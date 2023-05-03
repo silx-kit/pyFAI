@@ -29,8 +29,8 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "10/01/2023"
-__copyright__ = "2014-2022, ESRF, Grenoble"
+__date__ = "31/01/2023"
+__copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging

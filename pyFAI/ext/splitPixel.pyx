@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,9 +35,9 @@ Splitting is done by full pixel splitting
 Histogram (direct) implementation
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/07/2022"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -231,7 +231,7 @@ def fullSplit1D(pos,
                 for i in range(bin0_min, bin0_max):
                     sub_area = buffer[i] * inv_area
                     sum_count[i] += sub_area
-                    sum_data[i] += (sub_area ** coef_power) * data
+                    sum_data[i] += pown(sub_area, coef_power) * data
 
                 buffer[bin0_min:bin0_max] = 0
         for i in range(bins):
@@ -255,6 +255,8 @@ def fullSplit1D_engine(pos not None,
                        delta_dummy=None,
                        mask=None,
                        variance=None,
+                       dark_variance=None,
+                       int error_model=ErrorModel.NO,
                        dark=None,
                        flat=None,
                        solidangle=None,
@@ -302,12 +304,12 @@ def fullSplit1D_engine(pos not None,
         position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
         data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
-        acc_t[:, ::1] out_data = numpy.zeros((bins, 4), dtype=acc_d)
+        acc_t[:, ::1] out_data = numpy.zeros((bins, 5), dtype=acc_d)
         data_t[::1] out_intensity = numpy.zeros(bins, dtype=data_d)
-        data_t[::1] out_error
+        data_t[::1] std, sem
         mask_t[::1] cmask = None
         buffer_t[::1] buffer = numpy.zeros(bins, dtype=buffer_d)
-        acc_t norm
+        acc_t sig, var, nrm, cnt, nrm2
         data_t cdummy = 0.0, ddummy = 0.0
         position_t inv_area = 0
         position_t pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
@@ -315,15 +317,17 @@ def fullSplit1D_engine(pos not None,
         position_t a0 = 0, b0 = 0, c0 = 0, d0 = 0, max0 = 0, min0 = 0, a1 = 0, b1 = 0, c1 = 0, d1 = 0, max1 = 0, min1 = 0
         double epsilon = 1e-10
         bint check_pos1=pos1_range is not None, check_mask=False, check_dummy=False, do_dark=False,
-        bint do_flat=False, do_polarization=False, do_solidangle=False, do_variance = False
+        bint do_flat=False, do_polarization=False, do_solidangle=False
         Py_ssize_t i = 0, idx = 0, bin0_max = 0, bin0_min = 0
         preproc_t value
 
     if variance is not None:
         assert variance.size == size, "variance size"
-        do_variance = True
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
-        out_error = numpy.zeros(bins, dtype=data_d)
+        error_model = max(error_model, 1)
+    if error_model:
+        std = numpy.zeros(bins, dtype=data_d)
+        sem = numpy.zeros(bins, dtype=data_d)
 
     if mask is not None:
         check_mask = True
@@ -377,7 +381,7 @@ def fullSplit1D_engine(pos not None,
 
             is_valid = preproc_value_inplace(&value,
                                              cdata[idx],
-                                             variance=cvariance[idx] if do_variance else 0.0,
+                                             variance=cvariance[idx] if error_model==1 else 0.0,
                                              dark=cdark[idx] if do_dark else 0.0,
                                              flat=cflat[idx] if do_flat else 1.0,
                                              solidangle=csolidangle[idx] if do_solidangle else 1.0,
@@ -388,7 +392,8 @@ def fullSplit1D_engine(pos not None,
                                              delta_dummy=ddummy,
                                              check_dummy=check_dummy,
                                              normalization_factor=normalization_factor,
-                                             dark_variance=0.0)
+                                             dark_variance=0.0,
+                                             error_model=error_model)
 
             # Play with coordinates ...
             v8[:, :] = cpos[idx, :, :]
@@ -440,23 +445,36 @@ def fullSplit1D_engine(pos not None,
                         update_1d_accumulator(out_data, bin, value, buffer[bin]*inv_area)
                 buffer[bin0_min:bin0_max] = 0.0
         for i in range(bins):
-            norm = out_data[i, 2]
-            if out_data[i, 3] > 0.0:
+            sig = out_data[i, 0]
+            var = out_data[i, 1]
+            nrm = out_data[i, 2]
+            cnt = out_data[i, 3]
+            nrm2 = out_data[i, 4]
+            if cnt:
                 "test on count as norm can be negative "
-                out_intensity[i] = out_data[i, 0] / norm
-                if do_variance:
-                    out_error[i] = sqrt(out_data[i, 1]) / norm
+                out_intensity[i] = sig / nrm
+                if error_model:
+                    sem[i] = sqrt(var) / nrm
+                    std[i] = sqrt(var/nrm2)
             else:
                 out_intensity[i] = empty
-                if do_variance:
-                    out_error[i] = empty
+                if error_model:
+                    sem[i] = empty
+                    std[i] = empty
 
     bin_centers = numpy.linspace(pos0_min + 0.5 * dpos,
                                  pos0_max - 0.5 * dpos,
                                  bins)
 
-    return Integrate1dtpl(bin_centers, numpy.asarray(out_intensity), numpy.asarray(out_error) if do_variance else None,
-                          numpy.asarray(out_data[:, 0]), numpy.asarray(out_data[:, 1]), numpy.asarray(out_data[:, 2]), numpy.asarray(out_data[:, 3]))
+    return Integrate1dtpl(bin_centers, numpy.asarray(out_intensity),
+                          numpy.asarray(sem) if error_model else None,
+                          numpy.asarray(out_data[:, 0]),
+                          numpy.asarray(out_data[:, 1]) if error_model else None,
+                          numpy.asarray(out_data[:, 2]),
+                          numpy.asarray(out_data[:, 3]),
+                          std if error_model else None,
+                          sem if error_model else None,
+                          numpy.asarray(out_data[:, 4]) if error_model else None)
 
 fullSplit1D_ng = fullSplit1D_engine
 
@@ -681,14 +699,14 @@ def fullSplit2D(pos,
                     inv_area = 1.0 / area_pixel
 
                     sum_count[bin0_min, bin1_min] += inv_area * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_down) ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area * delta_down, coef_power)
 
                     sum_count[bin0_min, bin1_max] += inv_area * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                    sum_data[bin0_min, bin1_max] += data * pown(inv_area * delta_up, coef_power)
                     # if bin1_min + 1 < bin1_max:
                     for j in range(bin1_min + 1, bin1_max):
                             sum_count[bin0_min, j] += inv_area
-                            sum_data[bin0_min, j] += data * inv_area ** coef_power
+                            sum_data[bin0_min, j] += data * pown(inv_area, coef_power)
 
             else:
                 # spread on more than 2 bins in dim 0
@@ -698,15 +716,15 @@ def fullSplit2D(pos,
                     delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
                     inv_area = delta_left / area_pixel
                     sum_count[bin0_min, bin1_min] += inv_area
-                    sum_data[bin0_min, bin1_min] += data * inv_area ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area, coef_power)
                     delta_right = fbin0_max - (<acc_t> bin0_max)
                     inv_area = delta_right / area_pixel
                     sum_count[bin0_max, bin1_min] += inv_area
-                    sum_data[bin0_max, bin1_min] += data * inv_area ** coef_power
+                    sum_data[bin0_max, bin1_min] += data * pown(inv_area, coef_power)
                     inv_area = 1.0 / area_pixel
                     for i in range(bin0_min + 1, bin0_max):
                             sum_count[i, bin1_min] += inv_area
-                            sum_data[i, bin1_min] += data * inv_area ** coef_power
+                            sum_data[i, bin1_min] += data * pown(inv_area, coef_power)
                 else:
                     # spread on n pix in dim0 and m pixel in dim1:
                     area_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
@@ -717,30 +735,30 @@ def fullSplit2D(pos,
                     inv_area = 1.0 / area_pixel
 
                     sum_count[bin0_min, bin1_min] += inv_area * delta_left * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left * delta_down) ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area * delta_left * delta_down, coef_power)
 
                     sum_count[bin0_min, bin1_max] += inv_area * delta_left * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_left * delta_up) ** coef_power
+                    sum_data[bin0_min, bin1_max] += data * pown(inv_area * delta_left * delta_up, coef_power)
 
                     sum_count[bin0_max, bin1_min] += inv_area * delta_right * delta_down
-                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right * delta_down) ** coef_power
+                    sum_data[bin0_max, bin1_min] += data * pown(inv_area * delta_right * delta_down, coef_power)
 
                     sum_count[bin0_max, bin1_max] += inv_area * delta_right * delta_up
-                    sum_data[bin0_max, bin1_max] += data * (inv_area * delta_right * delta_up) ** coef_power
+                    sum_data[bin0_max, bin1_max] += data * pown(inv_area * delta_right * delta_up, coef_power)
                     for i in range(bin0_min + 1, bin0_max):
                             sum_count[i, bin1_min] += inv_area * delta_down
-                            sum_data[i, bin1_min] += data * (inv_area * delta_down) ** coef_power
+                            sum_data[i, bin1_min] += data * pown(inv_area * delta_down, coef_power)
                             for j in range(bin1_min + 1, bin1_max):
                                 sum_count[i, j] += inv_area
-                                sum_data[i, j] += data * inv_area ** coef_power
+                                sum_data[i, j] += data * pown(inv_area, coef_power)
                             sum_count[i, bin1_max] += inv_area * delta_up
-                            sum_data[i, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                            sum_data[i, bin1_max] += data * pown(inv_area * delta_up, coef_power)
                     for j in range(bin1_min + 1, bin1_max):
                             sum_count[bin0_min, j] += inv_area * delta_left
-                            sum_data[bin0_min, j] += data * (inv_area * delta_left) ** coef_power
+                            sum_data[bin0_min, j] += data * pown(inv_area * delta_left, coef_power)
 
                             sum_count[bin0_max, j] += inv_area * delta_right
-                            sum_data[bin0_max, j] += data * (inv_area * delta_right) ** coef_power
+                            sum_data[bin0_max, j] += data * pown(inv_area * delta_right, coef_power)
 
     # with nogil:
         for i in range(bins0):
@@ -773,6 +791,8 @@ def pseudoSplit2D_engine(pos not None,
                          delta_dummy=None,
                          mask=None,
                          variance=None,
+                         dark_variance=None,
+                         int error_model=ErrorModel.NO,
                          dark=None,
                          flat=None,
                          solidangle=None,
@@ -829,13 +849,14 @@ def pseudoSplit2D_engine(pos not None,
     cdef:
         position_t[:, :, ::1] cpos = numpy.ascontiguousarray(pos, dtype=position_d)
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
-        data_t[:, ::1] out_error, out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
+        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 5), dtype=acc_d)
+        data_t[:, ::1] out_intensity = numpy.empty((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] std, sem
         mask_t[:] cmask = None
         data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
         bint check_mask = False, check_dummy = False, do_dark = False,
         bint do_flat = False, do_polarization = False, do_solidangle = False,
-        bint do_variance = False, is_valid
+        bint is_valid
         data_t cdummy = 0, cddummy = 0, scale = 1
         position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, delta_right = 0, delta_left = 0, delta_up = 0, delta_down = 0, inv_area = 0
         position_t pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
@@ -844,7 +865,7 @@ def pseudoSplit2D_engine(pos not None,
         position_t center0 = 0.0, center1 = 0.0, area, width, height,
         position_t delta0, delta1, new_width, new_height, new_min0, new_max0, new_min1, new_max1
         Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
-        acc_t norm
+        acc_t sig, var, norm, cnt, norm2
         preproc_t value
 
     if mask is not None:
@@ -877,9 +898,11 @@ def pseudoSplit2D_engine(pos not None,
 
     if variance is not None:
         assert variance.size == size, "variance size"
-        do_variance = True
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
-        out_error = numpy.zeros((bins0, bins1), dtype=data_d)
+        error_model = max(error_model, 1)
+    if error_model:
+        std = numpy.zeros((bins0, bins1), dtype=data_d)
+        sem = numpy.zeros((bins0, bins1), dtype=data_d)
 
     if dark is not None:
         do_dark = True
@@ -960,7 +983,7 @@ def pseudoSplit2D_engine(pos not None,
 
             is_valid = preproc_value_inplace(&value,
                                              cdata[idx],
-                                             variance=cvariance[idx] if do_variance else 0.0,
+                                             variance=cvariance[idx] if error_model==1 else 0.0,
                                              dark=cdark[idx] if do_dark else 0.0,
                                              flat=cflat[idx] if do_flat else 1.0,
                                              solidangle=csolidangle[idx] if do_solidangle else 1.0,
@@ -971,7 +994,8 @@ def pseudoSplit2D_engine(pos not None,
                                              delta_dummy=cddummy,
                                              check_dummy=check_dummy,
                                              normalization_factor=normalization_factor,
-                                             dark_variance=0.0)
+                                             dark_variance=0.0,
+                                             error_model=error_model)
             if not is_valid:
                 continue
 
@@ -1077,24 +1101,33 @@ def pseudoSplit2D_engine(pos not None,
 
         for i in range(bins0):
             for j in range(bins1):
+                sig = out_data[i, j, 0]
+                var = out_data[i, j, 1]
                 norm = out_data[i, j, 2]
-                if out_data[i, j, 3] > 0.0:
-                    "Test on count rather than than norm which can be negative"
-                    out_intensity[i, j] = out_data[i, j, 0] / norm
-                    if do_variance:
-                        out_error[i, j] = sqrt(out_data[i, j, 1]) / norm
+                cnt = out_data[i, j, 3]
+                norm2 = out_data[i, j, 4]
+                if cnt > 0.0:
+                    "test on count as norm could be negatve"
+                    out_intensity[i, j] = sig / norm
+                    if error_model:
+                        sem[i, j] = sqrt(var) / norm
+                        std[i, j] = sqrt(var / norm2)
                 else:
                     out_intensity[i, j] = empty
-                    if do_variance:
-                        out_error[i, j] = empty
+                    if error_model:
+                        sem[i, j] = empty
+                        std[i, j] = empty
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-
     return Integrate2dtpl(bin_centers0, bin_centers1,
                           numpy.asarray(out_intensity).T,
-                          numpy.asarray(out_error).T if do_variance else None,
-                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
+                          numpy.asarray(sem).T if error_model else None,
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
+                          numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
+                          numpy.asarray(std).T if error_model else None,
+                          numpy.asarray(sem).T if error_model else None,
+                          numpy.asarray(out_data[...,4]).T if error_model else None)
 
 pseudoSplit2D_ng = pseudoSplit2D_engine
 
@@ -1108,6 +1141,8 @@ def fullSplit2D_engine(pos not None,
                          delta_dummy=None,
                          mask=None,
                          variance=None,
+                         dark_variance=None,
+                         int error_model=ErrorModel.NO,
                          dark=None,
                          flat=None,
                          solidangle=None,
@@ -1162,13 +1197,14 @@ def fullSplit2D_engine(pos not None,
         position_t[:, :, ::1] cpos = numpy.ascontiguousarray(pos, dtype=position_d)
         position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
-        data_t[:, ::1] out_error, out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
+        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 5), dtype=acc_d)
+        data_t[:, ::1] out_intensity = numpy.empty((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] std, sem
         mask_t[:] cmask = None
         data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
         bint check_mask = False, check_dummy = False, do_dark = False,
         bint do_flat = False, do_polarization = False, do_solidangle = False,
-        bint do_variance = False, is_valid
+        bint is_valid
         data_t cdummy = 0, cddummy = 0
         position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
         position_t pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
@@ -1177,7 +1213,7 @@ def fullSplit2D_engine(pos not None,
         position_t center0 = 0.0, center1 = 0.0, area, width, height,
         position_t delta0, delta1, new_width, new_height, new_min0, new_max0, new_min1, new_max1
         Py_ssize_t bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
-        acc_t norm
+        acc_t sig, var, norm, cnt, norm2
         preproc_t value
         Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15
         buffer_t[::1] linbuffer = numpy.empty(256, dtype=buffer_d)
@@ -1208,9 +1244,11 @@ def fullSplit2D_engine(pos not None,
 
     if variance is not None:
         assert variance.size == size, "variance size"
-        do_variance = True
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
-        out_error = numpy.zeros((bins0, bins1), dtype=data_d)
+        error_model = max(error_model, 1)
+    if error_model:
+        std = numpy.zeros((bins0, bins1), dtype=data_d)
+        sem = numpy.zeros((bins0, bins1), dtype=data_d)
 
     if mask is not None:
         check_mask = True
@@ -1241,7 +1279,7 @@ def fullSplit2D_engine(pos not None,
 
             is_valid = preproc_value_inplace(&value,
                                              cdata[idx],
-                                             variance=cvariance[idx] if do_variance else 0.0,
+                                             variance=cvariance[idx] if error_model==1 else 0.0,
                                              dark=cdark[idx] if do_dark else 0.0,
                                              flat=cflat[idx] if do_flat else 1.0,
                                              solidangle=csolidangle[idx] if do_solidangle else 1.0,
@@ -1252,7 +1290,8 @@ def fullSplit2D_engine(pos not None,
                                              delta_dummy=cddummy,
                                              check_dummy=check_dummy,
                                              normalization_factor=normalization_factor,
-                                             dark_variance=0.0)
+                                             dark_variance=0.0,
+                                             error_model=error_model)
             if not is_valid:
                 continue
 
@@ -1342,21 +1381,30 @@ def fullSplit2D_engine(pos not None,
 
         for i in range(bins0):
             for j in range(bins1):
+                sig = out_data[i, j, 0]
+                var = out_data[i, j, 1]
                 norm = out_data[i, j, 2]
-                if out_data[i, j, 3] > 0.0:
-                    "Test on count rather than than norm which can be negative"
-                    out_intensity[i, j] = out_data[i, j, 0] / norm
-                    if do_variance:
-                        out_error[i, j] = sqrt(out_data[i, j, 1]) / norm
+                cnt = out_data[i, j, 3]
+                norm2 = out_data[i, j, 4]
+                if cnt > 0.0:
+                    "test on count as norm could be negatve"
+                    out_intensity[i, j] = sig / norm
+                    if error_model:
+                        sem[i, j] = sqrt(var) / norm
+                        std[i, j] = sqrt(var / norm2)
                 else:
                     out_intensity[i, j] = empty
-                    if do_variance:
-                        out_error[i, j] = empty
+                    if error_model:
+                        sem[i, j] = empty
+                        std[i, j] = empty
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-
     return Integrate2dtpl(bin_centers0, bin_centers1,
                           numpy.asarray(out_intensity).T,
-                          numpy.asarray(out_error).T if do_variance else None,
-                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
+                          numpy.asarray(sem).T if error_model else None,
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
+                          numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
+                          numpy.asarray(std).T if error_model else None,
+                          numpy.asarray(sem).T if error_model else None,
+                          numpy.asarray(out_data[...,4]).T if error_model else None)

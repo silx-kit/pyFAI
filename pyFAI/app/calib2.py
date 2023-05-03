@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "24/02/2023"
 __status__ = "production"
 
 import os
@@ -569,7 +569,7 @@ def main():
         silx.config.DEFAULT_PLOT_BACKEND = "opengl"
 
     # Make sure matplotlib is loaded first by silx
-    import silx.gui.plot.matplotlib
+    import silx.gui.utils.matplotlib
     from pyFAI.gui.CalibrationWindow import CalibrationWindow
     from pyFAI.gui.CalibrationContext import CalibrationContext
 

@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/05/2019"
+__date__ = "27/03/2023"
 
 import weakref
 import logging
@@ -140,7 +140,7 @@ class ApplicationContext(object):
         if geometry is not None:
             dialog.setGeometry(geometry)
 
-    def __saveDialogState(self, dialog):
+    def __saveDialogState(self, dialog, *args, **kwargs):
         self.__dialogStates[type(dialog)] = dialog.saveState()
         self.__dialogGeometry[type(dialog)] = dialog.geometry()
 

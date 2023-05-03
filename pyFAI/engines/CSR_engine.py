@@ -22,11 +22,11 @@
 """CSR rebinning engine implemented in pure python (with bits of scipy !)
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2023"
+__date__ = "17/03/2023"
 __status__ = "development"
 
 import logging
@@ -394,16 +394,18 @@ class CsrIntegrator2d(CSRIntegrator):
                  image_size,
                  lut=None,
                  empty=0.0,
+                 unit=None,
                  bin_centers0=None,
                  bin_centers1=None,
                  checksum=None,
                  mask_checksum=None):
         """Constructor of the abstract class for 2D integration
 
-        :param size: input image size
+        :param image_size: input image size
         :param lut: tuple of 3 arrays with data, indices and indptr,
                      index of the start of line in the CSR matrix
         :param empty: value for empty pixels
+        :param unit: unit to be used
         :param bin_center: position of the bin center
         :param checksum: checksum for the LUT, if not provided, recalculated
         :param mask_checksum: just a place-holder to track which mask was used
@@ -413,6 +415,8 @@ class CsrIntegrator2d(CSRIntegrator):
         """
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
+        self.unit = unit
+
         if not checksum:
             self.checksum = calc_checksum(lut[0])
         else:
@@ -433,7 +437,7 @@ class CsrIntegrator2d(CSRIntegrator):
     def integrate(self,
                   signal,
                   variance=None,
-                  poissonian=False,
+                  error_model=ErrorModel.NO,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -441,12 +445,13 @@ class CsrIntegrator2d(CSRIntegrator):
                   solidangle=None,
                   polarization=None,
                   absorption=None,
-                  normalization_factor=1.0):
+                  normalization_factor=1.0,
+                  **kwargs):
         """Actually perform the 2D integration
 
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
-        :param poissonian: set to True to variance=max(signal,1), False will implement azimuthal variance
+        :param error_model: enum ErrorModel
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -458,11 +463,9 @@ class CsrIntegrator2d(CSRIntegrator):
         :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
 
         """
-        if variance is None and poissonian is None:
-            do_variance = False
-        else:
-            do_variance = True
-        trans = CSRIntegrator.integrate(self, signal, variance, poissonian, dummy, delta_dummy,
+        error_model = ErrorModel.parse(error_model)
+        do_variance = variance is not None or  error_model.do_variance
+        trans = CSRIntegrator.integrate(self, signal, variance, error_model, dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
         trans.shape = self.bins + (-1,)
@@ -471,6 +474,7 @@ class CsrIntegrator2d(CSRIntegrator):
         variance = trans[..., 1]
         normalization = trans[..., 2]
         count = trans[..., 3]
+        sum_nrm2 = trans[..., 4]
 
         mask = (normalization == 0)
         with warnings.catch_warnings():
@@ -478,14 +482,15 @@ class CsrIntegrator2d(CSRIntegrator):
             intensity = signal / normalization
             intensity[mask] = self.empty
             if do_variance:
-                error = numpy.sqrt(variance) / normalization
-                error[mask] = self.empty
-                sum_nrm2 = trans[..., 4]
+                sem = numpy.sqrt(variance) / normalization
+                std = numpy.sqrt(variance / sum_nrm2)
+                sem[mask] = self.empty
+                std[mask] = self.empty
             else:
-                variance = error = sum_nrm2 = None
+                variance = std = sem = sum_nrm2 = None
         return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
-                              intensity, error,
-                              signal, variance, normalization, count, sum_nrm2)
+                              intensity, sem,
+                              signal, variance, normalization, count, std, sem, sum_nrm2)
 
     integrate_ng = integrate
 

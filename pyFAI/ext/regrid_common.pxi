@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,9 +30,9 @@
 Some are defined in the associated header file .pxd
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/01/2022"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -41,7 +41,9 @@ __license__ = "MIT"
 import cython
 import numpy
 import sys
-from libc.math cimport ceil, floor, copysign
+from libc.math cimport ceil, floor, copysign, pow, fabs, M_PI, sqrt, log, NAN
+
+include "math_common.pxi"
 
 # Work around for issue similar to : https://github.com/pandas-dev/pandas/issues/16358
 
@@ -50,12 +52,6 @@ _numpy_1_12_py2_bug = ((sys.version_info.major == 2) and
 
 # Imports at the C level
 from .isnan cimport isnan
-from cython cimport floating
-from libc.math cimport fabs, M_PI, sqrt, log, NAN
-
-from .shared_types cimport int8_t, uint8_t, int16_t, uint16_t, \
-                           int32_t, uint32_t, int64_t, uint64_t,\
-                           float32_t, float64_t
 
 # How position are stored
 ctypedef float64_t position_t
@@ -106,31 +102,6 @@ else:
                           ('norm', acc_d),
                          ('count', acc_d)])
 
-ctypedef fused any_int_t:
-    uint8_t
-    uint16_t
-    uint32_t
-    uint64_t
-    int8_t
-    int16_t
-    int32_t
-    int64_t
-
-ctypedef fused any_t:
-    int
-    long
-    uint8_t
-    uint16_t
-    uint32_t
-    uint64_t
-    int8_t
-    int16_t
-    int32_t
-    int64_t
-    float32_t
-    float64_t
-
-
 cdef:
     struct preproc_t:
         data_t signal
@@ -147,12 +118,12 @@ cdef:
 
 
 from collections import namedtuple
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 Boundaries = namedtuple("Boundaries", "min0 max0 min1 max1")
 
 @cython.cdivision(True)
-cdef floating  get_bin_number(floating x0, floating pos0_min, floating delta) nogil:
+cdef inline floating get_bin_number(floating x0, floating pos0_min, floating delta) noexcept nogil:
     """
     calculate the bin number for any point (as floating)
 
@@ -165,7 +136,7 @@ cdef floating  get_bin_number(floating x0, floating pos0_min, floating delta) no
 
 
 @cython.cdivision(True)
-cdef inline floating calc_upper_bound(floating maximum_value) nogil:
+cdef inline floating calc_upper_bound(floating maximum_value) noexcept nogil:
     """Calculate the upper_bound for an histogram,
     given the maximum value of all the data.
 
@@ -188,7 +159,8 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
                                        floating delta_dummy=0.0,
                                        bint check_dummy=False,
                                        floating normalization_factor=1.0,
-                                       floating dark_variance=0.0) nogil:
+                                       floating dark_variance=0.0,
+                                       int error_model=1) noexcept nogil:
     """This is a Function in the C-space that performs the preprocessing
     for one data point
 
@@ -198,6 +170,8 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
     :param dark and dark_variance: the dark-noise and the associated variance to be subtracted (signal) or added (variance)
     :param flat, solidangle, polarization, absorption, normalization_factor: all normalization to be multiplied togeather
     :param dummy, delta_dummy, mask,check_dummy: controls the masking of the pixel
+    :param normalization_factor: multiply normalization with this value
+    :param error_model: 0 to diable, 1 for variance, 2 for Poisson model, ...
     :return: isvalid, i.e. True if the pixel is worth further processing
 
     where the result is calculated this way:
@@ -226,6 +200,9 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
 
     if is_valid:
         # Do not use "/=" as they mean reduction for cython
+        if error_model==2: # Poisson error-model:
+            variance = max(1.0, data)
+
         if dark:
             signal = data - dark
             if dark_variance:
@@ -258,7 +235,7 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
 cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
                                        int bin,
                                        preproc_t value,
-                                       double weight=1.0) nogil:
+                                       double weight=1.0) noexcept nogil:
     """Update a 1D array at given position with the proper values
 
     :param out_data: output 1D+(,4) accumulator
@@ -267,10 +244,13 @@ cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
     :param weight: weight associated with this value
     :return: Nothing
     """
+    cdef double w2 = weight * weight
     out_data[bin, 0] += value.signal * weight
-    out_data[bin, 1] += value.variance * weight * weight  # Important for variance propagation
+    out_data[bin, 1] += value.variance * w2  # Important for variance propagation
     out_data[bin, 2] += value.norm * weight
     out_data[bin, 3] += value.count * weight
+    # if out_data.shape[1] == 5: #Σ c²·ω²
+    out_data[bin, 4] += value.norm * value.norm * w2
 
 
 @cython.boundscheck(False)
@@ -278,17 +258,20 @@ cdef inline void update_2d_accumulator(acc_t[:, :, ::1] out_data,
                                        int bin0,
                                        int bin1,
                                        preproc_t value,
-                                       double weight=1.0) nogil:
+                                       double weight=1.0) noexcept nogil:
     """Update a 2D array at given position with the proper values
 
     :param out_data: 2D+1 accumulator
     :param bin0, bin1: where to assign data
     :return: Nothing
     """
+    cdef double w2 = weight * weight
     out_data[bin0, bin1, 0] += value.signal * weight
-    out_data[bin0, bin1, 1] += value.variance * weight * weight  # Important for variance propagation
+    out_data[bin0, bin1, 1] += value.variance * w2  # Important for variance propagation
     out_data[bin0, bin1, 2] += value.norm * weight
     out_data[bin0, bin1, 3] += value.count * weight
+    # if out_data.shape[2] == 5: #Σ c²·ω²
+    out_data[bin0, bin1, 4] += value.norm * value.norm * w2 # used to calculate the standard deviation
 
 
 cdef inline floating area4p(floating a0,
@@ -298,7 +281,7 @@ cdef inline floating area4p(floating a0,
                             floating c0,
                             floating c1,
                             floating d0,
-                            floating d1) nogil:
+                            floating d1) noexcept nogil:
     """
     Calculate the _APPROXIMATE_ area of the ABCD considering the parallelogram formula with 4 with corners:
     A(a0,a1)
@@ -317,7 +300,7 @@ cdef inline floating area4(floating a0,
                            floating c0,
                            floating c1,
                            floating d0,
-                           floating d1) nogil:
+                           floating d1) noexcept nogil:
     """
     Calculate the area of the ABCD polygon with 4 with corners:
     A(a0,a1)
@@ -342,7 +325,7 @@ cdef inline floating area4(floating a0,
 def _sp_area4(floating a0, floating a1, floating b0, floating b1, floating c0, floating c1, floating d0, floating d1):
     return area4(a0, a1, b0, b1, c0, c1, d0, d1)
 
-cdef inline position_t _recenter_helper(position_t azim, bint chiDiscAtPi)nogil:
+cdef inline position_t _recenter_helper(position_t azim, bint chiDiscAtPi) noexcept nogil:
     """Helper function
     """
     if (chiDiscAtPi and azim<0) or (not chiDiscAtPi and azim<pi):
@@ -351,7 +334,7 @@ cdef inline position_t _recenter_helper(position_t azim, bint chiDiscAtPi)nogil:
         return azim
 
 
-cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nogil:
+cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) noexcept nogil:
     cdef position_t a0, a1, b0, b1, c0, c1, d0, d1, center1, area, hi
     a0 = pixel[0, 0]
     a1 = pixel[0, 1]
@@ -381,6 +364,7 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nog
         pixel[3, 1] = d1
         area = area4p(a0, a1, b0, b1, c0, c1, d0, d1)
     return area
+
 def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
     """This function checks the pixel to be on the azimuthal discontinuity
     via the sign of its algebric area and recenters the corner coordinates in a
@@ -395,7 +379,7 @@ def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
     return _recenter(pixel, chiDiscAtPi)
 
 
-cdef inline any_t _clip(any_t value, any_t min_val, any_t max_val) nogil:
+cdef inline any_t _clip(any_t value, any_t min_val, any_t max_val) noexcept nogil:
     "Limits the value to bounds"
     if value < min_val:
         return min_val
@@ -403,6 +387,7 @@ cdef inline any_t _clip(any_t value, any_t min_val, any_t max_val) nogil:
         return max_val
     else:
         return value
+
 def clip(value,  min_val, int max_val):
     """Limits the value to bounds
 
@@ -412,18 +397,21 @@ def clip(value,  min_val, int max_val):
     :return: clipped value in the requested range
 
     """
-    return _clip(<float64_t>value, <float64_t>min_val, <float64_t>max_val)
+    return _clip(<double>value, <double> min_val, <double> max_val)
 
 
-cdef inline floating _calc_area(floating I1, floating I2, floating slope, floating intercept) nogil:
+cdef inline floating _calc_area(floating I1, floating I2, floating slope, floating intercept) noexcept nogil:
     #return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
     return (I2 - I1) * (0.5 * slope * (I2 + I1) + intercept)
+
 def calc_area(I1, I2, slope, intercept):
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
     return _calc_area(<position_t> I1, <position_t> I2, <position_t> slope, <position_t> intercept)
 
 
-cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1) nogil:
+cdef inline void _integrate1d(buffer_t[::1] buffer,
+                              floating start0, floating start1,
+                              floating stop0, floating stop1) noexcept nogil:
     """"Integrate in a box a segment between start and stop
 
     :param buffer: Buffer which is modified in place
@@ -464,10 +452,15 @@ cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating st
                 buffer[i] += _calc_area(i + 1, i, slope, intercept)
             if buffer_size > stop0 >= 0:
                 buffer[istop0] += _calc_area(floor(stop0 + 1), stop0, slope, intercept)
-def _sp_integrate1d(buffer_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1):
+
+def _sp_integrate1d(buffer_t[::1] buffer,
+                    floating start0, floating start1,
+                    floating stop0, floating stop1):
     _integrate1d(buffer, start0, start1, stop0, stop1)
 
-cdef inline void _integrate2d(buffer_t[:, ::1] box, floating start0, floating start1, floating stop0, floating stop1) nogil:
+cdef inline void _integrate2d(buffer_t[:, ::1] box,
+                              floating start0, floating start1,
+                              floating stop0, floating stop1) noexcept nogil:
     """Integrate in a box a line between start and stop0, line defined by its slope & intercept
 
     :param box: buffer with the relative area. Gets modified in place

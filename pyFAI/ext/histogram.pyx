@@ -1,6 +1,6 @@
 # coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
-#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+# cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ## This is for developping
 ## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
@@ -30,15 +30,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""A set of histogram functions with or without OpenMP enabled.
+"""A set of histogram functions, some of which with OpenMP enabled.
 
 Re-implementation of the numpy.histogram, optimized for azimuthal integration.
 
-Deprecated, will be replaced by ``silx.math.histogramnd``.
+Can be replaced by ``silx.math.histogramnd``.
 """
 
-__author__ = "Jerome Kieffer"
-__date__ = "29/06/2022"
+__author__ = "Jérôme Kieffer"
+__date__ = "17/03/2023"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -55,8 +55,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .preproc import preproc
-
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
+from .splitBBox_common import calc_boundaries
 
 _COMPILED_WITH_OPENMP = _openmp.COMPILED_WITH_OPENMP
 
@@ -354,6 +353,7 @@ def histogram_preproc(pos,
         position_t a = 0.0
         position_t fbin = 0.0
         position_t epsilon = 1e-10
+        data_t tmp
 
     if bin_range is not None:
         min0 = min(bin_range)
@@ -378,8 +378,9 @@ def histogram_preproc(pos,
             out_prop[bin, 0] += cdata[i, 0]
             out_prop[bin, 1] += cdata[i, 1]
             if nchan>2:
-                out_prop[bin, 2] += cdata[i, 2]
-                out_prop[bin, 3] += cdata[i, 2]**2
+                tmp = cdata[i, 2]
+                out_prop[bin, 2] += tmp
+                out_prop[bin, 3] += tmp*tmp
             if nchan>3:
                 out_prop[bin, 4] += cdata[i, 3]
     return (numpy.asarray(out_prop),
@@ -507,40 +508,71 @@ def histogram1d_engine(radial, int npt,
                           )
 
 
-def histogram2d_engine(pos0,
-                       pos1,
-                       bins,
-                       weights,
-                       pos0_range=None,
-                       pos1_range=None,
-                       bint split=False,
-                       double empty=0.0,
+def histogram2d_engine(radial, azimuthal,
+                       bins, #2-tuple
+                       raw,
+                       dark=None,
+                       flat=None,
+                       solidangle=None,
+                       polarization=None,
+                       absorption=None,
+                       mask=None,
+                       dummy=None,
+                       delta_dummy=None,
+                       double normalization_factor=1.0,
+                       data_t empty=0.0,
+                       variance=None,
+                       dark_variance=None,
+                       int error_model=ErrorModel.NO,
+                       radial_range=None,
+                       azimuth_range=None,
+                       bint allow_radial_neg=False,
+                       bint chiDiscAtPi=1,
+                       bint clip_azimuth=True
                        ):
-    """
-    Calculate 2D histogram of pos0,pos1 weighted by weights when the weights are
-    preprocessed and contain: signal, variance, normalization for each pixel
+    """Implementation of 2D rebinning engine using pure numpy histograms
 
-    :param pos0: 2Theta array
-    :param pos1: Chi array
-    :param weights: array with intensities
-    :param bins: number of output bins int or 2-tuple of int
-    :param pos0_range: minimum and maximum  of the 2th range
-    :param pos1_range: minimum and maximum  of the chi range
+    :param radial: radial position 2D array (same shape as raw)
+    :param azimuthal: azimuthal position 2D array (same shape as raw)
+    :param bins: number of points to integrate over in (radial, azimuthal) dimensions
+    :param raw: 2D array with the raw signal
+    :param dark: array containing the value of the dark noise, to be subtracted
+    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
+    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility
+    :param polarization: Correction for polarization of the incident beam
+    :param absorption: Correction for absorption in the sensor volume
+    :param mask: 2d array of int/bool: non-null where data should be ignored
+    :param dummy: value of invalid data
+    :param delta_dummy: precision for invalid data
+    :param normalization_factor: final value is divided by this
+    :param empty: value to be given for empty bins
+    :param variance: provide an estimation of the variance
+    :param dark_variance: provide an estimation of the variance of the dark_current,
+    :param error_model: set to "poisson" for assuming the detector is poissonian and variance = raw + dark
+    :param radial_range: enforce boundaries in radial dimention, 2tuple with lower and upper bound
+    :param azimuth_range: enforce boundaries in azimuthal dimention, 2tuple with lower and upper bound
+    :param allow_radial_neg: clip negative radial position (can a dimention be negative ?)
+    :param chiDiscAtPi: set the azimuthal discontinuity at π (True) or at 0/2π (False)
+    :param clip_azimuth: clip the azimuthal range to [-π π] (or [0 2π]), set to False to deactivate behavior.
 
-    :param split: pixel splitting is disabled in histogram
-    :param nthread: OpenMP is disabled. unused here
-    :param empty: value given to empty bins
+    NaN are always considered as invalid values
+
+    if neither empty nor dummy is provided, empty pixels are left at 0.
+
+    Nota: "azimuthal_range" has to be integrated into the
+           mask prior to the call of this function
+
+    :return: Integrate1dtpl named tuple containing:
+            position, average intensity, std on intensity,
+            plus the various histograms on signal, variance, normalization and count.
+
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
-    assert pos0.size == pos1.size, "Positions array have the same size"
-
     cdef:
-        Py_ssize_t bins0, bins1, i, j, bin0, bin1, c
-        Py_ssize_t size = pos0.size
-        Py_ssize_t nchan = weights.shape[weights.ndim - 1]
-    assert weights.ndim > 1, "Weights have been preprocessed"
-    assert pos0.size == (weights.size // nchan), "Weights have the right size"
-    assert nchan <= 4, "Maximum of 4 chanels"
+        Py_ssize_t bins0, bins1, i, j, bin0, bin1, idx
+        Py_ssize_t size = raw.size
+    assert size == radial.size, "radial has the same size as raw"
+    assert size == azimuthal.size, "azimuthal has the same size as raw"
 
     try:
         bins0, bins1 = tuple(bins)
@@ -550,81 +582,154 @@ def histogram2d_engine(pos0,
     bins1 = max(bins1, 1)
 
     cdef:
-        position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
-        position_t[::1] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
-        data_t[:, ::1] data = numpy.ascontiguousarray(weights.reshape((-1, nchan)), dtype=data_d)
-        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
-        data_t[:, ::1] out_signal = numpy.zeros((bins0, bins1), dtype=data_d)
-        data_t[:, ::1] out_error
+        # Related to data: single precision
+        data_t[::1] cdata = numpy.ascontiguousarray(raw.ravel(), dtype=data_d)
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption, cdark_variance
+        data_t cdummy, ddummy=0.0
+        # Related to positon: double precision
+        position_t[::1] cpos0 = numpy.ascontiguousarray(radial.ravel(), dtype=position_d)
+        position_t[::1] cpos1 = numpy.ascontiguousarray(azimuthal.ravel(), dtype=position_d)
+        #Accumulated data are also double
+        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 5), dtype=acc_d)
+        data_t[:, ::1] out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] out_std = numpy.zeros((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] out_sem = numpy.zeros((bins0, bins1), dtype=data_d)
+        mask_t[::1] cmask
+        acc_t sig, var, norm, cnt, norm2
+        position_t c0, c1
         position_t pos0_min, pos0_maxin, pos0_max,  pos1_min, pos1_maxin, pos1_max, delta0, delta1
-        position_t fbin0, fbin1, p0, p1
-        acc_t epsilon = 1e-10
-        acc_t sig, var, norm
+        position_t fbin0, fbin1
+        bint check_mask = False, check_dummy = False, is_valid
+        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, do_absorption=False
+        bint do_variance=error_model, do_dark_variance=False
+        preproc_t value
 
-    if pos0_range is not None and len(pos0_range) == 2:
-        pos0_min = min(pos0_range)
-        pos0_maxin = max(pos0_range)
+    if variance is not None:
+        assert variance.size == size, "variance size matches"
+        do_variance = True
+        cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
+
+    if mask is not None:
+        assert mask.size == size, "mask size"
+        check_mask = True
+        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
     else:
-        pos0_min = pos0.min()
-        pos0_maxin = pos0.max()
+        cmask = None
+
+    if (dummy is not None) and (delta_dummy is not None):
+        check_dummy = True
+        cdummy = float(dummy)
+        ddummy = float(delta_dummy)
+    elif (dummy is not None):
+        cdummy = float(dummy)
+        ddummy = 0.0
+        check_dummy = True
+    else:
+        cdummy = float(empty)
+        ddummy = 0.0
+        check_dummy = False
+
+    if dark is not None:
+        assert dark.size == size, "dark current array size"
+        do_dark = True
+        cdark = numpy.ascontiguousarray(dark.ravel(), dtype=data_d)
+    if dark_variance is not None:
+        assert dark_variance.size == size, "dark_varance array size"
+        do_dark_variance = True
+        cdark_variance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=data_d)
+    if flat is not None:
+        assert flat.size == size, "flat-field array size"
+        do_flat = True
+        cflat = numpy.ascontiguousarray(flat.ravel(), dtype=data_d)
+    if polarization is not None:
+        do_polarization = True
+        assert polarization.size == size, "polarization array size"
+        cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=data_d)
+    if solidangle is not None:
+        do_solidangle = True
+        assert solidangle.size == size, "Solid angle array size"
+        csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=data_d)
+    if absorption is not None:
+        do_absorption = True
+        assert absorption.size == size, "Absorption array size"
+        cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=data_d)
+
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, None,
+                                                                 cpos1, None,
+                                                                 cmask, radial_range, azimuth_range,
+                                                                 allow_radial_neg, chiDiscAtPi, clip_azimuth)
+
     pos0_max = calc_upper_bound(pos0_maxin)
-
-    if pos1_range is not None and len(pos1_range) > 1:
-        pos1_min = min(pos1_range)
-        pos1_maxin = max(pos1_range)
-    else:
-        pos1_min = pos1.min()
-        pos1_maxin = pos1.max()
     pos1_max = calc_upper_bound(pos1_maxin)
 
-    delta0 = (pos0_max - pos0_min) / (<position_t> (bins0))
-    delta1 = (pos1_max - pos1_min) / (<position_t> (bins1))
-
-    if nchan >= 3:
-        out_error = numpy.zeros((bins0, bins1), dtype=data_d)
-    if split:
-        logger.warning("No pixel splitting in histogram")
+    delta0 = (pos0_max - pos0_min) / (<position_t> bins0)
+    delta1 = (pos1_max - pos1_min) / (<position_t> bins1)
 
     with nogil:
-        for i in range(size):
-            p0 = cpos0[i]
-            p1 = cpos1[i]
-            fbin0 = get_bin_number(p0, pos0_min, delta0)
-            fbin1 = get_bin_number(p1, pos1_min, delta1)
-            bin0 = <Py_ssize_t> floor(fbin0)
-            bin1 = <Py_ssize_t> floor(fbin1)
-            if (bin0 < 0) or (bin1 < 0) or (bin0 >= bins0) or (bin1 >= bins1):
+        for idx in range(size):
+            if (check_mask) and cmask[idx]:
                 continue
-            for c in range(nchan):
-                out_data[bin0, bin1, c] += data[i, c]
-            if nchan < 4:
-                out_data[bin0, bin1, 3] += 1.0
+
+            is_valid = preproc_value_inplace(&value,
+                                             cdata[idx],
+                                             variance=cvariance[idx] if error_model==1 else 0.0,
+                                             dark=cdark[idx] if do_dark else 0.0,
+                                             flat=cflat[idx] if do_flat else 1.0,
+                                             solidangle=csolidangle[idx] if do_solidangle else 1.0,
+                                             polarization=cpolarization[idx] if do_polarization else 1.0,
+                                             absorption=cabsorption[idx] if do_absorption else 1.0,
+                                             mask=0, #previously checked
+                                             dummy=cdummy,
+                                             delta_dummy=ddummy,
+                                             check_dummy=check_dummy,
+                                             normalization_factor=normalization_factor,
+                                             dark_variance=cdark_variance[idx] if do_dark_variance else 0.0,
+                                             error_model=error_model)
+
+            if not is_valid:
+                continue
+
+            c0 = cpos0[idx]
+            c1 = cpos1[idx]
+
+            fbin0 = get_bin_number(c0, pos0_min, delta0)
+            fbin1 = get_bin_number(c1, pos1_min, delta1)
+
+            bin0 = <Py_ssize_t> fbin0
+            bin1 = <Py_ssize_t> fbin1
+
+            if (bin0 < 0) or (bin0 >= bins0) or (bin1 < 0) or (bin1 >= bins1):
+                    continue
+
+            update_2d_accumulator(out_data, bin0, bin1, value, 1.0)
+
         for i in range(bins0):
             for j in range(bins1):
-                if nchan >= 3:
-                    sig = out_data[i, j, 0]
-                    var = out_data[i, j, 1]
-                    norm = out_data[i, j, 2]
-                    if out_data[i, j, 3]:
-                        out_signal[i, j] = sig / norm
-                        out_error[i, j] = sqrt(var) / norm
-                    else:
-                        out_signal[i, j] = empty
-                        out_error[i, j] = empty
-                elif nchan == 2:
-                    sig = out_data[i, j, 0]
-                    norm = out_data[i, j, 2]
-                    if norm > 0:
-                        out_signal[i, j] = sig / norm
+                sig = out_data[i, j, 0]
+                var = out_data[i, j, 1]
+                norm = out_data[i, j, 2]
+                cnt = out_data[i, j, 3]
+                norm2 = out_data[i, j, 4]
+                if cnt > 0.0:
+                    "test on count as norm could be negatve"
+                    out_intensity[i, j] = sig / norm
+                    if do_variance:
+                        out_sem[i, j] = sqrt(var) / norm
+                        out_std[i, j] = sqrt(var / norm2)
                 else:
-                    out_signal[i, j] = out_data[i, j, 0]
+                    out_intensity[i, j] = empty
+                    if do_variance:
+                        out_sem[i, j] = empty
+                        out_std[i, j] = empty
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
-
     return Integrate2dtpl(bin_centers0, bin_centers1,
-                          numpy.asarray(out_signal).T,
-                          numpy.asarray(out_error) if nchan >= 3 else None,
-                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
+                          numpy.asarray(out_intensity).T,
+                          numpy.asarray(out_sem).T if do_variance else None,
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
+                          numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
+                          numpy.asarray(out_std).T, numpy.asarray(out_sem).T,
+                          numpy.asarray(out_data[...,4]).T)
 
-histogram2d_preproc = histogram2d_engine
+histogram2d_engine

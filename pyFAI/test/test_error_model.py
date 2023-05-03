@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/10/2022"
+__date__ = "03/03/2023"
 
 import unittest
 import sys
@@ -51,7 +51,7 @@ class TestErrorModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super(TestErrorModel, cls).setUpClass()
-        #synthetic dataset
+        # synthetic dataset
         pix = 100e-6
         shape = (256, 256)
         npt = 100
@@ -78,10 +78,10 @@ class TestErrorModel(unittest.TestCase):
            "wavelength":wl}
         cls.ai = AzimuthalIntegrator(**ai_init)
         # Generation of a "SAXS-like" curve with the shape of a lorentzian curve
-        unit="q_nm^-1"
+        unit = "q_nm^-1"
         q = numpy.linspace(0, cls.ai.array_from_unit(unit=unit).max(), npt)
-        I = I0/(1+q**2)
-        #Reconstruction of diffusion image:
+        I = I0 / (1 + q ** 2)
+        # Reconstruction of diffusion image:
         img_theo = cls.ai.calcfrom1d(q, I, dim1_unit="q_nm^-1",
                          correctSolidAngle=True,
                          polarization_factor=None,
@@ -89,7 +89,6 @@ class TestErrorModel(unittest.TestCase):
         cls.kwargs["flat"] = flat
         img = numpy.random.poisson(img_theo)
         cls.kwargs["data"] = img
-
 
     @classmethod
     def tearDownClass(cls):
@@ -108,9 +107,9 @@ class TestErrorModel(unittest.TestCase):
                 try:
                     results[error_model, impl, "clip"] = self.ai.sigma_clip_ng(**kw)
                 except RuntimeError as err:
-                    logger.error(f"({error_model}, {impl}, 'clip') ended in RuntimError: probably bot implemented: {err}")
+                    logger.error(f"({error_model}, {impl}, 'clip') ended in RuntimeError: probably not implemented: {err}")
         # test integrate
-        ref =  results[ "poisson", "python", "integrate"]
+        ref = results[ "poisson", "python", "integrate"]
         for k in results:
             if k[2] == "integrate":
                 res = results[k]
@@ -120,7 +119,7 @@ class TestErrorModel(unittest.TestCase):
                     # print(k, array, cormap(ref.__getattribute__(array), res.__getattribute__(array)))
                     self.assertGreaterEqual(cormap(ref.__getattribute__(array), res.__getattribute__(array)), epsilon, f"array {array} matches for {k} vs numpy")
         # test clip
-        ref =  results[ "poisson", "python", "clip"]
+        ref = results[ "poisson", "python", "clip"]
         for k in results:
             if k[2] == "clip":
                 res = results[k]
@@ -129,6 +128,7 @@ class TestErrorModel(unittest.TestCase):
                 for array in ("count", "sum_signal", "sum_normalization", "sum_variance"):
                     # print(k, array, cormap(ref.__getattribute__(array), res.__getattribute__(array)))
                     self.assertGreaterEqual(cormap(ref.__getattribute__(array), res.__getattribute__(array)), epsilon, f"array {array} matches for {k} vs numpy")
+
 
         # raise
 def suite():

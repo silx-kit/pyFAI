@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2022"
+__date__ = "03/02/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -42,10 +42,11 @@ import logging
 logger = logging.getLogger(__name__)
 from typing import NamedTuple
 from math import pi, cos, sin, sqrt, acos, asin
-degrees = lambda  x: 180*x/pi
-radians = lambda  x: x*pi/180
+degrees = lambda  x: 180 * x / pi
+radians = lambda  x: x * pi / 180
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
+
 
 class Fit2dGeometry(NamedTuple):
     """ This object represents the geometry as configured in Fit2D
@@ -58,16 +59,16 @@ class Fit2dGeometry(NamedTuple):
     :param detector: Detector definition as is pyFAI.
     :param wavelength: Wavelength of the beam in Angstrom
     """
-    directDist: float=None
-    centerX: float=None
-    centerY: float=None
-    tilt: float=0.0
-    tiltPlanRotation: float=0.0
-    pixelX: float=None
-    pixelY: float=None
-    splineFile: str=None
-    detector: Detector=None
-    wavelength: float=None
+    directDist: float = None
+    centerX: float = None
+    centerY: float = None
+    tilt: float = 0.0
+    tiltPlanRotation: float = 0.0
+    pixelX: float = None
+    pixelY: float = None
+    splineFile: str = None
+    detector: Detector = None
+    wavelength: float = None
 
     @classmethod
     def _fromdict(cls, dico):
@@ -132,7 +133,7 @@ def convert_to_Fit2d(poni):
     out["pixelY"] = poni.detector.pixel1 * 1e6
     out["splineFile"] = poni.detector.splineFile
     if poni.wavelength:
-        out["wavelength"] = poni.wavelength*1e10
+        out["wavelength"] = poni.wavelength * 1e10
     return Fit2dGeometry(**out)
 
 
@@ -170,10 +171,9 @@ def convert_from_Fit2d(f2d):
     else:
         detector = Detector.factory(f2d.detector)
 
-    print(detector, f2d.detector, f2d.pixelX, f2d.pixelY, f2d.splineFile)
     res._detector = detector
     if f2d.wavelength:
-        res._wavelength = f2d.wavelength*1e-10
+        res._wavelength = f2d.wavelength * 1e-10
     res._dist = f2d.directDist * cos_tilt * 1.0e-3
     res._poni1 = f2d.centerY * detector.pixel1 - f2d.directDist * sin_tilt * sin_tpr * 1.0e-3
     res._poni2 = f2d.centerX * detector.pixel2 - f2d.directDist * sin_tilt * cos_tpr * 1.0e-3

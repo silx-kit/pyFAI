@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/03/2022"
+__date__ = "29/03/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -196,10 +196,11 @@ class DiffMapWidget(qt.QWidget):
         self._menu_file()
 
     def set_validator(self):
-        validator = qt.QIntValidator(0, 999999, self)
-        self.fastMotorPts.setValidator(validator)
-        self.slowMotorPts.setValidator(validator)
-        self.offset.setValidator(validator)
+        validator0 = qt.QIntValidator(0, 999999, self)
+        validator1 = qt.QIntValidator(1, 999999, self)
+        self.fastMotorPts.setValidator(validator1)
+        self.slowMotorPts.setValidator(validator1)
+        self.offset.setValidator(validator0)
 
         float_valid = qt.QDoubleValidator(self)
         self.rMin.setValidator(float_valid)
@@ -327,6 +328,13 @@ class DiffMapWidget(qt.QWidget):
                 self.configure_output()
             else:
                 return
+        if self.fastMotorPts.text() == "" or self.slowMotorPts.text() == "" or int(self.fastMotorPts.text())*int(self.slowMotorPts.text()) == 0:
+            result = qt.QMessageBox.warning(self,
+                                            "Grid size",
+                                            "The number of steps for the grid (fast/slow motor) cannot be empty or null")
+            if result:
+                return
+
         config = self.get_config()
         self.progressBar.setRange(0, len(self.list_dataset))
         self.aborted = False
@@ -483,8 +491,8 @@ class DiffMapWidget(qt.QWidget):
         self.aximg = self.fig.add_subplot(1, 2, 1,
                                           xlabel=config.get("fast_motor_name", "Fast motor"),
                                           ylabel=config.get("slow_motor_name", "Slow motor"),
-                                          xlim=(-0.5, config.get("fast_motor_points", 1) - 0.5),
-                                          ylim=(-0.5, config.get("slow_motor_points", 1) - 0.5))
+                                          xlim=(-0.5, (config.get("fast_motor_points", 1) or 1) - 0.5),
+                                          ylim=(-0.5, (config.get("slow_motor_points", 1) or 1) - 0.5))
         self.aximg.set_title(config.get("experiment_title", "Diffraction imaging"))
         # print(config)
         self.axplt = self.fig.add_subplot(1, 2, 2,

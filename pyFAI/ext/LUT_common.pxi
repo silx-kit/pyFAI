@@ -29,9 +29,10 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2022"
+__date__ = "13/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
+
 
 from libc.string cimport memcpy
 from cython.parallel import prange
@@ -223,7 +224,7 @@ cdef class LutIntegrator(object):
                 if do_dummy and (data == cdummy):
                     continue
 
-                acc_data = acc_data + (coef ** coef_power) * data
+                acc_data = acc_data + pown(coef, coef_power) * data
                 acc_count = acc_count + coef
             sum_data[i] = acc_data
             sum_count[i] = acc_count
@@ -342,7 +343,7 @@ cdef class LutIntegrator(object):
                         acc_sig = coef * preproc4[idx, 0]
                         #Variance remains at 0
                         acc_norm = coef * preproc4[idx, 2]
-                        acc_norm_sq = (coef * preproc4[idx, 2])**2
+                        acc_norm_sq = pown(coef * preproc4[idx, 2], 2)
                         acc_count = coef * preproc4[idx, 3]
                     else:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
