@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/05/2023"
+__date__ = "03/05/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3481,6 +3481,26 @@ class AzimuthalIntegrator(Geometry):
                                   azimuth_range=azimuth_range, radial_range=radial_range).count.min()
             if mini < redundancy:
                 return i - 1
+
+    def guess_polarization(self, img, npt_rad=None, npt_azim=360, unit="2th_deg",
+                           method=("no", "csr", "cython")):
+        """Guess the polarization factor for the given image
+
+        :param:
+        :return: polarization factor, polarization angle
+        """
+        if npt_rad is None:
+            if self.detector.shape is None:
+                self.detector.shape = img.shape
+            npt_rad = self.guess_npt_rad()
+        res = self.integrate2d_ng(img, npt_rad, npt_azim, unit=unit, method=method)
+
+        azimuthal_range = (res.count>0).sum(axis=0)
+        azim_min = azimuthal_range.max()*0.95
+        valid_rings = numpy.where(azimuthal_range>azim_min)[0]
+        nbpix = res.count.sum(axis=0)[valid_rings]
+        bin = valid_rings[numpy.where(nbpix.max() == nbpix)[0][-1]]
+
 
 ################################################################################
 # Some properties
