@@ -17,14 +17,6 @@ pyFAI package
     :undoc-members:
     :show-inheritance:
 
-:mod:`geometry` Module
-----------------------
-
-.. automodule:: pyFAI.geometry
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`average` Module
 ---------------------
 
@@ -142,6 +134,7 @@ Other sub-packages:
     detectors/index
     engines/index
     ext/index
+    geometry/index
     gui/index
     io/index
     opencl/index
