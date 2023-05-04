@@ -14,7 +14,7 @@ if meson.backend() != 'ninja'
 endif
 
 # Seek for Cython installation
-cython = find_program('cython', required : true)
+cython = find_program('cython3', 'cython', required : true)
 if not cython.found()
   error('Cython not found.')
 endif
