@@ -5,7 +5,8 @@ Uploaders: Jerome Kieffer <jerome.kieffer@esrf.fr>,
 Section: science
 Priority: extra
 Build-Depends: cython3 (>=0.29.31),
-               cython3-dbg,
+               python3-mesonpy,
+               pkg-config,
                debhelper,
                dh-python,
                python3-all-dev,
@@ -15,22 +16,22 @@ Build-Depends: cython3 (>=0.29.31),
                python3-matplotlib,
                python3-numpy,
                python3-numexpr,
-               python3-pyqt5|python3-pyqt4|python3-pyside,
+               python3-pyqt5|python3-pyside2.qtgui,
                python3-scipy,
                python3-sphinx,
                python3-sphinxcontrib.programoutput,
                python3-nbconvert,
                python3-nbsphinx,
                python3-sphinx-rtd-theme,
-               python3-setuptools,
+               pybuild-plugin-pyproject
                python-dev-is-python3,
                help2man,
                devscripts
 Standards-Version: 3.9.6
 Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/pyfai.git
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/pyfai.git
-Homepage: http://forge.epn-campus.eu/projects/azimuthal
-X-Python3-Version: >= 3.5
+Homepage: http://www.silx.org/#pyFAI
+X-Python3-Version: >= 3.7
 
 Package: pyfai
 Architecture: all
@@ -65,11 +66,11 @@ Depends: ${misc:Depends},
          python3-fabio (>= 0.5),
          python3-pil,
          python3-matplotlib,
-         python3-scipy,
+         python3-scipy (>=1.1),
          python3-silx (>=0.10)
 Recommends: python3-pyopencl,
-            python3-pyqt5|python3-pyside
-Suggests: python3-h5py
+            python3-pyqt5|python3-pyside2.qtgui,
+            python3-h5py
 Description: Fast Azimuthal Integration scripts - Python3
  PyFAI is a Python library for azimuthal integration; it allows the conversion
  of diffraction images taken with 2D detectors like CCD cameras into X-Ray

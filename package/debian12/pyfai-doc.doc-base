@@ -5,5 +5,5 @@ Abstract: Fast Azimuthal Integration for images produced by 2D X-ray detector
 Section: Science/Data Analysis
 
 Format: HTML
-Index: /usr/share/doc/pyfai-doc/html/index.html
-Files: /usr/share/doc/pyfai-doc/html/*
+Index: /usr/share/doc/pyfai-doc/index.html
+Files: /usr/share/doc/pyfai-doc/*

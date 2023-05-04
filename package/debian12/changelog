@@ -1,3 +1,9 @@
+pyfai (2023.3.0-1) unstable; urgency=medium
+
+  * Change build system to meson-py 
+
+ -- Jerome Kieffer <jerome.kieffer@esrf.fr>  Fri, 04 May 2023 082:00:00 +0100
+
 pyfai (0.11.0+dfsg-3) unstable; urgency=medium
 
   * debian/path
