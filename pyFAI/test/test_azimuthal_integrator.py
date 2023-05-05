@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/05/2023"
+__date__ = "05/05/2023"
 
 import unittest
 import os
@@ -333,7 +333,7 @@ class TestFlatimage(unittest.TestCase):
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
             fig, ax = pylab.subplots()
-            fig.suptitle('cacking of a flat image: SplitBBox')
+            fig.suptitle('caking of a flat image: SplitBBox')
             ax.imshow(I, interpolation="nearest")
             fig.show()
             input("Press enter to quit")
@@ -350,6 +350,10 @@ class TestFlatimage(unittest.TestCase):
         res = self.ai.guess_npt_rad()
         self.assertEqual(res, 142, "the number of bins found is correct (142)")
 
+    def test_guess_polarization(self):
+        img = fabio.open(UtilsTest.getimage("Eiger4M.edf")).data
+        ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Eiger4M.poni"))
+        self.assertLess(abs(ai.guess_polarization(img)-0.5), 0.1)
 
 class TestSaxs(unittest.TestCase):
     saxsPilatus = "bsa_013_01.edf"
