@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/05/2023"
+__date__ = "05/05/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3481,6 +3481,45 @@ class AzimuthalIntegrator(Geometry):
                                   azimuth_range=azimuth_range, radial_range=radial_range).count.min()
             if mini < redundancy:
                 return i - 1
+
+    def guess_polarization(self, img, npt_rad=None, npt_azim=360, unit="2th_deg",
+                           method=("no", "csr", "cython"), target_rad=None):
+        """Guess the polarization factor for the given image
+
+        For this one performs several integration with different polarization factors
+        and take the one with the lowest std along the outer-most ring.
+
+        :param img: diffraction image, preferable with beam-stop centered.
+        :param npt_rad: number of point in the radial dimension, can be guessed, better avoid oversampling.
+        :param npt_azim: number of point in the azimuthal dimension, 1 per degree is usually OK
+        :param unit: radial unit for the integration
+        :param method: The  default one is pretty optimal: no splitting, CSR for the speed of the integration
+        :param target_rad: position of the outer-most complete ring, can be guessed.
+        :return: polarization factor (#, polarization angle)
+        """
+        if npt_rad is None:
+            if self.detector.shape is None:
+                self.detector.shape = img.shape
+            npt_rad = self.guess_npt_rad()
+
+        res = self.integrate2d_ng(img, npt_rad, npt_azim, unit=unit, method=method)
+
+        if target_rad is None:
+            azimuthal_range = (res.count>0).sum(axis=0)
+            azim_min = azimuthal_range.max()*0.95
+            valid_rings = numpy.where(azimuthal_range>azim_min)[0]
+            nbpix = res.count.sum(axis=0)[valid_rings]
+            bin_idx = valid_rings[numpy.where(nbpix.max() == nbpix)[0][-1]]
+        else:
+            bin_idx = numpy.argmin(abs(res-target_rad))
+
+        from scipy.optimize import minimize_scalar
+        sfun = lambda p:\
+            self.integrate2d_ng(img, npt_rad, npt_azim, unit=unit, method=method,
+                                polarization_factor=p).intensity[:, bin_idx].std()
+        opt = minimize_scalar(sfun, bounds=[-1, 1])
+        logger.info(str(opt))
+        return opt.x
 
 ################################################################################
 # Some properties

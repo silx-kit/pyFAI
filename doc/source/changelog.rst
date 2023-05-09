@@ -8,6 +8,8 @@ Change-log of versions
 2023.XX dd/mm/2023
 ------------------
 - New detector: Jungfrau 8M used at SwissFEL
+- new method in `Geometry` to guess the number of bin (and avoid oversampling)
+- new method in `AzimuthalIntegrator` to guess the polarization factor
 
 2023.03 22/03/2023
 ------------------
