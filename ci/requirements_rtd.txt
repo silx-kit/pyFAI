@@ -10,5 +10,5 @@ sphinxcontrib-programoutput
 silx
 nbsphinx
 sphinx-rtd-theme
-docutils<0.20
+docutils<0.21
 ipython_genutils
