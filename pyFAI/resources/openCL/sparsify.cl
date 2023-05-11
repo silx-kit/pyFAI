@@ -83,7 +83,7 @@ kernel void find_intense(       global  float4 *preproc4,  // both input and out
                 value.s1 = 0.0f;
             } // empty pixel
             float step = radius1d[1] - radius1d[0];
-            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)NBINS);
+            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)(NBINS - 1));
             int index = convert_int_rtz(pos);
             float delta = pos - index;
             if (index + 1 < NBINS) {
