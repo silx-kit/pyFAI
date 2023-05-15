@@ -50,20 +50,22 @@ from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 class CSCIntegrator(object):
 
     def __init__(self,
-                 image_size,
+                 input_size,
+                 output_size,
                  lut=None,
                  empty=0.0):
         """Constructor of the abstract class
 
-        :param size: input image size
+        :param input_size: input image size
+        :param output_size: output histogram size (int or 2-tuple)
         :param lut: tuple of 3 arrays with data, indices and indptr,
                      index of the start of line in the CSC matrix
         :param empty: value for empty pixels
         """
-        self.size = image_size
-        self.preprocessed = numpy.empty((image_size, 4), dtype=numpy.float32)
+        self.size = input_size
+        self.preprocessed = numpy.empty((input_size, 4), dtype=numpy.float32)
         self.empty = empty
-        self.bins = None
+        self.bins = output_size
         self._csc = None
         self._csc2 = None  # Used for propagating variance
         self.lut_size = 0  # actually nnz
@@ -84,9 +86,15 @@ class CSCIntegrator(object):
         self.indices = indices
         self.indptr = indptr
         self.lut_size = len(indices)
-        self.bins = len(indptr) - 1
-        self._csc = csc_matrix((data, indices, indptr), shape=(self.bins, self.size))
-        self._csc2 = csc_matrix((data * data, indices, indptr), shape=(self.bins, self.size))  # contains the coef squared, used for variance propagation
+        if self.size > len(indptr) - 1:
+            new_indptr = numpy.empty(self.size+1, indptr.dtype)
+            new_indptr[:] = indptr[-1]
+            new_indptr[:len(indptr)] = indptr
+            indptr = new_indptr
+        nbins = numpy.prod(self.bins)
+        assert max(indices) <= nbins
+        self._csc = csc_matrix((data, indices, indptr), shape=(nbins, self.size))
+        self._csc2 = csc_matrix((data * data, indices, indptr), shape=(nbins, self.size))  # contains the coef squared, used for variance propagation
 
     def integrate(self,
                   signal,
@@ -179,7 +187,7 @@ class CscIntegrator1d(CSCIntegrator):
         Nota: bins value is deduced from the dimentionality of bin_centers
         """
         self.bin_centers = bin_centers
-        CSCIntegrator.__init__(self, image_size, lut, empty)
+        CSCIntegrator.__init__(self, image_size, len(bin_centers), lut, empty)
         self.pos0_range = self.pos1_range = None
         self.unit = unit
         self.mask_checksum = mask_checksum
@@ -406,7 +414,8 @@ class CscIntegrator2d(CSCIntegrator):
                      index of the start of line in the CSR matrix
         :param empty: value for empty pixels
         :param unit: unit to be used
-        :param bin_center: position of the bin center
+        :param bin_center0: position of the bin center along dim0
+        :param bin_center1: position of the bin center along dim1
         :param checksum: checksum for the LUT, if not provided, recalculated
         :param mask_checksum: just a place-holder to track which mask was used
 
@@ -415,13 +424,14 @@ class CscIntegrator2d(CSCIntegrator):
         """
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
+        bins = (len(bin_centers0), len(bin_centers1))
         self.unit = unit
 
         if not checksum:
             self.checksum = calc_checksum(lut[0])
         else:
             self.checksum = checksum
-        CSCIntegrator.__init__(self, image_size, lut, empty)
+        CSCIntegrator.__init__(self, image_size, bins, lut, empty)
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
@@ -431,8 +441,7 @@ class CscIntegrator2d(CSCIntegrator):
         :param indptr: the index of the start of line"""
 
         CSCIntegrator.set_matrix(self, data, indices, indptr)
-        assert len(self.bin_centers0) * len(self.bin_centers1) == len(indptr) - 1
-        self.bins = (len(self.bin_centers0), len(self.bin_centers1))
+        assert self.size == len(indptr) - 1
 
     def integrate(self,
                   signal,
