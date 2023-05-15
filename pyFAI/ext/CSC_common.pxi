@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/03/2023"
+__date__ = "15/05/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -61,15 +61,15 @@ cdef class CscIntegrator(object):
                   int output_size,
                   data_t empty=0.0):
 
-        """Constructor for a CSR generic integrator
+        """Constructor for a CSC generic integrator
 
-        :param lut: Sparse matrix in CSR format, tuple of 3 arrays with (data, indices, indptr)
+        :param lut: Sparse matrix in CSC format, tuple of 3 arrays with (data, line_indices, col_indptr)
         :param size: input image size
         :param empty: value for empty pixels
         """
         self.empty = empty
         assert input_size >= len(lut[2])-1, "image size is OK"
-        assert len(lut) == 3, "Sparse matrix is expected as 3-tuple CSR with (data, indices, indptr)"
+        assert len(lut) == 3, "Sparse matrix is expected as 3-tuple CSC with (data, line_indices, col_indptr)"
         assert len(lut[1]) == len(lut[0]),  "Sparse matrix in CSC format is expected to have len(data) == len(indices) is expected as 3-tuple CSR with (data, indices, indptr)"
         self._data = numpy.ascontiguousarray(lut[0], dtype=data_d)
         self._indices = numpy.ascontiguousarray(lut[1], dtype=numpy.int32)
