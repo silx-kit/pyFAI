@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/03/2023"
+__date__ = "15/05/2023"
 __status__ = "development"
 
 import logging
@@ -416,12 +416,15 @@ class CsrIntegrator2d(CSRIntegrator):
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
         self.unit = unit
+        self.mask_checksum = mask_checksum
 
         if not checksum:
             self.checksum = calc_checksum(lut[0])
         else:
             self.checksum = checksum
         CSRIntegrator.__init__(self, image_size, lut, empty)
+
+
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content

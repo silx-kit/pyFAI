@@ -426,6 +426,7 @@ class CscIntegrator2d(CSCIntegrator):
         self.bin_centers1 = bin_centers1
         bins = (len(bin_centers0), len(bin_centers1))
         self.unit = unit
+        self.mask_checksum = mask_checksum
 
         if not checksum:
             self.checksum = calc_checksum(lut[0])

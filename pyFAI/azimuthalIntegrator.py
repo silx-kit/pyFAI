@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/05/2023"
+__date__ = "15/05/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2344,8 +2344,6 @@ class AzimuthalIntegrator(Geometry):
                                                                      unit=unit, empty=empty,
                                                                      mask_checksum=mask_crc
                                                                      )
-                                integr.pos0_range = cython_integr.pos0_range
-                                integr.pos1_range = cython_integr.pos1_range
 
                         elif (method.impl_lower == "python"):
                             with ocl_py_engine.lock:
@@ -2356,6 +2354,8 @@ class AzimuthalIntegrator(Geometry):
                                                                      checksum=cython_integr.lut_checksum,
                                                                      unit=unit, empty=empty,
                                                                      mask_checksum=mask_crc)
+                        integr.pos0_range = cython_integr.pos0_range
+                        integr.pos1_range = cython_integr.pos1_range
                         ocl_py_engine.set_engine(integr)
 
                     if (integr is not None):
