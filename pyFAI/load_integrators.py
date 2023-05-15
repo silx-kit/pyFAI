@@ -148,11 +148,11 @@ else:
     IntegrationMethod(1, "no", "CSC", "python",
                       class_funct_ng=(py_CSC_engine.CscIntegrator1d, py_CSC_engine.CscIntegrator1d.integrate))
     IntegrationMethod(2, "no", "CSC", "python",
-                      class_funct_legacy=(py_CSC_engine.CscIntegrator2d, py_CSC_engine.CscIntegrator2d.integrate))
+                      class_funct_ng=(py_CSC_engine.CscIntegrator2d, py_CSC_engine.CscIntegrator2d.integrate))
     IntegrationMethod(1, "bbox", "CSC", "python",
                       class_funct_ng=(py_CSC_engine.CscIntegrator1d, py_CSC_engine.CscIntegrator1d.integrate))
     IntegrationMethod(2, "bbox", "CSC", "python",
-                      class_funct_legacy=(py_CSC_engine.CscIntegrator2d, py_CSC_engine.CscIntegrator2d.integrate))
+                      class_funct_ng=(py_CSC_engine.CscIntegrator2d, py_CSC_engine.CscIntegrator2d.integrate))
 
 try:
     from .ext import splitBBoxLUT
