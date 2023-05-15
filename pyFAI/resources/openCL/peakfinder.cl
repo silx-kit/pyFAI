@@ -45,7 +45,7 @@ inline int pf8_calc_buffer2(int dim0, int dim1, int hw){
     int wsy = get_local_size(0);
     int wsx = get_local_size(1);
     int width = wsx + 2 * hw;
-    return (clamp(dim0, -hw, wsy + hw) + hw)*width + clamp(dim1, -hw, wsx + hw) + hw;
+    return (clamp(dim0, -hw, wsy + hw - 1) + hw)*width + clamp(dim1, -hw, wsx + hw - 1) + hw;
 }
 
 
@@ -75,7 +75,7 @@ inline float2 correct_pixel2(
         float radius = radius2d[gid];
         if (isfinite(radius) && (radius>=radius_min) && (radius<radius_max)) {
             float step = radius1d[1] - radius1d[0];
-            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)(NBINS-1));
+            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)(NBINS - 1));
             int index = convert_int_rtz(pos);
             if (index + 1 < NBINS) {
                 float delta = pos - index;
