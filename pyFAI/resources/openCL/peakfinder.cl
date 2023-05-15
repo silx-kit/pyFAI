@@ -77,12 +77,13 @@ inline float2 correct_pixel2(
             float step = radius1d[1] - radius1d[0];
             float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)(NBINS - 1));
             int index = convert_int_rtz(pos);
-            float delta = pos - index;
             if (index + 1 < NBINS) {
+                float delta = pos - index;
                 background = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // linear interpolation: averge
                 uncert = std1d[index]*(1.0f-delta) + std1d[index+1]*(delta); // linear interpolation: std
             }
             else { //Normal bin, using linear interpolation
+                index = NBINS-1;
                 background = average1d[index];
                 uncert = std1d[index];
             }//Upper most bin: no interpolation
