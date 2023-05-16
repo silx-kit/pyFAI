@@ -165,7 +165,7 @@ To test the development version (built but not yet installed):
     python run_tests.py
 
 
-PyFAI comes with 65 test-suites (444 tests in total) representing a coverage of 55%.
+PyFAI comes with 65 test-suites (445 tests in total) representing a coverage of 55%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
 Test may not pass on computer featuring less than 2GB of memory or 32 bit architectures.
