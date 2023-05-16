@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2023"
+__date__ = "16/05/2023"
 __status__ = "development"
 
 import threading
@@ -351,7 +351,6 @@ class Worker(object):
         kwarg["correctSolidAngle"] = self.correct_solid_angle
         kwarg["safe"] = self.safe
         kwarg["variance"] = variance
-        #print("error model", self.error_model)
         if self.error_model:
             kwarg["error_model"] = self.error_model
 
