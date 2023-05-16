@@ -21,7 +21,7 @@ Programming language
 
 PyFAI is a Python project but uses many programming languages:
 
-* 50000 lines of Python (of thich 8000 for the test)
+* 50000 lines of Python (of which 8000 are for the test)
 * 16000 lines of Cython which are converted into ... C or C++
 * 8000 lines of OpenCL kernels
 
@@ -112,11 +112,11 @@ On OSX, an alternative is to install a recent version of GCC (>=4.2) and to use
 it for compiling pyFAI.
 The options to be used then are * --force-cython --openmp*.
 
-Otherwise, C files are which are provided with pyFAI sources are directly useable
+Otherwise, C files which are provided with pyFAI sources are directly useable
 and Cython is only needed for developing new binary modules.
 If you want to generate your own C files, make sure your local Cython version
 is recent enough (v0.21 and newer),
-unless your Cython files will not be translated to C, nor used.
+otherwise your Cython files will not be translated to C, nor used.
 
 Building procedure
 ------------------
