@@ -37,7 +37,7 @@ Serial implementation based on a sparse CSC matrix multiplication
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/03/2023"
+__date__ = "16/05/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -106,11 +106,10 @@ class HistoBBox1d(CscIntegrator, SplitBBoxIntegrator):
         self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
                                           self.pos0_max - 0.5 * self.delta,
                                           self.bins)
-
-        csc = sparse.csr_matrix(self.calc_lut_1d().to_csr()).tocsc()
+        csc = sparse.csr_matrix(self.calc_lut_1d().to_csr(), shape=(self.bins, self.size)).tocsc()
 
         #Call the constructor of the parent class
-        CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.size, bins, empty or 0.0)
+        CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.size, self.bins, empty or 0.0)
 
         self.lut_checksum = crc32(self.data)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
@@ -184,9 +183,10 @@ class HistoBBox2d(CscIntegrator, SplitBBoxIntegrator):
         self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1,
                                            self.pos1_max - 0.5 * self.delta1,
                                            self.bins[1])
-        csc = sparse.csr_matrix(self.calc_lut_2d().to_csr()).tocsc()
+        output_size = numpy.prod(self.bins)
+        csc = sparse.csr_matrix(self.calc_lut_2d().to_csr(), shape=(output_size, self.size)).tocsc()
         #Call the constructor of the parent class
-        CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.size, numpy.prod(bins), empty or 0.0)
+        CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.size, output_size, empty or 0.0)
         self.lut_checksum = crc32(self.data)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
 
