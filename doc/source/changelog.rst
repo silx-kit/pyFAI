@@ -5,7 +5,7 @@
 Change-log of versions
 ======================
 
-2023.05 dd/mm/2023
+2023.05 06/05/2023
 ------------------
 - New detector: Jungfrau 8M used at SwissFEL
 - new method in `Geometry` to guess the number of bin (and avoid oversampling)
