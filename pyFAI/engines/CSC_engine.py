@@ -26,14 +26,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2023"
+__date__ = "16/05/2023"
 __status__ = "development"
 
 import logging
 import warnings
 logger = logging.getLogger(__name__)
 import numpy
-from scipy.sparse import csr_matrix, csc_matrix
+from scipy.sparse import csc_matrix
 from .preproc import preproc as preproc_np
 from ..utils.mathutil import interp_filter
 try:
@@ -92,7 +92,8 @@ class CSCIntegrator(object):
             new_indptr[:len(indptr)] = indptr
             indptr = new_indptr
         nbins = numpy.prod(self.bins)
-        assert max(indices) <= nbins
+        if len(indices):
+            assert max(indices) <= nbins
         self._csc = csc_matrix((data, indices, indptr), shape=(nbins, self.size))
         self._csc2 = csc_matrix((data * data, indices, indptr), shape=(nbins, self.size))  # contains the coef squared, used for variance propagation
 
