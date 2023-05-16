@@ -13,7 +13,7 @@ Change-log of versions
 - CSC-integrators (1D + 2D) implemented in pure python using scipy.sparse
 - Update documentation
 - Minor correction (remove debugging)
-- packaging for debian12 (using meson-python)
+- Packaging for debian12 using meson-python
 
 2023.03 22/03/2023
 ------------------
