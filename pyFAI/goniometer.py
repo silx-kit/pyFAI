@@ -605,6 +605,7 @@ class SingleGeometry(object):
         :param geometry: an azimuthal integrator or a ponifile
                         (or a dict with the geometry) (optional parameter)
         """
+        dict_geo = {}
         self.label = label
         self.image = image
         self.metadata = metadata  # may be anything
@@ -625,8 +626,7 @@ class SingleGeometry(object):
             dict_geo = Geometry.sload(geometry).getPyFAI()
         elif isinstance(geometry, dict):
             dict_geo = geometry
-        else:
-            dict_geo = {}
+
         if self.detector is not None:
             dict_geo["detector"] = self.detector
         if self.control_points is not None:
