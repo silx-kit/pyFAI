@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>431</width>
-    <height>330</height>
+    <width>400</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Sample stage geometry</string>
+   <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -410,13 +410,6 @@
      </widget>
     </widget>
    </item>
-   <item>
-    <widget class="QDialogButtonBox" name="_buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Close</set>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -431,21 +424,6 @@
    <header>pyFAI.gui.widgets.UnitLabel</header>
   </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>tabWidget</tabstop>
-  <tabstop>_pyfaiDistance</tabstop>
-  <tabstop>_pyfaiPoni1</tabstop>
-  <tabstop>_pyfaiPoni2</tabstop>
-  <tabstop>_pyfaiRotation1</tabstop>
-  <tabstop>_pyfaiRotation2</tabstop>
-  <tabstop>_pyfaiRotation3</tabstop>
-  <tabstop>_fit2dDistance</tabstop>
-  <tabstop>_fit2dCenterX</tabstop>
-  <tabstop>_fit2dCenterY</tabstop>
-  <tabstop>_fit2dTilt</tabstop>
-  <tabstop>_fit2dTiltPlan</tabstop>
-  <tabstop>_buttonBox</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>

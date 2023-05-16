@@ -38,7 +38,7 @@ algorithm.
 
 __authors__ = ["Pierre Paleo", "Jérôme Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "11/01/2021"
+__date__ = "03/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -147,8 +147,8 @@ def gaussian(sigma, width=None):
         if width % 2 == 0:
             width += 1
     sigma = float(sigma)
-    x = numpy.arange(width) - (width - 1) / 2.0
-    g = numpy.exp(-(x / sigma) ** 2 / 2.0)
+    x = numpy.arange(width) - (width - 1) / (2.0*sigma)
+    g = numpy.exp(-x * x / 2.0)
     #  Normalization is done at the end to cope for numerical precision
     return g / g.sum()
 

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2022"
+__date__ = "16/03/2023"
 
 import unittest
 import time
@@ -41,7 +41,7 @@ import logging
 from numpy import cos
 logger = logging.getLogger(__name__)
 from .utilstest import UtilsTest
-from ..ext.histogram import histogram, histogram2d, histogram2d_preproc
+from ..ext.histogram import histogram, histogram2d, histogram2d_engine
 from ..ext.splitBBoxCSR import HistoBBox1d, HistoBBox2d
 from ..utils import mathutil
 
@@ -230,10 +230,6 @@ class TestHistogram2d(unittest.TestCase):
         mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
         # _data = (numpy.random.poisson(cls.maxI, shape) * mod).astype("uint16")
         data = (numpy.ones(shape) * cls.maxI * mod).astype("uint16")
-        data_prep = numpy.empty((shape + (3,)), dtype="uint16")
-        data_prep[..., 0] = data
-        data_prep[..., 1] = data
-        data_prep[..., 2] = 1
         cls.data_sum = data.sum(dtype="float64")
         npt = (400, 360)
         chi = numpy.arctan2(y, x).astype("float32")
@@ -269,11 +265,12 @@ class TestHistogram2d(unittest.TestCase):
 
 #         print(tth.size, chi.size, data_prep.size, data_prep.shape)
         t5 = time.perf_counter()
-        cls.histo_ng_res = histogram2d_preproc(tth.ravel(),
+        cls.histo_ng_res = histogram2d_engine(tth.ravel(),
                                                chi.ravel(),
                                                npt,
-                                               data_prep,
-                                               split=False)
+                                               data,
+                                               # variance=data,
+                                               error_model=2)
         t6 = time.perf_counter()
         logger.info("Timing for Cython  histogram2d_preproc: %.3f", t6 - t5)
     #     if platform.system() == "Linux":
@@ -392,6 +389,7 @@ class TestHistogram2d(unittest.TestCase):
         logger.info("Cython: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
         self.assertEqual(delta, 0, msg="check all pixels were counted")
         self.assertLess(v, self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
+        # print(prop.signal.sum(), prop.variance.sum(), prop.count.sum(), prop.normalization.sum())
         self.assertEqual(abs(prop.signal - prop.variance).max(), 0, "variance == signal")
         self.assertEqual(abs(prop.count - prop.normalization).max(), 0, "count == norm")
 

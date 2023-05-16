@@ -83,16 +83,17 @@ kernel void find_intense(       global  float4 *preproc4,  // both input and out
                 value.s1 = 0.0f;
             } // empty pixel
             float step = radius1d[1] - radius1d[0];
-            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)NBINS);
+            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)(NBINS - 1));
             int index = convert_int_rtz(pos);
-            float delta = pos - index;
             if (index + 1 < NBINS) {
+                float delta = pos - index;
                 value.s2 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // linear interpolation: averge
                 value.s3 = std1d[index]*(1.0f-delta) + std1d[index+1]*(delta); // linear interpolation: std
             }
             else { //Normal bin, using linear interpolation
+              index = NBINS - 1;
             	value.s2 = average1d[index];
-				value.s3 = std1d[index];
+              value.s3 = std1d[index];
             }//Upper most bin: no interpolation
             value.s3 = fast_length((float2)(value.s3, noise)); //add quadratically noise to std
             if ((value.s1 - value.s2) > max(noise, cutoff*value.s3)){

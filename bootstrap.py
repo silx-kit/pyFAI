@@ -10,13 +10,16 @@ example: ./bootstrap.py ipython
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "05/01/2023"
+__date__ = "03/03/2023"
 
 import sys
 import os
 import subprocess
 import logging
-import tomli
+if sys.version_info[:2] < (3, 11):
+    import tomli
+else:
+    import tomllib as tomli
 logging.basicConfig()
 logger = logging.getLogger("bootstrap")
 

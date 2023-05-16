@@ -1,6 +1,14 @@
 pyFAI.engines package
 =====================
 
+pyFAI.engines.CSC_engine module
+-------------------------------
+
+.. automodule:: pyFAI.engines.CSC_engine
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pyFAI.engines.CSR_engine module
 -------------------------------
 

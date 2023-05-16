@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2022"
+__date__ = "13/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -114,6 +114,8 @@ cdef class CsrIntegrator(object):
                          int coef_power=1):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
+
+        Deprecated version !
 
         :param weights: input image
         :type weights: ndarray
@@ -231,7 +233,7 @@ cdef class CsrIntegrator(object):
                 data = cdata[idx]
                 if do_dummy and (data == cdummy):
                     continue
-                acc_data = acc_data + (coef ** coef_power) * data
+                acc_data = acc_data + pown(coef, coef_power) * data
                 acc_count = acc_count + coef
 
             sum_data[i] = acc_data

@@ -80,7 +80,7 @@ class QuantityEdit(qt.QLineEdit):
             text = self.text()
         font = self.font()
         metrics = qt.QFontMetrics(font)
-        width = metrics.width(text + " ") # Extra splace to ensure the full text is visible
+        width = metrics.boundingRect(text + " ").width() # Extra splace to ensure the full text is visible
         self.setMinimumWidth(width)
 
     def focusInEvent(self, event):

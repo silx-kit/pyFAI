@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/01/2023"
+__date__ = "25/04/2023"
 __status__ = "production"
 
 import sys
@@ -58,11 +58,12 @@ class Massif(object):
     """
     TARGET_SIZE = 1024
 
-    def __init__(self, data=None, mask=None, median_prefilter=True):
-        """Constructor of the class...
+    def __init__(self, data=None, mask=None, median_prefilter=False):
+        """Constructor of the Massif class
 
         :param data: 2D array or filename (discouraged)
         :param mask: array with non zero for invalid data
+        :param median_prefilter: apply a 3x3 median prefilter to the data to sieve out outliers
         """
         if isinstance(data, (str,)) and os.path.isfile(data):
             self.data = fabio.open(data).data.astype("float32")
@@ -112,7 +113,6 @@ class Massif(object):
                              median_prefilter=median_prefilter)
         memo[id(self)] = new
         return new
-
 
     def nearest_peak(self, x):
         """

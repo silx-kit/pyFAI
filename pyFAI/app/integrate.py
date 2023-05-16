@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2022"
+__date__ = "13/03/2023"
 __satus__ = "production"
 
 import sys
@@ -493,7 +493,7 @@ class MultiFileWriter(pyFAI.io.Writer):
         if data_info.source_filename:
             output_name = os.path.splitext(data_info.source_filename)[0]
         else:
-            output_name = "array_%d" % data_info.data_id
+            output_name = f"array_{data_info.data_id}"
 
         if self._is_2d:
             extension = ".azim"
@@ -501,10 +501,9 @@ class MultiFileWriter(pyFAI.io.Writer):
             extension = ".dat"
 
         if data_info.frame_id is not None:
-            output_name = "%s_%04d" % (output_name, data_info.frame_id)
+            output_name = f"{output_name}_{data_info.frame_id:04d}"
 
-        output_name = "%s%s" % (output_name, extension)
-
+        output_name = f"{output_name}{extension}"
         if self._output_path:
             if os.path.isdir(self._output_path):
                 basename = os.path.basename(output_name)
@@ -677,7 +676,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
     else:
         if source.is_single_multiframe():
             basename = os.path.splitext(source.basename())[0]
-            output_filename = "%s_pyFAI.h5" % basename
+            output_filename = f"{basename}_{'2d' if worker.do_2D() else '1d'}.h5"
             writer = HDF5Writer(output_filename, append_frames=True, mode=write_mode)
         else:
             output_path = os.path.abspath(".")
