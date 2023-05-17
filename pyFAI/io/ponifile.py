@@ -72,8 +72,10 @@ class PoniFile(object):
             return self.as_dict()
         elif type_=="str":
             return str(self)
-        elif type_=="str":
+        elif type_=="list":
             return str(self).split("\n")
+        else:
+            _logger.error(f"Don't know how to handle type {type_} !")
 
     def read_from_file(self, filename):
         data = collections.OrderedDict()
