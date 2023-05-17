@@ -31,7 +31,7 @@
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2022"
+__date__ = "17/05/2023"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -65,6 +65,15 @@ class PoniFile(object):
 
     def __repr__(self):
         return json.dumps(self.as_dict(), indent=4)
+
+    def make_headers(self, type_="list"):
+        "Generate a header for files, as list or dict or str"
+        if type_=="dict":
+            return self.as_dict()
+        elif type_=="str":
+            return str(self)
+        elif type_=="str":
+            return str(self).split("\n")
 
     def read_from_file(self, filename):
         data = collections.OrderedDict()
