@@ -32,6 +32,7 @@ Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/pyfai.git
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/pyfai.git
 Homepage: http://www.silx.org/#pyFAI
 X-Python3-Version: >= 3.7
+TestSuite: autopkgtest-pkg-pybuild
 
 Package: pyfai
 Architecture: all
