@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "12/12/2022"
+__date__ = "10/02/2023"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -725,7 +725,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     :param do_2d: perfrom benchmarking using integrate2d
     :devices: "all", "cpu", "gpu" or "acc" or a list of devices [(proc_id, dev_id)]
     """
-    print("Averaging over %i repetitions (best of %s)." % (number, repeat))
+    print(f"Benchmarking over {number} seconds (best of {repeat} repetitions).")
     bench = Bench(number, repeat, memprof, max_size=max_size)
     bench.init_curve()
 

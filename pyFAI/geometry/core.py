@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/11/2022"
+__date__ = "03/05/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1040,8 +1040,7 @@ class Geometry(object):
 
     def array_from_unit(self, shape=None, typ="center", unit=units.TTH, scale=True):
         """
-        Generate an array of position in different dimentions (R, Q,
-        2Theta)
+        Generate an array of position in different dimentions (R, Q, 2Theta ...)
 
         :param shape: shape of the expected array, leave it to None for safety
         :type shape: ndarray.shape
@@ -1084,7 +1083,7 @@ class Geometry(object):
         """
         Calculate the sinus of the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
-        it's incidence angle is :math:`\\{alpha} = 0` hence :math:`sin(\\{alpha}) = 0`.
+        it's incidence angle is :math:`{\\alpha} = 0` hence :math:`sin({\\alpha}) = 0`.
 
         Works also for non-flat detectors where the normal of the pixel is considered.
 
@@ -1115,7 +1114,7 @@ class Geometry(object):
         """
         Calculate the cosinus of the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
-        it's incidence angle is :math:`\\{alpha} = 0` hence :math:`cos(\\{alpha}) = 1`.
+        it's incidence angle is :math:`{\\alpha} = 0` hence :math:`cos({\\alpha}) = 1`.
 
         Works also for non-flat detectors where the normal of the pixel is considered.
 
@@ -2189,6 +2188,21 @@ class Geometry(object):
                                     rot1)  # 3x3 matrix
 
         return rotation_matrix
+
+    def guess_npt_rad(self):
+        """ calculate the number of pixels from the beam-center to the corner the further away from it.
+
+        :return: this distance as a number of pixels.
+
+        It is a good guess of the number of bins to be used without oversampling too much the data for azimuthal integration
+        """
+        assert self.detector.shape
+        with self._sem:
+            f2d = convert_to_Fit2d(self)
+        x = numpy.atleast_2d([0, self.detector.shape[-1]]) - f2d.centerX
+        y = numpy.atleast_2d([0, self.detector.shape[0]]).T - f2d.centerY
+        r = ((x**2 + y**2)**0.5).max()
+        return int(r)
 
 # ############################################
 # Accessors and public properties of the class

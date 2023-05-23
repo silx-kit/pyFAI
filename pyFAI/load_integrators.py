@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2023"
+__date__ = "15/05/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -45,6 +45,7 @@ import numpy
 
 from .method_registry import IntegrationMethod
 from .engines import CSR_engine as py_CSR_engine
+from .engines import CSC_engine as py_CSC_engine
 # Register numpy integrators which are fail-safe
 from .engines import histogram_engine
 IntegrationMethod(1, "no", "histogram", "python", old_method="numpy",
@@ -144,16 +145,14 @@ else:
                       class_funct_ng=(splitBBoxCSC.HistoBBox1d, splitBBoxCSC.HistoBBox1d.integrate_ng))
     IntegrationMethod(2, "bbox", "CSC", "cython",
                       class_funct_ng=(splitBBoxCSC.HistoBBox2d, splitBBoxCSC.HistoBBox2d.integrate_ng))
-
-    # TODO
-    # IntegrationMethod(1, "no", "CSC", "python",
-    #                   class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
-    # IntegrationMethod(2, "no", "CSC", "python",
-    #                   class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
-    # IntegrationMethod(1, "bbox", "CSR", "python",
-    #                   class_funct_ng=(py_CSR_engine.CsrIntegrator1d, py_CSR_engine.CsrIntegrator1d.integrate))
-    # IntegrationMethod(2, "bbox", "CSR", "python",
-    #                   class_funct_legacy=(py_CSR_engine.CsrIntegrator2d, py_CSR_engine.CsrIntegrator2d.integrate))
+    IntegrationMethod(1, "no", "CSC", "python",
+                      class_funct_ng=(py_CSC_engine.CscIntegrator1d, py_CSC_engine.CscIntegrator1d.integrate))
+    IntegrationMethod(2, "no", "CSC", "python",
+                      class_funct_ng=(py_CSC_engine.CscIntegrator2d, py_CSC_engine.CscIntegrator2d.integrate))
+    IntegrationMethod(1, "bbox", "CSC", "python",
+                      class_funct_ng=(py_CSC_engine.CscIntegrator1d, py_CSC_engine.CscIntegrator1d.integrate))
+    IntegrationMethod(2, "bbox", "CSC", "python",
+                      class_funct_ng=(py_CSC_engine.CscIntegrator2d, py_CSC_engine.CscIntegrator2d.integrate))
 
 try:
     from .ext import splitBBoxLUT

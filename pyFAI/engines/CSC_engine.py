@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2017-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -19,21 +19,21 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""CSR rebinning engine implemented in pure python (with bits of scipy !)
+"""CSC rebinning engine implemented in pure python (with bits of scipy !)
 """
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2023"
+__date__ = "16/05/2023"
 __status__ = "development"
 
 import logging
 import warnings
 logger = logging.getLogger(__name__)
 import numpy
-from scipy.sparse import csr_matrix
+from scipy.sparse import csc_matrix
 from .preproc import preproc as preproc_np
 from ..utils.mathutil import interp_filter
 try:
@@ -47,25 +47,27 @@ from ..utils import calc_checksum
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 
-class CSRIntegrator(object):
+class CSCIntegrator(object):
 
     def __init__(self,
-                 image_size,
+                 input_size,
+                 output_size,
                  lut=None,
                  empty=0.0):
         """Constructor of the abstract class
 
-        :param size: input image size
+        :param input_size: input image size
+        :param output_size: output histogram size (int or 2-tuple)
         :param lut: tuple of 3 arrays with data, indices and indptr,
-                     index of the start of line in the CSR matrix
+                     index of the start of line in the CSC matrix
         :param empty: value for empty pixels
         """
-        self.size = image_size
-        self.preprocessed = numpy.empty((image_size, 4), dtype=numpy.float32)
+        self.size = input_size
+        self.preprocessed = numpy.empty((input_size, 4), dtype=numpy.float32)
         self.empty = empty
-        self.bins = None
-        self._csr = None
-        self._csr2 = None  # Used for propagating variance
+        self.bins = output_size
+        self._csc = None
+        self._csc2 = None  # Used for propagating variance
         self.lut_size = 0  # actually nnz
         self.data = None
         self.indices = None
@@ -84,9 +86,16 @@ class CSRIntegrator(object):
         self.indices = indices
         self.indptr = indptr
         self.lut_size = len(indices)
-        self.bins = len(indptr) - 1
-        self._csr = csr_matrix((data, indices, indptr), shape=(self.bins, self.size))
-        self._csr2 = csr_matrix((data * data, indices, indptr), shape=(self.bins, self.size))  # contains the coef squared, used for variance propagation
+        if self.size > len(indptr) - 1:
+            new_indptr = numpy.empty(self.size+1, indptr.dtype)
+            new_indptr[:] = indptr[-1]
+            new_indptr[:len(indptr)] = indptr
+            indptr = new_indptr
+        nbins = numpy.prod(self.bins)
+        if len(indices):
+            assert max(indices) <= nbins
+        self._csc = csc_matrix((data, indices, indptr), shape=(nbins, self.size))
+        self._csc2 = csc_matrix((data * data, indices, indptr), shape=(nbins, self.size))  # contains the coef squared, used for variance propagation
 
     def integrate(self,
                   signal,
@@ -140,24 +149,24 @@ class CSRIntegrator(object):
         prep.shape = numpy.prod(shape), 4
         flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
         res = numpy.empty((numpy.prod(self.bins), 5), dtype=numpy.float32)
-        res[:, 0] = self._csr.dot(flat_sig)  # Σ c·x
-        res[:, 2] = self._csr.dot(flat_nrm)  # Σ c·ω
-        res[:, 3] = self._csr.dot(flat_cnt)  # Σ c·1
+        res[:, 0] = self._csc.dot(flat_sig)  # Σ c·x
+        res[:, 2] = self._csc.dot(flat_nrm)  # Σ c·ω
+        res[:, 3] = self._csc.dot(flat_cnt)  # Σ c·1
         if error_model is ErrorModel.AZIMUTHAL:
             avg = res[:, 0] / res[:, 2]
-            avg2d = self._csr.T.dot(avg)  # tranform 1D average into 2D (works only if splitting is disabled)
+            avg2d = self._csc.T.dot(avg)  # tranform 1D average into 2D (works only if splitting is disabled)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 delta = (flat_sig / flat_nrm - avg2d)
-            res[:, 1] = self._csr2.dot((delta * flat_nrm) ** 2)  # Σ c²·ω²·(x-x̄ )²
-            res[:, 4] = self._csr2.dot(flat_nrm ** 2)  # Σ c²·ω²
+            res[:, 1] = self._csc2.dot((delta * flat_nrm) ** 2)  # Σ c²·ω²·(x-x̄ )²
+            res[:, 4] = self._csc2.dot(flat_nrm ** 2)  # Σ c²·ω²
         elif error_model.do_variance:
-            res[:, 1] = self._csr2.dot(flat_var)  # Σ c²·σ²
-            res[:, 4] = self._csr2.dot(flat_nrm ** 2)  # Σ c²·ω²
+            res[:, 1] = self._csc2.dot(flat_var)  # Σ c²·σ²
+            res[:, 4] = self._csc2.dot(flat_nrm ** 2)  # Σ c²·ω²
         return res
 
 
-class CsrIntegrator1d(CSRIntegrator):
+class CscIntegrator1d(CSCIntegrator):
 
     def __init__(self,
                  image_size,
@@ -179,7 +188,7 @@ class CsrIntegrator1d(CSRIntegrator):
         Nota: bins value is deduced from the dimentionality of bin_centers
         """
         self.bin_centers = bin_centers
-        CSRIntegrator.__init__(self, image_size, lut, empty)
+        CSCIntegrator.__init__(self, image_size, len(bin_centers), lut, empty)
         self.pos0_range = self.pos1_range = None
         self.unit = unit
         self.mask_checksum = mask_checksum
@@ -191,7 +200,7 @@ class CsrIntegrator1d(CSRIntegrator):
         :param indices: the column number of the NZV
         :param indptr: the index of the start of line"""
 
-        CSRIntegrator.set_matrix(self, data, indices, indptr)
+        CSCIntegrator.set_matrix(self, data, indices, indptr)
         assert len(self.bin_centers) == self.bins
 
     def integrate(self,
@@ -226,7 +235,7 @@ class CsrIntegrator1d(CSRIntegrator):
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
             error_model = ErrorModel.VARIANCE
-        trans = CSRIntegrator.integrate(self, signal, variance, error_model,
+        trans = CSCIntegrator.integrate(self, signal, variance, error_model,
                                         dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
@@ -325,50 +334,50 @@ class CsrIntegrator1d(CSRIntegrator):
 
         # First azimuthal integration:
         flat_sig, flat_var, flat_nrm, flat_cnt = prep_flat.T  # should create views!
-        sum_sig = self._csr.dot(flat_sig)
-        sum_nrm = self._csr.dot(flat_nrm)
-        sum_nrm2 = self._csr2.dot(flat_nrm ** 2)
-        cnt = self._csr.dot(flat_cnt)
+        sum_sig = self._csc.dot(flat_sig)
+        sum_nrm = self._csc.dot(flat_nrm)
+        sum_nrm2 = self._csc2.dot(flat_nrm ** 2)
+        cnt = self._csc.dot(flat_cnt)
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             avg = sum_sig / sum_nrm
             interp_filter(avg, avg)
             if error_model == ErrorModel.AZIMUTHAL:
-                avg2d = self._csr.T.dot(avg)  # backproject the average value to the image
+                avg2d = self._csc.T.dot(avg)  # backproject the average value to the image
                 msk = (flat_nrm == 0)
                 delta = (flat_sig / flat_nrm - avg2d)
                 delta[msk] = 0
-                sum_var = self._csr2.dot((delta * flat_nrm) ** 2)
+                sum_var = self._csc2.dot((delta * flat_nrm) ** 2)
             else:
-                sum_var = self._csr2.dot(flat_var)
+                sum_var = self._csc2.dot(flat_var)
             std = numpy.sqrt(sum_var / sum_nrm2)
             interp_filter(std, std)
             for _ in range(cycle):
                 # Interpolate in 2D: TODO: can be skipped in the case of azimuthal...
-                avg2d = self._csr.T.dot(avg)
-                std2d = self._csr.T.dot(std)
-                cnt2d = numpy.maximum(self._csr.T.dot(cnt), 3)  # Needed for Chauvenet criterion
+                avg2d = self._csc.T.dot(avg)
+                std2d = self._csc.T.dot(std)
+                cnt2d = numpy.maximum(self._csc.T.dot(cnt), 3)  # Needed for Chauvenet criterion
                 delta = abs(flat_sig / flat_nrm - avg2d)
                 chauvenet = numpy.maximum(cutoff, numpy.sqrt(2.0 * numpy.log(cnt2d / numpy.sqrt(2.0 * numpy.pi))))
                 msk2d = numpy.where(numpy.logical_not(abs(delta) <= chauvenet * std2d))
                 # discard outlier pixel here:
                 prep_flat[msk2d] = 0
                 # subsequent integrations:
-                sum_sig = self._csr.dot(flat_sig)
-                sum_nrm = self._csr.dot(flat_nrm)
-                sum_nrm2 = self._csr2.dot(flat_nrm ** 2)
-                cnt = self._csr.dot(flat_cnt)
+                sum_sig = self._csc.dot(flat_sig)
+                sum_nrm = self._csc.dot(flat_nrm)
+                sum_nrm2 = self._csc2.dot(flat_nrm ** 2)
+                cnt = self._csc.dot(flat_cnt)
                 avg = sum_sig / sum_nrm
                 interp_filter(avg, avg)
                 if error_model == ErrorModel.AZIMUTHAL:
-                    avg2d = self._csr.T.dot(avg)  # backproject the average value to the image
+                    avg2d = self._csc.T.dot(avg)  # backproject the average value to the image
                     msk = (flat_nrm == 0)
                     delta = (flat_sig / flat_nrm - avg2d)
                     delta[msk] = 0
-                    sum_var = self._csr2.dot((delta * flat_nrm) ** 2)
+                    sum_var = self._csc2.dot((delta * flat_nrm) ** 2)
                 else:
-                    sum_var = self._csr2.dot(flat_var)
+                    sum_var = self._csc2.dot(flat_var)
                 std = numpy.sqrt(sum_var / sum_nrm2)
                 interp_filter(std, std)
             # Finally calculate the sem in addition to the std
@@ -388,7 +397,7 @@ class CsrIntegrator1d(CSRIntegrator):
         return self.mask_checksum is not None
 
 
-class CsrIntegrator2d(CSRIntegrator):
+class CscIntegrator2d(CSCIntegrator):
 
     def __init__(self,
                  image_size,
@@ -406,7 +415,8 @@ class CsrIntegrator2d(CSRIntegrator):
                      index of the start of line in the CSR matrix
         :param empty: value for empty pixels
         :param unit: unit to be used
-        :param bin_center: position of the bin center
+        :param bin_center0: position of the bin center along dim0
+        :param bin_center1: position of the bin center along dim1
         :param checksum: checksum for the LUT, if not provided, recalculated
         :param mask_checksum: just a place-holder to track which mask was used
 
@@ -415,6 +425,7 @@ class CsrIntegrator2d(CSRIntegrator):
         """
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
+        bins = (len(bin_centers0), len(bin_centers1))
         self.unit = unit
         self.mask_checksum = mask_checksum
 
@@ -422,9 +433,7 @@ class CsrIntegrator2d(CSRIntegrator):
             self.checksum = calc_checksum(lut[0])
         else:
             self.checksum = checksum
-        CSRIntegrator.__init__(self, image_size, lut, empty)
-
-
+        CSCIntegrator.__init__(self, image_size, bins, lut, empty)
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
@@ -433,9 +442,8 @@ class CsrIntegrator2d(CSRIntegrator):
         :param indices: the column number of the NZV
         :param indptr: the index of the start of line"""
 
-        CSRIntegrator.set_matrix(self, data, indices, indptr)
-        assert len(self.bin_centers0) * len(self.bin_centers1) == len(indptr) - 1
-        self.bins = (len(self.bin_centers0), len(self.bin_centers1))
+        CSCIntegrator.set_matrix(self, data, indices, indptr)
+        assert self.size == len(indptr) - 1
 
     def integrate(self,
                   signal,
@@ -468,7 +476,7 @@ class CsrIntegrator2d(CSRIntegrator):
         """
         error_model = ErrorModel.parse(error_model)
         do_variance = variance is not None or  error_model.do_variance
-        trans = CSRIntegrator.integrate(self, signal, variance, error_model, dummy, delta_dummy,
+        trans = CSCIntegrator.integrate(self, signal, variance, error_model, dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
         trans.shape = self.bins + (-1,)
