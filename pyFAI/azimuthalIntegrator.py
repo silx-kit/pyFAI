@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2023"
+__date__ = "17/05/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3511,7 +3511,7 @@ class AzimuthalIntegrator(Geometry):
             nbpix = res.count.sum(axis=0)[valid_rings]
             bin_idx = valid_rings[numpy.where(nbpix.max() == nbpix)[0][-1]]
         else:
-            bin_idx = numpy.argmin(abs(res-target_rad))
+            bin_idx = numpy.argmin(abs(res.radial-target_rad))
 
         from scipy.optimize import minimize_scalar
         sfun = lambda p:\
