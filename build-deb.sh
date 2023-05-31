@@ -149,7 +149,7 @@ do
           shift
           ;;
       --debian12)
-          debian_version=11
+          debian_version=12
           target_system=debian${debian_version}
           dist_directory=${project_directory}/dist/${target_system}
           build_directory=${project_directory}/build/${target_system}
