@@ -564,12 +564,13 @@ class TestBugRegression(unittest.TestCase):
         ai = load({"detector": "Pilatus100k", "wavelength": 1.54e-10})
         ai.polarization(factor=0.9)
         img = numpy.empty(ai.detector.shape, "float32")
-        ai.integrate2d(img, 100,36, method=("no", "histogram", "cython"))
-        ai.integrate2d(img, 100,36, method=("bbox", "histogram", "cython"))
+        ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
         ai.setChiDiscAtZero()
-        ai.integrate2d(img, 100,36, method=("no", "histogram", "cython"))
-        ai.integrate2d(img, 100,36, method=("bbox", "histogram", "cython"))
+        ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
         ai.setChiDiscAtPi()
+
 
 class TestBug1703(unittest.TestCase):
     """
