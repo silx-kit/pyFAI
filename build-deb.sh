@@ -62,6 +62,9 @@ then
             bullseye)
                 debian_version=11
                 ;;
+            bookworm)
+                debian_version=12
+                ;;
         esac
     fi
 
@@ -89,13 +92,14 @@ If the build succeed the directory dist/debian${debian_version} will
 contains the packages.
 
 optional arguments:
-    --help     show this help text
-    --install  install the packages generated at the end of
-               the process using 'sudo dpkg'
+    --help          Show this help text
+    --install       Install the packages generated at the end of
+                    the process using 'sudo dpkg'
     --stdeb-py3     Build using stdeb for python3
-    --debian9  Simulate a debian 9 Stretch system
-    --debian10 Simulate a debian 10 Buster system
-    --debian11 Simulate a debian 11 Bullseye system
+    --debian9       Simulate a debian 9 Stretch system
+    --debian10      Simulate a debian 10 Buster system
+    --debian11      Simulate a debian 11 Bullseye system
+    --debian12      Simulate a debian 12 Bookworm system
 "
 
 install=0
@@ -144,6 +148,13 @@ do
           build_directory=${project_directory}/build/${target_system}
           shift
           ;;
+      --debian12)
+          debian_version=11
+          target_system=debian${debian_version}
+          dist_directory=${project_directory}/dist/${target_system}
+          build_directory=${project_directory}/build/${target_system}
+          shift
+          ;;
       -*)
           echo "Error: Unknown option: $1" >&2
           echo "$usage"
@@ -168,7 +179,15 @@ build_deb() {
     echo "Build for debian 9 or newer using actual packaging"
     tarname=${project}_${debianversion}.orig.tar.gz
     clean_up
-    python3 setup.py debian_src
+    if [ $debian_version -le 11 ]
+    then
+       python3 setup.py debian_src
+       directory=${project}-${strictversion}
+    else
+       python -m build -s
+       ln -s ${source_project}-${strictversion}.tar.gz dist/${tarname}
+       directory=${source_project}-${strictversion}
+    fi
     cp -f dist/${tarname} ${build_directory}
     if [ -f dist/${project}-testimages.tar.gz ]
     then
@@ -178,7 +197,7 @@ build_deb() {
     cd ${build_directory}
     tar -xzf ${tarname}
 
-    directory=${project}-${strictversion}
+
     newname=${deb_name}_${debianversion}.orig.tar.gz
 
     #echo tarname $tarname newname $newname
@@ -255,6 +274,7 @@ build_deb() {
     fi
 }
 
+
 build_stdeb () {
     echo "Build for debian using stdeb"
     tarname=${project}-${strictversion}.tar.gz
@@ -293,8 +313,10 @@ if [ $use_stdeb -eq 1 ]; then
 else
     build_deb
 fi
+
+
 if [ $install -eq 1 ]; then
-  sudo  su -c  "dpkg -i ${dist_directory}/*.deb"
+  sudo su -c  "dpkg -i ${dist_directory}/*.deb"
 fi
 
 exit "$rc"
