@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/01/2023"
+__date__ = "31/05/2023"
 
 import sys
 import os
@@ -558,6 +558,19 @@ class TestBugRegression(unittest.TestCase):
         cp.append([[1,2],[3,4]], 0)
         sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "pilatus100k")
         self.assertNotEqual(id(sg), id(copy.deepcopy(sg)), "SingleGeometry copy works and id differs")
+
+    def test_bug_1889(self):
+        "reset cached arrays"
+        ai = load({"detector": "Pilatus100k", "wavelength": 1.54e-10})
+        ai.polarization(factor=0.9)
+        img = numpy.empty(ai.detector.shape, "float32")
+        ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
+        ai.setChiDiscAtZero()
+        ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
+        ai.setChiDiscAtPi()
+
 
 class TestBug1703(unittest.TestCase):
     """

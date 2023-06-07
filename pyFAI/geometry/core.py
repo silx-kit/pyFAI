@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/05/2023"
+__date__ = "31/05/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1800,7 +1800,7 @@ class Geometry(object):
             self.chiDiscAtPi = False
             self._cached_array["chi_center"] = None
             for key in list(self._cached_array.keys()):
-                if key.startswith("corner"):
+                if isinstance(key, str) and "corner" in key:
                     self._cached_array[key] = None
 
     def setChiDiscAtPi(self):
@@ -1814,7 +1814,7 @@ class Geometry(object):
             self.chiDiscAtPi = True
             self._cached_array["chi_center"] = None
             for key in list(self._cached_array.keys()):
-                if key.startswith("corner"):
+                if isinstance(key, str) and "corner" in key:
                     self._cached_array[key] = None
 
     @deprecated
