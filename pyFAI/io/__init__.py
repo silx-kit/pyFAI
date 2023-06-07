@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2023"
+__date__ = "17/05/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -581,20 +581,25 @@ class DefaultAiWriter(Writer):
         :rtype: str
         """
         if "make_headers" in dir(self._engine):
-            header_lst = self._engine.make_headers()
+            header_lst = self._engine.make_headers("list")
         else:
-            header_lst = [str(self._engine), ""]
+            header = str(self._engine)
+            if "\n" in header:
+                header_lst = header.split()
+            else:
+                header_lst = [header]
 
-        header_lst += ["Mask applied: %s" % has_mask,
-                       "Dark current applied: %s" % has_dark,
-                       "Flat field applied: %s" % has_flat,
-                       "Polarization factor: %s" % polarization_factor,
-                       "Normalization factor: %s" % normalization_factor]
+        header_lst += [""
+                       f"Mask applied: {has_mask}",
+                       f"Dark current applied: {has_dark}",
+                       f"Flat field applied: {has_flat}",
+                       f"Polarization factor: {polarization_factor}",
+                       f"Normalization factor: {normalization_factor}"]
 
         if metadata is not None:
             header_lst += ["", "Headers of the input frame:"]
             header_lst += [i.strip() for i in json.dumps(metadata, indent=2, cls=UnitEncoder).split("\n")]
-        header = "\n".join(["%s %s" % (hdr, i) for i in header_lst])
+        header = "\n".join([f"{hdr} {i}" for i in header_lst])
 
         return header
 
