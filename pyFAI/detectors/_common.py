@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2023"
+__date__ = "07/06/2023"
 __status__ = "stable"
 
 import logging
@@ -856,15 +856,17 @@ class Detector(metaclass=DetectorMeta):
         :return: the mask with valid pixel to 0
         :rtype: numpy ndarray of int8 or None
         """
+        if self.shape is None:
+            self.shape = img.shape
         assert img.shape == self.shape
         static_mask = self.mask
         if static_mask is None:
             static_mask = numpy.zeros(self.shape, numpy.int8)
         if self.dummy is not None:
-            actual_dummy = numpy.dtype(img.dtype).type(self.dummy)
-        else:
             logger.warning("dynamic_mask makes sense only when dummy is defined !")
             return static_mask
+        else:
+            actual_dummy = numpy.dtype(img.dtype).type(self.dummy)
         delta_dummy = self.delta_dummy
         if delta_dummy is None:
             dummy_mask = (actual_dummy == img)
