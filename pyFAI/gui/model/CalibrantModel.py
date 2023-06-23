@@ -40,6 +40,8 @@ class CalibrantModel(AbstractModel):
         return self.__calibrant is not None
 
     def setCalibrant(self, calibrant):
+        if self.__calibrant is calibrant:
+            return
         self.__calibrant = calibrant
         self.wasChanged()
 
