@@ -376,7 +376,7 @@ class Calibrant(object):
         """
         h = hash(self._wavelength)
         for d in self.dSpacing:
-                h = h ^ hash(d)
+            h = h ^ hash(d)
         return h
 
     def __copy__(self):
