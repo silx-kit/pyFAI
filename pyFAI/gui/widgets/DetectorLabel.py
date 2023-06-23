@@ -44,7 +44,13 @@ _logger = logging.getLogger(__name__)
 
 
 class DetectorLabel(qt.QLabel):
-    """Readonly line display"""
+    """Read-only widget to display a :class:`Detector`.
+
+    It can be setup as
+
+    - a detector holder (see :meth:`setDetector`, :meth:`detector`)
+    - a view on top of a model (see :meth:`setDetectorModel`, :meth:`detectorModel`)
+    """
 
     _BASE_TEMPLATE = "<html><head/><body>%s</body></html>"
 

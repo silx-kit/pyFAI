@@ -121,9 +121,14 @@ class Detector(metaclass=DetectorMeta):
     @classmethod
     def factory(cls, name: str, config: Union[None, str, Dict[str, Any]]=None) -> Detector:
         """
-        A kind of factory...
+        Create a pyFAI detector from a name.
 
-        :param name: name of a detector
+        If the detector is a known detector class, `config` in injected as constructor
+        arguments.
+
+        If the `name` is an existing hdf5 filename, the `config` argument is ignored.
+
+        :param name: A name of a detector or an existing hdf5 detector description file.
         :type name: str
         :param config: configuration of the detector
         :type config: dict or JSON representation of it.

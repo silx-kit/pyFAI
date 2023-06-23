@@ -33,7 +33,10 @@ from silx.gui.widgets.ElidedLabel import ElidedLabel
 
 
 class GeometryLabel(ElidedLabel):
-    """Label displaying a specific OpenCL device.
+    """Read-only widget to display a :class:`GeometryModel`.
+
+    - a detector holder (see :meth:`setDetector`, :meth:`detector`)
+    - a view on top of a model (see :meth:`setDetectorModel`, :meth:`detectorModel`)
     """
 
     def __init__(self, parent=None):

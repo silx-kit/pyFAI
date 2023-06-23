@@ -38,6 +38,16 @@ from ..model.CalibrantModel import CalibrantModel
 
 
 class CalibrantSelector(qt.QComboBox):
+    """Dropdown widget to select a calibrant.
+
+    It is a view on top of a calibrant model (see :meth:`setModel`, :meth:`model`)
+
+    The calibrant can be selected from a list of calibrant known by pyFAI.
+
+    An extra option to load a calibrant from a file can be enabled with
+    :meth:`setFileLoadable`. The widget does not handle the dialog or the IO
+    but provides a signal :prop:`sigLoadFileRequested` which have to be connected.
+    """
 
     sigLoadFileRequested = qt.Signal()
 
