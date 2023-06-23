@@ -63,13 +63,13 @@ class GeometryLabel(ElidedLabel):
             return
 
         tipTemplate = """<html>
-            <ul>
-            <li><b>Distance</b>: {distance} m</li>
-            <li><b>PONI1</b>: {poni1} m</li>
-            <li><b>PONI2</b>: {poni2} m</li>
-            <li><b>Rotation 1</b>: {rotation1} rad</li>
-            <li><b>Rotation 2</b>: {rotation2} rad</li>
-            <li><b>Rotation 3</b>: {rotation3} rad</li>
+            <ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">
+            <li style="white-space:pre"><b>Distance</b>: {distance} m</li>
+            <li style="white-space:pre"><b>PONI1</b>: {poni1} m</li>
+            <li style="white-space:pre"><b>PONI2</b>: {poni2} m</li>
+            <li style="white-space:pre"><b>Rotation 1</b>: {rotation1} rad</li>
+            <li style="white-space:pre"><b>Rotation 2</b>: {rotation2} rad</li>
+            <li style="white-space:pre"><b>Rotation 3</b>: {rotation3} rad</li>
             </ul>
         </html>"""
 

@@ -44,13 +44,14 @@ class DetectorLabel(qt.QLabel):
 
     _MANUFACTURER_TEMPLATE = "<span style=\"vertical-align:sub;\">%s</span>"
 
-    _TOOLTIP_TEMPLATE = ("<html>"
-                         "<ul>"
-                         "<li><b>Model:</b> {model}</li>"
-                         "<li><b>Manufacturer:</b> {manufacturer}</li>"
-                         "<li><b>Type:</b> {kind}</li>"
-                         "</ul>"
-                         "</html>")
+    _TOOLTIP_TEMPLATE = """
+        <html>
+        <ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">
+        <li style="white-space:pre"><b>Model:</b> {model}</li>
+        <li style="white-space:pre"><b>Manufacturer:</b> {manufacturer}</li>
+        <li style="white-space:pre"><b>Type:</b> {kind}</li>
+        </ul>
+        </html>"""
 
     _MODEL_TEMPLATE = "%s"
 
