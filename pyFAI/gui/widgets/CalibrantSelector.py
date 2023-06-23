@@ -23,6 +23,8 @@
 #
 # ###########################################################################*/
 
+from __future__ import absolute_import
+
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "16/10/2020"
@@ -54,7 +56,7 @@ class CalibrantSelector(qt.QComboBox):
         self.__calibrantCount = self.count()
         self.__isFileLoadable = False
 
-        self.__model = None
+        self.__model: CalibrantModel = None
         self.setModel(CalibrantModel())
         self.currentIndexChanged[int].connect(self.__currentIndexChanged)
 
@@ -96,7 +98,7 @@ class CalibrantSelector(qt.QComboBox):
     def __loadFileRequested(self):
         self.sigLoadFileRequested.emit()
 
-    def setModel(self, model):
+    def setModel(self, model: CalibrantModel):
         if self.__model is not None:
             self.__model.changed.disconnect(self.__modelChanged)
         self.__model = model
@@ -142,5 +144,5 @@ class CalibrantSelector(qt.QComboBox):
                     self.__calibrantCount += 1
                 self.setCurrentIndex(index)
 
-    def model(self):
+    def model(self) -> CalibrantModel:
         return self.__model

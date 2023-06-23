@@ -29,6 +29,8 @@
 
 """Description of all detectors with a factory to instantiate them"""
 
+from __future__ import annotations
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
@@ -43,6 +45,7 @@ import posixpath
 import threading
 from collections import OrderedDict
 import json
+from typing import Dict, Any, Union
 
 from .. import io
 from .. import spline
@@ -116,7 +119,7 @@ class Detector(metaclass=DetectorMeta):
     _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners")
 
     @classmethod
-    def factory(cls, name, config=None):
+    def factory(cls, name: str, config: Union[None, str, Dict[str, Any]]=None) -> Detector:
         """
         A kind of factory...
 

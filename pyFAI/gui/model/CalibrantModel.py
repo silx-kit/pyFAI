@@ -27,23 +27,25 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "16/10/2020"
 
+from typing import Optional
 from .AbstractModel import AbstractModel
+from ...calibrant import Calibrant
 
 
 class CalibrantModel(AbstractModel):
 
     def __init__(self, parent=None):
         super(CalibrantModel, self).__init__(parent)
-        self.__calibrant = None
+        self.__calibrant: Optional[Calibrant] = None
 
-    def isValid(self):
+    def isValid(self) -> bool:
         return self.__calibrant is not None
 
-    def setCalibrant(self, calibrant):
+    def setCalibrant(self, calibrant: Optional[Calibrant]):
         if self.__calibrant is calibrant:
             return
         self.__calibrant = calibrant
         self.wasChanged()
 
-    def calibrant(self):
+    def calibrant(self) -> Optional[Calibrant]:
         return self.__calibrant

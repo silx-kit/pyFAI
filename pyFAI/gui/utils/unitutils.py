@@ -32,7 +32,7 @@ import collections.abc
 from pyFAI import units
 
 
-def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
+def tthToRad(twoTheta: numpy.ndarray, unit: units.Unit, wavelength: float=None, directDist: float=None):
     """
     Convert a two theta angle from original `unit` to radian.
 

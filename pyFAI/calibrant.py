@@ -45,6 +45,7 @@ import os
 import logging
 import numpy
 import itertools
+from typing import Optional, List
 from math import sin, asin, cos, sqrt, pi, ceil
 import threading
 from .utils import get_calibration_dir
@@ -317,7 +318,7 @@ class Calibrant(object):
     are known. They are expressed in Angstrom (in the file)
     """
 
-    def __init__(self, filename=None, dSpacing=None, wavelength=None):
+    def __init__(self, filename: Optional[str]=None, dSpacing: Optional[List[float]]=None, wavelength: Optional[float]=None):
         object.__init__(self)
         self._filename = filename
         self._wavelength = wavelength
@@ -406,7 +407,7 @@ class Calibrant(object):
 
     filename = property(get_filename)
 
-    def load_file(self, filename=None):
+    def load_file(self, filename: str):
         with self._sem:
             self._load_file(filename)
 
@@ -734,7 +735,7 @@ class calibrant_factory(CalibrantFactory):
     pass
 
 
-def get_calibrant(calibrant_name, wavelength=None):
+def get_calibrant(calibrant_name: str, wavelength: float=None) -> Calibrant:
     """Returns a new instance of the calibrant by it's name.
 
     :param str calibrant_name: Name of the calibrant
