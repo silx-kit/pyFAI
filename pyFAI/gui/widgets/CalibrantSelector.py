@@ -41,6 +41,7 @@ class CalibrantSelector(qt.QComboBox):
 
     def __init__(self, parent=None):
         super(CalibrantSelector, self).__init__(parent)
+        self.setStyleSheet("QComboBox {combobox-popup: 0;}")
 
         # feed the widget with default calibrants
         items = pyFAI.calibrant.CALIBRANT_FACTORY.items()
