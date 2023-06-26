@@ -6,6 +6,7 @@ py.install_sources(
     'AdvancedSpinBox.py',
     'CalibrantPreview.py',
     'CalibrantSelector.py',
+    'CalibrantSelector2.py',
     'ChoiceToolButton.py',
     'ColoredCheckBox.py',
     'DetectorLabel.py',
