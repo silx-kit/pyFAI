@@ -32,11 +32,16 @@ import collections.abc
 from pyFAI import units
 
 
-def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
+def tthToRad(twoTheta: numpy.ndarray, unit: units.Unit, wavelength: float=None, directDist: float=None):
     """
     Convert a two theta angle from original `unit` to radian.
 
-    `directDist = ai.getFit2D()["directDist"]`
+    The `directDist` argument can be extracted from an azimuthal integrator the
+    following way:
+
+    .. code-block:: python
+
+        directDist = ai.getFit2D()["directDist"]
     """
     if isinstance(twoTheta, numpy.ndarray):
         pass
@@ -70,6 +75,16 @@ def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
 
 
 def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
+    """
+    Convert a two theta angle to this `unit`.
+
+    The `directDist` argument can be extracted from an azimuthal integrator the
+    following way:
+
+    .. code-block:: python
+
+        directDist = ai.getFit2D()["directDist"]
+    """
     if isinstance(twoTheta, numpy.ndarray):
         pass
     elif isinstance(twoTheta, collections.abc.Iterable):

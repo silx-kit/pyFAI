@@ -54,11 +54,11 @@ class MethodLabel(qt.QLabel):
         "opencl": "OpenCL",
     }
 
-    _TOOLTIP_TEMPLATE = """<ul>
-    <li><b>Pixel splitting:</b> {split}</li>
-    <li><b>Implementation:</b> {impl}</li>
-    <li><b>Algorithm:</b> {algo}</li>
-    <li><b>Availability:</b> {availability}</li>
+    _TOOLTIP_TEMPLATE = """<ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">
+    <li style="white-space:pre"><b>Pixel splitting:</b> {split}</li>
+    <li style="white-space:pre"><b>Implementation:</b> {impl}</li>
+    <li style="white-space:pre"><b>Algorithm:</b> {algo}</li>
+    <li style="white-space:pre"><b>Availability:</b> {availability}</li>
     </ul>"""
 
     def __init__(self, parent=None):

@@ -23,6 +23,8 @@
 #
 # ###########################################################################*/
 
+from __future__ import absolute_import
+
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "16/10/2020"
@@ -36,11 +38,22 @@ from ..model.CalibrantModel import CalibrantModel
 
 
 class CalibrantSelector(qt.QComboBox):
+    """Dropdown widget to select a calibrant.
+
+    It is a view on top of a calibrant model (see :meth:`setModel`, :meth:`model`)
+
+    The calibrant can be selected from a list of calibrant known by pyFAI.
+
+    An extra option to load a calibrant from a file can be enabled with
+    :meth:`setFileLoadable`. The widget does not handle the dialog or the IO
+    but provides a signal :prop:`sigLoadFileRequested` which have to be connected.
+    """
 
     sigLoadFileRequested = qt.Signal()
 
     def __init__(self, parent=None):
         super(CalibrantSelector, self).__init__(parent)
+        self.setStyleSheet("QComboBox {combobox-popup: 0;}")
 
         # feed the widget with default calibrants
         items = pyFAI.calibrant.CALIBRANT_FACTORY.items()
@@ -53,7 +66,7 @@ class CalibrantSelector(qt.QComboBox):
         self.__calibrantCount = self.count()
         self.__isFileLoadable = False
 
-        self.__model = None
+        self.__model: CalibrantModel = None
         self.setModel(CalibrantModel())
         self.currentIndexChanged[int].connect(self.__currentIndexChanged)
 
@@ -95,7 +108,7 @@ class CalibrantSelector(qt.QComboBox):
     def __loadFileRequested(self):
         self.sigLoadFileRequested.emit()
 
-    def setModel(self, model):
+    def setModel(self, model: CalibrantModel):
         if self.__model is not None:
             self.__model.changed.disconnect(self.__modelChanged)
         self.__model = model
@@ -141,5 +154,5 @@ class CalibrantSelector(qt.QComboBox):
                     self.__calibrantCount += 1
                 self.setCurrentIndex(index)
 
-    def model(self):
+    def model(self) -> CalibrantModel:
         return self.__model
