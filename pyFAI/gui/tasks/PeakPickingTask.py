@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/05/2022"
+__date__ = "26/06/2023"
 
 import logging
 import numpy
@@ -413,7 +413,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
     def eventFilter(self, widget, event):
         if event.type() == qt.QEvent.Enter:
-            if self.__mode == self.PEAK_SELECTION_MODE:
+            if self.__mode == self.PEAK_SELECTION_MODE and not os.environ.get("PYFAI_REMOTE_BUG"):
                 self.setCursor(qt.Qt.CrossCursor)
             else:
                 self.setCursor(qt.Qt.ArrowCursor)
