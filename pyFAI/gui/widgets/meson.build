@@ -1,4 +1,5 @@
 subdir('test')
+subdir('model')
 
 py.install_sources(
    ['AdvancedComboBox.py',
