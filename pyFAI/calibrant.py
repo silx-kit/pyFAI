@@ -45,6 +45,7 @@ import os
 import logging
 import numpy
 import itertools
+from typing import Optional, List
 from math import sin, asin, cos, sqrt, pi, ceil
 import threading
 from .utils import get_calibration_dir
@@ -313,11 +314,26 @@ class Cell(object):
 
 class Calibrant(object):
     """
-    A calibrant is a reference compound where the d-spacing (interplanar distances)
-    are known. They are expressed in Angstrom (in the file)
+    A calibrant is a named reference compound where the d-spacing are known.
+
+    The d-spacing (interplanar distances) are expressed in Angstrom (in the file).
+
+    If the access is don't from a file, the IO are delayed. If it is not desired
+    one could explicitly access to :meth:`load_file`.
+
+    .. code-block:: python
+
+        c = Calibrant()
+        c.load_file("my_calibrant.D")
+
+    :param filename: A filename containing the description (usually with .D extension).
+                     The access to the file description is delayed until the information
+                     is needed.
+    :param dSpacing: A list of d spacing in Angstrom.
+    :param wavelength: A wavelength in meter
     """
 
-    def __init__(self, filename=None, dSpacing=None, wavelength=None):
+    def __init__(self, filename: Optional[str]=None, dSpacing: Optional[List[float]]=None, wavelength: Optional[float]=None):
         object.__init__(self)
         self._filename = filename
         self._wavelength = wavelength
@@ -376,7 +392,7 @@ class Calibrant(object):
         """
         h = hash(self._wavelength)
         for d in self.dSpacing:
-                h = h ^ hash(d)
+            h = h ^ hash(d)
         return h
 
     def __copy__(self):
@@ -406,7 +422,12 @@ class Calibrant(object):
 
     filename = property(get_filename)
 
-    def load_file(self, filename=None):
+    def load_file(self, filename: str):
+        """
+        Load a calibrant.from file.
+
+        :param filename: The filename containing the calibrant description.
+        """
         with self._sem:
             self._load_file(filename)
 
@@ -734,11 +755,11 @@ class calibrant_factory(CalibrantFactory):
     pass
 
 
-def get_calibrant(calibrant_name, wavelength=None):
+def get_calibrant(calibrant_name: str, wavelength: float=None) -> Calibrant:
     """Returns a new instance of the calibrant by it's name.
 
-    :param str calibrant_name: Name of the calibrant
-    :param float wavelength: initialize the calibrant with the given wavelength (in m)
+    :param calibrant_name: Name of the calibrant
+    :param wavelength: initialize the calibrant with the given wavelength (in m)
     """
     cal = CALIBRANT_FACTORY(calibrant_name)
     if wavelength:
