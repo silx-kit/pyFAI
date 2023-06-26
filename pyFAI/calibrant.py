@@ -407,15 +407,31 @@ class Calibrant(object):
                          wavelength=self._wavelength)
 
     def __repr__(self):
-        name = "undefined"
         if self._filename:
-            name = os.path.splitext(os.path.basename(self._filename))[0]
+            name = self._filename
+            if name.startswith("pyfai:"):
+                name = name[6:]
+        else:
+            name = "undefined"
         name += " Calibrant "
         if len(self.dSpacing):
             name += "with %i reflections " % len(self._dSpacing)
         if self._wavelength:
             name += "at wavelength %s" % self._wavelength
         return name
+
+    @property
+    def name(self) -> str:
+        """Returns a short name describing the calibrant
+
+        It's the name of the file or the resource.
+        """
+        f = self._filename
+        if f is None:
+            return "Undefined"
+        if f.startswith("pyfai:"):
+            return f[6:]
+        return os.path.splitext(os.path.basename(f))[0]
 
     def get_filename(self):
         return self._filename
@@ -431,14 +447,25 @@ class Calibrant(object):
         with self._sem:
             self._load_file(filename)
 
+    def _get_abs_path(self, filename):
+        """Returns the absolute location of the calibrant"""
+        if filename is None:
+            return None
+        if filename.startswith("pyfai:"):
+            name = filename[6:]
+            basedir = get_calibration_dir()
+            return os.path.join(basedir, f"{name}.D")
+        return os.path.abspath(filename)
+
     def _load_file(self, filename=None):
         if filename:
             self._filename = filename
-        if not os.path.isfile(self._filename):
-            logger.error("No such calibrant file: %s", self._filename)
+
+        path = self._get_abs_path(self._filename)
+        if not os.path.isfile(path):
+            logger.error("No such calibrant file: %s", path)
             return
-        self._filename = os.path.abspath(self._filename)
-        self._dSpacing = numpy.unique(numpy.loadtxt(self._filename))
+        self._dSpacing = numpy.unique(numpy.loadtxt(path))
         self._dSpacing = list(self._dSpacing[-1::-1])  # reverse order
         # self._dSpacing.sort(reverse=True)
         if self._wavelength:
@@ -464,6 +491,8 @@ class Calibrant(object):
         """
         self._initialize()
         if (filename is None) and (self._filename is not None):
+            if self._filename.startswith("pyfai:"):
+                raise ValueError("A calibrant resource from pyFAI can't be overwritten)")
             filename = self._filename
         else:
             return
@@ -699,27 +728,34 @@ class CalibrantFactory(object):
         :param basedir: directory name where to search for the calibrants
         """
         if basedir is None:
-            basedir = get_calibration_dir()
-        self.directory = basedir
+            self.directory = get_calibration_dir()
+        else:
+            self.directory = basedir
+
         if not os.path.isdir(self.directory):
             logger.warning("No calibrant directory: %s", self.directory)
             self.all = {}
         else:
-            self.all = dict([(os.path.splitext(i)[0], os.path.join(self.directory, i))
-                             for i in os.listdir(self.directory)
-                             if i.endswith(".D")])
+            if basedir is None:
+                self.all = dict([(os.path.splitext(i)[0], f"pyfai:{os.path.splitext(i)[0]}")
+                                for i in os.listdir(self.directory)
+                                if i.endswith(".D")])
+            else:
+                self.all = dict([(os.path.splitext(i)[0], os.path.join(self.directory, i))
+                                for i in os.listdir(self.directory)
+                                if i.endswith(".D")])
 
     def __call__(self, calibrant_name):
         """Returns a new instance of a calibrant by it's name."""
         return Calibrant(self.all[calibrant_name])
 
-    def get(self, what, notfound=None):
+    def get(self, what: str, notfound=None):
         if what in self.all:
             return Calibrant(self.all[what])
         else:
             return notfound
 
-    def __contains__(self, k):
+    def __contains__(self, k: str):
         return k in self.all
 
     def __repr__(self):
@@ -767,9 +803,7 @@ def get_calibrant(calibrant_name: str, wavelength: float=None) -> Calibrant:
     return cal
 
 
-def names():
+def names() -> List[str]:
     """Returns the list of registred calibrant names.
-
-    :rtype: str
     """
     return CALIBRANT_FACTORY.keys()
