@@ -498,6 +498,20 @@ class TestSaxs(unittest.TestCase):
         for k, v in ai.engines.items():
             self.assertEqual(v.engine.empty, ref, k)
 
+    def test_empty_csr(self):
+        ai = AzimuthalIntegrator(detector="Pilatus100k", wavelength=1e-10)
+        with self.assertLogs('pyFAI.ext.sparse_builder', level='WARNING') as cm:
+            ai.setup_sparse_integrator(shape=ai.detector.shape, npt=100,
+                                       pos0_range=(90,100),
+                                       unit="2th_deg",
+                                       split='no',
+                                       algo='CSR',
+                                       empty=None,
+                                       scale=True)
+            self.assertEqual(cm.output, [
+                'WARNING:pyFAI.ext.sparse_builder:Sparse matrix is empty. Expect errors or non-sense results!'
+                            ])
+
 
 class TestSetter(unittest.TestCase):
 
