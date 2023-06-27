@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/05/2023"
+__date__ = "27/06/2023"
 
 import unittest
 import os
@@ -47,10 +47,10 @@ logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
 from ..containers import ErrorModel
-from ..detectors import Detector
+from ..detectors import Detector, detector_factory
 if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
-from pyFAI import units, detector_factory
+from pyFAI import units
 from ..utils import mathutil
 
 
@@ -657,24 +657,33 @@ class TestRange(unittest.TestCase):
         # self.skipTest("Re-enable this test when issue #1845 is solved.")
         methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=2)}
         # limits to 27 (actually 24) methods to test, keep only one OpenCL version
+        logger.info("methods investigated"+ "\n".join([str(i) for i in methods.values()]))
+
+        ai = copy.copy(self.ai)
+        ai.detector = detector_factory("Pilatus_100k")
+        img = self.img[:ai.detector.shape[0],:ai.detector.shape[1]]
 
         error_model = ErrorModel.parse(error_model)
         if error_model == ErrorModel.VARIANCE:
             variance = numpy.maximum(1, self.img)
         else:
             variance = None
-        # print(f"There are {len(methods)} 2D integration method available on this system")
+        failed = []
         for m in methods.values():
-            # print(m, end=" ")
-            res = self.ai.integrate2d_ng(self.img, 10, 20, variance=variance, error_model=error_model, method=m)
+            res = ai.integrate2d_ng(img, 10, 20, variance=variance, error_model=error_model, method=m)
             v = res.sum_variance
-            # print(v.min(), v.max(), end=" ")
-            self.assertGreaterEqual(v.min(), 0, f"min variance is positive or null with {res.method}")
-            self.assertGreater(v.max(), 0, f"max variance is strictly positive with {res.method}, error model {error_model}")
+            if v.min()< 0:
+                failed.append(f"min variance is positive or null with {res.method}, error model {error_model.as_str()}")
+            if v.max()<= 0:
+                failed.append(f"max variance is strictly positive with {res.method}, error model {error_model.as_str()}")
             s = res.sigma
-            # print(type(s))
-            self.assertGreaterEqual(s.min(), 0, f"min sigma is positive or null with {res.method}")
-            self.assertGreater(s.max(), 0, f"max sigma is strictly positive with {res.method}, error model {error_model}")
+            if s.min()< 0:
+                failed.append(f"min sigma is positive or null with {res.method}, error model {error_model.as_str()}")
+            if s.max()<= 0:
+                failed.append(f"max sigma is strictly positive with {res.method}, error model {error_model.as_str()}")
+        for err_msg in failed:
+            logger.error(err_msg)
+        self.assertEqual(len(failed), 0, f"Number of failed tests in test_variance_2d: {len(failed)}")
 
 
 def suite():
