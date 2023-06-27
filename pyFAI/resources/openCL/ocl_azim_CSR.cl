@@ -36,7 +36,7 @@
  */
 
 #include "for_eclipse.h"
-#define NULL 0
+#define ZERO 0
 /**
  * \brief OpenCL workgroup function for sparse matrix-dense vector multiplication
  *
@@ -71,7 +71,7 @@ static inline float2 CSRxVec(const   global  float   *vector,
     int idx;
 
     for (int k=bin_bounds.x+thread_id_loc; k<bin_bounds.y; k+=active_threads) {
-        coef = (data == NULL)?1.0f:data[k];
+        coef = (data == ZERO)?1.0f:data[k];
         idx = indices[k];
         signal = vector[idx];
         if (isfinite(signal)) {
@@ -141,7 +141,7 @@ static inline float4 CSRxVec2(const   global  float2   *data,
         k = j+thread_id_loc;
         if (k < bin_bounds.y) {
                float coef, signal, norm;
-               coef = (coefs == NULL)?1.0f:coefs[k];
+               coef = (coefs == ZERO)?1.0f:coefs[k];
                idx = indices[k];
                signal = data[idx].s0;
                norm = data[idx].s1;
@@ -337,7 +337,7 @@ static inline float8 _merge_poisson(float8 here,
 
 static inline float8 _merge_azimuthal(float8 here,
                                       float8 there){
-    if (here.s7 <= 0.0f){ // Check the counter is not null
+    if (here.s7 <= 0.0f){ // Check the counter is not ZERO
         return there;
     }
     else if (there.s7 <= 0.0f){
@@ -423,7 +423,7 @@ static inline float8 CSRxVec4(const   global  float4   *data,
 
     for (int k=bin_bounds.x+thread_id_loc; k<bin_bounds.y; k+=active_threads) {
         float coef, signal, variance, norm, count;
-        coef = (coefs == NULL)?1.0f: coefs[k];
+        coef = (coefs == ZERO)?1.0f: coefs[k];
         idx = indices[k];
         float4 quatret = data[idx];
         if (error_model==AZIMUTHAL){
@@ -486,7 +486,7 @@ static inline float8 CSRxVec4_single(const   global  float4   *data,
     float8 accum8 = (float8)(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
     for (int j=indptr[bin_num];j<indptr[bin_num+1];j++) {
-        float coef = (coefs == NULL)?1.0f:coefs[j];
+        float coef = (coefs == ZERO)?1.0f:coefs[j];
         int idx = indices[j];
         float4 quatret = data[idx];
         if (error_model==AZIMUTHAL){
@@ -602,7 +602,7 @@ csr_integrate(  const   global  float   *weights,
         int idx;
 
         for (int k=bin_bounds.x+thread_id_loc; k<bin_bounds.y; k+=active_threads) {
-           coef = (coefs == NULL)?1.0f:coefs[k];;
+           coef = (coefs == ZERO)?1.0f:coefs[k];;
            idx = indices[k];
            data = weights[idx];
            if  (! isfinite(data))
@@ -698,7 +698,7 @@ csr_integrate_single(  const   global  float   *weights,
         int idx, j;
 
         for (j=indptr[bin_num];j<indptr[bin_num+1];j++) {
-            coef = (coefs == NULL)?1.0f:coefs[j];
+            coef = (coefs == ZERO)?1.0f:coefs[j];
             idx = indices[j];
             data = weights[idx];
 
