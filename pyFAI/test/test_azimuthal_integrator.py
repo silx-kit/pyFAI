@@ -670,11 +670,11 @@ class TestRange(unittest.TestCase):
             v = res.sum_variance
             # print(v.min(), v.max(), end=" ")
             self.assertGreaterEqual(v.min(), 0, f"min variance is positive or null with {res.method}")
-            self.assertGreater(v.max(), 0, f"max variance is strictly positive with {res.method}")
+            self.assertGreater(v.max(), 0, f"max variance is strictly positive with {res.method}, error model {error_model}")
             s = res.sigma
             # print(type(s))
             self.assertGreaterEqual(s.min(), 0, f"min sigma is positive or null with {res.method}")
-            self.assertGreater(s.max(), 0, f"max sigma is strictly positive with {res.method}")
+            self.assertGreater(s.max(), 0, f"max sigma is strictly positive with {res.method}, error model {error_model}")
 
 
 def suite():
