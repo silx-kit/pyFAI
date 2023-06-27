@@ -628,8 +628,9 @@ class Calibrant(object):
             return self._2th.index(angle)
         if delta:
             d2th = abs(numpy.array(self._2th) - angle)
-            if d2th.min() < delta:
-                return d2th.argmin()
+            i = d2th.argmin()
+            if d2th[i] < delta:
+                return i
         return None
 
     def get_max_wavelength(self, index: Optional[int]=None):
