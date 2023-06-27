@@ -624,7 +624,7 @@ class Calibrant(object):
         :param delta: precision on angle
         :return: 0-based index or None
         """
-        if angle and angle in self._2th:
+        if angle in self._2th:
             return self._2th.index(angle)
         if delta:
             d2th = abs(numpy.array(self._2th) - angle)
