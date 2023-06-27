@@ -630,6 +630,7 @@ class Calibrant(object):
             d2th = abs(numpy.array(self._2th) - angle)
             if d2th.min() < delta:
                 return d2th.argmin()
+        return None
 
     def get_max_wavelength(self, index: Optional[int]=None):
         """Calculate the maximum wavelength assuming the ring at index is visible.
