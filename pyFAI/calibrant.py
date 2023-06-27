@@ -34,6 +34,8 @@ Interesting formula:
 http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
 """
 
+from __future__ import annotations
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
@@ -349,15 +351,14 @@ class Calibrant(object):
         if self._dSpacing and self._wavelength:
             self._calc_2th()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """
         Test the equality with another object
 
-        It only takes into acount the wavelength and dSpacing, not the
+        It only takes into account the wavelength and dSpacing, not the
         filename.
 
-        :param object other: Another object
-        :rtype: bool
+        :param other: Another object
         """
         if other is None:
             return False
@@ -369,44 +370,39 @@ class Calibrant(object):
             return False
         return True
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         """
         Test the non-equality with another object
 
-        It only takes into acount the wavelength and dSpacing, not the
+        It only takes into account the wavelength and dSpacing, not the
         filename.
 
-        :param object other: Another object
-        :rtype: bool
+        :param other: Another object
         """
         return not (self == other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """
         Returns the hash of the object.
 
-        It only takes into acount the wavelength and dSpacing, not the
+        It only takes into account the wavelength and dSpacing, not the
         filename.
-
-        :rtype: int
         """
         h = hash(self._wavelength)
         for d in self.dSpacing:
             h = h ^ hash(d)
         return h
 
-    def __copy__(self):
+    def __copy__(self) -> Calibrant:
         """
-        Copy a calibrant
-
-        :rtype: Calibrant
+        Copy a calibrant.
         """
         self._initialize()
         return Calibrant(filename=self._filename,
                          dSpacing=self._dSpacing + self._out_dSpacing,
                          wavelength=self._wavelength)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self._filename:
             name = self._filename
             if name.startswith("pyfai:"):
@@ -422,7 +418,7 @@ class Calibrant(object):
 
     @property
     def name(self) -> str:
-        """Returns a short name describing the calibrant
+        """Returns a short name describing the calibrant.
 
         It's the name of the file or the resource.
         """
@@ -433,7 +429,7 @@ class Calibrant(object):
             return f[6:]
         return os.path.splitext(os.path.basename(f))[0]
 
-    def get_filename(self):
+    def get_filename(self) -> str:
         return self._filename
 
     filename = property(get_filename)
@@ -447,8 +443,8 @@ class Calibrant(object):
         with self._sem:
             self._load_file(filename)
 
-    def _get_abs_path(self, filename):
-        """Returns the absolute location of the calibrant"""
+    def _get_abs_path(self, filename: str) -> str:
+        """Returns the absolute location of the calibrant."""
         if filename is None:
             return None
         if filename.startswith("pyfai:"):
@@ -457,7 +453,7 @@ class Calibrant(object):
             return os.path.join(basedir, f"{name}.D")
         return os.path.abspath(filename)
 
-    def _load_file(self, filename=None):
+    def _load_file(self, filename: Optional[str]=None):
         if filename:
             self._filename = filename
 
@@ -479,15 +475,14 @@ class Calibrant(object):
             else:
                 self._dSpacing = []
 
-    def count_registered_dSpacing(self):
-        """Count of registered dSpacing positons."""
+    def count_registered_dSpacing(self) -> int:
+        """Count of registered dSpacing positions."""
         self._initialize()
         return len(self._dSpacing) + len(self._out_dSpacing)
 
-    def save_dSpacing(self, filename=None):
+    def save_dSpacing(self, filename: Optional[str]=None):
         """
-        save the d-spacing to a file
-
+        Save the d-spacing to a file.
         """
         self._initialize()
         if (filename is None) and (self._filename is not None):
@@ -501,11 +496,11 @@ class Calibrant(object):
             for i in self.dSpacing:
                 f.write("%s\n" % i)
 
-    def get_dSpacing(self):
+    def get_dSpacing(self) -> List[float]:
         self._initialize()
         return self._dSpacing
 
-    def set_dSpacing(self, lst):
+    def set_dSpacing(self, lst: List[float]):
         self._dSpacing = list(lst)
         self._out_dSpacing = []
         self._filename = "Modified"
@@ -514,7 +509,8 @@ class Calibrant(object):
 
     dSpacing = property(get_dSpacing, set_dSpacing)
 
-    def append_dSpacing(self, value):
+    def append_dSpacing(self, value: float):
+        """Insert a d position at the right position of the dSpacing list"""
         self._initialize()
         with self._sem:
             delta = [abs(value - v) / v for v in self._dSpacing if v is not None]
@@ -523,7 +519,8 @@ class Calibrant(object):
                 self._dSpacing.sort(reverse=True)
                 self._calc_2th()
 
-    def append_2th(self, value):
+    def append_2th(self, value: float):
+        """Insert a 2th position at the right position of the dSpacing list"""
         with self._sem:
             self._initialize()
             if value not in self._2th:
@@ -531,7 +528,10 @@ class Calibrant(object):
                 self._2th.sort()
                 self._calc_dSpacing()
 
-    def setWavelength_change2th(self, value=None):
+    def setWavelength_change2th(self, value: Optional[float]=None):
+        """
+        Set a new wavelength.
+        """
         with self._sem:
             if value:
                 self._wavelength = float(value)
@@ -539,9 +539,11 @@ class Calibrant(object):
                     logger.warning("This is an unlikely wavelength (in meter): %s", self._wavelength)
                 self._calc_2th()
 
-    def setWavelength_changeDs(self, value=None):
+    def setWavelength_changeDs(self, value: Optional[float]=None):
         """
-        This is probably not a good idea, but who knows !
+        Set a new wavelength and only update the dSpacing list.
+
+        This is probably not a good idea, but who knows!
         """
         with self._sem:
             if value:
@@ -550,7 +552,10 @@ class Calibrant(object):
                     logger.warning("This is an unlikely wavelength (in meter): %s", self._wavelength)
                 self._calc_dSpacing()
 
-    def set_wavelength(self, value=None):
+    def set_wavelength(self, value: Optional[float]=None):
+        """
+        Set a new wavelength .
+        """
         updated = False
         with self._sem:
             if self._wavelength is None:
@@ -565,7 +570,10 @@ class Calibrant(object):
         if updated:
             self._calc_2th()
 
-    def get_wavelength(self):
+    def get_wavelength(self) -> Optional[float]:
+        """
+        Returns the used wavelength.
+        """
         return self._wavelength
 
     wavelength = property(get_wavelength, set_wavelength)
@@ -598,7 +606,7 @@ class Calibrant(object):
             return
         self._dSpacing = [5.0e9 * self._wavelength / sin(tth / 2.0) for tth in self._2th]
 
-    def get_2th(self):
+    def get_2th(self) -> List[float]:
         """Returns the 2theta positions for all peaks (cached)"""
         if not self._2th:
             self._initialize()
@@ -609,8 +617,8 @@ class Calibrant(object):
                     self._calc_2th()
         return self._2th
 
-    def get_2th_index(self, angle, delta=None):
-        """Returns the index in the 2theta angle index
+    def get_2th_index(self, angle: float, delta: Optional[float]=None) -> int:
+        """Returns the index in the 2theta angle index.
 
         :param angle: expected angle in radians
         :param delta: precision on angle
@@ -623,8 +631,8 @@ class Calibrant(object):
             if d2th.min() < delta:
                 return d2th.argmin()
 
-    def get_max_wavelength(self, index=None):
-        """Calculate the maximum wavelength assuming the ring at index is visible
+    def get_max_wavelength(self, index: Optional[int]=None):
+        """Calculate the maximum wavelength assuming the ring at index is visible.
 
         Bragg's law says: $\\lambda = 2d sin(\\theta)$
         So at 180° $\\lambda = 2d$
@@ -639,8 +647,9 @@ class Calibrant(object):
             raise IndexError("There are not than many (%s) rings indices in this calibrant" % (index))
         return dSpacing[index] * 2e-10
 
-    def get_peaks(self, unit="2th_deg"):
-        """Calculate the peak position as
+    def get_peaks(self, unit: str="2th_deg"):
+        """Calculate the peak position as this unit.
+
         :return: numpy array (unlike other methods which return lists)
         """
         unit = units.to_unit(unit)
@@ -657,9 +666,9 @@ class Calibrant(object):
         return values * scale
 
     def fake_calibration_image(self, ai, shape=None, Imax=1.0,
-                               U=0, V=0, W=0.0001):
+                               U=0, V=0, W=0.0001) -> numpy.ndarray:
         """
-        Generates a fake calibration image from an azimuthal integrator
+        Generates a fake calibration image from an azimuthal integrator.
 
         :param ai: azimuthal integrator
         :param Imax: maximum intensity of rings
