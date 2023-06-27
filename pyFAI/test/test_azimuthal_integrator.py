@@ -659,7 +659,7 @@ class TestRange(unittest.TestCase):
         # limits to 27 (actually 24) methods to test, keep only one OpenCL version
         logger.info("methods investigated"+ "\n".join([str(i) for i in methods.values()]))
 
-        ai = copy.copy(self.ai)
+        ai = AzimuthalIntegrator.sload(self.ai) #make an empty copy and work on just one module
         ai.detector = detector_factory("Pilatus_100k")
         img = self.img[:ai.detector.shape[0],:ai.detector.shape[1]]
 
@@ -670,7 +670,7 @@ class TestRange(unittest.TestCase):
             variance = None
         failed = []
         for m in methods.values():
-            res = ai.integrate2d_ng(img, 10, 20, variance=variance, error_model=error_model, method=m)
+            res = ai.integrate2d_ng(img, 11, 13, variance=variance, error_model=error_model, method=m)
             v = res.sum_variance
             if v.min()< 0:
                 failed.append(f"min variance is positive or null with {res.method}, error model {error_model.as_str()}")
