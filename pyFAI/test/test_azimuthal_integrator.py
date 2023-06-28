@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/06/2023"
+__date__ = "28/06/2023"
 
 import unittest
 import os
@@ -601,21 +601,20 @@ class TestRange(unittest.TestCase):
     def tearDownClass(cls):
         cls.unit = cls.azim_range = cls.rad_range = cls.ai = cls.img = None
 
-    def test_medfilt(self):
+    def tearDown(self)->None:
         self.ai.reset()
+
+    def test_medfilt(self):
         res = self.ai.medfilt1d(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
     def test_sigma_clip_legacy(self):
-        self.ai.reset()
         res = self.ai._sigma_clip_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
     def test_sigma_clip_ng(self):
-        self.ai.reset()
-
         for case in ({"error_model":"poisson", "max_iter":3, "thres":6},
                      {"error_model":"azimuthal", "max_iter":3, "thres":0},
                      ):
@@ -654,14 +653,20 @@ class TestRange(unittest.TestCase):
     def test_variance_2d(self, error_model="poisson"):
         """This test checks that the variance is actually calculated and positive
         for all integration methods available"""
-        # self.skipTest("Re-enable this test when issue #1845 is solved.")
-        methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=2)}
-        # limits to 27 (actually 24) methods to test, keep only one OpenCL version
-        logger.info("methods investigated"+ "\n".join([str(i) for i in methods.values()]))
 
+        def print_mem():
+            try:
+                import psutil
+            except:
+                logger.error("psutil missing")
+            else:
+                logger.warning("Memory consumption: %s",psutil.virtual_memory())
         ai = AzimuthalIntegrator.sload(self.ai) #make an empty copy and work on just one module
         ai.detector = detector_factory("Pilatus_100k")
         img = self.img[:ai.detector.shape[0],:ai.detector.shape[1]]
+
+        methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=2)}
+        logger.info("methods investigated"+ "\n".join([str(i) for i in methods.values()]))
 
         error_model = ErrorModel.parse(error_model)
         if error_model == ErrorModel.VARIANCE:
@@ -674,13 +679,17 @@ class TestRange(unittest.TestCase):
             v = res.sum_variance
             if v.min()< 0:
                 failed.append(f"min variance is positive or null with {res.method}, error model {error_model.as_str()}")
+                print_mem()
             if v.max()<= 0:
                 failed.append(f"max variance is strictly positive with {res.method}, error model {error_model.as_str()}")
+                print_mem()
             s = res.sigma
             if s.min()< 0:
                 failed.append(f"min sigma is positive or null with {res.method}, error model {error_model.as_str()}")
+                print_mem()
             if s.max()<= 0:
                 failed.append(f"max sigma is strictly positive with {res.method}, error model {error_model.as_str()}")
+                print_mem()
         for err_msg in failed:
             logger.error(err_msg)
         self.assertEqual(len(failed), 0, f"Number of failed tests in test_variance_2d: {len(failed)}")
