@@ -12,3 +12,4 @@ scipy
 matplotlib
 numexpr
 silx
+psutil

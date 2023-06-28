@@ -71,7 +71,7 @@ inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
 
 inline void atomic_add_global_kahan(volatile global float2 *addr, float val)
 {
-   union {
+       union {
        uint2   u64;
        float2 f64;
    } next, expected, current;
@@ -226,7 +226,7 @@ kernel void histogram_2d_preproc(global float * radial,
     {// we are in the image
         float rvalue = radial[idx];
         float avalue = azimuthal[idx];
-        if ((rvalue>=mini_rad)&&(rvalue<maxi_azim)&&
+        if ((rvalue>=mini_rad)&&(rvalue<maxi_rad)&&
             (avalue>=mini_azim)&&(avalue<maxi_azim))
         { //pixel position is the range
             unsigned int target_rad = (unsigned int) (nbins_rad * (radial[idx] - mini_rad) / (maxi_rad-mini_rad));
