@@ -644,9 +644,9 @@ class TestRange(unittest.TestCase):
                               ("count", 1e-1)):
                 for impl in results:
                     obt = results[impl]
-                    print(impl, what, obt.__getattribute__(what).max(),
-                    abs(ref.__getattribute__(what) - obt.__getattribute__(what)).max(),
-                    abs((ref.__getattribute__(what) - obt.__getattribute__(what)) / ref.__getattribute__(what)).max())
+                    # print(impl, what, obt.__getattribute__(what).max(),
+                    # abs(ref.__getattribute__(what) - obt.__getattribute__(what)).max(),
+                    # abs((ref.__getattribute__(what) - obt.__getattribute__(what)) / ref.__getattribute__(what)).max())
                     self.assertTrue(numpy.allclose(obt.__getattribute__(what), ref.__getattribute__(what), atol=10, rtol=tol),
                                     msg=f"Sigma clipping matches for impl {impl} on paramter {what} with error_model {case['error_model']}")
 
