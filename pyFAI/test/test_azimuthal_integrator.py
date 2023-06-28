@@ -661,7 +661,7 @@ class TestRange(unittest.TestCase):
                 logger.error("psutil missing")
             else:
                 logger.warning("Memory consumption: %s",psutil.virtual_memory())
-        ai = AzimuthalIntegrator.sload(self.ai) #make an empty copy and work on just one module
+        ai = AzimuthalIntegrator.sload(self.ai) #make an empty copy and work on just one module of the detector (much faster)
         ai.detector = detector_factory("Pilatus_100k")
         img = self.img[:ai.detector.shape[0],:ai.detector.shape[1]]
 
@@ -676,6 +676,7 @@ class TestRange(unittest.TestCase):
         failed = []
         for m in methods.values():
             res = ai.integrate2d_ng(img, 11, 13, variance=variance, error_model=error_model, method=m)
+            ai.reset()
             v = res.sum_variance
             if v.min()< 0:
                 failed.append(f"min variance is positive or null with {res.method}, error model {error_model.as_str()}")
