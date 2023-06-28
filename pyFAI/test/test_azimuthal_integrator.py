@@ -654,13 +654,13 @@ class TestRange(unittest.TestCase):
         """This test checks that the variance is actually calculated and positive
         for all integration methods available"""
 
-        def print_mem():
-            try:
-                import psutil
-            except:
-                logger.error("psutil missing")
-            else:
-                logger.warning("Memory consumption: %s",psutil.virtual_memory())
+        # def print_mem():
+        #     try:
+        #         import psutil
+        #     except:
+        #         logger.error("psutil missing")
+        #     else:
+        #         logger.warning("Memory consumption: %s",psutil.virtual_memory())
         ai = AzimuthalIntegrator.sload(self.ai) #make an empty copy and work on just one module of the detector (much faster)
         ai.detector = detector_factory("Pilatus_100k")
         img = self.img[:ai.detector.shape[0],:ai.detector.shape[1]]
@@ -676,21 +676,21 @@ class TestRange(unittest.TestCase):
         failed = []
         for m in methods.values():
             res = ai.integrate2d_ng(img, 11, 13, variance=variance, error_model=error_model, method=m)
-            ai.reset()
+            # ai.reset()
             v = res.sum_variance
             if v.min()< 0:
                 failed.append(f"min variance is positive or null with {res.method}, error model {error_model.as_str()}")
-                print_mem()
+                # print_mem()
             if v.max()<= 0:
                 failed.append(f"max variance is strictly positive with {res.method}, error model {error_model.as_str()}")
-                print_mem()
+                # print_mem()
             s = res.sigma
             if s.min()< 0:
                 failed.append(f"min sigma is positive or null with {res.method}, error model {error_model.as_str()}")
-                print_mem()
+                # print_mem()
             if s.max()<= 0:
                 failed.append(f"max sigma is strictly positive with {res.method}, error model {error_model.as_str()}")
-                print_mem()
+                # print_mem()
         for err_msg in failed:
             logger.error(err_msg)
         self.assertEqual(len(failed), 0, f"Number of failed tests in test_variance_2d: {len(failed)}")
