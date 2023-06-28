@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2023"
+__date__ = "26/06/2023"
 __status__ = "production"
 
 import os
@@ -231,6 +231,9 @@ decrease the value if arcs are mixed together.""", default=None)
                         help="Use square kernel shape for neighbor search instead of diamond shape",
                         default=False)
 
+    parser.add_argument("--remote-bug", dest="remote_bug", action="store_true",
+                        help="Simplify some Qt feature, removed disappearing cursor bug (#1899) when playing over remote desktop",
+                        default=False)
 
 description = """Calibrate the diffraction setup geometry based on
 Debye-Sherrer rings images without a priori knowledge of your setup.
@@ -567,6 +570,8 @@ def main():
     from silx.gui import qt
     if options.opengl:
         silx.config.DEFAULT_PLOT_BACKEND = "opengl"
+    if options.remote_bug:
+        os.environ["PYFAI_REMOTE_BUG"] = "1"
 
     # Make sure matplotlib is loaded first by silx
     import silx.gui.utils.matplotlib
