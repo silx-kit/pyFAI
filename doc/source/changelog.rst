@@ -7,7 +7,7 @@ Change-log of versions
 
 2023.XX dd/mm/2023
 ------------------
-- Enforce the usage of the `detector_factory`. `Detector(**config)` stops working.  
+- Enforce the usage of the `detector_factory`. `Detector(**config)` stops working.
 
 2023.05 156/06/2023
 ------------------
