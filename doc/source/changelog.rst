@@ -1,11 +1,15 @@
 :Author: Jérôme Kieffer
-:Date: 16/05/2023
+:Date: 29/06/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2023.05 dd/mm/2023
+2023.XX dd/mm/2023
+------------------
+- Enforce the usage of the `detector_factory`. `Detector(**config)` stops working.  
+
+2023.05 156/06/2023
 ------------------
 - New detector: Jungfrau 8M used at SwissFEL
 - new method in `Geometry` to guess the number of bin (and avoid oversampling)
