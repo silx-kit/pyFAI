@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/06/2023"
+__date__ = "29/06/2023"
 __status__ = "stable"
 
 import logging
@@ -179,12 +179,15 @@ class Detector(metaclass=DetectorMeta):
                     logger.error("Unable to parse config %s with JSON: %s, %s",
                                  name, config, err)
                     raise err
+            binning = config.pop("binning", None)
             try:
                 detector = detectorClass(**config)
             except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to configure detector %s with config: %s\n %s",
-                             name, config, err)
+                logger.error("%s: %s\nUnable to configure detector %s with config: %s\n",
+                             type(err).__name__, err, name, config)
                 raise err
+            if binning:
+                detector.set_binning(binning)
         else:
             detector = detectorClass()
 
