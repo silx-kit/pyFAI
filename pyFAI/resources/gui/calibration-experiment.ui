@@ -120,7 +120,7 @@
            </widget>
           </item>
           <item row="5" column="1" colspan="2">
-           <widget class="CalibrantSelector" name="_calibrant"/>
+           <widget class="CalibrantSelector2" name="_calibrant"/>
           </item>
           <item row="0" column="1" colspan="2">
            <widget class="QuantityEdit" name="_energy">
@@ -435,9 +435,9 @@
    <header>pyFAI.gui.widgets.FileEdit</header>
   </customwidget>
   <customwidget>
-   <class>CalibrantSelector</class>
+   <class>CalibrantSelector2</class>
    <extends>QComboBox</extends>
-   <header>pyFAI.gui.widgets.CalibrantSelector</header>
+   <header>pyFAI.gui.widgets.CalibrantSelector2</header>
   </customwidget>
   <customwidget>
    <class>CalibrantPreview</class>

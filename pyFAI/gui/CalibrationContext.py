@@ -83,6 +83,8 @@ class CalibrationContext(ApplicationContext):
         self.__scatteringVectorUnit.setValue(units.Unit.INV_ANGSTROM)
         self.__markerColors = {}
         self.__cacheStyles = {}
+        self.__recentCalibrants = DataModel()
+        self.__recentCalibrants.setValue([])
 
         self.sigStyleChanged = self.__rawColormap.sigChanged
 
@@ -142,6 +144,9 @@ class CalibrationContext(ApplicationContext):
         self.__restoreUnit(self.__scatteringVectorUnit, settings, "scattering-vector-unit", units.Unit.INV_ANGSTROM)
         settings.endGroup()
 
+        recentCalibrants = settings.value("recent-calibrations", [], type=list)
+        self.__recentCalibrants.setValue(recentCalibrants)
+
     def saveSettings(self):
         """Save the settings of all the application"""
         settings = self.__settings
@@ -156,6 +161,8 @@ class CalibrationContext(ApplicationContext):
         settings.setValue("wavelength-unit", self.__wavelengthUnit.value().name)
         settings.setValue("scattering-vector-unit", self.__scatteringVectorUnit.value().name)
         settings.endGroup()
+
+        settings.setValue("recent-calibrations", self.__recentCalibrants.value())
 
         # Synchronize the file storage
         super(CalibrationContext, self).saveSettings()
@@ -287,6 +294,9 @@ class CalibrationContext(ApplicationContext):
         colors = self.markerColorList()
         color = colors[index % len(colors)]
         return "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+
+    def getRecentCalibrants(self) -> DataModel:
+        return self.__recentCalibrants
 
     def disabledMarkerColor(self):
         style = self.getCurrentStyle()
