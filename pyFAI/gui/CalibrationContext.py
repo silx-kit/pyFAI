@@ -286,7 +286,7 @@ class CalibrationContext(ApplicationContext):
     def getHtmlMarkerColor(self, index):
         colors = self.markerColorList()
         color = colors[index % len(colors)]
-        "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+        return "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
 
     def disabledMarkerColor(self):
         style = self.getCurrentStyle()
