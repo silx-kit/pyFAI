@@ -141,7 +141,7 @@ class ExperimentTask(AbstractCalibrationTask):
 
         settings = model.experimentSettingsModel()
 
-        self._calibrant.setModel(settings.calibrantModel())
+        self._calibrant.setCalibrantModel(settings.calibrantModel())
         self._detectorLabel.setDetectorModel(settings.detectorModel())
         self._image.setModel(settings.image())
         self._imageLoader.setModel(settings.image())
