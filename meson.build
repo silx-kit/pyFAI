@@ -16,7 +16,7 @@ endif
 cc = meson.get_compiler('c')
 cpp = meson.get_compiler('cpp')
 cy = meson.get_compiler('cython')
-# We need -lm for all C code (assuming it uses math functions, which is safe). 
+# We need -lm for all C code (assuming it uses math functions, which is safe).
 # For C++ it isn't needed, because libstdc++/libc++ is guaranteed to depend on it.
 m_dep = cc.find_library('m', required : false)
 if m_dep.found()
