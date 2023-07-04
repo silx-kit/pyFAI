@@ -31,7 +31,7 @@
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2023"
+__date__ = "29/06/2023"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -99,6 +99,8 @@ class PoniFile(object):
         .. note:: The dictionary is versionned.
         """
         version = int(config.get("poni_version", 1))
+        if "detector_config" in config:
+            version = min(version, 2)
 
         if version == 1:
             # Handle former version of PONI-file
