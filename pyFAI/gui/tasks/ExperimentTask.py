@@ -78,8 +78,10 @@ class ExperimentTask(AbstractCalibrationTask):
 
         self._detectorFileDescription.setElideMode(qt.Qt.ElideMiddle)
 
-        self._calibrant.setFileLoadable(True)
+        #self._calibrant.setFileLoadable(True)
         self._calibrant.sigLoadFileRequested.connect(self.loadCalibrant)
+        recentCalibrants = CalibrationContext.instance().getRecentCalibrants().value()
+        self._calibrant.setRecentCalibrants(recentCalibrants)
 
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
@@ -92,6 +94,11 @@ class ExperimentTask(AbstractCalibrationTask):
         self._energy.setValidator(validator)
         self._wavelength.setValidator(validator)
         super()._initGui()
+
+    def aboutToClose(self):
+        super(ExperimentTask, self).aboutToClose()
+        recentCalibrants = self._calibrant.recentCalibrants()
+        CalibrationContext.instance().getRecentCalibrants().setValue(recentCalibrants)
 
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
@@ -141,7 +148,7 @@ class ExperimentTask(AbstractCalibrationTask):
 
         settings = model.experimentSettingsModel()
 
-        self._calibrant.setModel(settings.calibrantModel())
+        self._calibrant.setCalibrantModel(settings.calibrantModel())
         self._detectorLabel.setDetectorModel(settings.detectorModel())
         self._image.setModel(settings.image())
         self._imageLoader.setModel(settings.image())

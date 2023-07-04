@@ -28,20 +28,31 @@ __license__ = "MIT"
 __date__ = "16/10/2020"
 
 from silx.gui import qt
-from .model.AllDetectorItemModel import AllDetectorItemModel
-from .model.DetectorFilterProxyModel import DetectorFilterProxyModel
-from ...utils.decorators import deprecated
+from .AllDetectorItemModel import AllDetectorItemModel
 
 
-class AllDetectorModel(AllDetectorItemModel):
+class DetectorFilterProxyModel(qt.QSortFilterProxyModel):
 
-    @deprecated(replacement="pyFAI.gui.widgets.model.AllDetectorItemModel.AllDetectorItemModel", since_version="2023.6")
     def __init__(self, parent):
-        AllDetectorItemModel.__init__(self, parent=parent)
+        super(DetectorFilterProxyModel, self).__init__(parent)
+        self.__manufacturerFilter = None
 
+    def setManufacturerFilter(self, manufacturer):
+        if self.__manufacturerFilter == manufacturer:
+            return
+        self.__manufacturerFilter = manufacturer
+        self.invalidateFilter()
 
-class DetectorFilter(DetectorFilterProxyModel):
+    def filterAcceptsRow(self, sourceRow, sourceParent):
+        if self.__manufacturerFilter == "*":
+            return True
+        sourceModel = self.sourceModel()
+        index = sourceModel.index(sourceRow, 0, sourceParent)
+        manufacturer = index.data(AllDetectorItemModel.MANUFACTURER_ROLE)
+        return manufacturer == self.__manufacturerFilter
 
-    @deprecated(replacement="pyFAI.gui.widgets.model.DetectorFilterProxyModel.DetectorFilterProxyModel", since_version="2023.6")
-    def __init__(self, parent):
-        DetectorFilterProxyModel.__init__(self, parent=parent)
+    def indexFromDetector(self, detector, manufacturer):
+        sourceModel = self.sourceModel()
+        index = sourceModel.indexFromDetector(detector, manufacturer)
+        index = self.mapFromSource(index)
+        return index

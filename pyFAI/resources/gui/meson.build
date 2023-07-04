@@ -3,7 +3,8 @@ subdir('images')
 subdir('styles')
 
 py.install_sources(
-   ['calibration-experiment.ui',
+   ['calibrant-selector2.ui',
+    'calibration-experiment.ui',
     'calibration-geometry.ui',
     'calibration-main.ui',
     'calibration-mask.ui',
