@@ -9,7 +9,7 @@ Change-log of versions
 ------------------
 - Enforce the usage of the `detector_factory`. `Detector(**config)` stops working.
 
-2023.05 156/06/2023
+2023.05 16/05/2023
 ------------------
 - New detector: Jungfrau 8M used at SwissFEL
 - new method in `Geometry` to guess the number of bin (and avoid oversampling)
