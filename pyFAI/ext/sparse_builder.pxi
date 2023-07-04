@@ -27,7 +27,7 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "26/06/2023"
+__date__ = "04/07/2023"
 __copyright__ = "2018-2021, ESRF"
 
 import logging
@@ -463,6 +463,9 @@ cdef class SparseBuilder(object):
             libc.string.memset(self._sizes, 0, self._nbin * sizeof(int))
 
         self._mode = mode
+    
+    def __repr__(self):
+        return f"SparseBuilder in mode: {self._mode}, blocksize: {self._block_size}, nbin: {self._nbin}, total size: {self.size()}"
 
     def __dealloc__(self):
         """Release memory."""
@@ -868,7 +871,7 @@ cdef class SparseBuilder(object):
             nbins[bin_id + 1] = size
 
         if size == 0:
-            logger.warning("Sparse matrix is empty. Expect errors or non-sense results!")
+            logger.warning("Sparse matrix is empty. Expect errors or non-sense results! %s", self)
 
         indexes = numpy.empty(size, dtype=numpy.int32)
         coefs = numpy.empty(size, dtype=numpy.float32)
