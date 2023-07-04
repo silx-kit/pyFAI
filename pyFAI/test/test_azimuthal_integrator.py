@@ -509,7 +509,7 @@ class TestSaxs(unittest.TestCase):
                                        algo='CSR',
                                        empty=None,
                                        scale=True)
-            self.assertTrue(cm.output.startswith('WARNING:pyFAI.ext.sparse_builder:Sparse matrix is empty. Expect errors or non-sense results!'),
+            self.assertTrue(cm.output[0].startswith('WARNING:pyFAI.ext.sparse_builder:Sparse matrix is empty. Expect errors or non-sense results!'),
                             "Actually emits the expected warning")
 
 
