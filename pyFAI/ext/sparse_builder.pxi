@@ -463,7 +463,7 @@ cdef class SparseBuilder(object):
             libc.string.memset(self._sizes, 0, self._nbin * sizeof(int))
 
         self._mode = mode
-    
+
     def __repr__(self):
         return f"SparseBuilder in mode: {self._mode}, blocksize: {self._block_size}, nbin: {self._nbin}, total size: {self.size()}"
 
