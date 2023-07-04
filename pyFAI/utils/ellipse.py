@@ -38,14 +38,23 @@ __date__ = "26/02/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+from typing import NamedTuple
 import numpy
 import logging
 from math import sqrt, atan2, pi
-from collections import namedtuple
 
 _logger = logging.getLogger(__name__)
 
-Ellipse = namedtuple("Ellipse", ["center_1", "center_2", "angle", "half_long_axis", "half_short_axis"])
+
+class Ellipse(NamedTuple):
+    center_1: float
+    """Center position in the slow axis (pty)"""
+    center_2: float
+    """Center position in the fast axis (ptx)"""
+    angle: float
+    """Angle in radian"""
+    half_long_axis: float
+    half_short_axis: float
 
 
 def fit_ellipse(pty, ptx, _allow_delta=True):

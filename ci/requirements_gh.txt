@@ -21,3 +21,4 @@ matplotlib
 #pyopencl
 numexpr
 silx
+psutil
