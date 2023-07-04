@@ -1,10 +1,12 @@
 subdir('test')
+subdir('model')
 
 py.install_sources(
    ['AdvancedComboBox.py',
     'AdvancedSpinBox.py',
     'CalibrantPreview.py',
     'CalibrantSelector.py',
+    'CalibrantSelector2.py',
     'ChoiceToolButton.py',
     'ColoredCheckBox.py',
     'DetectorLabel.py',

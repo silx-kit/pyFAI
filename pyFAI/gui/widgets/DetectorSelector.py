@@ -29,8 +29,8 @@ __date__ = "16/10/2020"
 
 from silx.gui import qt
 from ..model.DetectorModel import DetectorModel
-from .DetectorModel import AllDetectorModel
-from .DetectorModel import DetectorFilter
+from .model.AllDetectorItemModel import AllDetectorItemModel
+from .model.DetectorFilterProxyModel import DetectorFilterProxyModel
 
 
 class DetectorSelector(qt.QComboBox):
@@ -39,8 +39,8 @@ class DetectorSelector(qt.QComboBox):
         super(DetectorSelector, self).__init__(parent)
 
         # feed the widget with default detectors
-        model = AllDetectorModel(self)
-        self.__filter = DetectorFilter(self)
+        model = AllDetectorItemModel(self)
+        self.__filter = DetectorFilterProxyModel(self)
         self.__filter.setSourceModel(model)
 
         super(DetectorSelector, self).setModel(self.__filter)

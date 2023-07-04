@@ -22,26 +22,8 @@
 # THE SOFTWARE.
 #
 # ###########################################################################*/
+"""Module containing generic widgets"""
 
-__authors__ = ["V. Valls"]
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "16/10/2020"
-
-from silx.gui import qt
-from .model.AllDetectorItemModel import AllDetectorItemModel
-from .model.DetectorFilterProxyModel import DetectorFilterProxyModel
-from ...utils.decorators import deprecated
-
-
-class AllDetectorModel(AllDetectorItemModel):
-
-    @deprecated(replacement="pyFAI.gui.widgets.model.AllDetectorItemModel.AllDetectorItemModel", since_version="2023.6")
-    def __init__(self, parent):
-        AllDetectorItemModel.__init__(self, parent=parent)
-
-
-class DetectorFilter(DetectorFilterProxyModel):
-
-    @deprecated(replacement="pyFAI.gui.widgets.model.DetectorFilterProxyModel.DetectorFilterProxyModel", since_version="2023.6")
-    def __init__(self, parent):
-        DetectorFilterProxyModel.__init__(self, parent=parent)
+__date__ = "25/06/2023"
