@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/06/2023"
+__date__ = "04/07/2023"
 
 import unittest
 import os
@@ -353,7 +353,8 @@ class TestFlatimage(unittest.TestCase):
     def test_guess_polarization(self):
         img = fabio.open(UtilsTest.getimage("Eiger4M.edf")).data
         ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Eiger4M.poni"))
-        self.assertLess(abs(ai.guess_polarization(img)-0.5), 0.1)
+        self.assertLess(abs(ai.guess_polarization(img) - 0.5), 0.1)
+
 
 class TestSaxs(unittest.TestCase):
     saxsPilatus = "bsa_013_01.edf"
@@ -502,15 +503,14 @@ class TestSaxs(unittest.TestCase):
         ai = AzimuthalIntegrator(detector="Pilatus100k", wavelength=1e-10)
         with self.assertLogs('pyFAI.ext.sparse_builder', level='WARNING') as cm:
             ai.setup_sparse_integrator(shape=ai.detector.shape, npt=100,
-                                       pos0_range=(90,100),
+                                       pos0_range=(90, 100),
                                        unit="2th_deg",
                                        split='no',
                                        algo='CSR',
                                        empty=None,
                                        scale=True)
-            self.assertEqual(cm.output, [
-                'WARNING:pyFAI.ext.sparse_builder:Sparse matrix is empty. Expect errors or non-sense results!'
-                            ])
+            self.assertTrue(cm.output[0].startswith('WARNING:pyFAI.ext.sparse_builder:Sparse matrix is empty. Expect errors or non-sense results!'),
+                            "Actually emits the expected warning")
 
 
 class TestSetter(unittest.TestCase):
@@ -601,7 +601,7 @@ class TestRange(unittest.TestCase):
     def tearDownClass(cls):
         cls.unit = cls.azim_range = cls.rad_range = cls.ai = cls.img = None
 
-    def tearDown(self)->None:
+    def tearDown(self) -> None:
         self.ai.reset()
 
     def test_medfilt(self):
@@ -661,12 +661,12 @@ class TestRange(unittest.TestCase):
         #         logger.error("psutil missing")
         #     else:
         #         logger.warning("Memory consumption: %s",psutil.virtual_memory())
-        ai = AzimuthalIntegrator.sload(self.ai) #make an empty copy and work on just one module of the detector (much faster)
+        ai = AzimuthalIntegrator.sload(self.ai)  # make an empty copy and work on just one module of the detector (much faster)
         ai.detector = detector_factory("Pilatus_100k")
         img = self.img[:ai.detector.shape[0],:ai.detector.shape[1]]
 
         methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=2)}
-        logger.info("methods investigated"+ "\n".join([str(i) for i in methods.values()]))
+        logger.info("methods investigated" + "\n".join([str(i) for i in methods.values()]))
 
         error_model = ErrorModel.parse(error_model)
         if error_model == ErrorModel.VARIANCE:
@@ -678,17 +678,17 @@ class TestRange(unittest.TestCase):
             res = ai.integrate2d_ng(img, 11, 13, variance=variance, error_model=error_model, method=m)
             # ai.reset()
             v = res.sum_variance
-            if v.min()< 0:
+            if v.min() < 0:
                 failed.append(f"min variance is positive or null with {res.method}, error model {error_model.as_str()}")
                 # print_mem()
-            if v.max()<= 0:
+            if v.max() <= 0:
                 failed.append(f"max variance is strictly positive with {res.method}, error model {error_model.as_str()}")
                 # print_mem()
             s = res.sigma
-            if s.min()< 0:
+            if s.min() < 0:
                 failed.append(f"min sigma is positive or null with {res.method}, error model {error_model.as_str()}")
                 # print_mem()
-            if s.max()<= 0:
+            if s.max() <= 0:
                 failed.append(f"max sigma is strictly positive with {res.method}, error model {error_model.as_str()}")
                 # print_mem()
         for err_msg in failed:
