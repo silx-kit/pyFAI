@@ -634,12 +634,12 @@ class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
         editor.setMouseWheelEnabled(False)
         editor.setMinimum(1)
         editor.setMaximum(999)
-        editor.valueChanged.connect(lambda x: self.commitData.emit(editor))
         editor.setFocusPolicy(qt.Qt.StrongFocus)
         editor.setValue(index.data())
         editor.installEventFilter(self)
         editor.setBackgroundRole(qt.QPalette.Background)
         editor.setAutoFillBackground(True)
+        editor.valueChanged.connect(lambda x: self.commitData.emit(editor))
         return editor
 
     def eventFilter(self, widget, event):
@@ -764,7 +764,7 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
             widget = widget.parent()
         raise TypeError("PeakPickingTask not found")
 
-    def __extractPeak(self, persistantIndex, checked):
+    def __extractPeak(self, persistantIndex, checked=False):
         if not persistantIndex.isValid():
             return
         model = persistantIndex.model()
@@ -773,7 +773,7 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
         if task is not None:
             task.autoExtractSingleRing(peak)
 
-    def __removePeak(self, persistantIndex, checked):
+    def __removePeak(self, persistantIndex, checked=False):
         if not persistantIndex.isValid():
             return
         model = persistantIndex.model()
