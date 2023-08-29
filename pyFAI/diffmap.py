@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/03/2023"
+__date__ = "28/08/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -598,10 +598,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         for f in self.inputfiles:
             self.process_one_file(f)
         tot = time.perf_counter() - t0
-        cnt = self._idx + 1
-        print(("Execution time for %i frames: %.3fs;"
-               " Average execution time: %.1fms") %
-              (cnt, tot, 1000. * tot / cnt))
+        cnt = max(self._idx, 0) + 1
+        print(f"Execution time for {cnt} frames: {tot:.3f} s; "
+              f"Average execution time: {1000. * tot / cnt:.1f} ms/img")
         self.nxs.close()
 
     def get_use_gpu(self):
