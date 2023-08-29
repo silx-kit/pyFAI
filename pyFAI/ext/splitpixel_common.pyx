@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/01/2022"
+__date__ = "29/08/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -288,9 +288,9 @@ class FullSplitIntegrator:
             position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
             mask_t[:] cmask = self.cmask
             bint check_mask = False, chiDiscAtPi = self.chiDiscAtPi
-            position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
-            position_t pos0_min = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
-            position_t a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
+            position_t min0 = 0.0, max0 = 0.0, min1 = 0.0, max1 = 0.0, inv_area = 0.0
+            position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0, pos0_maxin = 0.0, pos1_maxin = 0.0
+            position_t a0 = 0.0, a1 = 0.0, b0 = 0.0, b1 = 0.0, c0 = 0.0, c1 = 0.0, d0 = 0.0, d1 = 0.0
             position_t delta0, delta1
             position_t foffset0, foffset1, sum_area, area
             Py_ssize_t i = 0, j = 0, idx = 0
