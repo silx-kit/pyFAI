@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/01/2022"
+__date__ = "29/08/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -294,8 +294,8 @@ class SplitBBoxIntegrator:
             position_t[::1] cpos0, cpos1, dpos0, dpos1
             mask_t[::1] cmask
             bint check_mask=False, do_split=True
-            position_t c0, c1, d0, d1, min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
-            position_t pos0_min = 0, pos1_min = 0
+            position_t c0, c1, d0=0.0, d1=0.0, min0=0.0, max0=0.0, min1=0.0, max1=0.0, inv_area=0.0
+            position_t pos0_min=0.0, pos1_min=0.0
             position_t delta0, delta1, delta_down, delta_up, delta_left, delta_right
             position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max
             Py_ssize_t i = 0, j = 0, idx = 0
