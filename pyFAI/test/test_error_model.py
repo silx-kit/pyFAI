@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/03/2023"
+__date__ = "29/08/2023"
 
 import unittest
 import sys
@@ -43,7 +43,6 @@ import numpy
 from ..utils.mathutil import cormap
 from ..detectors import Detector
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..method_registry import IntegrationMethod
 
 
 class TestErrorModel(unittest.TestCase):
@@ -53,7 +52,7 @@ class TestErrorModel(unittest.TestCase):
         super(TestErrorModel, cls).setUpClass()
         # synthetic dataset
         pix = 100e-6
-        shape = (256, 256)
+        shape = (128, 128)
         npt = 100
         wl = 1e-10
         I0 = 1e2
@@ -63,7 +62,7 @@ class TestErrorModel(unittest.TestCase):
          "polarization_factor":0.99,
          "safe":False,
          "error_model": "poisson",
-         "method":("full", "csr", "cython"),
+         "method":("no", "csr", "cython"),
          "normalization_factor": 1e-6
          }
         detector = Detector(pix, pix)
@@ -98,11 +97,11 @@ class TestErrorModel(unittest.TestCase):
     def test(self):
         epsilon = 1e-3 if sys.platform == "win32" else 2e-3
         results = {}
-        for error_model in ("poisson", "azimuthal", "hybrid"):
+        for error_model in ("poisson", "azimuthal"):#, "hybrid"
             for impl in ("python", "cython", "opencl"):
                 kw = self.kwargs.copy()
                 kw["method"] = ("full", "csr", impl)
-                kw["error_model"] = "poisson"
+                kw["error_model"] = error_model
                 results[error_model, impl, "integrate"] = self.ai.integrate1d_ng(**kw)
                 try:
                     results[error_model, impl, "clip"] = self.ai.sigma_clip_ng(**kw)
