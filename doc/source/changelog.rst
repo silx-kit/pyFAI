@@ -1,12 +1,21 @@
 :Author: Jérôme Kieffer
-:Date: 29/06/2023
+:Date: 29/08/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2023.XX dd/mm/2023
+2023.08 30/08/2023
 ------------------
+- Minor release, mostly bug-fixes. 87 commits.
+- fix mal-formed headers in 1D ASCII export
+- Debian packaging without setup.py (at all)
+- Fix cache invalidation issue for polarization in geometry
+- More compact (+scrollable) calibrant widget in `Calib2` (Contribution from Valentin Valls)
+- Compatibility with PyQt6 and PySide6 bacckends (Contribution from malte-storm)
+- Comatibility with elder Matplotlib (<3.2)
+- Fix reproducibility issue with no-split sparse matrix multiplication (all 3)
+- Lower memory consumption of hexagonal detector instanciation.
 - Enforce the usage of the `detector_factory`. `Detector(**config)` stops working.
 
 2023.05 16/05/2023
