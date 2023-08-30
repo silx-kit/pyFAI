@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2023"
+__date__ = "29/08/2023"
 __status__ = "production"
 
 import logging
@@ -897,7 +897,7 @@ def cormap(ref, obt):
     This is a simplifed implementation
     """
     longest = max(_longest_true(ref<obt), _longest_true(ref>obt))
-    return LROH.probaLongerRun(len(ref), longest - 1)
+    return LROH.probaLongerRun(len(ref), max(1, longest - 1))
 
 
 def interp_filter(ary, out=None):
