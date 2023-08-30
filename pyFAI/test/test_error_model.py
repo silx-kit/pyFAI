@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/08/2023"
+__date__ = "30/08/2023"
 
 import unittest
 import sys
@@ -51,19 +51,23 @@ class TestErrorModel(unittest.TestCase):
     def setUpClass(cls):
         super(TestErrorModel, cls).setUpClass()
         # synthetic dataset
+        #fix seed, decrease noise while testing:
+        rng = numpy.random.Generator(numpy.random.PCG64(seed=0))
+
         pix = 100e-6
         shape = (128, 128)
         npt = 100
         wl = 1e-10
         I0 = 1e2
-        flat = numpy.random.random(shape) + 1
+        flat = rng.random(shape) + 1
         cls.kwargs = {"npt":npt,
          "correctSolidAngle":True,
          "polarization_factor":0.99,
          "safe":False,
          "error_model": "poisson",
          "method":("no", "csr", "cython"),
-         "normalization_factor": 1e-6
+         "normalization_factor": 1e-6,
+         "flat": flat
          }
         detector = Detector(pix, pix)
         detector.shape = detector.max_shape = shape
@@ -83,10 +87,9 @@ class TestErrorModel(unittest.TestCase):
         # Reconstruction of diffusion image:
         img_theo = cls.ai.calcfrom1d(q, I, dim1_unit="q_nm^-1",
                          correctSolidAngle=True,
-                         polarization_factor=None,
+                         polarization_factor=cls.kwargs["polarization_factor"],
                          flat=flat)
-        cls.kwargs["flat"] = flat
-        img = numpy.random.poisson(img_theo)
+        img = rng.poisson(img_theo)
         cls.kwargs["data"] = img
 
     @classmethod
