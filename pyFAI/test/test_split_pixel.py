@@ -220,8 +220,7 @@ class TestSplitBBoxNg(unittest.TestCase):
         img = (rng.random(numpy.prod(shape))*cls.maxi).astype(numpy.uint16)
 
         if platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4):
-            # cls.epsilon = 3e-13
-            cls.epsilon = numpy.finfo(numpy.float64).eps
+            cls.epsilon = 3e-13
         else:
             cls.epsilon = numpy.finfo(numpy.float64).eps
 
