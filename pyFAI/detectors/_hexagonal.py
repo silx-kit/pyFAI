@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/03/2023"
+__date__ = "29/08/2023"
 __status__ = "production"
 
 
@@ -67,7 +67,7 @@ class HexDetector(Detector):
         :return: array with pixel coordinates
         """
         assert len(shape) == 2
-        ary = numpy.zeros(shape+(6, 3))
+        ary = numpy.zeros(shape+(6, 3), dtype=numpy.float32)
         sqrt3 = sqrt(3.0)
         h = 0.5*sqrt3
         r = numpy.linspace(0, 2, 7, endpoint=True)[:-1] - 0.5
@@ -77,11 +77,13 @@ class HexDetector(Detector):
         px = numpy.atleast_3d(numpy.outer(numpy.ones(shape[0]), numpy.arange(shape[1])))
         py = numpy.atleast_3d(numpy.outer(numpy.arange(shape[0]), numpy.ones(shape[1])))*h
         cxy = px + complex(0, 1)*py
+        del px, py
         cplx = cxy + c[None, None, :]
         ary[..., 1] = cplx.imag
         ary[..., 2] = cplx.real
         ary[1::2, ... , 2] += 0.5
-        return ary*pitch
+        ary *= pitch
+        return ary
 
     def __init__(self, pitch=None, pixel1=None, pixel2=None, max_shape=None):
         if pitch:
