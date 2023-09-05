@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/03/2023"
+__date__ = "30/08/2023"
 
 import unittest
 import random
@@ -309,6 +309,7 @@ class TestFastPath(utilstest.ParametricTestCase):
                        ]
 
         for _ in range(number_of_geometries):
+            random.seed(0)
             geo = {"dist": 0.01 + random.random(),
                    "poni1": random.random() - 0.5,
                    "poni2": random.random() - 0.5,
