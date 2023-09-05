@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/05/2022"
+__date__ = "05/09/2023"
 
 import numpy
 import logging
@@ -188,13 +188,13 @@ class ExperimentTask(AbstractCalibrationTask):
         warnings = []
 
         if image is None:
-            warnings.append("An image have to be specified")
+            warnings.append("An image has to be specified")
         if detectorModel is None:
-            warnings.append("A detector have to be specified")
+            warnings.append("A detector has to be specified")
         if calibrantModel is None:
-            warnings.append("A calibrant have to be specified")
+            warnings.append("A calibrant has to be specified")
         if wavelength is None:
-            warnings.append("An energy have to be specified")
+            warnings.append("An energy has to be specified")
         if image is not None and calibrantModel is not None:
             try:
                 detector = settings.detector()

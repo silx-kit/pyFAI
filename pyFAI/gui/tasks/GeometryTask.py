@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/05/2022"
+__date__ = "05/09/2023"
 
 import logging
 import numpy
@@ -793,7 +793,7 @@ class GeometryTask(AbstractCalibrationTask):
         if self.__calibration is None:
             return None
 
-        # It have to be updated only if it changes
+        # It has to be updated only if it changes
         image = self.model().experimentSettingsModel().image().value()
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()

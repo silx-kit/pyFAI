@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 import os.path
 
@@ -48,7 +48,7 @@ class CalibrantSelector(qt.QComboBox):
 
     An extra option to load a calibrant from a file can be enabled with
     :meth:`setFileLoadable`. The widget does not handle the dialog or the IO
-    but provides a signal :prop:`sigLoadFileRequested` which have to be connected.
+    but provides a signal :prop:`sigLoadFileRequested` which has to be connected.
     """
 
     sigLoadFileRequested = qt.Signal()
