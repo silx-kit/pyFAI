@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 import os
 import logging
@@ -139,7 +139,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__selectAllRegistreredDetector()
 
     def __selectAndAccept(self):
-        # FIXME: This have to be part of the dialog, and not here
+        # FIXME: This has to be part of the dialog, and not here
         window = self.window()
         if isinstance(window, qt.QDialog):
             window.accept()

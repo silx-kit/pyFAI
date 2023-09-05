@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2023"
+__date__ = "05/09/2023"
 __status__ = "production"
 
 import os
@@ -558,7 +558,7 @@ def logUncaughtExceptions(exceptionClass, exception, stack):
 
 
 def main():
-    # It have to be done before loading Qt
+    # It has to be done before loading Qt
     # --help must also work without Qt
     options = parse_options()
 

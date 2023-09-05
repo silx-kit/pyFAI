@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2022"
+__date__ = "05/09/2023"
 __status__ = "development"
 
 import logging
@@ -219,7 +219,7 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
         """Returns a processing observer connected to this widget.
 
         :param bool qtSafe: If True the returned observer can be called from
-            any thread. Else it have to be called from the main Qt thread.
+            any thread. Else it has to be called from the main Qt thread.
         :rtype: integrate.IntegrationObserver
         """
         if qtSafe:
