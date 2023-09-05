@@ -33,7 +33,7 @@ __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2022"
+__date__ = "05/09/2023"
 
 import logging
 import numpy
@@ -82,7 +82,8 @@ class TestAddition(unittest.TestCase):
         if ocl is None:
             return
         self.shape = 4096
-        self.data = numpy.random.random(self.shape).astype(numpy.float32)
+        UtilsTest.get_rng()
+        self.data = UtilsTest.get_rng().random(self.shape).astype(numpy.float32)
         self.d_array_img = pyopencl.array.to_device(self.queue, self.data)
         self.d_array_5 = pyopencl.array.zeros_like(self.d_array_img) - 5
         self.program = pyopencl.Program(self.ctx, get_opencl_code("addition")).build()
