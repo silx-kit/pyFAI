@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/07/2022"
+__date__ = "05/09/2023"
 
 import os
 import unittest
@@ -65,8 +65,9 @@ class TestPreproc(unittest.TestCase):
         target[:, :2] = dummy
         mask = numpy.zeros(shape, "int8")
         mask[:2, :] = 1
-        dark = numpy.random.poisson(10, size).reshape(shape)
-        flat = 1.0 + numpy.random.random(shape)
+        rng = UtilsTest.get_rng()
+        dark = rng.poisson(10, size).reshape(shape)
+        flat = 1.0 + rng.random(shape)
         scale = 10.0
         raw = scale * flat + dark
         raw[-2:, :] = numpy.NaN

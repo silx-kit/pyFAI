@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/01/2023"
+__date__ = "05/09/2023"
 
 import os
 import unittest
@@ -92,8 +92,9 @@ class TestTranslation(unittest.TestCase):
         self.assertEqual(str(self.gt), str(new_gt), "serialized have the same representation")
 
     def test_equivalent(self):
-        pos = numpy.random.random(size=len(self.gt.pos_names))
-        param = numpy.random.random(size=len(self.gt.param_names))
+        rng = UtilsTest.get_rng()
+        pos = rng.random(size=len(self.gt.pos_names))
+        param = rng.random(size=len(self.gt.param_names))
         ref = numpy.array(self.reference_function(param, pos))
         obt = numpy.array(self.gt(param, pos))
         eps = abs(ref - obt).max()

@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/08/2023"
+__date__ = "05/09/2023"
 
 import unittest
 import platform
@@ -86,7 +86,7 @@ class TestRecenter(unittest.TestCase):
 
     def test_area(self):
         "Test the formula to calculate the area of any quad"
-        pos = numpy.random.random(8) * 10  # this is a random quad !
+        pos = UtilsTest.get_rng().uniform(0, 10, 8)  # this is a random quad !
 
         ref = splitPixel._sp_area4(*pos)
         trp = splitPixel._sp_area4(*pos.reshape((-1, 2))[:, -1::-1].ravel())
@@ -211,7 +211,7 @@ class TestSplitBBoxNg(unittest.TestCase):
         super(TestSplitBBoxNg, cls).setUpClass()
 
         #fix seed, decrease noise while testing:
-        rng = numpy.random.Generator(numpy.random.PCG64(seed=0))
+        rng = UtilsTest.get_rng()
 
         det = Detector.factory("Pilatus 100k")
         shape = det.shape
