@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "12/05/2022"
+__date__ = "05/09/2023"
 
 import numpy
 import collections.abc
@@ -54,20 +54,20 @@ def tthToRad(twoTheta: numpy.ndarray, unit: units.Unit, wavelength: float=None, 
         return numpy.deg2rad(twoTheta)
     elif unit == units.Q_A:
         if wavelength is None:
-            raise AttributeError("wavelength have to be specified")
+            raise AttributeError("wavelength has to be specified")
         return numpy.arcsin((twoTheta * wavelength) / (4.e-10 * numpy.pi)) * 2.0
     elif unit == units.Q_NM:
         if wavelength is None:
-            raise AttributeError("wavelength have to be specified")
+            raise AttributeError("wavelength has to be specified")
         return numpy.arcsin((twoTheta * wavelength) / (4.e-9 * numpy.pi)) * 2.0
     elif unit == units.R_MM:
         if directDist is None:
-            raise AttributeError("directDist have to be specified")
+            raise AttributeError("directDist has to be specified")
         # GF: correct formula?
         return numpy.arctan(twoTheta / directDist)
     elif unit == units.R_M:
         if directDist is None:
-            raise AttributeError("directDist have to be specified")
+            raise AttributeError("directDist has to be specified")
         # GF: correct formula?
         return numpy.arctan(twoTheta / (directDist * 0.001))
     else:

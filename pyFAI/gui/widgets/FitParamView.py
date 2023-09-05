@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 from silx.gui import icons
 
@@ -331,7 +331,7 @@ class FitParamView(qt.QObject):
         pos = pos - popup.labelCenter()
 
         # Make sure the popup is fully inside the screen
-        # FIXME: It have to be tested with multi screen
+        # FIXME: It has to be tested with multi screen
         wid = self.__quantity.winId()
         window = qt.QWindow.fromWinId(wid)
         screen = window.screen()

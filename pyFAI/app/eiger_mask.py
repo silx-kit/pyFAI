@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "05/09/2023"
 __satus__ = "development"
 
 import os
@@ -77,7 +77,7 @@ def main():
     version = "eiger-mask version %s from %s" % (pyFAI.version, pyFAI.date)
     epilog = None
     if h5py is None:
-        epilog = "Python h5py module is missing. It have to be installed to use this application"
+        epilog = "Python h5py module is missing. It has to be installed to use this application"
     parser = ArgumentParser(description=description, epilog=epilog)
     parser.add_argument("-V", "--version", action='version', version=version)
     parser.add_argument('input_file', help='Input file. Must be an HDF5 file.')

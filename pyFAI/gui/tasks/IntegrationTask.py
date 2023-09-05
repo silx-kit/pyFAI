@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "24/02/2023"
+__date__ = "05/09/2023"
 
 import logging
 import numpy
@@ -1061,7 +1061,7 @@ class IntegrationTask(AbstractCalibrationTask):
         integrationSettings.nPointsAzimuthal().changed.connect(self.__invalidateIntegrationNoReset)
 
     def __fittedGeometryChanged(self):
-        # File have to be saved again
+        # File has to be saved again
         poniFile = self.model().experimentSettingsModel().poniFile()
         with poniFile.lockContext():
             poniFile.setSynchronized(False)

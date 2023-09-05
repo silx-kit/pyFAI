@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 from silx.gui import qt
 
@@ -87,7 +87,7 @@ class OpenClDeviceDialog(qt.QDialog):
 
         if pyopencl is None:
             self._availableButton.setEnabled(False)
-            self._availableButton.setToolTip("PyOpenCL have to be installed to display available devices.")
+            self._availableButton.setToolTip("PyOpenCL has to be installed to display available devices.")
 
     def showEvent(self, event):
         result = qt.QDialog.showEvent(self, event)
