@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "06/09/2023"
 __status__ = "production"
 
 import os
@@ -142,6 +142,23 @@ def configure_parser_arguments(parser):
                         help="rot2 in radians. default: 0", default=None)
     parser.add_argument("--rot3", dest="rot3", type=float,
                         help="rot3 in radians. default: 0", default=None)
+
+    # optimization ranges
+    parser.add_argument("--dist-range", dest="dist_range", type=float, nargs=2,
+                        help="Range (2 values) for sample-detector distance in meter. Default: None", default=None)
+    parser.add_argument("--poni1-range", dest="poni1_range", type=float, nargs=2,
+                        help="Range for  poni1 coordinate in meter. Default: None", default=None)
+    parser.add_argument("--poni2-range", dest="poni2_range", type=float, nargs=2,
+                        help="Range (2 values) for poni2 coordinate in meter. Default: None", default=None)
+    parser.add_argument("--rot1-range", dest="rot1_range", type=float, nargs=2,
+                        help="Range (2 values) for rot1 in radians. default: None", default=None)
+    parser.add_argument("--rot2-range", dest="rot2_range", type=float, nargs=2,
+                        help="Range (2 values) for rot2 in radians. default: None", default=None)
+    parser.add_argument("--rot3-range", dest="rot3_range", type=float, nargs=2,
+                        help="Range (2 values) for rot3 in radians. default: None", default=None)
+    parser.add_argument("--wavelength-range", dest="wavelength_range", type=float, nargs=2,
+                        help="Range (2 values) for wavelength in meters. default: None", default=None)
+
     # Constraints
     parser.add_argument("--fix-wavelength", dest="fix_wavelength",
                         help="fix the wavelength parameter. Default: Activated", default=True, action="store_true")
@@ -457,18 +474,32 @@ def setup_model(model, options):
     constraints = model.geometryConstraintsModel()
     if options.fix_wavelength is not None:
         constraints.wavelength().setFixed(options.fix_wavelength)
+    if options.wavelength_range is not None:
+        constraints.wavelength().setRangeConstraint(min(options.wavelength_range), max(options.wavelength_range))
     if options.fix_dist is not None:
         constraints.distance().setFixed(options.fix_dist)
+    if options.dist_range is not None:
+        constraints.distance().setRangeConstraint(min(options.dist_range), max(options.dist_range))
     if options.fix_poni1 is not None:
         constraints.poni1().setFixed(options.fix_poni1)
+    if options.poni1_range is not None:
+        constraints.poni1().setRangeConstraint(min(options.poni1_range), max(options.poni1_range))
     if options.fix_poni2 is not None:
         constraints.poni2().setFixed(options.fix_poni2)
+    if options.poni2_range is not None:
+        constraints.poni2().setRangeConstraint(min(options.poni2_range), max(options.poni2_range))
     if options.fix_rot1 is not None:
         constraints.rotation1().setFixed(options.fix_rot1)
+    if options.rot1_range is not None:
+        constraints.rotation1().setRangeConstraint(min(options.rot1_range), max(options.rot1_range))
     if options.fix_rot2 is not None:
         constraints.rotation2().setFixed(options.fix_rot2)
+    if options.rot2_range is not None:
+        constraints.rotation2().setRangeConstraint(min(options.rot2_range), max(options.rot2_range))
     if options.fix_rot3 is not None:
         constraints.rotation3().setFixed(options.fix_rot3)
+    if options.rot3_range is not None:
+        constraints.rotation3().setRangeConstraint(min(options.rot3_range), max(options.rot3_range))
 
     integrationSettingsModel = model.integrationSettingsModel()
     npt = None
