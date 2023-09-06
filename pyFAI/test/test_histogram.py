@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2023"
+__date__ = "05/09/2023"
 
 import unittest
 import time
@@ -70,8 +70,7 @@ class TestHistogram1d(unittest.TestCase):
         y, x = numpy.ogrid[:shape[0],:shape[1]]
         tth = numpy.sqrt(x * x + y * y)  # .astype("float32")
         mod = 0.5 + 0.5 * numpy.cos(tth / 12) + 0.25 * numpy.cos(tth / 6) + 0.1 * numpy.cos(tth / 4)
-        # data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
-        data = (numpy.ones(shape) * maxI * mod).astype("uint16")
+        data = (UtilsTest.get_rng().poisson(maxI, shape) * mod).astype("uint16")
         cls.data_sum = data.sum(dtype="float64")
         t0 = time.perf_counter()
         drange = (tth.min(), tth.max() * EPS32)  # works as tth>0
@@ -228,8 +227,8 @@ class TestHistogram2d(unittest.TestCase):
         y, x = numpy.ogrid[:shape[0],:shape[1]]
         tth = numpy.sqrt(x * x + y * y).astype("float32")
         mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
-        # _data = (numpy.random.poisson(cls.maxI, shape) * mod).astype("uint16")
-        data = (numpy.ones(shape) * cls.maxI * mod).astype("uint16")
+        data = (UtilsTest.get_rng().poisson(cls.maxI, shape) * mod).astype("uint16")
+        # data = (numpy.ones(shape) * cls.maxI * mod).astype("uint16")
         cls.data_sum = data.sum(dtype="float64")
         npt = (400, 360)
         chi = numpy.arctan2(y, x).astype("float32")

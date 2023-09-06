@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2022"
+__date__ = "05/09/2023"
 
 import unittest
 import os
@@ -189,7 +189,7 @@ class TestHDF5Writer(unittest.TestCase):
         shape = 1024, 1024
         n = 100
         m = 10  # number of frames in memory
-        data = numpy.random.random((m, shape[0], shape[1])).astype(numpy.float32)
+        data = UtilsTest.get_rng().random((m, shape[0], shape[1])).astype(numpy.float32)
         nmbytes = data.nbytes / 1e6 * n / m
         t0 = time.perf_counter()
         writer = io.HDF5Writer(filename=h5file, hpath="data")
@@ -222,7 +222,7 @@ class TestFabIOWriter(unittest.TestCase):
         shape = 100, 128
         n = 10
         m = 3  # number of frames in memory
-        data = numpy.random.random((m, shape[0], shape[1])).astype(numpy.float32)
+        data = UtilsTest.get_rng().random((m, shape[0], shape[1])).astype(numpy.float32)
         nmbytes = data.nbytes / 1e6 * n / m
         t0 = time.perf_counter()
         writer = io.FabioWriter(extension=".edf")
@@ -251,7 +251,7 @@ class TestSpotWriter(unittest.TestCase):
         detector = pyFAI.detector_factory("pilatus300k")
         self.ai = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector=detector)
         nframes = 100
-        nspots = numpy.random.randint(1, nframes, size=nframes)
+        nspots = UtilsTest.get_rng().uniform(1, nframes, size=nframes).astype(numpy.int64)
         self.spots = [numpy.empty(count, dtype=[("index", numpy.int32),
                                                 ("intensity", numpy.float32),
                                                 ("sigma", numpy.float32),

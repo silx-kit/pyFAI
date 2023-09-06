@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/08/2023"
+__date__ = "05/09/2023"
 
 import unittest
 import sys
@@ -43,6 +43,7 @@ import numpy
 from ..utils.mathutil import cormap
 from ..detectors import Detector
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from .utilstest import UtilsTest
 
 
 class TestErrorModel(unittest.TestCase):
@@ -52,7 +53,7 @@ class TestErrorModel(unittest.TestCase):
         super(TestErrorModel, cls).setUpClass()
         # synthetic dataset
         #fix seed, decrease noise while testing:
-        rng = numpy.random.Generator(numpy.random.PCG64(seed=0))
+        rng = UtilsTest.get_rng()
 
         pix = 100e-6
         shape = (128, 128)

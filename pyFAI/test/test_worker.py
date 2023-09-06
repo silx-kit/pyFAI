@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/02/2023"
+__date__ = "05/09/2023"
 
 import unittest
 import logging
@@ -97,7 +97,15 @@ class MockedAiWriter():
 
 
 class TestWorker(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestWorker, cls).setUpClass()
+        cls.rng = utilstest.UtilsTest.get_rng()
 
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestWorker, cls).tearDownClass()
+        cls.rng = None
     def test_constructor_ai(self):
         ai = AzimuthalIntegrator()
         w = Worker(ai)
@@ -261,10 +269,10 @@ class TestWorker(unittest.TestCase):
     def test_pixelwiseworker(self):
         shape = (5, 7)
         size = numpy.prod(shape)
-        ref = numpy.random.randint(0, 60000, size=size).reshape(shape).astype("uint16")
-        dark = numpy.random.poisson(10, size=size).reshape(shape).astype("uint16")
+        ref = self.rng.uniform(0, 60000, size=size).reshape(shape).astype("uint16")
+        dark = self.rng.poisson(10, size=size).reshape(shape).astype("uint16")
         raw = ref + dark
-        flat = numpy.random.normal(1.0, 0.1, size=size).reshape(shape)
+        flat = self.rng.normal(1.0, 0.1, size=size).reshape(shape)
         signal = ref / flat
         precision = 1e-2
 
@@ -309,7 +317,7 @@ class TestWorker(unittest.TestCase):
                         shapeOut=(1, 100))
 
         self.assertEqual(worker.error_model, "azimuthal", "error model is OK")
-        img = numpy.random.random(ai.detector.shape)
+        img = self.rng.random(ai.detector.shape)
         worker(img)
 
     def test_sigma_clip_legacy(self):
@@ -319,7 +327,7 @@ class TestWorker(unittest.TestCase):
                         extra_options={"thres":2},
                         integrator_name="sigma_clip_legacy",
                         shapeOut=(1, 100))
-        img = numpy.random.random(ai.detector.shape)
+        img = self.rng.random(ai.detector.shape)
         worker(img)
 
 class TestWorkerConfig(unittest.TestCase):
