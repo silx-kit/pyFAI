@@ -1,11 +1,19 @@
 :Author: Jérôme Kieffer
-:Date: 29/08/2023
+:Date: 06/09/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2023.08 30/08/2023
+2023.08 XX/09/2023
+------------------
+- Bug fix release over 2023.08
+- Fix calibrant selection in calib2 (Thanks Valentin)
+- Centralized control of Random Number Generator for tests, to make non-regression test more consistent for CI.
+- Correct behaviour of dynamic mask (was causing systematic crashes)
+- Correct spelling of several messages.
+
+2023.08 30/08/2023 BUGGY, DO NOT USE !!!
 ------------------
 - Minor release, mostly bug-fixes. 87 commits.
 - fix mal-formed headers in 1D ASCII export
