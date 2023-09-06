@@ -4,4 +4,4 @@ Terminal=true
 Exec=pyFAI-calib2
 Name=pyFAI-calib2
 Type=Application
-Icon=doc/source/img/pyFAI-calibrate.png
+Icon=doc/source/img/pyFAI-calib2.png

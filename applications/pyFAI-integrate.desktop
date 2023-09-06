@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=1.0
+Terminal=true
+Exec=diff_map
+Name=diff_map
+Type=Application
+Icon=doc/source/img/pyFAI-diffmap.png
