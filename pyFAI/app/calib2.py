@@ -470,7 +470,7 @@ def setup_model(model, options):
         if geometryFromPoni is not None:
             geometry.setFrom(geometryFromPoni)
 
-    # Constraints TODO
+    # Constraints
     constraints = model.geometryConstraintsModel()
     if options.fix_wavelength is not None:
         constraints.wavelength().setFixed(options.fix_wavelength)
@@ -494,12 +494,12 @@ def setup_model(model, options):
         constraints.rotation1().setRangeConstraint(min(options.rot1_range), max(options.rot1_range))
     if options.fix_rot2 is not None:
         constraints.rotation2().setFixed(options.fix_rot2)
-    if options.wavelength_range is not None:
-        constraints.wavelength().setRangeConstraint(min(options.wavelength_range), max(options.wavelength_range))
+    if options.rot2_range is not None:
+        constraints.rotation2().setRangeConstraint(min(options.rot2_range), max(options.rot2_range))
     if options.fix_rot3 is not None:
         constraints.rotation3().setFixed(options.fix_rot3)
-    if options.wavelength_range is not None:
-        constraints.wavelength().setRangeConstraint(min(options.wavelength_range), max(options.wavelength_range))
+    if options.rot3_range is not None:
+        constraints.rotation3().setRangeConstraint(min(options.rot3_range), max(options.rot3_range))
 
     integrationSettingsModel = model.integrationSettingsModel()
     npt = None
