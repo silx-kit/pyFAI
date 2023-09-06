@@ -32,14 +32,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 import unittest
 import numpy
 import logging
-
 logger = logging.getLogger(__name__)
 
+from .utilstest import UtilsTest
 from ..massif import Massif
 
 
@@ -49,7 +49,7 @@ class TestMassif(unittest.TestCase):
     def setUpClass(cls):
         super(TestMassif, cls).setUpClass()
         cls.shape = (100, 100)
-        cls.image = numpy.random.poisson(10, cls.shape)
+        cls.image = UtilsTest.get_rng().poisson(10, cls.shape)
         cls.mask = numpy.zeros(cls.shape, dtype=numpy.int8)
         cls.mask[48:52, :] = 1
         cls.mask[:, 48:52] = 1

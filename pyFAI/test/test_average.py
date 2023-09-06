@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 import unittest
 import numpy
@@ -52,13 +52,15 @@ logger = logging.getLogger(__name__)
 
 class TestAverage(unittest.TestCase):
 
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.unbinned = numpy.random.random((64, 32))
-        self.dark = self.unbinned.astype("float32")
-        self.flat = 1 + numpy.random.random((64, 32))
-        self.raw = self.flat + self.dark
-        self.tmp_file = os.path.join(UtilsTest.tempdir, "testUtils_average.edf")
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestAverage, cls).setUpClass()
+        cls.rng = UtilsTest.get_rng()
+        cls.unbinned = cls.rng.random((64, 32))
+        cls.dark = cls.unbinned.astype("float32")
+        cls.flat = 1 + cls.rng.random((64, 32))
+        cls.raw = cls.flat + cls.dark
+        cls.tmp_file = os.path.join(UtilsTest.tempdir, "testUtils_average.edf")
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -89,11 +91,11 @@ class TestAverage(unittest.TestCase):
     def test_quantile(self):
         shape = (100, 100)
         dtype = numpy.float32
-        image1 = numpy.random.random(shape).astype(dtype)
-        image2 = numpy.random.random(shape).astype(dtype)
+        image1 = self.rng.random(shape).astype(dtype)
+        image2 = self.rng.random(shape).astype(dtype)
         image3 = numpy.zeros(shape, dtype=dtype)
         image4 = numpy.ones(shape, dtype=dtype)
-        image5 = numpy.random.random(shape).astype(dtype)
+        image5 = self.rng.random(shape).astype(dtype)
         expected = (image1 + image2 + image5) / 3.0
         result = average.average_images(
             [image1, image2, image3, image4, image5],
@@ -174,7 +176,7 @@ class TestAverage(unittest.TestCase):
     def test_writed_properties(self):
         writer = average.MultiFilesAverageWriter("foo", "edf", dry_run=True)
         algorithm = average.AverageDarkFilter(filter_name="quantiles", cut_off=None, quantiles=(0.2, 0.8))
-        image1 = numpy.random.random((1, 1)).astype(numpy.float32)
+        image1 = self.rng.random((1, 1)).astype(numpy.float32)
 
         averager = average.Average()
         averager.set_writer(writer)

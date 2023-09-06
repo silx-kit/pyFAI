@@ -262,6 +262,16 @@ class CalibrantSelector2(qt.QComboBox):
         view.sigLoadFileRequested.connect(self.__loadFileRequested)
         self.setView(view)
 
+        self.activated.connect(self.__calibrantWasSelected)
+
+    def __calibrantWasSelected(self):
+        index = self.currentIndex()
+        if index == -1:
+            calibrant = None
+        else:
+            calibrant = self.itemData(index, role=CalibrantItemModel.CALIBRANT_ROLE)
+        self.__calibrantModel.setCalibrant(calibrant)
+
     def __modelChanged(self):
         calibrant = self.__calibrantModel.calibrant()
         model = self.model()

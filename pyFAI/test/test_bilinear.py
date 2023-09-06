@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 import unittest
 import numpy
@@ -44,7 +44,15 @@ from ..ext import bilinear
 
 class TestBilinear(unittest.TestCase):
     """basic maximum search test"""
-    N = 10000
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestBilinear, cls).setUpClass()
+        cls.N = 10000
+        cls.rng = UtilsTest.get_rng()
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestBilinear, cls).tearDownClass()
+        cls.rng = None
 
     def test_max_search_round(self):
         """test maximum search using random points: maximum is at the pixel center"""
@@ -55,8 +63,9 @@ class TestBilinear(unittest.TestCase):
         gg = numpy.outer(ga, gb)
         b = bilinear.Bilinear(gg)
         ok = 0
+
         for _s in range(self.N):
-            i, j = numpy.random.randint(100), numpy.random.randint(100)
+            i, j = int(self.rng.uniform(0, 100)), int(self.rng.uniform(0, 100))
             k, l = b.local_maxi((i, j))
             if abs(k - 40) > 1e-4 or abs(l - 60) > 1e-4:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
@@ -76,7 +85,7 @@ class TestBilinear(unittest.TestCase):
         b = bilinear.Bilinear(gg)
         ok = 0
         for _s in range(self.N):
-            i, j = numpy.random.randint(100), numpy.random.randint(100)
+            i, j = int(self.rng.uniform(0,100)), int(self.rng.uniform(0,100))
             k, l = b.local_maxi((i, j))
             if abs(k - 40.5) > 0.5 or abs(l - 60.5) > 0.5:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)

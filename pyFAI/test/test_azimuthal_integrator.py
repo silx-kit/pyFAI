@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/07/2023"
+__date__ = "05/09/2023"
 
 import unittest
 import os
@@ -518,8 +518,9 @@ class TestSetter(unittest.TestCase):
     def setUp(self):
         self.ai = AzimuthalIntegrator()
         shape = (10, 15)
-        self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
-        self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
+        rng = UtilsTest.get_rng()
+        self.rnd1 = rng.random(shape).astype(numpy.float32)
+        self.rnd2 = rng.random(shape).astype(numpy.float32)
 
         fd, self.edf1 = UtilsTest.tempfile(".edf", "testAI1", dir=__class__.__name__)
         os.close(fd)
@@ -543,7 +544,7 @@ class TestIntergrationNextGeneration(unittest.TestCase):
 
     def test_histo(self):
         det = detector_factory("Pilatus100k")
-        data = numpy.random.random(det.shape)
+        data = UtilsTest.get_rng().random(det.shape)
         ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
 
         method = ("no", "histogram", "python")
