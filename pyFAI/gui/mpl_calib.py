@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/04/2022"
+__date__ = "07/09/2023"
 __status__ = "development"
 
 import logging
@@ -311,7 +311,11 @@ class MplCalibWidget:
         if self.fig and label in self.points:
             gpt = self.points[label]
             if gpt.annotate in self.ax.texts:
-                self.ax.texts.remove(gpt.annotate)
+                try:
+                    gpt.annotate.remove()
+                except:
+                    # works for matplotlib <3.7
+                    self.ax.texts.remove(gpt.annotate)
             for plot in gpt.plot:
                     if plot in self.ax.lines:
                         self.ax.lines.remove(plot)
