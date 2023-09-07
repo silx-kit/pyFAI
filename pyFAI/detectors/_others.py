@@ -145,7 +145,8 @@ class Basler(Detector):
 
         :return: dict with param for serialization
         """
-        return {"pixel": self._pixel1}
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2}
 
     def set_config(self, config):
         """Sets the configuration of the detector.
@@ -165,10 +166,11 @@ class Basler(Detector):
                 logger.error("Unable to parse config %s with JSON: %s, %s",
                              config, err)
                 raise err
-        pixel = config.get("pixel")
-        if pixel:
-            self.set_pixel1(pixel)
-            self.set_pixel2(pixel)
+        pixel1 = config.get("pixel1")
+        pixel2 = config.get("pixel2")
+        if pixel1 or pixel2:
+            self.set_pixel1(pixel1 or pixel2)
+            self.set_pixel2(pixel2 or pixel1)
         return self
 
 
