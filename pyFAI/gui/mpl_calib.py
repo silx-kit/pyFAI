@@ -245,7 +245,11 @@ class MplCalibWidget:
             logger.warning("No diffraction image available => not showing the contour")
             return
         # clean previous contour plots:
-        self.ax.collections.clear()
+        try:
+            while len(self.ax.collections) > 0:
+                self.ax.collections[0].remove()
+        except:  # matplotlib <3.7
+            self.ax.collections.clear()
         if data is not None:
             try:
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
