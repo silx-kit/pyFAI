@@ -53,8 +53,8 @@ class _ADSC(Detector):
     """
     MANUFACTURER = "ADSC"
 
-    def __init__(self, pixel1=51e-6, pixel2=51e-6):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=51e-6, pixel2=51e-6, max_shape=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
