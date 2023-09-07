@@ -227,5 +227,5 @@ class HF_9M(_ADSC):
     MAX_SHAPE = (3072, 3072)
     aliases = ["HF-9.4M"]
 
-    def __init__(self, pixel1=150e-6, pixel2=150e-6):
+    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None):
         _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
