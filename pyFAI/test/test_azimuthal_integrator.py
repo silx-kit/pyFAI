@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2022"
+__date__ = "05/09/2023"
 
 import unittest
 import os
@@ -45,41 +45,13 @@ import gc
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..detectors import Detector
+from ..method_registry import IntegrationMethod
+from ..containers import ErrorModel
+from ..detectors import Detector, detector_factory
 if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
-from pyFAI import units, detector_factory
+from pyFAI import units
 from ..utils import mathutil
-
-
-@unittest.skipIf(UtilsTest.low_mem, "test using >500M")
-class TestAzimPilatus(unittest.TestCase):
-    """This test uses a lot of memory"""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.img = UtilsTest.getimage("Pilatus6M.cbf")
-
-    @classmethod
-    def tearDownClass(cls):
-        super(TestAzimPilatus, cls).tearDownClass()
-        cls.img = None
-
-    def setUp(self):
-        """Download files"""
-        self.data = fabio.open(self.img).data
-        self.ai = AzimuthalIntegrator(detector="pilatus6m")
-        self.ai.setFit2D(300, 1326, 1303)
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.data = self.ai = None
-
-    def test_separate(self):
-        bragg, amorphous = self.ai.separate(self.data)
-        self.assertTrue(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
-        self.assertTrue(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
-        self.ai.reset()
 
 
 class TestAzimHalfFrelon(unittest.TestCase):
@@ -243,7 +215,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                               len(self.fit2d),
                                               correctSolidAngle=False,
                                               unit="2th_deg",
-                                              method=("no", "histogram", "numpy"))
+                                              method=("no", "histogram", "python"))
         tth_cy, I_cy = self.ai.integrate1d_ng(self.__class__.data,
                                               len(self.fit2d),
                                               correctSolidAngle=False,
@@ -290,8 +262,6 @@ class TestAzimHalfFrelon(unittest.TestCase):
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_ocl_csr")
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d median Rwp = %.3f", rwp)
-#        print("cython", ref.intensity.min(), ref.intensity.max(), ref.intensity.mean(), ref.intensity.std())
-#        print("opencl", ocl.intensity.min(), ocl.intensity.max(), ocl.intensity.mean(), ocl.intensity.std())
         self.assertLess(rwp, 1, "Rwp medfilt1d Cython/OpenCL: %.3f" % rwp)
 
         ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_csr", percentile=(20, 80))
@@ -363,7 +333,7 @@ class TestFlatimage(unittest.TestCase):
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
             fig, ax = pylab.subplots()
-            fig.suptitle('cacking of a flat image: SplitBBox')
+            fig.suptitle('caking of a flat image: SplitBBox')
             ax.imshow(I, interpolation="nearest")
             fig.show()
             input("Press enter to quit")
@@ -375,6 +345,15 @@ class TestFlatimage(unittest.TestCase):
         "This test can be rather noisy on 32bits platforms !!!"
         res = self.ai.guess_max_bins(unit="2th_deg")
         self.assertEqual(res, 240, "the number of bins found is correct (240)")
+
+    def test_guess_rad(self):
+        res = self.ai.guess_npt_rad()
+        self.assertEqual(res, 142, "the number of bins found is correct (142)")
+
+    def test_guess_polarization(self):
+        img = fabio.open(UtilsTest.getimage("Eiger4M.edf")).data
+        ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Eiger4M.poni"))
+        self.assertLess(abs(ai.guess_polarization(img) - 0.5), 0.1)
 
 
 class TestSaxs(unittest.TestCase):
@@ -452,7 +431,7 @@ class TestSaxs(unittest.TestCase):
         ai = AzimuthalIntegrator(detector="Pilatus100k")
         ai.wavelength = 1e-10
         methods = ["cython", "numpy", "lut", "csr", "splitpixel"]
-        if UtilsTest.opencl:
+        if UtilsTest.opencl and os.name != 'nt':
             methods.extend(["ocl_lut", "ocl_csr"])
 
         ref1d = {}
@@ -502,14 +481,46 @@ class TestSaxs(unittest.TestCase):
         res_azimuthal = ai.integrate1d_legacy(img, 1000, mask=mask, error_model="azimuthal")
         self.assertGreater(res_azimuthal.sigma.min(), 0, "Azimuthal error are positive")
 
+    def test_empty(self):
+        """Non regression about #1760"""
+        ai = AzimuthalIntegrator(detector="Pilatus100k", wavelength=1e-10)
+        img = numpy.empty(ai.detector.shape)
+        ref = ai.empty
+        target = -42
+        self.assertNotEqual(ref, target, "buggy test !")
+        for m in ("LUT", "CSR", "CSC"):
+            ai.integrate1d(img, 100, method=("no", m, "cython"))
+        for k, v in ai.engines.items():
+            self.assertEqual(v.engine.empty, ref, k)
+        ai.empty = target
+        for k, v in ai.engines.items():
+            self.assertEqual(v.engine.empty, target, k)
+        ai.empty = ref
+        for k, v in ai.engines.items():
+            self.assertEqual(v.engine.empty, ref, k)
+
+    def test_empty_csr(self):
+        ai = AzimuthalIntegrator(detector="Pilatus100k", wavelength=1e-10)
+        with self.assertLogs('pyFAI.ext.sparse_builder', level='WARNING') as cm:
+            ai.setup_sparse_integrator(shape=ai.detector.shape, npt=100,
+                                       pos0_range=(90, 100),
+                                       unit="2th_deg",
+                                       split='no',
+                                       algo='CSR',
+                                       empty=None,
+                                       scale=True)
+            self.assertTrue(cm.output[0].startswith('WARNING:pyFAI.ext.sparse_builder:Sparse matrix is empty. Expect errors or non-sense results!'),
+                            "Actually emits the expected warning")
+
 
 class TestSetter(unittest.TestCase):
 
     def setUp(self):
         self.ai = AzimuthalIntegrator()
         shape = (10, 15)
-        self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
-        self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
+        rng = UtilsTest.get_rng()
+        self.rnd1 = rng.random(shape).astype(numpy.float32)
+        self.rnd2 = rng.random(shape).astype(numpy.float32)
 
         fd, self.edf1 = UtilsTest.tempfile(".edf", "testAI1", dir=__class__.__name__)
         os.close(fd)
@@ -533,7 +544,7 @@ class TestIntergrationNextGeneration(unittest.TestCase):
 
     def test_histo(self):
         det = detector_factory("Pilatus100k")
-        data = numpy.random.random(det.shape)
+        data = UtilsTest.get_rng().random(det.shape)
         ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
 
         method = ("no", "histogram", "python")
@@ -591,27 +602,26 @@ class TestRange(unittest.TestCase):
     def tearDownClass(cls):
         cls.unit = cls.azim_range = cls.rad_range = cls.ai = cls.img = None
 
-    def test_medfilt(self):
+    def tearDown(self) -> None:
         self.ai.reset()
+
+    def test_medfilt(self):
         res = self.ai.medfilt1d(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
     def test_sigma_clip_legacy(self):
-        self.ai.reset()
         res = self.ai._sigma_clip_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
     def test_sigma_clip_ng(self):
-        self.ai.reset()
-
         for case in ({"error_model":"poisson", "max_iter":3, "thres":6},
                      {"error_model":"azimuthal", "max_iter":3, "thres":0},
                      ):
             results = {}
-            for impl in ('python', # Python is already fixed, please fix the 2 others
-                         'cython', 
+            for impl in ('python',  # Python is already fixed, please fix the 2 others
+                         'cython',
                          # 'opencl' #TODO
                          ):
                 try:
@@ -629,17 +639,62 @@ class TestRange(unittest.TestCase):
             ref = results['python']
             for what, tol in (("radial", 1e-8),
                               ("count", 1),
-                              #("intensity", 1e-6),
-                              #("sigma", 1e-6),
+                              # ("intensity", 1e-6),
+                              # ("sigma", 1e-6),
                               ("sum_normalization", 1e-1),
                               ("count", 1e-1)):
                 for impl in results:
                     obt = results[impl]
-                    print(impl, what, obt.__getattribute__(what).max(),
-                    abs(ref.__getattribute__(what) - obt.__getattribute__(what)).max(),
-                    abs((ref.__getattribute__(what) - obt.__getattribute__(what)) / ref.__getattribute__(what)).max())
+                    # print(impl, what, obt.__getattribute__(what).max(),
+                    # abs(ref.__getattribute__(what) - obt.__getattribute__(what)).max(),
+                    # abs((ref.__getattribute__(what) - obt.__getattribute__(what)) / ref.__getattribute__(what)).max())
                     self.assertTrue(numpy.allclose(obt.__getattribute__(what), ref.__getattribute__(what), atol=10, rtol=tol),
                                     msg=f"Sigma clipping matches for impl {impl} on paramter {what} with error_model {case['error_model']}")
+
+    def test_variance_2d(self, error_model="poisson"):
+        """This test checks that the variance is actually calculated and positive
+        for all integration methods available"""
+
+        # def print_mem():
+        #     try:
+        #         import psutil
+        #     except:
+        #         logger.error("psutil missing")
+        #     else:
+        #         logger.warning("Memory consumption: %s",psutil.virtual_memory())
+        ai = AzimuthalIntegrator.sload(self.ai)  # make an empty copy and work on just one module of the detector (much faster)
+        ai.detector = detector_factory("Pilatus_100k")
+        img = self.img[:ai.detector.shape[0],:ai.detector.shape[1]]
+
+        methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=2)}
+        logger.info("methods investigated" + "\n".join([str(i) for i in methods.values()]))
+
+        error_model = ErrorModel.parse(error_model)
+        if error_model == ErrorModel.VARIANCE:
+            variance = numpy.maximum(1, self.img)
+        else:
+            variance = None
+        failed = []
+        for m in methods.values():
+            res = ai.integrate2d_ng(img, 11, 13, variance=variance, error_model=error_model, method=m)
+            # ai.reset()
+            v = res.sum_variance
+            if v.min() < 0:
+                failed.append(f"min variance is positive or null with {res.method}, error model {error_model.as_str()}")
+                # print_mem()
+            if v.max() <= 0:
+                failed.append(f"max variance is strictly positive with {res.method}, error model {error_model.as_str()}")
+                # print_mem()
+            s = res.sigma
+            if s.min() < 0:
+                failed.append(f"min sigma is positive or null with {res.method}, error model {error_model.as_str()}")
+                # print_mem()
+            if s.max() <= 0:
+                failed.append(f"max sigma is strictly positive with {res.method}, error model {error_model.as_str()}")
+                # print_mem()
+        for err_msg in failed:
+            logger.error(err_msg)
+        self.assertEqual(len(failed), 0, f"Number of failed tests in test_variance_2d: {len(failed)}")
 
 
 def suite():
@@ -648,8 +703,6 @@ def suite():
     testsuite.addTest(loader(TestAzimHalfFrelon))
     testsuite.addTest(loader(TestFlatimage))
     testsuite.addTest(loader(TestSetter))
-    # Consumes a lot of memory
-    # testsuite.addTest(loader(TestAzimPilatus))
     testsuite.addTest(loader(TestSaxs))
     testsuite.addTest(loader(TestIntergrationNextGeneration))
     testsuite.addTest(loader(TestRange))

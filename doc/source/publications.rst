@@ -9,7 +9,7 @@ Publications about pyFAI
 * *PyFAI, a versatile library for azimuthal regrouping*,
   J Kieffer & D Karkoulis;
   **Journal of Physics: Conference Series** (2013) 425 (20), pp202012
-  Initial publication where the usage of GPU is envisaged to overcome 
+  Initial publication where the usage of GPU is envisaged to overcome
   the speed limitation of azimuthal integration.
 
 * *PyFAI: a Python library for high performance azimuthal integration on GPU*
@@ -29,7 +29,7 @@ Publications about pyFAI
   0.11 and further developed in v0.12, v0.13 & v0.14.
 
 * *New tools for calibrating diffraction setups*;
-  J. Kieffer, V. Valls, N. Blanc and C. Hennig; 
+  J. Kieffer, V. Valls, N. Blanc and C. Hennig;
   **Journal of Synchrotron Radiation** (2020) 27 (2), 558-566;
   Describes the new integration scheme, the new user interface and the calibration of goniometers.
 

@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2022"
+__date__ = "16/05/2023"
 __status__ = "development"
 
 import threading
@@ -254,7 +254,6 @@ class Worker(object):
         self.mask_image = None
         self.subdir = ""
         self.extension = None
-        self.error_model = None
         self.needs_reset = True
         self.output = "numpy"  # exports as numpy array by default
         self.shape = shapeIn
@@ -264,6 +263,7 @@ class Worker(object):
         self.azimuth_range = None
         self.safe = True
         self.extra_options = {} if extra_options is None else extra_options.copy()
+        self.error_model = self.extra_options.get("error_model")
 
     def __repr__(self):
         """
@@ -351,7 +351,6 @@ class Worker(object):
         kwarg["correctSolidAngle"] = self.correct_solid_angle
         kwarg["safe"] = self.safe
         kwarg["variance"] = variance
-
         if self.error_model:
             kwarg["error_model"] = self.error_model
 
@@ -380,7 +379,7 @@ class Worker(object):
                 self.radial = integrated_result.radial
                 self.azimuthal = integrated_result.azimuthal
                 result = integrated_result.intensity
-                if variance is not None:
+                if integrated_result.sigma is not None:
                     error = integrated_result.sigma
             else:
                 self.radial = integrated_result.radial
@@ -389,11 +388,11 @@ class Worker(object):
 
         except Exception as err:
             logger.debug("Backtrace", exc_info=True)
-            err2 = ["error in integration do_2d: %s" % self.do_2D(),
+            err2 = [f"error in integration do_2d: {self.do_2D()}",
                     str(err.__class__.__name__),
                     str(err),
-                    "data.shape: %s" % (data.shape,),
-                    "data.size: %s" % data.size,
+                    f"data.shape: {data.shape}",
+                    f"data.size: {data.size}",
                     "ai:",
                     str(self.ai),
                     "method:",
@@ -465,6 +464,7 @@ class Worker(object):
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
                 self.ai.detector.mask = data
+                self.mask_image = filename
 
         # Do it here while we have to store metadata
         filename = config.pop("dark_current", "")
@@ -679,10 +679,10 @@ class Worker(object):
     def validate_config(config, raise_exception=RuntimeError):
         """
         Validates a configuration for any inconsitencies
-        
+
         :param config: dict contraining the configuration
         :param raise_exception: Exception class to raise when configuration is not consistant
-        :return: None or reason as a string when raise_exception is None, else raise the given exception   
+        :return: None or reason as a string when raise_exception is None, else raise the given exception
         """
         reason = None
         if not config.get("dist"):

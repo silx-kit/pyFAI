@@ -402,7 +402,7 @@ class RingCalibration(object):
             from ...ext.bilinear import Bilinear
             bili = Bilinear(-tth_array)
             y, x = bili.local_maxi((y,x))
-            
+
             tth = self.__geoRef.tth(numpy.array([y]), numpy.array([x]))[0]
             if tth >=epsilon:
                 return None

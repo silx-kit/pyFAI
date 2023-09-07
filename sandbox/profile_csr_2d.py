@@ -62,4 +62,3 @@ plot(obt.ravel(), label="ocl_csr")
 legend()
 show()
 six.moves.input()
-

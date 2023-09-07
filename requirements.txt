@@ -1,15 +1,16 @@
-setuptools<60
+wheel
+meson-python
+ninja
 numpy
-cython
+cython >=0.29.31
 fabio
 scipy
 matplotlib
 numexpr
 h5py
-silx #>=1.1
+silx >=1.1
 PyOpenGL
 PyQt5
 hdf5plugin
-wheel
 transformations
 nbsphinx

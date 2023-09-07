@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -27,45 +27,41 @@
 
 """Common cdef constants and functions for preprocessing
 
-Some are defined in the associated header file .pxd 
+Some are defined in the associated header file .pxd
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/01/2022"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
 
-# Imports at the Python level 
+# Imports at the Python level
 import cython
 import numpy
 import sys
-from libc.math cimport ceil, floor, copysign
+from libc.math cimport ceil, floor, copysign, pow, fabs, M_PI, sqrt, log, NAN
+
+include "math_common.pxi"
 
 # Work around for issue similar to : https://github.com/pandas-dev/pandas/issues/16358
 
-_numpy_1_12_py2_bug = ((sys.version_info.major == 2) and 
+_numpy_1_12_py2_bug = ((sys.version_info.major == 2) and
                        ([1, 12] >= [int(i) for i in numpy.version.version.split(".", 2)[:2]]))
 
 # Imports at the C level
 from .isnan cimport isnan
-from cython cimport floating
-from libc.math cimport fabs, M_PI, sqrt, log, NAN
-
-from .shared_types cimport int8_t, uint8_t, int16_t, uint16_t, \
-                           int32_t, uint32_t, int64_t, uint64_t,\
-                           float32_t, float64_t
 
 # How position are stored
 ctypedef float64_t position_t
 position_d = numpy.float64
 
-# How weights or data are stored 
+# How weights or data are stored
 ctypedef float32_t data_t
 data_d = numpy.float32
 
-# how data are accumulated 
+# how data are accumulated
 ctypedef float64_t acc_t
 acc_d = numpy.float64
 
@@ -100,36 +96,11 @@ if _numpy_1_12_py2_bug:
                           (b'variance', acc_d),
                           (b'norm', acc_d),
                           (b'count', acc_d)])
-else: 
+else:
     prop_d = numpy.dtype([('signal', acc_d),
                           ('variance', acc_d),
                           ('norm', acc_d),
                          ('count', acc_d)])
-
-ctypedef fused any_int_t:
-    uint8_t
-    uint16_t
-    uint32_t
-    uint64_t
-    int8_t
-    int16_t
-    int32_t
-    int64_t
-
-ctypedef fused any_t:
-    int
-    long
-    uint8_t
-    uint16_t
-    uint32_t
-    uint64_t
-    int8_t
-    int16_t
-    int32_t
-    int64_t
-    float32_t
-    float64_t
-
 
 cdef:
     struct preproc_t:
@@ -137,7 +108,7 @@ cdef:
         data_t variance
         data_t norm
         data_t count
- 
+
     float pi = <float> M_PI
     double twopi = 2.0 * M_PI
     float piover2 = <float> (pi * 0.5)
@@ -147,12 +118,12 @@ cdef:
 
 
 from collections import namedtuple
-from ..containers import Integrate1dtpl, Integrate2dtpl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 Boundaries = namedtuple("Boundaries", "min0 max0 min1 max1")
 
 @cython.cdivision(True)
-cdef floating  get_bin_number(floating x0, floating pos0_min, floating delta) nogil:
+cdef inline floating get_bin_number(floating x0, floating pos0_min, floating delta) noexcept nogil:
     """
     calculate the bin number for any point (as floating)
 
@@ -165,14 +136,14 @@ cdef floating  get_bin_number(floating x0, floating pos0_min, floating delta) no
 
 
 @cython.cdivision(True)
-cdef inline floating calc_upper_bound(floating maximum_value) nogil:
-    """Calculate the upper_bound for an histogram, 
+cdef inline floating calc_upper_bound(floating maximum_value) noexcept nogil:
+    """Calculate the upper_bound for an histogram,
     given the maximum value of all the data.
-    
+
     :param maximum_value: maximum value over all elements
     :return: the smallest 32 bit float greater than the maximum
     """
-    return maximum_value * EPS32 if maximum_value > 0 else maximum_value / EPS32  
+    return maximum_value * EPS32 if maximum_value > 0 else maximum_value / EPS32
 
 
 cdef inline bint preproc_value_inplace(preproc_t* result,
@@ -188,30 +159,33 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
                                        floating delta_dummy=0.0,
                                        bint check_dummy=False,
                                        floating normalization_factor=1.0,
-                                       floating dark_variance=0.0) nogil:
+                                       floating dark_variance=0.0,
+                                       int error_model=1) noexcept nogil:
     """This is a Function in the C-space that performs the preprocessing
-    for one data point 
-    
-    
+    for one data point
+
+
     :param result: the container for the result, i.e. output which contains (signal, variance, normalisation, count)
     :param data and variance: the raw value and the associated variance
-    :param dark and dark_variance: the dark-noise and the associated variance to be subtracted (signal) or added (variance)  
+    :param dark and dark_variance: the dark-noise and the associated variance to be subtracted (signal) or added (variance)
     :param flat, solidangle, polarization, absorption, normalization_factor: all normalization to be multiplied togeather
-    :param dummy, delta_dummy, mask,check_dummy: controls the masking of the pixel 
-    :return: isvalid, i.e. True if the pixel is worth further processing 
+    :param dummy, delta_dummy, mask,check_dummy: controls the masking of the pixel
+    :param normalization_factor: multiply normalization with this value
+    :param error_model: 0 to diable, 1 for variance, 2 for Poisson model, ...
+    :return: isvalid, i.e. True if the pixel is worth further processing
 
     where the result is calculated this way:
     * signal = data-dark
-    * variance = variance + dark_variance 
+    * variance = variance + dark_variance
     * norm = prod(all normalization)
-    
+
     unless data are invalid (mask, nan, ...) where the result is all null.
     """
     cdef:
         floating signal, norm, count
         bint is_valid
 
-    is_valid = (not isnan(data)) and (mask == 0) 
+    is_valid = (not isnan(data)) and (mask == 0)
     if is_valid and check_dummy:
         if delta_dummy == 0.0:
             is_valid = (data != dummy)
@@ -226,6 +200,9 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
 
     if is_valid:
         # Do not use "/=" as they mean reduction for cython
+        if error_model==2: # Poisson error-model:
+            variance = max(1.0, data)
+
         if dark:
             signal = data - dark
             if dark_variance:
@@ -233,7 +210,7 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
         else:
             signal = data
         norm = normalization_factor * flat * polarization * solidangle * absorption
-        
+
         if (isnan(signal) or isnan(norm) or isnan(variance) or (norm == 0)):
             signal = 0.0
             variance = 0.0
@@ -258,19 +235,22 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
 cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
                                        int bin,
                                        preproc_t value,
-                                       double weight=1.0) nogil:
-    """Update a 1D array at given position with the proper values 
-    
+                                       double weight=1.0) noexcept nogil:
+    """Update a 1D array at given position with the proper values
+
     :param out_data: output 1D+(,4) accumulator
     :param bin: in which bin assign this data
     :param value: 4-uplet with (signal, variance, nomalisation, count)
-    :param weight: weight associated with this value 
+    :param weight: weight associated with this value
     :return: Nothing
     """
+    cdef double w2 = weight * weight
     out_data[bin, 0] += value.signal * weight
-    out_data[bin, 1] += value.variance * weight * weight  # Important for variance propagation
+    out_data[bin, 1] += value.variance * w2  # Important for variance propagation
     out_data[bin, 2] += value.norm * weight
     out_data[bin, 3] += value.count * weight
+    # if out_data.shape[1] == 5: #Σ c²·ω²
+    out_data[bin, 4] += value.norm * value.norm * w2
 
 
 @cython.boundscheck(False)
@@ -278,18 +258,21 @@ cdef inline void update_2d_accumulator(acc_t[:, :, ::1] out_data,
                                        int bin0,
                                        int bin1,
                                        preproc_t value,
-                                       double weight=1.0) nogil:
-    """Update a 2D array at given position with the proper values 
-    
+                                       double weight=1.0) noexcept nogil:
+    """Update a 2D array at given position with the proper values
+
     :param out_data: 2D+1 accumulator
-    :param bin0, bin1: where to assign data 
+    :param bin0, bin1: where to assign data
     :return: Nothing
     """
+    cdef double w2 = weight * weight
     out_data[bin0, bin1, 0] += value.signal * weight
-    out_data[bin0, bin1, 1] += value.variance * weight * weight  # Important for variance propagation
+    out_data[bin0, bin1, 1] += value.variance * w2  # Important for variance propagation
     out_data[bin0, bin1, 2] += value.norm * weight
     out_data[bin0, bin1, 3] += value.count * weight
-    
+    # if out_data.shape[2] == 5: #Σ c²·ω²
+    out_data[bin0, bin1, 4] += value.norm * value.norm * w2 # used to calculate the standard deviation
+
 
 cdef inline floating area4p(floating a0,
                             floating a1,
@@ -298,14 +281,14 @@ cdef inline floating area4p(floating a0,
                             floating c0,
                             floating c1,
                             floating d0,
-                            floating d1) nogil:
+                            floating d1) noexcept nogil:
     """
     Calculate the _APPROXIMATE_ area of the ABCD considering the parallelogram formula with 4 with corners:
     A(a0,a1)
     B(b0,b1)
     C(c0,c1)
     D(d0,d1)
-    
+
     :return: approximative area 1/2 * (AC ^ BD)
     """
     return 0.5 * ((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0))
@@ -317,41 +300,41 @@ cdef inline floating area4(floating a0,
                            floating c0,
                            floating c1,
                            floating d0,
-                           floating d1) nogil:
+                           floating d1) noexcept nogil:
     """
     Calculate the area of the ABCD polygon with 4 with corners:
     A(a0,a1)
     B(b0,b1)
     C(c0,c1)
     D(d0,d1)
-    
+
     see http://villemin.gerard.free.fr/GeomLAV/Carre/QuadAire.htm
-    
+
     :return: area, i.e. a complicated formule, not 1/2 * (AC ^ BD)
     """
     cdef floating a, b, c, d, p, q
-    
+
     a = sqrt((b1-a1)**2 + (b0-a0)**2) # AB
     b = sqrt((b1-c1)**2 + (b0-c0)**2) # BC
     c = sqrt((c1-d1)**2 + (c0-d0)**2) # CD
     d = sqrt((d1-a1)**2 + (d0-a0)**2) # DA
-    p = sqrt((c1-a1)**2 + (c0-a0)**2) # AC       
+    p = sqrt((c1-a1)**2 + (c0-a0)**2) # AC
     q = sqrt((b1-d1)**2 + (b0-d0)**2) # BD
     return 0.25 * sqrt(4*p*p*q*q - (b*b+d*d-a*a-c*c)**2)
 
 def _sp_area4(floating a0, floating a1, floating b0, floating b1, floating c0, floating c1, floating d0, floating d1):
     return area4(a0, a1, b0, b1, c0, c1, d0, d1)
 
-cdef inline position_t _recenter_helper(position_t azim, bint chiDiscAtPi)nogil:
+cdef inline position_t _recenter_helper(position_t azim, bint chiDiscAtPi) noexcept nogil:
     """Helper function
     """
     if (chiDiscAtPi and azim<0) or (not chiDiscAtPi and azim<pi):
         return azim + twopi
     else:
         return azim
-    
-    
-cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nogil:
+
+
+cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) noexcept nogil:
     cdef position_t a0, a1, b0, b1, c0, c1, d0, d1, center1, area, hi
     a0 = pixel[0, 0]
     a1 = pixel[0, 1]
@@ -381,21 +364,22 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) nog
         pixel[3, 1] = d1
         area = area4p(a0, a1, b0, b1, c0, c1, d0, d1)
     return area
+
 def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
-    """This function checks the pixel to be on the azimuthal discontinuity 
-    via the sign of its algebric area and recenters the corner coordinates in a 
-    consistent manner to have all azimuthal coordinate in 
-    
+    """This function checks the pixel to be on the azimuthal discontinuity
+    via the sign of its algebric area and recenters the corner coordinates in a
+    consistent manner to have all azimuthal coordinate in
+
     Nota: the returned area is negative since the positive area indicate the pixel is on the discontinuity.
-    
-    :param pixel: 4x2 array with radius, azimuth for the 4 corners. MODIFIED IN PLACE !!! 
+
+    :param pixel: 4x2 array with radius, azimuth for the 4 corners. MODIFIED IN PLACE !!!
     :param chiDiscAtPi: set to 0 to indicate the range goes from 0-2π instead of the default -π:π
     :return: signed area (approximate & negative)
-    """  
+    """
     return _recenter(pixel, chiDiscAtPi)
 
 
-cdef inline any_t _clip(any_t value, any_t min_val, any_t max_val) nogil:
+cdef inline any_t _clip(any_t value, any_t min_val, any_t max_val) noexcept nogil:
     "Limits the value to bounds"
     if value < min_val:
         return min_val
@@ -403,50 +387,54 @@ cdef inline any_t _clip(any_t value, any_t min_val, any_t max_val) nogil:
         return max_val
     else:
         return value
+
 def clip(value,  min_val, int max_val):
     """Limits the value to bounds
-    
+
     :param value: the value to clip
     :param min_value: the lower bound
     :param max_value: the upper bound
     :return: clipped value in the requested range
-    
+
     """
-    return _clip(<float64_t>value, <float64_t>min_val, <float64_t>max_val)
+    return _clip(<double>value, <double> min_val, <double> max_val)
 
 
-cdef inline floating _calc_area(floating I1, floating I2, floating slope, floating intercept) nogil:
+cdef inline floating _calc_area(floating I1, floating I2, floating slope, floating intercept) noexcept nogil:
     #return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
     return (I2 - I1) * (0.5 * slope * (I2 + I1) + intercept)
+
 def calc_area(I1, I2, slope, intercept):
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
     return _calc_area(<position_t> I1, <position_t> I2, <position_t> slope, <position_t> intercept)
 
 
-cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1) nogil:
+cdef inline void _integrate1d(buffer_t[::1] buffer,
+                              floating start0, floating start1,
+                              floating stop0, floating stop1) noexcept nogil:
     """"Integrate in a box a segment between start and stop
-    
+
     :param buffer: Buffer which is modified in place
     :param start0: position of the start in dim0
     :param start1: position of the start in dim1
     :param stop0: position of the end of segment in dim0
     :param stop1: position of the end of segment in dim1
     """
-    cdef: 
+    cdef:
         floating slope, intercept
         Py_ssize_t i, istart0, istop0
 
     if stop0 == start0:
         # slope is infinite, area is null: no change to the buffer
         return
-    
+
     buffer_size = buffer.shape[0]
     istart0 = <Py_ssize_t> floor(start0)
     istop0 = <Py_ssize_t> floor(stop0)
-    
+
     slope = (stop1 - start1) / (stop0 - start0)
     intercept = start1 - slope * start0
-    
+
     if buffer_size > istop0 == istart0 >= 0:
         buffer[istart0] += _calc_area(start0, stop0, slope, intercept)
     else:
@@ -464,10 +452,15 @@ cdef inline void _integrate1d(buffer_t[::1] buffer, floating start0, floating st
                 buffer[i] += _calc_area(i + 1, i, slope, intercept)
             if buffer_size > stop0 >= 0:
                 buffer[istop0] += _calc_area(floor(stop0 + 1), stop0, slope, intercept)
-def _sp_integrate1d(buffer_t[::1] buffer, floating start0, floating start1, floating stop0, floating stop1):
+
+def _sp_integrate1d(buffer_t[::1] buffer,
+                    floating start0, floating start1,
+                    floating stop0, floating stop1):
     _integrate1d(buffer, start0, start1, stop0, stop1)
 
-cdef inline void _integrate2d(buffer_t[:, ::1] box, floating start0, floating start1, floating stop0, floating stop1) nogil:
+cdef inline void _integrate2d(buffer_t[:, ::1] box,
+                              floating start0, floating start1,
+                              floating stop0, floating stop1) noexcept nogil:
     """Integrate in a box a line between start and stop0, line defined by its slope & intercept
 
     :param box: buffer with the relative area. Gets modified in place
@@ -475,20 +468,20 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box, floating start0, floating st
     :param start1: coodinate of the start of the segment in dim1
     :param start0: coodinate of the end of the segment in dim0
     :param start0: coodinate of the end of the segment in dim1
-    
+
     """
     cdef:
         Py_ssize_t i, h = 0
         float P, dP, segment_area, abs_area, dA
         float slope, intercept
         # , sign
-        
+
     if start0 == stop0:
-        return 
+        return
     else:
         slope = (stop1 - start1) / (stop0 - start0)
         intercept = stop1 - slope*stop0
-         
+
     if start0 < stop0:  # positive contribution
         P = ceil(start0)
         dP = P - start0

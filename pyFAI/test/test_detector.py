@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/04/2022"
+__date__ = "24/04/2023"
 
 import os
 import shutil
@@ -322,6 +322,7 @@ class TestDetector(unittest.TestCase):
         import copy
         detector = Detector(pixel1=90e-6, pixel2=110e-6, splineFile=None, max_shape=(110, 90))
         ref = detector.get_pixel_corners()
+        detector.reset_pixel_corners()
 
         delta_y = 0.3  # pixel
         delta_x = 0.1  # pixel
@@ -329,6 +330,7 @@ class TestDetector(unittest.TestCase):
         detector_a = copy.copy(detector)
         dx = numpy.ones(detector_a.shape) * delta_x
         dy = numpy.ones(detector_a.shape) * delta_y
+
         detector_a.set_dx(dx)
         detector_a.set_dy(dy)
         obt_a = detector_a.get_pixel_corners()
@@ -366,6 +368,15 @@ class TestDetector(unittest.TestCase):
             ai.integrate2d(img, 500, method=("full", "histogram", "cython"))
         except Exception as err:
             self.skipTest(f"SplitPixel does not work (yet) with hexagonal pixels: {err}")
+
+    def test_abstract(self):
+        shape = 10, 12
+        det = detector_factory("detector")
+        self.assertEqual(det.shape, None)
+        z = numpy.zeros(shape)
+        res = det.dynamic_mask(z)
+        self.assertEqual(det.shape, shape)
+        self.assertEqual(abs(z-res).max(), 0)
 
 
 def suite():

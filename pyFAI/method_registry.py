@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2022"
+__date__ = "17/03/2023"
 __status__ = "development"
 
 import inspect
@@ -401,3 +401,7 @@ class IntegrationMethod:
             sig = inspect.signature(function)
             manage_variance = ("poissonian" in sig.parameters) or ("error_model" in sig.parameters)
         return manage_variance
+
+    @property
+    def algo_is_sparse(self):
+        return self.algo_lower in self.AVAILABLE_ALGOS[1:]

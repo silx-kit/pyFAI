@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/07/2022"
+__date__ = "29/08/2023"
 __status__ = "production"
 
 import logging
@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 import math
 import numpy
 import time
-import scipy
+import scipy.ndimage
 from .decorators import deprecated
 
 try:
@@ -57,10 +57,10 @@ EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 def deg2rad(dd, disc=1):
     """
-    Convert degrees to radian in the range [-π->π[ or [0->2π[ 
+    Convert degrees to radian in the range [-π->π[ or [0->2π[
 
     :param dd: angle in degrees
-    :return: angle in radians in the selected range 
+    :return: angle in radians in the selected range
     """
     # range [0:2pi[
     rp = (dd / 180.0) % 2.0
@@ -742,7 +742,7 @@ def rwp(obt, ref, scale=1.0):
     :type obt: 2-list of array of the same size
     :param obt: reference data
     :type obt: 2-list of array of the same size
-    :param scale: scale obt intensity  
+    :param scale: scale obt intensity
     :return:  Rwp value, lineary interpolated
     """
     ref0, ref1 = ref[:2]
@@ -789,7 +789,7 @@ def chi_square(obt, ref):
 class LongestRunOfHeads(object):
     """Implements the "longest run of heads" by Mark F. Schilling
     The College Mathematics Journal, Vol. 21, No. 3, (1990), pp. 196-207
-    
+
     See: http://www.maa.org/sites/default/files/pdf/upload_library/22/Polya/07468342.di020742.02p0021g.pdf
     """
 
@@ -799,11 +799,11 @@ class LongestRunOfHeads(object):
 
     def A(self, n, c):
         """Calculate A(number_of_toss, length_of_longest_run)
-        
+
         :param n: number of coin toss in the experiment, an integer
-        :param c: length of the longest run of 
+        :param c: length of the longest run of
         :return: The A parameter used in the formula
-        
+
         """
         if n <= c:
             return 2 ** n
@@ -819,18 +819,18 @@ class LongestRunOfHeads(object):
     def B(self, n, c):
         """Calculate B(number_of_toss, length_of_longest_run)
         to have either a run of Heads either a run of Tails
-        
+
         :param n: number of coin toss in the experiment, an integer
-        :param c: length of the longest run of 
+        :param c: length of the longest run of
         :return: The B parameter used in the formula
         """
         return 2 * self.A(n - 1, c - 1)
 
     def __call__(self, n, c):
-        """Calculate the probability for the longest run of heads to exceed the observed length  
-        
+        """Calculate the probability for the longest run of heads to exceed the observed length
+
         :param n: number of coin toss in the experiment, an integer
-        :param c: length of the longest run of heads, an integer 
+        :param c: length of the longest run of heads, an integer
         :return: The probablility of having c subsequent heads in a n toss of fair coin
         """
         if c >= n:
@@ -841,10 +841,10 @@ class LongestRunOfHeads(object):
         return 2.0 ** (math.log(delta, 2) - n)
 
     def probaHeadOrTail(self, n, c):
-        """Calculate the probability of a longest run of head or tails to occur 
-        
+        """Calculate the probability of a longest run of head or tails to occur
+
         :param n: number of coin toss in the experiment, an integer
-        :param c: length of the longest run of heads or tails, an integer 
+        :param c: length of the longest run of heads or tails, an integer
         :return: The probablility of having c subsequent heads or tails in a n toss of fair coin
         """
         if c > n:
@@ -857,10 +857,10 @@ class LongestRunOfHeads(object):
         return min(2.0 ** (math.log(delta, 2.0) - n), 1.0)
 
     def probaLongerRun(self, n, c):
-        """Calculate the probability for the longest run of heads or tails to exceed the observed length  
-        
+        """Calculate the probability for the longest run of heads or tails to exceed the observed length
+
         :param n: number of coin toss in the experiment, an integer
-        :param c: length of thee observed run of heads or tails, an integer 
+        :param c: length of thee observed run of heads or tails, an integer
         :return: The probablility of having more than c subsequent heads or tails in a n toss of fair coin
         """
         if c > n:
@@ -894,16 +894,16 @@ def _longest_true(a):
 
 def cormap(ref, obt):
     """Calculate the probabily of two array to be the same based on the CorMap algorithm
-    This is a simplifed implementation 
+    This is a simplifed implementation
     """
     longest = max(_longest_true(ref<obt), _longest_true(ref>obt))
-    return LROH.probaLongerRun(len(ref), longest - 1)
-    
-    
+    return LROH.probaLongerRun(len(ref), max(1, longest - 1))
+
+
 def interp_filter(ary, out=None):
     """Interpolate missing values (nan or infinite) in a 1D array
-    
-    :param ary: 1D array 
+
+    :param ary: 1D array
     :param out: destination array (use ary to avoid allocation)
     :return: 1D array
     """

@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2022"
+__date__ = "17/05/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -56,7 +56,7 @@ import threading
 import time
 from collections import OrderedDict
 import __main__ as main
-from ._json import UnitEncoder 
+from ._json import UnitEncoder
 from ..utils import StringTypes, fully_qualified_name
 from .. import units
 from .. import version
@@ -216,7 +216,7 @@ class HDF5Writer(Writer):
         self._mode = mode
 
     def __repr__(self):
-        return "HDF5 writer on file %s:%s %sinitialized" % (self.filename, self.hpath, "" if self._initialized else "un")
+        return "HDF5 writer on file {self.filename}:{self.hpath} {'' if self._initialized else 'un'}initialized {}"
 
     def _require_main_entry(self, mode):
         """
@@ -581,20 +581,25 @@ class DefaultAiWriter(Writer):
         :rtype: str
         """
         if "make_headers" in dir(self._engine):
-            header_lst = self._engine.make_headers()
+            header_lst = self._engine.make_headers("list")
         else:
-            header_lst = [str(self._engine), ""]
+            header = str(self._engine)
+            if "\n" in header:
+                header_lst = header.split()
+            else:
+                header_lst = [header]
 
-        header_lst += ["Mask applied: %s" % has_mask,
-                       "Dark current applied: %s" % has_dark,
-                       "Flat field applied: %s" % has_flat,
-                       "Polarization factor: %s" % polarization_factor,
-                       "Normalization factor: %s" % normalization_factor]
+        header_lst += [""
+                       f"Mask applied: {has_mask}",
+                       f"Dark current applied: {has_dark}",
+                       f"Flat field applied: {has_flat}",
+                       f"Polarization factor: {polarization_factor}",
+                       f"Normalization factor: {normalization_factor}"]
 
         if metadata is not None:
             header_lst += ["", "Headers of the input frame:"]
             header_lst += [i.strip() for i in json.dumps(metadata, indent=2, cls=UnitEncoder).split("\n")]
-        header = "\n".join(["%s %s" % (hdr, i) for i in header_lst])
+        header = "\n".join([f"{hdr} {i}" for i in header_lst])
 
         return header
 
@@ -855,13 +860,14 @@ class FabioWriter(Writer):
     """
 
     def __init__(self, filename=None, extension=None, directory="", prefix=None, index_format="_%04d", start_index=0, fabio_class=None):
-        """
+        """Constructor of the class
+
         :param filename:
         :param extension:
         :param prefix: basename of the file
         :param index_format: "_%04s" gives "_0001" for example
         :param start_index: often 0 or 1
-        :param  
+        :param fabio_class: type of file to write
         """
         Writer.__init__(self, filename, extension)
         self.header = {}
@@ -956,7 +962,7 @@ class FabioWriter(Writer):
         """
         :param data: 2d array to save
         :param index: index of the file
-        :param header:  
+        :param header:
         """
         if index is None:
             index = self.index_format % (self.start_index + self.index)

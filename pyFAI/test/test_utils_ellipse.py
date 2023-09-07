@@ -40,7 +40,7 @@ from pyFAI.utils import ellipse as ellipse_mdl
 
 
 def modulo(value, div=numpy.pi):
-    """hack to calculate the value%div but returns the smallest 
+    """hack to calculate the value%div but returns the smallest
     absolute value, possibly negative"""
     q = value / div
     i = round(q)

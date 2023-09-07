@@ -2,8 +2,9 @@
 # Windows
 # https://ci.appveyor.com/project/ESRF/pyFAI
 
-version: 0.18.{build}
-shallow_clone: true
+version: 2023.1.{build}
+#shallow_clone: true
+clone_depth: 1
 build: false
 
 notifications:
@@ -39,7 +40,7 @@ environment:
         - PYTHON_DIR: "C:\\Python38-x64"
           PYTHON_ARCH: "64"
 
-        # Python 3.8
+        # Python 3.9
         - PYTHON_DIR: "C:\\Python39-x64"
           PYTHON_ARCH: "64"
 
@@ -50,9 +51,13 @@ install:
     # Add Python to PATH
     - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
 
+    # Activate visual studio compiler
+    - '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat"'
+    - 'cl.exe'
+
     # Upgrade/install distribution modules
-    - 'pip install --upgrade "setuptools<60.0.0"'
-    - "python -m pip install --upgrade pip"
+    - 'python -m pip install --upgrade pip'
+    - 'pip install --upgrade build meson meson-python ninja'
 
     # Install virtualenv
     - "pip install --upgrade virtualenv"
@@ -63,20 +68,14 @@ build_script:
     - "virtualenv --clear %VENV_BUILD_DIR%"
     - "%VENV_BUILD_DIR%\\Scripts\\activate.bat"
 
-    # Configure MSVC environment
-    # Python 3.3 x64 and Python 3.4 x64 need a special configuration
-    #- ps: >-
-    #    If (($env:PYTHON_ARCH -eq "64") -And (($env:PYTHON_VERSION -Like "3.3.*") -Or ($env:PYTHON_VERSION -Like "3.4.*"))) {
-    #      & "C:\\Program Files\\Microsoft SDKs\\Windows\\v7.1\\Bin\\SetEnv.cmd" /x64
-    #    }
-
     # Install build dependencies
     - "python -m pip install --upgrade pip"
-    - 'pip install --upgrade "setuptools<60.0.0"'
-    - "pip install --upgrade wheel"
+    - 'pip install --upgrade meson meson-python ninja build'
+    - "pip install --upgrade wheel tomli"
     - "pip install numpy cython --upgrade"
     - "pip install scipy --upgrade --pre"
     - "pip install silx"
+    - "dir"
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
 
     # Print Python info
@@ -85,11 +84,8 @@ build_script:
     - "dir"
 
     # Build
-    - "del pyFAI\\ext\\histogram.c"
-    - "python setup.py build %BUILD_ARGS%"
-    #- "python setup.py test"
     - "python run_tests.py -m"
-    - "python setup.py bdist_wheel bdist_msi"
+    - "python -m build --wheel"
     - ps: "ls dist"
     # Install the generated wheel package to test it
     - "pip install --pre --no-index --find-links dist/ pyFAI"
@@ -104,9 +100,7 @@ test_script:
     - "%VENV_TEST_DIR%\\Scripts\\activate.bat"
 
     # Upgrade distribution modules
-    - "python -m pip install --upgrade pip"
-    - 'pip install --upgrade "setuptools<60.0.0"'
-    - "pip install --upgrade wheel"
+    - "python -m pip install --upgrade pip tomli"
     # Install other build dependencies
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
     # Install the generated wheel package to test it

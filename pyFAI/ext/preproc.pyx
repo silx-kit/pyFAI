@@ -3,7 +3,7 @@
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ################################################################################
 # #This is for developping
-# #cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True 
+# #cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 ################################################################################
 #
 #    Project: Fast Azimuthal integration
@@ -38,17 +38,15 @@ flat-field normalization... taking care of masked values and normalization.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "13/07/2022"
+__date__ = "09/03/2023"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 include "regrid_common.pxi"
 
 import cython
-from cython.parallel import prange
 from ..containers import ErrorModel
 from libc.math cimport fabs, isfinite
-from cython cimport floating
 
 
 cdef floating[:, ::1] c1_preproc(floating[::1] data,
@@ -87,7 +85,7 @@ cdef floating[:, ::1] c1_preproc(floating[::1] data,
         bint check_mask, do_dark, do_flat, do_solidangle, do_absorption,
         bint do_polarization, is_valid
         floating one_num, one_den, one_flat
-   
+
     size = data.shape[0]
     do_dark = dark is not None
     do_flat = flat is not None
@@ -111,14 +109,14 @@ cdef floating[:, ::1] c1_preproc(floating[::1] data,
                     is_valid = (one_num != dummy)
                 else:
                     is_valid = fabs(one_num - dummy) > delta_dummy
-    
+
             if is_valid and do_flat:
                 one_flat = flat[i]
                 if delta_dummy == 0:
                     is_valid = (one_flat != dummy)
                 else:
                     is_valid = fabs(one_flat - dummy) > delta_dummy
-    
+
             if is_valid:
                 # Do not use "/=" as they mean reduction for cython
                 if do_dark:
@@ -192,7 +190,6 @@ cdef floating[:, ::1] c2_preproc(floating[::1] data,
         assert result.shape[1] == 2, "nb component = 2"
 
     with nogil:
-        #for i in prange(size, nogil=True, schedule="static"):
         for i in range(size):
             one_num = data[i]
             one_den = normalization_factor
@@ -203,14 +200,14 @@ cdef floating[:, ::1] c2_preproc(floating[::1] data,
                     is_valid = (one_num != dummy)
                 else:
                     is_valid = fabs(one_num - dummy) > delta_dummy
-    
+
             if is_valid and do_flat:
                 one_flat = flat[i]
                 if delta_dummy == 0:
                     is_valid = (one_flat != dummy)
                 else:
                     is_valid = fabs(one_flat - dummy) > delta_dummy
-    
+
             if is_valid:
                 # Do not use "/=" as they mean reduction for cython
                 if do_dark:
@@ -229,7 +226,7 @@ cdef floating[:, ::1] c2_preproc(floating[::1] data,
             else:
                 one_num = 0.0
                 one_den = 0.0
-    
+
             result[i, 0] = one_num
             result[i, 1] = one_den
     return result
@@ -267,7 +264,7 @@ cdef floating[:, ::1] c3_preproc(floating[::1] data,
     :param variance: variance of the data
     :param dark_variance: variance of the dark
     :param poissonian: if True, the variance is the signal (minimum 1)
-    :param result: ooutput array pre-allocated 
+    :param result: ooutput array pre-allocated
     NaN are always considered as invalid
 
     Empty pixels are 0.0 for both signal, variance and normalization
@@ -292,9 +289,8 @@ cdef floating[:, ::1] c3_preproc(floating[::1] data,
     else:
         assert result.shape[0] == size, "size matches"
         assert result.shape[1] == 3, "nb component = 3"
- 
- 
-    # for i in prange(size, nogil=True, schedule="static"):
+
+
     with nogil:
         for i in range(size):
             one_num = data[i]
@@ -305,23 +301,23 @@ cdef floating[:, ::1] c3_preproc(floating[::1] data,
                 one_var = variance[i]
             else:
                 one_var = 0.0
-    
+
             is_valid = isfinite(one_num)
             is_valid = (mask[i] == 0) if is_valid and check_mask else is_valid
-    
+
             if is_valid and check_dummy:
                 if delta_dummy == 0:
                     is_valid = (one_num != dummy)
                 else:
                     is_valid = fabs(one_num - dummy) > delta_dummy
-    
+
             if is_valid and do_flat:
                 one_flat = flat[i]
                 if delta_dummy == 0:
                     is_valid = (one_flat != dummy)
                 else:
                     is_valid = fabs(one_flat - dummy) > delta_dummy
-    
+
             if is_valid:
                 # Do not use "/=" as they mean reduction for cython
                 if do_dark:
@@ -344,7 +340,7 @@ cdef floating[:, ::1] c3_preproc(floating[::1] data,
                 one_num = 0.0
                 one_var = 0.0
                 one_den = 0.0
-    
+
             result[i, 0] = one_num
             result[i, 1] = one_var
             result[i, 2] = one_den
@@ -382,7 +378,7 @@ cdef floating[:, ::1] c4_preproc(floating[::1] data,
     :param normalization_factor: final value is divided by this, settles on the denominator
     :param variance: variance of the data
     :param dark_variance: variance of the dark
-    :param poissonian: if True, the variance is the signal (minimum 1) 
+    :param poissonian: if True, the variance is the signal (minimum 1)
     :param result: pre-allocated array
     NaN are always considered as invalid
 
@@ -406,7 +402,6 @@ cdef floating[:, ::1] c4_preproc(floating[::1] data,
 
     with nogil:
         for i in range(size):
-    # for i in prange(size, nogil=True, schedule="static"):
             one_num = data[i]
             one_den = normalization_factor
             if poissonian:
@@ -415,7 +410,7 @@ cdef floating[:, ::1] c4_preproc(floating[::1] data,
                 one_var = variance[i]
             else:
                 one_var = 0.0
-    
+
             is_valid = isfinite(one_num)
             is_valid = (mask[i] == 0) if is_valid and check_mask else is_valid
             if is_valid and check_dummy:
@@ -423,14 +418,14 @@ cdef floating[:, ::1] c4_preproc(floating[::1] data,
                     is_valid = (one_num != dummy)
                 else:
                     is_valid = fabs(one_num - dummy) > delta_dummy
-    
+
             if is_valid and do_flat:
                 one_flat = flat[i]
                 if delta_dummy == 0:
                     is_valid = (one_flat != dummy)
                 else:
                     is_valid = fabs(one_flat - dummy) > delta_dummy
-    
+
             if is_valid:
                 if do_dark:
                     one_num -= dark[i]
@@ -456,7 +451,7 @@ cdef floating[:, ::1] c4_preproc(floating[::1] data,
                 one_var = 0.0
                 one_den = 0.0
                 one_count = 0.0
-    
+
             result[i, 0] = one_num
             result[i, 1] = one_var
             result[i, 2] = one_den
@@ -520,7 +515,6 @@ def _preproc(floating[::1] raw,
     return result
 
 
-
 def preproc(raw,
             dark=None,
             flat=None,
@@ -567,6 +561,7 @@ def preproc(raw,
         bint check_dummy, poissonian=error_model.poissonian
         tuple shape
         int size, ndim
+        str key
 
     shape = raw.shape
     size = raw.size
@@ -621,7 +616,7 @@ def preproc(raw,
     else:
         assert mask.size == size, "Mask array size is correct"
         mask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
-    
+
     if split_result or (variance is not None) or poissonian:
         if split_result == 4:
             ndim = 4
@@ -630,8 +625,8 @@ def preproc(raw,
         else:
             ndim = 2
     else:
-        ndim = 1 
-    
+        ndim = 1
+
     if out is None:
         result = numpy.empty((size, ndim), dtype=dtype)
     else:
@@ -640,8 +635,10 @@ def preproc(raw,
             result = out
         else:
             result = out.reshape((size, ndim))
-    
-    _preproc(raw,
+
+    key = ("float" if numpy.dtype(dtype).itemsize==4 else "double")+"|int8_t"
+    cpreproc =_preproc.__signatures__[key]
+    cpreproc(raw,
              check_dummy,
              dummy,
              delta_dummy,
@@ -656,7 +653,7 @@ def preproc(raw,
              dark_variance,
              poissonian,
              result)
-    
+
     if ndim == 1:
         return numpy.asarray(result).reshape(shape)
     else:

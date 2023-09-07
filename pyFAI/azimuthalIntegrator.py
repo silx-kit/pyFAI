@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2022"
+__date__ = "17/05/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -215,11 +215,11 @@ class AzimuthalIntegrator(Geometry):
             * "where": does a numpy.where on the "numpy" output
 
         This method tries to accomodate various types of masks (like
-        valid=0 & masked=-1, ...) 
-        
+        valid=0 & masked=-1, ...)
+
         Note for the developper: we use a lot of numpy.logical_or in this method,
-        the out= argument allows to recycle buffers and save considerable time in 
-        allocating temporary arrays.  
+        the out= argument allows to recycle buffers and save considerable time in
+        allocating temporary arrays.
         """
         logical_or = numpy.logical_or
         shape = data.shape
@@ -1104,8 +1104,8 @@ class AzimuthalIntegrator(Geometry):
         :param ndarray data: 2D array from the Detector/CCD camera
         :param int npt: number of points in the output pattern
         :param str filename: output filename in 2/3 column ascii format
-        :param bool correctSolidAngle: correct for solid angle of each pixel if True 
-        :param ndarray variance: array containing the variance of the data. 
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param ndarray variance: array containing the variance of the data.
         :param str error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
         :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (min, max). Values outside the range are ignored.
         :type radial_range: (float, float), optional
@@ -1113,17 +1113,17 @@ class AzimuthalIntegrator(Geometry):
         :type azimuth_range: (float, float), optional
         :param ndarray mask: array with  0 for valid pixels, all other are masked (static mask)
         :param float dummy: value for dead/masked pixels (dynamic mask)
-        :param float delta_dummy: precision for dummy value 
+        :param float delta_dummy: precision for dummy value
         :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
                0 for circular polarization or random,
                None for no correction,
-               True for using the former correction 
+               True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param Unit unit: Output units, can be "q_nm^-1" (default), "2th_deg", "r_mm" for now.
         :param bool safe: Perform some extra checks to ensure LUT/CSR is still valid. False is faster.
-        :param float normalization_factor: Value of a normalization monitor 
+        :param float normalization_factor: Value of a normalization monitor
         :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
         """
@@ -1192,7 +1192,7 @@ class AzimuthalIntegrator(Geometry):
                 variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
 
         # Prepare LUT if needed!
-        if method.algo_lower in ("csr", "lut", "csc"):
+        if method.algo_is_sparse:
             # initialize the CSR/LUT integrator in Cython as it may be needed later on.
             cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
             if cython_method not in self.engines:
@@ -1378,10 +1378,9 @@ class AzimuthalIntegrator(Geometry):
                 else:
                     mask = numpy.logical_or(mask, azim_mask)
             radial = self.array_from_unit(shape, "center", unit, scale=False)
-
             intpl = integr(radial, npt, data,
                            dark=dark,
-                           dummy=dummy, delta_dummy=delta_dummy,
+                           dummy=dummy, delta_dummy=delta_dummy, empty=empty,
                            variance=variance,
                            flat=flat, solidangle=solidangle,
                            polarization=polarization,
@@ -1493,7 +1492,8 @@ class AzimuthalIntegrator(Geometry):
                                normalization_factor=normalization_factor,
                                mask=mask,
                                pos0_range=radial_range,
-                               pos1_range=azimuth_range)
+                               pos1_range=azimuth_range,
+                               error_model=error_model)
             elif method.method[1] == "full":
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 intpl = integr(weights=data, variance=variance,
@@ -1505,7 +1505,8 @@ class AzimuthalIntegrator(Geometry):
                                normalization_factor=normalization_factor,
                                mask=mask,
                                pos0_range=radial_range,
-                               pos1_range=azimuth_range)
+                               pos1_range=azimuth_range,
+                               error_model=error_model)
             else:
                 raise RuntimeError("Should not arrive here")
             if error_model.do_variance:
@@ -1756,7 +1757,7 @@ class AzimuthalIntegrator(Geometry):
                 variance = numpy.ascontiguousarray(data, numpy.float32)
 
         if azimuth_range is not None:
-            azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
+            azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             self.check_chi_disc(azimuth_range)
@@ -2169,15 +2170,19 @@ class AzimuthalIntegrator(Geometry):
         if radial_range:
             radial_range = tuple([i / pos0_scale for i in radial_range])
 
+        error_model = ErrorModel.parse(error_model)
         if variance is not None:
             assert variance.size == data.size
-        elif error_model:
-            error_model = error_model.lower()
-            if error_model == "poisson":
-                variance = numpy.ascontiguousarray(data, numpy.float32)
+            error_model = ErrorModel.VARIANCE
+        if error_model.poissonian and not method.manage_variance:
+            error_model = ErrorModel.VARIANCE
+            if dark is None:
+                variance = numpy.maximum(data, 1.0).astype(numpy.float32)
+            else:
+                variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
 
         if azimuth_range is not None:
-            azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
+            azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             self.check_chi_disc(azimuth_range)
@@ -2210,15 +2215,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             has_flat = "provided"
 
-        I = None
-        sigma = None
-        sum_ = None
-        count = None
-        signal2d = None
-        norm2d = None
-        var2d = None
-
-        if method.algo_lower in ("csr", "lut"):
+        if method.algo_is_sparse:
             intpl = None
             cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
             if cython_method not in self.engines:
@@ -2289,7 +2286,7 @@ class AzimuthalIntegrator(Geometry):
                     if (not reset) and safe:
                         if integr.unit != unit:
                             reset = "unit changed"
-                        if integr.bins != numpy.prod(npt):
+                        if integr.bins != npt:
                             reset = "number of points changed"
                         if integr.size != data.size:
                             reset = "input image size changed"
@@ -2350,18 +2347,21 @@ class AzimuthalIntegrator(Geometry):
 
                         elif (method.impl_lower == "python"):
                             with ocl_py_engine.lock:
-                                integr = method.class_funct_ng.klass(cython_integr.lut,
-                                                                     cython_integr.size,
-                                                                     bin_centers=cython_integr.bin_centers0,
-                                                                     azim_centers=cython_integr.bin_centers1,
+                                integr = method.class_funct_ng.klass(cython_integr.size,
+                                                                     cython_integr.lut,
+                                                                     bin_centers0=cython_integr.bin_centers0,
+                                                                     bin_centers1=cython_integr.bin_centers1,
                                                                      checksum=cython_integr.lut_checksum,
                                                                      unit=unit, empty=empty,
                                                                      mask_checksum=mask_crc)
+                        integr.pos0_range = cython_integr.pos0_range
+                        integr.pos1_range = cython_integr.pos1_range
                         ocl_py_engine.set_engine(integr)
 
                     if (integr is not None):
                             intpl = integr.integrate_ng(data,
                                                        variance=variance,
+                                                       error_model=error_model,
                                                        dark=dark, flat=flat,
                                                        solidangle=solidangle,
                                                        solidangle_checksum=self._dssa_crc,
@@ -2375,7 +2375,7 @@ class AzimuthalIntegrator(Geometry):
                 # The integrator has already been initialized previously
                 intpl = cython_integr.integrate_ng(data,
                                                    variance=variance,
-                                                   # poissonian=poissonian,
+                                                   error_model=error_model,
                                                    dummy=dummy,
                                                    delta_dummy=delta_dummy,
                                                    dark=dark,
@@ -2383,15 +2383,6 @@ class AzimuthalIntegrator(Geometry):
                                                    solidangle=solidangle,
                                                    polarization=polarization,
                                                    normalization_factor=normalization_factor)
-            I = intpl.intensity
-            bins_rad = intpl.radial
-            bins_azim = intpl.azimuthal
-            signal2d = intpl.signal
-            norm2d = intpl.normalization
-            count = intpl.count
-            if variance is not None:
-                sigma = intpl.sigma
-                var2d = intpl.variance
 
         elif method.algo_lower == "histogram":
             if method.split_lower in ("pseudo", "full"):
@@ -2399,21 +2390,22 @@ class AzimuthalIntegrator(Geometry):
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 integrator = method.class_funct_ng.function
                 intpl = integrator(pos=pos,
-                                 weights=data,
-                                 bins=(npt_rad, npt_azim),
-                                 pos0_range=radial_range,
-                                 pos1_range=azimuth_range,
-                                 dummy=dummy,
-                                 delta_dummy=delta_dummy,
-                                 mask=mask,
-                                 dark=dark,
-                                 flat=flat,
-                                 solidangle=solidangle,
-                                 polarization=polarization,
-                                 normalization_factor=normalization_factor,
-                                 chiDiscAtPi=self.chiDiscAtPi,
-                                 empty=empty,
-                                 variance=variance)
+                                   weights=data,
+                                   bins=(npt_rad, npt_azim),
+                                   pos0_range=radial_range,
+                                   pos1_range=azimuth_range,
+                                   dummy=dummy,
+                                   delta_dummy=delta_dummy,
+                                   mask=mask,
+                                   dark=dark,
+                                   flat=flat,
+                                   solidangle=solidangle,
+                                   polarization=polarization,
+                                   normalization_factor=normalization_factor,
+                                   chiDiscAtPi=self.chiDiscAtPi,
+                                   empty=empty,
+                                   variance=variance,
+                                   error_model=error_model)
 
             elif method.split_lower == "bbox":
                 logger.debug("integrate2d uses BBox implementation")
@@ -2422,24 +2414,25 @@ class AzimuthalIntegrator(Geometry):
                 pos0 = self.array_from_unit(shape, "center", unit, scale=False)
                 dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
                 intpl = splitBBox.histoBBox2d_ng(weights=data,
-                                               pos0=pos0,
-                                               delta_pos0=dpos0,
-                                               pos1=chi,
-                                               delta_pos1=dchi,
-                                               bins=(npt_rad, npt_azim),
-                                               pos0_range=radial_range,
-                                               pos1_range=azimuth_range,
-                                               dummy=dummy,
-                                               delta_dummy=delta_dummy,
-                                               mask=mask,
-                                               dark=dark,
-                                               flat=flat,
-                                               solidangle=solidangle,
-                                               polarization=polarization,
-                                               normalization_factor=normalization_factor,
-                                               chiDiscAtPi=self.chiDiscAtPi,
-                                               empty=empty,
-                                               variance=variance)
+                                                 pos0=pos0,
+                                                 delta_pos0=dpos0,
+                                                 pos1=chi,
+                                                 delta_pos1=dchi,
+                                                 bins=(npt_rad, npt_azim),
+                                                 pos0_range=radial_range,
+                                                 pos1_range=azimuth_range,
+                                                 dummy=dummy,
+                                                 delta_dummy=delta_dummy,
+                                                 mask=mask,
+                                                 dark=dark,
+                                                 flat=flat,
+                                                 solidangle=solidangle,
+                                                 polarization=polarization,
+                                                 normalization_factor=normalization_factor,
+                                                 chiDiscAtPi=self.chiDiscAtPi,
+                                                 empty=empty,
+                                                 variance=variance,
+                                                 error_model=error_model)
             elif method.split_lower == "no":
                 if method.impl_lower == "opencl":
                     logger.debug("integrate2d uses OpenCL histogram implementation")
@@ -2510,97 +2503,70 @@ class AzimuthalIntegrator(Geometry):
                                                  safe=safe,
                                                  normalization_factor=normalization_factor,
                                                  radial_range=radial_range,
-                                                 azimuthal_range=azimuth_range)
-###################3
-                elif method.impl_lower == "cython":
-                    logger.debug("integrate2d uses Cython histogram implementation")
-                    prep = preproc(data,
-                                   dark=dark,
-                                   flat=flat,
-                                   solidangle=solidangle,
-                                   polarization=polarization,
-                                   absorption=None,
-                                   mask=mask,
-                                   dummy=dummy,
-                                   delta_dummy=delta_dummy,
-                                   normalization_factor=normalization_factor,
-                                   empty=self._empty,
-                                   split_result=4,
-                                   variance=variance,
-                                   # dark_variance=None,
-                                   # poissonian=False,
-                                   dtype=numpy.float32)
-                    pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-                    chi = self.chiArray(shape)
-                    intpl = histogram.histogram2d_engine(pos0=pos0,
-                                                       pos1=chi,
-                                                       weights=prep,
-                                                       bins=(npt_rad, npt_azim),
-                                                       pos0_range=radial_range,
-                                                       pos1_range=azimuth_range,
-                                                       split=False,
-                                                       empty=empty,
-                                                       )
+                                                 azimuthal_range=azimuth_range,
+                                                 error_model=error_model)
+####################
+                else:  # if method.impl_lower in ["python", "cython"]:
+                    logger.debug("integrate2d uses [CP]ython histogram implementation")
+                    radial = self.array_from_unit(shape, "center", unit, scale=False)
+                    azim = self.chiArray(shape)
+                    if method.impl_lower == "python":
+                        data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
+                        mask = self.create_mask(data, mask, dummy, delta_dummy,
+                                                unit=unit,
+                                                radial_range=radial_range,
+                                                azimuth_range=azimuth_range,
+                                                mode="normal").ravel()
+                        # if radial_range is None:
+                        #     radial_range = [radial.min(), radial.max()]
+                        # if azimuth_range is None:
+                        #     azimuth_range = [azim.min(), azim.max()]
+                    histogrammer = method.class_funct_ng.function
+                    intpl = histogrammer(radial=radial,
+                                         azimuthal=azim,
+                                         bins=(npt_rad, npt_azim),
+                                         raw=data,
+                                         dark=dark,
+                                         flat=flat,
+                                         solidangle=solidangle,
+                                         polarization=polarization,
+                                         absorption=None,
+                                         mask=mask,
+                                         dummy=dummy,
+                                         delta_dummy=delta_dummy,
+                                         normalization_factor=normalization_factor,
+                                         empty=self._empty,
+                                         variance=variance,
+                                         dark_variance=None,
+                                         error_model=error_model,
+                                         radial_range=radial_range,
+                                         azimuth_range=azimuth_range)
 
-                else:  # Python implementation:
-                    logger.debug("integrate2d uses python implementation")
-                    data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
-                    mask = self.create_mask(data, mask, dummy, delta_dummy,
-                                            unit=unit,
-                                            radial_range=radial_range,
-                                            azimuth_range=azimuth_range,
-                                            mode="normal").ravel()
-                    pos0 = self.array_from_unit(shape, "center", unit, scale=False).ravel()
-                    pos1 = self.chiArray(shape).ravel()
-
-                    if radial_range is None:
-                        radial_range = [pos0.min(), pos0.max()]
-                    if azimuth_range is None:
-                        azimuth_range = [pos1.min(), pos1.max()]
-
-                    if method.method[1:4] == ("no", "histogram", "python"):
-                        logger.debug("integrate2d uses Numpy implementation")
-                        intpl = histogram_engine.histogram2d_engine(radial=pos0,
-                                                                    azimuthal=pos1,
-                                                                    npt=(npt_rad, npt_azim),
-                                                                    raw=data,
-                                                                    dark=dark,
-                                                                    flat=flat,
-                                                                    solidangle=solidangle,
-                                                                    polarization=polarization,
-                                                                    absorption=None,
-                                                                    mask=mask,
-                                                                    dummy=dummy,
-                                                                    delta_dummy=delta_dummy,
-                                                                    normalization_factor=normalization_factor,
-                                                                    empty=self._empty,
-                                                                    split_result=False,
-                                                                    variance=variance,
-                                                                    dark_variance=None,
-                                                                    error_model=ErrorModel.NO,
-                                                                    radial_range=radial_range,
-                                                                    azimuth_range=azimuth_range)
-            I = intpl.intensity
-            bins_azim = intpl.azimuthal
-            bins_rad = intpl.radial
-            signal2d = intpl.signal
-            norm2d = intpl.normalization
-            count = intpl.count
-            if variance is not None:
-                sigma = intpl.sigma
-                var2d = intpl.variance
+        I = intpl.intensity
+        bins_azim = intpl.azimuthal
+        bins_rad = intpl.radial
+        signal2d = intpl.signal
+        norm2d = intpl.normalization
+        count = intpl.count
+        if error_model.do_variance:
+            std = intpl.std
+            sem = intpl.sem
+            var2d = intpl.variance
+            norm2d_sq = intpl.norm_sq
+        else:
+            std = sem = var2d = norm2d_sq = None
 
         # Duplicate arrays on purpose ....
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * (180.0 / pi)
 
-        result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
+        result = Integrate2dResult(I, bins_rad, bins_azim, sem)
         result._set_method_called("integrate2d")
         result._set_compute_engine(str(method))
         result._set_method(method)
         result._set_unit(unit)
         result._set_count(count)
-        result._set_sum(sum_)
+        # result._set_sum(sum_)
         result._set_has_dark_correction(has_dark)
         result._set_has_flat_correction(has_flat)
         result._set_has_mask_applied(has_mask)
@@ -2610,7 +2576,11 @@ class AzimuthalIntegrator(Geometry):
 
         result._set_sum_signal(signal2d)
         result._set_sum_normalization(norm2d)
-        result._set_sum_variance(var2d)
+        if error_model.do_variance:
+            result._set_sum_normalization2(norm2d_sq)
+            result._set_sum_variance(var2d)
+            result._set_std(std)
+            result._set_std(sem)
 
         if filename is not None:
             writer = DefaultAiWriter(filename, self)
@@ -2896,22 +2866,22 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
-    def _sigma_clip_legacy(self, data, npt_rad=1024, npt_azim=512,
-                           correctSolidAngle=True, polarization_factor=None,
-                           radial_range=None, azimuth_range=None,
-                           dark=None, flat=None,
-                           method="splitpixel", unit=units.Q,
-                           thres=3, max_iter=5, dummy=None, delta_dummy=None,
-                           mask=None, normalization_factor=1.0, metadata=None):
-        """Perform the 2D integration and perform a sigm-clipping iterative
-        filter along each row. see the doc of scipy.stats.sigmaclip for the
-        options.
+    def sigma_clip_legacy(self, data, npt_rad=1024, npt_azim=512,
+                          correctSolidAngle=True, polarization_factor=None,
+                          radial_range=None, azimuth_range=None,
+                          dark=None, flat=None,
+                          method=("full", "histogram", "cython"), unit=units.Q,
+                          thres=3, max_iter=5, dummy=None, delta_dummy=None,
+                          mask=None, normalization_factor=1.0, metadata=None,
+                          safe=True, **kwargs):
+        """Perform first a 2D integration and then an iterative sigma-clipping
+        filter along each row. See the doc of scipy.stats.sigmaclip for the
+        options `thres` and `max_iter`.
 
         :param data: input image as numpy array
-        :param npt_rad: number of radial points
+        :param npt_rad: number of radial points (alias: npt)
         :param npt_azim: number of azimuthal points
-        :param bool correctSolidAngle: correct for solid angle of each pixel
-                if True
+        :param bool correctSolidAngle: correct for solid angle of each pixel when set
         :param float polarization_factor: polarization factor between -1 (vertical)
                 and +1 (horizontal).
 
@@ -2926,14 +2896,22 @@ class AzimuthalIntegrator(Geometry):
         :param ndarray flat: flat field image
         :param unit: unit to be used for integration
         :param method: pathway for integration and sort
-        :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres.
+        :param thres: cut-off for n*sigma: discard any values with `|I-<I>| > thres*σ`.
                 The threshold can be a 2-tuple with sigma_low and sigma_high.
-        :param max_iter: maximum number of iterations        :param mask: masked out pixels array
+        :param max_iter: maximum number of iterations
+        :param mask: masked out pixels array
         :param float normalization_factor: Value of a normalization monitor
         :param metadata: any other metadata,
         :type metadata: JSON serializable dict
+        :param safe: unset to save some checks on sparse matrix shape/content.
+        :kwargs: unused, just for signature compatibility when used within Worker.
         :return: Integrate1D like result like
+
+        Nota: The initial 2D-integration requires pixel splitting
         """
+        # compatibility layer with sigma_clip_ng
+        if "npt" in kwargs:
+            npt_rad = kwargs["npt"]
         # We use NaN as dummies
         if dummy is None:
             dummy = numpy.NaN
@@ -2961,7 +2939,8 @@ class AzimuthalIntegrator(Geometry):
                                  dummy=dummy, delta_dummy=delta_dummy,
                                  correctSolidAngle=correctSolidAngle,
                                  polarization_factor=polarization_factor,
-                                 normalization_factor=normalization_factor)
+                                 normalization_factor=normalization_factor,
+                                 safe=safe)
         image = res2d.intensity
         if (method.impl_lower == "opencl"):
             if (method.algo_lower == "csr") and \
@@ -3044,6 +3023,8 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
         return result
 
+    _sigma_clip_legacy = sigma_clip_legacy
+
     def sigma_clip_ng(self, data,
                       npt=1024,
                       correctSolidAngle=True,
@@ -3065,23 +3046,24 @@ class AzimuthalIntegrator(Geometry):
                       metadata=None,
                       safe=True,
                        **kwargs):
-        """Performs iteratively the 1D integration with variance propagation 
+        """Performs iteratively the 1D integration with variance propagation
         and performs a sigm-clipping at each iteration, i.e.
-        all pixel which intensity differs more than thres*std is 
+        all pixel which intensity differs more than thres*std is
         discarded for next iteration.
-        
-        Keep only pixels with intensty:
-        
-            |I - <I>| < thres * std(I)
 
-        This enforces a gaussian distibution and is very good at extracting 
-        background or amorphous isotropic scattering out of Bragg peaks.
+        Keep only pixels with intensty:
+
+            ``|I - <I>| < thres * σ(I)``
+
+        This enforces a symmetric, bell-shaped distibution (i.e. gaussian-like)
+        and is very good at extracting background or amorphous isotropic scattering
+        out of Bragg peaks.
 
         :param data: input image as numpy array
         :param npt_rad: number of radial points
         :param bool correctSolidAngle: correct for solid angle of each pixel if True
         :param float polarization_factor: polarization factor between:
-                -1 (vertical) 
+                -1 (vertical)
                 +1 (horizontal).
                 - 0 for circular polarization or random,
                 - None for no correction,
@@ -3093,24 +3075,26 @@ class AzimuthalIntegrator(Geometry):
 
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param ndarray variance: the variance of the signal 
-        :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)  
+        :param ndarray variance: the variance of the signal
+        :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)
         :param unit: unit to be used for integration
         :param method: pathway for integration and sort
         :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres.
-        :param max_iter: maximum number of iterations        
+        :param max_iter: maximum number of iterations
         :param mask: masked out pixels array
         :param float normalization_factor: Value of a normalization monitor
         :param metadata: any other metadata,
         :type metadata: JSON serializable dict
         :param safe: set to False to skip some tests
         :return: Integrate1D like result like
-        
-        The difference with the previous version is that there is no 2D regrouping, hence this is faster. 
-        The standard deviation is usually smaller than previously and the signal cleaner. It is also slightly faster.
-        
+
+        The difference with the previous `sigma_clip_legacy` implementation is that there is no 2D regrouping.
+        Pixel splitting should be avoided with this implementation.
+        The standard deviation is usually smaller than previously and the signal cleaner.
+        It is also slightly faster.
+
         The case neither `error_model`, nor `variance` is provided, fall-back on a poissonian model.
-        
+
         """
         for k in kwargs:
             if k == "npt_azim":
@@ -3185,11 +3169,11 @@ class AzimuthalIntegrator(Geometry):
                         cython_reset = "mask changed"
                     if (radial_range is None) and (cython_integr.pos0_range is not None):
                         cython_reset = "radial_range was defined in CSR"
-                    elif (radial_range is not None) and cython_integr.pos0_range != (min(radial_range), max(radial_range) * EPS32):
+                    elif (radial_range is not None) and cython_integr.pos0_range != (min(radial_range), max(radial_range)):
                         cython_reset = "radial_range is defined but not the same as in CSR"
                     if (azimuth_range is None) and (cython_integr.pos1_range is not None):
                         cython_reset = "azimuth_range not defined and CSR had azimuth_range defined"
-                    elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range) * EPS32):
+                    elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 if cython_reset:
                     logger.info("AI.sigma_clip_ng: Resetting Cython integrator because %s", cython_reset)
@@ -3317,10 +3301,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_error_model(error_model)
         return result
 
-    @deprecated(reason="will be replaced by `sigma_clip_ng` in version 0.23.0. Please use either `_sigma_clip_legacy` for full compatibility or upgrade your code to accomodate the new API",
-                replacement="sigma_clip_ng", since_version="0.21.0", only_once=True, skip_backtrace_count=1, deprecated_since="0.22.0")
-    def sigma_clip(self, *args, **kwargs):
-        return self._sigma_clip_legacy(*args, **kwargs)
+    sigma_clip = sigma_clip_ng
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):
@@ -3337,9 +3318,9 @@ class AzimuthalIntegrator(Geometry):
         :param mask: masked out pixels array
         :param restore_mask: masked pixels have the same value as input data provided
         :return: SeparateResult which the bragg & amorphous signal
-        
+
         Note: the filtered 1D spectrum can be retrieved from
-        SeparateResult.radial and SeparateResult.intensity 
+        SeparateResult.radial and SeparateResult.intensity
         """
 
         filter_result = self.medfilt1d(data, npt_rad=npt_rad, npt_azim=npt_azim,
@@ -3475,7 +3456,7 @@ class AzimuthalIntegrator(Geometry):
     def guess_max_bins(self, redundancy=1, search_range=None, unit="q_nm^-1", radial_range=None, azimuth_range=None):
         """
         Guess the maximum number of bins, considering the excpected minimum redundancy:
-        
+
         :param redundancy: minimum number of pixel per bin
         :param search_range: the minimum and maximun number of bins to be considered
         :param unit: the unit to be considered like "2th_deg" or "q_nm^-1"
@@ -3500,6 +3481,45 @@ class AzimuthalIntegrator(Geometry):
                                   azimuth_range=azimuth_range, radial_range=radial_range).count.min()
             if mini < redundancy:
                 return i - 1
+
+    def guess_polarization(self, img, npt_rad=None, npt_azim=360, unit="2th_deg",
+                           method=("no", "csr", "cython"), target_rad=None):
+        """Guess the polarization factor for the given image
+
+        For this one performs several integration with different polarization factors
+        and take the one with the lowest std along the outer-most ring.
+
+        :param img: diffraction image, preferable with beam-stop centered.
+        :param npt_rad: number of point in the radial dimension, can be guessed, better avoid oversampling.
+        :param npt_azim: number of point in the azimuthal dimension, 1 per degree is usually OK
+        :param unit: radial unit for the integration
+        :param method: The  default one is pretty optimal: no splitting, CSR for the speed of the integration
+        :param target_rad: position of the outer-most complete ring, can be guessed.
+        :return: polarization factor (#, polarization angle)
+        """
+        if npt_rad is None:
+            if self.detector.shape is None:
+                self.detector.shape = img.shape
+            npt_rad = self.guess_npt_rad()
+
+        res = self.integrate2d_ng(img, npt_rad, npt_azim, unit=unit, method=method)
+
+        if target_rad is None:
+            azimuthal_range = (res.count>0).sum(axis=0)
+            azim_min = azimuthal_range.max()*0.95
+            valid_rings = numpy.where(azimuthal_range>azim_min)[0]
+            nbpix = res.count.sum(axis=0)[valid_rings]
+            bin_idx = valid_rings[numpy.where(nbpix.max() == nbpix)[0][-1]]
+        else:
+            bin_idx = numpy.argmin(abs(res.radial-target_rad))
+
+        from scipy.optimize import minimize_scalar
+        sfun = lambda p:\
+            self.integrate2d_ng(img, npt_rad, npt_azim, unit=unit, method=method,
+                                polarization_factor=p).intensity[:, bin_idx].std()
+        opt = minimize_scalar(sfun, bounds=[-1, 1])
+        logger.info(str(opt))
+        return opt.x
 
 ################################################################################
 # Some properties

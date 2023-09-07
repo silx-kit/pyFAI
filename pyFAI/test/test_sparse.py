@@ -49,7 +49,7 @@ import fabio
 
 class TestSparseIntegrate1d(unittest.TestCase):
     """Test azimuthal integration based sparse matrix multiplication methods
-    * No splitting 
+    * No splitting
     * Bounding box pixel splitting
     * Full pixel splitting #TODO: check the numerical results!
     """
@@ -122,7 +122,7 @@ class TestSparseIntegrate1d(unittest.TestCase):
 
 class TestSparseIntegrate2d(unittest.TestCase):
     """Test azimuthal integration based sparse matrix multiplication methods
-    * No splitting                     
+    * No splitting
     * Bounding box pixel splitting
     * Full pixel splitting
     """

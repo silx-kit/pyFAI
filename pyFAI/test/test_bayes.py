@@ -32,13 +32,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 import unittest
 import numpy
 import logging
 logger = logging.getLogger(__name__)
 from ..utils import bayes
+from .utilstest import UtilsTest
 from scipy import interpolate
 
 
@@ -54,9 +55,10 @@ class TestBayes(unittest.TestCase):
         self.outliers = 10
         self.big = 10000
         self.x = numpy.arange(self.size)
-        self.noise = numpy.random.poisson(self.target, self.size)
+        rng = UtilsTest.get_rng()
+        self.noise = rng.poisson(self.target, self.size)
         self.sigma = numpy.sqrt(self.noise)
-        self.peaks = numpy.random.random_integers(0, self.size, self.outliers)
+        self.peaks = rng.uniform(0, self.size, self.outliers).astype(numpy.int64)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)

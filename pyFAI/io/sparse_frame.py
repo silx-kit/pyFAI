@@ -83,13 +83,13 @@ for idx, bg in enumerate(background_avg):
 
 def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, extra={}, start_time=None):
     """Write the list of frames into a HDF5 file
-    
+
     :param filename: name of the file
     :param frames: list of sparse frames (as built by sparsify)
     :param beamline: name of the beamline as text
     :param ai: Instance of geometry or azimuthal integrator
     :param source: list of input files
-    :param extra: dict with extra metadata 
+    :param extra: dict with extra metadata
     :param start_time: float with the time of start of the processing
     :return: None
     """
@@ -233,4 +233,3 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
                     else:
                         logger.error("Only HDF5 files readable with FabIO can be linked")
             sparsify_grp["source"] = source
-

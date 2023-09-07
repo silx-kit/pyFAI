@@ -19,7 +19,6 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
-project = u'pyFAI'
 try:
     import pyFAI
 
@@ -40,6 +39,11 @@ except ImportError:
     )
 
 # -- General configuration -----------------------------------------------------
+# General information about the project.
+from pyFAI._version import strictversion, __date__ as pyfai_date
+
+year = pyfai_date.split("/")[-1]
+project = 'pyFAI'
 
 # If your documentation needs a minimal Sphinx version, state it here.
 # needs_sphinx = '1.0'
@@ -90,15 +94,8 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-# General information about the project.
-from pyFAI._version import strictversion, __date__ as pyfai_date
-
-year = pyfai_date.split("/")[-1]
-copyright = (
-    u'2012-%s, Data analysis unit, European Synchrotron Radiation Facility, Grenoble'
-    % (year)
-)
-
+copyright = f'2012-{year}, European Synchrotron Radiation Facility, Grenoble.'
+#version = strictversion
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -181,7 +178,7 @@ html_static_path = []
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-# html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = f'pyFAI {strictversion} built %d %b %Y'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.

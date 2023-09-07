@@ -47,4 +47,3 @@ __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 from .core import Geometry, logger
-

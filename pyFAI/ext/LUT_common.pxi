@@ -1,4 +1,4 @@
-# coding: utf-8 
+# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -29,9 +29,10 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/07/2022"
+__date__ = "13/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
+
 
 from libc.string cimport memcpy
 from cython.parallel import prange
@@ -53,7 +54,7 @@ cdef class LutIntegrator(object):
     """
     cdef:
         readonly index_t input_size, output_size, lut_size
-        readonly data_t empty
+        public data_t empty
         readonly lut_t[:, ::1] _lut
         readonly data_t[:, ::1] preprocessed
 
@@ -74,13 +75,13 @@ cdef class LutIntegrator(object):
         self.output_size = lut.shape[0]
         self.lut_size = lut.shape[1]
         self._lut = lut
-    
+
     def __dealloc__(self):
         self._lut = None
         self.preprocessed = None
         self.empty = 0
         self.input_size = 0
-        self.output_size = 0 
+        self.output_size = 0
         self.nnz = 0
 
     @property
@@ -223,7 +224,7 @@ cdef class LutIntegrator(object):
                 if do_dummy and (data == cdummy):
                     continue
 
-                acc_data = acc_data + (coef ** coef_power) * data
+                acc_data = acc_data + pown(coef, coef_power) * data
                 acc_count = acc_count + coef
             sum_data[i] = acc_data
             sum_count[i] = acc_count
@@ -234,16 +235,16 @@ cdef class LutIntegrator(object):
 
         if self.bin_centers is None:
             # 2D integration case
-            return (numpy.asarray(merged).reshape(self.bins).T, 
-                    self.bin_centers0, 
-                    self.bin_centers1, 
-                    numpy.asarray(sum_data).reshape(self.bins).T, 
+            return (numpy.asarray(merged).reshape(self.bins).T,
+                    self.bin_centers0,
+                    self.bin_centers1,
+                    numpy.asarray(sum_data).reshape(self.bins).T,
                     numpy.asarray(sum_count).reshape(self.bins).T)
         else:
             # 1D integration case
-            return (self.bin_centers, 
-                    numpy.asarray(merged), 
-                    numpy.asarray(sum_data), 
+            return (self.bin_centers,
+                    numpy.asarray(merged),
+                    numpy.asarray(sum_data),
                     numpy.asarray(sum_count))
 
     def integrate_ng(self,
@@ -268,7 +269,7 @@ cdef class LutIntegrator(object):
         :type weights: ndarray
         :param variance: the variance associate to the image
         :type variance: ndarray
-        :param erro_model: enum ErrorModel.  
+        :param erro_model: enum ErrorModel.
         :param dummy: value for dead pixels (optional)
         :type dummy: float
         :param delta_dummy: precision for dead-pixel value in dynamic masking
@@ -282,14 +283,14 @@ cdef class LutIntegrator(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param absorption: Apparent efficiency of a pixel due to parallax effect
-        :type absorption: ndarray        
+        :type absorption: ndarray
         :param normalization_factor: divide the valid result by this value
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
         cdef:
-            int32_t i, j, idx = 0, 
+            int32_t i, j, idx = 0,
             index_t lut_size = self.lut_size
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
             acc_t delta, x, omega_A, omega_B, omega3, omega2_A, omega2_B, w
@@ -304,7 +305,7 @@ cdef class LutIntegrator(object):
             data_t[::1] sem = numpy.empty(self.output_size, dtype=data_d)
             data_t[:, ::1] preproc4
             bint do_azimuthal_variance = ErrorModel.AZIMUTHAL
-            
+
         assert weights.size == self.input_size, "weights size"
         empty = dummy if dummy is not None else self.empty
         #Call the preprocessor ...
@@ -315,9 +316,9 @@ cdef class LutIntegrator(object):
                            polarization=polarization,
                            absorption=absorption,
                            mask=self.cmask if self.check_mask else None,
-                           dummy=dummy, 
+                           dummy=dummy,
                            delta_dummy=delta_dummy,
-                           normalization_factor=normalization_factor, 
+                           normalization_factor=normalization_factor,
                            empty=self.empty,
                            split_result=4,
                            variance=variance,
@@ -336,13 +337,13 @@ cdef class LutIntegrator(object):
                 coef = self._lut[i, j].coef
                 if idx<0 or coef == 0.0:
                     continue
-                
+
                 if do_azimuthal_variance:
                     if acc_norm_sq <= 0.0:
                         acc_sig = coef * preproc4[idx, 0]
                         #Variance remains at 0
                         acc_norm = coef * preproc4[idx, 2]
-                        acc_norm_sq = (coef * preproc4[idx, 2])**2
+                        acc_norm_sq = pown(coef * preproc4[idx, 2], 2)
                         acc_count = coef * preproc4[idx, 3]
                     else:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
@@ -381,20 +382,20 @@ cdef class LutIntegrator(object):
         if self.bin_centers is None:
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
-                              numpy.asarray(merged).reshape(self.bins).T, 
+                              numpy.asarray(merged).reshape(self.bins).T,
                               numpy.asarray(sem).reshape(self.bins).T,
-                              numpy.asarray(sum_sig).reshape(self.bins).T, 
-                              numpy.asarray(sum_var).reshape(self.bins).T, 
-                              numpy.asarray(sum_norm).reshape(self.bins).T, 
+                              numpy.asarray(sum_sig).reshape(self.bins).T,
+                              numpy.asarray(sum_var).reshape(self.bins).T,
+                              numpy.asarray(sum_norm).reshape(self.bins).T,
                               numpy.asarray(sum_count).reshape(self.bins).T,
-                              numpy.asarray(std).reshape(self.bins).T, 
-                              numpy.asarray(sem).reshape(self.bins).T, 
+                              numpy.asarray(std).reshape(self.bins).T,
+                              numpy.asarray(sem).reshape(self.bins).T,
                               numpy.asarray(sum_norm_sq).reshape(self.bins).T)
         else:
             # 1D integration case: "position intensity error signal variance normalization count std sem norm_sq"
-            return Integrate1dtpl(self.bin_centers, 
+            return Integrate1dtpl(self.bin_centers,
                                   numpy.asarray(merged),numpy.asarray(sem) ,
-                                  numpy.asarray(sum_sig),numpy.asarray(sum_var), 
+                                  numpy.asarray(sum_sig),numpy.asarray(sum_var),
                                   numpy.asarray(sum_norm), numpy.asarray(sum_count),
                                   numpy.asarray(std), numpy.asarray(sem), numpy.asarray(sum_norm_sq))
 

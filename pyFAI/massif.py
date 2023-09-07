@@ -30,11 +30,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/05/2022"
+__date__ = "25/04/2023"
 __status__ = "production"
 
 import sys
 import os
+import copy
 import threading
 from math import ceil, sqrt
 import logging
@@ -57,11 +58,12 @@ class Massif(object):
     """
     TARGET_SIZE = 1024
 
-    def __init__(self, data=None, mask=None, median_prefilter=True):
-        """Constructor of the class...
+    def __init__(self, data=None, mask=None, median_prefilter=False):
+        """Constructor of the Massif class
 
         :param data: 2D array or filename (discouraged)
         :param mask: array with non zero for invalid data
+        :param median_prefilter: apply a 3x3 median prefilter to the data to sieve out outliers
         """
         if isinstance(data, (str,)) and os.path.isfile(data):
             self.data = fabio.open(data).data.astype("float32")
@@ -98,6 +100,19 @@ class Massif(object):
         self._sem_label = threading.Semaphore()
         self._sem_binning = threading.Semaphore()
         self._sem_median = threading.Semaphore()
+
+    def __deepcopy__(self, memo=None):
+        "Helper for copy.deepcopy"
+        if memo is None:
+            memo = {}
+        data = copy.deepcopy(self.data, memo=memo)
+        mask = copy.deepcopy(self.mask, memo=memo)
+        median_prefilter = copy.deepcopy(self.median_prefilter, memo=memo)
+        new = self.__class__(data=data,
+                             mask=mask,
+                             median_prefilter=median_prefilter)
+        memo[id(self)] = new
+        return new
 
     def nearest_peak(self, x):
         """
@@ -265,12 +280,12 @@ class Massif(object):
             data = self.data.copy()
             if self.median_prefilter:
                 "First stage of cleaning, localy 3x3"
-                data[numpy.where(self.mask)] = numpy.NaN 
+                data[numpy.where(self.mask)] = numpy.NaN
                 data = median_filter(data, 3)
                 mask = numpy.logical_not(numpy.isfinite(data))
             else:
                 mask = self.mask
-                
+
             "Second stage of cleaning, further away"
             idx = distance_transform_edt(mask,
                                          return_distances=False,

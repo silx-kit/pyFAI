@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 07/01/2021
+:Date: 05/01/2023
 :Keywords: Installation procedure on MacOSX
 :Target: System administrators
 
@@ -11,11 +11,11 @@ Install Python3:
 
 To install pyFAI on an *Apple* computer you will need a scientific Python3 stack.
 MacOSX provides by default Python2.7, you will need to install a recent version
-of Python3 (3.6 at least).
+of Python3 (3.7 at least).
 Those distribution are available as *dmg* images from:
 `Python.org <https://www.python.org/downloads/mac-osx/>`_
 
-After downloading, move the **app** into the *Applications* folder. 
+After downloading, move the **app** into the *Applications* folder.
 
 Using a virtual environment:
 ----------------------------
@@ -45,15 +45,12 @@ Get the sources from Github:
 
    python3 -m venv pyfai
    source pyfai/bin/activate
-   pip install setuptools wheel pip
-   wget https://github.com/silx-kit/pyFAI/archive/master.zip
-   unzip master.zip
-   cd pyFAI-master
+   pip install build
+   wget https://github.com/silx-kit/pyFAI/archive/main.zip
+   unzip main.zip
+   cd pyFAI-main
    pip install -r requirements.txt
-   python setup.py build
-   python run_tests.py
    pip install . --upgrade
-
 
 About OpenMP
 ............
@@ -66,7 +63,7 @@ support for OpenMP.
 
 There are two ways to compile pyFAI on MacOSX:
 
-* Using *Xcode* and de-activating OpenMP in pyFAI
+* Using *Xcode* which desctivates OpenMP
 * Using another compiler which supports OpenMP
 
 Using Xcode
@@ -76,9 +73,6 @@ To build pyFAI from sources, a C-compiler is needed.
 On an *Apple* computer, the default compiler is
 `Xcode <https://developer.apple.com/xcode/>`_, and it is available for free on
 the **AppStore**.
-As pyFAI will deactivate OpenMP on apple computer, for this  
-it needs to regenerate all Cython files without OpenMP.
-
 The absence of OpenMP is mitigated on Apple computer by the support of OpenCL which provied parallel intgeration.
 
 Using **gcc** or **clang**
@@ -86,16 +80,4 @@ Using **gcc** or **clang**
 
 If you want to keep the OpenMP feature (which makes the processing slightly faster),
 the alternative is to install another compiler like `gcc <https://gcc.gnu.org/>`_
-or `clang <http://clang.llvm.org/>`_ on your *Apple* computer.
-
-.. code-block:: shell
-
-    pip install cython
-    CC=gcc python setup.py build --force-cython --openmp
-    python setup.py bdist_wheel
-    pip install --find-links=dist/ --pre --no-index --upgrade pyFAI
-
-
-**Nota:** The usage of "python setup.py install" is now deprecated.
-It causes much more trouble as there is no installed file tracking,
-hence no way to properly un-install a package.
+or `clang <http://clang.llvm.org/>`_ on your *Apple* computer and define the environment variable ``CC``.

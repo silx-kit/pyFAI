@@ -329,8 +329,8 @@ class Nexus(object):
         return coll
 
     def get_dataset(self, grp, attr=None, value=None):
-        """return list of dataset of the group matching 
-        the given attribute having the given value 
+        """return list of dataset of the group matching
+        the given attribute having the given value
 
         :param grp: HDF5 group
         :param attr: name of an attribute
@@ -344,7 +344,7 @@ class Nexus(object):
 
     def get_default_NXdata(self):
         """Return the default plot configured in the nexus structure.
-        
+
         :return: the group with the default plot or None if not found
         """
         entry_name = self.h5.attrs.get("default")
@@ -411,7 +411,7 @@ class Nexus(object):
 
 def load_nexus(filename):
     """Tried to read-back a file from a Nexus file written by pyFAI
-    
+
     :param filename: the name of the nexus file
     :return: parsed result
     """
@@ -476,8 +476,8 @@ def load_nexus(filename):
 
 def _save_pyFAI(nexus, entry_grp, result):
     """Write the NXprocess into the entry
-    
-    :param nexus: Opened Nexus file 
+
+    :param nexus: Opened Nexus file
     :param entry: HDF5 group containing the NXentry
     :param result: instance of Integrate1dResult
     :return: the NXprocess group
@@ -523,16 +523,16 @@ def save_NXmonpd(filename, result,
                  source_probe="x-ray",
                  sample="sample",
                  extra=None):
-    """Save integrated data into a HDF5-file following 
+    """Save integrated data into a HDF5-file following
     the Nexus powder diffraction application definition:
     https://manual.nexusformat.org/classes/applications/NXmonopd.html
-    
+
     :param filename: name of the file to be written
     :param result: instance of Integrate1dResult
     :param title: title of the experiment
     :param entry: name of the entry
     :param instrument: name/brand of the instrument
-    :param source_name: name/brand of the particule source 
+    :param source_name: name/brand of the particule source
     :param source_type: kind of source as a string
     :param source_probe: Any of these values: 'neutron' | 'x-ray' | 'electron'
     :param sample: sample name
@@ -633,16 +633,16 @@ def save_NXcansas(filename, result,
                   source_probe="x-ray",
                   sample="sample",
                   extra=None):
-    """Save integrated data into a HDF5-file following 
+    """Save integrated data into a HDF5-file following
     the Nexus canSAS application definition:
     https://manual.nexusformat.org/classes/applications/NXcanSAS.html
-    
+
     :param filename: name of the file to be written
     :param result: instance of Integrate1dResult
     :param title: title of the experiment
     :param entry: name of the entry
     :param instrument: name/brand of the instrument
-    :param source_name: name/brand of the particule source 
+    :param source_name: name/brand of the particule source
     :param source_type: kind of source as a string
     :param source_probe: Any of these values: 'neutron' | 'x-ray' | 'electron'
     :param sample: sample name
@@ -753,4 +753,3 @@ def save_NXcansas(filename, result,
             extra_grp = nxs.new_class(entry_grp, "extra", "NXnote")
             extra_grp.create_dataset("data", data=json.dumps(extra, indent=2, separators=(",\r\n", ": ")))
             extra_grp.create_dataset("format", data="text/json")
-

@@ -510,4 +510,3 @@ kernel void sigma_clip_horizontal(global float *src,
         std[get_global_id(0)] = result.s1;
     }
 }
-

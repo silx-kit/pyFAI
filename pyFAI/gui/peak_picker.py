@@ -33,10 +33,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/03/2022"
+__date__ = "25/04/2023"
 __status__ = "production"
 
 import os
+import copy
 import threading
 import logging
 import operator
@@ -59,6 +60,7 @@ from ..control_points import ControlPoints
 from ..calibrant import CALIBRANT_FACTORY
 from ..blob_detection import BlobDetection
 from ..massif import Massif
+from ..detectors import Detector
 from ..ext.reconstruct import reconstruct
 from ..ext.watershed import InverseWatershed
 from ..utils.callback import dangling_callback
@@ -66,11 +68,11 @@ from ..utils.callback import dangling_callback
 
 def preprocess_image(data, log=False, clip=0.001):
     """Preforms the pre-processing of the image
-    
+
     :param data: the input image
     :param log: set to apply logarithmic intensity scale
     :param clip: discard pixel fraction which are too weak/intense
-    :return: scaled image, bounds  
+    :return: scaled image, bounds
     """
     if log:
         data_disp = numpy.arcsinh(data)
@@ -112,9 +114,12 @@ class PeakPicker(object):
         :param pointfile:
         """
         if isinstance(data, (str,)):
-            self.data = fabio.open(data).data.astype("float32")
-        else:
-            self.data = numpy.ascontiguousarray(data, numpy.float32)
+            data = fabio.open(data).data
+
+        self.data = numpy.ascontiguousarray(data, numpy.float32)
+        if (mask is None) and (isinstance(detector, Detector)):
+            mask = detector.dynamic_mask(data)
+
         if mask is not None:
             mask = mask.astype(bool)
             view = self.data.ravel()
@@ -147,6 +152,19 @@ class PeakPicker(object):
             method = self.VALID_METHODS[0]
         self.init(method, False)
 
+    def __deepcopy__(self, memo=None):
+        """Helper for deep-copy"""
+        if memo == None:
+            memo = {}
+        data = copy.deepcopy(self.data, memo=memo)
+        reconstruct = copy.deepcopy(self.reconstruct, memo=memo)
+        mask = copy.deepcopy(self.mask, memo=memo)
+        method = copy.deepcopy(self.method, memo=memo)
+        points = copy.deepcopy(self.points, memo=memo)
+        new = self.__class__(data=data, reconst=reconstruct, mask=mask, method=method)
+        new.points = points
+        return new
+
     def init(self, method, sync=True):
         """
         Unified initializer
@@ -170,7 +188,7 @@ class PeakPicker(object):
             data = reconstruct(self.data, self.mask)
         else:
             data = self.data
-        self.massif = Massif(data)
+        self.massif = Massif(data, mask=self.mask)
         self._init_thread = threading.Thread(target=self.massif.get_labeled_massif, name="massif_process")
         self._init_thread.start()
         if sync:
@@ -242,7 +260,7 @@ class PeakPicker(object):
     def gui(self, log=False, maximize=False, pick=True, widget_klass=None):
         """
         Display the GUI
-        
+
         :param log: show z in log scale
         :param maximize: set to true to maximize window
         :param pick: activate pixel picking
@@ -313,7 +331,7 @@ class PeakPicker(object):
 
         :param points: list of points
         :param gpt: group of point, instance of PointGroup, the one to
-        :param ring: ring number  
+        :param ring: ring number
         :return: gpt
         """
         if points:
@@ -323,7 +341,7 @@ class PeakPicker(object):
         return gpt
 
     def onclick_new_grp(self, yx, ring):
-        " * new_grp Right-click (click+n):         try an auto find for a ring"
+        "new_grp Right-click (click+n):         try an auto find for a ring"
         # ydata is a float, and matplotlib display pixels centered.
         # we use floor (int cast) instead of round to avoid use of
         # banker's rounding
@@ -337,7 +355,7 @@ class PeakPicker(object):
             logger.warning("No peak found !!!")
 
     def onclick_single_point(self, yx, ring):
-        " * Right-click + Ctrl (click+b):  create new group with one single point"
+        "Right-click + Ctrl (click+b):  create new group with one single point"
         newpeak = self.massif.nearest_peak(yx)
         if newpeak:
             gpt = self._common_creation([newpeak], ring=ring)
@@ -346,7 +364,7 @@ class PeakPicker(object):
             logger.warning("No peak found !!!")
 
     def onclick_append_more_points(self, yx, ring):
-        " * Right-click + m (click+m):     find more points for current group"
+        "Right-click + m (click+m):     find more points for current group"
         gpt = self.points.get(ring)
         if gpt:
             self.widget.remove_grp(gpt.label, update=False)
@@ -364,7 +382,8 @@ class PeakPicker(object):
             self.onclick_new_grp(yx, ring)
 
     def onclick_append_1_point(self, yx, ring=None):
-        """ * Right-click + Shift (click+v): add one point to current group
+        """Right-click + Shift (click+v): add one point to current group
+
         :param xy: 2tuple of coordinates
         """
         gpt = self.points.get(ring)
@@ -382,7 +401,7 @@ class PeakPicker(object):
             self.onclick_new_grp(yx, ring)
 
     def onclick_erase_grp(self, yx, ring):
-        " * Center-click or (click+d):     erase current group"
+        "Center-click or (click+d):     erase current group"
         gpt = self.points.pop(ring)
         if gpt:
             self.widget.remove_grp(gpt.label, update=True)
@@ -394,7 +413,7 @@ class PeakPicker(object):
             logger.warning("No group of points for ring %s", ring)
 
     def onclick_erase_1_point(self, yx, ring):
-        " * Center-click + 1 or (click+1): erase closest point from current group"
+        "Center-click + 1 or (click+1): erase closest point from current group"
         gpt = self.points.get(ring)
         if not gpt:
             self.widget.remove_grp(gpt.label, update=True)

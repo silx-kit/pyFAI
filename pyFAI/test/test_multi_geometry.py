@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2021"
+__date__ = "08/03/2023"
 
 import unittest
 import logging
@@ -63,7 +63,7 @@ class TestMultiGeometry(unittest.TestCase):
                    AzimuthalIntegrator(0.1, 0.030, 0.00, detector=cls.sub_det),
                    AzimuthalIntegrator(0.1, 0.005, 0.00, detector=cls.sub_det),
                    ]
-        cls.mg = MultiGeometry(cls.ais, radial_range=cls.range, unit="2th_deg")
+        cls.mg = MultiGeometry(cls.ais, radial_range=cls.range, unit="2th_deg", threadpoolsize=4)
         cls.N = 390
         cls.method = ("full", "histogram", "cython")
 

@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 08/01/2021
+:Date: 16/05/2023
 :Keywords: Project management description
 :Target: developers
 
@@ -21,7 +21,7 @@ Programming language
 
 PyFAI is a Python project but uses many programming languages:
 
-* 50000 lines of Python (of thich 8000 for the test)
+* 50000 lines of Python (of which 8000 are for the test)
 * 16000 lines of Cython which are converted into ... C or C++
 * 8000 lines of OpenCL kernels
 
@@ -112,11 +112,11 @@ On OSX, an alternative is to install a recent version of GCC (>=4.2) and to use
 it for compiling pyFAI.
 The options to be used then are * --force-cython --openmp*.
 
-Otherwise, C files are which are provided with pyFAI sources are directly useable
+Otherwise, C files which are provided with pyFAI sources are directly useable
 and Cython is only needed for developing new binary modules.
 If you want to generate your own C files, make sure your local Cython version
 is recent enough (v0.21 and newer),
-unless your Cython files will not be translated to C, nor used.
+otherwise your Cython files will not be translated to C, nor used.
 
 Building procedure
 ------------------
@@ -128,13 +128,6 @@ As most of the Python projects:
 
     pip install --upgrade .
 
-
-There are few specific options to setup.py:
-* ``-J 16``: Build the code using 16 compilers instances.
-* ``--no-cython``: do not use cython (even if present) and use the C source code provided by the development team
-* ``--force-cython``: enforce the regeneration of all C-files from cython sources
-* ``--no-openmp``: if you compiler lacks OpenMP support, like Xcode on MacOS.
-* ``--openmp``: enforce the use of OpenMP.
 
 Test suites
 -----------
@@ -169,17 +162,10 @@ To test the development version (built but not yet installed):
 
 .. code-block:: shell
 
-    python setup.py build test
-
-or
-
-.. code-block:: shell
-
-    python setup.py build
-    python run_test.py
+    python run_tests.py
 
 
-PyFAI comes with 63 test-suites (418 tests in total) representing a coverage of 54%.
+PyFAI comes with 65 test-suites (445 tests in total) representing a coverage of 55%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
 Test may not pass on computer featuring less than 2GB of memory or 32 bit architectures.
@@ -201,8 +187,8 @@ This software engineering practice consists in merging all developer working cop
 to a shared mainline several times a day and build the whole project for multiple
 targets.
 
-On Debian 8 - Jessie
-....................
+On Debian 11
+............
 Continuous integration is made by a home-made scripts which checks out the latest release and builds and runs the test every night.
 `Nightly builds <http://www.silx.org/pub/debian/binary/>`_ are available for debian8-64 bits. To install them:
 
@@ -224,14 +210,14 @@ Linux
 
 
 `Github workflows provides continuous integration on Linux <https://github.com/silx-kit/pyFAI/actions>`_,
-64 bits computer with Python 3.6 to 3.10. Travis.org is now dead since the service was discontinued.
+64 bits computer with Python 3.7 to 3.11. Travis.org is now dead since the service was discontinued.
 
 `Gitlab runners <https://gitlab.esrf.fr/silx/bob/pyfai/-/pipelines>`_ are periodically triggered to build the project and provide *wheels* for all kind of systems.
 
 AppVeyor
 ........
 
-`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 3.6 to 3.10.
+`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 3.8 to 3.10.
 Successful builds provide installers for pyFAI as *wheels* and *msi*, they are anonymously available as *artifacts*.
 Due to the limitation of AppVeyor's build system, those installers have openMP disabled.
 

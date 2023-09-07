@@ -1107,4 +1107,3 @@ class HistoBBox2d(object):
         if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
             Py_XDECREF(<PyObject *> self._lut)
         return  outMerge.T, self.outPos0, self.outPos1, outData.T, outCount.T
-

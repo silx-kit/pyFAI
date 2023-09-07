@@ -79,7 +79,7 @@ class JupyCalibration(AbstractCalibration):
         :param mask: 2D image with marked invalid pixels
         :param detector: instance of detector used
         :param wavelengh: wavelength in A as a float
-        :param calibrant: instance of calibrant 
+        :param calibrant: instance of calibrant
         """
         AbstractCalibration.__init__(self, img,
                                      mask=mask,
@@ -105,7 +105,7 @@ class JupyCalibration(AbstractCalibration):
         """
         Contains the geometry refinement part specific to Calibration from Jupyter
         Sets up the initial guess.
-        
+
         :param maxiter: number of iteration to run for in the minimizer
         :param fixed: a list of parameters for maintain fixed during the refinement. self.fixed by default.
         :return: nothing, object updated in place
@@ -141,7 +141,7 @@ class JupyCalibration(AbstractCalibration):
     def remove_grp(self, lbl):
         """
         Remove a group of points
-        
+
         :param lbl: label of the given group
         """
         self.peakPicker.remove_grp(lbl)

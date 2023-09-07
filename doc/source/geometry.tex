@@ -12,9 +12,9 @@ All dimentions are in meter and all rotation are in radians.
 by six variables, collectively called the PONI, for point of normal
 incidence. In addition, a detector calibration is provided in the
 PONI-file to convert pixel coordinates into real-space coordinates. In
-the simplest case this is a pixel size.  
+the simplest case this is a pixel size.
 
-\texttt{pyFAI} uses a coordinate system where the first axis (1)  is 
+\texttt{pyFAI} uses a coordinate system where the first axis (1)  is
 vertically up (or $y$), the second axis (2) is horizontal ($x$) towards the ring
 center (starboard), and the third axis (3) along the beam $z$. Note that
 in this order (1,2,3) is a right-handed coordinate system, which makes
@@ -55,7 +55,7 @@ matrices:
   \begin{bmatrix}
     \cos(\theta_3) & -\sin(\theta_3) & 0\\
     \sin(\theta_3) & \cos(\theta_3) & 0\\
-    0 & 0 & 1  
+    0 & 0 & 1
   \end{bmatrix}
   \\
   R(\theta_1, \theta_2, \theta_3)
@@ -143,7 +143,7 @@ The inversion is straight-forward:
   \end{bmatrix}
   & =
   \begin{bmatrix}
-    A_1  \\ A_2 \\ A_3 
+    A_1  \\ A_2 \\ A_3
   \end{bmatrix}
   + \alpha
   \begin{bmatrix}
@@ -209,7 +209,7 @@ following parameters:
   arranged on the detector. If, e.g., the detector is rotated by
   $90^{\circ}$, then $O=\begin{bmatrix} 0 & 1 \\ -1 &
   0\end{bmatrix}$. If left and right (or up and down) are inverted on the
-  detector, then $o_{22} = -1$ ($o_{11}=-1$). 
+  detector, then $o_{22} = -1$ ($o_{11}=-1$).
 \end{itemize}
 
 It appears that these conventions where defined under the assumption

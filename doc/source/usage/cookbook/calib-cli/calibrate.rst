@@ -202,4 +202,3 @@ Here is the diffraction pattern from a properly calibrated setup:
    s = Spline("F_K4320T_Cam43_30012013_distorsion.spline")
    ud = s.flipud()
    ud.write("flipud.spline")
-

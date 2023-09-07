@@ -31,7 +31,7 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "14/01/2021"
+__date__ = "09/03/2023"
 __copyright__ = "2018-2021, ESRF"
 
 
@@ -46,7 +46,6 @@ from cython.parallel import prange
 from cython.operator cimport dereference
 from cython.operator cimport preincrement
 cimport cython
-from cython cimport floating
 
 include "sparse_builder.pxi"
 include "regrid_common.pxi"
@@ -60,8 +59,8 @@ def feed_histogram(SparseBuilder builder not None,
                    double normalization_factor=1.0):
     """Missing docstring for feed_histogram
     Is this just a demo ?
-    
-    warning: 
+
+    warning:
         * Unused argument 'empty'
         * Unused argument 'normalization_factor'
 

@@ -29,10 +29,10 @@
 
 """Sparsify 2D single crystal diffraction images by separating Bragg peaks from background signal.
 
-Positive outlier pixels (i.e. Bragg peaks) are all recorded as they are without destruction. 
+Positive outlier pixels (i.e. Bragg peaks) are all recorded as they are without destruction.
 Peaks are not integrated: see the `peakfinder` to perform peak integration.
 
-Background is calculated by an iterative sigma-clipping in the polar space. 
+Background is calculated by an iterative sigma-clipping in the polar space.
 The number of iteration, the clipping value and the number of radial bins could be adjusted.
 
 This program requires OpenCL. The device needs be properly selected.
@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/10/2022"
+__date__ = "31/01/2023"
 __status__ = "production"
 
 import os
@@ -109,7 +109,7 @@ class FileReader(Thread):
         """
         :param filenames: list of multi-frame fabio objects.
         :param queue: queue where to put the image in as numpy array.
-        :param read_ahead: read in advance that many frames, should be > to the fps 
+        :param read_ahead: read in advance that many frames, should be > to the fps
         """
         Thread.__init__(self, name="FileReader")
         self.queue = queue
@@ -139,7 +139,7 @@ class FileReader(Thread):
 class Sparsifyer:
 
     def __init__(self, inqueue, outqueue, pf, variance, parameters, progress):
-        #Thread.__init__(self, name="Sparsifyer")
+        # Thread.__init__(self, name="Sparsifyer")
         self.inqueue = inqueue
         self.outqueue = outqueue
         self.pf = pf
@@ -180,7 +180,7 @@ class Sparsifyer:
                 if now > last_update + 0.1:  # 10Hz is enough
                     last_update = now
                     if self.progress:
-                        if len(current.peaks):
+                        if current.peaks is not None:
                             self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels/ {len(current.peaks):4} peaks")
                         else:
                             self.progress.update(cnt, message=f"{filename}: {current.intensity.size:6d} pixels")
@@ -188,6 +188,7 @@ class Sparsifyer:
                         print(f"{filename} frame #{cnt:04d}, found {current.intensity.size:6d} intense pixels")
                 cnt += 1
         return cnt
+
 
 class Writer(Thread):
 
@@ -465,11 +466,11 @@ def process(options):
               "extra": parameters,
               "start_time": start_time}
     writer = Writer(queue_process, options.output, kwargs)
-    
+
     reader.start()
     writer.start()
     t0 = time.perf_counter()
-    cnt = sparsifyer.run()  #Running in main thread, not in its own
+    cnt = sparsifyer.run()  # Running in main thread, not in its own
     t1 = time.perf_counter()
     reader.join()
     writer.join()

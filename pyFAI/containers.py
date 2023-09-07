@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2022"
+__date__ = "13/03/2023"
 __status__ = "development"
 
 from collections import namedtuple
@@ -45,7 +45,7 @@ class ErrorModel(IntEnum):
     VARIANCE = 1
     POISSON = 2
     AZIMUTHAL = 3
-    HYBRID = 4  # used in peak-pickin, use azimuthal for sigma-clipping and poisson later on
+    HYBRID = 4  # used in peak-picking, use azimuthal for sigma-clipping and poisson later on, at the last iteration
 
     @classmethod
     def parse(cls, value):
@@ -106,7 +106,7 @@ class IntegrateResult(tuple):
 
     @property
     def method(self):
-        """return the name of the integration method _actually_ used, 
+        """return the name of the integration method _actually_ used,
         represented as a 4-tuple (dimention, splitting, algorithm, implementation)
         """
         return self._method
@@ -511,10 +511,10 @@ class Integrate2dResult(IntegrateResult):
 class SeparateResult(tuple):
     """
     Class containing the result of AzimuthalIntegrator.separte which separates the
-    
+
     * Amorphous isotropic signal (from a median filter or a sigma-clip)
     * Bragg peaks (signal > amorphous)
-    * Shadow areas (signal < amorphous)  
+    * Shadow areas (signal < amorphous)
     """
 
     def __new__(self, bragg, amorphous):
@@ -547,7 +547,7 @@ class SeparateResult(tuple):
     @property
     def bragg(self):
         """
-        Contains the bragg peaks 
+        Contains the bragg peaks
 
         :rtype: numpy.ndarray
         """
@@ -600,7 +600,7 @@ class SeparateResult(tuple):
 
     @property
     def method(self):
-        """return the name of the integration method _actually_ used, 
+        """return the name of the integration method _actually_ used,
         represented as a 4-tuple (dimention, splitting, algorithm, implementation)
         """
         return self._method
@@ -859,7 +859,7 @@ class SparseFrame(tuple):
     @property
     def index(self):
         """
-        Contains the index position of bragg peaks 
+        Contains the index position of bragg peaks
 
         :rtype: numpy.ndarray
         """
@@ -868,7 +868,7 @@ class SparseFrame(tuple):
     @property
     def intensity(self):
         """
-        Contains the intensity of bragg peaks 
+        Contains the intensity of bragg peaks
 
         :rtype: numpy.ndarray
         """
@@ -877,7 +877,7 @@ class SparseFrame(tuple):
     @property
     def mask(self):
         """
-        Contains the mask used (encodes for the shape of the image as well) 
+        Contains the mask used (encodes for the shape of the image as well)
 
         :rtype: numpy.ndarray
         """
@@ -958,5 +958,3 @@ class SparseFrame(tuple):
     @property
     def unit(self):
         return self._unit
-
-

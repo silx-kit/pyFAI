@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/01/2022"
+__date__ = "17/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -97,12 +97,12 @@ def histoBBox1d(weights,
     if 'pos0Range' in back_compat_kwargs:
         if pos0_range is not None:
             raise ValueError(f"Can not pass both pos0_range and pos0Range")
-        pos0_range = back_compat_kwargs.popn('pos0Range')
+        pos0_range = back_compat_kwargs.pop('pos0Range')
         warnings.warn("The keyword 'pos0Range' is deprecated in favor of 'pos0_range'")
     if 'pos1Range' in back_compat_kwargs:
         if pos1_range is not None:
             raise ValueError(f"Can not pass both pos1_range and pos1Range")
-        pos1_range = back_compat_kwargs.popn('pos1Range')
+        pos1_range = back_compat_kwargs.pop('pos1Range')
         warnings.warn("The keyword 'pos1Range' is deprecated in favor of 'pos1_range'")
     assert len(back_compat_kwargs) == 0
     cdef Py_ssize_t  size = weights.size
@@ -127,7 +127,7 @@ def histoBBox1d(weights,
     cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
     cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
     dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
-    
+
     sum_data = numpy.zeros(bins, dtype=acc_d)
     sum_count = numpy.zeros(bins, dtype=acc_d)
     out_merge = numpy.zeros(bins, dtype=data_d)
@@ -175,9 +175,9 @@ def histoBBox1d(weights,
     else:
         cpos1 = None
         dpos1 = None
-    
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0, 
-                                                                 cpos1, dpos1, 
+
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
+                                                                 cpos1, dpos1,
                                                                  cmask, pos0_range, pos1_range,
                                                                  allow_pos0_neg=False, chiDiscAtPi=True, clip_pos1=False)
     pos0_max = calc_upper_bound(pos0_maxin)
@@ -240,15 +240,15 @@ def histoBBox1d(weights,
                 delta_right = fbin0_max - (<float> bin0_max)
 
                 sum_count[bin0_min] += (inv_area * delta_left)
-                sum_data[bin0_min] += (data * (inv_area * delta_left) ** coef_power)
+                sum_data[bin0_min] += (data * pown(inv_area * delta_left, coef_power))
 
                 sum_count[bin0_max] += (inv_area * delta_right)
-                sum_data[bin0_max] += (data * (inv_area * delta_right) ** coef_power)
+                sum_data[bin0_max] += (data * pown(inv_area * delta_right, coef_power))
 
                 if bin0_min + 1 < bin0_max:
                     for idx in range(bin0_min + 1, bin0_max):
                         sum_count[idx] += inv_area
-                        sum_data[idx] += data * (inv_area ** coef_power)
+                        sum_data[idx] += data * pown(inv_area, coef_power)
 
         for idx in range(bins):
                 if sum_count[idx] > epsilon:
@@ -273,6 +273,8 @@ def histoBBox1d_engine(weights,
                        delta_dummy=None,
                        mask=None,
                        variance=None,
+                       dark_variance=None,
+                       int error_model=ErrorModel.NO,
                        dark=None,
                        flat=None,
                        solidangle=None,
@@ -316,34 +318,39 @@ def histoBBox1d_engine(weights,
         Py_ssize_t i, idx
         # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption, cdark_variance
         data_t cdummy, ddummy=0.0
 
         # Related to positions: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
-        position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)        
+        position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
         position_t[::1] cpos1=None, dpos1=None
-        acc_t[:, ::1] out_data = numpy.zeros((bins, 4), dtype=acc_d)
-        data_t[::1] out_intensity = numpy.zeros(bins, dtype=data_d)
-        data_t[::1] out_error
+        acc_t[:, ::1] out_data = numpy.zeros((bins, 5), dtype=acc_d)
+        data_t[::1] out_intensity = numpy.empty(bins, dtype=data_d)
+        data_t[::1] std, sem
         mask_t[::1] cmask=None
         position_t c0, c1, d0, d1
         position_t min0, max0, delta
         position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
         position_t fbin0_min, fbin0_max
-        acc_t norm
+        acc_t sig, nrm, var, cnt, nrm2
         acc_t  inv_area, delta_right, delta_left
         Py_ssize_t  bin0_max, bin0_min
-        bint is_valid, check_mask = False, check_dummy = False, do_variance = False, check_pos1=False
-        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
+        bint is_valid, check_mask = False, check_dummy = False, check_pos1=False
+        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, do_dark_variance=False
         preproc_t value
 
     if variance is not None:
         assert variance.size == size, "variance size"
-        do_variance = True
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
-        out_error = numpy.zeros(bins, dtype=data_d)
-
+        error_model = max(error_model, 1)
+    if error_model:
+        std = numpy.empty(bins, dtype=data_d)
+        sem = numpy.empty(bins, dtype=data_d)
+    if dark_variance is not None:
+        assert dark_variance.size == size, "dark_varance array size"
+        do_dark_variance = True
+        cdark_variance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=data_d)
     if mask is not None:
         assert mask.size == size, "mask size"
         check_mask = True
@@ -386,8 +393,8 @@ def histoBBox1d_engine(weights,
         cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0, 
-                                                                 cpos1, dpos1, 
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
+                                                                 cpos1, dpos1,
                                                                  cmask, pos0_range, pos1_range,
                                                                  allow_pos0_neg, chiDiscAtPi=True, clip_pos1=False)
 
@@ -406,7 +413,7 @@ def histoBBox1d_engine(weights,
 
             is_valid = preproc_value_inplace(&value,
                                  cdata[idx],
-                                 variance=cvariance[idx] if do_variance else 0.0,
+                                 variance=cvariance[idx] if error_model==1 else 0.0,
                                  dark=cdark[idx] if do_dark else 0.0,
                                  flat=cflat[idx] if do_flat else 1.0,
                                  solidangle=csolidangle[idx] if do_solidangle else 1.0,
@@ -417,29 +424,30 @@ def histoBBox1d_engine(weights,
                                  delta_dummy=ddummy,
                                  check_dummy=check_dummy,
                                  normalization_factor=normalization_factor,
-                                 dark_variance=0.0)
+                                 dark_variance=cdark_variance[idx] if do_dark_variance else 0.0,
+                                 error_model=error_model)
             if not is_valid:
                 continue
             c0 = cpos0[idx]
             d0 = dpos0[idx]
             min0 = c0 - d0
-            max0 = c0 + d0  
+            max0 = c0 + d0
 
             if (max0 < pos0_min) or (min0 > pos0_maxin):
                 continue
-                      
+
             if check_pos1:
                 c1 = cpos1[idx]
                 d1 = dpos1[idx]
                 if (((c1 + d1) < pos1_min) or ((c1 - d1) > pos1_max)):
                     continue
-        
+
             fbin0_min = get_bin_number(min0, pos0_min, delta)
             fbin0_max = get_bin_number(max0, pos0_min, delta)
 
-            bin0_max = min(< Py_ssize_t > fbin0_max, bins - 1)             
+            bin0_max = min(< Py_ssize_t > fbin0_max, bins - 1)
             bin0_min = max(< Py_ssize_t > fbin0_min, 0)
-            
+
             # Here starts the pixel distribution
             if bin0_min == bin0_max:
                 # All pixel is within a single bin
@@ -458,21 +466,34 @@ def histoBBox1d_engine(weights,
                     update_1d_accumulator(out_data, idx, value, inv_area)
 
         for i in range(bins):
-            norm = out_data[i, 2]
-            if out_data[i, 3] > 0.0:
+            sig = out_data[i, 0]
+            var = out_data[i, 1]
+            nrm = out_data[i, 2]
+            cnt = out_data[i, 3]
+            nrm2 = out_data[i, 4]
+
+            if cnt:
                 "test on count as norm can be  negative"
-                out_intensity[i] = out_data[i, 0] / norm
-                if do_variance:
-                    out_error[i] = sqrt(out_data[i, 1]) / norm
+                out_intensity[i] = sig / nrm
+                if error_model:
+                    sem[i] = sqrt(var) / nrm
+                    std[i] = sqrt(var/nrm2)
             else:
                 out_intensity[i] = empty
-                if do_variance:
-                    out_error[i] = empty
+                if error_model:
+                    std[i] = sem[i] = empty
 
     bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_max - 0.5 * delta, bins)
-
-    return Integrate1dtpl(bin_centers, numpy.asarray(out_intensity), numpy.asarray(out_error) if do_variance else None, 
-                          numpy.asarray(out_data[:, 0]), numpy.asarray(out_data[:, 1]), numpy.asarray(out_data[:, 2]), numpy.asarray(out_data[:, 3]))
+    return Integrate1dtpl(bin_centers,
+                          numpy.asarray(out_intensity),
+                          numpy.asarray(sem) if error_model else None,
+                          numpy.asarray(out_data[:, 0]),
+                          numpy.asarray(out_data[:, 1]) if error_model else None,
+                          numpy.asarray(out_data[:, 2]),
+                          numpy.asarray(out_data[:, 3]),
+                          numpy.asarray(std) if error_model else None,
+                          numpy.asarray(sem) if error_model else None,
+                          numpy.asarray(out_data[:, 4]) if error_model else None)
 
 
 histoBBox1d_ng = histoBBox1d_engine
@@ -533,12 +554,12 @@ def histoBBox2d(weights,
     if 'pos0Range' in back_compat_kwargs:
         if pos0_range is not None:
             raise ValueError(f"Can not pass both pos0_range and pos0Range")
-        pos0_range = back_compat_kwargs.popn('pos0Range')
+        pos0_range = back_compat_kwargs.pop('pos0Range')
         warnings.warn("The keyword 'pos0Range' is deprecated in favor of 'pos0_range'")
     if 'pos1Range' in back_compat_kwargs:
         if pos1_range is not None:
             raise ValueError(f"Can not pass both pos1_range and pos1Range")
-        pos1_range = back_compat_kwargs.popn('pos1Range')
+        pos1_range = back_compat_kwargs.pop('pos1Range')
         warnings.warn("The keyword 'pos1Range' is deprecated in favor of 'pos1_range'")
     assert len(back_compat_kwargs) == 0
     cdef Py_ssize_t bins0, bins1, i, j, idx
@@ -611,8 +632,8 @@ def histoBBox2d(weights,
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0, 
-                                                                 cpos1, dpos1, 
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
+                                                                 cpos1, dpos1,
                                                                  cmask, pos0_range, pos1_range,
                                                                  allow_pos0_neg, chiDiscAtPi, clip_pos1)
 
@@ -684,13 +705,13 @@ def histoBBox2d(weights,
                     inv_area = 1.0 / (fbin1_max - fbin1_min)
 
                     sum_count[bin0_min, bin1_min] += inv_area * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_down) ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area * delta_down, coef_power)
 
                     sum_count[bin0_min, bin1_max] += inv_area * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                    sum_data[bin0_min, bin1_max] += data * pown(inv_area * delta_up, coef_power)
                     for j in range(bin1_min + 1, bin1_max):
                         sum_count[bin0_min, j] += inv_area
-                        sum_data[bin0_min, j] += data * (inv_area) ** coef_power
+                        sum_data[bin0_min, j] += data * pown(inv_area, coef_power)
 
             else:
                 # spread on 2 or more bins in dim 0
@@ -700,13 +721,13 @@ def histoBBox2d(weights,
 
                     delta_left = (<position_t> (bin0_min + 1)) - fbin0_min
                     sum_count[bin0_min, bin1_min] += inv_area * delta_left
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left) ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area * delta_left, coef_power)
                     delta_right = fbin0_max - (<position_t> bin0_max)
                     sum_count[bin0_max, bin1_min] += inv_area * delta_right
-                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right) ** coef_power
+                    sum_data[bin0_max, bin1_min] += data * pown(inv_area * delta_right, coef_power)
                     for i in range(bin0_min + 1, bin0_max):
                             sum_count[i, bin1_min] += inv_area
-                            sum_data[i, bin1_min] += data * (inv_area) ** coef_power
+                            sum_data[i, bin1_min] += data * pown(inv_area, coef_power)
                 else:
                     # spread on n pix in dim0 and m pixel in dim1:
                     inv_area = 1.0 / ((fbin0_max - fbin0_min) * (fbin1_max - fbin1_min))
@@ -717,30 +738,30 @@ def histoBBox2d(weights,
                     delta_up = fbin1_max - (<position_t> bin1_max)
 
                     sum_count[bin0_min, bin1_min] += inv_area * delta_left * delta_down
-                    sum_data[bin0_min, bin1_min] += data * (inv_area * delta_left * delta_down) ** coef_power
+                    sum_data[bin0_min, bin1_min] += data * pown(inv_area * delta_left * delta_down, coef_power)
 
                     sum_count[bin0_min, bin1_max] += inv_area * delta_left * delta_up
-                    sum_data[bin0_min, bin1_max] += data * (inv_area * delta_left * delta_up) ** coef_power
+                    sum_data[bin0_min, bin1_max] += data * pown(inv_area * delta_left * delta_up, coef_power)
 
                     sum_count[bin0_max, bin1_min] += inv_area * delta_right * delta_down
-                    sum_data[bin0_max, bin1_min] += data * (inv_area * delta_right * delta_down) ** coef_power
+                    sum_data[bin0_max, bin1_min] += data * pown(inv_area * delta_right * delta_down, coef_power)
 
                     sum_count[bin0_max, bin1_max] += inv_area * delta_right * delta_up
-                    sum_data[bin0_max, bin1_max] += data * (inv_area * delta_right * delta_up) ** coef_power
+                    sum_data[bin0_max, bin1_max] += data * pown(inv_area * delta_right * delta_up, coef_power)
                     for i in range(bin0_min + 1, bin0_max):
                             sum_count[i, bin1_min] += inv_area * delta_down
-                            sum_data[i, bin1_min] += data * (inv_area * delta_down) ** coef_power
+                            sum_data[i, bin1_min] += data * pown(inv_area * delta_down, coef_power)
                             for j in range(bin1_min + 1, bin1_max):
                                 sum_count[i, j] += inv_area
-                                sum_data[i, j] += data * (inv_area) ** coef_power
+                                sum_data[i, j] += data * pown(inv_area, coef_power)
                             sum_count[i, bin1_max] += inv_area * delta_up
-                            sum_data[i, bin1_max] += data * (inv_area * delta_up) ** coef_power
+                            sum_data[i, bin1_max] += data * pown(inv_area * delta_up, coef_power)
                     for j in range(bin1_min + 1, bin1_max):
                             sum_count[bin0_min, j] += inv_area * delta_left
-                            sum_data[bin0_min, j] += data * (inv_area * delta_left) ** coef_power
+                            sum_data[bin0_min, j] += data * pown(inv_area * delta_left, coef_power)
 
                             sum_count[bin0_max, j] += inv_area * delta_right
-                            sum_data[bin0_max, j] += data * (inv_area * delta_right) ** coef_power
+                            sum_data[bin0_max, j] += data * pown(inv_area * delta_right, coef_power)
 
         for i in range(bins0):
             for j in range(bins1):
@@ -770,6 +791,8 @@ def histoBBox2d_engine(weights,
                        delta_dummy=None,
                        mask=None,
                        variance=None,
+                       dark_variance=None,
+                       int error_model=ErrorModel.NO,
                        dark=None,
                        flat=None,
                        solidangle=None,
@@ -802,6 +825,7 @@ def histoBBox2d_engine(weights,
     :param flat: array (of float32) with flat-field image
     :param solidangle: array (of float32) with solid angle corrections
     :param polarization: array (of float32) with polarization corrections
+    :param error_model: 0 for no error propagation, 1 for variance, 2 for Poisson, 3,4 not implemented
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
@@ -819,10 +843,8 @@ def histoBBox2d_engine(weights,
         bins0, bins1 = tuple(bins)
     except TypeError:
         bins0 = bins1 = bins
-    if bins0 <= 0:
-        bins0 = 1
-    if bins1 <= 0:
-        bins1 = 1
+    bins0 = max(1, bins0)
+    bins1 = max(1, bins1)
     cdef:
         # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
@@ -833,26 +855,29 @@ def histoBBox2d_engine(weights,
         position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
         position_t[::1] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
         position_t[::1] dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
-        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 4), dtype=acc_d)
-        data_t[:, ::1] out_intensity = numpy.zeros((bins0, bins1), dtype=data_d)
-        data_t[:, ::1] out_error
+        #Accumulated data are also double
+        acc_t[:, :, ::1] out_data = numpy.zeros((bins0, bins1, 5), dtype=acc_d)
+        data_t[:, ::1] out_intensity = numpy.empty((bins0, bins1), dtype=data_d)
+        data_t[:, ::1] std, sem
         mask_t[::1] cmask
+        acc_t sig, var, nrm, cnt, nrm2
         position_t c0, c1, d0, d1
         position_t min0, max0, min1, max1, delta0, delta1
         position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
         position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max,
-        acc_t norm
         acc_t  inv_area, delta_up, delta_down, delta_right, delta_left
         Py_ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
-        bint check_mask = False, check_dummy = False, do_variance = False, is_valid
+        bint check_mask = False, check_dummy = False, is_valid
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
         preproc_t value
 
     if variance is not None:
         assert variance.size == size, "variance size"
-        do_variance = True
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=data_d)
-        out_error = numpy.zeros((bins0, bins1), dtype=data_d)
+        error_model = max(error_model, 1)
+    if error_model:
+        std = numpy.empty((bins0, bins1), dtype=data_d)
+        sem = numpy.empty((bins0, bins1), dtype=data_d)
 
     if mask is not None:
         assert mask.size == size, "mask size"
@@ -891,8 +916,8 @@ def histoBBox2d_engine(weights,
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0, 
-                                                                 cpos1, dpos1, 
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
+                                                                 cpos1, dpos1,
                                                                  cmask, pos0_range, pos1_range,
                                                                  allow_pos0_neg, chiDiscAtPi, clip_pos1)
     pos0_max = calc_upper_bound(pos0_maxin)
@@ -908,7 +933,7 @@ def histoBBox2d_engine(weights,
 
             is_valid = preproc_value_inplace(&value,
                                              cdata[idx],
-                                             variance=cvariance[idx] if do_variance else 0.0,
+                                             variance=cvariance[idx] if error_model==1 else 0.0,
                                              dark=cdark[idx] if do_dark else 0.0,
                                              flat=cflat[idx] if do_flat else 1.0,
                                              solidangle=csolidangle[idx] if do_solidangle else 1.0,
@@ -919,7 +944,8 @@ def histoBBox2d_engine(weights,
                                              delta_dummy=ddummy,
                                              check_dummy=check_dummy,
                                              normalization_factor=normalization_factor,
-                                             dark_variance=0.0)
+                                             dark_variance=0.0,
+                                             error_model=error_model)
 
             if not is_valid:
                 continue
@@ -945,7 +971,7 @@ def histoBBox2d_engine(weights,
             bin0_max = <Py_ssize_t> fbin0_max
             bin1_min = <Py_ssize_t> fbin1_min
             bin1_max = <Py_ssize_t> fbin1_max
-            
+
             if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
                     continue
 
@@ -954,7 +980,7 @@ def histoBBox2d_engine(weights,
             bin0_min = max(bin0_min, 0)
             bin1_max = min(bin1_max, bins1 - 1)
             bin1_min = max(bin1_min, 0)
-            
+
             if bin0_min == bin0_max:
                 # No spread along dim0
                 if bin1_min == bin1_max:
@@ -1007,23 +1033,33 @@ def histoBBox2d_engine(weights,
 
         for i in range(bins0):
             for j in range(bins1):
-                norm = out_data[i, j, 2]
-                if out_data[i, j, 3] > 0.0:
-                    "test on count as norm can be negatve"
-                    out_intensity[i, j] = out_data[i, j, 0] / norm
-                    if do_variance:
-                        out_error[i, j] = sqrt(out_data[i, j, 1]) / norm
+                sig = out_data[i, j, 0]
+                var = out_data[i, j, 1]
+                nrm = out_data[i, j, 2]
+                cnt = out_data[i, j, 3]
+                nrm2 = out_data[i, j, 4]
+                if cnt:
+                    "test on count as norm could be negatve"
+                    out_intensity[i, j] = sig / nrm
+                    if error_model:
+                        sem[i, j] = sqrt(var) / nrm
+                        std[i, j] = sqrt(var / nrm2)
                 else:
                     out_intensity[i, j] = empty
-                    if do_variance:
-                        out_error[i, j] = empty
+                    if error_model:
+                        sem[i, j] = empty
+                        std[i, j] = empty
 
     bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
     bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
     return Integrate2dtpl(bin_centers0, bin_centers1,
                           numpy.asarray(out_intensity).T,
-                          numpy.asarray(out_error).T if do_variance else None,
-                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T, numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T)
+                          numpy.asarray(sem).T if error_model else None,
+                          numpy.asarray(out_data[...,0]).T, numpy.asarray(out_data[...,1]).T,
+                          numpy.asarray(out_data[...,2]).T, numpy.asarray(out_data[...,3]).T,
+                          numpy.asarray(std).T  if error_model else None,
+                          numpy.asarray(sem).T  if error_model else None,
+                          numpy.asarray(out_data[...,4]).T  if error_model else None)
 
 
 histoBBox2d_ng = histoBBox2d_engine

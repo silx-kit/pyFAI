@@ -1,28 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# ##########################################################################
-#
-# Copyright (C) 2015-2018 European Synchrotron Radiation Facility
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-#
-# ###########################################################################
 """
 Bootstrap helps you to test scripts without installing them
 by patching your PYTHONPATH on the fly
@@ -33,55 +10,94 @@ example: ./bootstrap.py ipython
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "04/12/2020"
+__date__ = "03/03/2023"
 
 import sys
 import os
-import distutils.util
 import subprocess
 import logging
-
-logging.basicConfig(level=logging.INFO)
+if sys.version_info[:2] < (3, 11):
+    import tomli
+else:
+    import tomllib as tomli
+logging.basicConfig()
 logger = logging.getLogger("bootstrap")
 
 
-def _distutils_dir_name(dname="lib"):
+def get_project_name(root_dir):
+    """Retrieve project name by running python setup.py --name in root_dir.
+
+    :param str root_dir: Directory where to run the command.
+    :return: The name of the project stored in root_dir
     """
-    Returns the name of a distutils build directory
+    logger.debug("Getting project name in %s", root_dir)
+    with open("pyproject.toml") as f:
+        pyproject = tomli.loads(f.read())
+    return pyproject.get("project", {}).get("name")
+
+
+def build_project(name, root_dir):
+    """Build locally the project using meson
+
+    :param str name: Name of the project.
+    :param str root_dir: Root directory of the project
+    :return: The path to the directory were build was performed
     """
-    platform = distutils.util.get_platform()
-    architecture = "%s.%s-%i.%i" % (dname, platform,
-                                    sys.version_info[0], sys.version_info[1])
-    return architecture
+    extra = []
+    libdir = "lib"
+    if sys.platform == "win32":
+        libdir = "Lib"
+        # extra = ["--buildtype", "plain"]
+
+    build = os.path.join(root_dir, "build")
+    if not(os.path.isdir(build) and os.path.isdir(os.path.join(build, name))):
+        p = subprocess.Popen(["meson", "setup", "build"],
+                         shell=False, cwd=root_dir, env=os.environ)
+        p.wait()
+    p = subprocess.Popen(["meson", "configure", "--prefix", "/"] + extra,
+                     shell=False, cwd=build, env=os.environ)
+    p.wait()
+    p = subprocess.Popen(["meson", "install", "--destdir", "."],
+                     shell=False, cwd=build, env=os.environ)
+    logger.debug("meson install ended with rc= %s", p.wait())
+
+    home = None
+    if os.environ.get("PYBUILD_NAME") == name:
+        # we are in the debian packaging way
+        home = os.environ.get("PYTHONPATH", "").split(os.pathsep)[-1]
+    if not home:
+        if os.environ.get("BUILDPYTHONPATH"):
+            home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
+        else:
+            if sys.platform == "win32":
+                home = os.path.join(build, libdir, "site-packages")
+            else:
+                python_version = f"python{sys.version_info.major}.{sys.version_info.minor}"
+                home = os.path.join(build, libdir, python_version, "site-packages")
+            home = os.path.abspath(home)
+
+    cnt = 0
+    while not os.path.isdir(home):
+        cnt += 1
+        home = os.path.split(home)[0]
+    for _ in range(cnt):
+        n = os.listdir(home)[0]
+        home = os.path.join(home, n)
+
+    logger.warning("Building %s to %s", name, home)
+
+    return home
 
 
-def _distutils_scripts_name():
-    """Return the name of the distrutils scripts sirectory"""
-    f = "scripts-{version[0]}.{version[1]}"
-    return f.format(version=sys.version_info)
-
-
-def _get_available_scripts(path):
-    res = []
-    try:
-        res = " ".join([s.rstrip('.py') for s in os.listdir(path)])
-    except OSError:
-        res = ["no script available, did you ran "
-               "'python setup.py build' before bootstrapping ?"]
-    return res
-
-
-if sys.version_info[0] >= 3:  # Python3
-
-    def execfile(fullpath, globals=None, locals=None):
-        "Python3 implementation for execfile"
-        with open(fullpath) as f:
-            try:
-                data = f.read()
-            except UnicodeDecodeError:
-                raise SyntaxError("Not a Python script")
-            code = compile(data, fullpath, 'exec')
-            exec(code, globals, locals)
+def execfile(fullpath, globals=None, locals=None):
+    "Python3 implementation for execfile"
+    with open(fullpath) as f:
+        try:
+            data = f.read()
+        except UnicodeDecodeError:
+            raise SyntaxError("Not a Python script")
+        code = compile(data, fullpath, 'exec')
+        exec(code, globals, locals)
 
 
 def run_file(filename, argv):
@@ -106,9 +122,9 @@ def run_file(filename, argv):
             logger.info("Patch the sys.argv: %s", sys.argv)
             logger.info("Executing %s.main()", filename)
             print("########### EXECFILE ###########")
-            d = globals()
-            d["__file__"] = filename
-            execfile(filename, d, d)
+            module_globals = globals().copy()
+            module_globals['__file__'] = filename
+            execfile(filename, module_globals, module_globals)
         finally:
             sys.argv = old_argv
     except SyntaxError as error:
@@ -122,20 +138,16 @@ def run_file(filename, argv):
         run.wait()
 
 
-def run_entry_point(entry_point, argv):
+def run_entry_point(target_name, entry_point, argv):
     """
     Execute an entry_point using the current python context
-    (http://setuptools.readthedocs.io/en/latest/setuptools.html#automatic-script-creation)
 
     :param str entry_point: A string identifying a function from a module
         (NAME = PACKAGE.MODULE:FUNCTION)
+    :param argv: list of arguments
     """
     import importlib
-    # Remove ending extra dependencies
-    entry_point = entry_point.split("[")[0]
-    elements = entry_point.split("=")
-    target_name = elements[0].strip()
-    elements = elements[1].split(":")
+    elements = entry_point.split(":")
     module_name = elements[0].strip()
     function_name = elements[1].strip()
 
@@ -169,41 +181,27 @@ def find_executable(target):
     if os.path.isfile(target):
         return ("path", os.path.abspath(target))
 
-    # search the file from setup.py
-    import setup
-    config = setup.get_project_configuration(dry_run=True)
-    # scripts from project configuration
-    if "scripts" in config:
-        for script_name in config["scripts"]:
-            if os.path.basename(script) == target:
-                return ("path", os.path.abspath(script_name))
-    # entry-points from project configuration
-    if "entry_points" in config:
-        for kind in config["entry_points"]:
-            for entry_point in config["entry_points"][kind]:
-                elements = entry_point.split("=")
-                name = elements[0].strip()
-                if name == target:
-                    return ("entry_point", entry_point)
+    # search the executable in pyproject.toml
+    with open(os.path.join(PROJECT_DIR, "pyproject.toml")) as f:
+        pyproject = tomli.loads(f.read())
 
-    # search the file from env PATH
-    for dirname in os.environ.get("PATH", "").split(os.pathsep):
-        path = os.path.join(dirname, target)
-        if os.path.isfile(path):
-            return ("path", path)
+    scripts = {}
+    scripts.update(pyproject.get("project", {}).get("scripts", {}))
+    scripts.update(pyproject.get("project", {}).get("gui-scripts", {}))
 
+    for script, entry_point in scripts.items():
+        if script == target:
+            print(script, entry_point)
+            return ("entry_point", target, entry_point)
     return None, None
 
 
-home = os.path.dirname(os.path.abspath(__file__))
-LIBPATH = os.path.join(home, 'build', _distutils_dir_name('lib'))
-cwd = os.getcwd()
-os.chdir(home)
-build = subprocess.Popen([sys.executable, "setup.py", "build"], shell=False)
-logger.info("Build process ended with rc= %s", build.wait())
-os.chdir(cwd)
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_NAME = get_project_name(PROJECT_DIR)
+logger.info("Project name: %s", PROJECT_NAME)
 
 if __name__ == "__main__":
+    LIBPATH = build_project(PROJECT_NAME, PROJECT_DIR)
     if len(sys.argv) < 2:
         logger.warning("usage: ./bootstrap.py <script>\n")
         script = None
@@ -219,11 +217,11 @@ if __name__ == "__main__":
 
     if script:
         argv = sys.argv[2:]
-        kind, target = find_executable(script)
-        if kind == "path":
-            run_file(target, argv)
-        elif kind == "entry_point":
-            run_entry_point(target, argv)
+        res = find_executable(script)
+        if res[0] == "path":
+            run_file(res[1], argv)
+        elif res[0] == "entry_point":
+            run_entry_point(res[1], res[2], argv)
         else:
             logger.error("Script %s not found", script)
     else:

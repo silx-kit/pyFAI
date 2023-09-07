@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2021"
+__date__ = "05/09/2023"
 
 import unittest
 import numpy
@@ -77,17 +77,20 @@ _ROUND_FFT_VALUES = [
 
 class TestMathUtil(utilstest.ParametricTestCase):
 
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.unbinned = numpy.random.random((64, 32))
-        self.dark = self.unbinned.astype("float32")
-        self.flat = 1 + numpy.random.random((64, 32))
-        self.raw = self.flat + self.dark
-        self.tmp_file = os.path.join(utilstest.UtilsTest.tempdir, "testUtils_average.edf")
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestMathUtil, cls).setUpClass()
+        rng = utilstest.UtilsTest.get_rng()
+        cls.unbinned = rng.random((64, 32))
+        cls.dark = cls.unbinned.astype("float32")
+        cls.flat = 1 + rng.random((64, 32))
+        cls.raw = cls.flat + cls.dark
+        cls.tmp_file = os.path.join(utilstest.UtilsTest.tempdir, "testUtils_average.edf")
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.dark = self.flat = self.raw = self.tmp_file = None
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestMathUtil, cls).tearDownClass()
+        cls.dark = cls.flat = cls.raw = cls.tmp_file = None
 
     def test_round_fft(self):
         """Test some rounding values."""

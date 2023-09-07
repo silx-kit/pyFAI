@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2022"
+__date__ = "05/09/2023"
 __status__ = "development"
 
 import logging
@@ -591,7 +591,7 @@ class WorkerConfigurator(qt.QWidget):
         try:
             poni = PoniFile(ponifile)
         except Exception as error:
-            # FIXME: An error have to be displayed in the GUI
+            # FIXME: An error has to be displayed in the GUI
             logger.error("file %s does not look like a poni-file, error %s", ponifile, error)
             return
 

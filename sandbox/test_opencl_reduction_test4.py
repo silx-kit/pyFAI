@@ -47,7 +47,3 @@ cl.enqueue_copy(queue,result, d_result)
 print minmax
 
 print result
-
-
-
-

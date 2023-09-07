@@ -54,7 +54,7 @@ The object is saved in a PONI-file, see :ref:`Geometry`
 
 Image
 =====
-2D array of pixels which intensity is proportionnal to the number of photons. 
+2D array of pixels which intensity is proportionnal to the number of photons.
 see :ref:`Image`
 
 PONI
@@ -77,4 +77,3 @@ Worker
 A worker allow, once parameterized, to perform always the same processing on all
 images in a stack, for example azimuthal integration, distortion correction or
 simple pixel-wise operation.
-

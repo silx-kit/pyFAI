@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2021"
+__date__ = "05/09/2023"
 
 import unittest
 import numpy
@@ -48,27 +48,31 @@ from ..method_registry import IntegrationMethod
 
 class TestFlat1D(unittest.TestCase):
 
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.shape = 640, 480
-        self.flat = 1.0 + numpy.random.random(self.shape)
-        self.dark = numpy.random.random(self.shape)
-        self.raw = self.flat + self.dark
-        self.eps = 1e-6
-        self.ai = AzimuthalIntegrator()
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestFlat1D, cls).setUpClass()
+        cls.rng = UtilsTest.get_rng()
+        cls.shape = 640, 480
+        cls.flat = 1.0 + cls.rng.random(cls.shape)
+        cls.dark = cls.rng.random(cls.shape)
+        cls.raw = cls.flat + cls.dark
+        cls.eps = 1e-6
+        cls.ai = AzimuthalIntegrator()
         # 100mm distance and 100µm pixel size
-        self.ai.setFit2D(directDist=100, centerX=self.shape[1] // 2, centerY=self.shape[0] // 2, pixelX=100, pixelY=100)
-        self.bins = 500
+        cls.ai.setFit2D(directDist=100, centerX=cls.shape[1] // 2, centerY=cls.shape[0] // 2, pixelX=100, pixelY=100)
+        cls.bins = 500
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.shape = None
-        self.flat = None
-        self.dark = None
-        self.raw = None
-        self.eps = None
-        self.ai = None
-        self.bins = None
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestFlat1D, cls).tearDownClass()
+        cls.shape = None
+        cls.flat = None
+        cls.dark = None
+        cls.raw = None
+        cls.eps = None
+        cls.ai = None
+        cls.bins = None
+        cls.rng = None
 
     def test_no_correct(self):
         result = self.ai.integrate1d_ng(self.raw, self.bins, unit="r_mm", correctSolidAngle=False)
@@ -78,7 +82,9 @@ class TestFlat1D(unittest.TestCase):
         self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
 
     def test_correct(self):
-        for meth in IntegrationMethod._registry.values():
+        methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=1)}
+        logger.info("testing %s methods with 1d integration", len(methods))
+        for meth in methods.values():
             if meth.dimension != 1: continue
             res = self.ai.integrate1d_ng(self.raw, self.bins, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
 
@@ -87,6 +93,9 @@ class TestFlat1D(unittest.TestCase):
                 eps = 3 * self.eps
             else:
                 eps = self.eps
+            # print(res.sum_signal)
+            # print(res.sum_normalization)
+            # print(res.intensity)
             _, I = res
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", str(meth), I.min(), I.max(), I.mean(), I.std())
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
@@ -95,26 +104,32 @@ class TestFlat1D(unittest.TestCase):
 
 class TestFlat2D(unittest.TestCase):
 
-    def setUp(self):
-        self.shape = 640, 480
-        self.flat = 1 + numpy.random.random(self.shape)
-        self.dark = numpy.random.random(self.shape)
-        self.raw = self.flat + self.dark
-        self.eps = 1e-6
-        self.ai = AzimuthalIntegrator()
-        self.ai.setFit2D(directDist=1, centerX=self.shape[1] // 2, centerY=self.shape[0] // 2, pixelX=1, pixelY=1)
-        self.bins = 500
-        self.azim = 360
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestFlat2D, cls).setUpClass()
+        cls.rng = UtilsTest.get_rng()
+        cls.shape = 640, 480
+        cls.flat = 1 + cls.rng.random(cls.shape)
+        cls.dark = cls.rng.random(cls.shape)
+        cls.raw = cls.flat + cls.dark
+        cls.eps = 1e-6
+        cls.ai = AzimuthalIntegrator()
+        cls.ai.setFit2D(directDist=1, centerX=cls.shape[1] // 2, centerY=cls.shape[0] // 2, pixelX=1, pixelY=1)
+        cls.bins = 500
+        cls.azim = 360
 
-    def tearDown(self):
-        self.shape = None
-        self.flat = None
-        self.dark = None
-        self.raw = None
-        self.eps = None
-        self.ai = None
-        self.bins = None
-        self.azim = None
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestFlat2D, cls).tearDownClass()
+        cls.shape = None
+        cls.flat = None
+        cls.dark = None
+        cls.raw = None
+        cls.eps = None
+        cls.ai = None
+        cls.bins = None
+        cls.azim = None
+        cls.rng = None
 
     def test_no_correct(self):
         I, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", correctSolidAngle=False)

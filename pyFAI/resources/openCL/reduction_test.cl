@@ -30,13 +30,13 @@
 
 
 #include "for_eclipse.h"
- 
+
 __kernel
 void reduce1(__global float* buffer,
              __const int length,
              __global float2* preresult) {
-    
-    
+
+
     int global_index = get_global_id(0);
     int global_size  = get_global_size(0);
     float2 accumulator;
@@ -49,17 +49,17 @@ void reduce1(__global float* buffer,
         accumulator.y = (accumulator.y > element) ? accumulator.y : element;
         global_index += global_size;
     }
-    
+
     __local float2 scratch[WORKGROUP_SIZE];
 
     // Perform parallel reduction
     int local_index = get_local_id(0);
-    
+
     scratch[local_index] = accumulator;
     barrier(CLK_LOCAL_MEM_FENCE);
-    
+
     int active_threads = get_local_size(0);
-    
+
     while (active_threads != 2)
     {
         active_threads /= 2;
@@ -87,17 +87,17 @@ void reduce1(__global float* buffer,
 __kernel
 void reduce2(__global float2* preresult,
              __global float4* result) {
-    
-    
+
+
     __local float2 scratch[WORKGROUP_SIZE];
 
     int local_index = get_local_id(0);
-    
+
     scratch[local_index] = preresult[local_index];
     barrier(CLK_LOCAL_MEM_FENCE);
-    
+
     int active_threads = get_local_size(0);
-    
+
     while (active_threads != 2)
     {
         active_threads /= 2;
@@ -117,7 +117,7 @@ void reduce2(__global float2* preresult,
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    
+
 
     if (local_index == 0) {
         result[0] = vload4(0,scratch);

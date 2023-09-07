@@ -122,7 +122,7 @@ Two types of rebinning engines exists:
     Histograms loop over each individual pixel from the image, calculate the bin index and transfer the signal to the destination bin.
     This family of algorithms is rather easy to implement and provides good single threaded performances,
     but they are hard to parallelize (efficiently) due to the need of atomic operations for writing in the destination bin.
-    Note that several histograms are always needed, at least one for the signal and one for the count, plus one for the normalization factor and possibly one for the variance propagation. 
+    Note that several histograms are always needed, at least one for the signal and one for the count, plus one for the normalization factor and possibly one for the variance propagation.
 
 - Sparse matrix multiplication
 
@@ -140,13 +140,13 @@ Three levels of pixel splitting schemes are available within pyFAI:
 - No splitting
 
     The whole intensity is assigned to the center of the pixel and
-    rebinned using a simple histogram. 
+    rebinned using a simple histogram.
     Each pixel contributes to a single bin.
 
 - Bounding box pixel splitting
 
     The pixel is abstracted by a box surrounding it with, making calculation
-    easier but blurring a bit the image. Each pixel contributes to multiple bins. 
+    easier but blurring a bit the image. Each pixel contributes to multiple bins.
 
 - Tight pixel splitting
 

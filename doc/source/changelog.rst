@@ -1,13 +1,101 @@
 :Author: Jérôme Kieffer
-:Date: 24/03/2022
+:Date: 06/09/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-0.22
-----
-- Drop Python 3.6 (default parameters in namedtuple)
+2023.09 XX/09/2023
+------------------
+- Bug fix release over 2023.08
+- Fix calibrant selection in calib2 (Thanks Valentin)
+- Centralized control of Random Number Generator for tests, to make non-regression test more consistent for CI.
+- Correct behaviour of dynamic mask (was causing systematic crashes)
+- Correct spelling of several messages.
+- New application icon and launcher under linux
+
+2023.08 30/08/2023 BUGGY, DO NOT USE !!!
+------------------
+- Minor release, mostly bug-fixes. 87 commits.
+- fix mal-formed headers in 1D ASCII export
+- Debian packaging without setup.py (at all)
+- Fix cache invalidation issue for polarization in geometry
+- More compact (+scrollable) calibrant widget in `Calib2` (Contribution from Valentin Valls)
+- Compatibility with PyQt6 and PySide6 bacckends (Contribution from malte-storm)
+- Comatibility with elder Matplotlib (<3.2)
+- Fix reproducibility issue with no-split sparse matrix multiplication (all 3)
+- Lower memory consumption of hexagonal detector instanciation.
+- Enforce the usage of the `detector_factory`. `Detector(**config)` stops working.
+
+2023.05 16/05/2023
+------------------
+- New detector: Jungfrau 8M used at SwissFEL
+- new method in `Geometry` to guess the number of bin (and avoid oversampling)
+- new method in `AzimuthalIntegrator` to guess the polarization factor
+- CSC-integrators (1D + 2D) implemented in pure python using scipy.sparse
+- Update documentation
+- Minor correction (remove debugging)
+- Packaging for debian12 using meson-python
+
+2023.03 22/03/2023
+------------------
+- Rework all 2D integrator to propagate variance, expose standard deviation and standard error of the mean.
+- Support all version of python between 3.7 and 3.11
+- Support Cython 3.0b1 (with performance degradation) in addition of cython 0.29.31+
+
+2023.02 27/02/2023
+------------------
+- Core:
+    + `sigma_clip_ng` is not the default `sigma_clip`
+    + expose documentation for `sigma_clip_legacy` in addition to `sigma_clip_ng`
+    + `Worker` can now use `sigma_clip_legacy` in addition to `sigma_clip_ng`, `integrate1d` or `integrate2d`
+    + New calibrant: Vanadinite (used in high-presure, often as single crystal)
+- GUI:
+    + Fix labels on axes for some rarely used units
+    + refactor IntegrationMethodDialog and share the IntegrationMethodTabs with pyFAI-calib2
+- Test:
+    + silent some noisy test (OpenCL on windows)
+
+2023.01 16/01/2023
+------------------
+- Developer and packager tools:
+    + Switch build system from ``numpy.distutils`` to ``meson-python``
+    + Keep the former ``setup.py`` for compatibility reasons: it will be removed in a future release
+    + Drop Python 3.6 (default parameters in namedtuple feature used)
+    + Require silx 1.1 (for OpenCL), scipy and matplotlib
+- GUI side:
+    + several minor improvements in pyFAI-calib2
+    + Fixed calibration in jupyter-lab
+- Core improvements:
+    + Refactoring of the Geometry class
+    + Geometry pseudo-inversion optimization
+    + Improved support from Medipix-based Lambda-detectors
+    + New detectors from Dectris (Pilatus 900k and Eiger 250k)
+    + Support Nexus format in output: NXmonpd and NXcansas
+    + Single-threaded CSC sparse matrix multiplication engine
+- Improved uncertainty propagation:
+    + Refactor error model management (uses enum)
+    + Hybrid error model (azimuthal for sigma-clipping but reports Poissonian noise)
+    + Export peakfinder data to the CXI format (used by CrystFEL)
+- Improvement in the doc:
+    + Update installation instructions
+    + Multi-threaded integration tutorial
+    + GPU implementation tutorial
+- Facts and figures:
+    + 400+ commits, 100 PR
+    +with the contribution of:
+        Clemens Prescher,
+        Elena Pascal,
+        Jérôme Kieffer,
+        Malte Storm,
+        Marco Cammarata,
+        Michael Hudson-Doyle,
+        Picca Frédéric-Emmanuel,
+        Rodrigo Telles,
+        Thomas A Caswell,
+        Tommaso Vinci,
+        Valentin Valls,
+        Wout de Nolf.
 
 0.21.3 24/03/2022
 -----------------
@@ -41,17 +129,17 @@ Bug-fix release with:
     - Implementation in Python, Cython and OpenCL with poissonian and azimuthal error-model
     - Sparsification, compression of single crystal data
 	- Application to peak-picking and quality assessement of SSX data
-	- Analysis of grid-scan to find single crystal 
+	- Analysis of grid-scan to find single crystal
 	- Single pass variance propagation in azimuthal bin
 	- Integration of the Jungfrau detector  (ID29)
 * 2D integration:
 	- New integrators with error propagation by default
 	- Full pixel splitting in addition to BBox and no splitting
-* Refactor of all LUT and CSR to share the same code base, makes tests more robust. 
+* Refactor of all LUT and CSR to share the same code base, makes tests more robust.
 * Calibration of experimental setup using Jupyter notebooks
 	- User interaction with plots in matplotlib (thanks Phil Hans)
 	- Factorize code between `pyFAI-calib` and jupyter calibration
-	- Tutorial as notebook and video recording 	
+	- Tutorial as notebook and video recording
 * Parallax correction for thick detector (still experimental, thanks to Vadim)
 * Improved tutorial on detector geometry calibration (based on Kabsch alignment)
 * Better performances on HPC nodes by limiting simple OpenMP to fewer cores
@@ -63,8 +151,8 @@ Bug-fix release with:
 -----------------
 * One year of development, about 500 commits & 370 files modified.
 * Generalization of the new generation 1D integrators (better error propagation)
-* Sigma clipping and sparsification of single crystal data (OpenCL only)  
-* Fix issue introduced with the scipy 1.15 (constrained calibration broken)  
+* Sigma clipping and sparsification of single crystal data (OpenCL only)
+* Fix issue introduced with the scipy 1.15 (constrained calibration broken)
 * Improved distortion correction (also on GPU, ...)
 * Major re-work of the documentation (thanks Thomas Kluyver and Loic Huder)
 * Improve the calibration of Pilatus and Eiger detectors based on a grid of holes.

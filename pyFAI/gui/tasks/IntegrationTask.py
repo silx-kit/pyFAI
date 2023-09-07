@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2023 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,9 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "05/05/2022"
+__date__ = "05/09/2023"
 
 import logging
 import numpy
@@ -40,6 +40,8 @@ from .AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from ..utils import unitutils
 from ..model.DataModel import DataModel
+# from ..model.GeometryModel import GeometryModel
+# from ..model.Fit2dGeometryModel import Fit2dGeometryModel
 from ..widgets.QuantityLabel import QuantityLabel
 from ..CalibrationContext import CalibrationContext
 from ... import units as core_units
@@ -56,6 +58,7 @@ from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
 from pyFAI.io import ponifile
+import pyFAI.geometry
 
 _logger = logging.getLogger(__name__)
 
@@ -100,13 +103,13 @@ class EnablableDataModel(DataModel):
 
 class IntegrationProcess(object):
 
-    def __init__(self, model):
-        self.__isValid = self._init(model)
+    def __init__(self, model, altGeometry=None):
+        self.__isValid = self._init(model, altGeometry)
         self.__resetZoomPolicy = None
         self.__method = None
         self.__errorMessage = None
 
-    def _init(self, model):
+    def _init(self, model, altGeometry=None):
         self.__isValid = True
         if model is None:
             return False
@@ -117,7 +120,10 @@ class IntegrationProcess(object):
         detector = model.experimentSettingsModel().detector()
         if detector is None:
             return
-        geometry = model.fittedGeometry()
+        if altGeometry:
+            geometry = altGeometry
+        else:
+            geometry = model.fittedGeometry()
         if not geometry.isValid():
             return False
         self.__nPointsAzimuthal = model.integrationSettingsModel().nPointsAzimuthal().value()
@@ -905,7 +911,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self.__integrationUpToDate = True
         self.__integrationResetZoomPolicy = None
-        method = method_registry.Method(666, "bbox", "csr", "cython", None)
+        method = method_registry.Method(666, "bbox", "histogram", "cython", None)
         self.__setMethod(method)
 
         positiveValidator = validators.IntegerAndEmptyValidator(self)
@@ -913,7 +919,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self._radialPoints.setValidator(positiveValidator)
         self._azimuthalPoints.setValidator(positiveValidator)
-        self._radialUnit.setUnits(pyFAI.units.RADIAL_UNITS.values())
+        self._radialUnit.setUnits(core_units.RADIAL_UNITS.values())
         self.__polarizationModel = None
         self._polarizationFactorCheck.clicked[bool].connect(self.__polarizationFactorChecked)
         self.widgetShow.connect(self.__widgetShow)
@@ -985,7 +991,8 @@ class IntegrationTask(AbstractCalibrationTask):
             self._integrateButton.executeCallable()
 
     def __integrate(self):
-        self.__integrationProcess = IntegrationProcess(self.model())
+        geometry = self._geometryTabs.geometryModel()
+        self.__integrationProcess = IntegrationProcess(self.model(), geometry)
         self.__integrationProcess.setMethod(self.__method)
 
         if self.__integrationResetZoomPolicy is not None:
@@ -1054,17 +1061,20 @@ class IntegrationTask(AbstractCalibrationTask):
         integrationSettings.nPointsAzimuthal().changed.connect(self.__invalidateIntegrationNoReset)
 
     def __fittedGeometryChanged(self):
-        # File have to be saved again
+        # File has to be saved again
         poniFile = self.model().experimentSettingsModel().poniFile()
         with poniFile.lockContext():
             poniFile.setSynchronized(False)
+        # Update displayed data:
+        self.__updateDisplayedGeometry()
 
     def __saveAsPoni(self):
         # FIXME test the validity of the geometry before opening the dialog
         dialog = createSaveDialog(self, "Save as PONI file", poni=True)
         # Disable the warning as the data is append to the file
         dialog.setOption(qt.QFileDialog.DontConfirmOverwrite, True)
-        poniFile = self.model().experimentSettingsModel().poniFile()
+        model = self.model()
+        poniFile = model.experimentSettingsModel().poniFile()
         previousPoniFile = poniFile.value()
         if previousPoniFile is not None:
             dialog.selectFile(previousPoniFile)
@@ -1080,21 +1090,19 @@ class IntegrationTask(AbstractCalibrationTask):
         with poniFile.lockContext():
             poniFile.setValue(filename)
 
-        pyfaiGeometry = pyFAI.geometry.Geometry()
-
-        geometry = self.model().fittedGeometry()
-        pyfaiGeometry.dist = geometry.distance().value()
-        pyfaiGeometry.poni1 = geometry.poni1().value()
-        pyfaiGeometry.poni2 = geometry.poni2().value()
-        pyfaiGeometry.rot1 = geometry.rotation1().value()
-        pyfaiGeometry.rot2 = geometry.rotation2().value()
-        pyfaiGeometry.rot3 = geometry.rotation3().value()
-        pyfaiGeometry.wavelength = geometry.wavelength().value()
-
-        experimentSettingsModel = self.model().experimentSettingsModel()
+        geometry = self._geometryTabs.geometryModel()
+        experimentSettingsModel = model.experimentSettingsModel()
         detector = experimentSettingsModel.detector()
-        pyfaiGeometry.detector = detector
-
+        pyfaiGeometry = pyFAI.geometry.Geometry(
+            dist=geometry.distance().value(),
+            poni1=geometry.poni1().value(),
+            poni2=geometry.poni2().value(),
+            rot1=geometry.rotation1().value(),
+            rot2=geometry.rotation2().value(),
+            rot3=geometry.rotation3().value(),
+            wavelength=geometry.wavelength().value(),
+            detector=detector
+            )
         try:
             writer = ponifile.PoniFile(pyfaiGeometry)
             with open(filename, "wt") as fd:
@@ -1104,3 +1112,9 @@ class IntegrationTask(AbstractCalibrationTask):
                 poniFile.setSynchronized(True)
         except Exception as e:
             MessageBox.exception(self, "Error while saving poni file", e, _logger)
+
+    def __updateDisplayedGeometry(self):
+        "Called after the fit"
+        experimentSettingsModel = self.model().experimentSettingsModel()
+        self._geometryTabs.setDetector(experimentSettingsModel.detector())
+        self._geometryTabs.setGeometryModel(self.model().fittedGeometry())

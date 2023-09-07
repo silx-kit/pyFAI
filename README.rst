@@ -3,7 +3,7 @@ pyFAI: Fast Azimuthal Integration in Python
 
 Main development website: https://github.com/silx-kit/pyFAI
 
-|Build Status| |Appveyor Status| |myBinder Launcher| |RTD docs| |Zenodo DOI|
+|Github Actions| |Appveyor Status| |myBinder Launcher| |RTD docs| |Zenodo DOI|
 
 PyFAI is an azimuthal integration library that tries to be fast (as fast as C
 and even more using OpenCL and GPU).
@@ -18,13 +18,10 @@ rings of a reference compound.
 References
 ----------
 
-* The philosophy of pyFAI is described in the proceedings of SRI2012:
-  doi:10.1088/1742-6596/425/20/202012 http://iopscience.iop.org/1742-6596/425/20/202012/
-* Implementation in parallel is described in the proceedings of EPDIC13:
-  PyFAI: a Python library for high performance azimuthal integration on GPU.
-  doi:10.1017/S0885715613000924
-* Benchmarks and optimization procedure is described in the proceedings of EuroSciPy2014:
-  http://conference.scipy.org/category/euroscipy.html (accepted)
+* The philosophy of pyFAI is described in the proceedings of SRI2012: https://doi.org/10.1088/1742-6596/425/20/202012
+* Implementation in parallel is described in the proceedings of EPDIC13: https://doi.org/10.1017/S0885715613000924
+* Benchmarks and optimization procedure is described in the proceedings of EuroSciPy2014: https://doi.org/10.48550/arXiv.1412.6367
+* Calibration procedures are described in J. Synch. Radiation 2020: https://doi.org/10.1107/S1600577520000776
 
 Installation
 ------------
@@ -39,7 +36,7 @@ As most Python packages, pyFAI is available via PIP::
 It is advised to run this in a vitural environment.
 Provide the *--user* to perform an installation local to your user (not recommended).
 Under UNIX, you may have to run the command via *sudo* to gain root access an
-perform a system wide installation (neither recommended). 
+perform a system wide installation (neither recommended).
 
 
 With conda
@@ -55,22 +52,21 @@ From source code
 ................
 
 The latest release of pyFAI can be downloaded from
-`Github <https://github.com/silx-kit/pyFAI/archive/master.zip>`_.
+`Github <https://github.com/silx-kit/pyFAI/archive/main.zip>`_.
 Presently the source code has been distributed as a zip package.
 Download it one and unpack it::
 
-    unzip pyFAI-master.zip
+    unzip pyFAI-main.zip
 
 As developement is also done on Github,
-`development branch is also available <https://github.com/silx-kit/pyFAI/archive/master.zip>`_
+`development branch is also available <https://github.com/silx-kit/pyFAI/archive/main.zip>`_
 
-All files are unpacked into the directory pyFAI-master::
+All files are unpacked into the directory pyFAI-main::
 
-    cd pyFAI-master
+    cd pyFAI-main
 
 Build it & test it::
 
-    python3 setup.py build -j 4
     python3 run_tests.py
 
 For its tests, pyFAI downloads test images from the internet.
@@ -81,7 +77,6 @@ you may have to setup a proxy configuration like this (no more needed at ESRF)::
 
 Finally, install pyFAI in the virtualenv after testing it::
 
-    python3 setup.py bdist_wheel
     pip install --upgrade .
 
 The newest development version can also be obtained by checking out from the git
@@ -90,28 +85,22 @@ repository::
     git clone https://github.com/silx-kit/pyFAI.git
     cd pyFAI
     pip install --upgrade .
-    
+
 If you want pyFAI to make use of your graphic card, please install
 `pyopencl <http://mathema.tician.de/software/pyopencl>`_
-
-If you are using MS Windows you can also download a binary version packaged as executable
-installation files (choose the one corresponding to your python version).
-
-For MacOSX users with MacOS version>10.7, the default compiler switched from gcc
-to clang and dropped the OpenMP support. Please refer to the installation documentation ...
 
 Documentation
 -------------
 
 Documentation can be build using this command and Sphinx (installed on your computer)::
 
-    python3 setup.py build build_doc
+    python3 build-doc.py
 
 
 Dependencies
 ------------
 
-Python 3.6, ... 3.10 are well tested and officially supported.
+Python 3.7, ... 3.10 are well tested and officially supported.
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
@@ -158,18 +147,18 @@ using apt-get these can be installed as::
 MacOSX
 ------
 
-One needs to install `Python` (>=3.6) and `Xcode` prior to start installing pyFAI. 
+One needs to install `Python` (>=3.7) and `Xcode` prior to start installing pyFAI.
 The compiled extension will use only one core due to the limitation of the compiler.
-OpenCL is hence greately adviced on Apple systems. 
+OpenCL is hence greately adviced on Apple systems.
 Then install the missing dependencies with `pip`::
 
    pip install -r requirements.txt
-	
+
 
 Windows
 -------
 
-Under Windows, one needs to install `Python` (>=3.6) and the Visual Studio C++ compiler.
+Under Windows, one needs to install `Python` (>=3.7) and the Visual Studio C++ compiler.
 Then install the missing dependencies with `pip`::
 
    pip install  -r requirements.txt
@@ -211,15 +200,14 @@ Indirect contributors (ideas...)
 * Brian Pauw
 * Veijo Honkimaki
 
-.. |Build Status| image:: https://travis-ci.org/silx-kit/pyFAI.svg?branch=master
-   :target: https://travis-ci.org/silx-kit/pyFAI
+.. |Github Actions| image:: https://github.com/silx-kit/pyFAI/actions/workflows/python-package.yml/badge.svg
 .. |Appveyor Status| image:: https://ci.appveyor.com/api/projects/status/github/silx-kit/pyfai?svg=true
    :target: https://ci.appveyor.com/project/ESRF/pyfai
 .. |myBinder Launcher| image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/silx-kit/pyFAI/master?filepath=binder%2Findex.ipynb
-.. |RTD docs| image:: https://readthedocs.org/projects/pyFAI/badge/?version=master
+   :target: https://mybinder.org/v2/gh/silx-kit/pyFAI/main?filepath=binder%2Findex.ipynb
+.. |RTD docs| image:: https://readthedocs.org/projects/pyFAI/badge/?version=main
     :alt: Documentation Status
     :scale: 100%
-    :target: https://pyfai.readthedocs.io/en/master/?badge=master
+    :target: https://pyfai.readthedocs.io/en/main/?badge=main
 .. |Zenodo DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.832896.svg
    :target: https://doi.org/10.5281/zenodo.832896

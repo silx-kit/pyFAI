@@ -36,13 +36,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2022"
+__date__ = "05/09/2023"
 
 import sys
 import os
 import unittest
 import numpy
 import subprocess
+import copy
 import logging
 logger = logging.getLogger(__name__)
 from .utilstest import UtilsTest
@@ -102,7 +103,8 @@ Wavelength: 7e-11
         self.ponifile = os.path.join(UtilsTest.tempdir, "bug170.poni")
         with open(self.ponifile, "w") as poni:
             poni.write(ponitxt)
-        self.data = numpy.random.random((2300, 2300))
+        rng = UtilsTest.get_rng()
+        self.data = rng.random((2300, 2300))
 
     def tearDown(self):
         if os.path.exists(self.ponifile):
@@ -129,6 +131,7 @@ class TestBug211(unittest.TestCase):
         self.image_files = []
         self.outfile = os.path.join(UtilsTest.tempdir, "out.edf")
         res = numpy.zeros(shape, dtype=dtype)
+        rng = UtilsTest.get_rng()
         for i in range(5):
             fn = os.path.join(UtilsTest.tempdir, "img_%i.edf" % i)
             if i == 3:
@@ -136,7 +139,7 @@ class TestBug211(unittest.TestCase):
             elif i == 4:
                 data = numpy.ones(shape, dtype=dtype)
             else:
-                data = numpy.random.random(shape).astype(dtype)
+                data = rng.random(shape).astype(dtype)
                 res += data
             e = fabio.edfimage.edfimage(data=data)
             e.write(fn)
@@ -191,9 +194,9 @@ class TestBugRegression(unittest.TestCase):
         """
         det = detectors.ImXPadS10()
         ai = AzimuthalIntegrator(dist=1, detector=det)
-        data = numpy.random.random(det.shape)
+        data = UtilsTest.get_rng().random(det.shape)
         _result = ai.integrate1d_ng(data, 100, unit="r_mm")
-        import copy
+
         ai2 = copy.copy(ai)
         self.assertNotEqual(id(ai), id(ai2), "copy instances are different")
         self.assertEqual(id(ai.ra), id(ai2.ra), "copy arrays are the same after copy")
@@ -497,13 +500,13 @@ class TestBugRegression(unittest.TestCase):
 
     def test_bug_1510(self):
         """
-        CSR engine got systematically discarded when radial range is provided 
+        CSR engine got systematically discarded when radial range is provided
         """
         method = ("no", "csr", "cython")
         detector = detectors.Pilatus100k()
         ai = AzimuthalIntegrator(detector=detector)
         rm = max(detector.shape) * detector.pixel1 * 1000
-        img = numpy.random.random(detector.shape)
+        img = UtilsTest.get_rng().random(detector.shape)
         ai.integrate1d(img, 5, unit="r_mm", radial_range=[0, rm], method=method)
         id_before = None
         for v in ai.engines.values():
@@ -518,7 +521,7 @@ class TestBugRegression(unittest.TestCase):
         self.assertEqual(id_before, id_after, "The CSR engine got reset")
 
     def test_bug_1536(self):
-        """Ensure setPyFAI accepts the output of getPyFAI() 
+        """Ensure setPyFAI accepts the output of getPyFAI()
         and that the detector description matches !
         """
         detector = detectors.Detector(5e-4, 5e-4, max_shape=(1100, 1000))
@@ -532,10 +535,49 @@ class TestBugRegression(unittest.TestCase):
         print(obt)
         self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
 
+    def test_bug_1810(self):
+        "impossible to deepcopy goniometer calibration"
+        import copy
+        import pyFAI.control_points
+        cp = pyFAI.control_points.ControlPoints(calibrant="LaB6", wavelength=1e-10)
+        self.assertNotEqual(id(cp), id(copy.deepcopy(cp)), "control_points copy works and id differs")
+
+        import pyFAI.geometryRefinement
+        gr = pyFAI.geometryRefinement.GeometryRefinement([[1,2,3]], detector="Pilatus100k", wavelength=1e-10, calibrant="LaB6")
+        self.assertNotEqual(id(gr), id(copy.deepcopy(gr)), "geometryRefinement copy works and id differs")
+
+        import pyFAI.massif
+        ary = numpy.arange(100).reshape(10,10)
+        massif = pyFAI.massif.Massif(ary)
+        self.assertNotEqual(id(massif), id(copy.deepcopy(massif)), "Massif copy works and id differs")
+
+        import pyFAI.gui.peak_picker
+        pp = pyFAI.gui.peak_picker.PeakPicker(ary)
+        self.assertNotEqual(id(pp), id(copy.deepcopy(pp)), "PeakPicker copy works and id differs")
+
+        from pyFAI.goniometer import SingleGeometry
+        import pyFAI.calibrant
+        lab6 = pyFAI.calibrant.get_calibrant("LaB6", 1e-10)
+        cp.append([[1,2],[3,4]], 0)
+        sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "pilatus100k")
+        self.assertNotEqual(id(sg), id(copy.deepcopy(sg)), "SingleGeometry copy works and id differs")
+
+    def test_bug_1889(self):
+        "reset cached arrays"
+        ai = load({"detector": "Pilatus100k", "wavelength": 1.54e-10})
+        ai.polarization(factor=0.9)
+        img = numpy.empty(ai.detector.shape, "float32")
+        ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
+        ai.setChiDiscAtZero()
+        ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
+        ai.setChiDiscAtPi()
+
 
 class TestBug1703(unittest.TestCase):
     """
-    Check the normalization affect propely the propagated errors/intensity 
+    Check the normalization affect propely the propagated errors/intensity
     """
 
     @classmethod
@@ -574,7 +616,7 @@ class TestBug1703(unittest.TestCase):
         img_theo = cls.ai.calcfrom1d(cls.q, cls.I, dim1_unit=unit,
                          correctSolidAngle=True,
                          polarization_factor=None)
-        cls.img = numpy.random.poisson(img_theo)
+        cls.img = UtilsTest.get_rng().poisson(img_theo)
 
     @classmethod
     def tearDownClass(cls):

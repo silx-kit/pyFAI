@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2021"
+__date__ = "05/09/2023"
 
 import numpy
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
@@ -41,7 +41,7 @@ from pickle import dumps, loads
 import unittest
 import logging
 logger = logging.getLogger(__name__)
-
+from .utilstest import UtilsTest
 
 class TestPickle(unittest.TestCase):
 
@@ -51,7 +51,7 @@ class TestPickle(unittest.TestCase):
         cls.ai = AzimuthalIntegrator(1.0, detector="Pilatus100k")
         cls.ai.wavelength = 1e-10
         cls.npt = 100
-        cls.data = numpy.random.random(cls.ai.detector.shape)
+        cls.data = UtilsTest.get_rng().random(cls.ai.detector.shape)
 
     @classmethod
     def tearDownClass(cls):

@@ -30,10 +30,10 @@
 """
 Export the mask as a set of rectangles.
 
-This feature is needed for single crystal analysis programs (XDS, Crysalis, ...) 
+This feature is needed for single crystal analysis programs (XDS, Crysalis, ...)
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "10/11/2020"
+__date__ = "10/02/2023"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -41,7 +41,7 @@ import cython
 import numpy
 from libc.stdint cimport int8_t, int32_t
 
-    
+
 cdef struct Pair:
     int32_t start, height
 
@@ -49,36 +49,36 @@ cdef struct Pair:
 cdef class Rectangle:
     cdef:
         public int32_t height, width, row, col
-        
+
     def __cinit__(self, int32_t height, int32_t width, int32_t row=0, int32_t col=0):
         self.height = height
         self.width = width
         self.row = row
         self.col = col
-        
+
     def __repr__(self):
-        return f"Rectangle row:{self.row} col:{self.col} heigth:{self.height} width:{self.width} area:{self.area}"
+        return f"Rectangle row:{self.row} col:{self.col} height:{self.height} width:{self.width} area:{self.area}"
 
     cdef int32_t _area(self):
         return self.width*self.height
 
     @property
     def area(self):
-        return self._area()    
-    
+        return self._area()
+
 cdef class Stack:
     cdef:
         int32_t last, size
         int32_t[:, ::1] stack
-        
+
     def __cinit__(self, int32_t size):
         self.stack = numpy.zeros((size, 2), dtype=numpy.int32)
         self.last = 0
         self.size = size
-        
+
     def __dealloc__(self):
         self.stack = None
-    
+
     cpdef push(self, int32_t start, int32_t height):
         if self.last<self.size:
             self.stack[self.last, 0] = start
@@ -86,7 +86,7 @@ cdef class Stack:
             self.last += 1
         else:
             print("Overfull stack")
-            
+
     cpdef Pair top(self):
         cdef Pair res
         if self.last:
@@ -94,7 +94,7 @@ cdef class Stack:
             return res
         else:
             print("Emtpy stack")
-    
+
     cpdef Pair pop(self):
         cdef Pair res
         if self.last:
@@ -103,11 +103,11 @@ cdef class Stack:
             return res
         else:
             print("Emtpy stack")
-    
+
     cpdef bint empty(self):
         return self.last == 0
-    
-    
+
+
 cpdef Rectangle get_max_area(int32_t[::1] histo, int32_t row=-1):
     cdef:
         int32_t size, height, start, pos
@@ -123,7 +123,7 @@ cpdef Rectangle get_max_area(int32_t[::1] histo, int32_t row=-1):
         height = histo[pos]
         start = pos # position where rectangle starts
         while True:
-            if (stack.empty()) or (height > stack.top().height): 
+            if (stack.empty()) or (height > stack.top().height):
                 stack.push(start, height)
             elif (not stack.empty()) and (height < stack.top().height):
                 top = stack.top()
@@ -143,7 +143,7 @@ cpdef Rectangle get_max_area(int32_t[::1] histo, int32_t row=-1):
 
 cpdef Rectangle get_largest_rectangle(int8_t[:, ::1] ary):
     """Find the largest rectangular region
-    
+
     :param mask: 2D array with 1 for invalid pixels (0 elsewhere)
     :return: Largest rectangle of masked data
     """
@@ -163,7 +163,7 @@ cpdef Rectangle get_largest_rectangle(int8_t[:, ::1] ary):
                 histogram[j] = 0
         rect = get_max_area(histogram, i)
         if rect.area > best.area:
-            best = rect 
+            best = rect
     return best
 
 
@@ -178,7 +178,7 @@ cpdef bint any_non_zero(int8_t[::1] linear):
 @cython.wraparound(True)
 def search_bands(mask):
     "Find gaps in the mask"
-     
+
     vmin = mask.min(axis = 0)
     vdelta = vmin[1:] - vmin[:-1]
     vstart = numpy.where(vdelta==1)[0] + 1
@@ -198,20 +198,20 @@ def search_bands(mask):
         hend = numpy.concatenate((hend, [hmin.size]))
     res += [ Rectangle(e-s, mask.shape[1], s, 0)  for s,e in zip(hstart, hend)]
     return res
-                      
-                      
+
+
 def decompose_mask(mask, overlap=True):
     """Decompose a mask into a list of hiding rectangles
-    
+
     :param mask: 2D array with 1 for invalid pixels (0 elsewhere)
     :param overlap: By default (True) search for large overlapping horizontal or vertical bands (gaps)
     :return: list of Rectangles
-    """    
+    """
     cdef:
         int32_t idx, rlower, rupper, clower, cupper, width
         list res = []
         int8_t[:, ::1] remaining
-        int8_t[::1] linear 
+        int8_t[::1] linear
         Rectangle r
 
     if overlap:
@@ -224,17 +224,17 @@ def decompose_mask(mask, overlap=True):
         #Make an expicit copy
         remaining = numpy.array(mask, dtype=numpy.int8)
     width = remaining.shape[1]
-    
+
     linear = numpy.asarray(remaining).ravel()
-    
+
     while any_non_zero(linear):
         r = get_largest_rectangle(remaining)
         res.append(r)
         rlower = r.row
         rupper = rlower + r.height
-        clower = r.col 
+        clower = r.col
         cupper = clower + r.width
-        
+
         #Memset with tweaking in the case of non contiguous access
         if clower>0 or cupper<width:
             for idx in range(rlower, rupper):
@@ -242,5 +242,3 @@ def decompose_mask(mask, overlap=True):
         else: #We are luck and the memory is in one block
             remaining[rlower:rupper, clower:cupper] = 0
     return res
-
-        

@@ -34,17 +34,20 @@ Interesting formula:
 http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
 """
 
+from __future__ import annotations
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/01/2021"
+__date__ = "26/01/2023"
 __status__ = "production"
 
 import os
 import logging
 import numpy
 import itertools
+from typing import Optional, List
 from math import sin, asin, cos, sqrt, pi, ceil
 import threading
 from .utils import get_calibration_dir
@@ -313,11 +316,26 @@ class Cell(object):
 
 class Calibrant(object):
     """
-    A calibrant is a reference compound where the d-spacing (interplanar distances)
-    are known. They are expressed in Angstrom (in the file)
+    A calibrant is a named reference compound where the d-spacing are known.
+
+    The d-spacing (interplanar distances) are expressed in Angstrom (in the file).
+
+    If the access is don't from a file, the IO are delayed. If it is not desired
+    one could explicitly access to :meth:`load_file`.
+
+    .. code-block:: python
+
+        c = Calibrant()
+        c.load_file("my_calibrant.D")
+
+    :param filename: A filename containing the description (usually with .D extension).
+                     The access to the file description is delayed until the information
+                     is needed.
+    :param dSpacing: A list of d spacing in Angstrom.
+    :param wavelength: A wavelength in meter
     """
 
-    def __init__(self, filename=None, dSpacing=None, wavelength=None):
+    def __init__(self, filename: Optional[str]=None, dSpacing: Optional[List[float]]=None, wavelength: Optional[float]=None):
         object.__init__(self)
         self._filename = filename
         self._wavelength = wavelength
@@ -333,15 +351,14 @@ class Calibrant(object):
         if self._dSpacing and self._wavelength:
             self._calc_2th()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """
         Test the equality with another object
 
-        It only takes into acount the wavelength and dSpacing, not the
+        It only takes into account the wavelength and dSpacing, not the
         filename.
 
-        :param object other: Another object
-        :rtype: bool
+        :param other: Another object
         """
         if other is None:
             return False
@@ -353,47 +370,45 @@ class Calibrant(object):
             return False
         return True
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         """
         Test the non-equality with another object
 
-        It only takes into acount the wavelength and dSpacing, not the
+        It only takes into account the wavelength and dSpacing, not the
         filename.
 
-        :param object other: Another object
-        :rtype: bool
+        :param other: Another object
         """
         return not (self == other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """
         Returns the hash of the object.
 
-        It only takes into acount the wavelength and dSpacing, not the
+        It only takes into account the wavelength and dSpacing, not the
         filename.
-
-        :rtype: int
         """
         h = hash(self._wavelength)
         for d in self.dSpacing:
-                h = h ^ hash(d)
+            h = h ^ hash(d)
         return h
 
-    def __copy__(self):
+    def __copy__(self) -> Calibrant:
         """
-        Copy a calibrant
-
-        :rtype: Calibrant
+        Copy a calibrant.
         """
         self._initialize()
         return Calibrant(filename=self._filename,
                          dSpacing=self._dSpacing + self._out_dSpacing,
                          wavelength=self._wavelength)
 
-    def __repr__(self):
-        name = "undefined"
+    def __repr__(self) -> str:
         if self._filename:
-            name = os.path.splitext(os.path.basename(self._filename))[0]
+            name = self._filename
+            if name.startswith("pyfai:"):
+                name = name[6:]
+        else:
+            name = "undefined"
         name += " Calibrant "
         if len(self.dSpacing):
             name += "with %i reflections " % len(self._dSpacing)
@@ -401,23 +416,52 @@ class Calibrant(object):
             name += "at wavelength %s" % self._wavelength
         return name
 
-    def get_filename(self):
+    @property
+    def name(self) -> str:
+        """Returns a short name describing the calibrant.
+
+        It's the name of the file or the resource.
+        """
+        f = self._filename
+        if f is None:
+            return "Undefined"
+        if f.startswith("pyfai:"):
+            return f[6:]
+        return os.path.splitext(os.path.basename(f))[0]
+
+    def get_filename(self) -> str:
         return self._filename
 
     filename = property(get_filename)
 
-    def load_file(self, filename=None):
+    def load_file(self, filename: str):
+        """
+        Load a calibrant.from file.
+
+        :param filename: The filename containing the calibrant description.
+        """
         with self._sem:
             self._load_file(filename)
 
-    def _load_file(self, filename=None):
+    def _get_abs_path(self, filename: str) -> str:
+        """Returns the absolute location of the calibrant."""
+        if filename is None:
+            return None
+        if filename.startswith("pyfai:"):
+            name = filename[6:]
+            basedir = get_calibration_dir()
+            return os.path.join(basedir, f"{name}.D")
+        return os.path.abspath(filename)
+
+    def _load_file(self, filename: Optional[str]=None):
         if filename:
             self._filename = filename
-        if not os.path.isfile(self._filename):
-            logger.error("No such calibrant file: %s", self._filename)
+
+        path = self._get_abs_path(self._filename)
+        if not os.path.isfile(path):
+            logger.error("No such calibrant file: %s", path)
             return
-        self._filename = os.path.abspath(self._filename)
-        self._dSpacing = numpy.unique(numpy.loadtxt(self._filename))
+        self._dSpacing = numpy.unique(numpy.loadtxt(path))
         self._dSpacing = list(self._dSpacing[-1::-1])  # reverse order
         # self._dSpacing.sort(reverse=True)
         if self._wavelength:
@@ -431,18 +475,19 @@ class Calibrant(object):
             else:
                 self._dSpacing = []
 
-    def count_registered_dSpacing(self):
-        """Count of registered dSpacing positons."""
+    def count_registered_dSpacing(self) -> int:
+        """Count of registered dSpacing positions."""
         self._initialize()
         return len(self._dSpacing) + len(self._out_dSpacing)
 
-    def save_dSpacing(self, filename=None):
+    def save_dSpacing(self, filename: Optional[str]=None):
         """
-        save the d-spacing to a file
-
+        Save the d-spacing to a file.
         """
         self._initialize()
         if (filename is None) and (self._filename is not None):
+            if self._filename.startswith("pyfai:"):
+                raise ValueError("A calibrant resource from pyFAI can't be overwritten)")
             filename = self._filename
         else:
             return
@@ -451,11 +496,11 @@ class Calibrant(object):
             for i in self.dSpacing:
                 f.write("%s\n" % i)
 
-    def get_dSpacing(self):
+    def get_dSpacing(self) -> List[float]:
         self._initialize()
         return self._dSpacing
 
-    def set_dSpacing(self, lst):
+    def set_dSpacing(self, lst: List[float]):
         self._dSpacing = list(lst)
         self._out_dSpacing = []
         self._filename = "Modified"
@@ -464,7 +509,8 @@ class Calibrant(object):
 
     dSpacing = property(get_dSpacing, set_dSpacing)
 
-    def append_dSpacing(self, value):
+    def append_dSpacing(self, value: float):
+        """Insert a d position at the right position of the dSpacing list"""
         self._initialize()
         with self._sem:
             delta = [abs(value - v) / v for v in self._dSpacing if v is not None]
@@ -473,7 +519,8 @@ class Calibrant(object):
                 self._dSpacing.sort(reverse=True)
                 self._calc_2th()
 
-    def append_2th(self, value):
+    def append_2th(self, value: float):
+        """Insert a 2th position at the right position of the dSpacing list"""
         with self._sem:
             self._initialize()
             if value not in self._2th:
@@ -481,7 +528,10 @@ class Calibrant(object):
                 self._2th.sort()
                 self._calc_dSpacing()
 
-    def setWavelength_change2th(self, value=None):
+    def setWavelength_change2th(self, value: Optional[float]=None):
+        """
+        Set a new wavelength.
+        """
         with self._sem:
             if value:
                 self._wavelength = float(value)
@@ -489,9 +539,11 @@ class Calibrant(object):
                     logger.warning("This is an unlikely wavelength (in meter): %s", self._wavelength)
                 self._calc_2th()
 
-    def setWavelength_changeDs(self, value=None):
+    def setWavelength_changeDs(self, value: Optional[float]=None):
         """
-        This is probably not a good idea, but who knows !
+        Set a new wavelength and only update the dSpacing list.
+
+        This is probably not a good idea, but who knows!
         """
         with self._sem:
             if value:
@@ -500,7 +552,10 @@ class Calibrant(object):
                     logger.warning("This is an unlikely wavelength (in meter): %s", self._wavelength)
                 self._calc_dSpacing()
 
-    def set_wavelength(self, value=None):
+    def set_wavelength(self, value: Optional[float]=None):
+        """
+        Set a new wavelength .
+        """
         updated = False
         with self._sem:
             if self._wavelength is None:
@@ -515,7 +570,10 @@ class Calibrant(object):
         if updated:
             self._calc_2th()
 
-    def get_wavelength(self):
+    def get_wavelength(self) -> Optional[float]:
+        """
+        Returns the used wavelength.
+        """
         return self._wavelength
 
     wavelength = property(get_wavelength, set_wavelength)
@@ -548,7 +606,7 @@ class Calibrant(object):
             return
         self._dSpacing = [5.0e9 * self._wavelength / sin(tth / 2.0) for tth in self._2th]
 
-    def get_2th(self):
+    def get_2th(self) -> List[float]:
         """Returns the 2theta positions for all peaks (cached)"""
         if not self._2th:
             self._initialize()
@@ -559,22 +617,24 @@ class Calibrant(object):
                     self._calc_2th()
         return self._2th
 
-    def get_2th_index(self, angle, delta=None):
-        """Returns the index in the 2theta angle index
+    def get_2th_index(self, angle: float, delta: Optional[float]=None) -> int:
+        """Returns the index in the 2theta angle index.
 
         :param angle: expected angle in radians
         :param delta: precision on angle
         :return: 0-based index or None
         """
-        if angle and angle in self._2th:
+        if angle in self._2th:
             return self._2th.index(angle)
         if delta:
             d2th = abs(numpy.array(self._2th) - angle)
-            if d2th.min() < delta:
-                return d2th.argmin()
+            i = d2th.argmin()
+            if d2th[i] < delta:
+                return i
+        return None
 
-    def get_max_wavelength(self, index=None):
-        """Calculate the maximum wavelength assuming the ring at index is visible
+    def get_max_wavelength(self, index: Optional[int]=None):
+        """Calculate the maximum wavelength assuming the ring at index is visible.
 
         Bragg's law says: $\\lambda = 2d sin(\\theta)$
         So at 180° $\\lambda = 2d$
@@ -589,8 +649,9 @@ class Calibrant(object):
             raise IndexError("There are not than many (%s) rings indices in this calibrant" % (index))
         return dSpacing[index] * 2e-10
 
-    def get_peaks(self, unit="2th_deg"):
-        """Calculate the peak position as
+    def get_peaks(self, unit: str="2th_deg"):
+        """Calculate the peak position as this unit.
+
         :return: numpy array (unlike other methods which return lists)
         """
         unit = units.to_unit(unit)
@@ -607,9 +668,9 @@ class Calibrant(object):
         return values * scale
 
     def fake_calibration_image(self, ai, shape=None, Imax=1.0,
-                               U=0, V=0, W=0.0001):
+                               U=0, V=0, W=0.0001) -> numpy.ndarray:
         """
-        Generates a fake calibration image from an azimuthal integrator
+        Generates a fake calibration image from an azimuthal integrator.
 
         :param ai: azimuthal integrator
         :param Imax: maximum intensity of rings
@@ -678,27 +739,34 @@ class CalibrantFactory(object):
         :param basedir: directory name where to search for the calibrants
         """
         if basedir is None:
-            basedir = get_calibration_dir()
-        self.directory = basedir
+            self.directory = get_calibration_dir()
+        else:
+            self.directory = basedir
+
         if not os.path.isdir(self.directory):
             logger.warning("No calibrant directory: %s", self.directory)
             self.all = {}
         else:
-            self.all = dict([(os.path.splitext(i)[0], os.path.join(self.directory, i))
-                             for i in os.listdir(self.directory)
-                             if i.endswith(".D")])
+            if basedir is None:
+                self.all = dict([(os.path.splitext(i)[0], f"pyfai:{os.path.splitext(i)[0]}")
+                                for i in os.listdir(self.directory)
+                                if i.endswith(".D")])
+            else:
+                self.all = dict([(os.path.splitext(i)[0], os.path.join(self.directory, i))
+                                for i in os.listdir(self.directory)
+                                if i.endswith(".D")])
 
     def __call__(self, calibrant_name):
         """Returns a new instance of a calibrant by it's name."""
         return Calibrant(self.all[calibrant_name])
 
-    def get(self, what, notfound=None):
+    def get(self, what: str, notfound=None):
         if what in self.all:
             return Calibrant(self.all[what])
         else:
             return notfound
 
-    def __contains__(self, k):
+    def __contains__(self, k: str):
         return k in self.all
 
     def __repr__(self):
@@ -734,17 +802,19 @@ class calibrant_factory(CalibrantFactory):
     pass
 
 
-def get_calibrant(calibrant_name):
+def get_calibrant(calibrant_name: str, wavelength: float=None) -> Calibrant:
     """Returns a new instance of the calibrant by it's name.
 
-    :param str calibrant_name: Name of the calibrant
+    :param calibrant_name: Name of the calibrant
+    :param wavelength: initialize the calibrant with the given wavelength (in m)
     """
-    return CALIBRANT_FACTORY(calibrant_name)
+    cal = CALIBRANT_FACTORY(calibrant_name)
+    if wavelength:
+        cal.set_wavelength(wavelength)
+    return cal
 
 
-def names():
+def names() -> List[str]:
     """Returns the list of registred calibrant names.
-
-    :rtype: str
     """
     return CALIBRANT_FACTORY.keys()

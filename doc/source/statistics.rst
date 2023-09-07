@@ -3,11 +3,11 @@
 :Keywords: average sigma uncertainties standard-deviation standard-error-of-the-mean std sem
 :Target: General audiance
 
-Weighted average and uncertainty propagation 
+Weighted average and uncertainty propagation
 ============================================
 
 This document explains how pyFAI performs the azimuthal integration and the mathematical formula behind.
-While the mean is fairly straight forward, there is a lot discussed on uncertainty propagation since 
+While the mean is fairly straight forward, there is a lot discussed on uncertainty propagation since
 there are several uncertainties and different models to calculate them.
 
 Naively, most people would expect the azimuthal average to be the average of the signal of each pixel from
@@ -19,14 +19,14 @@ Usually this pixel needs to be corrected for some dark-current (often in the cas
 * Polarization effect: the beam used at synchrotron is heavily polarized and some direction will see more signal than others (:math:`P`)
 * Solid-angle: Pixel which see the beam arriving with a heavy inclinasion recieve less photons (:math:`\Omega`)
 * Absorption-effect, also refered to as parallax effect or thickness effect: very inclined beam passes through a longer sensor length, thus are likely to have a better detection of photons (:math:`A`)
-* Normalization: The user may want to scale the signal, for example to have it in absolute units, directly useable in subsequent analysis (:math:`I_0`). This value being constant among the pixel, it can be moved freele in equations unlike the 4 others.   
+* Normalization: The user may want to scale the signal, for example to have it in absolute units, directly useable in subsequent analysis (:math:`I_0`). This value being constant among the pixel, it can be moved freele in equations unlike the 4 others.
 
 This can be summarized as:
 
-.. math::   
-    
-      I_{cor} = \frac{I_{raw} - I_{dark}}{F \cdot \Omega \cdot P \cdot A \cdot I_0} = \frac{signal}{normalization} 
-    
+.. math::
+
+      I_{cor} = \frac{I_{raw} - I_{dark}}{F \cdot \Omega \cdot P \cdot A \cdot I_0} = \frac{signal}{normalization}
+
 To simplify the notation, we will assign :math:`signal=I_{raw} - I_{dark}` and :math:`normalization=F \cdot \Omega \cdot P \cdot A \cdot I_0`.
 
 Azimuthal average
@@ -37,17 +37,17 @@ In case of pixel splitting, a single pixel can contribute to serveral azimuthal 
 Let :math:`c_{i,r}` be the contribution of pixel :math:`i` to the bin :math:`r`.
 All those contributions are positive and sum up to one (the pixel is completely taken into account):
 
-.. math::   
-    
-    \sum_{r} c_{i,r} = 1 
- 
+.. math::
 
-The weight for a given pixel :math:`i` in the bin :math:`r` is thus the product of the normalization 
+    \sum_{r} c_{i,r} = 1
+
+
+The weight for a given pixel :math:`i` in the bin :math:`r` is thus the product of the normalization
 with the pixel splitting factor: :math:`\omega_i  = c_{i,r} \cdot  normalization_i`.
 
-So the weighted average in a given by the textbook formula (`wikipedia <https://en.wikipedia.org/wiki/Weighted_arithmetic_mean>`_):  
+So the weighted average in a given by the textbook formula (`wikipedia <https://en.wikipedia.org/wiki/Weighted_arithmetic_mean>`_):
 
-.. math::   
+.. math::
 
     \overline{x} = \frac{\sum \omega \cdot x}{\sum \omega}
 
@@ -56,23 +56,23 @@ which simplifies slightly in our case in:
 .. math::
 
     \overline{I_{r}} = \frac{\sum\limits_{i \in bin_r} c_{i,r} \cdot signal_i}{\sum\limits_{i \in bin_r} c_{i,r} \cdot normalization_i}
-                        
+
 Accumulators
 ------------
 
-In order to perform those calculations efficiently, possibly using multicore processor, 
-it is important to use a divide-and-conquer approach to reduce the amount of calculation to perform.  
+In order to perform those calculations efficiently, possibly using multicore processor,
+it is important to use a divide-and-conquer approach to reduce the amount of calculation to perform.
 
 Four different accumulators are used in pyFAI for azimuthal integration to simplify those calculations:
 
 .. math::
 
     V_A = \sum\limits_{i \in A} c_{i,r} \cdot signal_i
-    
+
     VV_A = \sum \omega^2 = \sum\limits_{i \in A} c_{i,r}^2 \cdot normalization_i^2 \cdot \sigma_i^2
-    
+
     \Omega_A = \sum\limits_{i \in A} c_{i,r} \cdot normalization_i
-    
+
     \Omega\Omega_A = \sum\limits_{i \in A} c_{i,r}^2 \cdot normalization_i^2
 
 Those *accumulators* are inspired by `Schubert & Gertz (2018) <https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf>`_
@@ -82,28 +82,28 @@ Those accumulator are summing over an ensemble :math:`A` and are designed for pa
 .. math::
 
     V_{A \cup B} = V_A + V_B
-       
+
     \Omega_{A \cup B} = \Omega_A + \Omega_B
-    
-    \Omega\Omega_{A \cup B} = \Omega\Omega_A + \Omega\Omega_B  
+
+    \Omega\Omega_{A \cup B} = \Omega\Omega_A + \Omega\Omega_B
 
 Uncertainties
 -------------
 
-One should distinguish two types of uncertainties: the uncertainties on the mean value, often called *standard error of the mean* and abreviated *sem*, 
+One should distinguish two types of uncertainties: the uncertainties on the mean value, often called *standard error of the mean* and abreviated *sem*,
 from the *standard deviation* which is abreviated *std*
 
 Standard deviation
 ++++++++++++++++++
 
 The standard error correspond to the uncertainty for a pixel value in the ensemble and is calculated this way in pyFAI:
- 
+
 .. math::
 
     \sigma(I_r) = \sqrt{\frac{VV_{i \in bin_r}}{\Omega\Omega_{i \in bin_r}}}
-    
+
 The standard deviation is rarely used in pyFAI except in the sigma-clipping procedure where it is used to discard pixels.
-The numerical value can be retrieved from an azimuthal-integration result with the *std* attribute.    
+The numerical value can be retrieved from an azimuthal-integration result with the *std* attribute.
 
 Standard error of the mean
 ++++++++++++++++++++++++++
@@ -121,7 +121,7 @@ The numerical value can be retrieved from an azimuthal-integration result with t
 Uncertainties propagated from known variance
 ++++++++++++++++++++++++++++++++++++++++++++
 
-Sometimes variance can be modeled and the array VV can be calculated directly. 
+Sometimes variance can be modeled and the array VV can be calculated directly.
 Very often the variance formula is based on asumption that the distribution is Poissonian (i.e. variance_i = max(1, signal_i)) which, after normalization, becomes :math:`\sigma_i^2 = max(1, signal_i)/ \cdot normalization_i^2`, thus:
 
 .. math::
@@ -135,17 +135,17 @@ This is the classical way to evaluate variance:
 
 .. math::
 
-    VV_A = \sum\limits_{i \in A} \omega_i^2\cdot(v_i - \overline{v_A})^2 
+    VV_A = \sum\limits_{i \in A} \omega_i^2\cdot(v_i - \overline{v_A})^2
 
-Note this formula differs from `Schubert & Gertz (2018) <https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf>`_'s 
+Note this formula differs from `Schubert & Gertz (2018) <https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf>`_'s
 paper with squared weights, but it does match the textbook or the `wikipedia <https://en.wikipedia.org/wiki/Weighted_arithmetic_mean>`_ page on the topic.
 Since there is no assumption made on the underlying distribution, this formula should be used when the input data are not Poissonian.
 There are several drawbacks, the first is the speed and the second, the noise of extracted uncertainties.
 
-This formula is a classical 2-pass algorithm which is not suitable for parallel reductions, but numerically stable. 
-The 2-pass version is used in the python-implementation of CSR-sparse matrix multiplication and provided a ground-truth to validate the single pass version.  
+This formula is a classical 2-pass algorithm which is not suitable for parallel reductions, but numerically stable.
+The 2-pass version is used in the python-implementation of CSR-sparse matrix multiplication and provided a ground-truth to validate the single pass version.
 
-For accumulating the variance in a single pass, the formula becomes: 
+For accumulating the variance in a single pass, the formula becomes:
 
 .. math::
 
@@ -165,4 +165,4 @@ Conclusion
 ----------
 
 This document described the way azimuthal integration is performed within pyFAI from a mathematical point of view.
-It highlights the difference between the *std* and the *sem* and exposes the two main error-models used: Azimuthal and Poisson.  
+It highlights the difference between the *std* and the *sem* and exposes the two main error-models used: Azimuthal and Poisson.

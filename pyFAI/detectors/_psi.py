@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/05/2022"
+__date__ = "21/03/2023"
 __status__ = "production"
 
 import numpy
@@ -208,7 +208,7 @@ class Jungfrau4M(_Dectris):
     force_pixel = True
     aliases = ["Jungfrau 4M"]
     uniform_pixel = True
-    
+
     def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
@@ -217,6 +217,68 @@ class Jungfrau4M(_Dectris):
             self.module_size = module_size
         self.offset1 = self.offset2 = None
 
+class Jungfrau8M(Jungfrau):
+    """
+    Jungfrau 8M module composed of 16 modules, 12 horizontals and 4 vertical
+
+    To simplyfy the layout, one considers the chips (256x256)
+    thus there are 128 chips (8 per modules)
+    """
+    MANUFACTURER = "PSI"
+    MODULE_SIZE = (256, 256)
+    MAX_SHAPE = (3333, 3212)  # max size of the detector
+    PIXEL_SIZE = (75e-6, 75e-6)
+    force_pixel = True
+    aliases = ["Jungfrau 8M"]
+    uniform_pixel = True
+    module_positions = [[1, 607], [1, 866], [1, 1124], [1, 1382],
+                        [69, 1646], [69, 1905], [69, 2163], [69, 2421],
+                        [259, 607], [259, 866], [259, 1124],[259, 1382],
+                        [328, 1646],[328, 1905], [328, 2163],[328, 2421],
+                        [550, 607], [550, 866], [550, 1124], [550, 1382],
+                        [619, 1646], [619, 1905], [619, 2163], [619, 2421],
+                        [667, 2698], [667, 2957], [809, 607], [809, 866],
+                        [809, 1124], [809, 1382], [856-259, 69], [856-259, 328],
+                        [856, 69], [856, 328],
+                        [878, 1646], [878, 1905], [878, 2163], [878, 2421],
+                        [926, 2698], [926, 2957],
+                        [926+259, 2698], [926+259, 2957],
+                        [1100, 607], [1100, 866], [1100, 1124], [1100, 1382],
+                        [1114, 69], [1114, 328],
+                        [1169, 1646], [1169, 1905], [1169, 2163], [1169, 2421],
+                        [1359, 607], [1359, 866], [1359, 1124], [1359, 1382],
+                        [1372, 69], [1372, 328],
+                        [1428, 1646], [1428, 1905], [1428, 2163], [1428, 2421],
+                        [1442, 2698], [1442, 2957],
+                        [1636, 1], [1636, 259],
+                        [1650, 538], [1650, 797], [1650, 1055], [1650, 1313],
+                        [1706, 2629], [1706, 2888],
+                        [1719, 1577], [1719, 1836], [1719, 2094], [1719, 2352],
+                        [1895, 1], [1895, 259],
+                        [1909, 538], [1909, 797], [1909, 1055], [1909, 1313],
+                        [1965, 2629], [1965, 2888],
+                        [1978, 1577], [1978, 1836], [1978, 2094], [1978, 2352],
+                        [2153, 1], [2153, 259],
+                        [2200, 538], [2200, 797], [2200, 1055], [2200, 1313],
+                        [2223, 2629], [2223, 2888],
+                        [2269, 1577], [2269, 1836], [2269, 2094], [2269, 2352],
+                        [2411, 1], [2411, 259],
+                        [2459, 538], [2459, 797], [2459, 1055], [2459, 1313],
+                        [2481, 2629], [2481, 2629+259],
+                        [2528, 1577], [2528, 1836], [2528, 2094], [2528, 2352],
+                        [2750, 538], [2750, 797], [2750, 1055], [2750, 1313],
+                        [2819, 1577], [2819, 1836], [2819, 2094], [2819, 2352],
+                        [3009, 538], [3009, 538+259], [3009, 1055], [3009, 1313],
+                        [3078, 1577], [3078, 1836], [3078, 2094], [3078, 2352]]
+
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None):
+        Jungfrau.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
+
+    def calc_mask(self):
+        mask = numpy.ones(self.max_shape, dtype=numpy.int8)
+        for i, j in self.module_positions:
+            mask[i:i+self.module_size[0], j:j+self.module_size[1]] = 0
+        return mask
 
 class Jungfrau_16M_cor(Jungfrau):
     """Jungfrau 16 corrected for double-sized pixels
@@ -229,7 +291,7 @@ class Jungfrau_16M_cor(Jungfrau):
     @staticmethod
     def load_geom(geom_fname):
         """"Load module geometry from ASCII file
-        
+
         Stollen from Alejandro Homs' code
         """
         import re
@@ -306,4 +368,3 @@ class Jungfrau_16M_cor(Jungfrau):
             mask[:, i + 257:self.MAX_SHAPE[1] - 2:self.MODULE_SIZE[1]] = 1
             mask[:, i + 258:self.MAX_SHAPE[1] - 2:self.MODULE_SIZE[1]] = 1
         return mask
-

@@ -28,6 +28,7 @@
 
 """This modules contains helper function to convert to/from CXI format described in:
 
-https://raw.githubusercontent.com/cxidb/CXI/master/cxi_file_format.pdf 
+https://raw.githubusercontent.com/cxidb/CXI/master/cxi_file_format.pdf
 
+ToDo
 """

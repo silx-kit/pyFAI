@@ -101,7 +101,7 @@
       <item row="2" column="2">
        <widget class="QToolButton" name="show_geometry">
         <property name="toolTip">
-         <string>select spline file graphically</string>
+         <string>Display the geometry with different conventions</string>
         </property>
         <property name="text">
          <string>...</string>

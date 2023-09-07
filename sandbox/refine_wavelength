@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
 #    File: "$Id$"
@@ -187,6 +187,3 @@ if __name__ == "__main__":
         last = refinement.chi2()
         refinement.refine2()
         print refinement
-
-
-

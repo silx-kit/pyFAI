@@ -20,7 +20,7 @@
 #  THE SOFTWARE.
 
 """This sub-module contains various rebinning and pre-processing engines
-defined at the Python level. 
+defined at the Python level.
 """
 
 __author__ = "Jerome Kieffer"

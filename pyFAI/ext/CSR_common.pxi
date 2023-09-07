@@ -1,4 +1,4 @@
-# coding: utf-8 
+# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/09/2022"
+__date__ = "13/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -55,7 +55,7 @@ cdef class CsrIntegrator(object):
     """
     cdef:
         readonly index_t input_size, output_size, nnz
-        readonly data_t empty
+        public data_t empty
         readonly data_t[::1] _data
         readonly index_t[::1] _indices, _indptr
         readonly data_t[:, ::1] preprocessed
@@ -81,7 +81,7 @@ cdef class CsrIntegrator(object):
         self._indptr = numpy.ascontiguousarray(lut[2], dtype=numpy.int32)
         self.nnz = len(lut[1])
         self.output_size = len(lut[2])-1
-    
+
     def __dealloc__(self):
         self._data = None
         self._indices = None
@@ -89,7 +89,7 @@ cdef class CsrIntegrator(object):
         self.preprocessed = None
         self.empty = 0
         self.input_size = 0
-        self.output_size = 0 
+        self.output_size = 0
         self.nnz = 0
 
     @property
@@ -115,6 +115,8 @@ cdef class CsrIntegrator(object):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
+        Deprecated version !
+
         :param weights: input image
         :type weights: ndarray
         :param dummy: value for dead pixels (optional)
@@ -137,7 +139,7 @@ cdef class CsrIntegrator(object):
 
         """
         cdef:
-            index_t i = 0, j = 0, idx = 0 
+            index_t i = 0, j = 0, idx = 0
             acc_t acc_data = 0.0, acc_count = 0.0, epsilon = 1e-10, coef = 0.0
             data_t data = 0.0, cdummy = 0.0, cddummy = 0.0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
@@ -231,7 +233,7 @@ cdef class CsrIntegrator(object):
                 data = cdata[idx]
                 if do_dummy and (data == cdummy):
                     continue
-                acc_data = acc_data + (coef ** coef_power) * data
+                acc_data = acc_data + pown(coef, coef_power) * data
                 acc_count = acc_count + coef
 
             sum_data[i] = acc_data
@@ -243,16 +245,16 @@ cdef class CsrIntegrator(object):
 
         if self.bin_centers is None:
             # 2D integration case
-            return (numpy.asarray(merged).reshape(self.bins).T, 
-                    self.bin_centers0, 
-                    self.bin_centers1, 
-                    numpy.asarray(sum_data).reshape(self.bins).T, 
+            return (numpy.asarray(merged).reshape(self.bins).T,
+                    self.bin_centers0,
+                    self.bin_centers1,
+                    numpy.asarray(sum_data).reshape(self.bins).T,
                     numpy.asarray(sum_count).reshape(self.bins).T)
         else:
             # 1D integration case
-            return (self.bin_centers, 
-                    numpy.asarray(merged), 
-                    numpy.asarray(sum_data), 
+            return (self.bin_centers,
+                    numpy.asarray(merged),
+                    numpy.asarray(sum_data),
                     numpy.asarray(sum_count))
 
     integrate = integrate_legacy
@@ -279,7 +281,7 @@ cdef class CsrIntegrator(object):
         :type weights: ndarray
         :param variance: the variance associate to the image
         :type variance: ndarray
-        :param error_model: enum ErrorModel 
+        :param error_model: enum ErrorModel
         :param dummy: value for dead pixels (optional)
         :type dummy: float
         :param delta_dummy: precision for dead-pixel value in dynamic masking
@@ -293,7 +295,7 @@ cdef class CsrIntegrator(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param absorption: Apparent efficiency of a pixel due to parallax effect
-        :type absorption: ndarray        
+        :type absorption: ndarray
         :param normalization_factor: divide the valid result by this value
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
@@ -325,9 +327,9 @@ cdef class CsrIntegrator(object):
                            polarization=polarization,
                            absorption=absorption,
                            mask=self.cmask if self.check_mask else None,
-                           dummy=dummy, 
+                           dummy=dummy,
                            delta_dummy=delta_dummy,
-                           normalization_factor=normalization_factor, 
+                           normalization_factor=normalization_factor,
                            empty=self.empty,
                            split_result=4,
                            variance=variance,
@@ -349,9 +351,9 @@ cdef class CsrIntegrator(object):
 
                 sig = preproc4[idx, 0]
                 var = preproc4[idx, 1]
-                norm = preproc4[idx, 2] 
+                norm = preproc4[idx, 2]
                 count = preproc4[idx, 3]
-                
+
                 acc_count = acc_count + coef * count
                 if do_azimuthal_variance:
                     if acc_norm_sq <= 0.0:
@@ -362,8 +364,8 @@ cdef class CsrIntegrator(object):
                     else:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                         # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
-                        # Emprically validated against 2-pass implementation in Python/scipy-sparse   
-                        
+                        # Emprically validated against 2-pass implementation in Python/scipy-sparse
+
                         omega_A = acc_norm
                         omega_B = coef * norm # ω_i = c_i * norm_i
                         omega2_A = acc_norm_sq
@@ -374,8 +376,8 @@ cdef class CsrIntegrator(object):
                         # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
                         b = sig / norm
                         delta1 = acc_sig/omega_A - b
-                        acc_sig = acc_sig + coef * sig 
-                        delta2 = acc_sig / acc_norm - b                        
+                        acc_sig = acc_sig + coef * sig
+                        delta2 = acc_sig / acc_norm - b
                         acc_var = acc_var +  omega2_B * delta1 * delta2
                 else:
                     acc_sig = acc_sig + coef * sig
@@ -384,7 +386,7 @@ cdef class CsrIntegrator(object):
                     w = coef * norm
                     acc_norm = acc_norm + w
                     acc_norm_sq = acc_norm_sq + w*w
-                    
+
 
             sum_sig[i] = acc_sig
             sum_var[i] = acc_var
@@ -403,38 +405,38 @@ cdef class CsrIntegrator(object):
         if self.bin_centers is None:
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
-                              numpy.asarray(merged).reshape(self.bins).T, 
+                              numpy.asarray(merged).reshape(self.bins).T,
                               numpy.asarray(sem).reshape(self.bins).T,
-                              numpy.asarray(sum_sig).reshape(self.bins).T, 
-                              numpy.asarray(sum_var).reshape(self.bins).T, 
-                              numpy.asarray(sum_norm).reshape(self.bins).T, 
+                              numpy.asarray(sum_sig).reshape(self.bins).T,
+                              numpy.asarray(sum_var).reshape(self.bins).T,
+                              numpy.asarray(sum_norm).reshape(self.bins).T,
                               numpy.asarray(sum_count).reshape(self.bins).T,
-                              numpy.asarray(std).reshape(self.bins).T, 
-                              numpy.asarray(sem).reshape(self.bins).T, 
+                              numpy.asarray(std).reshape(self.bins).T,
+                              numpy.asarray(sem).reshape(self.bins).T,
                               numpy.asarray(sum_norm_sq).reshape(self.bins).T)
         else:
             # 1D integration case: "position intensity error signal variance normalization count std sem norm_sq"
-            return Integrate1dtpl(self.bin_centers, 
+            return Integrate1dtpl(self.bin_centers,
                                   numpy.asarray(merged),numpy.asarray(sem) ,
-                                  numpy.asarray(sum_sig),numpy.asarray(sum_var), 
+                                  numpy.asarray(sum_sig),numpy.asarray(sum_var),
                                   numpy.asarray(sum_norm), numpy.asarray(sum_count),
                                   numpy.asarray(std), numpy.asarray(sem), numpy.asarray(sum_norm_sq))
-    
-    def sigma_clip(self, 
-                   weights, 
-                   dark=None, 
-                   dummy=None, 
+
+    def sigma_clip(self,
+                   weights,
+                   dark=None,
+                   dummy=None,
                    delta_dummy=None,
-                   variance=None, 
+                   variance=None,
                    dark_variance=None,
-                   flat=None, 
-                   solidangle=None, 
-                   polarization=None, 
+                   flat=None,
+                   solidangle=None,
+                   polarization=None,
                    absorption=None,
-                   bint safe=True, 
+                   bint safe=True,
                    error_model=ErrorModel.NO,
                    data_t normalization_factor=1.0,
-                   double cutoff=0.0, 
+                   double cutoff=0.0,
                    int cycle=5,
                    ):
         """Perform a sigma-clipping iterative filter within each along each row.
@@ -456,7 +458,7 @@ cdef class CsrIntegrator(object):
         arrays: signal, variance, normalization and count
 
         The threshold can automaticlly be calculated from Chauvenet's: sqrt(2*log(nbpix/sqrt(2.0f*pi)))
-        
+
         :param weights: input image
         :type weights: ndarray
         :param dark: array with the dark-current value to be subtracted (if any)
@@ -476,9 +478,9 @@ cdef class CsrIntegrator(object):
         :param polarization: array with the polarization correction values to be divided by (if any)
         :type polarization: ndarray
         :param absorption: Apparent efficiency of a pixel due to parallax effect
-        :type absorption: ndarray        
+        :type absorption: ndarray
         :param safe: set to True to save some tests
-        :param error_model: set to "poissonian" to use signal as variance (minimum 1), "azimuthal" to use the variance in a ring. 
+        :param error_model: set to "poissonian" to use signal as variance (minimum 1), "azimuthal" to use the variance in a ring.
         :param normalization_factor: divide the valid result by this value
 
         :return: positions, pattern, weighted_histogram and unweighted_histogram
@@ -511,9 +513,9 @@ cdef class CsrIntegrator(object):
                            polarization=polarization,
                            absorption=absorption,
                            mask=self.cmask if self.check_mask else None,
-                           dummy=dummy, 
+                           dummy=dummy,
                            delta_dummy=delta_dummy,
-                           normalization_factor=normalization_factor, 
+                           normalization_factor=normalization_factor,
                            empty=self.empty,
                            split_result=4,
                            variance=variance,
@@ -559,8 +561,8 @@ cdef class CsrIntegrator(object):
                             # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
                             b = sig / norm
                             delta1 = acc_sig/omega_A - b
-                            acc_sig = acc_sig + coef * sig 
-                            delta2 = acc_sig / acc_norm - b                        
+                            acc_sig = acc_sig + coef * sig
+                            delta2 = acc_sig / acc_norm - b
                             acc_var = acc_var +  omega2_B * delta1 * delta2
                             acc_count = acc_count + coef * count
                     else:
@@ -569,7 +571,7 @@ cdef class CsrIntegrator(object):
                         acc_norm = acc_norm + w
                         acc_norm_sq = acc_norm_sq + w*w
                         acc_count = acc_count + coef * count
-                        
+
                 if (acc_norm_sq > 0.0):
                     aver = acc_sig / acc_norm
                     std = sqrt(acc_var / acc_norm_sq)
@@ -578,15 +580,15 @@ cdef class CsrIntegrator(object):
                     aver = NAN;
                     std = NAN;
                     # sem = NAN;
-                
+
                 # cycle for sigma-clipping
                 for c in range(cycle):
                     # Sigma-clip
                     if (acc_norm == 0.0) or (acc_count == 0.0):
                         break
                     #This is for Chauvenet's criterion
-                    acc_count = max(3.0, acc_count) 
-                    chauvenet_cutoff = max(cutoff, sqrt(2.0*log(acc_count/sqrt(2.0*M_PI)))) 
+                    acc_count = max(3.0, acc_count)
+                    chauvenet_cutoff = max(cutoff, sqrt(2.0*log(acc_count/sqrt(2.0*M_PI))))
                     # Discard  outliers
                     bad_pix = 0
                     for j in range(self._indptr[i], self._indptr[i + 1]):
@@ -600,21 +602,21 @@ cdef class CsrIntegrator(object):
                         count = preproc4[idx, 3]
                         if isnan(sig) or isnan(var) or isnan(norm) or isnan(count) or (norm == 0.0) or (count == 0.0):
                             continue
-                        # Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division 
+                        # Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division
                         x = sig / norm
                         if fabs(x - aver) > chauvenet_cutoff * std:
                             preproc4[idx, 3] = NAN;
                             bad_pix = bad_pix + 1
                     if bad_pix == 0:
                         break
-                    
+
                     #integrate again
                     acc_sig = 0.0
                     acc_var = 0.0
                     acc_norm = 0.0
                     acc_norm_sq = 0.0
                     acc_count = 0.0
-                    
+
                     for j in range(self._indptr[i], self._indptr[i + 1]):
                         coef = self._data[j]
                         if coef == 0.0:
@@ -646,8 +648,8 @@ cdef class CsrIntegrator(object):
                                 # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
                                 b = sig / norm
                                 delta1 = acc_sig/omega_A - b
-                                acc_sig = acc_sig + coef * sig 
-                                delta2 = acc_sig / acc_norm - b                        
+                                acc_sig = acc_sig + coef * sig
+                                delta2 = acc_sig / acc_norm - b
                                 acc_var = acc_var +  omega2_B * delta1 * delta2
                                 acc_count = acc_count + coef * count
                         else:
@@ -664,12 +666,12 @@ cdef class CsrIntegrator(object):
                         aver = NAN;
                         std = NAN;
                         # sem = NAN;
-                    
+
                 #collect things ...
                 sum_sig[i] = acc_sig
                 sum_var[i] = acc_var
                 sum_norm[i] = acc_norm
-                sum_norm_sq[i] = acc_norm_sq   
+                sum_norm_sq[i] = acc_norm_sq
                 sum_count[i] = acc_count
                 if (acc_count > 0.0) and (acc_norm != 0.0):
                     merged[i] = acc_sig / acc_norm
@@ -679,10 +681,10 @@ cdef class CsrIntegrator(object):
                     merged[i] = empty
                     stda[i] = empty
 
-        
+
         #"position intensity error signal variance normalization count"
-        return Integrate1dtpl(self.bin_centers, 
+        return Integrate1dtpl(self.bin_centers,
                               numpy.asarray(merged),numpy.asarray(sema) ,
-                              numpy.asarray(sum_sig),numpy.asarray(sum_var), 
+                              numpy.asarray(sum_sig),numpy.asarray(sum_var),
                               numpy.asarray(sum_norm), numpy.asarray(sum_count),
                               numpy.asarray(stda), numpy.asarray(sema), numpy.asarray(sum_norm_sq))

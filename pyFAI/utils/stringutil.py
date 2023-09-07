@@ -28,7 +28,7 @@
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2021"
+__date__ = "31/01/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -87,7 +87,7 @@ def latex_to_unicode(string):
     string = string.replace("^{o}", u"°")
     string = string.replace("\\AA", u"Å")
     string = string.replace("log10", u"log₁₀")
-    string = string.replace("^{*2}", u"d*²")
+    string = string.replace("^{*2}", u"*²")
     return string
 
 

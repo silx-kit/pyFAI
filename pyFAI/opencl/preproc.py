@@ -490,7 +490,7 @@ def preproc(raw,
     :param empty: value to be given for empty pixels
     :param split_result: set to true to separate numerator from denominator and return an array of float2 or float3 (with variance)
     :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.
-    :param error_model: set to POISSONIAN to assume  
+    :param error_model: set to POISSONIAN to assume
     :param dtype: dtype for all processing
     :param out: output buffer to save a malloc
 

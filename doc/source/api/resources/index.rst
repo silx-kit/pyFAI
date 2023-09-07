@@ -1,14 +1,13 @@
 pyFAI.resources package
 =======================
 
-pyFAI.resources.setup module
+pyFAI.resources.__init__ module
 ----------------------------
 
-.. automodule:: pyFAI.resources.setup
+.. automodule:: pyFAI.resources.__init__
     :members:
     :undoc-members:
     :show-inheritance:
-
 
 Module contents
 ---------------

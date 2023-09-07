@@ -25,21 +25,25 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "17/11/2022"
 
+from typing import Optional
 from ..model.GeometryModel import GeometryModel
-from .ElidedLabel import ElidedLabel
+from silx.gui.widgets.ElidedLabel import ElidedLabel
 
 
 class GeometryLabel(ElidedLabel):
-    """Label displaying a specific OpenCL device.
+    """Read-only widget to display a :class:`GeometryModel`.
+
+    - a detector holder (see :meth:`setDetector`, :meth:`detector`)
+    - a view on top of a model (see :meth:`setDetectorModel`, :meth:`detectorModel`)
     """
 
     def __init__(self, parent=None):
         super(GeometryLabel, self).__init__(parent)
-        self.__geometry = None
+        self.__geometry: Optional[GeometryModel] = None
         self.__updateDisplay()
-        self.setValueAsToolTip(False)
+        self.setTextAsToolTip(False)
 
     def __updateDisplay(self):
         geometry = self.__geometry
@@ -63,13 +67,13 @@ class GeometryLabel(ElidedLabel):
             return
 
         tipTemplate = """<html>
-            <ul>
-            <li><b>Distance</b>: {distance} m</li>
-            <li><b>PONI1</b>: {poni1} m</li>
-            <li><b>PONI2</b>: {poni2} m</li>
-            <li><b>Rotation 1</b>: {rotation1} rad</li>
-            <li><b>Rotation 2</b>: {rotation2} rad</li>
-            <li><b>Rotation 3</b>: {rotation3} rad</li>
+            <ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">
+            <li style="white-space:pre"><b>Distance</b>: {distance} m</li>
+            <li style="white-space:pre"><b>PONI1</b>: {poni1} m</li>
+            <li style="white-space:pre"><b>PONI2</b>: {poni2} m</li>
+            <li style="white-space:pre"><b>Rotation 1</b>: {rotation1} rad</li>
+            <li style="white-space:pre"><b>Rotation 2</b>: {rotation2} rad</li>
+            <li style="white-space:pre"><b>Rotation 3</b>: {rotation3} rad</li>
             </ul>
         </html>"""
 
@@ -78,7 +82,7 @@ class GeometryLabel(ElidedLabel):
         self.setText(labelTemplate.format(**args))
         self.setToolTip(tipTemplate.format(**args))
 
-    def setGeometryModel(self, geometryModel):
+    def setGeometryModel(self, geometryModel: Optional[GeometryModel]):
         """Set the geometry to display.
 
         :param ~pyFAI.gui.model.GeometryModel geometryModel: A geometry.
@@ -92,7 +96,7 @@ class GeometryLabel(ElidedLabel):
         if self.__geometry is not None:
             self.__geometry.changed.connect(self.__updateDisplay)
 
-    def geometryModel(self):
+    def geometryModel(self) -> Optional[GeometryModel]:
         """Returns the geometry model
 
         :rtype: Union[None,~pyFAI.gui.model.GeometryModel]

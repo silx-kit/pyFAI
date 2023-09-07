@@ -26,14 +26,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""This modules contains helper function to convert to/from FIT2D geometry 
+"""This modules contains helper function to convert to/from FIT2D geometry
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2022"
+__date__ = "03/02/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -42,15 +42,16 @@ import logging
 logger = logging.getLogger(__name__)
 from typing import NamedTuple
 from math import pi, cos, sin, sqrt, acos, asin
-degrees = lambda  x: 180*x/pi
-radians = lambda  x: x*pi/180 
+degrees = lambda  x: 180 * x / pi
+radians = lambda  x: x * pi / 180
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
+
 
 class Fit2dGeometry(NamedTuple):
     """ This object represents the geometry as configured in Fit2D
 
-    :param directDist: Distance from sample to the detector along the incident beam in mm. The detector may be extrapolated when tilted. 
+    :param directDist: Distance from sample to the detector along the incident beam in mm. The detector may be extrapolated when tilted.
     :param centerX: Position of the beam-center on the detector in pixels, along the fastest axis of the image.
     :param centerY: Position of the beam-center on the detector in pixels, along the slowest axis of the image.
     :param tilt: Angle of tilt of the detector in degrees
@@ -58,16 +59,16 @@ class Fit2dGeometry(NamedTuple):
     :param detector: Detector definition as is pyFAI.
     :param wavelength: Wavelength of the beam in Angstrom
     """
-    directDist: float=None
-    centerX: float=None
-    centerY: float=None
-    tilt: float=0.0
-    tiltPlanRotation: float=0.0
-    pixelX: float=None
-    pixelY: float=None
-    splineFile: str=None
-    detector: Detector=None
-    wavelength: float=None
+    directDist: float = None
+    centerX: float = None
+    centerY: float = None
+    tilt: float = 0.0
+    tiltPlanRotation: float = 0.0
+    pixelX: float = None
+    pixelY: float = None
+    splineFile: str = None
+    detector: Detector = None
+    wavelength: float = None
 
     @classmethod
     def _fromdict(cls, dico):
@@ -88,14 +89,14 @@ class Fit2dGeometry(NamedTuple):
 def convert_to_Fit2d(poni):
     """Convert a Geometry|PONI object to the geometry of Fit2D
     Please see the doc from Fit2dGeometry
-    
+
     :param poni: azimuthal integrator, geometry or poni
     :return: same geometry as a Fit2dGeometry named-tuple
     """
     poni = PoniFile(poni)
 
     cos_tilt = cos(poni._rot1) * cos(poni._rot2)
-    
+
     sin_tilt = sqrt(1.0 - cos_tilt * cos_tilt)
     tan_tilt = sin_tilt / cos_tilt
     # This is tilt plane rotation
@@ -132,16 +133,16 @@ def convert_to_Fit2d(poni):
     out["pixelY"] = poni.detector.pixel1 * 1e6
     out["splineFile"] = poni.detector.splineFile
     if poni.wavelength:
-        out["wavelength"] = poni.wavelength*1e10
+        out["wavelength"] = poni.wavelength * 1e10
     return Fit2dGeometry(**out)
 
 
 def convert_from_Fit2d(f2d):
     """Import the geometry from Fit2D
-    
+
     :param f2d: instance of Fit2dGeometry
     :return: PoniFile instance
-    """  
+    """
     if not isinstance(f2d, Fit2dGeometry):
         if isinstance(f2d, dict):
             f2d = Fit2dGeometry(**f2d)
@@ -169,11 +170,10 @@ def convert_from_Fit2d(f2d):
         detector = f2d.detector
     else:
         detector = Detector.factory(f2d.detector)
-    
-    print(detector, f2d.detector, f2d.pixelX, f2d.pixelY, f2d.splineFile)
+
     res._detector = detector
     if f2d.wavelength:
-        res._wavelength = f2d.wavelength*1e-10
+        res._wavelength = f2d.wavelength * 1e-10
     res._dist = f2d.directDist * cos_tilt * 1.0e-3
     res._poni1 = f2d.centerY * detector.pixel1 - f2d.directDist * sin_tilt * sin_tpr * 1.0e-3
     res._poni2 = f2d.centerX * detector.pixel2 - f2d.directDist * sin_tilt * cos_tpr * 1.0e-3
@@ -190,5 +190,3 @@ def convert_from_Fit2d(f2d):
         rot3 = pi / 2.0 - rot3
     res._rot3 = rot3
     return res
-    
-    

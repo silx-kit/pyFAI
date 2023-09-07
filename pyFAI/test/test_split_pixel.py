@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2022"
+__date__ = "05/09/2023"
 
 import unittest
 import platform
@@ -86,7 +86,7 @@ class TestRecenter(unittest.TestCase):
 
     def test_area(self):
         "Test the formula to calculate the area of any quad"
-        pos = numpy.random.random(8) * 10  # this is a random quad !
+        pos = UtilsTest.get_rng().uniform(0, 10, 8)  # this is a random quad !
 
         ref = splitPixel._sp_area4(*pos)
         trp = splitPixel._sp_area4(*pos.reshape((-1, 2))[:, -1::-1].ravel())
@@ -96,7 +96,7 @@ class TestRecenter(unittest.TestCase):
         buf = numpy.zeros(int(max(pos) + 3), numpy.float32)
         for i in range(4):
             splitPixel._sp_integrate1d(buf, *b[2 * i:2 * i + 4])
-        print(buf, buf.sum(), ref, trp)
+        # print(buf, buf.sum(), ref, trp)
         self.assertAlmostEqual(abs(buf.sum()), ref, 4, "Check integration")
 
 
@@ -203,20 +203,24 @@ class TestSplitPixel(unittest.TestCase):
 
 
 class TestSplitBBoxNg(unittest.TestCase):
-    """Test the equivalence of the historical SplitBBox with the one propagating 
+    """Test the equivalence of the historical SplitBBox with the one propagating
     the variance"""
 
     @classmethod
     def setUpClass(cls):
         super(TestSplitBBoxNg, cls).setUpClass()
+
+        #fix seed, decrease noise while testing:
+        rng = UtilsTest.get_rng()
+
         det = Detector.factory("Pilatus 100k")
         shape = det.shape
         # The randomness of the image is not correlated to bug #1021
         cls.maxi = 65000
-        img = numpy.random.randint(0, cls.maxi, numpy.prod(shape))
+        img = (rng.random(numpy.prod(shape))*cls.maxi).astype(numpy.uint16)
 
         if platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4):
-            cls.epsilon = 1e-13
+            cls.epsilon = 3e-13
         else:
             cls.epsilon = numpy.finfo(numpy.float64).eps
 
@@ -275,16 +279,6 @@ class TestSplitBBoxNg(unittest.TestCase):
         count_legacy = self.results["histoBBox2d_legacy"][4]
         count_ng = self.results["histoBBox2d_ng"].count
 
-        if abs(count_ng).max() == 0:
-            print(splitBBox)
-            print(count_legacy)
-            print(count_ng)
-#             print("prop", self.results["histoBBox2d_ng"][4])
-#             print("pos1", self.results["histoBBox2d_ng"][3])
-#             print("pos0", self.results["histoBBox2d_ng"][2])
-#             print("err", self.results["histoBBox2d_ng"][1])
-#             print("int", self.results["histoBBox2d_ng"][0])
-
         self.assertLess(abs(count_legacy - count_ng).max(), self.epsilon, "count is the same")
         # same for normalisation ... in this case
         count_ng = self.results["histoBBox2d_ng"].normalization
@@ -298,6 +292,16 @@ class TestSplitBBoxNg(unittest.TestCase):
         # resulting intensity validation
         int_legacy = self.results["histoBBox2d_legacy"][0]
         int_ng = self.results["histoBBox2d_ng"].intensity
+
+        if False:
+            print("intergator:", splitBBox)
+            print('count_legacy', count_legacy)
+            print("count_ng", count_ng)
+            print("weighted_legacy", weighted_legacy)
+            print("signal", signal)
+            print("int_legacy", int_legacy)
+            print("int_ng", int_ng)
+
         self.assertLess(abs(int_legacy - int_ng).max(), self.epsilon, "intensity is the same")
 
     def test_split_pixel_2d(self):

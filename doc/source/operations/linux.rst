@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 07/01/2021
+:Date: 05/01/2023
 :Keywords: Installation procedure on Linux
 :Target: System administrators
 
@@ -52,9 +52,9 @@ One can also built the current development version from sources:
 .. code-block:: shell
 
    sudo apt-get build-dep pyfai
-   wget https://github.com/silx-kit/pyFAI/archive/master.zip
-   unzip master.zip
-   cd pyFAI-master
+   wget https://github.com/silx-kit/pyFAI/archive/main.zip
+   unzip main.zip
+   cd pyFAI-main
    ./build-deb.sh --install
 
 
@@ -69,14 +69,13 @@ Installation procedure on other linux distibution
 -------------------------------------------------
 
 If your distribution does not provide you pyFAI packages, using the **PIP** way
-is advised, via wheels packages. First install *pip* and *wheel* and activate a 
+is advised, via wheels packages. First install *pip* and *wheel* and activate a
 virtual environment:
 
 .. code-block:: shell
 
    python3 -m venv pyfai
    source pyfai/bin/activate
-   pip install setuptools wheel pip
    pip install pyFAI
 
 Or you can install pyFAI from the sources:
@@ -85,16 +84,12 @@ Or you can install pyFAI from the sources:
 
    python3 -m venv pyfai
    source pyfai/bin/activate
-   pip install setuptools wheel pip
-   wget https://github.com/silx-kit/pyFAI/archive/master.zip
-   unzip master.zip
-   cd pyFAI-master
+   pip install build
+   wget https://github.com/silx-kit/pyFAI/archive/main.zip
+   unzip main.zip
+   cd pyFAI-main
    pip install -r requirements.txt
-   python setup.py build
-   python run_tests.py
    pip install . --upgrade
 
 **Nota:** The usage of "python setup.py install" is now deprecated.
-It causes much more trouble as there is no installed file tracking,
-hence no way to de-install properly the package. 
-One should never use *sudo pip* as it is likely to interfer with the software installed with the system. 
+One should never use *sudo pip* as it is likely to interfer with the software installed with the system.

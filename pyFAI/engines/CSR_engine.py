@@ -19,14 +19,14 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""CSR rebinning engine implemented in pure python (with bits of scipy !) 
+"""CSR rebinning engine implemented in pure python (with bits of scipy !)
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/07/2022"
+__date__ = "15/05/2023"
 __status__ = "development"
 
 import logging
@@ -54,7 +54,7 @@ class CSRIntegrator(object):
                  lut=None,
                  empty=0.0):
         """Constructor of the abstract class
-        
+
         :param size: input image size
         :param lut: tuple of 3 arrays with data, indices and indptr,
                      index of the start of line in the CSR matrix
@@ -76,7 +76,7 @@ class CSRIntegrator(object):
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
-        
+
         :param data: the non zero values NZV
         :param indices: the column number of the NZV
         :param indptr: the index of the start of line"""
@@ -102,10 +102,10 @@ class CSRIntegrator(object):
                   normalization_factor=1.0,
                   ):
         """Actually perform the CSR matrix multiplication after preprocessing.
-        
+
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
-        :param error_model: Enum or string, set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model. 
+        :param error_model: Enum or string, set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model.
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -115,7 +115,7 @@ class CSRIntegrator(object):
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
         :return: the preprocessed data integrated as array nbins x 4 which contains:
-                    regrouped signal, variance, normalization, pixel count, sum_norm² 
+                    regrouped signal, variance, normalization, pixel count, sum_norm²
 
         Nota: all normalizations are grouped in the preprocessing step.
         """
@@ -168,14 +168,15 @@ class CsrIntegrator1d(CSRIntegrator):
                  mask_checksum=None
                  ):
         """Constructor of the abstract class for 1D integration
-        
-        :param image_size: size of the image 
+
+        :param image_size: size of the image
         :param lut: (data, indices, indptr) of the CSR matrix
         :param empty: value for empty pixels
         :param unit: the kind of radial units
         :param bin_center: position of the bin center
         :param mask_checksum: just a place-holder to track which mask was used
-        Nota: bins value is deduced from the dimentionality of bin_centers 
+
+        Nota: bins value is deduced from the dimentionality of bin_centers
         """
         self.bin_centers = bin_centers
         CSRIntegrator.__init__(self, image_size, lut, empty)
@@ -185,7 +186,7 @@ class CsrIntegrator1d(CSRIntegrator):
 
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
-        
+
         :param data: the non zero values NZV
         :param indices: the column number of the NZV
         :param indptr: the index of the start of line"""
@@ -206,8 +207,8 @@ class CsrIntegrator1d(CSRIntegrator):
                   absorption=None,
                   normalization_factor=1.0,
                   ):
-        """Actually perform the 1D integration 
-        
+        """Actually perform the 1D integration
+
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
         :param error_model: Enum or str, set to "poisson" to use signal as variance (minimum 1), set to "azimuthal" to use azimuthal model.
@@ -219,8 +220,8 @@ class CsrIntegrator1d(CSRIntegrator):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
-        :return: Integrate1dResult or Integrate1dWithErrorResult object depending on variance 
-        
+        :return: Integrate1dResult or Integrate1dWithErrorResult object depending on variance
+
         """
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
@@ -259,12 +260,12 @@ class CsrIntegrator1d(CSRIntegrator):
                    normalization_factor=1.0,
                    cutoff=4.0, cycle=5):
         """
-        Perform a sigma-clipping iterative filter within each along each row. 
+        Perform a sigma-clipping iterative filter within each along each row.
         see the doc of scipy.stats.sigmaclip for more descriptions.
-        
+
         If the error model is "azimuthal": the variance is the variance within a bin,
         which is refined at each iteration, can be costly !
-        
+
         Else, the error is propagated according to:
 
         .. math::
@@ -291,9 +292,10 @@ class CsrIntegrator1d(CSRIntegrator):
         :param safe: Unused in this implementation
         :param error_model: Enum or str, "azimuthal" or "poisson"
         :param normalization_factor: divide raw signal by this value
-        :param cutoff: discard all points with |value - avg| > cutoff * sigma. 3-4 is quite common 
+        :param cutoff: discard all points with ``|value - avg| > cutoff * sigma``. 3-4 is quite common
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :return: namedtuple with "position intensity error signal variance normalization count"
+
         """
         shape = data.shape
         error_model = ErrorModel.parse(error_model)
@@ -392,34 +394,41 @@ class CsrIntegrator2d(CSRIntegrator):
                  image_size,
                  lut=None,
                  empty=0.0,
+                 unit=None,
                  bin_centers0=None,
                  bin_centers1=None,
                  checksum=None,
                  mask_checksum=None):
         """Constructor of the abstract class for 2D integration
-        
-        :param size: input image size
+
+        :param image_size: input image size
         :param lut: tuple of 3 arrays with data, indices and indptr,
                      index of the start of line in the CSR matrix
         :param empty: value for empty pixels
+        :param unit: unit to be used
         :param bin_center: position of the bin center
         :param checksum: checksum for the LUT, if not provided, recalculated
         :param mask_checksum: just a place-holder to track which mask was used
 
-        Nota: bins are deduced from bin_centers0, bin_centers1 
-    
+        Nota: bins are deduced from bin_centers0, bin_centers1
+
         """
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
+        self.unit = unit
+        self.mask_checksum = mask_checksum
+
         if not checksum:
             self.checksum = calc_checksum(lut[0])
         else:
             self.checksum = checksum
         CSRIntegrator.__init__(self, image_size, lut, empty)
 
+
+
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
-        
+
         :param data: the non zero values NZV
         :param indices: the column number of the NZV
         :param indptr: the index of the start of line"""
@@ -431,7 +440,7 @@ class CsrIntegrator2d(CSRIntegrator):
     def integrate(self,
                   signal,
                   variance=None,
-                  poissonian=False,
+                  error_model=ErrorModel.NO,
                   dummy=None,
                   delta_dummy=None,
                   dark=None,
@@ -439,12 +448,13 @@ class CsrIntegrator2d(CSRIntegrator):
                   solidangle=None,
                   polarization=None,
                   absorption=None,
-                  normalization_factor=1.0):
-        """Actually perform the 2D integration 
-        
+                  normalization_factor=1.0,
+                  **kwargs):
+        """Actually perform the 2D integration
+
         :param signal: array of the right size with the signal in it.
         :param variance: Variance associated with the signal
-        :param poissonian: set to True to variance=max(signal,1), False will implement azimuthal variance
+        :param error_model: enum ErrorModel
         :param dummy: values which have to be discarded (dynamic mask)
         :param delta_dummy: precision for dummy values
         :param dark: noise to be subtracted from signal
@@ -454,13 +464,11 @@ class CsrIntegrator2d(CSRIntegrator):
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
         :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
-        
+
         """
-        if variance is None and poissonian is None:
-            do_variance = False
-        else:
-            do_variance = True
-        trans = CSRIntegrator.integrate(self, signal, variance, poissonian, dummy, delta_dummy,
+        error_model = ErrorModel.parse(error_model)
+        do_variance = variance is not None or  error_model.do_variance
+        trans = CSRIntegrator.integrate(self, signal, variance, error_model, dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor)
         trans.shape = self.bins + (-1,)
@@ -469,6 +477,7 @@ class CsrIntegrator2d(CSRIntegrator):
         variance = trans[..., 1]
         normalization = trans[..., 2]
         count = trans[..., 3]
+        sum_nrm2 = trans[..., 4]
 
         mask = (normalization == 0)
         with warnings.catch_warnings():
@@ -476,14 +485,15 @@ class CsrIntegrator2d(CSRIntegrator):
             intensity = signal / normalization
             intensity[mask] = self.empty
             if do_variance:
-                error = numpy.sqrt(variance) / normalization
-                error[mask] = self.empty
-                sum_nrm2 = trans[..., 4]
+                sem = numpy.sqrt(variance) / normalization
+                std = numpy.sqrt(variance / sum_nrm2)
+                sem[mask] = self.empty
+                std[mask] = self.empty
             else:
-                variance = error = sum_nrm2 = None
+                variance = std = sem = sum_nrm2 = None
         return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
-                              intensity, error,
-                              signal, variance, normalization, count, sum_nrm2)
+                              intensity, sem,
+                              signal, variance, normalization, count, std, sem, sum_nrm2)
 
     integrate_ng = integrate
 

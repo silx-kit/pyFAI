@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2022"
+__date__ = "21/08/2023"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
@@ -66,9 +66,14 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
             ai = sg.geometry_refinement
         if label is None:
             label = sg.label
-    colornorm = SymLogNorm(1, base=10,
-                           vmin=numpy.nanmin(img),
-                           vmax=numpy.nanmax(img))
+    try:
+        colornorm = SymLogNorm(1, base=10,
+                               vmin=numpy.nanmin(img),
+                               vmax=numpy.nanmax(img))
+    except: # elder version of matplotlib <3.2 do not support the base kwarg.
+        colornorm = SymLogNorm(1,
+                               vmin=numpy.nanmin(img),
+                               vmax=numpy.nanmax(img))
     ax.imshow(img,
               origin="lower",
               cmap="inferno",

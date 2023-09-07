@@ -1,6 +1,6 @@
 /*
  *   Project: Stencil based peak finder.
- *            OpenCL Kernels  
+ *            OpenCL Kernels
  *
  *
  *   Copyright (C) 2020-2020 European Synchrotron Radiation Facility
@@ -31,15 +31,15 @@
 
 #include "for_eclipse.h"
 
-//read without caching. Profiling demonstrated this kernel best works without manual cache. 
-float inline read_simple(global float *img, 
+//read without caching. Profiling demonstrated this kernel best works without manual cache.
+float inline read_simple(global float *img,
                          int height,
                          int width,
                          int row,
                          int col){
     //This kernel reads the value and returns it without active caching
     float value = NAN;
-    
+
     // Read
     if ((col>=0) && (col<width) && (row>=0) && (row<height)){
         int read_pos = col + row*width;
@@ -53,12 +53,12 @@ float inline read_simple(global float *img,
 
 
 /* Stencil kernel that calculated the I-bg and counting pixels of interest
- * 
- * For every pixel (no preproc), the value for the background level 
+ *
+ * For every pixel (no preproc), the value for the background level
  * and the std are calculated from a local patch (7x7).
- * Pixel with (Icor-Bg)>   min(cutoff*std, noise) are maked as peak-pixel, 
+ * Pixel with (Icor-Bg)>   min(cutoff*std, noise) are maked as peak-pixel,
  * counted and their index registered in highidx
- * 
+ *
  * The kernel uses local memory for keeping track of peak count and positions
  * parameters:
  * img:    the image, tested on int (pilatus images)
@@ -73,12 +73,12 @@ float inline read_simple(global float *img,
  * high: the list of peaks (only indexes)
  * high_size: size of the allocated array (should not overflows)
  * local_high: some local memory to store the local peaks
- * local_size: size of the local memory 
- *  
+ * local_size: size of the local memory
+ *
  */
-// workgroup size of kernel: as big as possible, (32x32) is working well. 1000 points as local peak cache 
+// workgroup size of kernel: as big as possible, (32x32) is working well. 1000 points as local peak cache
 kernel void simple_spot_finder(
-                        global float *img, 
+                        global float *img,
                                int height,
                                int width,
                                int half_wind_height,
@@ -96,7 +96,7 @@ kernel void simple_spot_finder(
     float value, sum, std, centroid_r, centroid_c, dist, mean, M2, delta, delta2, target_value, centroid;
     col = get_global_id(0);
     row = get_global_id(1);
-    
+
     //Initialization of output array in shared
     volatile local int local_cnt_high[2];
     blocksize = get_local_size(0) * get_local_size(1);
@@ -104,13 +104,13 @@ kernel void simple_spot_finder(
     if (tid < 2){
         local_cnt_high[tid] = 0;
     }
-        
+
     for (i=0; i<local_size; i+=blocksize){
         if ((i+tid)<local_size)
             local_high[i+tid] = 0;
     }
-    barrier(CLK_LOCAL_MEM_FENCE);        
-    
+    barrier(CLK_LOCAL_MEM_FENCE);
+
     // basic check if target_value is worth processing ...
     target_value = read_simple(img, height, width, row, col);
     if (isfinite(target_value) && (target_value>noise)){
@@ -120,20 +120,20 @@ kernel void simple_spot_finder(
         centroid_r = 0.0f;
         centroid_c = 0.0f;
         cnt = 1;
-        
+
         for (i=-half_wind_height; i<=half_wind_height; i++){
             for (j=-half_wind_width; j<=half_wind_width; j++){
                 if (i || j){
                     value = read_simple(img, height, width, row+i, col+j);
                     if (isfinite(value)){
-                        centroid_r += value*i; 
+                        centroid_r += value*i;
                         centroid_c += value*j;
                         cnt += 1;
                         delta = value - mean;
                         mean += delta / cnt;
                         delta2 = value - mean;
                         M2 += delta * delta2;
-                    }                    
+                    }
                 }
             }
         }
@@ -146,8 +146,8 @@ kernel void simple_spot_finder(
                 local_high[where] = col+width*row;
             }
         } // if intense signal properly centered
-    } // if value worth processing            
-         
+    } // if value worth processing
+
     //Store the results in global memory
     barrier(CLK_LOCAL_MEM_FENCE);
     if (tid==0) {
@@ -168,7 +168,7 @@ kernel void simple_spot_finder(
     for (i=0; i<local_cnt_high[0]; i+=blocksize){
         if ((i+tid) < local_cnt_high[0]){
             high[local_cnt_high[1]+i+tid] = local_high[i+tid];
-        }        
+        }
     }//store results
 } //kernel
 
@@ -177,8 +177,8 @@ kernel void simple_spot_finder(
 
 // Simple kernel for resetting a buffer
 kernel void
-memset_int(global int *array, 
-                  int pattern, 
+memset_int(global int *array,
+                  int pattern,
                   int size){
   int i = get_global_id(0);
   //Global memory guard for padding
@@ -211,7 +211,7 @@ s8_to_float(global char  *array_int,
             array_float[pos] = NAN;
         }
         else{
-            array_float[pos] = (float)(array_int[pos]);    
+            array_float[pos] = (float)(array_int[pos]);
         }
     }
 }
@@ -228,7 +228,7 @@ u8_to_float(global unsigned char  *array_int,
                             int height,
                             int width,
                             char do_mask,
-            global char *mask, 
+            global char *mask,
             global float *array_float){
     int x, y, pos;
     x = get_global_id(0);
@@ -240,7 +240,7 @@ u8_to_float(global unsigned char  *array_int,
             array_float[pos] = NAN;
         }
         else{
-            array_float[pos] = (float)(array_int[pos]);    
+            array_float[pos] = (float)(array_int[pos]);
         }
     }
 }
@@ -257,7 +257,7 @@ s16_to_float(global short *array_int,
                     int height,
                     int width,
                     char do_mask,
-             global char *mask, 
+             global char *mask,
              global float  *array_float){
     int x, y, pos;
     x = get_global_id(0);
@@ -269,7 +269,7 @@ s16_to_float(global short *array_int,
             array_float[pos] = NAN;
         }
         else{
-            array_float[pos] = (float)(array_int[pos]);    
+            array_float[pos] = (float)(array_int[pos]);
         }
     }
 }
@@ -287,7 +287,7 @@ u16_to_float(global unsigned short *array_int,
                     int height,
                     int width,
                     char do_mask,
-             global char *mask, 
+             global char *mask,
              global float  *array_float){
     int x, y, pos;
     x = get_global_id(0);
@@ -299,7 +299,7 @@ u16_to_float(global unsigned short *array_int,
             array_float[pos] = NAN;
         }
         else{
-            array_float[pos] = (float)(array_int[pos]);    
+            array_float[pos] = (float)(array_int[pos]);
         }
     }
 }
@@ -315,7 +315,7 @@ u32_to_float(global unsigned int  *array_int,
                     int height,
                     int width,
                     char do_mask,
-             global char *mask, 
+             global char *mask,
              global float  *array_float){
     int x, y, pos;
     x = get_global_id(0);
@@ -327,7 +327,7 @@ u32_to_float(global unsigned int  *array_int,
             array_float[pos] = NAN;
         }
         else{
-            array_float[pos] = (float)(array_int[pos]);    
+            array_float[pos] = (float)(array_int[pos]);
         }
     }
 }
@@ -355,7 +355,7 @@ s32_to_float(global int  *array_int,
 	    array_float[pos] = NAN;
 	}
 	else{
-	    array_float[pos] = (float)(array_int[pos]);    
+	    array_float[pos] = (float)(array_int[pos]);
 	}
   }
 }
@@ -383,7 +383,7 @@ f32_to_float(global float  *array_inp,
         array_float[pos] = NAN;
     }
     else{
-        array_float[pos] = (array_inp[pos]);    
+        array_float[pos] = (array_inp[pos]);
     }
   }
 }
@@ -395,10 +395,9 @@ kernel void copy_intense(global int *peak_position,
                       global float *preprocessed,
                       global float *peak_intensity){
     int cnt, tid;
-    tid = get_global_id(0);    
+    tid = get_global_id(0);
     cnt = counter[0];
     if (tid<cnt){
         peak_intensity[tid] =  preprocessed[peak_position[tid]];
     }
 }
-

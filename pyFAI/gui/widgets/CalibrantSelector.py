@@ -23,9 +23,11 @@
 #
 # ###########################################################################*/
 
+from __future__ import absolute_import
+
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 import os.path
 
@@ -33,14 +35,27 @@ from silx.gui import qt
 from silx.gui import icons
 import pyFAI.calibrant
 from ..model.CalibrantModel import CalibrantModel
+from ...utils.decorators import deprecated
 
 
 class CalibrantSelector(qt.QComboBox):
+    """Dropdown widget to select a calibrant.
+
+    It is a view on top of a calibrant model (see :meth:`setCalibrantModel`,
+    :meth:`calibrantModel`)
+
+    The calibrant can be selected from a list of calibrant known by pyFAI.
+
+    An extra option to load a calibrant from a file can be enabled with
+    :meth:`setFileLoadable`. The widget does not handle the dialog or the IO
+    but provides a signal :prop:`sigLoadFileRequested` which has to be connected.
+    """
 
     sigLoadFileRequested = qt.Signal()
 
     def __init__(self, parent=None):
         super(CalibrantSelector, self).__init__(parent)
+        self.setStyleSheet("QComboBox {combobox-popup: 0;}")
 
         # feed the widget with default calibrants
         items = pyFAI.calibrant.CALIBRANT_FACTORY.items()
@@ -53,12 +68,12 @@ class CalibrantSelector(qt.QComboBox):
         self.__calibrantCount = self.count()
         self.__isFileLoadable = False
 
-        self.__model = None
-        self.setModel(CalibrantModel())
+        self.__model: CalibrantModel = None
+        self.setCalibrantModel(CalibrantModel())
         self.currentIndexChanged[int].connect(self.__currentIndexChanged)
 
     def __currentIndexChanged(self, index):
-        model = self.model()
+        model = self.calibrantModel()
         if model is None:
             return
         if self.__isFileLoadable:
@@ -95,13 +110,17 @@ class CalibrantSelector(qt.QComboBox):
     def __loadFileRequested(self):
         self.sigLoadFileRequested.emit()
 
-    def setModel(self, model):
+    def setCalibrantModel(self, model: CalibrantModel):
         if self.__model is not None:
             self.__model.changed.disconnect(self.__modelChanged)
         self.__model = model
         if self.__model is not None:
             self.__model.changed.connect(self.__modelChanged)
         self.__modelChanged()
+
+    @deprecated(replacement="setCalibrantModel")
+    def setModel(self, model: CalibrantModel):
+        self.setCalibrantModel(model)
 
     def findCalibrant(self, calibrant):
         """Returns the first index containing the requested calibrant.
@@ -141,5 +160,9 @@ class CalibrantSelector(qt.QComboBox):
                     self.__calibrantCount += 1
                 self.setCurrentIndex(index)
 
-    def model(self):
+    def calibrantModel(self) -> CalibrantModel:
         return self.__model
+
+    @deprecated(replacement="calibrantModel")
+    def model(self) -> CalibrantModel:
+        return self.model()

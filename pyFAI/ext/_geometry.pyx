@@ -37,9 +37,11 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "14/09/2021"
+__date__ = "09/03/2023"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
+
+include "math_common.pxi"
 
 cimport cython
 import os
@@ -47,24 +49,26 @@ import numpy
 from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
 
-
-cdef: 
+cdef:
     Py_ssize_t MIN_SIZE = 1024  # Minumum size of the array to go parallel.
-    Py_ssize_t MAX_THREADS = 8  # Limit to 8 cores at maximum, avoids using multiple sockets usually. The value comes from numexpr 
+    Py_ssize_t MAX_THREADS = 8  # Limit to 8 cores at maximum, avoids using multiple sockets usually. The value comes from numexpr
     double twopi = 2.0 * M_PI
-    
+
 # We declare a second cython.floating so that it behaves like an actual template
 ctypedef fused float_or_double:
     cython.double
     cython.float
 
-try:    
+try:
     MAX_THREADS = min(MAX_THREADS, len(os.sched_getaffinity(os.getpid()))) # Limit to the actual number of threads
 except Exception:
     MAX_THREADS = min(MAX_THREADS, os.cpu_count() or 1)
 
 
-cdef inline double f_t1(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
+cdef inline double f_t1(double p1, double p2, double p3,
+                        double sinRot1, double cosRot1,
+                        double sinRot2, double cosRot2,
+                        double sinRot3, double cosRot3) noexcept nogil:
     """Calculate t2 (aka y) for 1 pixel
 
     :param p1:distances in meter along dim1 from PONI
@@ -78,7 +82,10 @@ cdef inline double f_t1(double p1, double p2, double p3, double sinRot1, double 
             p3 * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3))
 
 
-cdef inline double f_t2(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
+cdef inline double f_t2(double p1, double p2, double p3,
+                        double sinRot1, double cosRot1,
+                        double sinRot2, double cosRot2,
+                        double sinRot3, double cosRot3) noexcept nogil:
     """Calculate t2 (aka y) for 1 pixel
 
     :param p1:distances in meter along dim1 from PONI
@@ -92,7 +99,10 @@ cdef inline double f_t2(double p1, double p2, double p3, double sinRot1, double 
             p3 * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3))
 
 
-cdef inline double f_t3(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
+cdef inline double f_t3(double p1, double p2, double p3,
+                        double sinRot1, double cosRot1,
+                        double sinRot2, double cosRot2,
+                        double sinRot3, double cosRot3) noexcept nogil:
     """Calculate t3 (aka -z) for 1 pixel
 
     :param p1:distances in meter along dim1 from PONI
@@ -105,7 +115,10 @@ cdef inline double f_t3(double p1, double p2, double p3, double sinRot1, double 
     return p1 * sinRot2 - p2 * cosRot2 * sinRot1 + p3 * cosRot1 * cosRot2
 
 
-cdef inline double f_tth(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
+cdef inline double f_tth(double p1, double p2, double L,
+                         double sinRot1, double cosRot1,
+                         double sinRot2, double cosRot2,
+                         double sinRot3, double cosRot3) noexcept nogil:
     """Calculate 2 theta for 1 pixel
 
     :param p1:distances in meter along dim1 from PONI
@@ -122,7 +135,11 @@ cdef inline double f_tth(double p1, double p2, double L, double sinRot1, double 
     return atan2(sqrt(t1 * t1 + t2 * t2), t3)
 
 
-cdef inline double f_q(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3, double wavelength) nogil:
+cdef inline double f_q(double p1, double p2, double L,
+                       double sinRot1, double cosRot1,
+                       double sinRot2, double cosRot2,
+                       double sinRot3, double cosRot3,
+                       double wavelength) noexcept nogil:
     """
     Calculate the scattering vector q for 1 pixel
 
@@ -135,7 +152,10 @@ cdef inline double f_q(double p1, double p2, double L, double sinRot1, double co
     return 4.0e-9 * M_PI / wavelength * sin(f_tth(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3) / 2.0)
 
 
-cdef inline double f_chi(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
+cdef inline double f_chi(double p1, double p2, double L,
+                         double sinRot1, double cosRot1,
+                         double sinRot2, double cosRot2,
+                         double sinRot3, double cosRot3) noexcept nogil:
     """
     calculate chi for 1 pixel
     :param p1:distances in meter along dim1 from PONI
@@ -150,7 +170,10 @@ cdef inline double f_chi(double p1, double p2, double L, double sinRot1, double 
     return atan2(t1, t2)
 
 
-cdef inline double f_r(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
+cdef inline double f_r(double p1, double p2, double L,
+                       double sinRot1, double cosRot1,
+                       double sinRot2, double cosRot2,
+                       double sinRot3, double cosRot3) noexcept nogil:
     """
     calculate r for 1 pixel, radius from beam center to current
     :param p1:distances in meter along dim1 from PONI
@@ -168,7 +191,7 @@ cdef inline double f_r(double p1, double p2, double L, double sinRot1, double co
     # return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
 
 
-cdef inline double f_cosa(double p1, double p2, double L) nogil:
+cdef inline double f_cosa(double p1, double p2, double L) noexcept nogil:
     """
     calculate cosine of the incidence angle for 1 pixel
 
@@ -178,7 +201,7 @@ cdef inline double f_cosa(double p1, double p2, double L) nogil:
     """
     return L / sqrt((L * L) + ((p1 * p1) + (p2 * p2)))
 
-cdef inline double f_sina(double p1, double p2, double L) nogil:
+cdef inline double f_sina(double p1, double p2, double L) noexcept nogil:
     """
     calculate sinus of the incidence angle for 1 pixel
 
@@ -550,7 +573,7 @@ def calc_rad_azim(double L,
                   pos2 not None,
                   pos3=None,
                   space="2th",
-                  wavelength=None, 
+                  wavelength=None,
                   bint chi_discontinuity_at_pi=True
                   ):
     """Calculate the radial & azimutal position for each pixel from pos1, pos2, pos3.
@@ -644,7 +667,7 @@ def calc_rad_azim(double L,
         return nout
 
 
-def calc_delta_chi(cython.floating[:, ::1] centers,
+def calc_delta_chi(floating[:, ::1] centers,
                    float_or_double[:, :, :, ::1] corners):
     """Calculate the delta chi array (azimuthal angles) using OpenMP
 

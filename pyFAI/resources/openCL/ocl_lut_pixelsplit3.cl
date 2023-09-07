@@ -64,7 +64,7 @@ float max4f(float a, float b, float c, float d)
 }
 
 
-void AtomicAdd(volatile __global float *source, const float operand) 
+void AtomicAdd(volatile __global float *source, const float operand)
 {
     union {
         unsigned int intVal;
@@ -168,8 +168,8 @@ __kernel
 void reduce1(__global float2* buffer,
              __const int length,
              __global float4* preresult) {
-    
-    
+
+
     int global_index = get_global_id(0);
     int global_size  = get_global_size(0);
     float4 accumulator;
@@ -177,7 +177,7 @@ void reduce1(__global float2* buffer,
     accumulator.y = -INFINITY;
     accumulator.z = INFINITY;
     accumulator.w = -INFINITY;
-    
+
     // Loop sequentially over chunks of input vector
     while (global_index < length/2) {
         float2 element = buffer[global_index];
@@ -187,17 +187,17 @@ void reduce1(__global float2* buffer,
         accumulator.w = (accumulator.w > element.s1) ? accumulator.w : element.s1;
         global_index += global_size;
     }
-    
+
     __local float4 scratch[WORKGROUP_SIZE];
 
     // Perform parallel reduction
     int local_index = get_local_id(0);
-    
+
     scratch[local_index] = accumulator;
     barrier(CLK_LOCAL_MEM_FENCE);
-    
+
     int active_threads = get_local_size(0);
-    
+
     while (active_threads != 1)
     {
         active_threads /= 2;
@@ -230,17 +230,17 @@ void reduce1(__global float2* buffer,
 __kernel
 void reduce2(__global float4* preresult,
              __global float4* result) {
-    
-    
+
+
     __local float4 scratch[WORKGROUP_SIZE];
 
     int local_index = get_local_id(0);
-    
+
     scratch[local_index] = preresult[local_index];
     barrier(CLK_LOCAL_MEM_FENCE);
-    
+
     int active_threads = get_local_size(0);
-    
+
     while (active_threads != 1)
     {
         active_threads /= 2;
@@ -262,7 +262,7 @@ void reduce2(__global float4* preresult,
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    
+
 
     if (local_index == 0) {
         result[0] = scratch[0];
@@ -346,27 +346,27 @@ void lut1(__global float8* pos,
         float pos0_maxin = minmax[0].s1;
         float pos0_max = pos0_maxin*( 1 + EPS);
 //         pos0_max *= 1.00001;
-        
+
 //         if (global_index == 0)
 //             printf("%f  %f  %f", pos0_maxin, pos0_max, ( 1 + EPS));
-        
+
         float delta = (pos0_max - pos0_min) / BINS;
-        
+
         int local_index = get_local_id(0);
-        
+
         float8 pixel = pos[global_index];
-        
+
         pixel.s0 = getBinNr(pixel.s0, delta, pos0_min);
         pixel.s2 = getBinNr(pixel.s2, delta, pos0_min);
         pixel.s4 = getBinNr(pixel.s4, delta, pos0_min);
         pixel.s6 = getBinNr(pixel.s6, delta, pos0_min);
-        
+
         float min0 = min4f(pixel.s0, pixel.s2, pixel.s4, pixel.s6);
         float max0 = max4f(pixel.s0, pixel.s2, pixel.s4, pixel.s6);
-        
+
         int bin0_min = floor(min0);
         int bin0_max = floor(max0);
-        
+
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
 //             if (bin < BINS)
@@ -376,7 +376,7 @@ void lut1(__global float8* pos,
 //                 printf("fooo %d \n", bin);
 //             }
              atomic_add(&outMax[bin], 1);
-            
+
         }
     }
 }
@@ -389,7 +389,7 @@ void lut2(__global int*  outMax,
 {
     int local_index = get_local_id(0);
 //    int local_size  = get_local_size(0);
-    
+
     if (local_index == 0)
     {
         idx_ptr[0] = 0;
@@ -397,19 +397,19 @@ void lut2(__global int*  outMax,
             idx_ptr[i+1] = idx_ptr[i] + outMax[i];
         lutsize[0] = idx_ptr[BINS];
     }
-                     
+
 // for future memory access optimizations
 //
 //      __local int scratch1[WORKGROUP_SIZE];
-//      
+//
 //      scratch1[local_index] = 0
-//      
+//
 //     // Loop sequentially over chunks of input vector
 //     for (int i=local_index; i < BINS; i += local_size)
 //     {
 //         scratch1[i] = outMax[i];
 //         barrier(CLK_LOCAL_MEM_FENCE);
-//         
+//
 //         if (local_index == 0)
 //         {
 //             for (int j=0; j<local_size; j++)
@@ -444,26 +444,26 @@ void lut3(__global float8* pos,
         float pos0_maxin = minmax[0].s1;
         float pos0_max = pos0_maxin * (1 + EPS);
        // pos0_max *= 1.1;
-        
+
         float delta = (pos0_max - pos0_min) / BINS;
-        
+
         int local_index  = get_local_id(0);
-        
+
         float8 pixel = pos[global_index];
-        
+
         pixel.s0 = getBinNr(pixel.s0, delta, pos0_min);
         pixel.s2 = getBinNr(pixel.s2, delta, pos0_min);
         pixel.s4 = getBinNr(pixel.s4, delta, pos0_min);
         pixel.s6 = getBinNr(pixel.s6, delta, pos0_min);
-        
+
         float min0 = min4f(pixel.s0, pixel.s2, pixel.s4, pixel.s6);
         float max0 = max4f(pixel.s0, pixel.s2, pixel.s4, pixel.s6);
-        
+
         int bin0_min = floor(min0);
         int bin0_max = floor(max0);
-        
+
         float2 AB, BC, CD, DA;
-        
+
         AB.x=(pixel.s3-pixel.s1)/(pixel.s2-pixel.s0);
         AB.y= pixel.s1 - AB.x*pixel.s0;
         BC.x=(pixel.s5-pixel.s3)/(pixel.s4-pixel.s2);
@@ -472,7 +472,7 @@ void lut3(__global float8* pos,
         CD.y= pixel.s5 - CD.x*pixel.s4;
         DA.x=(pixel.s1-pixel.s7)/(pixel.s0-pixel.s6);
         DA.y= pixel.s7 - DA.x*pixel.s6;
-        
+
         float A_lim = pixel.s0;
         float B_lim = pixel.s2;
         float C_lim = pixel.s4;
@@ -484,7 +484,7 @@ void lut3(__global float8* pos,
 
         pixelArea = fabs(pixelArea);
         float oneOverPixelArea = 1.0 / pixelArea;
-        
+
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
             float A_lim = (pixel.s0<=bin)*(pixel.s0<=(bin+1))*bin + (pixel.s0>bin)*(pixel.s0<=(bin+1))*pixel.s0 + (pixel.s0>bin)*(pixel.s0>(bin+1))*(bin+1);
@@ -588,10 +588,10 @@ csr_integrate(  const   __global    float   *weights,
     __local float super_sum_data_correction[WORKGROUP_SIZE];
     __local float super_sum_count[WORKGROUP_SIZE];
     __local float super_sum_count_correction[WORKGROUP_SIZE];
-    
+
     float super_sum_temp = 0.0f;
     int index, active_threads = WORKGROUP_SIZE;
-    
+
     if (bin_size < WORKGROUP_SIZE)
     {
         if (thread_id_loc < bin_size)
@@ -619,7 +619,7 @@ csr_integrate(  const   __global    float   *weights,
     barrier(CLK_LOCAL_MEM_FENCE);
     cd = 0;
     cc = 0;
-    
+
     while (active_threads != 1)
     {
         active_threads /= 2;
@@ -632,7 +632,7 @@ csr_integrate(  const   __global    float   *weights,
             t = super_sum_temp + y;
             super_sum_data_correction[thread_id_loc] = (t - super_sum_temp) - y;
             super_sum_data[thread_id_loc] = t;
-            
+
             cc = super_sum_count_correction[thread_id_loc] + super_sum_count_correction[index];
             super_sum_temp = super_sum_count[thread_id_loc];
             y = super_sum_count[index] - cc;

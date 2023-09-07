@@ -8,7 +8,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2017-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2022 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,22 +29,19 @@
 # THE SOFTWARE.
 
 """
-Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
+Cython module for doing inpaining of images.
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "10/02/2021"
+__date__ = "09/03/2023"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
-from cython cimport floating 
-cimport numpy
 import numpy
 from libc.math cimport floor, ceil
-
 include "bilinear.pxi"
 
 
-def largest_width(numpy.int8_t[:, :]image):
+def largest_width(int8_t[:, :]image):
     """Calculate the width of the largest part in the binary image
     Nota: this is along the horizontal direction.
     """
@@ -71,7 +68,7 @@ def largest_width(numpy.int8_t[:, :]image):
 
 
 def polar_interpolate(data,
-                      numpy.int8_t[:, ::1] mask,
+                      int8_t[:, ::1] mask,
                       floating[:, ::1] radial,
                       floating[:, ::1] azimuthal,
                       polar,
@@ -129,8 +126,8 @@ def polar_interpolate(data,
 
 
 def polar_inpaint(floating[:, :] img not None,
-                  numpy.int8_t[:, :] topaint not None,
-                  numpy.int8_t[:, :] mask=None,
+                  int8_t[:, :] topaint not None,
+                  int8_t[:, :] mask=None,
                   empty=None):
     """Relaplce the values flagged in topaint with possible values
     If mask is provided, those values are knows to be invalid and not re-calculated
@@ -202,25 +199,25 @@ def polar_inpaint(floating[:, :] img not None,
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)):
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:
                                 values.append((img[idx_row, idx_col],
-                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                               pow2(row - idx_row) + pow2(col - idx_col)))
 
                         idx_col = min(npt_radial - 1, col + radius)
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)):
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:
                                 values.append((img[idx_row, idx_col],
-                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                               pow2(row - idx_row) + pow2(col - idx_col)))
 
                         idx_row = max(0, row - radius)
                         for idx_col in range(max(0, col - radius), min(npt_radial, col + radius + 1)):
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:
                                 values.append((img[idx_row, idx_col],
-                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                               pow2(row - idx_row) + pow2(col - idx_col)))
 
                         idx_row = min(npt_azim - 1, row + radius)
                         for idx_col in range(max(0, col - radius), min(npt_radial, col + radius + 1)):
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:
                                 values.append((img[idx_row, idx_col],
-                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                               pow2(row - idx_row) + pow2(col - idx_col)))
                     if len(values) == 0:
                         zero = numpy.int8(0)
                         if not numpy.logical_and(mask == zero, topaint == zero).any():

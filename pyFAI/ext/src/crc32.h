@@ -27,5 +27,11 @@ THE SOFTWARE.
 #define PYFAI_VISIBILITY_HIDDEN
 #endif
 
+PYFAI_VISIBILITY_HIDDEN uint32_t _get_crc32_table_key();
+PYFAI_VISIBILITY_HIDDEN int8_t _is_crc32_sse4_available();
+PYFAI_VISIBILITY_HIDDEN int8_t _check_sse4();
+PYFAI_VISIBILITY_HIDDEN void _get_crc32_table(uint32_t *table);
+PYFAI_VISIBILITY_HIDDEN void _crc32_table_init(uint32_t key);
+PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_table(char *str, uint32_t len);
+PYFAI_VISIBILITY_HIDDEN uint32_t _crc32_sse4(char *str, uint32_t len);
 PYFAI_VISIBILITY_HIDDEN uint32_t pyFAI_crc32(char *str, uint32_t len);
-

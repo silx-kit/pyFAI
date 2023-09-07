@@ -1,5 +1,12 @@
 #!/usr/bin/env python
-# coding: utf-8
+# -*- coding: utf-8 -*-
+#
+#    Project: Fast Azimuthal integration
+#             https://github.com/silx-kit/pyFAI
+#
+#    Copyright (C) 2023 European Synchrotron Radiation Facility, Grenoble, France
+#
+#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -19,28 +26,27 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-""
+"""
+Utilities for multiprocessing
+"""
+
+__author__ = "Jérôme Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "24/01/2023"
+__status__ = "production"
 
 import os
-import glob
-import sys
-root_dir = os.path.abspath("../..")
-build_dir = glob.glob('../../build/lib*')
 
-
-# Build pyFAI if it is not yet built (especially for readthedocs)
-if (not build_dir) or ("__init__.py" not in os.listdir(os.path.join(build_dir[0], "pyFAI"))):
-    import subprocess
-    curr_dir = os.getcwd()
-    os.chdir(root_dir)
-    errno = subprocess.call([sys.executable, 'setup.py', 'build'])
-    if errno != 0:
-        raise SystemExit(errno)
-    else:
-        os.chdir(curr_dir)
-    build_dir = glob.glob('../../build/lib*')
-
-if "" not in sys.path:
-    sys.path.insert(0, "")
-
-from conf import *
+def cpu_count():
+    """Returns the number of CPUs __USABLE__ in the system"""
+    count = None
+    try:
+        count = len(os.sched_getaffinity(0))
+    except:
+        try:
+            count = os.cpu_count()
+        except:
+            pass
+    return count

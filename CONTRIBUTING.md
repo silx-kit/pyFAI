@@ -1,9 +1,9 @@
 # Contributing
 
 When contributing to this repository, please first open an issue to discuss the change you wish to make.
-Mention you wish to help us improving this specific part of the project, we will be able to provide you guidance. 
+Mention you wish to help us improving this specific part of the project, we will be able to provide you guidance.
 
-If you have questions, the best is to subscribe to the associated mailing list. Direct contact with maintainers is 
+If you have questions, the best is to subscribe to the associated mailing list. Direct contact with maintainers is
 discouraged as we are few and may be unavailable (holidays, ...).
 
 ## Prepare your local working environment
@@ -13,10 +13,10 @@ discouraged as we are few and may be unavailable (holidays, ...).
 3. Create a virtual environment `python3 -m venv ~/.py3`
 4. Activate your environment `source ~/.py3/bin/activate`
 5. Install the dependencies `pip install --upgrade -r requirements.txt --only-binary :all:`
-6. Build and test `python setup.py build test`
+6. Build and test `python run_tests.py`
 
 This should take a few minutes and ensures everything is ready for developping within pyFAI.
-Later-on no recompilation will be needed unless you modify cython code. 
+Later-on no recompilation will be needed unless you modify cython code.
 In this case, recompilation can be accelerating by installing `ccache`.
 
 ## Pull Request Process
@@ -36,13 +36,12 @@ or to run any third party application using pyFAI (when the full path needs is p
 In one word, `bootstrap` is a great tool to help debugging, it re-compiles the code when needed but it is not perfect and corner cases probably exists.
 Note: it is forbidden to import pyFAI from the sources, to avoid bugs as many files will be missing or mis-placed.
 
-## Test locally your code 
+## Test locally your code
 
 The test suite of pyFAI can simply be triggered by running `./run_tests.py` which
-takes care of re-building what is needed. 
+takes care of re-building what is needed.
 This helper script has many option about coverage, selecting tests, debuging mode ...
 use `./run_tests.py -h` to visualize them all.
 
 
 Please note we have not yet decided for a code of conduct.
-

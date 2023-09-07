@@ -29,10 +29,10 @@
 
 """peakfinder: Count the number of Bragg-peaks on an image.
 
-Bragg peaks are local maxima of the background subtracted signal. 
+Bragg peaks are local maxima of the background subtracted signal.
 Peaks are integrated and variance propagated. The centroids are reported.
 
-Background is calculated by an iterative sigma-clipping in the polar space. 
+Background is calculated by an iterative sigma-clipping in the polar space.
 The number of iteration, the clipping value and the number of radial bins could be adjusted.
 
 This program requires OpenCL. The device needs be properly selected.
@@ -107,7 +107,7 @@ class FileReader(Thread):
         """
         :param filenames: list of multi-frame fabio objects.
         :param queue: queue where to put the image in as numpy array.
-        :param read_ahead: read in advance that many frames, should be > to the fps 
+        :param read_ahead: read in advance that many frames, should be > to the fps
         """
         Thread.__init__(self, name="FileReader")
         self.queue = queue
@@ -469,7 +469,7 @@ def process(options):
               "grid": (options.grid_size, options.zig_zag),
               "powder": integrator.bin_centers if options.save_powder else None}
     writer = Writer(queue_process, options.output, save_spots, kwargs)
-    
+
     reader.start()
     writer.start()
     t0 = time.perf_counter()

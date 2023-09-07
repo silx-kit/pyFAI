@@ -8,11 +8,11 @@
 Example of usage
 ================
 
-This section presents typical usage of the *pyFAI* library. 
+This section presents typical usage of the *pyFAI* library.
 
-It starts with recipies which present typical applications 
+It starts with recipies which present typical applications
 like calibration of an experimental setup or integration of an image.
-Those cookbooks are short tutorials which explain how to use *pyFAI* on a 
+Those cookbooks are short tutorials which explain how to use *pyFAI* on a
 practical example (5 mn to read).
 
 Tutorials explain the Python interface of *pyFAI* and use the *Jupyter Notebook*

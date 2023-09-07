@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2022"
+__date__ = "20/04/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -61,7 +61,7 @@ else:
 def _stack_frames(fimg):
     """return a stack of images from a single or multiframe fabio object
     :param fimg: opened fabio image
-    :return: 3d array 
+    :return: 3d array
     """
     shape = (fimg.nframes,) + fimg.shape
     stack = numpy.empty(shape, dtype=fimg.dtype)
@@ -72,7 +72,7 @@ def _stack_frames(fimg):
 
 def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None, powder=False):
     """Write the list of spots per frame into a HDF5 file with the Nexus convention
-    
+
     :param filename: name of the file
     :param spots: list of spots per frame (as built by peakfinder)
     :param beamline: name of the beamline as text
@@ -80,7 +80,7 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
     :param source: list of input files
     :param extra: dict with extra metadata
     :param grid: 2-tuple with grid shape and if it was acquired in zigzag mode
-    :param powder: unused 
+    :param powder: unused
     :return: None
     """
     assert len(spots)
@@ -160,7 +160,7 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
 def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, extra={}, grid=None, powder=None):
     """Write the list of spots per frame into a HDF5 file with the CXI convention
     https://raw.githubusercontent.com/cxidb/CXI/master/cxi_file_format.pdf
-    
+
     :param filename: name of the file
     :param spots: list of spots per frame (as built by peakfinder)
     :param beamline: name of the beamline as text
@@ -186,7 +186,15 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
         result = entry.create_group("result_1")
         result.attrs["NX_class"] = "NXdata"
         result.attrs["signal"] = "nPeaks"
-        result.create_dataset("nPeaks", data=spots_per_frame).attrs["interpretation"] = "spectrum"
+        nPeaks_ds = result.create_dataset("nPeaks", data=spots_per_frame)
+        nPeaks_ds.attrs["interpretation"] = "spectrum"
+
+        if grid and grid[0] and len(grid[0]) > 1:
+            img = spots_per_frame.reshape(grid[0])
+            if grid[1]:
+                img[1::2,:] = img[1::2, -1::-1]  # flip one line out of 2
+            spot_ds = result.create_dataset("map", data=img)
+            spot_ds.attrs["interpretation"] = "image"
 
         total_int = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
         xpos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
@@ -212,6 +220,7 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
         process.create_dataset("command",
                                data=numpy.array(sys.argv, dtype=h5py.special_dtype(vlen=str)),
                                ).attrs["hint"] = "argv"
+        process.create_dataset("cwd", data=os.getcwd()).attrs["help"] = "Working directory"
         process["date"] = get_isotime()
         process["program"] = "pyFAI"
         process["version"] = version
@@ -265,7 +274,8 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
 
                 detector["distance"] = ai.dist
                 detector["distance"].attrs["units"] = "m"
-                detector.create_dataset("mask", data=ai.detector.mask, **cmp)
+                if ai.detector.mask is not None:
+                    detector.create_dataset("mask", data=ai.detector.mask, **cmp)
                 detector["x_pixel_size"] = ai.detector.pixel2
                 detector["y_pixel_size"] = ai.detector.pixel1
                 detector["x_pixel_size"].attrs["units"] = "m"

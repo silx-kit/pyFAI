@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 import os
 import logging
@@ -34,8 +34,8 @@ from silx.gui import qt
 
 import pyFAI.utils
 import pyFAI.detectors
-from ..widgets.DetectorModel import AllDetectorModel
-from ..widgets.DetectorModel import DetectorFilter
+from ..widgets.model.AllDetectorItemModel import AllDetectorItemModel
+from ..widgets.model.DetectorFilterProxyModel import DetectorFilterProxyModel
 from ..model.DataModel import DataModel
 from ..utils import validators
 from ..ApplicationContext import ApplicationContext
@@ -62,8 +62,8 @@ class DetectorSelectorDrop(qt.QWidget):
         selection = self._manufacturerList.selectionModel()
         selection.selectionChanged.connect(self.__manufacturerChanged)
 
-        model = AllDetectorModel(self)
-        modelFilter = DetectorFilter(self)
+        model = AllDetectorItemModel(self)
+        modelFilter = DetectorFilterProxyModel(self)
         modelFilter.setSourceModel(model)
 
         self._detectorView.setModel(modelFilter)
@@ -139,7 +139,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__selectAllRegistreredDetector()
 
     def __selectAndAccept(self):
-        # FIXME: This have to be part of the dialog, and not here
+        # FIXME: This has to be part of the dialog, and not here
         window = self.window()
         if isinstance(window, qt.QDialog):
             window.accept()
@@ -512,7 +512,7 @@ class DetectorSelectorDrop(qt.QWidget):
             return None
         index = indexes[0]
         model = self._detectorView.model()
-        return model.data(index, role=AllDetectorModel.CLASS_ROLE)
+        return model.data(index, role=AllDetectorItemModel.CLASS_ROLE)
 
     def __modelChanged(self, selected, deselected):
         model = self.currentDetectorClass()

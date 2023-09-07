@@ -37,21 +37,28 @@ image (masked) to be able to use more common algorithms.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "14/01/2021"
+__date__ = "03/03/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
 
 import cython
 import numpy
-from libc.math cimport sqrt, fabs
+from libc.math cimport sqrt, fabs, NAN
 from cython.parallel import prange
 from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
                          int32_t, uint32_t, int64_t, uint64_t
 
 
-cdef float invert_distance(size_t i0, size_t i1, size_t p0, size_t p1) nogil:
-    return 1. / sqrt(<float> ((i0 - p0) ** 2 + (i1 - p1) ** 2))
+cdef inline float invert_distance(Py_ssize_t i0, Py_ssize_t i1, Py_ssize_t p0, Py_ssize_t p1) noexcept nogil:
+    """Neither d0, nor d1 can be null !"""
+    cdef Py_ssize_t d0, d1
+    d0 = (i0 - p0)
+    d1 = (i1 - p1)
+    return 1. / sqrt(d0*d0 + d1*d1)
+    # if d0*d1:
+    # else:
+    #     return NAN
 
 
 cdef inline float processPoint(float[:, ::1] data,
@@ -59,7 +66,7 @@ cdef inline float processPoint(float[:, ::1] data,
                                size_t p0,
                                size_t p1,
                                size_t d0,
-                               size_t d1)nogil:
+                               size_t d1) noexcept nogil:
     cdef:
         size_t dist = 0, i = 0
         float sum = 0.0, count = 0.0, invdst = 0.0
@@ -106,9 +113,9 @@ cdef inline float processPoint(float[:, ::1] data,
     return sum / count
 
 
-def reconstruct(data, 
-                mask=None, 
-                dummy=None, 
+def reconstruct(data,
+                mask=None,
+                dummy=None,
                 delta_dummy=None):
     """
     reconstruct missing part of an image (tries to be continuous)
@@ -126,11 +133,11 @@ def reconstruct(data,
         ssize_t d1 = data.shape[1]
         ssize_t p0, p1
         float[:, ::1] cdata
-        int8_t[:, ::1] cmask 
+        int8_t[:, ::1] cmask
         bint is_masked, do_dummy
         float cdummy, cddummy, value
         float[:, ::1] out = numpy.zeros_like(data)
-        
+
     cdata = numpy.ascontiguousarray(data, dtype=numpy.float32)
     if mask is not None:
         cmask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
@@ -147,7 +154,7 @@ def reconstruct(data,
         else:
             cddummy = <float> delta_dummy
 
-    #  Nota: this has to go in 2 passes, one to mark, one to reconstruct  
+    #  Nota: this has to go in 2 passes, one to mark, one to reconstruct
     for p0 in prange(d0, nogil=True, schedule="guided"):
         for p1 in range(d1):
             is_masked = cmask[p0, p1]
@@ -157,7 +164,7 @@ def reconstruct(data,
                     cmask[p0, p1] += (value == cdummy)
                 elif (fabs(value - cdummy) <= cddummy):
                     cmask[p0, p1] += 1
-    # Reconstruction phase         
+    # Reconstruction phase
     for p0 in prange(d0, nogil=True, schedule="guided"):
         for p1 in range(d1):
             if cmask[p0, p1]:

@@ -25,14 +25,14 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "20/02/2023"
 
+import logging
 import numpy
-
 from silx.gui import qt
-
 from .DataModel import DataModel
 
+_logger = logging.getLogger(__name__)
 
 class ImageModel(DataModel):
 
@@ -43,6 +43,9 @@ class ImageModel(DataModel):
                 raise TypeError("A numpy array is expected, but %s was found." % value.__class__.__name__)
             if len(value.shape) != 2:
                 raise TypeError("A 2d array is expected, but %s was found." % value.shape)
+            if value.dtype.kind == "b":
+                _logger.warning('Converting boolean image to int8 to plot it.')
+                value = numpy.array(value, copy=False, dtype=numpy.int8)
             if value.dtype.kind not in "uif":
                 raise TypeError("A numeric array is expected, but %s was found." % value.dtype.kind)
             previous = self.value()
@@ -103,6 +106,9 @@ class ImageFromFilenameModel(DataModel):
                 raise TypeError("A numpy array is expected, but %s was found." % value.__class__.__name__)
             if len(value.shape) != 2:
                 raise TypeError("A 2d array is expected, but %s was found." % value.shape)
+            if value.dtype.kind == "b":
+                _logger.warning('Converting boolean image to int8 to plot it.')
+                value = numpy.array(value, copy=False, dtype=numpy.int8)
             if value.dtype.kind not in "uif":
                 raise TypeError("A numeric array is expected, but %s was found." % value.dtype.kind)
             previous = self.value()

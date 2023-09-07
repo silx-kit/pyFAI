@@ -111,4 +111,3 @@ you understanding the underlying mechanism:
 * **Distortion** which explains how to correct images for geometric distortion
 * **CCD-calibration** which explains how to calibrate such detectors for geometric
   distortion.
-

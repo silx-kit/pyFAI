@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/03/2022"
+__date__ = "24/04/2023"
 __status__ = "production"
 
 import os
@@ -62,6 +62,8 @@ class _Dectris(Detector):
     MODULE_SIZE = (64, 128)
     MODULE_GAP = (9, 11)
     force_pixel = True
+    DUMMY = -2
+    DELTA_DUMMY = 1.5
 
     def calc_mask(self):
         """
@@ -294,14 +296,14 @@ class Eiger2_2MW(Eiger2):
     MAX_SHAPE = (512, 4148)
     aliases = ["Eiger2 2M-W"]
 
-    
+
 class Eiger2_4M(Eiger2):
     """
     Eiger2 4M detector
     """
     MAX_SHAPE = (2162, 2068)
     aliases = ["Eiger2 4M"]
-    
+
 
 class Eiger2_9M(Eiger2):
     """
@@ -636,8 +638,8 @@ class Pilatus300kw(Pilatus):
 class Pilatus900k(Pilatus):
     """
     Pilatus 900k detector, assembly of 3x3 modules
-    Available at NSLS-II 12-ID. 
-    
+    Available at NSLS-II 12-ID.
+
     This is different from the "Pilatus CdTe 900kw" available at ESRF ID06-LVP which is 1x9 modules
     """
     MAX_SHAPE = (619, 1475)
@@ -707,8 +709,8 @@ class PilatusCdTe900kw(PilatusCdTe):
     """
     Pilatus CdTe 900k-wide detector, assembly of 1x9 modules
     Available at ESRF ID06-LVP
-    
-    This differes from the "Pilatus 900k" detector, assembly of 3x3 modules, available at NSLS-II 12-ID. 
+
+    This differes from the "Pilatus 900k" detector, assembly of 3x3 modules, available at NSLS-II 12-ID.
     """
     MAX_SHAPE = (195, 4439)
     aliases = ["Pilatus CdTe 900kw", "Pilatus 900kw CdTe", "Pilatus900kw CdTe", "Pilatus900kwCdTe"]

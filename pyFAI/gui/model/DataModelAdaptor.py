@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 from .AbstractModel import AbstractModel
 
@@ -47,10 +47,10 @@ class DataModelAdaptor(AbstractModel):
         return self.__model.isValid()
 
     def fromModel(self, data):
-        raise NotImplementedError("It have to be implemented by inheritance")
+        raise NotImplementedError("It has to be implemented by inheritance")
 
     def toModel(self, data):
-        raise NotImplementedError("It have to be implemented by inheritance")
+        raise NotImplementedError("It has to be implemented by inheritance")
 
     def value(self):
         value = self.__model.value()

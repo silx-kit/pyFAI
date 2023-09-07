@@ -1,6 +1,6 @@
 /*
  *   Project: 2D Diffraction images sparsification.
- *            OpenCL Kernels  
+ *            OpenCL Kernels
  *
  *
  *   Copyright (C) 2012-2021 European Synchrotron Radiation Facility
@@ -37,77 +37,76 @@
 
 
 /* Pixel-wise kernel that calculated the I-bg and counting pixels of interest
- * 
- * For every pixel in the preproc array, the value for the background level 
+ *
+ * For every pixel in the preproc array, the value for the background level
  * and the std are interpolated.
- * Pixel with (Icor-Bg)> max(cutoff*std, noise) are marked as intense-pixel, 
+ * Pixel with (Icor-Bg)> max(cutoff*std, noise) are marked as intense-pixel,
  * counted and their index registered in highidx
- * 
- * The kernel uses local memory for keeping track of peak count and positions 
+ *
+ * The kernel uses local memory for keeping track of peak count and positions
  */
-kernel void find_intense(       global  float4 *preproc4, // both input and output, pixel wise array of (signal, variance, norm, cnt) 
-                         const global  float  *radius2d,  // contains the distance to the center for each pixel
-                         const global  float  *radius1d,  // Radial bin postion 
-                         const global  float  *average1d, // average intensity in the bin
-                         const global  float  *std1d,     // associated deviation
-                         const         float   radius_min,// minimum radius
-                         const         float   radius_max,// maximum radius 
-                         const         float   cutoff,    // pick pixel with I>avg+min(cutoff*std, noise)
-                         const         float   noise,     // Noise level of the measurement
-                               global  int    *counter,   // Counter of the number of peaks found
-                               global  int    *highidx){  // indexes of the pixels of high intensity
+kernel void find_intense(       global  float4 *preproc4,  // both input and output, pixel wise array of (signal, variance, norm, cnt)
+                         const global  float  *radius2d,   // contains the distance to the center for each pixel
+                         const global  float  *radius1d,   // Radial bin postion
+                         const global  float  *average1d,  // average intensity in the bin
+                         const global  float  *std1d,      // associated deviation
+                         const         float   radius_min, // minimum radius
+                         const         float   radius_max, // maximum radius
+                         const         float   cutoff,     // pick pixel with I>avg+min(cutoff*std, noise)
+                         const         float   noise,      // Noise level of the measurement
+                               global  int    *counter,    // Counter of the number of peaks found
+                               global  int    *highidx,    // indexes of the pixels of high intensity
+                         volatile local int *local_highidx)// Shared memory of size 4*WORKGROUP_SIZE
+{
     int tid = get_local_id(0);
     int gid = get_global_id(0);
     int wg = get_local_size(0);
     // all thread in this WG share this local counter, upgraded at the end
     volatile local int local_counter[2]; //first element MUST be set to zero
-    volatile local int local_highidx[WORKGROUP_SIZE]; //This array does not deserve to be initialized
-    // Ensure wg <= WORKGROUP_SIZE
-    
-    // local_highidx[tid] = 0; 
-    
+
     // Only the first elements must be initialized
     if (tid<2){
     	local_counter[tid] = 0;
     }
-    barrier(CLK_LOCAL_MEM_FENCE);    
-    
+    barrier(CLK_LOCAL_MEM_FENCE);
+
     if (gid<NIMAGE) {
         float radius = radius2d[gid];
         float4 value = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
         if (isfinite(radius) && (radius>=radius_min) && (radius<radius_max)) {
             value = preproc4[gid];
             if (value.s2>0.0) {
-                value.s1 = value.s0 / value.s2; 
+                value.s1 = value.s0 / value.s2;
             } // normalization not null -> calculate corrected value
             else {
                 value.s0 = 0.0f;
                 value.s1 = 0.0f;
             } // empty pixel
             float step = radius1d[1] - radius1d[0];
-            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)NBINS);
+            float pos = clamp((radius - radius1d[0]) / step, 0.0f, (float)(NBINS - 1));
             int index = convert_int_rtz(pos);
-            float delta = pos - index;
             if (index + 1 < NBINS) {
+                float delta = pos - index;
                 value.s2 = average1d[index]*(1.0f-delta) + average1d[index+1]*(delta); // linear interpolation: averge
-                value.s3 = std1d[index]*(1.0f-delta) + std1d[index+1]*(delta); // linear interpolation: std            	
+                value.s3 = std1d[index]*(1.0f-delta) + std1d[index+1]*(delta); // linear interpolation: std
             }
             else { //Normal bin, using linear interpolation
+              index = NBINS - 1;
             	value.s2 = average1d[index];
-				value.s3 = std1d[index];
+              value.s3 = std1d[index];
             }//Upper most bin: no interpolation
-            value.s3 = fast_length((float2)(value.s3, noise)); //add quadratically noise to std 
+            value.s3 = fast_length((float2)(value.s3, noise)); //add quadratically noise to std
             if ((value.s1 - value.s2) > max(noise, cutoff*value.s3)){
                 local_highidx[atomic_inc(local_counter)] = gid;
-            }//pixel is considered of high intensity: registering it. 
+            }//pixel is considered of high intensity: registering it.
         } //check radius range
         preproc4[gid] = value;
     } //pixel in image
-    
+
     //Update global memory counter
     barrier(CLK_LOCAL_MEM_FENCE);
     if (local_counter[0]){
-        if (tid == 0) 
+        if (tid == 0)
             local_counter[1] = atomic_add(counter, local_counter[0]);
         barrier(CLK_LOCAL_MEM_FENCE);
         if (tid<local_counter[0])
@@ -127,7 +126,7 @@ kernel void copy_intense(global int *peak_position,
                          const  int counter,
                          global float4 *preprocessed,
                          global float *peak_intensity){
-    int tid = get_global_id(0);    
+    int tid = get_global_id(0);
     if (tid<counter){
         peak_intensity[tid] = preprocessed[peak_position[tid]].s0;
     }
@@ -137,7 +136,7 @@ kernel void copy_intense_uint8(global int *peak_position,
                       const  int counter,
                       global float4 *preprocessed,
                       global unsigned char *peak_intensity){
-    int tid = get_global_id(0);    
+    int tid = get_global_id(0);
     if (tid<counter){
         peak_intensity[tid] = (unsigned char)(preprocessed[peak_position[tid]].s0+0.5f);
     }
@@ -147,7 +146,7 @@ kernel void copy_intense_int8(global int *peak_position,
                       const  int counter,
                       global float4 *preprocessed,
                       global char *peak_intensity){
-    int tid = get_global_id(0);    
+    int tid = get_global_id(0);
     if (tid<counter){
         peak_intensity[tid] = (char)(preprocessed[peak_position[tid]].s0+0.5f);
     }
@@ -157,7 +156,7 @@ kernel void copy_intense_uint16(global int *peak_position,
                       const  int counter,
                       global float4 *preprocessed,
                       global unsigned short *peak_intensity){
-    int tid = get_global_id(0);    
+    int tid = get_global_id(0);
     if (tid<counter){
         peak_intensity[tid] = (unsigned short)(preprocessed[peak_position[tid]].s0+0.5f);
     }
@@ -168,7 +167,7 @@ kernel void copy_intense_int16(global int *peak_position,
                       global float4 *preprocessed,
                       global short *peak_intensity)
 {
-    int tid = get_global_id(0);    
+    int tid = get_global_id(0);
     if (tid<counter){
         peak_intensity[tid] = (short)(preprocessed[peak_position[tid]].s0+0.5f);
     }
@@ -178,7 +177,7 @@ kernel void copy_intense_uint32(global int *peak_position,
                       const  int counter,
                       global float4 *preprocessed,
                       global unsigned int *peak_intensity){
-    int tid = get_global_id(0);    
+    int tid = get_global_id(0);
     if (tid<counter){
         peak_intensity[tid] = (unsigned int)(preprocessed[peak_position[tid]].s0+0.5f);
     }
@@ -188,7 +187,7 @@ kernel void copy_intense_int32(global int *peak_position,
                       const  int counter,
                       global float4 *preprocessed,
                       global int *peak_intensity){
-    int tid = get_global_id(0);    
+    int tid = get_global_id(0);
     if (tid<counter){
         peak_intensity[tid] = (int)(preprocessed[peak_position[tid]].s0+0.5f);
     }
@@ -196,11 +195,11 @@ kernel void copy_intense_int32(global int *peak_position,
 
 
 /* this kernel takes the list of high-pixels, searches for the local maximum.
- * 
+ *
  * the index of this maximum is saved into the pixel position.
  * the counter of the local maximum is incremented.
- * 
- * 
+ *
+ *
  * This kernel has to be launched with one thread per hot pixel.
  */
 
@@ -210,7 +209,7 @@ kernel void seach_maximum(       global  float4 *preproc4, //both input and outp
 						   const         int     nbhigh,
 						   const         int     width,
 						   const         int     height,
-						   
+
                                  global  int    *peak_size){
 	//Nota preproc4 contains Iraw, Icor, Ibg, sigma
 	int gid = get_global_id(0);
@@ -224,10 +223,10 @@ kernel void seach_maximum(       global  float4 *preproc4, //both input and outp
 			//TODO: finish
 		}
 	}
-	
+
 }
 
-/* this kernel takes an images 
+/* this kernel takes an images
 kernel void peak_dilation(){
 	TODO
 }

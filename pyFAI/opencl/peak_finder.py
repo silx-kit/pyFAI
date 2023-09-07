@@ -29,8 +29,8 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "06/10/2022"
-__copyright__ = "2014-2022, ESRF, Grenoble"
+__date__ = "31/01/2023"
+__copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
@@ -134,12 +134,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 
     def guess_workgroup_size(self, block_size=None):
         """Determines the optimal workgroup size.
-        
+
         For peak finding, the larger, the better.
         this is limited by the amount of shared memory available on the device.
-        
+
         :param block_size: Input workgroup size (block is the cuda name)
-        :return: the optimal workgoup size   
+        :return: the optimal workgoup size
         """
         if block_size is None:
             # one float8, i.e. 32 bytes per thread of storage is needed
@@ -164,7 +164,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                                                           ("cutoff", numpy.float32(5.0)),
                                                           ("noise", numpy.float32(1.0)),
                                                           ("counter", self.cl_mem["counter"]),
-                                                          ("position", self.cl_mem["position"])))
+                                                          ("position", self.cl_mem["position"]),
+                                                          ('shared', None)))
         self.cl_kernel_args["copy_intense"] = OrderedDict((("position", self.cl_mem["position"]),
                                                            ("counter", 0),
                                                            ("output4", self.cl_mem["output4"]),
@@ -199,7 +200,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                safe=True, error_model=ErrorModel.NO,
                normalization_factor=1.0,
                cutoff_clip=5.0, cycle=5):
-        """Performs the sigma-clipping which is common to all processing        
+        """Performs the sigma-clipping which is common to all processing
         Note: this function does not lock the OpenCL context!
 
         :param data: 2D array with the signal
@@ -324,6 +325,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 
         wg_min = min(self.workgroup_size["csr_sigma_clip4"])
         wdim_bins = (self.bins * wg_min),
+        kw_int["shared"] = pyopencl.LocalMemory(32 * wg_min)
         integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
         events.append(EventDescription("csr_sigma_clip4", integrate))
         return events
@@ -334,7 +336,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         * reconstruct the background in 2D
         * count the number of pixel above max(noise, mean + cutoff*sigma)
 
-        Note: 
+        Note:
         *this function does not lock the OpenCL context!
         *sigma clipping has to be performed previously
 
@@ -362,7 +364,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
         wg = max(self.workgroup_size["find_intense"])
-        wdim_data = (self.size + wg - 1) & ~(wg - 1),
+        wdim_data = (self.size + wg - 1) // wg * wg,  # & ~(wg - 1),
+        kw_proj["shared"] = pyopencl.LocalMemory(wg * 4)  # stores int
         peak_search = self.program.find_intense(self.queue, wdim_data, (wg,), *list(kw_proj.values()))
         events.append(EventDescription("find_intense", peak_search))
 
@@ -411,7 +414,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_peak: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
-        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 
+        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5
         :param connected: number of pixels above threshold in local patch
         :return: number of pixel of high intensity found
         """
@@ -430,11 +433,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                       events=None):
         """This calls only the peak-picking kernel, unlocked
 
-        :param data: input 2d image 
+        :param data: input 2d image
         :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_peak: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
-        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 
+        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5
         :param connected: number of pixels above threshold in local patch
         :return: number of pixel of high intensity found
         """
@@ -508,7 +511,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         Count the number of intense by:
         * sigma_clipping within a radial bin to measure the mean and the deviation of the background
         * reconstruct the background in 2D
-        * count the number of peaks above mean + cutoff*sigma
+        * count the number of pixels above mean + cutoff*sigma
 
         :param data: 2D array with the signal
         :param dark: array of same shape as data for pre-processing
@@ -599,9 +602,9 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_pick: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
-        :param cutoff_peak: cut-off to consider a pixel as part of a peak (activate peak-picking) 
+        :param cutoff_peak: cut-off to consider a pixel as part of a peak (activate peak-picking)
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
-        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 when peak-picking. Depends on `cutoff_peak`  
+        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 when peak-picking. Depends on `cutoff_peak`
         :param connected: number of pixels above threshold in local patch ot be considered as a peak. Depends on `cutoff_peak`
 
         :return: SparseFrame object, see `intensity`, `x` and `y` properties
@@ -740,7 +743,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_peak: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
-        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5 
+        :param patch_size: defines the size of the vinicy to explore 3x3 or 5x5
         :param connected: number of pixels above threshold in 3x3 region
         :return: number of pixel of high intensity found
         """
