@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "08/09/2023"
 __status__ = "production"
 
 import functools
@@ -162,14 +162,14 @@ class ImXPadS10(Detector):
                     p2 = mathutil.expand2d(edges2, self.shape[0] + 1, True)
                     # p3 = None
                     self._pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
-                    self._pixel_corners[:, :, 0, 1] = p1[:-1, :-1]
-                    self._pixel_corners[:, :, 0, 2] = p2[:-1, :-1]
-                    self._pixel_corners[:, :, 1, 1] = p1[1:, :-1]
-                    self._pixel_corners[:, :, 1, 2] = p2[1:, :-1]
-                    self._pixel_corners[:, :, 2, 1] = p1[1:, 1:]
-                    self._pixel_corners[:, :, 2, 2] = p2[1:, 1:]
-                    self._pixel_corners[:, :, 3, 1] = p1[:-1, 1:]
-                    self._pixel_corners[:, :, 3, 2] = p2[:-1, 1:]
+                    self._pixel_corners[:,:, 0, 1] = p1[:-1,:-1]
+                    self._pixel_corners[:,:, 0, 2] = p2[:-1,:-1]
+                    self._pixel_corners[:,:, 1, 1] = p1[1:,:-1]
+                    self._pixel_corners[:,:, 1, 2] = p2[1:,:-1]
+                    self._pixel_corners[:,:, 2, 1] = p1[1:, 1:]
+                    self._pixel_corners[:,:, 2, 2] = p2[1:, 1:]
+                    self._pixel_corners[:,:, 3, 1] = p1[:-1, 1:]
+                    self._pixel_corners[:,:, 3, 2] = p2[:-1, 1:]
                     # if p3 is not None:
                     #     # non flat detector
                     #    self._pixel_corners[:, :, 0, 0] = p3[:-1, :-1]
@@ -273,8 +273,8 @@ class ImXPadS70(ImXPadS10):
     aliases = ["Imxpad S70"]
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
 
 
 class ImXPadS70V(ImXPadS10):
@@ -289,8 +289,8 @@ class ImXPadS70V(ImXPadS10):
     aliases = ["Imxpad S70 V"]
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
 
 
 class ImXPadS140(ImXPadS10):
@@ -304,8 +304,8 @@ class ImXPadS140(ImXPadS10):
     force_pixel = True
     aliases = ["Imxpad S140"]
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
 
 
 class Xpad_flat(ImXPadS10):
@@ -361,8 +361,8 @@ class Xpad_flat(ImXPadS10):
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
         # workinng in dim0 = Y
         for i in range(0, self.max_shape[0], self.module_size[0]):
-            mask[i, :] = 1
-            mask[i + self.module_size[0] - 1, :] = 1
+            mask[i,:] = 1
+            mask[i + self.module_size[0] - 1,:] = 1
         # workinng in dim1 = X
         for i in range(0, self.max_shape[1], self.module_size[1]):
             mask[:, i] = 1
@@ -407,14 +407,14 @@ class Xpad_flat(ImXPadS10):
             delta1 = d1 - i1
             delta2 = d2 - i2
             pixels = corners[i1, i2]
-            A1 = pixels[:, :, 0, 1]
-            A2 = pixels[:, :, 0, 2]
-            B1 = pixels[:, :, 1, 1]
-            B2 = pixels[:, :, 1, 2]
-            C1 = pixels[:, :, 2, 1]
-            C2 = pixels[:, :, 2, 2]
-            D1 = pixels[:, :, 3, 1]
-            D2 = pixels[:, :, 3, 2]
+            A1 = pixels[:,:, 0, 1]
+            A2 = pixels[:,:, 0, 2]
+            B1 = pixels[:,:, 1, 1]
+            B2 = pixels[:,:, 1, 2]
+            C1 = pixels[:,:, 2, 1]
+            C2 = pixels[:,:, 2, 2]
+            D1 = pixels[:,:, 3, 1]
+            D2 = pixels[:,:, 3, 2]
             # points A and D are on the same dim1 (Y), they differ in dim2 (X)
             # points B and C are on the same dim1 (Y), they differ in dim2 (X)
             # points A and B are on the same dim2 (X), they differ in dim1
@@ -474,14 +474,14 @@ class Xpad_flat(ImXPadS10):
                     pixel_size2.strides = 0, pixel_size2.strides[1]
 
                     corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
-                    corners[:, :, 0, 1] = pixel_center1 - pixel_size1 / 2.0
-                    corners[:, :, 0, 2] = pixel_center2 - pixel_size2 / 2.0
-                    corners[:, :, 1, 1] = pixel_center1 + pixel_size1 / 2.0
-                    corners[:, :, 1, 2] = pixel_center2 - pixel_size2 / 2.0
-                    corners[:, :, 2, 1] = pixel_center1 + pixel_size1 / 2.0
-                    corners[:, :, 2, 2] = pixel_center2 + pixel_size2 / 2.0
-                    corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
-                    corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
+                    corners[:,:, 0, 1] = pixel_center1 - pixel_size1 / 2.0
+                    corners[:,:, 0, 2] = pixel_center2 - pixel_size2 / 2.0
+                    corners[:,:, 1, 1] = pixel_center1 + pixel_size1 / 2.0
+                    corners[:,:, 1, 2] = pixel_center2 - pixel_size2 / 2.0
+                    corners[:,:, 2, 1] = pixel_center1 + pixel_size1 / 2.0
+                    corners[:,:, 2, 2] = pixel_center2 + pixel_size2 / 2.0
+                    corners[:,:, 3, 1] = pixel_center1 - pixel_size1 / 2.0
+                    corners[:,:, 3, 2] = pixel_center2 + pixel_size2 / 2.0
                     self._pixel_corners = corners
         if correct_binning and self._pixel_corners.shape[:2] != self.shape:
             return self._rebin_pixel_corners()
@@ -541,8 +541,8 @@ class Cirpad(ImXPadS10):
     def _translation(md, u):
         return md + u
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
         size = numpy.ones(length)
@@ -590,14 +590,14 @@ class Cirpad(ImXPadS10):
 
         # Position of the first module
         corners = numpy.zeros((self.MEDIUM_MODULE_SIZE[0], self.MEDIUM_MODULE_SIZE[1], 4, 3), dtype=numpy.float32)
-        corners[:, :, 0, 1] = pixel_center1 - pixel_size1 / 2.0
-        corners[:, :, 0, 2] = pixel_center2 - pixel_size2 / 2.0
-        corners[:, :, 1, 1] = pixel_center1 + pixel_size1 / 2.0
-        corners[:, :, 1, 2] = pixel_center2 - pixel_size2 / 2.0
-        corners[:, :, 2, 1] = pixel_center1 + pixel_size1 / 2.0
-        corners[:, :, 2, 2] = pixel_center2 + pixel_size2 / 2.0
-        corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
-        corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
+        corners[:,:, 0, 1] = pixel_center1 - pixel_size1 / 2.0
+        corners[:,:, 0, 2] = pixel_center2 - pixel_size2 / 2.0
+        corners[:,:, 1, 1] = pixel_center1 + pixel_size1 / 2.0
+        corners[:,:, 1, 2] = pixel_center2 - pixel_size2 / 2.0
+        corners[:,:, 2, 1] = pixel_center1 + pixel_size1 / 2.0
+        corners[:,:, 2, 2] = pixel_center2 + pixel_size2 / 2.0
+        corners[:,:, 3, 1] = pixel_center1 - pixel_size1 / 2.0
+        corners[:,:, 3, 2] = pixel_center2 + pixel_size2 / 2.0
 
         modules = [self._passage(corners, [self.ROT[0], self.ROT[1], self.ROT[2] * i]) for i in range(20)]
         result = numpy.concatenate(modules, axis=0)
@@ -649,18 +649,18 @@ class Cirpad(ImXPadS10):
                 D1 = pixels[:, 3, 1]
                 D2 = pixels[:, 3, 2]
             else:
-                A0 = pixels[:, :, 0, 0]
-                A1 = pixels[:, :, 0, 1]
-                A2 = pixels[:, :, 0, 2]
-                B0 = pixels[:, :, 1, 0]
-                B1 = pixels[:, :, 1, 1]
-                B2 = pixels[:, :, 1, 2]
-                C0 = pixels[:, :, 2, 0]
-                C1 = pixels[:, :, 2, 1]
-                C2 = pixels[:, :, 2, 2]
-                D0 = pixels[:, :, 3, 0]
-                D1 = pixels[:, :, 3, 1]
-                D2 = pixels[:, :, 3, 2]
+                A0 = pixels[:,:, 0, 0]
+                A1 = pixels[:,:, 0, 1]
+                A2 = pixels[:,:, 0, 2]
+                B0 = pixels[:,:, 1, 0]
+                B1 = pixels[:,:, 1, 1]
+                B2 = pixels[:,:, 1, 2]
+                C0 = pixels[:,:, 2, 0]
+                C1 = pixels[:,:, 2, 1]
+                C2 = pixels[:,:, 2, 2]
+                D0 = pixels[:,:, 3, 0]
+                D1 = pixels[:,:, 3, 1]
+                D2 = pixels[:,:, 3, 2]
 
             # points A and D are on the same dim1 (Y), they differ in dim2 (X)
             # points B and C are on the same dim1 (Y), they differ in dim2 (X)
