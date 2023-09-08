@@ -56,7 +56,7 @@ class _Rayonix(Detector):
     MAX_SHAPE = (4096, 4096)
 
     def __init__(self, pixel1=32e-6, pixel2=32e-6, max_shape=None):
-        super(_Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        super(_Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
         binning = [1, 1]
         for b, p in self.BINNED_PIXEL_SIZE.items():
             if p == pixel1:
