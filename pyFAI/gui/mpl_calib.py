@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/04/2022"
+__date__ = "07/09/2023"
 __status__ = "development"
 
 import logging
@@ -245,7 +245,11 @@ class MplCalibWidget:
             logger.warning("No diffraction image available => not showing the contour")
             return
         # clean previous contour plots:
-        self.ax.collections.clear()
+        try:
+            while len(self.ax.collections) > 0:
+                self.ax.collections[0].remove()
+        except:  # matplotlib <3.7
+            self.ax.collections.clear()
         if data is not None:
             try:
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
@@ -270,10 +274,16 @@ class MplCalibWidget:
         """
         if self.fig:
             # empty annotate and plots
-            if len(self.ax.texts) > 0:
-                self.ax.texts.clear()
-            if len(self.ax.lines) > 0:
-                self.ax.lines.clear()
+            try:
+                while len(self.ax.texts) > 0:
+                    self.ax.texts[0].remove()
+                while len(self.ax.lines) > 0:
+                    self.ax.lines[0].remove()
+            except:  # matplot<3.7
+                if len(self.ax.texts) > 0:
+                    self.ax.texts.clear()
+                if len(self.ax.lines) > 0:
+                    self.ax.lines.clear()
             # Redraw the image
             if update:
                 # TODO: fix this
@@ -311,10 +321,16 @@ class MplCalibWidget:
         if self.fig and label in self.points:
             gpt = self.points[label]
             if gpt.annotate in self.ax.texts:
-                self.ax.texts.remove(gpt.annotate)
+                try:
+                    gpt.annotate.remove()
+                except:  # works for matplotlib <3.7
+                    self.ax.texts.remove(gpt.annotate)
             for plot in gpt.plot:
                     if plot in self.ax.lines:
-                        self.ax.lines.remove(plot)
+                        try:
+                            plot.remove()
+                        except:  # works for matplotlib <3.7
+                            self.ax.lines.remove(plot)
             if update:
                 self.update()
 

@@ -34,11 +34,9 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2020"
+__date__ = "07/09/2023"
 __status__ = "production"
 
-
-import numpy
 import logging
 logger = logging.getLogger(__name__)
 import json
@@ -57,8 +55,8 @@ class Fairchild(Detector):
     aliases = ["Fairchild", "Condor", "Fairchild Condor 486:90"]
     MAX_SHAPE = (4096, 4096)
 
-    def __init__(self, pixel1=15e-6, pixel2=15e-6):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=15e-6, pixel2=15e-6, max_shape=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -84,8 +82,8 @@ class Titan(Detector):
     aliases = ["Titan 2k x 2k", "Titan 2k x 2k", "OXD Titan", "Agilent Titan"]
     uniform_pixel = True
 
-    def __init__(self, pixel1=60e-6, pixel2=60e-6):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=60e-6, pixel2=60e-6, max_shape=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -108,8 +106,8 @@ class Dexela2923(Detector):
     aliases = ["Dexela 2923"]
     MAX_SHAPE = (3888, 3072)
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None):
+        super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -135,8 +133,8 @@ class Basler(Detector):
     aliases = ["aca1300"]
     MAX_SHAPE = (966, 1296)
 
-    def __init__(self, pixel=3.75e-6):
-        super(Basler, self).__init__(pixel1=pixel, pixel2=pixel)
+    def __init__(self, pixel1=3.75e-6, pixel2=3.75e-6, max_shape=None):
+        super(Basler, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -147,7 +145,8 @@ class Basler(Detector):
 
         :return: dict with param for serialization
         """
-        return {"pixel": self._pixel1}
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2}
 
     def set_config(self, config):
         """Sets the configuration of the detector.
@@ -167,10 +166,11 @@ class Basler(Detector):
                 logger.error("Unable to parse config %s with JSON: %s, %s",
                              config, err)
                 raise err
-        pixel = config.get("pixel")
-        if pixel:
-            self.set_pixel1(pixel)
-            self.set_pixel2(pixel)
+        pixel1 = config.get("pixel1")
+        pixel2 = config.get("pixel2")
+        if pixel1 or pixel2:
+            self.set_pixel1(pixel1 or pixel2)
+            self.set_pixel2(pixel2 or pixel1)
         return self
 
 
@@ -186,8 +186,8 @@ class Perkin(Detector):
     MAX_SHAPE = (4096, 4096)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 200e-6
 
-    def __init__(self, pixel1=200e-6, pixel2=200e-6):
-        super(Perkin, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=200e-6, pixel2=200e-6, max_shape=None):
+        super(Perkin, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
             self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
             self.shape = tuple(s // b for s, b in zip(self.max_shape, self._binning))
@@ -221,10 +221,10 @@ class Pixium(Detector):
     MAX_SHAPE = (1910, 2480)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 154e-6
 
-    def __init__(self, pixel1=308e-6, pixel2=308e-6):
+    def __init__(self, pixel1=308e-6, pixel2=308e-6, max_shape=None):
         """Defaults to 2x2 binning
         """
-        super(Pixium, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        super(Pixium, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
             self._binning = (int(round(pixel1 / self.DEFAULT_PIXEL1)),
                              int(round(pixel2 / self.DEFAULT_PIXEL2)))
@@ -255,10 +255,10 @@ class Apex2(Detector):
     MAX_SHAPE = (1024, 1024)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 60e-6
 
-    def __init__(self, pixel1=120e-6, pixel2=120e-6):
+    def __init__(self, pixel1=120e-6, pixel2=120e-6, max_shape=None):
         """Defaults to 2x2 binning
         """
-        super(Apex2, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        super(Apex2, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
             self._binning = (int(round(pixel1 / self.DEFAULT_PIXEL1)),
                              int(round(pixel2 / self.DEFAULT_PIXEL2)))
@@ -285,8 +285,8 @@ class RaspberryPi5M(Detector):
     force_pixel = True
     MAX_SHAPE = (1944, 2592)
 
-    def __init__(self, pixel1=1.4e-6, pixel2=1.4e-6):
-        super(RaspberryPi5M, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=1.4e-6, pixel2=1.4e-6, max_shape=None):
+        super(RaspberryPi5M, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
@@ -305,8 +305,8 @@ class RaspberryPi8M(Detector):
     force_pixel = True
     MAX_SHAPE = (2464, 3280)
 
-    def __init__(self, pixel1=1.12e-6, pixel2=1.12e-6):
-        super(RaspberryPi8M, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=1.12e-6, pixel2=1.12e-6, max_shape=None):
+        super(RaspberryPi8M, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
