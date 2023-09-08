@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2023"
+__date__ = "08/09/2023"
 __status__ = "production"
 
 import numpy
@@ -517,7 +517,7 @@ class Mar345(Detector):
     aliases = ["MAR 345", "Mar3450"]
 
     def __init__(self, pixel1=100e-6, pixel2=100e-6, max_shape=None):
-        Detector.__init__(self, pixel1, pixel2)
+        Detector.__init__(self, pixel1, pixel2, max_shape=max_shape)
         self._default_pixel_size = pixel1, pixel2
         self.max_shape = (int(self.max_shape[0] * 100e-6 / self.pixel1),
                           int(self.max_shape[1] * 100e-6 / self.pixel2))
