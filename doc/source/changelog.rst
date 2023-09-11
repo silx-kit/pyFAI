@@ -5,14 +5,16 @@
 Change-log of versions
 ======================
 
-2023.09 XX/09/2023
+2023.09 08/09/2023
 ------------------
 - Bug fix release over 2023.08
 - Fix calibrant selection in calib2 (Thanks Valentin)
 - Centralized control of Random Number Generator for tests, to make non-regression test more consistent for CI.
 - Correct behaviour of dynamic mask (was causing systematic crashes)
 - Correct spelling of several messages.
+- Compatibility with matplotlib 3.7
 - New application icon and launcher under linux
+- Updated notebook (addresses API changes)
 
 2023.08 30/08/2023 BUGGY, DO NOT USE !!!
 ------------------
