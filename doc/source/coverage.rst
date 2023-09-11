@@ -1,7 +1,7 @@
 Test coverage report for pyFAI
 ==============================
 
-Measured on *pyFAI* version 2023.8.0, 30/08/2023
+Measured on *pyFAI* version 2023.9.0, 08/09/2023
 
 .. csv-table:: Test suite coverage
    :header: "Name", "Stmts", "Exec", "Cover"
@@ -23,7 +23,7 @@ Measured on *pyFAI* version 2023.8.0, 30/08/2023
    "grid.py", "36", "15", "41.7 %"
    "load_integrators.py", "162", "117", "72.2 %"
    "massif.py", "239", "196", "82.0 %"
-   "method_registry.py", "247", "212", "85.8 %"
+   "method_registry.py", "247", "213", "86.2 %"
    "multi_geometry.py", "162", "133", "82.1 %"
    "parallax.py", "249", "211", "84.7 %"
    "spline.py", "427", "252", "59.0 %"
@@ -32,7 +32,7 @@ Measured on *pyFAI* version 2023.8.0, 30/08/2023
    "app/__init__.py", "7", "7", "100.0 %"
    "app/average.py", "176", "35", "19.9 %"
    "app/benchmark.py", "58", "21", "36.2 %"
-   "app/calib2.py", "345", "37", "10.7 %"
+   "app/calib2.py", "366", "37", "10.1 %"
    "app/calib.py", "31", "21", "67.7 %"
    "app/check_calib.py", "32", "21", "65.6 %"
    "app/detector2nexus.py", "88", "20", "22.7 %"
@@ -78,7 +78,7 @@ Measured on *pyFAI* version 2023.8.0, 30/08/2023
    "gui/cli_calibration.py", "1579", "104", "6.6 %"
    "gui/diffmap_widget.py", "371", "63", "17.0 %"
    "gui/matplotlib.py", "33", "26", "78.8 %"
-   "gui/mpl_calib.py", "225", "40", "17.8 %"
+   "gui/mpl_calib.py", "241", "40", "16.6 %"
    "gui/mpl_calib_qt.py", "49", "21", "42.9 %"
    "gui/peak_picker.py", "300", "108", "36.0 %"
    "gui/dialog/Detector3dDialog.py", "173", "36", "20.8 %"
@@ -146,7 +146,7 @@ Measured on *pyFAI* version 2023.8.0, 30/08/2023
    "gui/widgets/AdvancedComboBox.py", "66", "56", "84.8 %"
    "gui/widgets/AdvancedSpinBox.py", "20", "11", "55.0 %"
    "gui/widgets/CalibrantPreview.py", "108", "99", "91.7 %"
-   "gui/widgets/CalibrantSelector2.py", "204", "110", "53.9 %"
+   "gui/widgets/CalibrantSelector2.py", "211", "112", "53.1 %"
    "gui/widgets/CalibrantSelector.py", "100", "25", "25.0 %"
    "gui/widgets/ChoiceToolButton.py", "71", "43", "60.6 %"
    "gui/widgets/ColoredCheckBox.py", "28", "11", "39.3 %"
@@ -185,9 +185,9 @@ Measured on *pyFAI* version 2023.8.0, 30/08/2023
    "io/spots.py", "210", "139", "66.2 %"
    "opencl/OCLFullSplit.py", "199", "24", "12.1 %"
    "opencl/__init__.py", "32", "25", "78.1 %"
-   "opencl/azim_csr.py", "531", "391", "73.6 %"
-   "opencl/azim_hist.py", "471", "327", "69.4 %"
-   "opencl/azim_lut.py", "330", "243", "73.6 %"
+   "opencl/azim_csr.py", "531", "395", "74.4 %"
+   "opencl/azim_hist.py", "471", "331", "70.3 %"
+   "opencl/azim_lut.py", "330", "244", "73.9 %"
    "opencl/ocl_hist_pixelsplit.py", "223", "27", "12.1 %"
    "opencl/peak_finder.py", "472", "366", "77.5 %"
    "opencl/preproc.py", "208", "148", "71.2 %"
@@ -214,4 +214,4 @@ Measured on *pyFAI* version 2023.8.0, 30/08/2023
    "utils/shell.py", "55", "46", "83.6 %"
    "utils/stringutil.py", "74", "67", "90.5 %"
 
-   "pyFAI total", "36491", "20004", "54.8 %"
+   "pyFAI total", "36535", "20016", "54.8 %"
