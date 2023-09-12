@@ -75,7 +75,7 @@ _version_info = namedtuple("version_info", ["major", "minor", "micro", "releasel
 
 version_info = _version_info(MAJOR, MINOR, MICRO, RELEV, SERIAL)
 
-strictversion = version = debianversion = "%d.%02d.%d" % version_info[:3]
+strictversion = version = debianversion = "%d.%d.%d" % version_info[:3]
 if version_info.releaselevel != "final":
     version += "-%s%s" % version_info[-2:]
     debianversion += "~adev%i" % version_info[-1] if RELEV == "dev" else "~%s%i" % version_info[-2:]
