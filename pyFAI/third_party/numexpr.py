@@ -26,9 +26,11 @@ __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
 __date__ = "14/09/2023"
 
+import os
 import logging
 logger = logging.getLogger(__name__)
 local = locals()
+os.environ['NUMEXPR_SANITIZE'] = "0"
 try:
     import numexpr as _numexpr
 except ImportError as error:
@@ -41,13 +43,9 @@ else:
             local[key] = getattr(_numexpr, key)
     else:
         for key in dir(_numexpr):
-            if key not in ("evaluate", "NumExpr"):
+            if key not in ("NumExpr",):
                 local[key] = getattr(_numexpr, key)
-        # patch NumExpr and evaluate with  `sanitize=False`
+        # patch NumExpr with  `sanitize=False`
         def NumExpr(*args, **kwargs):
             kwargs["sanitize"] = False
             return _numexpr.NumExpr(*args, **kwargs)
-
-        def evaluate(*args, **kwargs):
-            kwargs["sanitize"] = False
-            return _numexpr.evaluate(*args, **kwargs)
