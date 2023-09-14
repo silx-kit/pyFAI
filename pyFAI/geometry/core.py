@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/05/2023"
+__date__ = "14/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -63,7 +63,7 @@ from ..units import CONST_hc, to_unit
 logger = logging.getLogger(__name__)
 
 try:
-    import numexpr
+    from ..third_party import numexpr
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     numexpr = None

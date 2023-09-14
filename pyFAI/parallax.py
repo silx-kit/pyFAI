@@ -29,14 +29,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/01/2022"
+__date__ = "14/09/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import logging
 logger = logging.getLogger(__name__)
 import numpy
-import numexpr
+try:
+    from ..third_party import numexpr
+except ImportError:
+    logger.debug("Backtrace", exc_info=True)
+    numexpr = None
+
 import scipy.integrate, scipy.signal
 from math import sin, cos, pi, log, sqrt
 from .utils.decorators import timeit

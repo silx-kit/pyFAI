@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2023"
+__date__ = "14/09/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -58,10 +58,11 @@ from .units import CONST_hc, CONST_q
 logger = logging.getLogger(__name__)
 
 try:
-    import numexpr
+    from .third_party import numexpr
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     numexpr = None
+
 
 # Parameter set used in PyFAI:
 PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"])

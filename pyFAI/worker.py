@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2023"
+__date__ = "14/09/2023"
 __status__ = "development"
 
 import threading
@@ -105,10 +105,13 @@ from .io import integration_config
 import pyFAI.io.image
 from .engines.preproc import preproc as preproc_numpy
 from .utils.decorators import deprecated_warning
+
 try:
-    import numexpr
-except ImportError as err:
+    from ..third_party import numexpr
+except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     logger.warning("Unable to import Cython version of preproc: %s", err)
+    numexpr = None
     USE_NUMEXPR = False
 else:
     USE_NUMEXPR = True

@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2023"
+__date__ = "14/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -47,9 +47,11 @@ import numpy
 from numpy import pi
 import scipy.constants
 try:
-    import numexpr
-except (ImportError, ModuleNotFoundError):
+    from ..third_party import numexpr
+except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     numexpr = None
+
 
 ################################################################################
 # A few physical constants
