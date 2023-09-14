@@ -47,7 +47,7 @@ import numpy
 from numpy import pi
 import scipy.constants
 try:
-    from ..third_party import numexpr
+    from .third_party import numexpr
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     numexpr = None

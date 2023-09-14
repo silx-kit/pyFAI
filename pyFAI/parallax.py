@@ -37,7 +37,7 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy
 try:
-    from ..third_party import numexpr
+    from .third_party import numexpr
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     numexpr = None

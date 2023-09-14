@@ -44,10 +44,9 @@ else:
             if key not in ("evaluate", "NumExpr"):
                 local[key] = getattr(_numexpr, key)
         # patch NumExpr and evaluate with  `sanitize=False`
-        class NumExpr(_numexpr.NumExpr):
-            def __init__(self, *args, **kwargs):
-                kwargs["sanitize"] = False
-                _numexpr.NumExpr.__init__(self, *args, **kwargs)
+        def NumExpr(*args, **kwargs):
+            kwargs["sanitize"] = False
+            return _numexpr.NumExpr(*args, **kwargs)
 
         def evaluate(*args, **kwargs):
             kwargs["sanitize"] = False

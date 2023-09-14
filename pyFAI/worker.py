@@ -107,10 +107,10 @@ from .engines.preproc import preproc as preproc_numpy
 from .utils.decorators import deprecated_warning
 
 try:
-    from ..third_party import numexpr
-except ImportError:
+    from .third_party import numexpr
+except ImportError as err:
     logger.debug("Backtrace", exc_info=True)
-    logger.warning("Unable to import Cython version of preproc: %s", err)
+    logger.warning("Unable to import NumExpr version of preproc: %s", err)
     numexpr = None
     USE_NUMEXPR = False
 else:
