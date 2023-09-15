@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2022"
+__date__ = "15/09/2023"
 __status__ = "stable"
 
 import io
@@ -985,7 +985,7 @@ def get_project_configuration(dry_run):
         "fabio>=0.5",
         "matplotlib",
         "scipy",
-        "numexpr",
+        "numexpr!=2.8.6",
         # for the use of pkg_resources on script launcher
         "setuptools<60.0.0",
         "silx>=1.1"]
