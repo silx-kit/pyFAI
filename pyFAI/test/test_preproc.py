@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "18/09/2023"
 
 import os
 import unittest
@@ -40,7 +40,7 @@ import numpy
 import logging
 
 logger = logging.getLogger(__name__)
-
+from ..containers import ErrorModel
 from ..engines import preproc as python_preproc
 from ..ext import preproc as cython_preproc
 from .utilstest import UtilsTest
@@ -56,8 +56,10 @@ class TestPreproc(unittest.TestCase):
         """
         logger.debug("using preproc from: %s", preproc.__name__)
         shape = 8, 8
+        dtype = numpy.int32
         size = shape[0] * shape[1]
-        target = numpy.ones(shape)
+
+        target = numpy.ones(shape, dtype=dtype)
         dummy = -1.0
         target[:2, :] = dummy
         target[-2:, :] = dummy
@@ -66,7 +68,7 @@ class TestPreproc(unittest.TestCase):
         mask = numpy.zeros(shape, "int8")
         mask[:2, :] = 1
         rng = UtilsTest.get_rng()
-        dark = rng.poisson(10, size).reshape(shape)
+        dark = rng.poisson(10, shape).astype(dtype=dtype)
         flat = 1.0 + rng.random(shape)
         scale = 10.0
         raw = scale * flat + dark
@@ -142,6 +144,10 @@ class TestPreproc(unittest.TestCase):
         # Test all features together
         res = preproc.preproc(raw, dark=dark, flat=flat, dummy=dummy, mask=mask, normalization_factor=scale)
         self.assertLessEqual(abs(res - target).max(), 1e-6, "test all features ")
+
+        res = preproc.preproc(raw, error_model=ErrorModel.POISSON, split_result=4)
+        self.assertEqual(res.shape, (8,8,4))
+
 
     def test_python(self):
         self.one_test(python_preproc)
