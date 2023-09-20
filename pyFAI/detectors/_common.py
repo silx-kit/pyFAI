@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,11 +29,13 @@
 
 """Description of all detectors with a factory to instantiate them"""
 
+from __future__ import annotations
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2023"
+__date__ = "29/06/2023"
 __status__ = "stable"
 
 import logging
@@ -43,6 +45,7 @@ import posixpath
 import threading
 from collections import OrderedDict
 import json
+from typing import Dict, Any, Union
 
 from .. import io
 from .. import spline
@@ -116,11 +119,16 @@ class Detector(metaclass=DetectorMeta):
     _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners")
 
     @classmethod
-    def factory(cls, name, config=None):
+    def factory(cls, name: str, config: Union[None, str, Dict[str, Any]]=None) -> Detector:
         """
-        A kind of factory...
+        Create a pyFAI detector from a name.
 
-        :param name: name of a detector
+        If the detector is a known detector class, `config` in injected as constructor
+        arguments.
+
+        If the `name` is an existing hdf5 filename, the `config` argument is ignored.
+
+        :param name: A name of a detector or an existing hdf5 detector description file.
         :type name: str
         :param config: configuration of the detector
         :type config: dict or JSON representation of it.
@@ -171,12 +179,15 @@ class Detector(metaclass=DetectorMeta):
                     logger.error("Unable to parse config %s with JSON: %s, %s",
                                  name, config, err)
                     raise err
+            binning = config.pop("binning", None)
             try:
                 detector = detectorClass(**config)
             except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to configure detector %s with config: %s\n %s",
-                             name, config, err)
+                logger.error("%s: %s\nUnable to configure detector %s with config: %s\n",
+                             type(err).__name__, err, name, config)
                 raise err
+            if binning:
+                detector.set_binning(binning)
         else:
             detector = detectorClass()
 
@@ -856,15 +867,17 @@ class Detector(metaclass=DetectorMeta):
         :return: the mask with valid pixel to 0
         :rtype: numpy ndarray of int8 or None
         """
+        if self.shape is None:
+            self.shape = img.shape
         assert img.shape == self.shape
         static_mask = self.mask
         if static_mask is None:
             static_mask = numpy.zeros(self.shape, numpy.int8)
-        if self.dummy is not None:
-            actual_dummy = numpy.dtype(img.dtype).type(self.dummy)
-        else:
-            logger.warning("dynamic_mask makes sense only when dummy is defined !")
+        if self.dummy is None:
+            logger.info("dynamic_mask makes sense only when dummy is defined !")
             return static_mask
+        else:
+            actual_dummy = numpy.dtype(img.dtype).type(self.dummy)
         delta_dummy = self.delta_dummy
         if delta_dummy is None:
             dummy_mask = (actual_dummy == img)

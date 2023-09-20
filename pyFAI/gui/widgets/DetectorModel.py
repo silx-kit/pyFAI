@@ -28,104 +28,20 @@ __license__ = "MIT"
 __date__ = "16/10/2020"
 
 from silx.gui import qt
-import pyFAI.detectors
+from .model.AllDetectorItemModel import AllDetectorItemModel
+from .model.DetectorFilterProxyModel import DetectorFilterProxyModel
+from ...utils.decorators import deprecated
 
 
-class AllDetectorModel(qt.QStandardItemModel):
+class AllDetectorModel(AllDetectorItemModel):
 
-    CLASS_ROLE = qt.Qt.UserRole
-    MODEL_ROLE = qt.Qt.UserRole + 1
-    MANUFACTURER_ROLE = qt.Qt.UserRole + 2
-
+    @deprecated(replacement="pyFAI.gui.widgets.model.AllDetectorItemModel.AllDetectorItemModel", since_version="2023.6")
     def __init__(self, parent):
-        qt.QStandardItemModel.__init__(self, parent)
-
-        detectorClasses = set(pyFAI.detectors.ALL_DETECTORS.values())
-
-        def getNameAndManufacturer(detectorClass):
-            modelName = None
-            result = []
-
-            if hasattr(detectorClass, "MANUFACTURER"):
-                manufacturer = detectorClass.MANUFACTURER
-            else:
-                manufacturer = None
-
-            if isinstance(manufacturer, list):
-                for index, m in enumerate(manufacturer):
-                    if m is None:
-                        continue
-                    modelName = detectorClass.aliases[index]
-                    result.append((modelName, m, detectorClass))
-            else:
-                if hasattr(detectorClass, "aliases"):
-                    if len(detectorClass.aliases) > 0:
-                        modelName = detectorClass.aliases[0]
-                if modelName is None:
-                    modelName = detectorClass.__name__
-                result.append((modelName, manufacturer, detectorClass))
-            return result
-
-        def sortingKey(item):
-            modelName, manufacturerName, _detector = item
-            if modelName:
-                modelName = modelName.lower()
-            if manufacturerName:
-                manufacturerName = manufacturerName.lower()
-            return modelName, manufacturerName
-
-        items = []
-        for c in detectorClasses:
-            items.extend(getNameAndManufacturer(c))
-        items = sorted(items, key=sortingKey)
-        for modelName, manufacturerName, detector in items:
-            if detector is pyFAI.detectors.Detector:
-                continue
-            item = qt.QStandardItem(modelName)
-            item.setData(detector, role=self.CLASS_ROLE)
-            item.setData(modelName, role=self.MODEL_ROLE)
-            item.setData(manufacturerName, role=self.MANUFACTURER_ROLE)
-            item2 = qt.QStandardItem(manufacturerName)
-            item2.setData(detector, role=self.CLASS_ROLE)
-            item2.setData(modelName, role=self.MODEL_ROLE)
-            item2.setData(manufacturerName, role=self.MANUFACTURER_ROLE)
-            self.appendRow([item, item2])
-
-    def indexFromDetector(self, detector, manufacturer):
-        for row in range(self.rowCount()):
-            index = self.index(row, 0)
-            manufacturerName = self.data(index, role=self.MANUFACTURER_ROLE)
-            if manufacturerName != manufacturer:
-                continue
-            detectorClass = self.data(index, role=self.CLASS_ROLE)
-            if detectorClass != detector:
-                continue
-            return index
-        return qt.QModelIndex()
+        AllDetectorItemModel.__init__(self, parent=parent)
 
 
-class DetectorFilter(qt.QSortFilterProxyModel):
+class DetectorFilter(DetectorFilterProxyModel):
 
+    @deprecated(replacement="pyFAI.gui.widgets.model.DetectorFilterProxyModel.DetectorFilterProxyModel", since_version="2023.6")
     def __init__(self, parent):
-        super(DetectorFilter, self).__init__(parent)
-        self.__manufacturerFilter = None
-
-    def setManufacturerFilter(self, manufacturer):
-        if self.__manufacturerFilter == manufacturer:
-            return
-        self.__manufacturerFilter = manufacturer
-        self.invalidateFilter()
-
-    def filterAcceptsRow(self, sourceRow, sourceParent):
-        if self.__manufacturerFilter == "*":
-            return True
-        sourceModel = self.sourceModel()
-        index = sourceModel.index(sourceRow, 0, sourceParent)
-        manufacturer = index.data(AllDetectorModel.MANUFACTURER_ROLE)
-        return manufacturer == self.__manufacturerFilter
-
-    def indexFromDetector(self, detector, manufacturer):
-        sourceModel = self.sourceModel()
-        index = sourceModel.indexFromDetector(detector, manufacturer)
-        index = self.mapFromSource(index)
-        return index
+        DetectorFilterProxyModel.__init__(self, parent=parent)

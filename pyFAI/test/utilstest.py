@@ -28,12 +28,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2023"
+__date__ = "05/09/2023"
 
 PACKAGE = "pyFAI"
 
 import os
 import sys
+import time
 import threading
 import unittest
 import logging
@@ -42,6 +43,7 @@ import tempfile
 import getpass
 import functools
 import struct
+import numpy
 
 from silx.resources import ExternalResources
 from ..directories import testimages
@@ -86,6 +88,9 @@ class TestOptions(object):
         self.TEST_IS32_BIT = False
         """Skip tests on 32-bit systems"""
 
+        self.TEST_RANDOM = False
+        """Use a random seed to generate random values"""
+
         self.options = None
         self.timeout = 60  # timeout in seconds for downloading images
         self.url_base = "http://ftp.edna-site.org/pyFAI/testimages"
@@ -107,7 +112,8 @@ class TestOptions(object):
 
     def __repr__(self):
         return f"TestOptions: WITH_QT_TEST={self.WITH_QT_TEST} WITH_OPENCL_TEST={self.WITH_OPENCL_TEST} "\
-               f"WITH_GL_TEST={self.WITH_GL_TEST} TEST_LOW_MEM={self.TEST_LOW_MEM} TEST_IS32_BIT={self.TEST_IS32_BIT}"
+               f"WITH_GL_TEST={self.WITH_GL_TEST} TEST_LOW_MEM={self.TEST_LOW_MEM} TEST_IS32_BIT={self.TEST_IS32_BIT} "\
+               f"TEST_RANDOM={self.TEST_RANDOM} "
 
     @property
     def gui(self):
@@ -181,6 +187,11 @@ class TestOptions(object):
         if struct.calcsize("P") == 4:
             self.TEST_IS32_BIT = True
 
+        if parsed_options is not None and parsed_options.random:
+            self.TEST_RANDOM = True
+        if os.environ.get('PYFAI_RANDOM', 'False').lower() in ("1", "true", "on"):
+            self.TEST_RANDOM = True
+
     def add_parser_argument(self, parser):
         """Add extrat arguments to the test argument parser
 
@@ -198,6 +209,10 @@ class TestOptions(object):
         parser.add_argument("-l", "--low-mem", dest="low_mem", default=False,
                             action="store_true",
                             help="Disable test with large memory consumption (>100Mbyte")
+        parser.add_argument("-r", "--random", dest="random", default=False,
+                            action="store_true",
+                            help="Enable actual random number to be generated. By default, stable seed ensures reproducibility of tests")
+
 
     def get_test_env(self):
         """
@@ -291,6 +306,12 @@ class TestOptions(object):
             os.rmdir(self._tempdir)
             self._tempdir = None
 
+    def get_rng(self):
+        """Create and return a seeded Random Number Generator"""
+        if self.TEST_RANDOM:
+            return numpy.random.Generator(numpy.random.PCG64(seed=time.perf_counter_ns()))
+        else:
+            return numpy.random.Generator(numpy.random.PCG64(seed=0))
 
 test_options = TestOptions()
 """Singleton containing util context of whole the tests"""
@@ -488,14 +509,14 @@ def create_fake_data(dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
     """
     from .. import calibrant as pyFAI_calibrant
     from .. import azimuthalIntegrator
-    import numpy
     cal = pyFAI_calibrant.get_calibrant(calibrant)
     cal.wavelength = wavelength
     ai = azimuthalIntegrator.AzimuthalIntegrator(dist, poni1, poni2,
                                                  rot1, rot2, rot3,
                                                  detector=detector, wavelength=wavelength)
     img = cal.fake_calibration_image(ai, Imax=Imax) + offset
-    if poissonian:
-        return numpy.random.poisson(img), ai
+    if poissonian and test_options.TEST_RANDOM:
+        rng = test_options.get_rng()
+        return rng.poisson(img), ai
     else:
         return img, ai

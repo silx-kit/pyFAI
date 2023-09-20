@@ -27,13 +27,13 @@
 
 __author__ = "Valentin Valls"
 __license__ = "MIT"
-__date__ = "03/03/2023"
+__date__ = "04/07/2023"
 __copyright__ = "2018-2021, ESRF"
 
-
-# include "numpy_common.pxi"
-# cimport numpy as cnumpy
+import logging
+logger = logging.getLogger(__name__)
 import numpy
+
 from .shared_types cimport int32_t, float32_t
 from libcpp.vector cimport vector
 from libcpp.list cimport list as clist
@@ -464,6 +464,9 @@ cdef class SparseBuilder(object):
 
         self._mode = mode
 
+    def __repr__(self):
+        return f"SparseBuilder in mode: {self._mode}, blocksize: {self._block_size}, nbin: {self._nbin}, total size: {self.size()}"
+
     def __dealloc__(self):
         """Release memory."""
         cdef:
@@ -867,6 +870,9 @@ cdef class SparseBuilder(object):
             size += bin_size
             nbins[bin_id + 1] = size
 
+        if size == 0:
+            logger.warning("Sparse matrix is empty. Expect errors or non-sense results! %s", self)
+
         indexes = numpy.empty(size, dtype=numpy.int32)
         coefs = numpy.empty(size, dtype=numpy.float32)
         indexes_ptr = &indexes[0]
@@ -974,6 +980,9 @@ cdef class SparseBuilder(object):
             size = self.cget_bin_size(bin_id)
             if size > max_size:
                 max_size = size
+
+        if max_size == 0:
+            logger.warning("Sparse matrix is empty. Expect error or non-sense results!")
 
         # Alloc a very big array
         lut = numpy.zeros((self._nbin, max_size), dtype=lut_d)

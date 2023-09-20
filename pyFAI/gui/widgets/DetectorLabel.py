@@ -23,41 +23,54 @@
 #
 # ###########################################################################*/
 
+from __future__ import absolute_import
+
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "17/12/2021"
 
 import logging
+from typing import Optional
 
 from silx.gui import qt
 import html
 
 import pyFAI.detectors
+from pyFAI.detectors import Detector
+from ..model.DetectorModel import DetectorModel
+
 
 _logger = logging.getLogger(__name__)
 
 
 class DetectorLabel(qt.QLabel):
-    """Readonly line display"""
+    """Read-only widget to display a :class:`Detector`.
+
+    It can be setup as
+
+    - a detector holder (see :meth:`setDetector`, :meth:`detector`)
+    - a view on top of a model (see :meth:`setDetectorModel`, :meth:`detectorModel`)
+    """
 
     _BASE_TEMPLATE = "<html><head/><body>%s</body></html>"
 
     _MANUFACTURER_TEMPLATE = "<span style=\"vertical-align:sub;\">%s</span>"
 
-    _TOOLTIP_TEMPLATE = ("<html>"
-                         "<ul>"
-                         "<li><b>Model:</b> {model}</li>"
-                         "<li><b>Manufacturer:</b> {manufacturer}</li>"
-                         "<li><b>Type:</b> {kind}</li>"
-                         "</ul>"
-                         "</html>")
+    _TOOLTIP_TEMPLATE = """
+        <html>
+        <ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">
+        <li style="white-space:pre"><b>Model:</b> {model}</li>
+        <li style="white-space:pre"><b>Manufacturer:</b> {manufacturer}</li>
+        <li style="white-space:pre"><b>Type:</b> {kind}</li>
+        </ul>
+        </html>"""
 
     _MODEL_TEMPLATE = "%s"
 
     def __init__(self, parent=None):
         super(DetectorLabel, self).__init__(parent)
-        self.__model = None
-        self.__detector = None
+        self.__model: Optional[DetectorModel] = None
+        self.__detector: Optional[Detector] = None
 
     def dragEnterEvent(self, event):
         if self.__model is not None:
@@ -93,7 +106,7 @@ class DetectorLabel(qt.QLabel):
 
         self.__model.setDetector(detector)
 
-    def __getModelName(self, detector):
+    def __getModelName(self, detector: Detector):
         if isinstance(detector, pyFAI.detectors.NexusDetector):
             if hasattr(detector, "name"):
                 name = detector.name
@@ -110,7 +123,7 @@ class DetectorLabel(qt.QLabel):
             modelName = detectorClass.__name__
         return modelName
 
-    def detector(self):
+    def detector(self) -> Optional[Detector]:
         if self.__detector is not None:
             return self.__detector
         if self.__model is not None:
@@ -174,7 +187,7 @@ class DetectorLabel(qt.QLabel):
         self.setText(text)
         self.setToolTip(tooltip)
 
-    def setDetectorModel(self, model):
+    def setDetectorModel(self, model: DetectorModel):
         self.__detector = None
         if self.__model is not None:
             self.__model.changed.disconnect(self.__modelChanged)
@@ -186,10 +199,10 @@ class DetectorLabel(qt.QLabel):
     def __modelChanged(self):
         self.__updateDisplay()
 
-    def detectorModel(self):
+    def detectorModel(self) -> Optional[DetectorModel]:
         return self.__model
 
-    def setDetector(self, detector):
+    def setDetector(self, detector: Optional[Detector]):
         self.__model = None
         self.__detector = detector
         self.__updateDisplay()

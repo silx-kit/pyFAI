@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/05/2022"
+__date__ = "05/09/2023"
 
 import logging
 import numpy
@@ -186,7 +186,7 @@ class _PeakSelectionTableView(qt.QTableView):
     def __onRowInserted(self, parent, start, end):
         self.__openPersistantViewOnRowInserted(parent, start, end)
         self.updateGeometry()
-        # It have to be done only on the 3, else the layout is wrong
+        # It has to be done only on the 3, else the layout is wrong
         self.resizeColumnToContents(_PeakSelectionTableModel.ColumnControl)
 
     def __openPersistantViewOnRowInserted(self, parent, start, end):
@@ -413,7 +413,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
     def eventFilter(self, widget, event):
         if event.type() == qt.QEvent.Enter:
-            if self.__mode == self.PEAK_SELECTION_MODE:
+            if self.__mode == self.PEAK_SELECTION_MODE and not os.environ.get("PYFAI_REMOTE_BUG"):
                 self.setCursor(qt.Qt.CrossCursor)
             else:
                 self.setCursor(qt.Qt.ArrowCursor)
@@ -634,12 +634,12 @@ class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
         editor.setMouseWheelEnabled(False)
         editor.setMinimum(1)
         editor.setMaximum(999)
-        editor.valueChanged.connect(lambda x: self.commitData.emit(editor))
         editor.setFocusPolicy(qt.Qt.StrongFocus)
         editor.setValue(index.data())
         editor.installEventFilter(self)
         editor.setBackgroundRole(qt.QPalette.Background)
         editor.setAutoFillBackground(True)
+        editor.valueChanged.connect(lambda x: self.commitData.emit(editor))
         return editor
 
     def eventFilter(self, widget, event):
@@ -764,7 +764,7 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
             widget = widget.parent()
         raise TypeError("PeakPickingTask not found")
 
-    def __extractPeak(self, persistantIndex, checked):
+    def __extractPeak(self, persistantIndex, checked=False):
         if not persistantIndex.isValid():
             return
         model = persistantIndex.model()
@@ -773,7 +773,7 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
         if task is not None:
             task.autoExtractSingleRing(peak)
 
-    def __removePeak(self, persistantIndex, checked):
+    def __removePeak(self, persistantIndex, checked=False):
         if not persistantIndex.isValid():
             return
         model = persistantIndex.model()
@@ -792,7 +792,7 @@ class _RingSelectionBehaviour(qt.QObject):
             of the table view
     - Else
         - The spinner is enabled
-        - The value of the spinner have to be consistant with the hilighted
+        - The value of the spinner has to be consistant with the hilighted
             ring from the table view.
     """
 
@@ -932,7 +932,7 @@ class _RingSelectionBehaviour(qt.QObject):
             peak = model.peakObject(index)
 
         if not self.__newRingOption.isChecked():
-            # It have to be updated
+            # It has to be updated
             if peak is not None:
                 self.__spinnerRing.valueChanged.disconnect(self.__spinerRingChanged)
                 try:

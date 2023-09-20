@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 import numpy
 from .AbstractModel import AbstractModel
@@ -56,7 +56,7 @@ class PeakModel(AbstractModel):
 
     def isEnabled(self):
         """
-        True if this group have to be taken into acount.
+        True if this group has to be taken into acount.
 
         :rtype: bool
         """
@@ -64,7 +64,7 @@ class PeakModel(AbstractModel):
 
     def setEnabled(self, isEnabled):
         """
-        Set if this group have to be taken into acount.
+        Set this group to be taken into acount (or not).
 
         :param bool isEnabled: True to enable this group.
         """

@@ -36,13 +36,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/05/2023"
+__date__ = "05/09/2023"
 
 import sys
 import os
 import unittest
 import numpy
 import subprocess
+import copy
 import logging
 logger = logging.getLogger(__name__)
 from .utilstest import UtilsTest
@@ -102,7 +103,8 @@ Wavelength: 7e-11
         self.ponifile = os.path.join(UtilsTest.tempdir, "bug170.poni")
         with open(self.ponifile, "w") as poni:
             poni.write(ponitxt)
-        self.data = numpy.random.random((2300, 2300))
+        rng = UtilsTest.get_rng()
+        self.data = rng.random((2300, 2300))
 
     def tearDown(self):
         if os.path.exists(self.ponifile):
@@ -129,6 +131,7 @@ class TestBug211(unittest.TestCase):
         self.image_files = []
         self.outfile = os.path.join(UtilsTest.tempdir, "out.edf")
         res = numpy.zeros(shape, dtype=dtype)
+        rng = UtilsTest.get_rng()
         for i in range(5):
             fn = os.path.join(UtilsTest.tempdir, "img_%i.edf" % i)
             if i == 3:
@@ -136,7 +139,7 @@ class TestBug211(unittest.TestCase):
             elif i == 4:
                 data = numpy.ones(shape, dtype=dtype)
             else:
-                data = numpy.random.random(shape).astype(dtype)
+                data = rng.random(shape).astype(dtype)
                 res += data
             e = fabio.edfimage.edfimage(data=data)
             e.write(fn)
@@ -191,9 +194,9 @@ class TestBugRegression(unittest.TestCase):
         """
         det = detectors.ImXPadS10()
         ai = AzimuthalIntegrator(dist=1, detector=det)
-        data = numpy.random.random(det.shape)
+        data = UtilsTest.get_rng().random(det.shape)
         _result = ai.integrate1d_ng(data, 100, unit="r_mm")
-        import copy
+
         ai2 = copy.copy(ai)
         self.assertNotEqual(id(ai), id(ai2), "copy instances are different")
         self.assertEqual(id(ai.ra), id(ai2.ra), "copy arrays are the same after copy")
@@ -503,7 +506,7 @@ class TestBugRegression(unittest.TestCase):
         detector = detectors.Pilatus100k()
         ai = AzimuthalIntegrator(detector=detector)
         rm = max(detector.shape) * detector.pixel1 * 1000
-        img = numpy.random.random(detector.shape)
+        img = UtilsTest.get_rng().random(detector.shape)
         ai.integrate1d(img, 5, unit="r_mm", radial_range=[0, rm], method=method)
         id_before = None
         for v in ai.engines.values():
@@ -613,7 +616,7 @@ class TestBug1703(unittest.TestCase):
         img_theo = cls.ai.calcfrom1d(cls.q, cls.I, dim1_unit=unit,
                          correctSolidAngle=True,
                          polarization_factor=None)
-        cls.img = numpy.random.poisson(img_theo)
+        cls.img = UtilsTest.get_rng().poisson(img_theo)
 
     @classmethod
     def tearDownClass(cls):

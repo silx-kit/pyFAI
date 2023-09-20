@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "05/09/2023"
 
 import logging
 import numpy
@@ -261,7 +261,7 @@ class RingExtractorThread(qt.QThread):
         geometryModel = self.__geometryModel
 
         if peaksModel is not None and geometryModel is not None:
-            raise ValueError("Computation have to be done from peaks or from geometry")
+            raise ValueError("Computation has to be done from peaks or from geometry")
 
         if peaksModel is not None:
             peaks = model_transform.createPeaksArray(peaksModel)

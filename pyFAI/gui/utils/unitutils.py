@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "12/05/2022"
+__date__ = "05/09/2023"
 
 import numpy
 import collections.abc
@@ -32,11 +32,16 @@ import collections.abc
 from pyFAI import units
 
 
-def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
+def tthToRad(twoTheta: numpy.ndarray, unit: units.Unit, wavelength: float=None, directDist: float=None):
     """
     Convert a two theta angle from original `unit` to radian.
 
-    `directDist = ai.getFit2D()["directDist"]`
+    The `directDist` argument can be extracted from an azimuthal integrator the
+    following way:
+
+    .. code-block:: python
+
+        directDist = ai.getFit2D()["directDist"]
     """
     if isinstance(twoTheta, numpy.ndarray):
         pass
@@ -49,20 +54,20 @@ def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
         return numpy.deg2rad(twoTheta)
     elif unit == units.Q_A:
         if wavelength is None:
-            raise AttributeError("wavelength have to be specified")
+            raise AttributeError("wavelength has to be specified")
         return numpy.arcsin((twoTheta * wavelength) / (4.e-10 * numpy.pi)) * 2.0
     elif unit == units.Q_NM:
         if wavelength is None:
-            raise AttributeError("wavelength have to be specified")
+            raise AttributeError("wavelength has to be specified")
         return numpy.arcsin((twoTheta * wavelength) / (4.e-9 * numpy.pi)) * 2.0
     elif unit == units.R_MM:
         if directDist is None:
-            raise AttributeError("directDist have to be specified")
+            raise AttributeError("directDist has to be specified")
         # GF: correct formula?
         return numpy.arctan(twoTheta / directDist)
     elif unit == units.R_M:
         if directDist is None:
-            raise AttributeError("directDist have to be specified")
+            raise AttributeError("directDist has to be specified")
         # GF: correct formula?
         return numpy.arctan(twoTheta / (directDist * 0.001))
     else:
@@ -70,6 +75,16 @@ def tthToRad(twoTheta, unit, wavelength=None, directDist=None):
 
 
 def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
+    """
+    Convert a two theta angle to this `unit`.
+
+    The `directDist` argument can be extracted from an azimuthal integrator the
+    following way:
+
+    .. code-block:: python
+
+        directDist = ai.getFit2D()["directDist"]
+    """
     if isinstance(twoTheta, numpy.ndarray):
         pass
     elif isinstance(twoTheta, collections.abc.Iterable):

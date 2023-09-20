@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/03/2023"
+__date__ = "05/09/2023"
 
 import unittest
 import random
@@ -309,6 +309,7 @@ class TestFastPath(utilstest.ParametricTestCase):
                        ]
 
         for _ in range(number_of_geometries):
+            random.seed(0)
             geo = {"dist": 0.01 + random.random(),
                    "poni1": random.random() - 0.5,
                    "poni2": random.random() - 0.5,
@@ -509,7 +510,7 @@ class TestCalcFrom(unittest.TestCase):
     def test_calcfrom12d(self):
         det = detector_factory("pilatus300k")
         ai = AzimuthalIntegrator(0.1, 0.05, 0.04, detector=det)
-        prof_1d = ai.integrate1d_ng(numpy.random.random(det.shape), 200, unit="2th_deg")
+        prof_1d = ai.integrate1d_ng(UtilsTest.get_rng().random(det.shape), 200, unit="2th_deg")
         sig = numpy.sinc(prof_1d.radial * 10) ** 2
         img1 = ai.calcfrom1d(prof_1d.radial, sig, dim1_unit="2th_deg", mask=det.mask, dummy=-1)
         new_prof_1d = ai.integrate1d_ng(img1, 200, unit="2th_deg")

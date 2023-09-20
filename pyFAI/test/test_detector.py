@@ -369,6 +369,15 @@ class TestDetector(unittest.TestCase):
         except Exception as err:
             self.skipTest(f"SplitPixel does not work (yet) with hexagonal pixels: {err}")
 
+    def test_abstract(self):
+        shape = 10, 12
+        det = detector_factory("detector")
+        self.assertEqual(det.shape, None)
+        z = numpy.zeros(shape)
+        res = det.dynamic_mask(z)
+        self.assertEqual(det.shape, shape)
+        self.assertEqual(abs(z-res).max(), 0)
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

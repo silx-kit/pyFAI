@@ -120,6 +120,27 @@ optional arguments:
 **--rot3** ROT3
    rot3 in radians. default: 0
 
+**--dist-range** DIST_MIN DIST_MAX
+   Range (2 values) for sample-detector distance in meter. Default: None
+
+**--poni1-range** PONI1_MIN PONI1_MAX
+   Range for poni1 coordinate in meter. Default: None
+
+**--poni2-range** PONI2_MIN PONI2_MAX
+   Range (2 values) for poni2 coordinate in meter. Default: None
+
+**--rot1-range** ROT1_MIN ROT1_MAX
+   Range (2 values) for rot1 in radians. default: None
+
+**--rot2-range** ROT2_MIN ROT2_MAX
+   Range (2 values) for rot2 in radians. default: None
+
+**--rot3-range** ROT3_MIN ROT3_MAX
+   Range (2 values) for rot3 in radians. default: None
+
+**--wavelength-range** WAVELENGTH_MIN WAVELENGTH_MAX
+   Range (2 values) for wavelength in meters. default: None
+
 **--fix-wavelength**
    fix the wavelength parameter. Default: Activated
 
@@ -133,31 +154,31 @@ optional arguments:
    free the distance parameter. Default: Activated
 
 **--fix-poni1**
-   fix the poni1 parameter
+   fix the poni1 parameter. Default: Deactivated
 
 **--free-poni1**
    free the poni1 parameter. Default: Activated
 
 **--fix-poni2**
-   fix the poni2 parameter
+   fix the poni2 parameter. Default: Deactivated
 
 **--free-poni2**
    free the poni2 parameter. Default: Activated
 
 **--fix-rot1**
-   fix the rot1 parameter
+   fix the rot1 parameter. Default: Deactivated
 
 **--free-rot1**
    free the rot1 parameter. Default: Activated
 
 **--fix-rot2**
-   fix the rot2 parameter
+   fix the rot2 parameter. Default: Deactivated
 
 **--free-rot2**
    free the rot2 parameter. Default: Activated
 
 **--fix-rot3**
-   fix the rot3 parameter
+   fix the rot3 parameter. Default: Deactivated
 
 **--free-rot3**
    free the rot3 parameter. Default: Activated

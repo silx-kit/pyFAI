@@ -42,7 +42,7 @@ dependencies = [
    'h5py',
    'fabio',
    'silx',
-   'numexpr',
+   'numexpr != 2.8.6',
    'scipy',
    'matplotlib'
 ]

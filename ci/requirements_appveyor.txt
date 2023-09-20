@@ -10,5 +10,6 @@ h5py
 fabio
 scipy
 matplotlib
-numexpr
+numexpr != 2.8.6
 silx
+psutil

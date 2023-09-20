@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/03/2023"
+__date__ = "05/09/2023"
 
 import unittest
 import platform
@@ -86,7 +86,7 @@ class TestRecenter(unittest.TestCase):
 
     def test_area(self):
         "Test the formula to calculate the area of any quad"
-        pos = numpy.random.random(8) * 10  # this is a random quad !
+        pos = UtilsTest.get_rng().uniform(0, 10, 8)  # this is a random quad !
 
         ref = splitPixel._sp_area4(*pos)
         trp = splitPixel._sp_area4(*pos.reshape((-1, 2))[:, -1::-1].ravel())
@@ -96,7 +96,7 @@ class TestRecenter(unittest.TestCase):
         buf = numpy.zeros(int(max(pos) + 3), numpy.float32)
         for i in range(4):
             splitPixel._sp_integrate1d(buf, *b[2 * i:2 * i + 4])
-        print(buf, buf.sum(), ref, trp)
+        # print(buf, buf.sum(), ref, trp)
         self.assertAlmostEqual(abs(buf.sum()), ref, 4, "Check integration")
 
 
@@ -209,14 +209,18 @@ class TestSplitBBoxNg(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super(TestSplitBBoxNg, cls).setUpClass()
+
+        #fix seed, decrease noise while testing:
+        rng = UtilsTest.get_rng()
+
         det = Detector.factory("Pilatus 100k")
         shape = det.shape
         # The randomness of the image is not correlated to bug #1021
         cls.maxi = 65000
-        img = numpy.random.randint(0, cls.maxi, numpy.prod(shape))
+        img = (rng.random(numpy.prod(shape))*cls.maxi).astype(numpy.uint16)
 
         if platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4):
-            cls.epsilon = 1e-13
+            cls.epsilon = 3e-13
         else:
             cls.epsilon = numpy.finfo(numpy.float64).eps
 

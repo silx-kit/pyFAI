@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/12/2022"
+__date__ = "05/09/2023"
 
 import unittest
 import os
@@ -176,8 +176,9 @@ class TestSort(unittest.TestCase):
         cls.N = 1024
         cls.ws = cls.N // 8
 
-        cls.h_data = numpy.random.random(cls.N).astype("float32")
-        cls.h2_data = numpy.random.random((cls.N, cls.N)).astype("float32").reshape((cls.N, cls.N))
+        rng = utilstest.test_options.get_rng()
+        cls.h_data = rng.random(cls.N).astype("float32")
+        cls.h2_data = rng.random((cls.N, cls.N)).astype("float32").reshape((cls.N, cls.N))
 
         cls.ctx = ocl.create_context(devicetype="GPU")
         device = cls.ctx.devices[0]
@@ -533,8 +534,9 @@ class TestDoubleWord(unittest.TestCase):
         else:
             cls.args = ""
         size = 1024
-        cls.a = 1.0 + numpy.random.random(size)
-        cls.b = 1.0 + numpy.random.random(size)
+        rng = utilstest.test_options.get_rng()
+        cls.a = 1.0 + rng.random(size)
+        cls.b = 1.0 + rng.random(size)
         cls.ah = cls.a.astype(numpy.float32)
         cls.bh = cls.b.astype(numpy.float32)
         cls.al = (cls.a - cls.ah).astype(numpy.float32)

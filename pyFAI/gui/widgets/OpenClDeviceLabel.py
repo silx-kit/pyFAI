@@ -82,19 +82,19 @@ class OpenClDeviceLabel(qt.QLabel):
             if deviceName is None:
                 labelTemplate = "{deviceId}, {platformId}"
                 tipTemplate = """
-                    <ul>
-                    <li><b>Platform index</b>: {platformId}</li>
-                    <li><b>Device index</b>: {deviceId}</li>
+                    <ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">
+                    <li style="white-space:pre"><b>Platform index</b>: {platformId}</li>
+                    <li style="white-space:pre"><b>Device index</b>: {deviceId}</li>
                     </ul>
                 """
             else:
                 labelTemplate = "{deviceName} ({platformId}, {deviceId})"
                 tipTemplate = """
-                    <ul>
-                    <li><b>Platform name</b>: {platformName}</li>
-                    <li><b>Platform index</b>: {platformId}</li>
-                    <li><b>Device name</b>: {deviceName}</li>
-                    <li><b>Device index</b>: {deviceId}</li>
+                    <ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">
+                    <li style="white-space:pre"><b>Platform name</b>: {platformName}</li>
+                    <li style="white-space:pre"><b>Platform index</b>: {platformId}</li>
+                    <li style="white-space:pre"><b>Device name</b>: {deviceName}</li>
+                    <li style="white-space:pre"><b>Device index</b>: {deviceId}</li>
                     </ul>
                 """
 

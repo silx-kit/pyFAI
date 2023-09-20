@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/05/2022"
+__date__ = "05/09/2023"
 
 import numpy
 import logging
@@ -78,8 +78,10 @@ class ExperimentTask(AbstractCalibrationTask):
 
         self._detectorFileDescription.setElideMode(qt.Qt.ElideMiddle)
 
-        self._calibrant.setFileLoadable(True)
+        #self._calibrant.setFileLoadable(True)
         self._calibrant.sigLoadFileRequested.connect(self.loadCalibrant)
+        recentCalibrants = CalibrationContext.instance().getRecentCalibrants().value()
+        self._calibrant.setRecentCalibrants(recentCalibrants)
 
         self.__synchronizeRawView = SynchronizeRawView()
         self.__synchronizeRawView.registerTask(self)
@@ -92,6 +94,11 @@ class ExperimentTask(AbstractCalibrationTask):
         self._energy.setValidator(validator)
         self._wavelength.setValidator(validator)
         super()._initGui()
+
+    def aboutToClose(self):
+        super(ExperimentTask, self).aboutToClose()
+        recentCalibrants = self._calibrant.recentCalibrants()
+        CalibrationContext.instance().getRecentCalibrants().setValue(recentCalibrants)
 
     def __createPlot(self, parent):
         plot = silx.gui.plot.PlotWidget(parent=parent)
@@ -141,7 +148,7 @@ class ExperimentTask(AbstractCalibrationTask):
 
         settings = model.experimentSettingsModel()
 
-        self._calibrant.setModel(settings.calibrantModel())
+        self._calibrant.setCalibrantModel(settings.calibrantModel())
         self._detectorLabel.setDetectorModel(settings.detectorModel())
         self._image.setModel(settings.image())
         self._imageLoader.setModel(settings.image())
@@ -181,13 +188,13 @@ class ExperimentTask(AbstractCalibrationTask):
         warnings = []
 
         if image is None:
-            warnings.append("An image have to be specified")
+            warnings.append("An image has to be specified")
         if detectorModel is None:
-            warnings.append("A detector have to be specified")
+            warnings.append("A detector has to be specified")
         if calibrantModel is None:
-            warnings.append("A calibrant have to be specified")
+            warnings.append("A calibrant has to be specified")
         if wavelength is None:
-            warnings.append("An energy have to be specified")
+            warnings.append("An energy has to be specified")
         if image is not None and calibrantModel is not None:
             try:
                 detector = settings.detector()

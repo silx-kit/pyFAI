@@ -1,11 +1,35 @@
 :Author: Jérôme Kieffer
-:Date: 16/05/2023
+:Date: 06/09/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2023.05 dd/mm/2023
+2023.09 08/09/2023
+------------------
+- Bug fix release over 2023.08
+- Fix calibrant selection in calib2 (Thanks Valentin)
+- Centralized control of Random Number Generator for tests, to make non-regression test more consistent for CI.
+- Correct behaviour of dynamic mask (was causing systematic crashes)
+- Correct spelling of several messages.
+- Compatibility with matplotlib 3.7
+- New application icon and launcher under linux
+- Updated notebook (addresses API changes)
+
+2023.08 30/08/2023 BUGGY, DO NOT USE !!!
+------------------
+- Minor release, mostly bug-fixes. 87 commits.
+- fix mal-formed headers in 1D ASCII export
+- Debian packaging without setup.py (at all)
+- Fix cache invalidation issue for polarization in geometry
+- More compact (+scrollable) calibrant widget in `Calib2` (Contribution from Valentin Valls)
+- Compatibility with PyQt6 and PySide6 bacckends (Contribution from malte-storm)
+- Comatibility with elder Matplotlib (<3.2)
+- Fix reproducibility issue with no-split sparse matrix multiplication (all 3)
+- Lower memory consumption of hexagonal detector instanciation.
+- Enforce the usage of the `detector_factory`. `Detector(**config)` stops working.
+
+2023.05 16/05/2023
 ------------------
 - New detector: Jungfrau 8M used at SwissFEL
 - new method in `Geometry` to guess the number of bin (and avoid oversampling)

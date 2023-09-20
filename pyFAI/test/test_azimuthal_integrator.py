@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/05/2023"
+__date__ = "05/09/2023"
 
 import unittest
 import os
@@ -47,10 +47,10 @@ logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
 from ..containers import ErrorModel
-from ..detectors import Detector
+from ..detectors import Detector, detector_factory
 if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
-from pyFAI import units, detector_factory
+from pyFAI import units
 from ..utils import mathutil
 
 
@@ -353,7 +353,8 @@ class TestFlatimage(unittest.TestCase):
     def test_guess_polarization(self):
         img = fabio.open(UtilsTest.getimage("Eiger4M.edf")).data
         ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Eiger4M.poni"))
-        self.assertLess(abs(ai.guess_polarization(img)-0.5), 0.1)
+        self.assertLess(abs(ai.guess_polarization(img) - 0.5), 0.1)
+
 
 class TestSaxs(unittest.TestCase):
     saxsPilatus = "bsa_013_01.edf"
@@ -498,14 +499,28 @@ class TestSaxs(unittest.TestCase):
         for k, v in ai.engines.items():
             self.assertEqual(v.engine.empty, ref, k)
 
+    def test_empty_csr(self):
+        ai = AzimuthalIntegrator(detector="Pilatus100k", wavelength=1e-10)
+        with self.assertLogs('pyFAI.ext.sparse_builder', level='WARNING') as cm:
+            ai.setup_sparse_integrator(shape=ai.detector.shape, npt=100,
+                                       pos0_range=(90, 100),
+                                       unit="2th_deg",
+                                       split='no',
+                                       algo='CSR',
+                                       empty=None,
+                                       scale=True)
+            self.assertTrue(cm.output[0].startswith('WARNING:pyFAI.ext.sparse_builder:Sparse matrix is empty. Expect errors or non-sense results!'),
+                            "Actually emits the expected warning")
+
 
 class TestSetter(unittest.TestCase):
 
     def setUp(self):
         self.ai = AzimuthalIntegrator()
         shape = (10, 15)
-        self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
-        self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
+        rng = UtilsTest.get_rng()
+        self.rnd1 = rng.random(shape).astype(numpy.float32)
+        self.rnd2 = rng.random(shape).astype(numpy.float32)
 
         fd, self.edf1 = UtilsTest.tempfile(".edf", "testAI1", dir=__class__.__name__)
         os.close(fd)
@@ -529,7 +544,7 @@ class TestIntergrationNextGeneration(unittest.TestCase):
 
     def test_histo(self):
         det = detector_factory("Pilatus100k")
-        data = numpy.random.random(det.shape)
+        data = UtilsTest.get_rng().random(det.shape)
         ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
 
         method = ("no", "histogram", "python")
@@ -587,21 +602,20 @@ class TestRange(unittest.TestCase):
     def tearDownClass(cls):
         cls.unit = cls.azim_range = cls.rad_range = cls.ai = cls.img = None
 
-    def test_medfilt(self):
+    def tearDown(self) -> None:
         self.ai.reset()
+
+    def test_medfilt(self):
         res = self.ai.medfilt1d(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
     def test_sigma_clip_legacy(self):
-        self.ai.reset()
         res = self.ai._sigma_clip_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
     def test_sigma_clip_ng(self):
-        self.ai.reset()
-
         for case in ({"error_model":"poisson", "max_iter":3, "thres":6},
                      {"error_model":"azimuthal", "max_iter":3, "thres":0},
                      ):
@@ -631,36 +645,56 @@ class TestRange(unittest.TestCase):
                               ("count", 1e-1)):
                 for impl in results:
                     obt = results[impl]
-                    print(impl, what, obt.__getattribute__(what).max(),
-                    abs(ref.__getattribute__(what) - obt.__getattribute__(what)).max(),
-                    abs((ref.__getattribute__(what) - obt.__getattribute__(what)) / ref.__getattribute__(what)).max())
+                    # print(impl, what, obt.__getattribute__(what).max(),
+                    # abs(ref.__getattribute__(what) - obt.__getattribute__(what)).max(),
+                    # abs((ref.__getattribute__(what) - obt.__getattribute__(what)) / ref.__getattribute__(what)).max())
                     self.assertTrue(numpy.allclose(obt.__getattribute__(what), ref.__getattribute__(what), atol=10, rtol=tol),
                                     msg=f"Sigma clipping matches for impl {impl} on paramter {what} with error_model {case['error_model']}")
 
     def test_variance_2d(self, error_model="poisson"):
         """This test checks that the variance is actually calculated and positive
         for all integration methods available"""
-        # self.skipTest("Re-enable this test when issue #1845 is solved.")
+
+        # def print_mem():
+        #     try:
+        #         import psutil
+        #     except:
+        #         logger.error("psutil missing")
+        #     else:
+        #         logger.warning("Memory consumption: %s",psutil.virtual_memory())
+        ai = AzimuthalIntegrator.sload(self.ai)  # make an empty copy and work on just one module of the detector (much faster)
+        ai.detector = detector_factory("Pilatus_100k")
+        img = self.img[:ai.detector.shape[0],:ai.detector.shape[1]]
+
         methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=2)}
-        # limits to 27 (actually 24) methods to test, keep only one OpenCL version
+        logger.info("methods investigated" + "\n".join([str(i) for i in methods.values()]))
 
         error_model = ErrorModel.parse(error_model)
         if error_model == ErrorModel.VARIANCE:
             variance = numpy.maximum(1, self.img)
         else:
             variance = None
-        # print(f"There are {len(methods)} 2D integration method available on this system")
+        failed = []
         for m in methods.values():
-            # print(m, end=" ")
-            res = self.ai.integrate2d_ng(self.img, 10, 20, variance=variance, error_model=error_model, method=m)
+            res = ai.integrate2d_ng(img, 11, 13, variance=variance, error_model=error_model, method=m)
+            # ai.reset()
             v = res.sum_variance
-            # print(v.min(), v.max(), end=" ")
-            self.assertGreaterEqual(v.min(), 0, f"min variance is positive or null with {res.method}")
-            self.assertGreater(v.max(), 0, f"max variance is strictly positive with {res.method}")
+            if v.min() < 0:
+                failed.append(f"min variance is positive or null with {res.method}, error model {error_model.as_str()}")
+                # print_mem()
+            if v.max() <= 0:
+                failed.append(f"max variance is strictly positive with {res.method}, error model {error_model.as_str()}")
+                # print_mem()
             s = res.sigma
-            # print(type(s))
-            self.assertGreaterEqual(s.min(), 0, f"min sigma is positive or null with {res.method}")
-            self.assertGreater(s.max(), 0, f"max sigma is strictly positive with {res.method}")
+            if s.min() < 0:
+                failed.append(f"min sigma is positive or null with {res.method}, error model {error_model.as_str()}")
+                # print_mem()
+            if s.max() <= 0:
+                failed.append(f"max sigma is strictly positive with {res.method}, error model {error_model.as_str()}")
+                # print_mem()
+        for err_msg in failed:
+            logger.error(err_msg)
+        self.assertEqual(len(failed), 0, f"Number of failed tests in test_variance_2d: {len(failed)}")
 
 
 def suite():

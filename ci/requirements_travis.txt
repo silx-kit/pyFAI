@@ -16,5 +16,5 @@ matplotlib
 #mako
 #pybind11
 #pyopencl
-numexpr
+numexpr != 2.8.6
 silx
