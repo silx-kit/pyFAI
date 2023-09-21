@@ -441,7 +441,7 @@ class Pilatus(_Dectris):
         if self.x_offset_file:
             txt += f"\t delta_x= {self.x_offset_file}"
         if self.y_offset_file:
-            txt += f"\t delta_y= {self.y_offset_file}" 
+            txt += f"\t delta_y= {self.y_offset_file}"
         return txt
 
     def set_offset_files(self, x_offset_file=None, y_offset_file=None):
