@@ -105,8 +105,7 @@ class Eiger(_Dectris):
         self.offset1 = self.offset2 = None
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
+        return f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -438,11 +437,11 @@ class Pilatus(_Dectris):
         self.set_offset_files(x_offset_file, y_offset_file)
 
     def __repr__(self):
-        txt = "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
+        txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
         if self.x_offset_file:
-            txt += "\t delta_x= %s" % self.x_offset_file
+            txt += f"\t delta_x= {self.x_offset_file}"
         if self.y_offset_file:
-            txt += "\t delta_y= %s" % self.y_offset_file
+            txt += f"\t delta_y= {self.y_offset_file}" 
         return txt
 
     def set_offset_files(self, x_offset_file=None, y_offset_file=None):
@@ -730,3 +729,45 @@ class PilatusCdTe2M(PilatusCdTe):
     """
     MAX_SHAPE = 1679, 1475
     aliases = ["Pilatus CdTe 2M", "Pilatus 2M CdTe", "Pilatus2M CdTe", "Pilatus2MCdTe"]
+
+
+class Pilatus4(_Dectris):
+    """
+    Pilatus4 detector: generic description containing mask algorithm
+
+    Sub-classed by Pilatus4_1M, Pilatus4_2M and Pilatus_4M
+    """
+    MODULE_SIZE = (530, 513)
+    MODULE_GAP = (20, 7)
+    force_pixel = True
+
+    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None):
+        super(Pilatus4, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+        self.module_size = tuple(self.MODULE_SIZE)
+
+    def __repr__(self):
+        return f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+
+
+class Pilatus4_1M(Pilatus4):
+    MAX_SHAPE = 1080, 1033
+    aliases = ["Pilatus4 1M"]
+
+
+class Pilatus4_2M(Pilatus4):
+    MAX_SHAPE = 1630, 1553
+    aliases = ["Pilatus4 2M"]
+
+
+class Pilatus4_4M(Pilatus4):
+    MAX_SHAPE = 2180, 2073
+    aliases = ["Pilatus4 4M"]
+
+
+class Pilatus4_260k(Pilatus4):
+    MAX_SHAPE = 530, 513
+    aliases = ["Pilatus4 CdTe 260k", "Pilatus4 260k CdTe", "Pilatus4 260k"]
+
+class Pilatus4_260kw(Pilatus4):
+    MAX_SHAPE = 255, 1033
+    aliases = ["Pilatus4 CdTe 260kw", "Pilatus4 260kw CdTe", "Pilatus4 260kw"]
