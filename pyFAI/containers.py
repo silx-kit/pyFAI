@@ -30,11 +30,12 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2023"
+__date__ = "25/09/2023"
 __status__ = "development"
 
 from collections import namedtuple
 from enum import IntEnum
+from .utils.decorators import deprecated_warning
 
 Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
 Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
@@ -468,6 +469,8 @@ class Integrate2dResult(IntegrateResult):
 
     def __init__(self, intensity, radial, azimuthal, sigma=None):
         super(Integrate2dResult, self).__init__()
+        self._radial_unit = None
+        self._azimuth_unit = None
 
     @property
     def intensity(self):
@@ -506,6 +509,54 @@ class Integrate2dResult(IntegrateResult):
         if len(self) == 3:
             return None
         return self[3]
+
+    @property
+    def unit(self):
+        """Radial unit
+
+        :rtype: string
+        """
+        deprecated_warning("Property", "unit", replacement="radial_unit", since_version="2023.09", only_once=True)
+        return self._radial_unit
+
+    def _set_unit(self, unit):
+        """Define the radial unit
+
+        :type unit: str
+        """
+        deprecated_warning("Function", "_set_unit", replacement="_set_radial_unit", since_version="2023.09", only_once=True)
+
+        self._radial_unit = unit
+
+    @property
+    def radial_unit(self):
+        """Radial unit
+
+        :rtype: string
+        """
+        return self._radial_unit
+
+    def _set_radial_unit(self, unit):
+        """Define the radial unit
+
+        :type unit: str
+        """
+        self._radial_unit = unit
+
+    @property
+    def azimuthal_unit(self):
+        """Radial unit
+
+        :rtype: string
+        """
+        return self._azimuthal_unit
+
+    def _set_azimuthal_unit(self, unit):
+        """Define the radial unit
+
+        :type unit: str
+        """
+        self._azimuthal_unit = unit
 
 
 class SeparateResult(tuple):
