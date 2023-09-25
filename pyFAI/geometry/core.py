@@ -1082,10 +1082,11 @@ class Geometry(object):
                 if units is None:
                     out = self.corner_array(shape, unit, scale=scale)
                 else:
-                    out0 = self.corner_array(shape, units[0], scale=scale)
-                    out1 = self.corner_array(shape, units[1], scale=scale)
-                    out = out0
-                    out[..., 1] = out1[..., 0]
+                    out = self.corner_array(shape, units[0], scale=scale)
+                    if units[1] not in (units.CHI_DEG, units.CHI_RAD):
+                        # shortcut
+                        out1 = self.corner_array(shape, units[1], scale=scale)
+                        out[..., 1] = out1[..., 0]
             elif typ == "delta":
                 out = self.delta_array(shape, unit, scale=scale)
             else:

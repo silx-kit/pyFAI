@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2023"
+__date__ = "25/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -647,7 +647,8 @@ class DefaultAiWriter(Writer):
                 f.write("\n".join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
             f.write("\n")
 
-    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit="2th_deg",
+    def save2D(self, filename, I, dim1, dim2, error=None,
+               dim1_unit="2th_deg", dim2_unit="chi_deg",
                has_mask=None, has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None,
                metadata=None, format_="edf"):
@@ -665,6 +666,8 @@ class DefaultAiWriter(Writer):
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
         :type dim1_unit: pyFAI.units.Unit
+        :param dim2_unit: the unit of the dim2 array
+        :type dim2_unit: pyFAI.units.Unit
         :param has_mask: a mask was used
         :param has_dark: a dark-current was applied
         :param has_flat: flat-field was applied
@@ -677,7 +680,11 @@ class DefaultAiWriter(Writer):
         """
         if fabio is None:
             raise RuntimeError("FabIO module is needed to save images")
-        dim1_unit = units.to_unit(dim1_unit)
+        if dim2_unit == "chi_deg" and isinstance(dim1_unit, (tuple, list)) and len(dim1_unit) == 2:
+            dim1_unit,dim2_unit = (units.to_unit(i) for i in dim1_unit)
+        else:
+            dim1_unit = units.to_unit(dim1_unit)
+            dim2_unit = units.to_unit(dim2_unit)
 
         # Remove \n and \t)
         engine_info = " ".join(str(self._engine).split())
@@ -687,11 +694,10 @@ class DefaultAiWriter(Writer):
         if "make_headers" in dir(self._engine):
             header.update(self._engine.make_headers("dict"))
 
-        header[dim1_unit.name + "_min"] = str(dim1.min())
-        header[dim1_unit.name + "_max"] = str(dim1.max())
-
-        header["chi_min"] = str(dim2.min())
-        header["chi_max"] = str(dim2.max())
+        header[f"{dim1_unit.name}_min"] = str(dim1.min())
+        header[f"{dim1_unit.name}_max"] = str(dim1.max())
+        header[f"{dim2_unit.name}_min"] = str(dim2.min())
+        header[f"{dim2_unit.name}_min"] = str(dim2.max())
 
         header["has_mask_applied"] = str(has_mask)
         header["has_dark_correction"] = str(has_dark)
