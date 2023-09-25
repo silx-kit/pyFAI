@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2023"
+__date__ = "25/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -99,14 +99,7 @@ class Unit(object):
         self._equation = equation
         self.formula = formula
         if (numexpr is not None) and isinstance(formula, str):
-            signature = [("x", numpy.float64),
-                         ("y", numpy.float64), ]
-            if "z" in formula:
-                signature.append(("z", numpy.float64))
-            if "λ" in formula:
-                signature.append(("λ", numpy.float64))
-            if "π" in formula:
-                signature.append(("π", numpy.float64))
+            signature = [(key, numpy.float64) for key in "xyzλπ" if key in formula]
             ne_formula = numexpr.NumExpr(formula, signature)
 
             def ne_equation(x, y, z=None, wavelength=None, ne_formula=ne_formula):
@@ -142,12 +135,17 @@ class Unit(object):
 
 
 RADIAL_UNITS = {}
-
+AZIMUTHAL_UNITS = {}
 
 def register_radial_unit(name, scale=1, label=None, equation=None, formula=None,
                          center=None, corner=None, delta=None, short_name=None, unit_symbol=None):
     RADIAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
                               corner, delta, short_name, unit_symbol)
+
+def register_azimuthal_unit(name, scale=1, label=None, equation=None, formula=None,
+                         center=None, corner=None, delta=None, short_name=None, unit_symbol=None):
+    AZIMUTHAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
+                                 corner, delta, short_name, unit_symbol)
 
 
 def eq_r(x, y, z=None, wavelength=None):
@@ -187,6 +185,8 @@ formula_r = "sqrt(x * x + y * y)"
 formula_2th = "arctan2(sqrt(x * x + y * y), z)"
 formula_q = "4.0e-9*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0)"
 formula_d2 = "(2.0e-9/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))**2"
+formula_qx = "4.0e-9*π/λ*sin(arctan2(abs(x), z)/2.0)"
+formula_qy = "4.0e-9*π/λ*sin(arctan2(abs(y), z)/2.0)"
 
 register_radial_unit("r_mm",
                      center="rArray",
@@ -315,6 +315,21 @@ register_radial_unit("arcsinh(q.A)_None",
                      short_name=r"arcsinh(q.\AA)",
                      unit_symbol="?")
 
+register_radial_unit("qx_nm^-1",
+                     scale=1.0,
+                     label=r"Scattering vector along x $q_x$ ($nm^{-1}$)",
+                     formula=formula_qx,
+                     short_name="qx",
+                     unit_symbol="nm^{-1}")
+
+register_radial_unit("qy_nm^-1",
+                     scale=1.0,
+                     label=r"Scattering vector along x $q_y$ ($nm^{-1}$)",
+                     formula=formula_qy,
+                     short_name="qy",
+                     unit_symbol="nm^{-1}")
+
+
 LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),
                 "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)"),
                 "cm": Unit("cm", scale=1e2, label=r"length $l$ ($cm$)"),
@@ -327,8 +342,10 @@ ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o
                "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)"),
                }
 
-AZIMUTHAL_UNITS = {"chi_rad": Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)"),
-                   "chi_deg": Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)")}
+AZIMUTHAL_UNITS["chi_rad"] = Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)")
+AZIMUTHAL_UNITS["chi_deg"] = Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)")
+AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
+AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
 
 
 def to_unit(obj, type_=None):
