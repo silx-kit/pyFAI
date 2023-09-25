@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/05/2023"
+__date__ = "25/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1046,8 +1046,8 @@ class Geometry(object):
         :type shape: ndarray.shape
         :param typ: "center", "corner" or "delta"
         :type typ: str
-        :param unit: can be Q, TTH, R for now
-        :type unit: pyFAI.units.Enum
+        :param unit: can be any valid unit (see units.ANY_UNITS)
+        :type unit: pyFAI.units.Unit or 2-tuple of them (valid only for corner coordinates calculation
         :param scale: set to False for returning the internal representation
                 (S.I. often) which is faster
         :return: R, Q or 2Theta array depending on unit
@@ -1062,7 +1062,12 @@ class Geometry(object):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
-        unit = to_unit(unit)
+        if typ == "corner" and isinstance(unit, (tuple,list)) and len(unit)==2:
+            units = (to_unit(unit[0]),to_unit(unit[1]))
+            unit = units[0]
+        else:
+            units = None
+            unit = to_unit(unit)
         meth_name = unit.get(typ)
         if meth_name and meth_name in dir(Geometry):
             # fast path may be available
@@ -1074,9 +1079,17 @@ class Geometry(object):
             if typ == "center":
                 out = self.center_array(shape, unit, scale=scale)
             elif typ == "corner":
-                out = self.corner_array(shape, unit, scale=scale)
-            else:  # typ == "delta":
+                if units is None:
+                    out = self.corner_array(shape, unit, scale=scale)
+                else:
+                    out0 = self.corner_array(shape, units[0], scale=scale)
+                    out1 = self.corner_array(shape, units[1], scale=scale)
+                    out = out0
+                    out[..., 1] = out1[..., 0]
+            elif typ == "delta":
                 out = self.delta_array(shape, unit, scale=scale)
+            else:
+                logger.error("Unsupported")
         return out
 
     def sin_incidence(self, d1, d2, path="cython"):

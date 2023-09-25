@@ -183,6 +183,7 @@ def eq_q(x, y, z, wavelength):
 
 formula_r = "sqrt(x * x + y * y)"
 formula_2th = "arctan2(sqrt(x * x + y * y), z)"
+formula_chi = "arctan2(y, x)"
 formula_q = "4.0e-9*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0)"
 formula_d2 = "(2.0e-9/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))**2"
 formula_qx = "4.0e-9*π/λ*sin(arctan2(abs(x), z)/2.0)"
@@ -342,15 +343,17 @@ ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o
                "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)"),
                }
 
-AZIMUTHAL_UNITS["chi_rad"] = Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)")
-AZIMUTHAL_UNITS["chi_deg"] = Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)")
+AZIMUTHAL_UNITS["chi_rad"] = Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)", formula=formula_chi)
+AZIMUTHAL_UNITS["chi_deg"] = Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)", formula=formula_chi)
 AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
 AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
-
+ANY_UNITS = {}
+ANY_UNITS.update(RADIAL_UNITS)
+ANY_UNITS.update(AZIMUTHAL_UNITS)
 
 def to_unit(obj, type_=None):
     if type_ is None:
-        type_ = RADIAL_UNITS
+        type_ = ANY_UNITS
     rad_unit = None
     if isinstance(obj, (str,)):
         rad_unit = type_.get(obj)

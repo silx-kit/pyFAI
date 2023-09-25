@@ -516,17 +516,18 @@ class Integrate2dResult(IntegrateResult):
 
         :rtype: string
         """
-        deprecated_warning("Property", "unit", replacement="radial_unit", since_version="2023.09", only_once=True)
-        return self._radial_unit
+        return self._radial_unit, self.azimuthal_unit
 
     def _set_unit(self, unit):
         """Define the radial unit
 
         :type unit: str
         """
-        deprecated_warning("Function", "_set_unit", replacement="_set_radial_unit", since_version="2023.09", only_once=True)
-
-        self._radial_unit = unit
+        deprecated_warning("Function", "_set_unit", replacement="_set_radial_unit/_set_azimuthal_unit", since_version="2023.09", only_once=True)
+        if isinstance(unit, (tuple, list)) and len(unit) == 2:
+            self._radial_unit, self.azimuthal_unit = unit
+        else:
+            self._radial_unit = unit
 
     @property
     def radial_unit(self):
