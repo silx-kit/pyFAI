@@ -720,7 +720,6 @@ class Geometry(object):
             unit = to_unit(unit)
             space = unit.space
             requested_unit = unit
-        print(space)
         if unit is None or space=="chi":
             # If no unit is asked, any is OK for extracting the Chi array
             unit = None
