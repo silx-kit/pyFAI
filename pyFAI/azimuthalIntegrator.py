@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/09/2023"
+__date__ = "26/09/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -253,11 +253,17 @@ class AzimuthalIntegrator(Geometry):
 
         if radial_range is not None:
             assert unit, "unit is needed when building a mask based on radial_range"
-            rad = self.array_from_unit(shape, "center", unit, scale=False)
+            if isinstance(unit, (tuple, list)) and len(unit)==2:
+                radial_unit = units.to_unit(unit[0])
+            else:
+                radial_unit = units.to_unit(unit)
+            rad = self.array_from_unit(shape, "center", radial_unit, scale=False)
             logical_or(mask, rad < radial_range[0], out=mask)
             logical_or(mask, rad > radial_range[1], out=mask)
         if azimuth_range is not None:
-            chi = self.chiArray(shape)
+            if isinstance(unit, (tuple, list)) and len(unit)==2:
+                azimuth_unit = units.to_unit(unit[1])
+            chi = self.array_from_unit(shape, "center", azimuth_unit, scale=False)
             logical_or(mask, chi < azimuth_range[0], out=mask)
             logical_or(mask, chi > azimuth_range[1], out=mask)
 
@@ -2167,6 +2173,7 @@ class AzimuthalIntegrator(Geometry):
         radial_unit = units.to_unit(radial_unit, units.RADIAL_UNITS)
         azimuth_unit = units.to_unit(azimuth_unit, units.AZIMUTHAL_UNITS)
         unit = (radial_unit, azimuth_unit)
+        space = (radial_unit.space, azimuth_unit.space)
         pos0_scale = radial_unit.scale
         pos1_scale = azimuth_unit.scale
         empty = dummy if dummy is not None else self._empty
@@ -2246,14 +2253,14 @@ class AzimuthalIntegrator(Geometry):
                 if cython_integr is None:
                     cython_reset = "of first initialization"
                 if (not cython_reset) and safe:
-                    if cython_integr.unit != unit:
-                        cython_reset = "unit was changed"
+                    if cython_integr.space != space:
+                        cython_reset = f"unit {cython_integr.unit} incompatible with requested {unit}"
                     if cython_integr.bins != npt:
-                        cython_reset = "number of points changed"
+                        cython_reset = f"number of points {cython_integr.bins} incompatible with requested {npt}"
                     if cython_integr.size != data.size:
-                        cython_reset = "input image size changed"
+                        cython_reset = f"input image size {cython_integr.size} incompatible with requested {data.size}"
                     if cython_integr.empty != empty:
-                        cython_reset = "empty value changed"
+                        cython_reset = f"empty value {cython_integr.empty} incompatible with requested {empty}"
                     if (mask is not None) and (not cython_integr.check_mask):
                         cython_reset = f"mask but {method.algo_lower.upper()} was without mask"
                     elif (mask is None) and (cython_integr.cmask is not None):
@@ -2301,14 +2308,14 @@ class AzimuthalIntegrator(Geometry):
                     if integr is None:
                         reset = "init"
                     if (not reset) and safe:
-                        if integr.unit != radial_unit:
-                            reset = "unit changed"
+                        if integr.space != space:
+                            reset = f"unit {integr.unit} incompatible with requested {unit}"
                         if integr.bins != npt:
-                            reset = "number of points changed"
+                            reset = f"number of points {integr.bins} incompatible with requested {npt}"
                         if integr.size != data.size:
-                            reset = "input image size changed"
+                            reset = f"input image size {integr.size} incompatible with requested {data.size}"
                         if integr.empty != empty:
-                            reset = "empty value changed"
+                            reset = f"empty value {integr.empty} incompatible with requested {empty}"
                         if (mask is not None) and (not integr.check_mask):
                             reset = "mask but CSR was without mask"
                         elif (mask is None) and (integr.check_mask):
@@ -2331,7 +2338,7 @@ class AzimuthalIntegrator(Geometry):
                             cython_integr = self.setup_sparse_integrator(shape, npt, mask,
                                                                          radial_range, azimuth_range,
                                                                          mask_checksum=mask_crc,
-                                                                         unit=radial_unit, split=split, algo=method.algo_lower,
+                                                                         unit=unit, split=split, algo=method.algo_lower,
                                                                          empty=empty, scale=False)
                         except MemoryError:
                             logger.warning("MemoryError: falling back on default implementation")
@@ -2404,7 +2411,7 @@ class AzimuthalIntegrator(Geometry):
         elif method.algo_lower == "histogram":
             if method.split_lower in ("pseudo", "full"):
                 logger.debug("integrate2d uses (full, histogram, cython) implementation")
-                pos = self.array_from_unit(shape, "corner", radial_unit, scale=False)
+                pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 integrator = method.class_funct_ng.function
                 intpl = integrator(pos=pos,
                                    weights=data,
@@ -2426,15 +2433,15 @@ class AzimuthalIntegrator(Geometry):
 
             elif method.split_lower == "bbox":
                 logger.debug("integrate2d uses BBox implementation")
-                chi = self.chiArray(shape)
-                dchi = self.deltaChi(shape)
                 pos0 = self.array_from_unit(shape, "center", radial_unit, scale=False)
                 dpos0 = self.array_from_unit(shape, "delta", radial_unit, scale=False)
+                pos1 = self.array_from_unit(shape, "center", azimuth_unit, scale=False)
+                dpos1 = self.array_from_unit(shape, "delta", azimuth_unit, scale=False)
                 intpl = splitBBox.histoBBox2d_ng(weights=data,
                                                  pos0=pos0,
                                                  delta_pos0=dpos0,
-                                                 pos1=chi,
-                                                 delta_pos1=dchi,
+                                                 pos1=pos1,
+                                                 delta_pos1=dpos1,
                                                  bins=(npt_rad, npt_azim),
                                                  pos0_range=radial_range,
                                                  pos1_range=azimuth_range,
@@ -2465,8 +2472,8 @@ class AzimuthalIntegrator(Geometry):
                         if integr is None:
                             reset = "init"
                         if (not reset) and safe:
-                            if integr.unit != radial_unit:
-                                reset = "unit changed"
+                            if integr.space != space:
+                                reset = f"unit {integr.unit} incompatible with requested {unit}"
                             if (integr.bins_radial, integr.bins_azimuthal) != npt:
                                 reset = "number of points changed"
                             if integr.size != data.size:
@@ -2477,25 +2484,25 @@ class AzimuthalIntegrator(Geometry):
                                 reset = "no mask but CSR has mask"
                             elif (mask is not None) and (integr.on_device.get("mask") != mask_crc):
                                 reset = "mask changed"
-                            if self._cached_array[unit.name.split("_")[0] + "_crc"] != integr.on_device.get("radial"):
+                            if self._cached_array[f"{radial_unit.space}_crc"] != integr.on_device.get("radial"):
                                 reset = "radial array changed"
-                            if self._cached_array["chi_crc"] != integr.on_device.get("azimuthal"):
+                            if self._cached_array[f"{azimuth_unit.space}_crc"] != integr.on_device.get("azimuthal"):
                                 reset = "azimuthal array changed"
                             # Nota: Ranges are enforced at runtime, not initialization
                         error = False
                         if reset:
                             logger.info("AI.integrate2d: Resetting OCL_Histogram2d integrator because %s", reset)
                             rad = self.array_from_unit(shape, typ="center", unit=radial_unit, scale=False)
-                            rad_crc = self._cached_array[radial_unit.name.split("_")[0] + "_crc"] = crc32(rad)
+                            rad_crc = self._cached_array[f"{radial_unit.space}_crc"] = crc32(rad)
                             azi = self.chiArray(shape)
-                            azi_crc = self._cached_array["chi_crc"] = crc32(azi)
+                            azi_crc = self._cached_array[f"{azimuth_unit.space}_crc"] = crc32(azi)
                             try:
                                 integr = method.class_funct_ng.klass(rad,
                                                                      azi,
                                                                      *npt,
                                                                      radial_checksum=rad_crc,
                                                                      azimuthal_checksum=azi_crc,
-                                                                     empty=empty, unit=radial_unit,
+                                                                     empty=empty, unit=unit,
                                                                      mask=mask, mask_checksum=mask_crc,
                                                                      platformid=method.target[0],
                                                                      deviceid=method.target[1]

@@ -715,7 +715,7 @@ class Geometry(object):
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
-        requested_unit = unit
+        requested_unit = space = unit
         if unit:
             unit = to_unit(unit)
             space = unit.space
