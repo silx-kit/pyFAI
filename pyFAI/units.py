@@ -319,14 +319,14 @@ register_radial_unit("arcsinh(q.A)_None",
 
 register_radial_unit("qx_nm^-1",
                      scale=1.0,
-                     label=r"Scattering vector along x $q_x$ ($nm^{-1}$)",
+                     label=r"Rectilinear scattering vector $q_x$ ($nm^{-1}$)",
                      formula=formula_qx,
                      short_name="qx",
                      unit_symbol="nm^{-1}")
 
 register_radial_unit("qy_nm^-1",
                      scale=1.0,
-                     label=r"Scattering vector along x $q_y$ ($nm^{-1}$)",
+                     label=r"Rectilinear scattering vector $q_y$ ($nm^{-1}$)",
                      formula=formula_qy,
                      short_name="qy",
                      unit_symbol="nm^{-1}")
