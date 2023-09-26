@@ -2365,7 +2365,7 @@ class AzimuthalIntegrator(Geometry):
                                                                      platformid=method.target[0],
                                                                      deviceid=method.target[1],
                                                                      checksum=cython_integr.lut_checksum,
-                                                                     unit=radial_unit, empty=empty,
+                                                                     unit=unit, empty=empty,
                                                                      mask_checksum=mask_crc
                                                                      )
 
@@ -2376,7 +2376,7 @@ class AzimuthalIntegrator(Geometry):
                                                                      bin_centers0=cython_integr.bin_centers0,
                                                                      bin_centers1=cython_integr.bin_centers1,
                                                                      checksum=cython_integr.lut_checksum,
-                                                                     unit=radial_unit, empty=empty,
+                                                                     unit=unit, empty=empty,
                                                                      mask_checksum=mask_crc)
                         integr.pos0_range = cython_integr.pos0_range
                         integr.pos1_range = cython_integr.pos1_range
@@ -2494,7 +2494,7 @@ class AzimuthalIntegrator(Geometry):
                             logger.info("AI.integrate2d: Resetting OCL_Histogram2d integrator because %s", reset)
                             rad = self.array_from_unit(shape, typ="center", unit=radial_unit, scale=False)
                             rad_crc = self._cached_array[f"{radial_unit.space}_crc"] = crc32(rad)
-                            azi = self.chiArray(shape)
+                            azi = self.array_from_unit(shape, typ="center", unit=azimuth_unit, scale=False)
                             azi_crc = self._cached_array[f"{azimuth_unit.space}_crc"] = crc32(azi)
                             try:
                                 integr = method.class_funct_ng.klass(rad,
@@ -2533,11 +2533,11 @@ class AzimuthalIntegrator(Geometry):
                 else:  # if method.impl_lower in ["python", "cython"]:
                     logger.debug("integrate2d uses [CP]ython histogram implementation")
                     radial = self.array_from_unit(shape, "center", radial_unit, scale=False)
-                    azim = self.chiArray(shape)
+                    azim = self.array_from_unit(shape, "center", azimuth_unit, scale=False)
                     if method.impl_lower == "python":
                         data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
                         mask = self.create_mask(data, mask, dummy, delta_dummy,
-                                                unit=radial_unit,
+                                                unit=unit,
                                                 radial_range=radial_range,
                                                 azimuth_range=azimuth_range,
                                                 mode="normal").ravel()
