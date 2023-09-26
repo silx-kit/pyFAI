@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/09/2023"
+__date__ = "26/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -91,6 +91,7 @@ class Unit(object):
         :param str unit_symbol: symbol used to display values of this unit
         """
         self.name = name
+        self.space = name.split("_")[0]  # used to idenfify compatible spaces.
         self.scale = scale
         self.label = label if label is not None else name
         self.corner = corner
