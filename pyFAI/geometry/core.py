@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/09/2023"
+__date__ = "26/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1063,10 +1063,10 @@ class Geometry(object):
                            " defaulting to 'center'" % typ)
             typ = "center"
         if typ == "corner" and isinstance(unit, (tuple,list)) and len(unit)==2:
-            units = (to_unit(unit[0]),to_unit(unit[1]))
-            unit = units[0]
+            unit2 = (to_unit(unit[0]),to_unit(unit[1]))
+            unit = unit2[0]
         else:
-            units = None
+            unit2 = None
             unit = to_unit(unit)
         meth_name = unit.get(typ)
         if meth_name and meth_name in dir(Geometry):
@@ -1079,13 +1079,13 @@ class Geometry(object):
             if typ == "center":
                 out = self.center_array(shape, unit, scale=scale)
             elif typ == "corner":
-                if units is None:
+                if unit2 is None:
                     out = self.corner_array(shape, unit, scale=scale)
                 else:
-                    out = self.corner_array(shape, units[0], scale=scale)
-                    if units[1] not in (units.CHI_DEG, units.CHI_RAD):
+                    out = self.corner_array(shape, unit2[0], scale=scale)
+                    if unit2[1] not in (units.CHI_DEG, units.CHI_RAD):
                         # shortcut
-                        out1 = self.corner_array(shape, units[1], scale=scale)
+                        out1 = self.corner_array(shape, unit2[1], scale=scale)
                         out[..., 1] = out1[..., 0]
             elif typ == "delta":
                 out = self.delta_array(shape, unit, scale=scale)
