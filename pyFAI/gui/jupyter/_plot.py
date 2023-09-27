@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2023"
+__date__ = "27/09/2023"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
@@ -70,7 +70,7 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
         colornorm = SymLogNorm(1, base=10,
                                vmin=numpy.nanmin(img),
                                vmax=numpy.nanmax(img))
-    except: # elder version of matplotlib <3.2 do not support the base kwarg.
+    except:  # elder version of matplotlib <3.2 do not support the base kwarg.
         colornorm = SymLogNorm(1,
                                vmin=numpy.nanmin(img),
                                vmax=numpy.nanmax(img))
@@ -156,8 +156,12 @@ def plot2d(result, calibrant=None, label=None, ax=None):
         ax.set_title("2D regrouping")
     else:
         ax.set_title(label)
-    ax.set_xlabel(result.unit.label)
-    ax.set_ylabel(r"Azimuthal angle $\chi$ ($^{o}$)")
+    if isinstance(result.unit, (list, tuple)) and len(result.unit) == 2:
+        ax.set_xlabel(result.unit[0].label)
+        ax.set_ylabel(result.unit[1].label)
+    else:
+        ax.set_xlabel(result.unit.label)
+        ax.set_ylabel(r"Azimuthal angle $\chi$ ($^{o}$)")
     if calibrant:
         from pyFAI import units
         x_values = None
