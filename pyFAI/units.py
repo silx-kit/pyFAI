@@ -343,20 +343,20 @@ register_radial_unit("qy_nm^-1",
                      positive=False)
 
 
-LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),
-                "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)"),
-                "cm": Unit("cm", scale=1e2, label=r"length $l$ ($cm$)"),
-                "micron": Unit("micron", scale=1e6, label=r"length $l$ ($\mu m$)"),
-                "nm": Unit("nm", scale=1e9, label=r"length $l$ ($nm$)"),
-                "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)"),
+LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)", positive=False),
+                "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)", positive=False),
+                "cm": Unit("cm", scale=1e2, label=r"length $l$ ($cm$)", positive=False),
+                "micron": Unit("micron", scale=1e6, label=r"length $l$ ($\mu m$)", positive=False),
+                "nm": Unit("nm", scale=1e9, label=r"length $l$ ($nm$)", positive=False),
+                "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)", positive=False),
                 }
 
-ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o}$)"),
-               "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)"),
+ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o}$)", positive=False),
+               "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)", positive=False),
                }
 
-AZIMUTHAL_UNITS["chi_rad"] = Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)", formula=formula_chi)
-AZIMUTHAL_UNITS["chi_deg"] = Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)", formula=formula_chi)
+AZIMUTHAL_UNITS["chi_rad"] = Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)", formula=formula_chi, positive=False)
+AZIMUTHAL_UNITS["chi_deg"] = Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)", formula=formula_chi, positive=False)
 AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
 AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
 ANY_UNITS = {}

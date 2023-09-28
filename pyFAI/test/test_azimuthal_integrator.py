@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "28/09/2023"
 
 import unittest
 import os
@@ -696,6 +696,41 @@ class TestRange(unittest.TestCase):
             logger.error(err_msg)
         self.assertEqual(len(failed), 0, f"Number of failed tests in test_variance_2d: {len(failed)}")
 
+
+class TestFlexible2D(unittest.TestCase):
+    """Test integration in non-azimuthal 2D unit"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.img = fabio.open(UtilsTest.getimage("moke.tif")).data
+        det = detector_factory("Detector", {"pixel1":1e-4,"pixel2":1e-4})
+        ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
+        ai.setFit2D(1000, 300, 300)
+        cls.ai = ai
+
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestFlexible2D, cls).tearDownClass()
+        cls.ai = cls.img = None
+
+    def test_flexible(self):
+        for m in IntegrationMethod.select_method(dim=2, impl="cython"):
+            try:
+                res = self.ai.integrate2d(self.img, 100, 100, method=m, unit=("qx_nm^-1", "qy_nm^-1"))
+            except:
+                print(m, "broken")
+            else:
+                img, rad, azim = res
+                print(m)
+                self.assertTrue(numpy.nanmax(img)>0, f"image is non empty for {m}")
+                radmax = rad.max()
+                radmin = rad.min()
+                self.assertTrue(1.8<radmax<2, f"Upper bound radial is  1.8<{radmax}<2")
+                self.assertTrue(-2<radmin<-1.8, f"Lower bound radial is  -2<{radmin}<-1.8")
+                azimax = azim.max()
+                azimin = azim.min()
+                self.assertTrue(1<azimax<2, f"Upper bound azimuthal is  1.8<{azimax}<2")
+                self.assertTrue(-2<azimin<-1, f"Lower bound azimuthal is  -2<{azimin}<-1.8")
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

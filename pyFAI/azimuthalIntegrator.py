@@ -402,21 +402,15 @@ class AzimuthalIntegrator(Geometry):
                 dpos0 = None
             else:
                 dpos0 = self.array_from_unit(shape, "delta", unit0, scale=False)
-            if (pos1_range is None) and (not int2d):
-                pos1 = None
-                dpos1 = None
-            else:
-                pos1 = self.chiArray(shape)
+
+            pos1 = None
+            dpos1 = None
+            if int2d or pos1_range:
+                pos1 = self.array_from_unit(shape, "delta", unit1, scale=False)
                 if split == "no":
                     dpos1 = None
                 else:
-                    dpos1 = self.deltaChi(shape)
-            if (pos1_range is None) and (not int2d):
-                pos1 = None
-                dpos1 = None
-            else:
-                pos1 = self.chiArray(shape)
-                dpos1 = self.deltaChi(shape)
+                    dpos1 = self.array_from_unit(shape, "delta", unit0, scale=False)
 
         if mask is None:
             mask_checksum = None
