@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/03/2023"
+__date__ = "28/09/2023"
 __status__ = "development"
 
 import logging
@@ -172,7 +172,9 @@ def histogram2d_engine(radial, azimuthal, bins,
                        dark_variance=None,
                        error_model=ErrorModel.NO,
                        radial_range=None,
-                       azimuth_range=None
+                       azimuth_range=None,
+                       allow_radial_neg=False,
+                       # bint chiDiscAtPi=1,
                        ):
     """Implementation of 2D rebinning engine using pure numpy histograms
 
@@ -193,6 +195,9 @@ def histogram2d_engine(radial, azimuthal, bins,
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
     :param error_model: set to "poisson" for assuming the detector is poissonian and variance = raw + dark
+    :param radial_range: enforce boundaries in radial dimention, 2tuple with lower and upper bound
+    :param azimuth_range: enforce boundaries in azimuthal dimention, 2tuple with lower and upper bound
+    :param allow_radial_neg: clip negative radial position (can a dimention be negative ?)
 
 
     NaN are always considered as invalid values
@@ -231,9 +236,12 @@ def histogram2d_engine(radial, azimuthal, bins,
     assert prep.shape[0] == azimuthal.size
     npt = tuple(max(1, i) for i in bins)
     if radial_range is None:
-        radial_range = [radial.min(), radial.max() * EPS32]
+        if allow_radial_neg:
+            radial_range = [radial.min(), radial.max() * EPS32]
+        else:
+            radial_range = [max(0, radial.min()), radial.max() * EPS32]
     if azimuth_range is None:
-        azimuth_range = [azimuthal.min(), azimuthal.max() * EPS32]
+            azimuth_range = [azimuthal.min(), azimuthal.max() * EPS32]
 
     rng = [radial_range, azimuth_range]
     histo_signal, _, _ = numpy.histogram2d(radial, azimuthal, npt, weights=prep[:, 0], range=rng)

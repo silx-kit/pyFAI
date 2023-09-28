@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/08/2023"
+__date__ = "28/09/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -321,7 +321,6 @@ class SplitBBoxIntegrator:
 
         #heap size is larger than the size of the image and a multiple of 1024 which can be divided by 8
         builder = SparseBuilder(bins1*bins0, block_size=8, heap_size=(size+1023)&~(1023))
-
         with nogil:
             for idx in range(size):
                 if (check_mask) and cmask[idx]:
