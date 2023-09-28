@@ -782,9 +782,6 @@ class Geometry(object):
                             else:
                                 corners = res
                     if corners is None:
-                        print(f"calculate corners for {unit}")
-                        # import traceback
-                        # traceback.print_stack()
                         # In case the fast-path is not implemented
                         pos = self.position_array(shape, corners=True)
                         x = pos[..., 2]
@@ -1088,7 +1085,6 @@ class Geometry(object):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
-        print("array_from_unit", typ, isinstance(unit, (tuple,list)), type(unit), unit)
         if typ == "corner" and isinstance(unit, (tuple,list)) and len(unit)==2:
             unit2 = tuple(to_unit(u) for u in unit)
             unit = unit2[0]
@@ -1106,7 +1102,6 @@ class Geometry(object):
             if typ == "center":
                 out = self.center_array(shape, unit, scale=scale)
             elif typ == "corner":
-                print(f"calculate corner array for {unit} {unit2}")
                 if unit2 is None:
                     out = self.corner_array(shape, unit, scale=scale)
                 else:

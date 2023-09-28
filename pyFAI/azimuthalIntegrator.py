@@ -2407,7 +2407,6 @@ class AzimuthalIntegrator(Geometry):
                 logger.debug("integrate2d uses (full, histogram, cython) implementation")
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 integrator = method.class_funct_ng.function
-                print(integrator, pos[...,0].min(), pos[...,0].max(), radial_range)
                 intpl = integrator(pos=pos,
                                    weights=data,
                                    bins=(npt_rad, npt_azim),
