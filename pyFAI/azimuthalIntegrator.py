@@ -2407,6 +2407,7 @@ class AzimuthalIntegrator(Geometry):
                 logger.debug("integrate2d uses (full, histogram, cython) implementation")
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 integrator = method.class_funct_ng.function
+                print(integrator, pos[...,0].min(), pos[...,0].max(), radial_range)
                 intpl = integrator(pos=pos,
                                    weights=data,
                                    bins=(npt_rad, npt_azim),
@@ -2423,7 +2424,8 @@ class AzimuthalIntegrator(Geometry):
                                    chiDiscAtPi=self.chiDiscAtPi,
                                    empty=empty,
                                    variance=variance,
-                                   error_model=error_model)
+                                   error_model=error_model,
+                                   allow_pos0_neg=not radial_unit.positive)
 
             elif method.split_lower == "bbox":
                 logger.debug("integrate2d uses BBox implementation")
@@ -2431,27 +2433,28 @@ class AzimuthalIntegrator(Geometry):
                 dpos0 = self.array_from_unit(shape, "delta", radial_unit, scale=False)
                 pos1 = self.array_from_unit(shape, "center", azimuth_unit, scale=False)
                 dpos1 = self.array_from_unit(shape, "delta", azimuth_unit, scale=False)
-                intpl = splitBBox.histoBBox2d_ng(weights=data,
-                                                 pos0=pos0,
-                                                 delta_pos0=dpos0,
-                                                 pos1=pos1,
-                                                 delta_pos1=dpos1,
-                                                 bins=(npt_rad, npt_azim),
-                                                 pos0_range=radial_range,
-                                                 pos1_range=azimuth_range,
-                                                 dummy=dummy,
-                                                 delta_dummy=delta_dummy,
-                                                 mask=mask,
-                                                 dark=dark,
-                                                 flat=flat,
-                                                 solidangle=solidangle,
-                                                 polarization=polarization,
-                                                 normalization_factor=normalization_factor,
-                                                 chiDiscAtPi=self.chiDiscAtPi,
-                                                 empty=empty,
-                                                 variance=variance,
-                                                 error_model=error_model,
-                                                 allow_pos0_neg=not radial_unit.positive,)
+                integrator = method.class_funct_ng.function
+                intpl = integrator(weights=data,
+                                     pos0=pos0,
+                                     delta_pos0=dpos0,
+                                     pos1=pos1,
+                                     delta_pos1=dpos1,
+                                     bins=(npt_rad, npt_azim),
+                                     pos0_range=radial_range,
+                                     pos1_range=azimuth_range,
+                                     dummy=dummy,
+                                     delta_dummy=delta_dummy,
+                                     mask=mask,
+                                     dark=dark,
+                                     flat=flat,
+                                     solidangle=solidangle,
+                                     polarization=polarization,
+                                     normalization_factor=normalization_factor,
+                                     chiDiscAtPi=self.chiDiscAtPi,
+                                     empty=empty,
+                                     variance=variance,
+                                     error_model=error_model,
+                                     allow_pos0_neg=not radial_unit.positive,)
             elif method.split_lower == "no":
                 if method.impl_lower == "opencl":
                     logger.debug("integrate2d uses OpenCL histogram implementation")
