@@ -2450,7 +2450,8 @@ class AzimuthalIntegrator(Geometry):
                                                  chiDiscAtPi=self.chiDiscAtPi,
                                                  empty=empty,
                                                  variance=variance,
-                                                 error_model=error_model)
+                                                 error_model=error_model,
+                                                 allow_pos0_neg=not radial_unit.positive,)
             elif method.split_lower == "no":
                 if method.impl_lower == "opencl":
                     logger.debug("integrate2d uses OpenCL histogram implementation")

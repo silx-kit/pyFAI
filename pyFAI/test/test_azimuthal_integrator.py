@@ -714,7 +714,7 @@ class TestFlexible2D(unittest.TestCase):
         cls.ai = cls.img = None
 
     def test_flexible(self):
-        for m in IntegrationMethod.select_method(dim=2, impl="cython"):
+        for m in IntegrationMethod.select_method(dim=2):#, impl="cython"):
             try:
                 res = self.ai.integrate2d(self.img, 100, 100, method=m, unit=("qx_nm^-1", "qy_nm^-1"))
             except:
