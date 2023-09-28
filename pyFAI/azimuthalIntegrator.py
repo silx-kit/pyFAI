@@ -406,11 +406,11 @@ class AzimuthalIntegrator(Geometry):
             pos1 = None
             dpos1 = None
             if int2d or pos1_range:
-                pos1 = self.array_from_unit(shape, "delta", unit1, scale=False)
+                pos1 = self.array_from_unit(shape, "center", unit1, scale=False)
                 if split == "no":
                     dpos1 = None
                 else:
-                    dpos1 = self.array_from_unit(shape, "delta", unit0, scale=False)
+                    dpos1 = self.array_from_unit(shape, "delta", unit1, scale=False)
 
         if mask is None:
             mask_checksum = None
@@ -2563,7 +2563,7 @@ class AzimuthalIntegrator(Geometry):
                                          error_model=error_model,
                                          radial_range=radial_range,
                                          azimuth_range=azimuth_range,
-                                         allow_pos0_neg=not radial_unit.positive,)
+                                         allow_radial_neg=not radial_unit.positive,)
 
         I = intpl.intensity
         bins_azim = intpl.azimuthal

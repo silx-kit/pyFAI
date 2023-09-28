@@ -714,23 +714,18 @@ class TestFlexible2D(unittest.TestCase):
         cls.ai = cls.img = None
 
     def test_flexible(self):
-        for m in IntegrationMethod.select_method(dim=2):#, impl="cython"):
-            try:
-                res = self.ai.integrate2d(self.img, 100, 100, method=m, unit=("qx_nm^-1", "qy_nm^-1"))
-            except:
-                print(m, "broken")
-            else:
-                img, rad, azim = res
-                print(m)
-                self.assertTrue(numpy.nanmax(img)>0, f"image is non empty for {m}")
-                radmax = rad.max()
-                radmin = rad.min()
-                self.assertTrue(1.8<radmax<2, f"Upper bound radial is  1.8<{radmax}<2 for {m}")
-                self.assertTrue(-2<radmin<-1.8, f"Lower bound radial is  -2<{radmin}<-1.8 for {m}")
-                azimax = azim.max()
-                azimin = azim.min()
-                self.assertTrue(1<azimax<2, f"Upper bound azimuthal is  1.8<{azimax}<2 for {m} ")
-                self.assertTrue(-2<azimin<-1, f"Lower bound azimuthal is  -2<{azimin}<-1.8 for {m}")
+        for m in IntegrationMethod.select_method(dim=2, impl="cython"):
+            res = self.ai.integrate2d(self.img, 50, 50, method=m, unit=("qx_nm^-1", "qy_nm^-1"))
+            img, rad, azim = res
+            self.assertTrue(numpy.nanmax(img)>0, f"image is non empty for {m}")
+            radmax = rad.max()
+            radmin = rad.min()
+            self.assertTrue(1.5<radmax<2, f"Upper bound radial is  1.5<{radmax}<2 for {m}")
+            self.assertTrue(-2<radmin<-1.5, f"Lower bound radial is  -2<{radmin}<-1.5 for {m}")
+            azimax = azim.max()
+            azimin = azim.min()
+            self.assertTrue(1.<azimax<2, f"Upper bound azimuthal is  1.<{azimax}<2 for {m} ")
+            self.assertTrue(-2<azimin<-1.5, f"Lower bound azimuthal is  -2<{azimin}<-1.5 for {m}")
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

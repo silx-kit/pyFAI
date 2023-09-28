@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/08/2023"
+__date__ = "28/09/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -54,6 +54,7 @@ elif logging.root.level >= logging.INFO:
     NUM_WARNING = 100
 else:
     NUM_WARNING = 10000
+
 
 def calc_boundaries(position_t[:, :, ::1] cpos,
                     mask_t[::1] cmask=None,

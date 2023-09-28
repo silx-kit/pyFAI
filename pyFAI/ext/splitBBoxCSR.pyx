@@ -37,7 +37,7 @@ reverse implementation based on a sparse matrix multiplication
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/09/2023"
+__date__ = "28/09/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -53,6 +53,7 @@ import numpy
 from ..utils import crc32
 from ..utils.decorators import deprecated
 from .splitBBox_common import SplitBBoxIntegrator
+
 
 class HistoBBox1d(CsrIntegrator, SplitBBoxIntegrator):
     """
