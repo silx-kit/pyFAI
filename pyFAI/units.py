@@ -76,7 +76,7 @@ class Unit(object):
 
     def __init__(self, name, scale=1, label=None, equation=None, formula=None,
                  center=None, corner=None, delta=None, short_name=None, unit_symbol=None,
-                 positive=True):
+                 positive=True, period=None):
         """Constructor of a unit.
 
         :param str name: name of the unit
@@ -91,6 +91,7 @@ class Unit(object):
         :param str center: name of the fast-path function
         :param str unit_symbol: symbol used to display values of this unit
         :param bool positive: this value can only be positive
+        :param period: None or the periodicity of the unit (angles are periodic)
         """
         self.name = name
         self.space = name.split("_")[0]  # used to idenfify compatible spaces.
@@ -118,6 +119,7 @@ class Unit(object):
         self.short_name = short_name
         self.unit_symbol = unit_symbol
         self.positive = positive
+        self.period = period
 
     def get(self, key):
         """Mimics the dictionary interface
@@ -351,8 +353,8 @@ LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)", positive=Fal
                 "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)", positive=False),
                 }
 
-ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o}$)", positive=False),
-               "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)", positive=False),
+ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o}$)", positive=False, period=360),
+               "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)", positive=False, period=2*numpy.pi),
                }
 
 AZIMUTHAL_UNITS["chi_rad"] = Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)", formula=formula_chi, positive=False)

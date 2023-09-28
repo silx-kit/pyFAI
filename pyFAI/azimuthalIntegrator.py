@@ -2199,7 +2199,7 @@ class AzimuthalIntegrator(Geometry):
             else:
                 variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
 
-        if azimuth_range is not None:
+        if azimuth_range is not None and azimuth_unit.period:
             azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
