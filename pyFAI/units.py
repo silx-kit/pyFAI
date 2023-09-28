@@ -374,8 +374,6 @@ def to_unit(obj, type_=None):
     # elif isinstance(obj, (list, tuple)) and len(obj) == 2:
     #     rad_unit = tuple(to_unit(i) for i in obj)
     if rad_unit is None:
-        import traceback
-        traceback.print_stack()
         logger.error("Unable to recognize this type unit '%s' of type %s. "
                      "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_])))
     return rad_unit
