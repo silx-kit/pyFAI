@@ -705,7 +705,7 @@ class TestFlexible2D(unittest.TestCase):
         cls.img = fabio.open(UtilsTest.getimage("moke.tif")).data
         det = detector_factory("Detector", {"pixel1":1e-4,"pixel2":1e-4})
         ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
-        ai.setFit2D(1000, 300, 300)
+        ai.setFit2D(100, 300, 300)
         cls.ai = ai
 
     @classmethod
@@ -720,12 +720,12 @@ class TestFlexible2D(unittest.TestCase):
             self.assertTrue(numpy.nanmax(img)>0, f"image is non empty for {m}")
             radmax = rad.max()
             radmin = rad.min()
-            self.assertTrue(1.5<radmax<2, f"Upper bound radial is  1.5<{radmax}<2 for {m}")
-            self.assertTrue(-2<radmin<-1.5, f"Lower bound radial is  -2<{radmin}<-1.5 for {m}")
+            self.assertTrue(15<radmax<20, f"Upper bound radial is  15<{radmax}<20 for {m}")
+            self.assertTrue(-20<radmin<-15, f"Lower bound radial is  -20<{radmin}<-15 for {m}")
             azimax = azim.max()
             azimin = azim.min()
-            self.assertTrue(1.<azimax<2, f"Upper bound azimuthal is  1.<{azimax}<2 for {m} ")
-            self.assertTrue(-2<azimin<-1.5, f"Lower bound azimuthal is  -2<{azimin}<-1.5 for {m}")
+            self.assertTrue(10<azimax<20, f"Upper bound azimuthal is  10<{azimax}<20 for {m} ")
+            self.assertTrue(-20<azimin<-15, f"Lower bound azimuthal is  -20<{azimin}<-15 for {m}")
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
