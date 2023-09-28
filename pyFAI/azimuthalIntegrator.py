@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2023"
+__date__ = "28/09/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -432,7 +432,7 @@ class AzimuthalIntegrator(Geometry):
                                                     pos1_range=pos1_range,
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
-                                                    allow_pos0_neg=False,
+                                                    allow_pos0_neg=not unit0.positive,
                                                     unit=unit,
                                                     chiDiscAtPi=self.chiDiscAtPi,
                                                     empty=empty)
@@ -443,7 +443,7 @@ class AzimuthalIntegrator(Geometry):
                                                                  pos1_range=pos1_range,
                                                                  mask=mask,
                                                                  mask_checksum=mask_checksum,
-                                                                 allow_pos0_neg=False,
+                                                                 allow_pos0_neg=not unit0.positive,
                                                                  unit=unit,
                                                                  empty=empty)
             else:
@@ -454,7 +454,7 @@ class AzimuthalIntegrator(Geometry):
                                                     pos1_range=pos1_range,
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
-                                                    allow_pos0_neg=False,
+                                                    allow_pos0_neg=not unit0.positive,
                                                     unit=unit,
                                                     empty=empty)
                 else:
@@ -464,7 +464,7 @@ class AzimuthalIntegrator(Geometry):
                                                     pos1_range=pos1_range,
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
-                                                    allow_pos0_neg=False,
+                                                    allow_pos0_neg=not unit0.positive,
                                                     unit=unit,
                                                     empty=empty)
         elif algo == "CSR":
@@ -476,7 +476,7 @@ class AzimuthalIntegrator(Geometry):
                                                              pos1_range=pos1_range,
                                                              mask=mask,
                                                              mask_checksum=mask_checksum,
-                                                             allow_pos0_neg=False,
+                                                             allow_pos0_neg=not unit0.positive,
                                                              unit=unit,
                                                              chiDiscAtPi=self.chiDiscAtPi,
                                                              empty=empty)
@@ -487,7 +487,7 @@ class AzimuthalIntegrator(Geometry):
                                                              pos1_range=pos1_range,
                                                              mask=mask,
                                                              mask_checksum=mask_checksum,
-                                                             allow_pos0_neg=False,
+                                                             allow_pos0_neg=not unit0.positive,
                                                              unit=unit,
                                                              empty=empty)
             else:
@@ -498,7 +498,7 @@ class AzimuthalIntegrator(Geometry):
                                                     pos1_range=pos1_range,
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
-                                                    allow_pos0_neg=False,
+                                                    allow_pos0_neg=not unit0.positive,
                                                     unit=unit,
                                                     empty=empty)
                 else:
@@ -508,7 +508,7 @@ class AzimuthalIntegrator(Geometry):
                                                     pos1_range=pos1_range,
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
-                                                    allow_pos0_neg=False,
+                                                    allow_pos0_neg=not unit0.positive,
                                                     unit=unit,
                                                     empty=empty)
         elif algo == "CSC":
@@ -520,7 +520,7 @@ class AzimuthalIntegrator(Geometry):
                                                              pos1_range=pos1_range,
                                                              mask=mask,
                                                              mask_checksum=mask_checksum,
-                                                             allow_pos0_neg=False,
+                                                             allow_pos0_neg=not unit0.positive,
                                                              unit=unit,
                                                              chiDiscAtPi=self.chiDiscAtPi,
                                                              empty=empty)
@@ -531,7 +531,7 @@ class AzimuthalIntegrator(Geometry):
                                                              pos1_range=pos1_range,
                                                              mask=mask,
                                                              mask_checksum=mask_checksum,
-                                                             allow_pos0_neg=False,
+                                                             allow_pos0_neg=not unit0.positive,
                                                              unit=unit,
                                                              empty=empty)
             else:
@@ -542,7 +542,7 @@ class AzimuthalIntegrator(Geometry):
                                                     pos1_range=pos1_range,
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
-                                                    allow_pos0_neg=False,
+                                                    allow_pos0_neg=not unit0.positive,
                                                     unit=unit,
                                                     empty=empty)
                 else:
@@ -552,7 +552,7 @@ class AzimuthalIntegrator(Geometry):
                                                     pos1_range=pos1_range,
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
-                                                    allow_pos0_neg=False,
+                                                    allow_pos0_neg=not unit0.positive,
                                                     unit=unit,
                                                     empty=empty)
 
@@ -2284,7 +2284,7 @@ class AzimuthalIntegrator(Geometry):
                         cython_integr = self.setup_sparse_integrator(shape, npt, mask,
                                                                      radial_range, azimuth_range,
                                                                      mask_checksum=mask_crc,
-                                                                     unit=radial_unit, split=split, algo=method.algo_lower,
+                                                                     unit=unit, split=split, algo=method.algo_lower,
                                                                      empty=empty, scale=False)
                     except MemoryError:  # sparse method are hungry...
                         logger.warning("MemoryError: falling back on forward implementation")

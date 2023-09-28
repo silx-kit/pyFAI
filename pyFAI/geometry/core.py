@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2023"
+__date__ = "28/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -783,8 +783,8 @@ class Geometry(object):
                                 corners = res
                     if corners is None:
                         print(f"calculate corners for {unit}")
-                        import traceback
-                        traceback.print_stack()
+                        # import traceback
+                        # traceback.print_stack()
                         # In case the fast-path is not implemented
                         pos = self.position_array(shape, corners=True)
                         x = pos[..., 2]
@@ -1088,8 +1088,9 @@ class Geometry(object):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
+        print("array_from_unit", typ, isinstance(unit, (tuple,list)), type(unit), unit)
         if typ == "corner" and isinstance(unit, (tuple,list)) and len(unit)==2:
-            unit2 = (to_unit(unit[0]),to_unit(unit[1]))
+            unit2 = tuple(to_unit(u) for u in unit)
             unit = unit2[0]
         else:
             unit2 = None

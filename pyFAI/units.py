@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2023"
+__date__ = "28/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -75,7 +75,8 @@ class Unit(object):
     """
 
     def __init__(self, name, scale=1, label=None, equation=None, formula=None,
-                 center=None, corner=None, delta=None, short_name=None, unit_symbol=None):
+                 center=None, corner=None, delta=None, short_name=None, unit_symbol=None,
+                 positive=True):
         """Constructor of a unit.
 
         :param str name: name of the unit
@@ -89,6 +90,7 @@ class Unit(object):
                        Valid variable names are `x`, `y`, `z`, `λ` and the constant `π`
         :param str center: name of the fast-path function
         :param str unit_symbol: symbol used to display values of this unit
+        :param bool positive: this value can only be positive
         """
         self.name = name
         self.space = name.split("_")[0]  # used to idenfify compatible spaces.
@@ -115,6 +117,7 @@ class Unit(object):
             self.equation = self._equation
         self.short_name = short_name
         self.unit_symbol = unit_symbol
+        self.positive = positive
 
     def get(self, key):
         """Mimics the dictionary interface
@@ -139,14 +142,14 @@ RADIAL_UNITS = {}
 AZIMUTHAL_UNITS = {}
 
 def register_radial_unit(name, scale=1, label=None, equation=None, formula=None,
-                         center=None, corner=None, delta=None, short_name=None, unit_symbol=None):
+                         center=None, corner=None, delta=None, short_name=None, unit_symbol=None, positive=True):
     RADIAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
-                              corner, delta, short_name, unit_symbol)
+                              corner, delta, short_name, unit_symbol, positive)
 
 def register_azimuthal_unit(name, scale=1, label=None, equation=None, formula=None,
-                         center=None, corner=None, delta=None, short_name=None, unit_symbol=None):
+                         center=None, corner=None, delta=None, short_name=None, unit_symbol=None, positive=False):
     AZIMUTHAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
-                                 corner, delta, short_name, unit_symbol)
+                                 corner, delta, short_name, unit_symbol, positive)
 
 
 def eq_r(x, y, z=None, wavelength=None):
@@ -187,8 +190,8 @@ formula_2th = "arctan2(sqrt(x * x + y * y), z)"
 formula_chi = "arctan2(y, x)"
 formula_q = "4.0e-9*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0)"
 formula_d2 = "(2.0e-9/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))**2"
-formula_qx = "4.0e-9*π/λ*sin(arctan2(abs(x), z)/2.0)"
-formula_qy = "4.0e-9*π/λ*sin(arctan2(abs(y), z)/2.0)"
+formula_qx = "4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"
+formula_qy = "4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"
 
 register_radial_unit("r_mm",
                      center="rArray",
@@ -275,7 +278,8 @@ register_radial_unit("log10(q.m)_None",
                      equation=lambda x, y, z, wavelength: numpy.log10(1e9 * eq_q(x, y, z, wavelength)),
                      formula="log10(4e-9*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))",
                      short_name="log10(q.m)",
-                     unit_symbol="?")
+                     unit_symbol="?",
+                     positive=False)
 
 register_radial_unit("log(q.nm)_None",
                      scale=1.0,
@@ -283,7 +287,8 @@ register_radial_unit("log(q.nm)_None",
                      equation=lambda x, y, z, wavelength: numpy.log(eq_q(x, y, z, wavelength)),
                      formula="log(4e-9*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))",
                      short_name="log(q.nm)",
-                     unit_symbol="?")
+                     unit_symbol="?",
+                     positive=False)
 
 register_radial_unit("log(1+q.nm)_None",
                      scale=1.0,
@@ -291,7 +296,8 @@ register_radial_unit("log(1+q.nm)_None",
                      equation=lambda x, y, z, wavelength: numpy.log1p(eq_q(x, y, z, wavelength)),
                      formula="log1p(4e-9*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))",
                      short_name="log(1+q.nm)",
-                     unit_symbol="?")
+                     unit_symbol="?",
+                     positive=True)
 
 register_radial_unit("log(1+q.A)_None",
                      scale=1.0,
@@ -299,7 +305,8 @@ register_radial_unit("log(1+q.A)_None",
                      equation=lambda x, y, z, wavelength: numpy.log1p(0.1 * eq_q(x, y, z, wavelength)),
                      formula="log1p(4e-10*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))",
                      short_name=r"log(1+q.\AA)",
-                     unit_symbol="?")
+                     unit_symbol="?",
+                     positive=True)
 
 register_radial_unit("arcsinh(q.nm)_None",
                      scale=1.0,
@@ -307,7 +314,8 @@ register_radial_unit("arcsinh(q.nm)_None",
                      equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength)),
                      formula="arcsinh(4e-9*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))",
                      short_name="arcsinh(q.nm)",
-                     unit_symbol="?")
+                     unit_symbol="?",
+                     positive=True)
 
 register_radial_unit("arcsinh(q.A)_None",
                      scale=1.0,
@@ -315,21 +323,24 @@ register_radial_unit("arcsinh(q.A)_None",
                      equation=lambda x, y, z, wavelength: numpy.arcsinh(0.1 * eq_q(x, y, z, wavelength)),
                      formula="arcsinh(4e-10*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))",
                      short_name=r"arcsinh(q.\AA)",
-                     unit_symbol="?")
+                     unit_symbol="?",
+                     positive=True)
 
 register_radial_unit("qx_nm^-1",
                      scale=1.0,
                      label=r"Rectilinear scattering vector $q_x$ ($nm^{-1}$)",
                      formula=formula_qx,
                      short_name="qx",
-                     unit_symbol="nm^{-1}")
+                     unit_symbol="nm^{-1}",
+                     positive=False)
 
 register_radial_unit("qy_nm^-1",
                      scale=1.0,
                      label=r"Rectilinear scattering vector $q_y$ ($nm^{-1}$)",
                      formula=formula_qy,
                      short_name="qy",
-                     unit_symbol="nm^{-1}")
+                     unit_symbol="nm^{-1}",
+                     positive=False)
 
 
 LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),
@@ -360,7 +371,11 @@ def to_unit(obj, type_=None):
         rad_unit = type_.get(obj)
     elif isinstance(obj, Unit):
         rad_unit = obj
+    # elif isinstance(obj, (list, tuple)) and len(obj) == 2:
+    #     rad_unit = tuple(to_unit(i) for i in obj)
     if rad_unit is None:
+        import traceback
+        traceback.print_stack()
         logger.error("Unable to recognize this type unit '%s' of type %s. "
                      "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_])))
     return rad_unit
