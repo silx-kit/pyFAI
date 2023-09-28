@@ -2558,7 +2558,8 @@ class AzimuthalIntegrator(Geometry):
                                          dark_variance=None,
                                          error_model=error_model,
                                          radial_range=radial_range,
-                                         azimuth_range=azimuth_range)
+                                         azimuth_range=azimuth_range,
+                                         allow_pos0_neg=not radial_unit.positive,)
 
         I = intpl.intensity
         bins_azim = intpl.azimuthal
