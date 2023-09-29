@@ -8,6 +8,7 @@ Change-log of versions
 2023.XX
 --------
 - Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others
+- Support for Detris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
 
 2023.09 08/09/2023
 ------------------
