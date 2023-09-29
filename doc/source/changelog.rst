@@ -7,7 +7,7 @@ Change-log of versions
 
 2023.XX
 --------
-- Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others 
+- Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others
 
 2023.09 08/09/2023
 ------------------
