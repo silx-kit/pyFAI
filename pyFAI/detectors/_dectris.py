@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2023"
+__date__ = "29/09/2023"
 __status__ = "production"
 
 import os
@@ -76,7 +76,7 @@ class _Dectris(Detector):
         # workinng in dim0 = Y
         for i in range(self.module_size[0], self.max_shape[0],
                        self.module_size[0] + self.MODULE_GAP[0]):
-            mask[i: i + self.MODULE_GAP[0], :] = 1
+            mask[i: i + self.MODULE_GAP[0],:] = 1
         # workinng in dim1 = X
         for i in range(self.module_size[1], self.max_shape[1],
                        self.module_size[1] + self.MODULE_GAP[1]):
@@ -145,11 +145,11 @@ class Eiger(_Dectris):
                     s0, s1 = self.offset1.shape
                     delta1 = numpy.zeros(d1.shape, dtype=numpy.int32)  # this is the natural type for pilatus CBF
                     delta2 = numpy.zeros(d2.shape, dtype=numpy.int32)
-                    delta1[:s0, :s1] = self.offset1
-                    delta2[:s0, :s1] = self.offset2
-                    mask = numpy.where(delta1[-s0:, :s1] == 0)
-                    delta1[-s0:, :s1][mask] = self.offset1[mask]
-                    delta2[-s0:, :s1][mask] = self.offset2[mask]
+                    delta1[:s0,:s1] = self.offset1
+                    delta2[:s0,:s1] = self.offset2
+                    mask = numpy.where(delta1[-s0:,:s1] == 0)
+                    delta1[-s0:,:s1][mask] = self.offset1[mask]
+                    delta2[-s0:,:s1][mask] = self.offset2[mask]
                     mask = numpy.where(delta1[-s0:, -s1:] == 0)
                     delta1[-s0:, -s1:][mask] = self.offset1[mask]
                     delta2[-s0:, -s1:][mask] = self.offset2[mask]
@@ -530,11 +530,11 @@ class Pilatus(_Dectris):
                     s0, s1 = self.offset1.shape
                     delta1 = numpy.zeros(d1.shape, dtype=numpy.int32)  # this is the natural type for pilatus CBF
                     delta2 = numpy.zeros(d2.shape, dtype=numpy.int32)
-                    delta1[:s0, :s1] = self.offset1
-                    delta2[:s0, :s1] = self.offset2
-                    mask = numpy.where(delta1[-s0:, :s1] == 0)
-                    delta1[-s0:, :s1][mask] = self.offset1[mask]
-                    delta2[-s0:, :s1][mask] = self.offset2[mask]
+                    delta1[:s0,:s1] = self.offset1
+                    delta2[:s0,:s1] = self.offset2
+                    mask = numpy.where(delta1[-s0:,:s1] == 0)
+                    delta1[-s0:,:s1][mask] = self.offset1[mask]
+                    delta2[-s0:,:s1][mask] = self.offset2[mask]
                     mask = numpy.where(delta1[-s0:, -s1:] == 0)
                     delta1[-s0:, -s1:][mask] = self.offset1[mask]
                     delta2[-s0:, -s1:][mask] = self.offset2[mask]
@@ -644,6 +644,7 @@ class Pilatus900k(Pilatus):
     MAX_SHAPE = (619, 1475)
     aliases = ["Pilatus 900k"]
 
+
 class Pilatus1M(Pilatus):
     """
     Pilatus 1M detector
@@ -737,7 +738,7 @@ class Pilatus4(_Dectris):
 
     Sub-classed by Pilatus4_1M, Pilatus4_2M and Pilatus_4M
     """
-    MODULE_SIZE = (530, 513)
+    MODULE_SIZE = (255, 513)
     MODULE_GAP = (20, 7)
     force_pixel = True
 
@@ -766,8 +767,53 @@ class Pilatus4_4M(Pilatus4):
 
 class Pilatus4_260k(Pilatus4):
     MAX_SHAPE = 530, 513
-    aliases = ["Pilatus4 CdTe 260k", "Pilatus4 260k CdTe", "Pilatus4 260k"]
+    aliases = ["Pilatus4 260k"]
+
 
 class Pilatus4_260kw(Pilatus4):
     MAX_SHAPE = 255, 1033
-    aliases = ["Pilatus4 CdTe 260kw", "Pilatus4 260kw CdTe", "Pilatus4 260kw"]
+    aliases = ["Pilatus4 260kw"]
+
+
+class Pilatus4_CdTe(Pilatus):
+    """
+    Pilatus CdTe detector: Like the Pilatus4 with an extra gap of 1 pixel in the middle
+    of every module (vertically)
+    """
+
+    def calc_mask(self):
+        """
+        Mask out an extra 3 pixel in the middle of each module
+        """
+        mask = super().calc_mask()
+        # Add the small gaps in the middle of the module
+        for i in range(self.module_size[1] // 2, self.max_shape[1],
+                       self.module_size[1] + self.MODULE_GAP[1]):
+            mask[:, i] = 1
+
+        return mask
+
+
+class Pilatus4_CdTe_1M(Pilatus4_CdTe):
+    MAX_SHAPE = 1080, 1033
+    aliases = ["Pilatus4 1M CdTe"]
+
+
+class Pilatus4_CdTe_2M(Pilatus4_CdTe):
+    MAX_SHAPE = 1630, 1553
+    aliases = ["Pilatus4 2M CdTe"]
+
+
+class Pilatus4_CdTe_4M(Pilatus4_CdTe):
+    MAX_SHAPE = 2180, 2073
+    aliases = ["Pilatus4 4M CdTe"]
+
+
+class Pilatus4_CdTe_260k(Pilatus4_CdTe):
+    MAX_SHAPE = 530, 513
+    aliases = ["Pilatus4 260k CdTe"]
+
+
+class Pilatus4_CdTe_260kw(Pilatus4_CdTe):
+    MAX_SHAPE = 255, 1033
+    aliases = ["Pilatus4 260kw CdTe"]
