@@ -34,4 +34,5 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Variance/Variance
    Separation/index
    Parallelization/index
+   integrate2d
    Soleil/index
