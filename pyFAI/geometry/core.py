@@ -40,13 +40,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/05/2023"
+__date__ = "29/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
 from math import pi
-from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
+from numpy import arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
 import threading
@@ -715,16 +715,25 @@ class Geometry(object):
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
+        requested_unit = space = unit
         if unit:
             unit = to_unit(unit)
-            space = unit.name.split("_")[0]
-        else:
+            space = unit.space
+            requested_unit = unit
+        if unit is None or space == "chi":
             # If no unit is asked, any is OK for extracting the Chi array
             unit = None
-            for space in [u.split("_")[0] for u in units.ANGLE_UNITS]:
-                ary = self._cached_array.get(space + "_corner")
+            for sp in [u.space for u in units.RADIAL_UNITS.values()]:
+                ary = self._cached_array.get(sp + "_corner")
                 if (ary is not None) and (shape == ary.shape[:2]):
-                    return ary
+                    if space == "chi":
+                        res = ary.copy()
+                        res[..., 0] = ary[..., 1]
+                        if scale and requested_unit:
+                            res *= requested_unit.scale
+                        return res
+                    else:
+                        return ary
             # This is the fastest to calculate
             space = "r"
             # unit = to_unit("r_m")
@@ -732,6 +741,9 @@ class Geometry(object):
         if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
                 if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
+                    # fix this with #1957
+                    nb_corners = 6 if isinstance(self.detector, detectors.HexDetector) else 4
+
                     corners = None
                     if (_geometry is not None) and use_cython:
                         if self.detector.IS_CONTIGUOUS:
@@ -761,7 +773,7 @@ class Geometry(object):
                                     azim = numpy.ascontiguousarray(res[..., 1], numpy.float32)
                                     corners = bilinear.convert_corner_2D_to_4D(2, radi, azim)
                                 else:
-                                    corners = numpy.zeros((shape[0], shape[1], 4, 2),
+                                    corners = numpy.zeros((shape[0], shape[1], nb_corners, 2),
                                                           dtype=numpy.float32)
                                     corners[:,:, 0,:] = res[:-1,:-1,:]
                                     corners[:,:, 1,:] = res[1:,:-1,:]
@@ -775,11 +787,16 @@ class Geometry(object):
                         x = pos[..., 2]
                         y = pos[..., 1]
                         z = pos[..., 0]
-                        chi = numpy.arctan2(y, x)
-                        if not self.chiDiscAtPi:
+                        if numexpr is None:
+                            # numpy path
+                            chi = numpy.arctan2(y, x)
+                            if not self.chiDiscAtPi:
+                                numpy.mod(chi, (2.0 * numpy.pi), out=chi)
+                        else:
+                            # numexpr path
                             twoPi = 2.0 * numpy.pi
-                            chi = (chi + twoPi) % twoPi
-                        corners = numpy.zeros((shape[0], shape[1], 4, 2),
+                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%twoPi")
+                        corners = numpy.zeros((shape[0], shape[1], nb_corners, 2),
                                               dtype=numpy.float32)
                         if chi.shape[:2] == shape:
                             corners[..., 1] = chi
@@ -794,12 +811,18 @@ class Geometry(object):
                     self._cached_array[key] = corners
 
         res = self._cached_array[key]
-        if scale and unit:
-            tmp = res.copy()
-            tmp[..., 0] *= unit.scale
-            return tmp
-        else:
-            return res
+        if requested_unit:
+            if requested_unit.space == "chi":
+                res = res.copy()
+                if scale:
+                    res[..., 0] = res[..., 1] * requested_unit.scale
+                else:
+                    res[..., 0] = res[..., 1]
+            else:
+                if scale:
+                    res = res.copy()
+                    res[..., 0] *= requested_unit.scale
+        return res
 
     @deprecated
     def cornerArray(self, shape=None):
@@ -888,6 +911,8 @@ class Geometry(object):
         y = pos[..., 1]
         z = pos[..., 0]
         ary = unit.equation(x, y, z, self.wavelength)
+        if unit.space == "chi" and not self.chiDiscAtPi:
+            numpy.mod(ary, 2.0 * numpy.pi, out=ary)
         self._cached_array[key] = ary
         if scale and unit:
                 tmp = ary.copy()
@@ -1046,8 +1071,8 @@ class Geometry(object):
         :type shape: ndarray.shape
         :param typ: "center", "corner" or "delta"
         :type typ: str
-        :param unit: can be Q, TTH, R for now
-        :type unit: pyFAI.units.Enum
+        :param unit: can be any valid unit (see units.ANY_UNITS)
+        :type unit: pyFAI.units.Unit or 2-tuple of them (valid only for corner coordinates calculation
         :param scale: set to False for returning the internal representation
                 (S.I. often) which is faster
         :return: R, Q or 2Theta array depending on unit
@@ -1062,7 +1087,12 @@ class Geometry(object):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
-        unit = to_unit(unit)
+        if typ == "corner" and isinstance(unit, (tuple, list)) and len(unit) == 2:
+            unit2 = tuple(to_unit(u) for u in unit)
+            unit = unit2[0]
+        else:
+            unit2 = None
+            unit = to_unit(unit)
         meth_name = unit.get(typ)
         if meth_name and meth_name in dir(Geometry):
             # fast path may be available
@@ -1074,9 +1104,17 @@ class Geometry(object):
             if typ == "center":
                 out = self.center_array(shape, unit, scale=scale)
             elif typ == "corner":
-                out = self.corner_array(shape, unit, scale=scale)
-            else:  # typ == "delta":
+                if unit2 is None:
+                    out = self.corner_array(shape, unit, scale=scale)
+                else:
+                    out = self.corner_array(shape, unit2[0], scale=scale)
+                    if unit2[1].space != "chi":
+                        out1 = self.corner_array(shape, unit2[1], scale=scale)
+                        out[..., 1] = out1[..., 0]
+            elif typ == "delta":
                 out = self.delta_array(shape, unit, scale=scale)
+            else:
+                logger.error("Unsupported")
         return out
 
     def sin_incidence(self, d1, d2, path="cython"):
@@ -2201,7 +2239,7 @@ class Geometry(object):
             f2d = convert_to_Fit2d(self)
         x = numpy.atleast_2d([0, self.detector.shape[-1]]) - f2d.centerX
         y = numpy.atleast_2d([0, self.detector.shape[0]]).T - f2d.centerY
-        r = ((x**2 + y**2)**0.5).max()
+        r = ((x ** 2 + y ** 2) ** 0.5).max()
         return int(r)
 
 # ############################################

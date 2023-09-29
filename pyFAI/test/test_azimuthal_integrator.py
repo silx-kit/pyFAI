@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "29/09/2023"
 
 import unittest
 import os
@@ -697,6 +697,37 @@ class TestRange(unittest.TestCase):
         self.assertEqual(len(failed), 0, f"Number of failed tests in test_variance_2d: {len(failed)}")
 
 
+class TestFlexible2D(unittest.TestCase):
+    """Test integration in non-azimuthal 2D unit"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.img = fabio.open(UtilsTest.getimage("moke.tif")).data
+        det = detector_factory("Detector", {"pixel1":1e-4, "pixel2":1e-4})
+        ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
+        ai.setFit2D(100, 300, 300)
+        cls.ai = ai
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super(TestFlexible2D, cls).tearDownClass()
+        cls.ai = cls.img = None
+
+    def test_flexible(self):
+        for m in IntegrationMethod.select_method(dim=2, impl="cython"):
+            res = self.ai.integrate2d(self.img, 50, 50, method=m, unit=("qx_nm^-1", "qy_nm^-1"))
+            img, rad, azim = res
+            self.assertTrue(numpy.nanmax(img) > 0, f"image is non empty for {m}")
+            radmax = rad.max()
+            radmin = rad.min()
+            self.assertTrue(15 < radmax < 20, f"Upper bound radial is  15<{radmax}<20 for {m}")
+            self.assertTrue(-20 < radmin < -15, f"Lower bound radial is  -20<{radmin}<-15 for {m}")
+            azimax = azim.max()
+            azimin = azim.min()
+            self.assertTrue(10 < azimax < 20, f"Upper bound azimuthal is  10<{azimax}<20 for {m} ")
+            self.assertTrue(-20 < azimin < -15, f"Lower bound azimuthal is  -20<{azimin}<-15 for {m}")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
@@ -706,6 +737,7 @@ def suite():
     testsuite.addTest(loader(TestSaxs))
     testsuite.addTest(loader(TestIntergrationNextGeneration))
     testsuite.addTest(loader(TestRange))
+    testsuite.addTest(loader(TestFlexible2D))
     return testsuite
 
 

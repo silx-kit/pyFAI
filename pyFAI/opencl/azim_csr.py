@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "06/01/2023"
+__date__ = "26/09/2023"
 __copyright__ = "2014-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -125,6 +125,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.size = image_size
         self.empty = empty or 0
         self.unit = unit
+        self.space = (str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = bin_centers
         self.azim_centers = azim_centers
         # a few place-folders
