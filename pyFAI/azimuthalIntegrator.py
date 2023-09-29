@@ -1615,7 +1615,7 @@ class AzimuthalIntegrator(Geometry):
                          radial_range=None, azimuth_range=None,
                          mask=None, dummy=None, delta_dummy=None,
                          polarization_factor=None, dark=None, flat=None,
-                         method="csr", unit=units.CHI_DEG, radial_unit=units.Q,
+                         method=("bbox", "csr", "cython"), unit=units.CHI_DEG, radial_unit=units.Q,
                          normalization_factor=1.0):
         """Calculate the radial integrated profile curve as I = f(chi)
 
