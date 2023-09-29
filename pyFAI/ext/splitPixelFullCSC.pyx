@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2022-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2022-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseColumn.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/01/2023"
+__date__ = "29/09/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -90,6 +90,7 @@ class FullSplitCSC_1d(CscIntegrator, FullSplitIntegrator):
         :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
         """
         self.unit = unit
+        self.space = (str(u).split("_")[0] for u in unit) if isinstance(unit, (tuple, list)) else  str(unit).split("_")[0]
         FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi)
 
         self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins))
@@ -143,7 +144,8 @@ class FullSplitCSC_2d(CscIntegrator, FullSplitIntegrator):
                  allow_pos0_neg=False,
                  unit="undefined",
                  empty=None,
-                 bint chiDiscAtPi=True):
+                 bint chiDiscAtPi=True,
+                 bint clip_pos1=True):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins (tth=100, chi=36 by default)
@@ -154,9 +156,11 @@ class FullSplitCSC_2d(CscIntegrator, FullSplitIntegrator):
         :param unit: can be 2th_deg or r_nm^-1 ...
         :param empty: value for bins where no pixels are contributing
         :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
+        :param clip_pos1: True if azimuthal direction is periodic (chi angle), False for non periodic units
         """
-        FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi)
+        FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi, clip_pos1)
         self.unit = unit
+        self.space = (str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = None
         self.delta0 = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins[0]))
         self.delta1 = (self.pos1_max - self.pos1_min) / (<position_t> (self.bins[1]))

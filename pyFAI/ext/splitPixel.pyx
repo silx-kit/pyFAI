@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/03/2023"
+__date__ = "28/09/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -127,7 +127,8 @@ def fullSplit1D(pos,
         assert mask.size == size, "mask size"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range,
+                                                                 allow_pos0_neg=allow_pos0_neg)
     if (not allow_pos0_neg):
         pos0_min = max(pos0_min, 0.0)
         pos1_maxin = max(pos1_maxin, 0.0)
@@ -334,7 +335,9 @@ def fullSplit1D_engine(pos not None,
         assert mask.size == size, "mask size"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range,
+                                                                 allow_pos0_neg=allow_pos0_neg,
+                                                                 chiDiscAtPi=chiDiscAtPi)
     if not allow_pos0_neg:
         pos0_min = max(0.0, pos0_min)
         pos0_maxin = max(0.0, pos0_maxin)
@@ -562,7 +565,9 @@ def fullSplit2D(pos,
         assert mask.size == size, "mask size"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range,
+                                                                 allow_pos0_neg=allow_pos0_neg,
+                                                                 chiDiscAtPi=chiDiscAtPi)
     if (not allow_pos0_neg):
         pos0_min = max(0.0, pos0_min)
         pos0_maxin = max(0.0, pos0_maxin)
@@ -873,7 +878,9 @@ def pseudoSplit2D_engine(pos not None,
         assert mask.size == size, "mask size"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range,
+                                                                 allow_pos0_neg=allow_pos0_neg,
+                                                                 chiDiscAtPi=chiDiscAtPi)
     if (not allow_pos0_neg):
         pos0_min = max(0.0, pos0_min)
         pos0_maxin = max(pos0_maxin, 0.0)
@@ -1220,10 +1227,13 @@ def fullSplit2D_engine(pos not None,
         buffer_t[:, ::1] buffer = numpy.asarray(linbuffer[:(bw0+1)*(bw1+1)]).reshape((bw0+1,bw1+1))
         double foffset0, foffset1, sum_area, loc_area
 
-    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range)
+    pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos, cmask, pos0_range, pos1_range,
+                                                                 allow_pos0_neg=allow_pos0_neg,
+                                                                 chiDiscAtPi=chiDiscAtPi)
     if not allow_pos0_neg:
         pos0_min = max(0.0, pos0_min)
         pos0_maxin = max(0.0, pos0_maxin)
+
     pos0_max = calc_upper_bound(pos0_maxin)
     pos1_max = calc_upper_bound(pos1_maxin)
 

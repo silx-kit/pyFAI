@@ -30,7 +30,7 @@ __authors__ = ["Jerome Kieffer", "H. Payno", "P. Knobel", "V. Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "25/09/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -120,12 +120,12 @@ def deprecated_warning(type_, name, reason=None, replacement=None,
 
     msg = "%s %s is deprecated"
     if since_version is not None:
-        msg += " since pyFAI version %s" % since_version
+        msg += f" since pyFAI version {since_version}"
     msg += "."
     if reason is not None:
-        msg += " Reason: %s." % reason
+        msg += f" Reason: {reason}."
     if replacement is not None:
-        msg += " Use '%s' instead." % replacement
+        msg += f" Use '{replacement}' instead."
     msg += "\n%s"
     limit = 2 + skip_backtrace_count
     backtrace = "".join(traceback.format_stack(limit=limit)[0])

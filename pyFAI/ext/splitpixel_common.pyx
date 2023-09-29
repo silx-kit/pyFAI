@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2021-2021 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2021-2023 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,9 +33,9 @@
 
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/08/2023"
+__date__ = "29/09/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -54,6 +54,7 @@ elif logging.root.level >= logging.INFO:
     NUM_WARNING = 100
 else:
     NUM_WARNING = 10000
+
 
 def calc_boundaries(position_t[:, :, ::1] cpos,
                     mask_t[::1] cmask=None,
