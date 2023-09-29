@@ -153,7 +153,7 @@ class FullSplitCSR_2d(CsrIntegrator, FullSplitIntegrator):
         :param unit: can be 2th_deg or r_nm^-1 ...
         :param empty: value for bins where no pixels are contributing
         :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
-        :param clip_pos1: True if azimuthal direction is periodic (chi angle), False for non periodic units 
+        :param clip_pos1: True if azimuthal direction is periodic (chi angle), False for non periodic units
         """
         FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi, clip_pos1)
         self.unit = unit
