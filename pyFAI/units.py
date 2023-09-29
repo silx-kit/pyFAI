@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/09/2023"
+__date__ = "29/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -143,10 +143,12 @@ class Unit(object):
 RADIAL_UNITS = {}
 AZIMUTHAL_UNITS = {}
 
+
 def register_radial_unit(name, scale=1, label=None, equation=None, formula=None,
                          center=None, corner=None, delta=None, short_name=None, unit_symbol=None, positive=True):
     RADIAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
                               corner, delta, short_name, unit_symbol, positive)
+
 
 def register_azimuthal_unit(name, scale=1, label=None, equation=None, formula=None,
                          center=None, corner=None, delta=None, short_name=None, unit_symbol=None, positive=False):
@@ -344,7 +346,6 @@ register_radial_unit("qy_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-
 LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)", positive=False),
                 "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)", positive=False),
                 "cm": Unit("cm", scale=1e2, label=r"length $l$ ($cm$)", positive=False),
@@ -354,16 +355,17 @@ LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)", positive=Fal
                 }
 
 ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o}$)", positive=False, period=360),
-               "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)", positive=False, period=2*numpy.pi),
+               "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)", positive=False, period=2 * numpy.pi),
                }
 
-AZIMUTHAL_UNITS["chi_rad"] = Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)", formula=formula_chi, positive=False)
-AZIMUTHAL_UNITS["chi_deg"] = Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)", formula=formula_chi, positive=False)
+AZIMUTHAL_UNITS["chi_rad"] = Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)", formula=formula_chi, positive=False, period=2 * numpy.pi)
+AZIMUTHAL_UNITS["chi_deg"] = Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)", formula=formula_chi, positive=False, period=360)
 AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
 AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
 ANY_UNITS = {}
 ANY_UNITS.update(RADIAL_UNITS)
 ANY_UNITS.update(AZIMUTHAL_UNITS)
+
 
 def to_unit(obj, type_=None):
     if type_ is None:
