@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "18/09/2023"
+__date__ = "29/09/2023"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -56,7 +56,7 @@ def dtype_converter(dtype):
     elif numpy.issubdtype(dtype, numpy.unsignedinteger):
         return numpy.int8(dtype.itemsize)
     else:
-        return numpy.int8(8*dtype.itemsize)
+        return numpy.int8(8 * dtype.itemsize)
 
 
 class OCL_Preproc(OpenclProcessing):
@@ -285,7 +285,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["corrections3"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -308,7 +308,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -331,7 +331,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("output", self.cl_mem["output"])))
         self.cl_kernel_args["corrections4a"] = OrderedDict((("image", self.cl_mem["image_raw"]),
                                                             ("dtype", numpy.int8(0)),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -353,7 +353,6 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("output", self.cl_mem["output"])))
 
-
     def compile_kernels(self, kernel_files=None, compile_options=None):
         """Call the OpenCL compiler
 
@@ -373,7 +372,7 @@ class OCL_Preproc(OpenclProcessing):
         :param convert: if True (default) convert dtype on GPU, if false, leave as it is.
         :return: the destination buffer and its actual dtype
         """
-        dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0]) # TODO: thos looks slow, use dict instead !
+        dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])  # TODO: thos looks slow, use dict instead !
         events = []
         if convert:
             if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
@@ -448,7 +447,6 @@ class OCL_Preproc(OpenclProcessing):
                 dshape = self.on_device.get("image").shape
             kwargs = self.cl_kernel_args[kernel_name]
 
-
             # finally
             if id(image) != id(self.on_device.get("image")):
                 if (image.dtype.itemsize <= 4) and (kernel_name == "corrections4"):
@@ -475,10 +473,10 @@ class OCL_Preproc(OpenclProcessing):
                 kwargs["do_dark_variance"] = do_dark
             kernel = self.kernels.get_kernel(kernel_name)
             logger.warning(f"Using kernel {kernel_name}")
-            i=1
-            for k,v in kwargs.items():
+            i = 1
+            for k, v in kwargs.items():
                 logger.warning(f"with argument #{i}: {k}: {v} ({type(v)})")
-                i+=1
+                i += 1
 
             evt = kernel(self.queue, (self.size,), None, *list(kwargs.values()))
 
@@ -548,7 +546,7 @@ def preproc(raw,
     :param empty: value to be given for empty pixels
     :param split_result: set to true to separate numerator from denominator and return an array of float2 or float3 (with variance)
     :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.
-    :param error_model: set to POISSONIAN to assume
+    :param error_model: set to POISSONIAN to assume variance=signal
     :param dtype: dtype for all processing
     :param out: output buffer to save a malloc
 
@@ -572,7 +570,6 @@ def preproc(raw,
 
       Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
 
-    * If poissonian is set to True, the variance is evaluated as (raw + dark) minimum (1)
     """
     if raw.dtype.itemsize > 4:  # use numpy to cast to float32
         raw = numpy.ascontiguousarray(raw, numpy.float32)
