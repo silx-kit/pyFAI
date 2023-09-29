@@ -38,7 +38,7 @@ Can be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jérôme Kieffer"
-__date__ = "17/03/2023"
+__date__ = "29/09/2023"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -528,7 +528,7 @@ def histogram2d_engine(radial, azimuthal,
                        azimuth_range=None,
                        bint allow_radial_neg=False,
                        bint chiDiscAtPi=1,
-                       bint clip_azimuth=True
+                       bint clip_pos1=True
                        ):
     """Implementation of 2D rebinning engine using pure numpy histograms
 
@@ -553,7 +553,7 @@ def histogram2d_engine(radial, azimuthal,
     :param azimuth_range: enforce boundaries in azimuthal dimention, 2tuple with lower and upper bound
     :param allow_radial_neg: clip negative radial position (can a dimention be negative ?)
     :param chiDiscAtPi: set the azimuthal discontinuity at π (True) or at 0/2π (False)
-    :param clip_azimuth: clip the azimuthal range to [-π π] (or [0 2π]), set to False to deactivate behavior.
+    :param clip_pos1: clip the azimuthal range to [-π π] (or [0 2π]), set to False to deactivate behavior.
 
     NaN are always considered as invalid values
 
@@ -657,7 +657,7 @@ def histogram2d_engine(radial, azimuthal,
     pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, None,
                                                                  cpos1, None,
                                                                  cmask, radial_range, azimuth_range,
-                                                                 allow_radial_neg, chiDiscAtPi, clip_azimuth)
+                                                                 allow_radial_neg, chiDiscAtPi, clip_pos1)
 
     pos0_max = calc_upper_bound(pos0_maxin)
     pos1_max = calc_upper_bound(pos1_maxin)

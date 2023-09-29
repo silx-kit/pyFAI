@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/09/2023"
+__date__ = "29/09/2023"
 __status__ = "development"
 
 import logging
@@ -174,7 +174,8 @@ def histogram2d_engine(radial, azimuthal, bins,
                        radial_range=None,
                        azimuth_range=None,
                        allow_radial_neg=False,
-                       # bint chiDiscAtPi=1,
+                       chiDiscAtPi=True,
+                       clip_pos1=True
                        ):
     """Implementation of 2D rebinning engine using pure numpy histograms
 
@@ -198,6 +199,9 @@ def histogram2d_engine(radial, azimuthal, bins,
     :param radial_range: enforce boundaries in radial dimention, 2tuple with lower and upper bound
     :param azimuth_range: enforce boundaries in azimuthal dimention, 2tuple with lower and upper bound
     :param allow_radial_neg: clip negative radial position (can a dimention be negative ?)
+    :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[ TODO: unimplemented
+    :param clip_pos1: clip the azimuthal range to [-pi pi] (or [0 2pi]), set to False to deactivate behavior TODO: unimplemented
+
 
 
     NaN are always considered as invalid values

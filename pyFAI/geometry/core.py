@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/09/2023"
+__date__ = "29/09/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -720,15 +720,15 @@ class Geometry(object):
             unit = to_unit(unit)
             space = unit.space
             requested_unit = unit
-        if unit is None or space=="chi":
+        if unit is None or space == "chi":
             # If no unit is asked, any is OK for extracting the Chi array
             unit = None
             for sp in [u.space for u in units.RADIAL_UNITS.values()]:
                 ary = self._cached_array.get(sp + "_corner")
                 if (ary is not None) and (shape == ary.shape[:2]):
-                    if space=="chi":
+                    if space == "chi":
                         res = ary.copy()
-                        res[...,0] = ary[..., 1]
+                        res[..., 0] = ary[..., 1]
                         if scale and requested_unit:
                             res *= requested_unit.scale
                         return res
@@ -791,12 +791,11 @@ class Geometry(object):
                             # numpy path
                             chi = numpy.arctan2(y, x)
                             if not self.chiDiscAtPi:
-                                twoPi = 2.0 * numpy.pi
-                                chi = (chi + twoPi) % twoPi
+                                numpy.mod(chi, (2.0 * numpy.pi), out=chi)
                         else:
                             # numexpr path
                             twoPi = 2.0 * numpy.pi
-                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("(arctan2(y, x)+twoPi)%twoPi")
+                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%twoPi")
                         corners = numpy.zeros((shape[0], shape[1], nb_corners, 2),
                                               dtype=numpy.float32)
                         if chi.shape[:2] == shape:
@@ -815,9 +814,10 @@ class Geometry(object):
         if requested_unit:
             if requested_unit.space == "chi":
                 res = res.copy()
-                res[...,0] = res[..., 1]
                 if scale:
-                    res *= requested_unit.scale
+                    res[..., 0] = res[..., 1] * requested_unit.scale
+                else:
+                    res[..., 0] = res[..., 1]
             else:
                 if scale:
                     res = res.copy()
@@ -911,6 +911,8 @@ class Geometry(object):
         y = pos[..., 1]
         z = pos[..., 0]
         ary = unit.equation(x, y, z, self.wavelength)
+        if unit.space == "chi" and not self.chiDiscAtPi:
+            numpy.mod(ary, 2.0 * numpy.pi, out=ary)
         self._cached_array[key] = ary
         if scale and unit:
                 tmp = ary.copy()
@@ -1085,7 +1087,7 @@ class Geometry(object):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
-        if typ == "corner" and isinstance(unit, (tuple,list)) and len(unit)==2:
+        if typ == "corner" and isinstance(unit, (tuple, list)) and len(unit) == 2:
             unit2 = tuple(to_unit(u) for u in unit)
             unit = unit2[0]
         else:
@@ -2237,7 +2239,7 @@ class Geometry(object):
             f2d = convert_to_Fit2d(self)
         x = numpy.atleast_2d([0, self.detector.shape[-1]]) - f2d.centerX
         y = numpy.atleast_2d([0, self.detector.shape[0]]).T - f2d.centerY
-        r = ((x**2 + y**2)**0.5).max()
+        r = ((x ** 2 + y ** 2) ** 0.5).max()
         return int(r)
 
 # ############################################
