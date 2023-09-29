@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/09/2023"
+__date__ = "29/09/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -253,7 +253,7 @@ class AzimuthalIntegrator(Geometry):
 
         if radial_range is not None:
             assert unit, "unit is needed when building a mask based on radial_range"
-            if isinstance(unit, (tuple, list)) and len(unit)==2:
+            if isinstance(unit, (tuple, list)) and len(unit) == 2:
                 radial_unit = units.to_unit(unit[0])
             else:
                 radial_unit = units.to_unit(unit)
@@ -261,7 +261,7 @@ class AzimuthalIntegrator(Geometry):
             logical_or(mask, rad < radial_range[0], out=mask)
             logical_or(mask, rad > radial_range[1], out=mask)
         if azimuth_range is not None:
-            if isinstance(unit, (tuple, list)) and len(unit)==2:
+            if isinstance(unit, (tuple, list)) and len(unit) == 2:
                 azimuth_unit = units.to_unit(unit[1])
             chi = self.array_from_unit(shape, "center", azimuth_unit, scale=False)
             logical_or(mask, chi < azimuth_range[0], out=mask)
@@ -376,7 +376,7 @@ class AzimuthalIntegrator(Geometry):
         be performed in 2th-space when the LUT was setup in q space.
         Unit can also be a 2-tuple in the case of a 2D integration
         """
-        if isinstance(unit, (list, tuple)) and len(unit)==2:
+        if isinstance(unit, (list, tuple)) and len(unit) == 2:
             unit0, unit1 = unit
         else:
             unit0 = unit
@@ -428,8 +428,10 @@ class AzimuthalIntegrator(Geometry):
                                                     mask_checksum=mask_checksum,
                                                     allow_pos0_neg=not unit0.positive,
                                                     unit=unit,
+                                                    empty=empty,
                                                     chiDiscAtPi=self.chiDiscAtPi,
-                                                    empty=empty)
+                                                    clip_pos1=bool(unit1.period),
+                                                    )
                 else:
                     return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
                                                                  bins=npt,
@@ -449,6 +451,7 @@ class AzimuthalIntegrator(Geometry):
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
                                                     allow_pos0_neg=not unit0.positive,
+                                                    clip_pos1=bool(unit1.period),
                                                     unit=unit,
                                                     empty=empty)
                 else:
@@ -472,8 +475,10 @@ class AzimuthalIntegrator(Geometry):
                                                              mask_checksum=mask_checksum,
                                                              allow_pos0_neg=not unit0.positive,
                                                              unit=unit,
+                                                             empty=empty,
                                                              chiDiscAtPi=self.chiDiscAtPi,
-                                                             empty=empty)
+                                                             clip_pos1=bool(unit1.period),
+                                                             )
                 else:
                     return splitPixelFullCSR.FullSplitCSR_1d(pos,
                                                              bins=npt,
@@ -492,9 +497,11 @@ class AzimuthalIntegrator(Geometry):
                                                     pos1_range=pos1_range,
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
-                                                    allow_pos0_neg=not unit0.positive,
                                                     unit=unit,
-                                                    empty=empty)
+                                                    empty=empty,
+                                                    allow_pos0_neg=not unit0.positive,
+                                                    clip_pos1=bool(unit1.period)
+)
                 else:
                     return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                     bins=npt,
@@ -516,8 +523,10 @@ class AzimuthalIntegrator(Geometry):
                                                              mask_checksum=mask_checksum,
                                                              allow_pos0_neg=not unit0.positive,
                                                              unit=unit,
+                                                             empty=empty,
                                                              chiDiscAtPi=self.chiDiscAtPi,
-                                                             empty=empty)
+                                                             clip_pos1=bool(unit1.period)
+                                                             )
                 else:
                     return splitPixelFullCSC.FullSplitCSC_1d(pos,
                                                              bins=npt,
@@ -536,9 +545,11 @@ class AzimuthalIntegrator(Geometry):
                                                     pos1_range=pos1_range,
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
-                                                    allow_pos0_neg=not unit0.positive,
                                                     unit=unit,
-                                                    empty=empty)
+                                                    empty=empty,
+                                                    allow_pos0_neg=not unit0.positive,
+                                                    clip_pos1=bool(unit1.period)
+)
                 else:
                     return splitBBoxCSC.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                     bins=npt,
@@ -1103,7 +1114,7 @@ class AzimuthalIntegrator(Geometry):
                        radial_range=None, azimuth_range=None,
                        mask=None, dummy=None, delta_dummy=None,
                        polarization_factor=None, dark=None, flat=None,
-                       method=("bbox","csr","cython"), unit=units.Q, safe=True,
+                       method=("bbox", "csr", "cython"), unit=units.Q, safe=True,
                        normalization_factor=1.0,
                        metadata=None):
         """Calculate the azimuthal integration (1d) of a 2D image.
@@ -2453,7 +2464,8 @@ class AzimuthalIntegrator(Geometry):
                                      empty=empty,
                                      variance=variance,
                                      error_model=error_model,
-                                     allow_pos0_neg=not radial_unit.positive,)
+                                     allow_pos0_neg=not radial_unit.positive,
+                                     clip_pos1=bool(azimuth_unit.period))
             elif method.split_lower == "no":
                 if method.impl_lower == "opencl":
                     logger.debug("integrate2d uses OpenCL histogram implementation")
@@ -2562,7 +2574,8 @@ class AzimuthalIntegrator(Geometry):
                                          error_model=error_model,
                                          radial_range=radial_range,
                                          azimuth_range=azimuth_range,
-                                         allow_radial_neg=not radial_unit.positive,)
+                                         allow_radial_neg=not radial_unit.positive,
+                                         clip_pos1=bool(azimuth_unit.period))
 
         I = intpl.intensity
         bins_azim = intpl.azimuthal
@@ -3528,13 +3541,13 @@ class AzimuthalIntegrator(Geometry):
         res = self.integrate2d_ng(img, npt_rad, npt_azim, unit=unit, method=method)
 
         if target_rad is None:
-            azimuthal_range = (res.count>0).sum(axis=0)
-            azim_min = azimuthal_range.max()*0.95
-            valid_rings = numpy.where(azimuthal_range>azim_min)[0]
+            azimuthal_range = (res.count > 0).sum(axis=0)
+            azim_min = azimuthal_range.max() * 0.95
+            valid_rings = numpy.where(azimuthal_range > azim_min)[0]
             nbpix = res.count.sum(axis=0)[valid_rings]
             bin_idx = valid_rings[numpy.where(nbpix.max() == nbpix)[0][-1]]
         else:
-            bin_idx = numpy.argmin(abs(res.radial-target_rad))
+            bin_idx = numpy.argmin(abs(res.radial - target_rad))
 
         from scipy.optimize import minimize_scalar
         sfun = lambda p:\

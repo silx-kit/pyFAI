@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2021-2021 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2021-2023 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,9 +33,9 @@
 
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "28/09/2023"
+__date__ = "29/09/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
