@@ -112,5 +112,8 @@ def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
         else:
             beamCentre = ai.getFit2D()["directDist"]  # in mm!!
         return beamCentre * numpy.tan(twoTheta) * 0.001
+    elif unit == units.RecD2_NM:
+        q = (4.e-9 * numpy.pi / wavelength) * numpy.sin(.5 * twoTheta)
+        return (q / (2.0 * numpy.pi)) ** 2
     else:
         raise ValueError("Converting from 2th to unit %s is not supported", unit)
