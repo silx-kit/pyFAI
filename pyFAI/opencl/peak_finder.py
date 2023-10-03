@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 class OCL_PeakFinder(OCL_CSR_Integrator):
     BLOCK_SIZE = 1024  # unlike in OCL_CSR_Integrator, here we need larger blocks
-    buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+    buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 1, numpy.int64, mf.READ_WRITE),
