@@ -194,7 +194,7 @@ static float _any2float(const global uchar* input,
         value = convert_float(ival);
     }
     else if (dtype == 32){
-        uchar4 rval =  (uchar4) (input[4*position],input[4*position+1], input[4*position+2],input[4*position+3]);
+        uchar4 rval =  (uchar4) (input[4*position], input[4*position+1], input[4*position+2], input[4*position+3]);
         value = as_float(rval);
     }
     else if (dtype == 64){

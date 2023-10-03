@@ -40,8 +40,7 @@ import numpy
 from ..containers import SparseFrame, ErrorModel
 from ..utils import EPS32
 from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl, OpenclProcessing
-from . import get_x87_volatile_option
-from . import kernel_workgroup_size
+from . import get_x87_volatile_option, kernel_workgroup_size, dtype_converter
 
 logger = logging.getLogger(__name__)
 
@@ -225,14 +224,25 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :return: list of event to wait for.
         """
         events = []
-        self.send_buffer(data, "image")
+        convert = (data.dtype.itemsize>4)
+        self.send_buffer(data, "image", convert=convert)
+
         wg = max(self.workgroup_size["memset_ng"])
         wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
         memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
         events.append(EventDescription("memset_ng", memset))
 
         # Prepare preprocessing
-        kw_corr = self.cl_kernel_args["corrections4"]
+        if convert:
+            kernel_correction_name = "corrections4"
+            corrections4 = self.kernels.corrections4
+            kw_corr = self.cl_kernel_args[kernel_correction_name]
+        else:
+            kernel_correction_name = "corrections4a"
+            corrections4 = self.kernels.corrections4a
+            kw_corr = self.cl_kernel_args[kernel_correction_name]
+            kw_corr["dtype"] = dtype_converter(data.dtype)
+
         if dummy is not None:
             do_dummy = numpy.int8(1)
             dummy = numpy.float32(dummy)
@@ -317,7 +327,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 
         wg = max(self.workgroup_size["corrections4"])
         wdim_data = (self.size + wg - 1) & ~(wg - 1),
-        ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
+        ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
         events.append(EventDescription("corrections", ev))
 
         # Prepare sigma-clipping

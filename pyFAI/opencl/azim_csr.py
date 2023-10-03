@@ -423,7 +423,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param convert: if True (default) convert dtype on GPU, if false, leave as it is.
         :return: True if the buffer is in `dest` buffer, False when convert is False and data are in image_raw
         """
-        dest_type = self.buffer_dtype.get(dest)
+        dest_type = self.buffer_dtype[dest]
         events = []
         if isinstance(data, pyopencl.array.Array):
             if (data.dtype == dest_type):
@@ -780,7 +780,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
             wdim_data = (self.size + wg - 1) // wg * wg ,
             ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
             events.append(EventDescription(kernel_correction_name, ev))
-
 
             kw_int["empty"] = dummy
             wg_min, wg_max = (workgroup_size, workgroup_size) if workgroup_size else self.workgroup_size["csr_integrate4"]
