@@ -24,7 +24,7 @@
 
 __authors__ = ["J. Kieffer"]
 __license__ = "MIT"
-__date__ = "20/01/2021"
+__date__ = "03/10/2023"
 
 import unittest
 from ...test.utilstest import UtilsTest
@@ -35,6 +35,7 @@ def suite():
 
     if UtilsTest.opencl:
         from . import test_addition
+        from . import test_preproc
         from . import test_ocl_histo
         from . import test_ocl_azim_csr
         from . import test_ocl_azim_lut
@@ -42,6 +43,7 @@ def suite():
         from . import test_ocl_sort
         from . import test_openCL
         testSuite.addTests(test_addition.suite())
+        testSuite.addTests(test_preproc.suite())
         testSuite.addTests(test_openCL.suite())
         testSuite.addTests(test_ocl_histo.suite())
         testSuite.addTests(test_ocl_azim_csr.suite())
