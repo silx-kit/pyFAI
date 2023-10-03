@@ -275,7 +275,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["corrections3"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -298,7 +298,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -363,7 +363,7 @@ class OCL_Preproc(OpenclProcessing):
         :param convert: if True (default) convert dtype on GPU, if false, leave as it is.
         :return: the destination buffer and its actual dtype
         """
-        dest_type = self.buffer_dtype.get(dest)
+        dest_type = self.buffer_dtype[dest]
         events = []
         if convert:
             if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
@@ -465,10 +465,6 @@ class OCL_Preproc(OpenclProcessing):
                 kwargs["do_dark_variance"] = do_dark
             kernel = self.kernels.get_kernel(kernel_name)
             logger.warning(f"Using kernel {kernel_name}")
-            i=1
-            for k,v in kwargs.items():
-                logger.warning(f"with argument #{i}: {k}: {v} ({type(v)})")
-                i+=1
 
             evt = kernel(self.queue, (self.size,), None, *list(kwargs.values()))
 
@@ -538,7 +534,7 @@ def preproc(raw,
     :param empty: value to be given for empty pixels
     :param split_result: set to true to separate numerator from denominator and return an array of float2 or float3 (with variance)
     :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.
-    :param error_model: set to POISSONIAN to assume
+    :param error_model: set to POISSONIAN to assume variance=signal
     :param dtype: dtype for all processing
     :param out: output buffer to save a malloc
 

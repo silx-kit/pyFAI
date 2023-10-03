@@ -387,7 +387,6 @@ class AzimuthalIntegrator(Geometry):
         if "__len__" in dir(npt) and len(npt) == 2:
             int2d = True
             if scale and pos1_range:
-                unit1 = units.to_unit(unit1)
                 pos1_scale = unit1.scale
                 pos1_range = tuple(pos1_range[i] / pos1_scale for i in (0, -1))
         else:

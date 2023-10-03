@@ -60,8 +60,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
     # Intel CPU driver calims preferred workgroup is 128 !
     buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
-               BufferDescription("tmp", 1, numpy.float32, mf.READ_ONLY),
-               BufferDescription("image_raw", 1, numpy.float64, mf.READ_ONLY),
+               BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("image_raw", 1, numpy.int64, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
@@ -349,7 +349,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                            ("delta_dummy", numpy.float32(0)),
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("output4", self.cl_mem["output4"])))
-
         self.cl_kernel_args["corrections4a"] = OrderedDict((("image", self.cl_mem["image_raw"]),
                                                             ("dtype", numpy.int8(0)),
                                                            ("error_model", numpy.int8(0)),
@@ -369,7 +368,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                            ("do_mask", numpy.int8(0)),
                                                            ("mask", self.cl_mem["mask"]),
                                                            ("do_dummy", numpy.int8(0)),
-                                                           ("dummy",  numpy.float32(0)),
+                                                           ("dummy", numpy.float32(0)),
                                                            ("delta_dummy", numpy.float32(0)),
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("output4", self.cl_mem["output4"])))
