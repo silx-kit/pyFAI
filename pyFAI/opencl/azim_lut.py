@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "17/03/2023"
+__date__ = "26/09/2023"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -115,6 +115,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.size = image_size
         self.empty = empty or 0  # numpy.NaN
         self.unit = unit
+        self.space = (str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = bin_centers
         self.azim_centers = azim_centers
         # a few place-folders
