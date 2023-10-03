@@ -36,12 +36,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2022"
+__date__ = "03/10/2023"
 __status__ = "stable"
 
 import os
 import logging
 import platform
+import numpy
 from ..utils.decorators import deprecated
 logger = logging.getLogger(__name__)
 
@@ -73,3 +74,14 @@ def get_x87_volatile_option(ctx):
             return "-DX87_VOLATILE=volatile"
         else:
             return ""
+
+
+def dtype_converter(dtype):
+    "convert a numpy dtype as a int8"
+    dtype = numpy.dtype(dtype)
+    if numpy.issubdtype(dtype, numpy.signedinteger):
+        return numpy.int8(-dtype.itemsize)
+    elif numpy.issubdtype(dtype, numpy.unsignedinteger):
+        return numpy.int8(dtype.itemsize)
+    else:
+        return numpy.int8(8*dtype.itemsize)

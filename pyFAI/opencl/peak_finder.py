@@ -4,7 +4,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "31/01/2023"
+__date__ = "03/10/2023"
 __copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -50,6 +50,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
     BLOCK_SIZE = 1024  # unlike in OCL_CSR_Integrator, here we need larger blocks
     buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
+               BufferDescription("tmp", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),

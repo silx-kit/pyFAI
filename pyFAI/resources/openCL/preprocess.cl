@@ -178,7 +178,7 @@ static float _any2float(const global uchar* input,
     }
     else if (dtype == -4){
         uchar4 rval =  (uchar4) (input[4*position],input[4*position+1], input[4*position+2],input[4*position+3]);
-        short ival = as_int(rval);
+        int ival = as_int(rval);
         value = convert_float(ival);
     }
     else if (dtype == 8){
@@ -190,7 +190,7 @@ static float _any2float(const global uchar* input,
     else if (dtype == -8){
         uchar8 rval =  (uchar8) (input[8*position],input[8*position+1], input[8*position+2],input[8*position+3],
                               input[8*position+4],input[8*position+5], input[8*position+6],input[8*position+7]);
-        short ival = as_long(rval);
+        long ival = as_long(rval);
         value = convert_float(ival);
     }
     else if (dtype == 32){

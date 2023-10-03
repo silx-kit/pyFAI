@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "18/09/2023"
+__date__ = "03/10/2023"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -43,20 +43,10 @@ import numpy
 from . import pyopencl
 if pyopencl is None:
     raise ImportError("pyopencl is not installed")
-from . import mf, processing, OpenclProcessing
+from . import mf, processing, OpenclProcessing, dtype_converter
 from ..containers import ErrorModel
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
-
-
-def dtype_converter(dtype):
-    dtype = numpy.dtype(dtype)
-    if numpy.issubdtype(dtype, numpy.signedinteger):
-        return numpy.int8(-dtype.itemsize)
-    elif numpy.issubdtype(dtype, numpy.unsignedinteger):
-        return numpy.int8(dtype.itemsize)
-    else:
-        return numpy.int8(8*dtype.itemsize)
 
 
 class OCL_Preproc(OpenclProcessing):
@@ -122,7 +112,7 @@ class OCL_Preproc(OpenclProcessing):
                         for i in self.__class__.buffers]
         self.allocate_buffers()
         self.compile_kernels()
-
+        self.buffer_dtype = {i.name:numpy.dtype(i.dtype) for i in self.buffers}
         if error_model:
             calc_variance = True
         if calc_variance:
@@ -373,7 +363,7 @@ class OCL_Preproc(OpenclProcessing):
         :param convert: if True (default) convert dtype on GPU, if false, leave as it is.
         :return: the destination buffer and its actual dtype
         """
-        dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0]) # TODO: thos looks slow, use dict instead !
+        dest_type = self.buffer_dtype.get(dest)
         events = []
         if convert:
             if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
