@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2023"
+__date__ = "04/10/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2273,13 +2273,13 @@ class AzimuthalIntegrator(Geometry):
                     if (radial_range is None) and (cython_integr.pos0_range is not None):
                         cython_reset = f"radial_range was defined in { method.algo_lower.upper()}"
                     elif (radial_range is not None) and (cython_integr.pos0_range != radial_range):
-                        cython_reset = f"radial_range is defined but differs in %s" % method.algo_lower.upper()
+                        cython_reset = f"radial_range is defined but differs in {method.algo_lower.upper()}"
                     if (azimuth_range is None) and (cython_integr.pos1_range is not None):
                         cython_reset = f"azimuth_range not defined and {method.algo_lower.upper()} had azimuth_range defined"
                     elif (azimuth_range is not None) and (cython_integr.pos1_range != azimuth_range):
                         cython_reset = f"azimuth_range requested and {method.algo_lower.upper()}'s azimuth_range don't match"
                 if cython_reset:
-                    logger.info("AI.integrate2d_ng: Resetting Cython integrator because %s", cython_reset)
+                    logger.info(f"AI.integrate2d_ng: Resetting Cython integrator because {cython_reset}")
                     split = method.split_lower
                     if split == "pseudo":
                         split = "full"
