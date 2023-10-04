@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/09/2023"
+__date__ = "04/10/2023"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -90,7 +90,7 @@ class FullSplitCSR_1d(CsrIntegrator, FullSplitIntegrator):
         :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
         """
         self.unit = unit
-        self.space = (str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
+        self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi)
 
         self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins))
@@ -157,7 +157,7 @@ class FullSplitCSR_2d(CsrIntegrator, FullSplitIntegrator):
         """
         FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi, clip_pos1)
         self.unit = unit
-        self.space = (str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
+        self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = None
         self.delta0 = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins[0]))
         self.delta1 = (self.pos1_max - self.pos1_min) / (<position_t> (self.bins[1]))
