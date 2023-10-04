@@ -790,7 +790,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
             wdim_data = (self.size + wg - 1) // wg * wg ,
             ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
             events.append(EventDescription(kernel_correction_name, ev))
-            print(kw_corr)
 
             kw_int["empty"] = dummy
             wg_min, wg_max = (workgroup_size, workgroup_size) if workgroup_size else self.workgroup_size["csr_integrate4"]
