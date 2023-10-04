@@ -237,17 +237,6 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
         events.append(EventDescription("memset_ng", memset))
 
-        # Prepare preprocessing
-        # if convert:
-        #     kernel_correction_name = "corrections4"
-        #     corrections4 = self.kernels.corrections4
-        #     kw_corr = self.cl_kernel_args[kernel_correction_name]
-        # else:
-        #     kernel_correction_name = "corrections4a"
-        #     corrections4 = self.kernels.corrections4a
-        #     kw_corr = self.cl_kernel_args[kernel_correction_name]
-        #     kw_corr["dtype"] = dtype_converter(data.dtype)
-
         if dummy is not None:
             do_dummy = numpy.int8(1)
             dummy = numpy.float32(dummy)
