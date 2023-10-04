@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "03/10/2023"
+__date__ = "04/10/2023"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -51,10 +51,10 @@ BufferDescription = processing.BufferDescription
 
 class OCL_Preproc(OpenclProcessing):
     """OpenCL class for pre-processing ... mainly for demonstration"""
-    buffers = [BufferDescription("output", 4, numpy.float32, mf.WRITE_ONLY),
-               BufferDescription("image_raw", 8, numpy.uint8, mf.READ_ONLY),
-               BufferDescription("temp", 4, numpy.uint8, mf.READ_ONLY),
+    buffers = [BufferDescription("output", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("image_raw", 8, numpy.uint8, mf.READ_WRITE),
+               BufferDescription("temp", 4, numpy.uint8, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("dark_variance", 1, numpy.float32, mf.READ_ONLY),
@@ -93,7 +93,7 @@ class OCL_Preproc(OpenclProcessing):
         :param dummy: value of impossible values: dynamic mask
         :param delta_dummy: precision for dummy values
         :param empty: value to be assigned to pixel without contribution (i.e masked)
-        :param split_result: return the result a tuple: data, [variance], normalization, so the last dim becomes 2 or 3
+        :param split_result: return the result a tuple: data, [variance], normalization, so the last dim becomes 2 or 3, can be also 4 for full error propagation
         :param calc_variance: report the result as  data, variance, normalization
         :param error_model: default error-model to be used
         :param ctx: actual working context, left to None for automatic
@@ -106,8 +106,9 @@ class OCL_Preproc(OpenclProcessing):
                         store profiling elements (makes code slower)
         """
         OpenclProcessing.__init__(self, ctx, devicetype, platformid, deviceid, block_size, profile)
-        self.size = image_size or image.size
-        self.input_dtype = image_dtype or image.dtype.type
+        self.size = image_size if image is None else image.size
+        self.shape = (image_size,) if image is None else image.shape
+        self.input_dtype = image_dtype if image is None else image.dtype.type
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
         self.allocate_buffers()
@@ -129,7 +130,8 @@ class OCL_Preproc(OpenclProcessing):
         self.on_device = {}
 
         if image is not None:
-            self.send_buffer(image, "image")
+            # self.send_buffer(image, "image")
+            self.on_device["image"] = numpy.empty_like(image)
         if dark is not None:
             assert dark.size == self.size
             self.send_buffer(dark, "dark")
@@ -319,9 +321,9 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("delta_dummy", delta_dummy),
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("output", self.cl_mem["output"])))
-        self.cl_kernel_args["corrections4a"] = OrderedDict((("image", self.cl_mem["image_raw"]),
+        self.cl_kernel_args["corrections4a"] = OrderedDict((("image_raw", self.cl_mem["image_raw"]),
                                                             ("dtype", numpy.int8(0)),
-                                                           ("poissonian", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
                                                            ("dark", self.cl_mem["dark"]),
@@ -360,27 +362,32 @@ class OCL_Preproc(OpenclProcessing):
 
         :param data: numpy array with data
         :param dest: name of the buffer as registered in the class.
-        :param convert: if True (default) convert dtype on GPU, if false, leave as it is.
-        :return: the destination buffer and its actual dtype
+        :param convert: if True (default) convert dtype on GPU, if false, leave as it is in buffer named `dest_raw`
+        :return: the destination buffer/array
         """
         dest_type = self.buffer_dtype[dest]
         events = []
         if convert:
+            actual_dest = self.cl_mem[dest]
             if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-                events.append(EventDescription("copy %s" % dest, copy_image))
+                copy_image = pyopencl.enqueue_copy(self.queue, actual_dest, numpy.ascontiguousarray(data, dest_type))
+                events.append(EventDescription(f"copy H->D {dest}", copy_image))
             else:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["temp"], numpy.ascontiguousarray(data))
                 kernel = self.kernels.get_kernel(self.mapping[data.dtype.type])
-                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["temp"], self.cl_mem[dest])
-                events += [EventDescription("copy raw", dest), EventDescription("convert to float", cast_to_float)]
+                to_float = kernel(self.queue, (self.size,), None, self.cl_mem["temp"], self.cl_mem[dest])
+                events += [EventDescription("copy H->D temp", copy_image),
+                           EventDescription("convert to float", to_float)]
+            self.on_device[dest] = data
         else:
-            copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-            events.append(EventDescription("copy %s" % dest, copy_image))
+            new_dest = f"{dest}_raw"
+            actual_dest = self.cl_mem[new_dest]
+            copy_image = pyopencl.enqueue_copy(self.queue, actual_dest, numpy.ascontiguousarray(data))
+            events.append(EventDescription(f"copy H->D {new_dest}", copy_image))
+            self.on_device[new_dest] = data
 
         self.profile_multi(events)
-        self.on_device[dest] = data
-        return dest, dtype_converter(dest_type)
+        return actual_dest
 
     def process(self, image,
                 dark=None,
@@ -425,30 +432,32 @@ class OCL_Preproc(OpenclProcessing):
                 split_result = self.on_host.get("split_result")
 
             if split_result == 4:
-                kernel_name = "corrections4"
-                dshape = self.on_device.get("image").shape + (4,)
+                dshape = self.shape + (4,)
+                if image.dtype == numpy.float32:
+                    kernel_name = "corrections4"
+                elif (image.dtype.itemsize <= 4):
+                    kernel_name = "corrections4a"
+                else:
+                    kernel_name = "corrections4"
             elif split_result == 3:
                 kernel_name = "corrections3"
-                dshape = self.on_device.get("image").shape + (3,)
+                dshape = self.shape + (3,)
             elif split_result == 2:
                 kernel_name = "corrections2"
-                dshape = self.on_device.get("image").shape + (2,)
+                dshape = self.shape + (2,)
             else:
                 kernel_name = "corrections"
-                dshape = self.on_device.get("image").shape
+                dshape = self.shape
             kwargs = self.cl_kernel_args[kernel_name]
-
 
             # finally
             if id(image) != id(self.on_device.get("image")):
-                if (image.dtype.itemsize <= 4) and (kernel_name == "corrections4"):
-                    kernel_name = "corrections4a"
-                    kwargs = self.cl_kernel_args[kernel_name]
-                    kwargs[image], kwargs["dtype"] = self.send_buffer(image, "raw_image", convert=False)
-                    print(image.dtype.itemsize, kernel_name, kwargs)
+                if kernel_name == "corrections4a":
+                    # with late conversion:
+                    kwargs["image_raw"] = self.send_buffer(image, "image", convert=False)
+                    kwargs["dtype"] = dtype_converter(image.dtype)
                 else:
-                    self.send_buffer(image, "image")
-                    print(kwargs)
+                    kwargs["image"] = self.send_buffer(image, "image")
 
             if out is None:
                 dest = numpy.empty(dshape, dtype=numpy.float32)
@@ -464,8 +473,7 @@ class OCL_Preproc(OpenclProcessing):
             if (kernel_name == "corrections3") and (self.on_device.get("dark_variance") is not None):
                 kwargs["do_dark_variance"] = do_dark
             kernel = self.kernels.get_kernel(kernel_name)
-            logger.warning(f"Using kernel {kernel_name}")
-
+            # logger.warning(f"Using kernel {kernel_name}")
             evt = kernel(self.queue, (self.size,), None, *list(kwargs.values()))
 
             copy_result = pyopencl.enqueue_copy(self.queue, dest, self.cl_mem["output"])
@@ -558,7 +566,7 @@ def preproc(raw,
 
       Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
 
-    * If poissonian is set to True, the variance is evaluated as (raw + dark) minimum (1)
+    * If error_model is set to poissonian, the variance is evaluated as (raw + dark) minimum (1)
     """
     if raw.dtype.itemsize > 4:  # use numpy to cast to float32
         raw = numpy.ascontiguousarray(raw, numpy.float32)
