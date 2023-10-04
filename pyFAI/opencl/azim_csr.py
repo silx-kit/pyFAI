@@ -689,7 +689,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         """
         events = []
         with self.sem:
-            convert = (data.dtype.itemsize>4)
+            convert = (data.dtype.itemsize>4) or (data.dtype == numpy.float32)
             self.send_buffer(data, "image", workgroup_size=workgroup_size, convert=convert)
             wg = workgroup_size if workgroup_size else max(self.workgroup_size["memset_ng"])
             wdim_bins = (self.bins + wg - 1) // wg * wg,
@@ -790,6 +790,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             wdim_data = (self.size + wg - 1) // wg * wg ,
             ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
             events.append(EventDescription(kernel_correction_name, ev))
+            print(kw_corr)
 
             kw_int["empty"] = dummy
             wg_min, wg_max = (workgroup_size, workgroup_size) if workgroup_size else self.workgroup_size["csr_integrate4"]

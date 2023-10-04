@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2023"
+__date__ = "04/10/2023"
 
 import unittest
 import os
@@ -441,12 +441,23 @@ class TestSaxs(unittest.TestCase):
         for method in methods:
             logger.debug("TestSaxs.test_normalization_factor method= " + method)
             ref1d[method + "_1"] = ai.integrate1d_ng(copy.deepcopy(data), 100, method=method, error_model="poisson")
+            if method=="ocl_csr":
+                print(data.dtype, data.shape)
+                e = list(ai.engines.values())[-1].engine
+                e.set_profiling(True)
             ref1d[method + "_10"] = ai.integrate1d_ng(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
             ratio_i = ref1d[method + "_1"].intensity.mean() / ref1d[method + "_10"].intensity.mean()
             ratio_s = ref1d[method + "_1"].sigma.mean() / ref1d[method + "_10"].sigma.mean()
-
-            self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 1d intensity Method: %s ratio: %s expected 10" % (ref1d[method + "_1"].method, ratio_i))
-            self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 1d sigma Method: %s ratio: %s expected 10" % (ref1d[method + "_1"].method, ratio_s))
+            print(method, ref1d[method + "_1"].intensity, ref1d[method + "_10"].intensity)
+            if method=="ocl_csr":
+                print(e)
+                print("\n".join(e.log_profile(True)))
+                prep = numpy.empty(ai.detector.shape+(4,), "float32")
+                import pyopencl
+                pyopencl.enqueue_copy(e.queue, prep, e.cl_mem["output4"]).wait()
+                print(e.on_device)
+            self.assertAlmostEqual(ratio_i, 10.0, places=3, msg=f"test_normalization_factor 1d intensity Method: {ref1d[method + '_1'].method} ratio: {ratio_i} expected 10")
+            self.assertAlmostEqual(ratio_s, 10.0, places=3, msg=f"test_normalization_factor 1d sigma Method: {ref1d[method + '_1'].method} ratio: {ratio_s} expected 10")
             # ai.reset()
             ref2d[method + "_1"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, error_model="poisson")
             ref2d[method + "_10"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, normalization_factor=10, error_model="poisson")
