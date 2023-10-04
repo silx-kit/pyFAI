@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "29/09/2023"
+__date__ = "04/10/2023"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -124,7 +124,7 @@ class OCL_Histogram1d(OpenclProcessing):
                            " but it can be present and not declared as Nvidia does",
                            self.ctx.devices[0].name)
         self.unit = unit
-        self.space = (str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
+        self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bins = numpy.uint32(bins)
         self.size = numpy.uint32(radial.size)
         self.empty = numpy.float32(empty) if empty is not None else numpy.float32(0.0)

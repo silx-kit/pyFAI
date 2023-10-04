@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2023"
+__date__ = "04/10/2023"
 __status__ = "development"
 
 import logging
@@ -182,7 +182,7 @@ class CsrIntegrator1d(CSRIntegrator):
         CSRIntegrator.__init__(self, image_size, lut, empty)
         self.pos0_range = self.pos1_range = None
         self.unit = unit
-        self.space = (str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
+        self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.mask_checksum = mask_checksum
 
     def set_matrix(self, data, indices, indptr):
@@ -417,7 +417,7 @@ class CsrIntegrator2d(CSRIntegrator):
         self.bin_centers0 = bin_centers0
         self.bin_centers1 = bin_centers1
         self.unit = unit
-        self.space = (str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
+        self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.mask_checksum = mask_checksum
 
         if not checksum:
