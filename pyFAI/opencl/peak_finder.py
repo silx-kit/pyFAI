@@ -4,7 +4,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "31/01/2023"
+__date__ = "04/10/2023"
 __copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -40,17 +40,17 @@ import numpy
 from ..containers import SparseFrame, ErrorModel
 from ..utils import EPS32
 from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl, OpenclProcessing
-from . import get_x87_volatile_option
-from . import kernel_workgroup_size
+from . import get_x87_volatile_option, kernel_workgroup_size, dtype_converter
 
 logger = logging.getLogger(__name__)
 
 
 class OCL_PeakFinder(OCL_CSR_Integrator):
     BLOCK_SIZE = 1024  # unlike in OCL_CSR_Integrator, here we need larger blocks
-    buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+    buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
-               BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("image_raw", 1, numpy.int64, mf.READ_WRITE),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
@@ -111,12 +111,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                  profile=profile, extra_buffers=extra_buffers)
 
         if mask is None:
-            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(0)
+            self.cl_kernel_args["corrections4a"]["do_mask"] = numpy.int8(0)
             self.mask = None
         else:
             self.mask = numpy.ascontiguousarray(mask, numpy.int8)
             self.send_buffer(self.mask, "mask")
-            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
+            self.cl_kernel_args["corrections4a"]["do_mask"] = numpy.int8(1)
 
         if self.bin_centers is None:
             raise RuntimeError("1D bin center position is mandatory")
@@ -224,14 +224,19 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :return: list of event to wait for.
         """
         events = []
-        self.send_buffer(data, "image")
+        # convert = (data.dtype.itemsize>4)
+        # self.send_buffer(data, "image", convert=convert)
+        kernel_correction_name = "corrections4a"
+        corrections4 = self.kernels.corrections4a
+        kw_corr = self.cl_kernel_args[kernel_correction_name]
+        kw_corr["image"] = self.send_buffer(data, "image", convert=False)
+        kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize>4 else dtype_converter(data.dtype)
+
         wg = max(self.workgroup_size["memset_ng"])
         wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
         memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
         events.append(EventDescription("memset_ng", memset))
 
-        # Prepare preprocessing
-        kw_corr = self.cl_kernel_args["corrections4"]
         if dummy is not None:
             do_dummy = numpy.int8(1)
             dummy = numpy.float32(dummy)
@@ -314,10 +319,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         kw_int = self.cl_kernel_args["csr_sigma_clip4"]
         kw_corr["error_model"] = kw_int["error_model"] = numpy.int8(error_model.value)
 
-        wg = max(self.workgroup_size["corrections4"])
+        wg = max(self.workgroup_size[kernel_correction_name])
         wdim_data = (self.size + wg - 1) & ~(wg - 1),
-        ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
-        events.append(EventDescription("corrections", ev))
+        ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
+        events.append(EventDescription(kernel_correction_name, ev))
 
         # Prepare sigma-clipping
         kw_int["cutoff"] = numpy.float32(cutoff_clip)

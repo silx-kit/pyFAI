@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2023"
+__date__ = "03/10/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -377,18 +377,16 @@ class AzimuthalIntegrator(Geometry):
         Unit can also be a 2-tuple in the case of a 2D integration
         """
         if isinstance(unit, (list, tuple)) and len(unit) == 2:
-            unit0, unit1 = unit
+            unit0, unit1 = tuple(units.to_unit(u) for u in unit)
         else:
-            unit0 = unit
+            unit0 = units.to_unit(unit)
             unit1 = units.CHI_DEG
         if scale and pos0_range:
-            unit0 = units.to_unit(unit0)
             pos0_scale = unit0.scale
             pos0_range = tuple(pos0_range[i] / pos0_scale for i in (0, -1))
         if "__len__" in dir(npt) and len(npt) == 2:
             int2d = True
             if scale and pos1_range:
-                unit1 = units.to_unit(unit1)
                 pos1_scale = unit1.scale
                 pos1_range = tuple(pos1_range[i] / pos1_scale for i in (0, -1))
         else:

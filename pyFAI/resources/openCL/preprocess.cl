@@ -146,6 +146,69 @@ s32_to_float(__global int  *array_int,
     array_float[i] = (float)(array_int[i]);
 }
 
+/* Function reading at the given position.
+ * Dtype is 1/-1 for char/uchar .... 8/-4 for int64/uint64 and 32/64 for float/double.
+ */
+static float _any2float(const global uchar* input,
+                       size_t position,
+                       char dtype){
+    float value=0.0f;
+    if (dtype == 1){
+        uchar ival =  input[position];
+        value = convert_float(ival);
+    }
+    else if (dtype == -1){
+        char ival =  as_char(input[position]);
+        value = convert_float(ival);
+    }
+    else if (dtype == 2){
+        uchar2 rval =  (uchar2) (input[2*position],input[2*position+1]);
+        ushort ival = as_ushort(rval);
+        value = convert_float(ival);
+    }
+    else if (dtype == -2){
+        uchar2 rval =  (uchar2) (input[2*position],input[2*position+1]);
+        short ival = as_short(rval);
+        value = convert_float(ival);
+    }
+    else if (dtype == 4){
+        uchar4 rval =  (uchar4) (input[4*position],input[4*position+1], input[4*position+2],input[4*position+3]);
+        uint ival = as_uint(rval);
+        value = convert_float(ival);
+    }
+    else if (dtype == -4){
+        uchar4 rval =  (uchar4) (input[4*position],input[4*position+1], input[4*position+2],input[4*position+3]);
+        int ival = as_int(rval);
+        value = convert_float(ival);
+    }
+    else if (dtype == 8){
+        uchar8 rval =  (uchar8) (input[8*position],input[8*position+1], input[8*position+2],input[8*position+3],
+                                 input[8*position+4],input[8*position+5], input[8*position+6],input[8*position+7]);
+        ulong ival = as_ulong(rval);
+        value = convert_float(ival);
+    }
+    else if (dtype == -8){
+        uchar8 rval =  (uchar8) (input[8*position],input[8*position+1], input[8*position+2],input[8*position+3],
+                              input[8*position+4],input[8*position+5], input[8*position+6],input[8*position+7]);
+        long ival = as_long(rval);
+        value = convert_float(ival);
+    }
+    else if (dtype == 32){
+        uchar4 rval =  (uchar4) (input[4*position], input[4*position+1], input[4*position+2], input[4*position+3]);
+        value = as_float(rval);
+    }
+    else if (dtype == 64){
+#ifdef cl_khr_fp64
+        uchar8 rval =  (uchar8) (input[8*position],input[8*position+1], input[8*position+2],input[8*position+3],
+                              input[8*position+4],input[8*position+5], input[8*position+6],input[8*position+7]);
+        value = convert_float(as_double(rval));
+#else
+        if (get_global_id==0)printf("Doubleprecision arithmetics is not supported on this device !\n");
+#endif
+    }
+
+    return value;
+}
 
 /**
  * Internal functions pixel wise function.
@@ -178,7 +241,7 @@ s32_to_float(__global int  *array_int,
  *
 **/
 
-static float4 _preproc4(const __global float  *image,
+static float4 _preproc4(const float  value,
                         const          char   error_model,
                         const __global float  *variance,
                         const          char   do_dark,
@@ -200,7 +263,7 @@ static float4 _preproc4(const __global float  *image,
                         const          float  delta_dummy,
                         const          float  normalization_factor)
 {
-    size_t i= get_global_id(0);
+    size_t i = get_global_id(0);
     float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
     if (i < NIMAGE){
         if ((!do_mask) || (!mask[i])){
@@ -214,9 +277,9 @@ static float4 _preproc4(const __global float  *image,
                 v = 0.0f;
                 break;
             default:
-                v = max(image[i], 1.0f);
+                v = max(value, 1.0f);
             }
-            result = (float4)(image[i], v, normalization_factor, 1.0f);
+            result = (float4)(value, v, normalization_factor, 1.0f);
 
             if ( (!do_dummy)
                   ||((delta_dummy != 0.0f) && (fabs(result.s0-dummy) > delta_dummy))
@@ -306,7 +369,7 @@ corrections(const __global float  *image,
     size_t i= get_global_id(0);
     if (i < NIMAGE) {
         float4 result;
-        result = _preproc4(image,
+        result = _preproc4(_any2float(image, i, 32),
                            0,
                            image,
                            do_dark,
@@ -384,12 +447,12 @@ corrections2(const __global float  *image,
                    __global float2  *output
             )
 {
-    size_t i= get_global_id(0);
+    size_t i = get_global_id(0);
 
     if (i < NIMAGE)
     {
         float4 result;
-        result = _preproc4(image,
+        result = _preproc4(_any2float(image, i, 32),
                            0,
                            image,
                            do_dark,
@@ -468,11 +531,11 @@ corrections3(const __global float  *image,
                    __global float3  *output
             )
 {
-    size_t i= get_global_id(0);
+    size_t i = get_global_id(0);
 
     if (i < NIMAGE){
         float4 result;
-        result = _preproc4( image,
+        result = _preproc4( _any2float(image, i, 32),
                             error_model,
                             variance,
                             do_dark,
@@ -528,7 +591,7 @@ corrections3(const __global float  *image,
 **/
 
 kernel void
-corrections4(const __global float  *image,
+corrections4(const __global uchar  *image,
              const          char   error_model,
              const __global float  *variance,
              const          char   do_dark,
@@ -552,11 +615,97 @@ corrections4(const __global float  *image,
                    __global float4  *output
             )
 {
-    size_t i= get_global_id(0);
+    size_t i = get_global_id(0);
     float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
-        result = _preproc4( image,
+        result = _preproc4( _any2float(image, i, 32),
+                            error_model,
+                            variance,
+                            do_dark,
+                            dark,
+                            do_dark_variance,
+                            dark_variance,
+                            do_flat,
+                            flat,
+                            do_solidangle,
+                            solidangle,
+                            do_polarization,
+                            polarization,
+                            do_absorption,
+                            absorption,
+                            do_mask,
+                            mask,
+                            do_dummy,
+                            dummy,
+                            delta_dummy,
+                            normalization_factor);
+        output[i] = result;
+    };//end if NIMAGE
+};//end kernel
+
+/**
+ * \brief Performs Normalization of input image with float4 output (signal, variance, normalization, count)
+ *
+ * Intensities of images are corrected by:
+ *  - dark (read-out) noise subtraction for the data
+ *  - Solid angle correction (division)
+ *  - polarization correction (division)
+ *  - flat fiels correction (division)
+ * Corrections are made in place unless the pixel is dummy.
+ * Dummy pixels are left untouched so that they remain dummy
+ *
+ * - image           Float pointer to global memory storing the input image.
+ * - image_dtype     integer containing the coding to the datatype ((+/)-1 for (u)char, ... (+/)-4 for (u)int, 32 and 64 for float and double)
+ * - error_model     error_model, int defined in the ErrorModel enum
+ * - do_dark         Bool/int: shall dark-current correction be applied ?
+ * - dark            Float pointer to global memory storing the dark image.
+ * - do_flat         Bool/int: shall flat-field correction be applied ?
+ * - flat            Float pointer to global memory storing the flat image.
+ * - do_solidangle   Bool/int: shall flat-field correction be applied ?
+ * - solidangle      Float pointer to global memory storing the solid angle of each pixel.
+ * - do_polarization Bool/int: shall flat-field correction be applied ?
+ * - polarization    Float pointer to global memory storing the polarization of each pixel.
+ * - do_dummy        Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
+ * - dummy           Float: value for bad pixels
+ * - delta_dummy     Float: precision for bad pixel value
+ * - normalization_factor : divide the input by this value
+ *
+ *
+**/
+
+kernel void
+corrections4a(const __global uchar  *image,
+             const          char  dtype,
+             const          char   error_model,
+             const __global float  *variance,
+             const          char   do_dark,
+             const __global float  *dark,
+             const          char   do_dark_variance,
+             const __global float  *dark_variance,
+             const          char   do_flat,
+             const __global float  *flat,
+             const          char   do_solidangle,
+             const __global float  *solidangle,
+             const          char   do_polarization,
+             const __global float  *polarization,
+             const          char   do_absorption,
+             const __global float  *absorption,
+             const          char   do_mask,
+             const __global char   *mask,
+             const          char   do_dummy,
+             const          float  dummy,
+             const          float  delta_dummy,
+             const          float  normalization_factor,
+                   __global float4  *output
+            )
+{
+    size_t i = get_global_id(0);
+    float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+    if (i < NIMAGE)
+    {
+        float value = _any2float(image, i, dtype);
+        result = _preproc4( value,
                             error_model,
                             variance,
                             do_dark,

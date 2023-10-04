@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -28,14 +28,14 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "26/09/2023"
-__copyright__ = "2014-2021, ESRF, Grenoble"
+__date__ = "04/10/2023"
+__copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-from . import pyopencl
+from . import pyopencl, dtype_converter
 from ..utils import calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -43,9 +43,9 @@ else:
     raise ImportError("pyopencl is not installed")
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from . import processing, OpenclProcessing
-from . import get_x87_volatile_option
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
+
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
     # Intel CPU driver calims preferred workgroup is 128 !
     buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
-               BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("image_raw", 1, numpy.int64, mf.READ_WRITE),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
@@ -170,6 +171,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             self.set_kernel_arguments()
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
+        self.buffer_dtype = {i.name:numpy.dtype(i.dtype) for i in self.buffers}
         if numpy.allclose(self._data, numpy.ones(self._data.shape)):
             self.cl_mem["data"] = None
             self.cl_kernel_args["csr_sigma_clip4"]["data"] = None
@@ -325,7 +327,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("merged", self.cl_mem["merged"]),
                                                             ("shared", pyopencl.LocalMemory(16))))
 
-        self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
+        self.cl_kernel_args["corrections4a"] = OrderedDict((("image", self.cl_mem["image_raw"]),
+                                                            ("dtype", numpy.int8(0)),
                                                            ("error_model", numpy.int8(0)),
                                                            ("variance", self.cl_mem["variance"]),
                                                            ("do_dark", numpy.int8(0)),
@@ -381,53 +384,78 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.cl_kernel_args["csr_integrate4_single"] = self.cl_kernel_args["csr_integrate4"]
         self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged")))
         self.cl_kernel_args["memset_ng"] = OrderedDict(((i, self.cl_mem[i]) for i in ("averint", "std", "merged8")))
-        self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
+        self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
+        self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
+        self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
+        self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
+        self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
 
-    def send_buffer(self, data, dest, checksum=None, workgroup_size=None):
+    def send_buffer(self, data, dest, checksum=None, workgroup_size=None, convert=True):
         """Send a numpy array to the device, including the type conversion on the device if possible
 
         :param data: numpy array with data
         :param dest: name of the buffer as registered in the class
         :param checksum: Checksum of the data to determine if the data needs to be transfered
         :param workgroup_size: enforce kernel to run with given workgroup size
-        :return: none
+        :param convert: if True (default) convert dtype on GPU, if false, leave as it is.
+        :return: the actual buffer where the data were sent
         """
-
-        dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])
+        dest_type = self.buffer_dtype[dest]
         events = []
         if isinstance(data, pyopencl.array.Array):
             if (data.dtype == dest_type):
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], data.data)
-                events.append(EventDescription("copy D->D %s" % dest, copy_image))
-            else:
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
+                dest_buffer = self.cl_mem[dest]
+                copy_image = pyopencl.enqueue_copy(self.queue, dest_buffer, data.data)
+                events.append(EventDescription(f"copy D->D {dest}", copy_image))
+            elif convert:
+                tmp_buffer =  self.cl_mem["tmp"]
+                dest_buffer = self.cl_mem[dest]
+                copy_image = pyopencl.enqueue_copy(self.queue, tmp_buffer, data.data)
                 kernel_name = self.mapping[data.dtype.type]
                 kernel = self.kernels.get_kernel(kernel_name)
                 wg = workgroup_size if workgroup_size else max(self.workgroup_size[kernel_name])
-                convert_to_float = kernel(self.queue, ((self.size + wg - 1) // wg * wg,), (wg,), self.cl_mem["image_raw"], self.cl_mem[dest])
-                events += [EventDescription("copy raw D->D " + dest, copy_image),
-                           EventDescription("convert " + kernel_name, convert_to_float)]
+                convert_to_float = kernel(self.queue, ((self.size + wg - 1) // wg * wg,), (wg,), tmp_buffer, dest_buffer)
+                events += [EventDescription(f"copy raw D->D {dest}", copy_image),
+                           EventDescription(f"convert {kernel_name}", convert_to_float)]
+            else: # no convert
+                actual_dest = f"{dest}_raw"
+                dest_buffer = self.cl_mem[actual_dest]
+                if data.dtype.itemsize > dest_type.itemsize:
+                    converted_data = data.astype(dest_type)
+                else:
+                    converted_data = data
+                copy_image = pyopencl.enqueue_copy(self.queue, dest_buffer, converted_data.data)
+                events.append(EventDescription(f"copy D->D {actual_dest}", copy_image))
         else:
             # Assume it is a numpy array
             if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-                events.append(EventDescription("copy H->D %s" % dest, copy_image))
-            else:
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                dest_buffer = self.cl_mem[dest]
+                copy_image = pyopencl.enqueue_copy(self.queue, dest_buffer, numpy.ascontiguousarray(data, dest_type))
+                events.append(EventDescription(f"copy H->D {dest}", copy_image))
+            elif convert:
+                tmp_buffer =  self.cl_mem["tmp"]
+                dest_buffer = self.cl_mem[dest]
+                copy_image = pyopencl.enqueue_copy(self.queue, tmp_buffer, numpy.ascontiguousarray(data))
                 kernel_name = self.mapping[data.dtype.type]
                 kernel = self.kernels.get_kernel(kernel_name)
                 wg = workgroup_size if workgroup_size else max(self.workgroup_size[kernel_name])
-                convert_to_float = kernel(self.queue, ((self.size + wg - 1) // wg * wg,), (wg,), self.cl_mem["image_raw"], self.cl_mem[dest])
-                events += [EventDescription("copy raw H->D " + dest, copy_image),
-                           EventDescription("convert " + kernel_name, convert_to_float)]
+                convert_to_float = kernel(self.queue, ((self.size + wg - 1) // wg * wg,), (wg,), tmp_buffer, dest_buffer)
+                events += [EventDescription(f"copy raw H->D {dest}", copy_image),
+                           EventDescription(f"convert {kernel_name}", convert_to_float)]
+            else:
+                actual_dest = f"{dest}_raw"
+                dest_buffer = self.cl_mem[actual_dest]
+                if data.dtype.itemsize > dest_type.itemsize:
+                    converted_data = numpy.ascontiguousarray(data, dest_type)
+                else:
+                    converted_data = numpy.ascontiguousarray(data)
+                copy_image = pyopencl.enqueue_copy(self.queue, dest_buffer, converted_data)
+                events.append(EventDescription(f"copy H->D {actual_dest}", copy_image))
         self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum
+        return dest_buffer
 
     def integrate_legacy(self, data, dummy=None, delta_dummy=None,
                          dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
@@ -529,6 +557,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     polarization_checksum = calc_checksum(polarization, safe)
                 if polarization_checksum != self.on_device["polarization"]:
                     self.send_buffer(polarization, "polarization", polarization_checksum)
+                    self.on_device["polarization"] = polarization_checksum
             else:
                 do_polarization = numpy.int8(0)
             kw_corr["do_polarization"] = do_polarization
@@ -552,6 +581,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 image = numpy.empty(data.shape, dtype=numpy.float32)
                 ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
                 events.append(EventDescription("copy D->H image", ev))
+                ev.wait()
                 self.profile_multi(events)
                 return image
 
@@ -589,12 +619,13 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if merged is not None:
                 ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
                 events.append(EventDescription("copy D->H merged", ev))
-            if  sum_data is not None:
+            if sum_data is not None:
                 ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
                 events.append(EventDescription("copy D->H sum_data", ev))
             if sum_count is not None:
                 ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
                 events.append(EventDescription("copy D->H sum_count", ev))
+            ev.wait()
         self.profile_multi(events)
         return merged, sum_data, sum_count
 
@@ -647,12 +678,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
         """
         events = []
         with self.sem:
-            self.send_buffer(data, "image", workgroup_size=workgroup_size)
+            kernel_correction_name = "corrections4a"
+            corrections4 = self.kernels.corrections4a
+            kw_corr = self.cl_kernel_args[kernel_correction_name]
+            kw_corr["image"] = self.send_buffer(data, "image", convert=False)
+            kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize>4 else dtype_converter(data.dtype)
             wg = workgroup_size if workgroup_size else max(self.workgroup_size["memset_ng"])
             wdim_bins = (self.bins + wg - 1) // wg * wg,
             memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
-            kw_corr = self.cl_kernel_args["corrections4"]
             kw_int = self.cl_kernel_args["csr_integrate4"]
 
             if dummy is not None:
@@ -734,10 +768,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
 
-            wg = workgroup_size if workgroup_size else max(self.workgroup_size["corrections4"])
+            wg = workgroup_size if workgroup_size else max(self.workgroup_size[kernel_correction_name])
             wdim_data = (self.size + wg - 1) // wg * wg ,
-            ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
-            events.append(EventDescription("corrections4", ev))
+            ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
+            events.append(EventDescription(kernel_correction_name, ev))
 
             kw_int["empty"] = dummy
             wg_min, wg_max = (workgroup_size, workgroup_size) if workgroup_size else self.workgroup_size["csr_integrate4"]
@@ -768,14 +802,14 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             if out_sem is None:
                 sem = numpy.empty(self.bins, dtype=numpy.float32)
-            elif out_sem is  False:
+            elif out_sem is False:
                 sem = None
             else:
                 sem = out_sem.data
 
             if out_std is None:
                 std = numpy.empty(self.bins, dtype=numpy.float32)
-            elif out_std is  False:
+            elif out_std is False:
                 std = None
             else:
                 std = out_std.data
@@ -873,12 +907,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
         error_model = ErrorModel.parse(error_model)
         events = []
         with self.sem:
-            self.send_buffer(data, "image")
+            kernel_correction_name = "corrections4a"
+            corrections4 = self.kernels.corrections4a
+            kw_corr = self.cl_kernel_args[kernel_correction_name]
+            kw_corr["image"] = self.send_buffer(data, "image", convert=False)
+            kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize>4 else dtype_converter(data.dtype)
             wg = max(self.workgroup_size["memset_ng"])
             wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
             memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
-            kw_corr = self.cl_kernel_args["corrections4"]
             kw_int = self.cl_kernel_args["csr_sigma_clip4"]
 
             if dummy is not None:
@@ -962,10 +999,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
 
-            wg = max(self.workgroup_size["corrections4"])
+            wg = max(self.workgroup_size[kernel_correction_name])
             wdim_data = (self.size + wg - 1) & ~(wg - 1),
-            ev = self.kernels.corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
-            events.append(EventDescription("corrections", ev))
+            ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
+            events.append(EventDescription(kernel_correction_name, ev))
 
             kw_int["cutoff"] = numpy.float32(cutoff)
             kw_int["cycle"] = numpy.int32(cycle)
