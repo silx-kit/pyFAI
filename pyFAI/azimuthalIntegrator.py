@@ -2279,7 +2279,7 @@ class AzimuthalIntegrator(Geometry):
                     elif (azimuth_range is not None) and (cython_integr.pos1_range != azimuth_range):
                         cython_reset = f"azimuth_range requested and {method.algo_lower.upper()}'s azimuth_range don't match"
                 if cython_reset:
-                    logger.info(f"AI.integrate2d_ng: Resetting Cython integrator because {cython_reset}")
+                    logger.info("AI.integrate2d_ng: Resetting Cython integrator because %s", cython_reset)
                     split = method.split_lower
                     if split == "pseudo":
                         split = "full"
