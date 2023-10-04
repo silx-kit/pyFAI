@@ -719,7 +719,7 @@ class AzimuthalIntegrator(Geometry):
                 integr = engine.engine
                 reset = None
                 if integr is None:
-                    reset = "init"
+                    reset = "of first initialization"
                 if (not reset) and safe:
                     if integr.unit != unit:
                         reset = "unit changed"
@@ -843,7 +843,7 @@ class AzimuthalIntegrator(Geometry):
                 reset = None
 
                 if integr is None:
-                    reset = "init"
+                    reset = "of first initialization"
                 if (not reset) and safe:
                     if integr.unit != unit:
                         reset = "unit changed"
@@ -1822,7 +1822,7 @@ class AzimuthalIntegrator(Geometry):
                 integr = engine.engine
                 reset = None
                 if integr is None:
-                    reset = "init"
+                    reset = "of first initialization"
                 if (not reset) and safe:
                     if integr.unit != unit:
                         reset = "unit changed"
@@ -1907,7 +1907,7 @@ class AzimuthalIntegrator(Geometry):
                 integr = engine.engine
                 reset = None
                 if integr is None:
-                    reset = "init"
+                    reset = "of first initialization"
                 if (not reset) and safe:
                     if integr.unit != unit:
                         reset = "unit changed"
@@ -2309,11 +2309,11 @@ class AzimuthalIntegrator(Geometry):
                     integr = engine.engine
                     reset = None
                     if integr is None:
-                        reset = "init"
+                        reset = "of first initialization"
                     if (not reset) and safe:
                         if integr.space != space:
                             reset = f"unit {integr.unit} incompatible with requested {unit}"
-                        if integr.bins != npt:
+                        if numpy.prod(integr.bins) != numpy.prod(npt):
                             reset = f"number of points {integr.bins} incompatible with requested {npt}"
                         if integr.size != data.size:
                             reset = f"input image size {integr.size} incompatible with requested {data.size}"
@@ -2477,7 +2477,7 @@ class AzimuthalIntegrator(Geometry):
                         integr = engine.engine
                         reset = None
                         if integr is None:
-                            reset = "init"
+                            reset = "of first initialization"
                         if (not reset) and safe:
                             if integr.space != space:
                                 reset = f"unit {integr.unit} incompatible with requested {unit}"
