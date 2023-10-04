@@ -116,7 +116,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.size = image_size
         self.empty = empty or 0  # numpy.NaN
         self.unit = unit
-        self.space = (str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
+        self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = bin_centers
         self.azim_centers = azim_centers
         # a few place-folders
