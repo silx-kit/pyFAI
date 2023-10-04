@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/09/2023"
+__date__ = "05/10/2023"
 
 import numpy
 import collections.abc
@@ -32,7 +32,12 @@ import collections.abc
 from pyFAI import units
 
 
-def tthToRad(twoTheta: numpy.ndarray, unit: units.Unit, wavelength: float=None, directDist: float=None):
+def tthToRad(
+    twoTheta: numpy.ndarray,
+    unit: units.Unit,
+    wavelength: float = None,
+    directDist: float = None,
+):
     """
     Convert a two theta angle from original `unit` to radian.
 
@@ -42,6 +47,11 @@ def tthToRad(twoTheta: numpy.ndarray, unit: units.Unit, wavelength: float=None, 
     .. code-block:: python
 
         directDist = ai.getFit2D()["directDist"]
+
+    :param unit: instance of pyFAI.units.Unit
+    :param wavelength: wavelength in m
+    :param directDist: distance from sample to beam-center on the detector in _mm_
+    :param ai: instance of pyFAI.azimuthalIntegrator.AzimuthalIntegrator
     """
     if isinstance(twoTheta, numpy.ndarray):
         pass
@@ -55,11 +65,11 @@ def tthToRad(twoTheta: numpy.ndarray, unit: units.Unit, wavelength: float=None, 
     elif unit == units.Q_A:
         if wavelength is None:
             raise AttributeError("wavelength has to be specified")
-        return numpy.arcsin((twoTheta * wavelength) / (4.e-10 * numpy.pi)) * 2.0
+        return numpy.arcsin((twoTheta * wavelength) / (4.0e-10 * numpy.pi)) * 2.0
     elif unit == units.Q_NM:
         if wavelength is None:
             raise AttributeError("wavelength has to be specified")
-        return numpy.arcsin((twoTheta * wavelength) / (4.e-9 * numpy.pi)) * 2.0
+        return numpy.arcsin((twoTheta * wavelength) / (4.0e-9 * numpy.pi)) * 2.0
     elif unit == units.R_MM:
         if directDist is None:
             raise AttributeError("directDist has to be specified")
@@ -84,36 +94,30 @@ def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
     .. code-block:: python
 
         directDist = ai.getFit2D()["directDist"]
+
+    :param unit: instance of pyFAI.units.Unit
+    :param wavelength: wavelength in m
+    :param directDist: distance from sample to beam-center on the detector in _mm_
+    :param ai: instance of pyFAI.azimuthalIntegrator.AzimuthalIntegrator
     """
     if isinstance(twoTheta, numpy.ndarray):
         pass
     elif isinstance(twoTheta, collections.abc.Iterable):
         twoTheta = numpy.array(twoTheta)
 
-    if unit == units.TTH_DEG:
-        return numpy.rad2deg(twoTheta)
-    elif unit == units.TTH_RAD:
-        return twoTheta
-    elif unit == units.Q_A:
-        return (4.e-10 * numpy.pi / wavelength) * numpy.sin(.5 * twoTheta)
-    elif unit == units.Q_NM:
-        return (4.e-9 * numpy.pi / wavelength) * numpy.sin(.5 * twoTheta)
-    elif unit == units.R_MM:
-        # GF: correct formula?
+    if unit.space == "2th":
+        return twoTheta * unit.scale
+    elif unit.space == "q":
+        q_nm = (4.0e-9 * numpy.pi / wavelength) * numpy.sin(0.5 * twoTheta)
+        return q_nm * unit.scale
+    elif unit.space == "r":
         if directDist is not None:
-            beamCentre = directDist
+            beamCentre_m = directDist * 1e-3  # convert in m
         else:
-            beamCentre = ai.getFit2D()["directDist"]  # in mm!!
-        return beamCentre * numpy.tan(twoTheta)
-    elif unit == units.R_M:
-        # GF: correct formula?
-        if directDist is not None:
-            beamCentre = directDist
-        else:
-            beamCentre = ai.getFit2D()["directDist"]  # in mm!!
-        return beamCentre * numpy.tan(twoTheta) * 0.001
-    elif unit == units.RecD2_NM:
-        q = (4.e-9 * numpy.pi / wavelength) * numpy.sin(.5 * twoTheta)
-        return (q / (2.0 * numpy.pi)) ** 2
+            beamCentre_m = ai.getFit2D()["directDist"] * 1e-3  # convert in m
+        return beamCentre_m * numpy.tan(twoTheta) * unit.scale
+    elif unit.space == "d*2":
+        rec_d2_nm = (2e-9 / wavelength * numpy.sin(0.5 * twoTheta)) ** 2
+        return rec_d2_nm * unit.scale
     else:
         raise ValueError("Converting from 2th to unit %s is not supported", unit)
