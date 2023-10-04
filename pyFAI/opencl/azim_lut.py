@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -27,14 +27,14 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "26/09/2023"
+__date__ = "04/10/2023"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-from . import pyopencl
+from . import pyopencl, dtype_converter
 from ..utils import calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -42,9 +42,9 @@ else:
     raise ImportError("pyopencl is not installed")
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from . import processing, OpenclProcessing
-from . import get_x87_volatile_option
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
+
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
     BLOCK_SIZE = 32
     buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
-               BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("image_raw", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
@@ -150,6 +151,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                          BufferDescription("merged8", (self.bins, 8), numpy.float32, mf.WRITE_ONLY),
                          ]
         self.allocate_buffers()
+        self.buffer_dtype = {i.name:numpy.dtype(i.dtype) for i in self.buffers}
         self.compile_kernels()
         self.set_kernel_arguments()
         if self.device.type == "CPU":
@@ -208,12 +210,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
                           (self.bins, self.size, self.lut_size, int(self.device.type == "CPU"))
 
-        try:
-            default_compiler_options = self.get_compiler_options(x87_volatile=True)
-        except AttributeError:  # Silx version too old
-            logger.warning("Please upgrade to silx v0.10+")
-            default_compiler_options = get_x87_volatile_option(self.ctx)
-
+        default_compiler_options = self.get_compiler_options(x87_volatile=True)
         if default_compiler_options:
             compile_options += " " + default_compiler_options
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
@@ -276,6 +273,29 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                            ("delta_dummy", numpy.float32(0)),
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("output4", self.cl_mem["output4"])))
+        self.cl_kernel_args["corrections4a"] = OrderedDict((("image", self.cl_mem["image_raw"]),
+                                                            ("dtype", numpy.int8(0)),
+                                                           ("error_model", numpy.int8(0)),
+                                                           ("variance", self.cl_mem["variance"]),
+                                                           ("do_dark", numpy.int8(0)),
+                                                           ("dark", self.cl_mem["dark"]),
+                                                           ("do_dark_variance", numpy.int8(0)),
+                                                           ("dark_variance", self.cl_mem["dark_variance"]),
+                                                           ("do_flat", numpy.int8(0)),
+                                                           ("flat", self.cl_mem["flat"]),
+                                                           ("do_solidangle", numpy.int8(0)),
+                                                           ("solidangle", self.cl_mem["solidangle"]),
+                                                           ("do_polarization", numpy.int8(0)),
+                                                           ("polarization", self.cl_mem["polarization"]),
+                                                           ("do_absorption", numpy.int8(0)),
+                                                           ("absorption", self.cl_mem["absorption"]),
+                                                           ("do_mask", numpy.int8(0)),
+                                                           ("mask", self.cl_mem["mask"]),
+                                                           ("do_dummy", numpy.int8(0)),
+                                                           ("dummy", numpy.float32(0)),
+                                                           ("delta_dummy", numpy.float32(0)),
+                                                           ("normalization_factor", numpy.float32(1.0)),
+                                                           ("output4", self.cl_mem["output4"])))
 
         self.cl_kernel_args["lut_integrate4"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                             ("lut", self.cl_mem["lut"]),
@@ -295,14 +315,16 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
 
-    def send_buffer(self, data, dest, checksum=None):
+    def send_buffer(self, data, dest, checksum=None, convert=True):
         """Send a numpy array to the device, including the cast on the device if possible
 
         :param data: numpy array with data
         :param dest: name of the buffer as registered in the class
+        :param convert: if True (default) convert dtype on GPU, if false, leave as it is.
+        :return: the actual buffer where the data were sent
         """
 
-        dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])
+        dest_type = self.buffer_dtype[dest]
         events = []
         if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
@@ -400,7 +422,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                 if not solidangle_checksum:
                     solidangle_checksum = calc_checksum(solidangle, safe)
                 if solidangle_checksum != self.on_device["solidangle"]:
-                    self.send_buffer(solidangle, "solidangle", flat_checksum)
+                    self.send_buffer(solidangle, "solidangle", solidangle_checksum)
             else:
                 do_solidangle = numpy.int8(0)
             kw_corr['do_solidangle'] = do_solidangle
@@ -478,7 +500,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                      polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                      safe=True,
                      normalization_factor=1.0,
-                     out_avgint=None, out_std=None, out_sem=None, out_merged=None):
+                     out_avgint=None, out_sem=None, out_std=None, out_merged=None):
         """
         Before performing azimuthal integration with proper variance propagation, the preprocessing is:
 
@@ -508,19 +530,29 @@ class OCL_LUT_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param out_avgint: destination array or pyopencl array for sum of all data
-        :param out_sem: destination array or pyopencl array for sum of the number of pixels
+        :param out_avgint: destination array or pyopencl array for average intensity
+        :param out_sem: destination array or pyopencl array for standard deviation (of mean)
+        :param out_std: destination array or pyopencl array for standard deviation (of pixels)
         :param out_merged: destination array or pyopencl array for averaged data (float8!)
         :return: large namedtuple with out_avgint, out_sem, out_merged ...
         """
         events = []
         with self.sem:
-            self.send_buffer(data, "image")
+            convert = (data.dtype.itemsize>4) or (data.dtype == numpy.float32)
+            self.send_buffer(data, "image", convert=convert)
             wg = self.workgroup_size
             wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
             memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
-            kw_corr = self.cl_kernel_args["corrections4"]
+            if convert:
+                kernel_correction_name = "corrections4"
+                corrections4 = self.kernels.corrections4
+                kw_corr = self.cl_kernel_args[kernel_correction_name]
+            else:
+                kernel_correction_name = "corrections4a"
+                corrections4 = self.kernels.corrections4a
+                kw_corr = self.cl_kernel_args[kernel_correction_name]
+                kw_corr["dtype"] = dtype_converter(data.dtype)
             kw_int = self.cl_kernel_args["lut_integrate4"]
 
             if dummy is not None:
@@ -602,8 +634,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
 
-            ev = self.kernels.corrections4(self.queue, self.wdim_data, self.workgroup_size, *list(kw_corr.values()))
-            events.append(EventDescription("corrections4", ev))
+            ev = corrections4(self.queue, self.wdim_data, self.workgroup_size, *list(kw_corr.values()))
+            events.append(EventDescription(kernel_correction_name, ev))
 
             kw_int["empty"] = dummy
             integrate = self.kernels.lut_integrate4(self.queue, wdim_bins, self.workgroup_size, *kw_int.values())
@@ -615,24 +647,27 @@ class OCL_LUT_Integrator(OpenclProcessing):
                 merged = None
             else:
                 merged = out_merged.data
+
             if out_avgint is None:
                 avgint = numpy.empty(self.bins, dtype=numpy.float32)
             elif out_avgint is False:
                 avgint = None
             else:
                 avgint = out_avgint.data
+
             if out_sem is None:
                 sem = numpy.empty(self.bins, dtype=numpy.float32)
             elif out_sem is False:
                 sem = None
             else:
                 sem = out_sem.data
+
             if out_std is None:
                 std = numpy.empty(self.bins, dtype=numpy.float32)
             elif out_std is False:
                 std = None
             else:
-                std = out_sem.data
+                std = out_std.data
 
             ev = pyopencl.enqueue_copy(self.queue, avgint, self.cl_mem["averint"])
             events.append(EventDescription("copy D->H avgint", ev))

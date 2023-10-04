@@ -571,6 +571,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     polarization_checksum = calc_checksum(polarization, safe)
                 if polarization_checksum != self.on_device["polarization"]:
                     self.send_buffer(polarization, "polarization", polarization_checksum)
+                    self.on_device["polarization"] = polarization_checksum
             else:
                 do_polarization = numpy.int8(0)
             kw_corr["do_polarization"] = do_polarization
@@ -594,6 +595,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 image = numpy.empty(data.shape, dtype=numpy.float32)
                 ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
                 events.append(EventDescription("copy D->H image", ev))
+                ev.wait()
                 self.profile_multi(events)
                 return image
 
@@ -631,12 +633,13 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if merged is not None:
                 ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
                 events.append(EventDescription("copy D->H merged", ev))
-            if  sum_data is not None:
+            if sum_data is not None:
                 ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
                 events.append(EventDescription("copy D->H sum_data", ev))
             if sum_count is not None:
                 ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
                 events.append(EventDescription("copy D->H sum_count", ev))
+            ev.wait()
         self.profile_multi(events)
         return merged, sum_data, sum_count
 
@@ -820,14 +823,14 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             if out_sem is None:
                 sem = numpy.empty(self.bins, dtype=numpy.float32)
-            elif out_sem is  False:
+            elif out_sem is False:
                 sem = None
             else:
                 sem = out_sem.data
 
             if out_std is None:
                 std = numpy.empty(self.bins, dtype=numpy.float32)
-            elif out_std is  False:
+            elif out_std is False:
                 std = None
             else:
                 std = out_std.data
