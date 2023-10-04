@@ -273,29 +273,29 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                            ("delta_dummy", numpy.float32(0)),
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("output4", self.cl_mem["output4"])))
-        self.cl_kernel_args["corrections4a"] = OrderedDict((("image", self.cl_mem["image_raw"]),
-                                                            ("dtype", numpy.int8(0)),
-                                                           ("error_model", numpy.int8(0)),
-                                                           ("variance", self.cl_mem["variance"]),
-                                                           ("do_dark", numpy.int8(0)),
-                                                           ("dark", self.cl_mem["dark"]),
-                                                           ("do_dark_variance", numpy.int8(0)),
-                                                           ("dark_variance", self.cl_mem["dark_variance"]),
-                                                           ("do_flat", numpy.int8(0)),
-                                                           ("flat", self.cl_mem["flat"]),
-                                                           ("do_solidangle", numpy.int8(0)),
-                                                           ("solidangle", self.cl_mem["solidangle"]),
-                                                           ("do_polarization", numpy.int8(0)),
-                                                           ("polarization", self.cl_mem["polarization"]),
-                                                           ("do_absorption", numpy.int8(0)),
-                                                           ("absorption", self.cl_mem["absorption"]),
-                                                           ("do_mask", numpy.int8(0)),
-                                                           ("mask", self.cl_mem["mask"]),
-                                                           ("do_dummy", numpy.int8(0)),
-                                                           ("dummy", numpy.float32(0)),
-                                                           ("delta_dummy", numpy.float32(0)),
-                                                           ("normalization_factor", numpy.float32(1.0)),
-                                                           ("output4", self.cl_mem["output4"])))
+        # self.cl_kernel_args["corrections4a"] = OrderedDict((("image", self.cl_mem["image_raw"]),
+        #                                                     ("dtype", numpy.int8(0)),
+        #                                                    ("error_model", numpy.int8(0)),
+        #                                                    ("variance", self.cl_mem["variance"]),
+        #                                                    ("do_dark", numpy.int8(0)),
+        #                                                    ("dark", self.cl_mem["dark"]),
+        #                                                    ("do_dark_variance", numpy.int8(0)),
+        #                                                    ("dark_variance", self.cl_mem["dark_variance"]),
+        #                                                    ("do_flat", numpy.int8(0)),
+        #                                                    ("flat", self.cl_mem["flat"]),
+        #                                                    ("do_solidangle", numpy.int8(0)),
+        #                                                    ("solidangle", self.cl_mem["solidangle"]),
+        #                                                    ("do_polarization", numpy.int8(0)),
+        #                                                    ("polarization", self.cl_mem["polarization"]),
+        #                                                    ("do_absorption", numpy.int8(0)),
+        #                                                    ("absorption", self.cl_mem["absorption"]),
+        #                                                    ("do_mask", numpy.int8(0)),
+        #                                                    ("mask", self.cl_mem["mask"]),
+        #                                                    ("do_dummy", numpy.int8(0)),
+        #                                                    ("dummy", numpy.float32(0)),
+        #                                                    ("delta_dummy", numpy.float32(0)),
+        #                                                    ("normalization_factor", numpy.float32(1.0)),
+        #                                                    ("output4", self.cl_mem["output4"])))
 
         self.cl_kernel_args["lut_integrate4"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                             ("lut", self.cl_mem["lut"]),
@@ -315,7 +315,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
 
-    def send_buffer(self, data, dest, checksum=None, convert=True):
+    def send_buffer(self, data, dest, checksum=None):
         """Send a numpy array to the device, including the cast on the device if possible
 
         :param data: numpy array with data
@@ -538,21 +538,16 @@ class OCL_LUT_Integrator(OpenclProcessing):
         """
         events = []
         with self.sem:
-            convert = (data.dtype.itemsize>4) or (data.dtype == numpy.float32)
-            self.send_buffer(data, "image", convert=convert)
+            kernel_correction_name = "corrections4"
+            corrections4 = self.kernels.corrections4
+            kw_corr = self.cl_kernel_args[kernel_correction_name]
+            self.send_buffer(data, "image")
+
             wg = self.workgroup_size
             wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
             memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
-            if convert:
-                kernel_correction_name = "corrections4"
-                corrections4 = self.kernels.corrections4
-                kw_corr = self.cl_kernel_args[kernel_correction_name]
-            else:
-                kernel_correction_name = "corrections4a"
-                corrections4 = self.kernels.corrections4a
-                kw_corr = self.cl_kernel_args[kernel_correction_name]
-                kw_corr["dtype"] = dtype_converter(data.dtype)
+
             kw_int = self.cl_kernel_args["lut_integrate4"]
 
             if dummy is not None:

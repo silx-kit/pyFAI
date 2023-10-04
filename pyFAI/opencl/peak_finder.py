@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "03/10/2023"
+__date__ = "04/10/2023"
 __copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -111,12 +111,12 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                  profile=profile, extra_buffers=extra_buffers)
 
         if mask is None:
-            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(0)
+            self.cl_kernel_args["corrections4a"]["do_mask"] = numpy.int8(0)
             self.mask = None
         else:
             self.mask = numpy.ascontiguousarray(mask, numpy.int8)
             self.send_buffer(self.mask, "mask")
-            self.cl_kernel_args["corrections4"]["do_mask"] = numpy.int8(1)
+            self.cl_kernel_args["corrections4a"]["do_mask"] = numpy.int8(1)
 
         if self.bin_centers is None:
             raise RuntimeError("1D bin center position is mandatory")
@@ -224,8 +224,13 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :return: list of event to wait for.
         """
         events = []
-        convert = (data.dtype.itemsize>4)
-        self.send_buffer(data, "image", convert=convert)
+        # convert = (data.dtype.itemsize>4)
+        # self.send_buffer(data, "image", convert=convert)
+        kernel_correction_name = "corrections4a"
+        corrections4 = self.kernels.corrections4a
+        kw_corr = self.cl_kernel_args[kernel_correction_name]
+        kw_corr["image"] = self.send_buffer(data, "image", convert=False)
+        kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize>4 else dtype_converter(data.dtype)
 
         wg = max(self.workgroup_size["memset_ng"])
         wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
@@ -233,15 +238,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         events.append(EventDescription("memset_ng", memset))
 
         # Prepare preprocessing
-        if convert:
-            kernel_correction_name = "corrections4"
-            corrections4 = self.kernels.corrections4
-            kw_corr = self.cl_kernel_args[kernel_correction_name]
-        else:
-            kernel_correction_name = "corrections4a"
-            corrections4 = self.kernels.corrections4a
-            kw_corr = self.cl_kernel_args[kernel_correction_name]
-            kw_corr["dtype"] = dtype_converter(data.dtype)
+        # if convert:
+        #     kernel_correction_name = "corrections4"
+        #     corrections4 = self.kernels.corrections4
+        #     kw_corr = self.cl_kernel_args[kernel_correction_name]
+        # else:
+        #     kernel_correction_name = "corrections4a"
+        #     corrections4 = self.kernels.corrections4a
+        #     kw_corr = self.cl_kernel_args[kernel_correction_name]
+        #     kw_corr["dtype"] = dtype_converter(data.dtype)
 
         if dummy is not None:
             do_dummy = numpy.int8(1)
@@ -325,10 +330,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         kw_int = self.cl_kernel_args["csr_sigma_clip4"]
         kw_corr["error_model"] = kw_int["error_model"] = numpy.int8(error_model.value)
 
-        wg = max(self.workgroup_size["corrections4"])
+        wg = max(self.workgroup_size[kernel_correction_name])
         wdim_data = (self.size + wg - 1) & ~(wg - 1),
         ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
-        events.append(EventDescription("corrections", ev))
+        events.append(EventDescription(kernel_correction_name, ev))
 
         # Prepare sigma-clipping
         kw_int["cutoff"] = numpy.float32(cutoff_clip)

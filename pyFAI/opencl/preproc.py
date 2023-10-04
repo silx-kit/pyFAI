@@ -299,28 +299,28 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("output", self.cl_mem["output"])))
 
-        self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                           ("error_model", numpy.int8(0)),
-                                                           ("variance", self.cl_mem["variance"]),
-                                                           ("do_dark", numpy.int8(0)),
-                                                           ("dark", self.cl_mem["dark"]),
-                                                           ("do_dark_variance", numpy.int8(0)),
-                                                           ("dark_variance", self.cl_mem["dark_variance"]),
-                                                           ("do_flat", numpy.int8(0)),
-                                                           ("flat", self.cl_mem["flat"]),
-                                                           ("do_solidangle", numpy.int8(0)),
-                                                           ("solidangle", self.cl_mem["solidangle"]),
-                                                           ("do_polarization", numpy.int8(0)),
-                                                           ("polarization", self.cl_mem["polarization"]),
-                                                           ("do_absorption", numpy.int8(0)),
-                                                           ("absorption", self.cl_mem["absorption"]),
-                                                           ("do_mask", numpy.int8(0)),
-                                                           ("mask", self.cl_mem["mask"]),
-                                                           ("do_dummy", do_dummy),
-                                                           ("dummy", dummy),
-                                                           ("delta_dummy", delta_dummy),
-                                                           ("normalization_factor", numpy.float32(1.0)),
-                                                           ("output", self.cl_mem["output"])))
+        # self.cl_kernel_args["corrections4"] = OrderedDict((("image", self.cl_mem["image"]),
+        #                                                    ("error_model", numpy.int8(0)),
+        #                                                    ("variance", self.cl_mem["variance"]),
+        #                                                    ("do_dark", numpy.int8(0)),
+        #                                                    ("dark", self.cl_mem["dark"]),
+        #                                                    ("do_dark_variance", numpy.int8(0)),
+        #                                                    ("dark_variance", self.cl_mem["dark_variance"]),
+        #                                                    ("do_flat", numpy.int8(0)),
+        #                                                    ("flat", self.cl_mem["flat"]),
+        #                                                    ("do_solidangle", numpy.int8(0)),
+        #                                                    ("solidangle", self.cl_mem["solidangle"]),
+        #                                                    ("do_polarization", numpy.int8(0)),
+        #                                                    ("polarization", self.cl_mem["polarization"]),
+        #                                                    ("do_absorption", numpy.int8(0)),
+        #                                                    ("absorption", self.cl_mem["absorption"]),
+        #                                                    ("do_mask", numpy.int8(0)),
+        #                                                    ("mask", self.cl_mem["mask"]),
+        #                                                    ("do_dummy", do_dummy),
+        #                                                    ("dummy", dummy),
+        #                                                    ("delta_dummy", delta_dummy),
+        #                                                    ("normalization_factor", numpy.float32(1.0)),
+        #                                                    ("output", self.cl_mem["output"])))
         self.cl_kernel_args["corrections4a"] = OrderedDict((("image_raw", self.cl_mem["image_raw"]),
                                                             ("dtype", numpy.int8(0)),
                                                            ("error_model", numpy.int8(0)),
@@ -433,12 +433,13 @@ class OCL_Preproc(OpenclProcessing):
 
             if split_result == 4:
                 dshape = self.shape + (4,)
-                if image.dtype == numpy.float32:
-                    kernel_name = "corrections4"
-                elif (image.dtype.itemsize <= 4):
-                    kernel_name = "corrections4a"
-                else:
-                    kernel_name = "corrections4"
+                kernel_name = "corrections4a"
+                # if image.dtype == numpy.float32:
+                #     kernel_name = "corrections4"
+                # elif (image.dtype.itemsize <= 4):
+                #     kernel_name = "corrections4a"
+                # else:
+                #     kernel_name = "corrections4"
             elif split_result == 3:
                 kernel_name = "corrections3"
                 dshape = self.shape + (3,)
@@ -453,9 +454,12 @@ class OCL_Preproc(OpenclProcessing):
             # finally
             if id(image) != id(self.on_device.get("image")):
                 if kernel_name == "corrections4a":
-                    # with late conversion:
-                    kwargs["image_raw"] = self.send_buffer(image, "image", convert=False)
-                    kwargs["dtype"] = dtype_converter(image.dtype)
+                    if (image.dtype.itemsize <= 4):
+                        kwargs["image_raw"] = self.send_buffer(image, "image", convert=False)
+                        kwargs["dtype"] = dtype_converter(image.dtype)
+                    else:
+                        kwargs["image_raw"] = self.send_buffer(numpy.ascontiguousarray(image, numpy.float32), "image", convert=False)
+                        kwargs["dtype"] = numpy.int8(32)
                 else:
                     kwargs["image"] = self.send_buffer(image, "image")
 
