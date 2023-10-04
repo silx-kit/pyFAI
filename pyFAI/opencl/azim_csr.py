@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "03/10/2023"
+__date__ = "04/10/2023"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -421,45 +421,55 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param checksum: Checksum of the data to determine if the data needs to be transfered
         :param workgroup_size: enforce kernel to run with given workgroup size
         :param convert: if True (default) convert dtype on GPU, if false, leave as it is.
-        :return: True if the buffer is in `dest` buffer, False when convert is False and data are in image_raw
+        :return: the actual buffer where the data were sent
         """
         dest_type = self.buffer_dtype[dest]
         events = []
         if isinstance(data, pyopencl.array.Array):
             if (data.dtype == dest_type):
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], data.data)
+                dest_buffer = self.cl_mem[dest]
+                copy_image = pyopencl.enqueue_copy(self.queue, dest_buffer, data.data)
                 events.append(EventDescription(f"copy D->D {dest}", copy_image))
             elif convert:
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["tmp"], data.data)
+                tmp_buffer =  self.cl_mem["tmp"]
+                dest_buffer = self.cl_mem[dest]
+                copy_image = pyopencl.enqueue_copy(self.queue, tmp_buffer, data.data)
                 kernel_name = self.mapping[data.dtype.type]
                 kernel = self.kernels.get_kernel(kernel_name)
                 wg = workgroup_size if workgroup_size else max(self.workgroup_size[kernel_name])
-                convert_to_float = kernel(self.queue, ((self.size + wg - 1) // wg * wg,), (wg,), self.cl_mem["tmp"], self.cl_mem[dest])
+                convert_to_float = kernel(self.queue, ((self.size + wg - 1) // wg * wg,), (wg,), tmp_buffer, dest_buffer)
                 events += [EventDescription(f"copy raw D->D {dest}", copy_image),
                            EventDescription(f"convert {kernel_name}", convert_to_float)]
             else: # no convert
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
-                events.append(EventDescription(f"copy D->D {dest}", copy_image))
+                actual_dest = f"{dest}_raw"
+                dest_buffer = self.cl_mem[actual_dest]
+                copy_image = pyopencl.enqueue_copy(self.queue, dest_buffer, data.data)
+                events.append(EventDescription(f"copy D->D {actual_dest}", copy_image))
         else:
             # Assume it is a numpy array
             if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
+                dest_buffer = self.cl_mem[dest]
+                copy_image = pyopencl.enqueue_copy(self.queue, dest_buffer, numpy.ascontiguousarray(data, dest_type))
                 events.append(EventDescription(f"copy H->D {dest}", copy_image))
             elif convert:
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["tmp"], numpy.ascontiguousarray(data))
+                tmp_buffer =  self.cl_mem["tmp"]
+                dest_buffer = self.cl_mem[dest]
+                copy_image = pyopencl.enqueue_copy(self.queue, tmp_buffer, numpy.ascontiguousarray(data))
                 kernel_name = self.mapping[data.dtype.type]
                 kernel = self.kernels.get_kernel(kernel_name)
                 wg = workgroup_size if workgroup_size else max(self.workgroup_size[kernel_name])
-                convert_to_float = kernel(self.queue, ((self.size + wg - 1) // wg * wg,), (wg,), self.cl_mem["tmp"], self.cl_mem[dest])
-                events += [EventDescription("copy raw H->D " + dest, copy_image),
-                           EventDescription("convert " + kernel_name, convert_to_float)]
+                convert_to_float = kernel(self.queue, ((self.size + wg - 1) // wg * wg,), (wg,), tmp_buffer, dest_buffer)
+                events += [EventDescription(f"copy raw H->D {dest}", copy_image),
+                           EventDescription(f"convert {kernel_name}", convert_to_float)]
             else:
-                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
-                events.append(EventDescription(f"copy H->D {dest}", copy_image))
+                actual_dest = f"{dest}_raw"
+                dest_buffer = self.cl_mem[actual_dest]
+                copy_image = pyopencl.enqueue_copy(self.queue, dest_buffer, numpy.ascontiguousarray(data))
+                events.append(EventDescription(f"copy H->D {actual_dest}", copy_image))
         self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum
-        return convert
+        return dest_buffer
 
     def integrate_legacy(self, data, dummy=None, delta_dummy=None,
                          dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
