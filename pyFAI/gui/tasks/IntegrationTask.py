@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "05/09/2023"
+__date__ = "05/10/2023"
 
 import logging
 import numpy
@@ -839,7 +839,12 @@ class IntegrationPlot(qt.QFrame):
             scale=(scaleX, scaleY),
             colormap=colormap,
             resetzoom=False)
-        self.__plot2d.setGraphXLabel(result2d.unit.label)
+        unit = result2d.unit
+        if isinstance(unit, (tuple, list)) and len(unit) == 2:
+            self.__plot2d.setGraphXLabel(unit[0].label)
+            self.__plot2d.setGraphYLabel(unit[1].label)
+        else:
+            self.__plot2d.setGraphXLabel(unit.label)
 
         self.__radialUnit = integrationProcess.radialUnit()
         self.__wavelength = integrationProcess.wavelength()
