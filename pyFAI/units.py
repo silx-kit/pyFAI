@@ -193,6 +193,7 @@ formula_r = "sqrt(x * x + y * y)"
 formula_2th = "arctan2(sqrt(x * x + y * y), z)"
 formula_chi = "arctan2(y, x)"
 formula_q = "4.0e-9*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0)"
+formula_d = "λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0)/2.0e-9"
 formula_d2 = "(2.0e-9/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))**2"
 formula_qx = "4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"
 formula_qy = "4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"
@@ -255,6 +256,16 @@ register_radial_unit("q_A^-1",
                      formula=formula_q,
                      short_name="q",
                      unit_symbol=r"\AA^{-1}")
+
+register_radial_unit("d_A",
+                     center="qArray",
+                     delta="deltaQ",
+                     scale=1e10,
+                     label=r"Recip. spacing sq. $d$ ($\AA$)",
+                     equation=lambda x, y, z, wavelength: ((2.0 * numpy.pi) / (1e9 * eq_q(x, y, z, wavelength))),
+                     formula=formula_d,
+                     short_name="d",
+                     unit_symbol=r"\AA")
 
 register_radial_unit("d*2_A^-2",
                      center="rd2Array",
@@ -390,6 +401,7 @@ TTH_RAD = RADIAL_UNITS["2th_rad"]
 TTH_DEG = TTH = RADIAL_UNITS["2th_deg"]
 R = R_MM = RADIAL_UNITS["r_mm"]
 R_M = RADIAL_UNITS["r_m"]
+RecD_A = RADIAL_UNITS["d_A"]
 RecD2_NM = RADIAL_UNITS["d*2_nm^-2"]
 RecD2_A = RADIAL_UNITS["d*2_A^-2"]
 l_m = LENGTH_UNITS["m"]
