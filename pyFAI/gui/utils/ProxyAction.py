@@ -25,9 +25,10 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "05/10/2023"
 
-from distutils.version import LooseVersion
+def LooseVersion(version):
+    return tuple(int(i) for i in version.split(".") if i.isdecimal())
 
 from silx.gui import qt
 

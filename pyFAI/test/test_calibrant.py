@@ -146,13 +146,13 @@ class TestCalibrant(unittest.TestCase):
         # this 2 calibrant must only be used there to test the lazy-loading
         c1 = get_calibrant("LaB6_SRM660a")
         c2 = get_calibrant("LaB6_SRM660b")
-        self.assertNotEquals(c1, c2)
+        self.assertNotEqual(c1, c2)
 
     def test_not_same_wavelength(self):
         c1 = get_calibrant("LaB6")
         c1.set_wavelength(1e-10)
         c2 = get_calibrant("LaB6")
-        self.assertNotEquals(c1, c2)
+        self.assertNotEqual(c1, c2)
 
     def test_copy(self):
         c1 = get_calibrant("AgBh")
@@ -160,7 +160,7 @@ class TestCalibrant(unittest.TestCase):
         self.assertIsNot(c1, c2)
         self.assertEqual(c1, c2)
         c2.set_wavelength(1e-10)
-        self.assertNotEquals(c1, c2)
+        self.assertNotEqual(c1, c2)
 
     def test_hash(self):
         c1 = get_calibrant("AgBh")
