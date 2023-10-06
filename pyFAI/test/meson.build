@@ -44,6 +44,7 @@ py.install_sources(
     'test_sparse_builder.py',
     'test_spline.py',
     'test_split_pixel.py',
+    'test_units.py',
     'test_utils.py',
     'test_utils_ellipse.py',
     'test_utils_header.py',
