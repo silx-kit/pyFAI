@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/09/2023"
+__date__ = "06/10/2023"
 
 import unittest
 import random
@@ -536,12 +536,8 @@ class TestBug474(unittest.TestCase):
         delta = abs(rp - rc).max()
         self.assertLess(delta, 1e-5, "error on position is %s" % delta)
 
-class TestUnits(unittest.TestCase):
-    def test_corner(self):
-        ai = AzimuthalIntegrator(detector="Pilatus100k")
-        res = ai.array_from_unit(typ="corner", unit=("chi_rad"))
-        #no fast path, just checks numexpr gives correct values.
-        self.assertTrue(numpy.allclose(res[...,0], res[...,1]), "numexpr formula OK")
+
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -553,7 +549,6 @@ def suite():
     testsuite.addTest(loader(TestCalcFrom))
     testsuite.addTest(loader(TestGeometry))
     testsuite.addTest(loader(TestFastPath))
-    testsuite.addTest(loader(TestUnits))
     return testsuite
 
 

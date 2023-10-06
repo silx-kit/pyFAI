@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2023"
+__date__ = "06/10/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -280,7 +280,7 @@ register_radial_unit("log10(q.m)_None",
                      scale=1.0,
                      label=r"log10($q$.m)",
                      equation=lambda x, y, z, wavelength: numpy.log10(1e9 * eq_q(x, y, z, wavelength)),
-                     formula="log10(4e-9*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))",
+                     formula="log10(4*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))",
                      short_name="log10(q.m)",
                      unit_symbol="?",
                      positive=False)
