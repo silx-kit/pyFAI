@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 21/10/2021
+:Date: 06/10/2023
 :Keywords: Tutorials
 :Target: Advanced users tutorials using jupyter notebooks
 
@@ -45,6 +45,18 @@ silx v1.2 (development for now). This is demonstrate in the second tutorial.
 4. Full FPGA processing: It is proven to be up to 10x faster compared
 to GPU but requires even more specialized hardware and staff: both decompression
 and integration can be performed there.
+
+Here are a couple of videos on this topic:
+
+.. image:: https://img.youtube.com/vi/Bzw0z07MraY/maxresdefault.jpg
+    :alt: Conference EuHUG2023 Hamburg
+    :target: https://www.youtube.com/watch?v=Bzw0z07MraY
+
+and about FPGA:
+
+.. image:: https://img.youtube.com/vi/IfG1e983ODU/maxresdefault.jpg
+    :alt: Conference EuHUG2023 Hamburg
+    :target: https://www.youtube.com/watch?v=IfG1e983ODU
 
 The notebook hereafter present some of those approaches (0, 1 and 3):
 
