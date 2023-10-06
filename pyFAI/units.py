@@ -192,9 +192,9 @@ def eq_q(x, y, z, wavelength):
 formula_r = "sqrt(x * x + y * y)"
 formula_2th = "arctan2(sqrt(x * x + y * y), z)"
 formula_chi = "arctan2(y, x)"
-formula_q = "4.0e-9*π/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0)"
-formula_d = "λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0)/2.0e-9"
-formula_d2 = "(2.0e-9/λ*sin(arctan2(sqrt(x * x + y * y), z)/2.0))**2"
+formula_q = "4.0e-9*π/λ*sin(0.5*arctan2(sqrt(x * x + y * y), z))"
+formula_d = "0.5*λ/sin(0.5*arctan2(sqrt(x * x + y * y), z))"
+formula_d2 = "(2.0e-9/λ*sin(0.5*arctan2(sqrt(x * x + y * y), z)))**2"
 formula_qx = "4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"
 formula_qy = "4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"
 
@@ -257,11 +257,25 @@ register_radial_unit("q_A^-1",
                      short_name="q",
                      unit_symbol=r"\AA^{-1}")
 
+register_radial_unit("d_m",
+                     scale=1,
+                     label=r"d-spacing $d$ ($m$)",
+                     equation=lambda x, y, z, wavelength: ((2.0 * numpy.pi) / (1e9 * eq_q(x, y, z, wavelength))),
+                     formula=formula_d,
+                     short_name="d",
+                     unit_symbol=r"m")
+
+register_radial_unit("d_nm",
+                     scale=1e9,
+                     label=r"d-spacing $d$ ($nm$)",
+                     equation=lambda x, y, z, wavelength: ((2.0 * numpy.pi) / (1e9 * eq_q(x, y, z, wavelength))),
+                     formula=formula_d,
+                     short_name="d",
+                     unit_symbol=r"nm")
+
 register_radial_unit("d_A",
-                     center="qArray",
-                     delta="deltaQ",
                      scale=1e10,
-                     label=r"Recip. spacing sq. $d$ ($\AA$)",
+                     label=r"d-spacing $d$ ($\AA$)",
                      equation=lambda x, y, z, wavelength: ((2.0 * numpy.pi) / (1e9 * eq_q(x, y, z, wavelength))),
                      formula=formula_d,
                      short_name="d",
