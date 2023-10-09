@@ -50,8 +50,8 @@ class TestUnitUtils(unittest.TestCase):
         result = unitutils.from2ThRad(0.1, units.Q_A, wavelength=1.03321e-10)
         self.assertAlmostEqual(result, 0.6078, places=3)
 
-    def testFrom2ThRad__RecD_A(self):
-        result = unitutils.from2ThRad(0.1, units.RecD_A, wavelength=1.03321e-10)
+    def testFrom2ThRad__D_A(self):
+        result = unitutils.from2ThRad(0.1, units.D_A, wavelength=1.03321e-10)
         self.assertAlmostEqual(result, 10.3364, places=3)
 
     def testFrom2ThRad__Q_NM(self):
