@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "09/10/2023"
 
 import sys
 import os
@@ -573,6 +573,15 @@ class TestBugRegression(unittest.TestCase):
         ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
         ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
         ai.setChiDiscAtPi()
+
+    def test_bug_1946(self):
+        """
+        method ("full", "CSC", "python):
+        """
+        from ..method_registry import IntegrationMethod
+        res = IntegrationMethod.select_method(dim=1, split="full", algo="csc", impl="python", degradable=False)
+        self.assertGreater(len(res), 0, "method actually exists")
+        print(res)
 
 
 class TestBug1703(unittest.TestCase):
