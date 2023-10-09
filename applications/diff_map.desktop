@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=1.0
-Terminal=true
-Exec=pyFAI-calib2
-Name=pyFAI-calib2
+Exec=diff_map %u
+Name=diff_map
 Type=Application
-Icon=doc/source/img/pyFAI-calib2.png
+Icon=doc/source/img/pyFAI-diffmap.png
+MimeType=application/x-hdf5

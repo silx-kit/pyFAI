@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=1.0
-Terminal=true
-Exec=diff_map
-Name=diff_map
+Exec=pyFAI-integrate %u
+Name=pyFAI-integrate
 Type=Application
-Icon=doc/source/img/pyFAI-diffmap.png
+Icon=doc/source/img/pyFAI-integrate.png
+MimeType=application/x-hdf5
