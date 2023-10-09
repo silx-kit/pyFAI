@@ -1,6 +1,7 @@
 [Desktop Entry]
 Version=1.0
-Exec=pyFAI-integrate
+Exec=pyFAI-integrate %u
 Name=pyFAI-integrate
 Type=Application
 Icon=doc/source/img/pyFAI-integrate.png
+MimeType=application/x-hdf5

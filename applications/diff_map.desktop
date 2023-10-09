@@ -1,6 +1,7 @@
 [Desktop Entry]
 Version=1.0
-Exec=diff_map
+Exec=diff_map %u
 Name=diff_map
 Type=Application
 Icon=doc/source/img/pyFAI-diffmap.png
+MimeType=application/x-hdf5

@@ -1,6 +1,7 @@
 [Desktop Entry]
 Version=1.0
-Exec=pyFAI-calib2
+Exec=pyFAI-calib2 %u
 Name=pyFAI-calib2
 Type=Application
 Icon=doc/source/img/pyFAI-calibrate.png
+MimeType=application/x-hdf5
