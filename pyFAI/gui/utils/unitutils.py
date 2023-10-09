@@ -116,6 +116,9 @@ def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
         else:
             beamCentre_m = ai.getFit2D()["directDist"] * 1e-3  # convert in m
         return beamCentre_m * numpy.tan(twoTheta) * unit.scale
+    elif unit.space == "d":
+        q_m = (4.0 * numpy.pi / wavelength) * numpy.sin(0.5 * twoTheta)
+        return (2 * numpy.pi / q_m) * unit.scale
     elif unit.space == "d*2":
         rec_d2_nm = (2e-9 / wavelength * numpy.sin(0.5 * twoTheta)) ** 2
         return rec_d2_nm * unit.scale
