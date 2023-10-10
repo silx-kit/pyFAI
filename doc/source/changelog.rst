@@ -22,7 +22,7 @@ Change-log of versions
 - Updated notebook (addresses API changes)
 
 2023.08 30/08/2023 BUGGY, DO NOT USE !!!
-------------------
+----------------------------------------
 - Minor release, mostly bug-fixes. 87 commits.
 - fix mal-formed headers in 1D ASCII export
 - Debian packaging without setup.py (at all)
