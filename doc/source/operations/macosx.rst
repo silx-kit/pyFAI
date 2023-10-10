@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 05/01/2023
+:Date: 10/10/2023
 :Keywords: Installation procedure on MacOSX
 :Target: System administrators
 
@@ -46,9 +46,8 @@ Get the sources from Github:
    python3 -m venv pyfai
    source pyfai/bin/activate
    pip install build
-   wget https://github.com/silx-kit/pyFAI/archive/main.zip
-   unzip main.zip
-   cd pyFAI-main
+   git clone https://github.com/silx-kit/pyFAI
+   cd pyFAI
    pip install -r requirements.txt
    pip install . --upgrade
 

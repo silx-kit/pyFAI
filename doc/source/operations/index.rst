@@ -41,17 +41,18 @@ by may impair performances or prevent tools from properly working:
 Build dependencies:
 -------------------
 
-PyFAI v2023.01 intoduces a new build system based on meson with the following requirements:
+PyFAI v2023.01 intoduced a new build system based on `meson` with the following requirements:
 
-* meson (>=0.64)
 * meson-python (>=0.11)
+* git
+* meson (>=0.64)
 * ninja
 
 The former build system was using `setup.py` files, based on setuptools and numpy.distutils.
-The later is deprecated and will stop working in python 3.12.
-Those files remain available but unmaintained and will be removed in a future release.
+The later is deprecated and will stop working in python 3.12 and has been removed with pyFAI v2023.10.
+The new build system assumes the code
 
-In addition to the build tools, pyFAI needs a C/C++ compiler to build extensions and cython_ (>0.25) to generate those C/C++ files.
+In addition to the build tools, pyFAI needs a C/C++ compiler to build extensions and cython_ (>0.29) to generate those C/C++ files.
 The following compiler have been successfully tested:
 
 * Linux: `gcc` and `clang` (both support OpenMP)
@@ -66,6 +67,8 @@ Building procedure
 
 .. code-block:: shell
 
+    git clone https://github.com/silx-kit/pyFAI
+    cd pyFAI
     pip install -r requirements.txt
     pip install . --upgrade
 
@@ -73,6 +76,8 @@ or
 
 .. code-block:: shell
 
+    git clone https://github.com/silx-kit/pyFAI
+    cd pyFAI
     pip install build --upgrade
     pip install -r requirements.txt
     python3 -m build --wheel

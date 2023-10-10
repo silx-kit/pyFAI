@@ -51,10 +51,10 @@ One can also built the current development version from sources:
 
 .. code-block:: shell
 
+   sudo apt install git
    sudo apt-get build-dep pyfai
-   wget https://github.com/silx-kit/pyFAI/archive/main.zip
-   unzip main.zip
-   cd pyFAI-main
+   git clone https://github.com/silx-kit/pyFAI
+   cd pyFAI
    ./build-deb.sh --install
 
 
@@ -85,11 +85,9 @@ Or you can install pyFAI from the sources:
    python3 -m venv pyfai
    source pyfai/bin/activate
    pip install build
-   wget https://github.com/silx-kit/pyFAI/archive/main.zip
-   unzip main.zip
-   cd pyFAI-main
+   git clone https://github.com/silx-kit/pyFAI
+   cd pyFAI
    pip install -r requirements.txt
    pip install . --upgrade
 
-**Nota:** The usage of "python setup.py install" is now deprecated.
-One should never use *sudo pip* as it is likely to interfer with the software installed with the system.
+**Nota:** One should never use *sudo pip* as it is likely to interfer with the software installed with the system.
