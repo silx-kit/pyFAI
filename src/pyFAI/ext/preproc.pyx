@@ -38,7 +38,7 @@ flat-field normalization... taking care of masked values and normalization.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "09/03/2023"
+__date__ = "10/10/2023"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -61,7 +61,7 @@ cdef floating[:, ::1] c1_preproc(floating[::1] data,
                               bint check_dummy=False,
                               floating normalization_factor=1.0,
                               floating[:, ::1] result = None
-                              ) with gil:
+                              ) noexcept with gil:
     """Common preprocessing step for all routines: C-implementation
 
     :param data: raw value, as a numpy array, 1D or 2D
@@ -150,7 +150,7 @@ cdef floating[:, ::1] c2_preproc(floating[::1] data,
                                  bint check_dummy=False,
                                  floating normalization_factor=1.0,
                                  floating[:, ::1] result=None
-                                 ) with gil:
+                                 ) noexcept with gil:
     """Common preprocessing step for all routines: C-implementation
     with split_result without variance
 
@@ -247,7 +247,7 @@ cdef floating[:, ::1] c3_preproc(floating[::1] data,
                                  floating[::1] dark_variance=None,
                                  bint poissonian=False,
                                  floating[:, ::1] result=None,
-                                 ) with gil:
+                                 ) noexcept with gil:
     """Common preprocessing step for all routines: C-implementation
     with split_result with variance in second position: (signal, variance, normalization)
 
@@ -362,7 +362,7 @@ cdef floating[:, ::1] c4_preproc(floating[::1] data,
                                  floating[::1] dark_variance=None,
                                  bint poissonian=False,
                                  floating[:, ::1] result=None,
-                                 ) with gil:
+                                 ) noexcept with gil:
     """Common preprocessing step for all routines: C-implementation
     with split_result to return (signal, variance, normalization, count)
 
