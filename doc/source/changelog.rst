@@ -1,14 +1,16 @@
 :Author: Jérôme Kieffer
-:Date: 29/09/2023
+:Date: 10/10/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2023.XX
---------
+2023.10 XX/10/2023
+------------------
 - Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others
 - Support for Detris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
+- Drop of the build system based of setuptools (setup.py)
+- Support for Python 3.7-3.12
 
 2023.09 08/09/2023
 ------------------
