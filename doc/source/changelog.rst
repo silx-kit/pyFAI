@@ -9,8 +9,10 @@ Change-log of versions
 ------------------
 - Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others
 - Support for Detris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
-- Drop of the build system based of setuptools (setup.py)
+- Several new units have been added
+- Drop of `setup.py` the build system based on distutils/numpy.distutils/setuptools. Use meson-python.
 - Support for Python 3.7-3.12
+- Move the sources of the code into `src` directory
 
 2023.09 08/09/2023
 ------------------

@@ -12,11 +12,10 @@ subdir('test')
 subdir('third_party')
 subdir('utils')
 
-version_py = configure_file(input: '../version.py', output: '_version.py', copy: true)
-
 py.install_sources(
-   [ version_py,
+   [
     '__init__.py',
+    '_version.py',
     'average.py',
     'azimuthalIntegrator.py',
     'blob_detection.py',

@@ -28,7 +28,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2022"
+__date__ = "10/10/2023"
 
 import sys
 import os
@@ -36,18 +36,14 @@ import logging
 if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
     logging.basicConfig()
 
-try:
-    from ._version import __date__ as date
-    from ._version import version, version_info, hexversion, strictversion
-    from ._version import citation, calc_hexversion
-except ImportError:
-    project = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
-    raise RuntimeError("Do NOT use %s from its sources: build it and use the built version" % project)
+from ._version import __date__ as date
+from ._version import version, version_info, hexversion, strictversion
+from ._version import citation, calc_hexversion
 
-if sys.version_info < (2, 6):
+if sys.version_info < (3, 7):
     logger = logging.getLogger(__name__)
-    logger.error("pyFAI required a python version >= 2.6")
-    raise RuntimeError("pyFAI required a python version >= 2.6, now we are running: %s" % sys.version)
+    logger.error("pyFAI required a python version >= 3.7")
+    raise RuntimeError("pyFAI required a python version >= 3.7, now we are running: %s" % sys.version)
 
 from .utils import decorators
 
