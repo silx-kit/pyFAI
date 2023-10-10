@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2022"
+__date__ = "10/10/2023"
 
 import unittest
 import logging
@@ -78,11 +78,11 @@ class TestFIT2D(unittest.TestCase):
     def test_simple(self):
         ref = AzimuthalIntegrator.sload(self.poniFile)
         obt = AzimuthalIntegrator()
-        print(ref)
+        # print(ref)
         f2d = ref.getFit2D()
-        print(f2d)
+        # print(f2d)
         obt.setFit2D(**f2d)
-        print(obt)
+        # print(obt)
         for key in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "pixel1", "pixel2", "splineFile"]:
             refv = ref.__getattribute__(key)
             obtv = obt.__getattribute__(key)

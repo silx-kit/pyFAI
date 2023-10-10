@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2023"
+__date__ = "10/10/2023"
 
 import sys
 import os
@@ -344,7 +344,7 @@ class TestBugRegression(unittest.TestCase):
         # so far, so good
         df = detectors.detector_factory("Frelon",
                                         {"splineFile": UtilsTest.getimage("frelon.spline")})
-        print(df.spline.splineFuncX(numpy.array([1, 2]), numpy.array([3, 4]), True))
+        # print(df.spline.splineFuncX(numpy.array([1, 2]), numpy.array([3, 4]), True))
         aif = AzimuthalIntegrator(detector=df)
         aif.chi(numpy.array([1, 2]), numpy.array([3, 4]))
         aif.chi(numpy.array([1]), numpy.array([3]))
@@ -364,7 +364,7 @@ class TestBugRegression(unittest.TestCase):
         target = numpy.prod(shape) / 180 * delta
         ai.setChiDiscAtPi()
         angles = numpy.arange(-180, 400, 90)
-        print(angles)
+        # print(angles)
         for method in [("no", "histogram", "python"),
                        ("no", "histogram", "cython"),
                        ("no", "csr", "cython"),
@@ -527,12 +527,12 @@ class TestBugRegression(unittest.TestCase):
         detector = detectors.Detector(5e-4, 5e-4, max_shape=(1100, 1000))
         ref = AzimuthalIntegrator(detector=detector)
         geo = ref.getPyFAI()
-        print(geo)
-        print(ref.get_config())
+        # print(geo)
+        # print(ref.get_config())
         obt = AzimuthalIntegrator()
         obt.setPyFAI(**geo)
 
-        print(obt)
+        # print(obt)
         self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
 
     def test_bug_1810(self):
@@ -581,7 +581,6 @@ class TestBugRegression(unittest.TestCase):
         from ..method_registry import IntegrationMethod
         res = IntegrationMethod.select_method(dim=1, split="full", algo="csc", impl="python", degradable=False)
         self.assertGreater(len(res), 0, "method actually exists")
-        print(res)
 
 
 class TestBug1703(unittest.TestCase):

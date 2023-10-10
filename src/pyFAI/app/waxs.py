@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2021"
+__date__ = "10/10/2023"
 __status__ = "production"
 
 import os
@@ -162,8 +162,8 @@ def main():
         if options.flat and os.path.exists(options.flat):  # set Flat field
             integrator.flatfield = fabio.open(options.flat).data
 
-        print(integrator)
-        print("Mask: %s\tMethods: %s / %s" % (integrator.maskfile, method1d, method2d))
+        # print(integrator)
+        # print("Mask: %s\tMethods: %s / %s" % (integrator.maskfile, method1d, method2d))
         for afile in to_process:
             sys.stdout.write("Integrating %s --> " % afile)
             outfile = os.path.splitext(afile)[0] + options.ext

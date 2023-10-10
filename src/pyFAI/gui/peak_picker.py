@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2023"
+__date__ = "10/10/2023"
 __status__ = "production"
 
 import os
@@ -519,14 +519,12 @@ class PeakPicker(object):
         callback function
         """
         self.append_mode = True
-        print(self.append_mode)
 
     def on_minus_pts_clicked(self, *args):
         """
         callback function
         """
         self.append_mode = False
-        print(self.append_mode)
 
     def onclick_option(self, *args):
         """

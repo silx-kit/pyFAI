@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "10/10/2023"
 __status__ = "development"
 
 import sys
@@ -99,7 +99,6 @@ def main():
     # A short option only expect a single char
     argv = ["-" + a if a.startswith("-dx") else a for a in argv]
     argv = ["-" + a if a.startswith("-dy") else a for a in argv]
-    print(argv)
     options = parser.parse_args(args=argv[1:])
 
     if options.verbose:

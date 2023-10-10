@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/09/2023"
+__date__ = "10/10/2023"
 
 import os
 import unittest
@@ -81,8 +81,8 @@ class TestPreproc(unittest.TestCase):
 
         # add some tests with various levels of conditioning
         res = preproc.preproc(raw)
-        print(raw)
-        print(res)
+        # print(raw)
+        # print(res)
         # then Nan on last lines -> 0
         self.assertEqual(abs(res[-2:, 2:]).max(), 0, "Nan filtering")
         self.assertGreater(abs(res[:-2, 2:]).max(), scale, "untouched other")

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "10/10/2023"
 
 import unittest
 import numpy
@@ -62,17 +62,17 @@ class TestMassif(unittest.TestCase):
     def test_nomask(self):
         massif = Massif(self.image)
         massif.get_labeled_massif()
-        print(massif._number_massif)
+        # print(massif._number_massif)
 
     def test_mask_noreconstruct(self):
         massif = Massif(self.image, self.mask)
         massif.get_labeled_massif(reconstruct=False)
-        print(massif._number_massif)
+        # print(massif._number_massif)
 
     def test_mask_reconstruct(self):
         massif = Massif(self.image, self.mask)
         massif.get_labeled_massif(reconstruct=True)
-        print(massif._number_massif)
+        # print(massif._number_massif)
 
     def test_himask(self):
         image = self.image[...]

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "10/10/2023"
 
 import unittest
 import fabio
@@ -55,11 +55,11 @@ class TestWatershed(unittest.TestCase):
     def test_init(self):
         w = watershed.InverseWatershed(data=self.data)
         w.init()
-        print(len(w.regions))
-        from sys import getsizeof
-        print(getsizeof(w))
+        # print(len(w.regions))
+        # from sys import getsizeof
+        # print(getsizeof(w))
         w.__dealloc__()
-        print(getsizeof(w))
+        # print(getsizeof(w))
 
 
 def suite():

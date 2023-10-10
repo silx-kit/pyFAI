@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "10/10/2023"
 
 import unittest
 import platform
@@ -80,7 +80,7 @@ class TestRecenter(unittest.TestCase):
             for i1 in range(pos.shape[1]):
                 area.append(splitPixel.recenter(pos[i0, i1], chiDiscAtPi=disc_at_pi))
         self.assertLessEqual(max(area), 0, "All area are negative")
-        print((pos[..., 1] > numpy.pi).sum(), (pos[..., 1] < -numpy.pi).sum())
+        # print((pos[..., 1] > numpy.pi).sum(), (pos[..., 1] < -numpy.pi).sum())
         self.assertEqual((pos[..., 1] > numpy.pi).sum(), 1, "1 corner is >pi")
         self.assertEqual((pos[..., 1] < -numpy.pi).sum(), 5, "5 corner are <-pi")
 

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "10/10/2023"
 
 import unittest
 import os
@@ -841,9 +841,9 @@ class TestGeometryRefinement(unittest.TestCase):
         mycalibrant.wavelength = 1e-10
         r2 = GeometryRefinement(data, calibrant=mycalibrant, detector="Fairchild",
                                 wavelength=mycalibrant.wavelength)
-        print(r2)
+        # print(r2)
         r2.guess_poni()
-        print(r2)
+        # print(r2)
         r2.refine2(10000000, fix=[])
         ref = {"dist": (0.1, 1e-5),  # value, tolerance
                "poni1": (0.05, 1e-5),
@@ -852,7 +852,7 @@ class TestGeometryRefinement(unittest.TestCase):
                "poni2": (0.06, 1e-5),
                "rot1": (0.07, 1e-4),
                "wavelength": (1e-10, 1e-10)}
-        print(r2)
+        # print(r2)
         for key in ref.keys():
             self.assertAlmostEqual(ref[key][0], r2.__getattribute__(key), delta=ref[key][1],
                                    msg="%s is %s, I expected %s%s%s" % (key, r2.__getattribute__(key), ref[key], os.linesep, r2))

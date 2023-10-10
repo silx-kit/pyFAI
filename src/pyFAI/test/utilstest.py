@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "10/10/2023"
 
 PACKAGE = "pyFAI"
 
@@ -251,7 +251,7 @@ class TestOptions(object):
                 base = base[1:-1]
             for file_extension in available_extensions:
                 script_path = os.path.join(base, script + file_extension)
-                print(script_path)
+                # print(script_path)
                 if os.path.exists(script_path):
                     # script found
                     return script_path

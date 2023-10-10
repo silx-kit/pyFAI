@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/01/2021"
+__date__ = "10/10/2023"
 
 import unittest
 import numpy
@@ -301,10 +301,9 @@ class TestOther(unittest.TestCase):
         Q = distortion.Quad(data)
         Q.reinit(7.5, 6.5, 2.5, 5.5, 3.5, 1.5, 8.5, 1.5)
         Q.init_slope()
-        print(Q.calc_area())
+        # print(Q.calc_area())
         Q.populate_box()
-        print(Q)
-        print(data.sum())
+        # print(Q)
         Q.reinit(8.5, 1.5, 3.5, 1.5, 2.5, 5.5, 7.5, 6.5)
         Q.init_slope()
         Q.populate_box()

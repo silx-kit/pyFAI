@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "10/10/2023"
 
 import unittest
 import sys
@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 class TestDummy(unittest.TestCase):
 
     def test_dummy(self):
-        print(__name__)
+        # print(__name__)
         if "pyFAI" not in sys.modules:
             pyFAI = __import__("pyFAI")
         else:

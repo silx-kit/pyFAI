@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2021"
+__date__ = "10/10/2023"
 __status__ = "production"
 
 import os
@@ -144,8 +144,8 @@ def main():
                 method = IntegrationMethod.select_method(1, "full", "csr")[0]
             else:
                 method = IntegrationMethod.select_method(1, "full", "histogram")[0]
-        print(integrator)
-        print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
+        # print(integrator)
+        # print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
 
         for afile in to_process:
             sys.stdout.write("Integrating %s --> " % afile)

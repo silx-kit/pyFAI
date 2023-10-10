@@ -31,7 +31,7 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/05/2022"
+__date__ = "10/10/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -510,13 +510,13 @@ class BlobDetection(object):
             dxs = (dx_next - dx_prev) / 2.0
             dys = (dy_next - dy_prev) / 2.0
 
-            print(dx, dy, ds)
-            print(d2x, d2y, d2s, dxy, dxs, dys)
+            # print(dx, dy, ds)
+            # print(d2x, d2y, d2s, dxy, dxs, dys)
 
             lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
             delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
-            print(y, x)
-            print(delta)
+            # print(y, x)
+            # print(delta)
             # err = numpy.linalg.norm(delta[:-1])
 
             if numpy.abs(delta[0]) <= self.tresh and numpy.abs(delta[1]) <= self.tresh and numpy.abs(delta[2]) <= self.tresh:

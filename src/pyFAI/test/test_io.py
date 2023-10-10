@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "10/10/2023"
 
 import unittest
 import os
@@ -119,7 +119,7 @@ class TestNexus(unittest.TestCase):
 
             elif isinstance(a, dict):
                 for l in a:
-                    print(l, a[l])
+                    # print(l, a[l])
                     self.assertEqual(a[l], b[l], f"{k}[{l}]")
             else:
                 logger.warning("unchecked: %s vs %s", a, b)
@@ -160,7 +160,7 @@ class TestNexus(unittest.TestCase):
 
             elif isinstance(a, dict):
                 for l in a:
-                    print(l, a[l])
+                    # print(l, a[l])
                     self.assertEqual(a[l], b[l], f"{k}[{l}]")
             else:
                 logger.warning("unchecked: %s vs %s", a, b)
