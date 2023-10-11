@@ -59,7 +59,7 @@ class TestUnits(unittest.TestCase):
         y = rng.uniform(-2, 2, shape)
         z = rng.uniform(0.1, 2, shape)
         λ = rng.uniform(1e-11, 1e-9, shape)
-        for k,u in {**units.RADIAL_UNITS, **units.AZIMUTHAL_UNITS}.items():
+        for k,u in units.ANY_UNITS.items():
             if callable(u._equation) and callable(u.equation) and (u._equation!=u.equation):
                 ref = u.equation(x,y,z,λ)
                 obt = u._equation(x,y,z,λ)

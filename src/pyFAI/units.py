@@ -142,18 +142,23 @@ class Unit(object):
 
 RADIAL_UNITS = {}
 AZIMUTHAL_UNITS = {}
+ANY_UNITS = {}
 
 
 def register_radial_unit(name, scale=1, label=None, equation=None, formula=None,
-                         center=None, corner=None, delta=None, short_name=None, unit_symbol=None, positive=True):
+                         center=None, corner=None, delta=None, short_name=None,
+                         unit_symbol=None, positive=True, period=None):
     RADIAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
-                              corner, delta, short_name, unit_symbol, positive)
+                              corner, delta, short_name, unit_symbol, positive, period)
+    ANY_UNITS.update(RADIAL_UNITS)
 
 
 def register_azimuthal_unit(name, scale=1, label=None, equation=None, formula=None,
-                         center=None, corner=None, delta=None, short_name=None, unit_symbol=None, positive=False):
+                         center=None, corner=None, delta=None, short_name=None,
+                         unit_symbol=None, positive=False, period=None):
     AZIMUTHAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
-                                 corner, delta, short_name, unit_symbol, positive)
+                                 corner, delta, short_name, unit_symbol, positive, period)
+    ANY_UNITS.update(AZIMUTHAL_UNITS)
 
 
 def eq_r(x, y, z=None, wavelength=None):
@@ -386,8 +391,18 @@ ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o
                "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)", positive=False, period=2 * numpy.pi),
                }
 
-AZIMUTHAL_UNITS["chi_rad"] = Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)", formula=formula_chi, positive=False, period=2 * numpy.pi)
-AZIMUTHAL_UNITS["chi_deg"] = Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)", formula=formula_chi, positive=False, period=360)
+register_azimuthal_unit("chi_rad",
+                        scale=1.0,
+                        label=r"Azimuthal angle $\chi$ ($rad$)",
+                        formula=formula_chi,
+                        positive=False,
+                        period=2.*pi)
+register_azimuthal_unit("chi_deg",
+                        scale=180. / pi,
+                        label=r"Azimuthal angle $\chi$ ($^{o}$)",
+                        formula=formula_chi,
+                        positive=False,
+                        period=360)
 AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
 AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
 
@@ -400,14 +415,15 @@ def to_unit(obj, type_=None):
     :return: Unit instance
     """
     rad_unit = None
+    if type_ is None:
+        type_ = ANY_UNITS
     if isinstance(obj, (str,)):
-        rad_unit = (type_ or {**AZIMUTHAL_UNITS, **RADIAL_UNITS}).get(obj)
+        rad_unit = type_.get(obj)
     elif isinstance(obj, Unit):
         rad_unit = obj
     # elif isinstance(obj, (list, tuple)) and len(obj) == 2:
     #     rad_unit = tuple(to_unit(i) for i in obj)
     if rad_unit is None:
-        type_ = type_ or {**AZIMUTHAL_UNITS, **RADIAL_UNITS}
         logger.error("Unable to recognize this type unit '%s' of type %s. "
                      "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_])))
     return rad_unit
