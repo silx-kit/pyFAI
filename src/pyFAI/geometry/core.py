@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2023"
+__date__ = "11/10/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1071,7 +1071,7 @@ class Geometry(object):
         :type shape: ndarray.shape
         :param typ: "center", "corner" or "delta"
         :type typ: str
-        :param unit: can be any valid unit (see units.ANY_UNITS)
+        :param unit: can be any valid unit (found in  units.AZIMUTHAL_UNITS or units.RADIAL_UNITS)
         :type unit: pyFAI.units.Unit or 2-tuple of them (valid only for corner coordinates calculation
         :param scale: set to False for returning the internal representation
                 (S.I. often) which is faster

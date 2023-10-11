@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2023"
+__date__ = "11/10/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -142,27 +142,33 @@ class Unit(object):
 
 RADIAL_UNITS = {}
 AZIMUTHAL_UNITS = {}
+ANY_UNITS = {}
 
 
 def register_radial_unit(name, scale=1, label=None, equation=None, formula=None,
-                         center=None, corner=None, delta=None, short_name=None, unit_symbol=None, positive=True):
+                         center=None, corner=None, delta=None, short_name=None,
+                         unit_symbol=None, positive=True, period=None):
     RADIAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
-                              corner, delta, short_name, unit_symbol, positive)
+                              corner, delta, short_name, unit_symbol, positive, period)
+    ANY_UNITS.update(RADIAL_UNITS)
 
 
 def register_azimuthal_unit(name, scale=1, label=None, equation=None, formula=None,
-                         center=None, corner=None, delta=None, short_name=None, unit_symbol=None, positive=False):
+                         center=None, corner=None, delta=None, short_name=None,
+                         unit_symbol=None, positive=False, period=None):
     AZIMUTHAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
-                                 corner, delta, short_name, unit_symbol, positive)
+                                 corner, delta, short_name, unit_symbol, positive, period)
+    ANY_UNITS.update(AZIMUTHAL_UNITS)
 
 
 def eq_r(x, y, z=None, wavelength=None):
-    """Calculates the radius
+    """Calculates the radius in meter
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
     :param wavelength: in meter
+    :return: radius in meter
     """
     return numpy.sqrt(x * x + y * y)
 
@@ -174,6 +180,7 @@ def eq_2th(x, y, z, wavelength=None):
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
     :param wavelength: in meter
+    :return: opening angle 2θ in radian
     """
     return numpy.arctan2(eq_r(x, y), z)
 
@@ -185,6 +192,7 @@ def eq_q(x, y, z, wavelength):
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
     :param wavelength: in meter
+    :return: modulus of the scattering verctor q in inverse nm
     """
     return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
 
@@ -383,19 +391,32 @@ ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o
                "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)", positive=False, period=2 * numpy.pi),
                }
 
-AZIMUTHAL_UNITS["chi_rad"] = Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)", formula=formula_chi, positive=False, period=2 * numpy.pi)
-AZIMUTHAL_UNITS["chi_deg"] = Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)", formula=formula_chi, positive=False, period=360)
+register_azimuthal_unit("chi_rad",
+                        scale=1.0,
+                        label=r"Azimuthal angle $\chi$ ($rad$)",
+                        formula=formula_chi,
+                        positive=False,
+                        period=2.*pi)
+register_azimuthal_unit("chi_deg",
+                        scale=180. / pi,
+                        label=r"Azimuthal angle $\chi$ ($^{o}$)",
+                        formula=formula_chi,
+                        positive=False,
+                        period=360)
 AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
 AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
-ANY_UNITS = {}
-ANY_UNITS.update(RADIAL_UNITS)
-ANY_UNITS.update(AZIMUTHAL_UNITS)
 
 
 def to_unit(obj, type_=None):
+    """Convert to Unit object
+
+    :param obj: can be a unit or a string like "2th_deg"
+    :param type_: family of units like AZIMUTHAL_UNITS or RADIAL_UNITS
+    :return: Unit instance
+    """
+    rad_unit = None
     if type_ is None:
         type_ = ANY_UNITS
-    rad_unit = None
     if isinstance(obj, (str,)):
         rad_unit = type_.get(obj)
     elif isinstance(obj, Unit):
