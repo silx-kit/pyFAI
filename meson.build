@@ -2,7 +2,7 @@ project('pyFAI',
   'c', 'cpp', 'cython',
   license: 'MIT',
   meson_version: '>= 0.60',
-  version: run_command(['version.py', '--wheel'],
+  version: run_command(['src/pyFAI/_version.py', '--wheel'],
                        check:true).stdout().strip(),
   default_options: ['buildtype=plain', ],
 )
@@ -28,4 +28,4 @@ py_mod = import('python')
 py = py_mod.find_installation()
 py_dep = py.dependency()
 
-subdir('pyFAI')
+subdir('src/pyFAI')

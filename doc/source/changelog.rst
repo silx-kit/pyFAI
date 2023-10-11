@@ -1,14 +1,18 @@
 :Author: Jérôme Kieffer
-:Date: 29/09/2023
+:Date: 10/10/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2023.XX
---------
+2023.10 XX/10/2023
+------------------
 - Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others
 - Support for Detris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
+- Several new units have been added
+- Drop of `setup.py` the build system based on distutils/numpy.distutils/setuptools. Use meson-python.
+- Support for Python 3.7-3.12
+- Move the sources of the code into `src` directory
 
 2023.09 08/09/2023
 ------------------
@@ -22,7 +26,7 @@ Change-log of versions
 - Updated notebook (addresses API changes)
 
 2023.08 30/08/2023 BUGGY, DO NOT USE !!!
-------------------
+----------------------------------------
 - Minor release, mostly bug-fixes. 87 commits.
 - fix mal-formed headers in 1D ASCII export
 - Debian packaging without setup.py (at all)
