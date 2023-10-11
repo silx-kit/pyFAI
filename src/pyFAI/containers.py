@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/09/2023"
+__date__ = "11/10/2023"
 __status__ = "development"
 
 from collections import namedtuple
@@ -470,7 +470,7 @@ class Integrate2dResult(IntegrateResult):
     def __init__(self, intensity, radial, azimuthal, sigma=None):
         super(Integrate2dResult, self).__init__()
         self._radial_unit = None
-        self._azimuth_unit = None
+        self._azimuthal_unit = None
 
     @property
     def intensity(self):
@@ -514,9 +514,12 @@ class Integrate2dResult(IntegrateResult):
     def unit(self):
         """Radial unit
 
-        :rtype: string
+        :rtype: Unit or 2-tuple of Unit
         """
-        return self._radial_unit, self.azimuthal_unit
+        if self._azimuthal_unit is None:
+            return self._radial_unit
+        else:
+            return self._radial_unit, self._azimuthal_unit
 
     def _set_unit(self, unit):
         """Define the radial unit
@@ -525,7 +528,7 @@ class Integrate2dResult(IntegrateResult):
         """
         deprecated_warning("Function", "_set_unit", replacement="_set_radial_unit/_set_azimuthal_unit", since_version="2023.09", only_once=True)
         if isinstance(unit, (tuple, list)) and len(unit) == 2:
-            self._radial_unit, self.azimuthal_unit = unit
+            self._radial_unit, self._azimuthal_unit = unit
         else:
             self._radial_unit = unit
 

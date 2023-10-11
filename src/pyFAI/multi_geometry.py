@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2023"
+__date__ = "11/10/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -286,7 +286,8 @@ class MultiGeometry(object):
             result = Integrate2dResult(I, res.radial, res.azimuthal)
         result._set_sum(signal)
         result._set_compute_engine(res.compute_engine)
-        result._set_unit(self.unit)
+        result._set_radial_unit(self.unit)
+        result._set_azimuthal_unit(units.CHI_DEG)
         result._set_sum_signal(signal)
         result._set_sum_normalization(normalization)
         result._set_sum_variance(variance)
