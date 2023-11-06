@@ -129,8 +129,8 @@ class CreateSceneThread(qt.QThread):
         if self.__mask is not None:
             mask = self.__mask.reshape(-1)
             if pixelValues.dtype.kind in "ui":
-                pixelValues = pixelValues.astype(numpy.float)
-            pixelValues[mask != 0] = numpy.float("nan")
+                pixelValues = pixelValues.astype(float)
+            pixelValues[mask != 0] = float("nan")
 
         values = numpy.empty(shape=(vertices.shape[0]))
         values[0::4] = pixelValues
