@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 #
-#    Copyright (C) 2016-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2016-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "10/02/2023"
+__date__ = "20/10/2023"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -57,7 +57,7 @@ try:
         _update_fig(*args, **kwargs)
 
 except ImportError:
-    pylab = None
+    pylab = pyplot = None
 
     def update_fig(*args, **kwargs):
         pass
@@ -607,7 +607,7 @@ class Bench(object):
         if self.fig:
             print("Already initialized")
             return
-        if pylab and (sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ):
+        if pyplot and ((sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ)):
             self.fig, self.ax = pyplot.subplots()
             self.fig.show()
             self.ax.set_autoscale_on(False)
@@ -677,7 +677,7 @@ class Bench(object):
             return
         self.memory_profile[0].append(time.perf_counter() - self.starttime)
         self.memory_profile[1].append(self.get_mem())
-        if pylab:
+        if pyplot:
             if self.fig_mp is None:
                 self.fig_mp, self.ax_mp = pyplot.subplots()
                 self.ax_mp.set_autoscale_on(False)

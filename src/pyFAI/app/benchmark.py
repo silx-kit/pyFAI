@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2022"
+__date__ = "20/10/2023"
 __status__ = "development"
 
 import logging
