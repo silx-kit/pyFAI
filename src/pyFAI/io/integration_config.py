@@ -31,7 +31,7 @@
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "16/11/2023"
 __docformat__ = 'restructuredtext'
 
 import logging
@@ -155,13 +155,14 @@ def _patch_v2_to_v3(config):
     config["version"] = 3
 
 
-def normalize(config, inplace=False):
+def normalize(config, inplace=False, do_raise=False):
     """Normalize the configuration file to the one supported internally\
     (the last one).
 
     :param dict config: The configuration dictionary to read
     :param bool inplace: In true, the dictionary is edited inplace
-    :raise ValueError: If the configuration do not match.
+    :param bool do_raise: raise ValueError if set. Else use logger.
+    :raise ValueError: If the configuration do not match & do_raise is set
     """
     if not inplace:
         config = config.copy()
@@ -176,7 +177,11 @@ def normalize(config, inplace=False):
 
     application = config.get("application", None)
     if application != "pyfai-integrate":
-        raise ValueError("Configuration application do not match. Found '%s'" % application)
+        txt = f"Configuration application do not match. Found '{application}'"
+        if do_raise:
+            raise ValueError(txt)
+        else:
+            _logger.error(txt)
 
     if version > 3:
         _logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read this configuration", version)

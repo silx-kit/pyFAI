@@ -32,15 +32,14 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "16/11/2023"
 
 import unittest
 import logging
 import os.path
 import shutil
+import json
 import numpy
-
-from silx.io.url import DataUrl
 
 from .. import units
 from .. import worker as worker_mdl
@@ -97,15 +96,17 @@ class MockedAiWriter():
 
 
 class TestWorker(unittest.TestCase):
+
     @classmethod
-    def setUpClass(cls)->None:
+    def setUpClass(cls) -> None:
         super(TestWorker, cls).setUpClass()
         cls.rng = utilstest.UtilsTest.get_rng()
 
     @classmethod
-    def tearDownClass(cls)->None:
+    def tearDownClass(cls) -> None:
         super(TestWorker, cls).tearDownClass()
         cls.rng = None
+
     def test_constructor_ai(self):
         ai = AzimuthalIntegrator()
         w = Worker(ai)
@@ -330,6 +331,7 @@ class TestWorker(unittest.TestCase):
         img = self.rng.random(ai.detector.shape)
         worker(img)
 
+
 class TestWorkerConfig(unittest.TestCase):
 
     @classmethod
@@ -372,6 +374,31 @@ class TestWorkerConfig(unittest.TestCase):
         worker.process(data=data)
         self.assertTrue(numpy.isclose(worker.ai.detector.get_darkcurrent()[0, 0], (1 + 2 + 3) / 3))
         self.assertTrue(numpy.isclose(worker.ai.detector.get_flatfield()[0, 0], (1 + 2 + 4) / 3))
+
+    def test_reload(self):
+        config = {"version": 2,
+                  "application": "pyfai-integrate",
+                  "dark_current": [self.a, self.b, self.c],
+                  "flat_field": [self.a, self.b, self.d],
+                  "poni": utilstest.UtilsTest.getimage("Pilatus1M.poni"),
+                  "detector": "Detector",
+                  "detector_config": {"pixel1": 1, "pixel2": 1, "max_shape": (2, 2)},
+                  "do_2D": False,
+                  "nbpt_rad": 2,
+                  "do_solid_angle": False,
+                  "method": "splitbbox"}
+        print(json.dumps(config, indent=2))
+        worker = Worker()
+        worker.validate_config(config)
+        worker.set_config(config)
+        new_config = worker.get_config()
+        print(json.dumps(new_config, indent=2))
+        new_worker = Worker()
+        new_worker.validate_config(new_config)
+        new_worker.set_config(new_config)
+        # test ai
+        ai = AzimuthalIntegrator.load(new_config)
+        print(ai)
 
 
 def suite():
