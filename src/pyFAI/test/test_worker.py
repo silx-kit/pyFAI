@@ -400,6 +400,37 @@ class TestWorkerConfig(unittest.TestCase):
         ai = AzimuthalIntegrator.load(new_config)
         print(ai)
 
+    def test_old(self):
+        """bug 1991"""
+        config = {'unit': 'q_nm^-1',
+                 'dist': 0.1999693237019301,
+                 'poni1': 0.12279243634743776,
+                 'poni2': 0.11803581502718556,
+                 'rot1': 0.013977781483742164,
+                 'rot3': -7.470130596383977e-05,
+                 'rot2': -0.013837145398466972,
+                 'pixel1': 7.5e-05,
+                 'pixel2': 7.5e-05,
+                 'splineFile': None,
+                 'wavelength': 3.7380000000000004e-11,
+                 'nbpt_azim': 1,
+                 'nbpt_rad': 5000,
+                 'polarization_factor': 0.99,
+                 'dummy': None,
+                 'delta_dummy': None,
+                 'correct_solid_angle': True,
+                 'dark_current_image': None,
+                 'flat_field_image': None,
+                 'mask_image': 'DAC-04-mask.npy',
+                 'error_model': 'poisson',
+                 'shape': [3262, 3108],
+                 'method': [1, 'full', 'csr', 'opencl', 'gpu'],
+                 'do_azimuth_range': False,
+                 'do_radial_range': False}
+
+        worker = Worker()
+        worker.validate_config(config)
+        worker.set_config(config)
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
