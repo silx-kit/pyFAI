@@ -432,6 +432,9 @@ class TestWorkerConfig(unittest.TestCase):
         worker.validate_config(config)
         worker.set_config(config)
 
+        ai = worker.ai
+        self.assertTrue(numpy.allclose(config["shape"], ai.detector.max_shape))
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()

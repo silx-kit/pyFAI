@@ -115,7 +115,13 @@ def _patch_v1_to_v2(config):
         splineFile = config.pop("splineFile", None)
         if splineFile:
             detector.set_splineFile(splineFile)
-
+    else:
+        if "shape" in config and "pixel1" in config and "pixel2" in config:
+            max_shape = config["shape"]
+            pixel1 = config["pixel1"]
+            pixel2 = config["pixel2"]
+            spline = config.get("splineFile")
+            detector = detectors.Detector(pixel1, pixel2, splineFile=spline, max_shape=max_shape)
     if detector is not None:
         # Feed the detector as version2
         config["detector"] = detector.__class__.__name__
@@ -148,7 +154,13 @@ def _patch_v2_to_v3(config):
     :param dict config: Dictionary reworked inplace.
     """
     old_method = config.pop("method")
-    method = method_registry.Method.parsed(old_method)
+    if isinstance(old_method, (list, tuple)):
+        if len(old_method)==5:
+            method = method_registry.Method(*old_method)
+        else:
+            method = old_method
+    else:        
+        method = method_registry.Method.parse(old_method)
     config["method"] = method.split, method.algo, method.impl
     config["opencl_device"] = method.target
 
@@ -161,7 +173,7 @@ def normalize(config, inplace=False, do_raise=False):
 
     :param dict config: The configuration dictionary to read
     :param bool inplace: In true, the dictionary is edited inplace
-    :param bool do_raise: raise ValueError if set. Else use logger.
+    :param bool do_raise: raise ValueError if set. Else use logger.error
     :raise ValueError: If the configuration do not match & do_raise is set
     """
     if not inplace:
