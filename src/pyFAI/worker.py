@@ -447,9 +447,9 @@ class Worker(object):
         :param bool consume_keys: If true the keys from the dictionary will be
             consumed when used.
         """
-        print(f"config before {json.dumps(config)}")
+        # print(f"config before {json.dumps(config)}")
         config = integration_config.normalize(config, inplace=consume_keys, do_raise=False)
-        print(f"config after {json.dumps(config)}")
+        # print(f"config after {json.dumps(config)}")
         _init_ai(self.ai, config, consume_keys=True, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
