@@ -255,10 +255,13 @@ class ConfigurationReader(object):
             method = method_registry.Method.parsed(method)
             method = method.fixed(dim=dim, target=target)
         elif isinstance(method, (list, tuple)):
-            if len(method) != 3:
-                raise TypeError("Method size %s unsupported." % len(method))
-            split, algo, impl = method
-            method = method_registry.Method(dim, split, algo, impl, target)
+            if len(method) == 3:
+                split, algo, impl = method
+                method = method_registry.Method(dim, split, algo, impl, target)
+            elif 3 < len(method) <= 5:
+                method = method_registry.Method(*method)
+            else:
+                raise TypeError(f"Method size {len(method)} is unsupported, method={method}.")
         else:
-            raise TypeError("Method type %s unsupported." % type(method))
+            raise TypeError(f"Method type {type(method)} unsupported, method={method}.")
         return method
