@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2023"
+__date__ = "16/11/2023"
 __status__ = "development"
 
 import threading
@@ -447,11 +447,7 @@ class Worker(object):
         :param bool consume_keys: If true the keys from the dictionary will be
             consumed when used.
         """
-        if not consume_keys:
-            # Avoid to edit the input argument
-            config = dict(config)
-
-        integration_config.normalize(config, inplace=True)
+        config = integration_config.normalize(config, inplace=consume_keys, do_raise=False)
         _init_ai(self.ai, config, consume_keys=True, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
@@ -577,15 +573,15 @@ class Worker(object):
     def get_config(self):
         """Returns the configuration as a dictionary.
 
-        FIXME: The returned dictionary is not exhaustive.
+        :return: dict with the config to be de-serialized with set_config/loaded with pyFAI.load
         """
-        config = OrderedDict()
-        config["unit"] = str(self.unit)
-        for key in ["dist", "poni1", "poni2", "rot1", "rot3", "rot2", "pixel1", "pixel2", "splineFile", "wavelength"]:
-            try:
-                config[key] = self.ai.__getattribute__(key)
-            except Exception:
-                pass
+        config = {
+            "version": 3,
+            "unit": str(self.unit),
+            }
+
+        config.update(self.ai.get_config())
+
         for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "dummy", "delta_dummy",
                     "correct_solid_angle", "dark_current_image", "flat_field_image",
                     "mask_image", "error_model", "shape", "method"]:
@@ -710,6 +706,7 @@ class Worker(object):
         if reason and isinstance(raise_exception, Exception):
             raise_exception(reason)
         return reason
+
 
 class PixelwiseWorker(object):
     """

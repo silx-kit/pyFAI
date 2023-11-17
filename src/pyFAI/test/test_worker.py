@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,15 +32,14 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "16/11/2023"
 
 import unittest
 import logging
 import os.path
 import shutil
+import json
 import numpy
-
-from silx.io.url import DataUrl
 
 from .. import units
 from .. import worker as worker_mdl
@@ -97,15 +96,17 @@ class MockedAiWriter():
 
 
 class TestWorker(unittest.TestCase):
+
     @classmethod
-    def setUpClass(cls)->None:
+    def setUpClass(cls) -> None:
         super(TestWorker, cls).setUpClass()
         cls.rng = utilstest.UtilsTest.get_rng()
 
     @classmethod
-    def tearDownClass(cls)->None:
+    def tearDownClass(cls) -> None:
         super(TestWorker, cls).tearDownClass()
         cls.rng = None
+
     def test_constructor_ai(self):
         ai = AzimuthalIntegrator()
         w = Worker(ai)
@@ -330,6 +331,7 @@ class TestWorker(unittest.TestCase):
         img = self.rng.random(ai.detector.shape)
         worker(img)
 
+
 class TestWorkerConfig(unittest.TestCase):
 
     @classmethod
@@ -373,6 +375,63 @@ class TestWorkerConfig(unittest.TestCase):
         self.assertTrue(numpy.isclose(worker.ai.detector.get_darkcurrent()[0, 0], (1 + 2 + 3) / 3))
         self.assertTrue(numpy.isclose(worker.ai.detector.get_flatfield()[0, 0], (1 + 2 + 4) / 3))
 
+    def test_reload(self):
+        config = {"version": 2,
+                  "application": "pyfai-integrate",
+                  "dark_current": [self.a, self.b, self.c],
+                  "flat_field": [self.a, self.b, self.d],
+                  "poni": utilstest.UtilsTest.getimage("Pilatus1M.poni"),
+                  "detector": "Detector",
+                  "detector_config": {"pixel1": 1, "pixel2": 1, "max_shape": (2, 2)},
+                  "do_2D": False,
+                  "nbpt_rad": 2,
+                  "do_solid_angle": False,
+                  "method": "splitbbox"}
+        worker = Worker()
+        worker.validate_config(config)
+        worker.set_config(config)
+        new_config = worker.get_config()
+        new_worker = Worker()
+        new_worker.validate_config(new_config)
+        new_worker.set_config(new_config)
+        # test ai
+        ai = AzimuthalIntegrator.sload(new_config)
+        self.assertEqual(ai.detector.shape, (2,2), "detector shape matches")
+
+    def test_old(self):
+        """bug 1991"""
+        config = {'unit': 'q_nm^-1',
+                 'dist': 0.1999693237019301,
+                 'poni1': 0.12279243634743776,
+                 'poni2': 0.11803581502718556,
+                 'rot1': 0.013977781483742164,
+                 'rot3': -7.470130596383977e-05,
+                 'rot2': -0.013837145398466972,
+                 'pixel1': 7.5e-05,
+                 'pixel2': 7.5e-05,
+                 'splineFile': None,
+                 'wavelength': 3.7380000000000004e-11,
+                 'nbpt_azim': 1,
+                 'nbpt_rad': 5000,
+                 'polarization_factor': 0.99,
+                 'dummy': None,
+                 'delta_dummy': None,
+                 'correct_solid_angle': True,
+                 'dark_current_image': None,
+                 'flat_field_image': None,
+                 'mask_image': 'DAC-04-mask.npy',
+                 'error_model': 'poisson',
+                 'shape': [3262, 3108],
+                 'method': [1, 'full', 'csr', 'opencl', 'gpu'],
+                 'do_azimuth_range': False,
+                 'do_radial_range': False}
+
+        worker = Worker()
+        worker.validate_config(config)
+        worker.set_config(config)
+
+        ai = worker.ai
+        self.assertTrue(numpy.allclose(config["shape"], ai.detector.max_shape))
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
