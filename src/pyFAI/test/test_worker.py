@@ -397,7 +397,7 @@ class TestWorkerConfig(unittest.TestCase):
         new_worker.validate_config(new_config)
         new_worker.set_config(new_config)
         # test ai
-        ai = AzimuthalIntegrator.load(new_config)
+        ai = AzimuthalIntegrator.sload(new_config)
         print(ai)
 
     def test_old(self):
