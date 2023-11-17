@@ -160,7 +160,7 @@ def _patch_v2_to_v3(config):
         else:
             method = old_method
     else:
-        method = method_registry.Method.parse(old_method)
+        method = method_registry.Method.parsed(old_method)
     config["method"] = method.split, method.algo, method.impl
     config["opencl_device"] = method.target
 
