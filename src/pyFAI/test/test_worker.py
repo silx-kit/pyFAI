@@ -397,7 +397,7 @@ class TestWorkerConfig(unittest.TestCase):
         # test ai
         ai = AzimuthalIntegrator.sload(new_config)
         self.assertEqual(ai.detector.shape, (2,2), "detector shape matches")
-    
+
     def test_old(self):
         """bug 1991"""
         config = {'unit': 'q_nm^-1',
