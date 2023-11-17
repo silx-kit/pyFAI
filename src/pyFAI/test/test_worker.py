@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -387,19 +387,17 @@ class TestWorkerConfig(unittest.TestCase):
                   "nbpt_rad": 2,
                   "do_solid_angle": False,
                   "method": "splitbbox"}
-        print(json.dumps(config, indent=2))
         worker = Worker()
         worker.validate_config(config)
         worker.set_config(config)
         new_config = worker.get_config()
-        print(json.dumps(new_config, indent=2))
         new_worker = Worker()
         new_worker.validate_config(new_config)
         new_worker.set_config(new_config)
         # test ai
         ai = AzimuthalIntegrator.sload(new_config)
-        print(ai)
-
+        self.assertEqual(ai.detector.shape, (2,2), "detector shape matches")
+    
     def test_old(self):
         """bug 1991"""
         config = {'unit': 'q_nm^-1',
