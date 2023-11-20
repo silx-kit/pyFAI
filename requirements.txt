@@ -12,5 +12,4 @@ silx >=1.1
 PyOpenGL
 PyQt5
 hdf5plugin
-transformations
 nbsphinx
