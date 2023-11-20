@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/10/2023"
+__date__ = "20/11/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -882,10 +882,8 @@ class Geometry(object):
         :type shape: 2-tuple of integer
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
         :param scale: set to False for returning the internal representation
-                (S.I. often) which is faster
-        :return: 3d array with shape=(\\*shape,4,2) the two elements are:
-            - dim3[0]: radial angle 2th, q, r...
-            - dim3[1]: azimuthal angle chi
+                (S.I. often) which is faster.
+        :return: 2d array of given shape
         """
 
         unit = to_unit(unit)
@@ -900,9 +898,7 @@ class Geometry(object):
 
         if (ary is not None) and (ary.shape == shape):
             if scale and unit:
-                tmp = ary.copy()
-                tmp[..., 0] *= unit.scale
-                return tmp
+                return ary * unit.scale
             else:
                 return ary
 
@@ -915,26 +911,20 @@ class Geometry(object):
             numpy.mod(ary, 2.0 * numpy.pi, out=ary)
         self._cached_array[key] = ary
         if scale and unit:
-                tmp = ary.copy()
-                tmp[..., 0] *= unit.scale
-                return tmp
+                return ary * unit.scale
         else:
             return ary
 
     def delta_array(self, shape=None, unit="2th_deg", scale=False):
         """
-        Generate a 2D array of the given shape with (i,j) (delta-radial
-        angle) for all elements.
+        Generate a 2D array of the given shape with the delta-radius for all elements.
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
         :param scale: set to False for returning the internal representation
                 (S.I. often) which is faster
-        :return: 3d array with shape=(\\*shape,4,2) the two elements are:
-
-            - dim3[0]: radial angle 2th, q, r...
-            - dim3[1]: azimuthal angle chi
+        :return: 2D array
         """
 
         unit = to_unit(unit)
@@ -948,9 +938,7 @@ class Geometry(object):
 
         if (ary is not None) and (ary.shape == shape):
             if scale and unit:
-                tmp = ary.copy()
-                tmp[..., 0] *= unit.scale
-                return tmp
+                return ary * unit.scale
             else:
                 return ary
         center = self.center_array(shape, unit=unit, scale=False)
@@ -959,35 +947,22 @@ class Geometry(object):
         ary = delta.max(axis=-1)
         self._cached_array[space] = ary
         if scale and unit:
-            tmp = ary.copy()
-            tmp[..., 0] *= unit.scale
-            return tmp
-
+            return ary * unit.scale
         else:
             return ary
 
     def delta2Theta(self, shape=None):
         """
-        Generate a 3D array of the given shape with (i,j) with the max
-        distance between the center and any corner in 2 theta
+        Generate a 2D array of the given shape with the max distance between the center and any corner in 2 theta angle in radians
 
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: 2D-array containing the max delta angle between a pixel center and any corner in 2theta-angle (rad)
         """
-        key = "2th_delta"
-        if self._cached_array.get(key) is None:
-            center = self.twoThetaArray(shape)
-            corners = self.corner_array(shape, unit=units.TTH, scale=False)
-            with self._sem:
-                if self._cached_array.get(key) is None:
-                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array[key] = delta.max(axis=-1)
-        return self._cached_array[key]
+        return self.delta_array(shape, units.TTH, False)
 
     def deltaChi(self, shape=None, use_cython=True):
         """
-        Generate a 3D array of the given shape with (i,j) with the max
-        distance between the center and any corner in chi-angle (rad)
+        Generate a 2D array of the given shape with the max distance between the center and any corner in chi-angle (rad)
 
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: 2D-array  containing the max delta angle between a pixel center and any corner in chi-angle (rad)
@@ -1011,57 +986,33 @@ class Geometry(object):
 
     def deltaQ(self, shape=None):
         """
-        Generate a 2D array of the given shape with (i,j) with the max
-        distance between the center and any corner in q_vector unit
-        (nm^-1)
+        Generate a 2D array of the given shape with the max distance between the center
+        and any corner in q_vector unit (nm^-1)
 
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
         """
-        key = "q_delta"
-        if self._cached_array.get(key) is None:
-            center = self.qArray(shape)
-            corners = self.corner_array(shape, unit=units.Q, scale=False)
-            with self._sem:
-                if self._cached_array.get(key) is None:
-                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array[key] = delta.max(axis=-1)
-        return self._cached_array[key]
+        return self.delta_array(shape, units.Q, False)
 
     def deltaR(self, shape=None):
         """
         Generate a 2D array of the given shape with (i,j) with the max
-        distance between the center and any corner in radius unit (mm)
+        distance between the center and any corner in radius unit (m)
 
         :param shape: The shape of the detector array: 2-tuple of integer
-        :return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
+        :return: array 2D containing the max delta Q between a pixel center and any corner in distance (m)
         """
-        key = "r_delta"
-        if self._cached_array.get(key) is None:
-            center = self.rArray(shape)
-            corners = self.corner_array(shape, unit=units.R, scale=False)
-            with self._sem:
-                if self._cached_array.get(key) is None:
-                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array[key] = delta.max(axis=-1)
-        return self._cached_array[key]
+        return self.delta_array(shape, units.R_M, False)
 
     def deltaRd2(self, shape=None):
         """
-        Generate a 2D array of the given shape with (i,j) with the max
+        Generate a 2D array of the given shape with the max
         distance between the center and any corner in unit: reciprocal spacing squarred (1/nm^2)
 
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: array 2D containing the max delta (d*)^2 between a pixel center and any corner in reciprocal spacing squarred (1/nm^2)
         """
-        if self._cached_array.get("d*2_delta") is None:
-            center = self.center_array(shape, unit=units.RecD2_NM, scale=False)
-            corners = self.corner_array(shape, unit=units.RecD2_NM, scale=False)
-            with self._sem:
-                if self._cached_array.get("d*2_delta") is None:
-                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array["d*2_delta"] = delta.max(axis=-1)
-        return self._cached_array.get("d*2_delta")
+        return self.delta_array(shape, units.RecD2_NM, False)
 
     def array_from_unit(self, shape=None, typ="center", unit=units.TTH, scale=True):
         """
@@ -2100,7 +2051,6 @@ class Geometry(object):
         empty_data = numpy.zeros(shape, dtype=numpy.float32)
 
         from ..ext.inpainting import polar_interpolate
-
         calcimage = polar_interpolate(empty_data,
                                       mask=built_mask,
                                       radial=ttha,
