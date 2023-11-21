@@ -108,7 +108,7 @@ class Eiger(_Dectris):
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
         if self.orientation:
-            txt += f"\t {self.orientation.name} (self.orientation.value)"
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
         return txt
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
@@ -445,7 +445,7 @@ class Pilatus(_Dectris):
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
         if self.orientation>1:
-            txt += f"\t {self.orientation.name} (self.orientation.value)"
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
         if self.x_offset_file:
             txt += f"\t delta_x= {self.x_offset_file}"
         if self.y_offset_file:
@@ -758,7 +758,7 @@ class Pilatus4(_Dectris):
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
         if self.orientation>1:
-            txt += f"\t {self.orientation.name} (self.orientation.value)"
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
 
 
 class Pilatus4_1M(Pilatus4):

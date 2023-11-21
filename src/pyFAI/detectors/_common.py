@@ -256,7 +256,7 @@ class Detector(metaclass=DetectorMeta):
         else:
             txt += "\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
         if self.orientation:
-            txt += "\t {self.orientation.name} (self.orientation.value)"
+            txt += "\t {self.orientation.name} ({self.orientation.value})"
         return txt
 
     def __copy__(self):

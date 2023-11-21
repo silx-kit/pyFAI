@@ -98,7 +98,7 @@ class _Rayonix(Detector):
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
         if self.orientation:
-            txt+=f"\t {self.orientation.name} (self.orientation.value)"
+            txt+=f"\t {self.orientation.name} ({self.orientation.value})"
         return txt
 
     def guess_binning(self, data):

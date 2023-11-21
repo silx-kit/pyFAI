@@ -329,7 +329,7 @@ class Xpad_flat(ImXPadS10):
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {self.pixel1:.3e}, {self.pixel2:.3e} m"
         if self.orientation:
-            txt += f"\t {self.orientation.name} (self.orientation.value)({self.orientation.value})"
+            txt += f"\t {self.orientation.name} ({self.orientation.value})({self.orientation.value})"
         return txt
 
     def calc_pixels_edges(self):
