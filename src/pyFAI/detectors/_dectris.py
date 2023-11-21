@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -64,7 +64,7 @@ class _Dectris(Detector):
     force_pixel = True
     DUMMY = -2
     DELTA_DUMMY = 1.5
-    ORIENTATION = 1
+    ORIENTATION = 2 # Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
 
     def calc_mask(self):
         """
@@ -107,7 +107,7 @@ class Eiger(_Dectris):
 
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
-        if self.orientation>1:
+        if self.orientation:
             txt += f"\t {self.orientation.name}"
         return txt
 
