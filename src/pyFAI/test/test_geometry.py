@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2023"
+__date__ = "21/11/2023"
 
 import unittest
 import random
@@ -486,7 +486,7 @@ class TestGeometry(utilstest.ParametricTestCase):
                 logger.debug(msg)
 
     def test_ponifile_custom_detector(self):
-        config = {"pixel1": 1, "pixel2": 2}
+        config = {"pixel1": 1, "pixel2": 2, "orientation":0}
         detector = detector_factory("adsc_q315", config)
         geom = geometry.Geometry(detector=detector)
         ponifile = os.path.join(UtilsTest.tempdir, "%s.poni" % self.id())

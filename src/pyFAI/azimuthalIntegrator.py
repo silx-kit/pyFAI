@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2023"
+__date__ = "21/11/2023"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -118,7 +118,7 @@ class AzimuthalIntegrator(Geometry):
     def __init__(self, dist=1, poni1=0, poni2=0,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None,
-                 splineFile=None, detector=None, wavelength=None):
+                 splineFile=None, detector=None, wavelength=None, orientation=0):
         """
         :param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         :type dist: float
@@ -152,12 +152,12 @@ class AzimuthalIntegrator(Geometry):
             description is deprecated. Prefer using the result of the detector
             factory: ``pyFAI.detector_factory("eiger4m")``
         :type detector: str or pyFAI.Detector
-        :param wavelength: Wave length used in meter
-        :type wavelength: float
+        :param float wavelength: Wave length used in meter
+        :param int orientation: orientation of the detector, see pyFAI.detectors.orientation.Orientation
         """
         Geometry.__init__(self, dist, poni1, poni2,
                           rot1, rot2, rot3,
-                          pixel1, pixel2, splineFile, detector, wavelength)
+                          pixel1, pixel2, splineFile, detector, wavelength, orientation)
 
         # mask, maskfile, darkcurrent and flatfield are properties pointing to
         # self.detector now (16/06/2017)
