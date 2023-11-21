@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2023"
+__date__ = "21/11/2023"
 
 import os
 import shutil
@@ -71,7 +71,7 @@ class TestDetector(unittest.TestCase):
             self.assertEqual(res, True, name)
 
     def test_reading_non_default_args(self):
-        config = {"pixel1": 1, "pixel2": 2}
+        config = {"pixel1": 1, "pixel2": 2, "orientation":0}
         detector = detector_factory("adsc_q315", config)
         self.assertEqual(detector.get_config(), config)
         self.assertEqual(detector.pixel1, config["pixel1"])
