@@ -504,8 +504,8 @@ class Detector(metaclass=DetectorMeta):
                 "pixel1": self._pixel1,
                 "pixel2": self._pixel2,
                 'max_shape': self.max_shape}
-        if self.orientation:
-            dico['orientation'] = self.orientation
+        # if self.orientation:
+        #     dico['orientation'] = self.orientation
         if self._splineFile:
             dico["splineFile"] = self._splineFile
         return dico
