@@ -10,7 +10,8 @@ py.install_sources(
  '_others.py',
  '_psi.py',
  '_rayonix.py',
- '_xspectrum.py'],
+ '_xspectrum.py',
+ 'orientation.py'],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/detectors'  # Folder relative to site-packages to install to
 )
