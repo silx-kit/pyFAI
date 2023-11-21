@@ -33,11 +33,11 @@ The website is no longer available, but can be found throung the
 `web archive <https://web.archive.org/web/20150403133907/http://www.adsc-xray.com/>`_.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2023"
+__date__ = "21/11/2023"
 __status__ = "production"
 
 from collections import OrderedDict
@@ -53,16 +53,17 @@ class _ADSC(Detector):
     """
     MANUFACTURER = "ADSC"
 
-    def __init__(self, pixel1=51e-6, pixel2=51e-6, max_shape=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=51e-6, pixel2=51e-6, max_shape=None, orientation=0):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation}
 
 
 class ADSC_Q315(_ADSC):
@@ -78,8 +79,8 @@ class ADSC_Q315(_ADSC):
     MAX_SHAPE = (6144, 6144)
     aliases = ["Quantum 315"]
 
-    def __init__(self, pixel1=51e-6, pixel2=51e-6, max_shape=None):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=51e-6, pixel2=51e-6, max_shape=None, orientation=0):
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
 
 class ADSC_Q210(_ADSC):
@@ -95,8 +96,8 @@ class ADSC_Q210(_ADSC):
     MAX_SHAPE = (4096, 4096)
     aliases = ["Quantum 210"]
 
-    def __init__(self, pixel1=51e-6, pixel2=51e-6, max_shape=None):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=51e-6, pixel2=51e-6, max_shape=None, orientation=0):
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
 
 class ADSC_Q270(_ADSC):
@@ -112,8 +113,8 @@ class ADSC_Q270(_ADSC):
     MAX_SHAPE = (4168, 4168)
     aliases = ["Quantum 270"]
 
-    def __init__(self, pixel1=64.8e-6, pixel2=64.8e-6, max_shape=None):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=64.8e-6, pixel2=64.8e-6, max_shape=None, orientation=0):
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
 
 class ADSC_Q4(_ADSC):
@@ -129,8 +130,8 @@ class ADSC_Q4(_ADSC):
     MAX_SHAPE = (2304, 2304)
     aliases = ["Quantum 4"]
 
-    def __init__(self, pixel1=82e-6, pixel2=82e-6, max_shape=None):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=82e-6, pixel2=82e-6, max_shape=None, orientation=0):
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
 
 class HF_130K(_ADSC):
@@ -145,8 +146,8 @@ class HF_130K(_ADSC):
     MAX_SHAPE = (256, 512)
     aliases = ["HF-130k"]
 
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
 
 class HF_262k(_ADSC):
@@ -162,8 +163,8 @@ class HF_262k(_ADSC):
     MAX_SHAPE = (512, 512)
     aliases = ["HF-262k"]
 
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
 
 class HF_1M(_ADSC):
@@ -179,8 +180,8 @@ class HF_1M(_ADSC):
     MAX_SHAPE = (1024, 1024)
     aliases = ["HF-1M"]
 
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
 
 class HF_2M(_ADSC):
@@ -196,8 +197,8 @@ class HF_2M(_ADSC):
     MAX_SHAPE = (1536, 1536)
     aliases = ["HF-2.4M"]
 
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
 
 class HF_4M(_ADSC):
@@ -211,8 +212,8 @@ class HF_4M(_ADSC):
     MAX_SHAPE = (2048, 2048)
     aliases = ["HF-4M"]
 
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
 
 class HF_9M(_ADSC):
@@ -227,5 +228,5 @@ class HF_9M(_ADSC):
     MAX_SHAPE = (3072, 3072)
     aliases = ["HF-9.4M"]
 
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
+        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)

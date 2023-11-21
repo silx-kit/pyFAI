@@ -3,7 +3,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2022-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2022-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,14 +33,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/08/2023"
+__date__ = "21/11/2023"
 __status__ = "production"
 
 
 import numpy
 import logging
 from math import sqrt
-from ._common import Detector
+from ._common import Detector, Orientation
 logger = logging.getLogger(__name__)
 
 
@@ -85,14 +85,14 @@ class HexDetector(Detector):
         ary *= pitch
         return ary
 
-    def __init__(self, pitch=None, pixel1=None, pixel2=None, max_shape=None):
+    def __init__(self, pitch=None, pixel1=None, pixel2=None, max_shape=None, orientation=0):
         if pitch:
             pitch = float(pitch)
             h = 0.5*pitch*sqrt(3.0)
         else: #fallback on standard signature
             pitch = pixel2
             h = pixel1
-        Detector.__init__(self, pixel1=h, pixel2=pitch, max_shape=max_shape)
+        Detector.__init__(self, pixel1=h, pixel2=pitch, max_shape=max_shape, orientation=orientation)
         self.set_pixel_corners(self.build_pixel_coordinates(self.max_shape, self.pitch))
 
     @property
@@ -108,29 +108,33 @@ class Pixirad1(HexDetector):
     MAX_SHAPE = (476, 512)  # max size of the detector
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-1"]
-    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None):
-        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
+        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2,
+                             max_shape=max_shape, orientation=orientation)
 
 
 class Pixirad2(HexDetector):
     MAX_SHAPE = (476, 1024)  # max size of the detector
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-2"]
-    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None):
-        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
+        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2,
+                             max_shape=max_shape, orientation=orientation)
 
 
 class Pixirad4(HexDetector):
     MAX_SHAPE = (476, 2048)  # max size of the detector
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-4"]
-    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None):
-        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
+        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2,
+                             max_shape=max_shape, orientation=orientation)
 
 
 class Pixirad8(HexDetector):
     MAX_SHAPE = (476, 4096)  # max size of the detector
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-8"]
-    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None):
-        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
+        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2,
+                             max_shape=max_shape, orientation=orientation)

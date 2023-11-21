@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,13 +34,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2023"
+__date__ = "21/11/2023"
 __status__ = "production"
 
 import functools
 import numpy
 import json
-from ._common import Detector
+from ._common import Detector, Orientation
 from ..utils import mathutil
 
 import logging
@@ -94,8 +94,8 @@ class ImXPadS10(Detector):
         # size[-1] = 1.0
         return pixel_size * size
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
@@ -273,8 +273,9 @@ class ImXPadS70(ImXPadS10):
     aliases = ["Imxpad S70"]
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                           module_size=module_size, orientation=orientation)
 
 
 class ImXPadS70V(ImXPadS10):
@@ -289,9 +290,6 @@ class ImXPadS70V(ImXPadS10):
     aliases = ["Imxpad S70 V"]
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
-
 
 class ImXPadS140(ImXPadS10):
     """
@@ -303,9 +301,6 @@ class ImXPadS140(ImXPadS10):
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
     force_pixel = True
     aliases = ["Imxpad S140"]
-
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
 
 
 class Xpad_flat(ImXPadS10):
@@ -323,8 +318,8 @@ class Xpad_flat(ImXPadS10):
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
+        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         self._pixel_corners = None
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
@@ -332,7 +327,10 @@ class Xpad_flat(ImXPadS10):
             self.module_size = module_size
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
+        txt = f"Detector {self.name}\t PixelSize= {self.pixel1:.3e}, {self.pixel2:.3e} m"
+        if orientation:
+            txt += f"\t {self.orientation.name}"
+        return txt
 
     def calc_pixels_edges(self):
         """

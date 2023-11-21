@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2023"
+__date__ = "21/11/2023"
 __status__ = "production"
 
 import logging
@@ -55,8 +55,8 @@ class Fairchild(Detector):
     aliases = ["Fairchild", "Condor", "Fairchild Condor 486:90"]
     MAX_SHAPE = (4096, 4096)
 
-    def __init__(self, pixel1=15e-6, pixel2=15e-6, max_shape=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=15e-6, pixel2=15e-6, max_shape=None, orientation=0):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -67,8 +67,9 @@ class Fairchild(Detector):
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation}
 
 
 class Titan(Detector):
@@ -82,8 +83,8 @@ class Titan(Detector):
     aliases = ["Titan 2k x 2k", "Titan 2k x 2k", "OXD Titan", "Agilent Titan"]
     uniform_pixel = True
 
-    def __init__(self, pixel1=60e-6, pixel2=60e-6, max_shape=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=60e-6, pixel2=60e-6, max_shape=None, orientation=0):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -94,8 +95,9 @@ class Titan(Detector):
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation}
 
 
 class Dexela2923(Detector):
@@ -106,8 +108,8 @@ class Dexela2923(Detector):
     aliases = ["Dexela 2923"]
     MAX_SHAPE = (3888, 3072)
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None):
-        super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, orientation=0):
+        super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -118,8 +120,9 @@ class Dexela2923(Detector):
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation}
 
 
 class Basler(Detector):
@@ -133,8 +136,8 @@ class Basler(Detector):
     aliases = ["aca1300"]
     MAX_SHAPE = (966, 1296)
 
-    def __init__(self, pixel1=3.75e-6, pixel2=3.75e-6, max_shape=None):
-        super(Basler, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=3.75e-6, pixel2=3.75e-6, max_shape=None, orientation=0):
+        super(Basler, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -146,7 +149,8 @@ class Basler(Detector):
         :return: dict with param for serialization
         """
         return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2}
+                "pixel2": self._pixel2,
+                "orientation": self.orientation}
 
     def set_config(self, config):
         """Sets the configuration of the detector.
@@ -186,8 +190,8 @@ class Perkin(Detector):
     MAX_SHAPE = (4096, 4096)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 200e-6
 
-    def __init__(self, pixel1=200e-6, pixel2=200e-6, max_shape=None):
-        super(Perkin, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=200e-6, pixel2=200e-6, max_shape=None, orientation=0):
+        super(Perkin, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
             self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
             self.shape = tuple(s // b for s, b in zip(self.max_shape, self._binning))
@@ -204,8 +208,9 @@ class Perkin(Detector):
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation}
 
 
 class Pixium(Detector):
@@ -221,10 +226,10 @@ class Pixium(Detector):
     MAX_SHAPE = (1910, 2480)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 154e-6
 
-    def __init__(self, pixel1=308e-6, pixel2=308e-6, max_shape=None):
+    def __init__(self, pixel1=308e-6, pixel2=308e-6, max_shape=None, orientation=0):
         """Defaults to 2x2 binning
         """
-        super(Pixium, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+        super(Pixium, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
             self._binning = (int(round(pixel1 / self.DEFAULT_PIXEL1)),
                              int(round(pixel2 / self.DEFAULT_PIXEL2)))
@@ -239,8 +244,9 @@ class Pixium(Detector):
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation}
 
 
 class Apex2(Detector):
@@ -255,10 +261,10 @@ class Apex2(Detector):
     MAX_SHAPE = (1024, 1024)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 60e-6
 
-    def __init__(self, pixel1=120e-6, pixel2=120e-6, max_shape=None):
+    def __init__(self, pixel1=120e-6, pixel2=120e-6, max_shape=None, orientation=0):
         """Defaults to 2x2 binning
         """
-        super(Apex2, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+        super(Apex2, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
             self._binning = (int(round(pixel1 / self.DEFAULT_PIXEL1)),
                              int(round(pixel2 / self.DEFAULT_PIXEL2)))
@@ -273,8 +279,9 @@ class Apex2(Detector):
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation}
 
 
 class RaspberryPi5M(Detector):
@@ -285,16 +292,17 @@ class RaspberryPi5M(Detector):
     force_pixel = True
     MAX_SHAPE = (1944, 2592)
 
-    def __init__(self, pixel1=1.4e-6, pixel2=1.4e-6, max_shape=None):
-        super(RaspberryPi5M, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=1.4e-6, pixel2=1.4e-6, max_shape=None, orientation=0):
+        super(RaspberryPi5M, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation}
 
 
 class RaspberryPi8M(Detector):
@@ -305,13 +313,14 @@ class RaspberryPi8M(Detector):
     force_pixel = True
     MAX_SHAPE = (2464, 3280)
 
-    def __init__(self, pixel1=1.12e-6, pixel2=1.12e-6, max_shape=None):
-        super(RaspberryPi8M, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=1.12e-6, pixel2=1.12e-6, max_shape=None, orientation=0):
+        super(RaspberryPi8M, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation}

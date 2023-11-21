@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2023"
+__date__ = "21/11/2023"
 __status__ = "production"
 
 
@@ -44,8 +44,7 @@ import numpy
 import logging
 logger = logging.getLogger(__name__)
 import json
-from collections import OrderedDict
-from ._common import Detector
+from ._common import Detector, Orientation
 from pyFAI.utils import mathutil
 try:
     from ..ext import bilinear
@@ -60,8 +59,8 @@ class CylindricalDetector(Detector):
     IS_FLAT = False
     force_pixel = True
 
-    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989):
-        Detector.__init__(self, pixel1, pixel2)
+    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989, orientation=0):
+        Detector.__init__(self, pixel1, pixel2, orientation=orientation)
         self.radius = radius
         self._pixel_corners = None
 
@@ -70,9 +69,10 @@ class CylindricalDetector(Detector):
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2),
-                            ("radius", self.radius)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "radius": self.radius,
+                "orientation": self.orientation}
 
     def set_config(self, config):
         """Sets the configuration of the detector.
@@ -102,6 +102,7 @@ class CylindricalDetector(Detector):
         if radius:
             self.radius = radius
             self._pixel_corners = None
+        self.orientation = Orientation(config.get("orientation", 0))
         return self
 
     def _get_compact_pixel_corners(self):
@@ -268,8 +269,8 @@ class Aarhus(CylindricalDetector):
 
     MAX_SHAPE = (1000, 16000)
 
-    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989):
-        CylindricalDetector.__init__(self, pixel1, pixel2, radius)
+    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989, orientation=0):
+        CylindricalDetector.__init__(self, pixel1, pixel2, radius, orientation=orientation)
 
     def _get_compact_pixel_corners(self):
         "The core function which calculates the pixel corner coordinates"
@@ -304,8 +305,8 @@ class Rapid(CylindricalDetector):
     aliases = ["RapidII"]
     MAX_SHAPE = (2560, 4700)
 
-    def __init__(self, pixel1=0.1e-3, pixel2=0.1e-3, radius=0.12726):
-        CylindricalDetector.__init__(self, pixel1, pixel2, radius)
+    def __init__(self, pixel1=0.1e-3, pixel2=0.1e-3, radius=0.12726, orientation=0):
+        CylindricalDetector.__init__(self, pixel1, pixel2, radius, orientation=orientation)
 
     def _get_compact_pixel_corners(self):
         "The core function which calculates the pixel corner coordinates"
