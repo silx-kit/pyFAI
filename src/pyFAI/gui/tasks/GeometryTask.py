@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/09/2023"
+__date__ = "22/11/2023"
 
 import logging
 import numpy
@@ -51,6 +51,9 @@ from ..helper import ProcessingWidget
 from ..helper import model_transform
 from ..utils import unitutils
 from ... import units as core_units
+from ...geometry import fit2d
+from ...io.ponifile import PoniFile
+
 from silx.image import marchingsquares
 
 _logger = logging.getLogger(__name__)
@@ -666,6 +669,19 @@ class GeometryTask(AbstractCalibrationTask):
         constraintsModel.unlockSignals()
         geometry = calibrationModel.fittedGeometry()
         geometry.lockSignals()
+
+        try:
+            poni_tilted = PoniFile(geometry)
+            poni_tilted._detector = self.model().experimentSettingsModel().detector()
+            f2d = fit2d.convert_to_Fit2d(poni_tilted)._asdict()
+            f2d["tilt"] = 0
+            poni_notilt = fit2d.convert_from_Fit2d(f2d)
+        except Exception as err:
+            _logger.error("%s: %s", type(err), err)
+        else:
+            geometry.poni1().setValue(poni_notilt.poni1)
+            geometry.poni2().setValue(poni_notilt.poni2)
+
         geometry.rotation1().setValue(0)
         geometry.rotation2().setValue(0)
         geometry.rotation3().setValue(0)

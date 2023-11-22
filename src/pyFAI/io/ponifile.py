@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,10 +28,10 @@
 """Module function to manage poni files.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2023"
+__date__ = "22/11/2023"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -41,6 +41,11 @@ import logging
 _logger = logging.getLogger(__name__)
 import numpy
 from .. import detectors
+try:
+    from ..gui.model.GeometryModel import GeometryModel
+except ImportError:
+    GeometryModel = None
+
 
 
 class PoniFile(object):
@@ -60,6 +65,8 @@ class PoniFile(object):
             self.read_from_dict(data)
         elif isinstance(data, (str,)):
             self.read_from_file(data)
+        elif GeometryModel and isinstance(data, GeometryModel):
+            self.read_from_geometryModel(data)
         else:
             self.read_from_duck(data)
 
@@ -173,6 +180,19 @@ class PoniFile(object):
         assert numpy.isreal(duck.wavelength)
         self._wavelength = duck.wavelength
         self._detector = duck.detector
+
+    def read_from_geometryModel(self, duck, detector=None):
+        """Initialize the object from a GeometryModel
+
+        pyFAI.gui.model.GeometryModel.GeometryModel"""
+        self._dist = duck.distance().value()
+        self._poni1 = duck.poni1().value()
+        self._poni2 = duck.poni2().value()
+        self._rot1 = duck.rotation1().value()
+        self._rot2 = duck.rotation2().value()
+        self._rot3 = duck.rotation3().value()
+        self._wavelength = duck.wavelength().value()
+        self._detector = detector
 
     def write(self, fd):
         """Write this object to an open stream.
