@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "22/11/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -178,6 +178,8 @@ class Geometry(object):
         elif pixel1 and pixel2:
             self.detector.pixel1 = pixel1
             self.detector.pixel2 = pixel2
+        if orientation:
+            self.detector.orientation = detectors.orientation.Orientation(orientation or detector.ORIENTATION)
 
     def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="m"):
         """Nice representation of the class

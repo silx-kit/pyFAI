@@ -130,8 +130,9 @@ class Eiger(_Dectris):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-                d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+                r1, r2 = self._calc_pixel_index_from_orientation(True)
+                d1 = expand2d(r1, self.shape[1], False)
+                d2 = expand2d(r2, self.shape[0], True)
 
         if self.offset1 is None or self.offset2 is None:
             delta1 = delta2 = 0.
@@ -520,8 +521,9 @@ class Pilatus(_Dectris):
         the same shape.
         """
         if self.shape and ((d1 is None) or (d2 is None)):
-            d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-            d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+            r1, r2 = self._calc_pixel_index_from_orientation(True)
+            d1 = expand2d(r1, self.shape[1], False)
+            d2 = expand2d(r2, self.shape[0], True)
 
         if (self.offset1 is None) or (self.offset2 is None):
             delta1 = delta2 = 0.

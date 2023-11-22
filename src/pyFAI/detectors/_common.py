@@ -503,9 +503,8 @@ class Detector(metaclass=DetectorMeta):
         dico = {"detector": self.name,
                 "pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                'max_shape': self.max_shape}
-        # if self.orientation:
-        #     dico['orientation'] = self.orientation
+                'max_shape': self.max_shape,
+                'orientation': self.orientation or 3}
         if self._splineFile:
             dico["splineFile"] = self._splineFile
         return dico
@@ -567,6 +566,31 @@ class Detector(metaclass=DetectorMeta):
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
 
+    def _calc_pixel_index_from_orientation(self, plus_one=False):
+        """Calculate the pixel index when considereing the different orientations"""
+        if plus_one: # used with corners
+            m1 = self.shape[0] + 1
+            m2 = self.shape[1] + 1
+        else: #used with centers
+            m1 = self.shape[0]
+            m2 = self.shape[1]
+
+        if self.orientation in (0,3):
+            r1 = numpy.arange(m1, dtype="float32")
+            r2 = numpy.arange(m2, dtype="float32")
+        elif self.orientation==1:
+            r1 = numpy.arange(m1 - 1, -1, -1, dtype="float32")
+            r2 = numpy.arange(m2 - 1, -1, -1, dtype="float32")
+        elif self.orientation==2:
+            r1 = numpy.arange(m1 - 1, -1, -1, dtype="float32")
+            r2 = numpy.arange(m2, dtype="float32")
+        elif self.orientation == 4:
+            r1 = numpy.arange(m1, dtype="float32")
+            r2 = numpy.arange(m2 - 1, -1, -1, dtype="float32")
+        else:
+            raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+        return r1, r2
+
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
@@ -590,8 +614,21 @@ class Detector(metaclass=DetectorMeta):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-                d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+                r1, r2 = self._calc_pixel_index_from_orientation(False)
+                d1 = expand2d(r1, self.shape[1], False)
+                d2 = expand2d(r2, self.shape[0], True)
+            else:
+                if self.orientation in (0,3):
+                    pass
+                elif self.orientation==1:
+                    d1 = self.shape[0] - 1 - d1
+                    d2 = self.shape[1] - 1 - d2
+                elif self.orientation==2:
+                    d1 = self.shape[0] - 1 - d1
+                elif self.orientation == 4:
+                    d2 = self.shape[1] - 1 - d2
+                else:
+                    raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
 
         elif "ndim" in dir(d1):
             if d1.ndim == 2:
@@ -601,7 +638,7 @@ class Detector(metaclass=DetectorMeta):
                 self.shape = d2.shape
 
         if center:
-            # avoid += It modifies in place and segfaults
+            # avoid += It modifies in place then segfaults
             d1c = d1 + 0.5
             d2c = d2 + 0.5
         else:
@@ -693,9 +730,11 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
+                    r1, r2 = self._calc_pixel_index_from_orientation(True)
+
                     # like numpy.ogrid
-                    d1 = expand2d(numpy.arange(self.shape[0] + 1.0), self.shape[1] + 1, False)
-                    d2 = expand2d(numpy.arange(self.shape[1] + 1.0), self.shape[0] + 1, True)
+                    d1 = expand2d(r1, self.shape[1] + 1, False)
+                    d2 = expand2d(r2, self.shape[0] + 1, True)
                     p1, p2, p3 = self.calc_cartesian_positions(d1, d2, center=False)
                     self._pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
                     self._pixel_corners[:,:, 0, 1] = p1[:-1,:-1]

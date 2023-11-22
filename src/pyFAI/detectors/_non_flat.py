@@ -179,8 +179,9 @@ class CylindricalDetector(Detector):
         the same shape.
         """
         if (d1 is None) or d2 is None:
-            d1 = mathutil.expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-            d2 = mathutil.expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+            r1, r2 = self._calc_pixel_index_from_orientation(True)
+            d1 = mathutil.expand2d(r1, self.shape[1], False)
+            d2 = mathutil.expand2d(r2, self.shape[0], True)
         corners = self.get_pixel_corners()
         if center:
             # avoid += It modifies in place and segfaults

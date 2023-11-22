@@ -281,16 +281,28 @@ class TestFastPath(utilstest.ParametricTestCase):
         # Here is a set of pathological cases ...
         geometries = [
             # Provides atol = 1.08e-5
-            {"dist": 0.037759112584709535, "poni1": 0.005490358659182459, "poni2": 0.06625690275821605, "rot1": 0.20918568578536278, "rot2": 0.42161920581114365, "rot3": 0.38784171093239983, "wavelength": 1e-10, 'detector': 'Pilatus100k'},
+            {"dist": 0.037759112584709535, "poni1": 0.005490358659182459, "poni2": 0.06625690275821605,
+             "rot1": 0.20918568578536278, "rot2": 0.42161920581114365, "rot3": 0.38784171093239983,
+             "wavelength": 1e-10, 'detector': 'Pilatus100k', "orientation":3},
             # Provides atol = 2.8e-5
-            {'dist': 0.48459003559204783, 'poni2':-0.15784154756282065, 'poni1': 0.02783657100374448, 'rot3':-0.2901541134116695, 'rot1':-0.3927992588689394, 'rot2': 0.148115949280184, "wavelength": 1e-10, 'detector': 'Pilatus100k'},
+            {'dist': 0.48459003559204783, 'poni2':-0.15784154756282065, 'poni1': 0.02783657100374448,
+             'rot3':-0.2901541134116695, 'rot1':-0.3927992588689394, 'rot2': 0.148115949280184,
+             "wavelength": 1e-10, 'detector': 'Pilatus100k', "orientation":3},
             # Provides atol = 3.67761e-05
-            {'poni1':-0.22055143279015976, 'poni2':-0.11124668733292842, 'rot1':-0.18105235367380956, 'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257, 'detector': 'Pilatus100k', 'dist': 0.7350926443000882},
+            {'poni1':-0.22055143279015976, 'poni2':-0.11124668733292842, 'rot1':-0.18105235367380956,
+             'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257,
+             'detector': 'Pilatus100k', 'dist': 0.7350926443000882, "orientation":3},
             # Provides atol = 4.94719e-05
-            {'poni2': 0.1010652698401574, 'rot3':-0.30578860159890153, 'rot1': 0.46240992613529186, 'wavelength': 1e-10, 'detector': 'Pilatus300k', 'rot2':-0.027476969196682077, 'dist': 0.04711960678381288, 'poni1': 0.012745759325719641},
+            {'poni2': 0.1010652698401574, 'rot3':-0.30578860159890153, 'rot1': 0.46240992613529186,
+             'wavelength': 1e-10, 'detector': 'Pilatus300k', 'rot2':-0.027476969196682077,
+             'dist': 0.04711960678381288, 'poni1': 0.012745759325719641, "orientation":3},
             # atol=2pi
-            {'poni1': 0.07803878450256929, 'poni2': 0.2601779472529494, 'rot1':-0.33177239820033455, 'wavelength': 1e-10, 'rot3': 0.2928945825578625, 'rot2': 0.2762729953307118, 'detector': 'Pilatus100k', 'dist': 0.43544642285972124},
-            {'wavelength': 1e-10, 'dist': 0.13655542730645986, 'rot1':-0.16145635108891077, 'poni1': 0.16271587645146157, 'rot2':-0.443426307059295, 'rot3': 0.40517456402269536, 'poni2': 0.05248001026597382, 'detector': 'Pilatus100k'}
+            {'poni1': 0.07803878450256929, 'poni2': 0.2601779472529494, 'rot1':-0.33177239820033455,
+             'wavelength': 1e-10, 'rot3': 0.2928945825578625, 'rot2': 0.2762729953307118,
+             'detector': 'Pilatus100k', 'dist': 0.43544642285972124, "orientation":3},
+            {'wavelength': 1e-10, 'dist': 0.13655542730645986, 'rot1':-0.16145635108891077,
+             'poni1': 0.16271587645146157, 'rot2':-0.443426307059295, 'rot3': 0.40517456402269536,
+             'poni2': 0.05248001026597382, 'detector': 'Pilatus100k', "orientation":3}
         ]
 
         matrices = [[[ 0.84465919, -0.29127499, -0.44912107], [ 0.34507215, 0.93768707, 0.04084325], [ 0.4092384 , -0.1894778 , 0.89253689]],
@@ -316,7 +328,8 @@ class TestFastPath(utilstest.ParametricTestCase):
                    "rot1": (random.random() - 0.5) * numpy.pi,
                    "rot2": (random.random() - 0.5) * numpy.pi,
                    "rot3": (random.random() - 0.5) * numpy.pi,
-                   "wavelength": 1e-10}
+                   "wavelength": 1e-10,
+                   "orientation":3}
 
             for det in detectors:
                 dico = geo.copy()
@@ -348,6 +361,8 @@ class TestFastPath(utilstest.ParametricTestCase):
         for data, space in params:
             with self.subTest(data=data, space=space):
                 geo = geometry.Geometry(**data)
+                print(data)
+                print(geo.detector.orientation)
                 t00 = time.perf_counter()
                 py_res = geo.corner_array(unit=space, use_cython=False, scale=False)
                 t01 = time.perf_counter()

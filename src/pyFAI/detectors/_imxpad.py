@@ -389,8 +389,9 @@ class Xpad_flat(ImXPadS10):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                d1 = mathutil.expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-                d2 = mathutil.expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+                r1, r2 = self._calc_pixel_index_from_orientation(True)
+                d1 = mathutil.expand2d(r1, self.shape[1], False)
+                d2 = mathutil.expand2d(r2, self.shape[0], True)
         corners = self.get_pixel_corners()
         if center:
             # note += would make an increment in place which is bad (segfault !)
@@ -616,8 +617,9 @@ class Cirpad(ImXPadS10):
     # TODO !!!
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         if (d1 is None) or d2 is None:
-            d1 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[0]).astype(numpy.float32), self.MAX_SHAPE[1], False)
-            d2 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[1]).astype(numpy.float32), self.MAX_SHAPE[0], True)
+            r1, r2 = self._calc_pixel_index_from_orientation(True)
+            d1 = mathutil.expand2d(r1, self.MAX_SHAPE[1], False)
+            d2 = mathutil.expand2d(r2, self.MAX_SHAPE[0], True)
         corners = self.get_pixel_corners()
         if center:
             # avoid += It modifies in place and segfaults
