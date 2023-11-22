@@ -181,7 +181,7 @@ class PoniFile(object):
         self._wavelength = duck.wavelength
         self._detector = duck.detector
 
-    def read_from_geometryModel(self, duck, detector=None):
+    def read_from_geometryModel(self, model: GeometryModel, detector=None):
         """Initialize the object from a GeometryModel
 
         pyFAI.gui.model.GeometryModel.GeometryModel"""
