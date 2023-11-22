@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "22/11/2023"
 
 import os
 import shutil
@@ -71,7 +71,7 @@ class TestDetector(unittest.TestCase):
             self.assertEqual(res, True, name)
 
     def test_reading_non_default_args(self):
-        config = {"pixel1": 1, "pixel2": 2, "orientation":0}
+        config = {"pixel1": 1, "pixel2": 2, "orientation":3}
         detector = detector_factory("adsc_q315", config)
         self.assertEqual(detector.get_config(), config)
         self.assertEqual(detector.pixel1, config["pixel1"])
