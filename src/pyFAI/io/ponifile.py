@@ -185,13 +185,13 @@ class PoniFile(object):
         """Initialize the object from a GeometryModel
 
         pyFAI.gui.model.GeometryModel.GeometryModel"""
-        self._dist = duck.distance().value()
-        self._poni1 = duck.poni1().value()
-        self._poni2 = duck.poni2().value()
-        self._rot1 = duck.rotation1().value()
-        self._rot2 = duck.rotation2().value()
-        self._rot3 = duck.rotation3().value()
-        self._wavelength = duck.wavelength().value()
+        self._dist = model.distance().value()
+        self._poni1 = model.poni1().value()
+        self._poni2 = model.poni2().value()
+        self._rot1 = model.rotation1().value()
+        self._rot2 = model.rotation2().value()
+        self._rot3 = model.rotation3().value()
+        self._wavelength = model.wavelength().value()
         self._detector = detector
 
     def write(self, fd):
