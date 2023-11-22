@@ -574,8 +574,8 @@ class Mar345(Detector):
 
         :return: dict with param for serialization
         """
-        dico = {"pixel1": self.pixel1
-                "pixel2": self.pixel3,
+        dico = {"pixel1": self.pixel1,
+                "pixel2": self.pixel2,
                 "orientation": self.orientation or 3}
         return dico
 
