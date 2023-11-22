@@ -623,7 +623,7 @@ class Mar555(Detector):
         """
         dico = {"pixel1": self.pixel1,
                 "pixel2": self.pixel2,
-                "orientation": self.orientation or 3
+                "orientation": self.orientation or 3}
         return dico
 
     def set_config(self, config):
