@@ -37,11 +37,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "22/11/2023"
 __status__ = "production"
 
-from collections import OrderedDict
-from ._common import Detector
+from ._common import Detector, Orientation
 
 import logging
 logger = logging.getLogger(__name__)
@@ -63,7 +62,7 @@ class _ADSC(Detector):
         """
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
 
 class ADSC_Q315(_ADSC):

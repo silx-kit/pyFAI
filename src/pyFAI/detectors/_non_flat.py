@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "22/11/2023"
 __status__ = "production"
 
 
@@ -72,7 +72,7 @@ class CylindricalDetector(Detector):
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
                 "radius": self.radius,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
     def set_config(self, config):
         """Sets the configuration of the detector.
@@ -102,7 +102,7 @@ class CylindricalDetector(Detector):
         if radius:
             self.radius = radius
             self._pixel_corners = None
-        self.orientation = Orientation(config.get("orientation", 0))
+        self.orientation = Orientation(config.get("orientation", 3))
         return self
 
     def _get_compact_pixel_corners(self):

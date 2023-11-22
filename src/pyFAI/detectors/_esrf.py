@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "22/11/2023"
 __status__ = "production"
 
 
@@ -100,7 +100,7 @@ class FReLoN(Detector):
         :return: dict with param for serialization
         """
         return {"splineFile": self._splineFile,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
 
 class Maxipix(Detector):
@@ -152,7 +152,7 @@ class Maxipix(Detector):
 
         :return: dict with param for serialization
         """
-        dico = {"orientation": self.orientation}
+        dico = {"orientation": self.orientation or 3}
         if ((self.max_shape is not None) and
                 ("MAX_SHAPE" in dir(self.__class__)) and
                 (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
@@ -184,7 +184,7 @@ class Maxipix(Detector):
         module_size = config.get("module_size")
         if module_size is not None:
             self.module_size = tuple(module_size)
-        self.orientation = Orientation(config.get("orientation",0))
+        self.orientation = Orientation(config.get("orientation", 3))
         return self
 
 

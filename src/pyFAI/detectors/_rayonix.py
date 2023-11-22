@@ -35,13 +35,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "22/11/2023"
 __status__ = "production"
 
 import numpy
 import json
-from collections import OrderedDict
-from ._common import Detector
+from ._common import Detector, Orientation
 
 import logging
 logger = logging.getLogger(__name__)
@@ -141,8 +140,9 @@ class _Rayonix(Detector):
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation or 3}
 
 
 class Rayonix133(_Rayonix):
@@ -574,8 +574,9 @@ class Mar345(Detector):
 
         :return: dict with param for serialization
         """
-        dico = OrderedDict((("pixel1", self.pixel1),
-                            ("pixel2", self.pixel2)))
+        dico = {"pixel1": self.pixel1
+                "pixel2": self.pixel3,
+                "orientation": self.orientation or 3}
         return dico
 
     def set_config(self, config):
@@ -595,6 +596,7 @@ class Mar345(Detector):
                 raise err
         self.set_pixel1(config.get("pixel1"))
         self.set_pixel2(config.get("pixel2"))
+        self.oientation = Orientation(config.get("orientation", 3))
         return self
 
 
@@ -619,8 +621,9 @@ class Mar555(Detector):
 
         :return: dict with param for serialization
         """
-        dico = OrderedDict((("pixel1", self.pixel1),
-                            ("pixel2", self.pixel2)))
+        dico = {"pixel1": self.pixel1,
+                "pixel2": self.pixel2,
+                "orientation": self.orientation or 3
         return dico
 
     def set_config(self, config):
@@ -640,4 +643,5 @@ class Mar555(Detector):
                 raise err
         self.set_pixel1(config.get("pixel1"))
         self.set_pixel2(config.get("pixel2"))
+        self.orientation = Orientation(config.get("orientatio", 3))
         return self

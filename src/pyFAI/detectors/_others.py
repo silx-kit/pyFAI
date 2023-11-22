@@ -34,14 +34,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "22/11/2023"
 __status__ = "production"
 
 import logging
 logger = logging.getLogger(__name__)
 import json
-from collections import OrderedDict
-from ._common import Detector
+from ._common import Detector, Orientation
 
 
 class Fairchild(Detector):
@@ -69,7 +68,7 @@ class Fairchild(Detector):
         """
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
 
 class Titan(Detector):
@@ -97,7 +96,7 @@ class Titan(Detector):
         """
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
 
 class Dexela2923(Detector):
@@ -122,7 +121,7 @@ class Dexela2923(Detector):
         """
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
 
 class Basler(Detector):
@@ -150,7 +149,7 @@ class Basler(Detector):
         """
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
     def set_config(self, config):
         """Sets the configuration of the detector.
@@ -175,6 +174,7 @@ class Basler(Detector):
         if pixel1 or pixel2:
             self.set_pixel1(pixel1 or pixel2)
             self.set_pixel2(pixel2 or pixel1)
+        self.orientation = Orientation(config.get("orientation", 3))
         return self
 
 
@@ -210,7 +210,7 @@ class Perkin(Detector):
         """
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
 
 class Pixium(Detector):
@@ -246,7 +246,7 @@ class Pixium(Detector):
         """
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
 
 class Apex2(Detector):
@@ -281,7 +281,7 @@ class Apex2(Detector):
         """
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
 
 class RaspberryPi5M(Detector):
@@ -302,7 +302,7 @@ class RaspberryPi5M(Detector):
         """
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
 
 
 class RaspberryPi8M(Detector):
@@ -323,4 +323,4 @@ class RaspberryPi8M(Detector):
         """
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}

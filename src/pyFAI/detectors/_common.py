@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "22/11/2023"
 __status__ = "stable"
 
 import logging
@@ -358,7 +358,7 @@ class Detector(metaclass=DetectorMeta):
         dico = {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
                 'max_shape': self.max_shape,
-                "orientation": self.orientation}
+                "orientation": self.orientation or 3}
         if self._splineFile:
             dico["splineFile"] = self._splineFile
         return dico
@@ -1210,6 +1210,8 @@ class NexusDetector(Detector):
                 self.uniform_pixel = True
             if "orientation" in det_grp:
                 self.orientation = Orientation(det_grp["orientation"][()])
+            else:
+                self.orientation = Orientation(3)
         # Populate shape and max_shape if needed
         if self.max_shape is None:
             if self.shape is None:
@@ -1310,7 +1312,7 @@ class NexusDetector(Detector):
         return {"detector": self._filename or self.name,
                 "pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                "orientation": self.orientation
+                "orientation": self.orientation or 3
                 }
 
     def getFit2D(self):
