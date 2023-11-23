@@ -596,7 +596,7 @@ class Mar345(Detector):
                 raise err
         self.set_pixel1(config.get("pixel1"))
         self.set_pixel2(config.get("pixel2"))
-        self.orientation = Orientation(config.get("orientation", 3))
+        self._orientation = Orientation(config.get("orientation", 3))
         return self
 
 
