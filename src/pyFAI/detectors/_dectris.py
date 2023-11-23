@@ -136,10 +136,10 @@ class Eiger(_Dectris):
             else:
                 if self.orientation in (0,3):
                     pass
-                elif self.orientation==1:
+                elif self.orientation == 1:
                     d1 = self.shape[0] - 1 - d1
                     d2 = self.shape[1] - 1 - d2
-                elif self.orientation==2:
+                elif self.orientation == 2:
                     d1 = self.shape[0] - 1 - d1
                 elif self.orientation == 4:
                     d2 = self.shape[1] - 1 - d2
@@ -786,7 +786,7 @@ class Pilatus4(_Dectris):
 
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
-        if self.orientation>1:
+        if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
 
 
