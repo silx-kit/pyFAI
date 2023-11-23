@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/11/2023"
+__date__ = "23/11/2023"
 __status__ = "stable"
 
 import logging
@@ -240,7 +240,7 @@ class Detector(metaclass=DetectorMeta):
         if splineFile:
             self.set_splineFile(splineFile)
 
-        orientation = Orientation(orientation or self.ORIENTATION)
+        orientation = Orientation(orientation or self.ORIENTATION or 3)
         if orientation<0 or orientation>4:
             raise RuntimeError("Unsuported orientation: "+orientation.__doc__)
         self.orientation = orientation

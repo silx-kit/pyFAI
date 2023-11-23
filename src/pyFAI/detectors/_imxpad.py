@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/11/2023"
+__date__ = "23/11/2023"
 __status__ = "production"
 
 import functools
@@ -541,8 +541,8 @@ class Cirpad(ImXPadS10):
     def _translation(md, u):
         return md + u
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation)
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
         size = numpy.ones(length)

@@ -30,11 +30,11 @@
 Description of the `Dectris <https://www.dectris.com/>`_ detectors.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/11/2023"
+__date__ = "23/11/2023"
 __status__ = "production"
 
 import os
@@ -64,7 +64,7 @@ class _Dectris(Detector):
     force_pixel = True
     DUMMY = -2
     DELTA_DUMMY = 1.5
-    ORIENTATION = 2 # Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
+    ORIENTATION = 3#2 # Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
 
     def calc_mask(self):
         """
