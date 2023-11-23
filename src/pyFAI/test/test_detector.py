@@ -455,7 +455,7 @@ class TestOrientation(unittest.TestCase):
         self.assertTrue(numpy.allclose(r1, p1), "orient 3 dim1,y points")
         self.assertTrue(numpy.allclose(r2, p2), "orient 3 dim2,x points")
 
-        #orient1
+        #orient4
         r1, r2, _ = self.orient4.calc_cartesian_positions(Y, X)
         ref1, ref2, _ = self.orient4.calc_cartesian_positions()
         p1 = ref1[Y, X]
