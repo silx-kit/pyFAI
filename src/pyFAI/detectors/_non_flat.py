@@ -179,7 +179,7 @@ class CylindricalDetector(Detector):
         the same shape.
         """
         if (d1 is None) or d2 is None:
-            r1, r2 = self._calc_pixel_index_from_orientation(True)
+            r1, r2 = self._calc_pixel_index_from_orientation(False)
             d1 = mathutil.expand2d(r1, self.shape[1], False)
             d2 = mathutil.expand2d(r2, self.shape[0], True)
         corners = self.get_pixel_corners()
