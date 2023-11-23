@@ -459,7 +459,7 @@ class Pilatus(_Dectris):
 
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
-        if self.orientation>1:
+        if self.orientation > 0:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
         if self.x_offset_file:
             txt += f"\t delta_x= {self.x_offset_file}"
