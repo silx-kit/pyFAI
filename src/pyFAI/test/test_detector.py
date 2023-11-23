@@ -406,7 +406,7 @@ class TestOrientation(unittest.TestCase):
         r1, r2, _ = self.orient3.calc_cartesian_positions()
         self.assertTrue(numpy.allclose(p1, numpy.flipud(numpy.fliplr(r1))), "orient 3vs1 dim1,y center")
         self.assertTrue(numpy.allclose(p2, numpy.flipud(numpy.fliplr(r2))), "orient 3vs1 dim2,x center")
-        #orient3 -> flip u-d
+        #orient4 -> flip u-d
         r1, r2, _ = self.orient4.calc_cartesian_positions()
         self.assertTrue(numpy.allclose(p1, numpy.flipud(r1)), "orient 4vs1 dim1,y center")
         self.assertTrue(numpy.allclose(p2, numpy.flipud(r2)), "orient 4vs1 dim2,x center")
