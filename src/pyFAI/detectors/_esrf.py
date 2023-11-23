@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,18 +30,18 @@
 Detectors manufactured by ESRF
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/06/2020"
+__date__ = "23/11/2023"
 __status__ = "production"
 
 
 import numpy
 import logging
 import json
-from ._common import Detector
+from ._common import Detector, Orientation
 logger = logging.getLogger(__name__)
 
 try:
@@ -64,8 +64,8 @@ class FReLoN(Detector):
 
     HAVE_TAPER = True
 
-    def __init__(self, splineFile=None):
-        super(FReLoN, self).__init__(splineFile=splineFile)
+    def __init__(self, splineFile=None, orientation=0):
+        super(FReLoN, self).__init__(splineFile=splineFile, orientation=orientation)
         if splineFile:
             self.max_shape = (int(self.spline.ymax - self.spline.ymin),
                               int(self.spline.xmax - self.spline.xmin))
@@ -99,7 +99,8 @@ class FReLoN(Detector):
 
         :return: dict with param for serialization
         """
-        return {"splineFile": self._splineFile}
+        return {"splineFile": self._splineFile,
+                "orientation": self.orientation or 3}
 
 
 class Maxipix(Detector):
@@ -116,8 +117,8 @@ class Maxipix(Detector):
     force_pixel = True
     aliases = ["Maxipix 1x1", "Maxipix1x1"]
 
-    def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None):
-        super(Maxipix, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0):
+        super(Maxipix, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
@@ -151,7 +152,7 @@ class Maxipix(Detector):
 
         :return: dict with param for serialization
         """
-        dico = {}
+        dico = {"orientation": self.orientation or 3}
         if ((self.max_shape is not None) and
                 ("MAX_SHAPE" in dir(self.__class__)) and
                 (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
@@ -183,6 +184,7 @@ class Maxipix(Detector):
         module_size = config.get("module_size")
         if module_size is not None:
             self.module_size = tuple(module_size)
+        self._orientation = Orientation(config.get("orientation", 3))
         return self
 
 

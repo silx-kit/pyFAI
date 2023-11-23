@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2023"
+__date__ = "23/11/2023"
 
 import os
 import shutil
@@ -71,7 +71,7 @@ class TestDetector(unittest.TestCase):
             self.assertEqual(res, True, name)
 
     def test_reading_non_default_args(self):
-        config = {"pixel1": 1, "pixel2": 2}
+        config = {"pixel1": 1, "pixel2": 2, "orientation":3}
         detector = detector_factory("adsc_q315", config)
         self.assertEqual(detector.get_config(), config)
         self.assertEqual(detector.pixel1, config["pixel1"])
@@ -199,6 +199,7 @@ class TestDetector(unittest.TestCase):
                 logger.warning("Test nexus_detector failed due to short memory on detector %s", det_name)
                 continue
             self.assertEqual(len(o), len(r), "data have same dimension")
+
             err1 = abs(r[0] - o[0]).max()
             err2 = abs(r[1] - o[1]).max()
             if det.name in known_fail:
@@ -378,11 +379,96 @@ class TestDetector(unittest.TestCase):
         self.assertEqual(det.shape, shape)
         self.assertEqual(abs(z-res).max(), 0)
 
+class TestOrientation(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestOrientation, cls).setUpClass()
+        cls.orient1 = detector_factory("Pilatus100k", config={"orientation":1})
+        cls.orient2 = detector_factory("Pilatus100k", config={"orientation":2})
+        cls.orient3 = detector_factory("Pilatus100k", config={"orientation":3})
+        cls.orient4 = detector_factory("Pilatus100k", config={"orientation":4})
+
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestOrientation, cls).tearDownClass()
+        cls.orient1 = None
+        cls.orient2 = None
+        cls.orient3 = None
+        cls.orient4 = None
+
+    def test_centers(self):
+        p1, p2, _ = self.orient1.calc_cartesian_positions()
+        #orient2 -> flip rl
+        r1, r2, _ = self.orient2.calc_cartesian_positions()
+        self.assertTrue(numpy.allclose(p1, numpy.fliplr(r1)), "orient 2vs1 dim1,y center")
+        self.assertTrue(numpy.allclose(p2, numpy.fliplr(r2)), "orient 2vs1 dim2,x center")
+        #orient3 -< rotate180
+        r1, r2, _ = self.orient3.calc_cartesian_positions()
+        self.assertTrue(numpy.allclose(p1, numpy.flipud(numpy.fliplr(r1))), "orient 3vs1 dim1,y center")
+        self.assertTrue(numpy.allclose(p2, numpy.flipud(numpy.fliplr(r2))), "orient 3vs1 dim2,x center")
+        #orient4 -> flip u-d
+        r1, r2, _ = self.orient4.calc_cartesian_positions()
+        self.assertTrue(numpy.allclose(p1, numpy.flipud(r1)), "orient 4vs1 dim1,y center")
+        self.assertTrue(numpy.allclose(p2, numpy.flipud(r2)), "orient 4vs1 dim2,x center")
+
+    def test_corners(self):
+        p1, p2, _ = self.orient1.calc_cartesian_positions(center=False)
+        #orient2 -> flip rl
+        r1, r2, _ = self.orient2.calc_cartesian_positions(center=False)
+        self.assertTrue(numpy.allclose(p1, numpy.fliplr(r1)), "orient 2vs1 dim1,y corner")
+        self.assertTrue(numpy.allclose(p2, numpy.fliplr(r2)), "orient 2vs1 dim2,x corner")
+        #orient3 -< rotate180
+        r1, r2, _ = self.orient3.calc_cartesian_positions(center=False)
+        self.assertTrue(numpy.allclose(p1, numpy.flipud(numpy.fliplr(r1))), "orient 3vs1 dim1,y corner")
+        self.assertTrue(numpy.allclose(p2, numpy.flipud(numpy.fliplr(r2))), "orient 3vs1 dim2,x corner")
+        #orient4 -> flip u-d
+        r1, r2, _ = self.orient4.calc_cartesian_positions(center=False)
+        self.assertTrue(numpy.allclose(p1, numpy.flipud(r1)), "orient 4vs1 dim1,y corner")
+        self.assertTrue(numpy.allclose(p2, numpy.flipud(r2)), "orient 4vs1 dim2,x corner")
+
+    def test_points(self):
+        npt = 1000
+        rng = UtilsTest.get_rng()
+        Y = rng.integers(0, self.orient1.shape[0]-1, size=npt)
+        X = rng.integers(0, self.orient1.shape[1]-1, size=npt)
+        #orient1
+        r1, r2, _ = self.orient1.calc_cartesian_positions(Y, X)
+        ref1, ref2, _ = self.orient1.calc_cartesian_positions()
+        p1 = ref1[Y, X]
+        p2 = ref2[Y, X]
+        self.assertTrue(numpy.allclose(r1, p1), "orient 1 dim1,y points")
+        self.assertTrue(numpy.allclose(r2, p2), "orient 1 dim2,x points")
+
+        #orient2
+        r1, r2, _ = self.orient2.calc_cartesian_positions(Y, X)
+        ref1, ref2, _ = self.orient2.calc_cartesian_positions()
+        p1 = ref1[Y, X]
+        p2 = ref2[Y, X]
+        self.assertTrue(numpy.allclose(r1, p1), "orient 2 dim1,y points")
+        self.assertTrue(numpy.allclose(r2, p2), "orient 2 dim2,x points")
+
+        #orient3
+        r1, r2, _ = self.orient3.calc_cartesian_positions(Y, X)
+        ref1, ref2, _ = self.orient3.calc_cartesian_positions()
+        p1 = ref1[Y, X]
+        p2 = ref2[Y, X]
+        self.assertTrue(numpy.allclose(r1, p1), "orient 3 dim1,y points")
+        self.assertTrue(numpy.allclose(r2, p2), "orient 3 dim2,x points")
+
+        #orient4
+        r1, r2, _ = self.orient4.calc_cartesian_positions(Y, X)
+        ref1, ref2, _ = self.orient4.calc_cartesian_positions()
+        p1 = ref1[Y, X]
+        p2 = ref2[Y, X]
+        self.assertTrue(numpy.allclose(r1, p1), "orient 4 dim1,y points")
+        self.assertTrue(numpy.allclose(r2, p2), "orient 4 dim2,x points")
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestDetector))
+    testsuite.addTest(loader(TestOrientation))
     return testsuite
 
 

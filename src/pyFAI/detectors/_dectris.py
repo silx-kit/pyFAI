@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,11 +30,11 @@
 Description of the `Dectris <https://www.dectris.com/>`_ detectors.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2023"
+__date__ = "23/11/2023"
 __status__ = "production"
 
 import os
@@ -42,7 +42,7 @@ import numpy
 import logging
 import json
 from collections import OrderedDict
-from ._common import Detector
+from ._common import Detector, Orientation
 from ..utils import expand2d
 logger = logging.getLogger(__name__)
 
@@ -64,6 +64,7 @@ class _Dectris(Detector):
     force_pixel = True
     DUMMY = -2
     DELTA_DUMMY = 1.5
+    ORIENTATION = 3 # should be 2, Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
 
     def calc_mask(self):
         """
@@ -96,8 +97,8 @@ class Eiger(_Dectris):
     MODULE_GAP = (37, 10)
     force_pixel = True
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
@@ -105,7 +106,10 @@ class Eiger(_Dectris):
         self.offset1 = self.offset2 = None
 
     def __repr__(self):
-        return f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        if self.orientation:
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        return txt
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -126,12 +130,26 @@ class Eiger(_Dectris):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-                d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+                r1, r2 = self._calc_pixel_index_from_orientation(False)
+                d1 = expand2d(r1, self.shape[1], False)
+                d2 = expand2d(r2, self.shape[0], True)
+            else:
+                if self.orientation in (0,3):
+                    pass
+                elif self.orientation == 1:
+                    d1 = self.shape[0] - 1 - d1
+                    d2 = self.shape[1] - 1 - d2
+                elif self.orientation == 2:
+                    d1 = self.shape[0] - 1 - d1
+                elif self.orientation == 4:
+                    d2 = self.shape[1] - 1 - d2
+                else:
+                    raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
 
         if self.offset1 is None or self.offset2 is None:
             delta1 = delta2 = 0.
         else:
+            #TODO: this does not take into account the orientation of the detector !
             if d2.ndim == 1:
                 d1n = d1.astype(numpy.int32)
                 d2n = d2.astype(numpy.int32)
@@ -176,7 +194,7 @@ class Eiger(_Dectris):
 
         :return: dict with param for serialization
         """
-        dico = {}
+        dico = {"orientation": self.orientation}
         if ((self.max_shape is not None) and
                 ("MAX_SHAPE" in dir(self.__class__)) and
                 (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
@@ -208,6 +226,7 @@ class Eiger(_Dectris):
         module_size = config.get("module_size")
         if module_size is not None:
             self.module_size = tuple(module_size)
+        self._orientation = Orientation(config.get("orientation", 3))
         return self
 
 
@@ -401,16 +420,17 @@ class Mythen(_Dectris):
     force_pixel = True
     MAX_SHAPE = (1, 1280)
 
-    def __init__(self, pixel1=8e-3, pixel2=50e-6):
-        super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=8e-3, pixel2=50e-6, orientation=0):
+        super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2, orientation=orientation)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "orientation": self.orientation or 3}
 
     def calc_mask(self):
         "Mythen have no masks"
@@ -427,9 +447,10 @@ class Pilatus(_Dectris):
     MODULE_GAP = (17, 7)
     force_pixel = True
 
+
     def __init__(self, pixel1=172e-6, pixel2=172e-6, max_shape=None, module_size=None,
-                 x_offset_file=None, y_offset_file=None):
-        super(Pilatus, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+                 x_offset_file=None, y_offset_file=None, orientation=0):
+        super(Pilatus, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
@@ -438,6 +459,8 @@ class Pilatus(_Dectris):
 
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        if self.orientation > 0:
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
         if self.x_offset_file:
             txt += f"\t delta_x= {self.x_offset_file}"
         if self.y_offset_file:
@@ -510,9 +533,23 @@ class Pilatus(_Dectris):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if self.shape and ((d1 is None) or (d2 is None)):
-            d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-            d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+        if self.shape:
+            if ((d1 is None) or (d2 is None)):
+                r1, r2 = self._calc_pixel_index_from_orientation(False)
+                d1 = expand2d(r1, self.shape[1], False)
+                d2 = expand2d(r2, self.shape[0], True)
+            else:
+                if self.orientation in (0,3):
+                    pass
+                elif self.orientation==1:
+                    d1 = self.shape[0] - 1 - d1
+                    d2 = self.shape[1] - 1 - d2
+                elif self.orientation==2:
+                    d1 = self.shape[0] - 1 - d1
+                elif self.orientation == 4:
+                    d2 = self.shape[1] - 1 - d2
+                else:
+                    raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
 
         if (self.offset1 is None) or (self.offset2 is None):
             delta1 = delta2 = 0.
@@ -562,7 +599,7 @@ class Pilatus(_Dectris):
 
         :return: dict with param for serialization
         """
-        dico = OrderedDict()
+        dico = {"orientation": self.orientation or 3}
         if ((self.max_shape is not None) and
                 ("MAX_SHAPE" in dir(self.__class__)) and
                 (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
@@ -593,6 +630,7 @@ class Pilatus(_Dectris):
                 raise err
 
         # pixel size is enforced by the detector itself
+        self._orientation = Orientation(config.get("orientation", 0))
         if "max_shape" in config:
             self.max_shape = tuple(config["max_shape"])
         module_size = config.get("module_size")
@@ -742,12 +780,14 @@ class Pilatus4(_Dectris):
     MODULE_GAP = (20, 7)
     force_pixel = True
 
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None):
-        super(Pilatus4, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
+        super(Pilatus4, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         self.module_size = tuple(self.MODULE_SIZE)
 
     def __repr__(self):
-        return f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        if self.orientation:
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
 
 
 class Pilatus4_1M(Pilatus4):

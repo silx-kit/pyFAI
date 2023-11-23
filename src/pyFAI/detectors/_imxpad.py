@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,13 +34,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2023"
+__date__ = "23/11/2023"
 __status__ = "production"
 
 import functools
 import numpy
 import json
-from ._common import Detector
+from ._common import Detector, Orientation
 from ..utils import mathutil
 
 import logging
@@ -94,8 +94,8 @@ class ImXPadS10(Detector):
         # size[-1] = 1.0
         return pixel_size * size
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
@@ -226,7 +226,7 @@ class ImXPadS10(Detector):
 
         :return: dict with param for serialization
         """
-        dico = {}
+        dico = {"orientation": self.orientation or 3}
         if ((self.max_shape is not None) and
                 ("MAX_SHAPE" in dir(self.__class__)) and
                 (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
@@ -258,6 +258,7 @@ class ImXPadS10(Detector):
         module_size = config.get("module_size")
         if module_size is not None:
             self.module_size = tuple(module_size)
+        self._orientation = Orientation(config.get("orientation", 3))
         return self
 
 
@@ -273,8 +274,9 @@ class ImXPadS70(ImXPadS10):
     aliases = ["Imxpad S70"]
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                           module_size=module_size, orientation=orientation)
 
 
 class ImXPadS70V(ImXPadS10):
@@ -289,9 +291,6 @@ class ImXPadS70V(ImXPadS10):
     aliases = ["Imxpad S70 V"]
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
-
 
 class ImXPadS140(ImXPadS10):
     """
@@ -303,9 +302,6 @@ class ImXPadS140(ImXPadS10):
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
     force_pixel = True
     aliases = ["Imxpad S140"]
-
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
 
 
 class Xpad_flat(ImXPadS10):
@@ -323,8 +319,8 @@ class Xpad_flat(ImXPadS10):
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
+        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         self._pixel_corners = None
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
@@ -332,7 +328,10 @@ class Xpad_flat(ImXPadS10):
             self.module_size = module_size
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
+        txt = f"Detector {self.name}\t PixelSize= {self.pixel1:.3e}, {self.pixel2:.3e} m"
+        if self.orientation:
+            txt += f"\t {self.orientation.name} ({self.orientation.value})({self.orientation.value})"
+        return txt
 
     def calc_pixels_edges(self):
         """
@@ -390,8 +389,9 @@ class Xpad_flat(ImXPadS10):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                d1 = mathutil.expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-                d2 = mathutil.expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+                r1, r2 = self._calc_pixel_index_from_orientation(False)
+                d1 = mathutil.expand2d(r1, self.shape[1], False)
+                d2 = mathutil.expand2d(r2, self.shape[0], True)
         corners = self.get_pixel_corners()
         if center:
             # note += would make an increment in place which is bad (segfault !)
@@ -541,8 +541,8 @@ class Cirpad(ImXPadS10):
     def _translation(md, u):
         return md + u
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation)
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
         size = numpy.ones(length)
@@ -553,7 +553,7 @@ class Cirpad(ImXPadS10):
         return pixel_size * size
 
     def _passage(self, corners, rot):
-        shape = corners.shape
+        # shape = corners.shape
         deltaX, deltaY = 0.0, 0.0
         nmd = self._rotation(corners, rot)
         # Size in mm of the chip in the Y direction (including 10px gap)
@@ -617,8 +617,9 @@ class Cirpad(ImXPadS10):
     # TODO !!!
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         if (d1 is None) or d2 is None:
-            d1 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[0]).astype(numpy.float32), self.MAX_SHAPE[1], False)
-            d2 = mathutil.expand2d(numpy.arange(self.MAX_SHAPE[1]).astype(numpy.float32), self.MAX_SHAPE[0], True)
+            r1, r2 = self._calc_pixel_index_from_orientation(False)
+            d1 = mathutil.expand2d(r1, self.MAX_SHAPE[1], False)
+            d2 = mathutil.expand2d(r2, self.MAX_SHAPE[0], True)
         corners = self.get_pixel_corners()
         if center:
             # avoid += It modifies in place and segfaults

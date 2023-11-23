@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2023"
+__date__ = "23/11/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -115,7 +115,8 @@ class Geometry(object):
     _LAST_POLARIZATION = "last_polarization"
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
-                 pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None):
+                 pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None,
+                 orientation=0):
         """
         :param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         :param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
@@ -145,6 +146,7 @@ class Geometry(object):
         :type detector: str or pyFAI.Detector
         :param wavelength: Wave length used in meter
         :type wavelength: float
+        :param int orientation: orientation of the detector, see pyFAI.detectors.orientation.Orientation
         """
         self._dist = dist
         self._poni1 = poni1
@@ -176,6 +178,8 @@ class Geometry(object):
         elif pixel1 and pixel2:
             self.detector.pixel1 = pixel1
             self.detector.pixel2 = pixel2
+        if orientation:
+            self.detector._orientation = detectors.orientation.Orientation(orientation or detector.ORIENTATION)
 
     def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="m"):
         """Nice representation of the class

@@ -29,13 +29,12 @@
 
 """Description of all detectors with a factory to instantiate them"""
 
-from __future__ import annotations
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2023"
+__date__ = "23/11/2023"
 __status__ = "stable"
 
 import logging
@@ -47,6 +46,7 @@ from collections import OrderedDict
 import json
 from typing import Dict, Any, Union
 
+from .orientation import Orientation
 from .. import io
 from .. import spline
 from .. import utils
@@ -113,13 +113,16 @@ class Detector(metaclass=DetectorMeta):
     """If true a spline file is mandatory to correct the geometry"""
     DUMMY = None
     DELTA_DUMMY = None
+    ORIENTATION = 0
     _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                         '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
-                        "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy")
+                        "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy",
+                        "_orientation")
     _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners")
 
+
     @classmethod
-    def factory(cls, name: str, config: Union[None, str, Dict[str, Any]]=None) -> Detector:
+    def factory(cls, name: str, config: Union[None, str, Dict[str, Any]]=None):
         """
         Create a pyFAI detector from a name.
 
@@ -193,7 +196,7 @@ class Detector(metaclass=DetectorMeta):
 
         return detector
 
-    def __init__(self, pixel1=None, pixel2=None, splineFile=None, max_shape=None):
+    def __init__(self, pixel1=None, pixel2=None, splineFile=None, max_shape=None, orientation=0):
         """
         :param pixel1: size of the pixel in meter along the slow dimension (often Y)
         :type pixel1: float
@@ -203,6 +206,7 @@ class Detector(metaclass=DetectorMeta):
         :type splineFile: str
         :param max_shape: maximum size of the detector
         :type max_shape: 2-tuple of integrers
+        :param orientation: Orientation of the detector
         """
         self._pixel1 = None
         self._pixel2 = None
@@ -236,13 +240,24 @@ class Detector(metaclass=DetectorMeta):
         if splineFile:
             self.set_splineFile(splineFile)
 
+        orientation = Orientation(orientation or self.ORIENTATION or 3)
+        if orientation<0 or orientation>4:
+            raise RuntimeError("Unsupported orientation: "+orientation.__doc__)
+        self._orientation = orientation
+
     def __repr__(self):
         """Nice representation of the instance
         """
+        txt = f"Detector {self.name}"
+        if self.splineFile:
+            txt += "\t Spline= {self.splineFile}"
         if (self._pixel1 is None) or (self._pixel2 is None):
             return "Undefined detector"
-        return "Detector %s\t Spline= %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self.splineFile, self._pixel1, self._pixel2)
+        else:
+            txt += "\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        if self.orientation:
+            txt += "\t {self.orientation.name} ({self.orientation.value})"
+        return txt
 
     def __copy__(self):
         """
@@ -295,7 +310,7 @@ class Detector(metaclass=DetectorMeta):
         if other is None:
             return False
         res = True
-        for what in ["pixel1", "pixel2", "binning", "shape", "max_shape"]:
+        for what in ["pixel1", "pixel2", "binning", "shape", "max_shape", "orientation"]:
             res &= getattr(self, what) == getattr(other, what)
         return res
 
@@ -329,6 +344,7 @@ class Detector(metaclass=DetectorMeta):
                 self.set_splineFile(config.get("splineFile"))
             if "max_shape" in config:
                 self.max_shape = config.get("max_shape")
+        self._orientation = Orientation(config.get("orientation", 0))
         return self
 
     def get_config(self):
@@ -339,9 +355,10 @@ class Detector(metaclass=DetectorMeta):
 
         :return: dict with param for serialization
         """
-        dico = OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2),
-                            ('max_shape', self.max_shape)))
+        dico = {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                'max_shape': self.max_shape,
+                "orientation": self.orientation or 3}
         if self._splineFile:
             dico["splineFile"] = self._splineFile
         return dico
@@ -483,13 +500,13 @@ class Detector(metaclass=DetectorMeta):
         :return: representation of the detector easy to serialize
         :rtype: dict
         """
-        dico = OrderedDict((("detector", self.name),
-                            ("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2),
-                            ('max_shape', self.max_shape)))
+        dico = {"detector": self.name,
+                "pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                'max_shape': self.max_shape,
+                'orientation': self.orientation or 3}
         if self._splineFile:
             dico["splineFile"] = self._splineFile
-
         return dico
 
     def getFit2D(self):
@@ -513,7 +530,7 @@ class Detector(metaclass=DetectorMeta):
         if "detector" in kwarg:
             import pyFAI.detectors
             config = {}
-            for key in ("pixel1", "pixel2", 'max_shape', "splineFile"):
+            for key in ("pixel1", "pixel2", 'max_shape', "splineFile", "orientation"):
                 if key in kwarg:
                     config[key] = kwarg[key]
             self = pyFAI.detectors.detector_factory(kwarg["detector"], config)
@@ -549,6 +566,31 @@ class Detector(metaclass=DetectorMeta):
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
 
+    def _calc_pixel_index_from_orientation(self, plus_one=False):
+        """Calculate the pixel index when considering the different orientations"""
+        if plus_one: # used with corners
+            m1 = self.shape[0] + 1
+            m2 = self.shape[1] + 1
+        else: #used with centers
+            m1 = self.shape[0]
+            m2 = self.shape[1]
+
+        if self.orientation in (0,3):
+            r1 = numpy.arange(m1, dtype="float32")
+            r2 = numpy.arange(m2, dtype="float32")
+        elif self.orientation==1:
+            r1 = numpy.arange(m1 - 1, -1, -1, dtype="float32")
+            r2 = numpy.arange(m2 - 1, -1, -1, dtype="float32")
+        elif self.orientation==2:
+            r1 = numpy.arange(m1 - 1, -1, -1, dtype="float32")
+            r2 = numpy.arange(m2, dtype="float32")
+        elif self.orientation == 4:
+            r1 = numpy.arange(m1, dtype="float32")
+            r2 = numpy.arange(m2 - 1, -1, -1, dtype="float32")
+        else:
+            raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+        return r1, r2
+
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
@@ -572,8 +614,21 @@ class Detector(metaclass=DetectorMeta):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-                d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+                r1, r2 = self._calc_pixel_index_from_orientation(False)
+                d1 = expand2d(r1, self.shape[1], False)
+                d2 = expand2d(r2, self.shape[0], True)
+            else:
+                if self.orientation in (0,3):
+                    pass
+                elif self.orientation==1:
+                    d1 = self.shape[0] - 1 - d1
+                    d2 = self.shape[1] - 1 - d2
+                elif self.orientation==2:
+                    d1 = self.shape[0] - 1 - d1
+                elif self.orientation == 4:
+                    d2 = self.shape[1] - 1 - d2
+                else:
+                    raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
 
         elif "ndim" in dir(d1):
             if d1.ndim == 2:
@@ -583,7 +638,7 @@ class Detector(metaclass=DetectorMeta):
                 self.shape = d2.shape
 
         if center:
-            # avoid += It modifies in place and segfaults
+            # avoid += It modifies in place then segfaults
             d1c = d1 + 0.5
             d2c = d2 + 0.5
         else:
@@ -675,9 +730,10 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
+                    r1, r2 = self._calc_pixel_index_from_orientation(True)
                     # like numpy.ogrid
-                    d1 = expand2d(numpy.arange(self.shape[0] + 1.0), self.shape[1] + 1, False)
-                    d2 = expand2d(numpy.arange(self.shape[1] + 1.0), self.shape[0] + 1, True)
+                    d1 = expand2d(r1, self.shape[1] + 1, False)
+                    d2 = expand2d(r2, self.shape[0] + 1, True)
                     p1, p2, p3 = self.calc_cartesian_positions(d1, d2, center=False)
                     self._pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
                     self._pixel_corners[:,:, 0, 1] = p1[:-1,:-1]
@@ -776,6 +832,10 @@ class Detector(metaclass=DetectorMeta):
                 det_grp["shape"] = numpy.array(self.shape, dtype=numpy.int32)
             if self.binning is not None:
                 det_grp["binning"] = numpy.array(self._binning, dtype=numpy.int32)
+            if self.orientation:
+                det_grp["orientation"] = numpy.array(self.orientation.value, dtype=numpy.int32)
+                det_grp["orientation"].attrs["value"] = self.orientation.name
+                det_grp["orientation"].attrs["doc"] = self.orientation.__doc__
             if self.flatfield is not None:
                 dset = det_grp.create_dataset("flatfield", data=self.flatfield,
                                               compression="gzip", compression_opts=9, shuffle=True)
@@ -1109,6 +1169,9 @@ class Detector(metaclass=DetectorMeta):
     def delta_dummy(self, value=None):
         self._delta_dummy = value
 
+    @property
+    def orientation(self):
+        return self._orientation
 
 class NexusDetector(Detector):
     """
@@ -1186,6 +1249,10 @@ class NexusDetector(Detector):
                     self.mask = numpy.logical_or(previous_mask, new_mask).astype(numpy.int8)
             else:
                 self.uniform_pixel = True
+            if "orientation" in det_grp:
+                self._orientation = Orientation(det_grp["orientation"][()])
+            else:
+                self._orientation = Orientation(3)
         # Populate shape and max_shape if needed
         if self.max_shape is None:
             if self.shape is None:
@@ -1285,7 +1352,8 @@ class NexusDetector(Detector):
         """
         return {"detector": self._filename or self.name,
                 "pixel1": self._pixel1,
-                "pixel2": self._pixel2
+                "pixel2": self._pixel2,
+                "orientation": self.orientation or 3
                 }
 
     def getFit2D(self):
