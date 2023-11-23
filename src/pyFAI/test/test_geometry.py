@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/11/2023"
+__date__ = "23/11/2023"
 
 import unittest
 import random
@@ -361,8 +361,6 @@ class TestFastPath(utilstest.ParametricTestCase):
         for data, space in params:
             with self.subTest(data=data, space=space):
                 geo = geometry.Geometry(**data)
-                print(data)
-                print(geo.detector.orientation)
                 t00 = time.perf_counter()
                 py_res = geo.corner_array(unit=space, use_cython=False, scale=False)
                 t01 = time.perf_counter()
