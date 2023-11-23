@@ -64,7 +64,7 @@ class _Dectris(Detector):
     force_pixel = True
     DUMMY = -2
     DELTA_DUMMY = 1.5
-    ORIENTATION = 2 # Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
+    ORIENTATION = 3 # should be 2, Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
 
     def calc_mask(self):
         """
