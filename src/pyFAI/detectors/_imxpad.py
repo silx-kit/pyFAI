@@ -389,7 +389,7 @@ class Xpad_flat(ImXPadS10):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                r1, r2 = self._calc_pixel_index_from_orientation(True)
+                r1, r2 = self._calc_pixel_index_from_orientation(False)
                 d1 = mathutil.expand2d(r1, self.shape[1], False)
                 d2 = mathutil.expand2d(r2, self.shape[0], True)
         corners = self.get_pixel_corners()
@@ -553,7 +553,7 @@ class Cirpad(ImXPadS10):
         return pixel_size * size
 
     def _passage(self, corners, rot):
-        shape = corners.shape
+        # shape = corners.shape
         deltaX, deltaY = 0.0, 0.0
         nmd = self._rotation(corners, rot)
         # Size in mm of the chip in the Y direction (including 10px gap)
@@ -617,7 +617,7 @@ class Cirpad(ImXPadS10):
     # TODO !!!
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         if (d1 is None) or d2 is None:
-            r1, r2 = self._calc_pixel_index_from_orientation(True)
+            r1, r2 = self._calc_pixel_index_from_orientation(False)
             d1 = mathutil.expand2d(r1, self.MAX_SHAPE[1], False)
             d2 = mathutil.expand2d(r2, self.MAX_SHAPE[0], True)
         corners = self.get_pixel_corners()

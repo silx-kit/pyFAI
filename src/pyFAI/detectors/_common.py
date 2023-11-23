@@ -731,7 +731,6 @@ class Detector(metaclass=DetectorMeta):
             with self._sem:
                 if self._pixel_corners is None:
                     r1, r2 = self._calc_pixel_index_from_orientation(True)
-
                     # like numpy.ogrid
                     d1 = expand2d(r1, self.shape[1] + 1, False)
                     d2 = expand2d(r2, self.shape[0] + 1, True)

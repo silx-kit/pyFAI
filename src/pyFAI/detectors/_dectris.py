@@ -64,7 +64,7 @@ class _Dectris(Detector):
     force_pixel = True
     DUMMY = -2
     DELTA_DUMMY = 1.5
-    ORIENTATION = 3#2 # Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
+    ORIENTATION = 2 # Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
 
     def calc_mask(self):
         """
@@ -130,7 +130,7 @@ class Eiger(_Dectris):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                r1, r2 = self._calc_pixel_index_from_orientation(True)
+                r1, r2 = self._calc_pixel_index_from_orientation(False)
                 d1 = expand2d(r1, self.shape[1], False)
                 d2 = expand2d(r2, self.shape[0], True)
 
@@ -521,7 +521,7 @@ class Pilatus(_Dectris):
         the same shape.
         """
         if self.shape and ((d1 is None) or (d2 is None)):
-            r1, r2 = self._calc_pixel_index_from_orientation(True)
+            r1, r2 = self._calc_pixel_index_from_orientation(False)
             d1 = expand2d(r1, self.shape[1], False)
             d2 = expand2d(r2, self.shape[0], True)
 
