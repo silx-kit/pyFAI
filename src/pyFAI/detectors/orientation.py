@@ -60,7 +60,7 @@ class Orientation(IntEnum):
 Orientation(0).__doc__ = "An orientation flag is not set."
 Orientation(1).__doc__ = "Camera default. Origin at the top left of the image when looking at the sample."
 Orientation(2).__doc__ = "Origin at the top left of the image when looking from the sample."
-Orientation(3).__doc__ = "Native orientation of pyFAI. Origin at the bottom left when looking from the sample"
+Orientation(3).__doc__ = "Native orientation of pyFAI. Origin at the bottom left when looking from the sample."
 Orientation(4).__doc__ = "Origin at the bottom left when looking at the sample."
 Orientation(5).__doc__ = "Rotate the photo counter-clockwise 270 degrees and then flip it horizontally. Unsupported for now."
 Orientation(6).__doc__ = "Rotate the photo counter-clockwise 270 degrees. Unsupported for now."
