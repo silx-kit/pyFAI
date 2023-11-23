@@ -567,7 +567,7 @@ class Detector(metaclass=DetectorMeta):
                 self.set_splineFile(kwarg[kw])
 
     def _calc_pixel_index_from_orientation(self, plus_one=False):
-        """Calculate the pixel index when considereing the different orientations"""
+        """Calculate the pixel index when considering the different orientations"""
         if plus_one: # used with corners
             m1 = self.shape[0] + 1
             m2 = self.shape[1] + 1
