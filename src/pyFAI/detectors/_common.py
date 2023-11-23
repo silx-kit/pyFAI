@@ -242,7 +242,7 @@ class Detector(metaclass=DetectorMeta):
 
         orientation = Orientation(orientation or self.ORIENTATION or 3)
         if orientation<0 or orientation>4:
-            raise RuntimeError("Unsuported orientation: "+orientation.__doc__)
+            raise RuntimeError("Unsupported orientation: "+orientation.__doc__)
         self._orientation = orientation
 
     def __repr__(self):
