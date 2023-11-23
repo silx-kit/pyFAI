@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/11/2023"
+__date__ = "23/11/2023"
 __status__ = "production"
 
 
@@ -184,7 +184,7 @@ class Maxipix(Detector):
         module_size = config.get("module_size")
         if module_size is not None:
             self.module_size = tuple(module_size)
-        self.orientation = Orientation(config.get("orientation", 3))
+        self._orientation = Orientation(config.get("orientation", 3))
         return self
 
 

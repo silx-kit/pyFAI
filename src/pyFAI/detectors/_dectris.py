@@ -226,7 +226,7 @@ class Eiger(_Dectris):
         module_size = config.get("module_size")
         if module_size is not None:
             self.module_size = tuple(module_size)
-        self.orientation = Orientation(config.get("orientation", 3))
+        self._orientation = Orientation(config.get("orientation", 3))
         return self
 
 
@@ -630,7 +630,7 @@ class Pilatus(_Dectris):
                 raise err
 
         # pixel size is enforced by the detector itself
-        self.orientation = Orientation(config.get("orientation", 0))
+        self._orientation = Orientation(config.get("orientation", 0))
         if "max_shape" in config:
             self.max_shape = tuple(config["max_shape"])
         module_size = config.get("module_size")

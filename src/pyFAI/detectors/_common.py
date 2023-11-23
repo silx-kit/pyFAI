@@ -243,7 +243,7 @@ class Detector(metaclass=DetectorMeta):
         orientation = Orientation(orientation or self.ORIENTATION or 3)
         if orientation<0 or orientation>4:
             raise RuntimeError("Unsuported orientation: "+orientation.__doc__)
-        self.orientation = orientation
+        self._orientation = orientation
 
     def __repr__(self):
         """Nice representation of the instance
@@ -344,7 +344,7 @@ class Detector(metaclass=DetectorMeta):
                 self.set_splineFile(config.get("splineFile"))
             if "max_shape" in config:
                 self.max_shape = config.get("max_shape")
-        self.orientation = Orientation(config.get("orientation", 0))
+        self._orientation = Orientation(config.get("orientation", 0))
         return self
 
     def get_config(self):
@@ -1169,6 +1169,9 @@ class Detector(metaclass=DetectorMeta):
     def delta_dummy(self, value=None):
         self._delta_dummy = value
 
+    @property
+    def orientation(self):
+        return self._orientation
 
 class NexusDetector(Detector):
     """
@@ -1247,9 +1250,9 @@ class NexusDetector(Detector):
             else:
                 self.uniform_pixel = True
             if "orientation" in det_grp:
-                self.orientation = Orientation(det_grp["orientation"][()])
+                self._orientation = Orientation(det_grp["orientation"][()])
             else:
-                self.orientation = Orientation(3)
+                self._orientation = Orientation(3)
         # Populate shape and max_shape if needed
         if self.max_shape is None:
             if self.shape is None:

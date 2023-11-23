@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/11/2023"
+__date__ = "23/11/2023"
 __status__ = "production"
 
 import logging
@@ -174,7 +174,7 @@ class Basler(Detector):
         if pixel1 or pixel2:
             self.set_pixel1(pixel1 or pixel2)
             self.set_pixel2(pixel2 or pixel1)
-        self.orientation = Orientation(config.get("orientation", 3))
+        self._orientation = Orientation(config.get("orientation", 3))
         return self
 
 

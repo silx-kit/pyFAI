@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/11/2023"
+__date__ = "23/11/2023"
 __status__ = "production"
 
 import numpy
@@ -643,5 +643,5 @@ class Mar555(Detector):
                 raise err
         self.set_pixel1(config.get("pixel1"))
         self.set_pixel2(config.get("pixel2"))
-        self.orientation = Orientation(config.get("orientatio", 3))
+        self._orientation = Orientation(config.get("orientatio", 3))
         return self
