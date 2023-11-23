@@ -133,10 +133,23 @@ class Eiger(_Dectris):
                 r1, r2 = self._calc_pixel_index_from_orientation(False)
                 d1 = expand2d(r1, self.shape[1], False)
                 d2 = expand2d(r2, self.shape[0], True)
+            else:
+                if self.orientation in (0,3):
+                    pass
+                elif self.orientation==1:
+                    d1 = self.shape[0] - 1 - d1
+                    d2 = self.shape[1] - 1 - d2
+                elif self.orientation==2:
+                    d1 = self.shape[0] - 1 - d1
+                elif self.orientation == 4:
+                    d2 = self.shape[1] - 1 - d2
+                else:
+                    raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
 
         if self.offset1 is None or self.offset2 is None:
             delta1 = delta2 = 0.
         else:
+            #TODO: this does not take into account the orientation of the detector !
             if d2.ndim == 1:
                 d1n = d1.astype(numpy.int32)
                 d2n = d2.astype(numpy.int32)
@@ -520,10 +533,23 @@ class Pilatus(_Dectris):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if self.shape and ((d1 is None) or (d2 is None)):
-            r1, r2 = self._calc_pixel_index_from_orientation(False)
-            d1 = expand2d(r1, self.shape[1], False)
-            d2 = expand2d(r2, self.shape[0], True)
+        if self.shape:
+            if ((d1 is None) or (d2 is None)):
+                r1, r2 = self._calc_pixel_index_from_orientation(False)
+                d1 = expand2d(r1, self.shape[1], False)
+                d2 = expand2d(r2, self.shape[0], True)
+            else:
+                if self.orientation in (0,3):
+                    pass
+                elif self.orientation==1:
+                    d1 = self.shape[0] - 1 - d1
+                    d2 = self.shape[1] - 1 - d2
+                elif self.orientation==2:
+                    d1 = self.shape[0] - 1 - d1
+                elif self.orientation == 4:
+                    d2 = self.shape[1] - 1 - d2
+                else:
+                    raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
 
         if (self.offset1 is None) or (self.offset2 is None):
             delta1 = delta2 = 0.
