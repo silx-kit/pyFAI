@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "24/11/2023"
 
 import os
 import shutil
@@ -378,6 +378,14 @@ class TestDetector(unittest.TestCase):
         res = det.dynamic_mask(z)
         self.assertEqual(det.shape, shape)
         self.assertEqual(abs(z-res).max(), 0)
+
+    def test_factory_warning(self):
+        with self.assertLogs('pyFAI.detectors._common', level='ERROR') as cm:
+            d = detector_factory("pilatus1M", {"toto": "pippo", "pixel1": 1})
+            self.assertEqual(d.pixel1, 1, "taken into account")
+            self.assertNotEqual(d.pixel2, 1, "default value")
+            self.assertTrue("Factory: Left-over config parameters in" in  cm.output[0], "emits an error")
+
 
 class TestOrientation(unittest.TestCase):
     @classmethod

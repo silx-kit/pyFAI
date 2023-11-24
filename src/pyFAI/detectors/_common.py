@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "24/11/2023"
 __status__ = "stable"
 
 import logging
@@ -188,7 +188,7 @@ class Detector(metaclass=DetectorMeta):
             kwargs = { key:config.pop(key) for key in inspect.getfullargspec(detectorClass).args if key in config}
             if config:
                 logger.error(f"Factory: Left-over config parameters in detector {detectorClass.__name__}: {config}")
-            print(detectorClass.__name__, kwargs)
+
             try:
                 detector = detectorClass(**kwargs)
             except Exception as err:  # IGNORE:W0703:
