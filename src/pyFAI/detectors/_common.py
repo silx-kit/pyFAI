@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "24/11/2023"
 __status__ = "stable"
 
 import logging
@@ -42,9 +42,9 @@ import numpy
 import os
 import posixpath
 import threading
-from collections import OrderedDict
 import json
 from typing import Dict, Any, Union
+import inspect
 
 from .orientation import Orientation
 from .. import io
@@ -175,7 +175,9 @@ class Detector(metaclass=DetectorMeta):
         # Create the detector
         detector = None
         if config is not None:
-            if not isinstance(config, dict):
+            if isinstance(config, dict):
+                config = config.copy()
+            else:
                 try:
                     config = json.loads(config)
                 except Exception as err:  # IGNORE:W0703:
@@ -183,8 +185,12 @@ class Detector(metaclass=DetectorMeta):
                                  name, config, err)
                     raise err
             binning = config.pop("binning", None)
+            kwargs = { key:config.pop(key) for key in inspect.getfullargspec(detectorClass).args if key in config}
+            if config:
+                logger.error(f"Factory: Left-over config parameters in detector {detectorClass.__name__}: {config}")
+
             try:
-                detector = detectorClass(**config)
+                detector = detectorClass(**kwargs)
             except Exception as err:  # IGNORE:W0703:
                 logger.error("%s: %s\nUnable to configure detector %s with config: %s\n",
                              type(err).__name__, err, name, config)
