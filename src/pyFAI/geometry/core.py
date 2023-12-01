@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "01/12/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -616,6 +616,8 @@ class Geometry(object):
         else:
             _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False, use_cython=True, do_parallax=True)
             chi = numpy.arctan2(t1, t2)
+        if self.detector.orientation in (2,4):
+            chi = -chi
         return chi
 
     def chi_corner(self, d1, d2):
@@ -764,7 +766,9 @@ class Geometry(object):
                                                           self.rot1, self.rot2, self.rot3,
                                                           p1, p2, p3,
                                                           space, self._wavelength,
-                                                          chi_discontinuity_at_pi=self.chiDiscAtPi)
+                                                          chi_discontinuity_at_pi=self.chiDiscAtPi,
+                                                          flip_direction=self.detector.orientation in (2,4))
+                            #TODO: change orientation if nedded
                         except KeyError:
                             logger.warning("No fast path for space: %s", space)
                         except AttributeError as err:
@@ -794,12 +798,20 @@ class Geometry(object):
                         if numexpr is None:
                             # numpy path
                             chi = numpy.arctan2(y, x)
+                            if self.detector.orientation in (2, 4):
+                                numpy.negative(chi, out=chi)
                             if not self.chiDiscAtPi:
                                 numpy.mod(chi, (2.0 * numpy.pi), out=chi)
                         else:
                             # numexpr path
                             twoPi = 2.0 * numpy.pi
-                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%twoPi")
+                            if self.detector.orientation in (2, 4):
+                                formula = "-arctan2(y, x)"
+                            else:
+                                formula = "arctan2(y, x)"
+                            if self.chiDiscAtPi:
+                                formula += "%twoPi"
+                            chi = numexpr.evaluate(formula)
                         corners = numpy.zeros((shape[0], shape[1], nb_corners, 2),
                                               dtype=numpy.float32)
                         if chi.shape[:2] == shape:
@@ -911,6 +923,8 @@ class Geometry(object):
         y = pos[..., 1]
         z = pos[..., 0]
         ary = unit.equation(x, y, z, self.wavelength)
+        if self.detector.orientation in (2,4):
+            numpy.negative(ary, out=ary)
         if unit.space == "chi" and not self.chiDiscAtPi:
             numpy.mod(ary, 2.0 * numpy.pi, out=ary)
         self._cached_array[key] = ary
