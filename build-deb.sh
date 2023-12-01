@@ -42,7 +42,7 @@ then
     if [ -z $debian_version ]
     then
     #we are probably on a ubuntu platform
-        debian_version=$(cat /etc/debian_version | cut -d/ -f1)
+        debian_version=$(< /etc/debian_version  cut -d/ -f1)
         case $debian_version in
             squeeze)
                 debian_version=6

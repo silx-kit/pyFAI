@@ -276,6 +276,7 @@ def report_rst(cov, package, version="0.0.0", base="", inject_xml=None):
     else:
         fn = inject_xml
     from lxml import etree
+
     xml = etree.parse(fn)
     classes = xml.xpath("//class")
 
