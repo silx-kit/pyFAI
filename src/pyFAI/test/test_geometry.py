@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "01/12/2023"
 
 import unittest
 import random
@@ -549,7 +549,55 @@ class TestBug474(unittest.TestCase):
         delta = abs(rp - rc).max()
         self.assertLess(delta, 1e-5, "error on position is %s" % delta)
 
+class TestOrientation(unittest.TestCase):
+    """Simple tests to validate the orientation of the detector"""
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestOrientation, cls).setUpClass()
+        cls.ai1 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":1}, "wavelength":1e-10})
+        cls.ai2 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":2}, "wavelength":1e-10})
+        cls.ai3 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":3}, "wavelength":1e-10})
+        cls.ai4 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":4}, "wavelength":1e-10})
+        print(cls.ai1)
+        print(cls.ai2)
+        print(cls.ai3)
+        print(cls.ai4)
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestOrientation, cls).tearDownClass()
+        cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
 
+    def test_array_from_unit_tth(self):
+        r1 = self.ai1.array_from_unit(unit="2th_deg")
+        r2 = self.ai2.array_from_unit(unit="2th_deg")
+        r3 = self.ai3.array_from_unit(unit="2th_deg")
+        r4 = self.ai4.array_from_unit(unit="2th_deg")
+
+        self.assertFalse(numpy.allclose(r1, r2), "orientation 1,2 differ tth")
+        self.assertFalse(numpy.allclose(r1, r3), "orientation 1,3 differ tth")
+        self.assertFalse(numpy.allclose(r1, r4), "orientation 1,4 differ tth")
+
+        self.assertTrue(numpy.allclose(r1, numpy.fliplr(r2)), "orientation 1,2 flipped match tth")
+        self.assertTrue(numpy.allclose(r1, numpy.flipud(r4)), "orientation 1,4 flipped match tth")
+        self.assertTrue(numpy.allclose(r2, numpy.flipud(r3)), "orientation 2,3 flipped match tth")
+        self.assertTrue(numpy.allclose(r1, r3[-1::-1,-1::-1]), "orientation 1,3 inversion match tth")
+        self.assertTrue(numpy.allclose(r2, r4[-1::-1,-1::-1]), "orientation 2,4 inversion match tth")
+
+    def test_array_from_unit_chi(self):
+        r1 = self.ai1.array_from_unit(unit="chi_deg")
+        r2 = self.ai2.array_from_unit(unit="chi_deg")
+        r3 = self.ai3.array_from_unit(unit="chi_deg")
+        r4 = self.ai4.array_from_unit(unit="chi_deg")
+
+        self.assertFalse(numpy.allclose(r1, r2), "orientation 1,2 differ chi")
+        self.assertFalse(numpy.allclose(r1, r3), "orientation 1,3 differ chi")
+        self.assertFalse(numpy.allclose(r1, r4), "orientation 1,4 differ chi")
+
+        self.assertTrue(numpy.allclose(r1, -numpy.fliplr(r2)), "orientation 1,2 flipped match chi")
+        self.assertTrue(numpy.allclose(r1, -numpy.flipud(r4)), "orientation 1,4 flipped match chi")
+        self.assertTrue(numpy.allclose(r2, -numpy.flipud(r3)), "orientation 2,3 flipped match chi")
+        self.assertTrue(numpy.allclose(r1, r3[-1::-1,-1::-1]), "orientation 1,3 inversion match chi")
+        self.assertTrue(numpy.allclose(r2, r4[-1::-1,-1::-1]), "orientation 2,4 inversion match chi")
 
 
 def suite():
@@ -562,6 +610,7 @@ def suite():
     testsuite.addTest(loader(TestCalcFrom))
     testsuite.addTest(loader(TestGeometry))
     testsuite.addTest(loader(TestFastPath))
+    testsuite.addTest(loader(TestOrientation))
     return testsuite
 
 
