@@ -617,7 +617,7 @@ class Geometry(object):
             _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False, use_cython=True, do_parallax=True)
             chi = numpy.arctan2(t1, t2)
         if self.detector.orientation in (2,4):
-            chi = -chi
+            numpy.negative(chi, out=chi)
         return chi
 
     def chi_corner(self, d1, d2):
@@ -754,8 +754,16 @@ class Geometry(object):
                     if (_geometry is not None) and use_cython:
                         if self.detector.IS_CONTIGUOUS:
                             r1, r2 = self.detector._calc_pixel_index_from_orientation(True)
-                            d1 = utils.expand2d(r1, shape[1]+1, False)
-                            d2 = utils.expand2d(r2, shape[0]+1, True)
+                            d1 = utils.expand2d(r1, shape[1] + 1, False)
+                            d2 = utils.expand2d(r2, shape[0] + 1, True)
+                            p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False)
+
+
+                            #r1, r2 = self.detector._calc_pixel_index_from_orientation(True)
+                            #d1 = utils.expand2d(r1, shape[1]+1, False)
+                            #d2 = utils.expand2d(r2, shape[0]+1, True)
+                            d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
+                            d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
                             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=True)
                         else:
                             det_corners = self.detector.get_pixel_corners()
@@ -774,7 +782,7 @@ class Geometry(object):
                         except AttributeError as err:
                             logger.warning("AttributeError: The binary extension _geomety may be missing: %s", err)
                         else:
-                            if self.detector.IS_CONTIGUOUS:
+                            if 0:#self.detector.IS_CONTIGUOUS:
                                 if bilinear:
                                     # convert_corner_2D_to_4D needs contiguous arrays as input
                                     radi = numpy.ascontiguousarray(res[..., 0], numpy.float32)

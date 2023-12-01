@@ -567,7 +567,7 @@ class TestOrientation(unittest.TestCase):
         super(TestOrientation, cls).tearDownClass()
         cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
 
-    def test_array_from_unit_tth(self):
+    def test_array_from_unit_tth_center(self):
         r1 = self.ai1.array_from_unit(unit="2th_deg")
         r2 = self.ai2.array_from_unit(unit="2th_deg")
         r3 = self.ai3.array_from_unit(unit="2th_deg")
@@ -583,7 +583,7 @@ class TestOrientation(unittest.TestCase):
         self.assertTrue(numpy.allclose(r1, r3[-1::-1,-1::-1]), "orientation 1,3 inversion match tth")
         self.assertTrue(numpy.allclose(r2, r4[-1::-1,-1::-1]), "orientation 2,4 inversion match tth")
 
-    def test_array_from_unit_chi(self):
+    def test_array_from_unit_chi_center(self):
         r1 = self.ai1.array_from_unit(unit="chi_deg")
         r2 = self.ai2.array_from_unit(unit="chi_deg")
         r3 = self.ai3.array_from_unit(unit="chi_deg")
@@ -598,6 +598,39 @@ class TestOrientation(unittest.TestCase):
         self.assertTrue(numpy.allclose(r2, -numpy.flipud(r3)), "orientation 2,3 flipped match chi")
         self.assertTrue(numpy.allclose(r1, r3[-1::-1,-1::-1]), "orientation 1,3 inversion match chi")
         self.assertTrue(numpy.allclose(r2, r4[-1::-1,-1::-1]), "orientation 2,4 inversion match chi")
+
+    def test_array_from_unit_tth_corner(self):
+        r1 = self.ai1.array_from_unit(unit="2th_deg", typ="corner")
+        r2 = self.ai2.array_from_unit(unit="2th_deg", typ="corner")
+        r3 = self.ai3.array_from_unit(unit="2th_deg", typ="corner")
+        r4 = self.ai4.array_from_unit(unit="2th_deg", typ="corner")
+
+        tth1 = r1[...,0].mean(axis=-1)
+        chi1 = r1[...,1].mean(axis=-1)
+        tth2 = r2[...,0].mean(axis=-1)
+        chi2 = r2[...,1].mean(axis=-1)
+        tth3 = r3[...,0].mean(axis=-1)
+        chi3 = r3[...,1].mean(axis=-1)
+        tth4 = r4[...,0].mean(axis=-1)
+        chi4 = r4[...,1].mean(axis=-1)
+
+        self.assertFalse(numpy.allclose(tth1, tth2), "orientation 1,2 differ tth")
+        self.assertFalse(numpy.allclose(chi1, chi2), "orientation 1,2 differ chi")
+        self.assertFalse(numpy.allclose(tth1, tth3), "orientation 1,3 differ tth")
+        self.assertFalse(numpy.allclose(chi1, chi3), "orientation 1,3 differ chi")
+        self.assertFalse(numpy.allclose(tth1, tth4), "orientation 1,4 differ tth")
+        self.assertFalse(numpy.allclose(chi1, chi4), "orientation 1,4 differ chi")
+
+        self.assertTrue(numpy.allclose(tth1, numpy.fliplr(tth2)), "orientation 1,2 flipped match tth")
+        self.assertTrue(numpy.allclose(chi1, -numpy.fliplr(chi2)), "orientation 1,2 flipped match chi")
+        self.assertTrue(numpy.allclose(tth1, numpy.flipud(tth4)), "orientation 1,4 flipped match tth")
+        self.assertTrue(numpy.allclose(chi1, -numpy.flipud(chi4)), "orientation 1,4 flipped match chi")
+        self.assertTrue(numpy.allclose(tth2, numpy.flipud(tth3)), "orientation 2,3 flipped match tth")
+        self.assertTrue(numpy.allclose(chi2, -numpy.flipud(chi3)), "orientation 2,3 flipped match chi")
+        self.assertTrue(numpy.allclose(tth1, tth3[-1::-1,-1::-1]), "orientation 1,3 inversion match tth")
+        self.assertTrue(numpy.allclose(chi1, chi3[-1::-1,-1::-1]), "orientation 1,3 inversion match chi")
+        self.assertTrue(numpy.allclose(tth2, tth4[-1::-1,-1::-1]), "orientation 2,4 inversion match tth")
+        self.assertTrue(numpy.allclose(chi2, chi4[-1::-1,-1::-1]), "orientation 2,4 inversion match chi")
 
 
 def suite():
