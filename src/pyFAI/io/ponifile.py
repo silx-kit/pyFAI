@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/11/2023"
+__date__ = "01/12/2023"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -107,8 +107,7 @@ class PoniFile(object):
         """
         version = int(config.get("poni_version", 1))
         if "detector_config" in config:
-            version = min(version, 2)
-
+            version = max(version, 2)
         if version == 1:
             # Handle former version of PONI-file
             if "detector" in config:
