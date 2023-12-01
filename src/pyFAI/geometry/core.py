@@ -753,8 +753,9 @@ class Geometry(object):
                     corners = None
                     if (_geometry is not None) and use_cython:
                         if self.detector.IS_CONTIGUOUS:
-                            d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
-                            d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
+                            r1, r2 = self.detector._calc_pixel_index_from_orientation(True)
+                            d1 = utils.expand2d(r1, shape[1]+1, False)
+                            d2 = utils.expand2d(r2, shape[0]+1, True)
                             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=True)
                         else:
                             det_corners = self.detector.get_pixel_corners()
@@ -768,7 +769,6 @@ class Geometry(object):
                                                           space, self._wavelength,
                                                           chi_discontinuity_at_pi=self.chiDiscAtPi,
                                                           flip_direction=self.detector.orientation in (2,4))
-                            #TODO: change orientation if nedded
                         except KeyError:
                             logger.warning("No fast path for space: %s", space)
                         except AttributeError as err:
