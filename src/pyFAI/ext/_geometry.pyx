@@ -574,8 +574,7 @@ def calc_rad_azim(double L,
                   pos3=None,
                   space="2th",
                   wavelength=None,
-                  bint chi_discontinuity_at_pi=True,
-                  bint flip_direction=False,
+                  bint chi_discontinuity_at_pi=True
                   ):
     """Calculate the radial & azimutal position for each pixel from pos1, pos2, pos3.
 
@@ -590,7 +589,6 @@ def calc_rad_azim(double L,
     :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
     :param space: can be "2th", "q" or "r" for radial units. Azimuthal units are radians
     :param chi_discontinuity_at_pi: set to False to obtain chi in the range [0, 2pi[ instead of [-pi, pi[
-    :param flip_direction: set True when orientation in 2,4
     :return: ndarray of double with same shape and size as pos1 + (2,),
     :raise: KeyError when space is bad !
             ValueError when wavelength is missing
@@ -637,8 +635,6 @@ def calc_rad_azim(double L,
             elif cspace == 3:
                 out[i, 0] = sqrt(t1 * t1 + t2 * t2)
             chi = atan2(t1, t2)
-            if flip_direction:
-                chi = -chi
             if chi_discontinuity_at_pi:
                 out[i, 1] = chi
             else:
@@ -657,8 +653,6 @@ def calc_rad_azim(double L,
             elif cspace == 3:
                 out[i, 0] = sqrt(t1 * t1 + t2 * t2)
             chi = atan2(t1, t2)
-            if flip_direction:
-                chi = -chi
             if chi_discontinuity_at_pi:
                 out[i, 1] = chi
             else:
