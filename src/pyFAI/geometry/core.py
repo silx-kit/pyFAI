@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/12/2023"
+__date__ = "06/12/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -348,7 +348,8 @@ class Geometry(object):
         else:
             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
         if ((not do_parallax) or (self._parallax is None)) and use_cython and (_geometry is not None):
-            t3, t1, t2 = _geometry.calc_pos_zyx(L, poni1, poni2, rot1, rot2, rot3, p1, p2, p3)
+            t3, t1, t2 = _geometry.calc_pos_zyx(L, poni1, poni2, rot1, rot2, rot3, p1, p2, p3,
+                                                orientation=self.detector.orientation)
         else:
             shape = p1.shape
             size = p1.size
@@ -374,6 +375,11 @@ class Geometry(object):
             t1.shape = shape
             t2.shape = shape
             t3.shape = shape
+            # correct orientation:
+            if self.detector.orientation in (1,2):
+                numpy.negative(t1, out=t1)
+            if self.detector.orientation in (1,4):
+                numpy.negative(t2, out=t2)
         return (t3, t1, t2)
 
     def tth(self, d1, d2, param=None, path="cython"):
@@ -764,6 +770,7 @@ class Geometry(object):
                                                           self.rot1, self.rot2, self.rot3,
                                                           p1, p2, p3,
                                                           space, self._wavelength,
+                                                          orientation=self.detector.orientation,
                                                           chi_discontinuity_at_pi=self.chiDiscAtPi)
                         except KeyError:
                             logger.warning("No fast path for space: %s", space)

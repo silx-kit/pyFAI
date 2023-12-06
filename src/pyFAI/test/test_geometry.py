@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/12/2023"
+__date__ = "04/12/2023"
 
 import unittest
 import random
@@ -593,11 +593,14 @@ class TestOrientation(unittest.TestCase):
         self.assertFalse(numpy.allclose(r1, r3), "orientation 1,3 differ chi")
         self.assertFalse(numpy.allclose(r1, r4), "orientation 1,4 differ chi")
 
-        self.assertTrue(numpy.allclose(r1, -numpy.fliplr(r2)), "orientation 1,2 flipped match chi")
-        self.assertTrue(numpy.allclose(r1, -numpy.flipud(r4)), "orientation 1,4 flipped match chi")
-        self.assertTrue(numpy.allclose(r2, -numpy.flipud(r3)), "orientation 2,3 flipped match chi")
-        self.assertTrue(numpy.allclose(r1, r3[-1::-1,-1::-1]), "orientation 1,3 inversion match chi")
-        self.assertTrue(numpy.allclose(r2, r4[-1::-1,-1::-1]), "orientation 2,4 inversion match chi")
+        self.assertTrue(-180<r1.min()<-179, "Orientation 1 lower range matches")
+        self.assertTrue(-91<r1.max()<-90, "Orientation 1 upperrange matches")
+        self.assertTrue(-90<r2.min()<-89, "Orientation 2 lower range matches")
+        self.assertTrue(-1<r2.max()<0, "Orientation 2 upperrange matches")
+        self.assertTrue(0<r3.min()<1, "Orientation 3 lower range matches")
+        self.assertTrue(89<r3.max()<90, "Orientation 3 upperrange matches")
+        self.assertTrue(90<r4.min()<91, "Orientation 4 lower range matches")
+        self.assertTrue(179<r4.max()<180, "Orientation 4 upperrange matches")
 
     def test_array_from_unit_tth_corner(self):
         r1 = self.ai1.array_from_unit(unit="2th_deg", typ="corner")

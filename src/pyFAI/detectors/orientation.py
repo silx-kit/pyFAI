@@ -38,20 +38,25 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "04/12/2023"
 __status__ = "stable"
 
 from enum import IntEnum
 
 class Orientation(IntEnum):
-    """Names inspired from
+    """Names come from the position of the origin when looking at the sample from behind the camera.
+
+    When looking from the sample to the detector, the right & left are swapped
+
+    Some names (index 5-8) are inspired from
     https://learn.microsoft.com/en-us/uwp/api/windows.storage.fileproperties.photoorientation
+    but unsupported
     """
     Unspecified = 0
-    Normal = 1
-    FlipHorizontal = 2
-    Rotate180 = 3
-    FlipVertical = 4
+    TopLeft = 1
+    TopRight = 2
+    BottomRight = 3
+    BottomLeft = 4
     Transpose = 5
     Rotate270 = 6
     Transverse = 7
