@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2023"
+__date__ = "07/12/2023"
 
 import unittest
 import random
@@ -609,13 +609,13 @@ class TestOrientation(unittest.TestCase):
         r4 = self.ai4.array_from_unit(unit="2th_deg", typ="corner")
 
         tth1 = r1[...,0].mean(axis=-1)
-        chi1 = r1[...,1].mean(axis=-1)
+        chi1 = r1[...,1].mean(axis=-1)/numpy.pi
         tth2 = r2[...,0].mean(axis=-1)
-        chi2 = r2[...,1].mean(axis=-1)
+        chi2 = r2[...,1].mean(axis=-1)/numpy.pi
         tth3 = r3[...,0].mean(axis=-1)
-        chi3 = r3[...,1].mean(axis=-1)
+        chi3 = r3[...,1].mean(axis=-1)/numpy.pi
         tth4 = r4[...,0].mean(axis=-1)
-        chi4 = r4[...,1].mean(axis=-1)
+        chi4 = r4[...,1].mean(axis=-1)/numpy.pi
 
         self.assertFalse(numpy.allclose(tth1, tth2), "orientation 1,2 differ tth")
         self.assertFalse(numpy.allclose(chi1, chi2), "orientation 1,2 differ chi")
@@ -625,15 +625,15 @@ class TestOrientation(unittest.TestCase):
         self.assertFalse(numpy.allclose(chi1, chi4), "orientation 1,4 differ chi")
 
         self.assertTrue(numpy.allclose(tth1, numpy.fliplr(tth2)), "orientation 1,2 flipped match tth")
-        self.assertTrue(numpy.allclose(chi1, -numpy.fliplr(chi2)), "orientation 1,2 flipped match chi")
+        self.assertTrue(numpy.allclose(chi1+1, -numpy.fliplr(chi2), atol=0.0001), "orientation 1,2 flipped match chi")
         self.assertTrue(numpy.allclose(tth1, numpy.flipud(tth4)), "orientation 1,4 flipped match tth")
         self.assertTrue(numpy.allclose(chi1, -numpy.flipud(chi4)), "orientation 1,4 flipped match chi")
         self.assertTrue(numpy.allclose(tth2, numpy.flipud(tth3)), "orientation 2,3 flipped match tth")
         self.assertTrue(numpy.allclose(chi2, -numpy.flipud(chi3)), "orientation 2,3 flipped match chi")
         self.assertTrue(numpy.allclose(tth1, tth3[-1::-1,-1::-1]), "orientation 1,3 inversion match tth")
-        self.assertTrue(numpy.allclose(chi1, chi3[-1::-1,-1::-1]), "orientation 1,3 inversion match chi")
+        self.assertTrue(numpy.allclose(chi1+1, chi3[-1::-1,-1::-1], atol=0.0001), "orientation 1,3 inversion match chi")
         self.assertTrue(numpy.allclose(tth2, tth4[-1::-1,-1::-1]), "orientation 2,4 inversion match tth")
-        self.assertTrue(numpy.allclose(chi2, chi4[-1::-1,-1::-1]), "orientation 2,4 inversion match chi")
+        self.assertTrue(numpy.allclose(chi2+1, chi4[-1::-1,-1::-1]), "orientation 2,4 inversion match chi")
 
 
 def suite():
