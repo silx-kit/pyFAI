@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "07/12/2023"
 __status__ = "production"
 
 import os
@@ -134,17 +134,7 @@ class Eiger(_Dectris):
                 d1 = expand2d(r1, self.shape[1], False)
                 d2 = expand2d(r2, self.shape[0], True)
             else:
-                if self.orientation in (0,3):
-                    pass
-                elif self.orientation == 1:
-                    d1 = self.shape[0] - 1 - d1
-                    d2 = self.shape[1] - 1 - d2
-                elif self.orientation == 2:
-                    d1 = self.shape[0] - 1 - d1
-                elif self.orientation == 4:
-                    d2 = self.shape[1] - 1 - d2
-                else:
-                    raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+                d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
 
         if self.offset1 is None or self.offset2 is None:
             delta1 = delta2 = 0.
@@ -539,17 +529,7 @@ class Pilatus(_Dectris):
                 d1 = expand2d(r1, self.shape[1], False)
                 d2 = expand2d(r2, self.shape[0], True)
             else:
-                if self.orientation in (0,3):
-                    pass
-                elif self.orientation==1:
-                    d1 = self.shape[0] - 1 - d1
-                    d2 = self.shape[1] - 1 - d2
-                elif self.orientation==2:
-                    d1 = self.shape[0] - 1 - d1
-                elif self.orientation == 4:
-                    d2 = self.shape[1] - 1 - d2
-                else:
-                    raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+                d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
 
         if (self.offset1 is None) or (self.offset2 is None):
             delta1 = delta2 = 0.

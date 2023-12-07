@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2023"
+__date__ = "07/12/2023"
 
 import os
 import shutil
@@ -45,6 +45,7 @@ logger = logging.getLogger(__name__)
 from .. import detectors
 from ..detectors import detector_factory, ALL_DETECTORS
 from .. import io
+from .. import utils
 from .utilstest import UtilsTest
 
 
@@ -433,6 +434,24 @@ class TestOrientation(unittest.TestCase):
         r1, r2, _ = self.orient4.calc_cartesian_positions(center=False)
         self.assertTrue(numpy.allclose(p1, numpy.flipud(r1)), "orient 4vs1 dim1,y corner")
         self.assertTrue(numpy.allclose(p2, numpy.flipud(r2)), "orient 4vs1 dim2,x corner")
+
+    def test_corners2(self):
+        """similar to what is made in geometry ...."""
+
+        shape = self.orient1.shape
+        d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
+        d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
+        for orient in (self.orient1, self.orient2, self.orient3, self.orient4):
+            for use_cython in (True, False):
+                p1, p2, p3 = orient.calc_cartesian_positions(d1, d2, center=False, use_cython=use_cython)
+                p1/=orient.pixel1
+                p2/=orient.pixel2
+                self.assertEqual(p3, None, f"P3 is None for {orient} with use_cython={use_cython}")
+                self.assertEqual(p1.min(), 0, f"P1_min is 0 for {orient} with use_cython={use_cython}")
+                self.assertEqual(p1.max(), shape[0], f"P1_max is shape for {orient} with use_cython={use_cython}")
+                self.assertEqual(p2.min(), 0, f"P2_min is 0 for {orient} with use_cython={use_cython}")
+                self.assertEqual(p2.max(), shape[1], f"P2_max is shape for {orient} with use_cython={use_cython}")
+
 
     def test_points(self):
         npt = 1000

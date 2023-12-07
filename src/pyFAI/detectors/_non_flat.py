@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "07/12/2023"
 __status__ = "production"
 
 
@@ -178,10 +178,12 @@ class CylindricalDetector(Detector):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if (d1 is None) or d2 is None:
+        if (d1 is None) or (d2 is None):
             r1, r2 = self._calc_pixel_index_from_orientation(False)
             d1 = mathutil.expand2d(r1, self.shape[1], False)
             d2 = mathutil.expand2d(r2, self.shape[0], True)
+        else:
+            d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
         corners = self.get_pixel_corners()
         if center:
             # avoid += It modifies in place and segfaults
