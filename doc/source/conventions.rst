@@ -35,17 +35,17 @@ Detector orientation
 --------------------
 
 Since 2023.12, it is possible to take into account the detector orientation in pyFAI.
-There is a norm in photography for storing this kind of information in an EXIF tag with the following values::
+There is a norme in photography for storing this kind of information in an EXIF tag as an integer with a value from 1 to 8::
 
-    1        2       3      4         5            6           7          8
-
-  888888  888888      88  88      8888888888  88                  88  8888888888
-  88          88      88  88      88  88      88  88          88  88      88  88
-  8888      8888    8888  8888    88          8888888888  8888888888          88
-  88          88      88  88
-  88          88  888888  888888
-
-In photography the observer is behind the camera, thus the image's first pixel of the image (origin) is on the top-left.
+    1        2       3       4         5            6           7          8
+ o              o                 o                                              o
+  888888  888888      88   88      8888888888  88                  88  8888888888
+  88          88      88   88      88  88      88  88          88  88      88  88
+  8888      8888    8888   8888    88          8888888888  8888888888          88
+  88          88      88   88                 o                      o
+  88          88  888888   888888
+                        o o
+In photography the observer is behind the camera, thus the image's first pixel of the image (origin, noted (o)) is by default on the top-left.
 This differes in two point with pyFAI's definition:
 
  * pyFAI considers the frame seen from the sample, so in front of the camera, this change of point of view is equivalent to a flip-right-left of the image
@@ -76,7 +76,8 @@ Conventions from the detector manufacturer
 ..........................................
 
 Different detector manufacturer follow different convention, in addition to which acquisition software allow to save the image with some transformation applied.
-Here are some information collected for the manufacture::
+Here are some information collected for the manufacture:
+
  * Dectris: orientation 2: TopRight
  * ... to be completed.
 
