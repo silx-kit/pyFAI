@@ -130,9 +130,9 @@ class Eiger(_Dectris):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                r1, r2 = self._calc_pixel_index_from_orientation(False)
-                d1 = expand2d(r1, self.shape[1], False)
-                d2 = expand2d(r2, self.shape[0], True)
+                r1, r2 = self._calc_pixel_index_from_orientation(center)
+                d1 = expand2d(r1, self.shape[1]+(0 if center else 1), False)
+                d2 = expand2d(r2, self.shape[0]+(0 if center else 1), True)
             else:
                 d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
 
@@ -525,9 +525,10 @@ class Pilatus(_Dectris):
         """
         if self.shape:
             if ((d1 is None) or (d2 is None)):
-                r1, r2 = self._calc_pixel_index_from_orientation(False)
-                d1 = expand2d(r1, self.shape[1], False)
-                d2 = expand2d(r2, self.shape[0], True)
+                r1, r2 = self._calc_pixel_index_from_orientation(center)
+                delta = 0 if center else 1
+                d1 = expand2d(r1, self.shape[1] + delta, False)
+                d2 = expand2d(r2, self.shape[0] + delta, True)
             else:
                 d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
 

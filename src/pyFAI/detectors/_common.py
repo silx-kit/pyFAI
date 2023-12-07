@@ -572,14 +572,14 @@ class Detector(metaclass=DetectorMeta):
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
 
-    def _calc_pixel_index_from_orientation(self, plus_one=False): #TODO refactor `plus_one` to not `center`
+    def _calc_pixel_index_from_orientation(self, center=True):
         """Calculate the pixel index when considering the different orientations"""
-        if plus_one: # used with corners
-            m1 = self.shape[0] + 1
-            m2 = self.shape[1] + 1
-        else: #used with centers
+        if center:
             m1 = self.shape[0]
             m2 = self.shape[1]
+        else: #corner
+            m1 = self.shape[0] + 1
+            m2 = self.shape[1] + 1
 
         if self.orientation in (0,3):
             r1 = numpy.arange(m1, dtype="float32")
@@ -645,14 +645,10 @@ class Detector(metaclass=DetectorMeta):
         print("in calc_cartesian_positions")
         if self.shape:
             if (d1 is None) or (d2 is None):
-                if center:
-                    r1, r2 = self._calc_pixel_index_from_orientation(False)
-                    d1 = expand2d(r1, self.shape[1], False)
-                    d2 = expand2d(r2, self.shape[0], True)
-                else:
-                    r1, r2 = self._calc_pixel_index_from_orientation(True)
-                    d1 = expand2d(r1, self.shape[1]+1.0, False)
-                    d2 = expand2d(r2, self.shape[0]+1.0, True)
+                r1, r2 = self._calc_pixel_index_from_orientation(center)
+                delta = 0 if center else 1
+                d1 = expand2d(r1, self.shape[1] + delta, False)
+                d2 = expand2d(r2, self.shape[0] + delta, True)
             else:
                 d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
         elif "ndim" in dir(d1):
@@ -761,7 +757,7 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-                    r1, r2 = self._calc_pixel_index_from_orientation(True)
+                    r1, r2 = self._calc_pixel_index_from_orientation(False)
                     # like numpy.ogrid
                     d1 = expand2d(r1, self.shape[1] + 1, False)
                     d2 = expand2d(r2, self.shape[0] + 1, True)

@@ -558,10 +558,6 @@ class TestOrientation(unittest.TestCase):
         cls.ai2 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":2}, "wavelength":1e-10})
         cls.ai3 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":3}, "wavelength":1e-10})
         cls.ai4 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":4}, "wavelength":1e-10})
-        print(cls.ai1)
-        print(cls.ai2)
-        print(cls.ai3)
-        print(cls.ai4)
     @classmethod
     def tearDownClass(cls)->None:
         super(TestOrientation, cls).tearDownClass()
@@ -635,6 +631,84 @@ class TestOrientation(unittest.TestCase):
         self.assertTrue(numpy.allclose(tth2, tth4[-1::-1,-1::-1]), "orientation 2,4 inversion match tth")
         self.assertTrue(numpy.allclose(chi2+1, chi4[-1::-1,-1::-1]), "orientation 2,4 inversion match chi")
 
+class TestOrientation2(unittest.TestCase):
+    """Simple tests to validate the orientation of the detector"""
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestOrientation2, cls).setUpClass()
+        p = detector_factory("Pilatus100k")
+        c = p.get_pixel_corners()
+        d1=c[..., 1].max()
+        d2=c[..., 2].max()
+        cls.ai1 = geometry.Geometry.sload({"poni1":3*d1/4,"poni2":3*d2/4,"wavelength":1e-10,
+                                           "detector":"pilatus100k", "detector_config":{"orientation":1}})
+        cls.ai2 = geometry.Geometry.sload({"poni1":3*d1/4,"poni2":d2/4,"wavelength":1e-10,
+                                           "detector":"pilatus100k", "detector_config":{"orientation":2}})
+        cls.ai3 = geometry.Geometry.sload({"poni1":d1/4,"poni2":d2/4,"wavelength":1e-10,
+                                           "detector":"pilatus100k", "detector_config":{"orientation":3}})
+        cls.ai4 = geometry.Geometry.sload({"poni1":d1/4,"poni2":3*d2/4,"wavelength":1e-10,
+                                           "detector":"pilatus100k", "detector_config":{"orientation":4}})
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestOrientation2, cls).tearDownClass()
+        cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
+
+    def test_center_radius_center(self):
+        r1 = self.ai1.array_from_unit(unit="r_m", typ="center")
+        r2 = self.ai2.array_from_unit(unit="r_m", typ="center")
+        r3 = self.ai3.array_from_unit(unit="r_m", typ="center")
+        r4 = self.ai4.array_from_unit(unit="r_m", typ="center")
+        self.assertTrue(numpy.allclose(r1, r2, atol=1e-8))
+        self.assertTrue(numpy.allclose(r1, r3, atol=1e-8))
+        self.assertTrue(numpy.allclose(r1, r4, atol=1e-8))
+        self.assertTrue(numpy.allclose(r2, r3, atol=1e-8))
+        self.assertTrue(numpy.allclose(r2, r4, atol=1e-8))
+        self.assertTrue(numpy.allclose(r3, r4, atol=1e-8))
+
+    def test_center_chi_center(self):
+        r1 = self.ai1.array_from_unit(unit="chi_rad", typ="center")/numpy.pi
+        r2 = self.ai2.array_from_unit(unit="chi_rad", typ="center")/numpy.pi
+        r3 = self.ai3.array_from_unit(unit="chi_rad", typ="center")/numpy.pi
+        r4 = self.ai4.array_from_unit(unit="chi_rad", typ="center")/numpy.pi
+        self.assertTrue(numpy.allclose(r1[:,200:], r2[:,200:], atol=1e-8))
+        self.assertTrue(numpy.allclose(r1[:,200:], r3[:,200:], atol=1e-8))
+        self.assertTrue(numpy.allclose(r1[:,200:], r4[:,200:], atol=1e-8))
+        self.assertTrue(numpy.allclose(r2[:,200:], r3[:,200:], atol=1e-8))
+        self.assertTrue(numpy.allclose(r2[:,200:], r4[:,200:], atol=1e-8))
+        self.assertTrue(numpy.allclose(r3[:,200:], r4[:,200:], atol=1e-8))
+
+    def test_center_tth_center(self):
+        r1 = self.ai1.array_from_unit(unit="2th_deg", typ="corner")
+        r2 = self.ai2.array_from_unit(unit="2th_deg", typ="corner")
+        r3 = self.ai3.array_from_unit(unit="2th_deg", typ="corner")
+        r4 = self.ai4.array_from_unit(unit="2th_deg", typ="corner")
+        tth1 = r1[...,0].mean(axis=-1)
+        chi1 = r1[...,1].mean(axis=-1)
+        tth2 = r2[...,0].mean(axis=-1)
+        chi2 = r2[...,1].mean(axis=-1)
+        tth3 = r3[...,0].mean(axis=-1)
+        chi3 = r3[...,1].mean(axis=-1)
+        tth4 = r4[...,0].mean(axis=-1)
+        chi4 = r4[...,1].mean(axis=-1)
+
+        res = []
+        tths = [tth1, tth2, tth3, tth4]
+        thres = 0.1
+        for idx, a1 in enumerate(tths):
+            for a2 in tths[:idx]:
+                res.append(numpy.allclose(a1, a2,atol=thres))
+        print(res)
+        self.assertTrue(numpy.all(res), "2th is OK")
+
+        res = []
+        tths = [chi1, chi2, chi3, chi4]
+        thres = 0.1
+        for idx, a1 in enumerate(tths):
+            for a2 in tths[:idx]:
+                res.append(numpy.allclose(a1[:,200:], a2[:,200:],atol=thres))
+        print(res)
+        self.assertTrue(numpy.all(res), "2th is OK")
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -647,6 +721,7 @@ def suite():
     testsuite.addTest(loader(TestGeometry))
     testsuite.addTest(loader(TestFastPath))
     testsuite.addTest(loader(TestOrientation))
+    testsuite.addTest(loader(TestOrientation2))
     return testsuite
 
 
