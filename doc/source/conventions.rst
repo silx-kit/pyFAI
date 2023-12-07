@@ -46,10 +46,11 @@ There is a norm in photography for storing this kind of information in an EXIF t
   88          88  888888  888888
 
 In photography the observer is behind the camera, thus the image's first pixel of the image (origin) is on the top-left.
-This differes in two point with pyFAI's definition::
-* pyFAI considers the frame seen from the sample, so in front of the camera, this change of point of view is equivalent to a flip-right-left of the image
-* pyFAI considers the origin is a the bottom (left) of the image, so this corresponds to a flip-up-down of the image
-* Those two image flip result in a default orientation identified as *BottomRight (3)* by default on all detectors.
+This differes in two point with pyFAI's definition:
+
+ * pyFAI considers the frame seen from the sample, so in front of the camera, this change of point of view is equivalent to a flip-right-left of the image
+ * pyFAI considers the origin is a the bottom (left) of the image, so this corresponds to a flip-up-down of the image
+ * Those two image flip result in a default orientation identified as *BottomRight (3)* by default on all detectors.
 
 The *orientation* is a property of the *detector*, it is **intentionnally unmuttable** to prevent errors.
 For now, only the geometries 1 to 4 are supported, the rotated geometries can easily be accomodated using the *rot3* parameter during the calibration of the experimental setup
