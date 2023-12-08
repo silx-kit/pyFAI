@@ -642,7 +642,6 @@ class Detector(metaclass=DetectorMeta):
 
         pos_z is None for flat detectors
         """
-        print("in calc_cartesian_positions")
         if self.shape:
             if (d1 is None) or (d2 is None):
                 r1, r2 = self._calc_pixel_index_from_orientation(center)
