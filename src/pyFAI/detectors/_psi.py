@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "07/12/2023"
 __status__ = "production"
 
 import numpy
@@ -188,6 +188,7 @@ class Jungfrau(Detector):
             p1 = numpy.outer(d1, numpy.ones(self.shape[1]))
             p2 = numpy.outer(numpy.ones(self.shape[0]), d2)
         else:
+            d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
             if center:
                 # Not +=: do not mangle in place arrays
                 d1 = d1 + 0.5

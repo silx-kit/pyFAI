@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "07/12/2023"
 __status__ = "production"
 
 import functools
@@ -213,6 +213,7 @@ class ImXPadS10(Detector):
             p1 = numpy.outer(d1, numpy.ones(self.shape[1]))
             p2 = numpy.outer(numpy.ones(self.shape[0]), d2)
         else:
+            d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
             if center:
                 # Not +=: do not mangle in place arrays
                 d1 = d1 + 0.5
@@ -389,9 +390,10 @@ class Xpad_flat(ImXPadS10):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                r1, r2 = self._calc_pixel_index_from_orientation(False)
-                d1 = mathutil.expand2d(r1, self.shape[1], False)
-                d2 = mathutil.expand2d(r2, self.shape[0], True)
+                r1, r2 = self._calc_pixel_index_from_orientation(center)
+                delta = 0 if center else 1
+                d1 = mathutil.expand2d(r1, self.shape[1] + delta, False)
+                d2 = mathutil.expand2d(r2, self.shape[0] + delta, True)
         corners = self.get_pixel_corners()
         if center:
             # note += would make an increment in place which is bad (segfault !)
@@ -617,9 +619,10 @@ class Cirpad(ImXPadS10):
     # TODO !!!
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         if (d1 is None) or d2 is None:
-            r1, r2 = self._calc_pixel_index_from_orientation(False)
-            d1 = mathutil.expand2d(r1, self.MAX_SHAPE[1], False)
-            d2 = mathutil.expand2d(r2, self.MAX_SHAPE[0], True)
+            r1, r2 = self._calc_pixel_index_from_orientation(center)
+            delta = 0 if center else 1
+            d1 = mathutil.expand2d(r1, self.MAX_SHAPE[1] + delta, False)
+            d2 = mathutil.expand2d(r2, self.MAX_SHAPE[0] + delta, True)
         corners = self.get_pixel_corners()
         if center:
             # avoid += It modifies in place and segfaults

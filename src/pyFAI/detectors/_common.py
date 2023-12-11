@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2023"
+__date__ = "07/12/2023"
 __status__ = "stable"
 
 import logging
@@ -572,14 +572,14 @@ class Detector(metaclass=DetectorMeta):
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
 
-    def _calc_pixel_index_from_orientation(self, plus_one=False):
+    def _calc_pixel_index_from_orientation(self, center=True):
         """Calculate the pixel index when considering the different orientations"""
-        if plus_one: # used with corners
-            m1 = self.shape[0] + 1
-            m2 = self.shape[1] + 1
-        else: #used with centers
+        if center:
             m1 = self.shape[0]
             m2 = self.shape[1]
+        else: #corner
+            m1 = self.shape[0] + 1
+            m2 = self.shape[1] + 1
 
         if self.orientation in (0,3):
             r1 = numpy.arange(m1, dtype="float32")
@@ -596,6 +596,30 @@ class Detector(metaclass=DetectorMeta):
         else:
             raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
         return r1, r2
+
+    def _reorder_indexes_from_orientation(self, d1, d2, center=True):
+        """Helper function to recalculate the index of pixels considering orientation
+        # Not +=: do not mangle in place arrays"""
+        if self.orientation in (0,3):
+            return d1, d2
+        if center:
+            shape1 = self.shape[0] - 1
+            shape2 = self.shape[1] - 1
+        else: #corner
+            shape1 = self.shape[0]
+            shape2 = self.shape[1]
+
+        if self.orientation==1:
+            d1 = shape1 - d1
+            d2 = shape2 - d2
+        elif self.orientation==2:
+            d1 = shape1 - d1
+        elif self.orientation == 4:
+            d2 = shape2 - d2
+        else:
+            raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+        return d1, d2
+
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -620,28 +644,24 @@ class Detector(metaclass=DetectorMeta):
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
-                r1, r2 = self._calc_pixel_index_from_orientation(False)
-                d1 = expand2d(r1, self.shape[1], False)
-                d2 = expand2d(r2, self.shape[0], True)
+                r1, r2 = self._calc_pixel_index_from_orientation(center)
+                delta = 0 if center else 1
+                d1 = expand2d(r1, self.shape[1] + delta, False)
+                d2 = expand2d(r2, self.shape[0] + delta, True)
             else:
-                if self.orientation in (0,3):
-                    pass
-                elif self.orientation==1:
-                    d1 = self.shape[0] - 1 - d1
-                    d2 = self.shape[1] - 1 - d2
-                elif self.orientation==2:
-                    d1 = self.shape[0] - 1 - d1
-                elif self.orientation == 4:
-                    d2 = self.shape[1] - 1 - d2
-                else:
-                    raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
-
+                d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
         elif "ndim" in dir(d1):
             if d1.ndim == 2:
-                self.shape = d1.shape
+                if center:
+                    self.shape = d1.shape
+                else: #corner
+                    self.shape = tuple(i-1 for i in d1.shape)
         elif "ndim" in dir(d2):
             if d2.ndim == 2:
-                self.shape = d2.shape
+                if center:
+                    self.shape = d2.shape
+                else: #corner
+                    self.shape = tuple(i-1 for i in d2.shape)
 
         if center:
             # avoid += It modifies in place then segfaults
@@ -736,7 +756,7 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-                    r1, r2 = self._calc_pixel_index_from_orientation(True)
+                    r1, r2 = self._calc_pixel_index_from_orientation(False)
                     # like numpy.ogrid
                     d1 = expand2d(r1, self.shape[1] + 1, False)
                     d2 = expand2d(r2, self.shape[0] + 1, True)
