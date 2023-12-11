@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2023"
+__date__ = "11/12/2023"
 
 import unittest
 import random
@@ -549,6 +549,7 @@ class TestBug474(unittest.TestCase):
         delta = abs(rp - rc).max()
         self.assertLess(delta, 1e-5, "error on position is %s" % delta)
 
+
 class TestOrientation(unittest.TestCase):
     """Simple tests to validate the orientation of the detector"""
     @classmethod
@@ -652,6 +653,20 @@ class TestOrientation2(unittest.TestCase):
     def tearDownClass(cls)->None:
         super(TestOrientation2, cls).tearDownClass()
         cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
+
+    def test_positions(self):
+        for cc in (True, False):
+            for cm in (True, False):
+                for ai in (self.ai1, self.ai2, self.ai3, self.ai4):
+                    zc, yc, xc = ai.calc_pos_zyx(corners=False, use_cython=cc)
+                    zco, yco, xco = ai.calc_pos_zyx(corners=True, use_cython=cm)
+                    zm = zco.mean(axis=-1)
+                    ym = yco.mean(axis=-1)
+                    xm = xco.mean(axis=-1)
+                    self.assertTrue(numpy.allclose(zc, zm, atol=1e-8), f"check Z on {ai.detector.orientation.name}, cython: center={cc}, corner={cm}")
+                    self.assertTrue(numpy.allclose(yc, ym, atol=1e-8), f"check Y on {ai.detector.orientation.name}, cython: center={cc}, corner={cm}")
+                    self.assertTrue(numpy.allclose(xc, xm, atol=1e-8), f"check X on {ai.detector.orientation.name}, cython: center={cc}, corner={cm}")
+
 
     def test_center_radius_center(self):
         r1 = self.ai1.array_from_unit(unit="r_m", typ="center")
