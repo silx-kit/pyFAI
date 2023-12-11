@@ -663,6 +663,7 @@ class TestOrientation2(unittest.TestCase):
                     zm = zco.mean(axis=-1)
                     ym = yco.mean(axis=-1)
                     xm = xco.mean(axis=-1)
+
                     self.assertTrue(numpy.allclose(zc, zm, atol=1e-8), f"check Z on {ai.detector.orientation.name}, cython: center={cc}, corner={cm}")
                     self.assertTrue(numpy.allclose(yc, ym, atol=1e-8), f"check Y on {ai.detector.orientation.name}, cython: center={cc}, corner={cm}")
                     self.assertTrue(numpy.allclose(xc, xm, atol=1e-8), f"check X on {ai.detector.orientation.name}, cython: center={cc}, corner={cm}")
