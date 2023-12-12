@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2023"
+__date__ = "12/12/2023"
 __status__ = "stable"
 
 import logging
@@ -256,13 +256,13 @@ class Detector(metaclass=DetectorMeta):
         """
         txt = f"Detector {self.name}"
         if self.splineFile:
-            txt += "\t Spline= {self.splineFile}"
+            txt += f"\t Spline= {self.splineFile}"
         if (self._pixel1 is None) or (self._pixel2 is None):
             return "Undefined detector"
         else:
-            txt += "\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+            txt += f"\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
         if self.orientation:
-            txt += "\t {self.orientation.name} ({self.orientation.value})"
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
         return txt
 
     def __copy__(self):
@@ -756,11 +756,11 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-                    r1, r2 = self._calc_pixel_index_from_orientation(False)
+                    # r1, r2 = self._calc_pixel_index_from_orientation(False)
                     # like numpy.ogrid
-                    d1 = expand2d(r1, self.shape[1] + 1, False)
-                    d2 = expand2d(r2, self.shape[0] + 1, True)
-                    p1, p2, p3 = self.calc_cartesian_positions(d1, d2, center=False)
+                    # d1 = expand2d(r1, self.shape[1] + 1, False)
+                    # d2 = expand2d(r2, self.shape[0] + 1, True)
+                    p1, p2, p3 = self.calc_cartesian_positions(center=False)
                     self._pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
                     self._pixel_corners[:,:, 0, 1] = p1[:-1,:-1]
                     self._pixel_corners[:,:, 0, 2] = p2[:-1,:-1]

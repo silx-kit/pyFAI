@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2023"
+__date__ = "12/12/2023"
 
 import os
 import shutil
@@ -460,13 +460,8 @@ class TestOrientation(unittest.TestCase):
             zm = tmp[..., 0]
             ym = tmp[..., 1]
             xm = tmp[..., 2]
-            print(zm)
             self.assertTrue(numpy.all(zm==0), f"Z is OK (detector {orient} is flat)")
-            print(ym)
-            print(yc)
             self.assertTrue(numpy.allclose(ym, yc), f"Y is OK (detector {orient})")
-            print(xc)
-            print(xm)
             self.assertTrue(numpy.allclose(xm, xc), f"X is OK (detector {orient})")
 
 

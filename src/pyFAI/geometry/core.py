@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2023"
+__date__ = "12/12/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -759,7 +759,9 @@ class Geometry(object):
                         if self.detector.IS_CONTIGUOUS:
                             d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
                             d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
-                            p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=True)
+                            p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=use_cython)
+                            #TODO fix test so that this is simpler:
+                            # p1, p2, p3 = self.detector.calc_cartesian_positions(center=False, use_cython=use_cython)
                         else:
                             det_corners = self.detector.get_pixel_corners()
                             p1 = det_corners[..., 1]
