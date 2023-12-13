@@ -353,7 +353,8 @@ class Bench(object):
             else:
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
-            label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method.method[1:4]], platform, device)).replace(" ", "_")
+            # label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method.method[1:4]], platform, device)).replace(" ", "_")
+            label = f'{devicetype}:{platform} / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}' #Edgar
             method = IntegrationMethod.select_method(dim=1, split=method.split_lower,
                                                       algo=method.algo_lower, impl=method.impl_lower,
                                                       target=(opencl["platformid"], opencl["deviceid"]))[0]
@@ -361,7 +362,8 @@ class Bench(object):
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
-            label = function + " " + self.LABELS[method.method[1:4]]
+            # label = function + " " + self.LABELS[method.method[1:4]] 
+            label = f'CPU / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}' #Edgar
             memory_error = (MemoryError, RuntimeError)
         results = OrderedDict()
         first = True
@@ -464,12 +466,14 @@ class Bench(object):
 
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
-            label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method[1:4]], platform, device)).replace(" ", "_")
+            # label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method[1:4]], platform, device)).replace(" ", "_")
+            label = f'{devicetype}:{platform} / 2D: {method.split_lower}_{method.algo_lower}_{method.impl_lower}' #Edgar
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
 
         else:
             print("Working on processor: %s" % self.get_cpu())
-            label = "2D_" + self.LABELS[method[1:4]]
+            # label = "2D_" + self.LABELS[method[1:4]]
+            label = f'CPU / 2D: {method.split_lower}_{method.algo_lower}_{method.impl_lower}' #Edgar
             memory_error = (MemoryError, RuntimeError)
 
         results = OrderedDict()
@@ -481,6 +485,8 @@ class Bench(object):
             bench_test = BenchTest2D(poni, file_name, self.unit, method, self.out_2d)
             bench_test.setup()
             size = bench_test.data.size / 1.0e6
+            if size > self.max_size:
+                continue
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(file_name), size, bench_test.N))
             try:
                 t0 = time.perf_counter()
@@ -493,9 +499,11 @@ class Bench(object):
             if check:
                 module = sys.modules.get(AzimuthalIntegrator.__module__)
                 if module:
-                    if "lut" in method:
+                    if "lut" in method.algo_lower: # Edgar
+                    # if "lut" in method:
                         key = module.EXT_LUT_ENGINE
-                    elif "csr" in method:
+                    elif "csr" in method.algo_lower: # Edgar
+                    # elif "csr" in method:
                         key = module.EXT_CSR_ENGINE
                     else:
                         key = None
@@ -714,7 +722,9 @@ class Bench(object):
 
 
 def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
-                  do_1d=True, do_2d=False, devices="all"):
+                  do_1d=True, do_2d=False, processor=True, devices="all",
+                  split_list=["bbox"], algo_list=["histogram", "CSR"], impl_list=["cython", "opencl"], function="all",
+                  all=False,):
     """Run the integrated benchmark using the most common algorithms (method parameter)
 
     :param number: Measure timimg over number of executions or average over this time
@@ -731,7 +741,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
 
     ocl_devices = []
     if ocl:
-        if devices and isinstance(devices, (tuple, list)) and len(devices[0]) == 2:
+        if devices and isinstance(devices, (tuple, list)) and len(devices) == 2:
             ocl_devices = devices
         else:
             ocl_devices = []
@@ -746,24 +756,93 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                     if "acc" in devices:
                         ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "ACC"]
         print("Devices:", ocl_devices)
-    if do_1d:
-        bench.bench_1d("splitBBox", True, function="integrate1d_legacy")
-        bench.bench_1d("splitBBox", True, function="integrate1d_ng")
-        bench.bench_1d(("bbox", "csc", "cython"), True, function="integrate1d_ng")
-        bench.bench_1d("csr", True, function="integrate1d_legacy")
-        bench.bench_1d("csr", True, function="integrate1d_ng")
-        for device in ocl_devices:
-            print("Working on device: " + str(device))
-#             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
-            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]}, function="integrate1d_legacy")
-            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]}, function="integrate1d_ng")
 
+    # Gather available methods
+    if all:
+        methods_available = IntegrationMethod.select_method(dim=1)
+    else:
+        methods_available = []
+        
+        # Clear list if "all" to avoid redundances
+        if "all" in split_list:
+            split_list = [None]
+        if "all" in algo_list:
+            algo_list = [None]
+        if "all" in impl_list:
+            impl_list = [None]
+
+        for split in split_list:
+            for algo in algo_list:
+                for impl in impl_list:
+                    for method in IntegrationMethod.select_method(dim=1, split=split, algo=algo, impl=impl):
+                        print(method)
+                        if method not in methods_available:
+                            methods_available.append(method)
+
+    # Separate non-opencl from opencl methods
+    methods_non_ocl, methods_ocl = [], []
+    for method in methods_available:
+        if method.impl_lower == 'opencl':
+            if method.target in ocl_devices:
+                methods_ocl.append(method)
+        else:
+            if processor:
+                methods_non_ocl.append(method)
+
+    # Benchmark 1d integration
+    if do_1d:
+        if function == "all":
+            function_list = ["integrate1d_legacy", "integrate1d_ng"]
+        elif function == "ng":
+            function_list = ["integrate1d_ng"]
+        elif function == "legacy":
+            function_list = ["integrate1d_legacy"]
+
+        # Benchmark No OpenCL devices
+        for method in methods_non_ocl:
+            for function in function_list:
+                bench.bench_1d(
+                    method=method,
+                    check=True,
+                    opencl=None,
+                    function=function,
+                )
+
+        # Benchmark OpenCL devices
+        for method in methods_ocl:
+            print("Working on device: " + str(method.target_name))
+            for function in function_list:
+                bench.bench_1d(
+                    method=method,
+                    check=True,
+                    opencl={"platformid": method.target[0], "deviceid": method.target[1]},
+                    function=function,
+                )
+
+    # Benchmark 2d integration (reshaping)
     if do_2d:
-        bench.bench_2d("splitBBox")
-        bench.bench_2d("lut", True)
-        for device in ocl_devices:
-#             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
-            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+
+        # Benchmark No OpenCL devices
+        for method in methods_non_ocl:
+            bench.bench_2d(
+                method=method,
+                check=False,
+                opencl=False,
+            )
+
+        # Benchmark OpenCL devices
+        # CRASHES, NOT WORKING YET
+        for method in methods_ocl:
+            bench.bench_2d(
+                method=method,
+                check=False,
+                opencl={"platformid": method.target[0], "deviceid": method.target[1]},
+            )
+#         bench.bench_2d("splitBBox")
+#         bench.bench_2d("lut", True)
+#         for device in ocl_devices:
+# #             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+#             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
     bench.save()
     bench.print_res()
