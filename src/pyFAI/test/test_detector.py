@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2023"
+__date__ = "12/12/2023"
 
 import os
 import shutil
@@ -451,6 +451,18 @@ class TestOrientation(unittest.TestCase):
                 self.assertEqual(p1.max(), shape[0], f"P1_max is shape for {orient} with use_cython={use_cython}")
                 self.assertEqual(p2.min(), 0, f"P2_min is 0 for {orient} with use_cython={use_cython}")
                 self.assertEqual(p2.max(), shape[1], f"P2_max is shape for {orient} with use_cython={use_cython}")
+
+    def test_corners3(self):
+        """similar to what is made in geometry ...."""
+        for orient in (self.orient1, self.orient2, self.orient3, self.orient4):
+            yc,xc, _ = orient.calc_cartesian_positions(center=1)
+            tmp = orient.get_pixel_corners().mean(axis=-2)
+            zm = tmp[..., 0]
+            ym = tmp[..., 1]
+            xm = tmp[..., 2]
+            self.assertTrue(numpy.all(zm==0), f"Z is OK (detector {orient} is flat)")
+            self.assertTrue(numpy.allclose(ym, yc), f"Y is OK (detector {orient})")
+            self.assertTrue(numpy.allclose(xm, xc), f"X is OK (detector {orient})")
 
 
     def test_points(self):

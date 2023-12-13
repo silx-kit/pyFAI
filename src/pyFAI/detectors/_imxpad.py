@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2023"
+__date__ = "12/12/2023"
 __status__ = "production"
 
 import functools
@@ -103,8 +103,10 @@ class ImXPadS10(Detector):
             self.module_size = module_size
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self.pixel1, self.pixel2)
+        txt = f"Detector {self.name}\t PixelSize= {self.pixel1:.3e}, {self.pixel2:.3e} m"
+        if self.orientation:
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        return txt
 
     def calc_pixels_edges(self):
         """
@@ -117,6 +119,10 @@ class ImXPadS10(Detector):
             pixel_edges2 = numpy.zeros(self.max_shape[1] + 1)
             pixel_edges1[1:] = numpy.cumsum(pixel_size1)
             pixel_edges2[1:] = numpy.cumsum(pixel_size2)
+            if self.orientation in (1,2):
+                pixel_edges1 = pixel_edges1[-1::-1]
+            if self.orientation in (1,4):
+                pixel_edges2 = pixel_edges2[-1::-1]
             self._pixel_edges = pixel_edges1, pixel_edges2
         return self._pixel_edges
 
@@ -206,12 +212,13 @@ class ImXPadS10(Detector):
                 # Take the center of each pixel
                 d1 = 0.5 * (edges1[:-1] + edges1[1:])
                 d2 = 0.5 * (edges2[:-1] + edges2[1:])
+                p1 = numpy.outer(d1, numpy.ones(self.shape[1]))
+                p2 = numpy.outer(numpy.ones(self.shape[0]), d2)
             else:
-                # take the lower corner
-                d1 = edges1[:-1]
-                d2 = edges2[:-1]
-            p1 = numpy.outer(d1, numpy.ones(self.shape[1]))
-            p2 = numpy.outer(numpy.ones(self.shape[0]), d2)
+                d1 = edges1
+                d2 = edges2
+                p1 = numpy.outer(d1, numpy.ones(self.shape[1]+1))
+                p2 = numpy.outer(numpy.ones(self.shape[0]+1), d2)
         else:
             d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
             if center:
