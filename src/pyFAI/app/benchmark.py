@@ -98,7 +98,7 @@ def main():
     parser.add_argument("-r", "--repeat",
                         dest="repeat", default=1, type=int,
                         help="Repeat each measurement x times to take the best")
-    
+
     parser.add_argument("-ps", "--pixelsplit",
                         dest="pixelsplit", default=["bbox"], type=str, nargs="+",
                         help="Benchmark using specific pixel splitting protocols: no, bbox, pseudo, full",)
@@ -108,7 +108,7 @@ def main():
     parser.add_argument("-i", "--implementation",
                         dest="implementation", default=["cython", "opencl"], type=str, nargs="+",
                         help="Benchmark using specific algorithm implementations: python, cython, opencl, all")
-    
+
     parser.add_argument("-f", "--function",
                         dest="function", default="all", type=str,
                         help="Benchmark legacy (legacy), engine function (ng), or both (all)")
@@ -128,7 +128,7 @@ def main():
         devices.append("gpu")
     if options.opencl_acc:
         devices.append("acc")
-    
+
     pyFAI.benchmark.run(number=options.number,
                         repeat=options.repeat,
                         memprof=options.memprof,

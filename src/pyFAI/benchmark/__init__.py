@@ -362,7 +362,7 @@ class Bench(object):
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
-            # label = function + " " + self.LABELS[method.method[1:4]] 
+            # label = function + " " + self.LABELS[method.method[1:4]]
             label = f'CPU / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}' #Edgar
             memory_error = (MemoryError, RuntimeError)
         results = OrderedDict()
@@ -762,7 +762,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
         methods_available = IntegrationMethod.select_method(dim=1)
     else:
         methods_available = []
-        
+
         # Clear list if "all" to avoid redundances
         if "all" in split_list:
             split_list = [None]
