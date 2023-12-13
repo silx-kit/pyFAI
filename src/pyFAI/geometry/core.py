@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2023"
+__date__ = "13/12/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -617,11 +617,15 @@ class Geometry(object):
             p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self._poni2, do_parallax=True)
             chi = _geometry.calc_chi(L=self._dist,
                                      rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
-                                     pos1=p1, pos2=p2, pos3=p3)
+                                     pos1=p1, pos2=p2, pos3=p3,
+                                     orientation=self.detector.orientation,
+                                     chi_discontinuity_at_pi=self.chiDiscAtPi)
             chi.shape = d1.shape
         else:
             _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False, use_cython=True, do_parallax=True)
             chi = numpy.arctan2(t1, t2)
+            if not self.chiDiscAtPi:
+                numpy.mod(chi, (2.0 * numpy.pi), out=chi)
         return chi
 
     def chi_corner(self, d1, d2):

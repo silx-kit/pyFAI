@@ -555,10 +555,18 @@ class TestOrientation(unittest.TestCase):
     @classmethod
     def setUpClass(cls)->None:
         super(TestOrientation, cls).setUpClass()
-        cls.ai1 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":1}, "wavelength":1e-10})
-        cls.ai2 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":2}, "wavelength":1e-10})
-        cls.ai3 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":3}, "wavelength":1e-10})
-        cls.ai4 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":4}, "wavelength":1e-10})
+        cls.ai1 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":1},
+                                           #"poni1":0.1,"poni2":0.1,
+                                           "wavelength":1e-10})
+        cls.ai2 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":2},
+                                           #"poni1":0.1,"poni2":0.1,
+                                           "wavelength":1e-10})
+        cls.ai3 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":3},
+                                           #"poni1":0.1,"poni2":0.1,
+                                           "wavelength":1e-10})
+        cls.ai4 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":4},
+                                           #"poni1":0.1,"poni2":0.1,
+                                           "wavelength":1e-10})
     @classmethod
     def tearDownClass(cls)->None:
         super(TestOrientation, cls).tearDownClass()
@@ -631,6 +639,31 @@ class TestOrientation(unittest.TestCase):
         self.assertTrue(numpy.allclose(chi1+1, chi3[-1::-1,-1::-1], atol=0.0001), "orientation 1,3 inversion match chi")
         self.assertTrue(numpy.allclose(tth2, tth4[-1::-1,-1::-1]), "orientation 2,4 inversion match tth")
         self.assertTrue(numpy.allclose(chi2+1, chi4[-1::-1,-1::-1]), "orientation 2,4 inversion match chi")
+
+    def test_chi(self):
+        orient = {}
+        for i in range(1,5):
+            ai = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":i},
+                                           "poni1":0.01, "poni2":0.01,
+                                           "wavelength":1e-10})
+            chi_c = ai.center_array(unit="chi_rad")/numpy.pi
+            chi_m = ai.corner_array(unit="chi_rad")[...,0].mean(axis=-1)/numpy.pi
+
+            orient[i] = {"ai": ai, "chi_c": chi_c, "chi_m": chi_m}
+
+        for o, orien in orient.items():
+            self.assertLess(numpy.median(abs(orien["chi_m"]-orien["chi_c"])), 1e-7, f"Orientation {o} matches")
+            ai = orien["ai"]
+            self.assertLess(numpy.median(ai.delta_array(unit="chi_rad"))/numpy.pi, 1e-3, f"Orientation {o} delta chi small #0")
+            self.assertLess(numpy.median(ai.deltaChi())/numpy.pi, 1e-3, f"Orientation {o} delta chi small #1")
+            ai.reset()
+            self.assertLess(numpy.median(ai.delta_array(unit="chi_rad"))/numpy.pi, 1e-3, f"Orientation {o} delta chi small #2")
+            ai.reset()
+            self.assertLess(numpy.median(ai.deltaChi())/numpy.pi, 1e-3, f"Orientation {o} delta chi small #3")
+            ai.reset()
+            chiArray = ai.chiArray()/numpy.pi
+            chi_center = orien["chi_c"]
+            self.assertTrue(numpy.allclose(chiArray, chi_center, atol=1e-5), f"Orientation {o} chiArray == center_array(chi)")
 
 class TestOrientation2(unittest.TestCase):
     """Simple tests to validate the orientation of the detector"""
