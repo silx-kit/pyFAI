@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2023"
+__date__ = "13/12/2023"
 
 import unittest
 import random
@@ -713,7 +713,7 @@ class TestOrientation2(unittest.TestCase):
         for idx, a1 in enumerate(tths):
             for a2 in tths[:idx]:
                 res.append(numpy.allclose(a1, a2,atol=thres))
-        print(res)
+        # print(res)
         self.assertTrue(numpy.all(res), "2th is OK")
 
         res = []
@@ -722,7 +722,7 @@ class TestOrientation2(unittest.TestCase):
         for idx, a1 in enumerate(tths):
             for a2 in tths[:idx]:
                 res.append(numpy.allclose(a1[:,200:], a2[:,200:],atol=thres))
-        print(res)
+        # print(res)
         self.assertTrue(numpy.all(res), "2th is OK")
 
 
