@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/09/2023"
+__date__ = "14/12/2023"
 
 import os
 import logging
@@ -37,6 +37,7 @@ import pyFAI.detectors
 from ..widgets.model.AllDetectorItemModel import AllDetectorItemModel
 from ..widgets.model.DetectorFilterProxyModel import DetectorFilterProxyModel
 from ..model.DataModel import DataModel
+from ..model.DetectorModel import DetectorOrientationModel
 from ..utils import validators
 from ..ApplicationContext import ApplicationContext
 from ..utils import FilterBuilder
@@ -121,11 +122,13 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight = DataModel()
         self.__pixelWidth = DataModel()
         self.__pixelHeight = DataModel()
+        self.__detectorOrientation = DetectorOrientationModel()
 
         self._detectorWidth.setModel(self.__detectorWidth)
         self._detectorHeight.setModel(self.__detectorHeight)
         self._pixelWidth.setModel(self.__pixelWidth)
         self._pixelHeight.setModel(self.__pixelHeight)
+        self._detectorOrientation.setModel(self.__detectorOrientation)
 
         self._customResult.setVisible(False)
         self._customError.setVisible(False)
@@ -133,6 +136,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight.changed.connect(self.__customDetectorChanged)
         self.__pixelWidth.changed.connect(self.__customDetectorChanged)
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
+        # self.__detectorOrientation.changed.connect(self.__customDetectorChanged)
         self.__customDetector = None
 
         # By default select all the manufacturers
@@ -405,6 +409,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight.changed.disconnect(self.__customDetectorChanged)
         self.__pixelWidth.changed.disconnect(self.__customDetectorChanged)
         self.__pixelHeight.changed.disconnect(self.__customDetectorChanged)
+        self.__detectorOrientation.changed.disconnect(self.__customDetectorChanged)
 
         if detector.max_shape is None:
             self.__detectorWidth.setValue(None)
@@ -420,12 +425,17 @@ class DetectorSelectorDrop(qt.QWidget):
             self.__pixelHeight.setValue(detector.pixel2 * 1e6)
         else:
             self.__pixelHeight.setValue(None)
+        if detector.orientation is None:
+            self.__detectorOrientation.setValue(None)
+        else:
+            self.__detectorOrientation.setValue(detector.orientation)
 
         self.__customDetector = detector
         self.__detectorWidth.changed.connect(self.__customDetectorChanged)
         self.__detectorHeight.changed.connect(self.__customDetectorChanged)
         self.__pixelWidth.changed.connect(self.__customDetectorChanged)
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
+        self.__detectorOrientation.changed.connect(self.__customDetectorChanged)
         # Update the GUI
         self.__setCustomField("MANUAL")
         self._customList.setFocus(qt.Qt.NoFocusReason)
