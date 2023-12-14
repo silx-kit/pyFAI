@@ -764,7 +764,7 @@ class Geometry(object):
                             d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
                             d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
                             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=use_cython)
-                            #TODO fix test so that this is simpler:
+                            #TODO fix test so that this is simpler: issue #2014
                             # p1, p2, p3 = self.detector.calc_cartesian_positions(center=False, use_cython=use_cython)
                         else:
                             det_corners = self.detector.get_pixel_corners()
