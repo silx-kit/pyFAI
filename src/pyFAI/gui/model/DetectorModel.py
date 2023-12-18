@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/12/2023"
+__date__ = "18/12/2023"
 
 from .AbstractModel import AbstractModel
 from silx.gui import qt
@@ -46,19 +46,3 @@ class DetectorModel(AbstractModel):
 
     def detector(self):
         return self.__detector
-
-
-class DetectorOrientationModel(qt.QAbstractItemModel):
-    def __init__(self, parent=None, orientations=None):
-        super(DetectorOrientationModel, self).__init__(parent)
-        if orientations:
-            self._orientation_list = list(orientations)
-        else:
-            self._orientation_list = list()
-
-    def columnCount(self):
-        return 1
-
-    def rowCount(self, *arg, **kwarg):
-        print(f"DetectorOrientationModel: arg={arg}, kwarg={kwarg}")
-        return len(self._orientation_list)
