@@ -141,27 +141,23 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__selectAllRegistreredDetector()
 
     def _initOrientation(self):
-        cnt = 0
         for item in pyFAI.detectors.orientation.Orientation:
             if item.available:
-                self._detectorOrientation.addItem(f"{item.value}: {item.name} ")
-                if item == 3:
-                    default = cnt
-                cnt+=1
+                self._detectorOrientation.addItem(f"{item.value}: {item.name} ",  userData=item)
 
-        self._detectorOrientation.currentTextChanged.connect(self._orientationChanged)
-        self._detectorOrientation.currentTextChanged.connect(self.__customDetectorChanged)
-        self._detectorOrientation.setCurrentIndex(default)
+        self._detectorOrientation.currentIndexChanged.connect(self.__orientationChanged)
+        self._detectorOrientation.currentIndexChanged.connect(self.__customDetectorChanged)
+        default = pyFAI.detectors.orientation.Orientation(3)
+        self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(default))
 
-    def getOrientation(self, txt=None):
-        if txt is None:
-            txt =  self._detectorOrientation.currentText()
-        num = txt.split(":")[0].strip()
-        orientation = pyFAI.detectors.orientation.Orientation(int(num))
-        return orientation
+    def getOrientation(self, idx=None):
+        if idx is None:
+            return self._detectorOrientation.currentData()
+        else:
+            return self._detectorOrientation.itemData(idx)
 
-    def _orientationChanged(self, txtOrientation):
-        orientation = self.getOrientation(txtOrientation)
+    def __orientationChanged(self, idx):
+        orientation = self._detectorOrientation.itemData(idx)
         self._detectorOrientationLabel.setText(orientation.__doc__)
 
     def __selectAndAccept(self):
