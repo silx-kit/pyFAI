@@ -40,7 +40,7 @@ except ImportError:
 
 # -- General configuration -----------------------------------------------------
 # General information about the project.
-from pyFAI._version import strictversion, __date__ as pyfai_date
+from pyFAI import strictversion, date as pyfai_date
 
 year = pyfai_date.split("/")[-1]
 project = 'pyFAI'
