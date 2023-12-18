@@ -28,7 +28,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "10/10/2023"
+__date__ = "18/12/2023"
 
 import sys
 import os
@@ -36,9 +36,8 @@ import logging
 if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
     logging.basicConfig()
 
-from ._version import __date__ as date
-from ._version import version, version_info, hexversion, strictversion
-from ._version import citation, calc_hexversion
+from .version import __date__ as date
+from .version import version, version_info, hexversion, strictversion, citation, calc_hexversion
 
 if sys.version_info < (3, 7):
     logger = logging.getLogger(__name__)

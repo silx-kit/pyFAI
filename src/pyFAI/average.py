@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2003-2018 European Synchrotron Radiation Facility, Grenoble,
+#    Copyright (C) 2003-2023 European Synchrotron Radiation Facility, Grenoble,
 #             France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2022"
+__date__ = "18/12/2023"
 __status__ = "production"
 
 import logging
@@ -45,7 +45,7 @@ from .utils import stringutil
 from .utils import header_utils
 from .io.image import read_data
 
-from ._version import calc_hexversion
+from .version import calc_hexversion
 if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4, 0, "dev", 5)):
     # Short cut fabio.factory do not exists on older versions
     fabio.factory = fabio.fabioimage.FabioImage.factory
