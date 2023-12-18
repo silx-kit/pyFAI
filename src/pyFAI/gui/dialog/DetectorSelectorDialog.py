@@ -118,7 +118,6 @@ class DetectorSelectorDrop(qt.QWidget):
         self._detectorWidth.setValidator(validator)
         self._detectorHeight.setValidator(validator)
 
-        self._initOrientation()
         self.__detectorWidth = DataModel()
         self.__detectorHeight = DataModel()
         self.__pixelWidth = DataModel()
@@ -135,6 +134,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight.changed.connect(self.__customDetectorChanged)
         self.__pixelWidth.changed.connect(self.__customDetectorChanged)
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
+        self._initOrientation()
         self.__customDetector = None
 
         # By default select all the manufacturers
