@@ -38,7 +38,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2023"
+__date__ = "18/12/2023"
 __status__ = "stable"
 
 from enum import IntEnum
@@ -63,11 +63,20 @@ class Orientation(IntEnum):
     Rotate90 = 8
 
 Orientation(0).__doc__ = "An orientation flag is not set."
+Orientation(0).available = False
 Orientation(1).__doc__ = "Camera default. Origin at the top left of the image when looking at the sample."
+Orientation(1).available = True
 Orientation(2).__doc__ = "Origin at the top left of the image when looking from the sample."
+Orientation(2).available = True
 Orientation(3).__doc__ = "Native orientation of pyFAI. Origin at the bottom left when looking from the sample."
+Orientation(3).available = True
 Orientation(4).__doc__ = "Origin at the bottom left when looking at the sample."
+Orientation(4).available = True
 Orientation(5).__doc__ = "Rotate the photo counter-clockwise 270 degrees and then flip it horizontally. Unsupported for now."
+Orientation(5).available = False
 Orientation(6).__doc__ = "Rotate the photo counter-clockwise 270 degrees. Unsupported for now."
+Orientation(6).available = False
 Orientation(7).__doc__ = "Rotate the photo counter-clockwise 90 degrees and then flip it horizontally. Unsupported for now."
+Orientation(7).available = False
 Orientation(8).__doc__ = "Rotate the photo counter-clockwise 90 degrees. Unsupported for now."
+Orientation(8).available = False
