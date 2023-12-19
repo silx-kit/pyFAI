@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/01/2023"
+__date__ = "18/12/2023"
 
 import os
 import unittest
@@ -41,7 +41,7 @@ from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 import numpy
 from .. import utils
-from .. import _version
+from ..version import calc_hexversion
 from ..method_registry import IntegrationMethod
 from .. import azimuthalIntegrator
 from ..detectors import detector_factory
@@ -70,12 +70,11 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(s), 0, "set is still empty")
 
     def test_hexversion(self):
-        # print(_version, type(_version))
-        self.assertEqual(_version.calc_hexversion(1), 1 << 24, "Major is OK")
-        self.assertEqual(_version.calc_hexversion(0, 1), 1 << 16, "Minor is OK")
-        self.assertEqual(_version.calc_hexversion(0, 0, 1), 1 << 8, "Micro is OK")
-        self.assertEqual(_version.calc_hexversion(0, 0, 0, 1), 1 << 4, "Release level is OK")
-        self.assertEqual(_version.calc_hexversion(0, 0, 0, 0, 1), 1, "Serial is OK")
+        self.assertEqual(calc_hexversion(1), 1 << 24, "Major is OK")
+        self.assertEqual(calc_hexversion(0, 1), 1 << 16, "Minor is OK")
+        self.assertEqual(calc_hexversion(0, 0, 1), 1 << 8, "Micro is OK")
+        self.assertEqual(calc_hexversion(0, 0, 0, 1), 1 << 4, "Release level is OK")
+        self.assertEqual(calc_hexversion(0, 0, 0, 0, 1), 1, "Serial is OK")
 
     def test_method_registry(self):
         l = IntegrationMethod.list_available()

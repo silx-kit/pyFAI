@@ -15,7 +15,6 @@ subdir('utils')
 py.install_sources(
    [
     '__init__.py',
-    '_version.py',
     'average.py',
     'azimuthalIntegrator.py',
     'blob_detection.py',
