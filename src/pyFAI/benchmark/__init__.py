@@ -70,6 +70,24 @@ ds_list = ["Pilatus1M.poni",
            "Mar3450.poni",
            "Fairchild.poni"]
 
+detector_names = ["Pilatus1M",
+                  "Pilatus2M",
+                  "Eiger4M",
+                  "Pilatus6M",
+                  "Eiger9M",
+                  "Mar3450",
+                  "Fairchild",]
+
+data_sizes = [1.023183,
+         2.476525,
+         4.48569,
+         6.224001,
+         10.138296,
+         11.9025,
+         16.777216,
+] #Mpixels
+
+
 datasets = {"Fairchild.poni": "Fairchild.edf",
             "halfccd.poni": "halfccd.edf",
             "Frelon2k.poni": "Frelon2k.edf",
@@ -80,6 +98,7 @@ datasets = {"Fairchild.poni": "Fairchild.edf",
             "Eiger4M.poni":"Eiger4M.edf",
             "Eiger9M.poni":"Eiger9M.h5"
             }
+
 
 PONIS = { i: UtilsTest.getimage(i) for i in ds_list}
 
@@ -354,7 +373,7 @@ class Bench(object):
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             # label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method.method[1:4]], platform, device)).replace(" ", "_")
-            label = f'{devicetype}:{platform} / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}' #Edgar
+            label = f'{devicetype}:{platform}:{device} / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
             method = IntegrationMethod.select_method(dim=1, split=method.split_lower,
                                                       algo=method.algo_lower, impl=method.impl_lower,
                                                       target=(opencl["platformid"], opencl["deviceid"]))[0]
@@ -363,7 +382,7 @@ class Bench(object):
         else:
             print("Working on processor: %s" % self.get_cpu())
             # label = function + " " + self.LABELS[method.method[1:4]]
-            label = f'CPU / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}' #Edgar
+            label = f'CPU / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
             memory_error = (MemoryError, RuntimeError)
         results = OrderedDict()
         first = True
@@ -468,13 +487,13 @@ class Bench(object):
 
             print(f"Working on device: {devicetype} platform: {platform} device: {device} method {method}")
             # label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method[1:4]], platform, device)).replace(" ", "_")
-            label = f'{devicetype}:{platform} / 2D: {method.split_lower}_{method.algo_lower}_{method.impl_lower}' #Edgar
+            label = f'{devicetype}:{platform}:{device} / 2D: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
 
         else:
             print("Working on processor: %s" % self.get_cpu())
             # label = "2D_" + self.LABELS[method[1:4]]
-            label = f'CPU / 2D: {method.split_lower}_{method.algo_lower}_{method.impl_lower}' #Edgar
+            label = f'CPU / 2D: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
             memory_error = (MemoryError, RuntimeError)
 
         results = OrderedDict()
@@ -619,11 +638,12 @@ class Bench(object):
             print("Already initialized")
             return
         if pyplot and ((sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ)):
-            self.fig, self.ax = pyplot.subplots()
+            self.fig, self.ax = pyplot.subplots(figsize=(12,6))
             self.fig.show()
             self.ax.set_autoscale_on(False)
             self.ax.set_xlabel("Image size in mega-pixels")
             self.ax.set_ylabel("Frame per second (log scale)")
+
             try:
                 self.ax.set_yscale("log", base=2)
             except Exception:
@@ -631,9 +651,22 @@ class Bench(object):
             t = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
-            self.ax.set_xlim(0.5, 17)
+            self.ax.set_xlim(0.0, 20)
             self.ax.set_ylim(0.5, 1500)
-            self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
+            self.ax.set_title(f'CPU: {self.get_cpu()}\nGPU: {self.get_gpu()}')
+
+            # Display detector markers (vertical lines)
+            self.ax.vlines(
+                x=data_sizes, 
+                ymin=self.ax.get_ylim()[0], 
+                ymax=self.ax.get_ylim()[1], 
+                linestyles='dashed', 
+                alpha=0.4,
+                colors='black',
+            )
+            for size, detector_label in zip(data_sizes, detector_names):
+                self.ax.text(x=size, y=0.6, s=detector_label, rotation=270, fontsize=7)
+
             update_fig(self.fig)
 
     def new_curve(self, results, label, style="-", marker="x"):
@@ -651,7 +684,15 @@ class Bench(object):
         self.plot_x.sort()
         self.plot_y = [1000.0 / results[i] for i in self.plot_x]
         self.plot = self.ax.plot(self.plot_x, self.plot_y, marker + style, label=label)[0]
-        self.ax.legend()
+
+        handles, labels = self.ax.get_legend_handles_labels()
+        self.ax.legend(
+            handles=handles,
+            loc='center left',
+            bbox_to_anchor=(1.05,0.5),
+            fontsize=10,
+        )
+        self.fig.subplots_adjust(right=0.5) 
         update_fig(self.fig)
 
     def new_point(self, size, exec_time):
@@ -679,6 +720,10 @@ class Bench(object):
         self.fig.savefig("benchmark.png")
         self.fig.show()
 #        plt.ion()
+
+    def display_detector_markers(self):
+        if not self.fig:
+            return     
 
     def update_mp(self):
         """
@@ -780,19 +825,16 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                 for impl in impl_list:
                     if do_1d:
                         for method in IntegrationMethod.select_method(dim=1, split=split, algo=algo, impl=impl):
-                            print(method)
                             if method not in methods_available:
                                 methods_available.append(method)
                     if do_2d:
                         for method in IntegrationMethod.select_method(dim=2, split=split, algo=algo, impl=impl):
-                            print(method)
                             if method not in methods_available:
                                 methods_available.append(method)
-    print(methods_available)
     # Separate non-opencl from opencl methods
     methods_non_ocl, methods_ocl = [], []
     for method in methods_available:
-        print(method, method.impl_lower, method.target, ocl_devices)
+        # print(method, method.impl_lower, method.target, ocl_devices)
         if method.impl_lower == 'opencl':
             if method.target in ocl_devices:
                 methods_ocl.append(method)
@@ -800,7 +842,6 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
             if processor:
                 methods_non_ocl.append(method)
 
-    print(methods_ocl, methods_non_ocl)
     # Benchmark 1d integration
     if do_1d:
         if function == "all":
@@ -835,13 +876,6 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
 
     # Benchmark 2d integration
     if do_2d:
-        print(do_2d, methods_non_ocl, methods_ocl)
-        if function == "all":
-            function_list = ["integrate2d_legacy", "integrate2d_ng"]
-        elif function == "ng":
-            function_list = ["integrate2d_ng"]
-        elif function == "legacy":
-            function_list = ["integrate2d_legacy"]
 
         # Benchmark No OpenCL devices
         for method in methods_non_ocl:
@@ -850,7 +884,6 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                     method=method,
                     check=False,
                     opencl=False,
-                    function=function,
                 )
 
         # Benchmark OpenCL devices

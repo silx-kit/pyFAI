@@ -101,7 +101,7 @@ def main():
 
     parser.add_argument("-ps", "--pixelsplit",
                         dest="pixelsplit", default=["bbox"], type=str, nargs="+",
-                        help="Benchmark using specific pixel splitting protocols: no, bbox, pseudo, full",)
+                        help="Benchmark using specific pixel splitting protocols: no, bbox, pseudo, full, all",)
     parser.add_argument("-algo", "--algorithm",
                         dest="algorithm", default=["histogram", "CSR"], type=str, nargs="+",
                         help="Benchmark using specific algorithms: histogram, CSR, CSC, all")
