@@ -657,10 +657,10 @@ class Bench(object):
 
             # Display detector markers (vertical lines)
             self.ax.vlines(
-                x=data_sizes, 
-                ymin=self.ax.get_ylim()[0], 
-                ymax=self.ax.get_ylim()[1], 
-                linestyles='dashed', 
+                x=data_sizes,
+                ymin=self.ax.get_ylim()[0],
+                ymax=self.ax.get_ylim()[1],
+                linestyles='dashed',
                 alpha=0.4,
                 colors='black',
             )
@@ -692,7 +692,7 @@ class Bench(object):
             bbox_to_anchor=(1.05,0.5),
             fontsize=10,
         )
-        self.fig.subplots_adjust(right=0.5) 
+        self.fig.subplots_adjust(right=0.5)
         update_fig(self.fig)
 
     def new_point(self, size, exec_time):
@@ -723,7 +723,7 @@ class Bench(object):
 
     def display_detector_markers(self):
         if not self.fig:
-            return     
+            return
 
     def update_mp(self):
         """
