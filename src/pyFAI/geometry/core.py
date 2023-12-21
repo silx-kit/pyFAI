@@ -40,12 +40,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2023"
+__date__ = "20/12/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
 from math import pi
+twopi = 2*pi
 from numpy import arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
@@ -60,6 +61,7 @@ from ..utils import crc32, deg2rad
 from .. import utils
 from ..io import ponifile, integration_config
 from ..units import CONST_hc, to_unit
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -250,7 +252,7 @@ class Geometry(object):
             return
         azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
         if azimuth_range[1] <= azimuth_range[0]:
-            azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
+            azimuth_range = (azimuth_range[0], azimuth_range[1] + twopi)
             self.check_chi_disc(azimuth_range)
         return azimuth_range
 
@@ -453,7 +455,7 @@ class Geometry(object):
                                    pos3=p3,
                                    wavelength=self.wavelength)
         else:
-            out = 4.0e-9 * numpy.pi / self.wavelength * \
+            out = 4.0e-9 * pi / self.wavelength * \
                 numpy.sin(self.tth(d1=d1, d2=d2, param=param, path=path) / 2.0)
         return out
 
@@ -545,7 +547,7 @@ class Geometry(object):
         if self._cached_array.get("d*2_center") is None:
             with self._sem:
                 if self._cached_array.get("d*2_center") is None:
-                    self._cached_array["d*2_center"] = (qArray / (2.0 * numpy.pi)) ** 2
+                    self._cached_array["d*2_center"] = (qArray / (twopi)) ** 2
         return self._cached_array["d*2_center"]
 
     @deprecated
@@ -625,7 +627,7 @@ class Geometry(object):
             _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False, use_cython=True, do_parallax=True)
             chi = numpy.arctan2(t1, t2)
             if not self.chiDiscAtPi:
-                numpy.mod(chi, (2.0 * numpy.pi), out=chi)
+                numpy.mod(chi, (twopi), out=chi)
         return chi
 
     def chi_corner(self, d1, d2):
@@ -662,7 +664,7 @@ class Geometry(object):
                     chia = numpy.fromfunction(self.chi, shape,
                                               dtype=numpy.float32)
                     if not self.chiDiscAtPi:
-                        chia = chia % (2.0 * numpy.pi)
+                        chia = chia % (twopi)
                     self._cached_array["chi_center"] = chia
         return self._cached_array["chi_center"]
 
@@ -808,11 +810,10 @@ class Geometry(object):
                             # numpy path
                             chi = numpy.arctan2(y, x)
                             if not self.chiDiscAtPi:
-                                numpy.mod(chi, (2.0 * numpy.pi), out=chi)
+                                numpy.mod(chi, (twopi), out=chi)
                         else:
                             # numexpr path
-                            twoPi = 2.0 * numpy.pi
-                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%twoPi")
+                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%twopi")
                         corners = numpy.zeros((shape[0], shape[1], nb_corners, 2),
                                               dtype=numpy.float32)
                         if chi.shape[:2] == shape:
@@ -925,7 +926,7 @@ class Geometry(object):
         z = pos[..., 0]
         ary = unit.equation(x, y, z, self.wavelength)
         if unit.space == "chi" and not self.chiDiscAtPi:
-            numpy.mod(ary, 2.0 * numpy.pi, out=ary)
+            numpy.mod(ary, twopi, out=ary)
         self._cached_array[key] = ary
         if scale and unit:
                 return ary * unit.scale
@@ -961,6 +962,12 @@ class Geometry(object):
         center = self.center_array(shape, unit=unit, scale=False)
         corners = self.corner_array(shape, unit=unit, scale=False)
         delta = abs(corners[..., 0] - numpy.atleast_3d(center))
+        if space == "chi_delta":
+            if numexpr:
+                delta = numexpr.evaluate("where(delta<twopi-delta, delta, twopi-delta)")
+            else:
+                numpy.minimum(delta, twopi-delta, out=delta)
+
         ary = delta.max(axis=-1)
         self._cached_array[space] = ary
         if scale and unit:
@@ -994,10 +1001,9 @@ class Geometry(object):
                         delta = _geometry.calc_delta_chi(center, corner)
                         self._cached_array[key] = delta
                     else:
-                        twoPi = 2.0 * numpy.pi
                         center = numpy.atleast_3d(center)
-                        delta = numpy.minimum(((corner[:,:,:, 1] - center) % twoPi),
-                                              ((center - corner[:,:,:, 1]) % twoPi))
+                        delta = numpy.minimum(((corner[:,:,:, 1] - center) % twopi),
+                                              ((center - corner[:,:,:, 1]) % twopi))
                         self._cached_array[key] = delta.max(axis=-1)
         return self._cached_array[key]
 
