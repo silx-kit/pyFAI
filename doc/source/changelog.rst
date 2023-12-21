@@ -1,12 +1,20 @@
 :Author: Jérôme Kieffer
-:Date: 10/10/2023
+:Date: 18/12/2023
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2023.10 XX/10/2023
+2023.12 UNRELEASED
 ------------------
+- Possibility to define the detector orientation:
+  + It is the position of the origin of the detector at any of the 4 corner of the image
+  + Uses the EXIF nomenclature where pyFAI's orientation is tagged *3*
+  + Offers compatibility with calibration made by Diotas (where orientation=2)
+  + Expose the feature in the `calib2` GUI for custom detectors.
+
+2023.10  UNRELEASED
+-------------------
 - Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others
 - Support for Detris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
 - Several new units have been added
