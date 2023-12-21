@@ -40,13 +40,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2023"
+__date__ = "21/12/2023"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
 from math import pi
-twopi = 2*pi
+twopi = 2 * pi
 from numpy import arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
@@ -378,9 +378,9 @@ class Geometry(object):
             t2.shape = shape
             t3.shape = shape
             # correct orientation:
-            if self.detector.orientation in (1,2):
+            if self.detector.orientation in (1, 2):
                 numpy.negative(t1, out=t1)
-            if self.detector.orientation in (1,4):
+            if self.detector.orientation in (1, 4):
                 numpy.negative(t2, out=t2)
         return (t3, t1, t2)
 
@@ -766,7 +766,7 @@ class Geometry(object):
                             d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
                             d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
                             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=use_cython)
-                            #TODO fix test so that this is simpler: issue #2014
+                            # TODO fix test so that this is simpler: issue #2014
                             # p1, p2, p3 = self.detector.calc_cartesian_positions(center=False, use_cython=use_cython)
                         else:
                             det_corners = self.detector.get_pixel_corners()
@@ -966,7 +966,7 @@ class Geometry(object):
             if numexpr:
                 delta = numexpr.evaluate("where(delta<twopi-delta, delta, twopi-delta)")
             else:
-                numpy.minimum(delta, twopi-delta, out=delta)
+                numpy.minimum(delta, twopi - delta, out=delta)
 
         ary = delta.max(axis=-1)
         self._cached_array[space] = ary

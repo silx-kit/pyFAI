@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 18/12/2023
+:Date: 21/12/2023
 :Keywords: changelog
 
 Change-log of versions
@@ -7,20 +7,19 @@ Change-log of versions
 
 2023.12 UNRELEASED
 ------------------
+- refactor `pyFAI-benchmark` tool (Thanks Edgar)
 - Possibility to define the detector orientation:
   + It is the position of the origin of the detector at any of the 4 corner of the image
-  + Uses the EXIF nomenclature where pyFAI's orientation is tagged *3*
+  + Uses the EXIF nomenclature where pyFAI's (default) orientation is tagged *3*
   + Offers compatibility with calibration made by Diotas (where orientation=2)
   + Expose the feature in the `calib2` GUI for custom detectors.
-
-2023.10  UNRELEASED
--------------------
-- Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others
+  + Tutorial on the usage 
+- Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others.
 - Support for Detris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
 - Several new units have been added
 - Drop of `setup.py` the build system based on distutils/numpy.distutils/setuptools. Use meson-python.
-- Support for Python 3.7-3.12
 - Move the sources of the code into `src` directory
+- Support for Python 3.7-3.12
 
 2023.09 08/09/2023
 ------------------
