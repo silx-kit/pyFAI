@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "09/01/2024"
 
 import unittest
 import os
@@ -42,15 +42,39 @@ import time
 import sys
 import logging
 import json
+import pathlib
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
 import pyFAI.io.spots
+from pyFAI.io.ponifile import PoniFile
 import h5py
 import fabio
 import pyFAI.azimuthalIntegrator
+
+
+class TestPoniFile(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestPoniFile, cls).setUpClass()
+        cls.ponifile = UtilsTest.getimage("Pilatus1M.poni")
+
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestPoniFile, cls).tearDownClass()
+        cls.ponifile = None
+
+    def test_filename(self):
+        poni = PoniFile(self.ponifile)
+        self.assertAlmostEqual(poni.wavelength, 1e-10, msg="wavelength matches")
+        self.assertAlmostEqual(poni.dist, 1.6, places=1, msg="dist matches")
+
+    def test_path(self):
+        poni = PoniFile(pathlib.Path(self.ponifile))
+        self.assertAlmostEqual(poni.wavelength, 1e-10, msg="wavelength matches")
+        self.assertAlmostEqual(poni.dist, 1.6, places=1, msg="dist matches")
 
 
 class TestIsoTime(unittest.TestCase):
@@ -110,7 +134,7 @@ class TestNexus(unittest.TestCase):
                 self.assertTrue(numpy.allclose(a, b), msg=f"check {k}")
             elif isinstance(a, (int, float, str, tuple, type(None))):
                 self.assertEqual(a, b, k)
-            elif isinstance(a, io.ponifile.PoniFile):
+            elif isinstance(a, PoniFile):
                 self.assertEqual(a.as_dict(), b.as_dict(), "Poni matches")
             elif isinstance(a, pyFAI.method_registry.IntegrationMethod):
                 self.assertEqual(a.method, b.method, "method matches")
@@ -151,7 +175,7 @@ class TestNexus(unittest.TestCase):
                 self.assertTrue(numpy.allclose(a, b), msg=f"check {k}")
             elif isinstance(a, (int, float, str, tuple, type(None))):
                 self.assertEqual(a, b, k)
-            elif isinstance(a, io.ponifile.PoniFile):
+            elif isinstance(a, PoniFile):
                 self.assertEqual(a.as_dict(), b.as_dict(), "Poni matches")
             elif isinstance(a, pyFAI.method_registry.IntegrationMethod):
                 self.assertEqual(a.method, b.method, "method matches")
@@ -280,6 +304,7 @@ def suite():
     testsuite.addTest(loader(TestHDF5Writer))
     testsuite.addTest(loader(TestFabIOWriter))
     testsuite.addTest(loader(TestSpotWriter))
+    testsuite.addTest(loader(TestPoniFile))
     return testsuite
 
 

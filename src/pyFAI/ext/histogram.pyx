@@ -8,7 +8,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -38,7 +38,7 @@ Can be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jérôme Kieffer"
-__date__ = "29/09/2023"
+__date__ = "09/01/2024"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
