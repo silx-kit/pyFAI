@@ -13,7 +13,7 @@ Change-log of versions
   + Uses the EXIF nomenclature where pyFAI's (default) orientation is tagged *3*
   + Offers compatibility with calibration made by Diotas (where orientation=2)
   + Expose the feature in the `calib2` GUI for custom detectors.
-  + Tutorial on the usage 
+  + Tutorial on the usage
 - Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others.
 - Support for Detris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
 - Several new units have been added
