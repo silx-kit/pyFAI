@@ -31,12 +31,13 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/12/2023"
+__date__ = "09/01/2024"
 __docformat__ = 'restructuredtext'
 
 import collections
 import time
 import json
+import pathlib
 import logging
 _logger = logging.getLogger(__name__)
 import numpy
@@ -45,7 +46,6 @@ try:
     from ..gui.model.GeometryModel import GeometryModel
 except ImportError:
     GeometryModel = None
-
 
 
 class PoniFile(object):
@@ -63,7 +63,7 @@ class PoniFile(object):
             pass
         elif isinstance(data, dict):
             self.read_from_dict(data)
-        elif isinstance(data, (str,)):
+        elif isinstance(data, (str, pathlib.Path)):
             self.read_from_file(data)
         elif GeometryModel and isinstance(data, GeometryModel):
             self.read_from_geometryModel(data)
