@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "10/01/2024"
 
 import unittest
 import os
@@ -272,6 +272,23 @@ class TestSpotWriter(unittest.TestCase):
         self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
 
+class TestXrdmlWriter(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestXrdmlWriter, cls).setUpClass()
+        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        cls.ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
+        cls.result = cls.ai.integrate1d(cls.img.data, 200, method=("no", "histogram", "cython"), unit="2th_deg")
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestXrdmlWriter, cls).tearDownClass()
+        cls.ai=cls.img=cls.result=None
+    def test_xrdml(self):
+        from ..io.xrdml import save_xrdml
+        tmpfile = UtilsTest.tempfile(".xrdml")
+        save_xrdml(tmpfile, cls.result)
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -280,6 +297,7 @@ def suite():
     testsuite.addTest(loader(TestHDF5Writer))
     testsuite.addTest(loader(TestFabIOWriter))
     testsuite.addTest(loader(TestSpotWriter))
+    testsuite.addTest(loader(TestXrdmlWriter))
     return testsuite
 
 
