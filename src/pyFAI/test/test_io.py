@@ -283,11 +283,23 @@ class TestXrdmlWriter(unittest.TestCase):
     @classmethod
     def tearDownClass(cls)->None:
         super(TestXrdmlWriter, cls).tearDownClass()
-        cls.ai=cls.img=cls.result=None
+        cls.ai = cls.img = cls.result=None
+
     def test_xrdml(self):
         from ..io.xrdml import save_xrdml
-        tmpfile = UtilsTest.tempfile(".xrdml")
-        save_xrdml(tmpfile, cls.result)
+        tmpfile = UtilsTest.tempfile(".xrdml")[-1]
+        save_xrdml(tmpfile, self.result)
+        self.assertGreater(os.path.getsize(tmpfile), 3000)
+
+    def test_integration(self):
+        tmpfile = UtilsTest.tempfile(".xrdml")[-1]
+        self.ai.integrate1d(self.img.data, 200, method=("no", "histogram", "cython"), unit="2th_deg",
+                            filename=tmpfile)
+        self.assertGreater(os.path.getsize(tmpfile), 3000)
+        from xml.etree import ElementTree as et
+        et.parse(tmpfile)
+
+
 
 def suite():
     testsuite = unittest.TestSuite()
