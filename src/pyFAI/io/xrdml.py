@@ -44,14 +44,14 @@ def save_xrdml(filename, result):
 
     https://www.researchgate.net/profile/Mohamed-Ali-392/post/XRD_Refinement_for_TiO2_Anatase_using_MAUD/attachment/60fa1d85647f3906fc8af2f3/AS%3A1048546157539329%401627004293526/download/sample.xrdml
     """
-    now = get_isotime
+    now = get_isotime()
     xrdml = et.Element("xrdMeasurements", {"xmlns":"http://www.xrdml.com/XRDMeasurement/1.0",
                                            "xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance",
                                            "xsi:schemaLocation": "http://www.xrdml.com/XRDMeasurement/1.3 http://www.xrdml.com/XRDMeasurement/1.3/XRDMeasurement.xsd",
                                            "status": "Completed"})
     sample = et.Element("sample", type="To be analyzed")
     xid = et.Element("id")
-    xid.text = "000000-0000")
+    xid.text = "000000-0000"
     sample.append(xid)
     name = et.Element("name")
     name.text = "sample"
@@ -82,9 +82,9 @@ def save_xrdml(filename, result):
                                "status":"Completed"})
     header = et.Element("header")
     for stamp in ("startTimeStamp", "endTimeStamp"):
-        stamp = et.Element()
-        stamp.text = now
-        header.append(stamp)
+        estamp = et.Element(stamp)
+        estamp.text = now
+        header.append(estamp)
     author = et.Element("author")
     name = et.Element("name")
     name.text = "pyFAI"
@@ -100,7 +100,7 @@ def save_xrdml(filename, result):
     positions = et.Element("positions", axis=result.unit.short_name, unit=result.unit.unit_symbol)
     for pos, idx in {"startPosition": 0, "endPosition":-1}.items():
         position = et.Element(pos)
-        position.text = str(results.radial[idx])
+        position.text = str(result.radial[idx])
         positions.append(position)
     datapoints.append(positions)
     ct = et.Element("commonCountingTime", unit="seconds")
@@ -110,6 +110,7 @@ def save_xrdml(filename, result):
     intensities.text = " ".join(str(i) for i in result.intensity)
     datapoints.append(intensities)
     scan.append(datapoints)
+    measurement.append(scan)
     xrdml.append(measurement)
-    with open(filename, "w") as w:
+    with open(filename, "wb") as w:
         w.write(et.tostring(xrdml))
