@@ -32,9 +32,10 @@ Inspiration from
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2024"
+__date__ = "11/01/2024"
 __docformat__ = 'restructuredtext'
 
+import os
 from xml.etree import  ElementTree as et
 from .nexus import get_isotime
 from .. import version as pyFAI_version
@@ -45,6 +46,10 @@ def save_xrdml(filename, result):
     https://www.researchgate.net/profile/Mohamed-Ali-392/post/XRD_Refinement_for_TiO2_Anatase_using_MAUD/attachment/60fa1d85647f3906fc8af2f3/AS%3A1048546157539329%401627004293526/download/sample.xrdml
     """
     now = get_isotime()
+    dirname = os.path.dirname(os.path.abspath(filename))
+    if not os.path.isdir(dirname):
+        os.makedirs(dirname, exist_ok=True)
+
     xrdml = et.Element("xrdMeasurements", {"xmlns":"http://www.xrdml.com/XRDMeasurement/1.0",
                                            "xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance",
                                            "xsi:schemaLocation": "http://www.xrdml.com/XRDMeasurement/1.3 http://www.xrdml.com/XRDMeasurement/1.3/XRDMeasurement.xsd",
