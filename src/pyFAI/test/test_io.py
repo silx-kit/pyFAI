@@ -311,17 +311,20 @@ class TestXrdmlWriter(unittest.TestCase):
 
     def test_xrdml(self):
         from ..io.xrdml import save_xrdml
-        tmpfile = UtilsTest.tempfile(".xrdml")[-1]
+        fd, tmpfile = UtilsTest.tempfile(".xrdml")
+        os.close(fd)
         save_xrdml(tmpfile, self.result)
         self.assertGreater(os.path.getsize(tmpfile), 3000)
 
     def test_integration(self):
-        tmpfile = UtilsTest.tempfile(".xrdml")[-1]
+        fd, tmpfile = UtilsTest.tempfile(".xrdml")
+        os.close(fd)
         self.ai.integrate1d(self.img.data, 200, method=("no", "histogram", "cython"), unit="2th_deg",
                             filename=tmpfile)
         self.assertGreater(os.path.getsize(tmpfile), 3000)
         from xml.etree import ElementTree as et
-        et.parse(tmpfile)
+        with open(tmpfile, "rb") as f:
+            xml = et.fromstring(f.read())
 
 
 
