@@ -23,7 +23,7 @@ Build-Depends: cython3 (>=0.29.31),
                python3-sphinxcontrib.programoutput,
                python3-nbconvert,
                python3-nbsphinx,
-               python3-sphinx-rtd-theme,
+               python3-pydata-sphinx-theme,
                help2man,
                devscripts
 Standards-Version: 3.9.6
