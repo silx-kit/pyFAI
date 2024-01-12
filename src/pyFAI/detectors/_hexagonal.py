@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "12/01/2024"
 __status__ = "production"
 
 
@@ -57,6 +57,7 @@ class HexDetector(Detector):
     uniform_pixel = False # ensures we use the array of position !
     IS_CONTIGUOUS = False
     IS_FLAT = True
+    CORNERS = 6
 
     @staticmethod
     def build_pixel_coordinates(shape, pitch=1):

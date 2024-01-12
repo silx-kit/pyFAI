@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2023"
+__date__ = "12/01/2024"
 __status__ = "stable"
 
 import logging
@@ -100,14 +100,15 @@ class Detector(metaclass=DetectorMeta):
     Generic class representing a 2D detector
     """
     MANUFACTURER = None
-
+    CORNERS = 4
     force_pixel = False  # Used to specify pixel size should be defined by the class itself.
     aliases = []  # list of alternative names
     registry = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
     IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
-    API_VERSION = "1.0"
+    API_VERSION = "1.1"
+    # 1.1: support for CORNER attribute
 
     HAVE_TAPER = False
     """If true a spline file is mandatory to correct the geometry"""
@@ -845,6 +846,7 @@ class Detector(metaclass=DetectorMeta):
             det_grp["API_VERSION"] = numpy.string_(self.API_VERSION)
             det_grp["IS_FLAT"] = self.IS_FLAT
             det_grp["IS_CONTIGUOUS"] = self.IS_CONTIGUOUS
+            det_grp["CORNERS"] = self.CORNERS
             if self.dummy is not None:
                 det_grp["dummy"] = self.dummy
             if self.delta_dummy is not None:
@@ -1208,6 +1210,7 @@ class NexusDetector(Detector):
         "aliases",
         "IS_FLAT",
         "IS_CONTIGUOUS",
+        "CORNERS"
         "force_pixel",
         "_filename",
         "uniform_pixel") + Detector._UNMUTABLE_ATTRS + Detector._MUTABLE_ATTRS
@@ -1239,6 +1242,11 @@ class NexusDetector(Detector):
                 raise RuntimeError("No detector definition in this file %s" % filename)
             name = posixpath.split(det_grp.name)[-1]
             self.aliases = [name.replace("_", " "), det_grp.name]
+            if "API_VERSION" in det_grp:
+                self.API_VERSION = det_grp["API_VERSION"][()].decode()
+                api = [int(i) for i in self.API_VERSION.split(".")]
+                if api>=[1,1] and "CORNERS" in det_grp:
+                    self.CORNERS = det_grp["CORNERS"][()]
             if "IS_FLAT" in det_grp:
                 self.IS_FLAT = det_grp["IS_FLAT"][()]
             if "IS_CONTIGUOUS" in det_grp:
