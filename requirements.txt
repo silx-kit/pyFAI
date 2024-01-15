@@ -13,3 +13,4 @@ PyOpenGL
 PyQt5
 hdf5plugin
 nbsphinx
+pydata-sphinx-theme
