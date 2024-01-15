@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2024"
+__date__ = "15/01/2024"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -121,6 +121,7 @@ class PoniFile(object):
 
         if version == 2.1 and "orientation" not in config.get("detector_config", {}):
             _logger.error("PoniFile claim to be version 2.1 but contains no detector orientation !!!")
+        self.API_VERSION = version
 
         if version == 1:
             # Handle former version of PONI-file
@@ -217,15 +218,26 @@ class PoniFile(object):
         txt = ["# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis",
               f"# Calibration done at {time.ctime()}",
               f"poni_version: {self.API_VERSION}",
-              f"Detector: {detector.__class__.__name__}",
-              f"Detector_config: {json.dumps(detector.get_config())}",
-              f"Distance: {self._dist}",
-              f"Poni1: {self._poni1}",
-              f"Poni2: {self._poni2}",
-              f"Rot1: {self._rot1}",
-              f"Rot2: {self._rot2}",
-              f"Rot3: {self._rot3}"
-              ]
+              f"Detector: {detector.__class__.__name__}"]
+        if self.API_VERSION == 1:
+            if not detector.force_pixel:
+                txt += [f"pixelsize1: {detector.pixel1}",
+                        f"pixelsize2: {detector.pixel2}"]
+            if detector.splineFile:
+                txt.append(f"splinefile: {detector.splineFile}")
+        elif self.API_VERSION >= 2:
+            detector_config = detector.get_config()
+            if self.API_VERSION == 2:
+                detector_config.pop("orientation")
+            txt.append(f"Detector_config: {json.dumps(detector_config)}")
+
+        txt += [f"Distance: {self._dist}",
+                f"Poni1: {self._poni1}",
+                f"Poni2: {self._poni2}",
+                f"Rot1: {self._rot1}",
+                f"Rot2: {self._rot2}",
+                f"Rot3: {self._rot3}"
+                ]
         if self._wavelength is not None:
             txt.append(f"Wavelength: {self._wavelength}")
         txt.append("")
