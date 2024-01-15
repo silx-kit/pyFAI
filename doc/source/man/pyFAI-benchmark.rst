@@ -44,6 +44,9 @@ Usage
 **-d**, **--debug**
    switch to verbose/debug mode
 
+**--no-proc**
+   do not benchmark using the central processor
+
 **-c**, **--cpu**
    perform benchmark using OpenCL on the CPU
 
@@ -58,8 +61,7 @@ Usage
    limited memory)
 
 **-n** NUMBER, **--number** NUMBER
-   Runtime for each test, in seconds, by
-   default 10
+   Perform the test for this amount of time, by default 10s/measurment
 
 **-2d**, **--2dimention**
    Benchmark also algorithm for 2D-regrouping
@@ -71,7 +73,25 @@ Usage
    Perfrom memory profiling (Linux only)
 
 **-r** REPEAT, **--repeat** REPEAT
-   Repeat each benchmark x times to take the best, by default only run once
+   Repeat each measurement x times to take the best
+
+**-ps** PIXELSPLIT [PIXELSPLIT ...], **--pixelsplit** PIXELSPLIT [PIXELSPLIT ...]
+   Benchmark using specific pixel splitting protocols: no, bbox, pseudo,
+   full, all
+
+**-algo** ALGORITHM [ALGORITHM ...], **--algorithm** ALGORITHM [ALGORITHM ...]
+   Benchmark using specific algorithms: histogram, CSR, CSC, all
+
+**-i** IMPLEMENTATION [IMPLEMENTATION ...], **--implementation** IMPLEMENTATION [IMPLEMENTATION ...]
+   Benchmark using specific algorithm implementations: python, cython,
+   opencl, all
+
+**-f** FUNCTION, **--function** FUNCTION
+   Benchmark legacy (legacy), engine function (ng), or both (all)
+
+**--all**
+   Benchmark using all available methods and devices
+
 
 Results
 -------

@@ -99,4 +99,4 @@ pyFAI-integrate = 'pyFAI.app.integrate:main'
 
 [tool.cibuildwheel]
 # Skip 32-bit builds and PyPy
-skip = ["*-win32", "*-manylinux_i686", "pp*"]
+skip = ["*-win32", "*-manylinux_i686", "pp*", "*musllinux*"]
