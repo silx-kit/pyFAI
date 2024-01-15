@@ -6,8 +6,8 @@ requires-python = '>=3.7'
 readme = 'README.rst'
 description = 'Python implementation of fast azimuthal integration'
 authors = [
-
   { name = 'Jérôme Kieffer', email = 'jerome.kieffer@esrf.fr'},
+  { name = 'Edgar Gutierrez Fernandez', email = 'edgar.gutierrez-fernandez@esrf.fr'},
   { name = 'Valentin Valls', email = 'valentin.valls@esrf.fr'},
   { name = 'Jonathan P. Wright', email= 'wright@esrf.fr'},
   { name = 'Gael Goret'},
@@ -23,6 +23,7 @@ classifiers = ["Development Status :: 5 - Production/Stable",
                "Programming Language :: Python :: 3.9",
                "Programming Language :: Python :: 3.10",
                "Programming Language :: Python :: 3.11",
+               "Programming Language :: Python :: 3.12",
                "Programming Language :: Python :: Implementation :: CPython",
                "Programming Language :: Cython",
                "Environment :: Console",
@@ -59,7 +60,7 @@ requires = [
     'Cython>=0.29.31',
     'numpy',
     'pyproject-metadata>=0.5.0',
-    'tomli>=1.0.0'
+    "tomli>=1.0.0; python_version < '3.12'"
 ]
 
 [project.optional-dependencies]
