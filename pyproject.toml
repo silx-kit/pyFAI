@@ -58,7 +58,6 @@ requires = [
     'wheel',
     'oldest-supported-numpy',
     'Cython>=0.29.31',
-    'numpy',
     'pyproject-metadata>=0.5.0',
     "tomli>=1.0.0; python_version < '3.12'"
 ]
