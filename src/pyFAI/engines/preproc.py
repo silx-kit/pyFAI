@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/07/2022"
+__date__ = "12/01/2024"
 __status__ = "development"
 
 import warnings
@@ -55,7 +55,8 @@ def preproc(raw,
             dark_variance=None,
             error_model=ErrorModel.NO,
             dtype=numpy.float32,
-            out= None
+            out= None,
+            apply_polarization_on_raw=False
             ):
     """Common preprocessing step for all integration engines
 
@@ -79,6 +80,7 @@ def preproc(raw,
     :param error_model: set to "Poisson" for assuming the detector is poissonian and variance = max(1, raw + dark)
     :param dtype: dtype for all processing
     :param out: output buffer to save a malloc
+    :param apply_polarization_on_raw: correct (directly) the raw signal with polarization, not recommanded
 
     All calculation are performed in single precision floating point (32 bits).
 
@@ -183,7 +185,12 @@ def preproc(raw,
 
         if polarization is not None:
             assert polarization.size == size, "Polarization array size is correct"
-            normalization *= numpy.ascontiguousarray(polarization.ravel(), dtype=dtype)
+            polarization = numpy.ascontiguousarray(polarization.ravel(), dtype=dtype)
+            if apply_polarization_on_raw:
+                signal /= polarization
+                # variance /= TODO !!!
+            else:
+                normalization *= polarization
 
         if solidangle is not None:
             assert solidangle.size == size, "Solid angle array size is correct"
