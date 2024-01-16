@@ -8,7 +8,7 @@ Change-log of versions
 2024.1 UNRELEASED
 -----------------
 - Support XRDML formt (compatibility with MAUD software)
-- Support pathlib for reading PONI files 
+- Support pathlib for reading PONI files
 - Refactor `pyFAI-benchmark` tool (Thanks Edgar)
 - Possibility to define the detector orientation:
   + It is the position of the origin of the detector at any of the 4 corner of the image
