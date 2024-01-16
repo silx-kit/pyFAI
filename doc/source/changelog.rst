@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 10/01/2024
+:Date: 16/01/2024
 :Keywords: changelog
 
 Change-log of versions
@@ -13,6 +13,8 @@ Change-log of versions
   + Offers compatibility with calibration made by Diotas (where orientation=2)
   + Expose the feature in the `calib2` GUI for custom detectors.
   + Tutorial on the usage
+  + New sub-version of the PoniFile API (2.1)
+- Expose the number of corners of a detector pixel
 - Refactor `pyFAI-benchmark` tool (Thanks Edgar)
 - Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others.
 - Support for Detris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
