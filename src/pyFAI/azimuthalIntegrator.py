@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "11/01/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -47,7 +47,7 @@ from . import units
 from .utils import EPS32, deg2rad, crc32
 from .utils.decorators import deprecated, deprecated_warning
 from .containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
-from .io import DefaultAiWriter
+from .io import DefaultAiWriter, save_integrate_result
 from .io.ponifile import PoniFile
 error = None
 from .method_registry import IntegrationMethod
@@ -1099,8 +1099,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_metadata(metadata)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
+            save_integrate_result(filename, result)
 
         return result
 
@@ -1600,9 +1599,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_has_solidangle_correction(correctSolidAngle)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
-
+            save_integrate_result(filename, result)
         return result
 
     _integrate1d_ng = integrate1d_ng
@@ -2102,8 +2099,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_metadata(metadata)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
+            save_integrate_result(filename, result)
 
         return result
 
@@ -2617,8 +2613,7 @@ class AzimuthalIntegrator(Geometry):
             result._set_std(sem)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
+            save_integrate_result(filename, result)
 
         return result
 
