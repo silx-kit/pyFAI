@@ -6,7 +6,8 @@ py.install_sources(
     'nexus.py',
     'ponifile.py',
     'sparse_frame.py',
-    'spots.py'],
+    'spots.py',
+    'xrdml.py'],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/io'  # Folder relative to site-packages to install to
 )
