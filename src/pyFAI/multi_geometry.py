@@ -36,6 +36,7 @@ __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import collections.abc
+import gc
 import logging
 logger = logging.getLogger(__name__)
 from .azimuthalIntegrator import AzimuthalIntegrator
@@ -302,7 +303,12 @@ class MultiGeometry(object):
         for ai in self.ais:
             ai.set_wavelength(self.wavelength)
 
-    def reset(self):
-        """Clean up all caches for all integrators"""
+    def reset(self, collect_garbage=True):
+        """Clean up all caches for all integrators
+
+        :param collect_garbage: set to False to prevent garbage collection, faster
+        """
         for ai in self.ais:
-            ai.reset()
+            ai.reset(collect_garbage=False)
+        if collect_garbage:
+            gc.collect()
