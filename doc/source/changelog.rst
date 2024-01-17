@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 10/01/2024
+:Date: 12/01/2024
 :Keywords: changelog
 
 Change-log of versions
@@ -7,6 +7,7 @@ Change-log of versions
 
 2024.1 UNRELEASED
 -----------------
+- Expose the number of corners of a detector pixel
 - Support XRDML formt (compatibility with MAUD software)
 - Support pathlib for reading PONI files
 - Refactor `pyFAI-benchmark` tool (Thanks Edgar)

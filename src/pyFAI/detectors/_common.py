@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2023"
+__date__ = "12/01/2024"
 __status__ = "stable"
 
 import logging
@@ -100,14 +100,15 @@ class Detector(metaclass=DetectorMeta):
     Generic class representing a 2D detector
     """
     MANUFACTURER = None
-
+    CORNERS = 4
     force_pixel = False  # Used to specify pixel size should be defined by the class itself.
     aliases = []  # list of alternative names
     registry = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
     IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
-    API_VERSION = "1.0"
+    API_VERSION = "1.1"
+    # 1.1: support for CORNER attribute
 
     HAVE_TAPER = False
     """If true a spline file is mandatory to correct the geometry"""
@@ -756,6 +757,7 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
+                    assert self.CORNERS == 4, "overwrite this method when hexagonal !"
                     # r1, r2 = self._calc_pixel_index_from_orientation(False)
                     # like numpy.ogrid
                     # d1 = expand2d(r1, self.shape[1] + 1, False)
@@ -790,6 +792,7 @@ class Detector(metaclass=DetectorMeta):
             r1 = self._pixel_corners.shape[1] // self.shape[1]
             if r0 == 0 or r1 == 0:
                 raise RuntimeError("Cannot unbin an image ")
+            assert self.CORNERS==4, "not valid with hexagonal pixels"
             pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
             pixel_corners[:,:, 0,:] = self._pixel_corners[::r0,::r1, 0,:]
             pixel_corners[:,:, 1,:] = self._pixel_corners[r0 - 1::r0,::r1, 1,:]
@@ -815,7 +818,7 @@ class Detector(metaclass=DetectorMeta):
             # Validation for the array
             assert ary.ndim == 4
             assert ary.shape[3] == 3  # 3 coordinates in Z Y X
-            assert ary.shape[2] >= 3  # at least 3 corners per pixel
+            assert ary.shape[2] == self.CORNERS  # at least 3 corners per pixel
 
             z = ary[..., 0]
             is_flat = (z.max() == z.min() == 0.0)
@@ -845,6 +848,7 @@ class Detector(metaclass=DetectorMeta):
             det_grp["API_VERSION"] = numpy.string_(self.API_VERSION)
             det_grp["IS_FLAT"] = self.IS_FLAT
             det_grp["IS_CONTIGUOUS"] = self.IS_CONTIGUOUS
+            det_grp["CORNERS"] = self.CORNERS
             if self.dummy is not None:
                 det_grp["dummy"] = self.dummy
             if self.delta_dummy is not None:
@@ -1208,6 +1212,7 @@ class NexusDetector(Detector):
         "aliases",
         "IS_FLAT",
         "IS_CONTIGUOUS",
+        "CORNERS"
         "force_pixel",
         "_filename",
         "uniform_pixel") + Detector._UNMUTABLE_ATTRS + Detector._MUTABLE_ATTRS
@@ -1239,6 +1244,11 @@ class NexusDetector(Detector):
                 raise RuntimeError("No detector definition in this file %s" % filename)
             name = posixpath.split(det_grp.name)[-1]
             self.aliases = [name.replace("_", " "), det_grp.name]
+            if "API_VERSION" in det_grp:
+                self.API_VERSION = det_grp["API_VERSION"][()].decode()
+                api = [int(i) for i in self.API_VERSION.split(".")]
+                if api>=[1,1] and "CORNERS" in det_grp:
+                    self.CORNERS = det_grp["CORNERS"][()]
             if "IS_FLAT" in det_grp:
                 self.IS_FLAT = det_grp["IS_FLAT"][()]
             if "IS_CONTIGUOUS" in det_grp:
