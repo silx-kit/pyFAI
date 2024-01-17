@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #    Copyright (C)      2016 Synchrotron SOLEIL - L'Orme des Merisiers Saint-Aubin
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,11 +31,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/10/2023"
+__date__ = "16/01/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import collections.abc
+import gc
 import logging
 logger = logging.getLogger(__name__)
 from .azimuthalIntegrator import AzimuthalIntegrator
@@ -301,3 +302,13 @@ class MultiGeometry(object):
         self.wavelength = float(value)
         for ai in self.ais:
             ai.set_wavelength(self.wavelength)
+
+    def reset(self, collect_garbage=True):
+        """Clean up all caches for all integrators
+
+        :param collect_garbage: set to False to prevent garbage collection, faster
+        """
+        for ai in self.ais:
+            ai.reset(collect_garbage=False)
+        if collect_garbage:
+            gc.collect()

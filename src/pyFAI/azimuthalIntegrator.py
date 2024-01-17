@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2024"
+__date__ = "16/01/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -167,18 +167,24 @@ class AzimuthalIntegrator(Geometry):
 
         self._empty = 0.0
 
-    def reset(self):
+    def reset(self, collect_garbage=True):
         """Reset azimuthal integrator in addition to other arrays.
-        """
-        Geometry.reset(self)
-        self.reset_engines()
 
-    def reset_engines(self):
-        """Urgently free memory by deleting all regrid-engines"""
+        :param collect_garbage: set to False to prevent garbage collection, faster
+        """
+        Geometry.reset(self, collect_garbage=False)
+        self.reset_engines(collect_garbage)
+
+    def reset_engines(self, collect_garbage=True):
+        """Urgently free memory by deleting all regrid-engines
+
+        :param collect_garbage: set to False to prevent garbage collection, faster
+        """
         with self._lock:
             for key in list(self.engines.keys()):  # explicit copy
                 self.engines.pop(key).reset()
-        gc.collect()
+        if collect_garbage:
+            gc.collect()
 
     def create_mask(self, data, mask=None,
                     dummy=None, delta_dummy=None,
