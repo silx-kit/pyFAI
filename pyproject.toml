@@ -6,8 +6,8 @@ requires-python = '>=3.7'
 readme = 'README.rst'
 description = 'Python implementation of fast azimuthal integration'
 authors = [
-
   { name = 'Jérôme Kieffer', email = 'jerome.kieffer@esrf.fr'},
+  { name = 'Edgar Gutierrez Fernandez', email = 'edgar.gutierrez-fernandez@esrf.fr'},
   { name = 'Valentin Valls', email = 'valentin.valls@esrf.fr'},
   { name = 'Jonathan P. Wright', email= 'wright@esrf.fr'},
   { name = 'Gael Goret'},
@@ -23,6 +23,7 @@ classifiers = ["Development Status :: 5 - Production/Stable",
                "Programming Language :: Python :: 3.9",
                "Programming Language :: Python :: 3.10",
                "Programming Language :: Python :: 3.11",
+               "Programming Language :: Python :: 3.12",
                "Programming Language :: Python :: Implementation :: CPython",
                "Programming Language :: Cython",
                "Environment :: Console",
@@ -41,7 +42,8 @@ dependencies = [
    'numpy',
    'h5py',
    'fabio',
-   'silx',
+   "silx>=1.1; python_version < '3.12'",
+   "silx>=2; python_version >= '3.12'",
    'numexpr != 2.8.6',
    'scipy',
    'matplotlib'
@@ -55,11 +57,10 @@ requires = [
     "meson>=0.60; platform_system!='Windows'",
     'ninja',
     'wheel',
-    'numpy',
+    'oldest-supported-numpy',
     'Cython>=0.29.31',
-    'numpy',
     'pyproject-metadata>=0.5.0',
-    'tomli>=1.0.0'
+    "tomli>=1.0.0; python_version < '3.12'"
 ]
 
 [project.optional-dependencies]
@@ -95,3 +96,8 @@ pyFAI-calib2 = 'pyFAI.app.calib2:main'
 pyFAI-drawmask = 'pyFAI.app.drawmask:main'
 pyFAI-diffmap = 'pyFAI.app.diff_map:main'
 pyFAI-integrate = 'pyFAI.app.integrate:main'
+
+
+[tool.cibuildwheel]
+# Skip 32-bit builds and PyPy
+skip = ["*-win32", "*-manylinux_i686", "pp*", "*musllinux*"]

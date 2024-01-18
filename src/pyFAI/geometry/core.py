@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/12/2023"
+__date__ = "16/01/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -52,6 +52,7 @@ import numpy
 import os
 import threading
 import json
+import gc
 from collections import namedtuple, OrderedDict
 from .fit2d import convert_to_Fit2d, convert_from_Fit2d
 from .. import detectors
@@ -1972,15 +1973,18 @@ class Geometry(object):
 
         return transmission_corr
 
-    def reset(self):
+    def reset(self, collect_garbage=True):
         """
-        reset most arrays that are cached: used when a parameter
-        changes.
+        reset most arrays that are cached: used when a parameter changes.
+
+        :param collect_garbage: set to False to prevent garbage collection, faster
         """
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         self._transmission_normal = None
         self._cached_array = {}
+        if collect_garbage:
+            gc.collect()
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True,
