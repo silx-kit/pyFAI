@@ -98,6 +98,6 @@ Results
 
 This tool produces a graphic that looks like:
 
-.. image:: ../img/benchmark_2023.1.svg
+.. image:: ../img/benchmark_2024.01.svg
   :width: 800
   :alt: PyFAI-benchmark graph
