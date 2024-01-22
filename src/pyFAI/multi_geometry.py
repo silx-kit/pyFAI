@@ -315,7 +315,6 @@ class MultiGeometry(object):
                 threadpoolsize = self.threadpool._processes
             except Exception as err:
                 print(f"{type(err)}: {err}")
-            else:
                 threadpoolsize = 1
             self.threadpool.terminate()
             self.threadpool = ThreadPool(threadpoolsize)
