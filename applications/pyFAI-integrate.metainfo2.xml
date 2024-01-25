@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+    <id>pyFAI-integrate</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>pyFAI-integrate</name>
+  <summary>PyFAI's graphical user interface for azimuthal integration</summary>
+  <description>
+PyFAI-integrate performs the azimuthal integration of a stack of images.
+  </description>
+  <url type="homepage">https://github.com/silx-kit/pyFAI</url>
+  <url type="bugtracker">https://github.com/silx-kit/pyFAI/issues</url>
+  <url type="faq">https://github.com/silx-kit/pyFAI/discussions</url>
+  <url type="help">http://www.silx.org/doc/pyFAI/latest/</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>http://www.silx.org/doc/pyFAI/latest/_images/integrate.png</image>
+      <caption>Image calibration from rings</caption>
+    </screenshot>
+  </screenshots>
+  <developer_name>Jerome Kieffer</developer_name>
+  <update_contact>pyfai@esrf.fr</update_contact>
+</component>
