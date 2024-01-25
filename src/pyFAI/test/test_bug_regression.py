@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,8 +35,8 @@ https://github.com/silx-kit/pyFAI/issues
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
-__copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "23/01/2024"
 
 import sys
 import os
@@ -582,6 +582,18 @@ class TestBugRegression(unittest.TestCase):
         res = IntegrationMethod.select_method(dim=1, split="full", algo="csc", impl="python", degradable=False)
         self.assertGreater(len(res), 0, "method actually exists")
 
+    def test_bug_2053(self):
+        """ LUT gives different uncertainties
+        """
+        ai = load(UtilsTest.getimage("Pilatus1M.poni"))
+        img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        res = {}
+        for m in ("histogram", "csr", "csc", "lut"):
+            res[m] = ai.integrate1d(img, 100, error_model="poisson", method=("no", m, "cython"))
+            if m == "histogram":
+                ref = res[m].sigma
+            else:
+                self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
 
 class TestBug1703(unittest.TestCase):
     """
