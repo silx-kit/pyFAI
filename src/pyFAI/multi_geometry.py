@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2024"
+__date__ = "22/01/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -304,11 +304,19 @@ class MultiGeometry(object):
             ai.set_wavelength(self.wavelength)
 
     def reset(self, collect_garbage=True):
-        """Clean up all caches for all integrators
+        """Clean up all caches for all integrators, resets the thread-pool as well.
 
         :param collect_garbage: set to False to prevent garbage collection, faster
         """
         for ai in self.ais:
             ai.reset(collect_garbage=False)
+        if self.threadpool:
+            try:
+                threadpoolsize = self.threadpool._processes
+            except Exception as err:
+                print(f"{type(err)}: {err}")
+                threadpoolsize = 1
+            self.threadpool.terminate()
+            self.threadpool = ThreadPool(threadpoolsize)
         if collect_garbage:
             gc.collect()
