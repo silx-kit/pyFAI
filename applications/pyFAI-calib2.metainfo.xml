@@ -3,8 +3,8 @@
     <id>pyFAI-calib2</id>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
-  <name>pyFAI Calibration GUI</name>
-  <summary>Database manager part of the LibreOffice productivity suite</summary>
+  <name>pyFAI-calib2</name>
+  <summary>PyFAI's calibration graphical user interface</summary>
   <description>
 Calib2 performs the calibration of a diffraction setup based on the analysis of an image with Debye-Scherrer rings
   </description>

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
-    <id>pyFAI-calib2</id>
+    <id>diff_map</id>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
-  <name>pyFAI Calibration GUI</name>
-  <summary>Database manager part of the LibreOffice productivity suite</summary>
+  <name>diffraction mapping</name>
+  <summary>PyFAI's diffraction mapping data-reduction tool with graphical interface</summary>
   <description>
-Calib2 performs the calibration of a diffraction setup based on the analysis of an image with Debye-Scherrer rings
+Diff_map performs the data reduction for diffraction map experiments, i.e. azimuthal integration of each image then builds the map.
   </description>
   <url type="homepage">https://github.com/silx-kit/pyFAI</url>
   <url type="bugtracker">https://github.com/silx-kit/pyFAI/issues</url>
@@ -14,8 +14,8 @@ Calib2 performs the calibration of a diffraction setup based on the analysis of 
   <url type="help">http://www.silx.org/doc/pyFAI/latest/</url>
   <screenshots>
     <screenshot type="default">
-      <image>http://www.silx.org/doc/pyFAI/latest/_images/3_extract.png</image>
-      <caption>Image calibration from rings</caption>
+      <image>http://www.silx.org/doc/pyFAI/latest/_images/diffmap_main.png</image>
+      <caption>Setup of the diffraction map integration</caption>
     </screenshot>
   </screenshots>
   <developer_name>Jerome Kieffer</developer_name>
