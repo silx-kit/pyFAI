@@ -391,8 +391,9 @@ def histogram_preproc(pos,
                 sum_sig = out_prop[bin, 0]
                 sum_var = out_prop[bin, 1]
                 sum_norm = out_prop[bin, 2]
-                sum_norm_sq = out_prop[bin, 3]
-                sum_count = out_prop[bin, 4] 
+                sum_count = out_prop[bin, 3]
+                sum_norm_sq = out_prop[bin, 4]
+                 
                 signal = cdata[i, 0]
                 variance = cdata[i, 1]
                 nrm = cdata[i, 2]
@@ -429,9 +430,8 @@ def histogram_preproc(pos,
                 out_prop[bin, 0] = sum_sig  
                 out_prop[bin, 1] = sum_var 
                 out_prop[bin, 2] = sum_norm 
-                out_prop[bin, 3] = sum_norm_sq 
-                out_prop[bin, 4] = sum_count  
-
+                out_prop[bin, 3] = sum_count  
+                out_prop[bin, 4] = sum_norm_sq 
 
     return (numpy.asarray(out_prop),
             numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins))
