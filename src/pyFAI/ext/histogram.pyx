@@ -38,7 +38,7 @@ Can be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jérôme Kieffer"
-__date__ = "09/01/2024"
+__date__ = "26/01/2024"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -326,7 +326,8 @@ def histogram2d(pos0,
 def histogram_preproc(pos,
                       weights,
                       int bins=100,
-                      bin_range=None):
+                      bin_range=None,
+                      int error_model=0):
     """
     Calculates histogram of pos weighted by weights
     in the case data have been preprocessed, i.e. each datapoint contains
@@ -336,8 +337,8 @@ def histogram_preproc(pos,
     :param weights: array with intensities, variance, normalization and count
     :param bins: number of output bins
     :param bin_range: 2-tuple with lower and upper bound for the valid position range.
-
-    :return: 4 histograms concatenated, radial position (bin center)
+    :param error_model: 0:no error propagation, 1:variance 2:poisson 3: azimuthal
+    :return: 5 histograms concatenated, radial position (bin center)
     """
     cdef int nchan, ndim
     assert bins > 1
@@ -349,6 +350,8 @@ def histogram_preproc(pos,
         position_t[::1] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=position_d)
         data_t[:, ::1] cdata = numpy.ascontiguousarray(weights, dtype=data_d).reshape(-1, nchan)
         acc_t[:, ::1] out_prop = numpy.zeros((bins, 5), dtype=acc_d)
+        acc_t sum_sig, sum_var, sum_norm, sum_norm_sq, sum_count, omega_A, omega_B, omega_AB, omega2_A, omega2_B
+        acc_t signal, variance, nrm, cnt, b, delta1, delta2 
         position_t delta, min0, max0, maxin0
         position_t a = 0.0
         position_t fbin = 0.0
@@ -375,14 +378,61 @@ def histogram_preproc(pos,
             bin = < Py_ssize_t > fbin
             if bin < 0 or bin >= bins:
                 continue
-            out_prop[bin, 0] += cdata[i, 0]
-            out_prop[bin, 1] += cdata[i, 1]
-            if nchan>2:
-                tmp = cdata[i, 2]
-                out_prop[bin, 2] += tmp
-                out_prop[bin, 3] += tmp*tmp
-            if nchan>3:
-                out_prop[bin, 4] += cdata[i, 3]
+            if error_model == 0:
+                out_prop[bin, 0] += cdata[i, 0]
+                out_prop[bin, 1] += cdata[i, 1]
+                if nchan>2:
+                    tmp = cdata[i, 2]
+                    out_prop[bin, 2] += tmp
+                    out_prop[bin, 3] += tmp*tmp
+                if nchan>3:
+                    out_prop[bin, 4] += cdata[i, 3]
+            else:
+                sum_sig = out_prop[bin, 0]
+                sum_var = out_prop[bin, 1]
+                sum_norm = out_prop[bin, 2]
+                sum_norm_sq = out_prop[bin, 3]
+                sum_count = out_prop[bin, 4] 
+                signal = cdata[i, 0]
+                variance = cdata[i, 1]
+                nrm = cdata[i, 2]
+                cnt = cdata[i, 3]
+                if error_model==3:
+                    "Azimuthal error model"
+                    if sum_norm_sq > 0.0:
+                        # Inspired from https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
+                        # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
+                        # Emprically validated against 2-pass implementation in Python/scipy-sparse
+                        if nrm:
+                            omega_A = sum_norm
+                            omega_B = nrm
+                            omega2_A = sum_norm_sq
+                            omega2_B = omega_B*omega_B 
+                            sum_norm = omega_AB = omega_A + omega_B
+                            sum_norm_sq = omega2_A + omega2_B
+        
+                            # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                            b = signal / nrm
+                            delta1 = sum_sig/omega_A - b
+                            sum_sig += signal
+                            delta2 = sum_sig / omega_AB - b
+                            sum_var += omega2_B * delta1 * delta2
+                    else:
+                        sum_sig = signal
+                        sum_norm = nrm
+                        sum_norm_sq = nrm*nrm
+                else:
+                    sum_sig += signal
+                    sum_norm += nrm
+                    sum_norm_sq += nrm * nrm
+                    sum_var += variance
+                out_prop[bin, 0] = sum_sig  
+                out_prop[bin, 1] = sum_var 
+                out_prop[bin, 2] = sum_norm 
+                out_prop[bin, 3] = sum_norm_sq 
+                out_prop[bin, 4] = sum_count  
+
+
     return (numpy.asarray(out_prop),
             numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins))
 
@@ -444,7 +494,8 @@ def histogram1d_engine(radial, int npt,
         data_t[::1] histo_normalization, histo_signal, histo_variance, histo_count, intensity, std, sem, histo_normalization2
         data_t norm, sig, var, cnt, norm2
         int i
-        bint do_variance=error_model
+        bint do_variance = error_model
+        bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
 
     prep = preproc(raw,
                    dark=dark,
@@ -464,7 +515,8 @@ def histogram1d_engine(radial, int npt,
     res, position = histogram_preproc(radial.ravel(),
                                       prep,
                                       npt,
-                                      bin_range=radial_range)
+                                      bin_range=radial_range,
+                                      error_model = <int> error_model)
 
     histo_signal = numpy.empty(npt, dtype=data_d)
     histo_variance = numpy.empty(npt, dtype=data_d)
