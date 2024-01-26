@@ -62,9 +62,9 @@ class TestUncertainties(unittest.TestCase):
         cls.ai = cls.img = cls.npt = None
 
     def test_poisson_model(self):
-        """ LUT used to gives different uncertainties 
+        """ LUT used to gives different uncertainties
         Issue #2053 on Poisson error model
-        
+
         """
         res = {}
         for m in ("histogram", "csr", "csc", "lut"):
@@ -75,9 +75,9 @@ class TestUncertainties(unittest.TestCase):
                 self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
 
     def test_azimuthal_model_nosplit(self):
-        """ histogram and csc are not producing uncertainties ... 
+        """ histogram and csc are not producing uncertainties ...
         Issue #2061 on azimuthal error model
-        
+
         """
         res = {}
         for m in ("csr", "lut", "csc", "histogram"):
@@ -88,9 +88,9 @@ class TestUncertainties(unittest.TestCase):
                 self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
 
     def test_azimuthal_model_bbox(self):
-        """ histogram and csc are not producing uncertainties ... 
+        """ histogram and csc are not producing uncertainties ...
         Issue #2061 on azimuthal error model
-        
+
         """
         res = {}
         for m in ("csr", "lut", "csc", "histogram"):
@@ -101,9 +101,9 @@ class TestUncertainties(unittest.TestCase):
                 self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
 
     def test_azimuthal_model_full(self):
-        """ histogram and csc are not producing uncertainties ... 
+        """ histogram and csc are not producing uncertainties ...
         Issue #2061 on azimuthal error model
-        
+
         """
         res = {}
         for m in ("csr", "lut", "csc", "histogram"):

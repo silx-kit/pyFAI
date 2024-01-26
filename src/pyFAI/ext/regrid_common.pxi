@@ -245,7 +245,7 @@ cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
     :param error_model: 0:disable, 1:variance, 2: poisson, 3:azimuhal
     :return: Nothing
     """
-    cdef: 
+    cdef:
         double w2 = weight * weight
         acc_t omega_A, omega_B, omega2_A, omega2_B, w, omega_AB, sum_sig, b, delta1, delta2
     if error_model == 3:
@@ -263,7 +263,7 @@ cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
                 out_data[bin, 4] = omega2_A + omega2_B
 
                 # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
-                sum_sig = out_data[bin, 0] 
+                sum_sig = out_data[bin, 0]
                 b = value.signal / value.norm
                 delta1 = sum_sig/omega_A - b
                 sum_sig += weight * value.signal

@@ -351,7 +351,7 @@ def histogram_preproc(pos,
         data_t[:, ::1] cdata = numpy.ascontiguousarray(weights, dtype=data_d).reshape(-1, nchan)
         acc_t[:, ::1] out_prop = numpy.zeros((bins, 5), dtype=acc_d)
         acc_t sum_sig, sum_var, sum_norm, sum_norm_sq, sum_count, omega_A, omega_B, omega_AB, omega2_A, omega2_B
-        acc_t signal, variance, nrm, cnt, b, delta1, delta2 
+        acc_t signal, variance, nrm, cnt, b, delta1, delta2
         position_t delta, min0, max0, maxin0
         position_t a = 0.0
         position_t fbin = 0.0
@@ -393,7 +393,7 @@ def histogram_preproc(pos,
                 sum_norm = out_prop[bin, 2]
                 sum_count = out_prop[bin, 3]
                 sum_norm_sq = out_prop[bin, 4]
-                 
+
                 signal = cdata[i, 0]
                 variance = cdata[i, 1]
                 nrm = cdata[i, 2]
@@ -408,10 +408,10 @@ def histogram_preproc(pos,
                             omega_A = sum_norm
                             omega_B = nrm
                             omega2_A = sum_norm_sq
-                            omega2_B = omega_B*omega_B 
+                            omega2_B = omega_B*omega_B
                             sum_norm = omega_AB = omega_A + omega_B
                             sum_norm_sq = omega2_A + omega2_B
-        
+
                             # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
                             b = signal / nrm
                             delta1 = sum_sig/omega_A - b
@@ -427,11 +427,11 @@ def histogram_preproc(pos,
                     sum_norm += nrm
                     sum_norm_sq += nrm * nrm
                     sum_var += variance
-                out_prop[bin, 0] = sum_sig  
-                out_prop[bin, 1] = sum_var 
-                out_prop[bin, 2] = sum_norm 
-                out_prop[bin, 3] = sum_count  
-                out_prop[bin, 4] = sum_norm_sq 
+                out_prop[bin, 0] = sum_sig
+                out_prop[bin, 1] = sum_var
+                out_prop[bin, 2] = sum_norm
+                out_prop[bin, 3] = sum_count
+                out_prop[bin, 4] = sum_norm_sq
 
     return (numpy.asarray(out_prop),
             numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins))
