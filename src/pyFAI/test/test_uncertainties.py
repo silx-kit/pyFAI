@@ -49,16 +49,66 @@ from .. import load
 
 class TestUncertainties(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        super(TestUncertainties, cls).setUpClass()
+        cls.ai = load(UtilsTest.getimage("Pilatus1M.poni"))
+        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        cls.npt = 100
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super(TestUncertainties, cls).tearDownClass()
+        cls.ai = cls.img = cls.npt = None
+
     def test_poisson_model(self):
-        """ LUT gives different uncertainties in issue #2053
+        """ LUT used to gives different uncertainties 
+        Issue #2053 on Poisson error model
         
         """
-        ai = load(UtilsTest.getimage("Pilatus1M.poni"))
-        img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
         res = {}
         for m in ("histogram", "csr", "csc", "lut"):
-            res[m] = ai.integrate1d(img, 100, error_model="poisson", method=("no", m, "cython"))
+            res[m] = self.ai.integrate1d(self.img, self.npt, error_model="poisson", method=("no", m, "cython"))
             if m == "histogram":
+                ref = res[m].sigma
+            else:
+                self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
+
+    def test_azimuthal_model_nosplit(self):
+        """ histogram and csc are not producing uncertainties ... 
+        Issue #2061 on azimuthal error model
+        
+        """
+        res = {}
+        for m in ("csr", "lut", "csc", "histogram"):
+            res[m] = self.ai.integrate1d(self.img, self.npt, error_model="azimuthal", method=("no", m, "cython"))
+            if m == "csr":
+                ref = res[m].sigma
+            else:
+                self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
+
+    def test_azimuthal_model_bbox(self):
+        """ histogram and csc are not producing uncertainties ... 
+        Issue #2061 on azimuthal error model
+        
+        """
+        res = {}
+        for m in ("csr", "lut", "csc", "histogram"):
+            res[m] = self.ai.integrate1d(self.img, self.npt, error_model="azimuthal", method=("bbox", m, "cython"))
+            if m == "csr":
+                ref = res[m].sigma
+            else:
+                self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
+
+    def test_azimuthal_model_full(self):
+        """ histogram and csc are not producing uncertainties ... 
+        Issue #2061 on azimuthal error model
+        
+        """
+        res = {}
+        for m in ("csr", "lut", "csc", "histogram"):
+            res[m] = self.ai.integrate1d(self.img, self.npt, error_model="azimuthal", method=("full", m, "cython"))
+            if m == "csr":
                 ref = res[m].sigma
             else:
                 self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
