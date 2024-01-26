@@ -51,6 +51,7 @@ py.install_sources(
     'test_utils_mathutil.py',
     'test_utils_shell.py',
     'test_utils_stringutil.py',
+    'test_uncertainties.py',
     'test_watershed.py',
     'test_worker.py',
     'utilstest.py'],
