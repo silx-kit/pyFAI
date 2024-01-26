@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "28/09/2023"
+__date__ = "26/01/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -426,7 +426,7 @@ def fullSplit1D_engine(pos not None,
 
             if bin0_min == bin0_max:
                 # All pixel is within a single bin
-                update_1d_accumulator(out_data, bin0_min, value, 1.0)
+                update_1d_accumulator(out_data, bin0_min, value, 1.0, error_model)
 
             # else we have pixel splitting.
             else:
@@ -445,7 +445,7 @@ def fullSplit1D_engine(pos not None,
                 if sum_area != 0.0:
                     inv_area = 1.0 / sum_area
                     for bin in range(bin0_min, bin0_max):
-                        update_1d_accumulator(out_data, bin, value, buffer[bin]*inv_area)
+                        update_1d_accumulator(out_data, bin, value, buffer[bin]*inv_area, error_model)
                 buffer[bin0_min:bin0_max] = 0.0
         for i in range(bins):
             sig = out_data[i, 0]
