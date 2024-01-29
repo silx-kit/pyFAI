@@ -87,7 +87,7 @@ class ExperimentSettingsModel(AbstractModel):
                 try:
                     mask = detector.dynamic_mask(image)
                 except ValueError as err:
-                    _logger.warning(f"{type(err}: {err} \nDetector shape: {detector.shape} and image shape: {image.shape}")
+                    _logger.warning(f"{type(err)}: {err} \nDetector shape: {detector.shape} and image shape: {image.shape}")
                     mask = detector.mask
             else:
                 mask = detector.mask
