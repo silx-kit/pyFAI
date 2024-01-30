@@ -38,7 +38,7 @@ Can be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jérôme Kieffer"
-__date__ = "26/01/2024"
+__date__ = "30/01/2024"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -427,6 +427,7 @@ def histogram_preproc(pos,
                     sum_norm += nrm
                     sum_norm_sq += nrm * nrm
                     sum_var += variance
+                sum_count += cnt
                 out_prop[bin, 0] = sum_sig
                 out_prop[bin, 1] = sum_var
                 out_prop[bin, 2] = sum_norm
@@ -533,8 +534,8 @@ def histogram1d_engine(radial, int npt,
             sig = histo_signal[i] = res[i, 0]
             var = histo_variance[i] = res[i, 1]
             norm = histo_normalization[i] = res[i, 2]
-            norm2 = histo_normalization2[i] = res[i, 3]
-            cnt = histo_count[i] = res[i, 4]
+            cnt = histo_count[i] = res[i, 3]
+            norm2 = histo_normalization2[i] = res[i, 4]
             if norm2 > 0.0:
                 intensity[i] = sig / norm
                 if do_variance:

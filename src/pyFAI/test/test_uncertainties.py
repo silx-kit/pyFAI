@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2024-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/01/2024"
+__date__ = "30/01/2024"
 
 import sys
 import os
@@ -92,26 +92,37 @@ class TestUncertainties(unittest.TestCase):
         Issue #2061 on azimuthal error model
 
         """
+        epsilon = 1e-6
         res = {}
         for m in ("csr", "lut", "csc", "histogram"):
             res[m] = self.ai.integrate1d(self.img, self.npt, error_model="azimuthal", method=("bbox", m, "cython"))
+            # print(m[:3], res[m].sum_variance[:5])
             if m == "csr":
                 ref = res[m].sigma
             else:
-                self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
+                # print(m,
+                #       numpy.allclose(res["csr"].sum_signal, res[m].sum_signal, rtol=epsilon),
+                #       numpy.allclose(res["csr"].sum_variance, res[m].sum_variance, rtol=epsilon),
+                #       numpy.allclose(res["csr"].sum_normalization, res[m].sum_normalization, rtol=epsilon),
+                #       numpy.allclose(res["csr"].count, res[m].count, rtol=epsilon),
+                #       numpy.allclose(res["csr"].sum_normalization2, res[m].sum_normalization2, rtol=epsilon),
+                #     )
+                self.assertTrue(numpy.allclose(ref, res[m].sigma, rtol=epsilon), f"sigma matches for {m}")
 
     def test_azimuthal_model_full(self):
         """ histogram and csc are not producing uncertainties ...
         Issue #2061 on azimuthal error model
 
         """
+        epsilon = 1e-6
         res = {}
         for m in ("csr", "lut", "csc", "histogram"):
             res[m] = self.ai.integrate1d(self.img, self.npt, error_model="azimuthal", method=("full", m, "cython"))
+            # print(m[:3], res[m].sigma[:5])
             if m == "csr":
                 ref = res[m].sigma
             else:
-                self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
+                self.assertTrue(numpy.allclose(ref, res[m].sigma, rtol=epsilon), f"sigma matches for {m}")
 
 
 def suite():

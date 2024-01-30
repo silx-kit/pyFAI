@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2024"
+__date__ = "30/01/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1545,6 +1545,7 @@ class AzimuthalIntegrator(Geometry):
             result._set_unit(unit)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
+            result._set_sum_normalization2(intpl.norm_sq)
             result._set_count(intpl.count)
 
         else:

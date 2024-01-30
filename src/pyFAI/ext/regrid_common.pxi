@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/01/2024"
+__date__ = "30/01/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -246,41 +246,53 @@ cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
     :return: Nothing
     """
     cdef:
-        double w2 = weight * weight
-        acc_t omega_A, omega_B, omega2_A, omega2_B, w, omega_AB, sum_sig, b, delta1, delta2
+        double weight2 = weight * weight
+        acc_t omega_A, omega_B, omega2_A, omega2_B, w, w2, omega_AB, b, delta1, delta2
+        acc_t sum_sig = out_data[bin, 0]
+        acc_t sum_var = out_data[bin, 1]
+        acc_t sum_nrm = out_data[bin, 2]
+        acc_t sum_cnt = out_data[bin, 3]
+        acc_t sum_nrm2 = out_data[bin, 4]
+
+    w = weight * value.norm
+    w2 = w * w
     if error_model == 3:
-        w = weight * value.norm
-        if out_data[bin, 4] > 0.0:
+        if sum_nrm2 > 0.0:
             # Inspired from https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
             # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
             # Emprically validated against 2-pass implementation in Python/scipy-sparse
             if value.norm:
-                omega_A = out_data[bin, 2]
-                omega_B = w
-                omega2_A = out_data[bin, 4]
-                omega2_B = omega_B * omega_B
-                out_data[bin, 2] = omega_AB = omega_A + omega_B
-                out_data[bin, 4] = omega2_A + omega2_B
+                omega_A = sum_nrm
+                omega2_A = sum_nrm2
+                omega2_B = w2
+                sum_nrm += w
+                sum_nrm2 += w2
 
                 # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
-                sum_sig = out_data[bin, 0]
                 b = value.signal / value.norm
                 delta1 = sum_sig/omega_A - b
                 sum_sig += weight * value.signal
-                delta2 = sum_sig / omega_AB - b
-                out_data[bin, 1] += sum_sig + omega2_B * delta1 * delta2
-                out_data[bin, 0] = sum_sig
+                delta2 = sum_sig / sum_nrm - b
+                sum_var += omega2_B * delta1 * delta2
+
+
         else:
-            out_data[bin, 0] = weight * value.signal
-            out_data[bin, 2] = w
-            out_data[bin, 4] = w * w
+            sum_sig = weight * value.signal
+            sum_nrm = w
+            sum_nrm2 = w2
     else:
-        out_data[bin, 0] += value.signal * weight
-        out_data[bin, 1] += value.variance * w2  # Important for variance propagation
-        out_data[bin, 2] += value.norm * weight
-        out_data[bin, 3] += value.count * weight
+        sum_sig += value.signal * weight
+        sum_var += value.variance * weight2
+        sum_nrm += w
         # if out_data.shape[1] == 5: #Σ c²·ω²
-        out_data[bin, 4] += value.norm * value.norm * w2
+        sum_nrm2 += w2
+    sum_cnt += value.count * weight
+
+    out_data[bin, 0] = sum_sig
+    out_data[bin, 1] = sum_var
+    out_data[bin, 2] = sum_nrm
+    out_data[bin, 3] = sum_cnt
+    out_data[bin, 4] = sum_nrm2
 
 
 @cython.boundscheck(False)
