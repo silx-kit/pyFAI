@@ -1,7 +1,7 @@
 wheel
 meson-python
 ninja
-numpy
+numpy >= 1.10
 cython >=0.29.31
 fabio
 scipy
