@@ -384,9 +384,9 @@ def histogram_preproc(pos,
                 if nchan>2:
                     tmp = cdata[i, 2]
                     out_prop[bin, 2] += tmp
-                    out_prop[bin, 3] += tmp*tmp
+                    out_prop[bin, 4] += tmp*tmp
                 if nchan>3:
-                    out_prop[bin, 4] += cdata[i, 3]
+                    out_prop[bin, 3] += cdata[i, 3]
             else:
                 sum_sig = out_prop[bin, 0]
                 sum_var = out_prop[bin, 1]
