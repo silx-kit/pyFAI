@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,9 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "29/01/2024"
+
+import logging
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
@@ -34,7 +36,7 @@ from .DataModel import DataModel
 from .MaskedImageModel import MaskedImageModel
 from .ImageModel import ImageFromFilenameModel
 from .FilenameModel import FilenameModel
-
+_logger = logging.getLogger(__name__)
 
 class ExperimentSettingsModel(AbstractModel):
 
@@ -82,8 +84,13 @@ class ExperimentSettingsModel(AbstractModel):
             image = self.__image.value()
             if image is not None:
                 detector.guess_binning(image)
-
-            mask = detector.mask
+                try:
+                    mask = detector.dynamic_mask(image)
+                except ValueError as err:
+                    _logger.warning(f"{type(err)}: {err} \nDetector shape: {detector.shape} and image shape: {image.shape}")
+                    mask = detector.mask
+            else:
+                mask = detector.mask
             # Here mask can be None
             # For example if image do not feet the detector
 

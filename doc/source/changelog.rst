@@ -5,6 +5,11 @@
 Change-log of versions
 ======================
 
+2024.2 XX/02/2024
+-----------------
+- Fix segmentation fault in calib2 application #2047
+- Use the dynamic mask to mask-out dead pixels in Eiger images
+
 2024.1 18/01/2024
 -----------------
 - Possibility to define the detector orientation:
