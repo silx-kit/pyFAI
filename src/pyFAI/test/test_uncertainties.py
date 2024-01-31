@@ -79,7 +79,7 @@ class TestUncertainties(unittest.TestCase):
                 ref_name = m
             else:
                 for what in check:
-                    print(m[:3], what, getattr(tmp, what), getattr(ref, what))
+                    # print(m[:3], what, getattr(tmp, what), getattr(ref, what))
                     if isinstance(check, dict):
                         epsilon =  check.get(what)
                         self.assertTrue(numpy.allclose(getattr(ref,what), getattr(tmp,what), rtol=epsilon),
