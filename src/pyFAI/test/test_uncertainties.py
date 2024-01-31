@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2024-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/01/2024"
+__date__ = "31/01/2024"
 
 import sys
 import os
@@ -52,77 +52,72 @@ class TestUncertainties(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super(TestUncertainties, cls).setUpClass()
-        cls.ai = load(UtilsTest.getimage("Pilatus1M.poni"))
-        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
-        cls.npt = 100
+        cls.ai = load({"detector": "Pilatus 100k",
+                       "dist": 0.1,
+                       "poni1": 0.01,
+                       "poni2": 0.01,
+                       "wavelength": 1e-10,
+                       })
+        cls.img = UtilsTest.get_rng().poisson(1000, cls.ai.detector.shape)
+        cls.npt = 500
 
     @classmethod
     def tearDownClass(cls) -> None:
         super(TestUncertainties, cls).tearDownClass()
         cls.ai = cls.img = cls.npt = None
 
+    def _test(self, split="no", error_model="poisson",
+              algos=("histogram", "csr", "csc", "lut"),
+              check=("radial", "intensity", "std", "sem", "count", "sum_signal", "sum_variance", "sum_normalization", "sum_normalization2")):
+
+        res = {}
+        for m in algos:
+            tmp = self.ai.integrate1d(self.img, self.npt, error_model=error_model, method=(split, m, "cython"))
+            if not res:
+                res[m] = tmp
+                ref = tmp
+                ref_name = m
+            else:
+                for what in check:
+                    print(m[:3], what, getattr(tmp, what), getattr(ref, what))
+                    if isinstance(check, dict):
+                        epsilon =  check.get(what)
+                        self.assertTrue(numpy.allclose(getattr(ref,what), getattr(tmp,what), rtol=epsilon),
+                                        f"{what} matches for {m} with {ref_name}, split: {split}, error_model: {error_model}, epsilon: {epsilon}")
+                    else:
+                        self.assertTrue(numpy.allclose(getattr(ref, what), getattr(tmp, what)),
+                                        f"{what} matches for {m} with {ref_name}, split: {split}, error_model: {error_model}")
+
     def test_poisson_model(self):
         """ LUT used to gives different uncertainties
         Issue #2053 on Poisson error model
 
         """
-        res = {}
-        for m in ("histogram", "csr", "csc", "lut"):
-            res[m] = self.ai.integrate1d(self.img, self.npt, error_model="poisson", method=("no", m, "cython"))
-            if m == "histogram":
-                ref = res[m].sigma
-            else:
-                self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
+        self._test(split="no", error_model="poisson", algos=("histogram", "csr", "csc", "lut"),
+                   check=("radial", "intensity", "std", "sem", "count", "sum_signal", "sum_variance", "sum_normalization", "sum_normalization2"))
 
-    def test_azimuthal_model_nosplit(self):
+        self._test(split="bbox", error_model="poisson", algos=("histogram", "csr", "csc", "lut"),
+                   check=("radial", "intensity", "std", "sem", "count", "sum_signal", "sum_variance", "sum_normalization", "sum_normalization2"))
+
+        self._test(split="full", error_model="poisson", algos=("histogram", "csr", "csc", "lut"),
+                   check=("radial", "intensity", "std", "sem", "count", "sum_signal", "sum_variance", "sum_normalization", "sum_normalization2"))
+
+
+    def test_azimuthal_model(self):
         """ histogram and csc are not producing uncertainties ...
         Issue #2061 on azimuthal error model
 
         """
-        res = {}
-        for m in ("csr", "lut", "csc", "histogram"):
-            res[m] = self.ai.integrate1d(self.img, self.npt, error_model="azimuthal", method=("no", m, "cython"))
-            if m == "csr":
-                ref = res[m].sigma
-            else:
-                self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
 
-    def test_azimuthal_model_bbox(self):
-        """ histogram and csc are not producing uncertainties ...
-        Issue #2061 on azimuthal error model
+        self._test(split="no", error_model="azimuthal", algos=("csr", "lut", "csc", "histogram"),
+                   check=("radial", "intensity", "std", "sem", "count", "sum_signal", "sum_variance", "sum_normalization", "sum_normalization2"))
 
-        """
-        epsilon = 1e-6
-        res = {}
-        for m in ("csr", "lut", "csc", "histogram"):
-            res[m] = self.ai.integrate1d(self.img, self.npt, error_model="azimuthal", method=("bbox", m, "cython"))
-            # print(m[:3], res[m].sum_variance[:5])
-            if m == "csr":
-                ref = res[m].sigma
-            else:
-                # print(m,
-                #       numpy.allclose(res["csr"].sum_signal, res[m].sum_signal, rtol=epsilon),
-                #       numpy.allclose(res["csr"].sum_variance, res[m].sum_variance, rtol=epsilon),
-                #       numpy.allclose(res["csr"].sum_normalization, res[m].sum_normalization, rtol=epsilon),
-                #       numpy.allclose(res["csr"].count, res[m].count, rtol=epsilon),
-                #       numpy.allclose(res["csr"].sum_normalization2, res[m].sum_normalization2, rtol=epsilon),
-                #     )
-                self.assertTrue(numpy.allclose(ref, res[m].sigma, rtol=epsilon), f"sigma matches for {m}")
+        self._test(split="bbox", error_model="azimuthal", algos=("csr", "lut", "csc", "histogram"),
+                   check=("radial", "intensity", "std", "sem", "count", "sum_signal", "sum_variance", "sum_normalization", "sum_normalization2"))
 
-    def test_azimuthal_model_full(self):
-        """ histogram and csc are not producing uncertainties ...
-        Issue #2061 on azimuthal error model
+        self._test(split="full", error_model="azimuthal", algos=("csr", "lut", "csc", "histogram"),
+                   check=("radial", "intensity", "std", "sem", "count", "sum_signal", "sum_variance", "sum_normalization", "sum_normalization2"))
 
-        """
-        epsilon = 1e-6
-        res = {}
-        for m in ("csr", "lut", "csc", "histogram"):
-            res[m] = self.ai.integrate1d(self.img, self.npt, error_model="azimuthal", method=("full", m, "cython"))
-            # print(m[:3], res[m].sigma[:5])
-            if m == "csr":
-                ref = res[m].sigma
-            else:
-                self.assertTrue(numpy.allclose(ref, res[m].sigma, rtol=epsilon), f"sigma matches for {m}")
 
 
 def suite():

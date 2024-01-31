@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/01/2024"
+__date__ = "30/01/2024"
 
 import sys
 import os
@@ -368,7 +368,8 @@ class TestBugRegression(unittest.TestCase):
         for method in [("no", "histogram", "python"),
                        ("no", "histogram", "cython"),
                        ("no", "csr", "cython"),
-                       ("no", "lut", "cython")]:
+                       ("no", "lut", "cython"),
+                       ]:
             for angle in angles:
                 res0 = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method)
                 # try:
@@ -376,6 +377,7 @@ class TestBugRegression(unittest.TestCase):
                 # except:
                 #     pass
                 res = res0.count.sum()
+                # print("disc at π",  method, angle, res)
                 if angle in (-180, 180):
                     # We expect only half of the pixel
                     self.assertLess(abs(res / target - 0.5), 0.1, f"ChiDiscAtPi with {method} at {angle} expect half of the pixels ({target}/2), got {res}")
@@ -394,6 +396,7 @@ class TestBugRegression(unittest.TestCase):
                 #     print(ai.engines[res0.method].engine.pos1_range, ai.engines[res0.method].engine.pos1_min, ai.engines[res0.method].engine.pos1_maxin, ai.engines[res0.method].engine.pos1_max)
                 # except: pass
                 res = res0.count.sum()
+                # print("disc at 0",  method, angle, res)
                 if angle in (0, 360):
                     # We expect only half of the pixel
                     self.assertLess(abs(res / target - 0.5), 0.1, f"ChiDiscAtZero with {method} at {angle} expect half of the pixels ({target}/2), got {res}")
