@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/01/2024"
+__date__ = "31/01/2024"
 
 import unittest
 import numpy
@@ -93,10 +93,10 @@ class TestFlat1D(unittest.TestCase):
                 eps = 3 * self.eps
             else:
                 eps = self.eps
-            print(meth)
-            print(res.sum_signal)
-            print(res.sum_normalization)
-            print(res.intensity)
+            # print(meth)
+            # print(res.sum_signal)
+            # print(res.sum_normalization)
+            # print(res.intensity)
             _, I = res
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", str(meth), I.min(), I.max(), I.mean(), I.std())
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
