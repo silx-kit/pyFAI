@@ -223,7 +223,7 @@ def eq_qhorz(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     exit_angle = eq_exitangle(x=hpos, y=vpos, z=z, incident_angle=incident_angle)
     c1 = numpy.cos(exit_angle) * numpy.sin(numpy.arctan2(hpos, z)) * numpy.cos(tilt_angle)
     c2 = numpy.sin(exit_angle) * numpy.sin(tilt_angle)
-    c3 = numpy.sin(incident_angle) * numpy.sin(tilt_angle)                                                    
+    c3 = numpy.sin(incident_angle) * numpy.sin(tilt_angle)
     return 2.0e-9 * numpy.pi * (c1 - c2 - c3)/ wavelength
 
 
@@ -271,7 +271,7 @@ def eq_qxgi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :return: component of the scattering vector along the horizontal direction in inverse nm
-    """                                             
+    """
     return eq_qhorz(hpos=x, vpos=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
@@ -286,13 +286,13 @@ def eq_qxgi_rot90(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :return: component of the scattering vector along the horizontal direction in inverse nm
-    """                                             
+    """
     return eq_qhorz(hpos=y, vpos=x, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
 def eq_qygi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     """Calculates the component of the scattering vector along the vertical direction in the sample frame (for grazing-incidence geometries), to the roof
-    
+
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
@@ -335,7 +335,7 @@ def eq_qzgi(x, y, z, wavelength, incident_angle=0.0):
 def eq_qzgi_rot90(x, y, z, wavelength, incident_angle=0.0):
     """Calculates the component of the scattering vector along the beam propagation direction in the sample frame (for grazing-incidence geometries)
     Use if the horizontal axis of the lab frame is the vertical axis of the detector
-    
+
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
@@ -365,7 +365,7 @@ def eq_qip(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
 def eq_qip_rot90(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     """Calculates the component of the scattering vector in the plane XZ in the sample frame (for grazing-incidence geometries)
     Use if the horizontal axis of the lab frame is the vertical axis of the detector
-    
+
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
@@ -381,7 +381,7 @@ def eq_qip_rot90(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
 
 def eq_qoop(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     """Calculates the component of the scattering vector in the vertical direction in the sample frame (for grazing-incidence geometries)
-    
+
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
@@ -396,7 +396,7 @@ def eq_qoop(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
 def eq_qoop_rot90(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     """Calculates the component of the scattering vector in the vertical direction in the sample frame (for grazing-incidence geometries)
     Use if the horizontal axis of the lab frame is the vertical axis of the detector
-    
+
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
