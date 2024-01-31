@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/01/2024"
+__date__ = "31/01/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1547,6 +1547,8 @@ class AzimuthalIntegrator(Geometry):
             result._set_sum_normalization(intpl.normalization)
             result._set_sum_normalization2(intpl.norm_sq)
             result._set_count(intpl.count)
+            result._set_sem(intpl.sem)
+            result._set_std(intpl.std)
 
         else:
             raise RuntimeError("Fallback method ... should no more be used: %s" % method)
