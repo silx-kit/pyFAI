@@ -210,7 +210,7 @@ def eq_qxgi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     """
     c1 = numpy.cos(numpy.arctan2(y, z)) * numpy.sin(numpy.arctan2(x, z)) * numpy.cos(numpy.deg2rad(tilt_angle))
     c2 = numpy.sin(numpy.arctan2(y, z)) * numpy.sin(numpy.deg2rad(tilt_angle))
-    c3 = numpy.sin(numpy.deg2rad(incident_angle)) * numpy.sin(numpy.deg2rad(tilt_angle))                                                    
+    c3 = numpy.sin(numpy.deg2rad(incident_angle)) * numpy.sin(numpy.deg2rad(tilt_angle))
     return 2.0e-9 * numpy.pi * (c1 - c2 - c3)/ wavelength
 
 
@@ -264,7 +264,7 @@ def eq_qxygi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
 
 def eq_qxzgi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     """Calculates the component of the scattering vector in the plane XZ in the sample frame (for grazing-incidence geometries)
-    
+
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
@@ -280,7 +280,7 @@ def eq_qxzgi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
 
 def eq_qyzgi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     """Calculates the component of the scattering vector in the plane YZ in the sample frame (for grazing-incidence geometries)
-    
+
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
