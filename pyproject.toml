@@ -39,7 +39,7 @@ classifiers = ["Development Status :: 5 - Production/Stable",
                ]
 
 dependencies = [
-   'numpy',
+   'numpy>=1.10',
    'h5py',
    'fabio',
    "silx>=1.1; python_version < '3.12'",
