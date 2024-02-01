@@ -11,5 +11,5 @@ fabio
 scipy
 matplotlib
 numexpr != 2.8.6
-silx
+silx >= 2
 psutil

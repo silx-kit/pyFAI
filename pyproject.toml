@@ -42,8 +42,7 @@ dependencies = [
    'numpy>=1.10',
    'h5py',
    'fabio',
-   "silx>=1.1; python_version < '3.12'",
-   "silx>=2; python_version >= '3.12'",
+   'silx>=2',
    'numexpr != 2.8.6',
    'scipy',
    'matplotlib'
