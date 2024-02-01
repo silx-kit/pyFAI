@@ -1,14 +1,17 @@
 :Author: Jérôme Kieffer
-:Date: 18/01/2024
+:Date: 01/02/2024
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2024.2 XX/02/2024
+2024.2 01/02/2024
 -----------------
-- Fix segmentation fault in calib2 application #2047
-- Use the dynamic mask to mask-out dead pixels in Eiger images
+- Include grazing-incidence capabilities + tutorial (thanks Edgar)
+- Fix segmentation-fault in calib2 application #2047 (thanks Thomas & Edgar)
+- Use the dynamic mask to mask-out dead pixels in Eiger images in calib2
+- Extend Poisson+azimuthal uncertainties to all Cython integrators (+ non regression tests)
+- Support for Python 3.7-3.12 (requires silx v2 for 3.12)
 
 2024.1 18/01/2024
 -----------------
