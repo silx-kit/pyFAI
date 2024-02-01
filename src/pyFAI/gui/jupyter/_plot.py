@@ -152,7 +152,7 @@ def plot2d(result, calibrant=None, label=None, ax=None):
               aspect="auto",
               cmap="inferno",
               norm=colornorm)
-    if label:
+    if label is None:
         ax.set_title("2D regrouping")
     else:
         ax.set_title(label)
