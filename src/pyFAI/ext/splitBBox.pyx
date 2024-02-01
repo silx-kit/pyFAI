@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/09/2023"
+__date__ = "26/01/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -451,7 +451,7 @@ def histoBBox1d_engine(weights,
             # Here starts the pixel distribution
             if bin0_min == bin0_max:
                 # All pixel is within a single bin
-                update_1d_accumulator(out_data, bin0_max, value, 1.0)
+                update_1d_accumulator(out_data, bin0_max, value, 1.0, error_model)
 
             else:
                 # we have pixel splitting.
@@ -460,10 +460,10 @@ def histoBBox1d_engine(weights,
                 delta_left = < float > (bin0_min + 1) - fbin0_min
                 delta_right = fbin0_max - (<float> bin0_max)
 
-                update_1d_accumulator(out_data, bin0_min, value, inv_area * delta_left)
-                update_1d_accumulator(out_data, bin0_max, value, inv_area * delta_right)
+                update_1d_accumulator(out_data, bin0_min, value, inv_area * delta_left, error_model)
+                update_1d_accumulator(out_data, bin0_max, value, inv_area * delta_right, error_model)
                 for idx in range(bin0_min + 1, bin0_max):
-                    update_1d_accumulator(out_data, idx, value, inv_area)
+                    update_1d_accumulator(out_data, idx, value, inv_area, error_model)
 
         for i in range(bins):
             sig = out_data[i, 0]

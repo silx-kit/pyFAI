@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2024"
+__date__ = "30/01/2024"
 
 import sys
 import os
@@ -368,7 +368,8 @@ class TestBugRegression(unittest.TestCase):
         for method in [("no", "histogram", "python"),
                        ("no", "histogram", "cython"),
                        ("no", "csr", "cython"),
-                       ("no", "lut", "cython")]:
+                       ("no", "lut", "cython"),
+                       ]:
             for angle in angles:
                 res0 = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method)
                 # try:
@@ -376,6 +377,7 @@ class TestBugRegression(unittest.TestCase):
                 # except:
                 #     pass
                 res = res0.count.sum()
+                # print("disc at π",  method, angle, res)
                 if angle in (-180, 180):
                     # We expect only half of the pixel
                     self.assertLess(abs(res / target - 0.5), 0.1, f"ChiDiscAtPi with {method} at {angle} expect half of the pixels ({target}/2), got {res}")
@@ -394,6 +396,7 @@ class TestBugRegression(unittest.TestCase):
                 #     print(ai.engines[res0.method].engine.pos1_range, ai.engines[res0.method].engine.pos1_min, ai.engines[res0.method].engine.pos1_maxin, ai.engines[res0.method].engine.pos1_max)
                 # except: pass
                 res = res0.count.sum()
+                # print("disc at 0",  method, angle, res)
                 if angle in (0, 360):
                     # We expect only half of the pixel
                     self.assertLess(abs(res / target - 0.5), 0.1, f"ChiDiscAtZero with {method} at {angle} expect half of the pixels ({target}/2), got {res}")
@@ -543,11 +546,11 @@ class TestBugRegression(unittest.TestCase):
         self.assertNotEqual(id(cp), id(copy.deepcopy(cp)), "control_points copy works and id differs")
 
         import pyFAI.geometryRefinement
-        gr = pyFAI.geometryRefinement.GeometryRefinement([[1,2,3]], detector="Pilatus100k", wavelength=1e-10, calibrant="LaB6")
+        gr = pyFAI.geometryRefinement.GeometryRefinement([[1, 2, 3]], detector="Pilatus100k", wavelength=1e-10, calibrant="LaB6")
         self.assertNotEqual(id(gr), id(copy.deepcopy(gr)), "geometryRefinement copy works and id differs")
 
         import pyFAI.massif
-        ary = numpy.arange(100).reshape(10,10)
+        ary = numpy.arange(100).reshape(10, 10)
         massif = pyFAI.massif.Massif(ary)
         self.assertNotEqual(id(massif), id(copy.deepcopy(massif)), "Massif copy works and id differs")
 
@@ -558,7 +561,7 @@ class TestBugRegression(unittest.TestCase):
         from pyFAI.goniometer import SingleGeometry
         import pyFAI.calibrant
         lab6 = pyFAI.calibrant.get_calibrant("LaB6", 1e-10)
-        cp.append([[1,2],[3,4]], 0)
+        cp.append([[1, 2], [3, 4]], 0)
         sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "pilatus100k")
         self.assertNotEqual(id(sg), id(copy.deepcopy(sg)), "SingleGeometry copy works and id differs")
 
@@ -567,11 +570,11 @@ class TestBugRegression(unittest.TestCase):
         ai = load({"detector": "Pilatus100k", "wavelength": 1.54e-10})
         ai.polarization(factor=0.9)
         img = numpy.empty(ai.detector.shape, "float32")
-        ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
-        ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
+        ai.integrate2d(img, 10, 9, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 10, 9, method=("bbox", "histogram", "cython"))
         ai.setChiDiscAtZero()
-        ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
-        ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
+        ai.integrate2d(img, 10, 9, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 10, 9, method=("bbox", "histogram", "cython"))
         ai.setChiDiscAtPi()
 
     def test_bug_1946(self):
@@ -582,18 +585,6 @@ class TestBugRegression(unittest.TestCase):
         res = IntegrationMethod.select_method(dim=1, split="full", algo="csc", impl="python", degradable=False)
         self.assertGreater(len(res), 0, "method actually exists")
 
-    def test_bug_2053(self):
-        """ LUT gives different uncertainties
-        """
-        ai = load(UtilsTest.getimage("Pilatus1M.poni"))
-        img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
-        res = {}
-        for m in ("histogram", "csr", "csc", "lut"):
-            res[m] = ai.integrate1d(img, 100, error_model="poisson", method=("no", m, "cython"))
-            if m == "histogram":
-                ref = res[m].sigma
-            else:
-                self.assertTrue(numpy.allclose(ref, res[m].sigma), f"sigma matches for {m}")
 
 class TestBug1703(unittest.TestCase):
     """

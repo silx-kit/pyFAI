@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "31/01/2024"
 
 import unittest
 import numpy
@@ -93,6 +93,7 @@ class TestFlat1D(unittest.TestCase):
                 eps = 3 * self.eps
             else:
                 eps = self.eps
+            # print(meth)
             # print(res.sum_signal)
             # print(res.sum_normalization)
             # print(res.intensity)
