@@ -957,7 +957,8 @@ class Detector(metaclass=DetectorMeta):
         :return: the mask with valid pixel to 0
         :rtype: numpy ndarray of int8 or None
         """
-        self.guess_binning(img)
+        if not self.guess_binning(img):
+            self.shape = img.shape
 
         static_mask = self.mask
         if static_mask is None:
