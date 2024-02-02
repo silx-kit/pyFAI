@@ -219,7 +219,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             logger.setLevel(logging.DEBUG)
         if options.outfile:
             self.hdf5 = options.outfile
-            config["output_file"] = self.hdf5,
+            config["output_file"] = self.hdf5
         if options.dark:
             dark_files = [os.path.abspath(urlparse(f).path)
                           for f in options.dark.split(",")
