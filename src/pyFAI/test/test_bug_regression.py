@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/01/2024"
+__date__ = "02/02/2024"
 
 import sys
 import os
@@ -585,6 +585,11 @@ class TestBugRegression(unittest.TestCase):
         res = IntegrationMethod.select_method(dim=1, split="full", algo="csc", impl="python", degradable=False)
         self.assertGreater(len(res), 0, "method actually exists")
 
+    def test_bug_2072(self):
+        from ..diffmap import DiffMap
+        d = DiffMap()
+        d.use_gpu # used to raise AttributeError
+        d.use_gpu = True # used to raise AttributeError
 
 class TestBug1703(unittest.TestCase):
     """
