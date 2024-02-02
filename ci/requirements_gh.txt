@@ -18,5 +18,5 @@ matplotlib
 #pybind11
 #pyopencl
 numexpr != 2.8.6
-silx
+silx >= 2
 psutil

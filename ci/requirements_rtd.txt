@@ -6,7 +6,7 @@ scipy
 cython >=0.29.31
 pygments[plugins]
 sphinxcontrib-programoutput
-silx
+silx >= 2
 nbsphinx
 sphinx-rtd-theme
 docutils<0.20

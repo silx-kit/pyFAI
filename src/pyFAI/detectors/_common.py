@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2024"
+__date__ = "01/02/2024"
 __status__ = "stable"
 
 import logging
@@ -953,16 +953,19 @@ class Detector(metaclass=DetectorMeta):
 
         This uses the `dummy` and `delta_dummy` properties in addition to the static mask.
 
-        :param img: 2D array with the image to analyze
+        :param img: 2D array with the image to analyse
         :return: the mask with valid pixel to 0
         :rtype: numpy ndarray of int8 or None
         """
-        if self.shape is None:
+        if not self.guess_binning(img):
             self.shape = img.shape
-        assert img.shape == self.shape
+
         static_mask = self.mask
         if static_mask is None:
             static_mask = numpy.zeros(self.shape, numpy.int8)
+        if img.shape != self.shape:
+            logger.warning(f"Detector {self.name} has shape {self.shape} while image has shape {img.shape}. Use static mask only !")
+            return static_mask
         if self.dummy is None:
             logger.info("dynamic_mask makes sense only when dummy is defined !")
             return static_mask
