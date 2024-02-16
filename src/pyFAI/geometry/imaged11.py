@@ -128,9 +128,9 @@ def convert_to_ImageD11(poni, distance_unit="µm", wavelength_unit="nm"):
             "o12": 0,
             "o21": 0,
             "o22": -1}
-    id11["distance"] = f2d.get("directDist", 0) * 1e-3 * distance_unit.scale
-    id11["y_center"] = f2d.get("centerX", 0)  # in pixel
-    id11["z_center"] = f2d.get("centerY", 0)  # in pixel
+    id11["distance"] = (f2d.directDist or 0) * 1e-3 * distance_unit.scale
+    id11["y_center"] = (f2d.centerX or 0)  # in pixel
+    id11["z_center"] = (f2d.centerY or 0)  # in pixel
     id11["tilt_x"] = poni.rot3
     id11["tilt_y"] = poni.rot2
     id11["tilt_z"] = -poni.rot1
@@ -139,7 +139,7 @@ def convert_to_ImageD11(poni, distance_unit="µm", wavelength_unit="nm"):
     id11["y_size"] = poni.detector.pixel2 * distance_unit.scale
     id11["z_size"] = poni.detector.pixel1 * distance_unit.scale
 
-    return ImageD11Geometry.from_dict(id11, distance_unit=distance_unit, wavelength_unit=wavelength_unit)
+    return ImageD11Geometry._fromdict(id11, distance_unit=distance_unit, wavelength_unit=wavelength_unit)
 
 def convert_from_ImageD11(id11):
     """Set the geometry from the parameter set which contains distance,
@@ -153,7 +153,7 @@ def convert_from_ImageD11(id11):
     :return: PoniFile like object
     """
     if isinstance(id11, dict):
-        id11 = ImageD11Geometry.from_dict(id11)
+        id11 = ImageD11Geometry._fromdict(id11)
 
     o11 = id11.o11
     o12 = id11.o12
@@ -182,18 +182,18 @@ def convert_from_ImageD11(id11):
         len_scale = 1e6 # µm by default (compatibility with implementation from Carsten in 2019)
 
     poni = PoniFile()
-    poni.rot3 = id11.tilt_x or 0
-    poni.rot2 = id11.tilt_y or 0
-    poni.rot1 = -id11.tilt_z or 0
+    poni._rot3 = id11.tilt_x or 0
+    poni._rot2 = id11.tilt_y or 0
+    poni._rot1 = -id11.tilt_z or 0
     distance = (id11.distance or 0) / len_scale
-    poni.dist = distance * cos(poni.rot2) * cos(poni.rot1)
+    poni._dist = distance * cos(poni.rot2) * cos(poni.rot1)
     pixel_v = (id11.z_size or 0) / len_scale
     pixel_h = (id11.y_size or 0) / len_scale
-    poni.poni1 = -distance * sin(poni.rot2) + pixel_v * (id11.z_center or 0.0)
-    poni.poni2 = +distance * cos(poni.rot2) * sin(poni.rot1) + pixel_h * (id11.y_center or 0)
-    poni.detector = Detector(pixel1=pixel_v, pixel2=pixel_h, orientation=orientation)
+    poni._poni1 = -distance * sin(poni.rot2) + pixel_v * (id11.z_center or 0.0)
+    poni._poni2 = +distance * cos(poni.rot2) * sin(poni.rot1) + pixel_h * (id11.y_center or 0)
+    poni._detector = Detector(pixel1=pixel_v, pixel2=pixel_h, orientation=orientation)
     wl = id11.wavelength
     if wl:
-        poni.wavelength = wl / wl_scale
+        poni._wavelength = wl / wl_scale
 
     return poni

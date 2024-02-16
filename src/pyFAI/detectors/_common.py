@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2024"
+__date__ = "16/02/2024"
 __status__ = "stable"
 
 import logging
@@ -1205,6 +1205,7 @@ class Detector(metaclass=DetectorMeta):
     @property
     def orientation(self):
         return self._orientation
+
 
 class NexusDetector(Detector):
     """

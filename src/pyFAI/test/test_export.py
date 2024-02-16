@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "16/02/2024"
 
 import unittest
 import logging
@@ -114,6 +114,7 @@ class TestFIT2D(unittest.TestCase):
             if refv is None:
                 self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
             else:
+                #print(key, refv, obtv)
                 self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
 
 
