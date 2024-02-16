@@ -25,7 +25,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-from units import to_unit
 
 """This modules contains helper function to convert to/from ImageD11 geometry
 """
@@ -34,7 +33,7 @@ __author__ = "Jérôme Kieffer, Carsten DETLEFS"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/02/2024"
+__date__ = "16/02/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -132,9 +131,9 @@ def convert_to_ImageD11(poni, distance_unit="µm", wavelength_unit="nm"):
     id11["distance"] = f2d.get("directDist", 0) * 1e-3 * distance_unit.scale
     id11["y_center"] = f2d.get("centerX", 0)  # in pixel
     id11["z_center"] = f2d.get("centerY", 0)  # in pixel
-    id11["tilt_x"] = self.rot3
-    id11["tilt_y"] = self.rot2
-    id11["tilt_z"] = -self.rot1
+    id11["tilt_x"] = poni.rot3
+    id11["tilt_y"] = poni.rot2
+    id11["tilt_z"] = -poni.rot1
     if poni.wavelength:
         id11["wavelength"] = poni.wavelength * wavelength_unit.scale
     id11["y_size"] = poni.detector.pixel2 * distance_unit.scale
@@ -173,15 +172,14 @@ def convert_from_ImageD11(id11):
     else:
         raise RuntimeError("rotated orientations are not supported")
 
-    if id11.wavelength_unit
+    if id11.wavelength_unit:
         wl_scale = id11.wavelength_unit.scale
     else:
-        wl_scale = 1e9 # nm by default (compatibility with implementation from 2019)
-    if id11.distance_unit
+        wl_scale = 1e9 # nm by default (compatibility with implementation from Carsten in 2019)
+    if id11.distance_unit:
         len_scale = id11.distance_unit.scale
     else:
-        len_scale = 1e6 # µm by default (compatibility with implementation from 2019)
-
+        len_scale = 1e6 # µm by default (compatibility with implementation from Carsten in 2019)
 
     poni = PoniFile()
     poni.rot3 = id11.tilt_x or 0
@@ -192,7 +190,7 @@ def convert_from_ImageD11(id11):
     pixel_v = (id11.z_size or 0) / len_scale
     pixel_h = (id11.y_size or 0) / len_scale
     poni.poni1 = -distance * sin(poni.rot2) + pixel_v * (id11.z_center or 0.0)
-    poni.poni2 = +distance * cos(poni.rot2) * sin(self.rot1) + pixel_h * (id11.y_center or 0)
+    poni.poni2 = +distance * cos(poni.rot2) * sin(poni.rot1) + pixel_h * (id11.y_center or 0)
     poni.detector = Detector(pixel1=pixel_v, pixel2=pixel_h, orientation=orientation)
     wl = id11.wavelength
     if wl:
