@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer, Carsten DETLEFS"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/02/2024"
+__date__ = "19/02/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -47,8 +47,8 @@ from ..io.ponifile import PoniFile
 from collections import namedtuple
 
 _ImageD11Geometry = namedtuple("_ImageD11Geometry",
-                               "distance o11 o12 o21 o22 tilt_x tilt_y tilt_z wavelength y_center y_size z_center z_size",
-                               defaults=[None]*13)
+                               "distance o11 o12 o21 o22 tilt_x tilt_y tilt_z wavelength y_center y_size z_center z_size spline shape",
+                               defaults=[None]*15)
 
 class ImageD11Geometry(_ImageD11Geometry):
     """ This object represents the geometry as configured in Fit2D
@@ -64,8 +64,8 @@ class ImageD11Geometry(_ImageD11Geometry):
 
     def __new__(cls, *args, **kwargs):
         self = super().__new__(cls, *args, **kwargs)
-        self._wavelength_unit=None
-        self._distance_unit=None
+        self._distance_unit = None
+        self._wavelength_unit = None
         return self
 
     @classmethod
@@ -75,8 +75,8 @@ class ImageD11Geometry(_ImageD11Geometry):
             obj = cls(**dico)
             obj._wavelength_unit = to_unit(wavelength_unit, LENGTH_UNITS)
             obj._distance_unit = to_unit(distance_unit, LENGTH_UNITS)
-        except TypeError as err:
-            logger.warning("TypeError: %s", err)
+        except TypeError:# as err:
+            # logger.warning("TypeError: %s", err)
             obj = cls(**{key: dico[key] for key in [i for i in cls._fields if i in dico]})
             if "wavelength_unit" in dico:
                 obj._wavelength_unit = to_unit(dico["wavelength_unit"], LENGTH_UNITS)
@@ -106,7 +106,6 @@ class ImageD11Geometry(_ImageD11Geometry):
         else:
             raise TypeError(f"{type(self)} object does not support item assignment")
 
-
 def convert_to_ImageD11(poni, distance_unit="µm", wavelength_unit="nm"):
     """Convert a Geometry|PONI object to the geometry of ImageD11
     Please see the doc in  doc/source/geometry_conversion.rst or
@@ -119,7 +118,6 @@ def convert_to_ImageD11(poni, distance_unit="µm", wavelength_unit="nm"):
     """
     poni = PoniFile(poni)
     detector = poni.detector
-    print(detector)
     distance_unit = to_unit(distance_unit, LENGTH_UNITS)
     wavelength_unit = to_unit(wavelength_unit, LENGTH_UNITS)
     f2d = convert_to_Fit2d(poni)
@@ -136,8 +134,10 @@ def convert_to_ImageD11(poni, distance_unit="µm", wavelength_unit="nm"):
     id11["tilt_z"] = -poni.rot1
     if poni.wavelength:
         id11["wavelength"] = poni.wavelength * wavelength_unit.scale
-    id11["y_size"] = poni.detector.pixel2 * distance_unit.scale
-    id11["z_size"] = poni.detector.pixel1 * distance_unit.scale
+    id11["y_size"] = detector.pixel2 * distance_unit.scale
+    id11["z_size"] = detector.pixel1 * distance_unit.scale
+    id11["shape"] = detector.shape or detector.max_shape
+    id11["spline"] = detector.splineFile
 
     return ImageD11Geometry._fromdict(id11, distance_unit=distance_unit, wavelength_unit=wavelength_unit)
 
@@ -191,7 +191,9 @@ def convert_from_ImageD11(id11):
     pixel_h = (id11.y_size or 0) / len_scale
     poni._poni1 = -distance * sin(poni.rot2) + pixel_v * (id11.z_center or 0.0)
     poni._poni2 = +distance * cos(poni.rot2) * sin(poni.rot1) + pixel_h * (id11.y_center or 0)
-    poni._detector = Detector(pixel1=pixel_v, pixel2=pixel_h, orientation=orientation)
+    shape = id11.shape
+    spline = id11.spline
+    poni._detector = Detector(pixel1=pixel_v, pixel2=pixel_h, splineFile=spline, max_shape=shape, orientation=orientation)
     wl = id11.wavelength
     if wl:
         poni._wavelength = wl / wl_scale
