@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2023"
+__date__ = "20/02/2024"
 __status__ = "production"
 
 import sys
@@ -221,21 +221,26 @@ class Massif(object):
         :param seed: list of good guesses to start with
         :return: list of peaks [y,x], [y,x], ...]
         """
-        all_points = numpy.vstack(numpy.where(mask)).T
+
         res = []
         cnt = 0
         dmin2 = dmin * dmin
+
+        all_points = numpy.vstack(numpy.where(mask)).T
         if len(all_points) > 0:
             numpy.random.shuffle(all_points)
+
         if seed:
             seeds = numpy.array(list(seed))
             if len(seeds) > 0:
                 numpy.random.shuffle(seeds)
             all_points = numpy.concatenate((seeds, all_points))
+
+        msg = "[ %3i, %3i ] -> [ %.1f, %.1f ]"
         for idx in all_points:
             out = self.nearest_peak(idx)
             if out is not None:
-                msg = "[ %3i, %3i ] -> [ %.1f, %.1f ]"
+
                 logger.debug(msg, idx[1], idx[0], out[1], out[0])
                 p0, p1 = int(round(out[0])), int(round(out[1]))
                 if mask[p0, p1]:
