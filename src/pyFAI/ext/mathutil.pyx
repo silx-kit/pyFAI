@@ -98,22 +98,23 @@ def build_qmask(tth_array,
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
         do_mask = True
 
-    for i in range(n):
-        if do_mask and cmask[i]:
-            qmask[i] = -2
-            continue
-        tthv = ctth[i]
-        for r in range(nref):
-            lb = ctth_min[r]
-            ub = ctth_max[r]
-            if tthv < lb:
+    with nogil:
+        for i in range(n):
+            if do_mask and cmask[i]:
+                qmask[i] = -2
+                continue
+            tthv = ctth[i]
+            for r in range(nref):
+                lb = ctth_min[r]
+                ub = ctth_max[r]
+                if tthv < lb:
+                    qmask[i] = -1
+                    break
+                if lb <= tthv < ub:
+                    qmask[i] = r
+                    count[r] += 1
+                    break
+            else:
                 qmask[i] = -1
-                break
-            if lb <= tthv < ub:
-                qmask[i] = r
-                count[r] += 1
-                break
-        else:
-            qmask[i] = -1
 
     return numpy.asarray(qmask).reshape(tth_array.shape), numpy.asarray(count)
