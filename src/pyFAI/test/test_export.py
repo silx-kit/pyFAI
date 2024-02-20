@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2024"
+__date__ = "20/02/2024"
 
 import unittest
 import logging
@@ -108,7 +108,6 @@ class TestFIT2D(unittest.TestCase):
         ai.detector.shape = (250, 260)
         ai.wavelength = 1.234e-10
         param = ai.getImageD11()
-        param.pop("spline")
         ai2 = AzimuthalIntegrator()
         ai2.setImageD11(param)
 

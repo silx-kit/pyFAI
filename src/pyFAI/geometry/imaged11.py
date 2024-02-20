@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer, Carsten DETLEFS"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2024"
+__date__ = "20/02/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -83,6 +83,13 @@ class ImageD11Geometry(_ImageD11Geometry):
             if "distance_unit" in dico:
                 obj._distance_unit = to_unit(dico["distance_unit"], LENGTH_UNITS)
         return obj
+
+    def _asdict(self):
+        """work arround for bug in ImageD11"""
+        dico = super()._asdict()
+        if self.spline is None:
+            dico.pop("spline")
+        return dico
 
     @property
     def wavelength_unit(self):
