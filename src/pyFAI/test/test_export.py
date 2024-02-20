@@ -132,6 +132,7 @@ class TestFIT2D(unittest.TestCase):
                 unittest.skip(f"ImageD11 does not recognize is parameter set: {param}")
             else:
                 self.assertTrue(numpy.allclose(id11.tth, ai.center_array(unit="2th_deg"), atol=3e-2), "2theta array matches")
+                self.assertLess(numpy.median(abs((270-id11.eta)%360-180 - ai.center_array(unit="chi_deg"))), 0.5, "chi array roughly matches")
 
 
 class TestExport(unittest.TestCase):
