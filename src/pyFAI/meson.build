@@ -32,6 +32,7 @@ py.install_sources(
     'method_registry.py',
     'multi_geometry.py',
     'parallax.py',
+    'ring_extraction.py'
     'spline.py',
     'units.py',
     'worker.py'],
