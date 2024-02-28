@@ -352,7 +352,7 @@ class RingExtraction:
 
     def _calculate_num_of_points_to_keep(
         self,
-        pixels_at_two_theta_level: np.ndrray,
+        pixels_at_two_theta_level: np.ndarray,
         points_per_degree,
     ) -> int:
         """
