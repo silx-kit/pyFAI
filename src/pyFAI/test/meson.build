@@ -38,6 +38,7 @@ py.install_sources(
     'test_preproc.py',
     'test_pyfai_api.py',
     'test_rectangle.py',
+    'test_ring_extraction.py',
     'test_saxs.py',
     'test_scripts.py',
     'test_sparse.py',
