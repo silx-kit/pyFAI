@@ -9,9 +9,9 @@ from typing import Optional
 import numpy as np
 from silx.image import marchingsquares
 
-from pyFAI.control_points import ControlPoints
-from pyFAI.goniometer import SingleGeometry
-from pyFAI.massif import Massif
+from .control_points import ControlPoints
+from .goniometer import SingleGeometry
+from .massif import Massif
 
 logger = logging.getLogger(__name__)
 
