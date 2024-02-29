@@ -308,7 +308,7 @@ class RingExtraction:
 
         Returns
         -------
-        uple[np.ndarray, float]
+        tuple[np.ndarray, float]
             final mask of valid pixels, upper limit of intensity to mask
         """
         mean, std = self._calculate_mean_and_std_of_intensities_in_mask(mask)
