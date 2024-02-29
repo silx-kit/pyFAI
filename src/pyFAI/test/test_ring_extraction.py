@@ -34,137 +34,356 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "28/02/2024"
 
+import unittest
+from unittest import mock
+
 import numpy as np
-import pytest
 
 from .. import ring_extraction
 from ..ring_extraction import RingExtraction
 
 
-@pytest.fixture
-def ring_extraction_instance(mocker):
-    single_geometry = mocker.MagicMock()
-    massif = mocker.MagicMock()
-    ring_extraction_inst = RingExtraction(single_geometry, massif)
-    two_theta_values = np.array([1, 2, 3, 4, 5])
-    ring_extraction_inst.two_theta_values = two_theta_values
-    return ring_extraction_inst
+class RingExtractionTestBase(unittest.TestCase):
+    def setUp(self):
+        self.single_geometry = mock.MagicMock()
+        self.massif = mock.MagicMock()
+        self.ring_extraction = RingExtraction(self.single_geometry, self.massif)
+        two_theta_values = np.array([1, 2, 3, 4, 5])
+        self.ring_extraction.two_theta_values = two_theta_values
+        self.ones_array = np.ones((5, 5))
+        self.ring_extraction.two_theta_array = self.ones_array
+        self.expected_two_theta_dictionary = {
+            "min": 0.75,
+            "max": 1.25,
+        }
+
+        self.mock_np = mock.patch(
+            ring_extraction.__name__ + ".np", autospec=True
+        ).start()
+
+    def tearDown(self):
+        mock.patch.stopall()
 
 
-@pytest.fixture
-def mock_numpy(mocker):
-    return mocker.patch(ring_extraction.__name__ + ".np")
+class TestCalibAttributes(RingExtractionTestBase):
+    def test_calib_attributes(self):
+        ring_extraction_attributes = [
+            "single_geometry",
+            "image",
+            "detector",
+            "calibrant",
+            "massif",
+            "two_theta_array",
+            "two_theta_values",
+        ]
+
+        for attribute_name in ring_extraction_attributes:
+            with self.subTest(attribute_name=attribute_name):
+                self.assertTrue(
+                    hasattr(self.ring_extraction, attribute_name),
+                    f"{attribute_name} is missing",
+                )
 
 
-ring_extraction_attributes = [
-    "single_geometry",
-    "image",
-    "detector",
-    "calibrant",
-    "massif",
-    "two_theta_array",
-    "two_theta_values",
-]
+class TestExtractControlPoints(RingExtractionTestBase):
+    def setUp(self):
+        super().setUp()
+        self.mock_control_points = mock.patch(
+            (ring_extraction.__name__ + ".ControlPoints")
+        ).start()
+        self.mock_extract_peaks_in_one_ring = mock.patch.object(
+            self.ring_extraction, "extract_list_of_peaks_in_one_ring"
+        ).start()
+
+    def tearDown(self):
+        mock.patch.stopall()
+
+    def test_extract_control_points(self):
+        # Act
+        self.ring_extraction.extract_control_points(max_number_of_rings=3)
+
+        # Assert
+        self.mock_control_points.assert_called_once_with(
+            calibrant=self.ring_extraction.calibrant
+        )
+
+        self.assertEqual(self.mock_extract_peaks_in_one_ring.call_count, 3)
+        self.mock_extract_peaks_in_one_ring.assert_has_calls(
+            [
+                mock.call(0, 1),
+                mock.call(1, 1),
+                mock.call(2, 1),
+            ],
+            any_order=False,
+        )
 
 
-@pytest.mark.parametrize("attribute_name", ring_extraction_attributes)
-def test_calib(attribute_name, ring_extraction_instance):
-    assert hasattr(ring_extraction_instance, attribute_name)
+class TestExtractOneRing(RingExtractionTestBase):
+    def setUp(self):
+        super().setUp()
+        self.ring_extraction.detector.mask = "detector_mask_string"
+
+        self.mock_calculate_num_of_points_to_keep = mock.patch.object(
+            RingExtraction, "_calculate_num_of_points_to_keep", return_value=5
+        ).start()
+        self.mock_remove_low_intensity_pixels = mock.patch.object(
+            RingExtraction,
+            "_remove_low_intensity_pixels_from_mask",
+            return_value=(np.ones((5, 5)), 0),
+        ).start()
+        self.mock_create_mask_around_ring = mock.patch.object(
+            RingExtraction, "_create_mask_around_ring", return_value=np.ones((5, 5))
+        ).start()
+        self.mock_marching_squares = mock.patch(
+            ring_extraction.__name__ + ".marchingsquares.MarchingSquaresMergeImpl"
+        ).start()
+
+        def tearDown(self):
+            mock.patch.stopall()
+
+    def test_extract_list_of_peaks_in_one_ring(
+        self,
+    ):
+        # Act
+        self.ring_extraction.extract_list_of_peaks_in_one_ring(ring_index=1)
+
+        # Assert
+        self.mock_marching_squares.assert_called_once()
+        self.assertTrue(
+            np.array_equal(
+                self.mock_marching_squares.call_args_list[0][0][0], self.ones_array
+            )
+        )
+        self.assertEqual(
+            self.mock_marching_squares.call_args_list[0][1]["mask"],
+            "detector_mask_string",
+        )
+        self.assertTrue(
+            self.mock_marching_squares.call_args_list[0][1]["use_minmax_cache"], True
+        )
+
+        self.mock_create_mask_around_ring.assert_called_once_with(1)
+        self.mock_remove_low_intensity_pixels.assert_called_once()
+        self.assertTrue(
+            np.array_equal(
+                self.mock_remove_low_intensity_pixels.call_args_list[0][0][0],
+                self.ones_array,
+            )
+        )
+        self.mock_calculate_num_of_points_to_keep.assert_called_once()
+
+        self.ring_extraction.massif.peaks_from_area.assert_called_once()
+        self.assertTrue(
+            np.array_equal(
+                self.ring_extraction.massif.peaks_from_area.call_args_list[0][0][0],
+                self.ones_array,
+            )
+        )
+        self.assertEqual(
+            self.ring_extraction.massif.peaks_from_area.call_args_list[0][1]["keep"],
+            5,
+        )
+        self.assertEqual(
+            self.ring_extraction.massif.peaks_from_area.call_args_list[0][1]["dmin"],
+            0,
+        )
+        self.assertEqual(
+            self.ring_extraction.massif.peaks_from_area.call_args_list[0][1]["seed"],
+            set(),
+        )
+        self.assertEqual(
+            self.ring_extraction.massif.peaks_from_area.call_args_list[0][1]["ring"],
+            1,
+        )
 
 
-def test_extract_control_points(mocker, ring_extraction_instance):
-    # arrange
-    mock_control_points = mocker.patch(ring_extraction.__name__ + ".ControlPoints")
-    mock_extract_peaks_in_one_ring = mocker.patch.object(
-        ring_extraction_instance, "extract_list_of_peaks_in_one_ring"
-    )
+class TestGetUniqueTwoThetaValuesInImage(RingExtractionTestBase):
+    def test_get_unique_two_theta_values_in_image(
+        self,
+    ):
+        two_theta_values = np.array([0.5, 1, 1.5, 2, 2.5, 1])
+        self.ring_extraction.calibrant = mock.MagicMock()
+        self.mock_np.array.return_value = two_theta_values
 
-    # act
-    ring_extraction_instance.extract_control_points(max_number_of_rings=3)
+        # Act
+        self.ring_extraction._get_unique_two_theta_values_in_image()
 
-    # assert
-    mock_control_points.assert_called_once_with(
-        calibrant=ring_extraction_instance.calibrant
-    )
-
-    assert mock_extract_peaks_in_one_ring.call_count == 3
-    assert mock_extract_peaks_in_one_ring.call_args_list[0][0] == (
-        0,
-        1,
-    )
-    assert mock_extract_peaks_in_one_ring.call_args_list[1][0] == (
-        1,
-        1,
-    )
-    assert mock_extract_peaks_in_one_ring.call_args_list[2][0] == (
-        2,
-        1,
-    )
+        # Assert
+        self.ring_extraction.calibrant.get_2th.assert_called_once_with()
+        self.mock_np.unique.assert_called_once_with(two_theta_values)
 
 
-def test_extract_list_of_peaks_in_one_ring(mocker, ring_extraction_instance):
-    # arrange
-    ones_array = np.ones((5, 5))
+class TestCreateMaskAroundRing(RingExtractionTestBase):
+    def setUp(self):
+        super().setUp()
+        zeros_array = np.zeros((3, 3))
+        self.ring_extraction.two_theta_array = zeros_array
+        self.mock_get_two_theta_min_max = mock.patch.object(
+            RingExtraction,
+            "_get_two_theta_min_max",
+            return_value=self.expected_two_theta_dictionary,
+        ).start()
 
-    ring_extraction_instance.two_theta_array = ones_array
-    mock_marching_squares = mocker.patch(
-        ring_extraction.__name__ + ".marchingsquares.MarchingSquaresMergeImpl"
-    )
-    mock_create_mask_around_ring = mocker.patch.object(
-        ring_extraction_instance,
-        "_create_mask_around_ring",
-        return_value=ones_array,
-    )
-    mock_remove_low_intensity_pixels_from_mask = mocker.patch.object(
-        ring_extraction_instance,
-        "_remove_low_intensity_pixels_from_mask",
-        return_value=(ones_array, 0),
-    )
-    mock_calculate_num_of_points_to_keep = mocker.patch.object(
-        ring_extraction_instance,
-        "_calculate_num_of_points_to_keep",
-        return_value=5,
-    )
+    def tearDown(self):
+        mock.patch.stopall()
 
-    ring_extraction_instance.image = ones_array
-    ring_extraction_instance.detector.mask = "detector_mask_string"
+    def test_create_mask_around_ring(self):
+        # Act
+        self.ring_extraction._create_mask_around_ring(ring_index=0)
 
-    # act
-    ring_extraction_instance.extract_list_of_peaks_in_one_ring(ring_index=1)
+        # Assert
+        self.mock_get_two_theta_min_max.assert_called_once_with(0)
+        self.mock_np.logical_and.assert_called_once()
+        first_call_logical_and = (
+            np.zeros((3, 3), dtype=bool),
+            np.ones((3, 3), dtype=bool),
+        )
+        self.assertTrue(
+            np.array_equal(
+                self.mock_np.logical_and.call_args_list[0][0], first_call_logical_and
+            )
+        )
 
-    # assert
-    mock_marching_squares.assert_called_once()
-    assert np.array_equal(mock_marching_squares.call_args_list[0][0][0], ones_array)
-    assert mock_marching_squares.call_args_list[0][1]["mask"] == "detector_mask_string"
-    assert mock_marching_squares.call_args_list[0][1]["use_minmax_cache"]
-    mock_create_mask_around_ring.assert_called_once()
-    assert mock_create_mask_around_ring.call_args_list[0][0][0] == 1
 
-    mock_remove_low_intensity_pixels_from_mask.assert_called_once()
-    assert np.array_equal(
-        mock_remove_low_intensity_pixels_from_mask.call_args_list[0][0][0], ones_array
-    )
+class TestGetTwoThetaMinMax(RingExtractionTestBase):
+    def test_get_two_theta_min_max(self):
+        # Act
+        two_theta_dictionary = self.ring_extraction._get_two_theta_min_max(0)
 
-    mock_calculate_num_of_points_to_keep.assert_called_once()
+        # Assert
+        self.assertEqual(
+            set(two_theta_dictionary.keys()),
+            set(self.expected_two_theta_dictionary.keys()),
+        )
 
-    ring_extraction_instance.massif.peaks_from_area.assert_called_once()
-    assert np.array_equal(
-        ring_extraction_instance.massif.peaks_from_area.call_args_list[0][0][0],
-        ones_array,
-    )
-    assert (
-        ring_extraction_instance.massif.peaks_from_area.call_args_list[0][1]["keep"]
-        == 5
-    )
-    assert (
-        ring_extraction_instance.massif.peaks_from_area.call_args_list[0][1]["dmin"]
-        == 0
-    )
-    assert (
-        ring_extraction_instance.massif.peaks_from_area.call_args_list[0][1]["seed"]
-        == set()
-    )
-    assert (
-        ring_extraction_instance.massif.peaks_from_area.call_args_list[0][1]["ring"]
-        == 1
-    )
+
+class TestRemoveLowIntensityPixelsFromMask(RingExtractionTestBase):
+    def setUp(self):
+        super().setUp()
+        self.mock_np.logical_and.side_effect = [
+            np.ones((3, 3), dtype=bool),
+            np.ones((3, 3), dtype=bool),
+            np.ones((32, 32), dtype=bool),
+        ]
+        self.mock_calculate_mean_and_std_of_intensities_in_mask = mock.patch.object(
+            RingExtraction,
+            "_calculate_mean_and_std_of_intensities_in_mask",
+            return_value=(0.9, 0.1),
+        ).start()
+        self.ring_extraction.image = np.ones((3, 3))
+        self.mock_mask = np.ones((3, 3), dtype=bool)
+
+    def tearDown(self):
+        mock.patch.stopall()
+
+    def test_remove_low_intensity_pixels_from_mask(self):
+        # Act
+        (
+            final_mask,
+            upper_limit,
+        ) = self.ring_extraction._remove_low_intensity_pixels_from_mask(self.mock_mask)
+
+        # Assert
+        self.assertIsInstance(final_mask, np.ndarray)
+        self.assertEqual(upper_limit, 0.9)
+        self.mock_calculate_mean_and_std_of_intensities_in_mask.assert_called_once_with(
+            self.mock_mask
+        )
+
+        expected_first_call = (np.zeros((3, 3)), np.ones((3, 3)))
+        expected_second_call = (np.ones((3, 3)), np.ones((3, 3)))
+        actual_calls = self.mock_np.logical_and.call_args_list
+        self.assertEqual(
+            len(actual_calls), 2, "np.logical_and was not called twice as expected"
+        )
+        self.assertTrue(np.array_equal(actual_calls[0][0][0], expected_first_call[0]))
+        self.assertTrue(np.array_equal(actual_calls[0][0][1], expected_first_call[1]))
+        self.assertTrue(np.array_equal(actual_calls[1][0][0], expected_second_call[0]))
+        self.assertTrue(np.array_equal(actual_calls[1][0][1], expected_second_call[1]))
+
+    def test_remove_low_intensity_pixels_from_mask_enough_points(self):
+        # Act
+        self.ring_extraction._remove_low_intensity_pixels_from_mask(self.mock_mask)
+
+        # Assert
+        self.mock_calculate_mean_and_std_of_intensities_in_mask.assert_called_once_with(
+            self.mock_mask
+        )
+
+        expected_call_args = (np.zeros((3, 3)), np.ones((3, 3)))
+        actual_call_args = self.mock_np.logical_and.call_args_list[0][0]
+        self.assertTrue(np.array_equal(actual_call_args[0], expected_call_args[0]))
+        self.assertTrue(np.array_equal(actual_call_args[1], expected_call_args[1]))
+
+
+class TestCalcMeanStdOfIntensitiesInMask(RingExtractionTestBase):
+    def test_calculate_mean_and_std_of_intensities_in_mask(self):
+        mock_mask = mock.MagicMock()
+        mock_flattened_mask = np.ones(9, dtype=bool)
+        mock_mask.flatten.return_value = mock_flattened_mask
+
+        mock_image = mock.MagicMock()
+        mock_flattened_image = mock.MagicMock()
+        mock_image.flatten.return_value = mock_flattened_image
+        mock_pixel_intensities_in_mask = mock_flattened_image[
+            np.where(mock_flattened_mask)
+        ]
+        mean = 1
+        std = 0.1
+        mock_pixel_intensities_in_mask.mean.return_value = mean
+        mock_pixel_intensities_in_mask.std.return_value = std
+
+        self.ring_extraction.image = mock_image
+
+        # Act
+        result = self.ring_extraction._calculate_mean_and_std_of_intensities_in_mask(
+            mock_mask
+        )
+
+        # Assert
+        self.assertEqual(result, (mean, std))
+        mock_mask.flatten.assert_called_once_with()
+        mock_image.flatten.assert_called_once_with()
+        self.mock_np.where.assert_called_once_with(mock_flattened_mask)
+
+
+class TestCalcPointsToKeep(RingExtractionTestBase):
+    def test_calculate_num_of_points_to_keep(self):
+        self.ring_extraction.image = np.zeros((10, 10))
+        pixel_list_at_two_theta_level = np.array([[2, 2], [3, 3], [4, 4]])
+        sample_array = np.array([[1, 2], [3, 4]])
+
+        self.mock_np.unique.return_value = np.array([1, 2, 3, 4])
+        self.mock_np.rad2deg.return_value = sample_array
+        # Act
+        points_to_keep = self.ring_extraction._calculate_num_of_points_to_keep(
+            pixel_list_at_two_theta_level, 1
+        )
+
+        # Assert
+        self.single_geometry.geometry_refinement.chiArray.assert_called_once_with(
+            (10, 10)
+        )
+        self.mock_np.unique.assert_called_once_with(sample_array)
+        self.assertEqual(points_to_keep, 4)
+
+
+def suite():
+    testsuite = unittest.TestSuite()
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestCalibAttributes))
+    testsuite.addTest(loader(TestExtractControlPoints))
+    testsuite.addTest(loader(TestExtractOneRing))
+    testsuite.addTest(loader(TestGetUniqueTwoThetaValuesInImage))
+    testsuite.addTest(loader(TestCreateMaskAroundRing))
+    testsuite.addTest(loader(TestGetTwoThetaMinMax))
+    testsuite.addTest(loader(TestRemoveLowIntensityPixelsFromMask))
+    testsuite.addTest(loader(TestCalcMeanStdOfIntensitiesInMask))
+    testsuite.addTest(loader(TestCalcPointsToKeep))
+
+    return testsuite
+
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    runner.run(suite())
