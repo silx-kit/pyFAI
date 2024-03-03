@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/08/2023"
+__date__ = "20/02/2024"
 __status__ = "production"
 
 import logging
@@ -716,7 +716,7 @@ def roundfft(*args, **kwargs):
     return round_fft(*args, **kwargs)
 
 
-def is_far_from_group(pt, lst_pts, d2):
+def is_far_from_group_python(pt, lst_pts, d2):
     """
     Tells if a point is far from a group of points, distance greater than d2 (distance squared)
 
@@ -732,6 +732,12 @@ def is_far_from_group(pt, lst_pts, d2):
             return False
     return True
 
+try:
+    from ..ext.mathutil import is_far_from_group_cython
+except ImportError:
+    is_far_from_group = is_far_from_group_python
+else:
+    is_far_from_group = is_far_from_group_cython
 
 def rwp(obt, ref, scale=1.0):
     """Compute :math:`\\sqrt{\\sum \\frac{4\\cdot(obt-ref)^2}{(obt + ref)^2}}`.
