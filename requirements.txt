@@ -13,5 +13,3 @@ PyOpenGL
 PyQt5
 hdf5plugin
 nbsphinx
-pytest
-pytest-mock
