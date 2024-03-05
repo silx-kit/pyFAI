@@ -31,6 +31,8 @@
 Module used for extracting control points in a calibrant image to be used for geometry refinement.
 """
 
+from __future__ import annotations
+
 __authors__ = ["Emily Massahud", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
@@ -38,7 +40,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "28/02/2024"
 __status__ = "development"
 
-from __future__ import annotations
+
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
