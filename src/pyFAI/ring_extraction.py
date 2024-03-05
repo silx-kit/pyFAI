@@ -38,7 +38,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "28/02/2024"
 __status__ = "development"
 
-
+from __future__ import annotations
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
