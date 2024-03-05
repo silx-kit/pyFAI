@@ -142,7 +142,7 @@ class RingExtraction:
         self,
         ring_index: int,
         points_per_degree: float = 1.0
-        ):
+    ) -> Optional[list[tuple[float, float]]]:
         """
         Using massif.peaks_from_area, get all pixel coordinates inside a mask of pixels around a
         diffraction ring above a certain intensity, provided the desired number of points to keep,
