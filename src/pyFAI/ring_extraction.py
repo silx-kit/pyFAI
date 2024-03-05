@@ -3,9 +3,11 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2024-2024 Australian Synchrotron
+#                  2024-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#    Principal author:       Emily Massahud
+#                            Jerome Kieffer
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
