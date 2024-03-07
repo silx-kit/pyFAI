@@ -17,3 +17,4 @@ matplotlib
 #pyopencl
 numexpr != 2.8.6
 silx >= 2
+importlib_resources

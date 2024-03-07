@@ -13,3 +13,4 @@ matplotlib
 numexpr != 2.8.6
 silx >= 2
 psutil
+importlib_resources
