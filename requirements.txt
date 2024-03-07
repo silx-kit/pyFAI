@@ -13,3 +13,4 @@ PyOpenGL
 PyQt5
 hdf5plugin
 nbsphinx
+importlib_resources; python_version < '3.9'
