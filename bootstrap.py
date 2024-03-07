@@ -225,6 +225,7 @@ if __name__ == "__main__":
         else:
             logger.error("Script %s not found", script)
     else:
+        logging.info("Running IPython by default")
         logger.info("Patch the sys.argv: %s", sys.argv)
         sys.path.insert(2, "")
         try:

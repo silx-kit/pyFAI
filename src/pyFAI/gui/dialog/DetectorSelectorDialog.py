@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/09/2023"
+__date__ = "18/12/2023"
 
 import os
 import logging
@@ -33,10 +33,11 @@ import logging
 from silx.gui import qt
 
 import pyFAI.utils
-import pyFAI.detectors
+import pyFAI.detectors.orientation
 from ..widgets.model.AllDetectorItemModel import AllDetectorItemModel
 from ..widgets.model.DetectorFilterProxyModel import DetectorFilterProxyModel
 from ..model.DataModel import DataModel
+# from ..model.DetectorModel import DetectorOrientationModel
 from ..utils import validators
 from ..ApplicationContext import ApplicationContext
 from ..utils import FilterBuilder
@@ -133,10 +134,31 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight.changed.connect(self.__customDetectorChanged)
         self.__pixelWidth.changed.connect(self.__customDetectorChanged)
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
+        self._initOrientation()
         self.__customDetector = None
 
         # By default select all the manufacturers
         self.__selectAllRegistreredDetector()
+
+    def _initOrientation(self):
+        for item in pyFAI.detectors.orientation.Orientation:
+            if item.available:
+                self._detectorOrientation.addItem(f"{item.value}: {item.name} ",  userData=item)
+
+        self._detectorOrientation.currentIndexChanged.connect(self.__orientationChanged)
+        self._detectorOrientation.currentIndexChanged.connect(self.__customDetectorChanged)
+        default = pyFAI.detectors.orientation.Orientation(3)
+        self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(default))
+
+    def getOrientation(self, idx=None):
+        if idx is None:
+            return self._detectorOrientation.currentData()
+        else:
+            return self._detectorOrientation.itemData(idx)
+
+    def __orientationChanged(self, idx):
+        orientation = self._detectorOrientation.itemData(idx)
+        self._detectorOrientationLabel.setText(orientation.__doc__)
 
     def __selectAndAccept(self):
         # FIXME: This has to be part of the dialog, and not here
@@ -167,7 +189,7 @@ class DetectorSelectorDrop(qt.QWidget):
             _logger.debug("Backtrace", exc_info=True)
             # FIXME Display error dialog
 
-    def __customDetectorChanged(self):
+    def __customDetectorChanged(self, *args, **kwargs):
         detectorWidth = self.__detectorWidth.value()
         detectorHeight = self.__detectorHeight.value()
         pixelWidth = self.__pixelWidth.value()
@@ -191,7 +213,8 @@ class DetectorSelectorDrop(qt.QWidget):
         detector = pyFAI.detectors.Detector(
             pixel1=pixelWidth * 1e-6,
             pixel2=pixelHeight * 1e-6,
-            max_shape=maxShape)
+            max_shape=maxShape,
+            orientation=self.getOrientation())
         self.__customDetector = detector
         self._customResult.setVisible(True)
         self._customResult.setText("Detector configured")

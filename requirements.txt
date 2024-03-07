@@ -1,16 +1,15 @@
 wheel
 meson-python
 ninja
-numpy
+numpy >= 1.10
 cython >=0.29.31
 fabio
 scipy
 matplotlib
 numexpr != 2.8.6
 h5py
-silx >=1.1
+silx >= 2
 PyOpenGL
 PyQt5
 hdf5plugin
-transformations
 nbsphinx

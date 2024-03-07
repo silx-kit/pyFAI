@@ -31,7 +31,7 @@
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "16/11/2023"
 __docformat__ = 'restructuredtext'
 
 import logging
@@ -115,7 +115,13 @@ def _patch_v1_to_v2(config):
         splineFile = config.pop("splineFile", None)
         if splineFile:
             detector.set_splineFile(splineFile)
-
+    else:
+        if "shape" in config and "pixel1" in config and "pixel2" in config:
+            max_shape = config["shape"]
+            pixel1 = config["pixel1"]
+            pixel2 = config["pixel2"]
+            spline = config.get("splineFile")
+            detector = detectors.Detector(pixel1, pixel2, splineFile=spline, max_shape=max_shape)
     if detector is not None:
         # Feed the detector as version2
         config["detector"] = detector.__class__.__name__
@@ -148,20 +154,27 @@ def _patch_v2_to_v3(config):
     :param dict config: Dictionary reworked inplace.
     """
     old_method = config.pop("method")
-    method = method_registry.Method.parsed(old_method)
+    if isinstance(old_method, (list, tuple)):
+        if len(old_method)==5:
+            method = method_registry.Method(*old_method)
+        else:
+            method = old_method
+    else:
+        method = method_registry.Method.parsed(old_method)
     config["method"] = method.split, method.algo, method.impl
     config["opencl_device"] = method.target
 
     config["version"] = 3
 
 
-def normalize(config, inplace=False):
+def normalize(config, inplace=False, do_raise=False):
     """Normalize the configuration file to the one supported internally\
     (the last one).
 
     :param dict config: The configuration dictionary to read
     :param bool inplace: In true, the dictionary is edited inplace
-    :raise ValueError: If the configuration do not match.
+    :param bool do_raise: raise ValueError if set. Else use logger.error
+    :raise ValueError: If the configuration do not match & do_raise is set
     """
     if not inplace:
         config = config.copy()
@@ -176,7 +189,11 @@ def normalize(config, inplace=False):
 
     application = config.get("application", None)
     if application != "pyfai-integrate":
-        raise ValueError("Configuration application do not match. Found '%s'" % application)
+        txt = f"Configuration application do not match. Found '{application}'"
+        if do_raise:
+            raise ValueError(txt)
+        else:
+            _logger.error(txt)
 
     if version > 3:
         _logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read this configuration", version)
@@ -238,10 +255,13 @@ class ConfigurationReader(object):
             method = method_registry.Method.parsed(method)
             method = method.fixed(dim=dim, target=target)
         elif isinstance(method, (list, tuple)):
-            if len(method) != 3:
-                raise TypeError("Method size %s unsupported." % len(method))
-            split, algo, impl = method
-            method = method_registry.Method(dim, split, algo, impl, target)
+            if len(method) == 3:
+                split, algo, impl = method
+                method = method_registry.Method(dim, split, algo, impl, target)
+            elif 3 < len(method) <= 5:
+                method = method_registry.Method(*method)
+            else:
+                raise TypeError(f"Method size {len(method)} is unsupported, method={method}.")
         else:
-            raise TypeError("Method type %s unsupported." % type(method))
+            raise TypeError(f"Method type {type(method)} unsupported, method={method}.")
         return method

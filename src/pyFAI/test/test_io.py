@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "10/01/2024"
 
 import unittest
 import os
@@ -42,15 +42,39 @@ import time
 import sys
 import logging
 import json
+import pathlib
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
 import pyFAI.io.spots
+from pyFAI.io.ponifile import PoniFile
 import h5py
 import fabio
 import pyFAI.azimuthalIntegrator
+
+
+class TestPoniFile(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestPoniFile, cls).setUpClass()
+        cls.ponifile = UtilsTest.getimage("Pilatus1M.poni")
+
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestPoniFile, cls).tearDownClass()
+        cls.ponifile = None
+
+    def test_filename(self):
+        poni = PoniFile(self.ponifile)
+        self.assertAlmostEqual(poni.wavelength, 1e-10, msg="wavelength matches")
+        self.assertAlmostEqual(poni.dist, 1.6, places=1, msg="dist matches")
+
+    def test_path(self):
+        poni = PoniFile(pathlib.Path(self.ponifile))
+        self.assertAlmostEqual(poni.wavelength, 1e-10, msg="wavelength matches")
+        self.assertAlmostEqual(poni.dist, 1.6, places=1, msg="dist matches")
 
 
 class TestIsoTime(unittest.TestCase):
@@ -110,7 +134,7 @@ class TestNexus(unittest.TestCase):
                 self.assertTrue(numpy.allclose(a, b), msg=f"check {k}")
             elif isinstance(a, (int, float, str, tuple, type(None))):
                 self.assertEqual(a, b, k)
-            elif isinstance(a, io.ponifile.PoniFile):
+            elif isinstance(a, PoniFile):
                 self.assertEqual(a.as_dict(), b.as_dict(), "Poni matches")
             elif isinstance(a, pyFAI.method_registry.IntegrationMethod):
                 self.assertEqual(a.method, b.method, "method matches")
@@ -151,7 +175,7 @@ class TestNexus(unittest.TestCase):
                 self.assertTrue(numpy.allclose(a, b), msg=f"check {k}")
             elif isinstance(a, (int, float, str, tuple, type(None))):
                 self.assertEqual(a, b, k)
-            elif isinstance(a, io.ponifile.PoniFile):
+            elif isinstance(a, PoniFile):
                 self.assertEqual(a.as_dict(), b.as_dict(), "Poni matches")
             elif isinstance(a, pyFAI.method_registry.IntegrationMethod):
                 self.assertEqual(a.method, b.method, "method matches")
@@ -272,6 +296,38 @@ class TestSpotWriter(unittest.TestCase):
         self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
 
+class TestXrdmlWriter(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestXrdmlWriter, cls).setUpClass()
+        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        cls.ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
+        cls.result = cls.ai.integrate1d(cls.img.data, 200, method=("no", "histogram", "cython"), unit="2th_deg")
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestXrdmlWriter, cls).tearDownClass()
+        cls.ai = cls.img = cls.result=None
+
+    def test_xrdml(self):
+        from ..io.xrdml import save_xrdml
+        fd, tmpfile = UtilsTest.tempfile(".xrdml")
+        os.close(fd)
+        save_xrdml(tmpfile, self.result)
+        self.assertGreater(os.path.getsize(tmpfile), 3000)
+
+    def test_integration(self):
+        fd, tmpfile = UtilsTest.tempfile(".xrdml")
+        os.close(fd)
+        self.ai.integrate1d(self.img.data, 200, method=("no", "histogram", "cython"), unit="2th_deg",
+                            filename=tmpfile)
+        self.assertGreater(os.path.getsize(tmpfile), 3000)
+        from xml.etree import ElementTree as et
+        with open(tmpfile, "rb") as f:
+            xml = et.fromstring(f.read())
+
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -280,6 +336,8 @@ def suite():
     testsuite.addTest(loader(TestHDF5Writer))
     testsuite.addTest(loader(TestFabIOWriter))
     testsuite.addTest(loader(TestSpotWriter))
+    testsuite.addTest(loader(TestXrdmlWriter))
+    testsuite.addTest(loader(TestPoniFile))
     return testsuite
 
 

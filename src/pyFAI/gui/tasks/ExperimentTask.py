@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/09/2023"
+__date__ = "19/01/2024"
 
 import numpy
 import logging
@@ -115,7 +115,7 @@ class ExperimentTask(AbstractCalibrationTask):
         plot.addToolBar(toolBar)
         toolBar = tools.ImageToolBar(parent=self, plot=plot)
         colormapDialog = CalibrationContext.instance().getColormapDialog()
-        toolBar.getColormapAction().setColorDialog(colormapDialog)
+        toolBar.getColormapAction().setColormapDialog(colormapDialog)
         plot.addToolBar(toolBar)
 
         toolBar = qt.QToolBar(self)
@@ -244,8 +244,11 @@ class ExperimentTask(AbstractCalibrationTask):
             self._detectorLabel.setStyleSheet("QLabel { color: red }")
             self._detectorSize.setText("")
             self._detectorPixelSize.setText("")
+            self._detectorOrientationName.setText("")
+            self._detectorOrientationValue.setText("")
             self._detectorFileDescription.setVisible(False)
             self._detectorFileDescriptionTitle.setVisible(False)
+
         else:
             self._detectorLabel.setStyleSheet("QLabel { }")
             text = [str(s) for s in detector.max_shape]
@@ -259,6 +262,8 @@ class ExperimentTask(AbstractCalibrationTask):
                 _logger.debug(e, exc_info=True)
                 text = "N.A."
             self._detectorPixelSize.setText(text)
+            self._detectorOrientationName.setText(detector.orientation.name)
+            self._detectorOrientationValue.setText(f"({detector.orientation.value})")
 
             if detector.HAVE_TAPER or detector.__class__ == pyFAI.detectors.Detector:
                 fileDescription = detector.get_splineFile()

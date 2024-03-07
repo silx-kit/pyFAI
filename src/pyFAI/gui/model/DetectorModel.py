@@ -25,9 +25,10 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "18/12/2023"
 
 from .AbstractModel import AbstractModel
+from silx.gui import qt
 
 
 class DetectorModel(AbstractModel):

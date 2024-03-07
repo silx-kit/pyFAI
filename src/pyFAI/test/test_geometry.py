@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2023"
+__date__ = "21/12/2023"
 
 import unittest
 import random
@@ -281,16 +281,28 @@ class TestFastPath(utilstest.ParametricTestCase):
         # Here is a set of pathological cases ...
         geometries = [
             # Provides atol = 1.08e-5
-            {"dist": 0.037759112584709535, "poni1": 0.005490358659182459, "poni2": 0.06625690275821605, "rot1": 0.20918568578536278, "rot2": 0.42161920581114365, "rot3": 0.38784171093239983, "wavelength": 1e-10, 'detector': 'Pilatus100k'},
+            {"dist": 0.037759112584709535, "poni1": 0.005490358659182459, "poni2": 0.06625690275821605,
+             "rot1": 0.20918568578536278, "rot2": 0.42161920581114365, "rot3": 0.38784171093239983,
+             "wavelength": 1e-10, 'detector': 'Pilatus100k', "orientation":3},
             # Provides atol = 2.8e-5
-            {'dist': 0.48459003559204783, 'poni2':-0.15784154756282065, 'poni1': 0.02783657100374448, 'rot3':-0.2901541134116695, 'rot1':-0.3927992588689394, 'rot2': 0.148115949280184, "wavelength": 1e-10, 'detector': 'Pilatus100k'},
+            {'dist': 0.48459003559204783, 'poni2':-0.15784154756282065, 'poni1': 0.02783657100374448,
+             'rot3':-0.2901541134116695, 'rot1':-0.3927992588689394, 'rot2': 0.148115949280184,
+             "wavelength": 1e-10, 'detector': 'Pilatus100k', "orientation":3},
             # Provides atol = 3.67761e-05
-            {'poni1':-0.22055143279015976, 'poni2':-0.11124668733292842, 'rot1':-0.18105235367380956, 'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257, 'detector': 'Pilatus100k', 'dist': 0.7350926443000882},
+            {'poni1':-0.22055143279015976, 'poni2':-0.11124668733292842, 'rot1':-0.18105235367380956,
+             'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257,
+             'detector': 'Pilatus100k', 'dist': 0.7350926443000882, "orientation":3},
             # Provides atol = 4.94719e-05
-            {'poni2': 0.1010652698401574, 'rot3':-0.30578860159890153, 'rot1': 0.46240992613529186, 'wavelength': 1e-10, 'detector': 'Pilatus300k', 'rot2':-0.027476969196682077, 'dist': 0.04711960678381288, 'poni1': 0.012745759325719641},
+            {'poni2': 0.1010652698401574, 'rot3':-0.30578860159890153, 'rot1': 0.46240992613529186,
+             'wavelength': 1e-10, 'detector': 'Pilatus300k', 'rot2':-0.027476969196682077,
+             'dist': 0.04711960678381288, 'poni1': 0.012745759325719641, "orientation":3},
             # atol=2pi
-            {'poni1': 0.07803878450256929, 'poni2': 0.2601779472529494, 'rot1':-0.33177239820033455, 'wavelength': 1e-10, 'rot3': 0.2928945825578625, 'rot2': 0.2762729953307118, 'detector': 'Pilatus100k', 'dist': 0.43544642285972124},
-            {'wavelength': 1e-10, 'dist': 0.13655542730645986, 'rot1':-0.16145635108891077, 'poni1': 0.16271587645146157, 'rot2':-0.443426307059295, 'rot3': 0.40517456402269536, 'poni2': 0.05248001026597382, 'detector': 'Pilatus100k'}
+            {'poni1': 0.07803878450256929, 'poni2': 0.2601779472529494, 'rot1':-0.33177239820033455,
+             'wavelength': 1e-10, 'rot3': 0.2928945825578625, 'rot2': 0.2762729953307118,
+             'detector': 'Pilatus100k', 'dist': 0.43544642285972124, "orientation":3},
+            {'wavelength': 1e-10, 'dist': 0.13655542730645986, 'rot1':-0.16145635108891077,
+             'poni1': 0.16271587645146157, 'rot2':-0.443426307059295, 'rot3': 0.40517456402269536,
+             'poni2': 0.05248001026597382, 'detector': 'Pilatus100k', "orientation":3}
         ]
 
         matrices = [[[ 0.84465919, -0.29127499, -0.44912107], [ 0.34507215, 0.93768707, 0.04084325], [ 0.4092384 , -0.1894778 , 0.89253689]],
@@ -316,7 +328,8 @@ class TestFastPath(utilstest.ParametricTestCase):
                    "rot1": (random.random() - 0.5) * numpy.pi,
                    "rot2": (random.random() - 0.5) * numpy.pi,
                    "rot3": (random.random() - 0.5) * numpy.pi,
-                   "wavelength": 1e-10}
+                   "wavelength": 1e-10,
+                   "orientation":3}
 
             for det in detectors:
                 dico = geo.copy()
@@ -486,7 +499,7 @@ class TestGeometry(utilstest.ParametricTestCase):
                 logger.debug(msg)
 
     def test_ponifile_custom_detector(self):
-        config = {"pixel1": 1, "pixel2": 2}
+        config = {"pixel1": 1, "pixel2": 2, "orientation":3}
         detector = detector_factory("adsc_q315", config)
         geom = geometry.Geometry(detector=detector)
         ponifile = os.path.join(UtilsTest.tempdir, "%s.poni" % self.id())
@@ -524,31 +537,264 @@ class TestCalcFrom(unittest.TestCase):
         self.assertLess(delta2, 1e-3, "calcfrom2d works delta=%s" % delta2)
 
 
-class TestBug474(unittest.TestCase):
-    """This bug is about PONI coordinates not subtracted from x&y coodinates in Cython"""
+class TestBugRegression(unittest.TestCase):
 
-    def test_regression(self):
+    @classmethod
+    def setUpClass(cls) -> None:
+        super(TestBugRegression, cls).setUpClass()
         detector = detector_factory("Pilatus100K")  # small detectors makes calculation faster
-        geo = geometry.Geometry(detector=detector)
-        geo.setFit2D(100, detector.shape[1] // 3, detector.shape[0] // 3, tilt=1)
-        rc = geo.position_array(use_cython=True)
-        rp = geo.position_array(use_cython=False)
+        cls.geo = geometry.Geometry(detector=detector)
+        cls.geo.setFit2D(100, detector.shape[1] // 3, detector.shape[0] // 3, tilt=1)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super(TestBugRegression, cls).tearDownClass()
+        cls.geo = None
+
+    def test_bug747(self):
+        """This bug is about PONI coordinates not subtracted from x&y coodinates in Cython"""
+        # self.geo.reset()
+        rc = self.geo.position_array(use_cython=True)
+        rp = self.geo.position_array(use_cython=False)
         delta = abs(rp - rc).max()
         self.assertLess(delta, 1e-5, "error on position is %s" % delta)
 
+    def test_bug2024(self):
+        """This bug is about delta chi being sometimes 2pi"""
+        self.geo.reset()
+        deltaChi = self.geo.deltaChi()
+        self.assertLess(deltaChi.max(), numpy.pi, "deltaChi is less than pi")
+        self.geo.reset()
+        delta_array = self.geo.delta_array(unit="chi_rad")
+        self.assertLess(delta_array.max(), numpy.pi, "delta_array is less than pi")
+        self.assertTrue(numpy.allclose(delta_array, deltaChi, atol=7e-6), "delta_array matches deltaChi")
 
+
+class TestOrientation(unittest.TestCase):
+    """Simple tests to validate the orientation of the detector"""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super(TestOrientation, cls).setUpClass()
+        cls.ai1 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":1},
+                                           # "poni1":0.1,"poni2":0.1,
+                                           "wavelength":1e-10})
+        cls.ai2 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":2},
+                                           # "poni1":0.1,"poni2":0.1,
+                                           "wavelength":1e-10})
+        cls.ai3 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":3},
+                                           # "poni1":0.1,"poni2":0.1,
+                                           "wavelength":1e-10})
+        cls.ai4 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":4},
+                                           # "poni1":0.1,"poni2":0.1,
+                                           "wavelength":1e-10})
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super(TestOrientation, cls).tearDownClass()
+        cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
+
+    def test_array_from_unit_tth_center(self):
+        r1 = self.ai1.array_from_unit(unit="2th_deg")
+        r2 = self.ai2.array_from_unit(unit="2th_deg")
+        r3 = self.ai3.array_from_unit(unit="2th_deg")
+        r4 = self.ai4.array_from_unit(unit="2th_deg")
+
+        self.assertFalse(numpy.allclose(r1, r2), "orientation 1,2 differ tth")
+        self.assertFalse(numpy.allclose(r1, r3), "orientation 1,3 differ tth")
+        self.assertFalse(numpy.allclose(r1, r4), "orientation 1,4 differ tth")
+
+        self.assertTrue(numpy.allclose(r1, numpy.fliplr(r2)), "orientation 1,2 flipped match tth")
+        self.assertTrue(numpy.allclose(r1, numpy.flipud(r4)), "orientation 1,4 flipped match tth")
+        self.assertTrue(numpy.allclose(r2, numpy.flipud(r3)), "orientation 2,3 flipped match tth")
+        self.assertTrue(numpy.allclose(r1, r3[-1::-1, -1::-1]), "orientation 1,3 inversion match tth")
+        self.assertTrue(numpy.allclose(r2, r4[-1::-1, -1::-1]), "orientation 2,4 inversion match tth")
+
+    def test_array_from_unit_chi_center(self):
+        r1 = self.ai1.array_from_unit(unit="chi_deg")
+        r2 = self.ai2.array_from_unit(unit="chi_deg")
+        r3 = self.ai3.array_from_unit(unit="chi_deg")
+        r4 = self.ai4.array_from_unit(unit="chi_deg")
+
+        self.assertFalse(numpy.allclose(r1, r2), "orientation 1,2 differ chi")
+        self.assertFalse(numpy.allclose(r1, r3), "orientation 1,3 differ chi")
+        self.assertFalse(numpy.allclose(r1, r4), "orientation 1,4 differ chi")
+
+        self.assertTrue(-180 < r1.min() < -179, "Orientation 1 lower range matches")
+        self.assertTrue(-91 < r1.max() < -90, "Orientation 1 upperrange matches")
+        self.assertTrue(-90 < r2.min() < -89, "Orientation 2 lower range matches")
+        self.assertTrue(-1 < r2.max() < 0, "Orientation 2 upperrange matches")
+        self.assertTrue(0 < r3.min() < 1, "Orientation 3 lower range matches")
+        self.assertTrue(89 < r3.max() < 90, "Orientation 3 upperrange matches")
+        self.assertTrue(90 < r4.min() < 91, "Orientation 4 lower range matches")
+        self.assertTrue(179 < r4.max() < 180, "Orientation 4 upperrange matches")
+
+    def test_array_from_unit_tth_corner(self):
+        r1 = self.ai1.array_from_unit(unit="2th_deg", typ="corner")
+        r2 = self.ai2.array_from_unit(unit="2th_deg", typ="corner")
+        r3 = self.ai3.array_from_unit(unit="2th_deg", typ="corner")
+        r4 = self.ai4.array_from_unit(unit="2th_deg", typ="corner")
+
+        tth1 = r1[..., 0].mean(axis=-1)
+        chi1 = r1[..., 1].mean(axis=-1) / numpy.pi
+        tth2 = r2[..., 0].mean(axis=-1)
+        chi2 = r2[..., 1].mean(axis=-1) / numpy.pi
+        tth3 = r3[..., 0].mean(axis=-1)
+        chi3 = r3[..., 1].mean(axis=-1) / numpy.pi
+        tth4 = r4[..., 0].mean(axis=-1)
+        chi4 = r4[..., 1].mean(axis=-1) / numpy.pi
+
+        self.assertFalse(numpy.allclose(tth1, tth2), "orientation 1,2 differ tth")
+        self.assertFalse(numpy.allclose(chi1, chi2), "orientation 1,2 differ chi")
+        self.assertFalse(numpy.allclose(tth1, tth3), "orientation 1,3 differ tth")
+        self.assertFalse(numpy.allclose(chi1, chi3), "orientation 1,3 differ chi")
+        self.assertFalse(numpy.allclose(tth1, tth4), "orientation 1,4 differ tth")
+        self.assertFalse(numpy.allclose(chi1, chi4), "orientation 1,4 differ chi")
+
+        self.assertTrue(numpy.allclose(tth1, numpy.fliplr(tth2)), "orientation 1,2 flipped match tth")
+        self.assertTrue(numpy.allclose(chi1 + 1, -numpy.fliplr(chi2), atol=0.0001), "orientation 1,2 flipped match chi")
+        self.assertTrue(numpy.allclose(tth1, numpy.flipud(tth4)), "orientation 1,4 flipped match tth")
+        self.assertTrue(numpy.allclose(chi1, -numpy.flipud(chi4)), "orientation 1,4 flipped match chi")
+        self.assertTrue(numpy.allclose(tth2, numpy.flipud(tth3)), "orientation 2,3 flipped match tth")
+        self.assertTrue(numpy.allclose(chi2, -numpy.flipud(chi3)), "orientation 2,3 flipped match chi")
+        self.assertTrue(numpy.allclose(tth1, tth3[-1::-1, -1::-1]), "orientation 1,3 inversion match tth")
+        self.assertTrue(numpy.allclose(chi1 + 1, chi3[-1::-1, -1::-1], atol=0.0001), "orientation 1,3 inversion match chi")
+        self.assertTrue(numpy.allclose(tth2, tth4[-1::-1, -1::-1]), "orientation 2,4 inversion match tth")
+        self.assertTrue(numpy.allclose(chi2 + 1, chi4[-1::-1, -1::-1]), "orientation 2,4 inversion match chi")
+
+    def test_chi(self):
+        orient = {}
+        for i in range(1, 5):
+            ai = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":i},
+                                           "poni1":0.01, "poni2":0.01,
+                                           "wavelength":1e-10})
+            chi_c = ai.center_array(unit="chi_rad") / numpy.pi
+            chi_m = ai.corner_array(unit="chi_rad")[..., 0].mean(axis=-1) / numpy.pi
+
+            orient[i] = {"ai": ai, "chi_c": chi_c, "chi_m": chi_m}
+
+        for o, orien in orient.items():
+            self.assertLess(numpy.median(abs(orien["chi_m"] - orien["chi_c"])), 1e-7, f"Orientation {o} matches")
+            ai = orien["ai"]
+            self.assertLess(numpy.median(ai.delta_array(unit="chi_rad")) / numpy.pi, 1e-3, f"Orientation {o} delta chi small #0")
+            self.assertLess(numpy.median(ai.deltaChi()) / numpy.pi, 1e-3, f"Orientation {o} delta chi small #1")
+            ai.reset()
+            self.assertLess(numpy.median(ai.delta_array(unit="chi_rad")) / numpy.pi, 1e-3, f"Orientation {o} delta chi small #2")
+            ai.reset()
+            self.assertLess(numpy.median(ai.deltaChi()) / numpy.pi, 1e-3, f"Orientation {o} delta chi small #3")
+            ai.reset()
+            chiArray = ai.chiArray() / numpy.pi
+            chi_center = orien["chi_c"]
+            self.assertTrue(numpy.allclose(chiArray, chi_center, atol=1e-5), f"Orientation {o} chiArray == center_array(chi)")
+
+
+class TestOrientation2(unittest.TestCase):
+    """Simple tests to validate the orientation of the detector"""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super(TestOrientation2, cls).setUpClass()
+        p = detector_factory("Pilatus100k")
+        c = p.get_pixel_corners()
+        d1 = c[..., 1].max()
+        d2 = c[..., 2].max()
+        cls.ai1 = geometry.Geometry.sload({"poni1":3 * d1 / 4, "poni2":3 * d2 / 4, "wavelength":1e-10,
+                                           "detector":"pilatus100k", "detector_config":{"orientation":1}})
+        cls.ai2 = geometry.Geometry.sload({"poni1":3 * d1 / 4, "poni2":d2 / 4, "wavelength":1e-10,
+                                           "detector":"pilatus100k", "detector_config":{"orientation":2}})
+        cls.ai3 = geometry.Geometry.sload({"poni1":d1 / 4, "poni2":d2 / 4, "wavelength":1e-10,
+                                           "detector":"pilatus100k", "detector_config":{"orientation":3}})
+        cls.ai4 = geometry.Geometry.sload({"poni1":d1 / 4, "poni2":3 * d2 / 4, "wavelength":1e-10,
+                                           "detector":"pilatus100k", "detector_config":{"orientation":4}})
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super(TestOrientation2, cls).tearDownClass()
+        cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
+
+    def test_positions(self):
+        for cc in (True, False):
+            for cm in (True, False):
+                for ai in (self.ai1, self.ai2, self.ai3, self.ai4):
+                    zc, yc, xc = ai.calc_pos_zyx(corners=False, use_cython=cc)
+                    zco, yco, xco = ai.calc_pos_zyx(corners=True, use_cython=cm)
+                    zm = zco.mean(axis=-1)
+                    ym = yco.mean(axis=-1)
+                    xm = xco.mean(axis=-1)
+
+                    self.assertTrue(numpy.allclose(zc, zm, atol=1e-8), f"check Z on {ai.detector.orientation.name}, cython: center={cc}, corner={cm}")
+                    self.assertTrue(numpy.allclose(yc, ym, atol=1e-8), f"check Y on {ai.detector.orientation.name}, cython: center={cc}, corner={cm}")
+                    self.assertTrue(numpy.allclose(xc, xm, atol=1e-8), f"check X on {ai.detector.orientation.name}, cython: center={cc}, corner={cm}")
+
+    def test_center_radius_center(self):
+        r1 = self.ai1.array_from_unit(unit="r_m", typ="center")
+        r2 = self.ai2.array_from_unit(unit="r_m", typ="center")
+        r3 = self.ai3.array_from_unit(unit="r_m", typ="center")
+        r4 = self.ai4.array_from_unit(unit="r_m", typ="center")
+        self.assertTrue(numpy.allclose(r1, r2, atol=1e-8))
+        self.assertTrue(numpy.allclose(r1, r3, atol=1e-8))
+        self.assertTrue(numpy.allclose(r1, r4, atol=1e-8))
+        self.assertTrue(numpy.allclose(r2, r3, atol=1e-8))
+        self.assertTrue(numpy.allclose(r2, r4, atol=1e-8))
+        self.assertTrue(numpy.allclose(r3, r4, atol=1e-8))
+
+    def test_center_chi_center(self):
+        r1 = self.ai1.array_from_unit(unit="chi_rad", typ="center") / numpy.pi
+        r2 = self.ai2.array_from_unit(unit="chi_rad", typ="center") / numpy.pi
+        r3 = self.ai3.array_from_unit(unit="chi_rad", typ="center") / numpy.pi
+        r4 = self.ai4.array_from_unit(unit="chi_rad", typ="center") / numpy.pi
+        self.assertTrue(numpy.allclose(r1[:, 200:], r2[:, 200:], atol=1e-8))
+        self.assertTrue(numpy.allclose(r1[:, 200:], r3[:, 200:], atol=1e-8))
+        self.assertTrue(numpy.allclose(r1[:, 200:], r4[:, 200:], atol=1e-8))
+        self.assertTrue(numpy.allclose(r2[:, 200:], r3[:, 200:], atol=1e-8))
+        self.assertTrue(numpy.allclose(r2[:, 200:], r4[:, 200:], atol=1e-8))
+        self.assertTrue(numpy.allclose(r3[:, 200:], r4[:, 200:], atol=1e-8))
+
+    def test_center_tth_center(self):
+        r1 = self.ai1.array_from_unit(unit="2th_deg", typ="corner")
+        r2 = self.ai2.array_from_unit(unit="2th_deg", typ="corner")
+        r3 = self.ai3.array_from_unit(unit="2th_deg", typ="corner")
+        r4 = self.ai4.array_from_unit(unit="2th_deg", typ="corner")
+        tth1 = r1[..., 0].mean(axis=-1)
+        chi1 = r1[..., 1].mean(axis=-1)
+        tth2 = r2[..., 0].mean(axis=-1)
+        chi2 = r2[..., 1].mean(axis=-1)
+        tth3 = r3[..., 0].mean(axis=-1)
+        chi3 = r3[..., 1].mean(axis=-1)
+        tth4 = r4[..., 0].mean(axis=-1)
+        chi4 = r4[..., 1].mean(axis=-1)
+
+        res = []
+        tths = [tth1, tth2, tth3, tth4]
+        thres = 0.1
+        for idx, a1 in enumerate(tths):
+            for a2 in tths[:idx]:
+                res.append(numpy.allclose(a1, a2, atol=thres))
+        # print(res)
+        self.assertTrue(numpy.all(res), "2th is OK")
+
+        res = []
+        tths = [chi1, chi2, chi3, chi4]
+        thres = 0.1
+        for idx, a1 in enumerate(tths):
+            for a2 in tths[:idx]:
+                res.append(numpy.allclose(a1[:, 200:], a2[:, 200:], atol=thres))
+        # print(res)
+        self.assertTrue(numpy.all(res), "2th is OK")
 
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(loader(TestBug474))
+    testsuite.addTest(loader(TestBugRegression))
     testsuite.addTest(loader(TestSolidAngle))
     testsuite.addTest(loader(TestBug88SolidAngle))
     testsuite.addTest(loader(TestRecprocalSpacingSquarred))
     testsuite.addTest(loader(TestCalcFrom))
     testsuite.addTest(loader(TestGeometry))
     testsuite.addTest(loader(TestFastPath))
+    testsuite.addTest(loader(TestOrientation))
+    testsuite.addTest(loader(TestOrientation2))
     return testsuite
 
 

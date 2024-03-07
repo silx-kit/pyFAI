@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/02/2023"
+__date__ = "21/11/2023"
 __status__ = "development"
 
 import os
@@ -75,15 +75,18 @@ ROCA = "/opt/saxs/roca"
 class GeometryRefinement(AzimuthalIntegrator):
     PARAM_ORDER = ("dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength")
 
-    def __init__(self, data=None, dist=1, poni1=None, poni2=None,
+    def __init__(self, data=None, calibrant=None,
+                 dist=1, poni1=None, poni2=None,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None,
-                 wavelength=None, calibrant=None):
+                 wavelength=None, **kwargs):
         """
         :param data: ndarray float64 shape = n, 3
             col0: pos in dim0 (in pixels)
             col1: pos in dim1 (in pixels)
             col2: ring index in calibrant object
+        :param calibrant: instance of pyFAI.calibrant.Calibrant containing the d-Spacing
+
         :param dist: guessed sample-detector distance (optional, in m)
         :param poni1: guessed PONI coordinate along the Y axis (optional, in m)
         :param poni2: guessed PONI coordinate along the X axis (optional, in m)
@@ -95,7 +98,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         :param splineFile: file describing the detector as 2 cubic splines. Replaces pixel1 & pixel2
         :param detector: name of the detector or Detector instance. Replaces splineFile, pixel1 & pixel2
         :param wavelength: wavelength in m (1.54e-10)
-        :param calibrant: instance of pyFAI.calibrant.Calibrant containing the d-Spacing
+
 
         """
         if data is None:
@@ -110,7 +113,8 @@ class GeometryRefinement(AzimuthalIntegrator):
             raise RuntimeError("Setting up the geometry refinement without knowing the detector makes little sense")
         AzimuthalIntegrator.__init__(self, dist, 0, 0,
                                      rot1, rot2, rot3,
-                                     pixel1, pixel2, splineFile, detector, wavelength=wavelength)
+                                     pixel1, pixel2, splineFile, detector,
+                                     wavelength=wavelength, **kwargs)
 
         if calibrant is None:
             self.calibrant = Calibrant()

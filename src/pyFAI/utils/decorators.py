@@ -30,7 +30,7 @@ __authors__ = ["Jerome Kieffer", "H. Payno", "P. Knobel", "V. Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/09/2023"
+__date__ = "18/12/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -39,12 +39,12 @@ import time
 import functools
 import logging
 import traceback
-from .. import _version
+from ..version import calc_hexversion,  hexversion as pyFAI_hexversion
 
 timelog = logging.getLogger("pyFAI.timeit")
 depreclog = logging.getLogger("pyFAI.DEPRECATION")
 
-deprecache = set([])
+DEPRECATION_CACHE = set()
 _CACHE_VERSIONS = {}
 
 
@@ -132,20 +132,20 @@ def deprecated_warning(type_, name, reason=None, replacement=None,
     backtrace = backtrace.rstrip()
     if only_once:
         data = (msg, type_, name, backtrace)
-        if data in deprecache:
+        if data in DEPRECATION_CACHE:
             return
         else:
-            deprecache.add(data)
+            DEPRECATION_CACHE.add(data)
 
     if deprecated_since is not None:
         if isinstance(deprecated_since, (str,)):
             if deprecated_since not in _CACHE_VERSIONS:
-                hexversion = _version.calc_hexversion(string=deprecated_since)
+                hexversion = calc_hexversion(string=deprecated_since)
                 _CACHE_VERSIONS[deprecated_since] = hexversion
                 deprecated_since = hexversion
             else:
                 deprecated_since = _CACHE_VERSIONS[deprecated_since]
-        log_as_debug = _version.hexversion < deprecated_since
+        log_as_debug = pyFAI_hexversion < deprecated_since
     else:
         log_as_debug = False
 

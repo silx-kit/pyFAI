@@ -26,7 +26,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""This modules contains only one (large) class in charge of:
+"""This modules contains only one (large) class in charge  of:
 
 * calculating the geometry, i.e. the position in the detector space of each pixel of the detector
 * manages caches to store intermediate results
@@ -40,17 +40,19 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2023"
+__date__ = "16/01/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
 from math import pi
+twopi = 2 * pi
 from numpy import arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
 import threading
 import json
+import gc
 from collections import namedtuple, OrderedDict
 from .fit2d import convert_to_Fit2d, convert_from_Fit2d
 from .. import detectors
@@ -60,6 +62,7 @@ from ..utils import crc32, deg2rad
 from .. import utils
 from ..io import ponifile, integration_config
 from ..units import CONST_hc, to_unit
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -115,7 +118,8 @@ class Geometry(object):
     _LAST_POLARIZATION = "last_polarization"
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
-                 pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None):
+                 pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None,
+                 orientation=0):
         """
         :param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         :param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
@@ -145,6 +149,7 @@ class Geometry(object):
         :type detector: str or pyFAI.Detector
         :param wavelength: Wave length used in meter
         :type wavelength: float
+        :param int orientation: orientation of the detector, see pyFAI.detectors.orientation.Orientation
         """
         self._dist = dist
         self._poni1 = poni1
@@ -176,6 +181,8 @@ class Geometry(object):
         elif pixel1 and pixel2:
             self.detector.pixel1 = pixel1
             self.detector.pixel2 = pixel2
+        if orientation:
+            self.detector._orientation = detectors.orientation.Orientation(orientation or detector.ORIENTATION)
 
     def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="m"):
         """Nice representation of the class
@@ -246,7 +253,7 @@ class Geometry(object):
             return
         azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
         if azimuth_range[1] <= azimuth_range[0]:
-            azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
+            azimuth_range = (azimuth_range[0], azimuth_range[1] + twopi)
             self.check_chi_disc(azimuth_range)
         return azimuth_range
 
@@ -344,7 +351,8 @@ class Geometry(object):
         else:
             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
         if ((not do_parallax) or (self._parallax is None)) and use_cython and (_geometry is not None):
-            t3, t1, t2 = _geometry.calc_pos_zyx(L, poni1, poni2, rot1, rot2, rot3, p1, p2, p3)
+            t3, t1, t2 = _geometry.calc_pos_zyx(L, poni1, poni2, rot1, rot2, rot3, p1, p2, p3,
+                                                orientation=self.detector.orientation)
         else:
             shape = p1.shape
             size = p1.size
@@ -370,6 +378,11 @@ class Geometry(object):
             t1.shape = shape
             t2.shape = shape
             t3.shape = shape
+            # correct orientation:
+            if self.detector.orientation in (1, 2):
+                numpy.negative(t1, out=t1)
+            if self.detector.orientation in (1, 4):
+                numpy.negative(t2, out=t2)
         return (t3, t1, t2)
 
     def tth(self, d1, d2, param=None, path="cython"):
@@ -443,7 +456,7 @@ class Geometry(object):
                                    pos3=p3,
                                    wavelength=self.wavelength)
         else:
-            out = 4.0e-9 * numpy.pi / self.wavelength * \
+            out = 4.0e-9 * pi / self.wavelength * \
                 numpy.sin(self.tth(d1=d1, d2=d2, param=param, path=path) / 2.0)
         return out
 
@@ -535,7 +548,7 @@ class Geometry(object):
         if self._cached_array.get("d*2_center") is None:
             with self._sem:
                 if self._cached_array.get("d*2_center") is None:
-                    self._cached_array["d*2_center"] = (qArray / (2.0 * numpy.pi)) ** 2
+                    self._cached_array["d*2_center"] = (qArray / (twopi)) ** 2
         return self._cached_array["d*2_center"]
 
     @deprecated
@@ -607,11 +620,15 @@ class Geometry(object):
             p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self._poni2, do_parallax=True)
             chi = _geometry.calc_chi(L=self._dist,
                                      rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
-                                     pos1=p1, pos2=p2, pos3=p3)
+                                     pos1=p1, pos2=p2, pos3=p3,
+                                     orientation=self.detector.orientation,
+                                     chi_discontinuity_at_pi=self.chiDiscAtPi)
             chi.shape = d1.shape
         else:
             _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False, use_cython=True, do_parallax=True)
             chi = numpy.arctan2(t1, t2)
+            if not self.chiDiscAtPi:
+                numpy.mod(chi, (twopi), out=chi)
         return chi
 
     def chi_corner(self, d1, d2):
@@ -648,7 +665,7 @@ class Geometry(object):
                     chia = numpy.fromfunction(self.chi, shape,
                                               dtype=numpy.float32)
                     if not self.chiDiscAtPi:
-                        chia = chia % (2.0 * numpy.pi)
+                        chia = chia % (twopi)
                     self._cached_array["chi_center"] = chia
         return self._cached_array["chi_center"]
 
@@ -749,7 +766,9 @@ class Geometry(object):
                         if self.detector.IS_CONTIGUOUS:
                             d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
                             d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
-                            p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=True)
+                            p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=use_cython)
+                            # TODO fix test so that this is simpler: issue #2014
+                            # p1, p2, p3 = self.detector.calc_cartesian_positions(center=False, use_cython=use_cython)
                         else:
                             det_corners = self.detector.get_pixel_corners()
                             p1 = det_corners[..., 1]
@@ -760,6 +779,7 @@ class Geometry(object):
                                                           self.rot1, self.rot2, self.rot3,
                                                           p1, p2, p3,
                                                           space, self._wavelength,
+                                                          orientation=self.detector.orientation,
                                                           chi_discontinuity_at_pi=self.chiDiscAtPi)
                         except KeyError:
                             logger.warning("No fast path for space: %s", space)
@@ -791,11 +811,10 @@ class Geometry(object):
                             # numpy path
                             chi = numpy.arctan2(y, x)
                             if not self.chiDiscAtPi:
-                                numpy.mod(chi, (2.0 * numpy.pi), out=chi)
+                                numpy.mod(chi, (twopi), out=chi)
                         else:
                             # numexpr path
-                            twoPi = 2.0 * numpy.pi
-                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%twoPi")
+                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%twopi")
                         corners = numpy.zeros((shape[0], shape[1], nb_corners, 2),
                                               dtype=numpy.float32)
                         if chi.shape[:2] == shape:
@@ -882,10 +901,8 @@ class Geometry(object):
         :type shape: 2-tuple of integer
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
         :param scale: set to False for returning the internal representation
-                (S.I. often) which is faster
-        :return: 3d array with shape=(\\*shape,4,2) the two elements are:
-            - dim3[0]: radial angle 2th, q, r...
-            - dim3[1]: azimuthal angle chi
+                (S.I. often) which is faster.
+        :return: 2d array of given shape
         """
 
         unit = to_unit(unit)
@@ -900,9 +917,7 @@ class Geometry(object):
 
         if (ary is not None) and (ary.shape == shape):
             if scale and unit:
-                tmp = ary.copy()
-                tmp[..., 0] *= unit.scale
-                return tmp
+                return ary * unit.scale
             else:
                 return ary
 
@@ -912,29 +927,23 @@ class Geometry(object):
         z = pos[..., 0]
         ary = unit.equation(x, y, z, self.wavelength)
         if unit.space == "chi" and not self.chiDiscAtPi:
-            numpy.mod(ary, 2.0 * numpy.pi, out=ary)
+            numpy.mod(ary, twopi, out=ary)
         self._cached_array[key] = ary
         if scale and unit:
-                tmp = ary.copy()
-                tmp[..., 0] *= unit.scale
-                return tmp
+                return ary * unit.scale
         else:
             return ary
 
     def delta_array(self, shape=None, unit="2th_deg", scale=False):
         """
-        Generate a 2D array of the given shape with (i,j) (delta-radial
-        angle) for all elements.
+        Generate a 2D array of the given shape with the delta-radius for all elements.
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
         :param scale: set to False for returning the internal representation
                 (S.I. often) which is faster
-        :return: 3d array with shape=(\\*shape,4,2) the two elements are:
-
-            - dim3[0]: radial angle 2th, q, r...
-            - dim3[1]: azimuthal angle chi
+        :return: 2D array
         """
 
         unit = to_unit(unit)
@@ -948,46 +957,37 @@ class Geometry(object):
 
         if (ary is not None) and (ary.shape == shape):
             if scale and unit:
-                tmp = ary.copy()
-                tmp[..., 0] *= unit.scale
-                return tmp
+                return ary * unit.scale
             else:
                 return ary
         center = self.center_array(shape, unit=unit, scale=False)
         corners = self.corner_array(shape, unit=unit, scale=False)
         delta = abs(corners[..., 0] - numpy.atleast_3d(center))
+        if space == "chi_delta":
+            if numexpr:
+                delta = numexpr.evaluate("where(delta<twopi-delta, delta, twopi-delta)")
+            else:
+                numpy.minimum(delta, twopi - delta, out=delta)
+
         ary = delta.max(axis=-1)
         self._cached_array[space] = ary
         if scale and unit:
-            tmp = ary.copy()
-            tmp[..., 0] *= unit.scale
-            return tmp
-
+            return ary * unit.scale
         else:
             return ary
 
     def delta2Theta(self, shape=None):
         """
-        Generate a 3D array of the given shape with (i,j) with the max
-        distance between the center and any corner in 2 theta
+        Generate a 2D array of the given shape with the max distance between the center and any corner in 2 theta angle in radians
 
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: 2D-array containing the max delta angle between a pixel center and any corner in 2theta-angle (rad)
         """
-        key = "2th_delta"
-        if self._cached_array.get(key) is None:
-            center = self.twoThetaArray(shape)
-            corners = self.corner_array(shape, unit=units.TTH, scale=False)
-            with self._sem:
-                if self._cached_array.get(key) is None:
-                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array[key] = delta.max(axis=-1)
-        return self._cached_array[key]
+        return self.delta_array(shape, units.TTH, False)
 
     def deltaChi(self, shape=None, use_cython=True):
         """
-        Generate a 3D array of the given shape with (i,j) with the max
-        distance between the center and any corner in chi-angle (rad)
+        Generate a 2D array of the given shape with the max distance between the center and any corner in chi-angle (rad)
 
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: 2D-array  containing the max delta angle between a pixel center and any corner in chi-angle (rad)
@@ -1002,66 +1002,41 @@ class Geometry(object):
                         delta = _geometry.calc_delta_chi(center, corner)
                         self._cached_array[key] = delta
                     else:
-                        twoPi = 2.0 * numpy.pi
                         center = numpy.atleast_3d(center)
-                        delta = numpy.minimum(((corner[:,:,:, 1] - center) % twoPi),
-                                              ((center - corner[:,:,:, 1]) % twoPi))
+                        delta = numpy.minimum(((corner[:,:,:, 1] - center) % twopi),
+                                              ((center - corner[:,:,:, 1]) % twopi))
                         self._cached_array[key] = delta.max(axis=-1)
         return self._cached_array[key]
 
     def deltaQ(self, shape=None):
         """
-        Generate a 2D array of the given shape with (i,j) with the max
-        distance between the center and any corner in q_vector unit
-        (nm^-1)
+        Generate a 2D array of the given shape with the max distance between the center
+        and any corner in q_vector unit (nm^-1)
 
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
         """
-        key = "q_delta"
-        if self._cached_array.get(key) is None:
-            center = self.qArray(shape)
-            corners = self.corner_array(shape, unit=units.Q, scale=False)
-            with self._sem:
-                if self._cached_array.get(key) is None:
-                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array[key] = delta.max(axis=-1)
-        return self._cached_array[key]
+        return self.delta_array(shape, units.Q, False)
 
     def deltaR(self, shape=None):
         """
         Generate a 2D array of the given shape with (i,j) with the max
-        distance between the center and any corner in radius unit (mm)
+        distance between the center and any corner in radius unit (m)
 
         :param shape: The shape of the detector array: 2-tuple of integer
-        :return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
+        :return: array 2D containing the max delta Q between a pixel center and any corner in distance (m)
         """
-        key = "r_delta"
-        if self._cached_array.get(key) is None:
-            center = self.rArray(shape)
-            corners = self.corner_array(shape, unit=units.R, scale=False)
-            with self._sem:
-                if self._cached_array.get(key) is None:
-                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array[key] = delta.max(axis=-1)
-        return self._cached_array[key]
+        return self.delta_array(shape, units.R_M, False)
 
     def deltaRd2(self, shape=None):
         """
-        Generate a 2D array of the given shape with (i,j) with the max
+        Generate a 2D array of the given shape with the max
         distance between the center and any corner in unit: reciprocal spacing squarred (1/nm^2)
 
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: array 2D containing the max delta (d*)^2 between a pixel center and any corner in reciprocal spacing squarred (1/nm^2)
         """
-        if self._cached_array.get("d*2_delta") is None:
-            center = self.center_array(shape, unit=units.RecD2_NM, scale=False)
-            corners = self.corner_array(shape, unit=units.RecD2_NM, scale=False)
-            with self._sem:
-                if self._cached_array.get("d*2_delta") is None:
-                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array["d*2_delta"] = delta.max(axis=-1)
-        return self._cached_array.get("d*2_delta")
+        return self.delta_array(shape, units.RecD2_NM, False)
 
     def array_from_unit(self, shape=None, typ="center", unit=units.TTH, scale=True):
         """
@@ -1071,7 +1046,7 @@ class Geometry(object):
         :type shape: ndarray.shape
         :param typ: "center", "corner" or "delta"
         :type typ: str
-        :param unit: can be any valid unit (see units.ANY_UNITS)
+        :param unit: can be any valid unit (found in  units.AZIMUTHAL_UNITS or units.RADIAL_UNITS)
         :type unit: pyFAI.units.Unit or 2-tuple of them (valid only for corner coordinates calculation
         :param scale: set to False for returning the internal representation
                 (S.I. often) which is faster
@@ -1998,15 +1973,18 @@ class Geometry(object):
 
         return transmission_corr
 
-    def reset(self):
+    def reset(self, collect_garbage=True):
         """
-        reset most arrays that are cached: used when a parameter
-        changes.
+        reset most arrays that are cached: used when a parameter changes.
+
+        :param collect_garbage: set to False to prevent garbage collection, faster
         """
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         self._transmission_normal = None
         self._cached_array = {}
+        if collect_garbage:
+            gc.collect()
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True,
@@ -2100,7 +2078,6 @@ class Geometry(object):
         empty_data = numpy.zeros(shape, dtype=numpy.float32)
 
         from ..ext.inpainting import polar_interpolate
-
         calcimage = polar_interpolate(empty_data,
                                       mask=built_mask,
                                       radial=ttha,

@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/03/2023"
+__date__ = "07/12/2023"
 __status__ = "production"
 
 import numpy
@@ -83,8 +83,8 @@ class Jungfrau(Detector):
             size[i * module_size] = cls.BORDER_SIZE_RELATIVE
         return pixel_size * size
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
@@ -188,6 +188,7 @@ class Jungfrau(Detector):
             p1 = numpy.outer(d1, numpy.ones(self.shape[1]))
             p2 = numpy.outer(numpy.ones(self.shape[0]), d2)
         else:
+            d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
             if center:
                 # Not +=: do not mangle in place arrays
                 d1 = d1 + 0.5
@@ -209,8 +210,8 @@ class Jungfrau4M(_Dectris):
     aliases = ["Jungfrau 4M"]
     uniform_pixel = True
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
@@ -271,8 +272,8 @@ class Jungfrau8M(Jungfrau):
                         [3009, 538], [3009, 538+259], [3009, 1055], [3009, 1313],
                         [3078, 1577], [3078, 1836], [3078, 2094], [3078, 2352]]
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None):
-        Jungfrau.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
+        Jungfrau.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation)
 
     def calc_mask(self):
         mask = numpy.ones(self.max_shape, dtype=numpy.int8)

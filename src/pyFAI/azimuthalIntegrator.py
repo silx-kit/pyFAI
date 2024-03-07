@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2023"
+__date__ = "31/01/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -47,7 +47,7 @@ from . import units
 from .utils import EPS32, deg2rad, crc32
 from .utils.decorators import deprecated, deprecated_warning
 from .containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
-from .io import DefaultAiWriter
+from .io import DefaultAiWriter, save_integrate_result
 from .io.ponifile import PoniFile
 error = None
 from .method_registry import IntegrationMethod
@@ -118,7 +118,7 @@ class AzimuthalIntegrator(Geometry):
     def __init__(self, dist=1, poni1=0, poni2=0,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None,
-                 splineFile=None, detector=None, wavelength=None):
+                 splineFile=None, detector=None, wavelength=None, orientation=0):
         """
         :param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         :type dist: float
@@ -152,12 +152,12 @@ class AzimuthalIntegrator(Geometry):
             description is deprecated. Prefer using the result of the detector
             factory: ``pyFAI.detector_factory("eiger4m")``
         :type detector: str or pyFAI.Detector
-        :param wavelength: Wave length used in meter
-        :type wavelength: float
+        :param float wavelength: Wave length used in meter
+        :param int orientation: orientation of the detector, see pyFAI.detectors.orientation.Orientation
         """
         Geometry.__init__(self, dist, poni1, poni2,
                           rot1, rot2, rot3,
-                          pixel1, pixel2, splineFile, detector, wavelength)
+                          pixel1, pixel2, splineFile, detector, wavelength, orientation)
 
         # mask, maskfile, darkcurrent and flatfield are properties pointing to
         # self.detector now (16/06/2017)
@@ -167,18 +167,24 @@ class AzimuthalIntegrator(Geometry):
 
         self._empty = 0.0
 
-    def reset(self):
+    def reset(self, collect_garbage=True):
         """Reset azimuthal integrator in addition to other arrays.
-        """
-        Geometry.reset(self)
-        self.reset_engines()
 
-    def reset_engines(self):
-        """Urgently free memory by deleting all regrid-engines"""
+        :param collect_garbage: set to False to prevent garbage collection, faster
+        """
+        Geometry.reset(self, collect_garbage=False)
+        self.reset_engines(collect_garbage)
+
+    def reset_engines(self, collect_garbage=True):
+        """Urgently free memory by deleting all regrid-engines
+
+        :param collect_garbage: set to False to prevent garbage collection, faster
+        """
         with self._lock:
             for key in list(self.engines.keys()):  # explicit copy
                 self.engines.pop(key).reset()
-        gc.collect()
+        if collect_garbage:
+            gc.collect()
 
     def create_mask(self, data, mask=None,
                     dummy=None, delta_dummy=None,
@@ -1099,8 +1105,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_metadata(metadata)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
+            save_integrate_result(filename, result)
 
         return result
 
@@ -1540,7 +1545,10 @@ class AzimuthalIntegrator(Geometry):
             result._set_unit(unit)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
+            result._set_sum_normalization2(intpl.norm_sq)
             result._set_count(intpl.count)
+            result._set_sem(intpl.sem)
+            result._set_std(intpl.std)
 
         else:
             raise RuntimeError("Fallback method ... should no more be used: %s" % method)
@@ -1600,9 +1608,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_has_solidangle_correction(correctSolidAngle)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
-
+            save_integrate_result(filename, result)
         return result
 
     _integrate1d_ng = integrate1d_ng
@@ -2102,8 +2108,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_metadata(metadata)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
+            save_integrate_result(filename, result)
 
         return result
 
@@ -2617,8 +2622,7 @@ class AzimuthalIntegrator(Geometry):
             result._set_std(sem)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
+            save_integrate_result(filename, result)
 
         return result
 

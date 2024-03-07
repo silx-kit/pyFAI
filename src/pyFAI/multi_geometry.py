@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #    Copyright (C)      2016 Synchrotron SOLEIL - L'Orme des Merisiers Saint-Aubin
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,11 +31,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2023"
+__date__ = "22/01/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import collections.abc
+import gc
 import logging
 logger = logging.getLogger(__name__)
 from .azimuthalIntegrator import AzimuthalIntegrator
@@ -286,7 +287,8 @@ class MultiGeometry(object):
             result = Integrate2dResult(I, res.radial, res.azimuthal)
         result._set_sum(signal)
         result._set_compute_engine(res.compute_engine)
-        result._set_unit(self.unit)
+        result._set_radial_unit(self.unit)
+        result._set_azimuthal_unit(units.CHI_DEG)
         result._set_sum_signal(signal)
         result._set_sum_normalization(normalization)
         result._set_sum_variance(variance)
@@ -300,3 +302,21 @@ class MultiGeometry(object):
         self.wavelength = float(value)
         for ai in self.ais:
             ai.set_wavelength(self.wavelength)
+
+    def reset(self, collect_garbage=True):
+        """Clean up all caches for all integrators, resets the thread-pool as well.
+
+        :param collect_garbage: set to False to prevent garbage collection, faster
+        """
+        for ai in self.ais:
+            ai.reset(collect_garbage=False)
+        if self.threadpool:
+            try:
+                threadpoolsize = self.threadpool._processes
+            except Exception as err:
+                print(f"{type(err)}: {err}")
+                threadpoolsize = 1
+            self.threadpool.terminate()
+            self.threadpool = ThreadPool(threadpoolsize)
+        if collect_garbage:
+            gc.collect()

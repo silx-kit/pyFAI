@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,22 +28,28 @@
 """Module function to manage poni files.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2023"
+__date__ = "15/01/2024"
 __docformat__ = 'restructuredtext'
 
 import collections
 import time
 import json
+import pathlib
 import logging
 _logger = logging.getLogger(__name__)
 import numpy
 from .. import detectors
+try:
+    from ..gui.model.GeometryModel import GeometryModel
+except ImportError:
+    GeometryModel = None
 
 
 class PoniFile(object):
+    API_VERSION = 2.1 # valid version are 1, 2, 2.1
 
     def __init__(self, data=None):
         self._detector = None
@@ -58,8 +64,10 @@ class PoniFile(object):
             pass
         elif isinstance(data, dict):
             self.read_from_dict(data)
-        elif isinstance(data, (str,)):
+        elif isinstance(data, (str, pathlib.Path)):
             self.read_from_file(data)
+        elif GeometryModel and isinstance(data, GeometryModel):
+            self.read_from_geometryModel(data)
         else:
             self.read_from_duck(data)
 
@@ -97,10 +105,23 @@ class PoniFile(object):
         """Initialize this object using a dictionary.
 
         .. note:: The dictionary is versionned.
+        Version:
+        * 1: Historical version (i.e. unversioned)
+        * 2: store detector and detector_config instead of pixelsize1, pixelsize2 and splinefile
+        * 2.1: manage orientation of detector in detector_config
         """
-        version = int(config.get("poni_version", 1))
+        version = float(config.get("poni_version", 1))
         if "detector_config" in config:
-            version = min(version, 2)
+            if "orientation" in config["detector_config"]:
+                version = max(version, 2.1)
+            else:
+                version = max(version, 2)
+        if version >= 2 and "detector_config" not in config:
+            _logger.error("PoniFile claim to be version 2 but contains no `detector_config` !!!")
+
+        if version == 2.1 and "orientation" not in config.get("detector_config", {}):
+            _logger.error("PoniFile claim to be version 2.1 but contains no detector orientation !!!")
+        self.API_VERSION = version
 
         if version == 1:
             # Handle former version of PONI-file
@@ -128,7 +149,7 @@ class PoniFile(object):
                 if config["splinefile"].lower() != "none":
                     self._detector.set_splineFile(config["splinefile"])
 
-        elif version == 2:
+        elif version in (2, 2.1):
                 detector_name = config["detector"]
                 detector_config = config["detector_config"]
                 self._detector = detectors.detector_factory(detector_name, detector_config)
@@ -174,28 +195,56 @@ class PoniFile(object):
         self._wavelength = duck.wavelength
         self._detector = duck.detector
 
+    def read_from_geometryModel(self, model: GeometryModel, detector=None):
+        """Initialize the object from a GeometryModel
+
+        pyFAI.gui.model.GeometryModel.GeometryModel"""
+        self._dist = model.distance().value()
+        self._poni1 = model.poni1().value()
+        self._poni2 = model.poni2().value()
+        self._rot1 = model.rotation1().value()
+        self._rot2 = model.rotation2().value()
+        self._rot3 = model.rotation3().value()
+        self._wavelength = model.wavelength().value()
+        self._detector = detector
+
     def write(self, fd):
         """Write this object to an open stream.
-        """
-        fd.write(("# Nota: C-Order, 1 refers to the Y axis,"
-                 " 2 to the X axis \n"))
-        fd.write("# Calibration done at %s\n" % time.ctime())
-        fd.write("poni_version: 2\n")
-        detector = self.detector
-        fd.write("Detector: %s\n" % detector.__class__.__name__)
-        fd.write("Detector_config: %s\n" % json.dumps(detector.get_config()))
 
-        fd.write("Distance: %s\n" % self._dist)
-        fd.write("Poni1: %s\n" % self._poni1)
-        fd.write("Poni2: %s\n" % self._poni2)
-        fd.write("Rot1: %s\n" % self._rot1)
-        fd.write("Rot2: %s\n" % self._rot2)
-        fd.write("Rot3: %s\n" % self._rot3)
+        :param fd: file descriptor (opened file)
+        :return: nothing
+        """
+        detector = self.detector
+        txt = ["# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis",
+              f"# Calibration done at {time.ctime()}",
+              f"poni_version: {self.API_VERSION}",
+              f"Detector: {detector.__class__.__name__}"]
+        if self.API_VERSION == 1:
+            if not detector.force_pixel:
+                txt += [f"pixelsize1: {detector.pixel1}",
+                        f"pixelsize2: {detector.pixel2}"]
+            if detector.splineFile:
+                txt.append(f"splinefile: {detector.splineFile}")
+        elif self.API_VERSION >= 2:
+            detector_config = detector.get_config()
+            if self.API_VERSION == 2:
+                detector_config.pop("orientation")
+            txt.append(f"Detector_config: {json.dumps(detector_config)}")
+
+        txt += [f"Distance: {self._dist}",
+                f"Poni1: {self._poni1}",
+                f"Poni2: {self._poni2}",
+                f"Rot1: {self._rot1}",
+                f"Rot2: {self._rot2}",
+                f"Rot3: {self._rot3}"
+                ]
         if self._wavelength is not None:
-            fd.write("Wavelength: %s\n" % self._wavelength)
+            txt.append(f"Wavelength: {self._wavelength}")
+        txt.append("")
+        fd.write("\n".join(txt))
 
     def as_dict(self):
-        config = collections.OrderedDict([("poni_version", 2)])
+        config = collections.OrderedDict([("poni_version", self.API_VERSION)])
         config["detector"] = self.detector.__class__.__name__
         config["detector_config"] = self.detector.get_config()
         config["dist"] = self._dist

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 #
-#    Copyright (C) 2016-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2016-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "10/02/2023"
+__date__ = "20/12/2023"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -57,7 +57,7 @@ try:
         _update_fig(*args, **kwargs)
 
 except ImportError:
-    pylab = None
+    pylab = pyplot = None
 
     def update_fig(*args, **kwargs):
         pass
@@ -70,6 +70,24 @@ ds_list = ["Pilatus1M.poni",
            "Mar3450.poni",
            "Fairchild.poni"]
 
+detector_names = ["Pilatus1M",
+                  "Pilatus2M",
+                  "Eiger4M",
+                  "Pilatus6M",
+                  "Eiger9M",
+                  "Mar3450",
+                  "Fairchild",]
+
+data_sizes = [1.023183,
+         2.476525,
+         4.48569,
+         6.224001,
+         10.138296,
+         11.9025,
+         16.777216,
+] #Mpixels
+
+
 datasets = {"Fairchild.poni": "Fairchild.edf",
             "halfccd.poni": "halfccd.edf",
             "Frelon2k.poni": "Frelon2k.edf",
@@ -80,6 +98,7 @@ datasets = {"Fairchild.poni": "Fairchild.edf",
             "Eiger4M.poni":"Eiger4M.edf",
             "Eiger9M.poni":"Eiger9M.h5"
             }
+
 
 PONIS = { i: UtilsTest.getimage(i) for i in ds_list}
 
@@ -353,7 +372,8 @@ class Bench(object):
             else:
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
-            label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method.method[1:4]], platform, device)).replace(" ", "_")
+            # label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method.method[1:4]], platform, device)).replace(" ", "_")
+            label = f'{devicetype}:{platform}:{device} / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
             method = IntegrationMethod.select_method(dim=1, split=method.split_lower,
                                                       algo=method.algo_lower, impl=method.impl_lower,
                                                       target=(opencl["platformid"], opencl["deviceid"]))[0]
@@ -361,7 +381,8 @@ class Bench(object):
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
-            label = function + " " + self.LABELS[method.method[1:4]]
+            # label = function + " " + self.LABELS[method.method[1:4]]
+            label = f'CPU / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
             memory_error = (MemoryError, RuntimeError)
         results = OrderedDict()
         first = True
@@ -455,21 +476,24 @@ class Bench(object):
                     print("No such OpenCL device: skipping benchmark")
                     return
                 platformid, deviceid = opencl["platformid"], opencl["deviceid"] = platdev
-            devicetype = opencl["devicetype"] = ocl.platforms[platformid].devices[deviceid].type
+            else:
+                platformid, deviceid = opencl["platformid"], opencl["deviceid"]
+            devicetype = ocl.platforms[platformid].devices[deviceid].type
             platform = str(ocl.platforms[platformid]).split()[0]
             if devicetype == "CPU":
                 device = (str(ocl.platforms[platformid].devices[deviceid]).split("@")[0]).split()[-1]
             else:
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
 
-            print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
-            method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
-            label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method[1:4]], platform, device)).replace(" ", "_")
+            print(f"Working on device: {devicetype} platform: {platform} device: {device} method {method}")
+            # label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method[1:4]], platform, device)).replace(" ", "_")
+            label = f'{devicetype}:{platform}:{device} / 2D: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
 
         else:
             print("Working on processor: %s" % self.get_cpu())
-            label = "2D_" + self.LABELS[method[1:4]]
+            # label = "2D_" + self.LABELS[method[1:4]]
+            label = f'CPU / 2D: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
             memory_error = (MemoryError, RuntimeError)
 
         results = OrderedDict()
@@ -481,11 +505,15 @@ class Bench(object):
             bench_test = BenchTest2D(poni, file_name, self.unit, method, self.out_2d)
             bench_test.setup()
             size = bench_test.data.size / 1.0e6
+            if size > self.max_size:
+                continue
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(file_name), size, bench_test.N))
             try:
                 t0 = time.perf_counter()
                 _res = bench_test.stmt()
-                self.print_init(time.perf_counter() - t0)
+                t2 = time.perf_counter()
+                self.print_init(t2 - t0)
+                loops = int(ceil(self.nbr / (t2 - t0)))
             except memory_error as error:
                 print(error)
                 break
@@ -493,9 +521,11 @@ class Bench(object):
             if check:
                 module = sys.modules.get(AzimuthalIntegrator.__module__)
                 if module:
-                    if "lut" in method:
+                    if "lut" in method.algo_lower: # Edgar
+                    # if "lut" in method:
                         key = module.EXT_LUT_ENGINE
-                    elif "csr" in method:
+                    elif "csr" in method.algo_lower: # Edgar
+                    # elif "csr" in method:
                         key = module.EXT_CSR_ENGINE
                     else:
                         key = None
@@ -514,7 +544,7 @@ class Bench(object):
             bench_test.clean()
             try:
                 t = timeit.Timer(bench_test.stmt, bench_test.setup_and_stmt)
-                tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+                tmin = min([i / loops for i in t.repeat(repeat=self.repeat, number=loops)])
             except memory_error as error:
                 print(error)
                 break
@@ -607,12 +637,13 @@ class Bench(object):
         if self.fig:
             print("Already initialized")
             return
-        if pylab and (sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ):
-            self.fig, self.ax = pyplot.subplots()
+        if pyplot and ((sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ)):
+            self.fig, self.ax = pyplot.subplots(figsize=(12,6))
             self.fig.show()
             self.ax.set_autoscale_on(False)
             self.ax.set_xlabel("Image size in mega-pixels")
             self.ax.set_ylabel("Frame per second (log scale)")
+
             try:
                 self.ax.set_yscale("log", base=2)
             except Exception:
@@ -620,9 +651,22 @@ class Bench(object):
             t = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
-            self.ax.set_xlim(0.5, 17)
+            self.ax.set_xlim(0.0, 20)
             self.ax.set_ylim(0.5, 1500)
-            self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
+            self.ax.set_title(f'CPU: {self.get_cpu()}\nGPU: {self.get_gpu()}')
+
+            # Display detector markers (vertical lines)
+            self.ax.vlines(
+                x=data_sizes,
+                ymin=self.ax.get_ylim()[0],
+                ymax=self.ax.get_ylim()[1],
+                linestyles='dashed',
+                alpha=0.4,
+                colors='black',
+            )
+            for size, detector_label in zip(data_sizes, detector_names):
+                self.ax.text(x=size, y=0.6, s=detector_label, rotation=270, fontsize=7)
+
             update_fig(self.fig)
 
     def new_curve(self, results, label, style="-", marker="x"):
@@ -640,7 +684,15 @@ class Bench(object):
         self.plot_x.sort()
         self.plot_y = [1000.0 / results[i] for i in self.plot_x]
         self.plot = self.ax.plot(self.plot_x, self.plot_y, marker + style, label=label)[0]
-        self.ax.legend()
+
+        handles, labels = self.ax.get_legend_handles_labels()
+        self.ax.legend(
+            handles=handles,
+            loc='center left',
+            bbox_to_anchor=(1.05,0.5),
+            fontsize=10,
+        )
+        self.fig.subplots_adjust(right=0.5)
         update_fig(self.fig)
 
     def new_point(self, size, exec_time):
@@ -669,6 +721,10 @@ class Bench(object):
         self.fig.show()
 #        plt.ion()
 
+    def display_detector_markers(self):
+        if not self.fig:
+            return
+
     def update_mp(self):
         """
         Update memory profile curve
@@ -677,7 +733,7 @@ class Bench(object):
             return
         self.memory_profile[0].append(time.perf_counter() - self.starttime)
         self.memory_profile[1].append(self.get_mem())
-        if pylab:
+        if pyplot:
             if self.fig_mp is None:
                 self.fig_mp, self.ax_mp = pyplot.subplots()
                 self.ax_mp.set_autoscale_on(False)
@@ -714,7 +770,9 @@ class Bench(object):
 
 
 def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
-                  do_1d=True, do_2d=False, devices="all"):
+                  do_1d=True, do_2d=False, processor=True, devices="all",
+                  split_list=["bbox"], algo_list=["histogram", "CSR"], impl_list=["cython", "opencl"], function="all",
+                  all=False,):
     """Run the integrated benchmark using the most common algorithms (method parameter)
 
     :param number: Measure timimg over number of executions or average over this time
@@ -731,9 +789,10 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
 
     ocl_devices = []
     if ocl:
-        if devices and isinstance(devices, (tuple, list)) and len(devices[0]) == 2:
-            ocl_devices = devices
-        else:
+        try:
+            ocl_devices = [(int(i), int(j)) for i,j in devices]
+        except Exception as err:
+            # print(f"{type(err)}: {err}\ndevices is not a list of 2-tuple of integrers, parsing the list")
             ocl_devices = []
             for i in ocl.platforms:
                 if devices == "all":
@@ -745,25 +804,96 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                         ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "GPU"]
                     if "acc" in devices:
                         ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "ACC"]
-        print("Devices:", ocl_devices)
-    if do_1d:
-        bench.bench_1d("splitBBox", True, function="integrate1d_legacy")
-        bench.bench_1d("splitBBox", True, function="integrate1d_ng")
-        bench.bench_1d(("bbox", "csc", "cython"), True, function="integrate1d_ng")
-        bench.bench_1d("csr", True, function="integrate1d_legacy")
-        bench.bench_1d("csr", True, function="integrate1d_ng")
-        for device in ocl_devices:
-            print("Working on device: " + str(device))
-#             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
-            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]}, function="integrate1d_legacy")
-            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]}, function="integrate1d_ng")
+        print(f"Devices: {devices} --> {ocl_devices}")
 
+    # Gather available methods
+    if all:
+        methods_available = IntegrationMethod.select_method()
+    else:
+        methods_available = []
+
+        # Clear list if "all" to avoid redundances
+        if "all" in split_list:
+            split_list = [None]
+        if "all" in algo_list:
+            algo_list = [None]
+        if "all" in impl_list:
+            impl_list = [None]
+
+        for split in split_list:
+            for algo in algo_list:
+                for impl in impl_list:
+                    if do_1d:
+                        for method in IntegrationMethod.select_method(dim=1, split=split, algo=algo, impl=impl):
+                            if method not in methods_available:
+                                methods_available.append(method)
+                    if do_2d:
+                        for method in IntegrationMethod.select_method(dim=2, split=split, algo=algo, impl=impl):
+                            if method not in methods_available:
+                                methods_available.append(method)
+    # Separate non-opencl from opencl methods
+    methods_non_ocl, methods_ocl = [], []
+    for method in methods_available:
+        # print(method, method.impl_lower, method.target, ocl_devices)
+        if method.impl_lower == 'opencl':
+            if method.target in ocl_devices:
+                methods_ocl.append(method)
+        else:
+            if processor:
+                methods_non_ocl.append(method)
+
+    # Benchmark 1d integration
+    if do_1d:
+        if function == "all":
+            function_list = ["integrate1d_legacy", "integrate1d_ng"]
+        elif function == "ng":
+            function_list = ["integrate1d_ng"]
+        elif function == "legacy":
+            function_list = ["integrate1d_legacy"]
+
+        # Benchmark No OpenCL devices
+        for method in methods_non_ocl:
+            if method.dimension == 1:
+                for function in function_list:
+                    bench.bench_1d(
+                        method=method,
+                        check=True,
+                        opencl=None,
+                        function=function,
+                    )
+
+        # Benchmark OpenCL devices
+        for method in methods_ocl:
+            if method.dimension == 1:
+                print("Working on device: " + str(method.target_name))
+                for function in function_list:
+                    bench.bench_1d(
+                        method=method,
+                        check=True,
+                        opencl={"platformid": method.target[0], "deviceid": method.target[1]},
+                        function=function,
+                    )
+
+    # Benchmark 2d integration
     if do_2d:
-        bench.bench_2d("splitBBox")
-        bench.bench_2d("lut", True)
-        for device in ocl_devices:
-#             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
-            bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
+
+        # Benchmark No OpenCL devices
+        for method in methods_non_ocl:
+            if method.dimension == 2:
+                bench.bench_2d(
+                    method=method,
+                    check=False,
+                    opencl=False,
+                )
+
+        # Benchmark OpenCL devices
+        for method in methods_ocl:
+            if method.dimension == 2:
+                bench.bench_2d(
+                    method=method,
+                    check=False,
+                    opencl={"platformid": method.target[0], "deviceid": method.target[1]},
+                )
 
     bench.save()
     bench.print_res()

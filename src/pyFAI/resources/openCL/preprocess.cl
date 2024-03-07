@@ -3,11 +3,11 @@
  *            Preprocessing program
  *
  *
- *   Copyright (C) 2012-2022 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2023 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 20/06/2022
+ *   Last revision: 11/10/2023
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,8 @@ enum ErrorModel { NO_VAR=0, VARIANCE=1, POISSON=2, AZIMUTHAL=3, HYBRID=4 };
  * - array_float:  Pointer to global memory with the output data as float array
  */
 kernel void
-s8_to_float(__global char  *array_s8,
-            __global float *array_float
+s8_to_float(global char  *array_s8,
+            global float *array_float
 )
 {
   int i = get_global_id(0);
@@ -66,8 +66,8 @@ s8_to_float(__global char  *array_s8,
  * - array_float:  Pointer to global memory with the output data as float array
  */
 kernel void
-u8_to_float(__global unsigned char  *array_u8,
-            __global float *array_float
+u8_to_float(global unsigned char  *array_u8,
+            global float *array_float
 )
 {
   int i = get_global_id(0);
@@ -84,8 +84,8 @@ u8_to_float(__global unsigned char  *array_u8,
  * - array_float:  Pointer to global memory with the output data as float array
  */
 kernel void
-s16_to_float(__global short *array_s16,
-             __global float *array_float
+s16_to_float(global short *array_s16,
+             global float *array_float
 )
 {
   int i = get_global_id(0);
@@ -102,8 +102,8 @@ s16_to_float(__global short *array_s16,
  * - array_float:  Pointer to global memory with the output data as float array
  */
 kernel void
-u16_to_float(__global unsigned short  *array_u16,
-             __global float *array_float
+u16_to_float(global unsigned short  *array_u16,
+             global float *array_float
 )
 {
   int i = get_global_id(0);
@@ -119,8 +119,8 @@ u16_to_float(__global unsigned short  *array_u16,
  * - array_float:  Pointer to global memory with the output data as float array
  */
 kernel void
-u32_to_float(__global unsigned int  *array_u32,
-             __global float *array_float
+u32_to_float(global unsigned int  *array_u32,
+             global float *array_float
 )
 {
   int i = get_global_id(0);
@@ -136,8 +136,8 @@ u32_to_float(__global unsigned int  *array_u32,
  * - array_float:  Pointer to global memory with the data float array
  */
 kernel void
-s32_to_float(__global int  *array_int,
-             __global float  *array_float
+s32_to_float(global int  *array_int,
+             global float  *array_float
 )
 {
   int i = get_global_id(0);
@@ -243,21 +243,21 @@ static float _any2float(const global uchar* input,
 
 static float4 _preproc4(const float  value,
                         const          char   error_model,
-                        const __global float  *variance,
+                        const global float  *variance,
                         const          char   do_dark,
-                        const __global float  *dark,
+                        const global float  *dark,
                         const          char   do_dark_variance,
-                        const __global float  *dark_variance,
+                        const global float  *dark_variance,
                         const          char   do_flat,
-                        const __global float  *flat,
+                        const global float  *flat,
                         const          char   do_solidangle,
-                        const __global float  *solidangle,
+                        const global float  *solidangle,
                         const          char   do_polarization,
-                        const __global float  *polarization,
+                        const global float  *polarization,
                         const          char   do_absorption,
-                        const __global float  *absorption,
+                        const global float  *absorption,
                         const          char   do_mask,
-                        const __global char   *mask,
+                        const global char   *mask,
                         const          char   do_dummy,
                         const          float  dummy,
                         const          float  delta_dummy,
@@ -348,28 +348,28 @@ static float4 _preproc4(const float  value,
 **/
 
 kernel void
-corrections(const __global float  *image,
+corrections(const global float  *image,
             const          char   do_dark,
-            const __global float  *dark,
+            const global float  *dark,
             const          char   do_flat,
-            const __global float  *flat,
+            const global float  *flat,
             const          char   do_solidangle,
-            const __global float  *solidangle,
+            const global float  *solidangle,
             const          char   do_polarization,
-            const __global float  *polarization,
+            const global float  *polarization,
 			const          char   do_absorption,
-			const __global float  *absorption,
+			const global float  *absorption,
             const          char   do_mask,
-            const __global char   *mask,
+            const global char   *mask,
             const          char   do_dummy,
             const          float  dummy,
             const          float  delta_dummy,
             const          float  normalization_factor,
-                  __global float  *output){
+                  global float  *output){
     size_t i= get_global_id(0);
     if (i < NIMAGE) {
         float4 result;
-        result = _preproc4(_any2float(image, i, 32),
+        result = _preproc4(_any2float( (const global uchar*) image, i, 32),
                            0,
                            image,
                            do_dark,
@@ -427,24 +427,24 @@ corrections(const __global float  *image,
  *
 **/
 kernel void
-corrections2(const __global float  *image,
+corrections2(const global float  *image,
              const          char   do_dark,
-             const __global float  *dark,
+             const global float  *dark,
              const          char   do_flat,
-             const __global float  *flat,
+             const global float  *flat,
              const          char   do_solidangle,
-             const __global float  *solidangle,
+             const global float  *solidangle,
              const          char   do_polarization,
-             const __global float  *polarization,
+             const global float  *polarization,
              const          char   do_absorption,
-             const __global float  *absorption,
+             const global float  *absorption,
              const          char   do_mask,
-             const __global char   *mask,
+             const global char   *mask,
              const          char   do_dummy,
              const          float  dummy,
              const          float  delta_dummy,
              const          float  normalization_factor,
-                   __global float2  *output
+                   global float2  *output
             )
 {
     size_t i = get_global_id(0);
@@ -452,7 +452,7 @@ corrections2(const __global float  *image,
     if (i < NIMAGE)
     {
         float4 result;
-        result = _preproc4(_any2float(image, i, 32),
+        result = _preproc4(_any2float((const global uchar*)image, i, 32),
                            0,
                            image,
                            do_dark,
@@ -507,35 +507,35 @@ corrections2(const __global float  *image,
 **/
 
 kernel void
-corrections3(const __global float  *image,
+corrections3(const global float  *image,
              const          char   error_model,
-             const __global float  *variance,
+             const global float  *variance,
              const          char   do_dark,
-             const __global float  *dark,
+             const global float  *dark,
              const          char   do_dark_variance,
-             const __global float  *dark_variance,
+             const global float  *dark_variance,
              const          char   do_flat,
-             const __global float  *flat,
+             const global float  *flat,
              const          char   do_solidangle,
-             const __global float  *solidangle,
+             const global float  *solidangle,
              const          char   do_polarization,
-             const __global float  *polarization,
+             const global float  *polarization,
              const          char   do_absorption,
-             const __global float  *absorption,
+             const global float  *absorption,
              const          char   do_mask,
-             const __global char   *mask,
+             const global char   *mask,
              const          char   do_dummy,
              const          float  dummy,
              const          float  delta_dummy,
              const          float  normalization_factor,
-                   __global float3  *output
+                   global float3  *output
             )
 {
     size_t i = get_global_id(0);
 
     if (i < NIMAGE){
         float4 result;
-        result = _preproc4( _any2float(image, i, 32),
+        result = _preproc4( _any2float((const global uchar*)image, i, 32),
                             error_model,
                             variance,
                             do_dark,
@@ -591,35 +591,35 @@ corrections3(const __global float  *image,
 **/
 
 kernel void
-corrections4(const __global uchar  *image,
+corrections4(const global float  *image,
              const          char   error_model,
-             const __global float  *variance,
+             const global float  *variance,
              const          char   do_dark,
-             const __global float  *dark,
+             const global float  *dark,
              const          char   do_dark_variance,
-             const __global float  *dark_variance,
+             const global float  *dark_variance,
              const          char   do_flat,
-             const __global float  *flat,
+             const global float  *flat,
              const          char   do_solidangle,
-             const __global float  *solidangle,
+             const global float  *solidangle,
              const          char   do_polarization,
-             const __global float  *polarization,
+             const global float  *polarization,
              const          char   do_absorption,
-             const __global float  *absorption,
+             const global float  *absorption,
              const          char   do_mask,
-             const __global char   *mask,
+             const global char   *mask,
              const          char   do_dummy,
              const          float  dummy,
              const          float  delta_dummy,
              const          float  normalization_factor,
-                   __global float4  *output
+                   global float4  *output
             )
 {
     size_t i = get_global_id(0);
     float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
-        result = _preproc4( _any2float(image, i, 32),
+        result = _preproc4( _any2float((const global uchar*)image, i, 32),
                             error_model,
                             variance,
                             do_dark,
@@ -675,29 +675,29 @@ corrections4(const __global uchar  *image,
 **/
 
 kernel void
-corrections4a(const __global uchar  *image,
+corrections4a(const global uchar  *image,
              const          char  dtype,
              const          char   error_model,
-             const __global float  *variance,
+             const global float  *variance,
              const          char   do_dark,
-             const __global float  *dark,
+             const global float  *dark,
              const          char   do_dark_variance,
-             const __global float  *dark_variance,
+             const global float  *dark_variance,
              const          char   do_flat,
-             const __global float  *flat,
+             const global float  *flat,
              const          char   do_solidangle,
-             const __global float  *solidangle,
+             const global float  *solidangle,
              const          char   do_polarization,
-             const __global float  *polarization,
+             const global float  *polarization,
              const          char   do_absorption,
-             const __global float  *absorption,
+             const global float  *absorption,
              const          char   do_mask,
-             const __global char   *mask,
+             const global char   *mask,
              const          char   do_dummy,
              const          float  dummy,
              const          float  delta_dummy,
              const          float  normalization_factor,
-                   __global float4  *output
+                   global float4  *output
             )
 {
     size_t i = get_global_id(0);

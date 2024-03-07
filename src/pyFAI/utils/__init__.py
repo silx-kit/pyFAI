@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "18/12/2023"
 __status__ = "production"
 
 import logging
@@ -45,7 +45,7 @@ import threading
 sem = threading.Semaphore()  # global lock for image processing initialization
 import fabio
 
-from .._version import calc_hexversion
+from ..version import calc_hexversion
 if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2)):
     from fabio.nexus import exists
 else:

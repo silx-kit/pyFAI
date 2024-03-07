@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2023"
+__date__ = "07/12/2023"
 __status__ = "production"
 
 
@@ -44,8 +44,7 @@ import numpy
 import logging
 logger = logging.getLogger(__name__)
 import json
-from collections import OrderedDict
-from ._common import Detector
+from ._common import Detector, Orientation
 from pyFAI.utils import mathutil
 try:
     from ..ext import bilinear
@@ -60,8 +59,8 @@ class CylindricalDetector(Detector):
     IS_FLAT = False
     force_pixel = True
 
-    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989):
-        Detector.__init__(self, pixel1, pixel2)
+    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989, orientation=0):
+        Detector.__init__(self, pixel1, pixel2, orientation=orientation)
         self.radius = radius
         self._pixel_corners = None
 
@@ -70,9 +69,10 @@ class CylindricalDetector(Detector):
 
         :return: dict with param for serialization
         """
-        return OrderedDict((("pixel1", self._pixel1),
-                            ("pixel2", self._pixel2),
-                            ("radius", self.radius)))
+        return {"pixel1": self._pixel1,
+                "pixel2": self._pixel2,
+                "radius": self.radius,
+                "orientation": self.orientation or 3}
 
     def set_config(self, config):
         """Sets the configuration of the detector.
@@ -102,6 +102,7 @@ class CylindricalDetector(Detector):
         if radius:
             self.radius = radius
             self._pixel_corners = None
+        self._orientation = Orientation(config.get("orientation", 3))
         return self
 
     def _get_compact_pixel_corners(self):
@@ -177,9 +178,13 @@ class CylindricalDetector(Detector):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if (d1 is None) or d2 is None:
-            d1 = mathutil.expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-            d2 = mathutil.expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+        if (d1 is None) or (d2 is None):
+            r1, r2 = self._calc_pixel_index_from_orientation(center)
+            delta = 0 if center else 1
+            d1 = mathutil.expand2d(r1, self.shape[1] + delta, False)
+            d2 = mathutil.expand2d(r2, self.shape[0] + delta, True)
+        else:
+            d1, d2 = self._reorder_indexes_from_orientation(d1, d2, center)
         corners = self.get_pixel_corners()
         if center:
             # avoid += It modifies in place and segfaults
@@ -268,8 +273,8 @@ class Aarhus(CylindricalDetector):
 
     MAX_SHAPE = (1000, 16000)
 
-    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989):
-        CylindricalDetector.__init__(self, pixel1, pixel2, radius)
+    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989, orientation=0):
+        CylindricalDetector.__init__(self, pixel1, pixel2, radius, orientation=orientation)
 
     def _get_compact_pixel_corners(self):
         "The core function which calculates the pixel corner coordinates"
@@ -304,8 +309,8 @@ class Rapid(CylindricalDetector):
     aliases = ["RapidII"]
     MAX_SHAPE = (2560, 4700)
 
-    def __init__(self, pixel1=0.1e-3, pixel2=0.1e-3, radius=0.12726):
-        CylindricalDetector.__init__(self, pixel1, pixel2, radius)
+    def __init__(self, pixel1=0.1e-3, pixel2=0.1e-3, radius=0.12726, orientation=0):
+        CylindricalDetector.__init__(self, pixel1, pixel2, radius, orientation=orientation)
 
     def _get_compact_pixel_corners(self):
         "The core function which calculates the pixel corner coordinates"

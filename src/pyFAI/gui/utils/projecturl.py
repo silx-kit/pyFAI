@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -27,15 +27,15 @@
 
 """Module with GUI for diffraction mapping experiments"""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "18/12/2023"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-from ... import _version as version
+from ... import version_info
 
 BASE_DOC_URL = None
 
@@ -57,19 +57,19 @@ It supportes string replacement:
 def get_documentation_url(subpath):
     """Returns the URL to the documentation"""
 
-    if version.RELEV == "final":
+    if version_info.releaselevel == "final":
         # Released verison will point to a specific documentation
-        silx_doc_version = "%d.%d.%d" % (version.MAJOR, version.MINOR, version.MICRO)
+        silx_doc_version = "%d.%d.%d" % (version_info.major, version_info.minor, version_info.micro)
     else:
         # Dev versions will point to a single 'dev' documentation
         silx_doc_version = "dev"
 
     keyworks = {
         "silx_doc_version": silx_doc_version,
-        "major": version.MAJOR,
-        "minor": version.MINOR,
-        "micro": version.MICRO,
-        "relev": version.RELEV,
+        "major": version_info.major,
+        "minor": version_info.minor,
+        "micro": version_info.micro,
+        "relev": version_info.releaselevel,
         "subpath": subpath}
     template = BASE_DOC_URL
     if template is None:

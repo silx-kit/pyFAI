@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/03/2023"
+__date__ = "20/12/2023"
 __status__ = "development"
 
 import inspect
@@ -405,3 +405,19 @@ class IntegrationMethod:
     @property
     def algo_is_sparse(self):
         return self.algo_lower in self.AVAILABLE_ALGOS[1:]
+
+    @property
+    def dim(self):
+        return self.dimension
+
+    @property
+    def algo(self):
+        return self.algorithm
+
+    @property
+    def split(self):
+        return self.pixel_splitting
+
+    @property
+    def impl(self):
+        return self.implementation

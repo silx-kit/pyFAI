@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/08/2023"
+__date__ = "02/02/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -48,9 +48,10 @@ import fabio
 import json
 import __main__ as main
 from .opencl import ocl
-from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
+from . import version as PyFAI_VERSION, date as PyFAI_DATE, load, load_integrators
 from .io import Nexus, get_isotime, h5py
 from .worker import Worker, _reduce_images
+from .method_registry import Method, IntegrationMethod
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index, rot, trans')
@@ -96,6 +97,7 @@ class DiffMap(object):
         self.nxs = None
         self.entry_grp = None
         self.experiment_title = "Diffraction Mapping"
+        # method is a property from worker
 
     def __repr__(self):
         return "%s experiment with ntp_slow: %s ntp_fast: %s, npt_diff: %s" % \
@@ -219,7 +221,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             logger.setLevel(logging.DEBUG)
         if options.outfile:
             self.hdf5 = options.outfile
-            config["output_file"] = self.hdf5,
+            config["output_file"] = self.hdf5
         if options.dark:
             dark_files = [os.path.abspath(urlparse(f).path)
                           for f in options.dark.split(",")
@@ -604,14 +606,15 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.nxs.close()
 
     def get_use_gpu(self):
-        return self.method.impl_lower == "opencl"
+        return self.worker._method.impl_lower == "opencl"
 
     def set_use_gpu(self, value):
-        if value:
-            method = self.method.method.fixed("opencl")
-        else:
-            method = self.method.method.fixed("cython")
-        self.method = method
+        if self.worker:
+            if value:
+                method = self.worker._method.method.fixed("opencl")
+            else:
+                method = self.worker._method.method.fixed("cython")
+            self.worker.set_method(method)
 
     use_gpu = property(get_use_gpu, set_use_gpu)
 
