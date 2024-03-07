@@ -68,7 +68,7 @@ logger = logging.getLogger(__name__)
 # importlib_resources is useful when this package is stored in a zip
 # When importlib.resources is not available, the resources dir defaults to the
 # directory containing this module.
-if sys.version_info > (3,9):
+if sys.version_info >= (3,9):
     import importlib.resources as importlib_resources
 else:
     try:
