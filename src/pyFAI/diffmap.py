@@ -78,7 +78,7 @@ class DiffMap(object):
         self.fast_motor_name = "fast"
         self.offset = 0
         self.poni = None
-        self.worker = Worker(unit="2th_deg")
+        self.worker = Worker(unit="2th_deg", shapeOut=(1, npt_rad))
         self.worker.output = "raw"  # exchange IntegrateResults, not numpy arrays
         self.dark = None
         self.flat = None
@@ -266,6 +266,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                 self.mask = os.path.abspath(mask)
                 ai["mask_file"] = self.mask
                 ai["do_mask"] = True
+                self.worker.setMaskFile(imagefile=self.mask)
             else:
                 logger.warning("No such mask file %s", mask)
         if options.poni:
@@ -287,6 +288,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             config["slow_motor_points"] = self.npt_slow
         if options.npt_rad is not None:
             ai["nbpt_rad"] = self.npt_rad = int(options.npt_rad)
+            self.worker.nbpt_rad = self.npt_rad
         elif "nbpt_rad" in ai:
             self.npt_rad = ai["nbpt_rad"]
             # Why was ai["nbpt_rad"] a tuple ?
@@ -429,6 +431,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.ai.detector.set_flatfield(_reduce_images(self.flat))
         if self.mask is not None:
             self.ai.detector.set_mask(_reduce_images(self.mask, method="max"))
+        self.worker.update_processor()
 
     def init_shape(self):
         """Initialize the worker with the proper input shape

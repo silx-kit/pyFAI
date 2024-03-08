@@ -206,6 +206,8 @@ def _reduce_images(filenames, method="mean"):
     :param List[str] filenames: List of files used to compute the data
     :param str method: method used to compute the dark, "mean" or "median"
     """
+    if isinstance(filenames, str):
+        return pyFAI.io.image.read_image_data(filenames).astype(numpy.float32)
     if len(filenames) == 0:
         return None
     if len(filenames) == 1:
@@ -438,6 +440,12 @@ class Worker(object):
         self.flat_field_image = imagefile
 
     setFlatfieldFile = set_flat_field_file
+
+    def set_mask_file(self, imagefile):
+        self.ai.set_mask(mask=_reduce_images(imagefile))
+        self.mask_image = imagefile
+
+    setMaskFile = set_mask_file
 
     def set_config(self, config, consume_keys=False):
         """

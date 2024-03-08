@@ -11,3 +11,4 @@ nbsphinx
 sphinx-rtd-theme
 docutils<0.20
 ipython_genutils
+importlib_resources; python_version < '3.9'
