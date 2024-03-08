@@ -93,7 +93,7 @@ class RingExtraction:
     def extract_control_points(
         self,
         max_number_of_rings: Optional[int] = None,
-        points_per_degree: int = 1,
+        points_per_degree: float = 1,
     ) -> ControlPoints:
         """
         Primary method of RingExtraction class. Runs extract_control_points_in_one_ring for all
@@ -103,9 +103,9 @@ class RingExtraction:
         ----------
         max_number_of_rings : Optional[int]
             Maximum number of diffraction rings to extract points from, by default None
-        points_per_degree : int, optional
+        points_per_degree : float, optional
             number of control points per azimuthal degree (increase for better precision), by
-            default 1
+            default 1.0
 
         Returns
         -------
@@ -357,7 +357,7 @@ class RingExtraction:
     def _calculate_num_of_points_to_keep(
         self,
         pixels_at_two_theta_level: np.ndarray,
-        points_per_degree,
+        points_per_degree: float,
     ) -> int:
         """
         Calculate number of azimuthal degrees in ring, then multiply by self.points_per_degree
@@ -366,7 +366,7 @@ class RingExtraction:
         ----------
         pixels_at_two_theta_level : np.ndarray
             Array of pixels in the image located in the ring at the current two theta value
-        points_per_degree : int, optional
+        points_per_degree : float
             number of control points per azimuthal degree (increase for better precision)
 
         Returns
