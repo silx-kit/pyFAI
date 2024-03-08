@@ -20,4 +20,5 @@ matplotlib
 numexpr != 2.8.6
 silx >= 2
 psutil
+ImageD11
 importlib_resources; python_version < '3.9'

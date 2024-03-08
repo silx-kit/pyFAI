@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/10/2023"
+__date__ = "15/02/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -759,12 +759,13 @@ register_radial_unit("qooprot90_A^-1",
 
 
 LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)", positive=False),
-                "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)", positive=False),
                 "cm": Unit("cm", scale=1e2, label=r"length $l$ ($cm$)", positive=False),
+                "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)", positive=False),
                 "micron": Unit("micron", scale=1e6, label=r"length $l$ ($\mu m$)", positive=False),
                 "nm": Unit("nm", scale=1e9, label=r"length $l$ ($nm$)", positive=False),
                 "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)", positive=False),
                 }
+LENGTH_UNITS["µm"] = LENGTH_UNITS["micron"]
 
 ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o}$)", positive=False, period=360),
                "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)", positive=False, period=2 * numpy.pi),

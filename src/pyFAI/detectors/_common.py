@@ -1205,6 +1205,7 @@ class Detector(metaclass=DetectorMeta):
     def orientation(self):
         return self._orientation
 
+
 class NexusDetector(Detector):
     """
     Class representing a 2D detector loaded from a NeXus file
