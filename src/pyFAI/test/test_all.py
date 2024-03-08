@@ -37,7 +37,6 @@ __date__ = "26/01/2024"
 import sys
 import unittest
 import logging
-logger = logging.getLogger(__name__)
 
 from .utilstest import UtilsTest
 
@@ -95,6 +94,9 @@ from . import test_parallax
 from . import test_error_model
 from . import test_units
 from . import test_uncertainties
+from . import test_ring_extraction
+
+logger = logging.getLogger(__name__)
 
 
 def suite():
@@ -153,10 +155,12 @@ def suite():
     testsuite.addTest(test_parallax.suite())
     testsuite.addTest(test_error_model.suite())
     testsuite.addTest(test_uncertainties.suite())
+    testsuite.addTest(test_ring_extraction.suite())
+
     return testsuite
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     if runner.run(suite()).wasSuccessful():
         UtilsTest.clean_up()
