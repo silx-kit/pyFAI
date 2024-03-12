@@ -89,7 +89,7 @@ class MapPlotWidget(ImagePlotWidget):
         z = image.flatten()
 
         if self._first_plot:
-            rows, cols = image.shape
+            rows, cols = image.shape[:2]
             x = numpy.tile(numpy.arange(0, cols), (rows))
             y = numpy.tile(numpy.arange(0, rows), (cols, 1)).T.flatten()
             self._scatter_item.setData(x, y, z)
