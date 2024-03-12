@@ -134,8 +134,8 @@ class TestExtractOneRing(RingExtractionTestBase):
             ring_extraction.__name__ + ".marchingsquares.MarchingSquaresMergeImpl"
         ).start()
 
-        def tearDown(self):
-            mock.patch.stopall()
+    def tearDown(self):
+        mock.patch.stopall()
 
     def test_extract_list_of_peaks_in_one_ring(
         self,
