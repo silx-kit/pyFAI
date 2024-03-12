@@ -147,7 +147,7 @@ class RingExtraction:
 
         Returns
         -------
-        Optional[List[Tuple[float]]]
+        Optional[list[tuple[float, float]]]
             peaks at given ring index
         """
         marching_squares_algorithm = marchingsquares.MarchingSquaresMergeImpl(
