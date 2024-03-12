@@ -169,9 +169,11 @@ class RingExtraction:
                 pixels_at_two_theta_level, points_per_degree
             )
             if num_points_to_keep > 0:
-                min_distance_between_control_points = len(seeds) / 2.0 / num_points_to_keep
-                # original code has a comment here which seems outdates, but I also didn't
-                # understand where this calculation comes from, so I just left it as is
+                min_distance_between_control_points = (
+                    self._calculate_min_distance_between_control_points(
+                        pixels_at_two_theta_level.tolist(), points_per_degree
+                    )
+                )
 
                 logger.info(
                     "Extracting datapoints for ring %s (2theta = %.2f deg); searching for %i pts"
@@ -347,3 +349,47 @@ class RingExtraction:
             np.rad2deg(azimuthal_degrees_array_in_ring).round()
         ).size
         return int(number_of_azimuthal_degrees * points_per_degree)
+
+    def _calculate_min_distance_between_control_points(
+        self, pixel_list_at_two_theta_level: list[list[int]], points_per_degree: float
+    ) -> float:
+        """
+        Get a random value from the ring and subtract from beam_centre_coords to calculate ring
+        radius; grabbing any value from pixel_list_at_two_theta_level will lead to the same radius.
+        then calculate the distance between 2 points separated by 1 degree in ring circumference:
+            ring_radius * 0.0174533 (equals a degree in radians)
+        only good for shapes which are close to circular.
+
+        Parameters
+        ----------
+        pixel_list_at_two_theta_level : list[list[int]]
+            List of pixels in the image located in the ring at the current two theta value
+
+        Returns
+        -------
+        float
+            Minimum accepted distance between 2 control points
+        """
+
+        # TODO implementation for elliptical rings needs semi-minor axis to ensure the min value for
+        # arc, and ellipse centre, which differs from beam centre in elliptical projections
+        beam_centre_coords = self._get_beam_centre_coords()
+        random_point_in_ring = np.array(random.sample(pixel_list_at_two_theta_level, 1)[0])
+        ring_radius_px = np.sqrt(sum(x**2 for x in (random_point_in_ring - beam_centre_coords)))
+        one_degree = 1
+        ring_dist_in_one_deg = ring_radius_px * np.radians(one_degree)
+        return ring_dist_in_one_deg / points_per_degree
+
+    def _get_beam_centre_coords(self) -> np.ndarray:
+        """
+        Use AzimuthalIntegrator's method `getFit2D` to get the pixel coordinates of the beam centre
+
+        Returns
+        -------
+        np.ndarray
+            beam centre coordinates [y,x], to match pyFAI order.
+        """
+        fit_2d = self.single_geometry.get_ai().getFit2D()
+        beam_centre_x = fit_2d["centerX"]
+        beam_centre_y = fit_2d["centerY"]
+        return np.array([beam_centre_y, beam_centre_x])
