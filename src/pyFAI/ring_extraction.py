@@ -46,7 +46,7 @@ import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
 
-import numpy as np
+import numpy
 from silx.image import marchingsquares
 
 from .control_points import ControlPoints
@@ -179,7 +179,7 @@ class RingExtraction:
                     "Extracting datapoints for ring %s (2theta = %.2f deg); searching for %i pts"
                     " out of %i with I>%.1f, dmin=%.1f",
                     ring_index,
-                    np.degrees(self.two_theta_values[ring_index]),
+                    numpy.degrees(self.two_theta_values[ring_index]),
                     num_points_to_keep,
                     final_mask.sum(dtype=int),
                     upper_limit,
@@ -196,25 +196,25 @@ class RingExtraction:
             return None
         return None
 
-    def _get_unique_two_theta_values_in_image(self) -> np.ndarray:
+    def _get_unique_two_theta_values_in_image(self) -> numpy.ndarray:
         """
         Calculates all two theta values covered by the image with the current detector and geometry
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             array containing all two theta values for calibrant at present wavelength
         """
-        two_theta_values = np.unique(
-            np.array([i for i in self.calibrant.get_2th() if i is not None])
+        two_theta_values = numpy.unique(
+            numpy.array([i for i in self.calibrant.get_2th() if i is not None])
         )
         largest_two_theta_in_image = self.two_theta_array.max()
-        two_theta_values_in_image = np.array(
+        two_theta_values_in_image = numpy.array(
             [two_theta for two_theta in two_theta_values if two_theta <= largest_two_theta_in_image]
         )
         return two_theta_values_in_image
 
-    def _create_mask_around_ring(self, ring_index: int) -> np.ndarray:
+    def _create_mask_around_ring(self, ring_index: int) -> numpy.ndarray:
         """
         Creates a mask of valid pixels around each ring, of thickness equal to 1/2 the distance
         between the centre of two adjacent rings.
@@ -227,13 +227,13 @@ class RingExtraction:
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             Mask of valid pixels around each ring
         """
         two_theta_min_max = self._get_two_theta_min_max(ring_index)
         two_theta_min, two_theta_max = (two_theta_min_max["min"], two_theta_min_max["max"])
 
-        initial_mask = np.logical_and(
+        initial_mask = numpy.logical_and(
             self.two_theta_array >= two_theta_min, self.two_theta_array < two_theta_max
         )
         if self.detector.mask is not None:
@@ -254,7 +254,7 @@ class RingExtraction:
             ring number
         Returns
         -------
-        dict[str, np.ndarray]
+        dict[str, float]
             dictionary containing minimum and maximum values for two theta
         """
         if ring_index == 0:
@@ -269,35 +269,37 @@ class RingExtraction:
 
         return {"min": two_theta_min, "max": two_theta_max}
 
-    def _remove_low_intensity_pixels_from_mask(self, mask: np.ndarray) -> tuple[np.ndarray, float]:
+    def _remove_low_intensity_pixels_from_mask(
+        self, mask: numpy.ndarray
+    ) -> tuple[numpy.ndarray, float]:
         """
         Creates a final mask of valid pixels to be used in peak extraction, by removing low
         intensity pixels from the initial mask
 
         Parameters
         ----------
-        mask : np.ndarray
+        mask : numpy.ndarray
             mask of valid pixels
 
         Returns
         -------
-        tuple[np.ndarray, float]
+        tuple[numpy.ndarray, float]
             final mask of valid pixels, upper limit of intensity to mask
         """
         mean, std = self._calculate_mean_and_std_of_intensities_in_mask(mask)
         upper_limit = mean + std
         high_pixel_intensity_coords = self.image > upper_limit
-        final_mask = np.logical_and(high_pixel_intensity_coords, mask)
+        final_mask = numpy.logical_and(high_pixel_intensity_coords, mask)
         final_mask_size = final_mask.sum(dtype=int)
         minimum_mask_size = 1000  # copied this from original method, don't know why this number
         if final_mask_size < minimum_mask_size:
             upper_limit = mean
-            final_mask = np.logical_and(self.image > upper_limit, mask)
+            final_mask = numpy.logical_and(self.image > upper_limit, mask)
             final_mask_size = final_mask.sum()
         return final_mask, upper_limit
 
     def _calculate_mean_and_std_of_intensities_in_mask(
-        self, mask: np.ndarray
+        self, mask: numpy.ndarray
     ) -> tuple[float, float]:
         """
         Calculates mean and standard deviation of pixel intensities of image which are emcompassed
@@ -305,7 +307,7 @@ class RingExtraction:
 
         Parameters
         ----------
-        mask : np.ndarray
+        mask : numpy.ndarray
             mask of valid pixels
 
         Returns
@@ -315,21 +317,21 @@ class RingExtraction:
         """
         flattened_mask = mask.flatten()
         flattened_image = self.image.flatten()
-        pixel_intensities_in_mask = flattened_image[np.where(flattened_mask)]
+        pixel_intensities_in_mask = flattened_image[numpy.where(flattened_mask)]
         mean = pixel_intensities_in_mask.mean()
         std = pixel_intensities_in_mask.std()
 
         return mean, std
 
     def _calculate_num_of_points_to_keep(
-        self, pixels_at_two_theta_level: np.ndarray, points_per_degree: float
+        self, pixels_at_two_theta_level: numpy.ndarray, points_per_degree: float
     ) -> int:
         """
         Calculate number of azimuthal degrees in ring, then multiply by self.points_per_degree
 
         Parameters
         ----------
-        pixels_at_two_theta_level : np.ndarray
+        pixels_at_two_theta_level : numpy.ndarray
             Array of pixels in the image located in the ring at the current two theta value
         points_per_degree : float
             number of control points per azimuthal degree (increase for better precision)
@@ -345,8 +347,8 @@ class RingExtraction:
             pixels_at_two_theta_level[:, 0].clip(0, image_shape[0]),
             pixels_at_two_theta_level[:, 1].clip(0, image_shape[1]),
         ]
-        number_of_azimuthal_degrees = np.unique(
-            np.rad2deg(azimuthal_degrees_array_in_ring).round()
+        number_of_azimuthal_degrees = numpy.unique(
+            numpy.rad2deg(azimuthal_degrees_array_in_ring).round()
         ).size
         return int(number_of_azimuthal_degrees * points_per_degree)
 
@@ -374,22 +376,22 @@ class RingExtraction:
         # TODO implementation for elliptical rings needs semi-minor axis to ensure the min value for
         # arc, and ellipse centre, which differs from beam centre in elliptical projections
         beam_centre_coords = self._get_beam_centre_coords()
-        random_point_in_ring = np.array(random.sample(pixel_list_at_two_theta_level, 1)[0])
-        ring_radius_px = np.sqrt(sum(x**2 for x in (random_point_in_ring - beam_centre_coords)))
+        random_point_in_ring = numpy.array(random.sample(pixel_list_at_two_theta_level, 1)[0])
+        ring_radius_px = numpy.sqrt(sum(x**2 for x in (random_point_in_ring - beam_centre_coords)))
         one_degree = 1
-        ring_dist_in_one_deg = ring_radius_px * np.radians(one_degree)
+        ring_dist_in_one_deg = ring_radius_px * numpy.radians(one_degree)
         return ring_dist_in_one_deg / points_per_degree
 
-    def _get_beam_centre_coords(self) -> np.ndarray:
+    def _get_beam_centre_coords(self) -> numpy.ndarray:
         """
         Use AzimuthalIntegrator's method `getFit2D` to get the pixel coordinates of the beam centre
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             beam centre coordinates [y,x], to match pyFAI order.
         """
         fit_2d = self.single_geometry.get_ai().getFit2D()
         beam_centre_x = fit_2d["centerX"]
         beam_centre_y = fit_2d["centerY"]
-        return np.array([beam_centre_y, beam_centre_x])
+        return numpy.array([beam_centre_y, beam_centre_x])
