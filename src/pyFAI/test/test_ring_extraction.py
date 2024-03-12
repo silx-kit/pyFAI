@@ -128,10 +128,20 @@ class TestExtractOneRing(RingExtractionTestBase):
             return_value=(numpy.ones((5, 5)), 0),
         ).start()
         self.mock_create_mask_around_ring = mock.patch.object(
-            RingExtraction, "_create_mask_around_ring", return_value=numpy.ones((5, 5))
+            RingExtraction, "_create_mask_around_ring", return_value=self.ones_array
         ).start()
         self.mock_marching_squares = mock.patch(
             ring_extraction.__name__ + ".marchingsquares.MarchingSquaresMergeImpl"
+        ).start()
+        mock_marching_squares_instance = self.mock_marching_squares.return_value
+
+        self.pixels_at_two_theta_level = numpy.array(([1, 1], [2, 2], [3, 3]))
+        mock_marching_squares_instance.find_pixels.return_value = self.pixels_at_two_theta_level
+
+        self.mock_calculate_min_distance_between_control_points = mock.patch.object(
+            RingExtraction,
+            "_calculate_min_distance_between_control_points",
+            return_value=0.1,
         ).start()
 
     def tearDown(self):
@@ -162,7 +172,13 @@ class TestExtractOneRing(RingExtractionTestBase):
                 self.ones_array,
             )
         )
-        self.mock_calculate_num_of_points_to_keep.assert_called_once()
+        self.mock_calculate_num_of_points_to_keep.assert_called_once_with(
+            self.pixels_at_two_theta_level, 1
+        )
+
+        self.mock_calculate_min_distance_between_control_points.assert_called_once_with(
+            [[1, 1], [2, 2], [3, 3]], 1
+        )
 
         self.ring_extraction.massif.peaks_from_area.assert_called_once()
         self.assertTrue(
@@ -177,11 +193,11 @@ class TestExtractOneRing(RingExtractionTestBase):
         )
         self.assertEqual(
             self.ring_extraction.massif.peaks_from_area.call_args_list[0][1]["dmin"],
-            0,
+            0.1,
         )
         self.assertEqual(
             self.ring_extraction.massif.peaks_from_area.call_args_list[0][1]["seed"],
-            set(),
+            set(((1, 1), (2, 2), (3, 3))),
         )
         self.assertEqual(
             self.ring_extraction.massif.peaks_from_area.call_args_list[0][1]["ring"],
