@@ -13,6 +13,7 @@ py.install_sources(
   'integrate.py',
   'mx_calibrate.py',
   'peakfinder.py',
+  'pilx.py',
   'recalib.py',
   'saxs.py',
   'sparsify.py',

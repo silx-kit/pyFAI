@@ -9,6 +9,7 @@ authors = [
   { name = 'Jérôme Kieffer', email = 'jerome.kieffer@esrf.fr'},
   { name = 'Edgar Gutierrez Fernandez', email = 'edgar.gutierrez-fernandez@esrf.fr'},
   { name = 'Valentin Valls', email = 'valentin.valls@esrf.fr'},
+  { name = 'Loïc Huder', email = 'loic.huder@esrf.fr'},
   { name = 'Jonathan P. Wright', email= 'wright@esrf.fr'},
   { name = 'Gael Goret'},
   { name = 'Brian Pauw'},
@@ -96,7 +97,7 @@ pyFAI-calib2 = 'pyFAI.app.calib2:main'
 pyFAI-drawmask = 'pyFAI.app.drawmask:main'
 pyFAI-diffmap = 'pyFAI.app.diff_map:main'
 pyFAI-integrate = 'pyFAI.app.integrate:main'
-
+pyFAI-pilx = 'pyFAI.app.pilx:main'
 
 [tool.cibuildwheel]
 # Skip 32-bit builds and PyPy
