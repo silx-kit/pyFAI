@@ -59,7 +59,8 @@ class RingExtractionTestBase(unittest.TestCase):
             "max": 1.25,
         }
 
-        self.mock_numpy = mock.patch(ring_extraction.__name__ + ".numpy", autospec=True).start()
+        self.numpy_patcher = mock.patch(ring_extraction.__name__ + ".numpy", autospec=True)
+        self.mock_numpy = self.numpy_patcher.start()
 
     def tearDown(self):
         mock.patch.stopall()
@@ -206,11 +207,10 @@ class TestExtractOneRing(RingExtractionTestBase):
 
 
 class TestGetUniqueTwoThetaValuesInImage(RingExtractionTestBase):
-    def test_get_unique_two_theta_values_in_image(
-        self,
-    ):
+    def test_get_unique_two_theta_values_in_image(self):
         two_theta_values = numpy.array([0.5, 1, 1.5, 2, 2.5, 1])
         self.ring_extraction.calibrant = mock.MagicMock()
+
         self.mock_numpy.array.return_value = two_theta_values
 
         # Act
@@ -368,6 +368,36 @@ class TestCalcPointsToKeep(RingExtractionTestBase):
         self.assertEqual(points_to_keep, 4)
 
 
+class TestCalcMinDistBetweenControlPoints(RingExtractionTestBase):
+    def setUp(self):
+        super().setUp()
+        self.numpy_patcher.stop()
+        self.beam_centre_coords = numpy.array((1.5, 2.1))
+        self.mock_get_beam_centre_coords = mock.patch.object(
+            self.ring_extraction,
+            "_get_beam_centre_coords",
+            return_value=self.beam_centre_coords,
+        ).start()
+
+    def tearDown(self):
+        mock.patch.stopall()
+
+    def test_calculate_min_distance_between_control_points(self):
+        # Arrange
+        pixel_list_at_two_theta_level = [[5, 5]]
+
+        # Act
+        min_dist_between_control_points = (
+            self.ring_extraction._calculate_min_distance_between_control_points(
+                pixel_list_at_two_theta_level, 1
+            )
+        )
+
+        # Assert
+        self.mock_get_beam_centre_coords.assert_called_once_with()
+        self.assertAlmostEqual(min_dist_between_control_points, 0.0793309)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -380,6 +410,7 @@ def suite():
     testsuite.addTest(loader(TestRemoveLowIntensityPixelsFromMask))
     testsuite.addTest(loader(TestCalcMeanStdOfIntensitiesInMask))
     testsuite.addTest(loader(TestCalcPointsToKeep))
+    testsuite.addTest(loader(TestCalcMinDistBetweenControlPoints))
 
     return testsuite
 
