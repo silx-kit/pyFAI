@@ -42,6 +42,7 @@ __status__ = "development"
 
 
 import logging
+import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
 
@@ -58,11 +59,7 @@ logger = logging.getLogger(__name__)
 class RingExtraction:
     """Class to perform extraction of control points from a calibration image."""
 
-    def __init__(
-        self,
-        single_geometry: SingleGeometry,
-        massif: Optional[Massif] = None,
-    ):
+    def __init__(self, single_geometry: SingleGeometry, massif: Optional[Massif] = None):
         """
         Parameters
         ----------
@@ -91,9 +88,7 @@ class RingExtraction:
         self.two_theta_values = self._get_unique_two_theta_values_in_image()
 
     def extract_control_points(
-        self,
-        max_number_of_rings: Optional[int] = None,
-        points_per_degree: float = 1,
+        self, max_number_of_rings: Optional[int] = None, points_per_degree: float = 1
     ) -> ControlPoints:
         """
         Primary method of RingExtraction class. Runs extract_control_points_in_one_ring for all
@@ -120,13 +115,9 @@ class RingExtraction:
 
         tasks = {}
         with ThreadPoolExecutor() as executor:
-            for ring_index in range(
-                min(max_number_of_rings, self.two_theta_values.size)
-            ):
+            for ring_index in range(min(max_number_of_rings, self.two_theta_values.size)):
                 future = executor.submit(
-                    self.extract_list_of_peaks_in_one_ring,
-                    ring_index,
-                    points_per_degree,
+                    self.extract_list_of_peaks_in_one_ring, ring_index, points_per_degree
                 )
                 tasks[future] = ring_index
 
@@ -139,9 +130,7 @@ class RingExtraction:
         return control_points
 
     def extract_list_of_peaks_in_one_ring(
-        self,
-        ring_index: int,
-        points_per_degree: float = 1.0
+        self, ring_index: int, points_per_degree: float = 1.0
     ) -> Optional[list[tuple[float, float]]]:
         """
         Using massif.peaks_from_area, get all pixel coordinates inside a mask of pixels around a
@@ -162,36 +151,25 @@ class RingExtraction:
             peaks at given ring index
         """
         marching_squares_algorithm = marchingsquares.MarchingSquaresMergeImpl(
-            self.two_theta_array,
-            mask=self.detector.mask,
-            use_minmax_cache=True,
+            self.two_theta_array, mask=self.detector.mask, use_minmax_cache=True
         )
 
         initial_mask = self._create_mask_around_ring(ring_index)
 
         mask_size = initial_mask.sum(dtype=int)
         if mask_size > 0:
-            final_mask, upper_limit = self._remove_low_intensity_pixels_from_mask(
-                initial_mask
-            )
+            final_mask, upper_limit = self._remove_low_intensity_pixels_from_mask(initial_mask)
 
             pixels_at_two_theta_level = marching_squares_algorithm.find_pixels(
                 self.two_theta_values[ring_index]
             )
-            seeds = set(
-                (i[0], i[1])
-                for i in pixels_at_two_theta_level
-                if final_mask[i[0], i[1]]
-            )
+            seeds = set((i[0], i[1]) for i in pixels_at_two_theta_level if final_mask[i[0], i[1]])
 
             num_points_to_keep = self._calculate_num_of_points_to_keep(
-                pixels_at_two_theta_level,
-                points_per_degree,
+                pixels_at_two_theta_level, points_per_degree
             )
             if num_points_to_keep > 0:
-                min_distance_between_control_points = (
-                    len(seeds) / 2.0 / num_points_to_keep
-                )
+                min_distance_between_control_points = len(seeds) / 2.0 / num_points_to_keep
                 # original code has a comment here which seems outdates, but I also didn't
                 # understand where this calculation comes from, so I just left it as is
 
@@ -230,11 +208,7 @@ class RingExtraction:
         )
         largest_two_theta_in_image = self.two_theta_array.max()
         two_theta_values_in_image = np.array(
-            [
-                two_theta
-                for two_theta in two_theta_values
-                if two_theta <= largest_two_theta_in_image
-            ]
+            [two_theta for two_theta in two_theta_values if two_theta <= largest_two_theta_in_image]
         )
         return two_theta_values_in_image
 
@@ -255,14 +229,10 @@ class RingExtraction:
             Mask of valid pixels around each ring
         """
         two_theta_min_max = self._get_two_theta_min_max(ring_index)
-        two_theta_min, two_theta_max = (
-            two_theta_min_max["min"],
-            two_theta_min_max["max"],
-        )
+        two_theta_min, two_theta_max = (two_theta_min_max["min"], two_theta_min_max["max"])
 
         initial_mask = np.logical_and(
-            self.two_theta_array >= two_theta_min,
-            self.two_theta_array < two_theta_max,
+            self.two_theta_array >= two_theta_min, self.two_theta_array < two_theta_max
         )
         if self.detector.mask is not None:
             detector_mask_bool = self.detector.mask.astype(bool)
@@ -289,8 +259,7 @@ class RingExtraction:
             delta_two_theta = (self.two_theta_values[1] - self.two_theta_values[0]) / 4
         else:
             delta_two_theta = (
-                self.two_theta_values[ring_index]
-                - self.two_theta_values[ring_index - 1]
+                self.two_theta_values[ring_index] - self.two_theta_values[ring_index - 1]
             ) / 4
 
         two_theta_min = self.two_theta_values[ring_index] - delta_two_theta
@@ -298,9 +267,7 @@ class RingExtraction:
 
         return {"min": two_theta_min, "max": two_theta_max}
 
-    def _remove_low_intensity_pixels_from_mask(
-        self, mask: np.ndarray
-    ) -> tuple[np.ndarray, float]:
+    def _remove_low_intensity_pixels_from_mask(self, mask: np.ndarray) -> tuple[np.ndarray, float]:
         """
         Creates a final mask of valid pixels to be used in peak extraction, by removing low
         intensity pixels from the initial mask
@@ -320,9 +287,7 @@ class RingExtraction:
         high_pixel_intensity_coords = self.image > upper_limit
         final_mask = np.logical_and(high_pixel_intensity_coords, mask)
         final_mask_size = final_mask.sum(dtype=int)
-        minimum_mask_size = (
-            1000  # copied this from original method, don't know why this number
-        )
+        minimum_mask_size = 1000  # copied this from original method, don't know why this number
         if final_mask_size < minimum_mask_size:
             upper_limit = mean
             final_mask = np.logical_and(self.image > upper_limit, mask)
@@ -355,9 +320,7 @@ class RingExtraction:
         return mean, std
 
     def _calculate_num_of_points_to_keep(
-        self,
-        pixels_at_two_theta_level: np.ndarray,
-        points_per_degree: float,
+        self, pixels_at_two_theta_level: np.ndarray, points_per_degree: float
     ) -> int:
         """
         Calculate number of azimuthal degrees in ring, then multiply by self.points_per_degree
@@ -375,9 +338,7 @@ class RingExtraction:
             Number of points to keep as control points
         """
         image_shape = self.image.shape
-        azimuthal_angles_array = self.single_geometry.geometry_refinement.chiArray(
-            image_shape
-        )
+        azimuthal_angles_array = self.single_geometry.geometry_refinement.chiArray(image_shape)
         azimuthal_degrees_array_in_ring = azimuthal_angles_array[
             pixels_at_two_theta_level[:, 0].clip(0, image_shape[0]),
             pixels_at_two_theta_level[:, 1].clip(0, image_shape[1]),
