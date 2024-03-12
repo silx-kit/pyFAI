@@ -94,9 +94,6 @@ class TestExtractControlPoints(RingExtractionTestBase):
             self.ring_extraction, "extract_list_of_peaks_in_one_ring"
         ).start()
 
-    def tearDown(self):
-        mock.patch.stopall()
-
     def test_extract_control_points(self):
         # Act
         self.ring_extraction.extract_control_points(max_number_of_rings=3)
@@ -144,9 +141,6 @@ class TestExtractOneRing(RingExtractionTestBase):
             "_calculate_min_distance_between_control_points",
             return_value=0.1,
         ).start()
-
-    def tearDown(self):
-        mock.patch.stopall()
 
     def test_extract_list_of_peaks_in_one_ring(
         self,
@@ -232,9 +226,6 @@ class TestCreateMaskAroundRing(RingExtractionTestBase):
             return_value=self.expected_two_theta_dictionary,
         ).start()
 
-    def tearDown(self):
-        mock.patch.stopall()
-
     def test_create_mask_around_ring(self):
         # Act
         self.ring_extraction._create_mask_around_ring(ring_index=0)
@@ -280,9 +271,6 @@ class TestRemoveLowIntensityPixelsFromMask(RingExtractionTestBase):
         ).start()
         self.ring_extraction.image = numpy.ones((3, 3))
         self.mock_mask = numpy.ones((3, 3), dtype=bool)
-
-    def tearDown(self):
-        mock.patch.stopall()
 
     def test_remove_low_intensity_pixels_from_mask(self):
         # Act
@@ -379,9 +367,6 @@ class TestCalcMinDistBetweenControlPoints(RingExtractionTestBase):
             return_value=self.beam_centre_coords,
         ).start()
 
-    def tearDown(self):
-        mock.patch.stopall()
-
     def test_calculate_min_distance_between_control_points(self):
         # Arrange
         pixel_list_at_two_theta_level = [[5, 5]]
@@ -398,6 +383,22 @@ class TestCalcMinDistBetweenControlPoints(RingExtractionTestBase):
         self.assertAlmostEqual(min_dist_between_control_points, 0.0793309)
 
 
+class TestGetBeamCentreCoords(RingExtractionTestBase):
+    def setUp(self):
+        super().setUp()
+        self.numpy_patcher.stop()
+        self.mock_ai = self.single_geometry.get_ai.return_value
+        self.mock_ai.getFit2D.return_value = {"centerX": 1, "centerY": 2}
+
+    def test_get_beam_centre_coords(self):
+        # Act
+        beam_centre = self.ring_extraction._get_beam_centre_coords()
+
+        # Assert
+        self.single_geometry.get_ai().getFit2D.assert_called_once_with()
+        self.assertTrue(numpy.array_equal(beam_centre, numpy.array((2, 1))))
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -411,7 +412,7 @@ def suite():
     testsuite.addTest(loader(TestCalcMeanStdOfIntensitiesInMask))
     testsuite.addTest(loader(TestCalcPointsToKeep))
     testsuite.addTest(loader(TestCalcMinDistBetweenControlPoints))
-
+    testsuite.addTest(loader(TestGetBeamCentreCoords))
     return testsuite
 
 
