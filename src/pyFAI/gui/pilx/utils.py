@@ -1,32 +1,63 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#    Project: Azimuthal integration
+#             https://github.com/silx-kit/pyFAI
+#
+#    Copyright (C) 2023-2024 European Synchrotron Radiation Facility, Grenoble, France
+#
+#    Principal author:       Loïc Huder (loic.huder@ESRF.eu)
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
+
+"""Tool to visualize diffraction maps."""
 from __future__ import annotations
-import json
+__author__ = "Loïc Huder"
+__contact__ = "loic.huder@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "12/03/2024"
+__status__ = "development"
+
+
 from typing import Iterable
+import json
 import h5py
 import numpy
 import os.path
-import pyFAI
-import pyFAI.detectors
-import pyFAI.units
+from ...azimuthalIntegrator import AzimuthalIntegrator
+from ...detectors import Detector
 
 
 def compute_radial_values(pyFAI_config_as_str: str) -> numpy.ndarray:
     pyFAI_config: dict = json.loads(pyFAI_config_as_str)
-    ai = pyFAI.load(pyFAI_config)
+    ai = AzimuthalIntegrator.sload(pyFAI_config)
     if "detector" not in pyFAI_config:
-        ai.detector = pyFAI.detectors.Detector(
-            pixel1=pyFAI_config.get("pixel1"),
-            pixel2=pyFAI_config.get("pixel2"),
-            splineFile=pyFAI_config.get("splineFile"),
-            max_shape=pyFAI_config.get("max_shape"),
-        )
+        ai.detector = Detector.facory("detector", {
+                                      "pixel1": pyFAI_config.get("pixel1"),
+                                      "pixel2": pyFAI_config.get("pixel2"),
+                                      "splineFile": pyFAI_config.get("splineFile"),
+                                      "max_shape": pyFAI_config.get("max_shape")})
 
-    # Scale manually for now
-    # https://github.com/silx-kit/pyFAI/issues/1996
-    unscaled_values = ai.center_array(
-        pyFAI_config["shape"], pyFAI_config["unit"], scale=False
-    )
-    pyFAI_unit = pyFAI.units.to_unit(pyFAI_config["unit"])
-    return unscaled_values * pyFAI_unit.scale
+    scaled_values = ai.center_array(pyFAI_config["shape"],
+                                    pyFAI_config["unit"])
+    return scaled_values
 
 
 def get_indices_from_values(
