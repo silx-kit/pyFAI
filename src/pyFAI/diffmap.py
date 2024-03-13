@@ -343,7 +343,10 @@ If the number of files is too large, use double quotes like "*.edf" """
                                                    title="diff_map")
 
         process_grp = nxs.new_class(entry_grp, "pyFAI", class_type="NXprocess")
-        process_grp["program"] = main.__file__
+        try:
+            process_grp["program"] = main.__file__
+        except AttributeError:
+            process_grp["program"] = "interactive"
         process_grp["version"] = PyFAI_VERSION
         process_grp["date"] = get_isotime()
         if self.mask:
