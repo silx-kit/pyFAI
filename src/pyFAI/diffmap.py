@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2024"
+__date__ = "13/03/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -123,12 +123,13 @@ class DiffMap(object):
                 cur = ""
         return tuple(int(i) for i in res)
 
-    def parse(self, with_config=False):
+    def parse(self, sysargv=None, with_config=False):
         """
         Parse options from command line in order to setup the object
 
-        :param with_config:
-        :return: dictionary able to setup a DiffMapWidget
+        :param sysargv: list of arguments passed on the command line (mostly for debug/test)
+        :param with_config: parse also the config (as another dict) and return (options, config)
+        :return: options, a dictionary able to setup a DiffMapWidget
         """
         description = """Azimuthal integration for diffraction imaging.
 
@@ -200,7 +201,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             help="Do not use the Graphical User Interface", default=True)
         parser.add_argument("--config", dest="config", default=None,
                             help="provide a JSON configuration file")
-        options = parser.parse_args()
+        options = parser.parse_args(args=sysargv)
         args = options.args
         if (options.config is not None) and os.path.exists(options.config):
             with open(options.config, "r") as fd:
