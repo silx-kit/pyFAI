@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,13 +32,12 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2023"
+__date__ = "08/03/2024"
 
 import unittest
 import logging
 import os.path
 import shutil
-import json
 import numpy
 
 from .. import units
@@ -331,6 +330,13 @@ class TestWorker(unittest.TestCase):
         img = self.rng.random(ai.detector.shape)
         worker(img)
 
+    def test_default_shape(self):
+        "Non regression test for #2084"
+        ai = AzimuthalIntegrator.sload({"detector":"Eiger1M",
+                                        "distance":0.1,
+                                        "wavelength":1e-10})
+        w = Worker(ai)
+        self.assertEqual(w.shape, ai.detector.shape, "detector shape matches")
 
 class TestWorkerConfig(unittest.TestCase):
 
