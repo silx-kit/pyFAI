@@ -508,7 +508,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         on the number of rings.
         """
         if fix is None:
-            fix = ["wavelength"]
+            fix = []
         return self.refine3(maxiter=maxiter, fix=fix)
 
     def simplex(self, maxiter=1000000):
