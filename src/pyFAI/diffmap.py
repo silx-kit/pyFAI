@@ -427,24 +427,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.dataset.attrs["title"] = str(self)
         self.nxs = nxs
 
-    def setup_ai(self):
-        print("Deprecated -> replaced by configure_worker")
-        return
-        # logger.info("Setup of Azimuthal integrator ...")
-        # if self.poni:
-        #     self.ai = load(self.poni)
-        # else:
-        #     logger.error(("Unable to setup Azimuthal integrator:"
-        #                   " no poni file provided"))
-        #     raise RuntimeError("You must provide poni a file")
-        # if self.dark:
-        #     self.ai.detector.set_darkcurrent(_reduce_images(self.dark))
-        # if self.flat:
-        #     self.ai.detector.set_flatfield(_reduce_images(self.flat))
-        # if self.mask is not None:
-        #     self.ai.detector.set_mask(_reduce_images(self.mask, method="max"))
-        # self.worker.update_processor()
-        # logger.info(self.ai)
 
     def init_shape(self):
         """Initialize the worker with the proper input shape
