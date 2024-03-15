@@ -553,7 +553,7 @@ class DiffMapWidget(qt.QWidget):
             else:
                 if data.ndim == 4:
                     img = numpy.nanmean(data[..., self.slice], axis=(2,3))
-                    img[img<=lognorm.vmin] = numpy.NaN
+                    img[img<=lognorm.vmin] = numpy.nan
                     self.plot.set_data(intensity)
                 else:
                     img = data[:, :, self.slice].mean(axis=2)

@@ -144,7 +144,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
         y = numpy.sin(x)
         w = numpy.random.randint(1, x.shape[0] - 2, size=100)  # Here we remove a tenth of all points !
         z = y.copy()
-        z[w] = numpy.NaN
+        z[w] = numpy.nan
         self.assertLess(abs(y - utils.mathutil.interp_filter(z)).max(), 0.01, "error is small")
 
     def test_is_far_from_group_cython(self):

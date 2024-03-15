@@ -72,7 +72,7 @@ class TestPreproc(unittest.TestCase):
         flat = 1.0 + rng.random(shape)
         scale = 10.0
         raw = scale * flat + dark
-        raw[-2:, :] = numpy.NaN
+        raw[-2:, :] = numpy.nan
 
         raw[:, :2] = dummy
         flat[:, -2:] = dummy
