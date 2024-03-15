@@ -2952,7 +2952,7 @@ class AzimuthalIntegrator(Geometry):
             npt_rad = kwargs["npt"]
         # We use NaN as dummies
         if dummy is None:
-            dummy = numpy.NaN
+            dummy = numpy.nan
             delta_dummy = None
         unit = units.to_unit(unit)
         method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
@@ -3029,7 +3029,7 @@ class AzimuthalIntegrator(Geometry):
             as_strided = numpy.lib.stride_tricks.as_strided
             mask = numpy.logical_not(numpy.isfinite(image))
             dummies = mask.sum()
-            image[mask] = numpy.NaN
+            image[mask] = numpy.nan
             mean = numpy.nanmean(image, axis=0)
             std = numpy.nanstd(image, axis=0)
             for _ in range(max_iter):
@@ -3043,7 +3043,7 @@ class AzimuthalIntegrator(Geometry):
                 dummies = mask.sum()
                 if dummies == 0:
                     break
-                image[mask] = numpy.NaN
+                image[mask] = numpy.nan
                 mean = numpy.nanmean(image, axis=0)
                 std = numpy.nanstd(image, axis=0)
 

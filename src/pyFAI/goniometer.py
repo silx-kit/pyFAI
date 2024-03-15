@@ -93,7 +93,7 @@ class BaseTransformation(object):
         for key in self.param_names + self.pos_names:
             if key in self.variables:
                 raise RuntimeError("The keyword %s is already defined, please chose another variable name")
-            self.variables[key] = numpy.NaN
+            self.variables[key] = numpy.nan
         self.codes = {}
 
     def __call__(self, param, pos):
@@ -184,7 +184,7 @@ class GeometryTransformation(object):
         for key in self.param_names + self.pos_names:
             if key in self.variables:
                 raise RuntimeError(f"The keyword `{key}` is already defined, please chose another variable name")
-            self.variables[key] = numpy.NaN
+            self.variables[key] = numpy.nan
         self.codes = OrderedDict(((name, numexpr.NumExpr(expr)) for name, expr in self.expressions.items()))
 
     @property
@@ -231,7 +231,7 @@ class GeometryTransformation(object):
             for name, value in zip(self.pos_names, pos):
                 variables[name] = value
         for name, code in self.codes.items():
-            signa = [variables.get(name, numpy.NaN) for name in code.input_names]
+            signa = [variables.get(name, numpy.nan) for name in code.input_names]
             res[name] = (float(code(*signa)))
             # could ne done in a single liner but harder to understand !
         return PoniParam(**res)
@@ -331,7 +331,7 @@ class ExtendedTransformation(object):
         for key in self.param_names + self.pos_names:
             if key in self.variables:
                 raise RuntimeError("The keyword %s is already defined, please chose another variable name")
-            self.variables[key] = numpy.NaN
+            self.variables[key] = numpy.nan
 
         self.codes = OrderedDict(((name, numexpr.NumExpr(expr)) for name, expr in self.expressions.items()))
 
@@ -356,7 +356,7 @@ class ExtendedTransformation(object):
             for name, value in zip(self.pos_names, pos):
                 variables[name] = value
         for name, code in self.codes.items():
-            signa = [variables.get(name, numpy.NaN) for name in code.input_names]
+            signa = [variables.get(name, numpy.nan) for name in code.input_names]
             res[name] = (float(code(*signa)))
             # could ne done in a single liner but harder to understand !
         return self.ParamNT(**res)

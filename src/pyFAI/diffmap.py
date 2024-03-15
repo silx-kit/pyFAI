@@ -391,7 +391,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             dtype="float32",
                             chunks=(1, 1, self.npt_azim, self.npt_rad),
                             maxshape=(None, None, self.npt_azim, self.npt_rad),
-                            fillvalue=numpy.NaN)
+                            fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "image"
             self.nxdata_grp.attrs["axes"] = [".", ".", "azimuthal", str(self.unit).split("_")[0]]
             # Build a transposed view to display the mapping experiment
@@ -400,7 +400,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             for i in range(self.npt_slow):
                 for j in range(self.npt_fast):
                     layout[:, :, i, j] = source[i, j]
-            self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.NaN).attrs["interpretation"] = "image"
+            self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
 
         else:
             print(f"shape for dataset: {self.npt_slow}, {self.npt_fast}, {self.npt_rad}")
@@ -410,7 +410,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             dtype="float32",
                             chunks=(1, self.npt_fast, self.npt_rad),
                             maxshape=(None, None, self.npt_rad),
-                            fillvalue=numpy.NaN)
+                            fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "spectrum"
             self.nxdata_grp.attrs["axes"] = [".", ".", str(self.unit).split("_")[0]]
             # Build a transposed view to display the mapping experiment
@@ -419,7 +419,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             for i in range(self.npt_slow):
                 for j in range(self.npt_fast):
                     layout[:,i,j] = source[i,j]
-            self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.NaN).attrs["interpretation"] = "image"
+            self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
 
 
         self.nxdata_grp.attrs["signal"] = self.dataset.name.split("/")[-1]
