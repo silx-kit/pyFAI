@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/02/2023"
+__date__ = "14/03/2024"
 __satus__ = "Production"
 
 import sys
@@ -50,15 +50,11 @@ from pyFAI.diffmap import DiffMap
 
 
 def main():
+
     dt = DiffMap()
     options, config = dt.parse(with_config=True)
 
-    if not options.gui:
-        dt.setup_ai()
-        dt.makeHDF5()
-        dt.process()
-        dt.show_stats()
-    else:
+    if options.gui:
         from silx.gui import qt
         from pyFAI.gui.diffmap_widget import DiffMapWidget
         from pyFAI.gui.ApplicationContext import ApplicationContext
@@ -75,6 +71,11 @@ def main():
         # window.restore()
         window.show()
         sys.exit(app.exec_())
+    else:
+        dt.configure_worker(config["ai"])
+        dt.makeHDF5()
+        dt.process()
+        dt.show_stats()
 
 
 if __name__ == "__main__":

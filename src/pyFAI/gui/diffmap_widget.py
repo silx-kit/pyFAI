@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/03/2023"
+__date__ = "14/03/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -461,8 +461,7 @@ class DiffMapWidget(qt.QWidget):
                               npt_rad=config_ai.get("nbpt_rad", 1000),
                               npt_azim=config_ai.get("nbpt_azim", 1) if config_ai.get("do_2D") else None)
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
-            diffmap.worker = worker.Worker()
-            diffmap.worker.set_config(config_ai, consume_keys=False)
+            diffmap.configure_worker(config_ai)
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data, self.azimuthal_data = diffmap.init_ai()
             self.data_h5 = diffmap.dataset
@@ -472,15 +471,13 @@ class DiffMapWidget(qt.QWidget):
                 if self.aborted:
                     logger.warning("Aborted by user")
                     self.progressbarChanged.emit(0, 0)
-                    if diffmap.nxs:
-                        self.data_np = diffmap.dataset[()]
-                        diffmap.nxs.close()
-                    return
+                    break
             if diffmap.nxs:
                 self.data_np = diffmap.dataset[()]
                 diffmap.nxs.close()
-        logger.warning("Processing finished in %.3fs", time.perf_counter() - t0)
-        self.progressbarChanged.emit(len(self.list_dataset), 0)
+        if not self.aborted:
+            logger.warning("Processing finished in %.3fs", time.perf_counter() - t0)
+            self.progressbarChanged.emit(len(self.list_dataset), 0)
 
     def display_processing(self, config):
         """Setup the display for visualizing the processing
@@ -528,7 +525,6 @@ class DiffMapWidget(qt.QWidget):
             if self.radial_data is None:
                 return
 
-            npt = self.radial_data.size
             intensity = numpy.nanmean(data, axis=(0,1))
             if self.last_idx < 0:
                 self.update_slice()
