@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2024"
+__date__ = "20/03/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -48,9 +48,9 @@ from .matplotlib import pyplot, colors
 from ..utils import int_, str_, get_ui_file
 from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
-from .. import worker
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
+from .pilx import MainWindow as pilx_main
 
 logger = logging.getLogger(__name__)
 lognorm = colors.LogNorm()
@@ -144,6 +144,7 @@ class TreeModel(qt.QAbstractItemModel):
 
 class DiffMapWidget(qt.QWidget):
     progressbarChanged = qt.Signal(int, int)
+    processingFinished = qt.Signal(str)
 #     progressbarAborted = Signal()
     uif = "diffmap.ui"
     json_file = ".diffmap.json"
@@ -187,6 +188,7 @@ class DiffMapWidget(qt.QWidget):
         self.aximg = None
         self.img = None
         self.plot = None
+        self.pilx_widget = None
         self.radial_data = None
         self.azimuthal_data = None
         self.data_h5 = None  # one in hdf5 dataset while processing.
@@ -220,6 +222,7 @@ class DiffMapWidget(qt.QWidget):
         self.progressbarChanged.connect(self.update_processing)
         self.rMin.editingFinished.connect(self.update_slice)
         self.rMax.editingFinished.connect(self.update_slice)
+        self.processingFinished.connect(self.start_visu)
         # self.listFiles.expanded.connect(lambda:self.listFiles.resizeColumnToContents(0))
 
     def _menu_file(self):
@@ -449,6 +452,7 @@ class DiffMapWidget(qt.QWidget):
         """
         logger.info("process")
         t0 = time.perf_counter()
+        last_processed_file = None
         with self.processing_sem:
             config = self.dump()
             config_ai = config.get("ai", {})
@@ -474,10 +478,13 @@ class DiffMapWidget(qt.QWidget):
                     break
             if diffmap.nxs:
                 self.data_np = diffmap.dataset[()]
+                last_processed_file = diffmap.nxs.filename
                 diffmap.nxs.close()
         if not self.aborted:
             logger.warning("Processing finished in %.3fs", time.perf_counter() - t0)
             self.progressbarChanged.emit(len(self.list_dataset), 0)
+            self.finish_processing(last_processed_file)
+
 
     def display_processing(self, config):
         """Setup the display for visualizing the processing
@@ -567,6 +574,35 @@ class DiffMapWidget(qt.QWidget):
 
             qt.QCoreApplication.processEvents()
             time.sleep(0.1)
+
+    def finish_processing(self, start_pilx=False):
+        """ close the process bar widget and the images
+
+        :param start_pilx: (str) open the pilx visualization tool with the given file
+        """
+        with self.update_sem:
+            if self.fig:
+                pyplot.close(self.fig)
+                self.fig = None
+                self.plot = None
+                self.img = None
+                self.axplt = None
+                self.aximg = None
+
+        if start_pilx and isinstance(start_pilx, str) and os.path.exists(start_pilx):
+            self.processingFinished.emit(start_pilx)
+
+    def start_visu(self, filename):
+        """Open a pilx window
+
+        :param filename: name of the HDF5 file to open
+        """
+        if self.pilx_widget is not None:
+            self.pilx_widget.close()
+        if filename is not None:
+            self.pilx_widget = pilx_main.MainWindow()
+            self.pilx_widget.initData(filename)
+            self.pilx_widget.show()
 
     def update_slice(self, *args):
         """
