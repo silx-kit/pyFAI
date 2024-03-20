@@ -844,7 +844,7 @@ class Detector(metaclass=DetectorMeta):
 
         with io.Nexus(filename, "a") as nxs:
             det_grp = nxs.new_detector(name=self.name.replace(" ", "_"))
-            det_grp["API_VERSION"] = numpy.string_(self.API_VERSION)
+            det_grp["API_VERSION"] = numpy.bytes_(self.API_VERSION)
             det_grp["IS_FLAT"] = self.IS_FLAT
             det_grp["IS_CONTIGUOUS"] = self.IS_CONTIGUOUS
             det_grp["CORNERS"] = self.CORNERS

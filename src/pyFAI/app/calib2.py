@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2023"
+__date__ = "19/03/2024"
 __status__ = "production"
 
 import os
@@ -185,9 +185,9 @@ def configure_parser_arguments(parser):
     parser.add_argument("--free-rot2", dest="fix_rot2",
                         help="free the rot2 parameter. Default: Activated", default=None, action="store_false")
     parser.add_argument("--fix-rot3", dest="fix_rot3",
-                        help="fix the rot3 parameter", default=None, action="store_true")
+                        help="fix the rot3 parameter. Default: Activated", default=True, action="store_true")
     parser.add_argument("--free-rot3", dest="fix_rot3",
-                        help="free the rot3 parameter. Default: Activated", default=None, action="store_false")
+                        help="free the rot3 parameter", default=True, action="store_false")
 
     parser.add_argument("--npt", dest="npt_1d",
                         help="Number of point in 1D integrated pattern, Default: 1024", type=int,

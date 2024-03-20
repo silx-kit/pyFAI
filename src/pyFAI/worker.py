@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2023"
+__date__ = "08/03/2024"
 __status__ = "development"
 
 import threading
@@ -90,7 +90,6 @@ import os.path
 import logging
 import json
 import numpy
-from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -219,13 +218,13 @@ def _reduce_images(filenames, method="mean"):
 class Worker(object):
 
     def __init__(self, azimuthalIntegrator=None,
-                 shapeIn=(2048, 2048), shapeOut=(360, 500),
+                 shapeIn=None, shapeOut=(360, 500),
                  unit="r_mm", dummy=None, delta_dummy=None,
                  method=("bbox", "csr", "cython"),
                  integrator_name=None, extra_options=None):
         """
         :param AzimuthalIntegrator azimuthalIntegrator: An AzimuthalIntegrator instance
-        :param tuple shapeIn: image size in input
+        :param tuple shapeIn: image size in input ->auto guessed from detector shape now
         :param tuple shapeOut: Integrated size: can be (1,2000) for 1D integration
         :param str unit: can be "2th_deg, r_mm or q_nm^-1 ...
         :param float dummy: the value making invalid pixels
@@ -258,7 +257,7 @@ class Worker(object):
         self.extension = None
         self.needs_reset = True
         self.output = "numpy"  # exports as numpy array by default
-        self.shape = shapeIn
+        self._shape = shapeIn
         self.radial = None
         self.azimuthal = None
         self.radial_range = None
@@ -714,6 +713,16 @@ class Worker(object):
         if reason and isinstance(raise_exception, Exception):
             raise_exception(reason)
         return reason
+
+    @property
+    def shape(self):
+        try:
+            shape = self.ai.detector.shape
+        except Exception as err:
+            logger.warning("The detector does not define its shape !")
+            return self._shape
+        else:
+            return shape
 
 
 class PixelwiseWorker(object):
