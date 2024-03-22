@@ -575,7 +575,7 @@ class DiffMapWidget(qt.QWidget):
             qt.QCoreApplication.processEvents()
             time.sleep(0.1)
 
-    def finish_processing(self, start_pilx=False):
+    def finish_processing(self, start_pilx: Optional[str] = None):
         """ close the process bar widget and the images
 
         :param start_pilx: (str) open the pilx visualization tool with the given file
