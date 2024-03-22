@@ -32,9 +32,8 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "22/03/2024"
 __status__ = "development"
-
 
 from typing import Iterable
 import json
@@ -49,7 +48,7 @@ def compute_radial_values(pyFAI_config_as_str: str) -> numpy.ndarray:
     pyFAI_config: dict = json.loads(pyFAI_config_as_str)
     ai = AzimuthalIntegrator.sload(pyFAI_config)
     if "detector" not in pyFAI_config:
-        ai.detector = Detector.facory("detector", {
+        ai.detector = Detector.factory("detector", {
                                       "pixel1": pyFAI_config.get("pixel1"),
                                       "pixel2": pyFAI_config.get("pixel2"),
                                       "splineFile": pyFAI_config.get("splineFile"),
