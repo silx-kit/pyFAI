@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,12 +26,12 @@
 # THE SOFTWARE.
 
 """Module with GUI for diffraction mapping experiments"""
-
+from __future__ import annotations
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2024"
+__date__ = "22/03/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -48,9 +48,9 @@ from .matplotlib import pyplot, colors
 from ..utils import int_, str_, get_ui_file
 from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
-from .. import worker
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
+from .pilx import MainWindow as pilx_main
 
 logger = logging.getLogger(__name__)
 lognorm = colors.LogNorm()
@@ -144,6 +144,7 @@ class TreeModel(qt.QAbstractItemModel):
 
 class DiffMapWidget(qt.QWidget):
     progressbarChanged = qt.Signal(int, int)
+    processingFinished = qt.Signal(str)
 #     progressbarAborted = Signal()
     uif = "diffmap.ui"
     json_file = ".diffmap.json"
@@ -187,6 +188,7 @@ class DiffMapWidget(qt.QWidget):
         self.aximg = None
         self.img = None
         self.plot = None
+        self.pilx_widget = None
         self.radial_data = None
         self.azimuthal_data = None
         self.data_h5 = None  # one in hdf5 dataset while processing.
@@ -194,6 +196,8 @@ class DiffMapWidget(qt.QWidget):
         self.last_idx = -1
         self.slice = slice(0, -1, 1)  # Default slicing
         self._menu_file()
+        self.update_period = 1  # Update the live plot every second or so
+        self.next_update = time.perf_counter()
 
     def set_validator(self):
         validator0 = qt.QIntValidator(0, 999999, self)
@@ -220,6 +224,7 @@ class DiffMapWidget(qt.QWidget):
         self.progressbarChanged.connect(self.update_processing)
         self.rMin.editingFinished.connect(self.update_slice)
         self.rMax.editingFinished.connect(self.update_slice)
+        self.processingFinished.connect(self.start_visu)
         # self.listFiles.expanded.connect(lambda:self.listFiles.resizeColumnToContents(0))
 
     def _menu_file(self):
@@ -328,7 +333,7 @@ class DiffMapWidget(qt.QWidget):
                 self.configure_output()
             else:
                 return
-        if self.fastMotorPts.text() == "" or self.slowMotorPts.text() == "" or int(self.fastMotorPts.text())*int(self.slowMotorPts.text()) == 0:
+        if self.fastMotorPts.text() == "" or self.slowMotorPts.text() == "" or int(self.fastMotorPts.text()) * int(self.slowMotorPts.text()) == 0:
             result = qt.QMessageBox.warning(self,
                                             "Grid size",
                                             "The number of steps for the grid (fast/slow motor) cannot be empty or null")
@@ -336,7 +341,7 @@ class DiffMapWidget(qt.QWidget):
                 return
 
         config = self.get_config()
-        self.progressBar.setRange(0, len(self.list_dataset))
+        self.progressBar.setRange(0, self.number_of_points)
         self.aborted = False
         self.display_processing(config)
         self.last_idx = -1
@@ -347,7 +352,8 @@ class DiffMapWidget(qt.QWidget):
         cnt = len(self.list_dataset)
         self.numberOfFrames.setText("list: %s, tree: %s" % (cnt, self.list_model._root_item.size))
 
-    def update_number_of_points(self):
+    @property
+    def number_of_points(self):
         try:
             slow = int(self.slowMotorPts.text())
         except ValueError:
@@ -360,7 +366,10 @@ class DiffMapWidget(qt.QWidget):
             offset = int(self.offset.text())
         except ValueError:
             offset = 0
-        self.numberOfPoints.setText(str(slow * fast + offset))
+        return slow * fast + offset
+
+    def update_number_of_points(self):
+        self.numberOfPoints.setText(str(self.number_of_points))
 
     def sort_input(self):
         self.list_dataset.sort(key=lambda i: i.path)
@@ -449,6 +458,8 @@ class DiffMapWidget(qt.QWidget):
         """
         logger.info("process")
         t0 = time.perf_counter()
+        self.next_update = t0 + self.update_period
+        last_processed_file = None
         with self.processing_sem:
             config = self.dump()
             config_ai = config.get("ai", {})
@@ -466,18 +477,20 @@ class DiffMapWidget(qt.QWidget):
             self.radial_data, self.azimuthal_data = diffmap.init_ai()
             self.data_h5 = diffmap.dataset
             for i, fn in enumerate(self.list_dataset):
-                diffmap.process_one_file(fn.path)
-                self.progressbarChanged.emit(i, diffmap._idx)
+                diffmap.process_one_file(fn.path, callback=lambda fn, idx:self.progressbarChanged.emit(i, diffmap._idx))
+
                 if self.aborted:
                     logger.warning("Aborted by user")
                     self.progressbarChanged.emit(0, 0)
                     break
             if diffmap.nxs:
                 self.data_np = diffmap.dataset[()]
+                last_processed_file = diffmap.nxs.filename
                 diffmap.nxs.close()
         if not self.aborted:
             logger.warning("Processing finished in %.3fs", time.perf_counter() - t0)
-            self.progressbarChanged.emit(len(self.list_dataset), 0)
+            self.progressbarChanged.emit(len(self.list_dataset), diffmap._idx)
+            self.finish_processing(last_processed_file)
 
     def display_processing(self, config):
         """Setup the display for visualizing the processing
@@ -507,30 +520,35 @@ class DiffMapWidget(qt.QWidget):
         """
         cmap = "inferno"
 
-        if idx_file >= 0:
-            self.progressBar.setValue(idx_file)
+        if idx_img >= 0:
+            self.progressBar.setValue(idx_img)
 
-        # Check if there is a free semaphore without blocking
+        if time.perf_counter() < self.next_update:
+            # Do not update too frequently (kills performances
+            return
+
         if self.update_sem.acquire(blocking=False):
+            # Check if there is a free semaphore without blocking
             self.update_sem.release()
         else:
             # It's full
             return
 
         with self.update_sem:
+            self.next_update = time.perf_counter() + self.update_period
             try:
                 data = self.data_h5[()]
-            except ValueError:
+            except (ValueError, RuntimeError):
                 data = self.data_np
-            if self.radial_data is None:
+            if self.radial_data is None or self.fig is None:
                 return
 
-            intensity = numpy.nanmean(data, axis=(0,1))
+            intensity = numpy.nanmean(data, axis=(0, 1))
             if self.last_idx < 0:
                 self.update_slice()
 
                 if data.ndim == 4:
-                    img = data[..., self.slice].mean(axis=(2,3))
+                    img = data[..., self.slice].mean(axis=(2, 3))
 
                     self.plot = self.axplt.imshow(intensity,
                                                   interpolation="nearest",
@@ -552,11 +570,11 @@ class DiffMapWidget(qt.QWidget):
                                              )
             else:
                 if data.ndim == 4:
-                    img = numpy.nanmean(data[..., self.slice], axis=(2,3))
-                    img[img<=lognorm.vmin] = numpy.nan
+                    img = numpy.nanmean(data[..., self.slice], axis=(2, 3))
+                    img[img <= lognorm.vmin] = numpy.nan
                     self.plot.set_data(intensity)
                 else:
-                    img = data[:, :, self.slice].mean(axis=2)
+                    img = data[:,:, self.slice].mean(axis=2)
                     self.plot.set_ydata(intensity)
                 self.img.set_data(img)
             self.last_idx = idx_img
@@ -567,6 +585,35 @@ class DiffMapWidget(qt.QWidget):
 
             qt.QCoreApplication.processEvents()
             time.sleep(0.1)
+
+    def finish_processing(self, start_pilx=None):
+        """ close the process bar widget and the images
+
+        :param start_pilx: (str) open the pilx visualization tool with the given file
+        """
+        with self.update_sem:
+            if self.fig:
+                pyplot.close(self.fig)
+                self.fig = None
+                self.plot = None
+                self.img = None
+                self.axplt = None
+                self.aximg = None
+
+        if start_pilx and isinstance(start_pilx, str) and os.path.exists(start_pilx):
+            self.processingFinished.emit(start_pilx)
+
+    def start_visu(self, filename):
+        """Open a pilx window
+
+        :param filename: name of the HDF5 file to open
+        """
+        if self.pilx_widget is not None:
+            self.pilx_widget.close()
+        if filename is not None:
+            self.pilx_widget = pilx_main.MainWindow()
+            self.pilx_widget.initData(filename)
+            self.pilx_widget.show()
 
     def update_slice(self, *args):
         """

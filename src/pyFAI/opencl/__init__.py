@@ -32,11 +32,11 @@
 
 """Contains all OpenCL implementation."""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2023"
+__date__ = "22/03/2024"
 __status__ = "stable"
 
 import os
@@ -57,7 +57,11 @@ elif os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
     ocl = None
     OpenclProcessing = None
 else:
-    from silx.opencl.common import *
+    try:
+        from silx.opencl.common import (ocl, pyopencl, mf, release_cl_buffers, allocate_cl_buffers,
+                                        measure_workgroup_size, kernel_workgroup_size)
+    except:
+        from silx.opencl import *
     from .. import resources
     resources.silx_integration()
 
@@ -84,4 +88,4 @@ def dtype_converter(dtype):
     elif numpy.issubdtype(dtype, numpy.unsignedinteger):
         return numpy.int8(dtype.itemsize)
     else:
-        return numpy.int8(8*dtype.itemsize)
+        return numpy.int8(8 * dtype.itemsize)
