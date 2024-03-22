@@ -32,7 +32,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "22/03/2024"
 __status__ = "development"
 
 from silx.gui import qt
@@ -56,6 +56,7 @@ class OpenAxisDatasetAction(qt.QAction):
 
     def _onTrigger(self):
         dialog = DataFileDialog(self.parentWidget())
+        #       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this line triggers an exception later on ... TODO: investigate
         dialog.setWindowTitle("Open the dataset containing X values")
         dialog.setFilterMode(DataFileDialog.FilterMode.ExistingDataset)
         if self._file_directory is not None:
