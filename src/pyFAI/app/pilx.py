@@ -33,7 +33,7 @@ __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "12/03/2024"
-__satus__ = "development"
+__status__ = "development"
 
 from silx.gui import qt
 import sys
