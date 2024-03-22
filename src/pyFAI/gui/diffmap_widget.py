@@ -26,7 +26,7 @@
 # THE SOFTWARE.
 
 """Module with GUI for diffraction mapping experiments"""
-
+from __future__ import annotations
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
