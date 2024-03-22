@@ -33,9 +33,8 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "22/03/2024"
 __status__ = "development"
-
 
 from silx.gui import qt
 from silx.gui.plot import PlotWidget
@@ -46,7 +45,6 @@ from silx.gui.plot.actions.control import ResetZoomAction
 from silx.gui.plot.actions.io import SaveAction
 from silx.gui.plot.actions.mode import ZoomModeAction, PanModeAction
 
-
 from ..HorizontalRangeROI import HorizontalRangeROI
 from ..models import ROI_COLOR
 from .RoiModeAction import RoiModeAction
@@ -54,6 +52,7 @@ from .RoiRangeWidget import RoiRangeWidget
 
 
 class IntegratedPatternPlotWidget(PlotWidget):
+
     def __init__(self, parent=None, backend=None):
         super().__init__(parent, backend)
         self.sigPlotSignal.connect(self.onRectDraw)
@@ -122,8 +121,12 @@ class IntegratedPatternPlotWidget(PlotWidget):
             return
         curve_item = curves[0]
         assert isinstance(curve_item, Curve)
-        pixel_x, pixel_y = self.dataToPixel(x_data, y_data)
-        picking_result = curve_item.pick(pixel_x, pixel_y)
+        tmp = self.dataToPixel(x_data, y_data)
+        if tmp:
+            pixel_x, pixel_y = tmp
+            picking_result = curve_item.pick(pixel_x, pixel_y)
+        else:
+            picking_result = None
         if picking_result is None:
             return
         indices_x = picking_result.getIndices(copy=False)
