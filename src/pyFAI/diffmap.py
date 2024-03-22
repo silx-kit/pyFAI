@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2024"
+__date__ = "22/03/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -82,7 +82,7 @@ class DiffMap(object):
         self.worker.output = "raw"  # exchange IntegrateResults, not numpy arrays
         self.dark = None
         self.flat = None
-        self.mask = None # file containing the mask to be used
+        self.mask = None  # file containing the mask to be used
         self.I0 = None
         self.hdf5 = None
         self.nxdata_grp = None
@@ -176,7 +176,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         parser.add_argument("-c", "--npt", dest="npt_rad",
                             help="number of points in diffraction powder pattern. Mandatory without GUI",
                             default=None)
-        parser.add_argument( "--npt-azim", dest="npt_azim",
+        parser.add_argument("--npt-azim", dest="npt_azim",
                             help="number of points in azimuthal direction, 1 for 1D integration",
                             default=None)
         parser.add_argument("-d", "--dark", dest="dark", metavar="FILE",
@@ -327,7 +327,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         """
         self.worker.set_config(dico or self.poni)
 
-
     def makeHDF5(self, rewrite=False):
         """
         Create the HDF5 structure if needed ...
@@ -399,7 +398,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             source = h5py.VirtualSource(self.dataset)
             for i in range(self.npt_slow):
                 for j in range(self.npt_fast):
-                    layout[:, :, i, j] = source[i, j]
+                    layout[:,:, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
 
         else:
@@ -418,15 +417,13 @@ If the number of files is too large, use double quotes like "*.edf" """
             source = h5py.VirtualSource(self.dataset)
             for i in range(self.npt_slow):
                 for j in range(self.npt_fast):
-                    layout[:,i,j] = source[i,j]
+                    layout[:, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
-
 
         self.nxdata_grp.attrs["signal"] = self.dataset.name.split("/")[-1]
 
         self.dataset.attrs["title"] = str(self)
         self.nxs = nxs
-
 
     def init_shape(self):
         """Initialize the worker with the proper input shape
@@ -469,7 +466,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                                                                 dtype="float32",
                                                                 chunks=(1,) + self.dataset.shape[1:],
                                                                 maxshape=(None,) + self.dataset.shape[1:])
-            self.dataset_error.attrs["interpretation"] = "image" if self.dataset.ndim==4 else "spectrum"
+            self.dataset_error.attrs["interpretation"] = "image" if self.dataset.ndim == 4 else "spectrum"
         space, unit = str(self.unit).split("_")
         if space not in self.nxdata_grp:
             self.nxdata_grp[space] = tth
@@ -519,10 +516,12 @@ If the number of files is too large, use double quotes like "*.edf" """
             n = idx - self.offset
         return Position(n, n // self.npt_fast, n % self.npt_fast)
 
-    def process_one_file(self, filename):
+    def process_one_file(self, filename, callback=None):
         """
         :param filename: name of the input filename
         :param idx: index of file
+        :param callback: function to be called after every frame has been processed.
+        :return: None
         """
         if self.ai is None:
             self.setup_ai()
@@ -538,10 +537,14 @@ If the number of files is too large, use double quotes like "*.edf" """
             else:
                 self.set_hdf5_input_dataset(fimg.dataset)
         self.process_one_frame(fimg.data)
+        if callable(callback):
+            callback(filename, 0)
         if fimg.nframes > 1:
-            for i in range(fimg.nframes - 1):
+            for i in range(1, fimg.nframes):
                 fimg = fimg.next()
                 self.process_one_frame(fimg.data)
+                if callable(callback):
+                    callback(filename, i + 1)
         t -= time.perf_counter()
         print(f"Processing {os.path.basename(filename):30s} took {-1000*t:6.1f}ms ({fimg.nframes} frames)")
         self.timing.append(-t)
@@ -578,9 +581,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         pos = self.get_pos(None, self._idx)
         shape = self.dataset.shape
         if pos.slow + 1 > shape[0]:
-            self.dataset.resize((pos.slow + 1,)+ shape[1:])
+            self.dataset.resize((pos.slow + 1,) + shape[1:])
             if self.dataset_error is not None:
-                self.dataset_error.resize((pos.slow + 1,)+ shape[1:])
+                self.dataset_error.resize((pos.slow + 1,) + shape[1:])
         elif pos.index < 0 or pos.slow < 0 or pos.fast < 0:
             return
 
