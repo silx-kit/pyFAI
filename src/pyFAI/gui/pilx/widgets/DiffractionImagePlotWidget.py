@@ -33,13 +33,11 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "22/03/2024"
 __status__ = "development"
-
 
 import numpy
 from silx.gui.plot.items import ImageData
-
 
 from .ImagePlotWidget import ImagePlotWidget
 from ..models import ROI_COLOR, ImageIndices
@@ -48,6 +46,7 @@ _LEGEND = "IMAGE"
 
 
 class DiffractionImagePlotWidget(ImagePlotWidget):
+
     def __init__(self, parent=None, backend=None):
         super().__init__(parent, backend)
         image_item = self.addImage([[]], legend=_LEGEND)
@@ -70,8 +69,12 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
             self._first_plot = False
 
     def getImageIndices(self, x_data: float, y_data: float) -> ImageIndices | None:
-        pixel_x, pixel_y = self.dataToPixel(x_data, y_data)
-        picking_result = self._image_item.pick(pixel_x, pixel_y)
+        tmp = self.dataToPixel(x_data, y_data)
+        if tmp:
+            pixel_x, pixel_y = tmp
+            picking_result = self._image_item.pick(pixel_x, pixel_y)
+        else:
+            picking_result = None
         if picking_result is None:
             return
         # Image dims are first rows then cols
@@ -79,7 +82,7 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
         return ImageIndices(row=row_indices_array[0], col=col_indices_array[0])
 
     def addContour(
-        self, contour: numpy.ndarray, legend: str, linestyle: str | None = None
+        self, contour: numpy.ndarray, legend: str, linestyle: str | None=None
     ):
         self.addCurve(
             contour[:, 1],
