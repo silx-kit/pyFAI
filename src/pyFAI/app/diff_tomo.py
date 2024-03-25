@@ -68,7 +68,7 @@ class DiffTomo(DiffMap):
         :param nRot: number of translations
         :param nDiff: number of points in diffraction pattern
         """
-        DiffMap.__init__(self, npt_slow=nRot, npt_fast=nTrans, npt_rad=nDiff)
+        DiffMap.__init__(self, nbpt_slow=nRot, nbpt_fast=nTrans, nbpt_rad=nDiff)
         self.hdf5path = "diff_tomo/data/sinogram"
         self.experiment_title = "Diffraction Tomography"
         self.slow_motor_name = "rotation"
