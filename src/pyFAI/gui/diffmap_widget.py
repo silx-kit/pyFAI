@@ -464,9 +464,6 @@ class DiffMapWidget(qt.QWidget):
             config = self.dump()
             config_ai = config.get("ai", {})
             config_ai = config_ai.copy()
-            if "nbpt_rad" not in config_ai:
-                raise RuntimeError("The number of radial points is mandatory !")
-
             diffmap = DiffMap(npt_fast=config.get("fast_motor_points", 1),
                               npt_slow=config.get("slow_motor_points", 1),
                               npt_rad=config_ai.get("nbpt_rad", 1000),
