@@ -62,7 +62,7 @@ class DiffMap(object):
     Basic class for diffraction mapping experiment using pyFAI
     """
 
-    def __init__(self, npt_fast=0, npt_slow=1, npt_rad=1000, npt_azim=None):
+    def __init__(self, nbpt_fast=0, nbpt_slow=1, nbpt_rad=1000, nbpt_azim=None):
         """Constructor of the class DiffMap for diffraction mapping
 
         :param npt_fast: number of translations
@@ -70,15 +70,15 @@ class DiffMap(object):
         :param npt_rad: number of points in diffraction pattern (radial dimension)
         :param npt_azim:  number of points in diffraction pattern (azimuthal dimension)
         """
-        self.npt_fast = npt_fast
-        self.npt_slow = npt_slow
-        self.npt_rad = npt_rad
-        self.npt_azim = npt_azim
+        self.nbpt_fast = nbpt_fast
+        self.nbpt_slow = nbpt_slow
+        self.nbpt_rad = nbpt_rad
+        self.nbpt_azim = nbpt_azim
         self.slow_motor_name = "slow"
         self.fast_motor_name = "fast"
         self.offset = 0
         self.poni = None
-        self.worker = Worker(unit="2th_deg", shapeOut=(1, npt_rad))
+        self.worker = Worker(unit="2th_deg", shapeOut=(1, nbpt_rad))
         self.worker.output = "raw"  # exchange IntegrateResults, not numpy arrays
         self.dark = None
         self.flat = None
@@ -101,7 +101,7 @@ class DiffMap(object):
 
     def __repr__(self):
         return "%s experiment with ntp_slow: %s ntp_fast: %s, npt_diff: %s" % \
-            (self.experiment_title, self.npt_slow, self.npt_fast, self.npt_rad)
+            (self.experiment_title, self.nbpt_slow, self.nbpt_fast, self.nbpt_rad)
 
     @staticmethod
     def to_tuple(name):
@@ -277,23 +277,23 @@ If the number of files is too large, use double quotes like "*.edf" """
             else:
                 logger.warning("No such poni file %s", options.poni)
         if options.fast is None:
-            self.npt_fast = config.get("fast_motor_points", self.npt_fast)
+            self.nbpt_fast = config.get("nbpt_fast", self.nbpt_fast)
         else:
-            self.npt_fast = int(options.fast)
-            config["fast_motor_points"] = self.npt_fast
+            self.nbpt_fast = int(options.fast)
+            config["nbpt_fast"] = self.nbpt_fast
         if options.slow is None:
-            self.npt_slow = config.get("slow_motor_points", self.npt_slow)
+            self.nbpt_slow = config.get("nbpt_slow", self.nbpt_slow)
         else:
-            self.npt_slow = int(options.slow)
-            config["slow_motor_points"] = self.npt_slow
+            self.nbpt_slow = int(options.slow)
+            config["nbpt_slow"] = self.nbpt_slow
         if options.npt_rad is not None:
-            ai["nbpt_rad"] = self.npt_rad = int(options.npt_rad)
+            ai["nbpt_rad"] = self.nbpt_rad = int(options.npt_rad)
         elif "nbpt_rad" in ai:
-            self.npt_rad = ai["nbpt_rad"]
+            self.nbpt_rad = ai["nbpt_rad"]
         if options.npt_azim is not None:
-            ai["nbpt_azim"] = self.npt_azim = int(options.npt_azim)
+            ai["nbpt_azim"] = self.nbpt_azim = int(options.npt_azim)
         elif "nbpt_azim" in ai:
-            self.npt_azim = ai["nbpt_azim"]
+            self.nbpt_azim = ai["nbpt_azim"]
 
         if options.offset is not None:
             self.offset = int(options.offset)
@@ -364,11 +364,11 @@ If the number of files is too large, use double quotes like "*.edf" """
             process_grp["PONIfile"] = self.poni
         process_grp["inputfiles"] = numpy.array([i for i in self.inputfiles], dtype=dtype)
 
-        process_grp["dim0"] = self.npt_slow
+        process_grp["dim0"] = self.nbpt_slow
         process_grp["dim0"].attrs["axis"] = self.slow_motor_name
-        process_grp["dim1"] = self.npt_fast
+        process_grp["dim1"] = self.nbpt_fast
         process_grp["dim1"].attrs["axis"] = self.fast_motor_name
-        process_grp["dim2"] = self.npt_rad
+        process_grp["dim2"] = self.nbpt_rad
         process_grp["dim2"].attrs["axis"] = "diffraction"
         config = nxs.new_class(process_grp, "configuration", "NXnote")
         config["type"] = "text/json"
@@ -386,37 +386,37 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.worker.do_2D():
             self.dataset = self.nxdata_grp.create_dataset(
                             name="intensity",
-                            shape=(self.npt_slow, self.npt_fast, self.npt_azim, self.npt_rad),
+                            shape=(self.nbpt_slow, self.nbpt_fast, self.nbpt_azim, self.nbpt_rad),
                             dtype="float32",
-                            chunks=(1, 1, self.npt_azim, self.npt_rad),
-                            maxshape=(None, None, self.npt_azim, self.npt_rad),
+                            chunks=(1, 1, self.nbpt_azim, self.nbpt_rad),
+                            maxshape=(None, None, self.nbpt_azim, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "image"
             self.nxdata_grp.attrs["axes"] = [".", ".", "azimuthal", str(self.unit).split("_")[0]]
             # Build a transposed view to display the mapping experiment
-            layout = h5py.VirtualLayout(shape=(self.npt_azim, self.npt_rad, self.npt_slow, self.npt_fast), dtype=self.dataset.dtype)
+            layout = h5py.VirtualLayout(shape=(self.nbpt_azim, self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
-            for i in range(self.npt_slow):
-                for j in range(self.npt_fast):
+            for i in range(self.nbpt_slow):
+                for j in range(self.nbpt_fast):
                     layout[:,:, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
 
         else:
-            print(f"shape for dataset: {self.npt_slow}, {self.npt_fast}, {self.npt_rad}")
+            print(f"shape for dataset: {self.nbpt_slow}, {self.nbpt_fast}, {self.nbpt_rad}")
             self.dataset = self.nxdata_grp.create_dataset(
                             name="intensity",
-                            shape=(self.npt_slow, self.npt_fast, self.npt_rad),
+                            shape=(self.nbpt_slow, self.nbpt_fast, self.nbpt_rad),
                             dtype="float32",
-                            chunks=(1, self.npt_fast, self.npt_rad),
-                            maxshape=(None, None, self.npt_rad),
+                            chunks=(1, self.nbpt_fast, self.nbpt_rad),
+                            maxshape=(None, None, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "spectrum"
             self.nxdata_grp.attrs["axes"] = [".", ".", str(self.unit).split("_")[0]]
             # Build a transposed view to display the mapping experiment
-            layout = h5py.VirtualLayout(shape=(self.npt_rad, self.npt_slow, self.npt_fast), dtype=self.dataset.dtype)
+            layout = h5py.VirtualLayout(shape=(self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
-            for i in range(self.npt_slow):
-                for j in range(self.npt_fast):
+            for i in range(self.nbpt_slow):
+                for j in range(self.nbpt_fast):
                     layout[:, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
 
@@ -514,7 +514,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             n = self.inputfiles.index(filename) - self.offset
         else:
             n = idx - self.offset
-        return Position(n, n // self.npt_fast, n % self.npt_fast)
+        return Position(n, n // self.nbpt_fast, n % self.nbpt_fast)
 
     def process_one_file(self, filename, callback=None):
         """
@@ -630,7 +630,7 @@ If the number of files is too large, use double quotes like "*.edf" """
     @ai.setter
     def ai(self, value):
         if self.worker is None:
-            self.worker = Worker(value, unit=self.unit, shapeOut=(1, self.npt_rad))
+            self.worker = Worker(value, unit=self.unit, shapeOut=(1, self.nbpt_rad))
         else:
             self.worker.ai = value
 
