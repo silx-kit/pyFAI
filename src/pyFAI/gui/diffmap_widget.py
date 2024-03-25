@@ -471,7 +471,7 @@ class DiffMapWidget(qt.QWidget):
                     diffmap_kwargs[key] = config[key]
             if config_ai.get("do_2D"):
                 diffmap_kwargs["nbpt_azim"] = config_ai.get("nbpt_azim", 1)
-                
+
             diffmap = DiffMap(**diffmap_kwargs)
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
             diffmap.configure_worker(config_ai)
