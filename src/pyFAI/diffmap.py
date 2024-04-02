@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2024"
+__date__ = "01/04/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -52,6 +52,7 @@ from . import version as PyFAI_VERSION, date as PyFAI_DATE, load, load_integrato
 from .io import Nexus, get_isotime, h5py
 from .worker import Worker, _reduce_images
 from .method_registry import Method, IntegrationMethod
+from .utils.decorators import deprecated, deprecated_warning
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index slow fast')
@@ -62,18 +63,32 @@ class DiffMap(object):
     Basic class for diffraction mapping experiment using pyFAI
     """
 
-    def __init__(self, nbpt_fast=0, nbpt_slow=1, nbpt_rad=1000, nbpt_azim=None):
+    def __init__(self, nbpt_fast=0, nbpt_slow=1, nbpt_rad=1000, nbpt_azim=None,
+                 **kwargs):
         """Constructor of the class DiffMap for diffraction mapping
 
         :param npt_fast: number of translations
         :param npt_slow: number of translations
         :param npt_rad: number of points in diffraction pattern (radial dimension)
         :param npt_azim:  number of points in diffraction pattern (azimuthal dimension)
+        :param kwargs: former variables named npt_fast, npt_slow, npt_rad, npt_azim which are now deprecated
         """
         self.nbpt_fast = nbpt_fast
         self.nbpt_slow = nbpt_slow
         self.nbpt_rad = nbpt_rad
         self.nbpt_azim = nbpt_azim
+
+        # handle deprecated attributes
+        deprecated_args = {"npt_fast", "npt_fast", "npt_rad", "npt_azim"}
+        for key in deprecated_args:
+            if (key in kwargs):
+                valid = key.replace("npt_", "nbpt_")
+                self.__setattr__(valid, kwargs.pop(key))
+                print(key, valid)
+                deprecated_warning("Argument", key, replacement=valid)
+        if kwargs:
+            raise TypeError(f"DiffMap got unexpected kwargs: {', '.join(kwargs)}")
+
         self.slow_motor_name = "slow"
         self.fast_motor_name = "fast"
         self.offset = 0
@@ -100,7 +115,7 @@ class DiffMap(object):
         # method is a property from worker
 
     def __repr__(self):
-        return "%s experiment with ntp_slow: %s ntp_fast: %s, npt_diff: %s" % \
+        return "%s experiment with nbpt_slow: %s nbpt_fast: %s, nbpt_diff: %s" % \
             (self.experiment_title, self.nbpt_slow, self.nbpt_fast, self.nbpt_rad)
 
     @staticmethod
@@ -651,3 +666,43 @@ If the number of files is too large, use double quotes like "*.edf" """
     @unit.setter
     def unit(self, value):
         self.worker.unit = value
+
+    @property
+    @deprecated(replacement="nbpt_fast")
+    def npt_fast(self):
+        return self.nbpt_fast
+
+    @npt_fast.setter
+    @deprecated(replacement="nbpt_fast")
+    def npt_fast(self, value):
+        self.nbpt_fast = value
+
+    @property
+    @deprecated(replacement="nbpt_slow")
+    def npt_slow(self):
+        return self.nbpt_slow
+
+    @npt_slow.setter
+    @deprecated(replacement="nbpt_slow")
+    def npt_slow(self, value):
+        self.nbpt_slow = value
+
+    @property
+    @deprecated(replacement="nbpt_rad")
+    def npt_rad(self):
+        return self.nbpt_rad
+
+    @npt_rad.setter
+    @deprecated(replacement="nbpt_rad")
+    def npt_rad(self, value):
+        self.nbpt_rad = value
+
+    @property
+    @deprecated(replacement="nbpt_azim")
+    def npt_azim(self):
+        return self.nbpt_azim
+
+    @npt_azim.setter
+    @deprecated(replacement="nbpt_azim")
+    def npt_azim(self, value):
+        self.nbpt_azim = value
