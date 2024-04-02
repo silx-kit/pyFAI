@@ -84,7 +84,6 @@ class DiffMap(object):
             if (key in kwargs):
                 valid = key.replace("npt_", "nbpt_")
                 self.__setattr__(valid, kwargs.pop(key))
-                print(key, valid)
                 deprecated_warning("Argument", key, replacement=valid)
         if kwargs:
             raise TypeError(f"DiffMap got unexpected kwargs: {', '.join(kwargs)}")
