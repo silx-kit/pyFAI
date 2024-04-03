@@ -290,6 +290,16 @@ If the number of files is too large, use double quotes like "*.edf" """
                 ai["poni"] = self.poni
             else:
                 logger.warning("No such poni file %s", options.poni)
+
+        deprecated_keys = {
+            "fast_motor_points" : "nbpt_fast",
+            "slow_motor_points" : "nbpt_slow",
+            }
+        for key in deprecated_keys:
+            if key in config.keys():
+                deprecated_warning("Argument", key, deprecated_since="2024.3.0")
+                config[deprecated_keys[key]] = config.pop(key)
+
         if options.fast is None:
             self.nbpt_fast = config.get("nbpt_fast", self.nbpt_fast)
         else:
