@@ -479,7 +479,8 @@ class DiffMapWidget(qt.QWidget):
             config_ai = config_ai.copy()
             diffmap_kwargs = {}
 
-            for key in ["nbpt_fast", "nbpt_slow", "nbpt_rad"]:
+            diffmap_kwargs["nbpt_rad"] = config_ai.get("nbpt_rad")
+            for key in ["nbpt_fast", "nbpt_slow"]:
                 if key in config:
                     diffmap_kwargs[key] = config[key]
             if config_ai.get("do_2D"):
