@@ -406,12 +406,12 @@ class DiffMapWidget(qt.QWidget):
                       "offset": lambda a: self.offset.setText(str_(a)),
                       "output_file": self.outputFile.setText
                       }
-        
+
         deprecated_keys = {
             "fast_motor_points" : "nbpt_fast",
             "slow_motor_points" : "nbpt_slow",
             }
-        
+
         for key in dico.keys():
             if key in deprecated_keys.keys():
                 deprecated_warning("Argument", key, deprecated_since="2024.3.0")
