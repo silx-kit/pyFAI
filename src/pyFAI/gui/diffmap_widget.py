@@ -46,12 +46,13 @@ from silx.gui import icons
 
 from .matplotlib import pyplot, colors
 from ..utils import int_, str_, get_ui_file
+from ..utils.decorators import deprecated_warning
 from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
-from .pilx import MainWindow as pilx_main
 
+from .pilx import MainWindow as pilx_main
 logger = logging.getLogger(__name__)
 lognorm = colors.LogNorm()
 
@@ -405,9 +406,21 @@ class DiffMapWidget(qt.QWidget):
                       "offset": lambda a: self.offset.setText(str_(a)),
                       "output_file": self.outputFile.setText
                       }
+        
+        deprecated_keys = {
+            "fast_motor_points" : "nbpt_fast",
+            "slow_motor_points" : "nbpt_slow",
+            }
+        
+        for key in dico.keys():
+            if key in deprecated_keys.keys():
+                deprecated_warning("Argument", key, deprecated_since="2024.3.0")
+                dico[deprecated_keys[key]] = dico.pop(key)
+
         for key, value in setup_data.items():
             if key in dico:
                 value(dico[key])
+
         self.list_dataset = ListDataSet(DataSet(*(str_(j) for j in i)) for i in dico.get("input_data", []))
         self.list_model.update(self.list_dataset.as_tree())
         self.update_number_of_frames()
