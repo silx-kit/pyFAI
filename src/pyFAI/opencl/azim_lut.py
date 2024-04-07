@@ -114,7 +114,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.nbytes = lut.nbytes
         self.bins, self.lut_size = lut.shape
         self.size = image_size
-        self.empty = empty or 0  # numpy.NaN
+        self.empty = empty or 0  # numpy.nan
         self.unit = unit
         self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = bin_centers

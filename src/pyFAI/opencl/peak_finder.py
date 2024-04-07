@@ -1132,5 +1132,5 @@ def densify(sparse):
         dense = numpy.round(dense)
         dense[masked] = sparse.dummy
     else:
-        dense[masked] = numpy.NaN
+        dense[masked] = numpy.nan
     return numpy.ascontiguousarray(dense, sparse.dtype)
