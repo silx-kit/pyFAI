@@ -51,7 +51,6 @@ from silx.image import marchingsquares
 
 from .control_points import ControlPoints
 from .massif import Massif
-from .single_geometry import SingleGeometry
 from .calibrant import Calibrant
 from .geometryRefinement import GeometryRefinement
 
@@ -416,7 +415,7 @@ class RingExtraction:
         numpy.ndarray
             beam centre coordinates [y,x], to match pyFAI order.
         """
-        fit_2d = self.single_geometry.get_ai().getFit2D()
+        fit_2d = self.geometry_refinement.getFit2D()
         beam_centre_x = fit_2d["centerX"]
         beam_centre_y = fit_2d["centerY"]
         return numpy.array([beam_centre_y, beam_centre_x])
