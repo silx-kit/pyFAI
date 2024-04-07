@@ -49,8 +49,10 @@ import numpy as np
 from silx.image import marchingsquares
 
 from .control_points import ControlPoints
-from .goniometer import SingleGeometry
 from .massif import Massif
+from .single_geometry import SingleGeometry
+from .calibrant import Calibrant
+from .geometryRefinement import GeometryRefinement
 
 logger = logging.getLogger(__name__)
 
@@ -59,24 +61,29 @@ class RingExtraction:
     """Class to perform extraction of control points from a calibration image."""
 
     def __init__(
-        self,
-        single_geometry: SingleGeometry,
-        massif: Optional[Massif] = None,
+        self, image: numpy.ndarray, detector, calibrant: Calibrant,
+        geometry_refinement: GeometryRefinement, massif: Optional[Massif] = None,
     ):
         """
         Parameters
         ----------
-        single_geometry : SingleGeometry
-            instance of pyFAI class
+        image : numpy.ndarray
+            image with Debye-Scherrer rings as 2d numpy array
+        detector : pyFAI.detectors.Detector
+            a pyFAI.detectors.Detector instance or something like that contains the mask to be used
+        calibrant : Calibrant
+            instance of Calibrant class
+        geometry_refinement : GeometryRefinement
+            instance of GeometryRefinement class
         massif : Optional[Massif]
             instance of Massif class, which defines an area around a peak; it is used to find
             neighboring peaks, by default None
         """
 
-        self.single_geometry = single_geometry
-        self.image = self.single_geometry.image
-        self.detector = self.single_geometry.detector
-        self.calibrant = self.single_geometry.calibrant
+        self.image = image
+        self.detector = detector
+        self.calibrant = calibrant
+        self.geometry_refinement = geometry_refinement
 
         if massif:
             self.massif = massif
@@ -87,13 +94,12 @@ class RingExtraction:
                 mask = None
             self.massif = Massif(self.image, mask)
 
-        self.two_theta_array = self.single_geometry.geometry_refinement.twoThetaArray()
+        self.two_theta_array = self.geometry_refinement.twoThetaArray()
         self.two_theta_values = self._get_unique_two_theta_values_in_image()
 
     def extract_control_points(
-        self,
-        max_number_of_rings: Optional[int] = None,
-        points_per_degree: float = 1,
+        self, max_number_of_rings: Optional[int] = None,
+        points_per_degree: float = 1, min_intensity: float = 0,
     ) -> ControlPoints:
         """
         Primary method of RingExtraction class. Runs extract_control_points_in_one_ring for all
@@ -106,6 +112,8 @@ class RingExtraction:
         points_per_degree : float, optional
             number of control points per azimuthal degree (increase for better precision), by
             default 1.0
+        min_intensity : float
+            minimum of intensity above the background to keep the point
 
         Returns
         -------
@@ -126,6 +134,7 @@ class RingExtraction:
                 future = executor.submit(
                     self.extract_list_of_peaks_in_one_ring,
                     ring_index,
+                    min_intensity,
                     points_per_degree,
                 )
                 tasks[future] = ring_index
@@ -141,7 +150,8 @@ class RingExtraction:
     def extract_list_of_peaks_in_one_ring(
         self,
         ring_index: int,
-        points_per_degree: float = 1.0
+        min_intensity: float,
+        points_per_degree: float = 1.0,
     ) -> Optional[list[tuple[float, float]]]:
         """
         Using massif.peaks_from_area, get all pixel coordinates inside a mask of pixels around a
@@ -152,6 +162,8 @@ class RingExtraction:
         ----------
         ring_index : int
             ring number
+        min_intensity : float
+            minimum of intensity above the background to keep the point
         points_per_degree : float, optional
             number of control points per azimuthal degree (increase for better precision), by
             default 1.0
@@ -208,6 +220,7 @@ class RingExtraction:
 
                 return self.massif.peaks_from_area(
                     final_mask,
+                    Imin=min_intensity,
                     keep=num_points_to_keep,
                     dmin=min_distance_between_control_points,
                     seed=seeds,
@@ -375,7 +388,7 @@ class RingExtraction:
             Number of points to keep as control points
         """
         image_shape = self.image.shape
-        azimuthal_angles_array = self.single_geometry.geometry_refinement.chiArray(
+        azimuthal_angles_array = self.geometry_refinement.chiArray(
             image_shape
         )
         azimuthal_degrees_array_in_ring = azimuthal_angles_array[

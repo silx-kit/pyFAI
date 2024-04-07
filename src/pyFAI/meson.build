@@ -33,6 +33,7 @@ py.install_sources(
     'multi_geometry.py',
     'parallax.py',
     'ring_extraction.py',
+    'single_geometry.py'
     'spline.py',
     'units.py',
     'worker.py'],
