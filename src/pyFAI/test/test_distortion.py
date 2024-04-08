@@ -175,10 +175,10 @@ class TestHalfCCD(unittest.TestCase):
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
         logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
         self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
-        self.assertTrue(numpy.alltrue(a >= b), "signal is greater then error")
-        self.assertTrue(numpy.alltrue(b >= 0), "error is positive")
+        self.assertTrue(numpy.all(a >= b), "signal is greater then error")
+        self.assertTrue(numpy.all(b >= 0), "error is positive")
         self.assertTrue(numpy.any(b > 0), "error is not null")
-        self.assertTrue(numpy.alltrue(c >= 0), "propagated array is positive")
+        self.assertTrue(numpy.all(c >= 0), "propagated array is positive")
         self.assertTrue(numpy.any(c > 0), "propagated array is not null")
 
     def test_csr_vs_fit2d(self):
@@ -218,10 +218,10 @@ class TestHalfCCD(unittest.TestCase):
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
         logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
         self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
-        self.assertTrue(numpy.alltrue(a >= b), "signal is greater then error")
-        self.assertTrue(numpy.alltrue(b >= 0), "error is positive")
+        self.assertTrue(numpy.all(a >= b), "signal is greater then error")
+        self.assertTrue(numpy.all(b >= 0), "error is positive")
         self.assertTrue(numpy.any(b > 0), "error is not null")
-        self.assertTrue(numpy.alltrue(c >= 0), "propagated array is positive")
+        self.assertTrue(numpy.all(c >= 0), "propagated array is positive")
         self.assertTrue(numpy.any(c > 0), "propagated array is not null")
 
 

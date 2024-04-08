@@ -393,7 +393,7 @@ class TestFastPath(utilstest.ParametricTestCase):
                 logger.debug("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
                              geometryParams["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
                 msg = "delta=%s<%s, geo= \n%s" % (delta, self.EPSILON, geo)
-                self.assertTrue(numpy.alltrue(delta.max() < self.EPSILON), msg)
+                self.assertTrue(numpy.all(delta.max() < self.EPSILON), msg)
                 logger.debug(msg)
 
     def test_deltachi(self):
@@ -413,7 +413,7 @@ class TestFastPath(utilstest.ParametricTestCase):
                 logger.debug("TIMINGS\t meth: deltaChi %s python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
                              geometryParams["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
                 msg = "delta=%s<%s, geo= \n%s" % (delta, self.EPSILON, geo)
-                self.assertTrue(numpy.alltrue(delta.max() < self.EPSILON), msg)
+                self.assertTrue(numpy.all(delta.max() < self.EPSILON), msg)
                 logger.debug(msg)
 
     def test_quaternions(self):

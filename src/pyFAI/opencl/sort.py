@@ -33,7 +33,7 @@ separation on GPU.
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "06/10/2022"
+__date__ = "08/04/2024"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -236,7 +236,7 @@ class Separator(OpenclProcessing):
                 kargs["dummy"] = dummy
                 kargs["src_size"] = numpy.int32(data.size),
                 wg = min(32, self.block_size)
-                size = ((self.npt_height * self.npt_width) + wg - 1) & ~(wg - 1)
+                size = int(self.npt_height * self.npt_width + wg - 1) // wg * wg
                 evt = self.kernels.copy_pad(self.queue, (size,), (wg,), *kargs.values())
                 events.append(EventDescription("copy_pad", evt))
             else:
@@ -323,7 +323,7 @@ class Separator(OpenclProcessing):
             dummy = numpy.float32(dummy)
         _sorted = self.sort_vertical(data, dummy)
         wg = min(32, self.block_size)
-        ws = (self.npt_width + wg - 1) & ~(wg - 1)
+        ws = int(self.npt_width + wg - 1) // wg * wg
         with self.sem:
             kargs = self.cl_kernel_args["filter_vertical"]
             kargs["dummy"] = dummy
@@ -347,7 +347,7 @@ class Separator(OpenclProcessing):
             dummy = numpy.float32(dummy)
         _sorted = self.sort_horizontal(data, dummy)
         wg = min(32, self.block_size)
-        ws = (self.npt_height + wg - 1) & ~(wg - 1)
+        ws = int(self.npt_height + wg - 1) // wg * wg
         with self.sem:
             kargs = self.cl_kernel_args["filter_horizontal"]
             kargs["dummy"] = dummy
@@ -372,7 +372,7 @@ class Separator(OpenclProcessing):
             dummy = numpy.float32(dummy)
         _sorted = self.sort_vertical(data, dummy)
         wg = min(32, self.block_size)
-        ws = (self.npt_width + wg - 1) & ~(wg - 1)
+        ws = int(self.npt_width + wg - 1) // wg * wg
         with self.sem:
             kargs = self.cl_kernel_args["trimmed_mean_vertical"]
             kargs["dummy"] = dummy
@@ -398,7 +398,7 @@ class Separator(OpenclProcessing):
             dummy = numpy.float32(dummy)
         _sorted = self.sort_horizontal(data, dummy)
         wg = min(32, self.block_size)
-        ws = (self.npt_height + wg - 1) & ~(wg - 1)
+        ws = int(self.npt_height + wg - 1) // wg * wg
         with self.sem:
             kargs = self.cl_kernel_args["trimmed_mean_horizontal"]
             kargs["dummy"] = dummy
