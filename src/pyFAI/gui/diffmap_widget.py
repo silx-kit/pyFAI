@@ -46,12 +46,13 @@ from silx.gui import icons
 
 from .matplotlib import pyplot, colors
 from ..utils import int_, str_, get_ui_file
+from ..utils.decorators import deprecated_warning
 from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
-from .pilx import MainWindow as pilx_main
 
+from .pilx import MainWindow as pilx_main
 logger = logging.getLogger(__name__)
 lognorm = colors.LogNorm()
 
@@ -382,8 +383,8 @@ class DiffMapWidget(qt.QWidget):
                "experiment_title": str_(self.experimentTitle.text()).strip(),
                "fast_motor_name": str_(self.fastMotorName.text()).strip(),
                "slow_motor_name": str_(self.slowMotorName.text()).strip(),
-               "fast_motor_points": int_(self.fastMotorPts.text()),
-               "slow_motor_points": int_(self.slowMotorPts.text()),
+               "nbpt_fast": int_(self.fastMotorPts.text()),
+               "nbpt_slow": int_(self.slowMotorPts.text()),
                "offset": int_(self.offset.text()),
                "output_file": str_(self.outputFile.text()).strip(),
                "input_data": [i.as_tuple() for i in self.list_dataset]
@@ -400,14 +401,26 @@ class DiffMapWidget(qt.QWidget):
         setup_data = {"experiment_title": self.experimentTitle.setText,
                       "fast_motor_name": self.fastMotorName.setText,
                       "slow_motor_name": self.slowMotorName.setText,
-                      "fast_motor_points": lambda a: self.fastMotorPts.setText(str_(a)),
-                      "slow_motor_points": lambda a: self.slowMotorPts.setText(str_(a)),
+                      "nbpt_fast": lambda a: self.fastMotorPts.setText(str_(a)),
+                      "nbpt_slow": lambda a: self.slowMotorPts.setText(str_(a)),
                       "offset": lambda a: self.offset.setText(str_(a)),
                       "output_file": self.outputFile.setText
                       }
+
+        deprecated_keys = {
+            "fast_motor_points" : "nbpt_fast",
+            "slow_motor_points" : "nbpt_slow",
+            }
+
+        for key in dico.keys():
+            if key in deprecated_keys.keys():
+                deprecated_warning("Argument", key, deprecated_since="2024.3.0")
+                dico[deprecated_keys[key]] = dico.pop(key)
+
         for key, value in setup_data.items():
             if key in dico:
                 value(dico[key])
+
         self.list_dataset = ListDataSet(DataSet(*(str_(j) for j in i)) for i in dico.get("input_data", []))
         self.list_model.update(self.list_dataset.as_tree())
         self.update_number_of_frames()
@@ -464,13 +477,16 @@ class DiffMapWidget(qt.QWidget):
             config = self.dump()
             config_ai = config.get("ai", {})
             config_ai = config_ai.copy()
-            if "nbpt_rad" not in config_ai:
-                raise RuntimeError("The number of radial points is mandatory !")
+            diffmap_kwargs = {}
 
-            diffmap = DiffMap(npt_fast=config.get("fast_motor_points", 1),
-                              npt_slow=config.get("slow_motor_points", 1),
-                              npt_rad=config_ai.get("nbpt_rad", 1000),
-                              npt_azim=config_ai.get("nbpt_azim", 1) if config_ai.get("do_2D") else None)
+            diffmap_kwargs["nbpt_rad"] = config_ai.get("nbpt_rad")
+            for key in ["nbpt_fast", "nbpt_slow"]:
+                if key in config:
+                    diffmap_kwargs[key] = config[key]
+            if config_ai.get("do_2D"):
+                diffmap_kwargs["nbpt_azim"] = config_ai.get("nbpt_azim", 1)
+
+            diffmap = DiffMap(**diffmap_kwargs)
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
             diffmap.configure_worker(config_ai)
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
@@ -501,8 +517,8 @@ class DiffMapWidget(qt.QWidget):
         self.aximg = self.fig.add_subplot(1, 2, 1,
                                           xlabel=config.get("fast_motor_name", "Fast motor"),
                                           ylabel=config.get("slow_motor_name", "Slow motor"),
-                                          xlim=(-0.5, (config.get("fast_motor_points", 1) or 1) - 0.5),
-                                          ylim=(-0.5, (config.get("slow_motor_points", 1) or 1) - 0.5))
+                                          xlim=(-0.5, (config.get("nbpt_fast", 1) or 1) - 0.5),
+                                          ylim=(-0.5, (config.get("nbpt_slow", 1) or 1) - 0.5))
         self.aximg.set_title(config.get("experiment_title", "Diffraction imaging"))
         # print(config)
         self.axplt = self.fig.add_subplot(1, 2, 2,

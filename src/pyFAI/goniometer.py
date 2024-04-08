@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2024"
+__date__ = "01/04/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -232,8 +232,8 @@ class GeometryTransformation(object):
                 variables[name] = value
         for name, code in self.codes.items():
             signa = [variables.get(name, numpy.nan) for name in code.input_names]
-            res[name] = (float(code(*signa)))
-            # could ne done in a single liner but harder to understand !
+            res[name] = (float(code(*signa)[()]))
+            # could be done in a single liner but harder to understand !
         return PoniParam(**res)
 
     def __repr__(self):
@@ -357,7 +357,7 @@ class ExtendedTransformation(object):
                 variables[name] = value
         for name, code in self.codes.items():
             signa = [variables.get(name, numpy.nan) for name in code.input_names]
-            res[name] = (float(code(*signa)))
+            res[name] = (float(code(*signa)[()]))
             # could ne done in a single liner but harder to understand !
         return self.ParamNT(**res)
 
@@ -690,7 +690,7 @@ class SingleGeometry(object):
                 break
             if count[i]:
                 rings += 1
-                mask = qmask==i
+                mask = qmask == i
                 sub_data = self.image[mask]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
@@ -735,9 +735,11 @@ class SingleGeometry(object):
     def get_wavelength(self):
         assert self.calibrant.wavelength == self.geometry_refinement.wavelength
         return self.geometry_refinement.wavelength
+
     def set_wavelength(self, value):
         self.calibrant.setWavelength_change2th(value)
         self.geometry_refinement.set_wavelength(value)
+
     wavelength = property(get_wavelength, set_wavelength)
 
 
@@ -926,8 +928,6 @@ class GoniometerRefinement(Goniometer):
             print(self.nt_param(*self.param))
         return self.param
 
-
-
     def refine3(self, fix=None, method="slsqp", verbose=True, **options):
         """Geometry refinement tool
 
@@ -988,7 +988,6 @@ class GoniometerRefinement(Goniometer):
             return new_delta_theta2
         else:
             return old_delta_theta2
-
 
     def set_bounds(self, name, mini=None, maxi=None):
         """Redefines the bounds for the refinement
