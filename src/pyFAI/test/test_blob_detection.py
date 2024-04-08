@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/12/2022"
+__date__ = "08/04/2024"
 
 import unittest
 import numpy
@@ -78,9 +78,9 @@ class TestBlobDetection(unittest.TestCase):
     def test_local_max(self):
         bd = BlobDetection(self.img)
         bd._one_octave(shrink=False, refine=False, n_5=False)
-        self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, False) ==
+        self.assertTrue(numpy.all(_blob.local_max(bd.dogs, bd.cur_mask, False) ==
                                       local_max(bd.dogs, bd.cur_mask, False)), "max test, 3x3x3")
-        self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, True) ==
+        self.assertTrue(numpy.all(_blob.local_max(bd.dogs, bd.cur_mask, True) ==
                                       local_max(bd.dogs, bd.cur_mask, True)), "max test, 3x5x5")
 
 class TestMorphology(unittest.TestCase):
