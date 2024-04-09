@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "04/10/2023"
+__date__ = "08/04/2024"
 __copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -230,10 +230,10 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         corrections4 = self.kernels.corrections4a
         kw_corr = self.cl_kernel_args[kernel_correction_name]
         kw_corr["image"] = self.send_buffer(data, "image", convert=False)
-        kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize>4 else dtype_converter(data.dtype)
+        kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize > 4 else dtype_converter(data.dtype)
 
         wg = max(self.workgroup_size["memset_ng"])
-        wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
+        wdim_bins = int(self.bins + wg - 1) // wg * wg,
         memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
         events.append(EventDescription("memset_ng", memset))
 
@@ -320,7 +320,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         kw_corr["error_model"] = kw_int["error_model"] = numpy.int8(error_model.value)
 
         wg = max(self.workgroup_size[kernel_correction_name])
-        wdim_data = (self.size + wg - 1) & ~(wg - 1),
+        wdim_data = int(self.size + wg - 1) // wg * wg,
         ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
         events.append(EventDescription(kernel_correction_name, ev))
 
@@ -369,7 +369,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             kw_proj["radius_max"] = numpy.float32(numpy.finfo(numpy.float32).max)
 
         wg = max(self.workgroup_size["find_intense"])
-        wdim_data = (self.size + wg - 1) // wg * wg,  # & ~(wg - 1),
+        wdim_data = int(self.size + wg - 1) // wg * wg,
         kw_proj["shared"] = pyopencl.LocalMemory(wg * 4)  # stores int
         peak_search = self.program.find_intense(self.queue, wdim_data, (wg,), *list(kw_proj.values()))
         events.append(EventDescription("find_intense", peak_search))
@@ -479,7 +479,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 wg1 = int(swg * sqrt2)
                 wg0 = wg // wg1
 
-        wdim_data = (data.shape[0] + wg0 - 1) & ~(wg0 - 1), (data.shape[1] + wg1 - 1) & ~(wg1 - 1)
+        wdim_data = int(data.shape[0] + wg0 - 1) // wg0 * wg0, int(data.shape[1] + wg1 - 1) // wg1 * wg
         # allocate local memory: we store 4 bytes but at most 1 pixel out of 4 can be a peak
 
         hw = patch_size // 2  # Half width of the patch
@@ -666,7 +666,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 # Call kernel to copy intensities
                 kw = self.cl_kernel_args["copy_intense"]
                 kw["counter"] = cnt_intense
-                size = (cnt_intense + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1)
+                size = int(cnt_intense + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE
                 ev0 = kernel(self.queue, (size,), (self.BLOCK_SIZE,),
                                          *list(kw.values()))
                 ev1 = pyopencl.enqueue_copy(self.queue, indexes, self.cl_mem["position"])
@@ -847,7 +847,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         self.wg = self.size_to_doublet(self.BLOCK_SIZE)
         if sum(i < j for i, j in zip(self.ctx.devices[0].max_work_item_sizes, self.wg)):
             self.wg = self.ctx.devices[0].max_work_item_sizes[:2]
-        self.wdim = tuple((shape + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1) for shape, BLOCK_SIZE in zip(self.shape[-1::-1], self.wg))
+        self.wdim = tuple(int(shape + BLOCK_SIZE - 1) // BLOCK_SIZE * BLOCK_SIZE for shape, BLOCK_SIZE in zip(self.shape[-1::-1], self.wg))
 
         self.buffers = [BufferDescription(i.name, i.size * numpy.prod(self.shape), i.dtype, i.flags)
                         for i in self.__class__.buffers]
@@ -1078,7 +1078,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         with self.sem:
             count = self._count(image, window, cutoff, radius, noise)
             kw = self.cl_kernel_args["copy_intense"]
-            size = (count + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1)
+            size = int(count + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE
 
             copy_intense = self.program.copy_intense(self.queue, (size,), (self.BLOCK_SIZE,),
                                            *list(kw.values()))
