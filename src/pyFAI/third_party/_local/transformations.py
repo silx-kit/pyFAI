@@ -517,7 +517,7 @@ def projection_matrix(
     if perspective is not None:
         # perspective projection
         perspective = numpy.asarray(
-            perspective[:3], dtype=numpy.float64, copy=False
+            perspective[:3], dtype=numpy.float64,
         )
         M[0, 0] = M[1, 1] = M[2, 2] = numpy.dot(perspective - point, normal)
         M[:3, :3] -= numpy.outer(perspective, normal)
