@@ -779,7 +779,7 @@ def decompose_matrix(matrix):
     True
 
     """
-    M = numpy.asarray(matrix, dtype=numpy.float64, copy=True).T
+    M = numpy.array(matrix, dtype=numpy.float64, copy=True).T
     if abs(M[3, 3]) < _EPS:
         raise ValueError('M[3, 3] is zero')
     M /= M[3, 3]
