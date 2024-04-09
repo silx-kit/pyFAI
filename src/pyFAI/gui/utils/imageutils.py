@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2017-2018 European Synchrotron Radiation Facility
+# Copyright (c) 2017-2024 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "08/04/2024"
 
 import numpy
 
@@ -49,7 +49,7 @@ def convertArrayToQImage(image):
     """
     # Possible extension: add a format argument to support more formats
 
-    image = numpy.array(image, copy=False, order='C', dtype=numpy.uint8)
+    image = numpy.asarray(image, order='C', dtype=numpy.uint8)
 
     height, width, depth = image.shape
 
