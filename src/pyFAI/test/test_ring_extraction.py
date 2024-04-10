@@ -47,9 +47,14 @@ from ..ring_extraction import RingExtraction
 
 class RingExtractionTestBase(unittest.TestCase):
     def setUp(self):
-        self.single_geometry = mock.MagicMock()
+        self.image = mock.MagicMock()
+        self.detector = mock.MagicMock()
+        self.calibrant = mock.MagicMock()
+        self.geometry_refinement = mock.MagicMock()
         self.massif = mock.MagicMock()
-        self.ring_extraction = RingExtraction(self.single_geometry, self.massif)
+        self.ring_extraction = RingExtraction(
+            self.image, self.detector, self.calibrant, self.geometry_refinement, self.massif
+        )
         two_theta_values = numpy.array([1, 2, 3, 4, 5])
         self.ring_extraction.two_theta_values = two_theta_values
         self.ones_array = numpy.ones((5, 5))
@@ -69,7 +74,7 @@ class RingExtractionTestBase(unittest.TestCase):
 class TestCalibAttributes(RingExtractionTestBase):
     def test_calib_attributes(self):
         ring_extraction_attributes = [
-            "single_geometry",
+            "geometry_refinement",
             "image",
             "detector",
             "calibrant",
@@ -104,9 +109,9 @@ class TestExtractControlPoints(RingExtractionTestBase):
         self.assertEqual(self.mock_extract_peaks_in_one_ring.call_count, 3)
         self.mock_extract_peaks_in_one_ring.assert_has_calls(
             [
-                mock.call(0, 1),
-                mock.call(1, 1),
-                mock.call(2, 1),
+                mock.call(0, 0, 1),
+                mock.call(1, 0, 1),
+                mock.call(2, 0, 1),
             ],
             any_order=False,
         )
@@ -146,7 +151,7 @@ class TestExtractOneRing(RingExtractionTestBase):
         self,
     ):
         # Act
-        self.ring_extraction.extract_list_of_peaks_in_one_ring(ring_index=1)
+        self.ring_extraction.extract_list_of_peaks_in_one_ring(ring_index=1, min_intensity=0)
 
         # Assert
         self.mock_marching_squares.assert_called_once()
@@ -351,7 +356,7 @@ class TestCalcPointsToKeep(RingExtractionTestBase):
         )
 
         # Assert
-        self.single_geometry.geometry_refinement.chiArray.assert_called_once_with((10, 10))
+        self.geometry_refinement.chiArray.assert_called_once_with((10, 10))
         self.mock_numpy.unique.assert_called_once_with(sample_array)
         self.assertEqual(points_to_keep, 4)
 
@@ -387,15 +392,14 @@ class TestGetBeamCentreCoords(RingExtractionTestBase):
     def setUp(self):
         super().setUp()
         self.numpy_patcher.stop()
-        self.mock_ai = self.single_geometry.get_ai.return_value
-        self.mock_ai.getFit2D.return_value = {"centerX": 1, "centerY": 2}
+        self.geometry_refinement.getFit2D.return_value = {"centerX": 1, "centerY": 2}
 
     def test_get_beam_centre_coords(self):
         # Act
         beam_centre = self.ring_extraction._get_beam_centre_coords()
 
         # Assert
-        self.single_geometry.get_ai().getFit2D.assert_called_once_with()
+        self.geometry_refinement.getFit2D.assert_called_once_with()
         self.assertTrue(numpy.array_equal(beam_centre, numpy.array((2, 1))))
 
 

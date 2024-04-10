@@ -50,7 +50,7 @@ from .utilstest import UtilsTest
 from ..utils import mathutil
 import fabio
 from .. import load
-from ..azimuthalIntegrator import AzimuthalIntegrator, logger as ai_logger
+from ..azimuthalIntegrator import AzimuthalIntegrator
 from .. import detectors
 from .. import units
 from math import pi
@@ -409,7 +409,7 @@ class TestBugRegression(unittest.TestCase):
         """
         from .. import geometry
         from ..calibrant import CALIBRANT_FACTORY
-        from ..goniometer import SingleGeometry
+        from ..single_geometry import SingleGeometry
         filename = UtilsTest.getimage("Pilatus1M.edf")
         frame = fabio.open(filename).data
 
@@ -541,6 +541,7 @@ class TestBugRegression(unittest.TestCase):
     def test_bug_1810(self):
         "impossible to deepcopy goniometer calibration"
         import copy
+
         import pyFAI.control_points
         cp = pyFAI.control_points.ControlPoints(calibrant="LaB6", wavelength=1e-10)
         self.assertNotEqual(id(cp), id(copy.deepcopy(cp)), "control_points copy works and id differs")
@@ -558,8 +559,8 @@ class TestBugRegression(unittest.TestCase):
         pp = pyFAI.gui.peak_picker.PeakPicker(ary)
         self.assertNotEqual(id(pp), id(copy.deepcopy(pp)), "PeakPicker copy works and id differs")
 
-        from pyFAI.goniometer import SingleGeometry
         import pyFAI.calibrant
+        from pyFAI.single_geometry import SingleGeometry
         lab6 = pyFAI.calibrant.get_calibrant("LaB6", 1e-10)
         cp.append([[1, 2], [3, 4]], 0)
         sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "pilatus100k")
