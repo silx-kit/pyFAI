@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2023"
+__date__ = "11/04/2024"
 __status__ = "production"
 
 import numpy
@@ -217,6 +217,21 @@ class Jungfrau4M(_Dectris):
         else:
             self.module_size = module_size
         self.offset1 = self.offset2 = None
+
+
+class Jungfrau1M(Jungfrau4M):
+    """
+    Jungfrau 1M module without sub-module pixel expension applied.
+    """
+    MANUFACTURER = "PSI"
+    MODULE_SIZE = (514, 1030)  # number of pixels per module (y, x)
+    MAX_SHAPE = (1064, 1030)  # max size of the detector
+    MODULE_GAP = (36, 8)
+    PIXEL_SIZE = (75e-6, 75e-6)
+    force_pixel = True
+    aliases = ["Jungfrau 1M"]
+    uniform_pixel = True
+
 
 class Jungfrau8M(Jungfrau):
     """
