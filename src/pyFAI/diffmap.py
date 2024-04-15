@@ -228,6 +228,19 @@ If the number of files is too large, use double quotes like "*.edf" """
             ai = config["ai"]
         else:
             ai = {}
+
+        ai_keys = [
+            "wavelength", 
+            "dist", 
+            "poni1", "poni2", 
+            "rot1", "rot2", "rot3", 
+            "detector", "detector_config", 
+            "nbpt_rad", "nbpt_azim",
+        ]
+        for poni_key in ai_keys:
+            if not poni_key in ai.keys() and config.get(poni_key, None):
+                ai[poni_key] = config[poni_key]
+
         self.poni = config["ai"] = ai
         if "output_file" in config:
             self.hdf5 = config["output_file"]
@@ -259,7 +272,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             else:
                 raise RuntimeError("No such flat files")
 
-        if ocl and options.gpu:
+        if ocl and (options.gpu or 'opencl' in config.get("method", "")):
             ai["opencl_device"] = ocl.select_device(type="gpu")
             ai["method"] = ["full", "csr", "opencl"]
 
@@ -276,6 +289,15 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         if options.mask:
             mask = urlparse(options.mask).path
+            if os.path.isfile(mask):
+                logger.info("Reading Mask file from: %s", mask)
+                self.mask = os.path.abspath(mask)
+                ai["mask_file"] = self.mask
+                ai["do_mask"] = True
+            else:
+                logger.warning("No such mask file %s", mask)
+        elif config.get("do_mask", None) and config.get("mask_file", None):
+            mask = urlparse(config["mask_file"]).path
             if os.path.isfile(mask):
                 logger.info("Reading Mask file from: %s", mask)
                 self.mask = os.path.abspath(mask)
