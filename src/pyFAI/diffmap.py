@@ -226,8 +226,11 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.inputfiles = [i[0] for i in config.get("input_data", [])]
         if "ai" in config:
             ai = config["ai"]
+        elif config.get("application", None) == "pyfai-integrate":
+            ai = config.copy()
         else:
             ai = {}
+
         self.poni = config["ai"] = ai
         if "output_file" in config:
             self.hdf5 = config["output_file"]
