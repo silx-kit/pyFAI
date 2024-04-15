@@ -125,7 +125,7 @@ class TestIntegrationConfigV2(unittest.TestCase):
         self.assertEqual(config["method"], ('*', 'lut', 'opencl'))
         self.assertEqual(config["opencl_device"], "cpu")
 
-class TestRegression():
+class TestRegression(unittest.TestCase):
     def test_2132(self):
         """issue #2132:
         when parsing a config json file in diffmap + enforce the usage of the GPU, the splitting gets changed
