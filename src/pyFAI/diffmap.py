@@ -228,7 +228,6 @@ If the number of files is too large, use double quotes like "*.edf" """
             ai = config["ai"]
         else:
             ai = {}
-
         self.poni = config["ai"] = ai
         if "output_file" in config:
             self.hdf5 = config["output_file"]
