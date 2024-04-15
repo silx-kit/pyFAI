@@ -132,7 +132,7 @@ class TestRegression():
         """
         from ..diffmap import DiffMap
         from ..opencl import ocl
-        dm = DiffMap(1,1)
+
         expected_without_gpu = ["no", "lut", "cython"]
         expected_with_gpu = ["no", "lut", "opencl"]
         config = {"ai": {"method": expected_without_gpu}}
@@ -141,11 +141,13 @@ class TestRegression():
             json.dump(config, fp)
 
         #without GPU option -g
-        args, parsed_config = dm.parse(sysargv=["--config", config_file], with_config=True)
+        dm = DiffMap(1,1)
+        _, parsed_config = dm.parse(sysargv=["--config", config_file], with_config=True)
         self.assertEqual(parsed_config["ai"]["method"], expected_without_gpu, "method matches without -g option")
 
         #with GPU option -g
-        args, parsed_config = dm.parse(sysargv=["-g", "--config", config_file], with_config=True)
+        dm = DiffMap(1,1)
+        _, parsed_config = dm.parse(sysargv=["-g", "--config", config_file], with_config=True)
         expected = expected_with_gpu if ocl else expected_without_gpu
         self.assertEqual(parsed_config["ai"]["method"], expected, "method match with -g option")
 
