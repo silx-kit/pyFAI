@@ -230,11 +230,11 @@ If the number of files is too large, use double quotes like "*.edf" """
             ai = {}
 
         ai_keys = [
-            "wavelength", 
-            "dist", 
-            "poni1", "poni2", 
-            "rot1", "rot2", "rot3", 
-            "detector", "detector_config", 
+            "wavelength",
+            "dist",
+            "poni1", "poni2",
+            "rot1", "rot2", "rot3",
+            "detector", "detector_config",
             "nbpt_rad", "nbpt_azim",
         ]
         for poni_key in ai_keys:
