@@ -59,6 +59,7 @@ class ImageToolbar(qt.QToolBar):
 
 class ImagePlotWidget(PlotWidget):
     plotClicked = qt.Signal(float, float)
+    plotDoubleClicked = qt.Signal(float, float)
 
     def __init__(self, parent=None, backend=None):
         super().__init__(parent, backend)
@@ -70,6 +71,7 @@ class ImagePlotWidget(PlotWidget):
         self._toolbar.addAction(SaveAction(self, self._toolbar))
         self.addToolBar(self._toolbar)
         self.sigPlotSignal.connect(self.emitMouseClickSignal)
+        self.sigPlotSignal.connect(self.emitMouseDoubleClickSignal)
 
     def _initToolbar(self):
         return ImageToolbar(self)
@@ -119,3 +121,9 @@ class ImagePlotWidget(PlotWidget):
             return
 
         self.plotClicked.emit(signal_data["x"], signal_data["y"])
+
+    def emitMouseDoubleClickSignal(self, signal_data):
+        if signal_data["event"] != "mouseDoubleClicked":
+            return
+        
+        self.plotDoubleClicked.emit(signal_data["x"], signal_data["y"])

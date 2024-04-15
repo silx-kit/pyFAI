@@ -43,6 +43,7 @@ import os.path
 from silx.gui import qt
 from silx.gui.colors import Colormap
 from silx.image.marchingsquares import find_contours
+from silx.gui.plot.items import MarkerBase
 
 
 from .utils import (
@@ -78,7 +79,11 @@ class MainWindow(qt.QMainWindow):
         self._map_plot_widget.setDefaultColormap(
             Colormap("viridis", normalization="log")
         )
-        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
+        # self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
+        # self._map_plot_widget.plotDoubleClicked.connect(self.addMapPoint)
+        self._map_plot_widget.plotClicked.connect(self.addMapPoint)        
+        self._map_plot_widget.plotDoubleClicked.connect(self.selectMapPoint)
+
         self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
 
         self._integrated_plot_widget = IntegratedPatternPlotWidget(self)
@@ -122,13 +127,13 @@ class MainWindow(qt.QMainWindow):
         self.displayPatternAtIndex(0, 0)
         self.displayImageAtIndex(0, 0)
         self._map_plot_widget.addMarker(
-            0, 0, color="black", symbol="o", legend="MAP_LOCATION"
+            0, 0, color=self.getColorLastCurve(), symbol="o", legend="MAP_LOCATION"
         )
 
     def getRoiRadialRange(self) -> Tuple[float | None, float | None]:
         return self._integrated_plot_widget.roi.getRange()
 
-    def displayPatternAtIndex(self, row: int, col: int):
+    def displayPatternAtIndex(self, row: int, col: int, legend: str = ""):
         if self._file_name is None:
             return
 
@@ -141,9 +146,14 @@ class MainWindow(qt.QMainWindow):
             intensity_dset = get_dataset(h5file, "/entry_0000/pyFAI/result/intensity")
             pattern = intensity_dset[row, col, :]
             y_name = intensity_dset.attrs.get("long_name", "Intensity")
+        
+        if not legend:
+            curves = self._integrated_plot_widget.getAllCurves()
+            if len(curves) > 1:
+                _ = [self._integrated_plot_widget.removeCurve(legend=curve.getLegend()) for curve in curves]
 
         self._integrated_plot_widget.addCurve(
-            radial, pattern, legend="INTEGRATE", selectable=False
+            radial, pattern, legend=f"INTEGRATE_{legend}", selectable=False,
         )
         self._integrated_plot_widget.setGraphXLabel(x_name)
         self._integrated_plot_widget.setGraphYLabel(y_name)
@@ -173,11 +183,26 @@ class MainWindow(qt.QMainWindow):
         indices = self._map_plot_widget.getImageIndices(x, y)
         if indices is None:
             return
+        self._nb_curves = 0
         self.displayPatternAtIndex(row=indices.row, col=indices.col)
+        self.displayImageAtIndex(row=indices.row, col=indices.col)
+        color = self._integrated_plot_widget.getAllCurves()[-1].getColor()
+        pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
+        markers = [item for item in self._map_plot_widget.getItems() if isinstance(item, MarkerBase)]
+        _ = [self._map_plot_widget.removeMarker(legend=marker.getLegend()) for marker in markers]
+        self._map_plot_widget.addMarker(
+            *pixel_center_coords, color=self.getColorLastCurve(), symbol="o", legend="MAP_LOCATION"
+        )
+
+    def addMapPoint(self, x: float, y: float):
+        indices = self._map_plot_widget.getImageIndices(x, y)
+        if indices is None:
+            return
+        self.displayPatternAtIndex(row=indices.row, col=indices.col, legend=f"{x}_{y}")
         self.displayImageAtIndex(row=indices.row, col=indices.col)
         pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
         self._map_plot_widget.addMarker(
-            *pixel_center_coords, color="black", symbol="o", legend="MAP_LOCATION"
+            *pixel_center_coords, color=self.getColorLastCurve(), symbol="o", legend=f"MAP_LOCATION_{x}_{y}"
         )
 
     def onRoiEdition(self):
@@ -236,3 +261,10 @@ class MainWindow(qt.QMainWindow):
             radial_value - self._delta_radial_over_2,
             radial_value + self._delta_radial_over_2,
         )
+
+    def getColorLastCurve(self):
+        curves = self._integrated_plot_widget.getAllCurves()
+        if curves:
+            return self._integrated_plot_widget.getAllCurves()[-1].getColor()
+        else:
+            return
