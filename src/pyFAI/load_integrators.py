@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2023"
+__date__ = "15/04/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -340,3 +340,14 @@ if ocl:
         ocl_sort = None
 else:
     ocl_sort = ocl_azim = ocl_azim_csr = ocl_azim_lut = None
+
+
+# A set of fail-save but precise methods.
+PREFERED_METHODS_1D = IntegrationMethod.select_method(1, split="full", algo="histogram") + \
+                      IntegrationMethod.select_method(1, split="pseudo", algo="histogram") + \
+                      IntegrationMethod.select_method(1, split="bbox", algo="histogram") + \
+                      IntegrationMethod.select_method(1, split="no", algo="histogram")
+PREFERED_METHODS_2D = IntegrationMethod.select_method(2, split="full", algo="histogram") + \
+                      IntegrationMethod.select_method(2, split="pseudo", algo="histogram") + \
+                      IntegrationMethod.select_method(2, split="bbox", algo="histogram") + \
+                      IntegrationMethod.select_method(2, split="no", algo="histogram")

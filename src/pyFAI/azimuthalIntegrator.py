@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2024"
+__date__ = "15/04/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -63,8 +63,10 @@ else:
     preproc = preproc_cy
 
 from .load_integrators import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
-                                splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
-                                histogram_engine, splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC
+                              splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
+                              histogram_engine, splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC, \
+                              PREFERED_METHODS_1D, PREFERED_METHODS_2D
+
 from .engines import Engine
 
 # Few constants for engine names:
@@ -74,15 +76,6 @@ OCL_HIST_ENGINE = "ocl_histogram"
 OCL_SORT_ENGINE = "ocl_sorter"
 EXT_LUT_ENGINE = "lut_integrator"
 EXT_CSR_ENGINE = "csr_integrator"
-
-PREFERED_METHODS_1D = IntegrationMethod.select_method(1, split="full", algo="histogram") + \
-                      IntegrationMethod.select_method(1, split="pseudo", algo="histogram") + \
-                      IntegrationMethod.select_method(1, split="bbox", algo="histogram") + \
-                      IntegrationMethod.select_method(1, split="no", algo="histogram")
-PREFERED_METHODS_2D = IntegrationMethod.select_method(2, split="full", algo="histogram") + \
-                      IntegrationMethod.select_method(2, split="pseudo", algo="histogram") + \
-                      IntegrationMethod.select_method(2, split="bbox", algo="histogram") + \
-                      IntegrationMethod.select_method(2, split="no", algo="histogram")
 
 
 class AzimuthalIntegrator(Geometry):
