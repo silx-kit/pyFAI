@@ -32,8 +32,10 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "15/04/2024"
 
+import os
+import json
 import unittest
 import logging
 from ..io import integration_config
@@ -123,12 +125,38 @@ class TestIntegrationConfigV2(unittest.TestCase):
         self.assertEqual(config["method"], ('*', 'lut', 'opencl'))
         self.assertEqual(config["opencl_device"], "cpu")
 
+class TestRegression():
+    def test_2132(self):
+        """issue #2132:
+        when parsing a config json file in diffmap + enforce the usage of the GPU, the splitting gets changed
+        """
+        from ..diffmap import DiffMap
+        from ..opencl import ocl
+        dm = DiffMap(1,1)
+        expected_without_gpu = ["no", "lut", "cython"]
+        expected_with_gpu = ["no", "lut", "opencl"]
+        config = {"ai": {"method": expected_without_gpu}}
+        config_file = os.path.join(utilstest.UtilsTest.tempdir, "test_2132.json")
+        with open(config_file, "w") as fp:
+            json.dump(config, fp)
+
+        #without GPU option -g
+        args, parsed_config = dm.parse(sysargv=["--config", config_file], with_config=True)
+        self.assertEqual(parsed_config["ai"]["method"], expected_without_gpu, "method matches without -g option")
+
+        #with GPU option -g
+        args, parsed_config = dm.parse(sysargv=["-g", "--config", config_file], with_config=True)
+        expected = expected_with_gpu if ocl else expected_without_gpu
+        self.assertEqual(parsed_config["ai"]["method"], expected, "method match with -g option")
+
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestIntegrationConfigV1))
     testsuite.addTest(loader(TestIntegrationConfigV2))
+    testsuite.addTest(loader(TestRegression))
     return testsuite
 
 
