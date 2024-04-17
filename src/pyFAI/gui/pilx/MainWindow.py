@@ -79,10 +79,9 @@ class MainWindow(qt.QMainWindow):
         self._map_plot_widget.setDefaultColormap(
             Colormap("viridis", normalization="log")
         )
-        # self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
-        # self._map_plot_widget.plotDoubleClicked.connect(self.addMapPoint)
-        self._map_plot_widget.plotClicked.connect(self.addMapPoint)
-        self._map_plot_widget.plotDoubleClicked.connect(self.selectMapPoint)
+        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
+        self._map_plot_widget.plotClicked_add.connect(self.addMapPoint)
+        self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
 
         self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
 
