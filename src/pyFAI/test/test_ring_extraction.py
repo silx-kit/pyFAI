@@ -34,8 +34,9 @@ __authors__ = ["Emily Massahud", "Jérôme Kieffer"]
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/02/2024"
+__date__ = "16/04/2024"
 
+import sys
 import unittest
 from unittest import mock
 
@@ -94,6 +95,10 @@ class TestExtractControlPoints(RingExtractionTestBase):
             self.ring_extraction, "extract_list_of_peaks_in_one_ring"
         ).start()
 
+    def tearDown(self):
+        RingExtractionTestBase.tearDown(self)
+        self.mock_control_points = self.mock_extract_peaks_in_one_ring = None
+
     def test_extract_control_points(self):
         # Act
         self.ring_extraction.extract_control_points(max_number_of_rings=3)
@@ -102,14 +107,14 @@ class TestExtractControlPoints(RingExtractionTestBase):
         self.mock_control_points.assert_called_once_with(calibrant=self.ring_extraction.calibrant)
 
         self.assertEqual(self.mock_extract_peaks_in_one_ring.call_count, 3)
-        self.mock_extract_peaks_in_one_ring.assert_has_calls(
-            [
-                mock.call(0, 1),
-                mock.call(1, 1),
-                mock.call(2, 1),
-            ],
-            any_order=False,
-        )
+
+        if sys.version_info[:2] == (3, 9) and sys.platform=='win32':
+            # work arround for this issue https://github.com/python/cpython/issues/84147
+            self.mock_extract_peaks_in_one_ring.assert_called()
+        else:
+            self.mock_extract_peaks_in_one_ring.assert_has_calls(
+                [mock.call(0, 1), mock.call(1, 1), mock.call(2, 1)],
+                any_order=False)
 
 
 class TestExtractOneRing(RingExtractionTestBase):
