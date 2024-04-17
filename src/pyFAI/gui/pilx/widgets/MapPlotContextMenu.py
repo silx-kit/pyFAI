@@ -50,7 +50,7 @@ class MapPlotContextMenu(qt.QMenu):
 
     def _build(self):
         action_zoom_back = ZoomBackAction(
-            plot=self._plot, 
+            plot=self._plot,
             parent=self._plot,
         )
         action_multi_selection = MultiCurveAction(
