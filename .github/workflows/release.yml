@@ -1,0 +1,147 @@
+name: Build and deploy
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+jobs:
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine pillow
+      - name: Build sdist
+        run: python -m build --sdist
+      - name: Check the package
+        run: python -m twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-sdist
+          path: dist/*.tar.gz
+
+  test_sdist:
+    needs: [build_sdist]
+    name: Test source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - uses: actions/download-artifact@v4
+        with:
+          name: cibw-sdist
+          path: dist
+      - name: Install from sdist
+        run: pip install "$(ls dist/pyfai-*.tar.gz)"
+      - name: Run tests
+        run: python -c "import pyFAI.test, sys; sys.exit(pyFAI.test.run_tests())"
+
+  build_doc:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Install pandoc&graphviz
+        run: sudo apt-get install pandoc graphviz
+      - name: Install pyFAI
+        run: pip install .
+      - name: Install documentation dependencies
+        run: pip install -r ci/requirements_rtd.txt
+      - name: Build doc
+        env:
+          READTHEDOCS: "True"  # To skip checking that pyFAI is installed locally
+        run: |
+          export PYFAI_VERSION="$(python -c 'import pyFAI; print(pyFAI.strictversion)')"
+          sphinx-build doc/source/ "pyFAI-${PYFAI_VERSION}_documentation/"
+          zip -r "pyFAI-${PYFAI_VERSION}_documentation.zip" "pyFAI-${PYFAI_VERSION}_documentation/"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: pyFAI-*_documentation.zip
+
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}-${{ matrix.cibw_archs }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Ensure that a wheel builder finishes even if another fails
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            cibw_archs: "auto64"
+          - os: ubuntu-20.04
+            cibw_archs: "aarch64"
+          - os: ubuntu-20.04
+            cibw_archs: "ppc64le"
+          - os: windows-2019
+            cibw_archs: "auto64"
+          - os: macos-11
+            cibw_archs: "x86_64"
+            macos_target: "10.9"
+          - os: macos-14
+            cibw_archs: "arm64"
+            macos_target: "11.0"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+        if: runner.os == 'Linux'
+        with:
+          platforms: all
+      - uses: pypa/cibuildwheel@v2.16.5
+        env:
+          # Use silx wheelhouse: needed for ppc64le
+          CIBW_ENVIRONMENT_LINUX: "PIP_FIND_LINKS=https://www.silx.org/pub/wheelhouse/ PIP_TRUSTED_HOST=www.silx.org"
+
+          CIBW_BUILD: cp37-* cp38-* cp39-* cp310-* cp311-* cp312-*
+          # Do not build for pypy and muslinux
+          CIBW_SKIP: pp* *-musllinux_*
+          CIBW_ARCHS: ${{ matrix.cibw_archs }}
+
+          MACOSX_DEPLOYMENT_TARGET: "${{ matrix.macos_target }}"
+
+          # Install test dependencies
+          CIBW_TEST_COMMAND: python -c "import pyFAI.test, sys; sys.exit(pyFAI.test.run_tests())"
+          # Skip tests for emulated architectures
+          # and Python3.8 on macos/arm64 (https://github.com/pypa/cibuildwheel/pull/1169)
+          CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x} cp38-macosx_arm64"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
+
+  pypi-publish:
+    needs: [build_doc, build_sdist, build_wheels, test_sdist]
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
+    if: github.event_name == 'release' && github.event.action == 'published'
+    # or, alternatively, upload to PyPI on every tag starting with 'v' (remove on: release above to use this)
+    # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+      - uses: pypa/gh-action-pypi-publish@release/v1
