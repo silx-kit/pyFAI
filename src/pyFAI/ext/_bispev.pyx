@@ -36,7 +36,7 @@ scipy."""
 
 __authors__ = ["Zubair Nawaz", "Jérôme Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "16/04/2024"
+__date__ = "17/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -89,7 +89,7 @@ def bisplev(x, y, tck, dx=0, dy=0):
         the cross-product of `x` and `y`.
     """
     cdef:
-        int kx, ky, sx, sy
+        int kx, ky
         float[::1] tx, ty, c, cy_x, cy_y
     tx = numpy.ascontiguousarray(tck[0], dtype=numpy.float32)
     ty = numpy.ascontiguousarray(tck[1], dtype=numpy.float32)
@@ -111,9 +111,7 @@ def bisplev(x, y, tck, dx=0, dy=0):
     cy_x = numpy.ascontiguousarray(x, dtype=numpy.float32)
     cy_y = numpy.ascontiguousarray(y, dtype=numpy.float32)
 
-    sx = x.size
-    sy = y.size
-    z2d = numpy.zeros((sy, sx), dtype=numpy.float32)
+    z2d = numpy.zeros((y.size, x.size), dtype=numpy.float32)
 
     cy_bispev(tx, ty, c, kx, ky, cy_x, cy_y, z2d.ravel())
 
