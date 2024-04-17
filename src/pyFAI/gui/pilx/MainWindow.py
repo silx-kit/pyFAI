@@ -281,7 +281,7 @@ class MainWindow(qt.QMainWindow):
             return
         radial_background, pattern_background = self.getBackgroundCurve(row=indices.row, col=indices.col)
 
-        # Unset the background if it's the same pixel  
+        # Unset the background if it's the same pixel
         if self._intensity_background_curve:
             if (indices.row, indices.col) in self._intensity_background_curve.keys():
                 self._intensity_background_curve = {}
@@ -297,7 +297,7 @@ class MainWindow(qt.QMainWindow):
                         color=self._integrated_plot_widget.getCurve(legend=legend).getColor()
                     )
                 return
-                    
+
         if radial_background is not None and pattern_background is not None:
             self._intensity_background_curve = {(indices.row, indices.col) : pattern_background}
             pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
@@ -318,9 +318,9 @@ class MainWindow(qt.QMainWindow):
             radial = radial_dset[()]
             intensity_dset = get_dataset(h5file, "/entry_0000/pyFAI/result/intensity")
             pattern = intensity_dset[row, col, :]
-        
+
         return radial, pattern
-    
+
     def subtractBackground(self, radial_background, pattern_background):
         for legend, intensity_curve in self._intensity_curves_cache.items():
             self._integrated_plot_widget.addCurve(
