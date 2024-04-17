@@ -79,9 +79,10 @@ class MainWindow(qt.QMainWindow):
         self._map_plot_widget.setDefaultColormap(
             Colormap("viridis", normalization="log")
         )
-        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
-        self._map_plot_widget.plotClicked_add.connect(self.addMapPoint)
-        self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
+        # self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
+        # self._map_plot_widget.plotDoubleClicked.connect(self.addMapPoint)
+        self._map_plot_widget.plotClicked.connect(self.addMapPoint)
+        self._map_plot_widget.plotDoubleClicked.connect(self.selectMapPoint)
 
         self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
 
@@ -148,7 +149,7 @@ class MainWindow(qt.QMainWindow):
             intensity_dset = get_dataset(h5file, "/entry_0000/pyFAI/result/intensity")
             pattern = intensity_dset[row, col, :]
             y_name = intensity_dset.attrs.get("long_name", "Intensity")
-        
+
         if not legend:
             curves = self._integrated_plot_widget.getAllCurves()
             if len(curves) > 1:

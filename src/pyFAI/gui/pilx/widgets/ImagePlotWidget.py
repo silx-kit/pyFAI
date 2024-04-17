@@ -121,3 +121,9 @@ class ImagePlotWidget(PlotWidget):
             return
 
         self.plotClicked.emit(signal_data["x"], signal_data["y"])
+
+    def emitMouseDoubleClickSignal(self, signal_data):
+        if signal_data["event"] != "mouseDoubleClicked":
+            return
+
+        self.plotDoubleClicked.emit(signal_data["x"], signal_data["y"])
