@@ -33,7 +33,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "17/04/2024"
 __status__ = "development"
 
 
@@ -44,11 +44,12 @@ import h5py
 import silx.io
 from silx.io.url import DataUrl
 from silx.gui.plot.items import Scatter
-
+from silx.gui import qt
 
 from ..models import ImageIndices
 
 from .ImagePlotWidget import ImagePlotWidget
+from .MapPlotContextMenu import MapPlotContextMenu
 from .OpenAxisDatasetAction import OpenAxisDatasetAction
 from ..utils import (
     get_dataset,
@@ -71,6 +72,17 @@ class MapPlotWidget(ImagePlotWidget):
         self._scatter_item = scatter_item
         self._scatter_item.setVisualization(scatter_item.Visualization.REGULAR_GRID)
         self._first_plot = True
+
+        self._build_context_menu()
+
+    def _build_context_menu(self):
+        plotArea = self.getWidgetHandle()
+        plotArea.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        plotArea.customContextMenuRequested.connect(self._contextMenu)
+
+    def _contextMenu(self, pos):
+        menu = MapPlotContextMenu(plot=self)
+        menu._exec(pos=pos)
 
     def _initAxisDatasetAction(self):
         action = OpenAxisDatasetAction(self._toolbar)

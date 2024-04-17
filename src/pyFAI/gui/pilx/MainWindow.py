@@ -32,7 +32,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "17/04/2024"
 __status__ = "development"
 
 
@@ -79,10 +79,9 @@ class MainWindow(qt.QMainWindow):
         self._map_plot_widget.setDefaultColormap(
             Colormap("viridis", normalization="log")
         )
-        # self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
-        # self._map_plot_widget.plotDoubleClicked.connect(self.addMapPoint)
-        self._map_plot_widget.plotClicked.connect(self.addMapPoint)        
-        self._map_plot_widget.plotDoubleClicked.connect(self.selectMapPoint)
+        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
+        self._map_plot_widget.plotClicked_add.connect(self.addMapPoint)
+        self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
 
         self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
 
@@ -103,6 +102,9 @@ class MainWindow(qt.QMainWindow):
         layout.addWidget(self._integrated_plot_widget, 2, 1)
         self._central_widget.setLayout(layout)
         self.setCentralWidget(self._central_widget)
+
+        self._intensity_curves_cache = {}
+        self._intensity_background_curve = {}
 
     def initData(self, file_name: str):
         self._file_name = os.path.abspath(file_name)
@@ -152,6 +154,10 @@ class MainWindow(qt.QMainWindow):
             if len(curves) > 1:
                 _ = [self._integrated_plot_widget.removeCurve(legend=curve.getLegend()) for curve in curves]
 
+        self._intensity_curves_cache[f"INTEGRATE_{legend}"] = pattern
+        if self._intensity_background_curve:
+            pattern -= list(self._intensity_background_curve.values())[0]
+
         self._integrated_plot_widget.addCurve(
             radial, pattern, legend=f"INTEGRATE_{legend}", selectable=False,
         )
@@ -183,13 +189,12 @@ class MainWindow(qt.QMainWindow):
         indices = self._map_plot_widget.getImageIndices(x, y)
         if indices is None:
             return
-        self._nb_curves = 0
+        self._intensity_curves_cache = {}
         self.displayPatternAtIndex(row=indices.row, col=indices.col)
         self.displayImageAtIndex(row=indices.row, col=indices.col)
-        color = self._integrated_plot_widget.getAllCurves()[-1].getColor()
         pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
         markers = [item for item in self._map_plot_widget.getItems() if isinstance(item, MarkerBase)]
-        _ = [self._map_plot_widget.removeMarker(legend=marker.getLegend()) for marker in markers]
+        _ = [self._map_plot_widget.removeMarker(legend=marker.getLegend()) for marker in markers if "MAP" in marker.getLegend()]
         self._map_plot_widget.addMarker(
             *pixel_center_coords, color=self.getColorLastCurve(), symbol="o", legend="MAP_LOCATION"
         )
@@ -268,3 +273,59 @@ class MainWindow(qt.QMainWindow):
             return self._integrated_plot_widget.getAllCurves()[-1].getColor()
         else:
             return
+
+    def setNewBackgroundCurve(self, x: float, y: float):
+        indices = self._map_plot_widget.getImageIndices(x, y)
+        if indices is None:
+            return
+        radial_background, pattern_background = self.getBackgroundCurve(row=indices.row, col=indices.col)
+
+        # Unset the background if it's the same pixel  
+        if self._intensity_background_curve:
+            if (indices.row, indices.col) in self._intensity_background_curve.keys():
+                self._intensity_background_curve = {}
+                markers = [item for item in self._map_plot_widget.getItems() if isinstance(item, MarkerBase)]
+                _ = [self._map_plot_widget.removeMarker(legend=marker.getLegend()) for marker in markers if "BG" in marker.getLegend()]
+
+                for legend, intensity_curve in self._intensity_curves_cache.items():
+                    self._integrated_plot_widget.addCurve(
+                        x=radial_background,
+                        y=intensity_curve,
+                        legend=legend,
+                        selectable=False,
+                        color=self._integrated_plot_widget.getCurve(legend=legend).getColor()
+                    )
+                return
+                    
+        if radial_background is not None and pattern_background is not None:
+            self._intensity_background_curve = {(indices.row, indices.col) : pattern_background}
+            pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
+            self._map_plot_widget.addMarker(
+                *pixel_center_coords, color="black", symbol="x", legend=f"BG_LOCATION"
+            )
+
+        self.subtractBackground(radial_background, pattern_background)
+
+    def getBackgroundCurve(self, row: int, col: int):
+        if self._file_name is None:
+            return
+
+        with h5py.File(self._file_name, "r") as h5file:
+            radial_dset = get_radial_dataset(
+                h5file, nxdata_path="/entry_0000/pyFAI/result"
+            )
+            radial = radial_dset[()]
+            intensity_dset = get_dataset(h5file, "/entry_0000/pyFAI/result/intensity")
+            pattern = intensity_dset[row, col, :]
+        
+        return radial, pattern
+    
+    def subtractBackground(self, radial_background, pattern_background):
+        for legend, intensity_curve in self._intensity_curves_cache.items():
+            self._integrated_plot_widget.addCurve(
+                x=radial_background,
+                y=intensity_curve - pattern_background,
+                legend=legend,
+                selectable=False,
+                color=self._integrated_plot_widget.getCurve(legend=legend).getColor()
+            )
