@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: S I L X project
-#             https://github.com/silx-kit/silx
+#    Project: python fast azimuthal integration project
+#             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,8 +35,8 @@
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
-__copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2024"
+__copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "15/04/2024"
 __status__ = "stable"
 
 import os
@@ -57,11 +57,11 @@ elif os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
     ocl = None
     OpenclProcessing = None
 else:
-    try:
-        from silx.opencl.common import (ocl, pyopencl, mf, release_cl_buffers, allocate_cl_buffers,
-                                        measure_workgroup_size, kernel_workgroup_size)
-    except:
-        from silx.opencl import *
+    from silx.opencl import common
+    ocl = common.ocl    # /!\ lasy loading of ocl at the silx level !!!
+    from silx.opencl.common import pyopencl, mf, release_cl_buffers, allocate_cl_buffers, \
+                                    measure_workgroup_size, kernel_workgroup_size
+
     from .. import resources
     resources.silx_integration()
 
