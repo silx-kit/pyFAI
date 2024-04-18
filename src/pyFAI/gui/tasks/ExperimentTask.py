@@ -158,7 +158,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._maskLoader.setModel(settings.mask())
         self._dark.setModel(settings.dark())
         self._darkLoader.setModel(settings.dark())
-        
+
         self._wavelength.setModelUnit(units.Unit.METER_WL)
         self._wavelength.setDisplayedUnit(units.Unit.ANGSTROM)
         self._energy.setModelUnit(units.Unit.METER_WL)

@@ -9,10 +9,10 @@ class CorrectedImageModel(DataModel):
     """Image cleaned up by setting masked pixels to NaN"""
 
     def __init__(
-            self, 
-            parent=None, 
-            image_model_data: DarkedMaskedImageModel=None, 
-            image_model_background: DarkedMaskedImageModel=None, 
+            self,
+            parent=None,
+            image_model_data: DarkedMaskedImageModel=None,
+            image_model_background: DarkedMaskedImageModel=None,
             flat=None,
         ):
         super().__init__(parent=parent)
@@ -26,13 +26,13 @@ class CorrectedImageModel(DataModel):
         image = self.__image_model_data.value()
         if image is None:
             return None
-        
+
         if self.__image_model_background:
             image_background = self.__image_model_background.value()
             if image_background is None:
                 return image
             image = image - image_background
-        
+
         if self.__flat:
             flat = self.__flat.value()
             if flat.shape != image.shape:
