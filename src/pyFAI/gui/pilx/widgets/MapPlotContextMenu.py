@@ -79,7 +79,7 @@ class MultiCurveAction(PlotAction):
         super().__init__(
             plot=plot,
             icon=icons.getQIcon("stats-whole-items"),
-            text="Add curve to graph",
+            text="Fix/Unfix curve to graph",
             parent=parent,
             triggered=self._actionTriggered,
             checkable=False,

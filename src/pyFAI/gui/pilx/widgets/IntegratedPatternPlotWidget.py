@@ -73,6 +73,13 @@ class IntegratedPatternPlotWidget(PlotWidget):
         centralWidget = self._initCentralWidget(self._statusBar)
         self.setCentralWidget(centralWidget)
 
+    def __iter__(self):
+        for legend in self.getAllCurves(just_legend=True):
+            yield legend
+
+    def __len__(self):
+        return len(self.getAllCurves(just_legend=True))
+
     def _initRoi(self):
         roi = HorizontalRangeROI()
         roi.setColor(ROI_COLOR)
