@@ -344,7 +344,6 @@ else:
 
 # A set of fail-save but precise methods.
 PREFERED_METHODS_1D = IntegrationMethod.select_method(1, split="full", algo="histogram") + \
-                      IntegrationMethod.select_method(1, split="pseudo", algo="histogram") + \
                       IntegrationMethod.select_method(1, split="bbox", algo="histogram") + \
                       IntegrationMethod.select_method(1, split="no", algo="histogram")
 PREFERED_METHODS_2D = IntegrationMethod.select_method(2, split="full", algo="histogram") + \
