@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2024"
+__date__ = "17/04/2024"
 
 import os
 import shutil
@@ -388,6 +388,15 @@ class TestDetector(unittest.TestCase):
             self.assertEqual(d.pixel1, 1, "taken into account")
             self.assertNotEqual(d.pixel2, 1, "default value")
             self.assertTrue("Factory: Left-over config parameters in" in  cm.output[0], "emits an error")
+
+    def test_regression_2140(self):
+        """the mask has the max_shape and not shape.
+        Binning not taken into account.
+        """
+        d = detector_factory("Eiger2_CdTe_9M")
+        binned = tuple(i//2 for i in d.shape)
+        d.guess_binning(binned)
+        self.assertEqual(binned, d.mask.shape, "mask has been binned as well ")
 
 
 class TestOrientation(unittest.TestCase):

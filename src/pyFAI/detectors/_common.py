@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/03/2024"
+__date__ = "17/04/2024"
 __status__ = "stable"
 
 import logging
@@ -51,7 +51,7 @@ from .. import io
 from .. import spline
 from .. import utils
 from .. import average
-from ..utils import expand2d, crc32
+from ..utils import expand2d, crc32, binning as rebin
 from ..utils.decorators import deprecated
 
 logger = logging.getLogger(__name__)
@@ -969,7 +969,7 @@ class Detector(metaclass=DetectorMeta):
             logger.info("dynamic_mask makes sense only when dummy is defined !")
             return static_mask
         else:
-            actual_dummy = numpy.dtype(img.dtype).type(self.dummy)
+            actual_dummy = numpy.dtype(img.dtype).type(numpy.int64(self.dummy))
         delta_dummy = self.delta_dummy
         if delta_dummy is None:
             dummy_mask = (actual_dummy == img)
@@ -988,6 +988,8 @@ class Detector(metaclass=DetectorMeta):
                 if self._mask is False:
                     self._mask = self.calc_mask()  # gets None in worse cases
                     if self._mask is not None:
+                        if self._mask.shape != self.shape:
+                            self._mask = rebin(self._mask, self.binning)!=0
                         self._mask = numpy.ascontiguousarray(self._mask, numpy.int8)
                         self._mask_crc = crc32(self._mask)
         return self._mask
