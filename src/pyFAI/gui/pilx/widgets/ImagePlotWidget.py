@@ -33,7 +33,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "17/04/2024"
 __status__ = "development"
 
 
@@ -59,6 +59,8 @@ class ImageToolbar(qt.QToolBar):
 
 class ImagePlotWidget(PlotWidget):
     plotClicked = qt.Signal(float, float)
+    plotClicked_add = qt.Signal(float, float)
+    setBackgroundClicked = qt.Signal(float, float)
 
     def __init__(self, parent=None, backend=None):
         super().__init__(parent, backend)
@@ -119,3 +121,9 @@ class ImagePlotWidget(PlotWidget):
             return
 
         self.plotClicked.emit(signal_data["x"], signal_data["y"])
+
+    def emitMouseDoubleClickSignal(self, signal_data):
+        if signal_data["event"] != "mouseDoubleClicked":
+            return
+
+        self.plotDoubleClicked.emit(signal_data["x"], signal_data["y"])

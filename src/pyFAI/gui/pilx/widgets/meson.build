@@ -5,6 +5,7 @@ py.install_sources(
 'IntegratedPatternPlotWidget.py',
 'MapPlotWidget.py',
 'OpenAxisDatasetAction.py',
+'MapPlotContextMenu.py',
 'RoiModeAction.py',
 'RoiRangeWidget.py',
 'TitleWidget.py',
