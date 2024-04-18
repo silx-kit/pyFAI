@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2023"
+__date__ = "01/04/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -54,7 +54,7 @@ from .azimuthalIntegrator import AzimuthalIntegrator
 from .utils import StringTypes
 from .multi_geometry import MultiGeometry
 from .units import CONST_hc, CONST_q
-
+from .ext.mathutil import build_qmask
 logger = logging.getLogger(__name__)
 
 try:
@@ -93,7 +93,7 @@ class BaseTransformation(object):
         for key in self.param_names + self.pos_names:
             if key in self.variables:
                 raise RuntimeError("The keyword %s is already defined, please chose another variable name")
-            self.variables[key] = numpy.NaN
+            self.variables[key] = numpy.nan
         self.codes = {}
 
     def __call__(self, param, pos):
@@ -184,7 +184,7 @@ class GeometryTransformation(object):
         for key in self.param_names + self.pos_names:
             if key in self.variables:
                 raise RuntimeError(f"The keyword `{key}` is already defined, please chose another variable name")
-            self.variables[key] = numpy.NaN
+            self.variables[key] = numpy.nan
         self.codes = OrderedDict(((name, numexpr.NumExpr(expr)) for name, expr in self.expressions.items()))
 
     @property
@@ -231,9 +231,9 @@ class GeometryTransformation(object):
             for name, value in zip(self.pos_names, pos):
                 variables[name] = value
         for name, code in self.codes.items():
-            signa = [variables.get(name, numpy.NaN) for name in code.input_names]
-            res[name] = (float(code(*signa)))
-            # could ne done in a single liner but harder to understand !
+            signa = [variables.get(name, numpy.nan) for name in code.input_names]
+            res[name] = (float(code(*signa)[()]))
+            # could be done in a single liner but harder to understand !
         return PoniParam(**res)
 
     def __repr__(self):
@@ -331,7 +331,7 @@ class ExtendedTransformation(object):
         for key in self.param_names + self.pos_names:
             if key in self.variables:
                 raise RuntimeError("The keyword %s is already defined, please chose another variable name")
-            self.variables[key] = numpy.NaN
+            self.variables[key] = numpy.nan
 
         self.codes = OrderedDict(((name, numexpr.NumExpr(expr)) for name, expr in self.expressions.items()))
 
@@ -356,8 +356,8 @@ class ExtendedTransformation(object):
             for name, value in zip(self.pos_names, pos):
                 variables[name] = value
         for name, code in self.codes.items():
-            signa = [variables.get(name, numpy.NaN) for name in code.input_names]
-            res[name] = (float(code(*signa)))
+            signa = [variables.get(name, numpy.nan) for name in code.input_names]
+            res[name] = (float(code(*signa)[()]))
             # could ne done in a single liner but harder to understand !
         return self.ParamNT(**res)
 
@@ -680,27 +680,26 @@ class SingleGeometry(object):
         if max_rings is None:
             max_rings = tth.size
 
+        qmask, count = build_qmask(ttha, tth_min, tth_max, self.geometry_refinement.detector.mask)
+        mask2 = numpy.empty(qmask.shape, dtype=bool)
         ms = marchingsquares.MarchingSquaresMergeImpl(ttha,
                                                       mask=self.geometry_refinement.detector.mask,
                                                       use_minmax_cache=True)
         for i in range(tth.size):
             if rings >= max_rings:
                 break
-            mask = numpy.logical_and(ttha >= tth_min[i], ttha < tth_max[i])
-            if self.detector.mask is not None:
-                mask = numpy.logical_and(mask, numpy.logical_not(self.geometry_refinement.detector.mask))
-            size = mask.sum(dtype=int)
-            if (size > 0):
+            if count[i]:
                 rings += 1
-                sub_data = self.image.ravel()[numpy.where(mask.ravel())]
+                mask = qmask == i
+                sub_data = self.image[mask]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
                 upper_limit = mean + std
-                mask2 = numpy.logical_and(self.image > upper_limit, mask)
+                numpy.logical_and(self.image > upper_limit, mask, out=mask2)
                 size2 = mask2.sum(dtype=int)
                 if size2 < 1000:
                     upper_limit = mean
-                    mask2 = numpy.logical_and(self.image > upper_limit, mask)
+                    numpy.logical_and(self.image > upper_limit, mask, out=mask2)
                     size2 = mask2.sum()
                 # length of the arc:
                 points = ms.find_pixels(tth[i])
@@ -736,9 +735,11 @@ class SingleGeometry(object):
     def get_wavelength(self):
         assert self.calibrant.wavelength == self.geometry_refinement.wavelength
         return self.geometry_refinement.wavelength
+
     def set_wavelength(self, value):
         self.calibrant.setWavelength_change2th(value)
         self.geometry_refinement.set_wavelength(value)
+
     wavelength = property(get_wavelength, set_wavelength)
 
 
@@ -927,8 +928,6 @@ class GoniometerRefinement(Goniometer):
             print(self.nt_param(*self.param))
         return self.param
 
-
-
     def refine3(self, fix=None, method="slsqp", verbose=True, **options):
         """Geometry refinement tool
 
@@ -989,7 +988,6 @@ class GoniometerRefinement(Goniometer):
             return new_delta_theta2
         else:
             return old_delta_theta2
-
 
     def set_bounds(self, name, mini=None, maxi=None):
         """Redefines the bounds for the refinement

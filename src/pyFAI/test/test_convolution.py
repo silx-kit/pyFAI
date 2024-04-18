@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "16/10/2024"
 
 import unittest
 import numpy
@@ -51,7 +51,10 @@ class TestConvolution(unittest.TestCase):
         self.width = 8 * self.sigma + 1
         if self.width % 2 == 0:
             self.width += 1
-        self.gauss = scipy.signal.gaussian(self.width, self.sigma)
+        if "windows" in dir(scipy.signal):
+            self.gauss = scipy.signal.windows.gaussian(self.width, self.sigma)
+        else:
+            self.gauss = scipy.signal.gaussian(self.width, self.sigma)
         self.gauss /= self.gauss.sum()
         if "ascent" in dir(scipy.misc):
             self.lena = scipy.misc.ascent().astype("float32")

@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/02/2023"
+__date__ = "09/04/2024"
 
 import logging
 import numpy
@@ -45,7 +45,7 @@ class ImageModel(DataModel):
                 raise TypeError("A 2d array is expected, but %s was found." % value.shape)
             if value.dtype.kind == "b":
                 _logger.warning('Converting boolean image to int8 to plot it.')
-                value = numpy.array(value, copy=False, dtype=numpy.int8)
+                value = numpy.asarray(value, dtype=numpy.int8)
             if value.dtype.kind not in "uif":
                 raise TypeError("A numeric array is expected, but %s was found." % value.dtype.kind)
             previous = self.value()
@@ -108,7 +108,7 @@ class ImageFromFilenameModel(DataModel):
                 raise TypeError("A 2d array is expected, but %s was found." % value.shape)
             if value.dtype.kind == "b":
                 _logger.warning('Converting boolean image to int8 to plot it.')
-                value = numpy.array(value, copy=False, dtype=numpy.int8)
+                value = numpy.asarray(value, dtype=numpy.int8)
             if value.dtype.kind not in "uif":
                 raise TypeError("A numeric array is expected, but %s was found." % value.dtype.kind)
             previous = self.value()

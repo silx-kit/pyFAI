@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 05/01/2023
+:Date: 18/01/2023
 :Keywords: Installation procedure
 :Target: System administrators
 
@@ -28,7 +28,7 @@ PyFAI is a Python library which relies on the scientific stack (numpy, scipy, ma
 * Matplotlib: verson 2.0 or newer
 * FabIO: version 0.5 or newer
 * h5py: version 2.10 or newer
-* silx: version 1.1 or newer
+* silx: version 1.1 or newer (silx 2 for python 3.12)
 
 There are plenty of optional dependencies which will not prevent pyFAI from working
 by may impair performances or prevent tools from properly working:
@@ -48,9 +48,7 @@ PyFAI v2023.01 intoduced a new build system based on `meson` with the following 
 * meson (>=0.64)
 * ninja
 
-The former build system was using `setup.py` files, based on setuptools and numpy.distutils.
-The later is deprecated and will stop working in python 3.12 and has been removed with pyFAI v2023.10.
-The new build system assumes the code
+The former build system was using `setup.py` files, based on setuptools and numpy.distutils, was removed with pyFAI v2023.10.
 
 In addition to the build tools, pyFAI needs a C/C++ compiler to build extensions and cython_ (>0.29) to generate those C/C++ files.
 The following compiler have been successfully tested:

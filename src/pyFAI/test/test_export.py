@@ -32,10 +32,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "20/02/2024"
 
 import unittest
 import logging
+import numpy
 from .utilstest import UtilsTest
 from ..azimuthalIntegrator import AzimuthalIntegrator
 
@@ -103,11 +104,13 @@ class TestFIT2D(unittest.TestCase):
 
     def test_ImageD11(self):
         ai = AzimuthalIntegrator()
-        ai.setFit2D(100, centerX=900, centerY=1000, tilt=20, tiltPlanRotation=80, pixelX=50, pixelY=60)
+        ai.setFit2D(100, centerX=99, centerY=111, tilt=20, tiltPlanRotation=80, pixelX=50, pixelY=60)
+        ai.detector.shape = (250, 260)
         ai.wavelength = 1.234e-10
         param = ai.getImageD11()
         ai2 = AzimuthalIntegrator()
         ai2.setImageD11(param)
+
         for key in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "pixel1", "pixel2", "splineFile", "wavelength"]:
             refv = ai.__getattribute__(key)
             obtv = ai2.__getattribute__(key)
@@ -115,6 +118,21 @@ class TestFIT2D(unittest.TestCase):
                 self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
             else:
                 self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
+
+        try:
+            from ImageD11.transform import PixelLUT
+        except ImportError:
+            unittest.skip("ImageD11 is not installed")
+        else:
+            try:
+                id11 = PixelLUT(param)
+            except Exception as err:
+                logger.error(f"ImageD11 raised this exception: {type(err)}: {err}")
+                print(param)
+                unittest.skip(f"ImageD11 does not recognize is parameter set: {param}")
+            else:
+                self.assertTrue(numpy.allclose(id11.tth, ai.center_array(unit="2th_deg"), atol=3e-2), "2theta array matches")
+                self.assertLess(numpy.median(abs((270-id11.eta)%360-180 - ai.center_array(unit="chi_deg"))), 0.5, "chi array roughly matches")
 
 
 class TestExport(unittest.TestCase):

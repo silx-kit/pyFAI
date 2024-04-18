@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2023"
+__date__ = "08/04/2024"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -44,7 +44,6 @@ from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from . import processing, OpenclProcessing
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
-
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +113,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.nbytes = lut.nbytes
         self.bins, self.lut_size = lut.shape
         self.size = image_size
-        self.empty = empty or 0  # numpy.NaN
+        self.empty = empty or 0  # numpy.nan
         self.unit = unit
         self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = bin_centers
@@ -134,8 +133,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
 
         self.BLOCK_SIZE = min(self.BLOCK_SIZE, self.device.max_work_group_size)
         self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
-        self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
-        self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+        self.wdim_bins = int(self.bins + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE,
+        self.wdim_data = int(self.size + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE,
 
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
@@ -520,7 +519,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             self.send_buffer(data, "image")
 
             wg = self.workgroup_size
-            wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
+            wdim_bins = int(self.bins + wg[0] - 1) // wg[0] * wg[0],
             memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
 

@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2023"
+__date__ = "12/01/2024"
 
 import os
 import shutil
@@ -210,12 +210,12 @@ class TestDetector(unittest.TestCase):
             if err2 > 1e-6:
                 logger.error("%s precision on pixel position 1 is better than 1µm, got %e", det_name, err2)
 
-            self.assertTrue(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err1))
-            self.assertTrue(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
+            self.assertLess(err1, 1e-6, f"{det_name} precision on pixel position 1 is better than 1µm, got {err1:e}")
+            self.assertLess(err2, 1e-6, f"{det_name} precision on pixel position 2 is better than 1µm, got {err1:e}")
             if not det.IS_FLAT:
                 err = abs(r[2] - o[2]).max()
                 self.assertTrue(err < 1e-6, "%s precision on pixel position 3 is better than 1µm, got %e" % (det_name, err))
-
+            self.assertEqual(det.CORNERS, new_det.CORNERS, "Number of pixel corner is consistent")
         # check Pilatus with displacement maps
         # check spline
         # check SPD displacement
@@ -353,6 +353,8 @@ class TestDetector(unittest.TestCase):
 
     def test_hexagonal_detector(self):
         pix = detector_factory("Pixirad1")
+        self.assertEqual(pix.CORNERS, 6, "detector has 6 corners")
+
         wl = 1e-10
         from ..calibrant import ALL_CALIBRANTS
         from ..azimuthalIntegrator import AzimuthalIntegrator

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,12 +32,11 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2023"
+__date__ = "16/04/2024"
 
 import sys
 import unittest
 import logging
-logger = logging.getLogger(__name__)
 
 from .utilstest import UtilsTest
 
@@ -94,6 +93,10 @@ from . import test_rectangle
 from . import test_parallax
 from . import test_error_model
 from . import test_units
+from . import test_uncertainties
+from . import test_ring_extraction
+
+logger = logging.getLogger(__name__)
 
 
 def suite():
@@ -151,10 +154,13 @@ def suite():
     testsuite.addTest(test_rectangle.suite())
     testsuite.addTest(test_parallax.suite())
     testsuite.addTest(test_error_model.suite())
+    testsuite.addTest(test_uncertainties.suite())
+    testsuite.addTest(test_ring_extraction.suite())
+
     return testsuite
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     if runner.run(suite()).wasSuccessful():
         UtilsTest.clean_up()

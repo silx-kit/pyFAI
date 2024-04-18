@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/12/2023"
+__date__ = "16/02/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -52,8 +52,10 @@ import numpy
 import os
 import threading
 import json
+import gc
 from collections import namedtuple, OrderedDict
 from .fit2d import convert_to_Fit2d, convert_from_Fit2d
+from .imaged11 import convert_from_ImageD11, convert_to_ImageD11
 from .. import detectors
 from .. import units
 from ..utils.decorators import deprecated
@@ -1552,54 +1554,32 @@ class Geometry(object):
             logger.warning("Rotation conversion from pyFAI to SPD is not yet implemented")
         return res
 
-    def getImageD11(self):
+    def getImageD11(self, distance_unit="µm", wavelength_unit="nm"):
         """Export the current geometry in ImageD11 format.
         Please refer to the documentation in doc/source/geometry_conversion.rst
         for the orientation and units of those values.
 
+        :param distance_unit: expected units for the distances (also pixel size, µm by default)
+        :param wavelength_unit: expected units for the wavelength (nm by default)
         :return: an Ordered dict with those parameters:
-            distance 294662.658 #in nm
+            distance 294662.658   #µm
             o11 1
             o12 0
             o21 0
             o22 -1
-            tilt_x 0.00000
-            tilt_y -0.013173
-            tilt_z 0.002378
-            wavelength 0.154
-            y_center 1016.328171
-            y_size 48.0815
-            z_center 984.924425
-            z_size 46.77648
+            tilt_x 0.00000        #rad
+            tilt_y -0.013173      #rad
+            tilt_z 0.002378       #rad
+            wavelength 0.154      #nm
+            y_center 1016.328171  #pixels
+            y_size 48.0815        #µm
+            z_center 984.924425   #pixels
+            z_size 46.77648       #µm
         """
-        f2d = self.getFit2D()
-        distance = f2d.get("directDist", 0) * 1e3  # mm -> µm
-        y_center = f2d.get("centerX", 0)  # in pixel
-        z_center = f2d.get("centerY", 0)  # in pixel
+        id11 = convert_to_ImageD11(self, distance_unit=distance_unit, wavelength_unit=wavelength_unit)
+        return id11._asdict()
 
-        tilt_x = self.rot3
-        tilt_y = self.rot2
-        tilt_z = -self.rot1
-        out = OrderedDict([("distance", distance),
-                           ("o11", 1),
-                           ("o12", 0),
-                           ("o21", 0),
-                           ("o22", -1),
-                           ("tilt_x", tilt_x),
-                           ("tilt_y", tilt_y),
-                           ("tilt_z", tilt_z),
-                           ])
-        if self._wavelength:
-            out["wavelength"] = self.wavelength * 1e9  # nm
-        if y_center:
-            out["y_center"] = y_center
-        out["y_size"] = self.detector.pixel2 * 1e6  # µm
-        if z_center:
-            out["z_center"] = z_center
-        out["z_size"] = self.detector.pixel1 * 1e6  # µm
-        return out
-
-    def setImageD11(self, param):
+    def setImageD11(self, param, distance_unit="µm", wavelength_unit="nm"):
         """Set the geometry from the parameter set which contains distance,
         o11, o12, o21, o22, tilt_x, tilt_y tilt_z, wavelength, y_center, y_size,
         z_center and z_size.
@@ -1607,33 +1587,23 @@ class Geometry(object):
         for the orientation and units of those values.
 
         :param param: dict with the values to set.
-        """
-        o11 = param.get("o11")
-        if o11 is not None:
-            assert o11 == 1, "Only canonical orientation is supported"
-        o12 = param.get("o12")
-        if o12 is not None:
-            assert o12 == 0, "Only canonical orientation is supported"
-        o21 = param.get("o21")
-        if o21 is not None:
-            assert o21 == 0, "Only canonical orientation is supported"
-        o22 = param.get("o22")
-        if o22 is not None:
-            assert o22 == -1, "Only canonical orientation is supported"
+        :param distance_unit: expected units for the distances (also pixel size, µm by default)
+        :param wavelength_unit: expected units for the wavelength (nm by default)
 
-        self.rot3 = param.get("tilt_x", 0.0)
-        self.rot2 = param.get("tilt_y", 0.0)
-        self.rot1 = -param.get("tilt_z", 0.0)
-        distance = param.get("distance", 0.0) * 1e-6  # ->m
-        self.dist = distance * cos(self.rot2) * cos(self.rot1)
-        pixel_v = param.get("z_size", 0.0) * 1e-6
-        pixel_h = param.get("y_size", 0.0) * 1e-6
-        self.poni1 = -distance * sin(self.rot2) + pixel_v * param.get("z_center", 0.0)
-        self.poni2 = +distance * cos(self.rot2) * sin(self.rot1) + pixel_h * param.get("y_center", 0.0)
-        self.detector = detectors.Detector(pixel1=pixel_v, pixel2=pixel_h)
-        wl = param.get("wavelength")
-        if wl:
-            self.wavelength = wl * 1e-9
+        """
+        if "wavelength_unit" not in param:
+            param["wavelength_unit"] = wavelength_unit
+        if "distance_unit" not in param:
+            param["distance_unit"] = distance_unit
+        poni = convert_from_ImageD11(param)
+        for key in ("_detector", "_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3", "_wavelength"):
+            setattr(self, key, getattr(poni, key))
+
+        # keep detector since it is more precisise than what ImageD11 object contains
+        if not(poni.detector.pixel1 == self.detector.pixel1 and
+               poni.detector.pixel2 == self.detector.pixel2 and
+               poni.detector.orientation == self.detector.orientation):
+            self.detector = poni.detector
         self.reset()
         return self
 
@@ -1972,15 +1942,18 @@ class Geometry(object):
 
         return transmission_corr
 
-    def reset(self):
+    def reset(self, collect_garbage=True):
         """
-        reset most arrays that are cached: used when a parameter
-        changes.
+        reset most arrays that are cached: used when a parameter changes.
+
+        :param collect_garbage: set to False to prevent garbage collection, faster
         """
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         self._transmission_normal = None
         self._cached_array = {}
+        if collect_garbage:
+            gc.collect()
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True,

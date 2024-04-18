@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+    <id>diff_map</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>diffraction mapping</name>
+  <summary>PyFAI's diffraction mapping data-reduction tool with graphical interface</summary>
+  <description>
+Diff_map performs the data reduction for diffraction map experiments, i.e. azimuthal integration of each image then builds the map.
+  </description>
+  <url type="homepage">https://github.com/silx-kit/pyFAI</url>
+  <url type="bugtracker">https://github.com/silx-kit/pyFAI/issues</url>
+  <url type="faq">https://github.com/silx-kit/pyFAI/discussions</url>
+  <url type="help">http://www.silx.org/doc/pyFAI/latest/</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>http://www.silx.org/doc/pyFAI/latest/_images/diffmap_main.png</image>
+      <caption>Setup of the diffraction map integration</caption>
+    </screenshot>
+  </screenshots>
+  <developer_name>Jerome Kieffer</developer_name>
+  <update_contact>pyfai@esrf.fr</update_contact>
+</component>

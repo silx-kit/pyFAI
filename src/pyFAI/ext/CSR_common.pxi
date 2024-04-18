@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/03/2023"
+__date__ = "26/01/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -386,7 +386,6 @@ cdef class CsrIntegrator(object):
                     w = coef * norm
                     acc_norm = acc_norm + w
                     acc_norm_sq = acc_norm_sq + w*w
-
 
             sum_sig[i] = acc_sig
             sum_var[i] = acc_var

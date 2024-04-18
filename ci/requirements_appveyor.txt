@@ -3,7 +3,7 @@
 --find-links http://www.silx.org/pub/wheelhouse
 
 wheel
-numpy
+numpy >= 1.10
 #cython
 Pillow
 h5py
@@ -11,5 +11,6 @@ fabio
 scipy
 matplotlib
 numexpr != 2.8.6
-silx
+silx >= 2
 psutil
+importlib_resources; python_version < '3.9'

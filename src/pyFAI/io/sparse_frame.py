@@ -74,7 +74,7 @@ for idx, bg in enumerate(background_avg):
     dense[masked] = dummy"""
     else:
         res += """
-    dense[masked] = numpy.NaN"""
+    dense[masked] = numpy.nan"""
     res += """
     frames.append(dense.astype(intensity.dtype))
 """
@@ -115,7 +115,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             if is_integer:
                 dummy = 0
             else:
-                dummy = numpy.NaN
+                dummy = numpy.nan
         sparse_grp.create_dataset("dummy", data=dummy)
         rds = sparse_grp.create_dataset("radius", data=radius * unit.scale, dtype=numpy.float32)
         rds.attrs["interpretation"] = "spectrum"

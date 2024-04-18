@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2024"
+__date__ = "10/01/2024"
 
 import unittest
 import os
@@ -296,6 +296,38 @@ class TestSpotWriter(unittest.TestCase):
         self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
 
+class TestXrdmlWriter(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestXrdmlWriter, cls).setUpClass()
+        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        cls.ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
+        cls.result = cls.ai.integrate1d(cls.img.data, 200, method=("no", "histogram", "cython"), unit="2th_deg")
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestXrdmlWriter, cls).tearDownClass()
+        cls.ai = cls.img = cls.result=None
+
+    def test_xrdml(self):
+        from ..io.xrdml import save_xrdml
+        fd, tmpfile = UtilsTest.tempfile(".xrdml")
+        os.close(fd)
+        save_xrdml(tmpfile, self.result)
+        self.assertGreater(os.path.getsize(tmpfile), 3000)
+
+    def test_integration(self):
+        fd, tmpfile = UtilsTest.tempfile(".xrdml")
+        os.close(fd)
+        self.ai.integrate1d(self.img.data, 200, method=("no", "histogram", "cython"), unit="2th_deg",
+                            filename=tmpfile)
+        self.assertGreater(os.path.getsize(tmpfile), 3000)
+        from xml.etree import ElementTree as et
+        with open(tmpfile, "rb") as f:
+            xml = et.fromstring(f.read())
+
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -304,6 +336,7 @@ def suite():
     testsuite.addTest(loader(TestHDF5Writer))
     testsuite.addTest(loader(TestFabIOWriter))
     testsuite.addTest(loader(TestSpotWriter))
+    testsuite.addTest(loader(TestXrdmlWriter))
     testsuite.addTest(loader(TestPoniFile))
     return testsuite
 

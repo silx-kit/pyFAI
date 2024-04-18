@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2021 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/08/2021"
+__date__ = "19/03/2024"
 
 import logging
 import numpy
@@ -53,6 +53,7 @@ class GeometryRefinementContext(object):
         _logger.debug("GeometryRefinementContext.__init__")
         self.__geoRef = GeometryRefinement(*args, **kwargs)
         fixed = pyFAI.utils.FixedParameters()
+        fixed.add("rot3")
         fixed.add("wavelength")
         self.__fixed = fixed
 
