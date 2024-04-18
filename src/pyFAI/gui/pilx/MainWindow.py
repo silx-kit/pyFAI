@@ -161,12 +161,12 @@ class MainWindow(qt.QMainWindow):
             pattern_ = copy.copy(pattern) - list(self._intensity_background_curve.values())[0]
         else:
             pattern_ = pattern
-        
+
         self._integrated_plot_widget.addCurve(
-            radial, 
-            pattern_, 
-            legend=f"INTEGRATE{legend}", 
-            selectable=False, 
+            radial,
+            pattern_,
+            legend=f"INTEGRATE{legend}",
+            selectable=False,
             color=self.getColorAvailable(legend=legend),
             resetzoom=self._integrated_plot_widget.getGraphXLimits() == (0,100),
         )
@@ -209,7 +209,7 @@ class MainWindow(qt.QMainWindow):
         indices = self._map_plot_widget.getImageIndices(x, y)
         if indices is None:
             return
-        
+
         # Remove curve and marker if the fixing point is the last clicked
         if (indices.row, indices.col) in self._intensity_curve_cache.keys():
             self._intensity_curve_cache = {}
@@ -227,9 +227,9 @@ class MainWindow(qt.QMainWindow):
             self.displayImageAtIndex(row=indices.row, col=indices.col)
             pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
             self._map_plot_widget.addMarker(
-                *pixel_center_coords, 
-                color=self.getColorCurve(legend=f"INTEGRATE_{indices.row}_{indices.col}"), 
-                symbol="d", 
+                *pixel_center_coords,
+                color=self.getColorCurve(legend=f"INTEGRATE_{indices.row}_{indices.col}"),
+                symbol="d",
                 legend=f"MAP_LOCATION_{indices.row}_{indices.col}",
             )
 
@@ -296,7 +296,7 @@ class MainWindow(qt.QMainWindow):
             return curve.getColor()
         else:
             return
-        
+
     def getColorAvailable(self, legend: str):
         if self._integrated_plot_widget.getCurve(legend=f"INTEGRATE{legend}"):
             color = self._integrated_plot_widget.getCurve(legend=f"INTEGRATE{legend}").getColor()
