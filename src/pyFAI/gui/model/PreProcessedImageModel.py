@@ -15,7 +15,7 @@ class PreProcessedImageModel(DataModel):
     """Image cleaned up by setting masked pixels to NaN"""
 
     def __init__(
-            self, 
+            self,
             parent=None,
             image=None,
             mask=None,
@@ -40,14 +40,14 @@ class PreProcessedImageModel(DataModel):
         image = self.__image.value()
         if image is None:
             return None
-        
+
         if self.__mask is not None:
             mask = self.__mask.value()
             if mask.shape != image.shape:
                 mask = None
         else:
             mask = None
-        
+
         if self.__dark is not None:
             dark = self.__dark.value()
             if dark.shape != image.shape:
