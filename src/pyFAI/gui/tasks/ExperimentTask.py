@@ -62,10 +62,12 @@ class ExperimentTask(AbstractCalibrationTask):
         self._image.setAcceptDrops(True)
         self._mask.setAcceptDrops(True)
         self._dark.setAcceptDrops(True)
+        self._flat.setAcceptDrops(True)
 
         self._imageLoader.setDialogTitle("Load calibration image")
         self._maskLoader.setDialogTitle("Load mask image")
         self._darkLoader.setDialogTitle("Load dark-current image")
+        self._flatLoader.setDialogTitle("Load flat-field image")
 
         self._customDetector.clicked.connect(self.__customDetector)
 
@@ -158,6 +160,8 @@ class ExperimentTask(AbstractCalibrationTask):
         self._maskLoader.setModel(settings.mask())
         self._dark.setModel(settings.dark())
         self._darkLoader.setModel(settings.dark())
+        self._flat.setModel(settings.flat())
+        self._flatLoader.setModel(settings.flat())
 
         self._wavelength.setModelUnit(units.Unit.METER_WL)
         self._wavelength.setDisplayedUnit(units.Unit.ANGSTROM)
