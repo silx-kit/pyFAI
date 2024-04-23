@@ -18,7 +18,7 @@ py.install_sources(
     'MarkerModel.py',
     'MaskedImageModel.py',
     'DarkedMaskedImageModel.py',
-    'CorrectedImageModel.py',
+    'PreProcessedImageModel.py',
     'PeakModel.py',
     'PeakSelectionModel.py',
     'PlotViewModel.py',
