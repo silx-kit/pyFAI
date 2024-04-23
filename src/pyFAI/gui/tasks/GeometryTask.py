@@ -1079,7 +1079,8 @@ class GeometryTask(AbstractCalibrationTask):
     def __imageUpdated(self):
         try:
             image = self.model().experimentSettingsModel().preprocessedImage().value()
-        except:
+        except Exception as e:
+            _logger.warning(f"Error with PreProcessedImageModel: {e}")
             image = self.model().experimentSettingsModel().maskedImage().value()
             
         if image is not None:
