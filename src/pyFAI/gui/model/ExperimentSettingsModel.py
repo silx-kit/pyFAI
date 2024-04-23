@@ -171,6 +171,6 @@ class ExperimentSettingsModel(AbstractModel):
 
     def flat(self):
         return self.__flat
-    
+
     def preprocessedImage(self):
         return self.__preprocessed_image

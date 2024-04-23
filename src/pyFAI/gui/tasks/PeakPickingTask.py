@@ -1873,7 +1873,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             image = self.model().experimentSettingsModel().preprocessedImage().value()
         except:
             image = self.model().experimentSettingsModel().maskedImage().value()
-        
+
         if image is not None:
             self.__plot.addImage(image, legend="image", selectable=True, copy=False, z=-1)
             self.__plot.setGraphXLimits(0, image.shape[0])
