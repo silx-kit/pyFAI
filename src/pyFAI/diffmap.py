@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2024"
+__date__ = "15/04/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -264,7 +264,19 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         if ocl and options.gpu:
             ai["opencl_device"] = ocl.select_device(type="gpu")
-            ai["method"] = ["full", "csr", "opencl"]
+            ndim = ai.get("do_2D", 1)
+            if ndim==2:
+                default = load_integrators.PREFERED_METHODS_2D[0].method[1:-1]
+            else:
+                default = load_integrators.PREFERED_METHODS_1D[0].method[1:-1]
+            method = list(ai.get("method", default))
+            if len(method) ==  3:  # (split, algo, impl)
+                method[2] = "opencl"
+            elif len(method) ==  5:  # (dim, split, algo, impl, target)
+                method[3] = "opencl"
+            else:
+                logger.warning(f"Unexpected method found in configuration file: {method}")
+            ai["method"] = method
 
         for fn in args:
             f = urlparse(fn).path

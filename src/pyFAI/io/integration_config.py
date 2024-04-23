@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,18 +25,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Module function to manage poni files.
+"""Module function to manage configuration files, all serialisable to JSON.
 """
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2023"
+__date__ = "15/04/2024"
 __docformat__ = 'restructuredtext'
 
 import logging
 from . import ponifile
 from .. import detectors
+from .. import load_integrators
 from .. import method_registry
 
 _logger = logging.getLogger(__name__)
@@ -66,6 +67,12 @@ def _normalize_v1_darkflat_files(config, key):
 
 def _patch_v1_to_v2(config):
     """Rework the config dictionary from version 1 to version 2
+
+    The main difference with version1:
+    * management of the detector
+     --> pixel1, pixel2, shape and spline are now part of the detector_config, no more top level
+    * do_openCL is now deprecated, replaced with the method (which can still be a string)
+    * replace comma-separated list of flat/dark with a python list of files.
 
     :param dict config: Dictionary reworked inplace.
     """
@@ -151,6 +158,11 @@ def _patch_v1_to_v2(config):
 def _patch_v2_to_v3(config):
     """Rework the config dictionary from version 2 to version 3
 
+    The main difference is in the management of the "method" which was a string
+    and is now parsed into a 3- or 5-tuple containing the splitting scheme, the algorithm and the implementation.
+    when 5-tuple, there is a reference to the opencl-target as well.
+    The prefered version is to have method and opencl_device separated for ease of parsing.
+
     :param dict config: Dictionary reworked inplace.
     """
     old_method = config.pop("method")
@@ -158,7 +170,16 @@ def _patch_v2_to_v3(config):
         if len(old_method)==5:
             method = method_registry.Method(*old_method)
         else:
-            method = old_method
+            if config.get("do_2D") and config.get("nbpt_azim", 0)>1:
+                ndim = 2
+                default = load_integrators.PREFERED_METHODS_2D[0]
+            else:
+                ndim = 1
+                default = load_integrators.PREFERED_METHODS_1D[0]
+
+            long_method = method_registry.IntegrationMethod.select_one_available(old_method,
+                                                                                 dim=ndim, default=default)
+            method = long_method.method
     else:
         method = method_registry.Method.parsed(old_method)
     config["method"] = method.split, method.algo, method.impl
@@ -250,7 +271,8 @@ class ConfigurationReader(object):
             target = tuple(target)
 
         if method is None:
-            method = method_registry.Method(dim, "*", "*", "*", target=None)
+            lngm = load_integrators.PREFERED_METHODS_2D[0] if dim==2 else load_integrators.PREFERED_METHODS_1D[0]
+            method = lngm.method
         elif isinstance(method, (str,)):
             method = method_registry.Method.parsed(method)
             method = method.fixed(dim=dim, target=target)
