@@ -1874,7 +1874,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         except Exception as e:
             _logger.warning(f"Error with PreProcessedImageModel: {e}")
             image = self.model().experimentSettingsModel().maskedImage().value()
-        
+
         if image is not None:
             self.__plot.addImage(image, legend="image", selectable=True, copy=False, z=-1)
             self.__plot.setGraphXLimits(0, image.shape[0])

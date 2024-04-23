@@ -1082,7 +1082,7 @@ class GeometryTask(AbstractCalibrationTask):
         except Exception as e:
             _logger.warning(f"Error with PreProcessedImageModel: {e}")
             image = self.model().experimentSettingsModel().maskedImage().value()
-            
+
         if image is not None:
             self.__plot.addImage(image, legend="image", copy=False)
             self.__plot.setGraphXLimits(0, image.shape[0])
