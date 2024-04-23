@@ -43,21 +43,21 @@ class PreProcessedImageModel(DataModel):
 
         if self.__mask is not None:
             mask = self.__mask.value()
-            if mask.shape != image.shape:
+            if mask is not None and mask.shape != image.shape:
                 mask = None
         else:
             mask = None
 
         if self.__dark is not None:
             dark = self.__dark.value()
-            if dark.shape != image.shape:
+            if dark is not None and dark.shape != image.shape:
                 dark = None
         else:
             dark = None
 
         if self.__flat is not None:
             flat = self.__flat.value()
-            if flat.shape != image.shape:
+            if flat is not None and flat.shape != image.shape:
                 flat = None
         else:
             flat = None

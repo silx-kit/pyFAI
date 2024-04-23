@@ -118,6 +118,9 @@ class IntegrationProcess(object):
             return False
         mask = model.experimentSettingsModel().mask().value()
         detector = model.experimentSettingsModel().detector()
+        dark = model.experimentSettingsModel().dark().value()
+        flat = model.experimentSettingsModel().flat().value()
+
         if detector is None:
             return
         if altGeometry:
@@ -143,11 +146,17 @@ class IntegrationProcess(object):
             mask = numpy.array(mask)
         if image is not None:
             image = numpy.array(image)
+        if dark is not None:
+            dark = numpy.array(dark)
+        if flat is not None:
+            flat = numpy.array(flat)
 
         # FIXME calibrant and detector have to be cloned
         self.__detector = detector
         self.__image = image
         self.__mask = mask
+        self.__dark = dark
+        self.__flat = flat
 
         self.__wavelength = geometry.wavelength().value()
         self.__distance = geometry.distance().value()
@@ -212,7 +221,10 @@ class IntegrationProcess(object):
                 npt=self.__nPointsRadial,
                 unit=self.__radialUnit,
                 mask=self.__mask,
-                polarization_factor=self.__polarizationFactor)
+                polarization_factor=self.__polarizationFactor,
+                dark=self.__dark,
+                flat=self.__flat,
+                )
 
             self.__result2d = ai.integrate2d(
                 method=method2d,
@@ -221,7 +233,10 @@ class IntegrationProcess(object):
                 npt_azim=self.__nPointsAzimuthal,
                 unit=self.__radialUnit,
                 mask=self.__mask,
-                polarization_factor=self.__polarizationFactor)
+                polarization_factor=self.__polarizationFactor,
+                dark=self.__dark,
+                flat=self.__flat,
+                )
 
             # Create an image masked where data exists
             self.__resultMask2d = None
