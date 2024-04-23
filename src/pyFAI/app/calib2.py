@@ -550,7 +550,7 @@ def setup_model(model, options):
             displayExceptionBox("Error while loading the dark current image", e)
     if options.flat:
         try:
-            with settings.dark().lockContext() as image_model:
+            with settings.flat().lockContext() as image_model:
                 image_model.setFilename(options.flat)
                 data = pyFAI.io.image.read_image_data(options.flat)
                 image_model.setValue(data)
