@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "08/04/2024"
+__date__ = "23/04/2024"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -305,6 +305,7 @@ class OCL_Histogram1d(OpenclProcessing):
                                                            ("dummy", numpy.float32(0)),
                                                            ("delta_dummy", numpy.float32(0)),
                                                            ("normalization_factor", numpy.float32(1.0)),
+                                                           ("apply_normalization", numpy.int8(0)),
                                                            ("preproc4", self.cl_mem["output4"])))
 
         self.cl_kernel_args["histogram_1d_preproc"] = OrderedDict((("radial", self.cl_mem["radial"]),

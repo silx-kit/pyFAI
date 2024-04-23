@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "08/04/2024"
+__date__ = "23/04/2024"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -240,6 +240,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                           ("dummy", numpy.float32(0)),
                                                           ("delta_dummy", numpy.float32(0)),
                                                           ("normalization_factor", numpy.float32(1.0)),
+                                                          ("apply_normalization", numpy.int8(0)),
                                                           ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["lut_integrate"] = OrderedDict((("output", self.cl_mem["output"]),
@@ -271,6 +272,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                            ("dummy", numpy.float32(0)),
                                                            ("delta_dummy", numpy.float32(0)),
                                                            ("normalization_factor", numpy.float32(1.0)),
+                                                           ("apply_normalization", numpy.int8(0)),
                                                            ("output4", self.cl_mem["output4"])))
         self.cl_kernel_args["lut_integrate4"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                             ("lut", self.cl_mem["lut"]),
