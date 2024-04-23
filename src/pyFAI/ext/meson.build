@@ -101,3 +101,6 @@ py.extension_module('_distortion', '_distortion.pyx',
 
 py.extension_module('fastcrc', ['fastcrc.pyx','src/crc32.c'],
         dependencies : [py_dep], install: true, subdir: 'pyFAI/ext')
+
+py.extension_module('mathutil', ['mathutil.pyx'],
+        dependencies : [py_dep], install: true, subdir: 'pyFAI/ext')

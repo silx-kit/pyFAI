@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "17/03/2023"
+__date__ = "30/01/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -231,26 +231,68 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
     return is_valid
 
 
-@cython.boundscheck(False)
 cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
                                        int bin,
                                        preproc_t value,
-                                       double weight=1.0) noexcept nogil:
+                                       double weight=1.0,
+                                       int error_model=0) noexcept nogil:
     """Update a 1D array at given position with the proper values
 
     :param out_data: output 1D+(,4) accumulator
     :param bin: in which bin assign this data
     :param value: 4-uplet with (signal, variance, nomalisation, count)
     :param weight: weight associated with this value
+    :param error_model: 0:disable, 1:variance, 2: poisson, 3:azimuhal
     :return: Nothing
     """
-    cdef double w2 = weight * weight
-    out_data[bin, 0] += value.signal * weight
-    out_data[bin, 1] += value.variance * w2  # Important for variance propagation
-    out_data[bin, 2] += value.norm * weight
-    out_data[bin, 3] += value.count * weight
-    # if out_data.shape[1] == 5: #Σ c²·ω²
-    out_data[bin, 4] += value.norm * value.norm * w2
+    cdef:
+        double weight2 = weight * weight
+        acc_t omega_A, omega_B, omega2_A, omega2_B, w, w2, omega_AB, b, delta1, delta2
+        acc_t sum_sig = out_data[bin, 0]
+        acc_t sum_var = out_data[bin, 1]
+        acc_t sum_nrm = out_data[bin, 2]
+        acc_t sum_cnt = out_data[bin, 3]
+        acc_t sum_nrm2 = out_data[bin, 4]
+
+    w = weight * value.norm
+    w2 = w * w
+    if error_model == 3:
+        if sum_nrm2 > 0.0:
+            # Inspired from https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
+            # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
+            # Emprically validated against 2-pass implementation in Python/scipy-sparse
+            if value.norm:
+                omega_A = sum_nrm
+                omega2_A = sum_nrm2
+                omega2_B = w2
+                sum_nrm += w
+                sum_nrm2 += w2
+
+                # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                b = value.signal / value.norm
+                delta1 = sum_sig/omega_A - b
+                sum_sig += weight * value.signal
+                delta2 = sum_sig / sum_nrm - b
+                sum_var += omega2_B * delta1 * delta2
+
+
+        else:
+            sum_sig = weight * value.signal
+            sum_nrm = w
+            sum_nrm2 = w2
+    else:
+        sum_sig += value.signal * weight
+        sum_var += value.variance * weight2
+        sum_nrm += w
+        # if out_data.shape[1] == 5: #Σ c²·ω²
+        sum_nrm2 += w2
+    sum_cnt += value.count * weight
+
+    out_data[bin, 0] = sum_sig
+    out_data[bin, 1] = sum_var
+    out_data[bin, 2] = sum_nrm
+    out_data[bin, 3] = sum_cnt
+    out_data[bin, 4] = sum_nrm2
 
 
 @cython.boundscheck(False)

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "15/04/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -47,7 +47,7 @@ from . import units
 from .utils import EPS32, deg2rad, crc32
 from .utils.decorators import deprecated, deprecated_warning
 from .containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
-from .io import DefaultAiWriter
+from .io import DefaultAiWriter, save_integrate_result
 from .io.ponifile import PoniFile
 error = None
 from .method_registry import IntegrationMethod
@@ -63,8 +63,10 @@ else:
     preproc = preproc_cy
 
 from .load_integrators import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
-                                splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
-                                histogram_engine, splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC
+                              splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
+                              histogram_engine, splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC, \
+                              PREFERED_METHODS_1D, PREFERED_METHODS_2D
+
 from .engines import Engine
 
 # Few constants for engine names:
@@ -74,15 +76,6 @@ OCL_HIST_ENGINE = "ocl_histogram"
 OCL_SORT_ENGINE = "ocl_sorter"
 EXT_LUT_ENGINE = "lut_integrator"
 EXT_CSR_ENGINE = "csr_integrator"
-
-PREFERED_METHODS_1D = IntegrationMethod.select_method(1, split="full", algo="histogram") + \
-                      IntegrationMethod.select_method(1, split="pseudo", algo="histogram") + \
-                      IntegrationMethod.select_method(1, split="bbox", algo="histogram") + \
-                      IntegrationMethod.select_method(1, split="no", algo="histogram")
-PREFERED_METHODS_2D = IntegrationMethod.select_method(2, split="full", algo="histogram") + \
-                      IntegrationMethod.select_method(2, split="pseudo", algo="histogram") + \
-                      IntegrationMethod.select_method(2, split="bbox", algo="histogram") + \
-                      IntegrationMethod.select_method(2, split="no", algo="histogram")
 
 
 class AzimuthalIntegrator(Geometry):
@@ -167,18 +160,24 @@ class AzimuthalIntegrator(Geometry):
 
         self._empty = 0.0
 
-    def reset(self):
+    def reset(self, collect_garbage=True):
         """Reset azimuthal integrator in addition to other arrays.
-        """
-        Geometry.reset(self)
-        self.reset_engines()
 
-    def reset_engines(self):
-        """Urgently free memory by deleting all regrid-engines"""
+        :param collect_garbage: set to False to prevent garbage collection, faster
+        """
+        Geometry.reset(self, collect_garbage=False)
+        self.reset_engines(collect_garbage)
+
+    def reset_engines(self, collect_garbage=True):
+        """Urgently free memory by deleting all regrid-engines
+
+        :param collect_garbage: set to False to prevent garbage collection, faster
+        """
         with self._lock:
             for key in list(self.engines.keys()):  # explicit copy
                 self.engines.pop(key).reset()
-        gc.collect()
+        if collect_garbage:
+            gc.collect()
 
     def create_mask(self, data, mask=None,
                     dummy=None, delta_dummy=None,
@@ -1099,8 +1098,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_metadata(metadata)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
+            save_integrate_result(filename, result)
 
         return result
 
@@ -1540,7 +1538,10 @@ class AzimuthalIntegrator(Geometry):
             result._set_unit(unit)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
+            result._set_sum_normalization2(intpl.norm_sq)
             result._set_count(intpl.count)
+            result._set_sem(intpl.sem)
+            result._set_std(intpl.std)
 
         else:
             raise RuntimeError("Fallback method ... should no more be used: %s" % method)
@@ -1600,9 +1601,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_has_solidangle_correction(correctSolidAngle)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
-
+            save_integrate_result(filename, result)
         return result
 
     _integrate1d_ng = integrate1d_ng
@@ -2102,8 +2101,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_metadata(metadata)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
+            save_integrate_result(filename, result)
 
         return result
 
@@ -2617,8 +2615,7 @@ class AzimuthalIntegrator(Geometry):
             result._set_std(sem)
 
         if filename is not None:
-            writer = DefaultAiWriter(filename, self)
-            writer.write(result)
+            save_integrate_result(filename, result)
 
         return result
 
@@ -2948,7 +2945,7 @@ class AzimuthalIntegrator(Geometry):
             npt_rad = kwargs["npt"]
         # We use NaN as dummies
         if dummy is None:
-            dummy = numpy.NaN
+            dummy = numpy.nan
             delta_dummy = None
         unit = units.to_unit(unit)
         method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
@@ -3025,7 +3022,7 @@ class AzimuthalIntegrator(Geometry):
             as_strided = numpy.lib.stride_tricks.as_strided
             mask = numpy.logical_not(numpy.isfinite(image))
             dummies = mask.sum()
-            image[mask] = numpy.NaN
+            image[mask] = numpy.nan
             mean = numpy.nanmean(image, axis=0)
             std = numpy.nanstd(image, axis=0)
             for _ in range(max_iter):
@@ -3039,7 +3036,7 @@ class AzimuthalIntegrator(Geometry):
                 dummies = mask.sum()
                 if dummies == 0:
                     break
-                image[mask] = numpy.NaN
+                image[mask] = numpy.nan
                 mean = numpy.nanmean(image, axis=0)
                 std = numpy.nanstd(image, axis=0)
 

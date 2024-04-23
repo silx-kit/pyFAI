@@ -1,27 +1,43 @@
 :Author: Jérôme Kieffer
-:Date: 10/01/2024
+:Date: 01/02/2024
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2024.1 UNRELEASED
+2024.2 01/02/2024
 -----------------
-- Support XRDML formt (compatibility with MAUD software)
-- Support pathlib for reading PONI files 
-- Refactor `pyFAI-benchmark` tool (Thanks Edgar)
+- Include grazing-incidence capabilities + tutorial (thanks Edgar)
+- Fix segmentation-fault in calib2 application #2047 (thanks Thomas & Edgar)
+- Use the dynamic mask to mask-out dead pixels in Eiger images in calib2
+- Extend Poisson+azimuthal uncertainties to all Cython integrators (+ non regression tests)
+- Support for Python 3.7-3.12 (requires silx v2 for 3.12)
+
+2024.1 18/01/2024
+-----------------
 - Possibility to define the detector orientation:
-  + It is the position of the origin of the detector at any of the 4 corner of the image
+  + It is the position of the origin of the detector at any of the 4 corners of the image
   + Uses the EXIF nomenclature where pyFAI's (default) orientation is tagged *3*
-  + Offers compatibility with calibration made by Diotas (where orientation=2)
+  + Offers compatibility with calibration made by Dioptas (where orientation=2 since images are flipped)
   + Expose the feature in the `calib2` GUI for custom detectors.
   + Tutorial on the usage
-- Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others.
-- Support for Detris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
-- Several new units have been added
-- Drop of `setup.py` the build system based on distutils/numpy.distutils/setuptools. Use meson-python.
-- Move the sources of the code into `src` directory
-- Support for Python 3.7-3.12
+  + New sub-version of the PoniFile API (2.1) for this feature
+- Expose the number of corners of a detector pixel (feature unused for now)
+- Refactor `pyFAI-benchmark` tool with better looking results (Thanks Edgar)
+- Possibility to integrate in 2D with any second dimension unit:
+  + No more limited to the azimuthal angle `chi`
+  + Several new units have been added
+  + Offers the qx/qy integration as example
+- Support for Dectris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
+- Support XRDML format (compatibility with MAUD software)
+- Multigeometry gains a `reset()` method to free some memory with optimized garbage collection
+- Support pathlib when reading-PONI files
+- Change in the build system:
+  + Drop of `setup.py` the build system based on distutils/numpy.distutils/setuptools
+  + Enforce the use of meson-python
+  + Move the sources of the code into `src` directory
+  + Support for Python 3.7-3.12 (requires silx v2 for 3.12)
+  + Provide debian packages for debian12 but ubuntu 20.04 is too old and lack meson-python
 
 2023.09 08/09/2023
 ------------------

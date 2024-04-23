@@ -36,13 +36,14 @@ environment:
         - PYTHON_DIR: "C:\\Python37-x64"
           PYTHON_ARCH: "64"
 
-        # Python 3.8
-        - PYTHON_DIR: "C:\\Python38-x64"
-          PYTHON_ARCH: "64"
-
         # Python 3.9
         - PYTHON_DIR: "C:\\Python39-x64"
           PYTHON_ARCH: "64"
+
+        # Python 3.11
+        - PYTHON_DIR: "C:\\Python311-x64"
+          PYTHON_ARCH: "64"
+
 
 init:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

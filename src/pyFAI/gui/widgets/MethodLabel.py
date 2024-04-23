@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "19/03/2024"
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ class MethodLabel(qt.QLabel):
     def __init__(self, parent=None):
         super(MethodLabel, self).__init__(parent)
         self.__method = None
-        self.__labelTemplate = "{split} / {impl} / {algo}"
+        self.__labelTemplate = "{split} / {algo} / {impl}"
         self.__availability = False
         self.__updateFeedback()
 

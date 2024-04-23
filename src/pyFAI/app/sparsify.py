@@ -327,7 +327,7 @@ def parse():
     group.add_argument("--peak-patch-size", dest="patch_size", type=int, default=3,
                        help="size of the local patch for searching for a peak, typically 3(default) or 5. Used only with `--cutoff-peak`")
     group.add_argument("--peak-connected", dest="connected", default=2, type=int,
-                       help="number of high pixels in the patch to be considered as a peak. efault: 3. Used only with `--cutoff-peak`")
+                       help="number of high pixels in the patch to be considered as a peak. default: 3. Used only with `--cutoff-peak`")
     group = parser.add_argument_group("Opencl setup options")
     group.add_argument("--workgroup", type=int, default=None,
                        help="Enforce the workgroup size for OpenCL kernel. Impacts only on the execution speed, not on the result.")

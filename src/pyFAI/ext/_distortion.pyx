@@ -979,7 +979,7 @@ def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
         if delta_dummy is None:
             cdelta_dummy = 0.0
     else:
-        cdummy = numpy.NaN
+        cdummy = numpy.nan
         cdelta_dummy = 0.0
 
     assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
@@ -1060,7 +1060,7 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
         if delta_dummy is None:
             cdelta_dummy = 0.0
     else:
-        cdummy = numpy.NaN
+        cdummy = numpy.nan
         cdelta_dummy = 0.0
 
     data, indices, indptr = LUT
@@ -1122,7 +1122,7 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
         if delta_dummy is None:
             cdelta_dummy = 0.0
     else:
-        cdummy = numpy.NaN
+        cdummy = numpy.nan
         cdelta_dummy = 0.0
 
     data, indices, indptr = LUT
@@ -1157,7 +1157,7 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
 def correct_LUT_preproc_double(image, shape_out,
                                lut_t[:, ::1] LUT not None,
                                dummy=None, delta_dummy=None,
-                               empty=numpy.NaN):
+                               empty=numpy.nan):
     """Correct an image based on the look-up table calculated ...
     implementation using double precision accumulator
 
@@ -1258,7 +1258,7 @@ def correct_LUT_preproc_double(image, shape_out,
 def correct_CSR_preproc_double(image, shape_out,
                                LUT not None,
                                dummy=None, delta_dummy=None,
-                               empty=numpy.NaN):
+                               empty=numpy.nan):
     """Correct an image based on the look-up table calculated ...
     implementation using double precision accumulator
 

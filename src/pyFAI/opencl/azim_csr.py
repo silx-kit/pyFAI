@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "04/10/2023"
+__date__ = "08/04/2024"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -45,7 +45,6 @@ from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from . import processing, OpenclProcessing
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
-
 
 logger = logging.getLogger(__name__)
 
@@ -409,7 +408,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 copy_image = pyopencl.enqueue_copy(self.queue, dest_buffer, data.data)
                 events.append(EventDescription(f"copy D->D {dest}", copy_image))
             elif convert:
-                tmp_buffer =  self.cl_mem["tmp"]
+                tmp_buffer = self.cl_mem["tmp"]
                 dest_buffer = self.cl_mem[dest]
                 copy_image = pyopencl.enqueue_copy(self.queue, tmp_buffer, data.data)
                 kernel_name = self.mapping[data.dtype.type]
@@ -418,7 +417,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 convert_to_float = kernel(self.queue, ((self.size + wg - 1) // wg * wg,), (wg,), tmp_buffer, dest_buffer)
                 events += [EventDescription(f"copy raw D->D {dest}", copy_image),
                            EventDescription(f"convert {kernel_name}", convert_to_float)]
-            else: # no convert
+            else:  # no convert
                 actual_dest = f"{dest}_raw"
                 dest_buffer = self.cl_mem[actual_dest]
                 if data.dtype.itemsize > dest_type.itemsize:
@@ -434,7 +433,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 copy_image = pyopencl.enqueue_copy(self.queue, dest_buffer, numpy.ascontiguousarray(data, dest_type))
                 events.append(EventDescription(f"copy H->D {dest}", copy_image))
             elif convert:
-                tmp_buffer =  self.cl_mem["tmp"]
+                tmp_buffer = self.cl_mem["tmp"]
                 dest_buffer = self.cl_mem[dest]
                 copy_image = pyopencl.enqueue_copy(self.queue, tmp_buffer, numpy.ascontiguousarray(data))
                 kernel_name = self.mapping[data.dtype.type]
@@ -494,7 +493,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         with self.sem:
             self.send_buffer(data, "image")
             wg = max(self.workgroup_size["memset_out"])
-            wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
+            wdim_bins = int(self.bins + wg - 1) // wg * wg,
             memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_out"].values()))
             events.append(EventDescription("memset_out", memset))
             kw_corr = self.cl_kernel_args["corrections"]
@@ -573,7 +572,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["do_absorption"] = do_absorption
 
             wg = max(self.workgroup_size["corrections"])
-            wdim_data = (self.size + wg - 1) & ~(wg - 1),
+            wdim_data = int(self.size + wg - 1) // wg * wg,
             ev = self.kernels.corrections(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
             events.append(EventDescription("corrections", ev))
 
@@ -589,7 +588,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if wg_max == 1:
                 # thread-synchronization is probably not possible.
                 wg_max = max(self.workgroup_size["csr_integrate_single"])
-                wdim_bins = (self.bins + wg_max - 1) & ~(wg_max - 1),
+                wdim_bins = int(self.bins + wg_max - 1) // wg_max * wg_max,
                 integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg_max,), *kw_int.values())
                 events.append(EventDescription("csr_integrate_single", integrate))
             else:
@@ -682,7 +681,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             corrections4 = self.kernels.corrections4a
             kw_corr = self.cl_kernel_args[kernel_correction_name]
             kw_corr["image"] = self.send_buffer(data, "image", convert=False)
-            kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize>4 else dtype_converter(data.dtype)
+            kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize > 4 else dtype_converter(data.dtype)
             wg = workgroup_size if workgroup_size else max(self.workgroup_size["memset_ng"])
             wdim_bins = (self.bins + wg - 1) // wg * wg,
             memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
@@ -911,9 +910,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
             corrections4 = self.kernels.corrections4a
             kw_corr = self.cl_kernel_args[kernel_correction_name]
             kw_corr["image"] = self.send_buffer(data, "image", convert=False)
-            kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize>4 else dtype_converter(data.dtype)
+            kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize > 4 else dtype_converter(data.dtype)
             wg = max(self.workgroup_size["memset_ng"])
-            wdim_bins = (self.bins + wg - 1) & ~(wg - 1),
+            wdim_bins = int(self.bins + wg - 1) // wg * wg,
             memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
             kw_int = self.cl_kernel_args["csr_sigma_clip4"]
@@ -1000,7 +999,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["do_absorption"] = do_absorption
 
             wg = max(self.workgroup_size[kernel_correction_name])
-            wdim_data = (self.size + wg - 1) & ~(wg - 1),
+            wdim_data = int(self.size + wg - 1) // wg * wg,
             ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
             events.append(EventDescription(kernel_correction_name, ev))
 

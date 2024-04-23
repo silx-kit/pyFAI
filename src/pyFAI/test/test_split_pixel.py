@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "01/02/2024"
 
 import unittest
 import platform
@@ -221,8 +221,10 @@ class TestSplitBBoxNg(unittest.TestCase):
 
         if platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4):
             cls.epsilon = 3e-13
+        elif platform.machine() in ('arm64', ) and (platform.system() == "Darwin"):
+            cls.epsilon = 3e-14
         else:
-            cls.epsilon = numpy.finfo(numpy.float64).eps
+            cls.epsilon = numpy.finfo(numpy.float64).eps #~2e-16
 
         ai = AzimuthalIntegrator(1, detector=det)
         ai.wavelength = 1e-10

@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/12/2023"
+__date__ = "19/01/2024"
 
 import numpy
 import logging
@@ -115,7 +115,7 @@ class ExperimentTask(AbstractCalibrationTask):
         plot.addToolBar(toolBar)
         toolBar = tools.ImageToolBar(parent=self, plot=plot)
         colormapDialog = CalibrationContext.instance().getColormapDialog()
-        toolBar.getColormapAction().setColorDialog(colormapDialog)
+        toolBar.getColormapAction().setColormapDialog(colormapDialog)
         plot.addToolBar(toolBar)
 
         toolBar = qt.QToolBar(self)

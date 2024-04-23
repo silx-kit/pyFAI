@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "05/10/2023"
+__date__ = "19/01/2024"
 
 import logging
 import numpy
@@ -699,7 +699,7 @@ class IntegrationPlot(qt.QFrame):
 
         toolBar = tools.ImageToolBar(parent=self, plot=plot2d)
         colormapDialog = CalibrationContext.instance().getColormapDialog()
-        toolBar.getColormapAction().setColorDialog(colormapDialog)
+        toolBar.getColormapAction().setColormapDialog(colormapDialog)
         previousResetZoomAction = toolBar.getResetZoomAction()
         resetZoomAction = qt.QAction(toolBar)
         resetZoomAction.triggered.connect(self.resetZoom)

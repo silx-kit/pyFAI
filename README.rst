@@ -94,13 +94,15 @@ Documentation
 
 Documentation can be build using this command and Sphinx (installed on your computer)::
 
+    pip install -r requirements.txt
     python3 build-doc.py
 
 
 Dependencies
 ------------
 
-Python 3.7, ... 3.10 are well tested and officially supported.
+Python 3.7, ... 3.11 are well tested and officially supported.
+For python 3.12, it requires silx version 2 which is still unreleased for now.
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
@@ -178,15 +180,16 @@ Maintainers
 Contributors
 ------------
 
+* Edgar Gutierrez Fernandez (ESRF)
 * Valentin Valls (ESRF)
 * Frédéric-Emmanuel Picca (Soleil)
 * Thomas Vincent (ESRF)
-* Dimitris Karkoulis (ESRF)
-* Aurore Deschildre (ESRF)
-* Giannis Ashiotis (ESRF)
-* Zubair Nawaz (Sesame)
+* Dimitris Karkoulis (Formerly ESRF)
+* Aurore Deschildre (Formerly ESRF)
+* Giannis Ashiotis (Formerly ESRF)
+* Zubair Nawaz (Formerly Sesame)
 * Jon Wright (ESRF)
-* Amund Hov (ESRF)
+* Amund Hov (Formerly ESRF)
 * Dodogerstlin @github
 * Gunthard Benecke (Desy)
 * Gero Flucke (Desy)
@@ -205,9 +208,9 @@ Indirect contributors (ideas...)
    :target: https://ci.appveyor.com/project/ESRF/pyfai
 .. |myBinder Launcher| image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/silx-kit/pyFAI/main?filepath=binder%2Findex.ipynb
-.. |RTD docs| image:: https://readthedocs.org/projects/pyFAI/badge/?version=main
+.. |RTD docs| image:: https://readthedocs.org/projects/pyFAI/badge
     :alt: Documentation Status
     :scale: 100%
-    :target: https://pyfai.readthedocs.io/en/main/?badge=main
+    :target: https://pyfai.readthedocs.io/en/main
 .. |Zenodo DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.832896.svg
    :target: https://doi.org/10.5281/zenodo.832896

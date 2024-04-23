@@ -36,4 +36,5 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Separation/index
    Parallelization/index
    integrate2d
+   GrazingIncidence
    Soleil/index

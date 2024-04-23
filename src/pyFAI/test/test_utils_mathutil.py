@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "20/02/2024"
 
 import unittest
 import numpy
@@ -144,9 +144,18 @@ class TestMathUtil(utilstest.ParametricTestCase):
         y = numpy.sin(x)
         w = numpy.random.randint(1, x.shape[0] - 2, size=100)  # Here we remove a tenth of all points !
         z = y.copy()
-        z[w] = numpy.NaN
+        z[w] = numpy.nan
         self.assertLess(abs(y - utils.mathutil.interp_filter(z)).max(), 0.01, "error is small")
 
+    def test_is_far_from_group_cython(self):
+        from ..utils.mathutil import is_far_from_group_python, is_far_from_group_cython
+        rng = utilstest.UtilsTest.get_rng()
+        pt = rng.uniform(size=2)
+        pts = list(rng.uniform(size=(10,2)))
+        dst2 = rng.uniform()**2
+        ref = is_far_from_group_python(pt, pts, dst2)
+        res = is_far_from_group_cython(pt, pts, dst2)
+        self.assertEqual(ref, res, "cython implementation matches *is_far_from_group*")
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
