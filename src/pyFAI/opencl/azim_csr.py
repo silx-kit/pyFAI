@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "23/04/2024"
+__date__ = "24/04/2024"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -638,7 +638,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                      dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                      polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                      safe=True, workgroup_size=None,
-                     normalization_factor=1.0,
+                     normalization_factor=1.0, weighted_average=True,
                      out_avgint=None, out_sem=None, out_std=None, out_merged=None):
         """
         Before performing azimuthal integration with proper variance propagation, the preprocessing is:
@@ -670,6 +670,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param workgroup_size: enforce this workgroup size
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
         :param out_avgint: destination array or pyopencl array for average intensity
         :param out_sem: destination array or pyopencl array for standard deviation (of mean)
         :param out_std: destination array or pyopencl array for standard deviation (of pixels)
@@ -706,6 +707,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_corr["dummy"] = dummy
             kw_corr["delta_dummy"] = delta_dummy
             kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
+            kw_corr["apply_normalization"] = numpy.int8(not weighted_average)
             kw_int["error_model"] = kw_corr["error_model"] = numpy.int8(error_model.value)
             if variance is not None:
                 self.send_buffer(variance, "variance", workgroup_size=workgroup_size)
