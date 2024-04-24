@@ -38,7 +38,7 @@ Can be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jérôme Kieffer"
-__date__ = "30/01/2024"
+__date__ = "24/04/2024"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -454,6 +454,7 @@ def histogram1d_engine(radial, int npt,
                        variance=None,
                        dark_variance=None,
                        error_model=ErrorModel.NO,
+                       bint weighted_average=True,
                        radial_range=None
                        ):
     """Implementation of rebinning engine (without splitting) using pure cython histograms
@@ -474,6 +475,7 @@ def histogram1d_engine(radial, int npt,
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
     :param error_model: One of the several ErrorModel, only variance and Poisson are implemented.
+    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
 
 
     NaN are always considered as invalid values
@@ -512,6 +514,7 @@ def histogram1d_engine(radial, int npt,
                    variance=variance,
                    dark_variance=dark_variance,
                    error_model=error_model,
+                   apply_normalization = not weighted_average,
                    ).reshape(-1, 4)
     res, position = histogram_preproc(radial.ravel(),
                                       prep,
