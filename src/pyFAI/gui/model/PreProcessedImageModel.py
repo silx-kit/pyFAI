@@ -44,7 +44,7 @@ except ImportError as err:
     from pyFAI.engines.preproc import preproc
 
 class PreProcessedImageModel(DataModel):
-    """Image cleaned up by setting masked pixels to NaN"""
+    """Preprocessed image: masked pixels to NaN, dark-current subtracted and normalized to flat-field"""
 
     def __init__(
             self,

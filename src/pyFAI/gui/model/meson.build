@@ -17,7 +17,6 @@ py.install_sources(
     'ListModel.py',
     'MarkerModel.py',
     'MaskedImageModel.py',
-    'DarkedMaskedImageModel.py',
     'PreProcessedImageModel.py',
     'PeakModel.py',
     'PeakSelectionModel.py',
