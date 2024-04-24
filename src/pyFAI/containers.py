@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/10/2023"
+__date__ = "24/04/2024"
 __status__ = "development"
 
 from collections import namedtuple
@@ -104,6 +104,7 @@ class IntegrateResult(tuple):
         self._std = None  # standard deviation (error for a pixel)
         self._sem = None  # standard error of the mean (error for the mean)
         self._poni = None  # Contains the geometry which was used for the integration
+        self._weighted_average = None  # Should be True for weighted average and False for unweighted (legacy)
 
     @property
     def method(self):
@@ -386,6 +387,21 @@ class IntegrateResult(tuple):
 
     def _set_poni(self, value):
         self._poni = value
+
+    @property
+    def weighted_average(self):
+        """Average have been done:
+        * if True with the weighted mean (-ng)
+        * if False with the unweighted mean (-legacy)
+        """
+        return self._weighted_average
+
+    def _set_weighted_average(self, value):
+        """Average have been done:
+        * if True with the weighted mean (-ng)
+        * if False with the unweighted mean (-legacy)
+        """
+        self._weighted_average = bool(value)
 
 
 class Integrate1dResult(IntegrateResult):
