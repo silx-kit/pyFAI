@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/01/2024"
+__date__ = "24/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -281,7 +281,8 @@ def histoBBox1d_engine(weights,
                        polarization=None,
                        bint allow_pos0_neg=False,
                        data_t empty=0.0,
-                       double normalization_factor=1.0):
+                       double normalization_factor=1.0,
+                       bint weighted_average=True,):
 
     """
     Calculates histogram of pos0 (tth) weighted by weights
@@ -306,7 +307,8 @@ def histoBBox1d_engine(weights,
     :param polarization: array (of float32) with polarization corrections
     :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
     :param empty: value of output bins without any contribution when dummy is None
-    :param normalization_factor: divide the result by this value
+    :param float normalization_factor: divide the result by this value
+    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average. WIP
     :return: namedtuple with "position intensity error signal variance normalization count"
     """
     cdef Py_ssize_t size = weights.size

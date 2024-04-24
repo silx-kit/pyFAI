@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "30/01/2024"
+__date__ = "24/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -160,7 +160,8 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
                                        bint check_dummy=False,
                                        floating normalization_factor=1.0,
                                        floating dark_variance=0.0,
-                                       int error_model=1) noexcept nogil:
+                                       int error_model=1,
+                                       bint apply_normalization=False) noexcept nogil:
     """This is a Function in the C-space that performs the preprocessing
     for one data point
 
@@ -172,6 +173,7 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
     :param dummy, delta_dummy, mask,check_dummy: controls the masking of the pixel
     :param normalization_factor: multiply normalization with this value
     :param error_model: 0 to diable, 1 for variance, 2 for Poisson model, ...
+    :param apply_normalization: False by default, set to True to perform an unweighted average later on. WIP
     :return: isvalid, i.e. True if the pixel is worth further processing
 
     where the result is calculated this way:
@@ -219,6 +221,10 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
             is_valid = False
         else:
             count = 1.0
+            if apply_normalization:
+                signal /= norm
+                variance /= norm*norm
+                norm = 1.0
     else:
         signal = 0.0
         variance = 0.0
