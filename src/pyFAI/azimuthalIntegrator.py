@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/04/2024"
+__date__ = "24/04/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -51,16 +51,6 @@ from .io import DefaultAiWriter, save_integrate_result
 from .io.ponifile import PoniFile
 error = None
 from .method_registry import IntegrationMethod
-
-from .engines.preproc import preproc as preproc_np
-
-try:
-    from .ext.preproc import preproc as preproc_cy
-except ImportError as err:
-    logger.warning("ImportError pyFAI.ext.preproc %s", err)
-    preproc = preproc_np
-else:
-    preproc = preproc_cy
 
 from .load_integrators import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
                               splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
@@ -1111,7 +1101,7 @@ class AzimuthalIntegrator(Geometry):
                        mask=None, dummy=None, delta_dummy=None,
                        polarization_factor=None, dark=None, flat=None,
                        method=("bbox", "csr", "cython"), unit=units.Q, safe=True,
-                       normalization_factor=1.0,
+                       normalization_factor=1.0, weighted_average=True,
                        metadata=None):
         """Calculate the azimuthal integration (1d) of a 2D image.
 
@@ -1141,6 +1131,7 @@ class AzimuthalIntegrator(Geometry):
         :param Unit unit: Output units, can be "q_nm^-1" (default), "2th_deg", "r_mm" for now.
         :param bool safe: Perform some extra checks to ensure LUT/CSR is still valid. False is faster.
         :param float normalization_factor: Value of a normalization monitor
+        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
         :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
         """
@@ -1599,6 +1590,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_error_model(error_model)
         result._set_poni(PoniFile(self))
         result._set_has_solidangle_correction(correctSolidAngle)
+        result._set_weighted_average(weighted_average)
 
         if filename is not None:
             save_integrate_result(filename, result)
