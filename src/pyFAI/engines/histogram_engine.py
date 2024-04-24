@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2023"
+__date__ = "24/04/2024"
 __status__ = "development"
 
 import logging
@@ -61,6 +61,7 @@ def histogram1d_engine(radial, npt,
                        variance=None,
                        dark_variance=None,
                        error_model=ErrorModel.NO,
+                       weighted_average=True,
                        radial_range=None
                        ):
     """Implementation of rebinning engine using pure numpy histograms
@@ -81,7 +82,7 @@ def histogram1d_engine(radial, npt,
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
     :param error_model: Use the provided ErrorModel, only "poisson" and "variance" is valid
-
+    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
 
     NaN are always considered as invalid values
 
@@ -110,7 +111,8 @@ def histogram1d_engine(radial, npt,
                    variance=variance,
                    dark_variance=dark_variance,
                    error_model=error_model,
-                   empty=0
+                   empty=0,
+                   apply_normalization = not weighted_average,
                    )
     radial = radial.ravel()
     prep.shape = -1, 4

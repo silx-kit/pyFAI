@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2023"
+__date__ = "24/04/2024"
 __status__ = "development"
 
 import logging
@@ -100,6 +100,7 @@ class CSRIntegrator(object):
                   polarization=None,
                   absorption=None,
                   normalization_factor=1.0,
+                  weighted_average=True,
                   ):
         """Actually perform the CSR matrix multiplication after preprocessing.
 
@@ -114,6 +115,7 @@ class CSRIntegrator(object):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
+        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average WIP
         :return: the preprocessed data integrated as array nbins x 4 which contains:
                     regrouped signal, variance, normalization, pixel count, sum_norm²
 
@@ -136,6 +138,7 @@ class CSRIntegrator(object):
                        variance=variance,
                        dtype=numpy.float32,
                        error_model=error_model,
+                       apply_normalization = not weighted_average,
                        out=self.preprocessed)
         prep.shape = numpy.prod(shape), 4
         flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
@@ -207,6 +210,7 @@ class CsrIntegrator1d(CSRIntegrator):
                   polarization=None,
                   absorption=None,
                   normalization_factor=1.0,
+                  weighted_average=True,
                   ):
         """Actually perform the 1D integration
 
@@ -221,6 +225,7 @@ class CsrIntegrator1d(CSRIntegrator):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
+        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
         :return: Integrate1dResult or Integrate1dWithErrorResult object depending on variance
 
         """
@@ -230,7 +235,7 @@ class CsrIntegrator1d(CSRIntegrator):
         trans = CSRIntegrator.integrate(self, signal, variance, error_model,
                                         dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
-                                        absorption, normalization_factor)
+                                        absorption, normalization_factor, weighted_average)
         signal = trans[:, 0]
         variance = trans[:, 1]
         normalization = trans[:, 2]
