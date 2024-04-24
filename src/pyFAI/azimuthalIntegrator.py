@@ -1267,7 +1267,8 @@ class AzimuthalIntegrator(Geometry):
                                             flat=flat,
                                             solidangle=solidangle,
                                             polarization=polarization,
-                                            normalization_factor=normalization_factor)
+                                            normalization_factor=normalization_factor,
+                                            weighted_average=weighted_average)
             else:  # method.impl_lower in ("opencl", "python"):
                 if method not in self.engines:
                     # instanciated the engine
@@ -1354,6 +1355,7 @@ class AzimuthalIntegrator(Geometry):
                                             flat=flat, solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor,
+                                            weighted_average=weighted_average,
                                             **kwargs)
             # This section is common to all 3 CSR implementations...
             if error_model.do_variance:
@@ -1393,6 +1395,7 @@ class AzimuthalIntegrator(Geometry):
                            flat=flat, solidangle=solidangle,
                            polarization=polarization,
                            normalization_factor=normalization_factor,
+                           weighted_average=weighted_average,
                            mask=mask,
                            radial_range=radial_range,
                            error_model=error_model)
@@ -1462,6 +1465,7 @@ class AzimuthalIntegrator(Geometry):
                                polarization=polarization,
                                polarization_checksum=polarization_crc,
                                normalization_factor=normalization_factor,
+                               weighted_average=weighted_average,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range,
                                error_model=error_model)
@@ -1498,6 +1502,7 @@ class AzimuthalIntegrator(Geometry):
                                dark=dark, flat=flat, solidangle=solidangle,
                                polarization=polarization,
                                normalization_factor=normalization_factor,
+                               weighted_average=weighted_average,
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
@@ -1511,6 +1516,7 @@ class AzimuthalIntegrator(Geometry):
                                dark=dark, flat=flat, solidangle=solidangle,
                                polarization=polarization,
                                normalization_factor=normalization_factor,
+                               weighted_average=weighted_average,
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
@@ -1535,50 +1541,7 @@ class AzimuthalIntegrator(Geometry):
             result._set_std(intpl.std)
 
         else:
-            raise RuntimeError("Fallback method ... should no more be used: %s" % method)
-            if radial_range:
-                radial_range = tuple(radial_range[i] * pos0_scale for i in (0, -1))
-            if azimuth_range is not None:
-                azimuth_range = tuple(rad2deg(azimuth_range[i]) for i in (0, -1))
-
-            logger.warning("Failed to find method: %s", method)
-            kwargs = {"npt": npt,
-                      "error_model": None,
-                      "variance": None,
-                      "correctSolidAngle": False,
-                      "polarization_factor": None,
-                      "flat": None,
-                      "radial_range": radial_range,
-                      "azimuth_range": azimuth_range,
-                      "mask": mask,
-                      "dummy": dummy,
-                      "delta_dummy": delta_dummy,
-                      "method": method,
-                      "unit": unit,
-                      }
-
-            normalization_image = numpy.ones(data.shape) * normalization_factor
-            if correctSolidAngle:
-                normalization_image *= self.solidAngleArray(self.detector.shape)
-
-            if polarization_factor:
-                normalization_image *= self.polarization(self.detector.shape, factor=polarization_factor)
-
-            if flat is not None:
-                normalization_image *= flat
-
-            norm = self.integrate1d(normalization_image, **kwargs)
-            signal = self._integrate1d_legacy(data, dark=dark, ** kwargs)
-            sigma2 = self._integrate1d_legacy(variance, **kwargs)
-            result = Integrate1dResult(norm.radial * unit.scale,
-                                       signal.sum / norm.sum,
-                                       numpy.sqrt(sigma2.sum) / norm.sum)
-            result._set_compute_engine(norm.compute_engine)
-            result._set_unit(signal.unit)
-            result._set_sum_signal(signal.sum)
-            result._set_sum_normalization(norm.sum)
-            result._set_sum_variance(sigma2.sum)
-            result._set_count(signal.count)
+            raise RuntimeError(f"Fallback method ... should no more be used: {method}")
         result._set_method(method)
         result._set_has_dark_correction(has_dark)
         result._set_has_flat_correction(has_flat)
