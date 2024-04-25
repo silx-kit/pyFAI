@@ -2320,9 +2320,7 @@ class AzimuthalIntegrator(Geometry):
                                                                      deviceid=method.target[1],
                                                                      checksum=cython_integr.lut_checksum,
                                                                      unit=unit, empty=empty,
-                                                                     mask_checksum=mask_crc,
-                                                                     weighted_average=method.weighted_average,
-                                                                     )
+                                                                     mask_checksum=mask_crc)
 
                         elif (method.impl_lower == "python"):
                             with ocl_py_engine.lock:
@@ -2332,8 +2330,7 @@ class AzimuthalIntegrator(Geometry):
                                                                      bin_centers1=cython_integr.bin_centers1,
                                                                      checksum=cython_integr.lut_checksum,
                                                                      unit=unit, empty=empty,
-                                                                     mask_checksum=mask_crc,
-                                                                     weighted_average=method.weighted_average,)
+                                                                     mask_checksum=mask_crc)
                         integr.pos0_range = cython_integr.pos0_range
                         integr.pos1_range = cython_integr.pos1_range
                         ocl_py_engine.set_engine(integr)
