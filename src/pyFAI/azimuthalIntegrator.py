@@ -1353,7 +1353,7 @@ class AzimuthalIntegrator(Geometry):
                                             flat=flat, solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor,
-                                            weighted_average=method.weighted_average
+                                            weighted_average=method.weighted_average,
                                             ** kwargs)
             # This section is common to all 3 CSR implementations...
             if error_model.do_variance:
