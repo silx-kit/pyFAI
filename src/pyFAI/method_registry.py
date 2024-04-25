@@ -203,10 +203,10 @@ class IntegrationMethod:
     def select_method(cls, dim=None, split=None, algo=None, impl=None,
                       target=None, target_type=None, degradable=True, method=None):
         """Retrieve all algorithm which are fitting the requirement:
-        
+
         :param int dim:
         :param str split:
-        
+
         :return: list of compatible methods or None
         """
         if method is not None:
@@ -327,7 +327,7 @@ class IntegrationMethod:
     @classmethod
     def parse(cls, smth, dim=1):
         """Parse the string/list/tuple/dict for the content
-        
+
         :param smth: somthing
         :param int dim: dimentionnalty of integrator
         :return: one method fitting the requirement or the default method
@@ -542,4 +542,3 @@ class IntegrationMethod:
         cpy = copy.copy(self)
         cpy._weighted_average = False
         return cpy
-
