@@ -345,7 +345,7 @@ class IntegrationMethod:
             else:
                 res = cls.select_method(dim, *[i.split()[0] for i in (smth.split(","))])
         elif isinstance(smth, (list, tuple, dict)):
-            target = None,
+            target = None
 
             if isinstance(smth, dict):
                 split = smth.get("split") or smth.get("pixel_splitting")
@@ -361,7 +361,8 @@ class IntegrationMethod:
             split = split.lower() if split is not None else "*"
             algo = algo.lower() if algo is not None else "*"
             impl = impl.lower() if impl is not None else "*"
-            res = cls.select_method(dim, split, algo. impl, target)
+            # print(dim, split, algo, impl, target)
+            res = cls.select_method(dim, split, algo, impl, target)
 
         if res:
             result = res[0]
@@ -427,6 +428,14 @@ class IntegrationMethod:
         else:
             string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation))
         return "IntegrationMethod(%s)" % string
+
+    def __hash__(self):
+        """Make it independant from weighted"""
+        return self.__method.__hash__()
+
+    def __eq__(self, other):
+        """Make it independant from weighted"""
+        return self.__method == other.method
 
     def _does_manage_variance(self):
         "Checks if the method handles alone the error_model"
