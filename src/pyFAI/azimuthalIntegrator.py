@@ -2320,7 +2320,8 @@ class AzimuthalIntegrator(Geometry):
                                                                      deviceid=method.target[1],
                                                                      checksum=cython_integr.lut_checksum,
                                                                      unit=unit, empty=empty,
-                                                                     mask_checksum=mask_crc
+                                                                     mask_checksum=mask_crc,
+                                                                     weighted_average=method.weighted_average,
                                                                      )
 
                         elif (method.impl_lower == "python"):
@@ -2331,7 +2332,8 @@ class AzimuthalIntegrator(Geometry):
                                                                      bin_centers1=cython_integr.bin_centers1,
                                                                      checksum=cython_integr.lut_checksum,
                                                                      unit=unit, empty=empty,
-                                                                     mask_checksum=mask_crc)
+                                                                     mask_checksum=mask_crc,
+                                                                     weighted_average=method.weighted_average,)
                         integr.pos0_range = cython_integr.pos0_range
                         integr.pos1_range = cython_integr.pos1_range
                         ocl_py_engine.set_engine(integr)
@@ -2348,7 +2350,8 @@ class AzimuthalIntegrator(Geometry):
                                                        polarization=polarization,
                                                        polarization_checksum=polarization_crc,
                                                        safe=safe,
-                                                       normalization_factor=normalization_factor)
+                                                       normalization_factor=normalization_factor,
+                                                       weighted_average=method.weighted_average,)
             if intpl is None:  # fallback if OpenCL failed or default cython
                 # The integrator has already been initialized previously
                 intpl = cython_integr.integrate_ng(data,
@@ -2360,7 +2363,8 @@ class AzimuthalIntegrator(Geometry):
                                                    flat=flat,
                                                    solidangle=solidangle,
                                                    polarization=polarization,
-                                                   normalization_factor=normalization_factor)
+                                                   normalization_factor=normalization_factor,
+                                                   weighted_average=method.weighted_average,)
 
         elif method.algo_lower == "histogram":
             if method.split_lower in ("pseudo", "full"):
@@ -2384,7 +2388,8 @@ class AzimuthalIntegrator(Geometry):
                                    empty=empty,
                                    variance=variance,
                                    error_model=error_model,
-                                   allow_pos0_neg=not radial_unit.positive)
+                                   allow_pos0_neg=not radial_unit.positive,
+                                   weighted_average=method.weighted_average,)
 
             elif method.split_lower == "bbox":
                 logger.debug("integrate2d uses BBox implementation")
@@ -2414,7 +2419,8 @@ class AzimuthalIntegrator(Geometry):
                                      variance=variance,
                                      error_model=error_model,
                                      allow_pos0_neg=not radial_unit.positive,
-                                     clip_pos1=bool(azimuth_unit.period))
+                                     clip_pos1=bool(azimuth_unit.period),
+                                     weighted_average=method.weighted_average,)
             elif method.split_lower == "no":
                 if method.impl_lower == "opencl":
                     logger.debug("integrate2d uses OpenCL histogram implementation")
@@ -2486,7 +2492,8 @@ class AzimuthalIntegrator(Geometry):
                                                  normalization_factor=normalization_factor,
                                                  radial_range=radial_range,
                                                  azimuthal_range=azimuth_range,
-                                                 error_model=error_model)
+                                                 error_model=error_model,
+                                                 weighted_average=method.weighted_average,)
 ####################
                 else:  # if method.impl_lower in ["python", "cython"]:
                     logger.debug("integrate2d uses [CP]ython histogram implementation")
@@ -2499,10 +2506,6 @@ class AzimuthalIntegrator(Geometry):
                                                 radial_range=radial_range,
                                                 azimuth_range=azimuth_range,
                                                 mode="normal").ravel()
-                        # if radial_range is None:
-                        #     radial_range = [radial.min(), radial.max()]
-                        # if azimuth_range is None:
-                        #     azimuth_range = [azim.min(), azim.max()]
                     histogrammer = method.class_funct_ng.function
                     intpl = histogrammer(radial=radial,
                                          azimuthal=azim,
@@ -2524,7 +2527,8 @@ class AzimuthalIntegrator(Geometry):
                                          radial_range=radial_range,
                                          azimuth_range=azimuth_range,
                                          allow_radial_neg=not radial_unit.positive,
-                                         clip_pos1=bool(azimuth_unit.period))
+                                         clip_pos1=bool(azimuth_unit.period),
+                                         weighted_average=method.weighted_average,)
 
         I = intpl.intensity
         bins_azim = intpl.azimuthal
