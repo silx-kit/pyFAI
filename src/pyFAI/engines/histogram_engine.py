@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2024"
+__date__ = "25/04/2024"
 __status__ = "development"
 
 import logging
@@ -82,7 +82,7 @@ def histogram1d_engine(radial, npt,
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
     :param error_model: Use the provided ErrorModel, only "poisson" and "variance" is valid
-    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
+    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average
 
     NaN are always considered as invalid values
 
@@ -112,7 +112,7 @@ def histogram1d_engine(radial, npt,
                    dark_variance=dark_variance,
                    error_model=error_model,
                    empty=0,
-                   apply_normalization = not weighted_average,
+                   apply_normalization=not weighted_average,
                    )
     radial = radial.ravel()
     prep.shape = -1, 4
@@ -173,6 +173,7 @@ def histogram2d_engine(radial, azimuthal, bins,
                        variance=None,
                        dark_variance=None,
                        error_model=ErrorModel.NO,
+                       weighted_average=True,
                        radial_range=None,
                        azimuth_range=None,
                        allow_radial_neg=False,
@@ -198,6 +199,7 @@ def histogram2d_engine(radial, azimuthal, bins,
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
     :param error_model: set to "poisson" for assuming the detector is poissonian and variance = raw + dark
+    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average
     :param radial_range: enforce boundaries in radial dimention, 2tuple with lower and upper bound
     :param azimuth_range: enforce boundaries in azimuthal dimention, 2tuple with lower and upper bound
     :param allow_radial_neg: clip negative radial position (can a dimention be negative ?)
@@ -233,7 +235,8 @@ def histogram2d_engine(radial, azimuthal, bins,
                    variance=variance,
                    dark_variance=dark_variance,
                    error_model=error_model,
-                   empty=0
+                   empty=0,
+                   apply_normalization=not weighted_average,
                    )
     radial = radial.ravel()
     azimuthal = azimuthal.ravel()

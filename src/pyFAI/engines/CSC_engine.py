@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2023"
+__date__ = "25/04/2024"
 __status__ = "development"
 
 import logging
@@ -87,7 +87,7 @@ class CSCIntegrator(object):
         self.indptr = indptr
         self.lut_size = len(indices)
         if self.size > len(indptr) - 1:
-            new_indptr = numpy.empty(self.size+1, indptr.dtype)
+            new_indptr = numpy.empty(self.size + 1, indptr.dtype)
             new_indptr[:] = indptr[-1]
             new_indptr[:len(indptr)] = indptr
             indptr = new_indptr
@@ -124,7 +124,7 @@ class CSCIntegrator(object):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
-        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average
         :return: the preprocessed data integrated as array nbins x 4 which contains:
                     regrouped signal, variance, normalization, pixel count, sum_norm²
 
@@ -147,7 +147,7 @@ class CSCIntegrator(object):
                        variance=variance,
                        dtype=numpy.float32,
                        error_model=error_model,
-                       apply_normalization = not weighted_average,
+                       apply_normalization=not weighted_average,
                        out=self.preprocessed)
         prep.shape = numpy.prod(shape), 4
         flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
@@ -464,6 +464,7 @@ class CscIntegrator2d(CSCIntegrator):
                   polarization=None,
                   absorption=None,
                   normalization_factor=1.0,
+                  weighted_average=True,
                   **kwargs):
         """Actually perform the 2D integration
 
@@ -478,6 +479,7 @@ class CscIntegrator2d(CSCIntegrator):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average
         :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
 
         """
@@ -485,7 +487,7 @@ class CscIntegrator2d(CSCIntegrator):
         do_variance = variance is not None or  error_model.do_variance
         trans = CSCIntegrator.integrate(self, signal, variance, error_model, dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
-                                        absorption, normalization_factor)
+                                        absorption, normalization_factor, weighted_average=weighted_average)
         trans.shape = self.bins + (-1,)
 
         signal = trans[..., 0]

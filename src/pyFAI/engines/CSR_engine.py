@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2024"
+__date__ = "25/04/2024"
 __status__ = "development"
 
 import logging
@@ -138,7 +138,7 @@ class CSRIntegrator(object):
                        variance=variance,
                        dtype=numpy.float32,
                        error_model=error_model,
-                       apply_normalization = not weighted_average,
+                       apply_normalization=not weighted_average,
                        out=self.preprocessed)
         prep.shape = numpy.prod(shape), 4
         flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
@@ -225,7 +225,7 @@ class CsrIntegrator1d(CSRIntegrator):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
-        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average
         :return: Integrate1dResult or Integrate1dWithErrorResult object depending on variance
 
         """
@@ -431,8 +431,6 @@ class CsrIntegrator2d(CSRIntegrator):
             self.checksum = checksum
         CSRIntegrator.__init__(self, image_size, lut, empty)
 
-
-
     def set_matrix(self, data, indices, indptr):
         """Actually set the CSR sparse matrix content
 
@@ -456,6 +454,7 @@ class CsrIntegrator2d(CSRIntegrator):
                   polarization=None,
                   absorption=None,
                   normalization_factor=1.0,
+                  weighted_average=True,
                   **kwargs):
         """Actually perform the 2D integration
 
@@ -470,6 +469,7 @@ class CsrIntegrator2d(CSRIntegrator):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average
         :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
 
         """
@@ -477,7 +477,7 @@ class CsrIntegrator2d(CSRIntegrator):
         do_variance = variance is not None or  error_model.do_variance
         trans = CSRIntegrator.integrate(self, signal, variance, error_model, dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
-                                        absorption, normalization_factor)
+                                        absorption, normalization_factor, weighted_average=weighted_average)
         trans.shape = self.bins + (-1,)
 
         signal = trans[..., 0]
