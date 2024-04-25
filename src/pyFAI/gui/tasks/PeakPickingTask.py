@@ -1834,6 +1834,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__synchronizeRawView.registerModel(model.rawPlotView())
         settings = model.experimentSettingsModel()
         settings.maskedImage().changed.connect(self.__imageUpdated)
+        settings.preprocessedImage().changed.connect(self.__imageUpdated)
         settings.image().changed.connect(self.__invalidateMassif)
         settings.mask().changed.connect(self.__invalidateMassif)
         model.peakSelectionModel().changed.connect(self.__peakSelectionChanged)

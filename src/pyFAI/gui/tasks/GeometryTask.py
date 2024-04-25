@@ -1045,6 +1045,7 @@ class GeometryTask(AbstractCalibrationTask):
         self._geometryHistoryCombo.setHistoryModel(model.geometryHistoryModel())
         settings = model.experimentSettingsModel()
         settings.maskedImage().changed.connect(self.__imageUpdated)
+        settings.preprocessedImage().changed.connect(self.__imageUpdated)
         settings.wavelength().changed.connect(self.__invalidateWavelength)
 
         geometry = model.fittedGeometry()
