@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "08/04/2024"
+__date__ = "24/04/2024"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -240,6 +240,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                           ("dummy", numpy.float32(0)),
                                                           ("delta_dummy", numpy.float32(0)),
                                                           ("normalization_factor", numpy.float32(1.0)),
+                                                          ("apply_normalization", numpy.int8(0)),
                                                           ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["lut_integrate"] = OrderedDict((("output", self.cl_mem["output"]),
@@ -271,6 +272,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                            ("dummy", numpy.float32(0)),
                                                            ("delta_dummy", numpy.float32(0)),
                                                            ("normalization_factor", numpy.float32(1.0)),
+                                                           ("apply_normalization", numpy.int8(0)),
                                                            ("output4", self.cl_mem["output4"])))
         self.cl_kernel_args["lut_integrate4"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                             ("lut", self.cl_mem["lut"]),
@@ -474,7 +476,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                      dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                      polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                      safe=True,
-                     normalization_factor=1.0,
+                     normalization_factor=1.0, weighted_average=True,
                      out_avgint=None, out_sem=None, out_std=None, out_merged=None):
         """
         Before performing azimuthal integration with proper variance propagation, the preprocessing is:
@@ -505,6 +507,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
         :param out_avgint: destination array or pyopencl array for average intensity
         :param out_sem: destination array or pyopencl array for standard deviation (of mean)
         :param out_std: destination array or pyopencl array for standard deviation (of pixels)
@@ -603,6 +606,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             else:
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
+            kw_corr["apply_normalization"] = numpy.int8(not weighted_average)
 
             ev = corrections4(self.queue, self.wdim_data, self.workgroup_size, *list(kw_corr.values()))
             events.append(EventDescription(kernel_correction_name, ev))

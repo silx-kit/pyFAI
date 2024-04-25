@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration using single threaded CSC integrators
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2022-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2022-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/01/2024"
+__date__ = "24/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -110,6 +110,7 @@ cdef class CscIntegrator(object):
                      polarization=None,
                      absorption=None,
                      data_t normalization_factor=1.0,
+                     bint weighted_average=True,
                      ):
         """
         Actually perform the integration which in this case consists of:
@@ -136,7 +137,7 @@ cdef class CscIntegrator(object):
         :param absorption: Apparent efficiency of a pixel due to parallax effect
         :type absorption: ndarray
         :param normalization_factor: divide the valid result by this value
-
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average WIP
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
@@ -235,7 +236,9 @@ cdef class CscIntegrator(object):
                                                  check_dummy=check_dummy,
                                                  normalization_factor=normalization_factor,
                                                  dark_variance=0.0,
-                                                 error_model=c_error_model)
+                                                 error_model=c_error_model,
+                                                 apply_normalization=not weighted_average
+                                                 )
                 if not is_valid:
                     continue
                 for j in range(start, stop):

@@ -33,7 +33,7 @@ Deprecated ... restore or delete !
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "08/04/2024"
+__date__ = "23/04/2024"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -234,7 +234,7 @@ class OCL_Hist_Pixelsplit(object):
         self._cl_kernel_args["reduce2"] = [self._cl_mem["preresult"], self._cl_mem["minmax"]]
         self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"],
                                                numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"],
-                                               numpy.int32(0), numpy.float32(0), numpy.float32(0)]
+                                               numpy.int32(0), numpy.float32(0), numpy.float32(0), numpy.int8(0)]
         self._cl_kernel_args["integrate1"] = [self._cl_mem["pos"], self._cl_mem["image"], self._cl_mem["minmax"], numpy.int32(0), self.pos0_range[0],
                                               self.pos1_range[0], numpy.int32(0), numpy.float32(0), self._cl_mem["outData"], self._cl_mem["outCount"]]
         self._cl_kernel_args["integrate2"] = [self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]

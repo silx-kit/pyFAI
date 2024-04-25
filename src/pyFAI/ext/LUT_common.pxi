@@ -259,6 +259,7 @@ cdef class LutIntegrator(object):
                      polarization=None,
                      absorption=None,
                      data_t normalization_factor=1.0,
+                     bint weighted_average=True,
                      ):
         """
         Actually perform the integration which in this case consists of:
@@ -269,7 +270,7 @@ cdef class LutIntegrator(object):
         :type weights: ndarray
         :param variance: the variance associate to the image
         :type variance: ndarray
-        :param erro_model: enum ErrorModel.
+        :param error_model: enum ErrorModel
         :param dummy: value for dead pixels (optional)
         :type dummy: float
         :param delta_dummy: precision for dead-pixel value in dynamic masking
@@ -285,7 +286,7 @@ cdef class LutIntegrator(object):
         :param absorption: Apparent efficiency of a pixel due to parallax effect
         :type absorption: ndarray
         :param normalization_factor: divide the valid result by this value
-
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
@@ -324,6 +325,7 @@ cdef class LutIntegrator(object):
                            variance=variance,
                            dtype=data_d,
                            error_model=error_model,
+                           apply_normalization=not weighted_average,
                            out=self.preprocessed)
 
         for i in prange(self.output_size, nogil=True):
