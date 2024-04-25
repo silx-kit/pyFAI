@@ -345,7 +345,7 @@ class IntegrationMethod:
             else:
                 res = cls.select_method(dim, *[i.split()[0] for i in (smth.split(","))])
         elif isinstance(smth, (list, tuple, dict)):
-            target = None,
+            target = None
 
             if isinstance(smth, dict):
                 split = smth.get("split") or smth.get("pixel_splitting")
