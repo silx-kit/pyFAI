@@ -427,7 +427,15 @@ class IntegrationMethod:
         else:
             string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation))
         return "IntegrationMethod(%s)" % string
+        
+    def __hash__(self):
+        """Make it independant from weighted"""
+        return self.__method.__hash__()
 
+    def __eq__(self, other):
+        """Make it independant from weighted"""
+        return self.__method == other.method
+        
     def _does_manage_variance(self):
         "Checks if the method handles alone the error_model"
         manage_variance = False
