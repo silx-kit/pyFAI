@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2024"
+__date__ = "25/04/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -41,7 +41,6 @@ import threading
 import gc
 from math import pi, log
 import numpy
-from numpy import rad2deg
 from .geometry import Geometry
 from . import units
 from .utils import EPS32, deg2rad, crc32
@@ -1101,7 +1100,7 @@ class AzimuthalIntegrator(Geometry):
                        mask=None, dummy=None, delta_dummy=None,
                        polarization_factor=None, dark=None, flat=None,
                        method=("bbox", "csr", "cython"), unit=units.Q, safe=True,
-                       normalization_factor=1.0, weighted_average=True,
+                       normalization_factor=1.0,
                        metadata=None):
         """Calculate the azimuthal integration (1d) of a 2D image.
 
@@ -1131,7 +1130,6 @@ class AzimuthalIntegrator(Geometry):
         :param Unit unit: Output units, can be "q_nm^-1" (default), "2th_deg", "r_mm" for now.
         :param bool safe: Perform some extra checks to ensure LUT/CSR is still valid. False is faster.
         :param float normalization_factor: Value of a normalization monitor
-        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
         :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
         """
@@ -1268,7 +1266,7 @@ class AzimuthalIntegrator(Geometry):
                                             solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor,
-                                            weighted_average=weighted_average)
+                                            weighted_average=method.weighted_average)
             else:  # method.impl_lower in ("opencl", "python"):
                 if method not in self.engines:
                     # instanciated the engine
@@ -1355,8 +1353,8 @@ class AzimuthalIntegrator(Geometry):
                                             flat=flat, solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor,
-                                            weighted_average=weighted_average,
-                                            **kwargs)
+                                            weighted_average=method.weighted_average
+                                            ** kwargs)
             # This section is common to all 3 CSR implementations...
             if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -1395,7 +1393,7 @@ class AzimuthalIntegrator(Geometry):
                            flat=flat, solidangle=solidangle,
                            polarization=polarization,
                            normalization_factor=normalization_factor,
-                           weighted_average=weighted_average,
+                           weighted_average=method.weighted_average,
                            mask=mask,
                            radial_range=radial_range,
                            error_model=error_model)
@@ -1465,7 +1463,7 @@ class AzimuthalIntegrator(Geometry):
                                polarization=polarization,
                                polarization_checksum=polarization_crc,
                                normalization_factor=normalization_factor,
-                               weighted_average=weighted_average,
+                               weighted_average=method.weighted_average,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range,
                                error_model=error_model)
@@ -1502,7 +1500,7 @@ class AzimuthalIntegrator(Geometry):
                                dark=dark, flat=flat, solidangle=solidangle,
                                polarization=polarization,
                                normalization_factor=normalization_factor,
-                               weighted_average=weighted_average,
+                               weighted_average=method.weighted_average,
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
@@ -1516,7 +1514,7 @@ class AzimuthalIntegrator(Geometry):
                                dark=dark, flat=flat, solidangle=solidangle,
                                polarization=polarization,
                                normalization_factor=normalization_factor,
-                               weighted_average=weighted_average,
+                               weighted_average=method.weighted_average,
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
@@ -1553,7 +1551,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_error_model(error_model)
         result._set_poni(PoniFile(self))
         result._set_has_solidangle_correction(correctSolidAngle)
-        result._set_weighted_average(weighted_average)
+        result._set_weighted_average(method.weighted_average)
 
         if filename is not None:
             save_integrate_result(filename, result)
