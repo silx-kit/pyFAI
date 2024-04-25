@@ -528,13 +528,13 @@ class IntegrationMethod:
     def weighted_average(self):
         return self._weighted_average
 
+    @weighted_average.setter
+    def weighted_average(self, value):
+        self._weighted_average = bool(value)
+
     @property
     def weighted(self):
         return self._weighted_average
-
-    @weighted.setter
-    def weighted(self, value):
-        self._weighted_average = bool(value)
 
     @property
     def unweighted(self):
