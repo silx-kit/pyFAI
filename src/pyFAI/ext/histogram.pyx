@@ -514,7 +514,7 @@ def histogram1d_engine(radial, int npt,
                    variance=variance,
                    dark_variance=dark_variance,
                    error_model=error_model,
-                   apply_normalization = not weighted_average,
+                   apply_normalization=not weighted_average,
                    ).reshape(-1, 4)
     res, position = histogram_preproc(radial.ravel(),
                                       prep,
