@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2022"
+__date__ = "24/04/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -470,6 +470,7 @@ def load_nexus(filename):
         result._set_metadata(json.loads(cfg_grp["metadata"][()]))
         result._set_error_model(ErrorModel.parse(autodecode(cfg_grp["error_model"][()])))
         result._set_poni(poni)
+        result._set_weighted_average(cfg_grp["weighted_average"][()])
 
         return result
 
@@ -507,6 +508,7 @@ def _save_pyFAI(nexus, entry_grp, result):
     col_grp.create_dataset("method_called", data=result.method_called).attrs["doc"] = "name of the function called of AzimuthalIntegrator"
     col_grp.create_dataset("compute_engine", data=result.compute_engine).attrs["doc"] = "name of the compute engine selected by pyFAI"
     col_grp.create_dataset("error_model", data=result.error_model.as_str()).attrs["doc"] = "how is variance assessed from signal ?"
+    col_grp.create_dataset("weighted_average", data=result.weighted_average).attrs["doc"] = "use the weighted average (as in -ng engines) or the unweighted one (as in -legacy) ?"
 
     if result.method:
         col_grp.create_dataset("integration_method", data=json.dumps(result.method.method._asdict() or {})).\

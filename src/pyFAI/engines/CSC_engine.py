@@ -109,6 +109,7 @@ class CSCIntegrator(object):
                   polarization=None,
                   absorption=None,
                   normalization_factor=1.0,
+                  weighted_average=True,
                   ):
         """Actually perform the CSR matrix multiplication after preprocessing.
 
@@ -123,6 +124,7 @@ class CSCIntegrator(object):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
+        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
         :return: the preprocessed data integrated as array nbins x 4 which contains:
                     regrouped signal, variance, normalization, pixel count, sum_norm²
 
@@ -145,6 +147,7 @@ class CSCIntegrator(object):
                        variance=variance,
                        dtype=numpy.float32,
                        error_model=error_model,
+                       apply_normalization = not weighted_average,
                        out=self.preprocessed)
         prep.shape = numpy.prod(shape), 4
         flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
@@ -216,6 +219,7 @@ class CscIntegrator1d(CSCIntegrator):
                   polarization=None,
                   absorption=None,
                   normalization_factor=1.0,
+                  weighted_average=True,
                   ):
         """Actually perform the 1D integration
 
@@ -230,6 +234,7 @@ class CscIntegrator1d(CSCIntegrator):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
+        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
         :return: Integrate1dResult or Integrate1dWithErrorResult object depending on variance
 
         """
@@ -239,7 +244,7 @@ class CscIntegrator1d(CSCIntegrator):
         trans = CSCIntegrator.integrate(self, signal, variance, error_model,
                                         dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
-                                        absorption, normalization_factor)
+                                        absorption, normalization_factor, weighted_average)
         signal = trans[:, 0]
         variance = trans[:, 1]
         normalization = trans[:, 2]

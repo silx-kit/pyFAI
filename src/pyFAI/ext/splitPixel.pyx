@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/01/2024"
+__date__ = "24/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -264,6 +264,7 @@ def fullSplit1D_engine(pos not None,
                        polarization=None,
                        data_t empty=0.0,
                        double normalization_factor=1.0,
+                       bint weighted_average=True,
                        bint allow_pos0_neg=True,
                        bint chiDiscAtPi=True
                        ):
@@ -288,6 +289,7 @@ def fullSplit1D_engine(pos not None,
     :param solidangle: array (of float64) with flat image
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
+    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average WIP
     :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
     :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
     :return: namedtuple with "position intensity error signal variance normalization count"
@@ -396,7 +398,8 @@ def fullSplit1D_engine(pos not None,
                                              check_dummy=check_dummy,
                                              normalization_factor=normalization_factor,
                                              dark_variance=0.0,
-                                             error_model=error_model)
+                                             error_model=error_model,
+                                             apply_normalization=not weighted_average)
 
             # Play with coordinates ...
             v8[:, :] = cpos[idx, :, :]
