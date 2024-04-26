@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2022-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2022-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseColumn.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/10/2023"
+__date__ = "26/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -98,7 +98,8 @@ class FullSplitCSC_1d(CscIntegrator, FullSplitIntegrator):
                                           self.pos0_max - 0.5 * self.delta,
                                           self.bins)
 
-        csc = sparse.csr_matrix(self.calc_lut_1d().to_csr()).tocsc()
+        csc = sparse.csr_array(self.calc_lut_1d().to_csr(),
+                               shape=(bins, self.size)).tocsc()
         #Call the constructor of the parent class
         CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.pos.shape[0], bins, empty or 0.0)
 
@@ -171,7 +172,8 @@ class FullSplitCSC_2d(CscIntegrator, FullSplitIntegrator):
                                            self.pos1_max - 0.5 * self.delta1,
                                            self.bins[1])
 
-        csc = sparse.csr_matrix(self.calc_lut_2d().to_csr()).tocsc()
+        csc = sparse.csr_matrix(self.calc_lut_2d().to_csr(),
+                                shape=(numpy.prod(self.bins), self.size)).tocsc()
         #Call the constructor of the parent class
         CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.pos.shape[0], numpy.prod(bins), empty or 0.0)
 
