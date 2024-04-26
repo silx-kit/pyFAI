@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2024"
+__date__ = "26/04/2024"
 __status__ = "development"
 
 import logging
@@ -450,6 +450,8 @@ class CscIntegrator2d(CSCIntegrator):
         :param indptr: the index of the start of line"""
 
         CSCIntegrator.set_matrix(self, data, indices, indptr)
+        print(len(data), len(indices), len(indptr), self.size)
+
         assert self.size == len(indptr) - 1
 
     def integrate(self,

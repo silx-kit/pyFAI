@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2024"
+__date__ = "26/04/2024"
 __status__ = "development"
 
 import logging
@@ -34,14 +34,14 @@ logger = logging.getLogger(__name__)
 import numpy
 from ..utils import EPS32
 from .preproc import preproc as preproc_np
-try:
-    from ..ext.preproc import preproc as preproc_cy
-except ImportError as err:
-    logger.warning("ImportError pyFAI.ext.preproc %s", err)
-    preproc = preproc_np
-else:
-    preproc = preproc_cy
-
+# try:
+#     from ..ext.preproc import preproc as preproc_cy
+# except ImportError as err:
+#     logger.warning("ImportError pyFAI.ext.preproc %s", err)
+#     preproc = preproc_np
+# else:
+#     preproc = preproc_cy
+preproc = preproc_np
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 
@@ -97,6 +97,7 @@ def histogram1d_engine(radial, npt,
 
     """
     error_model = ErrorModel.parse(error_model)
+    print(weighted_average)
     prep = preproc(raw,
                    dark=dark,
                    flat=flat,

@@ -25,6 +25,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+from tornado.test.web_test import RaiseWithReasonTest
 
 """test suite for Azimuthal integrator class"""
 
@@ -32,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2024"
+__date__ = "26/04/2024"
 
 import unittest
 import os
@@ -733,7 +734,9 @@ class TestUnweighted(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         rng = UtilsTest.get_rng()
-        det = detector_factory("pilatus100k")
+        det = detector_factory("imxpad_s10") #very small detector, 10kpix
+        # det = detector_factory("mythen") #very small detector, 1kpix
+        # det = detector_factory("pilatus100k") #very small detector, 100kpix
         cls.img = rng.uniform(0.5, 1.5, det.shape)
         cls.ai = AzimuthalIntegrator(detector=det)
         cls.kwargs = {"flat": cls.img,
@@ -745,14 +748,21 @@ class TestUnweighted(unittest.TestCase):
         cls.ai = cls.img = cls.kwargs = None
 
     def test_weighted(self):
+
         done = set()
         for method in IntegrationMethod._registry.values():
+            self.ai.reset()
             if method.method[:3] in done:
                 continue
-            if method.dim == 1:
-                res = self.ai.integrate1d(self.img, 100, method=method, **self.kwargs)
-            elif method.dim == 2:
-                res = self.ai.integrate2d(self.img, 100, method=method, **self.kwargs)
+            method = method.weighted
+            try:
+                if method.dim == 1:
+                    res = self.ai.integrate1d(self.img, 10, method=method, **self.kwargs)
+                elif method.dim == 2:
+                    res = self.ai.integrate2d(self.img, 10, method=method, **self.kwargs)
+            except Exception as err:
+                print("Unable to integrate using method", method)
+                raise err
             sum_signal = res.sum_signal
             sum_normalization = res.sum_normalization
             count = res.count
@@ -770,6 +780,7 @@ class TestUnweighted(unittest.TestCase):
     def test_unweighted(self):
         done = set()
         for method in IntegrationMethod._registry.values():
+            self.ai.reset()
             if method.method[:3] in done:
                 continue
             method = method.unweighted
@@ -786,7 +797,7 @@ class TestUnweighted(unittest.TestCase):
                     sum_normalization = sum_normalization[..., 0]
                     sum_signal = sum_signal[..., 0]
             try:
-                self.assertFalse(numpy.allclose(sum_signal, sum_normalization), f"Unweighted: signal != norm for {method}")
+                self.assertTrue(numpy.allclose(sum_signal, sum_normalization), f"Unweighted: signal == norm for {method} because signal==flat")
                 self.assertTrue(numpy.allclose(sum_normalization, count), f"Unweighted: norm == count for {method}")
             except AssertionError as err:
                 raise err
