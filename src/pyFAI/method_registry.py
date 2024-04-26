@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2024"
+__date__ = "26/04/2024"
 __status__ = "development"
 
 import inspect
@@ -548,7 +548,10 @@ class IntegrationMethod:
 
     @property
     def weighted(self):
-        return self._weighted_average
+        "return the weighted version"
+        cpy = copy.copy(self)
+        cpy._weighted_average = True
+        return cpy
 
     @property
     def unweighted(self):
