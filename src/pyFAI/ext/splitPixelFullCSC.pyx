@@ -98,7 +98,7 @@ class FullSplitCSC_1d(CscIntegrator, FullSplitIntegrator):
                                           self.pos0_max - 0.5 * self.delta,
                                           self.bins)
 
-        csc = sparse.csr_array(self.calc_lut_1d().to_csr(),
+        csc = sparse.csr_matrix(self.calc_lut_1d().to_csr(),
                                shape=(bins, self.size)).tocsc()
         #Call the constructor of the parent class
         CscIntegrator.__init__(self, (csc.data, csc.indices, csc.indptr), self.pos.shape[0], bins, empty or 0.0)
