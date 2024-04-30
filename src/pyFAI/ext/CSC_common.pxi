@@ -137,7 +137,7 @@ cdef class CscIntegrator(object):
         :param absorption: Apparent efficiency of a pixel due to parallax effect
         :type absorption: ndarray
         :param normalization_factor: divide the valid result by this value
-        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average WIP
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average WIP
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """

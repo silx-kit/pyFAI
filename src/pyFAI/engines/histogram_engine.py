@@ -82,7 +82,7 @@ def histogram1d_engine(radial, npt,
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
     :param error_model: Use the provided ErrorModel, only "poisson" and "variance" is valid
-    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
+    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average
 
     NaN are always considered as invalid values
 

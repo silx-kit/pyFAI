@@ -115,7 +115,7 @@ class CSRIntegrator(object):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
-        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average WIP
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average WIP
         :return: the preprocessed data integrated as array nbins x 4 which contains:
                     regrouped signal, variance, normalization, pixel count, sum_norm²
 
@@ -225,7 +225,7 @@ class CsrIntegrator1d(CSRIntegrator):
         :param polarization: :solidangle normalization array
         :param absorption: :absorption normalization array
         :param normalization_factor: scale all normalization with this scalar
-        :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average
         :return: Integrate1dResult or Integrate1dWithErrorResult object depending on variance
 
         """

@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2024"
+__date__ = "26/04/2024"
 
 import sys
 import os
@@ -590,6 +590,15 @@ class TestBugRegression(unittest.TestCase):
         d = DiffMap()
         d.use_gpu # used to raise AttributeError
         d.use_gpu = True # used to raise AttributeError
+
+    def test_bug_2151(self):
+        """Some detector fail to integrate in 2D, the CSC matrix produced by cython has wrong shape.
+        Faulty detectors: S10
+        """
+        ai = load({"detector": "imxpad_s10"})
+        img=numpy.ones(ai.detector.shape);
+        ai.integrate2d(img, 10, method=("full","csc","python"), unit="r_mm")
+        #used to raise AssertionError assert self.size == len(indptr) - 1
 
 class TestBug1703(unittest.TestCase):
     """
