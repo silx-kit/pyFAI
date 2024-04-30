@@ -140,6 +140,14 @@ class Unit(object):
         return self.name.__hash__()
 
 class UnitFiber(Unit):
+    """Represents a unit + two rotation axis. To be used in a Grazing-Incidence or Fiber Diffraction/Scattering experiment.
+
+    Fiber parameters:
+    :param float incident_angle: projection angle of the beam in the sample. Its rotation axis is the fiber axis or the normal vector of the thin film
+    :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
+
+    It has at least a name and a scale (in SI-unit)
+    """
     def __init__(self, name, scale=1, label=None, equation=None, formula=None,
                  incident_angle=0.0, tilt_angle=0.0,
                  center=None, corner=None, delta=None, short_name=None, unit_symbol=None,
@@ -892,7 +900,14 @@ A_rad = ANGLE_UNITS["rad"]
 CHI_DEG = AZIMUTHAL_UNITS["chi_deg"]
 CHI_RAD = AZIMUTHAL_UNITS["chi_rad"]
 
-def get_unit_fiber(name, incident_angle=0.0, tilt_angle=0.0):
+def get_unit_fiber(name, incident_angle:float =0.0, tilt_angle:float =0.0):
+    """Retrieves a unit instance for Grazing-Incidence/Fiber Scattering with updated incident and tilt angles
+    The unit angles are in radians
+
+    :param float incident_angle: projection angle of the beam in the sample. Its rotation axis is the fiber axis or the normal vector of the thin film
+    :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
+    
+    """
     unit = RADIAL_UNITS.get(name, None)
     if unit is not None:
         unit.set_incident_angle(incident_angle)
