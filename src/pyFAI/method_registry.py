@@ -434,7 +434,12 @@ class IntegrationMethod:
 
     def __eq__(self, other):
         """Make it independant from weighted"""
-        return self.__method == other.method
+        if isinstance(other, self.__class__):
+            return self.__method == other.method
+        elif isinstance(other, Method):
+            return self.__method == other
+        else:
+            return self == other
 
     def _does_manage_variance(self):
         "Checks if the method handles alone the error_model"
