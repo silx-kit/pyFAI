@@ -160,21 +160,21 @@ class UnitFiber(Unit):
         )
         self._incident_angle = incident_angle
         self._tilt_angle = tilt_angle
-    
+
     @property
     def incident_angle(self):
         return self._incident_angle
-    
+
     @property
     def tilt_angle(self):
         return self._tilt_angle
-    
+
     def set_incident_angle(self, value:float):
         self._incident_angle = value
 
     def set_tilt_angle(self, value:float):
         self._tilt_angle = value
- 
+
 
 RADIAL_UNITS = {}
 AZIMUTHAL_UNITS = {}
