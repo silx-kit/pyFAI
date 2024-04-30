@@ -824,7 +824,7 @@ class Geometry(object):
                             corners[:shape[0],:shape[1],:, 1] = chi[:shape[0],:shape[1],:]
                         if space is not None:
                             if isinstance(unit, UnitFiber):
-                                rad = unit.equation(x, y, z, self.wavelength, unit.incident_angle, unit.tilt_angle)
+                                rad = unit.equation(x, y, z, self.wavelength, unit.incident_angle, unit.tilt_angle, unit.sample_orientation)
                             else:
                                 rad = unit.equation(x, y, z, self.wavelength)
                             if rad.shape[:2] == shape:
@@ -931,7 +931,7 @@ class Geometry(object):
         z = pos[..., 0]
 
         if isinstance(unit, UnitFiber):
-            ary = unit.equation(x, y, z, self.wavelength, unit.incident_angle, unit.tilt_angle)
+            ary = unit.equation(x, y, z, self.wavelength, unit.incident_angle, unit.tilt_angle, unit.sample_orientation)
         else:
             ary = unit.equation(x, y, z, self.wavelength)
 
