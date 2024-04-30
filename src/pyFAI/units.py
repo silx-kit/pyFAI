@@ -906,7 +906,7 @@ def get_unit_fiber(name, incident_angle:float =0.0, tilt_angle:float =0.0):
 
     :param float incident_angle: projection angle of the beam in the sample. Its rotation axis is the fiber axis or the normal vector of the thin film
     :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
-    
+
     """
     unit = RADIAL_UNITS.get(name, None)
     if unit is not None:
