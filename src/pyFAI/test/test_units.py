@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/10/2023"
+__date__ = "30/04/2024"
 
 import unittest
 import numpy
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 class TestUnits(unittest.TestCase):
     def test_corner(self):
-        ai = load({"detector":"Pilatus100k"})
+        ai = load({"detector":"Imxpad S10"})
         res = ai.array_from_unit(typ="corner", unit=("chi_rad"))
         #no fast path, just checks numexpr gives correct values.
         self.assertTrue(numpy.allclose(res[...,0], res[...,1]), "numexpr formula OK")

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2023"
+__date__ = "30/04/2024"
 
 import unittest
 import os
@@ -428,7 +428,7 @@ class TestSaxs(unittest.TestCase):
 
     def test_normalization_factor(self):
 
-        ai = AzimuthalIntegrator(detector="Pilatus100k")
+        ai = AzimuthalIntegrator(detector="Imxpad S10")
         ai.wavelength = 1e-10
         methods = ["cython", "numpy", "lut", "csr", "splitpixel"]
         if UtilsTest.opencl and os.name != 'nt':
@@ -482,7 +482,7 @@ class TestSaxs(unittest.TestCase):
 
     def test_empty(self):
         """Non regression about #1760"""
-        ai = AzimuthalIntegrator(detector="Pilatus100k", wavelength=1e-10)
+        ai = AzimuthalIntegrator(detector="Imxpad S10", wavelength=1e-10)
         img = numpy.empty(ai.detector.shape)
         ref = ai.empty
         target = -42
@@ -499,7 +499,7 @@ class TestSaxs(unittest.TestCase):
             self.assertEqual(v.engine.empty, ref, k)
 
     def test_empty_csr(self):
-        ai = AzimuthalIntegrator(detector="Pilatus100k", wavelength=1e-10)
+        ai = AzimuthalIntegrator(detector="Imxpad S10", wavelength=1e-10)
         with self.assertLogs('pyFAI.ext.sparse_builder', level='WARNING') as cm:
             ai.setup_sparse_integrator(shape=ai.detector.shape, npt=100,
                                        pos0_range=(90, 100),
@@ -542,7 +542,7 @@ class TestSetter(unittest.TestCase):
 class TestIntergrationNextGeneration(unittest.TestCase):
 
     def test_histo(self):
-        det = detector_factory("Pilatus100k")
+        det = detector_factory("Imxpad S10")
         data = UtilsTest.get_rng().random(det.shape)
         ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
 
@@ -587,8 +587,11 @@ class TestRange(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        detector = detector_factory("Pilatus 200k")
+        shape = detector.shape
+        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data[:shape[0], :shape[1]]
         cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Pilatus1M.poni"))
+        cls.ai.detector = detector
         cls.unit = "r_mm"
         cls.azim_range = (-90, 90)
         cls.rad_range = (10, 100)
@@ -662,7 +665,7 @@ class TestRange(unittest.TestCase):
         #     else:
         #         logger.warning("Memory consumption: %s",psutil.virtual_memory())
         ai = AzimuthalIntegrator.sload(self.ai)  # make an empty copy and work on just one module of the detector (much faster)
-        ai.detector = detector_factory("Pilatus_100k")
+        ai.detector = detector_factory("Imxpad S10")
         img = self.img[:ai.detector.shape[0],:ai.detector.shape[1]]
 
         methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=2)}
