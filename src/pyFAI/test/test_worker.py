@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2024"
+__date__ = "30/04/2024"
 
 import unittest
 import logging
@@ -310,7 +310,7 @@ class TestWorker(unittest.TestCase):
         self.assertLess(delta_err, precision, "Cython error calculation are OK: %s" % err)
 
     def test_sigma_clip(self):
-        ai = AzimuthalIntegrator.sload({"detector": "Pilatus100k", "wavelength":1e-10})
+        ai = AzimuthalIntegrator.sload({"detector": "Imxpad S10", "wavelength":1e-10})
         worker = Worker(azimuthalIntegrator=ai,
                         extra_options={"thres":2, "error_model":"azimuthal"},
                         integrator_name="sigma_clip_ng",
@@ -322,7 +322,7 @@ class TestWorker(unittest.TestCase):
 
     def test_sigma_clip_legacy(self):
         "Non regression test for #1825"
-        ai = AzimuthalIntegrator.sload({"detector": "Pilatus100k", "wavelength":1e-10})
+        ai = AzimuthalIntegrator.sload({"detector": "Imxpad S10", "wavelength":1e-10})
         worker = Worker(azimuthalIntegrator=ai,
                         extra_options={"thres":2},
                         integrator_name="sigma_clip_legacy",

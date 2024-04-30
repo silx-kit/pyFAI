@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2024"
+__date__ = "30/04/2024"
 
 import sys
 import os
@@ -337,7 +337,7 @@ class TestBugRegression(unittest.TestCase):
 
     def test_bug_924(self):
         "Regression on spline calculation for single pixel coordinate"
-        dp = detectors.detector_factory("Pilatus100k")
+        dp = detectors.detector_factory("Imxpad S10")
         aip = AzimuthalIntegrator(detector=dp)
         aip.chi(numpy.array([1, 2]), numpy.array([3, 4]))
         aip.chi(numpy.array([1]), numpy.array([3]))
@@ -506,7 +506,7 @@ class TestBugRegression(unittest.TestCase):
         CSR engine got systematically discarded when radial range is provided
         """
         method = ("no", "csr", "cython")
-        detector = detectors.Pilatus100k()
+        detector = detectors.ImXPadS10()
         ai = AzimuthalIntegrator(detector=detector)
         rm = max(detector.shape) * detector.pixel1 * 1000
         img = UtilsTest.get_rng().random(detector.shape)
@@ -540,13 +540,12 @@ class TestBugRegression(unittest.TestCase):
 
     def test_bug_1810(self):
         "impossible to deepcopy goniometer calibration"
-        import copy
         import pyFAI.control_points
         cp = pyFAI.control_points.ControlPoints(calibrant="LaB6", wavelength=1e-10)
         self.assertNotEqual(id(cp), id(copy.deepcopy(cp)), "control_points copy works and id differs")
 
         import pyFAI.geometryRefinement
-        gr = pyFAI.geometryRefinement.GeometryRefinement([[1, 2, 3]], detector="Pilatus100k", wavelength=1e-10, calibrant="LaB6")
+        gr = pyFAI.geometryRefinement.GeometryRefinement([[1, 2, 3]], detector="Imxpad S10", wavelength=1e-10, calibrant="LaB6")
         self.assertNotEqual(id(gr), id(copy.deepcopy(gr)), "geometryRefinement copy works and id differs")
 
         import pyFAI.massif
@@ -562,12 +561,12 @@ class TestBugRegression(unittest.TestCase):
         import pyFAI.calibrant
         lab6 = pyFAI.calibrant.get_calibrant("LaB6", 1e-10)
         cp.append([[1, 2], [3, 4]], 0)
-        sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "pilatus100k")
+        sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "Imxpad S10")
         self.assertNotEqual(id(sg), id(copy.deepcopy(sg)), "SingleGeometry copy works and id differs")
 
     def test_bug_1889(self):
         "reset cached arrays"
-        ai = load({"detector": "Pilatus100k", "wavelength": 1.54e-10})
+        ai = load({"detector": "Imxpad S10", "wavelength": 1.54e-10})
         ai.polarization(factor=0.9)
         img = numpy.empty(ai.detector.shape, "float32")
         ai.integrate2d(img, 10, 9, method=("no", "histogram", "cython"))
