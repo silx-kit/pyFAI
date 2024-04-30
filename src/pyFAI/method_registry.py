@@ -361,7 +361,6 @@ class IntegrationMethod:
             split = split.lower() if split is not None else "*"
             algo = algo.lower() if algo is not None else "*"
             impl = impl.lower() if impl is not None else "*"
-            # print(dim, split, algo, impl, target)
             res = cls.select_method(dim, split, algo, impl, target)
 
         if res:

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "30/04/2024"
 
 import unittest
 import numpy
@@ -223,7 +223,7 @@ class TestSparseUtils(unittest.TestCase):
 
     def test_matrix_conversion(self):
         "Compare the matrices generated without pixel splitting"
-        detector = detector_factory("Pilatus100k")
+        detector = detector_factory("Imxpad S10")
         ai = AzimuthalIntegrator(detector=detector)
         img = numpy.random.random(detector.shape)
         res_csr = ai.integrate1d_ng(img, 100, method=("no", "csr", "cython"), unit="r_mm")

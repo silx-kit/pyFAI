@@ -36,6 +36,7 @@ from .DataModel import DataModel
 from .MaskedImageModel import MaskedImageModel
 from .ImageModel import ImageFromFilenameModel
 from .FilenameModel import FilenameModel
+from .PreProcessedImageModel import PreProcessedImageModel
 _logger = logging.getLogger(__name__)
 
 class ExperimentSettingsModel(AbstractModel):
@@ -46,6 +47,15 @@ class ExperimentSettingsModel(AbstractModel):
         self.__mask = ImageFromFilenameModel()
         self.__maskedImage = MaskedImageModel(None, self.__image, self.__mask)
         self.__isDetectorMask = True
+        self.__dark = ImageFromFilenameModel()
+        self.__flat = ImageFromFilenameModel()
+        self.__preprocessed_image = PreProcessedImageModel(
+            parent=None,
+            image=self.__image,
+            mask=self.__mask,
+            dark=self.__dark,
+            flat=self.__flat,
+        )
 
         self.__wavelength = DataModel()
         self.__polarizationFactor = DataModel()
@@ -62,6 +72,11 @@ class ExperimentSettingsModel(AbstractModel):
         self.__calibrantModel.changed.connect(self.wasChanged)
         self.__detectorModel.changed.connect(self.wasChanged)
         self.__poniFile.changed.connect(self.wasChanged)
+
+        self.__dark.changed.connect(self.wasChanged)
+        self.__dark.filenameChanged.connect(self.wasChanged)
+        self.__flat.changed.connect(self.wasChanged)
+        self.__flat.filenameChanged.connect(self.wasChanged)
 
         self.__image.changed.connect(self.__updateDetectorMask)
         self.__detectorModel.changed.connect(self.__updateDetectorMask)
@@ -150,3 +165,12 @@ class ExperimentSettingsModel(AbstractModel):
 
     def poniFile(self):
         return self.__poniFile
+
+    def dark(self):
+        return self.__dark
+
+    def flat(self):
+        return self.__flat
+
+    def preprocessedImage(self):
+        return self.__preprocessed_image
