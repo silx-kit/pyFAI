@@ -139,11 +139,46 @@ class Unit(object):
     def __hash__(self):
         return self.name.__hash__()
 
+class UnitFiber(Unit):
+    def __init__(self, name, scale=1, label=None, equation=None, formula=None,
+                 incident_angle=0.0, tilt_angle=0.0,
+                 center=None, corner=None, delta=None, short_name=None, unit_symbol=None,
+                 positive=True, period=None):
+        super().__init__(
+            name=name,
+            scale=scale,
+            label=label,
+            equation=equation,
+            formula=formula,
+            center=center,
+            corner=corner,
+            delta=delta,
+            short_name=short_name,
+            unit_symbol=unit_symbol,
+            positive=positive,
+            period=period,
+        )
+        self._incident_angle = incident_angle
+        self._tilt_angle = tilt_angle
+    
+    @property
+    def incident_angle(self):
+        return self._incident_angle
+    
+    @property
+    def tilt_angle(self):
+        return self._tilt_angle
+    
+    def set_incident_angle(self, value:float):
+        self._incident_angle = value
+
+    def set_tilt_angle(self, value:float):
+        self._tilt_angle = value
+ 
 
 RADIAL_UNITS = {}
 AZIMUTHAL_UNITS = {}
 ANY_UNITS = {}
-
 
 def register_radial_unit(name, scale=1, label=None, equation=None, formula=None,
                          center=None, corner=None, delta=None, short_name=None,
@@ -152,6 +187,26 @@ def register_radial_unit(name, scale=1, label=None, equation=None, formula=None,
                               corner, delta, short_name, unit_symbol, positive, period)
     ANY_UNITS.update(RADIAL_UNITS)
 
+def register_radial_fiber_unit(name, scale=1, label=None, equation=None, formula=None,
+                               incident_angle=0.0, tilt_angle=0.0,
+                               center=None, corner=None, delta=None, short_name=None,
+                               unit_symbol=None, positive=True, period=None):
+    RADIAL_UNITS[name] = UnitFiber(name=name,
+                                   scale=scale,
+                                   label=label,
+                                   equation=equation,
+                                   formula=formula,
+                                   incident_angle=incident_angle,
+                                   tilt_angle=tilt_angle,
+                                   center=center,
+                                   corner=corner,
+                                   delta=delta,
+                                   short_name=short_name,
+                                   unit_symbol=unit_symbol,
+                                   positive=positive,
+                                   period=period,
+    )
+    ANY_UNITS.update(RADIAL_UNITS)
 
 def register_azimuthal_unit(name, scale=1, label=None, equation=None, formula=None,
                          center=None, corner=None, delta=None, short_name=None,
@@ -589,7 +644,7 @@ register_radial_unit("qy_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("exitangle_rad",
+register_radial_fiber_unit("exitangle_rad",
                      scale=1.0,
                      label=r"Exit scattering angle (rad)",
                      equation=eq_exitangle,
@@ -597,7 +652,7 @@ register_radial_unit("exitangle_rad",
                      unit_symbol="rad",
                      positive=False)
 
-register_radial_unit("qxgi_nm^-1",
+register_radial_fiber_unit("qxgi_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_x$ ($nm^{-1}$)",
                      equation=eq_qxgi,
@@ -605,7 +660,7 @@ register_radial_unit("qxgi_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("qxgirot90_nm^-1",
+register_radial_fiber_unit("qxgirot90_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_x$ ($nm^{-1}$)",
                      equation=eq_qxgi_rot90,
@@ -613,7 +668,7 @@ register_radial_unit("qxgirot90_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("qygi_nm^-1",
+register_radial_fiber_unit("qygi_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_y$ ($nm^{-1}$)",
                      equation=eq_qygi,
@@ -621,7 +676,7 @@ register_radial_unit("qygi_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("qygirot90_nm^-1",
+register_radial_fiber_unit("qygirot90_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_y$ ($nm^{-1}$)",
                      equation=eq_qygi_rot90,
@@ -629,7 +684,7 @@ register_radial_unit("qygirot90_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("qzgi_nm^-1",
+register_radial_fiber_unit("qzgi_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_z$ ($nm^{-1}$)",
                      equation=eq_qzgi,
@@ -637,7 +692,7 @@ register_radial_unit("qzgi_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("qzgirot90_nm^-1",
+register_radial_fiber_unit("qzgirot90_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_z$ ($nm^{-1}$)",
                      equation=eq_qzgi_rot90,
@@ -645,7 +700,7 @@ register_radial_unit("qzgirot90_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("qip_nm^-1",
+register_radial_fiber_unit("qip_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_{IP}$ ($nm^{-1}$)",
                      equation=eq_qip,
@@ -653,7 +708,7 @@ register_radial_unit("qip_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("qiprot90_nm^-1",
+register_radial_fiber_unit("qiprot90_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_{IP}$ ($nm^{-1}$)",
                      equation=eq_qip_rot90,
@@ -661,7 +716,7 @@ register_radial_unit("qiprot90_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("qoop_nm^-1",
+register_radial_fiber_unit("qoop_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_{OOP}$ ($nm^{-1}$)",
                      equation=eq_qoop,
@@ -669,7 +724,7 @@ register_radial_unit("qoop_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("qooprot90_nm^-1",
+register_radial_fiber_unit("qooprot90_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_{OOP}$ ($nm^{-1}$)",
                      equation=eq_qoop_rot90,
@@ -677,7 +732,7 @@ register_radial_unit("qooprot90_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_unit("qxgi_A^-1",
+register_radial_fiber_unit("qxgi_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_x$ ($A^{-1}$)",
                      equation=eq_qxgi,
@@ -685,7 +740,7 @@ register_radial_unit("qxgi_A^-1",
                      unit_symbol="A^{-1}",
                      positive=False)
 
-register_radial_unit("qxgirot90_A^-1",
+register_radial_fiber_unit("qxgirot90_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_x$ ($A^{-1}$)",
                      equation=eq_qxgi_rot90,
@@ -693,7 +748,7 @@ register_radial_unit("qxgirot90_A^-1",
                      unit_symbol="A^{-1}",
                      positive=False)
 
-register_radial_unit("qygi_A^-1",
+register_radial_fiber_unit("qygi_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_y$ ($A^{-1}$)",
                      equation=eq_qygi,
@@ -701,7 +756,7 @@ register_radial_unit("qygi_A^-1",
                      unit_symbol="A^{-1}",
                      positive=False)
 
-register_radial_unit("qygirot90_A^-1",
+register_radial_fiber_unit("qygirot90_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_y$ ($A^{-1}$)",
                      equation=eq_qygi_rot90,
@@ -709,7 +764,7 @@ register_radial_unit("qygirot90_A^-1",
                      unit_symbol="A^{-1}",
                      positive=False)
 
-register_radial_unit("qzgi_A^-1",
+register_radial_fiber_unit("qzgi_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_z$ ($A^{-1}$)",
                      equation=eq_qzgi,
@@ -717,7 +772,7 @@ register_radial_unit("qzgi_A^-1",
                      unit_symbol="A^{-1}",
                      positive=False)
 
-register_radial_unit("qzgirot90_A^-1",
+register_radial_fiber_unit("qzgirot90_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_z$ ($A^{-1}$)",
                      equation=eq_qzgi_rot90,
@@ -725,7 +780,7 @@ register_radial_unit("qzgirot90_A^-1",
                      unit_symbol="A^{-1}",
                      positive=False)
 
-register_radial_unit("qip_A^-1",
+register_radial_fiber_unit("qip_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_{IP}$ ($A^{-1}$)",
                      equation=eq_qip,
@@ -733,7 +788,7 @@ register_radial_unit("qip_A^-1",
                      unit_symbol="A^{-1}",
                      positive=False)
 
-register_radial_unit("qiprot90_A^-1",
+register_radial_fiber_unit("qiprot90_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_{IP}$ ($A^{-1}$)",
                      equation=eq_qip_rot90,
@@ -741,7 +796,7 @@ register_radial_unit("qiprot90_A^-1",
                      unit_symbol="A^{-1}",
                      positive=False)
 
-register_radial_unit("qoop_A^-1",
+register_radial_fiber_unit("qoop_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_{OOP}$ ($A^{-1}$)",
                      equation=eq_qoop,
@@ -749,7 +804,7 @@ register_radial_unit("qoop_A^-1",
                      unit_symbol="A^{-1}",
                      positive=False)
 
-register_radial_unit("qooprot90_A^-1",
+register_radial_fiber_unit("qooprot90_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_{OOP}$ ($A^{-1}$)",
                      equation=eq_qoop_rot90,
@@ -810,7 +865,7 @@ def to_unit(obj, type_=None):
         type_ = ANY_UNITS
     if isinstance(obj, (str,)):
         rad_unit = type_.get(obj)
-    elif isinstance(obj, Unit):
+    elif isinstance(obj, (Unit, UnitFiber)):
         rad_unit = obj
     # elif isinstance(obj, (list, tuple)) and len(obj) == 2:
     #     rad_unit = tuple(to_unit(i) for i in obj)
@@ -836,3 +891,10 @@ l_m = LENGTH_UNITS["m"]
 A_rad = ANGLE_UNITS["rad"]
 CHI_DEG = AZIMUTHAL_UNITS["chi_deg"]
 CHI_RAD = AZIMUTHAL_UNITS["chi_rad"]
+
+def get_unit_fiber(name, incident_angle=0.0, tilt_angle=0.0):
+    unit = RADIAL_UNITS.get(name, None)
+    if unit is not None:
+        unit.set_incident_angle(incident_angle)
+        unit.set_tilt_angle(tilt_angle)
+    return unit

@@ -62,7 +62,7 @@ from ..utils.decorators import deprecated
 from ..utils import crc32, deg2rad
 from .. import utils
 from ..io import ponifile, integration_config
-from ..units import CONST_hc, to_unit
+from ..units import CONST_hc, to_unit, UnitFiber
 
 logger = logging.getLogger(__name__)
 
@@ -823,7 +823,10 @@ class Geometry(object):
                         else:
                             corners[:shape[0],:shape[1],:, 1] = chi[:shape[0],:shape[1],:]
                         if space is not None:
-                            rad = unit.equation(x, y, z, self._wavelength)
+                            if isinstance(unit, UnitFiber):
+                                rad = unit.equation(x, y, z, self.wavelength, unit.incident_angle, unit.tilt_angle)
+                            else:
+                                rad = unit.equation(x, y, z, self.wavelength)
                             if rad.shape[:2] == shape:
                                 corners[..., 0] = rad
                             else:
@@ -926,7 +929,12 @@ class Geometry(object):
         x = pos[..., 2]
         y = pos[..., 1]
         z = pos[..., 0]
-        ary = unit.equation(x, y, z, self.wavelength)
+
+        if isinstance(unit, UnitFiber):
+            ary = unit.equation(x, y, z, self.wavelength, unit.incident_angle, unit.tilt_angle)
+        else:
+            ary = unit.equation(x, y, z, self.wavelength)
+
         if unit.space == "chi" and not self.chiDiscAtPi:
             numpy.mod(ary, twopi, out=ary)
         self._cached_array[key] = ary
