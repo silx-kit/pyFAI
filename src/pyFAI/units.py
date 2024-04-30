@@ -145,7 +145,7 @@ class UnitFiber(Unit):
     Fiber parameters:
     :param float incident_angle: projection angle of the beam in the sample. Its rotation axis is the fiber axis or the normal vector of the thin film
     :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
-    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º 
+    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
     # Sample orientation inspired by pygix by T.G.Dane: https://github.com/tgdane/pygix
 
     It has at least a name and a scale (in SI-unit)
@@ -183,7 +183,7 @@ class UnitFiber(Unit):
     @property
     def sample_orientation(self):
         return self._sample_orientation
-    
+
     def set_incident_angle(self, value:float):
         self._incident_angle = value
 
