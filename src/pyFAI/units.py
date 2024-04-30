@@ -272,7 +272,7 @@ def eq_q(x, y, z, wavelength):
 
 
 def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0):
-    """Calculates the vertical exit scattering angle (relative to incident angle), used for grazing incidence
+    """Calculates the vertical exit scattering angle (relative to incident angle), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -284,7 +284,7 @@ def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0):
 
 
 def eq_qhorz(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
-    """Calculates the component of the scattering vector along the horizontal direction in the sample frame (for grazing-incidence geometries), towards the center of the ring
+    """Calculates the component of the scattering vector along the horizontal direction in the sample frame (for GI/Fiber diffraction), towards the center of the ring
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -302,7 +302,7 @@ def eq_qhorz(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
 
 
 def eq_qvert(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
-    """Calculates the component of the scattering vector along the vertical direction in the sample frame (for grazing-incidence geometries), to the roof
+    """Calculates the component of the scattering vector along the vertical direction in the sample frame (for GI/Fiber diffraction), to the roof
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -320,7 +320,7 @@ def eq_qvert(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
 
 
 def eq_qbeam(hpos, vpos, z, wavelength, incident_angle=0.0):
-    """Calculates the component of the scattering vector along the beam propagation direction in the sample frame (for grazing-incidence geometries)
+    """Calculates the component of the scattering vector along the beam propagation direction in the sample frame (for GI/Fiber diffraction)
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -336,7 +336,7 @@ def eq_qbeam(hpos, vpos, z, wavelength, incident_angle=0.0):
 
 
 def eq_qxgi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the component of the scattering vector along the horizontal direction in the sample frame (for grazing-incidence geometries), towards the center of the ring
+    """Calculates the component of the scattering vector along the horizontal direction in the sample frame (for GI/Fiber diffraction), towards the center of the ring
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -358,7 +358,7 @@ def eq_qxgi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orie
 
 
 def eq_qygi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the component of the scattering vector along the vertical direction in the sample frame (for grazing-incidence geometries), to the roof
+    """Calculates the component of the scattering vector along the vertical direction in the sample frame (for GI/Fiber diffraction), to the roof
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -380,7 +380,7 @@ def eq_qygi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orie
 
 
 def eq_qzgi(x, y, z, wavelength, incident_angle=0.0, sample_orientation=1):
-    """Calculates the component of the scattering vector along the beam propagation direction in the sample frame (for grazing-incidence geometries)
+    """Calculates the component of the scattering vector along the beam propagation direction in the sample frame (for GI/Fiber diffraction)
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -401,7 +401,7 @@ def eq_qzgi(x, y, z, wavelength, incident_angle=0.0, sample_orientation=1):
 
 
 def eq_qip(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the component of the scattering vector in the plane YZ in the sample frame (for grazing-incidence geometries)
+    """Calculates the component of the scattering vector in the plane YZ in the sample frame (for GI/Fiber diffraction)
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -418,7 +418,7 @@ def eq_qip(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orien
 
 
 def eq_qoop(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the component of the scattering vector in the vertical direction in the sample frame (for grazing-incidence geometries)
+    """Calculates the component of the scattering vector in the vertical direction in the sample frame (for GI/Fiber diffraction)
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -430,6 +430,23 @@ def eq_qoop(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orie
     :return: component of the scattering vector in the plane YZ, in inverse nm
     """
     return eq_qygi(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+
+def eq_q_total(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the total component of the scattering vector joining qip and qoop (for GI/Fiber diffraction)
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+    :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+    :return: component of the scattering vector in the plane YZ, in inverse nm
+    """
+    return numpy.sqrt(
+        eq_qip(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation) ** 2 + 
+        eq_qoop(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation) ** 2
+    )
 
 formula_r = "sqrt(x * x + y * y)"
 formula_2th = "arctan2(sqrt(x * x + y * y), z)"
@@ -661,6 +678,14 @@ register_radial_fiber_unit("qoop_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
+register_radial_fiber_unit("qtot_nm^-1",
+                     scale=1.0,
+                     label=r"Scattering vector $q_{xyz}$ ($nm^{-1}$)",
+                     equation=eq_q_total,
+                     short_name="q",
+                     unit_symbol="nm^{-1}",
+                     positive=False)
+
 register_radial_fiber_unit("qxgi_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_x$ ($A^{-1}$)",
@@ -698,6 +723,14 @@ register_radial_fiber_unit("qoop_A^-1",
                      label=r"Scattering vector $q_{OOP}$ ($A^{-1}$)",
                      equation=eq_qoop,
                      short_name="qoop",
+                     unit_symbol="A^{-1}",
+                     positive=False)
+
+register_radial_fiber_unit("qtot_A^-1",
+                     scale=0.1,
+                     label=r"Scattering vector $q_{xyz}$ ($A^{-1}$)",
+                     equation=eq_q_total,
+                     short_name="q",
                      unit_symbol="A^{-1}",
                      positive=False)
 
