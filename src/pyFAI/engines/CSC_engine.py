@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -450,7 +450,6 @@ class CscIntegrator2d(CSCIntegrator):
         :param indptr: the index of the start of line"""
 
         CSCIntegrator.set_matrix(self, data, indices, indptr)
-        print(len(data), len(indices), len(indptr), self.size)
 
         assert self.size == len(indptr) - 1
 
