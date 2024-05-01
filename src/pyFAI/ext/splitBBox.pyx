@@ -825,11 +825,12 @@ def histoBBox2d_engine(weights,
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
     :param variance: variance associated with the weights
+    :param dark_variance: variance associated with the dark-field
+    :param error_model: 0 for no error propagation, 1 for variance, 2 for Poisson, 3,4 not implemented
     :param dark: array (of float32) with dark noise to be subtracted (or None)
     :param flat: array (of float32) with flat-field image
     :param solidangle: array (of float32) with solid angle corrections
     :param polarization: array (of float32) with polarization corrections
-    :param error_model: 0 for no error propagation, 1 for variance, 2 for Poisson, 3,4 not implemented
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
