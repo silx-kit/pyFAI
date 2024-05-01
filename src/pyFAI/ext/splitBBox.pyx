@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -308,7 +308,7 @@ def histoBBox1d_engine(weights,
     :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
     :param empty: value of output bins without any contribution when dummy is None
     :param float normalization_factor: divide the result by this value
-    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
+    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
     :return: namedtuple with "position intensity error signal variance normalization count"
     """
     cdef Py_ssize_t size = weights.size
@@ -833,7 +833,7 @@ def histoBBox2d_engine(weights,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
-    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
+    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
     :param clip_pos1: clip the azimuthal range to [-pi pi] (or [0 2pi]), set to False to deactivate behavior
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
