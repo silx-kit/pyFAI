@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -289,7 +289,7 @@ def fullSplit1D_engine(pos not None,
     :param solidangle: array (of float64) with flat image
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
-    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average. WIP
+    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average.
     :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
     :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
     :return: namedtuple with "position intensity error signal variance normalization count"
@@ -836,7 +836,7 @@ def pseudoSplit2D_engine(pos not None,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
-    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average. WIP
+    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average.
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
 
@@ -1189,7 +1189,7 @@ def fullSplit2D_engine(pos not None,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
-    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average. WIP
+    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average.
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
 
