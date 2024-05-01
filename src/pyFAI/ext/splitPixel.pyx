@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "24/04/2024"
+__date__ = "25/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -289,7 +289,7 @@ def fullSplit1D_engine(pos not None,
     :param solidangle: array (of float64) with flat image
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
-    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average WIP
+    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average.
     :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
     :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
     :return: namedtuple with "position intensity error signal variance normalization count"
@@ -808,7 +808,8 @@ def pseudoSplit2D_engine(pos not None,
                          bint allow_pos0_neg=0,
                          bint chiDiscAtPi=1,
                          float empty=0.0,
-                         double normalization_factor=1.0
+                         double normalization_factor=1.0,
+                         bint weighted_average=True,
                          ):
     """
     Calculate 2D histogram of pos weighted by weights
@@ -835,6 +836,7 @@ def pseudoSplit2D_engine(pos not None,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
+    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average.
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
 
@@ -1005,7 +1007,8 @@ def pseudoSplit2D_engine(pos not None,
                                              check_dummy=check_dummy,
                                              normalization_factor=normalization_factor,
                                              dark_variance=0.0,
-                                             error_model=error_model)
+                                             error_model=error_model,
+                                             apply_normalization=not weighted_average)
             if not is_valid:
                 continue
 
@@ -1160,7 +1163,8 @@ def fullSplit2D_engine(pos not None,
                          bint allow_pos0_neg=0,
                          bint chiDiscAtPi=1,
                          float empty=0.0,
-                         double normalization_factor=1.0
+                         double normalization_factor=1.0,
+                         bint weighted_average=True,
                          ):
     """
     Calculate 2D histogram of pos weighted by weights
@@ -1185,6 +1189,7 @@ def fullSplit2D_engine(pos not None,
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
+    :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average.
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
 
@@ -1304,7 +1309,8 @@ def fullSplit2D_engine(pos not None,
                                              check_dummy=check_dummy,
                                              normalization_factor=normalization_factor,
                                              dark_variance=0.0,
-                                             error_model=error_model)
+                                             error_model=error_model,
+                                             apply_normalization=not weighted_average)
             if not is_valid:
                 continue
 

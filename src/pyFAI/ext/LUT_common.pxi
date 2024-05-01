@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "23/01/2024"
+__date__ = "26/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -89,10 +89,9 @@ cdef class LutIntegrator(object):
         """Getter a copy of the LUT as an actual numpy array"""
         cdef double[:, ::1] tmp_ary = numpy.empty((self.output_size, self.lut_size), dtype=numpy.float64)
         memcpy(&tmp_ary[0, 0], &self._lut[0, 0], self._lut.nbytes)
-
-        return numpy.core.records.array(numpy.asarray(tmp_ary).view(dtype=lut_d),
-                                        shape=(self.output_size, self.lut_size), dtype=lut_d,
-                                        copy=True)
+        return numpy.recarray(buf=numpy.array(tmp_ary, copy=True).view(dtype=lut_d),
+                              shape=(self.output_size, self.lut_size),
+                              dtype=lut_d)
 
 
     def integrate_legacy(self, weights,

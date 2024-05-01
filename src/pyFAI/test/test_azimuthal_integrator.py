@@ -26,6 +26,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+
 """test suite for Azimuthal integrator class"""
 
 __author__ = "Jérôme Kieffer"
@@ -730,6 +731,83 @@ class TestFlexible2D(unittest.TestCase):
             self.assertTrue(-20 < azimin < -15, f"Lower bound azimuthal is  -20<{azimin}<-15 for {m}")
 
 
+class TestUnweighted(unittest.TestCase):
+    """Test for validating weighted/unweighted average provide correct results"""
+
+    @classmethod
+    def setUpClass(cls):
+        rng = UtilsTest.get_rng()
+        det = detector_factory("imxpad_s10") #very small detector, 10kpix
+        # det = detector_factory("mythen") #very small detector, 1kpix
+        # det = detector_factory("pilatus100k") #very small detector, 100kpix
+        cls.img = rng.uniform(0.5, 1.5, det.shape)
+        cls.ai = AzimuthalIntegrator(detector=det)
+        cls.kwargs = {"flat": cls.img,
+                      "unit": "r_mm",
+                      "correctSolidAngle": False}
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.ai = cls.img = cls.kwargs = None
+
+    def test_weighted(self):
+
+        done = set()
+        for method in IntegrationMethod._registry.values():
+            self.ai.reset()
+            if method.method[:3] in done:
+                continue
+            method = method.weighted
+            try:
+                if method.dim == 1:
+                    res = self.ai.integrate1d(self.img, 10, method=method, **self.kwargs)
+                elif method.dim == 2:
+                    res = self.ai.integrate2d(self.img, 10, method=method, **self.kwargs)
+            except Exception as err:
+                print("Unable to integrate using method", method)
+                raise err
+            sum_signal = res.sum_signal
+            sum_normalization = res.sum_normalization
+            count = res.count
+            if method.impl == "OpenCL":
+                done.add(method.method[:3])
+                if sum_signal.shape != count.shape:
+                    sum_normalization = sum_normalization[..., 0]
+                    sum_signal = sum_signal[..., 0]
+            try:
+                self.assertTrue(numpy.allclose(sum_signal, sum_normalization), f"Weighted: signal == norm for {method}")
+                self.assertFalse(numpy.allclose(sum_normalization, count), f"Weighted: norm != count for {method}")
+            except Exception as err:
+                self.fail(f"Weighted failed for {method} with exception {err}")
+
+    def test_unweighted(self):
+        done = set()
+        for method in IntegrationMethod._registry.values():
+            self.ai.reset()
+            if method.method[:3] in done:
+                continue
+            method = method.unweighted
+            if method.dim == 1:
+                res = self.ai.integrate1d(self.img, 100, method=method, **self.kwargs)
+            elif method.dim == 2:
+                res = self.ai.integrate2d(self.img, 100, method=method, **self.kwargs)
+            sum_signal = res.sum_signal
+            sum_normalization = res.sum_normalization
+            count = res.count
+            if method.impl == "OpenCL":
+                done.add(method.method[:3])
+                if sum_signal.shape != count.shape:
+                    sum_normalization = sum_normalization[..., 0]
+                    sum_signal = sum_signal[..., 0]
+            try:
+                self.assertTrue(numpy.allclose(sum_signal, sum_normalization), f"Unweighted: signal == norm for {method} because signal==flat")
+                self.assertTrue(numpy.allclose(sum_normalization, count), f"Unweighted: norm == count for {method}")
+            except AssertionError as err:
+                raise err
+            except Exception as err:
+                self.fail(f"Unweighted failed for {method} with exception {err}")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
@@ -740,6 +818,7 @@ def suite():
     testsuite.addTest(loader(TestIntergrationNextGeneration))
     testsuite.addTest(loader(TestRange))
     testsuite.addTest(loader(TestFlexible2D))
+    testsuite.addTest(loader(TestUnweighted))
     return testsuite
 
 

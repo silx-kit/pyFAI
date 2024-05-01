@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/04/2024"
+__date__ = "26/04/2024"
 __status__ = "development"
 
 import warnings
@@ -214,7 +214,7 @@ def preproc(raw,
                 numpy.divide(signal, normalization, out=signal)
                 if variance is not None:
                     numpy.divide(variance, normalization*normalization, out=variance)
-                normalization[:] = 1.0
+                normalization[...] = 1.0
 
             signal[mask] = 0.0
             normalization[mask] = 0.0

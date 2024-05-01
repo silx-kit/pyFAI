@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            D. Karkoulis (dimitris.karkoulis@gmail.com)
@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "24/04/2024"
+__date__ = "25/04/2024"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -152,8 +152,6 @@ class OCL_Histogram1d(OpenclProcessing):
 
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}
-        print("bins", self.bins, type(self.bins), "BLOCK_SIZE", self.BLOCK_SIZE, type(self.BLOCK_SIZE))
-        print(self.bins + self.BLOCK_SIZE - 1)
         self.wdim_bins = int(self.bins + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE,
         self.wdim_data = int(self.size + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE,
 
@@ -425,7 +423,7 @@ class OCL_Histogram1d(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
-        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
         :param radial_range: provide lower and upper bound for radial array
         :param azimuth_range: provide lower and upper bound for azimuthal array
         :param histo_signal: destination array or pyopencl array for sum of signals
@@ -771,7 +769,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
                   preprocess_only=False, safe=True,
-                  normalization_factor=1.0,
+                  normalization_factor=1.0, weighted_average=True,
                   radial_range=None, azimuthal_range=None,
                   histo_signal=None, histo_variance=None,
                   histo_normalization=None, histo_count=None, histo_normalization_sq=None,
@@ -803,6 +801,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
         :param radial_range: provide lower and upper bound for radial array
         :param azimuth_range: provide lower and upper bound for azimuthal array
         :param histo_signal: destination array or pyopencl array for sum of signals
@@ -846,6 +845,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
             kw_correction["delta_dummy"] = delta_dummy
             kw_correction["normalization_factor"] = numpy.float32(normalization_factor)
             kw_correction["error_model"] = numpy.int8(error_model.value)
+            kw_correction["apply_normalization"] = numpy.int8(not weighted_average)
             if dark is not None:
                 do_dark = numpy.int8(1)
                 # TODO: what is do_checksum=False and image not on device ...
