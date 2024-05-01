@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2019-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2019-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 """simple histogram rebinning engine implemented in pure python (with the help of numpy !)
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
@@ -34,14 +34,14 @@ logger = logging.getLogger(__name__)
 import numpy
 from ..utils import EPS32
 from .preproc import preproc as preproc_np
-# try:
-#     from ..ext.preproc import preproc as preproc_cy
-# except ImportError as err:
-#     logger.warning("ImportError pyFAI.ext.preproc %s", err)
-#     preproc = preproc_np
-# else:
-#     preproc = preproc_cy
-preproc = preproc_np
+try:
+    from ..ext.preproc import preproc as preproc_cy
+except ImportError as err:
+    logger.warning("ImportError pyFAI.ext.preproc %s", err)
+    preproc = preproc_np
+else:
+    preproc = preproc_cy
+
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 
