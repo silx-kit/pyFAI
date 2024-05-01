@@ -475,7 +475,7 @@ def histogram1d_engine(radial, int npt,
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
     :param error_model: One of the several ErrorModel, only variance and Poisson are implemented.
-    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
+    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
 
 
     NaN are always considered as invalid values
@@ -606,7 +606,7 @@ def histogram2d_engine(radial, azimuthal,
     :param variance: provide an estimation of the variance
     :param dark_variance: provide an estimation of the variance of the dark_current,
     :param error_model: set to "poisson" for assuming the detector is poissonian and variance = raw + dark
-    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
+    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
     :param radial_range: enforce boundaries in radial dimention, 2tuple with lower and upper bound
     :param azimuth_range: enforce boundaries in azimuthal dimention, 2tuple with lower and upper bound
     :param allow_radial_neg: clip negative radial position (can a dimention be negative ?)
