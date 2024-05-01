@@ -97,7 +97,6 @@ def histogram1d_engine(radial, npt,
 
     """
     error_model = ErrorModel.parse(error_model)
-    print(weighted_average)
     prep = preproc(raw,
                    dark=dark,
                    flat=flat,
