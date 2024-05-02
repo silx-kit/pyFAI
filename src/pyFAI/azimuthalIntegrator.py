@@ -1742,8 +1742,8 @@ class AzimuthalIntegrator(Geometry):
 
         if filename is not None:
             save_integrate_result(filename, result)
-            
-        return result   
+
+        return result
 
     def integrate_grazing_incidence(self, data,
                         npt_output, output_unit=units.Q_OOP, output_unit_range=None,
