@@ -1682,22 +1682,26 @@ class AzimuthalIntegrator(Geometry):
         else:
             sample_orientation = sample_orientation or 1
 
+        reset = False
         if isinstance(integrated_unit, units.UnitFiber):
             if integrated_unit.sample_orientation != sample_orientation:
                 integrated_unit.set_sample_orientation(sample_orientation)
-                self.reset()
+                reset = True
         else:
             integrated_unit = units.to_unit(integrated_unit)
             integrated_unit.set_sample_orientation(sample_orientation)
-            self.reset()
+            reset = True
 
         if isinstance(output_unit, units.UnitFiber):
             if output_unit.sample_orientation != sample_orientation:
                 output_unit.set_sample_orientation(sample_orientation)
-                self.reset()
+                reset = True
         else:
             output_unit = units.to_unit(output_unit)
             output_unit.set_sample_orientation(sample_orientation)
+            reset = True
+
+        if reset:
             self.reset()
 
         res = self.integrate2d_ng(data, npt_rad=npt_integrated, npt_azim=npt_output,
