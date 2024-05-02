@@ -812,6 +812,7 @@ Q_IP = Q_IP_NM = RADIAL_UNITS["qip_nm^-1"]
 Q_OOP = Q_OOP_NM = RADIAL_UNITS["qoop_nm^-1"]
 Q_IP_A = RADIAL_UNITS["qip_A^-1"]
 Q_OOP_A = RADIAL_UNITS["qoop_A^-1"]
+Q_TOT = RADIAL_UNITS["qtot_nm^-1"]
 
 def get_unit_fiber(name, incident_angle:float =0.0, tilt_angle:float =0.0, sample_orientation=1):
     """Retrieves a unit instance for Grazing-Incidence/Fiber Scattering with updated incident and tilt angles

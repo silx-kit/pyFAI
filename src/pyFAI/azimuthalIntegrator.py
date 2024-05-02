@@ -1651,7 +1651,7 @@ class AzimuthalIntegrator(Geometry):
                         polarization_factor=None, dark=None, flat=None,
                         method=("bbox", "csr", "cython"),
                         normalization_factor=1.0):
-        """Calculate the radial integrated profile curve as I = f(chi)
+        """Calculate the integrated profile curve along a specific FiberUnit
 
         :param ndarray data: 2D array from the Detector/CCD camera
         :param int npt_output: number of points in the output pattern
@@ -1755,7 +1755,7 @@ class AzimuthalIntegrator(Geometry):
                         polarization_factor=None, dark=None, flat=None,
                         method=("bbox", "csr", "cython"),
                         normalization_factor=1.0):
-        """Calculate the radial integrated profile curve as I = f(chi)
+        """Calculate the integrated profile curve along a specific FiberUnit, additional inputs for incident angle and tilt angle
 
         :param ndarray data: 2D array from the Detector/CCD camera
         :param int npt_output: number of points in the output pattern
