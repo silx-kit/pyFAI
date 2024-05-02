@@ -271,7 +271,7 @@ def eq_q(x, y, z, wavelength):
     return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
 
 
-def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0):
+def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the vertical exit scattering angle (relative to incident angle), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
@@ -283,7 +283,7 @@ def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0):
     return numpy.arctan2(y, z) - incident_angle
 
 
-def eq_qhorz(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
+def eq_qhorz(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the component of the scattering vector along the horizontal direction in the sample frame (for GI/Fiber diffraction), towards the center of the ring
 
     :param x: horizontal position, towards the center of the ring, from sample position
@@ -301,7 +301,7 @@ def eq_qhorz(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     return 2.0e-9 * numpy.pi * (c1 - c2 - c3)/ wavelength
 
 
-def eq_qvert(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
+def eq_qvert(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the component of the scattering vector along the vertical direction in the sample frame (for GI/Fiber diffraction), to the roof
 
     :param x: horizontal position, towards the center of the ring, from sample position
@@ -319,7 +319,7 @@ def eq_qvert(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0):
     return 2.0e-9 * numpy.pi * (c1 + c2 + c3) / wavelength
 
 
-def eq_qbeam(hpos, vpos, z, wavelength, incident_angle=0.0):
+def eq_qbeam(hpos, vpos, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the component of the scattering vector along the beam propagation direction in the sample frame (for GI/Fiber diffraction)
 
     :param x: horizontal position, towards the center of the ring, from sample position
@@ -379,7 +379,7 @@ def eq_qygi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orie
         return eq_qvert(hpos=-y, vpos=-x, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
-def eq_qzgi(x, y, z, wavelength, incident_angle=0.0, sample_orientation=1):
+def eq_qzgi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the component of the scattering vector along the beam propagation direction in the sample frame (for GI/Fiber diffraction)
 
     :param x: horizontal position, towards the center of the ring, from sample position
