@@ -4,6 +4,7 @@ pyFAI: Fast Azimuthal Integration in Python
 Main development website: https://github.com/silx-kit/pyFAI
 
 |Github Actions| |Appveyor Status| |myBinder Launcher| |Zenodo DOI|
+
 ..
   |RTD docs|
 
