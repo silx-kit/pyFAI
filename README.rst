@@ -3,11 +3,7 @@ pyFAI: Fast Azimuthal Integration in Python
 
 Main development website: https://github.com/silx-kit/pyFAI
 
-|Github Actions| |Appveyor Status| |myBinder Launcher| |Zenodo DOI|
-
-..
-  |RTD docs|
-
+|Github Actions| |Appveyor Status| |myBinder Launcher| |Zenodo DOI| |RTD docs|
 
 PyFAI is an azimuthal integration library that tries to be fast (as fast as C
 and even more using OpenCL and GPU).
@@ -213,8 +209,6 @@ Indirect contributors (ideas...)
 .. |myBinder Launcher| image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/silx-kit/pyFAI/main?filepath=binder%2Findex.ipynb
 .. |RTD docs| image:: https://readthedocs.org/projects/pyFAI/badge
-    :alt: Documentation Status
-    :scale: 100%
     :target: https://pyfai.readthedocs.io/en/main
 .. |Zenodo DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.832896.svg
    :target: https://doi.org/10.5281/zenodo.832896
