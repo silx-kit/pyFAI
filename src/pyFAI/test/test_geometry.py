@@ -652,8 +652,8 @@ class TestOrientation(unittest.TestCase):
         self.assertFalse(numpy.allclose(chi1, chi4), "orientation 1,4 differ chi")
 
         self.assertTrue(numpy.allclose(tth1, numpy.fliplr(tth2)), "orientation 1,2 flipped match tth")
-        delta = chi1 + 1 -numpy.fliplr(chi2)
-        print("line 655", delta.min(), delta.max(), delta.mean(), delta.std())
+        delta = chi1 + 1 +numpy.fliplr(chi2)
+        print("line 655", delta.min(), delta.max(), delta.mean(), delta.std(), numpy.allclose(chi1 + 1, -numpy.fliplr(chi2), atol=0.0001))
         self.assertTrue(numpy.allclose(chi1 + 1, -numpy.fliplr(chi2), atol=0.0001), "orientation 1,2 flipped match chi")
         self.assertTrue(numpy.allclose(tth1, numpy.flipud(tth4)), "orientation 1,4 flipped match tth")
         self.assertTrue(numpy.allclose(chi1, -numpy.flipud(chi4)), "orientation 1,4 flipped match chi")
