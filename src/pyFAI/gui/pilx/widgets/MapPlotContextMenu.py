@@ -79,7 +79,7 @@ class MultiCurveAction(PlotAction):
         super().__init__(
             plot=plot,
             icon=icons.getQIcon("stats-whole-items"),
-            text="Fix/Unfix curve to graph",
+            text="Show/Hide curve on graph",
             parent=parent,
             triggered=self._actionTriggered,
             checkable=False,
@@ -90,7 +90,7 @@ class MultiCurveAction(PlotAction):
         plotArea = self.plot.getWidgetHandle()
         globalPosition = plotArea.mapToParent(self._parent._pos)
         x, y = self.plot.pixelToData(globalPosition.x(), globalPosition.y())
-        self.plot.plotClicked_add.emit(x,y)
+        self.plot.pinContextEntrySelected.emit(x,y)
 
 class SetBackgroundCurveAction(PlotAction):
     def __init__(self, plot, parent=None):

@@ -39,7 +39,6 @@ __status__ = "development"
 from typing import Tuple
 import h5py
 import logging
-import copy
 import os.path
 from silx.gui import qt
 from silx.gui.colors import Colormap
@@ -47,7 +46,7 @@ from silx.image.marchingsquares import find_contours
 from silx.gui.plot.items import MarkerBase
 from silx.gui.colors import rgba
 
-
+from .models import DiffMapViewPoint, DisplayedPoint
 from .utils import (
     compute_radial_values,
     get_dataset,
@@ -82,7 +81,7 @@ class MainWindow(qt.QMainWindow):
             Colormap("viridis", normalization="log")
         )
         self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
-        self._map_plot_widget.plotClicked_add.connect(self.fixMapPoint)
+        self._map_plot_widget.pinContextEntrySelected.connect(self.fixMapPoint)
         self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
 
         self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
@@ -105,9 +104,9 @@ class MainWindow(qt.QMainWindow):
         self._central_widget.setLayout(layout)
         self.setCentralWidget(self._central_widget)
 
-        self._intensity_curve_cache = {}
-        self._intensity_curves_fixed_cache = {}
-        self._intensity_background_curve = {}
+        self._unfixed_point = None
+        self._fixed_points = []
+        self._background_point = None
 
     def initData(self, file_name: str):
         self._file_name = os.path.abspath(file_name)
@@ -129,7 +128,15 @@ class MainWindow(qt.QMainWindow):
         self._title_widget.setText(os.path.basename(file_name))
         self._map_plot_widget.setScatterData(map)
         # BUG: selectMapPoint(0, 0) does not work at first render cause the picking fails
-        self.displayPatternAtIndex(0, 0)
+        #self.displayPatternAtIndex(0, 0)
+        init_point = DisplayedPoint(
+            row=0,
+            col=0,
+            file_name=self._file_name,
+            legend="INTEGRATE",
+            color=self.getColorAvailable("INTEGRATE"),
+        )
+        self.displayPatternAtIndex(point=init_point)
         self.displayImageAtIndex(0, 0)
         self._map_plot_widget.addMarker(
             0, 0, color=self.getColorCurve(legend="INTEGRATE"), symbol="o", legend="MAP_LOCATION"
@@ -138,40 +145,32 @@ class MainWindow(qt.QMainWindow):
     def getRoiRadialRange(self) -> Tuple[float | None, float | None]:
         return self._integrated_plot_widget.roi.getRange()
 
-    def displayPatternAtIndex(self, row: int, col: int, legend: str = ""):
+    def displayPatternAtIndex(self, row: int = None, col: int = None, point: DisplayedPoint = None, legend: str = ""):
+
         if self._file_name is None:
             return
 
-        with h5py.File(self._file_name, "r") as h5file:
-            radial_dset = get_radial_dataset(
-                h5file, nxdata_path="/entry_0000/pyFAI/result"
+        if point is None:
+            point = DisplayedPoint(
+                row=row,
+                col=col,
+                legend=legend,
+                file_name=self._file_name,
+                background_point=self._background_point,
+                color=self.getColorAvailable(legend),
             )
-            radial = radial_dset[()]
-            x_name = get_dataset_name(radial_dset)
-            intensity_dset = get_dataset(h5file, "/entry_0000/pyFAI/result/intensity")
-            pattern = intensity_dset[row, col, :]
-            y_name = intensity_dset.attrs.get("long_name", "Intensity")
-
-        if legend:
-            self._intensity_curves_fixed_cache[(row,col)] = pattern
-        else:
-            self._intensity_curve_cache = {(row,col) : pattern}
-
-        if self._intensity_background_curve:
-            pattern_ = copy.copy(pattern) - list(self._intensity_background_curve.values())[0]
-        else:
-            pattern_ = pattern
 
         self._integrated_plot_widget.addCurve(
-            radial,
-            pattern_,
-            legend=f"INTEGRATE{legend}",
+            x=point._radial_curve,
+            y=point.get_curve(),
+            legend=point.legend,
             selectable=False,
-            color=self.getColorAvailable(legend=legend),
+            #color=self.getColorAvailable(legend=point.legend),
+            color=point._color,
             resetzoom=self._integrated_plot_widget.getGraphXLimits() == (0,100),
         )
-        self._integrated_plot_widget.setGraphXLabel(x_name)
-        self._integrated_plot_widget.setGraphYLabel(y_name)
+        self._integrated_plot_widget.setGraphXLabel(point._x_name)
+        self._integrated_plot_widget.setGraphYLabel(point._y_name)
 
     def displayImageAtIndex(self, row: int, col: int):
         if self._file_name is None:
@@ -198,7 +197,24 @@ class MainWindow(qt.QMainWindow):
         indices = self._map_plot_widget.getImageIndices(x, y)
         if indices is None:
             return
-        self.displayPatternAtIndex(row=indices.row, col=indices.col)
+        
+        point = DisplayedPoint(
+            row=indices.row, 
+            col=indices.col,
+            file_name=self._file_name,
+            background_point=self._background_point,
+            legend="INTEGRATE",
+            color=self.getColorAvailable("INTEGRATE"),
+        )
+
+        if point == self._unfixed_point:
+            return
+        else:
+            self._integrated_plot_widget.removeCurve(legend="INTEGRATE")
+            self._map_plot_widget.removeMarker(legend="MAP_LOCATION")
+            self._unfixed_point = point
+
+        self.displayPatternAtIndex(point=point)
         self.displayImageAtIndex(row=indices.row, col=indices.col)
         pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
         self._map_plot_widget.addMarker(
@@ -207,23 +223,34 @@ class MainWindow(qt.QMainWindow):
 
     def fixMapPoint(self, x: float, y: float):
         indices = self._map_plot_widget.getImageIndices(x, y)
+
         if indices is None:
             return
+        
+        point = DisplayedPoint(
+            row=indices.row, 
+            col=indices.col,
+            file_name=self._file_name,
+            background_point=self._background_point,
+            legend=f"INTEGRATE_{indices.row}_{indices.col}",
+            color=self.getColorAvailable(f"INTEGRATE_{indices.row}_{indices.col}"),
+        )
 
         # Remove curve and marker if the fixing point is the last clicked
-        if (indices.row, indices.col) in self._intensity_curve_cache.keys():
-            self._intensity_curve_cache = {}
-            self._integrated_plot_widget.removeCurve(legend=f"INTEGRATE")
+        if point == self._unfixed_point:
+            self._unfixed_point = None
+            self._integrated_plot_widget.removeCurve(legend="INTEGRATE")
             self._map_plot_widget.removeMarker(legend=f"MAP_LOCATION")
 
         # Unfix is the fixing point is already fixed
-        if (indices.row, indices.col) in self._intensity_curves_fixed_cache.keys():
-            self._intensity_curves_fixed_cache.pop((indices.row, indices.col))
+        if point in self._fixed_points:
+            self._fixed_points.remove(point)
             self._integrated_plot_widget.removeCurve(legend=f"INTEGRATE_{indices.row}_{indices.col}")
             self._map_plot_widget.removeMarker(legend=f"MAP_LOCATION_{indices.row}_{indices.col}")
         # Fix the point
         else:
-            self.displayPatternAtIndex(row=indices.row, col=indices.col, legend=f"_{indices.row}_{indices.col}")
+            self._fixed_points.append(point)
+            self.displayPatternAtIndex(point=point)
             self.displayImageAtIndex(row=indices.row, col=indices.col)
             pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
             self._map_plot_widget.addMarker(
@@ -298,8 +325,8 @@ class MainWindow(qt.QMainWindow):
             return
 
     def getColorAvailable(self, legend: str):
-        if self._integrated_plot_widget.getCurve(legend=f"INTEGRATE{legend}"):
-            color = self._integrated_plot_widget.getCurve(legend=f"INTEGRATE{legend}").getColor()
+        if self._integrated_plot_widget.getCurve(legend=legend):
+            color = self._integrated_plot_widget.getCurve(legend=legend).getColor()
         else:
             index_color = 0
             color = rgba(self._integrated_plot_widget.getDefaultColors()[index_color])
@@ -312,63 +339,32 @@ class MainWindow(qt.QMainWindow):
         indices = self._map_plot_widget.getImageIndices(x, y)
         if indices is None:
             return
-        radial_background, pattern_background = self.getBackgroundCurve(row=indices.row, col=indices.col)
+        
+        background_point = DiffMapViewPoint(row=indices.row,
+                                            col=indices.col,
+                                            file_name=self._file_name,
+        )
 
         # Unset the background if it's the same pixel and delete markers
-        if (indices.row, indices.col) in self._intensity_background_curve.keys():
-            self._intensity_background_curve = {}
+        if background_point == self._background_point:
+            self._background_point = None
             markers = [item for item in self._map_plot_widget.getItems() if isinstance(item, MarkerBase)]
             _ = [self._map_plot_widget.removeMarker(legend=marker.getLegend()) for marker in markers if "BG" in marker.getLegend()]
         else:
-            self._intensity_background_curve = {(indices.row, indices.col) : pattern_background}
+            self._background_point = background_point
 
-        if self._intensity_background_curve:
-            self._intensity_background_curve = {(indices.row, indices.col) : pattern_background}
+        if self._background_point:
             pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
             self._map_plot_widget.addMarker(
                 *pixel_center_coords, color="black", symbol="x", legend=f"BG_LOCATION"
             )
 
         # Substitute non-fixed curve
-        for indices, intensity_curve in self._intensity_curve_cache.items():
-            intensity_curve_ = copy.copy(intensity_curve)
-            if self._intensity_background_curve:
-                intensity_curve_ -= pattern_background
-
-            self._integrated_plot_widget.addCurve(
-                    x=radial_background,
-                    y=intensity_curve_,
-                    legend="INTEGRATE",
-                    selectable=False,
-                    color=self._integrated_plot_widget.getCurve(legend="INTEGRATE").getColor(),
-                    resetzoom=self._integrated_plot_widget.getGraphXLimits() == (0,100),
-            )
+        if self._unfixed_point:
+            self._unfixed_point.set_background(self._background_point)
+            self.displayPatternAtIndex(point=self._unfixed_point)
 
         # Substitute fixed curves
-        for indices, intensity_curve in self._intensity_curves_fixed_cache.items():
-            intensity_curve_ = copy.copy(intensity_curve)
-            if self._intensity_background_curve:
-                intensity_curve_ -= pattern_background
-
-            self._integrated_plot_widget.addCurve(
-                x=radial_background,
-                y=intensity_curve_,
-                legend=f"INTEGRATE_{indices[0]}_{indices[1]}",
-                selectable=False,
-                color=self._integrated_plot_widget.getCurve(legend=f"INTEGRATE_{indices[0]}_{indices[1]}").getColor(),
-                resetzoom=self._integrated_plot_widget.getGraphXLimits() == (0,100),
-            )
-
-    def getBackgroundCurve(self, row: int, col: int):
-        if self._file_name is None:
-            return
-
-        with h5py.File(self._file_name, "r") as h5file:
-            radial_dset = get_radial_dataset(
-                h5file, nxdata_path="/entry_0000/pyFAI/result"
-            )
-            radial = radial_dset[()]
-            intensity_dset = get_dataset(h5file, "/entry_0000/pyFAI/result/intensity")
-            pattern = intensity_dset[row, col, :]
-
-        return radial, pattern
+        for fixed_point in self._fixed_points:
+            fixed_point.set_background(self._background_point)
+            self.displayPatternAtIndex(point=fixed_point)
