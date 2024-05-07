@@ -662,7 +662,7 @@ class TestOrientation(unittest.TestCase):
         self.assertTrue(numpy.allclose(chi2, -numpy.flipud(chi3)), "orientation 2,3 flipped match chi")
         self.assertTrue(numpy.allclose(tth1, tth3[-1::-1, -1::-1]), "orientation 1,3 inversion match tth")
         # self.assertTrue(numpy.allclose(chi1 + 1, chi3[-1::-1, -1::-1], atol=0.0001), "orientation 1,3 inversion match chi")
-        delta = angular_distance(chi1+1, -chi3[-1::-1, -1::-1], 1)
+        delta = angular_distance(chi1+1, chi3[-1::-1, -1::-1], 1)
         self.assertLess(delta.mean(), 0.0001, "orientation 1,3 inversion match chi")
         self.assertTrue(numpy.allclose(tth2, tth4[-1::-1, -1::-1]), "orientation 2,4 inversion match tth")
         self.assertTrue(numpy.allclose(chi2 + 1, chi4[-1::-1, -1::-1]), "orientation 2,4 inversion match chi")
