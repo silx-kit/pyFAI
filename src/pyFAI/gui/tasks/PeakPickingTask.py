@@ -1834,6 +1834,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__synchronizeRawView.registerModel(model.rawPlotView())
         settings = model.experimentSettingsModel()
         settings.maskedImage().changed.connect(self.__imageUpdated)
+        settings.preprocessedImage().changed.connect(self.__imageUpdated)
         settings.image().changed.connect(self.__invalidateMassif)
         settings.mask().changed.connect(self.__invalidateMassif)
         model.peakSelectionModel().changed.connect(self.__peakSelectionChanged)
@@ -1869,7 +1870,12 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__peakSelectionView.setModel(tableModel)
 
     def __imageUpdated(self):
-        image = self.model().experimentSettingsModel().maskedImage().value()
+        try:
+            image = self.model().experimentSettingsModel().preprocessedImage().value()
+        except Exception as e:
+            _logger.warning(f"Error with PreProcessedImageModel: {e}")
+            image = self.model().experimentSettingsModel().maskedImage().value()
+
         if image is not None:
             self.__plot.addImage(image, legend="image", selectable=True, copy=False, z=-1)
             self.__plot.setGraphXLimits(0, image.shape[0])

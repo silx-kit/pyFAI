@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,13 +26,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+
 """test suite for Azimuthal integrator class"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2023"
+__date__ = "30/04/2024"
 
 import unittest
 import os
@@ -428,7 +429,7 @@ class TestSaxs(unittest.TestCase):
 
     def test_normalization_factor(self):
 
-        ai = AzimuthalIntegrator(detector="Pilatus100k")
+        ai = AzimuthalIntegrator(detector="Imxpad S10")
         ai.wavelength = 1e-10
         methods = ["cython", "numpy", "lut", "csr", "splitpixel"]
         if UtilsTest.opencl and os.name != 'nt':
@@ -482,7 +483,7 @@ class TestSaxs(unittest.TestCase):
 
     def test_empty(self):
         """Non regression about #1760"""
-        ai = AzimuthalIntegrator(detector="Pilatus100k", wavelength=1e-10)
+        ai = AzimuthalIntegrator(detector="Imxpad S10", wavelength=1e-10)
         img = numpy.empty(ai.detector.shape)
         ref = ai.empty
         target = -42
@@ -499,7 +500,7 @@ class TestSaxs(unittest.TestCase):
             self.assertEqual(v.engine.empty, ref, k)
 
     def test_empty_csr(self):
-        ai = AzimuthalIntegrator(detector="Pilatus100k", wavelength=1e-10)
+        ai = AzimuthalIntegrator(detector="Imxpad S10", wavelength=1e-10)
         with self.assertLogs('pyFAI.ext.sparse_builder', level='WARNING') as cm:
             ai.setup_sparse_integrator(shape=ai.detector.shape, npt=100,
                                        pos0_range=(90, 100),
@@ -542,7 +543,7 @@ class TestSetter(unittest.TestCase):
 class TestIntergrationNextGeneration(unittest.TestCase):
 
     def test_histo(self):
-        det = detector_factory("Pilatus100k")
+        det = detector_factory("Imxpad S10")
         data = UtilsTest.get_rng().random(det.shape)
         ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
 
@@ -587,8 +588,11 @@ class TestRange(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        detector = detector_factory("Pilatus 200k")
+        shape = detector.shape
+        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data[:shape[0], :shape[1]]
         cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Pilatus1M.poni"))
+        cls.ai.detector = detector
         cls.unit = "r_mm"
         cls.azim_range = (-90, 90)
         cls.rad_range = (10, 100)
@@ -662,7 +666,7 @@ class TestRange(unittest.TestCase):
         #     else:
         #         logger.warning("Memory consumption: %s",psutil.virtual_memory())
         ai = AzimuthalIntegrator.sload(self.ai)  # make an empty copy and work on just one module of the detector (much faster)
-        ai.detector = detector_factory("Pilatus_100k")
+        ai.detector = detector_factory("Imxpad S10")
         img = self.img[:ai.detector.shape[0],:ai.detector.shape[1]]
 
         methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=2)}
@@ -727,6 +731,83 @@ class TestFlexible2D(unittest.TestCase):
             self.assertTrue(-20 < azimin < -15, f"Lower bound azimuthal is  -20<{azimin}<-15 for {m}")
 
 
+class TestUnweighted(unittest.TestCase):
+    """Test for validating weighted/unweighted average provide correct results"""
+
+    @classmethod
+    def setUpClass(cls):
+        rng = UtilsTest.get_rng()
+        det = detector_factory("imxpad_s10") #very small detector, 10kpix
+        # det = detector_factory("mythen") #very small detector, 1kpix
+        # det = detector_factory("pilatus100k") #very small detector, 100kpix
+        cls.img = rng.uniform(0.5, 1.5, det.shape)
+        cls.ai = AzimuthalIntegrator(detector=det)
+        cls.kwargs = {"flat": cls.img,
+                      "unit": "r_mm",
+                      "correctSolidAngle": False}
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.ai = cls.img = cls.kwargs = None
+
+    def test_weighted(self):
+
+        done = set()
+        for method in IntegrationMethod._registry.values():
+            self.ai.reset()
+            if method.method[:3] in done:
+                continue
+            method = method.weighted
+            try:
+                if method.dim == 1:
+                    res = self.ai.integrate1d(self.img, 10, method=method, **self.kwargs)
+                elif method.dim == 2:
+                    res = self.ai.integrate2d(self.img, 10, method=method, **self.kwargs)
+            except Exception as err:
+                print("Unable to integrate using method", method)
+                raise err
+            sum_signal = res.sum_signal
+            sum_normalization = res.sum_normalization
+            count = res.count
+            if method.impl == "OpenCL":
+                done.add(method.method[:3])
+                if sum_signal.shape != count.shape:
+                    sum_normalization = sum_normalization[..., 0]
+                    sum_signal = sum_signal[..., 0]
+            try:
+                self.assertTrue(numpy.allclose(sum_signal, sum_normalization), f"Weighted: signal == norm for {method}")
+                self.assertFalse(numpy.allclose(sum_normalization, count), f"Weighted: norm != count for {method}")
+            except Exception as err:
+                self.fail(f"Weighted failed for {method} with exception {err}")
+
+    def test_unweighted(self):
+        done = set()
+        for method in IntegrationMethod._registry.values():
+            self.ai.reset()
+            if method.method[:3] in done:
+                continue
+            method = method.unweighted
+            if method.dim == 1:
+                res = self.ai.integrate1d(self.img, 100, method=method, **self.kwargs)
+            elif method.dim == 2:
+                res = self.ai.integrate2d(self.img, 100, method=method, **self.kwargs)
+            sum_signal = res.sum_signal
+            sum_normalization = res.sum_normalization
+            count = res.count
+            if method.impl == "OpenCL":
+                done.add(method.method[:3])
+                if sum_signal.shape != count.shape:
+                    sum_normalization = sum_normalization[..., 0]
+                    sum_signal = sum_signal[..., 0]
+            try:
+                self.assertTrue(numpy.allclose(sum_signal, sum_normalization), f"Unweighted: signal == norm for {method} because signal==flat")
+                self.assertTrue(numpy.allclose(sum_normalization, count), f"Unweighted: norm == count for {method}")
+            except AssertionError as err:
+                raise err
+            except Exception as err:
+                self.fail(f"Unweighted failed for {method} with exception {err}")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
@@ -737,6 +818,7 @@ def suite():
     testsuite.addTest(loader(TestIntergrationNextGeneration))
     testsuite.addTest(loader(TestRange))
     testsuite.addTest(loader(TestFlexible2D))
+    testsuite.addTest(loader(TestUnweighted))
     return testsuite
 
 

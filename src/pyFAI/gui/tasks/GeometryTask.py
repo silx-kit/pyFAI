@@ -1045,6 +1045,7 @@ class GeometryTask(AbstractCalibrationTask):
         self._geometryHistoryCombo.setHistoryModel(model.geometryHistoryModel())
         settings = model.experimentSettingsModel()
         settings.maskedImage().changed.connect(self.__imageUpdated)
+        settings.preprocessedImage().changed.connect(self.__imageUpdated)
         settings.wavelength().changed.connect(self.__invalidateWavelength)
 
         geometry = model.fittedGeometry()
@@ -1077,7 +1078,12 @@ class GeometryTask(AbstractCalibrationTask):
         self.__imageUpdated()
 
     def __imageUpdated(self):
-        image = self.model().experimentSettingsModel().maskedImage().value()
+        try:
+            image = self.model().experimentSettingsModel().preprocessedImage().value()
+        except Exception as e:
+            _logger.warning(f"Error with PreProcessedImageModel: {e}")
+            image = self.model().experimentSettingsModel().maskedImage().value()
+
         if image is not None:
             self.__plot.addImage(image, legend="image", copy=False)
             self.__plot.setGraphXLimits(0, image.shape[0])

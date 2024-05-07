@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2024"
+__date__ = "25/04/2024"
 __status__ = "development"
 
 import threading

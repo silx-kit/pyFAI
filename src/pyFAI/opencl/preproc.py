@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2023"
+__date__ = "23/04/2024"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -255,6 +255,7 @@ class OCL_Preproc(OpenclProcessing):
                                                           ("dummy", dummy),
                                                           ("delta_dummy", delta_dummy),
                                                           ("normalization_factor", numpy.float32(1.0)),
+                                                          ("apply_normalization", numpy.int8(0)),
                                                           ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["corrections2"] = OrderedDict((("image", self.cl_mem["image"]),
@@ -274,6 +275,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("dummy", dummy),
                                                            ("delta_dummy", delta_dummy),
                                                            ("normalization_factor", numpy.float32(1.0)),
+                                                           ("apply_normalization", numpy.int8(0)),
                                                            ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["corrections3"] = OrderedDict((("image", self.cl_mem["image"]),
@@ -297,6 +299,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("dummy", dummy),
                                                            ("delta_dummy", delta_dummy),
                                                            ("normalization_factor", numpy.float32(1.0)),
+                                                           ("apply_normalization", numpy.int8(0)),
                                                            ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["corrections4a"] = OrderedDict((("image_raw", self.cl_mem["image_raw"]),
@@ -321,6 +324,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("dummy", dummy),
                                                            ("delta_dummy", delta_dummy),
                                                            ("normalization_factor", numpy.float32(1.0)),
+                                                           ("apply_normalization", numpy.int8(0)),
                                                            ("output", self.cl_mem["output"])))
 
 
@@ -374,6 +378,7 @@ class OCL_Preproc(OpenclProcessing):
                 normalization_factor=1.0,
                 error_model=None,
                 split_result=None,
+                apply_normalization=False,
                 out=None
                 ):
         """Perform the pixel-wise operation of the array
@@ -384,6 +389,7 @@ class OCL_Preproc(OpenclProcessing):
         :param dark_variance: numpy array with the variance of dark-current image
         :param normalization_factor: divide the result by this
         :param error_model: set to "poisson"  to set variance=signal (minimum 1). None uses the default from constructor
+        :param apply_normalization: correct (directly) the raw signal & variance with normalization, WIP
         :param out: output buffer to save a malloc
         :return: array with processed data,
                 may be an array of (data,variance,normalization) depending on class initialization
@@ -444,6 +450,7 @@ class OCL_Preproc(OpenclProcessing):
 
             kwargs["do_dark"] = do_dark
             kwargs["normalization_factor"] = numpy.float32(normalization_factor)
+            kwargs["apply_normalization"] = numpy.int8(apply_normalization)
             if split_result >= 3:
                 kwargs["error_model"] = numpy.int8(error_model)
             if (kernel_name == "corrections3") and (self.on_device.get("dark_variance") is not None):
@@ -500,6 +507,7 @@ def preproc(raw,
             variance=None,
             dark_variance=None,
             error_model=ErrorModel.NO,
+            apply_normalization=False,
             dtype=numpy.float32,
             out=None
             ):
@@ -519,6 +527,7 @@ def preproc(raw,
     :param split_result: set to true to separate numerator from denominator and return an array of float2 or float3 (with variance)
     :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.
     :param error_model: set to POISSONIAN to assume variance=signal
+    :param apply_normalization: correct (directly) the raw signal & variance with normalization, WIP
     :param dtype: dtype for all processing
     :param out: output buffer to save a malloc
 
@@ -557,6 +566,7 @@ def preproc(raw,
     result = engine.process(raw, dark=dark, variance=variance,
                             dark_variance=dark_variance,
                             normalization_factor=normalization_factor,
+                            apply_normalization=apply_normalization,
                             out=out)
 
     if result.dtype != dtype:

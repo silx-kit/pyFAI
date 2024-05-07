@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2023"
+__date__ = "25/04/2024"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
@@ -104,15 +104,18 @@ def plot1d(result, calibrant=None, label=None, ax=None):
     if ax is None:
         _fig, ax = subplots()
 
-    unit = result.unit
-    if result.sigma is not None:
-        ax.errorbar(result.radial, result.intensity, result.sigma, label=label)
+    try:
+        unit = result.unit
+    except:
+        unit = None
+    if len(result) == 3:
+        ax.errorbar(*result, label=label)
     else:
-        ax.plot(result.radial, result.intensity, label=label)
+        ax.plot(*result, label=label)
 
     if label:
         ax.legend()
-    if calibrant:
+    if calibrant and unit:
         x_values = calibrant.get_peaks(unit)
         if x_values is not None:
             for x in x_values:
@@ -121,7 +124,8 @@ def plot1d(result, calibrant=None, label=None, ax=None):
                 ax.add_line(line)
 
     ax.set_title("1D integration")
-    ax.set_xlabel(unit.label)
+    if unit:
+        ax.set_xlabel(unit.label)
     ax.set_ylabel("Intensity")
 
     return ax

@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/04/2024"
+__date__ = "25/04/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -41,7 +41,6 @@ import threading
 import gc
 from math import pi, log
 import numpy
-from numpy import rad2deg
 from .geometry import Geometry
 from . import units
 from .utils import EPS32, deg2rad, crc32
@@ -51,16 +50,6 @@ from .io import DefaultAiWriter, save_integrate_result
 from .io.ponifile import PoniFile
 error = None
 from .method_registry import IntegrationMethod
-
-from .engines.preproc import preproc as preproc_np
-
-try:
-    from .ext.preproc import preproc as preproc_cy
-except ImportError as err:
-    logger.warning("ImportError pyFAI.ext.preproc %s", err)
-    preproc = preproc_np
-else:
-    preproc = preproc_cy
 
 from .load_integrators import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
                               splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
@@ -1276,7 +1265,8 @@ class AzimuthalIntegrator(Geometry):
                                             flat=flat,
                                             solidangle=solidangle,
                                             polarization=polarization,
-                                            normalization_factor=normalization_factor)
+                                            normalization_factor=normalization_factor,
+                                            weighted_average=method.weighted_average)
             else:  # method.impl_lower in ("opencl", "python"):
                 if method not in self.engines:
                     # instanciated the engine
@@ -1363,7 +1353,8 @@ class AzimuthalIntegrator(Geometry):
                                             flat=flat, solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor,
-                                            **kwargs)
+                                            weighted_average=method.weighted_average,
+                                            ** kwargs)
             # This section is common to all 3 CSR implementations...
             if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -1402,6 +1393,7 @@ class AzimuthalIntegrator(Geometry):
                            flat=flat, solidangle=solidangle,
                            polarization=polarization,
                            normalization_factor=normalization_factor,
+                           weighted_average=method.weighted_average,
                            mask=mask,
                            radial_range=radial_range,
                            error_model=error_model)
@@ -1471,6 +1463,7 @@ class AzimuthalIntegrator(Geometry):
                                polarization=polarization,
                                polarization_checksum=polarization_crc,
                                normalization_factor=normalization_factor,
+                               weighted_average=method.weighted_average,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range,
                                error_model=error_model)
@@ -1507,6 +1500,7 @@ class AzimuthalIntegrator(Geometry):
                                dark=dark, flat=flat, solidangle=solidangle,
                                polarization=polarization,
                                normalization_factor=normalization_factor,
+                               weighted_average=method.weighted_average,
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
@@ -1520,6 +1514,7 @@ class AzimuthalIntegrator(Geometry):
                                dark=dark, flat=flat, solidangle=solidangle,
                                polarization=polarization,
                                normalization_factor=normalization_factor,
+                               weighted_average=method.weighted_average,
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
@@ -1544,50 +1539,7 @@ class AzimuthalIntegrator(Geometry):
             result._set_std(intpl.std)
 
         else:
-            raise RuntimeError("Fallback method ... should no more be used: %s" % method)
-            if radial_range:
-                radial_range = tuple(radial_range[i] * pos0_scale for i in (0, -1))
-            if azimuth_range is not None:
-                azimuth_range = tuple(rad2deg(azimuth_range[i]) for i in (0, -1))
-
-            logger.warning("Failed to find method: %s", method)
-            kwargs = {"npt": npt,
-                      "error_model": None,
-                      "variance": None,
-                      "correctSolidAngle": False,
-                      "polarization_factor": None,
-                      "flat": None,
-                      "radial_range": radial_range,
-                      "azimuth_range": azimuth_range,
-                      "mask": mask,
-                      "dummy": dummy,
-                      "delta_dummy": delta_dummy,
-                      "method": method,
-                      "unit": unit,
-                      }
-
-            normalization_image = numpy.ones(data.shape) * normalization_factor
-            if correctSolidAngle:
-                normalization_image *= self.solidAngleArray(self.detector.shape)
-
-            if polarization_factor:
-                normalization_image *= self.polarization(self.detector.shape, factor=polarization_factor)
-
-            if flat is not None:
-                normalization_image *= flat
-
-            norm = self.integrate1d(normalization_image, **kwargs)
-            signal = self._integrate1d_legacy(data, dark=dark, ** kwargs)
-            sigma2 = self._integrate1d_legacy(variance, **kwargs)
-            result = Integrate1dResult(norm.radial * unit.scale,
-                                       signal.sum / norm.sum,
-                                       numpy.sqrt(sigma2.sum) / norm.sum)
-            result._set_compute_engine(norm.compute_engine)
-            result._set_unit(signal.unit)
-            result._set_sum_signal(signal.sum)
-            result._set_sum_normalization(norm.sum)
-            result._set_sum_variance(sigma2.sum)
-            result._set_count(signal.count)
+            raise RuntimeError(f"Fallback method ... should no more be used: {method}")
         result._set_method(method)
         result._set_has_dark_correction(has_dark)
         result._set_has_flat_correction(has_flat)
@@ -1599,6 +1551,7 @@ class AzimuthalIntegrator(Geometry):
         result._set_error_model(error_model)
         result._set_poni(PoniFile(self))
         result._set_has_solidangle_correction(correctSolidAngle)
+        result._set_weighted_average(method.weighted_average)
 
         if filename is not None:
             save_integrate_result(filename, result)
@@ -1685,6 +1638,237 @@ class AzimuthalIntegrator(Geometry):
         result._set_compute_engine = res.compute_engine
 
         return result
+
+    def integrate_fiber(self, data,
+                        npt_output, output_unit=units.Q_OOP, output_unit_range=None,
+                        npt_integrated=100, integrated_unit=units.Q_IP, integrated_unit_range=None,
+                        sample_orientation=None,
+                        filename=None,
+                        correctSolidAngle=True,
+                        mask=None, dummy=None, delta_dummy=None,
+                        polarization_factor=None, dark=None, flat=None,
+                        method=("bbox", "csr", "cython"),
+                        normalization_factor=1.0):
+        """Calculate the integrated profile curve along a specific FiberUnit
+
+        :param ndarray data: 2D array from the Detector/CCD camera
+        :param int npt_output: number of points in the output pattern
+        :param pyFAI.units.UnitFiber output_unit: Output units
+        :param output_unit_range: The lower and upper range of the output unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_integrated: number of points to be integrated along integrated_unit
+        :param pyFAI.units.UnitFiber integrated_unit: unit to be integrated along integrated_unit_range
+        :param integrated_unit_range: The lower and upper range to be integrated. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param str filename: output filename in 2/3 column ascii format
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param float normalization_factor: Value of a normalization monitor
+        :return: chi bins center positions and regrouped intensity
+        :rtype: Integrate1dResult
+        """
+        if isinstance(integrated_unit, units.UnitFiber):
+            sample_orientation = sample_orientation or integrated_unit.sample_orientation
+        else:
+            sample_orientation = sample_orientation or 1
+
+        reset = False
+        if isinstance(integrated_unit, units.UnitFiber):
+            if integrated_unit.sample_orientation != sample_orientation:
+                integrated_unit.set_sample_orientation(sample_orientation)
+                reset = True
+        else:
+            integrated_unit = units.to_unit(integrated_unit)
+            integrated_unit.set_sample_orientation(sample_orientation)
+            reset = True
+
+        if isinstance(output_unit, units.UnitFiber):
+            if output_unit.sample_orientation != sample_orientation:
+                output_unit.set_sample_orientation(sample_orientation)
+                reset = True
+        else:
+            output_unit = units.to_unit(output_unit)
+            output_unit.set_sample_orientation(sample_orientation)
+            reset = True
+
+        if reset:
+            self.reset()
+
+        res = self.integrate2d_ng(data, npt_rad=npt_integrated, npt_azim=npt_output,
+                                  correctSolidAngle=correctSolidAngle,
+                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                  polarization_factor=polarization_factor,
+                                  dark=dark, flat=flat, method=method,
+                                  normalization_factor=normalization_factor,
+                                  radial_range=integrated_unit_range,
+                                  azimuth_range=output_unit_range,
+                                  unit=(integrated_unit, output_unit))
+
+        unit_scale = output_unit.scale
+        sum_signal = res.sum_signal.sum(axis=-1)
+        count = res.count.sum(axis=-1)
+        sum_normalization = res._sum_normalization.sum(axis=-1)
+        mask = numpy.where(count == 0)
+        empty = dummy if dummy is not None else self._empty
+        intensity = sum_signal / sum_normalization
+        intensity[mask] = empty
+
+        if res.sigma is not None:
+            sum_variance = res.sum_variance.sum(axis=-1)
+            sigma = numpy.sqrt(sum_variance) / sum_normalization
+            sigma[mask] = empty
+        else:
+            sum_variance = None
+            sigma = None
+        result = Integrate1dResult(res.azimuthal * unit_scale, intensity, sigma)
+        result._set_method_called("integrate_radial")
+        result._set_unit(output_unit)
+        result._set_sum_normalization(sum_normalization)
+        result._set_count(count)
+        result._set_sum_signal(sum_signal)
+        result._set_sum_variance(sum_variance)
+        result._set_has_dark_correction(dark is not None)
+        result._set_has_flat_correction(flat is not None)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
+        result._set_method = res.method
+        result._set_compute_engine = res.compute_engine
+
+        if filename is not None:
+            save_integrate_result(filename, result)
+
+        return result
+
+    def integrate_grazing_incidence(self, data,
+                        npt_output, output_unit=units.Q_OOP, output_unit_range=None,
+                        npt_integrated=100, integrated_unit=units.Q_IP, integrated_unit_range=None,
+                        incident_angle=None, tilt_angle=None, sample_orientation=None,
+                        filename=None,
+                        correctSolidAngle=True,
+                        mask=None, dummy=None, delta_dummy=None,
+                        polarization_factor=None, dark=None, flat=None,
+                        method=("bbox", "csr", "cython"),
+                        normalization_factor=1.0):
+        """Calculate the integrated profile curve along a specific FiberUnit, additional inputs for incident angle and tilt angle
+
+        :param ndarray data: 2D array from the Detector/CCD camera
+        :param int npt_output: number of points in the output pattern
+        :param pyFAI.units.UnitFiber output_unit: Output units
+        :param output_unit_range: The lower and upper range of the output unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_integrated: number of points to be integrated along integrated_unit
+        :param pyFAI.units.UnitFiber integrated_unit: unit to be integrated along integrated_unit_range
+        :param integrated_unit_range: The lower and upper range to be integrated. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+        :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param str filename: output filename in 2/3 column ascii format
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param float normalization_factor: Value of a normalization monitor
+        :return: chi bins center positions and regrouped intensity
+        :rtype: Integrate1dResult
+        """
+        reset = False
+
+        if isinstance(integrated_unit, units.UnitFiber):
+            incident_angle = incident_angle or integrated_unit.incident_angle
+        else:
+            incident_angle = incident_angle or 0.0
+
+        if isinstance(integrated_unit, units.UnitFiber):
+            if integrated_unit.incident_angle != incident_angle:
+                integrated_unit.set_incident_angle(incident_angle)
+                reset = True
+        else:
+            integrated_unit = units.to_unit(integrated_unit)
+            integrated_unit.set_incident_angle(incident_angle)
+            reset = True
+
+        if isinstance(output_unit, units.UnitFiber):
+            if output_unit.incident_angle != incident_angle:
+                output_unit.set_incident_angle(incident_angle)
+                reset = True
+        else:
+            output_unit = units.to_unit(output_unit)
+            output_unit.set_incident_angle(incident_angle)
+            reset = True
+
+        if isinstance(integrated_unit, units.UnitFiber):
+            tilt_angle = tilt_angle or integrated_unit.tilt_angle
+        else:
+            tilt_angle = tilt_angle or 0.0
+
+        if isinstance(integrated_unit, units.UnitFiber):
+            if integrated_unit.tilt_angle != tilt_angle:
+                integrated_unit.set_tilt_angle(tilt_angle)
+                reset = True
+        else:
+            integrated_unit = units.to_unit(integrated_unit)
+            integrated_unit.set_tilt_angle(tilt_angle)
+            reset = True
+
+        if isinstance(output_unit, units.UnitFiber):
+            if output_unit.tilt_angle != tilt_angle:
+                output_unit.set_tilt_angle(tilt_angle)
+                reset = True
+        else:
+            output_unit = units.to_unit(output_unit)
+            output_unit.set_tilt_angle(tilt_angle)
+            reset = True
+
+        if isinstance(integrated_unit, units.UnitFiber):
+            sample_orientation = sample_orientation or integrated_unit.sample_orientation
+        else:
+            sample_orientation = sample_orientation or 1
+
+        if isinstance(integrated_unit, units.UnitFiber):
+            if integrated_unit.sample_orientation != sample_orientation:
+                integrated_unit.set_sample_orientation(sample_orientation)
+                reset = True
+        else:
+            integrated_unit = units.to_unit(integrated_unit)
+            integrated_unit.set_sample_orientation(sample_orientation)
+            reset = True
+
+        if isinstance(output_unit, units.UnitFiber):
+            if output_unit.sample_orientation != sample_orientation:
+                output_unit.set_sample_orientation(sample_orientation)
+                reset = True
+        else:
+            output_unit = units.to_unit(output_unit)
+            output_unit.set_sample_orientation(sample_orientation)
+            reset = True
+
+        if reset:
+            self.reset()
+
+        return self.integrate_fiber(data=data,
+                                    npt_output=npt_output, output_unit=output_unit, output_unit_range=output_unit_range,
+                                    npt_integrated=npt_integrated, integrated_unit=integrated_unit, integrated_unit_range=integrated_unit_range,
+                                    sample_orientation=sample_orientation,
+                                    filename=filename,
+                                    correctSolidAngle=correctSolidAngle,
+                                    mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                    polarization_factor=polarization_factor, dark=dark, flat=flat,
+                                    method=method,
+                                    normalization_factor=normalization_factor)
 
     @deprecated(since_version="0.21", only_once=True, deprecated_since="0.21.0")
     def integrate2d_legacy(self, data, npt_rad, npt_azim=360,
@@ -2367,8 +2551,7 @@ class AzimuthalIntegrator(Geometry):
                                                                      deviceid=method.target[1],
                                                                      checksum=cython_integr.lut_checksum,
                                                                      unit=unit, empty=empty,
-                                                                     mask_checksum=mask_crc
-                                                                     )
+                                                                     mask_checksum=mask_crc)
 
                         elif (method.impl_lower == "python"):
                             with ocl_py_engine.lock:
@@ -2395,7 +2578,8 @@ class AzimuthalIntegrator(Geometry):
                                                        polarization=polarization,
                                                        polarization_checksum=polarization_crc,
                                                        safe=safe,
-                                                       normalization_factor=normalization_factor)
+                                                       normalization_factor=normalization_factor,
+                                                       weighted_average=method.weighted_average,)
             if intpl is None:  # fallback if OpenCL failed or default cython
                 # The integrator has already been initialized previously
                 intpl = cython_integr.integrate_ng(data,
@@ -2407,7 +2591,8 @@ class AzimuthalIntegrator(Geometry):
                                                    flat=flat,
                                                    solidangle=solidangle,
                                                    polarization=polarization,
-                                                   normalization_factor=normalization_factor)
+                                                   normalization_factor=normalization_factor,
+                                                   weighted_average=method.weighted_average,)
 
         elif method.algo_lower == "histogram":
             if method.split_lower in ("pseudo", "full"):
@@ -2431,7 +2616,8 @@ class AzimuthalIntegrator(Geometry):
                                    empty=empty,
                                    variance=variance,
                                    error_model=error_model,
-                                   allow_pos0_neg=not radial_unit.positive)
+                                   allow_pos0_neg=not radial_unit.positive,
+                                   weighted_average=method.weighted_average,)
 
             elif method.split_lower == "bbox":
                 logger.debug("integrate2d uses BBox implementation")
@@ -2461,7 +2647,8 @@ class AzimuthalIntegrator(Geometry):
                                      variance=variance,
                                      error_model=error_model,
                                      allow_pos0_neg=not radial_unit.positive,
-                                     clip_pos1=bool(azimuth_unit.period))
+                                     clip_pos1=bool(azimuth_unit.period),
+                                     weighted_average=method.weighted_average,)
             elif method.split_lower == "no":
                 if method.impl_lower == "opencl":
                     logger.debug("integrate2d uses OpenCL histogram implementation")
@@ -2533,7 +2720,8 @@ class AzimuthalIntegrator(Geometry):
                                                  normalization_factor=normalization_factor,
                                                  radial_range=radial_range,
                                                  azimuthal_range=azimuth_range,
-                                                 error_model=error_model)
+                                                 error_model=error_model,
+                                                 weighted_average=method.weighted_average,)
 ####################
                 else:  # if method.impl_lower in ["python", "cython"]:
                     logger.debug("integrate2d uses [CP]ython histogram implementation")
@@ -2546,10 +2734,6 @@ class AzimuthalIntegrator(Geometry):
                                                 radial_range=radial_range,
                                                 azimuth_range=azimuth_range,
                                                 mode="normal").ravel()
-                        # if radial_range is None:
-                        #     radial_range = [radial.min(), radial.max()]
-                        # if azimuth_range is None:
-                        #     azimuth_range = [azim.min(), azim.max()]
                     histogrammer = method.class_funct_ng.function
                     intpl = histogrammer(radial=radial,
                                          azimuthal=azim,
@@ -2571,7 +2755,8 @@ class AzimuthalIntegrator(Geometry):
                                          radial_range=radial_range,
                                          azimuth_range=azimuth_range,
                                          allow_radial_neg=not radial_unit.positive,
-                                         clip_pos1=bool(azimuth_unit.period))
+                                         clip_pos1=bool(azimuth_unit.period),
+                                         weighted_average=method.weighted_average,)
 
         I = intpl.intensity
         bins_azim = intpl.azimuthal

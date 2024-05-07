@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/12/2023"
+__date__ = "30/04/2024"
 
 import unittest
 import random
@@ -168,7 +168,7 @@ class TestSolidAngle(unittest.TestCase):
     def test_flat(self):
         """test sine and cosine for the incidence angle
         """
-        pilatus = detector_factory("Pilatus100k")
+        pilatus = detector_factory("Imxpad S10")
         ai = AzimuthalIntegrator(0.1, detector=pilatus)
         for path in ("cython", "numexpr", "numpy"):
             cosa = numpy.fromfunction(ai.cos_incidence,
@@ -191,7 +191,7 @@ class TestBug88SolidAngle(unittest.TestCase):
 
     def testSolidAngle(self):
         method = ("no", "histogram", "python")
-        ai = AzimuthalIntegrator(dist=0.001, detector="pilatus100k", wavelength=1e-10)
+        ai = AzimuthalIntegrator(dist=0.001, detector="Imxpad S10", wavelength=1e-10)
         img = numpy.ones(ai.detector.shape, dtype=numpy.float32)
         r0 = ai.integrate1d_ng(img, 100, method=method)
         t = r0[1].max()
@@ -445,7 +445,7 @@ class TestGeometry(utilstest.ParametricTestCase):
         return functions
 
     def get_geometries(self):
-        pixels = {"detector": "Pilatus100k",
+        pixels = {"detector": "Imxpad S10",
                   "wavelength": 1e-10}
         geometries = [{'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0},
                       {'dist': 1, 'rot1':-1, 'rot2': 1, 'rot3': 1},
@@ -542,7 +542,7 @@ class TestBugRegression(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super(TestBugRegression, cls).setUpClass()
-        detector = detector_factory("Pilatus100K")  # small detectors makes calculation faster
+        detector = detector_factory("Imxpad S10")  # small detectors makes calculation faster
         cls.geo = geometry.Geometry(detector=detector)
         cls.geo.setFit2D(100, detector.shape[1] // 3, detector.shape[0] // 3, tilt=1)
 

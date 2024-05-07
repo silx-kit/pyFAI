@@ -540,9 +540,23 @@ def setup_model(model, options):
     if options.background:
         logger.error("background option not supported")
     if options.dark:
-        logger.error("dark option not supported")
+        try:
+            with settings.dark().lockContext() as image_model:
+                image_model.setFilename(options.dark)
+                data = pyFAI.io.image.read_image_data(options.dark)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
+        except Exception as e:
+            displayExceptionBox("Error while loading the dark current image", e)
     if options.flat:
-        logger.error("flat option not supported")
+        try:
+            with settings.flat().lockContext() as image_model:
+                image_model.setFilename(options.flat)
+                data = pyFAI.io.image.read_image_data(options.flat)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
+        except Exception as e:
+            displayExceptionBox("Error while loading the flat-field image", e)
     if options.filter:
         logger.error("filter option not supported")
 

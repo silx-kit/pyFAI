@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 #
-#    Copyright (C) 2016-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2016-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,9 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "20/12/2023"
+__date__ = "25/04/2024"
 __license__ = "MIT"
-__copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
+__copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
 
 from collections import OrderedDict
 import json
@@ -39,10 +39,9 @@ import subprocess
 import fabio
 import os.path as op
 from math import ceil
+import numpy
 
-# To use use the locally build version of PyFAI, use ../bootstrap.py
-
-from .. import load
+from .. import load, detector_factory
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod, Method
 from ..utils import mathutil
@@ -62,35 +61,22 @@ except ImportError:
     def update_fig(*args, **kwargs):
         pass
 
-ds_list = ["Pilatus1M.poni",
-           "Pilatus2M.poni",
-           "Eiger4M.poni",
-           "Pilatus6M.poni",
-           "Eiger9M.poni",
-           "Mar3450.poni",
-           "Fairchild.poni"]
-
 detector_names = ["Pilatus1M",
                   "Pilatus2M",
                   "Eiger4M",
                   "Pilatus6M",
                   "Eiger9M",
                   "Mar3450",
-                  "Fairchild",]
+                  "Fairchild", ]
 
-data_sizes = [1.023183,
-         2.476525,
-         4.48569,
-         6.224001,
-         10.138296,
-         11.9025,
-         16.777216,
-] #Mpixels
+ds_list = [d + ".poni" for d in detector_names]
 
+data_sizes = [numpy.prod(detector_factory(d).shape) * 1e-6
+              for d in detector_names]
 
 datasets = {"Fairchild.poni": "Fairchild.edf",
-            "halfccd.poni": "halfccd.edf",
-            "Frelon2k.poni": "Frelon2k.edf",
+            # "halfccd.poni": "halfccd.edf",
+            # "Frelon2k.poni": "Frelon2k.edf",
             "Pilatus6M.poni": "Pilatus6M.cbf",
             "Pilatus1M.poni": "Pilatus1M.edf",
             "Mar3450.poni": "LaB6_260210.mar3450",
@@ -98,7 +84,6 @@ datasets = {"Fairchild.poni": "Fairchild.edf",
             "Eiger4M.poni":"Eiger4M.edf",
             "Eiger9M.poni":"Eiger9M.h5"
             }
-
 
 PONIS = { i: UtilsTest.getimage(i) for i in ds_list}
 
@@ -138,7 +123,6 @@ class BenchTest(object):
         res = None
         if "ai" in dir(self):
             if "engines" in dir(self.ai):
-                from ..method_registry import Method
                 for method in self.ai.engines:
                     if isinstance(method, Method) and method.impl == "opencl":
                         res = self.ai.engines[method].engine.ctx.devices[0]
@@ -249,9 +233,12 @@ class Bench(object):
         self.LIMIT = 8
         self.repeat = repeat
         self.nbr = nbr
-        self.results = OrderedDict()
-        self.meth = []
         self._cpu = None
+        self.results = {"host": platform.node(),
+                        "argv": sys.argv,
+                        "cpu": self.get_cpu(),
+                        "gpu": self.get_gpu()}
+        self.meth = []
         self.fig = None
         self.ax = None
         self.starttime = time.perf_counter()
@@ -521,10 +508,10 @@ class Bench(object):
             if check:
                 module = sys.modules.get(AzimuthalIntegrator.__module__)
                 if module:
-                    if "lut" in method.algo_lower: # Edgar
+                    if "lut" in method.algo_lower:  # Edgar
                     # if "lut" in method:
                         key = module.EXT_LUT_ENGINE
-                    elif "csr" in method.algo_lower: # Edgar
+                    elif "csr" in method.algo_lower:  # Edgar
                     # elif "csr" in method:
                         key = module.EXT_CSR_ENGINE
                     else:
@@ -619,7 +606,7 @@ class Bench(object):
 
     def save(self, filename=None):
         if filename is None:
-            filename = f"benchmark{time.strftime('%Y%m%d-%H%M%S')}.json"
+            filename = f"benchmark-{time.strftime('%Y%m%d-%H%M%S')}.json"
         self.update_mp()
         json.dump(self.results, open(filename, "w"), indent=4)
         if self.fig is not None:
@@ -638,7 +625,7 @@ class Bench(object):
             print("Already initialized")
             return
         if pyplot and ((sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ)):
-            self.fig, self.ax = pyplot.subplots(figsize=(12,6))
+            self.fig, self.ax = pyplot.subplots(figsize=(12, 6))
             self.fig.show()
             self.ax.set_autoscale_on(False)
             self.ax.set_xlabel("Image size in mega-pixels")
@@ -689,7 +676,7 @@ class Bench(object):
         self.ax.legend(
             handles=handles,
             loc='center left',
-            bbox_to_anchor=(1.05,0.5),
+            bbox_to_anchor=(1.05, 0.5),
             fontsize=10,
         )
         self.fig.subplots_adjust(right=0.5)
@@ -790,7 +777,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     ocl_devices = []
     if ocl:
         try:
-            ocl_devices = [(int(i), int(j)) for i,j in devices]
+            ocl_devices = [(int(i), int(j)) for i, j in devices]
         except Exception as err:
             # print(f"{type(err)}: {err}\ndevices is not a list of 2-tuple of integrers, parsing the list")
             ocl_devices = []

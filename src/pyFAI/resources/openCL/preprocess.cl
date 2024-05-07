@@ -3,11 +3,11 @@
  *            Preprocessing program
  *
  *
- *   Copyright (C) 2012-2023 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2024 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 11/10/2023
+ *   Last revision: 23/04/2024
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -261,7 +261,8 @@ static float4 _preproc4(const float  value,
                         const          char   do_dummy,
                         const          float  dummy,
                         const          float  delta_dummy,
-                        const          float  normalization_factor)
+                        const          float  normalization_factor,
+                        const          char   apply_normalization)
 {
     size_t i = get_global_id(0);
     float4 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
@@ -305,10 +306,16 @@ static float4 _preproc4(const float  value,
                     result.s2 *= absorption[i];
                 if (isnan(result.s0) || isnan(result.s1) || isnan(result.s2) || (result.s2 == 0.0f))
                     result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+                else if (apply_normalization){
+                    result.s0 /= result.s2;
+                    result.s1 /= result.s2*result.s2;
+                    result.s2 = 1.0f;
+                }
             }
             else{
                 result = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
             }//end if do_dummy
+
         } // end if mask
     }//end if NIMAGE
     return result;
@@ -344,7 +351,8 @@ static float4 _preproc4(const float  value,
  * - dummy           Float: value for bad pixels
  * - delta_dummy     Float: precision for bad pixel value
  * - normalization_factor : divide the input by this value
- *
+ * - apply_normalization: divide signal by norm at preprocessing stage (for an unweighted mean, default being weighted mean)
+ * - output:         Destination array
 **/
 
 kernel void
@@ -365,6 +373,7 @@ corrections(const global float  *image,
             const          float  dummy,
             const          float  delta_dummy,
             const          float  normalization_factor,
+            const          char   apply_normalization,
                   global float  *output){
     size_t i= get_global_id(0);
     if (i < NIMAGE) {
@@ -389,7 +398,8 @@ corrections(const global float  *image,
                            do_dummy,
                            dummy,
                            delta_dummy,
-                           normalization_factor);
+                           normalization_factor,
+                           apply_normalization);
         if (result.s2 != 0.0f)
             output[i] = result.s0 / result.s2;
         else
@@ -444,6 +454,7 @@ corrections2(const global float  *image,
              const          float  dummy,
              const          float  delta_dummy,
              const          float  normalization_factor,
+             const          char   apply_normalization,
                    global float2  *output
             )
 {
@@ -472,7 +483,8 @@ corrections2(const global float  *image,
                            do_dummy,
                            dummy,
                            delta_dummy,
-                           normalization_factor);
+                           normalization_factor,
+                           apply_normalization);
         output[i] = (float2)(result.s0, result.s2);
     };//end if NIMAGE
 };//end kernel
@@ -528,6 +540,7 @@ corrections3(const global float  *image,
              const          float  dummy,
              const          float  delta_dummy,
              const          float  normalization_factor,
+             const          char   apply_normalization,
                    global float3  *output
             )
 {
@@ -555,7 +568,8 @@ corrections3(const global float  *image,
                             do_dummy,
                             dummy,
                             delta_dummy,
-                            normalization_factor);
+                            normalization_factor,
+                            apply_normalization);
         output[i] = (float3)(result.s0, result.s1, result.s2);
     };//end if NIMAGE
 };//end kernel
@@ -612,6 +626,7 @@ corrections4(const global float  *image,
              const          float  dummy,
              const          float  delta_dummy,
              const          float  normalization_factor,
+             const          char   apply_normalization,
                    global float4  *output
             )
 {
@@ -639,7 +654,8 @@ corrections4(const global float  *image,
                             do_dummy,
                             dummy,
                             delta_dummy,
-                            normalization_factor);
+                            normalization_factor,
+                            apply_normalization);
         output[i] = result;
     };//end if NIMAGE
 };//end kernel
@@ -697,6 +713,7 @@ corrections4a(const global uchar  *image,
              const          float  dummy,
              const          float  delta_dummy,
              const          float  normalization_factor,
+             const          char   apply_normalization,
                    global float4  *output
             )
 {
@@ -725,7 +742,8 @@ corrections4a(const global uchar  *image,
                             do_dummy,
                             dummy,
                             delta_dummy,
-                            normalization_factor);
+                            normalization_factor,
+                            apply_normalization);
         output[i] = result;
     };//end if NIMAGE
 };//end kernel

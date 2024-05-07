@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,10 +34,11 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2023"
+__date__ = "26/04/2024"
 __status__ = "development"
 
 import inspect
+import copy
 from logging import getLogger
 logger = getLogger(__name__)
 from collections import OrderedDict, namedtuple
@@ -180,7 +181,7 @@ class IntegrationMethod:
                 return method
             else:
                 method = method.method
-        if isinstance(method, str):
+        if isinstance(method, str):  # not elif, prevents change of dim in sigma-clip-legacy
             method = cls.parse(method, dim)
             method = method.method
         elif dim is not None:
@@ -201,10 +202,15 @@ class IntegrationMethod:
     @classmethod
     def select_method(cls, dim=None, split=None, algo=None, impl=None,
                       target=None, target_type=None, degradable=True, method=None):
-        """Retrieve all algorithm which are fitting the requirement
+        """Retrieve all algorithm which are fitting the requirement:
+
+        :param int dim:
+        :param str split:
+
+        :return: list of compatible methods or None
         """
         if method is not None:
-            dim, split, algo, impl, target = method
+            dim, split, algo, impl, target = method[:5]
             if isinstance(target, (list, tuple)):
                 target, target_type = tuple(target), None
             else:
@@ -320,11 +326,14 @@ class IntegrationMethod:
 
     @classmethod
     def parse(cls, smth, dim=1):
-        """Parse the string for the content
+        """Parse the string/list/tuple/dict for the content
 
-        TODO: parser does not allow to select device
+        :param smth: somthing
+        :param int dim: dimentionnalty of integrator
+        :return: one method fitting the requirement or the default method
         """
         res = []
+        weighted = True
         if isinstance(smth, cls):
             return smth
         if isinstance(smth, Method) and cls.is_available(method_nt=smth):
@@ -335,8 +344,39 @@ class IntegrationMethod:
                 res = cls.select_old_method(dim, smth)
             else:
                 res = cls.select_method(dim, *[i.split()[0] for i in (smth.split(","))])
+        elif isinstance(smth, (list, tuple, dict)):
+            target = None
+
+            if isinstance(smth, dict):
+                split = smth.get("split") or smth.get("pixel_splitting")
+                algo = smth.get("algo") or smth.get("algorithm")
+                impl = smth.get("impl") or smth.get("implementation")
+            else:
+                if len(smth) >= 3:
+                    split, algo, impl = smth[:3]
+                if len(smth) >= 4 and impl == "opencl":
+                    target = smth[3]
+                if len(smth) == 5:
+                    weighted = bool(smth[4])
+            split = split.lower() if split is not None else "*"
+            algo = algo.lower() if algo is not None else "*"
+            impl = impl.lower() if impl is not None else "*"
+            res = cls.select_method(dim, split, algo, impl, target)
+
         if res:
-            return res[0]
+            result = res[0]
+        else:
+            result = None
+        # TODO after other #1998 have been merged
+        # else:
+        #   if dim == 1:
+            #     result = default 1D
+            # else
+            #     result = default 2D
+        if weighted:
+            return result
+        else:
+            return result.unweighted
 
     def __init__(self, dim, split, algo, impl,
                  target=None, target_name=None, target_type=None,
@@ -344,7 +384,7 @@ class IntegrationMethod:
                  old_method=None, extra=None):
         """Constructor of the class, registering the methods.
 
-        DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI
+        /!\ DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI
 
 
         :param dim: 1 or 2 integration engine
@@ -358,33 +398,28 @@ class IntegrationMethod:
         :param old_method: former method name (legacy)
         :param extra: extra informations
         """
-        self.dimension = int(dim)
-        self.algorithm = str(algo)
-        self.algo_lower = self.algorithm.lower()
-        self.pixel_splitting = str(split)
-        self.split_lower = self.pixel_splitting.lower()
-        self.implementation = str(impl)
-        self.impl_lower = self.implementation.lower()
-        self.target = target
-        self.target_name = target_name or str(target)
-        self.target_type = target_type
+        self.__dimension = int(dim)
+        self.__algorithm = str(algo)
+        self.__pixel_splitting = str(split)
+        self.__implementation = str(impl)
+        self.__target = target
+        self.__target_name = target_name or str(target)
+        self.__target_type = target_type
         if class_funct_legacy:
-            self.class_funct_legacy = ClassFunction(*class_funct_legacy)
+            self.__class_funct_legacy = ClassFunction(*class_funct_legacy)
         else:
-            self.class_funct_legacy = None
+            self.__class_funct_legacy = None
         if class_funct_ng:
-            self.class_funct_ng = ClassFunction(*class_funct_ng)
+            self.__class_funct_ng = ClassFunction(*class_funct_ng)
         else:
-            self.class_funct_ng = None
-        self.old_method_name = old_method
+            self.__class_funct_ng = None
+        self.__old_method_name = old_method
         self.extra = extra
-        self.method = Method(self.dimension, self.split_lower, self.algo_lower, self.impl_lower, target)
-        # basic checks
-        assert self.split_lower in self.AVAILABLE_SPLITS
-        assert self.algo_lower in self.AVAILABLE_ALGOS
-        assert self.impl_lower in self.AVAILABLE_IMPLS
-        self.__class__._registry[self.method] = self
-        self.manage_variance = self._does_manage_variance()
+        self._weighted_average = True  # this one is mutable
+        self.__method = Method(self.dimension, self.split_lower, self.algo_lower, self.impl_lower, target)
+        self.__manage_variance = self._does_manage_variance()
+        # finally register
+        self._register()
 
     def __repr__(self):
         if self.target:
@@ -392,6 +427,19 @@ class IntegrationMethod:
         else:
             string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation))
         return "IntegrationMethod(%s)" % string
+
+    def __hash__(self):
+        """Make it independant from weighted"""
+        return self.__method.__hash__()
+
+    def __eq__(self, other):
+        """Make it independant from weighted"""
+        if isinstance(other, self.__class__):
+            return self.__method == other.method
+        elif isinstance(other, Method):
+            return self.__method == other
+        else:
+            return self == other
 
     def _does_manage_variance(self):
         "Checks if the method handles alone the error_model"
@@ -402,22 +450,111 @@ class IntegrationMethod:
             manage_variance = ("poissonian" in sig.parameters) or ("error_model" in sig.parameters)
         return manage_variance
 
+    def _register(self):
+        """basic checks before registering the method"""
+        assert self.split_lower in self.AVAILABLE_SPLITS
+        assert self.algo_lower in self.AVAILABLE_ALGOS
+        assert self.impl_lower in self.AVAILABLE_IMPLS
+        self.__class__._registry[self.method] = self
+
     @property
     def algo_is_sparse(self):
         return self.algo_lower in self.AVAILABLE_ALGOS[1:]
 
     @property
+    def dimension(self):
+        return self.__dimension
+
+    @property
     def dim(self):
-        return self.dimension
+        return self.__dimension
+
+    @property
+    def algorithm(self):
+        return self.__algorithm
 
     @property
     def algo(self):
-        return self.algorithm
+        return self.__algorithm
+
+    @property
+    def pixel_splitting(self):
+        return self.__pixel_splitting
 
     @property
     def split(self):
-        return self.pixel_splitting
+        return self.__pixel_splitting
+
+    @property
+    def implementation(self):
+        return self.__implementation
 
     @property
     def impl(self):
-        return self.implementation
+        return self.__implementation
+
+    @property
+    def algo_lower(self):
+        return self.__algorithm.lower()
+
+    @property
+    def split_lower(self):
+        return self.__pixel_splitting.lower()
+
+    @property
+    def impl_lower(self):
+        return self.implementation.lower()
+
+    @property
+    def target(self):
+        return self.__target
+
+    @property
+    def target_name(self):
+        return self.__target_name
+
+    @property
+    def target_type(self):
+        return self.__target_type
+
+    @property
+    def class_funct_legacy(self):
+        return self.__class_funct_legacy
+
+    @property
+    def class_funct_ng(self):
+        return self.__class_funct_ng
+
+    @property
+    def old_method_name(self):
+        return self.__old_method_name
+
+    @property
+    def method(self):
+        return self.__method
+
+    @property
+    def manage_variance(self):
+        return self.__manage_variance
+
+    @property
+    def weighted_average(self):
+        return self._weighted_average
+
+    @weighted_average.setter
+    def weighted_average(self, value):
+        self._weighted_average = bool(value)
+
+    @property
+    def weighted(self):
+        "return the weighted version"
+        cpy = copy.copy(self)
+        cpy._weighted_average = True
+        return cpy
+
+    @property
+    def unweighted(self):
+        "return the unweighted version"
+        cpy = copy.copy(self)
+        cpy._weighted_average = False
+        return cpy

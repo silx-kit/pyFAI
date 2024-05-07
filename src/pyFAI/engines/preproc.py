@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/07/2022"
+__date__ = "26/04/2024"
 __status__ = "development"
 
 import warnings
@@ -54,8 +54,9 @@ def preproc(raw,
             variance=None,
             dark_variance=None,
             error_model=ErrorModel.NO,
+            apply_normalization=False,
             dtype=numpy.float32,
-            out= None
+            out= None,
             ):
     """Common preprocessing step for all integration engines
 
@@ -77,6 +78,7 @@ def preproc(raw,
     :param dark_variance: provide an estimation of the variance of the dark_current,
             enforce split_result=True and return an float3 array with variance in second position.
     :param error_model: set to "Poisson" for assuming the detector is poissonian and variance = max(1, raw + dark)
+    :param apply_normalization: correct (directly) the raw signal & variance with normalization, WIP
     :param dtype: dtype for all processing
     :param out: output buffer to save a malloc
 
@@ -207,6 +209,13 @@ def preproc(raw,
             result = out
 
         if split_result:
+
+            if apply_normalization:  # see document in issue #1998
+                numpy.divide(signal, normalization, out=signal)
+                if variance is not None:
+                    numpy.divide(variance, normalization*normalization, out=variance)
+                normalization[...] = 1.0
+
             signal[mask] = 0.0
             normalization[mask] = 0.0
             result[..., 0] = signal.reshape(shape)
