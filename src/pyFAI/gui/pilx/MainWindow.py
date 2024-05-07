@@ -134,12 +134,12 @@ class MainWindow(qt.QMainWindow):
             col=0,
             file_name=self._file_name,
             legend="INTEGRATE",
-            color=self.getColorAvailable("INTEGRATE"),
+            color=self.getAvailableColor("INTEGRATE"),
         )
         self.displayPatternAtIndex(point=init_point)
         self.displayImageAtIndex(0, 0)
         self._map_plot_widget.addMarker(
-            0, 0, color=self.getColorCurve(legend="INTEGRATE"), symbol="o", legend="MAP_LOCATION"
+            0, 0, color=self.getCurveColor(legend="INTEGRATE"), symbol="o", legend="MAP_LOCATION"
         )
 
     def getRoiRadialRange(self) -> Tuple[float | None, float | None]:
@@ -157,7 +157,7 @@ class MainWindow(qt.QMainWindow):
                 legend=legend,
                 file_name=self._file_name,
                 background_point=self._background_point,
-                color=self.getColorAvailable(legend),
+                color=self.getAvailableColor(legend),
             )
 
         self._integrated_plot_widget.addCurve(
@@ -165,7 +165,6 @@ class MainWindow(qt.QMainWindow):
             y=point.get_curve(),
             legend=point.legend,
             selectable=False,
-            #color=self.getColorAvailable(legend=point.legend),
             color=point._color,
             resetzoom=self._integrated_plot_widget.getGraphXLimits() == (0,100),
         )
@@ -204,7 +203,7 @@ class MainWindow(qt.QMainWindow):
             file_name=self._file_name,
             background_point=self._background_point,
             legend="INTEGRATE",
-            color=self.getColorAvailable("INTEGRATE"),
+            color=self.getAvailableColor("INTEGRATE"),
         )
 
         if point == self._unfixed_point:
@@ -218,7 +217,7 @@ class MainWindow(qt.QMainWindow):
         self.displayImageAtIndex(row=indices.row, col=indices.col)
         pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
         self._map_plot_widget.addMarker(
-            *pixel_center_coords, color=self.getColorCurve(legend="INTEGRATE"), symbol="o", legend="MAP_LOCATION"
+            *pixel_center_coords, color=self.getCurveColor(legend="INTEGRATE"), symbol="o", legend="MAP_LOCATION"
         )
 
     def fixMapPoint(self, x: float, y: float):
@@ -233,14 +232,14 @@ class MainWindow(qt.QMainWindow):
             file_name=self._file_name,
             background_point=self._background_point,
             legend=f"INTEGRATE_{indices.row}_{indices.col}",
-            color=self.getColorAvailable(f"INTEGRATE_{indices.row}_{indices.col}"),
+            color=self.getAvailableColor(f"INTEGRATE_{indices.row}_{indices.col}"),
         )
 
         # Remove curve and marker if the fixing point is the last clicked
         if point == self._unfixed_point:
             self._unfixed_point = None
             self._integrated_plot_widget.removeCurve(legend="INTEGRATE")
-            self._map_plot_widget.removeMarker(legend=f"MAP_LOCATION")
+            self._map_plot_widget.removeMarker(legend="MAP_LOCATION")
 
         # Unfix is the fixing point is already fixed
         if point in self._fixed_points:
@@ -255,7 +254,7 @@ class MainWindow(qt.QMainWindow):
             pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
             self._map_plot_widget.addMarker(
                 *pixel_center_coords,
-                color=self.getColorCurve(legend=f"INTEGRATE_{indices.row}_{indices.col}"),
+                color=self.getCurveColor(legend=f"INTEGRATE_{indices.row}_{indices.col}"),
                 symbol="d",
                 legend=f"MAP_LOCATION_{indices.row}_{indices.col}",
             )
@@ -317,22 +316,23 @@ class MainWindow(qt.QMainWindow):
             radial_value + self._delta_radial_over_2,
         )
 
-    def getColorCurve(self, legend: str):
+    def getCurveColor(self, legend: str):
         curve = self._integrated_plot_widget.getCurve(legend=legend)
         if curve:
             return curve.getColor()
         else:
             return
 
-    def getColorAvailable(self, legend: str):
+    def getAvailableColor(self, legend: str):
         if self._integrated_plot_widget.getCurve(legend=legend):
             color = self._integrated_plot_widget.getCurve(legend=legend).getColor()
         else:
-            index_color = 0
-            color = rgba(self._integrated_plot_widget.getDefaultColors()[index_color])
-            while color in [self._integrated_plot_widget.getCurve(legend=legend).getColor() for legend in self._integrated_plot_widget]:
-                index_color += 1
-                color = rgba(self._integrated_plot_widget.getDefaultColors()[index_color])
+            color, style = self._integrated_plot_widget._getColorAndStyle()
+            # index_color = 0
+            # color = rgba(self._integrated_plot_widget.getDefaultColors()[index_color])
+            # while color in [self._integrated_plot_widget.getCurve(legend=legend).getColor() for legend in self._integrated_plot_widget]:
+            #     index_color += 1
+            #     color = rgba(self._integrated_plot_widget.getDefaultColors()[index_color])
         return color
 
     def setNewBackgroundCurve(self, x: float, y: float):
@@ -348,8 +348,7 @@ class MainWindow(qt.QMainWindow):
         # Unset the background if it's the same pixel and delete markers
         if background_point == self._background_point:
             self._background_point = None
-            markers = [item for item in self._map_plot_widget.getItems() if isinstance(item, MarkerBase)]
-            _ = [self._map_plot_widget.removeMarker(legend=marker.getLegend()) for marker in markers if "BG" in marker.getLegend()]
+            self._map_plot_widget.removeMarker(legend="BG_LOCATION")
         else:
             self._background_point = background_point
 

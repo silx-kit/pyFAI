@@ -77,8 +77,6 @@ class IntegratedPatternPlotWidget(PlotWidget):
         for legend in self.getAllCurves(just_legend=True):
             yield legend
 
-    def __len__(self):
-        return len(self.getAllCurves(just_legend=True))
 
     def _initRoi(self):
         roi = HorizontalRangeROI()
