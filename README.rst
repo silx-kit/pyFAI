@@ -209,6 +209,6 @@ Indirect contributors (ideas...)
 .. |myBinder Launcher| image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/silx-kit/pyFAI/main?filepath=binder%2Findex.ipynb
 .. |RTD docs| image:: https://readthedocs.org/projects/pyFAI/badge
-    :target: https://pyfai.readthedocs.io/en/main
+   :target: https://pyfai.readthedocs.io/en/latest/
 .. |Zenodo DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.832896.svg
    :target: https://doi.org/10.5281/zenodo.832896
