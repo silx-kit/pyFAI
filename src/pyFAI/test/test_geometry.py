@@ -577,16 +577,12 @@ class TestOrientation(unittest.TestCase):
     def setUpClass(cls) -> None:
         super(TestOrientation, cls).setUpClass()
         cls.ai1 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":1},
-                                           # "poni1":0.1,"poni2":0.1,
                                            "wavelength":1e-10})
         cls.ai2 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":2},
-                                           # "poni1":0.1,"poni2":0.1,
                                            "wavelength":1e-10})
         cls.ai3 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":3},
-                                           # "poni1":0.1,"poni2":0.1,
                                            "wavelength":1e-10})
         cls.ai4 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":4},
-                                           # "poni1":0.1,"poni2":0.1,
                                            "wavelength":1e-10})
 
     @classmethod
@@ -630,6 +626,8 @@ class TestOrientation(unittest.TestCase):
         self.assertTrue(179 < r4.max() < 180, "Orientation 4 upperrange matches")
 
     def test_array_from_unit_tth_corner(self):
+        def angular_distance(a, b, modulo):
+            return numpy.minimum((a-b)%modulo,(b-a)%modulo)
         r1 = self.ai1.array_from_unit(unit="2th_deg", typ="corner")
         r2 = self.ai2.array_from_unit(unit="2th_deg", typ="corner")
         r3 = self.ai3.array_from_unit(unit="2th_deg", typ="corner")
@@ -652,9 +650,8 @@ class TestOrientation(unittest.TestCase):
         self.assertFalse(numpy.allclose(chi1, chi4), "orientation 1,4 differ chi")
 
         self.assertTrue(numpy.allclose(tth1, numpy.fliplr(tth2)), "orientation 1,2 flipped match tth")
-        delta = chi1 + 1 +numpy.fliplr(chi2)
-        print("line 655", delta.min(), delta.max(), delta.mean(), delta.std(), numpy.allclose(chi1 + 1, -numpy.fliplr(chi2), atol=0.0001))
-        self.assertTrue(numpy.allclose(chi1 + 1, -numpy.fliplr(chi2), atol=0.0001), "orientation 1,2 flipped match chi")
+        delta = angular_distance(chi1 + 1,-numpy.fliplr(chi2), 2)
+        self.assertTrue(numpy.allclose(delta, 0, atol=0.0001), "orientation 1,2 flipped match chi")
         self.assertTrue(numpy.allclose(tth1, numpy.flipud(tth4)), "orientation 1,4 flipped match tth")
         self.assertTrue(numpy.allclose(chi1, -numpy.flipud(chi4)), "orientation 1,4 flipped match chi")
         self.assertTrue(numpy.allclose(tth2, numpy.flipud(tth3)), "orientation 2,3 flipped match tth")
