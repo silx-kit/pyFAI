@@ -47,8 +47,10 @@ jobs:
         run: pip install "$(ls dist/pyfai-*.tar.gz)"
       - name: Run tests
         env:
-          WITH_QT_TEST: "False"  # To skip GUI tests
-          PYFAI_OPENCL: "False"  # avoid GPU tests
+          WITH_QT_TEST: "False"  # skip GUI tests
+          PYFAI_OPENCL: "False"  # skip GPU tests
+          PYFAI_LOW_MEM: "True"  # skip all tests >100Mb
+          WITH_GL_TEST: "False"  # disable tests using OpenGL
         run: python -c "import pyFAI.test, sys; sys.exit(pyFAI.test.run_tests())"
 
   build_doc:
