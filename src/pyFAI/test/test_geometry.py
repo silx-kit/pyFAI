@@ -43,6 +43,7 @@ import numpy
 import itertools
 import logging
 import os.path
+import platform
 
 from . import utilstest
 logger = logging.getLogger(__name__)
@@ -626,8 +627,6 @@ class TestOrientation(unittest.TestCase):
         self.assertTrue(179 < r4.max() < 180, "Orientation 4 upperrange matches")
 
     def test_array_from_unit_tth_corner(self):
-        def angular_distance(a, b, modulo):
-            return numpy.minimum((a-b)%modulo,(b-a)%modulo)
         r1 = self.ai1.array_from_unit(unit="2th_deg", typ="corner")
         r2 = self.ai2.array_from_unit(unit="2th_deg", typ="corner")
         r3 = self.ai3.array_from_unit(unit="2th_deg", typ="corner")
@@ -650,25 +649,25 @@ class TestOrientation(unittest.TestCase):
         self.assertFalse(numpy.allclose(chi1, chi4), "orientation 1,4 differ chi")
 
         self.assertTrue(numpy.allclose(tth1, numpy.fliplr(tth2)), "orientation 1,2 flipped match tth")
-        # Something fishy on mac-arm64 where this is not correct ...
-        #self.assertTrue(numpy.allclose(chi1 + 1, -numpy.fliplr(chi2), atol=0.0001), "orientation 1,2 flipped match chi")
-        delta = angular_distance(chi1 + 1, -numpy.fliplr(chi2), 1)
-        self.assertLess(delta.mean(), 0.0001, "orientation 1,2 flipped match chi")
         self.assertTrue(numpy.allclose(tth1, numpy.flipud(tth4)), "orientation 1,4 flipped match tth")
-        # self.assertTrue(numpy.allclose(chi1, -numpy.flipud(chi4)), "orientation 1,4 flipped match chi")
-        delta = angular_distance(chi1, -numpy.flipud(chi4), 1)
-        # print(657, delta.min(), delta.max(),delta.mean(), delta.std())
-        self.assertLess(delta.mean(), 0.0001, "orientation 1,4 flipped match chi")
         self.assertTrue(numpy.allclose(tth2, numpy.flipud(tth3)), "orientation 2,3 flipped match tth")
         self.assertTrue(numpy.allclose(chi2, -numpy.flipud(chi3)), "orientation 2,3 flipped match chi")
         self.assertTrue(numpy.allclose(tth1, tth3[-1::-1, -1::-1]), "orientation 1,3 inversion match tth")
-        # self.assertTrue(numpy.allclose(chi1 + 1, chi3[-1::-1, -1::-1], atol=0.0001), "orientation 1,3 inversion match chi")
-        delta = angular_distance(chi1+1, chi3[-1::-1, -1::-1], 1)
-        self.assertLess(delta.mean(), 0.0001, "orientation 1,3 inversion match chi")
         self.assertTrue(numpy.allclose(tth2, tth4[-1::-1, -1::-1]), "orientation 2,4 inversion match tth")
-        # self.assertTrue(numpy.allclose(chi2 + 1, chi4[-1::-1, -1::-1]), "orientation 2,4 inversion match chi")
-        delta = angular_distance(chi2 + 1, chi4[-1::-1, -1::-1], 1)
-        self.assertLess(delta.mean(), 0.0001, "orientation 2,4 inversion match chi")
+
+        # Something fishy on mac-arm64 where this test fails ... correct on all other platforms !
+        if platform.system() == "Darwin" and platform.machine()=="arm64":
+            def angular_distance(a, b, modulo):
+                return numpy.minimum((a-b)%modulo,(b-a)%modulo)
+            self.assertLess(angular_distance(chi1 + 1, -numpy.fliplr(chi2), 1).mean(), 0.0001, "orientation 1,2 flipped match chi")
+            self.assertLess(angular_distance(chi1, -numpy.flipud(chi4), 1).mean(), 0.0001, "orientation 1,4 flipped match chi")
+            self.assertLess(angular_distance(chi1+1, chi3[-1::-1, -1::-1], 1).mean(), 0.0001, "orientation 1,3 inversion match chi")
+            self.assertLess(angular_distance(chi2 + 1, chi4[-1::-1, -1::-1], 1).mean(), 0.0001, "orientation 2,4 inversion match chi")
+        else:
+            self.assertTrue(numpy.allclose(chi1 + 1, -numpy.fliplr(chi2), atol=0.0001), "orientation 1,2 flipped match chi")
+            self.assertTrue(numpy.allclose(chi1, -numpy.flipud(chi4)), "orientation 1,4 flipped match chi")
+            self.assertTrue(numpy.allclose(chi1 + 1, chi3[-1::-1, -1::-1], atol=0.0001), "orientation 1,3 inversion match chi")
+            self.assertTrue(numpy.allclose(chi2 + 1, chi4[-1::-1, -1::-1]), "orientation 2,4 inversion match chi")
 
     def test_chi(self):
         orient = {}
