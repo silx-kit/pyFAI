@@ -61,7 +61,7 @@ class DiffMapViewPoint():
     @property
     def legend(self):
         return self._legend
-    
+
     def __eq__(self, other) -> bool:
         if isinstance(other, DiffMapViewPoint):
             return (self._row, self._col) == (other._row, other._col)
@@ -70,13 +70,13 @@ class DiffMapViewPoint():
 
     def __repr__(self) -> str:
         return str((self._row, self._col))
-    
+
     def __add__(self, other):
         return self._curve + other._curve
 
     def __sub__(self, other):
         return self._curve - other._curve
-    
+
     def _set_curve(self):
         with h5py.File(self._file_name, "r") as h5file:
             radial_dset = get_radial_dataset(
@@ -102,7 +102,7 @@ class DisplayedPoint(DiffMapViewPoint):
             color=color,
         )
         self.set_background(background_point)
-    
+
     def set_background(self, background_point:DiffMapViewPoint):
         self._background = background_point
 

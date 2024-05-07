@@ -196,9 +196,9 @@ class MainWindow(qt.QMainWindow):
         indices = self._map_plot_widget.getImageIndices(x, y)
         if indices is None:
             return
-        
+
         point = DisplayedPoint(
-            row=indices.row, 
+            row=indices.row,
             col=indices.col,
             file_name=self._file_name,
             background_point=self._background_point,
@@ -225,9 +225,9 @@ class MainWindow(qt.QMainWindow):
 
         if indices is None:
             return
-        
+
         point = DisplayedPoint(
-            row=indices.row, 
+            row=indices.row,
             col=indices.col,
             file_name=self._file_name,
             background_point=self._background_point,
@@ -339,7 +339,7 @@ class MainWindow(qt.QMainWindow):
         indices = self._map_plot_widget.getImageIndices(x, y)
         if indices is None:
             return
-        
+
         background_point = DiffMapViewPoint(row=indices.row,
                                             col=indices.col,
                                             file_name=self._file_name,
