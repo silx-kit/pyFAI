@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2024"
+__date__ = "16/05/2024"
 
 import unittest
 import random
@@ -627,52 +627,65 @@ class TestOrientation(unittest.TestCase):
         self.assertTrue(179 < r4.max() < 180, "Orientation 4 upperrange matches")
 
     def test_array_from_unit_tth_corner(self):
-        r1 = self.ai1.array_from_unit(unit="2th_deg", typ="corner")
-        r2 = self.ai2.array_from_unit(unit="2th_deg", typ="corner")
-        r3 = self.ai3.array_from_unit(unit="2th_deg", typ="corner")
-        r4 = self.ai4.array_from_unit(unit="2th_deg", typ="corner")
+        r1 = self.ai1.array_from_unit(unit="2th_rad", typ="corner")
+        r2 = self.ai2.array_from_unit(unit="2th_rad", typ="corner")
+        r3 = self.ai3.array_from_unit(unit="2th_rad", typ="corner")
+        r4 = self.ai4.array_from_unit(unit="2th_rad", typ="corner")
 
-        tth1 = r1[..., 0].mean(axis=-1)
-        chi1 = r1[..., 1].mean(axis=-1) / numpy.pi
-        tth2 = r2[..., 0].mean(axis=-1)
-        chi2 = r2[..., 1].mean(axis=-1) / numpy.pi
-        tth3 = r3[..., 0].mean(axis=-1)
-        chi3 = r3[..., 1].mean(axis=-1) / numpy.pi
-        tth4 = r4[..., 0].mean(axis=-1)
-        chi4 = r4[..., 1].mean(axis=-1) / numpy.pi
+        tth1 = r1[..., 0]
+        tth2 = r2[..., 0]
+        tth3 = r3[..., 0]
+        tth4 = r4[..., 0]
 
-        self.assertFalse(numpy.allclose(tth1, tth2), "orientation 1,2 differ tth")
-        self.assertFalse(numpy.allclose(chi1, chi2), "orientation 1,2 differ chi")
-        self.assertFalse(numpy.allclose(tth1, tth3), "orientation 1,3 differ tth")
-        self.assertFalse(numpy.allclose(chi1, chi3), "orientation 1,3 differ chi")
-        self.assertFalse(numpy.allclose(tth1, tth4), "orientation 1,4 differ tth")
-        self.assertFalse(numpy.allclose(chi1, chi4), "orientation 1,4 differ chi")
+        chi1 = r1[..., 0]
+        chi2 = r2[..., 0]
+        chi3 = r3[..., 0]
+        chi4 = r4[..., 0]
 
-        self.assertTrue(numpy.allclose(tth1, numpy.fliplr(tth2)), "orientation 1,2 flipped match tth")
-        self.assertTrue(numpy.allclose(tth1, numpy.flipud(tth4)), "orientation 1,4 flipped match tth")
-        self.assertTrue(numpy.allclose(tth2, numpy.flipud(tth3)), "orientation 2,3 flipped match tth")
-        self.assertTrue(numpy.allclose(chi2, -numpy.flipud(chi3)), "orientation 2,3 flipped match chi")
-        self.assertTrue(numpy.allclose(tth1, tth3[-1::-1, -1::-1]), "orientation 1,3 inversion match tth")
-        self.assertTrue(numpy.allclose(tth2, tth4[-1::-1, -1::-1]), "orientation 2,4 inversion match tth")
 
-        # Something fishy on mac-arm64 where this test fails ... correct on all other platforms !
-        if platform.system() == "Darwin" and platform.machine()=="arm64":
-            def angular_distance(a, b, modulo):
-                return numpy.minimum((a-b)%modulo,(b-a)%modulo)
-            self.assertLess(angular_distance(chi1 + 1, -numpy.fliplr(chi2), 1).mean(), 0.0001, "orientation 1,2 flipped match chi")
-            self.assertLess(angular_distance(chi1, -numpy.flipud(chi4), 1).mean(), 0.0001, "orientation 1,4 flipped match chi")
-            self.assertLess(angular_distance(chi1+1, chi3[-1::-1, -1::-1], 1).mean(), 0.0001, "orientation 1,3 inversion match chi")
-            self.assertLess(angular_distance(chi2 + 1, chi4[-1::-1, -1::-1], 1).mean(), 0.0001, "orientation 2,4 inversion match chi")
-        else:
-            self.assertTrue(numpy.allclose(chi1 + 1, -numpy.fliplr(chi2), atol=0.0001), "orientation 1,2 flipped match chi")
-            self.assertTrue(numpy.allclose(chi1, -numpy.flipud(chi4)), "orientation 1,4 flipped match chi")
-            self.assertTrue(numpy.allclose(chi1 + 1, chi3[-1::-1, -1::-1], atol=0.0001), "orientation 1,3 inversion match chi")
-            self.assertTrue(numpy.allclose(chi2 + 1, chi4[-1::-1, -1::-1]), "orientation 2,4 inversion match chi")
+        sin_chi1 = numpy.sin(r1[..., 1])
+        sin_chi2 = numpy.sin(r2[..., 1])
+        sin_chi3 = numpy.sin(r3[..., 1])
+        sin_chi4 = numpy.sin(r4[..., 1])
+
+        cos_chi1 = numpy.cos(r1[..., 1])
+        cos_chi2 = numpy.cos(r2[..., 1])
+        cos_chi3 = numpy.cos(r3[..., 1])
+        cos_chi4 = numpy.cos(r4[..., 1])
+
+        # Here we use complex numbers
+        z1 = tth1*cos_chi1 + tth1*sin_chi1 *1j
+        z2 = tth2*cos_chi2 + tth2*sin_chi2 *1j
+        z3 = tth3*cos_chi3 + tth3*sin_chi3 *1j
+        z4 = tth4*cos_chi4 + tth4*sin_chi4 *1j
+
+        # the mean is not sensitive to 2pi discontinuity in azimuthal direction
+        z1 = z1.mean(axis=-1)
+        z2 = z2.mean(axis=-1)
+        z3 = z3.mean(axis=-1)
+        z4 = z4.mean(axis=-1)
+
+        self.assertFalse(numpy.allclose(z1, z2), "orientation 1,2 differ")
+        self.assertFalse(numpy.allclose(z1, z3), "orientation 1,3 differ")
+        self.assertFalse(numpy.allclose(z1, z3), "orientation 1,3 differ")
+        self.assertFalse(numpy.allclose(z1, z4), "orientation 1,4 differ")
+        self.assertFalse(numpy.allclose(z2, z3), "orientation 2,3 differ")
+        self.assertFalse(numpy.allclose(z2, z4), "orientation 2,4 differ")
+        self.assertFalse(numpy.allclose(z3, z4), "orientation 3,4 differ")
+
+        #Check that the tranformation is OK. This is with complex number thus dense & complicated !
+        self.assertTrue(numpy.allclose(z1, -numpy.fliplr(z2.conj())), "orientation 1,2 flipped")
+        self.assertTrue(numpy.allclose(z1, -z3[-1::-1, -1::-1]), "orientation 1,3 inversed")
+        self.assertTrue(numpy.allclose(z1, numpy.flipud(z4.conj())), "orientation 1,4 flipped")
+        self.assertTrue(numpy.allclose(z2, numpy.flipud(z3.conj())), "orientation 2,3 flipped")
+        self.assertTrue(numpy.allclose(z2, -z4[-1::-1, -1::-1]), "orientation 2,4 inversion")
+        self.assertTrue(numpy.allclose(z3, -numpy.fliplr(z4.conj())), "orientation 3,4 flipped")
+
 
     def test_chi(self):
         orient = {}
         for i in range(1, 5):
-            ai = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":i},
+            ai = geometry.Geometry.sload({"detector":"Imxpad S10", "detector_config":{"orientation":i},
                                            "poni1":0.01, "poni2":0.01,
                                            "wavelength":1e-10})
             chi_c = ai.center_array(unit="chi_rad") / numpy.pi
@@ -701,18 +714,18 @@ class TestOrientation2(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super(TestOrientation2, cls).setUpClass()
-        p = detector_factory("Pilatus100k")
+        p = detector_factory("pilatus100k")
         c = p.get_pixel_corners()
         d1 = c[..., 1].max()
         d2 = c[..., 2].max()
         cls.ai1 = geometry.Geometry.sload({"poni1":3 * d1 / 4, "poni2":3 * d2 / 4, "wavelength":1e-10,
-                                           "detector":"pilatus100k", "detector_config":{"orientation":1}})
+                                           "detector":p, "detector_config":{"orientation":1}})
         cls.ai2 = geometry.Geometry.sload({"poni1":3 * d1 / 4, "poni2":d2 / 4, "wavelength":1e-10,
-                                           "detector":"pilatus100k", "detector_config":{"orientation":2}})
+                                           "detector":p, "detector_config":{"orientation":2}})
         cls.ai3 = geometry.Geometry.sload({"poni1":d1 / 4, "poni2":d2 / 4, "wavelength":1e-10,
-                                           "detector":"pilatus100k", "detector_config":{"orientation":3}})
+                                           "detector":p, "detector_config":{"orientation":3}})
         cls.ai4 = geometry.Geometry.sload({"poni1":d1 / 4, "poni2":3 * d2 / 4, "wavelength":1e-10,
-                                           "detector":"pilatus100k", "detector_config":{"orientation":4}})
+                                           "detector":p, "detector_config":{"orientation":4}})
 
     @classmethod
     def tearDownClass(cls) -> None:
