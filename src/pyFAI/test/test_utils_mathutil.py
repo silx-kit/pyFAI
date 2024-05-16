@@ -159,7 +159,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
 
     def test_allclose_mod(self):
         from ..utils.mathutil import allclose_mod
-        self.assertTrue(allclose_mod(numpy.atan2(+1e-10, -1), numpy.atan2(-1e-10, -1)),"angles matches modulo 2pi")
+        self.assertTrue(allclose_mod(numpy.arctan2(+1e-10, -1), numpy.atan2(-1e-10, -1)),"angles matches modulo 2pi")
 
 
 def suite():
