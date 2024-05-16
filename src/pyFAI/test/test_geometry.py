@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -43,7 +43,6 @@ import numpy
 import itertools
 import logging
 import os.path
-import platform
 
 from . import utilstest
 logger = logging.getLogger(__name__)
@@ -54,6 +53,7 @@ from .. import units
 from ..detectors import detector_factory
 from ..third_party import transformations
 from .utilstest import UtilsTest
+from ..utils.mathutil import allclose_mod
 import fabio
 
 
@@ -637,21 +637,21 @@ class TestOrientation(unittest.TestCase):
         tth3 = r3[..., 0]
         tth4 = r4[..., 0]
 
-        chi1 = r1[..., 0]
-        chi2 = r2[..., 0]
-        chi3 = r3[..., 0]
-        chi4 = r4[..., 0]
+        chi1 = r1[..., 1]
+        chi2 = r2[..., 1]
+        chi3 = r3[..., 1]
+        chi4 = r4[..., 1]
 
 
-        sin_chi1 = numpy.sin(r1[..., 1])
-        sin_chi2 = numpy.sin(r2[..., 1])
-        sin_chi3 = numpy.sin(r3[..., 1])
-        sin_chi4 = numpy.sin(r4[..., 1])
+        sin_chi1 = numpy.sin(chi1)
+        sin_chi2 = numpy.sin(chi2)
+        sin_chi3 = numpy.sin(chi3)
+        sin_chi4 = numpy.sin(chi4)
 
-        cos_chi1 = numpy.cos(r1[..., 1])
-        cos_chi2 = numpy.cos(r2[..., 1])
-        cos_chi3 = numpy.cos(r3[..., 1])
-        cos_chi4 = numpy.cos(r4[..., 1])
+        cos_chi1 = numpy.cos(chi1)
+        cos_chi2 = numpy.cos(chi2)
+        cos_chi3 = numpy.cos(chi3)
+        cos_chi4 = numpy.cos(chi4)
 
         # Here we use complex numbers
         z1 = tth1*cos_chi1 + tth1*sin_chi1 *1j
@@ -698,7 +698,7 @@ class TestOrientation(unittest.TestCase):
             orient[i] = {"ai": ai, "chi_c": chi_c, "chi_m": chi_m}
 
         for o, orien in orient.items():
-            self.assertTrue(numpy.allclose(orien["chi_m"], orien["chi_c"]), f"Orientation {o} matches")
+            self.assertTrue(allclose_mod(orien["chi_m"], orien["chi_c"], 2), f"Orientation {o} matches")
             ai = orien["ai"]
             self.assertLess(numpy.median(ai.delta_array(unit="chi_rad")) / numpy.pi, epsilon, f"Orientation {o} delta chi small #0")
             self.assertLess(numpy.median(ai.deltaChi()) / numpy.pi, epsilon, f"Orientation {o} delta chi small #1")
@@ -709,7 +709,7 @@ class TestOrientation(unittest.TestCase):
             ai.reset()
             chiArray = ai.chiArray() / numpy.pi
             chi_center = orien["chi_c"]
-            self.assertTrue(numpy.allclose(chiArray, chi_center), f"Orientation {o} chiArray == center_array(chi)")
+            self.assertTrue(allclose_mod(chiArray, chi_center), f"Orientation {o} chiArray == center_array(chi)")
 
 
 class TestOrientation2(unittest.TestCase):
