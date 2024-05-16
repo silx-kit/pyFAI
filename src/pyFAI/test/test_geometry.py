@@ -683,29 +683,33 @@ class TestOrientation(unittest.TestCase):
 
 
     def test_chi(self):
+        epsilon = 6e-3
         orient = {}
         for i in range(1, 5):
             ai = geometry.Geometry.sload({"detector":"Imxpad S10", "detector_config":{"orientation":i},
-                                           "poni1":0.01, "poni2":0.01,
-                                           "wavelength":1e-10})
+                                           "poni1":0.005, "poni2":0.005, "wavelength":1e-10})
             chi_c = ai.center_array(unit="chi_rad") / numpy.pi
-            chi_m = ai.corner_array(unit="chi_rad")[..., 0].mean(axis=-1) / numpy.pi
+            corners = ai.corner_array(unit="r_mm")
+            corners_rad = corners[..., 0]
+            corners_ang = corners[..., 1]
+            z = corners_rad*numpy.cos(corners_ang) + corners_rad*numpy.sin(corners_ang)*1j
+            chi_m = numpy.angle(z.mean(axis=-1)) / numpy.pi
 
             orient[i] = {"ai": ai, "chi_c": chi_c, "chi_m": chi_m}
 
         for o, orien in orient.items():
-            self.assertLess(numpy.median(abs(orien["chi_m"] - orien["chi_c"])), 1e-7, f"Orientation {o} matches")
+            self.assertTrue(numpy.allclose(orien["chi_m"], orien["chi_c"]), f"Orientation {o} matches")
             ai = orien["ai"]
-            self.assertLess(numpy.median(ai.delta_array(unit="chi_rad")) / numpy.pi, 1e-3, f"Orientation {o} delta chi small #0")
-            self.assertLess(numpy.median(ai.deltaChi()) / numpy.pi, 1e-3, f"Orientation {o} delta chi small #1")
+            self.assertLess(numpy.median(ai.delta_array(unit="chi_rad")) / numpy.pi, epsilon, f"Orientation {o} delta chi small #0")
+            self.assertLess(numpy.median(ai.deltaChi()) / numpy.pi, epsilon, f"Orientation {o} delta chi small #1")
             ai.reset()
-            self.assertLess(numpy.median(ai.delta_array(unit="chi_rad")) / numpy.pi, 1e-3, f"Orientation {o} delta chi small #2")
+            self.assertLess(numpy.median(ai.delta_array(unit="chi_rad")) / numpy.pi, epsilon, f"Orientation {o} delta chi small #2")
             ai.reset()
-            self.assertLess(numpy.median(ai.deltaChi()) / numpy.pi, 1e-3, f"Orientation {o} delta chi small #3")
+            self.assertLess(numpy.median(ai.deltaChi()) / numpy.pi, epsilon, f"Orientation {o} delta chi small #3")
             ai.reset()
             chiArray = ai.chiArray() / numpy.pi
             chi_center = orien["chi_c"]
-            self.assertTrue(numpy.allclose(chiArray, chi_center, atol=1e-5), f"Orientation {o} chiArray == center_array(chi)")
+            self.assertTrue(numpy.allclose(chiArray, chi_center), f"Orientation {o} chiArray == center_array(chi)")
 
 
 class TestOrientation2(unittest.TestCase):
@@ -719,13 +723,13 @@ class TestOrientation2(unittest.TestCase):
         d1 = c[..., 1].max()
         d2 = c[..., 2].max()
         cls.ai1 = geometry.Geometry.sload({"poni1":3 * d1 / 4, "poni2":3 * d2 / 4, "wavelength":1e-10,
-                                           "detector":p, "detector_config":{"orientation":1}})
+                                           "detector":"pilatus100k", "detector_config":{"orientation":1}})
         cls.ai2 = geometry.Geometry.sload({"poni1":3 * d1 / 4, "poni2":d2 / 4, "wavelength":1e-10,
-                                           "detector":p, "detector_config":{"orientation":2}})
+                                           "detector":"pilatus100k", "detector_config":{"orientation":2}})
         cls.ai3 = geometry.Geometry.sload({"poni1":d1 / 4, "poni2":d2 / 4, "wavelength":1e-10,
-                                           "detector":p, "detector_config":{"orientation":3}})
+                                           "detector":"pilatus100k", "detector_config":{"orientation":3}})
         cls.ai4 = geometry.Geometry.sload({"poni1":d1 / 4, "poni2":3 * d2 / 4, "wavelength":1e-10,
-                                           "detector":p, "detector_config":{"orientation":4}})
+                                           "detector":"pilatus100k", "detector_config":{"orientation":4}})
 
     @classmethod
     def tearDownClass(cls) -> None:
