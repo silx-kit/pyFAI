@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2024"
+__date__ = "16/05/2024"
 
 import unittest
 import numpy
@@ -156,6 +156,11 @@ class TestMathUtil(utilstest.ParametricTestCase):
         ref = is_far_from_group_python(pt, pts, dst2)
         res = is_far_from_group_cython(pt, pts, dst2)
         self.assertEqual(ref, res, "cython implementation matches *is_far_from_group*")
+
+    def test_allclose_mod(self):
+        from ..utils.mathutil import allclose_mod
+        self.assertTrue(allclose_mod(numpy.arctan2(+1e-10, -1), numpy.arctan2(-1e-10, -1)),"angles matches modulo 2pi")
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

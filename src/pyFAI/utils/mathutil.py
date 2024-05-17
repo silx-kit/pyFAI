@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2024"
+__date__ = "16/05/2024"
 __status__ = "production"
 
 import logging
@@ -392,6 +392,7 @@ def unbinning(binnedArray, binsize, norm=True):
 @deprecated(replacement="unbinning", since_version="0.15", only_once=True)
 def unBinning(*args, **kwargs):
     return unbinning(*args, **kwargs)
+
 
 
 def shift_fft(input_img, shift_val, method="fft"):
@@ -928,3 +929,13 @@ def interp_filter(ary, out=None):
     out[mask_invalid] = numpy.interp(x[mask_invalid], x[mask_valid], ary[mask_valid],
                                      left=first, right=last)
     return out
+
+
+def allclose_mod(a, b, modulo=2*numpy.pi, **kwargs):
+    """Returns True if the two arrays a & b are equal within the given
+    tolerance modulo `modulo`; False otherwise.
+
+    Thanks to "Serguei Sokol" <sokol@insa-toulouse.fr>
+    """
+    di = numpy.minimum((a-b)%modulo, (b-a)%modulo)
+    return numpy.allclose(modulo*0.5, (di+modulo*0.5), **kwargs)
