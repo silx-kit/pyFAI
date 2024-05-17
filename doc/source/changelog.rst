@@ -1,9 +1,23 @@
 :Author: Jérôme Kieffer
-:Date: 01/02/2024
+:Date: 17/05/2024
 :Keywords: changelog
 
 Change-log of versions
 ======================
+
+2024.5 XX/05/2024
+-----------------
+- Implemented unweighted average for 2D integration
+ + Integration engines now handle the boolean 'weighted_average' to switch to unweighted mean, similar to legacy methods
+- Implementation of pilx (diff-map-view): interactive viewer for pyFAI-diffmap files (thanks Loic Huder)
+- Creation of a RingExtraction class based on multi-threading (thanks Emily Massahud)
+- Flat-field and dark current corrections for pyFAI-calib2
+- Tunable units and integration methods for fiber/grazing-incidence scattering
+- Fix several bugs related to pyFAI-diffmap GUI/no-GUI options
+- Compatibility with numpy2
+- Fix numerical precision issue on MacOS/arm64
+- Build system moved from bob to cibuildwheels
+  + Windows wheels are build with openmp disabled
 
 2024.2 01/02/2024
 -----------------
