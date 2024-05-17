@@ -33,11 +33,9 @@ As most Python packages, pyFAI is available via PIP::
 
    pip install pyFAI[gui]
 
-It is advised to run this in a vitural environment.
-Provide the *--user* to perform an installation local to your user (not recommended).
-Under UNIX, you may have to run the command via *sudo* to gain root access an
-perform a system wide installation (neither recommended).
-
+It is advised to run this in a `vitural environment <https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments>`_ .
+Provide the *--user* option to perform an installation local to your user-space (**not recommended**).
+Under UNIX, you may have to run the command via *sudo* to gain root access and perform a system wide installation (which is **neither recommended**).
 
 With conda
 ..........
@@ -51,19 +49,20 @@ To install conda please see either `conda <https://conda.io/docs/install/quick.h
 From source code
 ................
 
-The latest release of pyFAI can be downloaded from
+The current development version of pyFAI can be downloaded from
 `Github <https://github.com/silx-kit/pyFAI/archive/main.zip>`_.
 Presently the source code has been distributed as a zip package.
 Download it one and unpack it::
 
     unzip pyFAI-main.zip
 
-As developement is also done on Github,
-`development branch is also available <https://github.com/silx-kit/pyFAI/archive/main.zip>`_
-
 All files are unpacked into the directory pyFAI-main::
 
     cd pyFAI-main
+
+Install dependencies::
+
+    pip install -r requirements.txt
 
 Build it & test it::
 
@@ -71,20 +70,20 @@ Build it & test it::
 
 For its tests, pyFAI downloads test images from the internet.
 Depending on your network connection and your local network configuration,
-you may have to setup a proxy configuration like this (no more needed at ESRF)::
+you may have to setup a proxy configuration like this (not needed at ESRF)::
 
    export http_proxy=http://proxy.site.org:3128
 
 Finally, install pyFAI in the virtualenv after testing it::
 
-    pip install --upgrade .
+    pip install .
 
 The newest development version can also be obtained by checking out from the git
 repository::
 
     git clone https://github.com/silx-kit/pyFAI.git
     cd pyFAI
-    pip install --upgrade .
+    pip install .
 
 If you want pyFAI to make use of your graphic card, please install
 `pyopencl <http://mathema.tician.de/software/pyopencl>`_
@@ -94,15 +93,12 @@ Documentation
 
 Documentation can be build using this command and Sphinx (installed on your computer)::
 
-    pip install -r requirements.txt
     python3 build-doc.py
-
 
 Dependencies
 ------------
 
-Python 3.7, ... 3.11 are well tested and officially supported.
-For python 3.12, it requires silx version 2 which is still unreleased for now.
+Python 3.7, ... 3.12 are well tested and officially supported.
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
@@ -149,7 +145,9 @@ using apt-get these can be installed as::
 MacOSX
 ------
 
-One needs to install `Python` (>=3.7) and `Xcode` prior to start installing pyFAI.
+One needs to manually install a recent version of `Python` (>=3.7) prior to installing pyFAI. 
+Apple provides only an outdated version of Python 2.7 which is now incomatible.
+If you want to build pyFAI from sources, you will also need `Xcode` which is available from the Apple store.
 The compiled extension will use only one core due to the limitation of the compiler.
 OpenCL is hence greately adviced on Apple systems.
 Then install the missing dependencies with `pip`::
@@ -160,7 +158,8 @@ Then install the missing dependencies with `pip`::
 Windows
 -------
 
-Under Windows, one needs to install `Python` (>=3.7) and the Visual Studio C++ compiler.
+Under Windows, one needs to install `Python` (>=3.7) prior to pyFAI.
+The Visual Studio C++ compiler is also needed when building from sources.
 Then install the missing dependencies with `pip`::
 
    pip install  -r requirements.txt
@@ -176,11 +175,12 @@ Maintainers
 -----------
 
 * Jérôme Kieffer (ESRF)
+* Edgar Gutierrez Fernandez (ESRF)
+* Maciej Jankowski (ESRF)
 
 Contributors
 ------------
 
-* Edgar Gutierrez Fernandez (ESRF)
 * Valentin Valls (ESRF)
 * Frédéric-Emmanuel Picca (Soleil)
 * Thomas Vincent (ESRF)
