@@ -1,7 +1,7 @@
 project('pyFAI',
   'c', 'cpp', 'cython',
   license: 'MIT',
-  meson_version: '>= 0.60',
+  meson_version: '>= 1.1',
   version: run_command(['version.py', '--wheel'],
                        check:true).stdout().strip(),
   default_options: ['buildtype=plain', ],
@@ -12,6 +12,16 @@ project('pyFAI',
 if meson.backend() != 'ninja'
   error('Ninja backend required')
 endif
+
+# Read configuration files to disable OpenMP:
+# 'PYFAI_WITH_OPENMP' file should contain 'False'
+os = import('fs')
+if os.is_file('PYFAI_WITH_OPENMP')
+  openmp_var = os.read('PYFAI_WITH_OPENMP').strip()
+else
+  openmp_var = ''
+endif
+
 
 cc = meson.get_compiler('c')
 cpp = meson.get_compiler('cpp')

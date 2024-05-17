@@ -113,6 +113,9 @@ jobs:
         env:
           # Use silx wheelhouse: needed for ppc64le
           CIBW_ENVIRONMENT_LINUX: "PIP_FIND_LINKS=https://www.silx.org/pub/wheelhouse/ PIP_TRUSTED_HOST=www.silx.org"
+          # diable OpenMP under windows
+          CIBW_ENVIRONMENT_WINDOWS: >
+            CIBW_BEFORE_BUILD="${{ echo False > PYFAI_WITH_OPENMP }}"
 
           CIBW_BUILD: cp37-* cp38-* cp39-* cp310-* cp311-* cp312-*
           # Do not build for pypy and muslinux
@@ -125,7 +128,7 @@ jobs:
           CIBW_TEST_COMMAND: python -c "import pyFAI.test, sys; sys.exit(pyFAI.test.run_tests())"
           # Skip tests for emulated architectures
           # and Python3.8 on macos/arm64 (https://github.com/pypa/cibuildwheel/pull/1169)
-          CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x} cp38-macosx_arm64 cp3*-win_amd64"
+          CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x} cp38-macosx_arm64"
           WITH_QT_TEST: "False"  # skip GUI tests
           PYFAI_OPENCL: "False"  # skip GPU tests
           PYFAI_LOW_MEM: "True"  # skip all tests >100Mb
