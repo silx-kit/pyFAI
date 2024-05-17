@@ -931,11 +931,11 @@ def interp_filter(ary, out=None):
     return out
 
 
-def allclose_mod(a, b, modulo=2*numpy.pi, rtol=1.e-5, atol=1.e-8, equal_nan=False):
+def allclose_mod(a, b, modulo=2*numpy.pi, **kwargs):
     """Returns True if the two arrays a & b are equal within the given
     tolerance modulo `modulo`; False otherwise.
 
     Thanks to "Serguei Sokol" <sokol@insa-toulouse.fr>
     """
     di = numpy.minimum((a-b)%modulo, (b-a)%modulo)
-    return numpy.allclose(modulo*0.5, (di+modulo*0.5), rtol=rtol, atol=atol, equal_nan=equal_nan)
+    return numpy.allclose(modulo*0.5, (di+modulo*0.5), **kwargs)
