@@ -1,5 +1,5 @@
 # OpenMP can be used
-omp = dependency('openmp', required : false)
+omp = dependency('openmp', required: get_option('use_openmp'))
 
 py.install_sources(['__init__.py'],
     pure: false,   # Will be installed next to binaries
