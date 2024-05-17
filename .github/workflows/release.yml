@@ -114,6 +114,7 @@ jobs:
           # Use silx wheelhouse: needed for ppc64le
           CIBW_ENVIRONMENT_LINUX: "PIP_FIND_LINKS=https://www.silx.org/pub/wheelhouse/ PIP_TRUSTED_HOST=www.silx.org"
           CIBW_ENVIRONMENT_WINDOWS: "PYFAI_WITH_OPENMP=False"
+          CIBW_BEFORE_BUILD_WINDOWS: ${{ C:\"Program Files"\"Microsoft Visual Studio"\2022\Enterprise\Common7\Tools\VsDevCmd.bat }}
           CIBW_BUILD: cp37-* cp38-* cp39-* cp310-* cp311-* cp312-*
           # Do not build for pypy and muslinux
           CIBW_SKIP: pp* *-musllinux_*
