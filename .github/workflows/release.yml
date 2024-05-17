@@ -113,6 +113,9 @@ jobs:
         env:
           # Use silx wheelhouse: needed for ppc64le
           CIBW_ENVIRONMENT_LINUX: "PIP_FIND_LINKS=https://www.silx.org/pub/wheelhouse/ PIP_TRUSTED_HOST=www.silx.org"
+          # diable OpenMP under windows
+          CIBW_ENVIRONMENT_WINDOWS: >
+            CIBW_BEFORE_BUILD="${{ echo False > PYFAI_WITH_OPENMP }}"
 
           CIBW_BUILD: cp37-* cp38-* cp39-* cp310-* cp311-* cp312-*
           # Do not build for pypy and muslinux
