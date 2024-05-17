@@ -17,7 +17,7 @@ Change-log of versions
 - Compatibility with numpy2
 - Fix numerical precision issue on MacOS/arm64
 - Build system moved from bob to cibuildwheels
-  + Windows wheels are build with openmp disabled 
+  + Windows wheels are build with openmp disabled
 
 2024.2 01/02/2024
 -----------------

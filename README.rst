@@ -145,7 +145,7 @@ using apt-get these can be installed as::
 MacOSX
 ------
 
-One needs to manually install a recent version of `Python` (>=3.7) prior to installing pyFAI. 
+One needs to manually install a recent version of `Python` (>=3.7) prior to installing pyFAI.
 Apple provides only an outdated version of Python 2.7 which is now incomatible.
 If you want to build pyFAI from sources, you will also need `Xcode` which is available from the Apple store.
 The compiled extension will use only one core due to the limitation of the compiler.
