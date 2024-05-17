@@ -54,8 +54,7 @@ dependencies = [
 build-backend = 'mesonpy'
 requires = [
     'meson-python>=0.11',
-    "meson>=0.64; platform_system=='Windows'",
-    "meson>=0.60; platform_system!='Windows'",
+    "meson>=1.1",
     'ninja',
     'wheel',
     'oldest-supported-numpy',
