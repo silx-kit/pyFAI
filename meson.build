@@ -7,21 +7,27 @@ project('pyFAI',
   default_options: ['buildtype=plain', ],
 )
 
+py_mod = import('python')
+py = py_mod.find_installation()
+os = import('fs')
 
 # Seek the backend
 if meson.backend() != 'ninja'
   error('Ninja backend required')
 endif
 
-# Read configuration files to disable OpenMP:
-# 'PYFAI_WITH_OPENMP' file should contain 'False'
-os = import('fs')
+# How to disable OpenMP:
+# The 'PYFAI_WITH_OPENMP' file should contain 'False'
 if os.is_file('PYFAI_WITH_OPENMP')
   openmp_var = os.read('PYFAI_WITH_OPENMP').strip()
 else
-  openmp_var = ''
+  res = run_command(py, '-c', 'import os; print(os.environ["PYFAI_WITH_OPENMP"])')
+  if res.returncode() == 0
+    openmp_var = res.stdout().strip()
+  else
+    openmp_var = ''
+  endif
 endif
-
 
 cc = meson.get_compiler('c')
 cpp = meson.get_compiler('cpp')
@@ -34,8 +40,6 @@ if m_dep.found()
 endif
 
 # https://mesonbuild.com/Python-module.html
-py_mod = import('python')
-py = py_mod.find_installation()
 py_dep = py.dependency()
 
 py.install_sources([
