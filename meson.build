@@ -21,7 +21,8 @@ endif
 if os.is_file('PYFAI_WITH_OPENMP')
   openmp_var = os.read('PYFAI_WITH_OPENMP').strip()
 else
-  res = run_command(py, '-c', 'import os; print(os.environ["PYFAI_WITH_OPENMP"])')
+  res = run_command(py, '-c', 'import os; print(os.environ["PYFAI_WITH_OPENMP"])',
+                    check:false)
   if res.returncode() == 0
     openmp_var = res.stdout().strip()
   else
