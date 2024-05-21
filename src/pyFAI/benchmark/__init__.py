@@ -203,7 +203,8 @@ class BenchTestGpu(BenchTest):
 
     def setup(self):
         self.ai = load(self.azimuthal_params)
-        self.data = fabio.open(self.file_name).data
+        with fabio.open(self.file_name) as fimg:
+            self.data = fimg.data
         self.N = min(self.data.shape)
         self.ai.xrpd_OpenCL(self.data, self.N, devicetype=self.devicetype, useFp64=self.useFp64, platformid=self.platformid, deviceid=self.deviceid)
 

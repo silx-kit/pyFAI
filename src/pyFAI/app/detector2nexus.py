@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "21/05/2024"
 __status__ = "development"
 
 import sys
@@ -113,16 +113,19 @@ def main():
         output = detector.name + ".h5"
 
     if options.mask:
-        mask = fabio.open(options.mask).data.astype(bool)
+        with fabio.open(options.mask) as fimg
+            mask = fimg.data.astype(bool)
         if detector.mask is None:
             detector.mask = mask
         else:
             detector.mask = numpy.logical_or(mask, detector.mask)
 
     if options.flat:
-        detector.flat = fabio.open(options.flat).data
+        with fabio.open(options.flat) as fimg:
+            detector.flat = fimg.data
     if options.dark:
-        detector.dark = fabio.open(options.dark).data
+        with fabio.open(options.dark) as fimg:
+            detector.dark = fimg.data
     if options.splinefile:
         detector.set_splineFile(options.splinefile)
     else:
@@ -143,8 +146,10 @@ def main():
             else:
                 detector.shape = int(p[1]), psize
         if options.dx and options.dy:
-            dx = fabio.open(options.dx).data
-            dy = fabio.open(options.dy).data
+            with fabio.open(options.dx) as fimg:
+                dx = fimg.data
+            with fabio.open(options.dy) as fimg:
+                dy = fimg.data
             # pilatus give displaceemt in percent of pixel ...
             if ".cbf" in options.dx:
                 dx *= 0.01
