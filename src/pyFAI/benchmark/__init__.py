@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "25/04/2024"
+__date__ = "21/05/2024"
 __license__ = "MIT"
 __copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -150,7 +150,8 @@ class BenchTest1D(BenchTest):
 
     def setup(self):
         self.ai = AzimuthalIntegrator.sload(self.poni)
-        self.data = fabio.open(self.file_name).data
+        with fabio.open(self.file_name) as fimg:
+            self.data = fimg.data
         self.N = min(self.data.shape)
         self.function = self.ai.__getattribute__(self.function_name)
 
@@ -176,7 +177,8 @@ class BenchTest2D(BenchTest):
 
     def setup(self):
         self.ai = AzimuthalIntegrator.sload(self.poni)
-        self.data = fabio.open(self.file_name).data
+        with fabio.open(self.file_name) as fimg:
+            self.data = fimg.data
         self.N = self.output_size
 
     def stmt(self):
@@ -565,7 +567,8 @@ class Bench(object):
             self.update_mp()
             file_name = UtilsTest.getimage(datasets[param])
             ai = load(param)
-            data = fabio.open(file_name).data
+            with fabio.open(file_name) as fimg:
+                data = fimg.data
             size = data.size
             N = min(data.shape)
             print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (op.basename(file_name), size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))

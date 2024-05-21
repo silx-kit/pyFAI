@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2023"
+__date__ = "21/05/2024"
 __status__ = "production"
 
 import os
@@ -463,8 +463,10 @@ class Pilatus(_Dectris):
         self.y_offset_file = y_offset_file
         if self.x_offset_file and self.y_offset_file:
             if fabio:
-                self.offset1 = fabio.open(self.y_offset_file).data
-                self.offset2 = fabio.open(self.x_offset_file).data
+                with fabio.open(self.y_offset_file) as fimgy:
+                    self.offset1 = fimgy.data
+                with fabio.open(self.x_offset_file) as fimgx:
+                    self.offset2 = fimgx.data
                 self.uniform_pixel = False
             else:
                 logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
@@ -494,8 +496,10 @@ class Pilatus(_Dectris):
                 self.uniform_pixel = True
                 return
             if fabio:
-                self.offset1 = fabio.open(self.y_offset_file).data
-                self.offset2 = fabio.open(self.x_offset_file).data
+                with fabio.open(self.y_offset_file) as fimgy:
+                    self.offset1 = fimgy.data
+                with fabio.open(self.x_offset_file) as fimgx:
+                    self.offset2 = fimgx.data
             else:
                 logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
                 self.offset1 = None

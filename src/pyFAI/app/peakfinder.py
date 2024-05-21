@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2022"
+__date__ = "21/05/2024"
 __status__ = "production"
 
 import os
@@ -377,7 +377,8 @@ def process(options):
         pb.update(0, message="Initialize the geometry", max_value=nframes)
     ai = load(options.poni)
     if options.mask is not None:
-        mask = fabio.open(options.mask).data
+        with fabio.open(options.mask) as fimg:
+            mask = fimg.data
         ai.detector.mask = mask
     else:
         mask = ai.detector.mask

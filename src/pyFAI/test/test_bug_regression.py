@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/04/2024"
+__date__ = "21/05/2024"
 
 import sys
 import os
@@ -181,7 +181,8 @@ class TestBug211(unittest.TestCase):
             return
 
         self.assertEqual(rc, 0, msg="pyFAI-average return code %i != 0" % rc)
-        self.assertTrue(numpy.allclose(fabio.open(self.outfile).data, self.res),
+        with fabio.open(self.outfile) as fimg:
+            self.assertTrue(numpy.allclose(fimg..data, self.res),
                         "pyFAI-average with quantiles gives good results")
 
 
@@ -211,7 +212,8 @@ class TestBugRegression(unittest.TestCase):
         wavelength change not taken into account (memoization error)
         """
         ai = load(UtilsTest.getimage("Pilatus1M.poni"))
-        data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            data = fimg.data
         wl1 = 1e-10
         wl2 = 2e-10
         ai.wavelength = wl1
@@ -411,7 +413,8 @@ class TestBugRegression(unittest.TestCase):
         from ..calibrant import CALIBRANT_FACTORY
         from ..goniometer import SingleGeometry
         filename = UtilsTest.getimage("Pilatus1M.edf")
-        frame = fabio.open(filename).data
+        with fabio.open(filename) as fimg:
+            frame = fimg.data
 
         # Approximatively the position of the beam center ...
         x = 200  # x-coordinate of the beam-center in pixels

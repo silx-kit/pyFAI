@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2023"
+__date__ = "21/05/2024"
 
 import unittest
 import logging
@@ -50,7 +50,8 @@ class TestMultiGeometry(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.data = fabio.open(UtilsTest.getimage("mock.tif")).data
+        with fabio.open(UtilsTest.getimage("mock.tif")) as fimg:
+            cls.data = fimg.data
         cls.lst_data = [cls.data[:250,:300], cls.data[250:,:300], cls.data[:250, 300:], cls.data[250:, 300:]]
         cls.det = Detector(1e-4, 1e-4)
         cls.det.max_shape = (500, 600)

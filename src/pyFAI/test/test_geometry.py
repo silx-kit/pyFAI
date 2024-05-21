@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2024"
+__date__ = "21/05/2024"
 
 import unittest
 import random
@@ -89,7 +89,8 @@ class TestSolidAngle(unittest.TestCase):
                                  rot3=0,
                                  pixel1=172e-6,
                                  pixel2=172e-6)
-        data = fabio.open(pilatusFile).data
+        with fabio.open(pilatusFile) as fimg:
+            data = fimg.data
         data[data < 0] = 0  # discard negative pixels
 
         method = ("bbox", "histogram", "cython")

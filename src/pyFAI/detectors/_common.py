@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/04/2024"
+__date__ = "21/05/2024"
 __status__ = "stable"
 
 import logging
@@ -1012,8 +1012,9 @@ class Detector(metaclass=DetectorMeta):
 
     def set_maskfile(self, maskfile):
         if fabio:
-            mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
-                                           dtype=numpy.int8)
+            with fabio.open(maskfile) as fimg:
+                mask = numpy.ascontiguousarray(fimg.data,
+                                               dtype=numpy.int8)
             self.set_mask(mask)
             self._maskfile = maskfile
         else:
@@ -1110,7 +1111,8 @@ class Detector(metaclass=DetectorMeta):
         elif len(files) == 1:
             if fabio is None:
                 raise RuntimeError("FabIO is missing")
-            self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
+            with fabio.open(files[0]) as fimg:
+                self.set_flatfield(fimg.data.astype(numpy.float32))
             self.flatfiles = files[0]
         else:
             self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
@@ -1152,7 +1154,8 @@ class Detector(metaclass=DetectorMeta):
         elif len(files) == 1:
             if fabio is None:
                 raise RuntimeError("FabIO is missing")
-            self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
+            with fabio.open(files[0]) as fimg:
+            self.set_darkcurrent(fimg.data.astype(numpy.float32))
             self.darkfiles = files[0]
         else:
             self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))

@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/01/2024"
+__date__ = "21/05/2024"
 __status__ = "production"
 
 import os
@@ -107,7 +107,8 @@ def get_detector(detector, datafiles=None):
     else:
         res = Detector()
     if datafiles and os.path.exists(datafiles[0]):
-        shape = fabio.open(datafiles[0]).data.shape
+        with fabio.open(datafiles[0]) as fimg:
+            shape = fimg.shape
         res.guess_binning(shape)
     return res
 
@@ -398,7 +399,8 @@ class AbstractCalibration(object):
                 logger.error("Unknown spline file %s", options.spline)
 
         if options.mask and os.path.isfile(options.mask):
-            self.mask = (fabio.open(options.mask).data != 0)
+            with fabio.open(options.mask) as fimg:
+                self.mask = (fimg.data != 0)
         else:  # Use default mask provided by detector
             self.mask = self.detector.mask
 
@@ -1493,7 +1495,8 @@ class CliCalibration(AbstractCalibration):
         if self.wavelength is None:
             self.wavelength = self.ai.wavelength
 
-        self.img = fabio.open(self.outfile).data
+        with fabio.open(self.outfile) as fimg:
+            self.img = fimg.data
 
         AbstractCalibration.preprocess(self)
 
@@ -2034,7 +2037,8 @@ class MultiCalib(object):
         if options.flat:
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
         if options.mask and os.path.isfile(options.mask):
-            self.mask = fabio.open(options.mask).data
+            with fabio.open(options.mask) as fimg:
+                self.mask = fimg.data
 
         if options.detector_name:
             self.detector = get_detector(options.detector_name, options.args)
@@ -2167,40 +2171,40 @@ class MultiCalib(object):
         """
         self.dataFiles.sort()
         for fn in self.dataFiles:
-            fabimg = fabio.open(fn)
-            wavelength = self.wavelength
-            dist = self.dist
-            if self.poni2:
-                centerX = self.poni2 / self.detector.pixel2
-            else:
-                centerX = None
-            if self.poni1:
-                centerY = self.poni1 / self.detector.pixel1
-            else:
-                centerY = None
-            if "_array_data.header_contents" in fabimg.header:
-                headers = fabimg.header["_array_data.header_contents"].lower().split()
-                if "detector_distance" in headers:
-                    dist = float(headers[headers.index("detector_distance") + 1])
-                if "wavelength" in headers:
-                    wavelength = float(headers[headers.index("wavelength") + 1]) * 1e-10
-                if "beam_xy" in headers:
-                    centerX = float(headers[headers.index("beam_xy") + 1][1:-1])
-                    centerY = float(headers[headers.index("beam_xy") + 2][:-1])
-            if dist is None:
-                digits = ""
-                for i in os.path.basename(fn):
-                    if i.isdigit() and not digits:
-                        digits += i
-                    elif i.isdigit():
-                        digits += i
-                    elif not i.isdigit() and digits:
-                        break
-                dist = int(digits) * 0.001
-            if centerX is None:
-                centerX = fabimg.data.shape[1] // 2
-            if centerY is None:
-                centerY = fabimg.data.shape[0] // 2
+            with fabio.open(fn) as fabimg:
+                wavelength = self.wavelength
+                dist = self.dist
+                if self.poni2:
+                    centerX = self.poni2 / self.detector.pixel2
+                else:
+                    centerX = None
+                if self.poni1:
+                    centerY = self.poni1 / self.detector.pixel1
+                else:
+                    centerY = None
+                if "_array_data.header_contents" in fabimg.header:
+                    headers = fabimg.header["_array_data.header_contents"].lower().split()
+                    if "detector_distance" in headers:
+                        dist = float(headers[headers.index("detector_distance") + 1])
+                    if "wavelength" in headers:
+                        wavelength = float(headers[headers.index("wavelength") + 1]) * 1e-10
+                    if "beam_xy" in headers:
+                        centerX = float(headers[headers.index("beam_xy") + 1][1:-1])
+                        centerY = float(headers[headers.index("beam_xy") + 2][:-1])
+                if dist is None:
+                    digits = ""
+                    for i in os.path.basename(fn):
+                        if i.isdigit() and not digits:
+                            digits += i
+                        elif i.isdigit():
+                            digits += i
+                        elif not i.isdigit() and digits:
+                            break
+                    dist = int(digits) * 0.001
+                if centerX is None:
+                    centerX = fabimg.data.shape[1] // 2
+                if centerY is None:
+                    centerY = fabimg.data.shape[0] // 2
             self.results[fn] = {"wavelength": wavelength, "dist": dist}
             rec = Recalibration(dataFiles=[fn], darkFiles=self.darkFiles,
                                 flatFiles=self.flatFiles, detector=self.detector,
@@ -2341,21 +2345,26 @@ refinement process.
             logger.setLevel(logging.DEBUG)
 
         if options.mask is not None:
-            self.mask = (fabio.open(options.mask).data != 0)
+            with fabio.open(options.mask) as fimg:
+                self.mask = (fimg.data != 0)
         args = expand_args(options.args)
         if len(args) > 0:
             f = args[0]
             if os.path.isfile(f):
-                self.img = fabio.open(f).data.astype(numpy.float32)
+                with fabio.open(f) as fimg:
+                    self.img = fimg.data.astype(numpy.float32)
             else:
                 print("Please enter diffraction images as arguments")
                 return False
             for f in args[1:]:
-                self.img += fabio.open(f).data
+                with fabio.open(f) as fimg:
+                    self.img += fimg.data
         if options.dark and os.path.exists(options.dark):
-            self.img -= fabio.open(options.dark).data
+            with fabio.open(options.dark) as fimg:
+                self.img -= fimg.data
         if options.flat and os.path.exists(options.flat):
-            self.img /= fabio.open(options.flat).data
+            with fabio.open(options.flat) as fimg:
+                self.img /= fimg.data
         if options.poni:
             self.ai = AzimuthalIntegrator.sload(options.poni)
         self.data = [f for f in args if os.path.isfile(f)]

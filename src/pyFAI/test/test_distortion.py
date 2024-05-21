@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "21/05/2024"
 
 import unittest
 import numpy
@@ -60,9 +60,11 @@ class TestHalfCCD(unittest.TestCase):
         cls.halfFrelon = UtilsTest.getimage(cls.halfFrelon)
         cls.splineFile = UtilsTest.getimage(cls.splineFile)
         cls.det = detectors.FReLoN(cls.splineFile)
-        cls.fit2d = fabio.open(cls.fit2dFile).data
+        with fabio.open(cls.fit2dFile) as fimg:
+            cls.fit2d = fimg.data
         cls.ref = _distortion.Distortion(cls.det)
-        cls.raw = fabio.open(cls.halfFrelon).data
+        with fabio.open(cls.halfFrelon) as fimg:
+            cls.raw = fimg.data
         cls.dis = distortion.Distortion(cls.det, method="LUT")
         cls.larger = numpy.zeros(cls.det.shape)
         cls.larger[:-1,:] = cls.raw
