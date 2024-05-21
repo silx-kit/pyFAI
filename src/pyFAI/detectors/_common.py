@@ -1155,7 +1155,7 @@ class Detector(metaclass=DetectorMeta):
             if fabio is None:
                 raise RuntimeError("FabIO is missing")
             with fabio.open(files[0]) as fimg:
-            self.set_darkcurrent(fimg.data.astype(numpy.float32))
+                self.set_darkcurrent(fimg.data.astype(numpy.float32))
             self.darkfiles = files[0]
         else:
             self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
