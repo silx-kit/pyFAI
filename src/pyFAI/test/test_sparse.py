@@ -134,8 +134,8 @@ class TestSparseIntegrate2d(unittest.TestCase):
         cls.N = 500
         cls.unit = "r_mm"
         cls.ai = load(UtilsTest.getimage("Pilatus1M.poni"))
-        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg
-        cls.data = fimg.data
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            cls.data = fimg.data
 
     @classmethod
     def tearDownClass(cls):
