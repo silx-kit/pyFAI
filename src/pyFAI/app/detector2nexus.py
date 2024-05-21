@@ -113,7 +113,7 @@ def main():
         output = detector.name + ".h5"
 
     if options.mask:
-        with fabio.open(options.mask) as fimg
+        with fabio.open(options.mask) as fimg:
             mask = fimg.data.astype(bool)
         if detector.mask is None:
             detector.mask = mask
