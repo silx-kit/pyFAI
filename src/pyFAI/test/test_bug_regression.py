@@ -182,7 +182,7 @@ class TestBug211(unittest.TestCase):
 
         self.assertEqual(rc, 0, msg="pyFAI-average return code %i != 0" % rc)
         with fabio.open(self.outfile) as fimg:
-            self.assertTrue(numpy.allclose(fimg..data, self.res),
+            self.assertTrue(numpy.allclose(fimg.data, self.res),
                         "pyFAI-average with quantiles gives good results")
 
 
