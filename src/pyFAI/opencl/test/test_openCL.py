@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "21/05/2024"
 
 import unittest
 import os
@@ -117,7 +117,8 @@ class TestMask(unittest.TestCase):
 
         for ds in self.datasets:
             ai = load(ds["poni"])
-            data = fabio.open(ds["img"]).data
+            with fabio.open(ds["img"]) as fimg:
+                data = fimg.data
             ref = ai.integrate1d_ng(data, self.N, method=("no", "histogram", "cython"), unit="2th_deg")
             for method in to_test:
                 res = ai.integrate1d_ng(data, self.N, method=method, unit="2th_deg")
@@ -132,7 +133,8 @@ class TestMask(unittest.TestCase):
         to_test = [v for k, v in IntegrationMethod._registry.items() if k.target == ids and k.split == "bbox" and k.algo in ("lut", "csr") and k.dim == 1]
         for ds in self.datasets:
             ai = load(ds["poni"])
-            data = fabio.open(ds["img"]).data
+            with fabio.open(ds["img"]) as fimg:
+                data = fimg.data
             ref = ai.integrate1d_ng(data, self.N, method=("bbox", "histogram", "cython"), unit="2th_deg")
             for method in to_test:
                 res = ai.integrate1d_ng(data, self.N, method=method, unit="2th_deg")
@@ -148,7 +150,8 @@ class TestMask(unittest.TestCase):
         N = 100
         for ds in self.datasets:
             ai = load(ds["poni"])
-            data = fabio.open(ds["img"]).data
+            with fabio.open(ds["img"]) as fimg:
+                data = fimg.data
             ref = ai.integrate1d_ng(data, N, method=("no", "histogram", "cython"), unit="2th_deg", error_model="poisson")
             for method  in  to_test:
                 try:

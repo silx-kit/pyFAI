@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "21/05/2024"
 __status__ = "production"
 
 import os
@@ -114,7 +114,8 @@ class PeakPicker(object):
         :param pointfile:
         """
         if isinstance(data, (str,)):
-            data = fabio.open(data).data
+            with fabio.open(data) as fimg:
+                data = fimg.data
 
         self.data = numpy.ascontiguousarray(data, numpy.float32)
         if (mask is None) and (isinstance(detector, Detector)):

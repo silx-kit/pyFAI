@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2022"
+__date__ = "21/05/2024"
 
 import contextlib
 import os
@@ -75,7 +75,8 @@ class TestIntegrate1D(unittest.TestCase):
     def setUpClass(self):
         self.npt = 1000
         self.img = UtilsTest.getimage("Pilatus1M.edf")
-        self.data = fabio.open(self.img).data
+        with fabio.open(self.img) as fimg:
+            self.data = fimg.data
         self.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
         self.ai.wavelength = 1e-10
         self.Rmax = 3
@@ -187,7 +188,8 @@ class TestIntegrate2D(unittest.TestCase):
     def setUpClass(cls):
         cls.npt = 500
         cls.img = UtilsTest.getimage("Pilatus1M.edf")
-        cls.data = fabio.open(cls.img).data
+        with fabio.open(cls.img) as fimg:
+            cls.data = fimg.data
         cls.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
         cls.ai.wavelength = 1e-10
         cls.Rmax = 30

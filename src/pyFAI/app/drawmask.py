@@ -33,7 +33,7 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2021"
+__date__ = "21/05/2024"
 __satus__ = "Production"
 
 import os
@@ -150,7 +150,8 @@ def postProcessId21(processFile, mask):
     """
     print("Selected %i datapoints on file %s" % (mask.sum(), processFile[0]))
     for datafile in processFile:
-        data = fabio.open(datafile).data[numpy.where(mask)]
+        with fabio.open(datafile) as fimg:
+            data = fimg.data[numpy.where(mask)]
         print("On File: %s,\t mean= %s \t std= %s" % (datafile, data.mean(), data.std()))
 
 
@@ -181,7 +182,8 @@ def main():
     app = qt.QApplication([])
 
     window = MaskImageWidget()
-    image = fabio.open(processFile[0]).data
+    with fabio.open(processFile[0]) as fimg:
+        image = fimg.data
     window.setImageData(image)
     window.show()
     outfile = os.path.splitext(processFile[0])[0] + "-mask.edf"

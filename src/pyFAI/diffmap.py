@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/04/2024"
+__date__ = "21/05/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -473,8 +473,8 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.ai.detector.shape:
             shape = self.ai.detector.shape
         else:
-            fimg = fabio.open(self.inputfiles[0])
-            shape = fimg.data.shape
+            with fabio.open(self.inputfiles[0]) as fimg:
+                shape = fimg.data.shape
             self.worker.ai.shape = shape
             self.worker._shape = shape
         self.worker.output = "raw"
@@ -568,22 +568,22 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.makeHDF5()
 
         t = time.perf_counter()
-        fimg = fabio.open(filename)
-        if "dataset" in dir(fimg):
-            if isinstance(fimg.dataset, list):
-                for ds in fimg.dataset:
-                    self.set_hdf5_input_dataset(ds)
-            else:
-                self.set_hdf5_input_dataset(fimg.dataset)
-        self.process_one_frame(fimg.data)
-        if callable(callback):
-            callback(filename, 0)
-        if fimg.nframes > 1:
-            for i in range(1, fimg.nframes):
-                fimg = fimg.next()
-                self.process_one_frame(fimg.data)
-                if callable(callback):
-                    callback(filename, i + 1)
+        with fabio.open(filename) as fimg:
+            if "dataset" in dir(fimg):
+                if isinstance(fimg.dataset, list):
+                    for ds in fimg.dataset:
+                        self.set_hdf5_input_dataset(ds)
+                else:
+                    self.set_hdf5_input_dataset(fimg.dataset)
+            self.process_one_frame(fimg.data)
+            if callable(callback):
+                callback(filename, 0)
+            if fimg.nframes > 1:
+                for i in range(1, fimg.nframes):
+                    fimg = fimg.next()
+                    self.process_one_frame(fimg.data)
+                    if callable(callback):
+                        callback(filename, i + 1)
         t -= time.perf_counter()
         print(f"Processing {os.path.basename(filename):30s} took {-1000*t:6.1f}ms ({fimg.nframes} frames)")
         self.timing.append(-t)

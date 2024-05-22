@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "21/05/2024"
 
 import unittest
 import numpy
@@ -99,13 +99,13 @@ class TestEdfMonitor(unittest.TestCase):
         self.assertRaises(header_utils.MonitorNotFound, header_utils._get_monitor_value_from_edf, self.image, "bad_size/mon")
 
     def test_edf_file_motor(self):
-        image = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
-        result = header_utils._get_monitor_value_from_edf(image, "motor/lx")
+        with  fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as image:
+            result = header_utils._get_monitor_value_from_edf(image, "motor/lx")
         self.assertEqual(result, -0.2)
 
     def test_edf_file_key(self):
-        image = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
-        result = header_utils._get_monitor_value_from_edf(image, "scan_no")
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as image:
+            result = header_utils._get_monitor_value_from_edf(image, "scan_no")
         self.assertEqual(result, 19)
 
 

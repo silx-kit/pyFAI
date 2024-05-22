@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2024"
+__date__ = "21/05/2024"
 __status__ = "production"
 
 import sys
@@ -66,7 +66,8 @@ class Massif(object):
         :param median_prefilter: apply a 3x3 median prefilter to the data to sieve out outliers
         """
         if isinstance(data, (str,)) and os.path.isfile(data):
-            self.data = fabio.open(data).data.astype("float32")
+            with fabio.open(data) as fimg:
+                self.data = fimg.data.astype("float32")
         elif isinstance(data, fabio.fabioimage.fabioimage):
             self.data = data.data.astype("float32")
         else:

@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/04/2024"
+__date__ = "21/05/2024"
 
 import unittest
 import os
@@ -96,7 +96,8 @@ class TestAzimHalfFrelon(unittest.TestCase):
         cls.fit2d = numpy.loadtxt(cls.fit2dFile)
         cls.ai = AzimuthalIntegrator()
         cls.ai.load(cls.poniFile)
-        cls.data = fabio.open(cls.halfFrelon).data
+        with fabio.open(cls.halfFrelon) as fimg:
+            cls.data = fimg.data
         for tmpfile in cls.tmpfiles.values():
             if os.path.isfile(tmpfile):
                 os.unlink(tmpfile)
@@ -352,7 +353,8 @@ class TestFlatimage(unittest.TestCase):
         self.assertEqual(res, 142, "the number of bins found is correct (142)")
 
     def test_guess_polarization(self):
-        img = fabio.open(UtilsTest.getimage("Eiger4M.edf")).data
+        with fabio.open(UtilsTest.getimage("Eiger4M.edf")) as fimg:
+            img = fimg.data
         ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Eiger4M.poni"))
         self.assertLess(abs(ai.guess_polarization(img) - 0.5), 0.1)
 
@@ -376,9 +378,13 @@ class TestSaxs(unittest.TestCase):
         ai = AzimuthalIntegrator(detector="Pilatus1M")
         ai.wavelength = 1e-10
 
-        data = fabio.open(self.edfPilatus).data
-        mask = fabio.open(self.maskFile).data
-        self.assertTrue(abs(ai.create_mask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0, "test without dummy")
+        with fabio.open(self.edfPilatus) as fimg:
+            data = fimg.data
+        with fabio.open(self.maskFile) as fimg:
+            mask = fimg.data
+        with fabio.open(self.maskRef) as fimg:
+            maskRef = fimg.data
+        self.assertTrue(abs(ai.create_mask(data, mask=mask).astype(int) - maskRef).max() == 0, "test without dummy")
         # self.assertTrue(abs(self.ai.create_mask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
 
     def test_positive_mask(self):
@@ -437,8 +443,8 @@ class TestSaxs(unittest.TestCase):
 
         ref1d = {}
         ref2d = {}
-
-        data = fabio.open(self.edfPilatus).data[:ai.detector.shape[0],:ai.detector.shape[1]]
+        with fabio.open(self.edfPilatus) as fimg:
+            data = fimg.data[:ai.detector.shape[0],:ai.detector.shape[1]]
         for method in methods:
             logger.debug("TestSaxs.test_normalization_factor method= " + method)
             ref1d[method + "_1"] = ai.integrate1d_ng(copy.deepcopy(data), 100, method=method, error_model="poisson")
@@ -458,7 +464,8 @@ class TestSaxs(unittest.TestCase):
 
     def test_inpainting(self):
         logger.debug("TestSaxs.test_inpainting")
-        img = fabio.open(self.edfPilatus).data
+        with fabio.open(self.edfPilatus) as fimg:
+            img = fimg.data
         ai = AzimuthalIntegrator(detector="Pilatus1M")
         ai.setFit2D(2000, 870, 102.123456789)  # rational numbers are hell !
         mask = img < 0
@@ -470,7 +477,8 @@ class TestSaxs(unittest.TestCase):
 
     def test_variance(self):
         "tests the different variance model available"
-        img = fabio.open(self.edfPilatus).data
+        with fabio.open(self.edfPilatus) as fimg:
+            img = fimg.data
         ai = AzimuthalIntegrator(pixel1=172e-6, pixel2=172e-6)
         ai.setFit2D(2000, 870, 102.123456789)  # rational numbers are hell !
         ai.wavelength = 1e-10
@@ -590,7 +598,8 @@ class TestRange(unittest.TestCase):
     def setUpClass(cls):
         detector = detector_factory("Pilatus 200k")
         shape = detector.shape
-        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data[:shape[0], :shape[1]]
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            cls.img = fimg.data[:shape[0], :shape[1]]
         cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Pilatus1M.poni"))
         cls.ai.detector = detector
         cls.unit = "r_mm"
@@ -705,7 +714,8 @@ class TestFlexible2D(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.img = fabio.open(UtilsTest.getimage("moke.tif")).data
+        with fabio.open(UtilsTest.getimage("moke.tif")) as fimg:
+            cls.img = fimg.data
         det = detector_factory("Detector", {"pixel1":1e-4, "pixel2":1e-4})
         ai = AzimuthalIntegrator(detector=det, wavelength=1e-10)
         ai.setFit2D(100, 300, 300)

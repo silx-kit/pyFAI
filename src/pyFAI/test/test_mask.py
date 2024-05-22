@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2021"
+__date__ = "21/05/2024"
 
 import unittest
 import numpy
@@ -56,7 +56,8 @@ class TestMask(unittest.TestCase):
         self.dataFile = UtilsTest.getimage(self.__class__.dataFile)
         self.poniFile = UtilsTest.getimage(self.__class__.poniFile)
         self.ai = load(self.poniFile)
-        self.data = fabio.open(self.dataFile).data
+        with fabio.open(self.dataFile) as fimg:
+            self.data = fimg.data
         self.mask = self.data < 0
 
     def tearDown(self):
@@ -251,7 +252,8 @@ class TestMaskBeamstop(unittest.TestCase):
         self.dataFile = UtilsTest.getimage(self.__class__.dataFile)
         detector = detectors.Detector(pixel1=0.0001, pixel2=0.0001)
         self.ai = AzimuthalIntegrator(dist=0.1, poni1=0.03, poni2=0.03, detector=detector)
-        self.data = fabio.open(self.dataFile).data
+        with fabio.open(self.dataFile) as fimg:
+            self.data = fimg.data
         self.tth, self.I = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg")
         self.mask = self.ai.ttha < numpy.deg2rad(3.7)
 

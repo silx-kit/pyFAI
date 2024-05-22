@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2024"
+__date__ = "21/05/2024"
 
 import unittest
 import os
@@ -118,9 +118,10 @@ class TestNexus(unittest.TestCase):
 
     @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
     def test_NXmonopd(self):
-        img = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            img = fimg.data
         ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
-        ref = ai.integrate1d(img.data, 1000, unit="2th_deg", error_model="poisson")
+        ref = ai.integrate1d(img, 1000, unit="2th_deg", error_model="poisson")
         fname = os.path.join(self.tmpdir, "NXmonopd.h5")
         io.nexus.save_NXmonpd(fname, ref, sample="AgBh", instrument="Dubble")
         res = io.nexus.load_nexus(fname)
@@ -155,9 +156,10 @@ class TestNexus(unittest.TestCase):
 
     @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
     def test_NXcansas(self):
-        img = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            img = fimg.data
         ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
-        ref = ai.integrate1d(img.data, 1000, unit="q_nm^-1", error_model="poisson")
+        ref = ai.integrate1d(img, 1000, unit="q_nm^-1", error_model="poisson")
         fname = os.path.join(self.tmpdir, "NXcansas.h5")
         io.nexus.save_NXcansas(fname, ref, sample="AgBh", instrument="Dubble")
         res = io.nexus.load_nexus(fname)
@@ -304,9 +306,10 @@ class TestXrdmlWriter(unittest.TestCase):
     @classmethod
     def setUpClass(cls)->None:
         super(TestXrdmlWriter, cls).setUpClass()
-        cls.img = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            cls.img = fimg.data
         cls.ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
-        cls.result = cls.ai.integrate1d(cls.img.data, 200, method=("no", "histogram", "cython"), unit="2th_deg")
+        cls.result = cls.ai.integrate1d(cls.img, 200, method=("no", "histogram", "cython"), unit="2th_deg")
     @classmethod
     def tearDownClass(cls)->None:
         super(TestXrdmlWriter, cls).tearDownClass()
@@ -322,7 +325,7 @@ class TestXrdmlWriter(unittest.TestCase):
     def test_integration(self):
         fd, tmpfile = UtilsTest.tempfile(".xrdml")
         os.close(fd)
-        self.ai.integrate1d(self.img.data, 200, method=("no", "histogram", "cython"), unit="2th_deg",
+        self.ai.integrate1d(self.img, 200, method=("no", "histogram", "cython"), unit="2th_deg",
                             filename=tmpfile)
         self.assertGreater(os.path.getsize(tmpfile), 3000)
         from xml.etree import ElementTree as et

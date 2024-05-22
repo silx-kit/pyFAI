@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/04/2024"
+__date__ = "21/05/2024"
 
 import unittest
 import numpy
@@ -60,7 +60,8 @@ class TestSparseIntegrate1d(unittest.TestCase):
         cls.N = 1000
         cls.unit = "r_mm"
         cls.ai = load(UtilsTest.getimage("Pilatus1M.poni"))
-        cls.data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            cls.data = fimg.data
         cls.epsilon = 1e-1
 
     @classmethod
@@ -133,7 +134,8 @@ class TestSparseIntegrate2d(unittest.TestCase):
         cls.N = 500
         cls.unit = "r_mm"
         cls.ai = load(UtilsTest.getimage("Pilatus1M.poni"))
-        cls.data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            cls.data = fimg.data
 
     @classmethod
     def tearDownClass(cls):

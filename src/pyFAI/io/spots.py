@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/04/2023"
+__date__ = "21/05/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -300,17 +300,17 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
                 datagrp = entry.create_group(f"data_{idx+1}")
                 datagrp.attrs["NX_class"] = "NXdata"
                 datagrp.attrs["signal"] = "data"
-                fimg = fabio.open(file_src)
-                try:
-                    lst_ds = fimg.dataset
-                except Exception as err:
-                    logger.error(f"file {file_src} of type {type(fimg)} has not dataset attribute, skipping ({type(err)}: {err})")
-                    datagrp.create_dataset("data", data=_stack_frames(fimg), **cmp).attrs["interpretation"] = "image"
-                else:
-                    if len(lst_ds) == 1:
-                        datagrp["data"] = h5py.ExternalLink(file_src, lst_ds[0].name)
-                        # datagrp[f"data"].attrs["interpretation"] = "image"
+                with fabio.open(file_src) as fimg:
+                    try:
+                        lst_ds = fimg.dataset
+                    except Exception as err:
+                        logger.error(f"file {file_src} of type {type(fimg)} has not dataset attribute, skipping ({type(err)}: {err})")
+                        datagrp.create_dataset("data", data=_stack_frames(fimg), **cmp).attrs["interpretation"] = "image"
                     else:
-                        for j, ds in enumerate(fimg.dataset):
-                            datagrp[f"data_{j+1}"] = h5py.ExternalLink(file_src, ds.name)
-                            # datagrp[f"data_{j+1}"].attrs["interpretation"] = "image"
+                        if len(lst_ds) == 1:
+                            datagrp["data"] = h5py.ExternalLink(file_src, lst_ds[0].name)
+                            # datagrp[f"data"].attrs["interpretation"] = "image"
+                        else:
+                            for j, ds in enumerate(fimg.dataset):
+                                datagrp[f"data_{j+1}"] = h5py.ExternalLink(file_src, ds.name)
+                                # datagrp[f"data_{j+1}"].attrs["interpretation"] = "image"

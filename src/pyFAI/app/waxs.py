@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "21/05/2024"
 __status__ = "production"
 
 import os
@@ -148,8 +148,8 @@ def main():
                 method2d = IntegrationMethod.select_method(2, "full", "histogram")[0]
         if to_process:
             first = to_process[0]
-            fabimg = fabio.open(first)
-            integrator.detector.guess_binning(fabimg.data)
+            with fabio.open(first) as fabimg:
+                integrator.detector.guess_binning(fabimg.data)
 
         if options.wavelength:
             integrator.wavelength = options.wavelength * 1e-10
@@ -158,9 +158,11 @@ def main():
         if options.mask and os.path.exists(options.mask):  # override with the command line mask
             integrator.maskfile = options.mask
         if options.dark and os.path.exists(options.dark):  # set dark current
-            integrator.darkcurrent = fabio.open(options.dark).data
+            with fabio.open(options.dark) as fimg:
+                integrator.darkcurrent = fimg.data
         if options.flat and os.path.exists(options.flat):  # set Flat field
-            integrator.flatfield = fabio.open(options.flat).data
+            with fabio.open(options.flat) as fimg:
+                integrator.flatfield = fimg.data
 
         # print(integrator)
         # print("Mask: %s\tMethods: %s / %s" % (integrator.maskfile, method1d, method2d))
@@ -169,42 +171,42 @@ def main():
             outfile = os.path.splitext(afile)[0] + options.ext
             azimFile = os.path.splitext(afile)[0] + ".azim"
             t0 = time.perf_counter()
-            fabimg = fabio.open(afile)
-            if options.multiframe:
-                data = average_dark([fabimg.getframe(i).data for i in range(fabimg.nframes)], center_method=options.average)
-            else:
-                data = fabimg.data
-            t1 = time.perf_counter()
-            integrator.integrate1d(data,
-                                   options.npt or min(fabimg.data.shape),
-                                   filename=outfile,
-                                   dummy=options.dummy,
-                                   delta_dummy=options.delta_dummy,
-                                   method=method1d,
-                                   unit=options.unit,
-                                   error_model=options.error_model,
-                                   polarization_factor=options.polarization_factor,
-                                   metadata=fabimg.header
-                                   )
-            t2 = time.perf_counter()
-            if options.do_2d:
-                integrator.integrate2d(data,
+            with fabio.open(afile) as fabimg:
+                if options.multiframe:
+                    data = average_dark([fabimg.getframe(i).data for i in range(fabimg.nframes)], center_method=options.average)
+                else:
+                    data = fabimg.data
+                t1 = time.perf_counter()
+                integrator.integrate1d(data,
                                        options.npt or min(fabimg.data.shape),
-                                       360,
-                                       filename=azimFile,
+                                       filename=outfile,
                                        dummy=options.dummy,
                                        delta_dummy=options.delta_dummy,
-                                       method=method2d,
+                                       method=method1d,
                                        unit=options.unit,
                                        error_model=options.error_model,
                                        polarization_factor=options.polarization_factor,
                                        metadata=fabimg.header
                                        )
-                msg = "%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs."
-                print(msg % (outfile, t1 - t0, t2 - t1, time.perf_counter() - t2))
-            else:
-                msg = "%s,\t reading: %.3fs\t 1D integration: %.3fs."
-                print(msg % (outfile, t1 - t0, t2 - t1))
+                t2 = time.perf_counter()
+                if options.do_2d:
+                    integrator.integrate2d(data,
+                                           options.npt or min(fabimg.data.shape),
+                                           360,
+                                           filename=azimFile,
+                                           dummy=options.dummy,
+                                           delta_dummy=options.delta_dummy,
+                                           method=method2d,
+                                           unit=options.unit,
+                                           error_model=options.error_model,
+                                           polarization_factor=options.polarization_factor,
+                                           metadata=fabimg.header
+                                           )
+                    t3 = time.perf_counter()
+                    print(f"{outfile}\t reading: {t1-t0:.3f}s\t 1D integration: {t2-t1:.3f}s,\t 2D integration {t3-t2:.3f}s.")
+                else:
+                    print(f"{outfile}\t reading: {t1-t0:.3f}s\t 1D integration: {t2 - t1:%.3f}s.")
+
 
 
 if __name__ == "__main__":
