@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel, Edgar Gutierrez-Ferna
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2023"
+__date__ = "28/05/2024"
 __status__ = "development"
 
 import logging
@@ -110,7 +110,7 @@ def main():
                         help="Benchmark using specific algorithm implementations: python, cython, opencl, all")
 
     parser.add_argument("-f", "--function",
-                        dest="function", default="all", type=str,
+                        dest="function", default="ng", type=str,
                         help="Benchmark legacy (legacy), engine function (ng), or both (all)")
 
     parser.add_argument("--all",
