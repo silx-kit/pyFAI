@@ -24,6 +24,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Detector/detector
    Calibrant/index
    Recalib/Recalib_notebook
+   Flatfield
    Ellipse/ellipse
    PixelSplitting
    Variance/uncertainties
