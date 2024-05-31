@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2023"
+__date__ = "27/05/2024"
 __status__ = "development"
 
 import logging
@@ -254,7 +254,10 @@ class MplCalibWidget:
             try:
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
                 if not isinstance(cmap, colors.Colormap):
-                    cmap = matplotlib.cm.get_cmap(cmap)
+                    try:
+                        cmap = matplotlib.colormaps[cmap]
+                    except:  # matplotlib<3.9
+                        cmap = matplotlib.cm.get_cmap(cmap)
 
                 self.ax.contour(data, levels=values, cmap=cmap, linewidths=linewidths, linestyles=linestyles)
                 self.ax.set_xlim(xlim)
