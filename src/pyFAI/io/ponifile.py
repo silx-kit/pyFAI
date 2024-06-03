@@ -217,7 +217,7 @@ class PoniFile(object):
         """
         detector = self.detector
         txt = ["# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis",
-              f"# Calibration done at {time.ctime()}",
+              f"# Calibration done on {time.ctime()}",
               f"poni_version: {self.API_VERSION}",
               f"Detector: {detector.__class__.__name__}"]
         if self.API_VERSION == 1:
