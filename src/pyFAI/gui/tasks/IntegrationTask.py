@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "19/01/2024"
+__date__ = "03/06/2024"
 
 import logging
 import numpy
@@ -1123,10 +1123,12 @@ class IntegrationTask(AbstractCalibrationTask):
             wavelength=geometry.wavelength().value(),
             detector=detector
             )
+        comments = [f"Calibrant: {experimentSettingsModel.calibrantModel().calibrant().name}",
+                    f"Image: {experimentSettingsModel.image().filename()}"]
         try:
             writer = ponifile.PoniFile(pyfaiGeometry)
             with open(filename, "wt") as fd:
-                writer.write(fd)
+                writer.write(fd, comments=comments)
             with poniFile.lockContext():
                 poniFile.setValue(filename)
                 poniFile.setSynchronized(True)
