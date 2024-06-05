@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "03/06/2024"
 
 import unittest
 import os
@@ -41,15 +41,14 @@ import numpy
 import time
 import sys
 import logging
-import json
 import pathlib
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
-import pyFAI.io.spots
-from pyFAI.io.ponifile import PoniFile
+from ..io import spots
+from ..io.ponifile import PoniFile
 import h5py
 import fabio
 import pyFAI.azimuthalIntegrator
@@ -60,6 +59,7 @@ class TestPoniFile(unittest.TestCase):
     def setUpClass(cls)->None:
         super(TestPoniFile, cls).setUpClass()
         cls.ponifile = UtilsTest.getimage("Pilatus1M.poni")
+
 
     @classmethod
     def tearDownClass(cls)->None:
@@ -75,6 +75,22 @@ class TestPoniFile(unittest.TestCase):
         poni = PoniFile(pathlib.Path(self.ponifile))
         self.assertAlmostEqual(poni.wavelength, 1e-10, msg="wavelength matches")
         self.assertAlmostEqual(poni.dist, 1.6, places=1, msg="dist matches")
+
+    def test_write(self):
+        poni = PoniFile(self.ponifile)
+        test_file1 = os.path.join(UtilsTest.tempdir, "test1.poni")
+        test_file2 = os.path.join(UtilsTest.tempdir, "test2.poni")
+        with open(test_file1, "w") as fd:
+            poni.write(fd, comments="lorem ipsus")
+        with open(test_file1, "r") as fd:
+            content1 = fd.readlines()
+        self.assertTrue("# lorem ipsus\n" in content1, 'Write comment as string')
+        with open(test_file2, "w") as fd:
+            poni.write(fd, comments=("lorem","ipsus"))
+        with open(test_file2, "r") as fd:
+            content2 = fd.readlines()
+        self.assertTrue("# lorem\n" in content2, 'Write comment as list')
+        self.assertTrue("# ipsus\n" in content2, 'Write comment as list')
 
 
 class TestIsoTime(unittest.TestCase):

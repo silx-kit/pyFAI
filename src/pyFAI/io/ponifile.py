@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2024"
+__date__ = "03/06/2024"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -208,15 +208,16 @@ class PoniFile(object):
         self._wavelength = model.wavelength().value()
         self._detector = detector
 
-    def write(self, fd):
+    def write(self, fd, comments=None):
         """Write this object to an open stream.
 
         :param fd: file descriptor (opened file)
-        :return: nothing
+        :param comments: extra comments as a string or a list of strings
+        :return: None
         """
         detector = self.detector
         txt = ["# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis",
-              f"# Calibration done at {time.ctime()}",
+              f"# Calibration done on {time.ctime()}",
               f"poni_version: {self.API_VERSION}",
               f"Detector: {detector.__class__.__name__}"]
         if self.API_VERSION == 1:
@@ -240,6 +241,13 @@ class PoniFile(object):
                 ]
         if self._wavelength is not None:
             txt.append(f"Wavelength: {self._wavelength}")
+        if comments:
+            if isinstance(comments, str):
+                txt.append(f"# {comments}")
+            elif isinstance(comments, bytes):
+                txt.append(f"# {comments.decode()}")
+            else: # assume it is a list/tuple/set:
+                txt += [f"# {comment}" for comment in comments]
         txt.append("")
         fd.write("\n".join(txt))
 
