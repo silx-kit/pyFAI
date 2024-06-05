@@ -34,7 +34,7 @@ __authors__ = ["Emily Massahud", "Jérôme Kieffer"]
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/04/2024"
+__date__ = "05/06/2024"
 
 import sys
 import unittest
@@ -108,8 +108,9 @@ class TestExtractControlPoints(RingExtractionTestBase):
 
         self.assertEqual(self.mock_extract_peaks_in_one_ring.call_count, 3)
 
-        if sys.version_info[:2] == (3, 9) and sys.platform=='win32':
-            # work arround for this issue https://github.com/python/cpython/issues/84147
+        if sys.platform=='win32':
+            # work arround for this issue https://github.com/python/cpython/issues/84147 and
+            # #2189 related to threads being used and the function callability checked.
             self.mock_extract_peaks_in_one_ring.assert_called()
         else:
             self.mock_extract_peaks_in_one_ring.assert_has_calls(
