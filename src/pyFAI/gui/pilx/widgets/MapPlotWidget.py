@@ -51,6 +51,7 @@ from ..models import ImageIndices
 from .ImagePlotWidget import ImagePlotWidget
 from .MapPlotContextMenu import MapPlotContextMenu
 from .OpenAxisDatasetAction import OpenAxisDatasetAction
+from .ClearPointsAction import ClearPointsAction
 from ..utils import (
     get_dataset,
     get_dataset_name,
@@ -61,10 +62,14 @@ _LEGEND = "MAP"
 
 
 class MapPlotWidget(ImagePlotWidget):
+    clearPointsSignal = qt.Signal()
+
     def __init__(self, parent=None, backend=None):
         super().__init__(parent, backend)
         self.axis_dataset_action = self._initAxisDatasetAction()
+        self.clear_points_action = self._initclearPointsAction()
         self._toolbar.addAction(self.axis_dataset_action)
+        self._toolbar.addAction(self.clear_points_action)
 
         self.addScatter([], [], [], legend=_LEGEND)
         scatter_item = self.getScatter(_LEGEND)
@@ -87,6 +92,11 @@ class MapPlotWidget(ImagePlotWidget):
     def _initAxisDatasetAction(self):
         action = OpenAxisDatasetAction(self._toolbar)
         action.datasetOpened.connect(self.changeAxes)
+        return action
+
+    def _initclearPointsAction(self):
+        action = ClearPointsAction(self._toolbar)
+        action.clearPoints.connect(self.clearPoints)
         return action
 
     def _dataConverter(self, x, y):
@@ -135,6 +145,9 @@ class MapPlotWidget(ImagePlotWidget):
         self.setGraphXLabel(axis0_name)
         self.setGraphYLabel(axis1_name)
         self.resetZoom()
+
+    def clearPoints(self):
+        self.clearPointsSignal.emit()
 
     def setScatterData(self, image: numpy.ndarray):
         z = image.flatten()

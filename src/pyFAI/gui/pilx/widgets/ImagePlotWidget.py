@@ -59,7 +59,7 @@ class ImageToolbar(qt.QToolBar):
 
 class ImagePlotWidget(PlotWidget):
     plotClicked = qt.Signal(float, float)
-    plotClicked_add = qt.Signal(float, float)
+    pinContextEntrySelected = qt.Signal(float, float)
     setBackgroundClicked = qt.Signal(float, float)
 
     def __init__(self, parent=None, backend=None):
