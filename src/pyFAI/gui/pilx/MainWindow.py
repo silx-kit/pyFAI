@@ -76,6 +76,7 @@ class MainWindow(qt.QMainWindow):
         self._image_plot_widget.plotClicked.connect(self.onMouseClickOnImage)
 
         self._map_plot_widget = MapPlotWidget(self)
+        self._map_plot_widget.clearPointsSignal.connect(self.clearPoints)
         self._map_plot_widget.setDefaultColormap(
             Colormap("viridis", normalization="log")
         )
@@ -222,13 +223,8 @@ class MainWindow(qt.QMainWindow):
 
         # Unfix is the fixing point is already fixed
         if indices in self._fixed_indices:
-            self._fixed_indices.remove(indices)
-            self._integrated_plot_widget.removeCurve(
-                legend=f"INTEGRATE_{indices.row}_{indices.col}"
-            )
-            self._map_plot_widget.removeMarker(
-                legend=f"MAP_LOCATION_{indices.row}_{indices.col}"
-            )
+            self.removeMapPoint(indices=indices)
+
         # Fix the point
         else:
             self._fixed_indices.add(indices)
@@ -246,6 +242,15 @@ class MainWindow(qt.QMainWindow):
                 symbol="d",
                 legend=f"MAP_LOCATION_{indices.row}_{indices.col}",
             )
+
+    def removeMapPoint(self, indices: ImageIndices):
+        self._fixed_indices.remove(indices)
+        self._integrated_plot_widget.removeCurve(
+            legend=f"INTEGRATE_{indices.row}_{indices.col}"
+        )
+        self._map_plot_widget.removeMarker(
+            legend=f"MAP_LOCATION_{indices.row}_{indices.col}"
+        )
 
     def onRoiEdition(self):
         v_min, v_max = self.getRoiRadialRange()
@@ -354,3 +359,7 @@ class MainWindow(qt.QMainWindow):
             self.displayPatternAtIndices(
                 indices, legend=f"INTEGRATE_{indices.row}_{indices.col}"
             )
+
+    def clearPoints(self):
+        for indices in self._fixed_indices.copy():
+            self.removeMapPoint(indices=indices)
