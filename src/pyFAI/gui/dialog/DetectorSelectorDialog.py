@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "18/12/2023"
+__date__ = "06/06/2024"
 
 import os
 import logging
@@ -143,22 +143,35 @@ class DetectorSelectorDrop(qt.QWidget):
     def _initOrientation(self):
         for item in pyFAI.detectors.orientation.Orientation:
             if item.available:
-                self._detectorOrientation.addItem(f"{item.value}: {item.name} ",  userData=item)
+                self._detectorOrientation.addItem(f"{item.value}: {item.name} ", userData=item)
 
         self._detectorOrientation.currentIndexChanged.connect(self.__orientationChanged)
-        self._detectorOrientation.currentIndexChanged.connect(self.__customDetectorChanged)
+        # self._detectorOrientation.currentIndexChanged.connect(self.__customDetectorChanged)
         default = pyFAI.detectors.orientation.Orientation(3)
         self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(default))
 
     def getOrientation(self, idx=None):
         if idx is None:
+            print(f"get orientation: {self._detectorOrientation.currentData()}")
             return self._detectorOrientation.currentData()
         else:
             return self._detectorOrientation.itemData(idx)
 
     def __orientationChanged(self, idx):
         orientation = self._detectorOrientation.itemData(idx)
-        self._detectorOrientationLabel.setText(orientation.__doc__)
+        # Split the description into several lines ...
+        width = 25
+        lines = []
+        line = ""
+        for word in orientation.__doc__.split():
+            if len(line) >= width:
+                lines.append(line)
+                line = word
+            else:
+                line += f" {word}"
+        else:
+            lines.append(line)
+        self._detectorOrientationLabel.setText(os.linesep.join(lines))
 
     def __selectAndAccept(self):
         # FIXME: This has to be part of the dialog, and not here
@@ -266,7 +279,8 @@ class DetectorSelectorDrop(qt.QWidget):
         # TODO: this test should be reworked in case of another extension
         if filename.endswith(".spline"):
             try:
-                self.__detectorFromFile = pyFAI.detectors.Detector(splineFile=filename)
+                self.__detectorFromFile = pyFAI.detectors.Detector(splineFile=filename,
+                                                                   orientation=self.getOrientation())
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("Spline detector loaded")
             except Exception as e:
@@ -280,7 +294,8 @@ class DetectorSelectorDrop(qt.QWidget):
             return
         else:
             try:
-                self.__detectorFromFile = pyFAI.detectors.NexusDetector(filename=filename)
+                self.__detectorFromFile = pyFAI.detectors.NexusDetector(filename=filename,
+                                                                        orientation=self.getOrientation())
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("HDF5 detector loaded")
             except Exception as e:
@@ -342,7 +357,7 @@ class DetectorSelectorDrop(qt.QWidget):
             classDetector = self.currentDetectorClass()
             if classDetector is None:
                 return None
-            detector = classDetector()
+            detector = classDetector(orientation=self.getOrientation())
             if detector.HAVE_TAPER:
                 splineFile = self.__splineFile.value()
                 if splineFile is not None:
