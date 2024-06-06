@@ -5,6 +5,7 @@ py.install_sources(
   'HorizontalRangeROI.py',
   'MainWindow.py',
   'models.py',
+  'point.py',
   'utils.py',
   ],
   pure: false,   # Will be installed next to binaries
