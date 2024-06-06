@@ -37,9 +37,6 @@ __status__ = "development"
 
 from silx.gui import qt
 import silx.gui.icons
-from silx.gui.dialog.DataFileDialog import DataFileDialog
-from silx.io.url import DataUrl
-
 
 class ClearPointsAction(qt.QAction):
     clearPoints = qt.Signal()
