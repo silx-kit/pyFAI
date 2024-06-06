@@ -93,7 +93,7 @@ class MapPlotWidget(ImagePlotWidget):
         action = OpenAxisDatasetAction(self._toolbar)
         action.datasetOpened.connect(self.changeAxes)
         return action
-    
+
     def _initclearPointsAction(self):
         action = ClearPointsAction(self._toolbar)
         action.clearPoints.connect(self.clearPoints)
