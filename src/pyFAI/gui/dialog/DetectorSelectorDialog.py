@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,13 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
 __date__ = "06/06/2024"
 
 import os
 import logging
-
+import textwrap
 from silx.gui import qt
 
 import pyFAI.utils
@@ -57,6 +57,9 @@ class DetectorSelectorDrop(qt.QWidget):
 
         self.__detector = None
         self.__dialogState = None
+        self.__detector = None
+        self.__customDetector = None
+        self.__detectorFromFile = None
 
         model = self.__createManufacturerModel()
         self._manufacturerList.setModel(model)
@@ -134,9 +137,8 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight.changed.connect(self.__customDetectorChanged)
         self.__pixelWidth.changed.connect(self.__customDetectorChanged)
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
-        self._initOrientation()
-        self.__customDetector = None
 
+        self._initOrientation()
         # By default select all the manufacturers
         self.__selectAllRegistreredDetector()
 
@@ -146,32 +148,26 @@ class DetectorSelectorDrop(qt.QWidget):
                 self._detectorOrientation.addItem(f"{item.value}: {item.name} ", userData=item)
 
         self._detectorOrientation.currentIndexChanged.connect(self.__orientationChanged)
-        # self._detectorOrientation.currentIndexChanged.connect(self.__customDetectorChanged)
         default = pyFAI.detectors.orientation.Orientation(3)
         self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(default))
 
     def getOrientation(self, idx=None):
         if idx is None:
-            print(f"get orientation: {self._detectorOrientation.currentData()}")
             return self._detectorOrientation.currentData()
         else:
             return self._detectorOrientation.itemData(idx)
 
     def __orientationChanged(self, idx):
         orientation = self._detectorOrientation.itemData(idx)
-        # Split the description into several lines ...
-        width = 25
-        lines = []
-        line = ""
-        for word in orientation.__doc__.split():
-            if len(line) >= width:
-                lines.append(line)
-                line = word
-            else:
-                line += f" {word}"
-        else:
-            lines.append(line)
-        self._detectorOrientationLabel.setText(os.linesep.join(lines))
+        self._detectorOrientationLabel.setText(textwrap.fill(orientation.__doc__, 30))
+
+        # Finally set the detector orientation
+        if self.__customDetector:
+            self.__customDetector._orientation = orientation
+        if self.__detectorFromFile:
+            self.__detectorFromFile._orientation = orientation
+        if self.__detector:
+            self.__detector._orientation = orientation
 
     def __selectAndAccept(self):
         # FIXME: This has to be part of the dialog, and not here
@@ -335,6 +331,9 @@ class DetectorSelectorDrop(qt.QWidget):
         if self.__detector == detector:
             return
         self.__detector = detector
+        # set orientation:
+        orientation = detector.orientation
+        self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(orientation))
         if self.__detector is None:
             self.__selectNoDetector()
         elif self.__detector.__class__ is pyFAI.detectors.NexusDetector:

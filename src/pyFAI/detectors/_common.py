@@ -1294,8 +1294,8 @@ class NexusDetector(Detector):
                 self.uniform_pixel = True
             if "orientation" in det_grp:
                 self._orientation = Orientation(det_grp["orientation"][()])
-            else:
-                self._orientation = Orientation(3)
+            # else: #Do not overwrite the default value provided at initialization
+            #     self._orientation = Orientation(3)
         # Populate shape and max_shape if needed
         if self.max_shape is None:
             if self.shape is None:
