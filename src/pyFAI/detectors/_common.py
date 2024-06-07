@@ -1229,18 +1229,20 @@ class NexusDetector(Detector):
         self.uniform_pixel = True
         self._filename = None
         if filename is not None:
-            self.load(filename)
+            self.load(filename, orientation=orientation)
 
     def __repr__(self):
         return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._filename, self._pixel1, self._pixel2)
 
-    def load(self, filename):
+    def load(self, filename, orientation=0):
         """
         Loads the detector description from a NeXus file, adapted from:
         http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
 
         :param filename: name of the file on the disk
+        :param orientation: overwrite the orientation (if provided in the file)
+        :return: None
         """
         if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
@@ -1292,10 +1294,12 @@ class NexusDetector(Detector):
                     self.mask = numpy.logical_or(previous_mask, new_mask).astype(numpy.int8)
             else:
                 self.uniform_pixel = True
-            if "orientation" in det_grp:
-                self._orientation = Orientation(det_grp["orientation"][()])
-            # else: #Do not overwrite the default value provided at initialization
-            #     self._orientation = Orientation(3)
+            if orientation:  # Highest priority
+                self._orientation = Orientation(orientation)
+            elif "orientation" in det_grp:  # Restore what was stored in the HDF5 file
+                self._orientation = det_grp["orientation"][()])
+            else:  # Initialize with default value
+                self._orientation = Orientation(self.ORIENTATION or 3)
         # Populate shape and max_shape if needed
         if self.max_shape is None:
             if self.shape is None:
