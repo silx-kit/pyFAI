@@ -1297,7 +1297,7 @@ class NexusDetector(Detector):
             if orientation:  # Highest priority
                 self._orientation = Orientation(orientation)
             elif "orientation" in det_grp:  # Restore what was stored in the HDF5 file
-                self._orientation = det_grp["orientation"][()])
+                self._orientation = Orientation(det_grp["orientation"][()])
             else:  # Initialize with default value
                 self._orientation = Orientation(self.ORIENTATION or 3)
         # Populate shape and max_shape if needed
