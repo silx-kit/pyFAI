@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/01/2024"
+__date__ = "07/06/2024"
 
 import numpy
 import logging
@@ -45,7 +45,7 @@ from ..utils import units
 from ..utils import validators
 from ..utils import FilterBuilder
 from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
-
+from ..model import MarkerModel
 _logger = logging.getLogger(__name__)
 
 
@@ -235,6 +235,18 @@ class ExperimentTask(AbstractCalibrationTask):
         if result:
             newDetector = dialog.selectedDetector()
             settings.detectorModel().setDetector(newDetector)
+            # Set also the origin of the detector if appropriate
+            markerModel = self.model().markerModel()
+            markerModel.removeLabel("Detector origin")
+            markerModel.removeLabel("Image origin")
+            markerModel.removeLabel("Origin")
+
+            if newDetector.orientation in (0,3):
+                markerModel.add(MarkerModel.PixelMarker("Origin", 0, 0))
+            else:
+                do = newDetector.origin
+                markerModel.add(MarkerModel.PixelMarker("Image origin", 0, 0))
+                markerModel.add(MarkerModel.PixelMarker("Detector origin", do[-1], do[0]))
 
     def __waveLengthChanged(self):
         settings = self.model().experimentSettingsModel()

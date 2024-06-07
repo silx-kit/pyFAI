@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "07/06/2024"
 
 from .AbstractModel import AbstractModel
 
@@ -87,6 +87,13 @@ class MarkerModel(AbstractModel):
     def remove(self, marker):
         self.__list.remove(marker)
         self.wasChanged()
+
+    def removeLabel(self, label):
+        to_remove = [mrk for mrk in self.__list if mrk.name() == label]
+        if to_remove:
+            for mrk in to_remove:
+                self.__list.remove(mrk)
+            self.wasChanged()
 
     def __len__(self):
         return len(self.__list)
