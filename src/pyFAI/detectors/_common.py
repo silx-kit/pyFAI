@@ -1211,7 +1211,7 @@ class Detector(metaclass=DetectorMeta):
 
     @property
     def origin(self):
-        "What is the coorninated of the detector's origin ?"
+        "What are the coordinnates of the detector's origin ?"
         if self.orientation == 1 :
             return self.shape
         elif self.orientation == 2 :
