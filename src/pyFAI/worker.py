@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2024"
+__date__ = "10/06/2024"
 __status__ = "development"
 
 import threading
@@ -260,11 +260,12 @@ class Worker(object):
         self._shape = shapeIn
         self.radial = None
         self.azimuthal = None
-        self.radial_range = None
-        self.azimuth_range = None
         self.safe = True
         self.extra_options = {} if extra_options is None else extra_options.copy()
+        self.radial_range = self.extra_options.get("radial_range")
+        self.azimuth_range = self.extra_options.get("azimuth_range")
         self.error_model = self.extra_options.get("error_model")
+
 
     def __repr__(self):
         """
