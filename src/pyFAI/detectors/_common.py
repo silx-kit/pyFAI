@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/06/2024"
+__date__ = "07/06/2024"
 __status__ = "stable"
 
 import logging
@@ -1209,6 +1209,17 @@ class Detector(metaclass=DetectorMeta):
     def orientation(self):
         return self._orientation
 
+    @property
+    def origin(self):
+        "What is the coorninated of the detector's origin ?"
+        if self.orientation == 1 :
+            return self.shape
+        elif self.orientation == 2 :
+            return (self.shape[0],0)
+        elif self.orientation == 4 :
+            return (0, self.shape[1])
+        # else self.orientation in (0,3):
+        return (0,0)
 
 class NexusDetector(Detector):
     """

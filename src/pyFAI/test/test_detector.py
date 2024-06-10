@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/04/2024"
+__date__ = "07/06/2024"
 
 import os
 import shutil
@@ -512,6 +512,13 @@ class TestOrientation(unittest.TestCase):
         p2 = ref2[Y, X]
         self.assertTrue(numpy.allclose(r1, p1), "orient 4 dim1,y points")
         self.assertTrue(numpy.allclose(r2, p2), "orient 4 dim2,x points")
+
+    def test_origin(self):
+        self.assertEqual(detector_factory("Pilatus100k", {"orientation":0}).origin, (0, 0))
+        self.assertEqual(detector_factory("Pilatus100k", {"orientation":1}).origin,(195, 487))
+        self.assertEqual(detector_factory("Pilatus100k", {"orientation":2}).origin,(195, 0))
+        self.assertEqual(detector_factory("Pilatus100k", {"orientation":3}).origin,(0, 0))
+        self.assertEqual(detector_factory("Pilatus100k", {"orientation":4}).origin,(0, 487))
 
 
 def suite():
