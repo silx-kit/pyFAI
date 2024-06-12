@@ -488,7 +488,6 @@ cdef class CsrIntegrator(object):
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
         error_model = ErrorModel.parse(error_model)
-        print(error_model)
         cdef:
             index_t i, j, c, bad_pix, idx = 0
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
@@ -525,7 +524,6 @@ cdef class CsrIntegrator(object):
                            dtype=data_d,
                            error_model=error_model,
                            out=self.preprocessed)
-        print(numpy.asarray(preproc4[0]))
         with nogil:
             # Integrate once
             for i in prange(self.output_size, schedule="guided"):
