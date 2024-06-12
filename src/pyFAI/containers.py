@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2024"
+__date__ = "12/06/2024"
 __status__ = "development"
 
 from collections import namedtuple
@@ -66,7 +66,7 @@ class ErrorModel(IntEnum):
 
     @property
     def poissonian(self):
-        return self._value_ == 2
+        return self._value_ == 2 or self._value_ == 4
 
     @property
     def do_variance(self):
