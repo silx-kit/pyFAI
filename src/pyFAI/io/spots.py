@@ -307,6 +307,8 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
                         logger.error(f"file {file_src} of type {type(fimg)} has not dataset attribute, skipping ({type(err)}: {err})")
                         datagrp.create_dataset("data", data=_stack_frames(fimg), **cmp).attrs["interpretation"] = "image"
                     else:
+                        if isinstance(lst_ds, h5py.Dataset):
+                            lst_ds = [lst_ds]
                         if len(lst_ds) == 1:
                             datagrp["data"] = h5py.ExternalLink(file_src, lst_ds[0].name)
                             # datagrp[f"data"].attrs["interpretation"] = "image"
