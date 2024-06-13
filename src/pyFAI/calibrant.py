@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/01/2023"
+__date__ = "13/06/2024"
 __status__ = "production"
 
 import os
@@ -790,6 +790,90 @@ class CalibrantFactory(object):
 
     has_key = __contains__
 
+
+class Reflection_condition:
+    """This class contains selection rules for certain space-group
+    Contribution welcome to
+
+    All methods are static.
+    """
+    @staticmethod
+    def group_96(h,k,l):
+        """Group 96 P 43 21 2 used in lysozyme"""
+        if h == 0 and k == 0:
+            # 00l: l=4n
+            return l%4 == 0
+        elif k == 0 and l == 0:
+            # h00: h=2n
+            return h%2 == 0
+        elif h == 0:
+            # 0kl:
+            if l%2==1:
+                # l=2n+1
+                return True
+            else:
+                # 2k+l=4n
+                return (2*k+l)%4==0
+        return False
+
+    @staticmethod
+    def group_166(h,k,l):
+        """
+        Group 166 R -3 m used in hydrocerusite
+        from http://img.chem.ucl.ac.uk/sgp/large/166bz2.htm"""
+        if h == 0 and k == 0:
+            # 00l: 3n
+            return l%3 == 0
+        elif h == 0 and l == 0:
+            # 0k0: k=3n
+            return k%3 == 0
+        elif k == 0 and l == 0:
+            # h00: h=3n
+            return h%3 == 0
+        elif h == k:
+            # hhl: l=3n
+            return l%3 == 0
+        elif l == 0:
+            # hk0: h-k = 3n
+            return (h-k)%3 == 0
+        elif k == 0:
+            # h0l: h-l = 3n
+            return ((h - l)%3 == 0)
+        elif h == 0:
+            # 0kl: h+l = 3n
+            return ((k + l)%3 == 0)
+        else:
+            # -h + k + l = 3n
+            return (-h + k + l) % 3 == 0
+
+    @staticmethod
+    def group_167(h,k,l):
+        """Grou[ 167 R -3 c used for Corrundum
+        from http://img.chem.ucl.ac.uk/sgp/large/167bz2.htm"""
+        if h == 0 and k == 0:
+            # 00l: 6n
+            return l%6 == 0
+        elif h == 0 and l == 0:
+            # 0k0: k=3n
+            return k%3 == 0
+        elif k == 0 and l == 0:
+            # h00: h=3n
+            return h%3 == 0
+        elif h == k:
+            # hhl: l=3n
+            return l%3 == 0
+        elif l == 0:
+            # hk0: h-k = 3n
+            return (h-3)%3 == 0
+        elif k == 0:
+            # h0l: l=2n h-l = 3n
+            return (l%2 == 0) and ((h - l)%3 == 0)
+        elif h == 0:
+            # 0kl: l=2n h+l = 3n
+            return (l%2 == 0) and ((k + l)%3 == 0)
+        else:
+            # -h + k + l = 3n
+            return (-h + k + l) % 3 == 0
 
 CALIBRANT_FACTORY = CalibrantFactory()
 """Default calibration factory provided by the library."""
