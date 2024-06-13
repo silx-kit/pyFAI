@@ -194,7 +194,7 @@ class MainWindow(qt.QMainWindow):
                 maskfile = bytes.decode(h5file['entry_0000']['pyFAI']['maskfile'][()])
             else:
                 maskfile = None
-            
+
         if maskfile:
             mask_image = get_data(url=DataUrl(maskfile))
             if mask_image.shape != image.shape:
