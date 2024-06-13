@@ -38,18 +38,20 @@ __status__ = "development"
 
 import numpy
 from silx.gui.plot.items import ImageData
+from silx.gui.colors import Colormap
 
 from .ImagePlotWidget import ImagePlotWidget
 from ..models import ROI_COLOR, ImageIndices
 
 _LEGEND = "IMAGE"
 
+DEFAULT_COLORMAP = Colormap(name="viridis")
 
 class DiffractionImagePlotWidget(ImagePlotWidget):
 
     def __init__(self, parent=None, backend=None):
         super().__init__(parent, backend)
-        image_item = self.addImage([[]], legend=_LEGEND)
+        image_item = self.addImage([[]], legend=_LEGEND, colormap=DEFAULT_COLORMAP)
         assert isinstance(image_item, ImageData)
         self._image_item = image_item
         self._first_plot = True

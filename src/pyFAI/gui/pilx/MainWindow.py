@@ -44,6 +44,9 @@ import os.path
 from silx.gui import qt
 from silx.gui.colors import Colormap
 from silx.image.marchingsquares import find_contours
+from silx.io.url import DataUrl
+from silx.io import get_data
+from silx.gui.plot.items.image import ImageBase
 
 from .models import ImageIndices
 from .point import Point
@@ -187,7 +190,18 @@ class MainWindow(qt.QMainWindow):
 
             image = image_dset[col * map_shape[0] + row]
 
-        self._image_plot_widget.setImageData(image)
+            if 'maskfile' in h5file['entry_0000']['pyFAI']:
+                maskfile = bytes.decode(h5file['entry_0000']['pyFAI']['maskfile'][()])
+            else:
+                maskfile = None
+            
+        if maskfile:
+            mask_image = get_data(url=DataUrl(maskfile))
+            if mask_image.shape != image.shape:
+                mask_image = None
+
+        image_base = ImageBase(data=image, mask=mask_image)
+        self._image_plot_widget.setImageData(image_base.getValueData())
 
     def selectMapPoint(self, x: float, y: float):
         indices = self._map_plot_widget.getImageIndices(x, y)
