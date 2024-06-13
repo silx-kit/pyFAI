@@ -143,7 +143,7 @@ class MainWindow(qt.QMainWindow):
     def getRoiRadialRange(self) -> Tuple[float | None, float | None]:
         return self._integrated_plot_widget.roi.getRange()
 
-    def displayPatternAtIndices(self, indices: ImageIndices, legend: str):
+    def displayPatternAtIndices(self, indices: ImageIndices, legend: str, color: str=None):
         if self._file_name is None:
             return
 
@@ -159,7 +159,6 @@ class MainWindow(qt.QMainWindow):
             y=curve,
             legend=legend,
             selectable=False,
-            color=self.getAvailableColor(legend),
             resetzoom=self._integrated_plot_widget.getGraphXLimits() == (0, 100),
         )
         self._integrated_plot_widget.setGraphXLabel(point._x_name)
@@ -228,17 +227,19 @@ class MainWindow(qt.QMainWindow):
         # Fix the point
         else:
             self._fixed_indices.add(indices)
+
+            legend = f"INTEGRATE_{indices.row}_{indices.col}"
             self.displayPatternAtIndices(
                 indices,
-                legend=f"INTEGRATE_{indices.row}_{indices.col}",
+                legend=legend,
             )
+            used_color = self._integrated_plot_widget.getCurve(legend=legend).getColor()
+
             self.displayImageAtIndices(indices)
             pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
             self._map_plot_widget.addMarker(
                 *pixel_center_coords,
-                color=self.getCurveColor(
-                    legend=f"INTEGRATE_{indices.row}_{indices.col}"
-                ),
+                color=used_color,
                 symbol="d",
                 legend=f"MAP_LOCATION_{indices.row}_{indices.col}",
             )
@@ -321,11 +322,6 @@ class MainWindow(qt.QMainWindow):
             color = self._integrated_plot_widget.getCurve(legend=legend).getColor()
         else:
             color, style = self._integrated_plot_widget._getColorAndStyle()
-            # index_color = 0
-            # color = rgba(self._integrated_plot_widget.getDefaultColors()[index_color])
-            # while color in [self._integrated_plot_widget.getCurve(legend=legend).getColor() for legend in self._integrated_plot_widget]:
-            #     index_color += 1
-            #     color = rgba(self._integrated_plot_widget.getDefaultColors()[index_color])
         return color
 
     def setNewBackgroundCurve(self, x: float, y: float):
