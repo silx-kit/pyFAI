@@ -280,7 +280,7 @@ class CalibrantSelector2(qt.QComboBox):
         else:
             index = model.indexFromCalibrant(calibrant)
             if not index.isValid():
-                model.appendCalibrant(index)
+                model.appendCalibrant(calibrant)
                 index = model.indexFromCalibrant(calibrant)
             if index.isValid():
                 self.view().touchCalibrant(calibrant)
