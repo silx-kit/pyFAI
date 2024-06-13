@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/01/2024"
+__date__ = "12/06/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -504,6 +504,7 @@ cdef class CsrIntegrator(object):
             data_t[::1] sema = numpy.empty(self.output_size, dtype=data_d)
             data_t[:, ::1] preproc4
             bint do_azimuthal_variance = error_model == ErrorModel.AZIMUTHAL
+            bint do_hybrid_variance = error_model == ErrorModel.HYBRID
         assert weights.size == self.input_size, "weights size"
         empty = dummy if dummy is not None else self.empty
         #Call the preprocessor ...
@@ -543,7 +544,7 @@ cdef class CsrIntegrator(object):
                     if isnan(sig) or isnan(var) or isnan(norm) or isnan(count) or (norm == 0.0) or (count == 0.0):
                         continue
                     w = coef * norm
-                    if do_azimuthal_variance:
+                    if do_azimuthal_variance or (do_hybrid_variance and cycle):
                         if acc_norm == 0.0:
                             # Initialize the accumulator with data from the pixel
                             acc_sig = coef * sig
@@ -587,6 +588,7 @@ cdef class CsrIntegrator(object):
                     # Sigma-clip
                     if (acc_norm == 0.0) or (acc_count == 0.0):
                         break
+
                     #This is for Chauvenet's criterion
                     acc_count = max(3.0, acc_count)
                     chauvenet_cutoff = max(cutoff, sqrt(2.0*log(acc_count/sqrt(2.0*M_PI))))
@@ -609,7 +611,10 @@ cdef class CsrIntegrator(object):
                             preproc4[idx, 3] = NAN;
                             bad_pix = bad_pix + 1
                     if bad_pix == 0:
-                        break
+                        if do_hybrid_variance:
+                            c = cycle #enforce the leave of the loop
+                        else:
+                            break
 
                     #integrate again
                     acc_sig = 0.0
@@ -630,7 +635,7 @@ cdef class CsrIntegrator(object):
                         if isnan(sig) or isnan(var) or isnan(norm) or isnan(count) or (norm == 0.0) or (count == 0.0):
                             continue
                         w = coef * norm
-                        if do_azimuthal_variance:
+                        if do_azimuthal_variance or (do_hybrid_variance and c+1<cycle):
                             if acc_norm_sq == 0.0:
                                 # Initialize the accumulator with data from the pixel
                                 acc_sig = coef * sig
@@ -667,6 +672,8 @@ cdef class CsrIntegrator(object):
                         aver = NAN;
                         std = NAN;
                         # sem = NAN;
+                    if bad_pix == 0:
+                        break
 
                 #collect things ...
                 sum_sig[i] = acc_sig

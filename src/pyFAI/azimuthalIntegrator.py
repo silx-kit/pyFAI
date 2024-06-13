@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2024"
+__date__ = "12/06/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3343,6 +3343,24 @@ class AzimuthalIntegrator(Geometry):
             mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
 
+        if dark is None:
+            dark = self.detector.darkcurrent
+            if dark is None:
+                has_dark = False
+            else:
+                has_dark = "from detector"
+        else:
+            has_dark = "provided"
+
+        if flat is None:
+            flat = self.detector.flatfield
+            if dark is None:
+                has_flat = False
+            else:
+                has_flat = "from detector"
+        else:
+            has_flat = "provided"
+
         if correctSolidAngle:
             solidangle = self.solidAngleArray(data.shape, correctSolidAngle)
         else:
@@ -3504,6 +3522,8 @@ class AzimuthalIntegrator(Geometry):
         result._set_percentile(thres)
         result._set_unit(unit)
         result._set_has_mask_applied(has_mask)
+        result._set_has_dark_correction(has_dark)
+        result._set_has_flat_correction(has_flat)
         result._set_metadata(metadata)
         result._set_sum_signal(intpl.signal)
         result._set_sum_normalization(intpl.normalization)
