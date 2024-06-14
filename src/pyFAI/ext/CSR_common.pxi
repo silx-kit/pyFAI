@@ -684,7 +684,7 @@ cdef class CsrIntegrator(object):
                 if (acc_norm_sq > 0.0):
                     merged[i] = aver  # calculated previously
                     stda[i] = std  # sqrt(acc_var / acc_norm_sq) # already calculated previously
-                    sema[i] = sqrt(acc_var) / acc_norm  # not calculated previously since it was not needed 
+                    sema[i] = sqrt(acc_var) / acc_norm  # not calculated previously since it was not needed
                 else:
                     merged[i] = empty
                     stda[i] = empty
