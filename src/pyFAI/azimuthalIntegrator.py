@@ -3261,6 +3261,7 @@ class AzimuthalIntegrator(Geometry):
                       normalization_factor=1.0,
                       metadata=None,
                       safe=True,
+                      absorption=None,
                        **kwargs):
         """Performs iteratively the 1D integration with variance propagation
         and performs a sigm-clipping at each iteration, i.e.
@@ -3302,6 +3303,7 @@ class AzimuthalIntegrator(Geometry):
         :param metadata: any other metadata,
         :type metadata: JSON serializable dict
         :param safe: set to False to skip some tests
+        :param ndarray absorption: Detector absorption (image)
         :return: Integrate1D like result like
 
         The difference with the previous `sigma_clip_legacy` implementation is that there is no 2D regrouping.
@@ -3508,7 +3510,7 @@ class AzimuthalIntegrator(Geometry):
                     integr = self.engines[method].engine
                 kwargs = {"dark":dark, "dummy":dummy, "delta_dummy":delta_dummy,
                           "variance":variance, "dark_variance":None,
-                          "flat":flat, "solidangle":solidangle, "polarization":polarization, "absorption":None,
+                          "flat":flat, "solidangle":solidangle, "polarization":polarization, "absorption":absorption,
                           "error_model":error_model, "normalization_factor":normalization_factor,
                           "cutoff":thres, "cycle":max_iter}
 
