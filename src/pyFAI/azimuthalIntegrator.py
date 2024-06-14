@@ -1509,8 +1509,8 @@ class AzimuthalIntegrator(Geometry):
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
-                               error_model=error_model,
-                               absorption=absorption)
+                               error_model=error_model)
+                               # absorption=absorption) # Not supported
             elif method.method[1] == "full":
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 intpl = integr(weights=data, variance=variance,
@@ -1524,8 +1524,8 @@ class AzimuthalIntegrator(Geometry):
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
-                               error_model=error_model,
-                               absorption=absorption)
+                               error_model=error_model)
+                               # absorption=absorption) # Not supported
             else:
                 raise RuntimeError("Should not arrive here")
             if error_model.do_variance:
