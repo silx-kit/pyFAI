@@ -1101,7 +1101,7 @@ class AzimuthalIntegrator(Geometry):
                        polarization_factor=None, dark=None, flat=None,
                        method=("bbox", "csr", "cython"), unit=units.Q, safe=True,
                        normalization_factor=1.0,
-                       metadata=None):
+                       metadata=None, absorption=None):
         """Calculate the azimuthal integration (1d) of a 2D image.
 
         Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
@@ -1131,6 +1131,7 @@ class AzimuthalIntegrator(Geometry):
         :param bool safe: Perform some extra checks to ensure LUT/CSR is still valid. False is faster.
         :param float normalization_factor: Value of a normalization monitor
         :param metadata: JSON serializable object containing the metadata, usually a dictionary.
+        :param ndarray absorption: detector absorption
         :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
         """
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
@@ -1266,7 +1267,8 @@ class AzimuthalIntegrator(Geometry):
                                             solidangle=solidangle,
                                             polarization=polarization,
                                             normalization_factor=normalization_factor,
-                                            weighted_average=method.weighted_average)
+                                            weighted_average=method.weighted_average,
+                                            absorption=absorption)
             else:  # method.impl_lower in ("opencl", "python"):
                 if method not in self.engines:
                     # instanciated the engine
@@ -1354,6 +1356,7 @@ class AzimuthalIntegrator(Geometry):
                                             polarization=polarization,
                                             normalization_factor=normalization_factor,
                                             weighted_average=method.weighted_average,
+                                            absorption=absorption,
                                             ** kwargs)
             # This section is common to all 3 CSR implementations...
             if error_model.do_variance:
@@ -1396,7 +1399,8 @@ class AzimuthalIntegrator(Geometry):
                            weighted_average=method.weighted_average,
                            mask=mask,
                            radial_range=radial_range,
-                           error_model=error_model)
+                           error_model=error_model,
+                           absorption=absorption)
 
             if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -1466,7 +1470,8 @@ class AzimuthalIntegrator(Geometry):
                                weighted_average=method.weighted_average,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range,
-                               error_model=error_model)
+                               error_model=error_model,
+                               absorption=absorption)
 
             if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -1504,7 +1509,8 @@ class AzimuthalIntegrator(Geometry):
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
-                               error_model=error_model)
+                               error_model=error_model,
+                               absorption=absorption)
             elif method.method[1] == "full":
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 intpl = integr(weights=data, variance=variance,
@@ -1518,7 +1524,8 @@ class AzimuthalIntegrator(Geometry):
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
-                               error_model=error_model)
+                               error_model=error_model,
+                               absorption=absorption)
             else:
                 raise RuntimeError("Should not arrive here")
             if error_model.do_variance:
