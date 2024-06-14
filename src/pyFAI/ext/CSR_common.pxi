@@ -688,6 +688,7 @@ cdef class CsrIntegrator(object):
                 else:
                     merged[i] = empty
                     stda[i] = empty
+                    sema[i] = empty
 
 
         #"position intensity error signal variance normalization count"
