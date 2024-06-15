@@ -322,7 +322,7 @@ def histoBBox1d_engine(weights,
         Py_ssize_t i, idx
         # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption, cdark_variance, cabsorption
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption, cdark_variance
         data_t cdummy, ddummy=0.0
 
         # Related to positions: double precision
