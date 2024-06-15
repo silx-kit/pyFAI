@@ -885,7 +885,7 @@ def histoBBox2d_engine(weights,
         Py_ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
         bint check_mask = False, check_dummy = False, is_valid
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
-        bint do_cabsorption = False
+        bint do_absorption = False
         preproc_t value
 
     if variance is not None:
