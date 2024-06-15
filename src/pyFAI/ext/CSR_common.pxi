@@ -667,7 +667,7 @@ cdef class CsrIntegrator(object):
                     if (acc_norm_sq > 0.0):
                         aver = acc_sig / acc_norm
                         std = sqrt(acc_var / acc_norm_sq)
-                        # sem = sqrt(acc_var) / acc_norm
+                        # sem = sqrt(acc_var) / acc_norm # Not needed yet
                     else:
                         aver = NAN;
                         std = NAN;
@@ -681,14 +681,14 @@ cdef class CsrIntegrator(object):
                 sum_norm[i] = acc_norm
                 sum_norm_sq[i] = acc_norm_sq
                 sum_count[i] = acc_count
-                if (acc_count > 0.0) and (acc_norm != 0.0):
-                    merged[i] = acc_sig / acc_norm
-                    stda[i] = std #sqrt(acc_var / acc_norm_sq)
-                    sema[i] = sqrt(acc_var) / acc_norm
+                if (acc_norm_sq > 0.0):
+                    merged[i] = aver  # calculated previously
+                    stda[i] = std  # sqrt(acc_var / acc_norm_sq) # already calculated previously
+                    sema[i] = sqrt(acc_var) / acc_norm  # not calculated previously since it was not needed
                 else:
                     merged[i] = empty
                     stda[i] = empty
-
+                    sema[i] = empty
 
         #"position intensity error signal variance normalization count"
         return Integrate1dtpl(self.bin_centers,
