@@ -262,7 +262,7 @@ def fullSplit1D_engine(pos not None,
                        flat=None,
                        solidangle=None,
                        polarization=None,
-                       absorption=None
+                       absorption=None,
                        data_t empty=0.0,
                        double normalization_factor=1.0,
                        bint weighted_average=True,
