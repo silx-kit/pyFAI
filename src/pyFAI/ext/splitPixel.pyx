@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "25/04/2024"
+__date__ = "15/06/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -262,6 +262,7 @@ def fullSplit1D_engine(pos not None,
                        flat=None,
                        solidangle=None,
                        polarization=None,
+                       absorption=None
                        data_t empty=0.0,
                        double normalization_factor=1.0,
                        bint weighted_average=True,
@@ -287,6 +288,7 @@ def fullSplit1D_engine(pos not None,
     :param flat: array (of float64) with flat image
     :param polarization: array (of float64) with polarization correction
     :param solidangle: array (of float64) with flat image
+    :param absorption: array (of float64) with absorption correction
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
     :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average.
@@ -306,7 +308,7 @@ def fullSplit1D_engine(pos not None,
         position_t[:, :, ::1] cpos = numpy.ascontiguousarray(pos, dtype=position_d)
         position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption
         acc_t[:, ::1] out_data = numpy.zeros((bins, 5), dtype=acc_d)
         data_t[::1] out_intensity = numpy.zeros(bins, dtype=data_d)
         data_t[::1] std, sem
@@ -319,8 +321,8 @@ def fullSplit1D_engine(pos not None,
         position_t area_pixel = 0, sum_area = 0, sub_area = 0, dpos = 0
         position_t a0 = 0, b0 = 0, c0 = 0, d0 = 0, max0 = 0, min0 = 0, a1 = 0, b1 = 0, c1 = 0, d1 = 0, max1 = 0, min1 = 0
         double epsilon = 1e-10
-        bint check_pos1=pos1_range is not None, check_mask=False, check_dummy=False, do_dark=False,
-        bint do_flat=False, do_polarization=False, do_solidangle=False
+        bint check_pos1=pos1_range is not None, check_mask=False, check_dummy=False, do_dark=False
+        bint do_flat=False, do_polarization=False, do_solidangle=False, do_absorption=False
         Py_ssize_t i = 0, idx = 0, bin0_max = 0, bin0_min = 0
         preproc_t value
 
@@ -377,6 +379,10 @@ def fullSplit1D_engine(pos not None,
         do_solidangle = True
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=data_d)
+    if absorption is not None:
+        do_absorption = True
+        assert absorption.size == size, "absorption array size"
+        cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=data_d)
 
     with nogil:
         for idx in range(size):
@@ -391,7 +397,7 @@ def fullSplit1D_engine(pos not None,
                                              flat=cflat[idx] if do_flat else 1.0,
                                              solidangle=csolidangle[idx] if do_solidangle else 1.0,
                                              polarization=cpolarization[idx] if do_polarization else 1.0,
-                                             absorption=1.0,
+                                             absorption=cabsorption[idx] if do_absorption else 1.0,
                                              mask=0, #previously checked
                                              dummy=cdummy,
                                              delta_dummy=ddummy,
@@ -805,6 +811,7 @@ def pseudoSplit2D_engine(pos not None,
                          flat=None,
                          solidangle=None,
                          polarization=None,
+                         absorption=None,
                          bint allow_pos0_neg=0,
                          bint chiDiscAtPi=1,
                          float empty=0.0,
@@ -832,6 +839,7 @@ def pseudoSplit2D_engine(pos not None,
     :param flat: array (of float64) with flat-field image
     :param polarization: array (of float64) with polarization correction
     :param solidangle: array (of float64)with solid angle corrections
+    :param absorption: array with absorption correction
     :param allow_pos0_neg: set to true to allow negative radial values.
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
@@ -863,8 +871,8 @@ def pseudoSplit2D_engine(pos not None,
         data_t[:, ::1] out_intensity = numpy.empty((bins0, bins1), dtype=data_d)
         data_t[:, ::1] std, sem
         mask_t[:] cmask = None
-        data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
-        bint check_mask = False, check_dummy = False, do_dark = False,
+        data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption
+        bint check_mask = False, check_dummy = False, do_dark = False, do_absorption=False
         bint do_flat = False, do_polarization = False, do_solidangle = False,
         bint is_valid
         data_t cdummy = 0, cddummy = 0, scale = 1
@@ -932,6 +940,10 @@ def pseudoSplit2D_engine(pos not None,
         do_solidangle = True
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=data_d)
+    if absorption is not None:
+        do_absorption = True
+        assert absorption.size == size, "absorption array size"
+        cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=data_d)
 
     with nogil:
         for idx in range(size):
@@ -1000,7 +1012,7 @@ def pseudoSplit2D_engine(pos not None,
                                              flat=cflat[idx] if do_flat else 1.0,
                                              solidangle=csolidangle[idx] if do_solidangle else 1.0,
                                              polarization=cpolarization[idx] if do_polarization else 1.0,
-                                             absorption=1.0,
+                                             absorption=cabsorption[idx] if do_absorption else 1.0,
                                              mask=cmask[idx] if check_mask else 0,
                                              dummy=cdummy,
                                              delta_dummy=cddummy,
@@ -1160,6 +1172,7 @@ def fullSplit2D_engine(pos not None,
                          flat=None,
                          solidangle=None,
                          polarization=None,
+                         absorption=None,
                          bint allow_pos0_neg=0,
                          bint chiDiscAtPi=1,
                          float empty=0.0,
@@ -1185,6 +1198,7 @@ def fullSplit2D_engine(pos not None,
     :param flat: array (of float64) with flat-field image
     :param polarization: array (of float64) with polarization correction
     :param solidangle: array (of float64)with solid angle corrections
+    :param absorption: array with absorption correction
     :param allow_pos0_neg: set to true to allow negative radial values.
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
@@ -1216,9 +1230,9 @@ def fullSplit2D_engine(pos not None,
         data_t[:, ::1] out_intensity = numpy.empty((bins0, bins1), dtype=data_d)
         data_t[:, ::1] std, sem
         mask_t[:] cmask = None
-        data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance
-        bint check_mask = False, check_dummy = False, do_dark = False,
-        bint do_flat = False, do_polarization = False, do_solidangle = False,
+        data_t[:] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption
+        bint check_mask=False, check_dummy=False, do_dark=False, do_absorption=False
+        bint do_flat=False, do_polarization=False, do_solidangle=False,
         bint is_valid
         data_t cdummy = 0, cddummy = 0
         position_t min0 = 0, max0 = 0, min1 = 0, max1 = 0, inv_area = 0
@@ -1288,6 +1302,10 @@ def fullSplit2D_engine(pos not None,
         do_solidangle = True
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=data_d)
+    if absorption is not None:
+        do_absorption = True
+        assert absorption.size == size, "absorption array size"
+        cabsorption = numpy.ascontiguousarray(solidangleabsorption.ravel(), dtype=data_d)
 
     with nogil:
         for idx in range(size):
@@ -1302,7 +1320,7 @@ def fullSplit2D_engine(pos not None,
                                              flat=cflat[idx] if do_flat else 1.0,
                                              solidangle=csolidangle[idx] if do_solidangle else 1.0,
                                              polarization=cpolarization[idx] if do_polarization else 1.0,
-                                             absorption=1.0,
+                                             absorption=cabsorption[idx] if do_absorption else 1.0,
                                              mask=cmask[idx] if check_mask else 0,
                                              dummy=cdummy,
                                              delta_dummy=cddummy,
