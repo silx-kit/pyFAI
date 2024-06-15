@@ -1305,7 +1305,7 @@ def fullSplit2D_engine(pos not None,
     if absorption is not None:
         do_absorption = True
         assert absorption.size == size, "absorption array size"
-        cabsorption = numpy.ascontiguousarray(solidangleabsorption.ravel(), dtype=data_d)
+        cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=data_d)
 
     with nogil:
         for idx in range(size):
