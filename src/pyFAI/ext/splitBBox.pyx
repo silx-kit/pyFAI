@@ -341,7 +341,7 @@ def histoBBox1d_engine(weights,
         acc_t  inv_area, delta_right, delta_left
         Py_ssize_t  bin0_max, bin0_min
         bint is_valid, check_mask = False, check_dummy = False, check_pos1=False
-        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, 
+        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False,
         bint do_dark_variance = False, do_absorption = False
         preproc_t value
 
