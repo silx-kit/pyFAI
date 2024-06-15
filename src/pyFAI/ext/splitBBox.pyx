@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "25/04/2024"
+__date__ = "15/06/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -279,6 +279,7 @@ def histoBBox1d_engine(weights,
                        flat=None,
                        solidangle=None,
                        polarization=None,
+                       absorption=None,
                        bint allow_pos0_neg=False,
                        data_t empty=0.0,
                        double normalization_factor=1.0,
@@ -305,6 +306,7 @@ def histoBBox1d_engine(weights,
     :param flat: array (of float32) with flat-field image
     :param solidangle: array (of float32) with solid angle corrections
     :param polarization: array (of float32) with polarization corrections
+    :param ndarray absorption: detector absorption
     :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
     :param empty: value of output bins without any contribution when dummy is None
     :param float normalization_factor: divide the result by this value
@@ -320,7 +322,7 @@ def histoBBox1d_engine(weights,
         Py_ssize_t i, idx
         # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption, cdark_variance
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption, cdark_variance, cabsorption
         data_t cdummy, ddummy=0.0
 
         # Related to positions: double precision
@@ -339,7 +341,8 @@ def histoBBox1d_engine(weights,
         acc_t  inv_area, delta_right, delta_left
         Py_ssize_t  bin0_max, bin0_min
         bint is_valid, check_mask = False, check_dummy = False, check_pos1=False
-        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, do_dark_variance=False
+        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, 
+        bint do_dark_variance = False, do_absorption = False
         preproc_t value
 
     if variance is not None:
@@ -387,6 +390,11 @@ def histoBBox1d_engine(weights,
         do_solidangle = True
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
+    if absorption is not None:
+        do_absorption = True
+        assert absorption.size == size, "absorption array size"
+        cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=numpy.float32)
+
 
     if pos1_range is not None:
         assert pos1.size == size, "pos1.size == size"
@@ -420,7 +428,7 @@ def histoBBox1d_engine(weights,
                                  flat=cflat[idx] if do_flat else 1.0,
                                  solidangle=csolidangle[idx] if do_solidangle else 1.0,
                                  polarization=cpolarization[idx] if do_polarization else 1.0,
-                                 absorption=1.0,
+                                 absorption=cabsorption[idx] if do_absorption else 1.0,
                                  mask=0, #previously checked
                                  dummy=cdummy,
                                  delta_dummy=ddummy,
@@ -800,6 +808,7 @@ def histoBBox2d_engine(weights,
                        flat=None,
                        solidangle=None,
                        polarization=None,
+                       absorption=None,
                        bint allow_pos0_neg=False,
                        bint chiDiscAtPi=1,
                        data_t empty=0.0,
@@ -831,6 +840,7 @@ def histoBBox2d_engine(weights,
     :param flat: array (of float32) with flat-field image
     :param solidangle: array (of float32) with solid angle corrections
     :param polarization: array (of float32) with polarization corrections
+    :param ndarray absorption: detector absorption
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
@@ -854,7 +864,7 @@ def histoBBox2d_engine(weights,
     cdef:
         # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption
         data_t cdummy, ddummy=0.0
         # Related to positions: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
@@ -875,6 +885,7 @@ def histoBBox2d_engine(weights,
         Py_ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
         bint check_mask = False, check_dummy = False, is_valid
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
+        bint do_cabsorption = False
         preproc_t value
 
     if variance is not None:
@@ -921,6 +932,10 @@ def histoBBox2d_engine(weights,
         do_solidangle = True
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
+    if absorption is not None:
+        do_absorption = True
+        assert absorption.size == size, "absorption array size"
+        cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=numpy.float32)
 
     pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
                                                                  cpos1, dpos1,
@@ -944,7 +959,7 @@ def histoBBox2d_engine(weights,
                                              flat=cflat[idx] if do_flat else 1.0,
                                              solidangle=csolidangle[idx] if do_solidangle else 1.0,
                                              polarization=cpolarization[idx] if do_polarization else 1.0,
-                                             absorption=1.0,
+                                             absorption=cabsorption[idx] if do_absorption else 1.0,
                                              mask=0, #previously checked
                                              dummy=cdummy,
                                              delta_dummy=ddummy,
