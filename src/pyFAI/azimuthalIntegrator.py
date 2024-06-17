@@ -1098,10 +1098,10 @@ class AzimuthalIntegrator(Geometry):
                        variance=None, error_model=None,
                        radial_range=None, azimuth_range=None,
                        mask=None, dummy=None, delta_dummy=None,
-                       polarization_factor=None, dark=None, flat=None,
+                       polarization_factor=None, dark=None, flat=None, absorption=None,
                        method=("bbox", "csr", "cython"), unit=units.Q, safe=True,
                        normalization_factor=1.0,
-                       metadata=None, absorption=None):
+                       metadata=None):
         """Calculate the azimuthal integration (1d) of a 2D image.
 
         Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
@@ -1126,6 +1126,7 @@ class AzimuthalIntegrator(Geometry):
                True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
+        :param ndarray absorption: absorption correction image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param Unit unit: Output units, can be "q_nm^-1" (default), "2th_deg", "r_mm" for now.
         :param bool safe: Perform some extra checks to ensure LUT/CSR is still valid. False is faster.
@@ -1266,9 +1267,9 @@ class AzimuthalIntegrator(Geometry):
                                             flat=flat,
                                             solidangle=solidangle,
                                             polarization=polarization,
+                                            absorption=absorption,
                                             normalization_factor=normalization_factor,
-                                            weighted_average=method.weighted_average,
-                                            absorption=absorption)
+                                            weighted_average=method.weighted_average)
             else:  # method.impl_lower in ("opencl", "python"):
                 if method not in self.engines:
                     # instanciated the engine
@@ -1353,10 +1354,9 @@ class AzimuthalIntegrator(Geometry):
                 intpl = integr.integrate_ng(data, dark=dark,
                                             dummy=dummy, delta_dummy=delta_dummy,
                                             flat=flat, solidangle=solidangle,
-                                            polarization=polarization,
+                                            absorption=absorption, polarization=polarization,
                                             normalization_factor=normalization_factor,
                                             weighted_average=method.weighted_average,
-                                            absorption=absorption,
                                             ** kwargs)
             # This section is common to all 3 CSR implementations...
             if error_model.do_variance:
@@ -1395,12 +1395,12 @@ class AzimuthalIntegrator(Geometry):
                            variance=variance,
                            flat=flat, solidangle=solidangle,
                            polarization=polarization,
+                           absorption=absorption,
                            normalization_factor=normalization_factor,
                            weighted_average=method.weighted_average,
                            mask=mask,
                            radial_range=radial_range,
-                           error_model=error_model,
-                           absorption=absorption)
+                           error_model=error_model)
 
             if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -1464,14 +1464,13 @@ class AzimuthalIntegrator(Geometry):
                                delta_dummy=delta_dummy,
                                variance=variance,
                                flat=flat, solidangle=solidangle,
-                               polarization=polarization,
+                               polarization=polarization, absorption=absorption
                                polarization_checksum=polarization_crc,
                                normalization_factor=normalization_factor,
                                weighted_average=method.weighted_average,
                                radial_range=radial_range,
                                azimuth_range=azimuth_range,
-                               error_model=error_model,
-                               absorption=absorption)
+                               error_model=error_model)
 
             if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
@@ -1503,14 +1502,13 @@ class AzimuthalIntegrator(Geometry):
                                bins=npt,
                                dummy=dummy, delta_dummy=delta_dummy, empty=empty,
                                dark=dark, flat=flat, solidangle=solidangle,
-                               polarization=polarization,
+                               polarization=polarization, absorption=absorption,
                                normalization_factor=normalization_factor,
                                weighted_average=method.weighted_average,
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
                                error_model=error_model)
-                               # absorption=absorption) # Not supported
             elif method.method[1] == "full":
                 pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 intpl = integr(weights=data, variance=variance,
@@ -1518,14 +1516,13 @@ class AzimuthalIntegrator(Geometry):
                                bins=npt,
                                dummy=dummy, delta_dummy=delta_dummy, empty=empty,
                                dark=dark, flat=flat, solidangle=solidangle,
-                               polarization=polarization,
+                               polarization=polarization, absorption=absorption,
                                normalization_factor=normalization_factor,
                                weighted_average=method.weighted_average,
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
                                error_model=error_model)
-                               # absorption=absorption) # Not supported
             else:
                 raise RuntimeError("Should not arrive here")
             if error_model.do_variance:
@@ -3258,6 +3255,7 @@ class AzimuthalIntegrator(Geometry):
                       azimuth_range=None,
                       dark=None,
                       flat=None,
+                      absorption=None,
                       method=("no", "csr", "cython"),
                       unit=units.Q,
                       thres=5.0,
@@ -3268,7 +3266,6 @@ class AzimuthalIntegrator(Geometry):
                       normalization_factor=1.0,
                       metadata=None,
                       safe=True,
-                      absorption=None,
                        **kwargs):
         """Performs iteratively the 1D integration with variance propagation
         and performs a sigm-clipping at each iteration, i.e.
@@ -3299,6 +3296,7 @@ class AzimuthalIntegrator(Geometry):
 
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
+        :param ndarray absorption: Detector absorption (image)
         :param ndarray variance: the variance of the signal
         :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)
         :param unit: unit to be used for integration
@@ -3310,7 +3308,6 @@ class AzimuthalIntegrator(Geometry):
         :param metadata: any other metadata,
         :type metadata: JSON serializable dict
         :param safe: set to False to skip some tests
-        :param ndarray absorption: Detector absorption (image)
         :return: Integrate1D like result like
 
         The difference with the previous `sigma_clip_legacy` implementation is that there is no 2D regrouping.
