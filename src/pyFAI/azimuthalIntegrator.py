@@ -1464,7 +1464,7 @@ class AzimuthalIntegrator(Geometry):
                                delta_dummy=delta_dummy,
                                variance=variance,
                                flat=flat, solidangle=solidangle,
-                               polarization=polarization, absorption=absorption
+                               polarization=polarization, absorption=absorption,
                                polarization_checksum=polarization_crc,
                                normalization_factor=normalization_factor,
                                weighted_average=method.weighted_average,
