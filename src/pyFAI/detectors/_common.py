@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/06/2024"
+__date__ = "17/06/2024"
 __status__ = "stable"
 
 import logging
@@ -1398,7 +1398,8 @@ class NexusDetector(Detector):
 
         :return: dict with param for serialization
         """
-        return {"filename": self._filename}
+        return {"filename": self._filename,
+                "orientation": self.orientation or 3}
 
     def getPyFAI(self):
         """
