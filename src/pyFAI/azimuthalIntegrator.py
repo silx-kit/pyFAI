@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/06/2024"
+__date__ = "18/06/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1098,7 +1098,7 @@ class AzimuthalIntegrator(Geometry):
                        variance=None, error_model=None,
                        radial_range=None, azimuth_range=None,
                        mask=None, dummy=None, delta_dummy=None,
-                       polarization_factor=None, dark=None, flat=None,
+                       polarization_factor=None, dark=None, flat=None, absorption=None,
                        method=("bbox", "csr", "cython"), unit=units.Q, safe=True,
                        normalization_factor=1.0,
                        metadata=None):
@@ -1126,11 +1126,13 @@ class AzimuthalIntegrator(Geometry):
                True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
+        :param ndarray absorption: absorption correction image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param Unit unit: Output units, can be "q_nm^-1" (default), "2th_deg", "r_mm" for now.
         :param bool safe: Perform some extra checks to ensure LUT/CSR is still valid. False is faster.
         :param float normalization_factor: Value of a normalization monitor
         :param metadata: JSON serializable object containing the metadata, usually a dictionary.
+        :param ndarray absorption: detector absorption
         :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
         """
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
@@ -1265,6 +1267,7 @@ class AzimuthalIntegrator(Geometry):
                                             flat=flat,
                                             solidangle=solidangle,
                                             polarization=polarization,
+                                            absorption=absorption,
                                             normalization_factor=normalization_factor,
                                             weighted_average=method.weighted_average)
             else:  # method.impl_lower in ("opencl", "python"):
@@ -1351,7 +1354,7 @@ class AzimuthalIntegrator(Geometry):
                 intpl = integr.integrate_ng(data, dark=dark,
                                             dummy=dummy, delta_dummy=delta_dummy,
                                             flat=flat, solidangle=solidangle,
-                                            polarization=polarization,
+                                            absorption=absorption, polarization=polarization,
                                             normalization_factor=normalization_factor,
                                             weighted_average=method.weighted_average,
                                             ** kwargs)
@@ -1392,6 +1395,7 @@ class AzimuthalIntegrator(Geometry):
                            variance=variance,
                            flat=flat, solidangle=solidangle,
                            polarization=polarization,
+                           absorption=absorption,
                            normalization_factor=normalization_factor,
                            weighted_average=method.weighted_average,
                            mask=mask,
@@ -1460,7 +1464,7 @@ class AzimuthalIntegrator(Geometry):
                                delta_dummy=delta_dummy,
                                variance=variance,
                                flat=flat, solidangle=solidangle,
-                               polarization=polarization,
+                               polarization=polarization, absorption=absorption,
                                polarization_checksum=polarization_crc,
                                normalization_factor=normalization_factor,
                                weighted_average=method.weighted_average,
@@ -1498,7 +1502,7 @@ class AzimuthalIntegrator(Geometry):
                                bins=npt,
                                dummy=dummy, delta_dummy=delta_dummy, empty=empty,
                                dark=dark, flat=flat, solidangle=solidangle,
-                               polarization=polarization,
+                               polarization=polarization, absorption=absorption,
                                normalization_factor=normalization_factor,
                                weighted_average=method.weighted_average,
                                mask=mask,
@@ -1512,7 +1516,7 @@ class AzimuthalIntegrator(Geometry):
                                bins=npt,
                                dummy=dummy, delta_dummy=delta_dummy, empty=empty,
                                dark=dark, flat=flat, solidangle=solidangle,
-                               polarization=polarization,
+                               polarization=polarization, absorption=absorption,
                                normalization_factor=normalization_factor,
                                weighted_average=method.weighted_average,
                                mask=mask,
@@ -3251,6 +3255,7 @@ class AzimuthalIntegrator(Geometry):
                       azimuth_range=None,
                       dark=None,
                       flat=None,
+                      absorption=None,
                       method=("no", "csr", "cython"),
                       unit=units.Q,
                       thres=5.0,
@@ -3291,6 +3296,7 @@ class AzimuthalIntegrator(Geometry):
 
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
+        :param ndarray absorption: Detector absorption (image)
         :param ndarray variance: the variance of the signal
         :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)
         :param unit: unit to be used for integration
@@ -3508,7 +3514,7 @@ class AzimuthalIntegrator(Geometry):
                     integr = self.engines[method].engine
                 kwargs = {"dark":dark, "dummy":dummy, "delta_dummy":delta_dummy,
                           "variance":variance, "dark_variance":None,
-                          "flat":flat, "solidangle":solidangle, "polarization":polarization, "absorption":None,
+                          "flat":flat, "solidangle":solidangle, "polarization":polarization, "absorption":absorption,
                           "error_model":error_model, "normalization_factor":normalization_factor,
                           "cutoff":thres, "cycle":max_iter}
 
