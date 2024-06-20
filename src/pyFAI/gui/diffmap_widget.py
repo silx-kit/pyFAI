@@ -377,6 +377,15 @@ class DiffMapWidget(qt.QWidget):
         self.list_dataset.sort(key=lambda i: i.path)
         self.list_model.update(self.list_dataset.as_tree())
 
+    def scan_input_files(self):
+        """ open all files, count the number of frames and check their size ?
+
+        :return: number of frames
+        """
+        total_frames = 0
+
+        return total_frames
+
     def get_config(self):
         """Return a dict with the plugin configuration which is JSON-serializable
         """
