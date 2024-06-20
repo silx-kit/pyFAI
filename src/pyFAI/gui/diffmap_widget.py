@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2024"
+__date__ = "20/06/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -180,7 +180,8 @@ class DiffMapWidget(qt.QWidget):
         self.update_sem = threading.Semaphore()
 
         # disable some widgets:
-        self.multiframe.setVisible(False)
+        # self.multiframe.setVisible(False)
+        self.zigzagScan.setVisible(False)
         self.label_10.setVisible(False)
         self.frameShape.setVisible(False)
         # Online visualization
