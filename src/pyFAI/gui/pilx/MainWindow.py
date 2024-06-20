@@ -186,8 +186,10 @@ class MainWindow(qt.QMainWindow):
                     status_bar.showMessage(error_msg)
                 return
 
-            image = image_dset[col * map_shape[0] + row]
+            image_index = row * map_shape[1] + col
+            image = image_dset[image_index]
 
+        self._image_plot_widget.setGraphTitle(f"Frame #{image_index}")
         self._image_plot_widget.setImageData(image)
 
     def selectMapPoint(self, x: float, y: float):
