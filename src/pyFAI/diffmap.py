@@ -293,6 +293,8 @@ If the number of files is too large, use double quotes like "*.edf" """
             mask = urlparse(options.mask).path
         elif config.get("do_mask", False) or config.get("mask_file", None):
             mask = urlparse(config.get("mask_file", None)).path
+        else:
+            mask = ""
         if os.path.isfile(mask):
             logger.info("Reading Mask file from: %s", mask)
             self.mask = os.path.abspath(mask)
