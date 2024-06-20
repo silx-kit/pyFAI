@@ -291,13 +291,17 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         if options.mask:
             mask = urlparse(options.mask).path
-            if os.path.isfile(mask):
-                logger.info("Reading Mask file from: %s", mask)
-                self.mask = os.path.abspath(mask)
-                ai["mask_file"] = self.mask
-                ai["do_mask"] = True
-            else:
-                logger.warning("No such mask file %s", mask)
+        elif config.get("do_mask", False) or config.get("mask_file", None):
+            mask = urlparse(config.get("mask_file", None)).path
+        else:
+            mask = ""
+        if os.path.isfile(mask):
+            logger.info("Reading Mask file from: %s", mask)
+            self.mask = os.path.abspath(mask)
+            ai["mask_file"] = self.mask
+            ai["do_mask"] = True
+        else:
+            logger.warning("No such mask file %s", mask)
         if options.poni:
             if os.path.isfile(options.poni):
                 logger.info("Reading PONI file from: %s", options.poni)
