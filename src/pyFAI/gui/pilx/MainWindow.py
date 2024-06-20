@@ -121,6 +121,10 @@ class MainWindow(qt.QMainWindow):
                 h5file, nxdata_path="/entry_0000/pyFAI/result"
             )
             delta_radial = (radial_dset[-1] - radial_dset[0]) / len(radial_dset)
+            if "offset" in h5file["/entry_0000/pyFAI"]:
+                self._offset = h5file["/entry_0000/pyFAI/offset"][()]
+            else:
+                self._offset = 0
 
         self._radial_matrix = compute_radial_values(pyFAI_config_as_str)
         self._delta_radial_over_2 = delta_radial / 2
@@ -186,7 +190,7 @@ class MainWindow(qt.QMainWindow):
                     status_bar.showMessage(error_msg)
                 return
 
-            image_index = row * map_shape[1] + col
+            image_index = row * map_shape[1] + col + self._offset
             image = image_dset[image_index]
 
         self._image_plot_widget.setGraphTitle(f"Frame #{image_index}")
