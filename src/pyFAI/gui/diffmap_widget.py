@@ -184,8 +184,9 @@ class DiffMapWidget(qt.QWidget):
         # disable some widgets:
         # self.multiframe.setVisible(False)
         self.zigzagBox.setVisible(False)
-        self.label_10.setVisible(False)
-        self.frameShape.setVisible(False)
+        # self.label_10.setVisible(False)
+        # self.frameShape.setVisible(False)
+        self.frameShape.setText("Click `Scan`")
         # Online visualization
         self.fig = None
         self.axplt = None
@@ -213,6 +214,10 @@ class DiffMapWidget(qt.QWidget):
         float_valid = qt.QDoubleValidator(self)
         self.rMin.setValidator(float_valid)
         self.rMax.setValidator(float_valid)
+        self.fastMotorMinimum.setValidator(float_valid)
+        self.fastMotorMaximum.setValidator(float_valid)
+        self.slowMotorMinimum.setValidator(float_valid)
+        self.slowMotorMaximum.setValidator(float_valid)
 
     def create_connections(self):
         """Signal-slot connection
@@ -421,6 +426,14 @@ class DiffMapWidget(qt.QWidget):
                "output_file": str_(self.outputFile.text()).strip(),
                "input_data": [i.as_tuple() for i in self.list_dataset]
                }
+        fast_motor_minimum = str_(self.fastMotorMinimum.text()).strip()
+        fast_motor_maximum = str_(self.fastMotorMaximum.text()).strip()
+        slow_motor_minimum = str_(self.slowMotorMinimum.text()).strip()
+        slow_motor_maximum = str_(self.slowMotorMaximum.text()).strip()
+        if fast_motor_minimum and fast_motor_maximum:
+            res["fast_motor_range"] = (float(fast_motor_minimum), float(fast_motor_maximum))
+        if slow_motor_minimum and slow_motor_maximum:
+            res["slow_motor_range"] = (float(slow_motor_minimum), float(slow_motor_maximum))
         return res
 
     def set_config(self, dico):
@@ -429,7 +442,6 @@ class DiffMapWidget(qt.QWidget):
         :param  dico: dictionary
         """
         self.integration_config = dico.get("ai", {})
-        # TODO
         setup_data = {"experiment_title": self.experimentTitle.setText,
                       "fast_motor_name": self.fastMotorName.setText,
                       "slow_motor_name": self.slowMotorName.setText,
@@ -452,7 +464,12 @@ class DiffMapWidget(qt.QWidget):
         for key, value in setup_data.items():
             if key in dico:
                 value(dico[key])
-
+        if "fast_motor_range" in dico:
+            self.fastMotorMinimum.setText(dico["fast_motor_range"][0])
+            self.fastMotorMaximum.setText(dico["fast_motor_range"][1])
+        if "slow_motor_range" in dico:
+            self.slowMotorMinimum.setText(dico["slow_motor_range"][0])
+            self.slowMotorMaximum.setText(dico["slow_motor_range"][1])
         self.list_dataset = ListDataSet(DataSet(*(str_(j) for j in i)) for i in dico.get("input_data", []))
         self.list_model.update(self.list_dataset.as_tree())
         self.update_number_of_frames()
@@ -520,6 +537,12 @@ class DiffMapWidget(qt.QWidget):
 
             diffmap = DiffMap(**diffmap_kwargs)
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
+            diffmap.experiment_title = config.get("experiment_title", "--")
+            diffmap.slow_motor_name = config.get("slow_motor_name", "slow")
+            diffmap.fast_motor_name = config.get("fast_motor_name", "fast")
+            diffmap.slow_motor_range = config.get("slow_motor_range")
+            diffmap.fast_motor_range = config.get("fast_motor_range")
+
             diffmap.configure_worker(config_ai)
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data, self.azimuthal_data = diffmap.init_ai()

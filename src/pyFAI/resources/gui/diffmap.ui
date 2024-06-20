@@ -256,7 +256,7 @@
           </widget>
          </item>
          <item row="4" column="2">
-          <widget class="QLineEdit" name="slowMotorMinumum"/>
+          <widget class="QLineEdit" name="slowMotorMinimum"/>
          </item>
          <item row="4" column="3">
           <widget class="QLineEdit" name="slowMotorMaximum"/>
@@ -271,14 +271,14 @@
          <item row="2" column="2">
           <widget class="QLabel" name="label_15">
            <property name="text">
-            <string>Minimum</string>
+            <string>Start position</string>
            </property>
           </widget>
          </item>
          <item row="2" column="3">
           <widget class="QLabel" name="label_16">
            <property name="text">
-            <string>Maximum</string>
+            <string>End position</string>
            </property>
           </widget>
          </item>
