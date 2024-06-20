@@ -465,11 +465,11 @@ class DiffMapWidget(qt.QWidget):
             if key in dico:
                 value(dico[key])
         if "fast_motor_range" in dico:
-            self.fastMotorMinimum.setText(dico["fast_motor_range"][0])
-            self.fastMotorMaximum.setText(dico["fast_motor_range"][1])
+            self.fastMotorMinimum.setText(str(dico["fast_motor_range"][0]))
+            self.fastMotorMaximum.setText(str(dico["fast_motor_range"][1]))
         if "slow_motor_range" in dico:
-            self.slowMotorMinimum.setText(dico["slow_motor_range"][0])
-            self.slowMotorMaximum.setText(dico["slow_motor_range"][1])
+            self.slowMotorMinimum.setText(str(dico["slow_motor_range"][0]))
+            self.slowMotorMaximum.setText(str(dico["slow_motor_range"][1]))
         self.list_dataset = ListDataSet(DataSet(*(str_(j) for j in i)) for i in dico.get("input_data", []))
         self.list_model.update(self.list_dataset.as_tree())
         self.update_number_of_frames()
