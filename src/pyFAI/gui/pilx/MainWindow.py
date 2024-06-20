@@ -146,7 +146,9 @@ class MainWindow(qt.QMainWindow):
     def getRoiRadialRange(self) -> Tuple[float | None, float | None]:
         return self._integrated_plot_widget.roi.getRange()
 
-    def displayPatternAtIndices(self, indices: ImageIndices, legend: str, color: str=None):
+    def displayPatternAtIndices(
+        self, indices: ImageIndices, legend: str, color: str = None
+    ):
         if self._file_name is None:
             return
 
@@ -188,10 +190,11 @@ class MainWindow(qt.QMainWindow):
                     status_bar.showMessage(error_msg)
                 return
 
-            image = image_dset[col * map_shape[0] + row]
+            image_index = row * map_shape[1] + col
+            image = image_dset[image_index]
 
-            if 'maskfile' in h5file['entry_0000']['pyFAI']:
-                maskfile = bytes.decode(h5file['entry_0000']['pyFAI']['maskfile'][()])
+            if "maskfile" in h5file["entry_0000"]["pyFAI"]:
+                maskfile = bytes.decode(h5file["entry_0000"]["pyFAI"]["maskfile"][()])
             else:
                 maskfile = None
 
@@ -202,6 +205,7 @@ class MainWindow(qt.QMainWindow):
 
         image_base = ImageBase(data=image, mask=mask_image)
         self._image_plot_widget.setImageData(image_base.getValueData())
+        self._image_plot_widget.setGraphTitle(f"Frame #{image_index}")
 
     def selectMapPoint(self, x: float, y: float):
         indices = self._map_plot_widget.getImageIndices(x, y)
