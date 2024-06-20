@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/06/2024"
+__date__ = "19/06/2024"
 __status__ = "stable"
 
 import logging
@@ -1243,8 +1243,11 @@ class NexusDetector(Detector):
             self.load(filename, orientation=orientation)
 
     def __repr__(self):
-        return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._filename, self._pixel1, self._pixel2)
+        txt = f"{self.name} detector from NeXus file: {self._filename}\t" +\
+              f"PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        if self.orientation:
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
+
 
     def load(self, filename, orientation=0):
         """
