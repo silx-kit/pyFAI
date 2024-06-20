@@ -41,6 +41,7 @@ import json
 import threading
 import logging
 import numpy
+import fabio
 from silx.gui import qt
 from silx.gui import icons
 
@@ -51,6 +52,7 @@ from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
+from .dialog import MessageBox
 
 from .pilx import MainWindow as pilx_main
 logger = logging.getLogger(__name__)
@@ -181,7 +183,7 @@ class DiffMapWidget(qt.QWidget):
 
         # disable some widgets:
         # self.multiframe.setVisible(False)
-        self.zigzagScan.setVisible(False)
+        self.zigzagBox.setVisible(False)
         self.label_10.setVisible(False)
         self.frameShape.setVisible(False)
         # Online visualization
@@ -228,6 +230,7 @@ class DiffMapWidget(qt.QWidget):
         self.rMax.editingFinished.connect(self.update_slice)
         self.processingFinished.connect(self.start_visu)
         # self.listFiles.expanded.connect(lambda:self.listFiles.resizeColumnToContents(0))
+        self.scanButton.clicked.connect(self.scan_input_files)
 
     def _menu_file(self):
         # Drop-down file menu
@@ -352,7 +355,7 @@ class DiffMapWidget(qt.QWidget):
 
     def update_number_of_frames(self):
         cnt = len(self.list_dataset)
-        self.numberOfFrames.setText("list: %s, tree: %s" % (cnt, self.list_model._root_item.size))
+        self.numberOfFrames.setText(f"list: {cnt}, tree: {self.list_model._root_item.size}")
 
     @property
     def number_of_points(self):
@@ -383,7 +386,26 @@ class DiffMapWidget(qt.QWidget):
         :return: number of frames
         """
         total_frames = 0
-
+        shape = None
+        for i in self.list_dataset:
+            fn = i.path
+            if os.path.exists(fn):
+                try:
+                    with fabio.open(fn) as fimg:
+                        new_shape = fimg.shape
+                        nframes = fimg.nframes
+                except Exception as error:
+                    MessageBox.exception(self, f"Unable to read file {fn}", error, None)
+                    return
+                if shape is None:
+                    shape = new_shape
+                elif shape != new_shape:
+                    MessageBox.exception(self, "Frame shape missmatch: got {fimg.shape}, expected {shape}", None, None)
+                    return
+                total_frames += nframes
+        self.numberOfFrames.setText(str(total_frames))
+        if shape:
+            self.frameShape.setText(f"{shape[1]} x {shape[0]}")
         return total_frames
 
     def get_config(self):
