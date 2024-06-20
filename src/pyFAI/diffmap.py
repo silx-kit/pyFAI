@@ -409,6 +409,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         process_grp["dim1"].attrs["axis"] = self.fast_motor_name
         process_grp["dim2"] = self.nbpt_rad
         process_grp["dim2"].attrs["axis"] = "diffraction"
+        process_grp["offset"] = self.offset
         config = nxs.new_class(process_grp, "configuration", "NXnote")
         config["type"] = "text/json"
         self.init_shape()

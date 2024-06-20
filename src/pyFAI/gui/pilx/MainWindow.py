@@ -186,7 +186,7 @@ class MainWindow(qt.QMainWindow):
                     status_bar.showMessage(error_msg)
                 return
 
-            image_index = col * map_shape[0] + row
+            image_index = row * map_shape[1] + col
             image = image_dset[image_index]
 
         self._image_plot_widget.setGraphTitle(f"Frame #{image_index}")
