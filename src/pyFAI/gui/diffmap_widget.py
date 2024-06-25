@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2024"
+__date__ = "20/06/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -41,6 +41,7 @@ import json
 import threading
 import logging
 import numpy
+import fabio
 from silx.gui import qt
 from silx.gui import icons
 
@@ -51,6 +52,7 @@ from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
+from .dialog import MessageBox
 
 from .pilx import MainWindow as pilx_main
 logger = logging.getLogger(__name__)
@@ -180,9 +182,11 @@ class DiffMapWidget(qt.QWidget):
         self.update_sem = threading.Semaphore()
 
         # disable some widgets:
-        self.multiframe.setVisible(False)
-        self.label_10.setVisible(False)
-        self.frameShape.setVisible(False)
+        # self.multiframe.setVisible(False)
+        self.zigzagBox.setVisible(False)
+        # self.label_10.setVisible(False)
+        # self.frameShape.setVisible(False)
+        self.frameShape.setText("Click `Scan`")
         # Online visualization
         self.fig = None
         self.axplt = None
@@ -210,6 +214,10 @@ class DiffMapWidget(qt.QWidget):
         float_valid = qt.QDoubleValidator(self)
         self.rMin.setValidator(float_valid)
         self.rMax.setValidator(float_valid)
+        self.fastMotorMinimum.setValidator(float_valid)
+        self.fastMotorMaximum.setValidator(float_valid)
+        self.slowMotorMinimum.setValidator(float_valid)
+        self.slowMotorMaximum.setValidator(float_valid)
 
     def create_connections(self):
         """Signal-slot connection
@@ -227,6 +235,7 @@ class DiffMapWidget(qt.QWidget):
         self.rMax.editingFinished.connect(self.update_slice)
         self.processingFinished.connect(self.start_visu)
         # self.listFiles.expanded.connect(lambda:self.listFiles.resizeColumnToContents(0))
+        self.scanButton.clicked.connect(self.scan_input_files)
 
     def _menu_file(self):
         # Drop-down file menu
@@ -351,7 +360,7 @@ class DiffMapWidget(qt.QWidget):
 
     def update_number_of_frames(self):
         cnt = len(self.list_dataset)
-        self.numberOfFrames.setText("list: %s, tree: %s" % (cnt, self.list_model._root_item.size))
+        self.numberOfFrames.setText(f"list: {cnt}, tree: {self.list_model._root_item.size}")
 
     @property
     def number_of_points(self):
@@ -376,6 +385,34 @@ class DiffMapWidget(qt.QWidget):
         self.list_dataset.sort(key=lambda i: i.path)
         self.list_model.update(self.list_dataset.as_tree())
 
+    def scan_input_files(self):
+        """ open all files, count the number of frames and check their size ?
+
+        :return: number of frames
+        """
+        total_frames = 0
+        shape = None
+        for i in self.list_dataset:
+            fn = i.path
+            if os.path.exists(fn):
+                try:
+                    with fabio.open(fn) as fimg:
+                        new_shape = fimg.shape
+                        nframes = fimg.nframes
+                except Exception as error:
+                    MessageBox.exception(self, f"Unable to read file {fn}", error, None)
+                    return
+                if shape is None:
+                    shape = new_shape
+                elif shape != new_shape:
+                    MessageBox.exception(self, "Frame shape missmatch: got {fimg.shape}, expected {shape}", None, None)
+                    return
+                total_frames += nframes
+        self.numberOfFrames.setText(str(total_frames))
+        if shape:
+            self.frameShape.setText(f"{shape[1]} x {shape[0]}")
+        return total_frames
+
     def get_config(self):
         """Return a dict with the plugin configuration which is JSON-serializable
         """
@@ -389,6 +426,14 @@ class DiffMapWidget(qt.QWidget):
                "output_file": str_(self.outputFile.text()).strip(),
                "input_data": [i.as_tuple() for i in self.list_dataset]
                }
+        fast_motor_minimum = str_(self.fastMotorMinimum.text()).strip()
+        fast_motor_maximum = str_(self.fastMotorMaximum.text()).strip()
+        slow_motor_minimum = str_(self.slowMotorMinimum.text()).strip()
+        slow_motor_maximum = str_(self.slowMotorMaximum.text()).strip()
+        if fast_motor_minimum and fast_motor_maximum:
+            res["fast_motor_range"] = (float(fast_motor_minimum), float(fast_motor_maximum))
+        if slow_motor_minimum and slow_motor_maximum:
+            res["slow_motor_range"] = (float(slow_motor_minimum), float(slow_motor_maximum))
         return res
 
     def set_config(self, dico):
@@ -397,7 +442,6 @@ class DiffMapWidget(qt.QWidget):
         :param  dico: dictionary
         """
         self.integration_config = dico.get("ai", {})
-        # TODO
         setup_data = {"experiment_title": self.experimentTitle.setText,
                       "fast_motor_name": self.fastMotorName.setText,
                       "slow_motor_name": self.slowMotorName.setText,
@@ -420,7 +464,12 @@ class DiffMapWidget(qt.QWidget):
         for key, value in setup_data.items():
             if key in dico:
                 value(dico[key])
-
+        if "fast_motor_range" in dico:
+            self.fastMotorMinimum.setText(str(dico["fast_motor_range"][0]))
+            self.fastMotorMaximum.setText(str(dico["fast_motor_range"][1]))
+        if "slow_motor_range" in dico:
+            self.slowMotorMinimum.setText(str(dico["slow_motor_range"][0]))
+            self.slowMotorMaximum.setText(str(dico["slow_motor_range"][1]))
         self.list_dataset = ListDataSet(DataSet(*(str_(j) for j in i)) for i in dico.get("input_data", []))
         self.list_model.update(self.list_dataset.as_tree())
         self.update_number_of_frames()
@@ -488,6 +537,12 @@ class DiffMapWidget(qt.QWidget):
 
             diffmap = DiffMap(**diffmap_kwargs)
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
+            diffmap.experiment_title = config.get("experiment_title", "--")
+            diffmap.slow_motor_name = config.get("slow_motor_name", "slow")
+            diffmap.fast_motor_name = config.get("fast_motor_name", "fast")
+            diffmap.slow_motor_range = config.get("slow_motor_range")
+            diffmap.fast_motor_range = config.get("fast_motor_range")
+
             diffmap.configure_worker(config_ai)
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data, self.azimuthal_data = diffmap.init_ai()

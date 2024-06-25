@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "20/06/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -111,11 +111,12 @@ class DiffMap(object):
         self.nxs = None
         self.entry_grp = None
         self.experiment_title = "Diffraction Mapping"
+        self.slow_motor_range = None
+        self.fast_motor_range = None
         # method is a property from worker
 
     def __repr__(self):
-        return "%s experiment with nbpt_slow: %s nbpt_fast: %s, nbpt_diff: %s" % \
-            (self.experiment_title, self.nbpt_slow, self.nbpt_fast, self.nbpt_rad)
+        return f"{self.experiment_title} experiment with nbpt_slow: {self.nbpt_slow} nbpt_fast: {self.nbpt_fast}, nbpt_diff: {self.nbpt_rad}"
 
     @staticmethod
     def to_tuple(name):
@@ -291,13 +292,17 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         if options.mask:
             mask = urlparse(options.mask).path
-            if os.path.isfile(mask):
-                logger.info("Reading Mask file from: %s", mask)
-                self.mask = os.path.abspath(mask)
-                ai["mask_file"] = self.mask
-                ai["do_mask"] = True
-            else:
-                logger.warning("No such mask file %s", mask)
+        elif config.get("do_mask", False) or config.get("mask_file", None):
+            mask = urlparse(config.get("mask_file", None)).path
+        else:
+            mask = ""
+        if os.path.isfile(mask):
+            logger.info("Reading Mask file from: %s", mask)
+            self.mask = os.path.abspath(mask)
+            ai["mask_file"] = self.mask
+            ai["do_mask"] = True
+        else:
+            logger.warning("No such mask file %s", mask)
         if options.poni:
             if os.path.isfile(options.poni):
                 logger.info("Reading PONI file from: %s", options.poni)
@@ -340,6 +345,14 @@ If the number of files is too large, use double quotes like "*.edf" """
         else:
             self.offset = config.get("offset", 0)
         self.offset = 0 if self.offset is None else self.offset
+
+        self.experiment_title = config.get("experiment_title", self.experiment_title)
+        self.slow_motor_name = config.get("slow_motor_name", self.slow_motor_name)
+        self.fast_motor_name = config.get("fast_motor_name", self.fast_motor_name)
+        self.slow_motor_range = config.get("slow_motor_range")
+        self.fast_motor_range = config.get("fast_motor_range")
+
+
         self.stats = options.stats
 
         if with_config:
@@ -349,12 +362,9 @@ If the number of files is too large, use double quotes like "*.edf" """
                 ai["do_solid_angle"] = True
             if "unit" not in ai:
                 ai["unit"] = "2th_deg"
-            if "experiment_title" not in config:
-                config["experiment_title"] = self.experiment_title
-            if "fast_motor_name" not in config:
-                config["fast_motor_name"] = self.fast_motor_name
-            if "slow_motor_name" not in config:
-                config["slow_motor_name"] = self.slow_motor_name
+            config["experiment_title"] = self.experiment_title
+            config["fast_motor_name"] = self.fast_motor_name
+            config["slow_motor_name"] = self.slow_motor_name
             return options, config
         return options
 
@@ -381,6 +391,12 @@ If the number of files is too large, use double quotes like "*.edf" """
         if os.path.exists(self.hdf5) and rewrite:
             os.unlink(self.hdf5)
 
+        # create motor range if not yet existing ...
+        if self.fast_motor_range is None:
+            self.fast_motor_range=(0, self.nbpt_fast-1)
+        if self.slow_motor_range is None:
+            self.slow_motor_range=(0, self.nbpt_slow-1)
+
         nxs = Nexus(self.hdf5, mode="w", creator="pyFAI")
         self.entry_grp = entry_grp = nxs.new_entry(entry="entry",
                                                    program_name="pyFAI",
@@ -405,22 +421,22 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         process_grp["dim0"] = self.nbpt_slow
         process_grp["dim0"].attrs["axis"] = self.slow_motor_name
+        process_grp["dim0"].attrs["range"] = self.slow_motor_range
         process_grp["dim1"] = self.nbpt_fast
         process_grp["dim1"].attrs["axis"] = self.fast_motor_name
+        process_grp["dim1"].attrs["range"] = self.slow_motor_range
         process_grp["dim2"] = self.nbpt_rad
         process_grp["dim2"].attrs["axis"] = "diffraction"
         config = nxs.new_class(process_grp, "configuration", "NXnote")
         config["type"] = "text/json"
         self.init_shape()
         worker_config = self.worker.get_config()
-        # print("Worker configuration:")
-        # for k,v in worker_config.items():
-        #     print(f"{k}:\t{v}")
-        # print("Worker:", self.worker)
         config["data"] = json.dumps(worker_config, indent=2, separators=(",\r\n", ": "))
 
         self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
         entry_grp.attrs["default"] = self.nxdata_grp.name.split("/", 2)[2]
+        self.nxdata_grp[self.slow_motor_name] = numpy.linspace(*self.slow_motor_range, self.nbpt_slow)
+        self.nxdata_grp[self.fast_motor_name] = numpy.linspace(*self.fast_motor_range, self.nbpt_fast)
 
         if self.worker.do_2D():
             self.dataset = self.nxdata_grp.create_dataset(
@@ -431,7 +447,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_azim, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "image"
-            self.nxdata_grp.attrs["axes"] = [".", ".", "azimuthal", str(self.unit).split("_")[0]]
+            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, "azimuthal", str(self.unit).split("_")[0]]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_azim, self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
@@ -450,7 +466,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "spectrum"
-            self.nxdata_grp.attrs["axes"] = [".", ".", str(self.unit).split("_")[0]]
+            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, str(self.unit).split("_")[0]]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)

@@ -1244,7 +1244,10 @@ class NexusDetector(Detector):
             self.load(filename, orientation=orientation)
 
     def __repr__(self):
-        return "{self.name} detector from NeXus file: {self._filename}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2}}m"
+        txt = f"{self.name} detector from NeXus file: {self._filename}\t"
+        txt += f"PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2}}m"
+        if self.orientation:
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
 
     def load(self, filename, orientation=0):
         """
@@ -1398,7 +1401,8 @@ class NexusDetector(Detector):
 
         :return: dict with param for serialization
         """
-        return {"filename": self._filename}
+        return {"filename": self._filename,
+                "orientation": self.orientation or 3}
 
     def getPyFAI(self):
         """
