@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,14 +34,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "25/06/2024"
 __status__ = "production"
 
 
 import numpy
 import logging
 import json
-from ._common import Detector, Orientation
+from ._common import Detector, Orientation, to_eng
 logger = logging.getLogger(__name__)
 
 try:
@@ -126,7 +126,7 @@ class Maxipix(Detector):
         self.uniform_pixel = True
 
     def __repr__(self):
-        txt = "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
+        txt = f"Detector {self.name}\t PixelSize= {to_eng(self.pixel1)}m, {to_eng(self.pixel2)}m"
         return txt
 
     def calc_mask(self):
