@@ -1245,7 +1245,7 @@ class NexusDetector(Detector):
 
     def __repr__(self):
         txt = f"{self.name} detector from NeXus file: {self._filename}\t"
-        txt += f"PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2}}m"
+        txt += f"PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
 
