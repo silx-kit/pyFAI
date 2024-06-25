@@ -28,7 +28,7 @@
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "25/06/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -66,6 +66,14 @@ class TestUtilsString(unittest.TestCase):
         expected = "aaaa{a[0]}{b.__name__}"
         self.assertEqual(stringutil.safe_format("aaaa{a[0]}{b.__name__}", {}), expected)
 
+    def test_to_eng(self):
+        expected = {(1,): "1",
+                   (2000,".4f"): "2.0000k",
+                   (1234,): "1.234k",
+                   (1234, None, "_"): "1.234_k",
+                   (75e-6,): '75µ'}
+        for args, exp in expected.items():
+            self.assertEqual(stringutil.to_eng(*args), exp, f"to_eng({args}) == {exp}")
 
 class TestToOrdinal(ParametricTestCase):
 
