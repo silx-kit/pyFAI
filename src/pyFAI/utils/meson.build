@@ -12,8 +12,7 @@ py.install_sources(
     'orderedset.py',
     'shell.py',
     'stringutil.py',
-    'mask_utils.py',
-    'engineering'],
+    'mask_utils.py'],
   pure: false,    # Will be installed next to binaries
   subdir: 'pyFAI/utils'  # Folder relative to site-packages to install to
 )
