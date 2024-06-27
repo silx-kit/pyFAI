@@ -124,6 +124,10 @@ class MainWindow(qt.QMainWindow):
                 h5file, nxdata_path="/entry_0000/pyFAI/result"
             )
             delta_radial = (radial_dset[-1] - radial_dset[0]) / len(radial_dset)
+            if "offset" in h5file["/entry_0000/pyFAI"]:
+                self._offset = h5file["/entry_0000/pyFAI/offset"][()]
+            else:
+                self._offset = 0
 
         self._radial_matrix = compute_radial_values(pyFAI_config_as_str)
         self._delta_radial_over_2 = delta_radial / 2
@@ -146,7 +150,9 @@ class MainWindow(qt.QMainWindow):
     def getRoiRadialRange(self) -> Tuple[float | None, float | None]:
         return self._integrated_plot_widget.roi.getRange()
 
-    def displayPatternAtIndices(self, indices: ImageIndices, legend: str, color: str=None):
+    def displayPatternAtIndices(
+        self, indices: ImageIndices, legend: str, color: str = None
+    ):
         if self._file_name is None:
             return
 
@@ -188,10 +194,11 @@ class MainWindow(qt.QMainWindow):
                     status_bar.showMessage(error_msg)
                 return
 
-            image = image_dset[col * map_shape[0] + row]
+            image_index = row * map_shape[1] + col + self._offset
+            image = image_dset[image_index]
 
-            if 'maskfile' in h5file['entry_0000']['pyFAI']:
-                maskfile = bytes.decode(h5file['entry_0000']['pyFAI']['maskfile'][()])
+            if "maskfile" in h5file["entry_0000"]["pyFAI"]:
+                maskfile = bytes.decode(h5file["entry_0000"]["pyFAI"]["maskfile"][()])
             else:
                 maskfile = None
 
@@ -202,6 +209,7 @@ class MainWindow(qt.QMainWindow):
 
         image_base = ImageBase(data=image, mask=mask_image)
         self._image_plot_widget.setImageData(image_base.getValueData())
+        self._image_plot_widget.setGraphTitle(f"Frame #{image_index}")
 
     def selectMapPoint(self, x: float, y: float):
         indices = self._map_plot_widget.getImageIndices(x, y)
