@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/06/2024"
+__date__ = "25/06/2024"
 __status__ = "stable"
 
 import logging
@@ -52,6 +52,7 @@ from .. import utils
 from .. import average
 from ..utils import expand2d, crc32, binning as rebin
 from ..utils.decorators import deprecated
+from ..utils.stringutil import to_eng
 
 logger = logging.getLogger(__name__)
 
@@ -259,7 +260,7 @@ class Detector(metaclass=DetectorMeta):
         if (self._pixel1 is None) or (self._pixel2 is None):
             return "Undefined detector"
         else:
-            txt += f"\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+            txt += f"\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
         return txt
@@ -1243,11 +1244,10 @@ class NexusDetector(Detector):
             self.load(filename, orientation=orientation)
 
     def __repr__(self):
-        txt = f"{self.name} detector from NeXus file: {self._filename}\t" +\
-              f"PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        txt = f"{self.name} detector from NeXus file: {self._filename}\t"
+        txt += f"PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
-
 
     def load(self, filename, orientation=0):
         """

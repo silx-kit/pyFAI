@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "25/06/2024"
 __status__ = "production"
 
 import os
@@ -42,7 +42,7 @@ import numpy
 import logging
 import json
 from collections import OrderedDict
-from ._common import Detector, Orientation
+from ._common import Detector, Orientation, to_eng
 from ..utils import expand2d
 logger = logging.getLogger(__name__)
 
@@ -106,7 +106,7 @@ class Eiger(_Dectris):
         self.offset1 = self.offset2 = None
 
     def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
         return txt
@@ -449,7 +449,7 @@ class Pilatus(_Dectris):
         self.set_offset_files(x_offset_file, y_offset_file)
 
     def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation > 0:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
         if self.x_offset_file:
@@ -771,7 +771,7 @@ class Pilatus4(_Dectris):
         self.module_size = tuple(self.MODULE_SIZE)
 
     def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
         return txt

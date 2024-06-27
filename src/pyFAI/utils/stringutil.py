@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,28 @@
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2023"
+__date__ = "25/06/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import string
 import math
 
+prefixes = {-7: "y",
+            -6: "z",
+            -5: "a",
+            -4: "f",
+            -3: "n",
+            -2: "µ",
+            -1:  "m",
+             0: "",
+             1: "k",
+             2: "M",
+             3: "G",
+             4: "T",
+             5: "P",
+             6: "E",
+             7: "Z"}
 
 class SafeFormatter(string.Formatter):
     """Like default formater but unmatched keys are still present
@@ -157,3 +172,24 @@ def to_ordinal(number):
         return string + "th"
     digit = ord(string[-1]) - ord("0")
     return string + _ordinal_suffix[digit]
+
+
+def to_eng(value, fmt=None, space=""):
+    """Return an engineering notation for the numerical value
+
+    :param value: the actual value
+    :param fmt: the formating, for example "5.3f"
+    :param space: can be used to insert a "_"  im 1_k
+    :return: string
+    """
+    key = int(math.log10(value)//3)
+    pfix = prefixes.get(key)
+    if pfix is None:
+        return str(value)
+    else:
+        value *= 10**(-3*key)
+        if fmt:
+            ffmt = "{value:%s}{space}{pfix}"%fmt
+            return ffmt.format(value=value, space=space, pfix=pfix, fmt=fmt)
+        else:
+            return f"{value:f}".rstrip("0.")+space+pfix
