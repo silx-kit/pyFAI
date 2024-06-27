@@ -182,7 +182,7 @@ def to_eng(value, fmt=None, space=""):
     :param space: can be used to insert a "_"  im 1_k
     :return: string
     """
-    key = int(math.log(value, 10)//3)
+    key = int(math.log10(value)//3)
     pfix = prefixes.get(key)
     if pfix is None:
         return str(value)
