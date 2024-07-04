@@ -31,7 +31,7 @@
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/04/2024"
+__date__ = "04/07/2024"
 __docformat__ = 'restructuredtext'
 
 import logging
@@ -76,9 +76,12 @@ def _patch_v1_to_v2(config):
 
     :param dict config: Dictionary reworked inplace.
     """
-
-    value = config.pop("poni", None)
     detector = None
+    value = config.pop("poni", None)
+    if value is None and "poni_version" in config:
+        # Anachronistic configuration, bug found in #2227
+        value = config.copy()
+        config.clear()  # Do not change the object: empty in place
     if value:
         # Use the poni file while it is not overwrited by a key of the config
         # dictionary
