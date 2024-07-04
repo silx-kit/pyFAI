@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/04/2024"
+__date__ = "04/07/2024"
 
 import unittest
 import logging
@@ -438,6 +438,29 @@ class TestWorkerConfig(unittest.TestCase):
 
         ai = worker.ai
         self.assertTrue(numpy.allclose(config["shape"], ai.detector.max_shape))
+
+    def test_regression_2227(self):
+        """pixel size got lost with generic detector"""
+        worker_generic = Worker()
+        integration_options_generic = {'poni_version': 2.1,
+                                       'detector': 'Detector',
+                                       'detector_config': {'pixel1': 1e-4,
+                                                           'pixel2': 1e-4,
+                                                           'max_shape': [576, 748],
+                                                           'orientation': 3},
+                                       'dist': 0.16156348926909264,
+                                       'poni1': 1.4999999999999998,
+                                       'poni2': 1.4999999999999998,
+                                       'rot1': 1.0822864853552985,
+                                       'rot2': -0.41026007690779387,
+                                       'rot3': 0.0,
+                                       'wavelength': 1.0332016536100021e-10}
+        worker_generic.set_config(integration_options_generic)
+        self.assertEqual(worker_generic.ai.detector.pixel1, 1e-4, "Pixel1 size matches")
+        self.assertEqual(worker_generic.ai.detector.pixel2, 1e-4, "Pixel2 size matches")
+        self.assertEqual(worker_generic.ai.detector.shape, [576, 748], "Shape matches")
+        self.assertEqual(worker_generic.ai.detector.orientation, 3, "Orientation matches")
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
