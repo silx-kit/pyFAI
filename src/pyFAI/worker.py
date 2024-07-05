@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/06/2024"
+__date__ = "03/07/2024"
 __status__ = "development"
 
 import threading
@@ -320,22 +320,27 @@ class Worker(object):
                     self.ai.reset()
                     self.needs_reset = False
 
-    def reconfig(self, shape=(2048, 2048), sync=False):
+    def reconfig(self, shape=None, sync=False):
         """
         This is just to force the integrator to initialize with a given input image shape
 
         :param shape: shape of the input image
         :param sync: return only when synchronized
         """
-        self.shape = shape
+        if shape is not None:
+            self._shape = shape
+            if not self.ai.detector.force_pixel:
+                self.ai.detector.shape = shape
         self.ai.reset()
         self.warmup(sync)
 
-    def process(self, data, variance=None, normalization_factor=1.0, writer=None, metadata=None):
+    def process(self, data, variance=None,
+                dark=None,
+                flat=None,
+                normalization_factor=1.0,
+                writer=None, metadata=None):
         """
         Process one frame
-        #TODO:
-        dark, flat, sa are missing
 
         :param data: numpy array containing the input image
         :param writer: An open writer in which 'write' will be called with the result of the integration
@@ -353,6 +358,8 @@ class Worker(object):
         kwarg["correctSolidAngle"] = self.correct_solid_angle
         kwarg["safe"] = self.safe
         kwarg["variance"] = variance
+        kwarg["dark"] = dark
+        kwarg["flat"] = flat
         if self.error_model:
             kwarg["error_model"] = self.error_model
 
