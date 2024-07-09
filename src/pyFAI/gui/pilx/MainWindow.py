@@ -113,10 +113,15 @@ class MainWindow(qt.QMainWindow):
 
     def initData(self, 
                  file_name: str, 
-                 dataset_path:str = "/entry_0000/measurement/images_0001",
-                 nxprocess_path:str = "entry_0000/pyFAI",
+                 dataset_path:str = None,
+                 nxprocess_path:str = None,
                  ):
         
+        if dataset_path is None:
+            dataset_path = "/entry_0000/measurement/images_0001"
+        
+        if nxprocess_path is None:
+            nxprocess_path = "entry_0000/pyFAI"
 
         self._file_name = os.path.abspath(file_name)
         self._dataset_path = dataset_path

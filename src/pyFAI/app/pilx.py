@@ -55,8 +55,8 @@ def main():
     app = qt.QApplication([])
     window = MainWindow()
     window.initData(file_name=options.filename,
-                    raw_dataset_path=options.data_path,
-                    integrate_nxprocess_path=options.nxprocess_path,
+                    dataset_path=options.data_path,
+                    nxprocess_path=options.nxprocess_path,
                     )
     window.show()
     return app.exec()
