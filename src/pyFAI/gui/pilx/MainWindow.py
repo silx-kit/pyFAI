@@ -111,21 +111,33 @@ class MainWindow(qt.QMainWindow):
         self._fixed_indices = set()
         self._background_point = None
 
-    def initData(self, file_name: str):
+    def initData(self, 
+                 file_name: str, 
+                 dataset_path:str = "/entry_0000/measurement/images_0001",
+                 nxprocess_path:str = "entry_0000/pyFAI",
+                 ):
+        
+
         self._file_name = os.path.abspath(file_name)
+        self._dataset_path = dataset_path
+        self._nxprocess_path = nxprocess_path
+
         self.sigFileChanged.emit(self._file_name)
 
         with h5py.File(self._file_name, "r") as h5file:
-            map = get_dataset(h5file, "/entry_0000/pyFAI/result/intensity")[:, :, 0]
+            map = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity")[:, :, 0]
             pyFAI_config_as_str = get_dataset(
-                h5file, "/entry_0000/pyFAI/configuration/data"
+                parent=h5file,
+                path=f"{self._nxprocess_path}/configuration/data"
             )[()]
+
             radial_dset = get_radial_dataset(
-                h5file, nxdata_path="/entry_0000/pyFAI/result"
+                h5file, nxdata_path=f"{self._nxprocess_path}/result"
             )
             delta_radial = (radial_dset[-1] - radial_dset[0]) / len(radial_dset)
-            if "offset" in h5file["/entry_0000/pyFAI"]:
-                self._offset = h5file["/entry_0000/pyFAI/offset"][()]
+
+            if "offset" in h5file[self._nxprocess_path]:
+                self._offset = h5file[f"{self._nxprocess_path}/offset"][()]
             else:
                 self._offset = 0
 
@@ -156,7 +168,9 @@ class MainWindow(qt.QMainWindow):
         if self._file_name is None:
             return
 
-        point = Point(indices, file_name=self._file_name)
+        point = Point(indices, 
+                      file_name=self._file_name, 
+                      nxprocess_path=self._nxprocess_path)
 
         if self._background_point:
             curve = point.get_curve() - self._background_point.get_curve()
@@ -180,12 +194,12 @@ class MainWindow(qt.QMainWindow):
         col = indices.col
 
         with h5py.File(self._file_name, "r") as h5file:
-            map_shape = get_dataset(h5file, "/entry_0000/pyFAI/result/intensity").shape
+            map_shape = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity").shape
             try:
-                image_dset = get_dataset(h5file, "/entry_0000/measurement/images_0001")
+                image_dset = get_dataset(h5file, f"{self._dataset_path}")
             except KeyError:
                 image_link = h5file.get(
-                    "/entry_0000/measurement/images_0001", getlink=True
+                    self._dataset_path, getlink=True
                 )
                 error_msg = f"Cannot access diffraction images at {image_link}"
                 logging.warning(error_msg)
@@ -200,8 +214,8 @@ class MainWindow(qt.QMainWindow):
             
             image = image_dset[image_index]
 
-            if "maskfile" in h5file["entry_0000"]["pyFAI"]:
-                maskfile = bytes.decode(h5file["entry_0000"]["pyFAI"]["maskfile"][()])
+            if "maskfile" in h5file[self._nxprocess_path]:
+                maskfile = bytes.decode(h5file[self._nxprocess_path]["maskfile"][()])
             else:
                 maskfile = None
 
@@ -317,11 +331,11 @@ class MainWindow(qt.QMainWindow):
             return
 
         with h5py.File(self._file_name, "r") as h5file:
-            radial = get_radial_dataset(h5file, nxdata_path="/entry_0000/pyFAI/result")[
+            radial = get_radial_dataset(h5file, nxdata_path=f"{self._nxprocess_path}/result")[
                 ()
             ]
             i_min, i_max = get_indices_from_values(v_min, v_max, radial)
-            map_data = get_dataset(h5file, "/entry_0000/pyFAI/result/intensity")[
+            map_data = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity")[
                 :, :, i_min:i_max
             ].mean(axis=2)
 
@@ -359,6 +373,7 @@ class MainWindow(qt.QMainWindow):
         new_background_point = Point(
             new_indices,
             file_name=self._file_name,
+            nxprocess_path=self._nxprocess_path
         )
         # Unset the background if it's the same pixel and delete markers
         if (
