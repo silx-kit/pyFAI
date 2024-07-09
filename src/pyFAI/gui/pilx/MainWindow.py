@@ -173,8 +173,8 @@ class MainWindow(qt.QMainWindow):
         if self._file_name is None:
             return
 
-        point = Point(indices, 
-                      file_name=self._file_name, 
+        point = Point(indices,
+                      file_name=self._file_name,
                       nxprocess_path=self._nxprocess_path)
 
         if self._background_point:
