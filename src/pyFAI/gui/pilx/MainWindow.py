@@ -195,6 +195,9 @@ class MainWindow(qt.QMainWindow):
                 return
 
             image_index = row * map_shape[1] + col + self._offset
+            if image_index >= len(image_dset):
+                return
+            
             image = image_dset[image_index]
 
             if "maskfile" in h5file["entry_0000"]["pyFAI"]:
@@ -206,6 +209,8 @@ class MainWindow(qt.QMainWindow):
             mask_image = get_data(url=DataUrl(maskfile))
             if mask_image.shape != image.shape:
                 mask_image = None
+        else:
+            mask_image = None
 
         image_base = ImageBase(data=image, mask=mask_image)
         self._image_plot_widget.setImageData(image_base.getValueData())
