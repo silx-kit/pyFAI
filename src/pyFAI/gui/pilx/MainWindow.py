@@ -111,15 +111,15 @@ class MainWindow(qt.QMainWindow):
         self._fixed_indices = set()
         self._background_point = None
 
-    def initData(self, 
-                 file_name: str, 
+    def initData(self,
+                 file_name: str,
                  dataset_path:str = None,
                  nxprocess_path:str = None,
                  ):
-        
+
         if dataset_path is None:
             dataset_path = "/entry_0000/measurement/images_0001"
-        
+
         if nxprocess_path is None:
             nxprocess_path = "entry_0000/pyFAI"
 
