@@ -197,7 +197,7 @@ class MainWindow(qt.QMainWindow):
             image_index = row * map_shape[1] + col + self._offset
             if image_index >= len(image_dset):
                 return
-            
+
             image = image_dset[image_index]
 
             if "maskfile" in h5file["entry_0000"]["pyFAI"]:
