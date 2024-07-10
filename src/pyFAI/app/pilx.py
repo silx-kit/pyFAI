@@ -46,9 +46,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
     parser.add_argument("-d", "--data", dest="data_path",
-                        help="inner path to the dataset with the Raw Data", default=None)
+                        help="inner path to the dataset with the Raw Data", 
+                        default="/entry_0000/measurement/images_0001",)
     parser.add_argument("-p", "--nxprocess", dest="nxprocess_path",
-                        help="inner path to the Nexus process with the integrated Data", default=None)
+                        help="inner path to the Nexus process with the integrated Data", 
+                        default="entry_0000/pyFAI",)
 
     options = parser.parse_args(sys.argv[1:])
 

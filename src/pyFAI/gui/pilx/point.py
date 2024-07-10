@@ -13,7 +13,7 @@ class Point:
         self,
         indices: ImageIndices,
         file_name: str,
-        nxprocess_path: str,
+        nxdata_path: str,
     ):
         self.indices = indices
         row = indices.row
@@ -21,11 +21,11 @@ class Point:
 
         with h5py.File(file_name, "r") as h5file:
             radial_dset = get_radial_dataset(
-                h5file, nxdata_path=f"{nxprocess_path}/result"
+                h5file, nxdata_path=nxdata_path
             )
             self._radial_curve = radial_dset[()]
             self._x_name = get_dataset_name(radial_dset)
-            intensity_dset = get_dataset(h5file, f"{nxprocess_path}/result/intensity")
+            intensity_dset = get_dataset(h5file, f"{nxdata_path}/intensity")
             self._intensity_curve = intensity_dset[row, col, :]
             self._y_name = intensity_dset.attrs.get("long_name", "Intensity")
 

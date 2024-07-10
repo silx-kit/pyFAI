@@ -113,16 +113,10 @@ class MainWindow(qt.QMainWindow):
 
     def initData(self, 
                  file_name: str, 
-                 dataset_path:str = None,
-                 nxprocess_path:str = None,
+                 dataset_path:str = "/entry_0000/measurement/images_0001",
+                 nxprocess_path:str = "/entry_0000/pyFAI",
                  ):
         
-        if dataset_path is None:
-            dataset_path = "/entry_0000/measurement/images_0001"
-        
-        if nxprocess_path is None:
-            nxprocess_path = "entry_0000/pyFAI"
-
         self._file_name = os.path.abspath(file_name)
         self._dataset_path = dataset_path
         self._nxprocess_path = nxprocess_path
@@ -175,7 +169,8 @@ class MainWindow(qt.QMainWindow):
 
         point = Point(indices,
                       file_name=self._file_name,
-                      nxprocess_path=self._nxprocess_path)
+                      nxdata_path=f"{self._nxprocess_path}/result",
+        )
 
         if self._background_point:
             curve = point.get_curve() - self._background_point.get_curve()
@@ -378,7 +373,7 @@ class MainWindow(qt.QMainWindow):
         new_background_point = Point(
             new_indices,
             file_name=self._file_name,
-            nxprocess_path=self._nxprocess_path
+            nxdata_path=f"{self._nxprocess_path}/result",
         )
         # Unset the background if it's the same pixel and delete markers
         if (
