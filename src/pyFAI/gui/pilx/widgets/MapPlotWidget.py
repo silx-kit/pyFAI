@@ -182,7 +182,7 @@ class MapPlotWidget(ImagePlotWidget):
             pixel_x, pixel_y = self.dataToPixel(x_data, y_data)
         except TypeError:
             return
-        
+
         picking_result = self._scatter_item.pick(pixel_x, pixel_y)
         if picking_result is None:
             return
