@@ -181,7 +181,7 @@ class MapPlotWidget(ImagePlotWidget):
         pixels = self.dataToPixel(x_data, y_data)
         if pixels is None:
             return
-        
+
         pixel_x, pixel_y = pixels
 
         picking_result = self._scatter_item.pick(pixel_x, pixel_y)
