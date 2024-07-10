@@ -181,6 +181,7 @@ class MapPlotWidget(ImagePlotWidget):
         try:
             pixel_x, pixel_y = self.dataToPixel(x_data, y_data)
         except TypeError:
+            # Patch to avoid out-of-bounds exception (see https://github.com/silx-kit/pyFAI/issues/2142)
             return
         
         picking_result = self._scatter_item.pick(pixel_x, pixel_y)
