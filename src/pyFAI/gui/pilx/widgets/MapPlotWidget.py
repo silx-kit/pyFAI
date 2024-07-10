@@ -178,11 +178,11 @@ class MapPlotWidget(ImagePlotWidget):
         return ImageIndices(row=row_indices_array[0], col=col_indices_array[0])
 
     def getScatterIndex(self, x_data: float, y_data: float) -> int | None:
-        try:
-            pixel_x, pixel_y = self.dataToPixel(x_data, y_data)
-        except TypeError:
-            # Patch to avoid out-of-bounds exception (see https://github.com/silx-kit/pyFAI/issues/2142)
+        pixels = self.dataToPixel(x_data, y_data)
+        if pixels is None:
             return
+        
+        pixel_x, pixel_y = pixels
 
         picking_result = self._scatter_item.pick(pixel_x, pixel_y)
         if picking_result is None:
