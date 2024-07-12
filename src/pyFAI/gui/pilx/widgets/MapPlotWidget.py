@@ -168,7 +168,11 @@ class MapPlotWidget(ImagePlotWidget):
         self._scatter_item.setData(x, y, z)
 
     def getImageIndices(self, x_data: float, y_data: float) -> ImageIndices | None:
-        pixel_x, pixel_y = self.dataToPixel(x_data, y_data)
+        pixels = self.dataToPixel(x_data, y_data)
+        if pixels is None:
+            return
+        
+        pixel_x, pixel_y  = pixels
         # Use the base class `pick` to retrieve row and col indices instead of the scatter index
         picking_result = super(Scatter, self._scatter_item).pick(pixel_x, pixel_y)
         if picking_result is None:
