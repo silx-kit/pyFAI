@@ -125,7 +125,6 @@ class MainWindow(qt.QMainWindow):
 
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
-            print(nxprocess.name)
             map = get_dataset(nxprocess, "result/intensity")[:, :, 0]
             pyFAI_config_as_str = get_dataset(
                 parent=nxprocess,
