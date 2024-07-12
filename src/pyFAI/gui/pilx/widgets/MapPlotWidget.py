@@ -171,7 +171,7 @@ class MapPlotWidget(ImagePlotWidget):
         pixels = self.dataToPixel(x_data, y_data)
         if pixels is None:
             return
-        
+
         pixel_x, pixel_y  = pixels
         # Use the base class `pick` to retrieve row and col indices instead of the scatter index
         picking_result = super(Scatter, self._scatter_item).pick(pixel_x, pixel_y)
