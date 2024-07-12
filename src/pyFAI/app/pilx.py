@@ -45,14 +45,23 @@ from ..gui.pilx.MainWindow import MainWindow
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
+    parser.add_argument("-d", "--data", dest="data_path",
+                        help="inner path to the dataset with the Raw Data",
+                        default="/entry_0000/measurement/images_0001",)
+    parser.add_argument("-p", "--nxprocess", dest="nxprocess_path",
+                        help="inner path to the Nexus process with the integrated Data",
+                        default="/entry_0000/pyFAI",)
+
     options = parser.parse_args(sys.argv[1:])
 
     app = qt.QApplication([])
     window = MainWindow()
-    window.initData(options.filename)
+    window.initData(file_name=options.filename,
+                    dataset_path=options.data_path,
+                    nxprocess_path=options.nxprocess_path,
+                    )
     window.show()
     return app.exec()
-
 
 if __name__ == "__main__":
     main()
