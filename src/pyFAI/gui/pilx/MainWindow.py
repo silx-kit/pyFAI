@@ -113,8 +113,8 @@ class MainWindow(qt.QMainWindow):
 
     def initData(self,
                  file_name: str,
-                 dataset_path:str = "/entry_0000/measurement/images_0001",
-                 nxprocess_path:str = "/entry_0000/pyFAI",
+                 dataset_path: str = "/entry_0000/measurement/images_0001",
+                 nxprocess_path: str = "/entry_0000/pyFAI",
                  ):
 
         self._file_name = os.path.abspath(file_name)
@@ -124,10 +124,12 @@ class MainWindow(qt.QMainWindow):
         self.sigFileChanged.emit(self._file_name)
 
         with h5py.File(self._file_name, "r") as h5file:
-            map = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity")[:, :, 0]
+            nxprocess = h5file[self._nxprocess_path]
+            print(nxprocess.name)
+            map = get_dataset(nxprocess, "result/intensity")[:, :, 0]
             pyFAI_config_as_str = get_dataset(
-                parent=h5file,
-                path=f"{self._nxprocess_path}/configuration/data"
+                parent=nxprocess,
+                path=f"configuration/data"
             )[()]
 
             radial_dset = get_radial_dataset(
@@ -168,8 +170,7 @@ class MainWindow(qt.QMainWindow):
             return
 
         point = Point(indices,
-                      file_name=self._file_name,
-                      nxdata_path=f"{self._nxprocess_path}/result",
+                      url_nxdata_path=f"{self._file_name}?{self._nxprocess_path}/result"
         )
 
         if self._background_point:
@@ -194,9 +195,10 @@ class MainWindow(qt.QMainWindow):
         col = indices.col
 
         with h5py.File(self._file_name, "r") as h5file:
-            map_shape = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity").shape
+            nxprocess = h5file[self._nxprocess_path]
+            map_shape = get_dataset(nxprocess, "result/intensity").shape
             try:
-                image_dset = get_dataset(h5file, f"{self._dataset_path}")
+                image_dset = get_dataset(h5file, self._dataset_path)
             except KeyError:
                 image_link = h5file.get(
                     self._dataset_path, getlink=True
@@ -372,9 +374,9 @@ class MainWindow(qt.QMainWindow):
 
         new_background_point = Point(
             new_indices,
-            file_name=self._file_name,
-            nxdata_path=f"{self._nxprocess_path}/result",
+            url_nxdata_path=f"{self._file_name}?{self._nxprocess_path}/result"
         )
+        
         # Unset the background if it's the same pixel and delete markers
         if (
             self._background_point

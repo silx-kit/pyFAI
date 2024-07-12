@@ -50,7 +50,7 @@ def main():
                         default="/entry_0000/measurement/images_0001",)
     parser.add_argument("-p", "--nxprocess", dest="nxprocess_path",
                         help="inner path to the Nexus process with the integrated Data",
-                        default="entry_0000/pyFAI",)
+                        default="/entry_0000/pyFAI",)
 
     options = parser.parse_args(sys.argv[1:])
 

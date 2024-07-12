@@ -1,5 +1,4 @@
 import h5py
-
 from .models import ImageIndices
 from .utils import (
     get_dataset,
@@ -7,17 +6,16 @@ from .utils import (
     get_radial_dataset,
 )
 
-
 class Point:
     def __init__(
         self,
         indices: ImageIndices,
-        file_name: str,
-        nxdata_path: str,
+        url_nxdata_path: str,
     ):
         self.indices = indices
         row = indices.row
         col = indices.col
+        file_name, nxdata_path = url_nxdata_path.split("?")
 
         with h5py.File(file_name, "r") as h5file:
             radial_dset = get_radial_dataset(
