@@ -34,12 +34,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2024"
+__date__ = "25/06/2024"
 __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector
+from ._common import Detector, to_eng
 from ._dectris import _Dectris
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
@@ -92,8 +92,7 @@ class Jungfrau(Detector):
             self.module_size = module_size
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self.pixel1, self.pixel2)
+        return f"Detector {self.name}%s\t PixelSize= {to_eng(self.pixel1)}m, {to_eng(self.pixel2)}m"
 
     def calc_pixels_edges(self):
         """

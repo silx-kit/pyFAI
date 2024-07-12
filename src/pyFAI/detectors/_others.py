@@ -34,13 +34,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "25/06/2024"
 __status__ = "production"
 
 import logging
 logger = logging.getLogger(__name__)
 import json
-from ._common import Detector, Orientation
+from ._common import Detector, Orientation, to_eng
 
 
 class Fairchild(Detector):
@@ -58,8 +58,7 @@ class Fairchild(Detector):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
+        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
@@ -86,8 +85,7 @@ class Titan(Detector):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
+        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
@@ -111,8 +109,7 @@ class Dexela2923(Detector):
         super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
+        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
@@ -200,8 +197,7 @@ class Perkin(Detector):
             self._binning = (2, 2)
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
+        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
@@ -236,8 +232,7 @@ class Pixium(Detector):
             self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
+        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
@@ -271,8 +266,7 @@ class Apex2(Detector):
             self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
+        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
