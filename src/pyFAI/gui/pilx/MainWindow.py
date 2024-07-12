@@ -376,7 +376,7 @@ class MainWindow(qt.QMainWindow):
             new_indices,
             url_nxdata_path=f"{self._file_name}?{self._nxprocess_path}/result"
         )
-        
+
         # Unset the background if it's the same pixel and delete markers
         if (
             self._background_point
