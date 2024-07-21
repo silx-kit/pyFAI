@@ -589,6 +589,8 @@ class MultiFilesAverageWriter(AverageWriter):
                             image.write(file_name)
                             logger.info("Wrote %s", file_name)
         
+        if self._dry_run:
+            image = self._fabio_class.__class__(data=data, header=header)
         self._fabio_images[algorithm] = image
 
     def get_fabio_image(self, algorithm):
