@@ -36,6 +36,7 @@ import logging
 import numpy
 import fabio
 import weakref
+import os
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
@@ -561,8 +562,6 @@ class MultiFilesAverageWriter(AverageWriter):
             header[name] = str(value)
 
         if not self._dry_run:
-
-            import os
             dim = len(data.shape)
 
             try:
