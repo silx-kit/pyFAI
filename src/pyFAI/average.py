@@ -561,7 +561,7 @@ class MultiFilesAverageWriter(AverageWriter):
             header[name] = str(value)
 
         if not self._dry_run:
-        #####    
+       
             import os
             dim = len(data.shape)
 
@@ -588,7 +588,7 @@ class MultiFilesAverageWriter(AverageWriter):
                             file_name=f"{base_name}_channel_{i}{ext}"
                             image.write(file_name)
                             logger.info("Wrote %s", file_name)
-        #####
+        
         self._fabio_images[algorithm] = image
 
     def get_fabio_image(self, algorithm):
