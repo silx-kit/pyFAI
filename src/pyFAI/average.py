@@ -588,7 +588,7 @@ class MultiFilesAverageWriter(AverageWriter):
                             file_name=f"{base_name}_channel_{i}{ext}"
                             image.write(file_name)
                             logger.info("Wrote %s", file_name)
-        
+
         if self._dry_run:
             image = self._fabio_class.__class__(data=data, header=header)
         self._fabio_images[algorithm] = image
