@@ -559,10 +559,36 @@ class MultiFilesAverageWriter(AverageWriter):
         filter_parameters = algorithm.get_parameters()
         for name, value in filter_parameters.items():
             header[name] = str(value)
-        image = self._fabio_class.__class__(data=data, header=header)
+
         if not self._dry_run:
-            image.write(file_name)
-            logger.info("Wrote %s", file_name)
+        #####    
+            import os
+            dim = len(data.shape)
+
+            try: 
+                image = self._fabio_class.__class__(data=data, header=header)
+                image.write(f"{file_name}")
+                logger.info("Wrote %s", file_name)
+
+            except:
+                if dim == 3:
+                    image = self._fabio_class.__class__(data=data[0], header=header)
+                    if hasattr(image, 'append_frame'):
+                        for i in range(1, data.shape[0]):
+                            image.append_frame(data=data[i])
+                        image.write(f"{file_name}")
+                        logger.info("Wrote %s", file_name)
+                    
+                    else:
+                        base_name, ext = os.path.splitext(file_name)
+                        image.write(f"{base_name}_channel_0{ext}")
+                        logger.info("Wrote %s", file_name)
+                        for i in range(1, data.shape[0]):
+                            image = self._fabio_class.__class__(data=data[i], header=header)    
+                            file_name=f"{base_name}_channel_{i}{ext}"
+                            image.write(file_name)
+                            logger.info("Wrote %s", file_name)
+        #####
         self._fabio_images[algorithm] = image
 
     def get_fabio_image(self, algorithm):
