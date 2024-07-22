@@ -282,7 +282,7 @@ class ConfigurationReader(object):
             detector_config = poni_dict.pop("detector_config", None)
             detector = detectors.detector_factory(detector_class, config=detector_config)
             return detector
-        
+
         detector_class = self._config.pop("detector", None)
         if detector_class is not None:
             # NOTE: Default way to describe a detector since pyFAI 0.17
