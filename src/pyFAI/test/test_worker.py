@@ -46,6 +46,8 @@ from ..worker import Worker, PixelwiseWorker
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
+from ..io.integration_config import ConfigurationReader
+from .. import detector_factory
 from . import utilstest
 
 logger = logging.getLogger(__name__)
@@ -460,6 +462,47 @@ class TestWorkerConfig(unittest.TestCase):
         self.assertEqual(worker_generic.ai.detector.pixel2, 1e-4, "Pixel2 size matches")
         self.assertEqual(worker_generic.ai.detector.shape, [576, 748], "Shape matches")
         self.assertEqual(worker_generic.ai.detector.orientation, 3, "Orientation matches")
+
+    def test_regression_v4(self):
+        """loading poni dictionary as a separate key in configuration"""
+        detector = detector_factory(name='Eiger2_4M', config={"orientation" : 3})
+        ai = AzimuthalIntegrator(dist=0.1,
+                                 poni1=0.1,
+                                 poni2=0.1,
+                                 wavelength=1e-10,
+                                 detector=detector,
+                                 )
+        worker = Worker(azimuthalIntegrator=ai)
+
+        self.assertEqual(ai.dist, worker.ai.dist, "Distance matches")
+        self.assertEqual(ai.poni1, worker.ai.poni1, "PONI1 matches")
+        self.assertEqual(ai.poni2, worker.ai.poni2, "PONI2 matches")
+        self.assertEqual(ai.rot1, worker.ai.rot1, "Rot1 matches")
+        self.assertEqual(ai.rot2, worker.ai.rot2, "Rot2 matches")
+        self.assertEqual(ai.rot3, worker.ai.rot3, "Rot3 matches")
+        self.assertEqual(ai.wavelength, worker.ai.wavelength, "Wavelength matches")
+        self.assertEqual(ai.detector, worker.ai.detector, "Detector matches")
+
+        config = worker.get_config()
+        config_reader = ConfigurationReader(config)
+
+        detector_from_reader = config_reader.pop_detector()
+        self.assertEqual(detector, detector_from_reader, "Detector from reader matches")        
+
+        config = worker.get_config()
+        config_reader = ConfigurationReader(config)
+        poni = config_reader.pop_ponifile()
+
+        self.assertEqual(ai.dist, poni.dist, "Distance matches")
+        self.assertEqual(ai.poni1, poni.poni1, "PONI1 matches")
+        self.assertEqual(ai.poni2, poni.poni2, "PONI2 matches")
+        self.assertEqual(ai.rot1, poni.rot1, "Rot1 matches")
+        self.assertEqual(ai.rot2, poni.rot2, "Rot2 matches")
+        self.assertEqual(ai.rot3, poni.rot3, "Rot3 matches")
+        self.assertEqual(ai.wavelength, poni.wavelength, "Wavelength matches")
+        self.assertEqual(ai.detector, poni.detector, "Detector matches")
+
+
 
 
 def suite():
