@@ -62,6 +62,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__calibrantModel = CalibrantModel()
         self.__detectorModel = DetectorModel()
         self.__poniFile = FilenameModel()
+        self.__jsonFile = FilenameModel()
 
         self.__image.changed.connect(self.wasChanged)
         self.__image.filenameChanged.connect(self.wasChanged)
@@ -72,6 +73,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__calibrantModel.changed.connect(self.wasChanged)
         self.__detectorModel.changed.connect(self.wasChanged)
         self.__poniFile.changed.connect(self.wasChanged)
+        self.__jsonFile.changed.connect(self.wasChanged)
 
         self.__dark.changed.connect(self.wasChanged)
         self.__dark.filenameChanged.connect(self.wasChanged)
@@ -165,6 +167,9 @@ class ExperimentSettingsModel(AbstractModel):
 
     def poniFile(self):
         return self.__poniFile
+    
+    def jsonFile(self):
+        return self.__jsonFile
 
     def dark(self):
         return self.__dark
