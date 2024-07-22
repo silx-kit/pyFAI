@@ -208,7 +208,7 @@ class WorkerConfigurator(qt.QWidget):
         if value == "":
             return None
         return int(value)
-    
+
     def getPoniDict(self):
         poni = {}
         poni["wavelength"] = self.__geometryModel.wavelength().value()
