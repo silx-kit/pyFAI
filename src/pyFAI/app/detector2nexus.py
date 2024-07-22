@@ -106,7 +106,7 @@ def main():
     else:
         logger.setLevel(logging.INFO)
 
-    detector = pyFAI.detectors.detector_factory(options.detector)
+    detector = pyFAI.detector_factory(options.detector)
     if options.output:
         output = options.output
     else:
