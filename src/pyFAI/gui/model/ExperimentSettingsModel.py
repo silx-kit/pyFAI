@@ -167,7 +167,7 @@ class ExperimentSettingsModel(AbstractModel):
 
     def poniFile(self):
         return self.__poniFile
-    
+
     def jsonFile(self):
         return self.__jsonFile
 

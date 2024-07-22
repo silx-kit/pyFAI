@@ -1162,7 +1162,7 @@ class IntegrationTask(AbstractCalibrationTask):
         geometry = self._geometryTabs.geometryModel()
         experimentSettingsModel = model.experimentSettingsModel()
         detector = experimentSettingsModel.detector()
-        
+
         ai = AzimuthalIntegrator(
             dist=geometry.distance().value(),
             poni1=geometry.poni1().value(),
@@ -1173,7 +1173,7 @@ class IntegrationTask(AbstractCalibrationTask):
             detector=detector,
             wavelength=geometry.wavelength().value(),
         )
-        
+
         nbpt_rad = self.model().integrationSettingsModel().nPointsRadial().value()
         nbpt_azim = self.model().integrationSettingsModel().nPointsAzimuthal().value()
         unit = self.model().integrationSettingsModel().radialUnit().value()
@@ -1213,7 +1213,7 @@ class IntegrationTask(AbstractCalibrationTask):
         try:
             with open(filename, "wt") as fd:
                 fd.write(json.dumps(config_dictionary, indent=2))
-                
+
             with jsonFile.lockContext():
                 jsonFile.setValue(filename)
                 jsonFile.setSynchronized(True)
