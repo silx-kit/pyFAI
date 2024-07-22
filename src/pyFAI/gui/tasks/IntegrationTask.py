@@ -58,7 +58,9 @@ from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
 from pyFAI.io import ponifile
+from pyFAI.worker import Worker
 import pyFAI.geometry
+import json
 
 _logger = logging.getLogger(__name__)
 
@@ -952,6 +954,7 @@ class IntegrationTask(AbstractCalibrationTask):
         self._customMethodButton.clicked.connect(self.__customIntegrationMethod)
 
         self._savePoniButton.clicked.connect(self.__saveAsPoni)
+        self._saveJsonButton.clicked.connect(self.__saveJsonFile)
 
         super()._initGui()
 
@@ -1134,6 +1137,88 @@ class IntegrationTask(AbstractCalibrationTask):
                 poniFile.setSynchronized(True)
         except Exception as e:
             MessageBox.exception(self, "Error while saving poni file", e, _logger)
+
+    def __saveJsonFile(self):
+        dialog = createSaveDialog(self, "Save as JSON file", json=True)
+        # Disable the warning as the data is append to the file
+        dialog.setOption(qt.QFileDialog.DontConfirmOverwrite, True)
+        model = self.model()
+        jsonFile = model.experimentSettingsModel().jsonFile()
+        previousJsonFile = jsonFile.value()
+        if previousJsonFile is not None:
+            dialog.selectFile(previousJsonFile)
+
+        result = dialog.exec_()
+        if not result:
+            return
+        filename = dialog.selectedFiles()[0]
+        nameFilter = dialog.selectedNameFilter()
+        isJsonFilter = ".json" in nameFilter
+        if isJsonFilter and not filename.endswith(".json"):
+            filename = filename + ".json"
+        with jsonFile.lockContext():
+            jsonFile.setValue(filename)
+
+        geometry = self._geometryTabs.geometryModel()
+        experimentSettingsModel = model.experimentSettingsModel()
+        detector = experimentSettingsModel.detector()
+
+        ai = AzimuthalIntegrator(
+            dist=geometry.distance().value(),
+            poni1=geometry.poni1().value(),
+            poni2=geometry.poni2().value(),
+            rot1=geometry.rotation1().value(),
+            rot2=geometry.rotation2().value(),
+            rot3=geometry.rotation3().value(),
+            detector=detector,
+            wavelength=geometry.wavelength().value(),
+        )
+
+        nbpt_rad = self.model().integrationSettingsModel().nPointsRadial().value()
+        nbpt_azim = self.model().integrationSettingsModel().nPointsAzimuthal().value()
+        unit = self.model().integrationSettingsModel().radialUnit().value()
+        method = method_registry.Method(0, self.__method.split, self.__method.algo, self.__method.impl, None)
+        if nbpt_azim == 1:
+            method = method.fixed(dim=1)
+        else:
+            method = method.fixed(dim=2)
+        worker = Worker(azimuthalIntegrator=ai,
+                        shapeOut=(nbpt_azim, nbpt_rad),
+                        unit=unit,
+                        method=method,
+                        )
+        config_dictionary = worker.get_config()
+        config_dictionary["application"] = "pyFAI-calib2"
+        config_dictionary["do_polarization"] = True
+        config_dictionary["polarization_factor"] = self.model().experimentSettingsModel().polarizationFactor().value()
+        mask_filename = model.experimentSettingsModel().mask().filename()
+        flat_filename = model.experimentSettingsModel().flat().filename()
+        dark_filename = model.experimentSettingsModel().dark().filename()
+        if mask_filename:
+            config_dictionary["do_mask"] = True
+            config_dictionary["mask_file"] = mask_filename
+        else:
+            config_dictionary["do_mask"] = False
+        if flat_filename:
+            config_dictionary["do_flat"] = True
+            config_dictionary["flat_field"] = flat_filename
+        else:
+            config_dictionary["do_flat"] = False
+        if dark_filename:
+            config_dictionary["do_dark"] = True
+            config_dictionary["dark_current"] = dark_filename
+        else:
+            config_dictionary["do_dark"] = False
+
+        try:
+            with open(filename, "wt") as fd:
+                fd.write(json.dumps(config_dictionary, indent=2))
+
+            with jsonFile.lockContext():
+                jsonFile.setValue(filename)
+                jsonFile.setSynchronized(True)
+        except Exception as e:
+            MessageBox.exception(self, "Error while saving json file", e, _logger)
 
     def __updateDisplayedGeometry(self):
         "Called after the fit"

@@ -181,6 +181,16 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="_saveJsonButton">
+            <property name="toolTip">
+             <string>A .json file with PONI and integration parameters.</string>
+            </property>
+            <property name="text">
+             <string>Save integration JSON file</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
