@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "21/08/2024"
 
 import unittest
 import numpy
@@ -245,51 +245,12 @@ class TestSparseUtils(unittest.TestCase):
         self.assertEqual(abs(sparse["csr"][2] - csr2[2]).max(), 0, "CSR indptr matches")
 
 
-class TestContainer(unittest.TestCase):
-    "Those classes are deprecated"
-
-    def test_vector(self):
-        nelem = 12
-        cont = sparse_utils.Vector()
-        self.assertEqual(cont.size, 0, "initialized vector is empty")
-        self.assertGreaterEqual(cont.allocated, 4, "Initialized vector has some space")
-        for i in range(nelem):
-            cont.append(i, 0.1 * i)
-        self.assertEqual(cont.size, nelem, "initialized vector is empty")
-        self.assertGreaterEqual(cont.allocated, nelem, "Initialized vector has some space")
-        i, f = cont.get_data()
-        d = abs(numpy.arange(nelem) - i).max()
-        self.assertEqual(d, 0, "result is OK")
-        self.assertLess(abs(f - i / 10.0).max(), 1e-6, "result is OK")
-
-    def test_container(self):
-        nlines = 11
-        ncol = 12
-        nelem = nlines * ncol
-        cont = sparse_utils.ArrayBuilder(nlines)
-        for i in range(nelem):
-            cont.append(i % nlines, i, 0.1 * i)
-        s = numpy.arange(nelem).reshape((ncol, nlines)).T.ravel()
-        a, b, c = cont.as_CSR()
-        err = abs(a - numpy.arange(0, nelem + 1, ncol)).max()
-        self.assertEqual(err, 0, "idxptr OK")
-        err = abs(s - b).max()
-        self.assertEqual(err, 0, "idx OK")
-        err = abs((s / 10.0) - c).max()
-        self.assertLessEqual(err, 1e-6, "value OK: %s" % err)
-        lut = cont.as_LUT()
-        s = numpy.arange(nelem).reshape((ncol, nlines)).T
-        self.assertEqual(abs(lut["idx"] - s).max(), 0, "LUT idx OK")
-        self.assertLessEqual(abs(lut["coef"] - s / 10.0).max(), 1e-6, "LUT coef OK")
-
-
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestSparseIntegrate1d))
     testsuite.addTest(loader(TestSparseIntegrate2d))
     testsuite.addTest(loader(TestSparseUtils))
-    testsuite.addTest(loader(TestContainer))
     return testsuite
 
 
