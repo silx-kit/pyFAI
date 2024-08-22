@@ -110,6 +110,10 @@ class PoniFile(object):
         * 2: store detector and detector_config instead of pixelsize1, pixelsize2 and splinefile
         * 2.1: manage orientation of detector in detector_config
         """
+        # Patch for worker version 4
+        if "poni" in config and config.get("version", 0) > 3:
+            config = config.get("poni", {})
+
         version = float(config.get("poni_version", 1))
         if "detector_config" in config:
             if "orientation" in config["detector_config"]:
