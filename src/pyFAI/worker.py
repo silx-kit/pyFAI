@@ -591,11 +591,12 @@ class Worker(object):
         :return: dict with the config to be de-serialized with set_config/loaded with pyFAI.load
         """
         config = {
-            "version": 3,
+            "version": 4,
+            "application" : "worker",
             "unit": str(self.unit),
             }
 
-        config.update(self.ai.get_config())
+        config["poni"] = dict(self.ai.get_config())
 
         for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "dummy", "delta_dummy",
                     "correct_solid_angle", "dark_current_image", "flat_field_image",
@@ -696,6 +697,11 @@ class Worker(object):
         :return: None or reason as a string when raise_exception is None, else raise the given exception
         """
         reason = None
+
+        config = config.copy()
+        if "poni" in config:
+            config.update(config.pop("poni"))
+
         if not config.get("dist"):
             reason = "Detector distance is undefined"
         elif config.get("poni1") is None:
