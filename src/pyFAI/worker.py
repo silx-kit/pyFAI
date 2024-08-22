@@ -699,9 +699,8 @@ class Worker(object):
         reason = None
 
         config = config.copy()
-        if "poni" in config:
+        if "poni" in config and config.get("version", 0) > 3:
             config.update(config.pop("poni"))
-
         if not config.get("dist"):
             reason = "Detector distance is undefined"
         elif config.get("poni1") is None:
