@@ -427,6 +427,8 @@ class WorkerConfigurator(qt.QWidget):
 
         for key, value in setup_data.items():
             if key in dico and (value is not None):
+                if key == "polarization_factor" and not isinstance(dico[key], (float, int)):
+                    continue
                 value(dico.pop(key))
 
         normalizationFactor = dico.pop("normalization_factor", None)
