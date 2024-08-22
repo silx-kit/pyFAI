@@ -279,9 +279,10 @@ class ConfigurationReader(object):
         if isinstance(self._config.get("poni", None), dict):
             poni_dict = self._config["poni"].copy()
             detector_class = poni_dict.pop("detector", None)
-            detector_config = poni_dict.pop("detector_config", None)
-            detector = detectors.detector_factory(detector_class, config=detector_config)
-            return detector
+            if detector_class is not None:
+                detector_config = poni_dict.pop("detector_config", None)
+                detector = detectors.detector_factory(detector_class, config=detector_config)
+                return detector
         
         detector_class = self._config.pop("detector", None)
         if detector_class is not None:
