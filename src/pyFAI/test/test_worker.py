@@ -487,7 +487,7 @@ class TestWorkerConfig(unittest.TestCase):
         config_reader = ConfigurationReader(config)
 
         detector_from_reader = config_reader.pop_detector()
-        self.assertEqual(detector, detector_from_reader, "Detector from reader matches")        
+        self.assertEqual(detector, detector_from_reader, "Detector from reader matches")
 
         config = worker.get_config()
         config_reader = ConfigurationReader(config)
