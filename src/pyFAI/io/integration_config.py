@@ -195,7 +195,7 @@ def _patch_v3_to_v4(config):
 
     The geometric, detector and beam parameters (contained in the .poni file) now they are gathered in a dictionary in the "poni" key
     This will ease the methods that handle only the PONI parameters defined during the calibration step
-    that now they can be retrieved just by getting the value of the key "poni" from the config. The rest of the parameters are 
+    that now they can be retrieved just by getting the value of the key "poni" from the config. The rest of the parameters are
     characteristic of the integration protocol.
 
     :param dict config: Dictionary reworked inplace.
