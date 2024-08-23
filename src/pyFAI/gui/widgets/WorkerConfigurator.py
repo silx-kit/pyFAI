@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "22/07/2024"
 __status__ = "development"
 
 import logging
@@ -209,6 +209,20 @@ class WorkerConfigurator(qt.QWidget):
             return None
         return int(value)
 
+    def getPoniDict(self):
+        poni = {}
+        poni["wavelength"] = self.__geometryModel.wavelength().value()
+        poni["dist"] = self.__geometryModel.distance().value()
+        poni["poni1"] = self.__geometryModel.poni1().value()
+        poni["poni2"] = self.__geometryModel.poni2().value()
+        poni["rot1"] = self.__geometryModel.rotation1().value()
+        poni["rot2"] = self.__geometryModel.rotation2().value()
+        poni["rot3"] = self.__geometryModel.rotation3().value()
+        if self.__detector is not None:
+            poni["detector"] = self.__detector.__class__.__name__
+            poni["detector_config"] = self.__detector.get_config()
+        return poni
+
     def getConfig(self):
         """Read the configuration of the plugin and returns it as a dictionary
 
@@ -230,21 +244,10 @@ class WorkerConfigurator(qt.QWidget):
 
         # file-version
         config["application"] = "pyfai-integrate"
-        config["version"] = 3
+        config["version"] = 4
 
         # geometry
-        config["wavelength"] = self.__geometryModel.wavelength().value()
-        config["dist"] = self.__geometryModel.distance().value()
-        config["poni1"] = self.__geometryModel.poni1().value()
-        config["poni2"] = self.__geometryModel.poni2().value()
-        config["rot1"] = self.__geometryModel.rotation1().value()
-        config["rot2"] = self.__geometryModel.rotation2().value()
-        config["rot3"] = self.__geometryModel.rotation3().value()
-
-        # detector
-        if self.__detector is not None:
-            config["detector"] = self.__detector.__class__.__name__
-            config["detector_config"] = self.__detector.get_config()
+        config["poni"] = self.getPoniDict()
 
         # pre-processing
         config["do_mask"] = bool(self.do_mask.isChecked())
@@ -319,7 +322,7 @@ class WorkerConfigurator(qt.QWidget):
             application = dico.pop("application", None)
             if application != "pyfai-integrate":
                 logger.error("It is not a configuration file from pyFAI-integrate.")
-        if version > 3:
+        if version > 4:
             logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read the configuration", version)
 
         # Clean up the GUI
@@ -332,7 +335,32 @@ class WorkerConfigurator(qt.QWidget):
         self.__geometryModel.rotation2().setValue(None)
         self.__geometryModel.rotation3().setValue(None)
 
-        # geometry
+        # patch for version 4
+        poni_dict = dico.get("poni", None)
+        if isinstance(poni_dict, dict) and version > 3:
+            if "wavelength" in poni_dict:
+                value = poni_dict.pop("wavelength")
+                self.__geometryModel.wavelength().setValue(value)
+            if "dist" in poni_dict:
+                value = poni_dict.pop("dist")
+                self.__geometryModel.distance().setValue(value)
+            if "poni1" in poni_dict:
+                value = poni_dict.pop("poni1")
+                self.__geometryModel.poni1().setValue(value)
+            if "poni2" in poni_dict:
+                value = poni_dict.pop("poni2")
+                self.__geometryModel.poni2().setValue(value)
+            if "rot1" in poni_dict:
+                value = poni_dict.pop("rot1")
+                self.__geometryModel.rotation1().setValue(value)
+            if "rot2" in poni_dict:
+                value = poni_dict.pop("rot2")
+                self.__geometryModel.rotation2().setValue(value)
+            if "rot3" in poni_dict:
+                value = poni_dict.pop("rot3")
+                self.__geometryModel.rotation3().setValue(value)
+
+        # For older versions (<4)
         if "wavelength" in dico:
             value = dico.pop("wavelength")
             self.__geometryModel.wavelength().setValue(value)
@@ -399,6 +427,8 @@ class WorkerConfigurator(qt.QWidget):
 
         for key, value in setup_data.items():
             if key in dico and (value is not None):
+                if key == "polarization_factor" and not isinstance(dico[key], (float, int)):
+                    continue
                 value(dico.pop(key))
 
         normalizationFactor = dico.pop("normalization_factor", None)
@@ -550,15 +580,9 @@ class WorkerConfigurator(qt.QWidget):
             return
 
         filename = dialog.selectedFiles()[0]
-        config = self.getConfig()
-        if config.get("wavelength") is None:
-            config.pop("wavelength")
-        from ...detectors import detector_factory
-        detector = detector_factory(config.get("detector"), config.get("detector_config"))
-        from ...geometry import Geometry
-        ai = Geometry(detector=detector)
-        ai.set_config(config)
-        ai.save(filename)
+        poni = PoniFile(data=self.getPoniDict())
+        with open(filename, 'w') as fd:
+            poni.write(fd)
 
     def __maskFileChanged(self):
         model = self.__model.maskFileModel

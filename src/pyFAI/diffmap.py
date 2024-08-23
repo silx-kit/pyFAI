@@ -227,7 +227,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.inputfiles = [i[0] for i in config.get("input_data", [])]
         if "ai" in config:
             ai = config["ai"]
-        elif config.get("application", None) == "pyfai-integrate":
+        elif config.get("application", None) in ("pyfai-integrate", "worker"):
             ai = config.copy()
         else:
             ai = {}

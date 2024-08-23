@@ -190,6 +190,35 @@ def _patch_v2_to_v3(config):
 
     config["version"] = 3
 
+def _patch_v3_to_v4(config):
+    """Rework the config dictionary from version 3 to version 4
+
+    The geometric, detector and beam parameters (contained in the .poni file) now they are gathered in a dictionary in the "poni" key
+    This will ease the methods that handle only the PONI parameters defined during the calibration step
+    that now they can be retrieved just by getting the value of the key "poni" from the config. The rest of the parameters are
+    characteristic of the integration protocol.
+
+    :param dict config: Dictionary reworked inplace.
+    """
+    poni_dict = {}
+    poni_parameters = ["dist",
+                       "poni1",
+                       "poni2",
+                       "rot1",
+                       "rot2",
+                       "rot3",
+                       "detector",
+                       "detector_config",
+                       "wavelength",
+                       "poni_version",
+                       ]
+    for poni_param in poni_parameters:
+        if config.get(poni_param, None) is not None:
+            poni_dict[poni_param] = config.pop(poni_param)
+
+    config["poni"] = poni_dict
+    config["version"] = 4
+
 
 def normalize(config, inplace=False, do_raise=False):
     """Normalize the configuration file to the one supported internally\
@@ -212,14 +241,17 @@ def normalize(config, inplace=False, do_raise=False):
         _patch_v2_to_v3(config)
 
     application = config.get("application", None)
-    if application != "pyfai-integrate":
+    if application not in ("pyfai-integrate", "worker"):
         txt = f"Configuration application do not match. Found '{application}'"
         if do_raise:
             raise ValueError(txt)
         else:
             _logger.error(txt)
 
-    if version > 3:
+    if version == 3:
+        _patch_v3_to_v4(config)
+
+    if version > 4:
         _logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read this configuration", version)
 
     return config
@@ -233,6 +265,9 @@ class ConfigurationReader(object):
 
     def pop_ponifile(self):
         """Returns the geometry subpart of the configuration"""
+        if isinstance(self._config.get("poni", None), dict):
+            return ponifile.PoniFile(self._config["poni"])
+
         dico = {"poni_version":2}
         mapping = { i:i for i in ('wavelength', 'poni1', 'poni2',
                                   'rot1', 'rot2', 'rot3', 'detector', 'detector_config')}
@@ -250,12 +285,20 @@ class ConfigurationReader(object):
 
         :rtype: pyFAI.detectors.Detector
         """
-        detector_class = self._config.pop("detector", None)
-        if detector_class is not None:
-            # NOTE: Default way to describe a detector since pyFAI 0.17
-            detector_config = self._config.pop("detector_config", None)
-            detector = detectors.detector_factory(detector_class, config=detector_config)
-            return detector
+        if isinstance(self._config.get("poni", None), dict):
+            poni_dict = self._config["poni"].copy()
+            detector_class = poni_dict.pop("detector", None)
+            if detector_class is not None:
+                detector_config = poni_dict.pop("detector_config", None)
+                detector = detectors.detector_factory(detector_class, config=detector_config)
+                return detector
+        else:
+            detector_class = self._config.pop("detector", None)
+            if detector_class is not None:
+                # NOTE: Default way to describe a detector since pyFAI 0.17
+                detector_config = self._config.pop("detector_config", None)
+                detector = detectors.detector_factory(detector_class, config=detector_config)
+                return detector
 
         return None
 
