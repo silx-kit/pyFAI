@@ -337,7 +337,7 @@ class WorkerConfigurator(qt.QWidget):
 
         # patch for version 4
         poni_dict = dico.get("poni", None)
-        if isinstance(poni_dict, dict):
+        if isinstance(poni_dict, dict) and version > 3:
             if "wavelength" in poni_dict:
                 value = poni_dict.pop("wavelength")
                 self.__geometryModel.wavelength().setValue(value)
