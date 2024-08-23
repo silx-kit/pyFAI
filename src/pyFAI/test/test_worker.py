@@ -47,6 +47,7 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
 from ..io.integration_config import ConfigurationReader
+from ..io.ponifile import PoniFile
 from .. import detector_factory
 from . import utilstest
 
@@ -501,6 +502,61 @@ class TestWorkerConfig(unittest.TestCase):
         self.assertEqual(ai.rot3, poni.rot3, "Rot3 matches")
         self.assertEqual(ai.wavelength, poni.wavelength, "Wavelength matches")
         self.assertEqual(ai.detector, poni.detector, "Detector matches")
+
+    def test_v3_equal_to_v4(self):
+        """checking equivalence between v3 and v4"""
+        config_v3 = {
+            "application": "pyfai-integrate",
+            "version": 3,
+            "wavelength": 1e-10,
+            "dist": 0.1,
+            "poni1": 0.1,
+            "poni2": 0.2,
+            "rot1": 1,
+            "rot2": 2,
+            "rot3": 3,
+            "detector": "Eiger2_4M",
+            "detector_config": {
+                "orientation": 3
+            },
+        }
+
+        config_v4 = {
+            "application": "pyfai-integrate",
+            "version": 4,
+            "poni": {
+                "wavelength": 1e-10,
+                "dist": 0.1,
+                "poni1": 0.1,
+                "poni2": 0.2,
+                "rot1": 1,
+                "rot2": 2,
+                "rot3": 3,
+                "detector": "Eiger2_4M",
+                "detector_config": {
+                    "orientation": 3
+                }
+            },
+        }
+
+        worker_v3 = Worker()
+        worker_v3.set_config(config=config_v3)
+        worker_v4 = Worker()
+        worker_v4.set_config(config=config_v4)
+        self.assertEqual(worker_v3.get_config(), worker_v4.get_config(), "Worker configs match")
+
+        ai_config_v3 = worker_v3.ai.get_config()
+        ai_config_v4 = worker_v4.ai.get_config()
+        self.assertEqual(ai_config_v3, ai_config_v4, "AI configs match")
+
+        poni_v3 = PoniFile(data=ai_config_v3)
+        poni_v4 = PoniFile(data=ai_config_v4)
+        self.assertEqual(poni_v3.as_dict(), poni_v4.as_dict(), "PONI dictionaries match")
+
+        poni_v3_from_config = PoniFile(data=config_v3)
+        poni_v4_from_config = PoniFile(data=config_v4)
+        self.assertEqual(poni_v3_from_config.as_dict(), poni_v4_from_config.as_dict(), "PONI dictionaries from config match")
+
 
 
 
