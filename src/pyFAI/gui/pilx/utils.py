@@ -48,7 +48,7 @@ def compute_radial_values(pyFAI_config_as_str: str) -> numpy.ndarray:
     pyFAI_config: dict = json.loads(pyFAI_config_as_str)
     ai = AzimuthalIntegrator.sload(pyFAI_config)
 
-    if not ai.detector:
+    if "detector" not in pyFAI_config and "detector" not in pyFAI_config.get("poni", {}):
         ai.detector = Detector.factory("detector", {
                                       "pixel1": pyFAI_config.get("pixel1"),
                                       "pixel2": pyFAI_config.get("pixel2"),
