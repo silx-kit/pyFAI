@@ -268,7 +268,7 @@ class PoniFile(object):
         if self._wavelength:
             config["wavelength"] = self._wavelength
         return config
-    
+
     def as_integration_config(self):
         return {
             "version" : 4,
