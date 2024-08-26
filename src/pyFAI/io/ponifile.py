@@ -39,6 +39,7 @@ import time
 import json
 import pathlib
 import logging
+from ..io import integration_config
 _logger = logging.getLogger(__name__)
 import numpy
 from .. import detectors
@@ -270,7 +271,8 @@ class PoniFile(object):
         return config
 
     def as_integration_config(self):
-        return {
+        config = {
+            "application" : "poni",
             "version" : 4,
             "poni" : dict(self.as_dict()),
             "do_2D" : True,
@@ -299,6 +301,7 @@ class PoniFile(object):
             "do_polarization" : False,
             "normalization_factor" : 1.0,
         }
+        return integration_config.normalize(config=config)
 
 
     @property

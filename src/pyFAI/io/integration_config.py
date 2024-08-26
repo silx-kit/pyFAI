@@ -241,7 +241,7 @@ def normalize(config, inplace=False, do_raise=False):
         _patch_v2_to_v3(config)
 
     application = config.get("application", None)
-    if application not in ("pyfai-integrate", "worker"):
+    if application not in ("pyfai-integrate", "worker", "poni"):
         txt = f"Configuration application do not match. Found '{application}'"
         if do_raise:
             raise ValueError(txt)
