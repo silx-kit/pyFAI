@@ -101,7 +101,6 @@ from .method_registry import IntegrationMethod
 from .distortion import Distortion
 from . import units
 from .io import integration_config
-from .io.ponifile import PoniFile
 import pyFAI.io.image
 from .engines.preproc import preproc as preproc_numpy
 from .utils.decorators import deprecated_warning
