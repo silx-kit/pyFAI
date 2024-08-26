@@ -215,13 +215,13 @@ def _reduce_images(filenames, method="mean"):
     else:
         return average.average_images(filenames, filter_=method, fformat=None, threshold=0)
 
-def get_config_from_poni(poni_data, 
+def get_config_from_poni(poni_data,
                          npt_rad = 500, npt_azim=360, integrator_name=None, extra_options=None,
-                         unit="q_nm^-1", mask_file=None, flat_file=None, dark_file=None, 
+                         unit="q_nm^-1", mask_file=None, flat_file=None, dark_file=None,
                          polarization_factor=None, normalization_factor=1.0, correct_solid_angle=True,
                          error_model=None, dummy_value=None, delta_dummy=None,
                          radial_range=None, azimuthal_range=None, chi_discontinuity_at_0=False,
-                         method=("bbox", "csr", "cython"), 
+                         method=("bbox", "csr", "cython"),
                          ):
     """From a poni data, it creates a worker .config dictionary with all default key-values
     """
@@ -240,7 +240,7 @@ def get_config_from_poni(poni_data,
     else:
         config["integrator_name"] = "integrate2d" or integrator_name
     config["extra_options"] = extra_options
-    
+
     config["unit"] = unit
     config["method"] = method
 
@@ -299,7 +299,7 @@ def get_config_from_poni(poni_data,
         config["azimuth_range_max"] = azimuthal_range[1]
     config["chi_discontinuity_at_0"] = False
     if chi_discontinuity_at_0:
-        config["chi_discontinuity_at_0"] = True    
+        config["chi_discontinuity_at_0"] = True
 
     return config
 
