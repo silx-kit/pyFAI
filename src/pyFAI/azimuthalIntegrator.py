@@ -1874,7 +1874,7 @@ class AzimuthalIntegrator(Geometry):
                                     correctSolidAngle=correctSolidAngle,
                                     mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                     polarization_factor=polarization_factor, dark=dark, flat=flat,
-                                    method=method, 
+                                    method=method,
                                     normalization_factor=normalization_factor)
 
     @deprecated(since_version="0.21", only_once=True, deprecated_since="0.21.0")
