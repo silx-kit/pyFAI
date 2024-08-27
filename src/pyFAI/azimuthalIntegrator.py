@@ -1874,7 +1874,8 @@ class AzimuthalIntegrator(Geometry):
                                     correctSolidAngle=correctSolidAngle,
                                     mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                     polarization_factor=polarization_factor, dark=dark, flat=flat,
-                                    method=method, normalization_factor=normalization_factor)
+                                    method=method, 
+                                    normalization_factor=normalization_factor)
 
     @deprecated(since_version="0.21", only_once=True, deprecated_since="0.21.0")
     def integrate2d_legacy(self, data, npt_rad, npt_azim=360,
