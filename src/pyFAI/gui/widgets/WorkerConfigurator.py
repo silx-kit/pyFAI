@@ -318,7 +318,7 @@ class WorkerConfigurator(qt.QWidget):
             if value != "":
                 value = str(value)
                 config["monitor_name"] = value
-        
+
         if self.integrator_name.currentText() == "sigma_clip_ng":
             config["do_2D"] = False
             config["integrator_name"] = "sigma_clip_ng"
