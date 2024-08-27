@@ -87,11 +87,18 @@ def build_detector(config):
         if isinstance(module, dict):
             max_ss = max(max_ss, int(module.get("max_ss", 0)))
             max_fs = max(max_fs, int(module.get("max_fs", 0)))
-    pixel_size = 1.0/config["res"]
+    if "res" in config:
+        pixel_size = 1.0/config["res"]
+    elif "pixel_pitch" in config:
+        pixel_size = config["pixel_pitch"]
+    else:
+        logger.error("No pixel size in geom file !")
+        pixel_size = 0
+
     detector = detector_factory("Detector", {"pixel1": pixel_size,
-                                            "pixel2": pixel_size,
-                                            "max_shape":(max_ss+1, max_fs+1),
-                                            "orientation":3})
+                                             "pixel2": pixel_size,
+                                             "max_shape":(max_ss+1, max_fs+1),
+                                             "orientation":3})
     mask = numpy.zeros(detector.shape, numpy.int8)
     for name, module in config.items():
         if isinstance(module, dict) and name.startswith("bad"):
@@ -158,15 +165,16 @@ def build_geometry(config):
     x-=xmin
     y-=ymin
 
+    # crystfel uses the module/pixel corner, so no half pixel shift
     pos = numpy.zeros(detector.shape+(4,3))
-    pos[:,:, 0, 1] = (y - 0.5) * detector.pixel1
-    pos[:,:, 0, 2] = (x - 0.5) * detector.pixel2
-    pos[:,:, 1, 1] = (y + 0.5) * detector.pixel1
-    pos[:,:, 1, 2] = (x - 0.5) * detector.pixel2
-    pos[:,:, 2, 1] = (y + 0.5) * detector.pixel1
-    pos[:,:, 2, 2] = (x + 0.5) * detector.pixel2
-    pos[:,:, 3, 1] = (y - 0.5) * detector.pixel1
-    pos[:,:, 3, 2] = (x + 0.5) * detector.pixel2
+    pos[:,:, 0, 1] = (y - 0.0) * detector.pixel1
+    pos[:,:, 0, 2] = (x - 0.0) * detector.pixel2
+    pos[:,:, 1, 1] = (y + 1.0) * detector.pixel1
+    pos[:,:, 1, 2] = (x - 0.0) * detector.pixel2
+    pos[:,:, 2, 1] = (y + 1.0) * detector.pixel1
+    pos[:,:, 2, 2] = (x + 1.0) * detector.pixel2
+    pos[:,:, 3, 1] = (y - 0.0) * detector.pixel1
+    pos[:,:, 3, 2] = (x + 1.0) * detector.pixel2
     detector.set_pixel_corners(pos)
 
     # manage energy/wavelength:
