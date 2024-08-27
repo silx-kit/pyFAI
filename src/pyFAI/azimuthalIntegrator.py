@@ -1651,7 +1651,7 @@ class AzimuthalIntegrator(Geometry):
                         correctSolidAngle=True,
                         mask=None, dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None,
-                        method=("bbox", "csr", "cython"),
+                        method_algo="csr", method_impl="cython",
                         normalization_factor=1.0):
         """Calculate the integrated profile curve along a specific FiberUnit
 
@@ -1674,7 +1674,8 @@ class AzimuthalIntegrator(Geometry):
                 * True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param method_algo: Algorithm of integration (default Compressed-Sparse Row)
+        :param method_impl: Integration implementation (default cython)
         :param float normalization_factor: Value of a normalization monitor
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
@@ -1710,7 +1711,7 @@ class AzimuthalIntegrator(Geometry):
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                   polarization_factor=polarization_factor,
-                                  dark=dark, flat=flat, method=method,
+                                  dark=dark, flat=flat, method=("no", method_algo, method_impl),
                                   normalization_factor=normalization_factor,
                                   radial_range=integrated_unit_range,
                                   azimuth_range=output_unit_range,
@@ -1759,7 +1760,7 @@ class AzimuthalIntegrator(Geometry):
                         correctSolidAngle=True,
                         mask=None, dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None,
-                        method=("bbox", "csr", "cython"),
+                        method_algo="csr", method_impl="cython",
                         normalization_factor=1.0):
         """Calculate the integrated profile curve along a specific FiberUnit, additional inputs for incident angle and tilt angle
 
@@ -1784,7 +1785,8 @@ class AzimuthalIntegrator(Geometry):
                 * True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param method_algo: Algorithm of integration (default Compressed-Sparse Row)
+        :param method_impl: Integration implementation (default cython)
         :param float normalization_factor: Value of a normalization monitor
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
@@ -1871,7 +1873,7 @@ class AzimuthalIntegrator(Geometry):
                                     correctSolidAngle=correctSolidAngle,
                                     mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                     polarization_factor=polarization_factor, dark=dark, flat=flat,
-                                    method=method,
+                                    method_algo=method_algo, method_impl=method_impl,
                                     normalization_factor=normalization_factor)
 
     @deprecated(since_version="0.21", only_once=True, deprecated_since="0.21.0")
