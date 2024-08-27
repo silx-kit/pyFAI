@@ -1674,7 +1674,7 @@ class AzimuthalIntegrator(Geometry):
                 * True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
@@ -1787,7 +1787,7 @@ class AzimuthalIntegrator(Geometry):
                 * True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
