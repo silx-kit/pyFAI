@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/08/2024"
+__date__ = "27/08/2024"
 __status__ = "production"
 
 import logging
@@ -116,6 +116,7 @@ def build_geometry(config):
     detector = build_detector(config)
     x = numpy.zeros(detector.shape)
     y = numpy.zeros(detector.shape)
+    mask = numpy.ones(detector.shape, numpy.int8)
 
     for name,module in config.items():
         if isinstance(module, dict) and not (name.startswith("bad") or
@@ -149,9 +150,10 @@ def build_geometry(config):
 
                 x[sl] += inv_rotation[0,0] * fs + inv_rotation[0,1] * ss
                 y[sl] += inv_rotation[1,0] * fs + inv_rotation[1,1] * ss
-
+                mask[sl] = 0
     xmin = x.min()
     ymin = y.min()
+    detector.mask = numpy.logical_or(detector.mask, mask)
 
     x-=xmin
     y-=ymin
