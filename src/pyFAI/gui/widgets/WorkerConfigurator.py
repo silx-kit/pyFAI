@@ -473,6 +473,13 @@ class WorkerConfigurator(qt.QWidget):
             # Force unchecked
             self.do_2D.setChecked(False)
 
+        integrator_name = dico.pop("integrator_name", "integrate")
+        self.integrator_name.setCurrentText(integrator_name)
+        if integrator_name == "sigma_clip_ng":
+            extra_options = dico.pop("extra_options", {})
+            self.sigmaclip_threshold.setText(str(extra_options.get("thres", 5.0)))
+            self.sigmaclip_maxiter.setText(str(extra_options.get("max_iter", 5)))
+
         if len(dico) != 0:
             for key, value in dico.items():
                 logger.warning("json key '%s' unused", key)
