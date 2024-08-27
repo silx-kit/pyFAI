@@ -150,6 +150,16 @@ class WorkerConfigurator(qt.QWidget):
             self.error_model.addItem(text, value)
         self.error_model.setCurrentIndex(0)
 
+        for value in ["integrate",
+                      "sigma_clip_ng",
+                      ]:
+            text = value
+            self.integrator_name.addItem(text, value)
+        self.integrator_name.setCurrentIndex(0)
+        self.sigmaclip_threshold.setText("5.0")
+        self.sigmaclip_maxiter.setText("5")
+
+
         self.__configureDisabledStates()
 
         self.setDetector(None)
@@ -164,6 +174,7 @@ class WorkerConfigurator(qt.QWidget):
         self.do_radial_range.clicked.connect(self.__updateDisabledStates)
         self.do_azimuthal_range.clicked.connect(self.__updateDisabledStates)
         self.do_normalization.clicked.connect(self.__updateDisabledStates)
+        self.integrator_name.currentTextChanged.connect(self.__updateDisabledStates)
 
         self.__updateDisabledStates()
 
@@ -182,6 +193,8 @@ class WorkerConfigurator(qt.QWidget):
         self.azimuth_range_max.setEnabled(enabled)
         self.normalization_factor.setEnabled(self.do_normalization.isChecked())
         self.monitor_name.setEnabled(self.do_normalization.isChecked())
+        self.sigmaclip_threshold.setEnabled(self.integrator_name.currentText() == "sigma_clip_ng")
+        self.sigmaclip_maxiter.setEnabled(self.integrator_name.currentText() == "sigma_clip_ng")
 
     def set1dIntegrationOnly(self, only1d):
         """Enable only 1D integration for this widget."""
@@ -305,6 +318,13 @@ class WorkerConfigurator(qt.QWidget):
             if value != "":
                 value = str(value)
                 config["monitor_name"] = value
+        
+        if self.integrator_name.currentText() == "sigma_clip_ng":
+            config["do_2D"] = False
+            config["integrator_name"] = "sigma_clip_ng"
+            config["extra_options"] = {"thres" : float(self.sigmaclip_threshold.text()),
+                                       "max_iter" : float(self.sigmaclip_maxiter.text()),
+                                       }
 
         return config
 
