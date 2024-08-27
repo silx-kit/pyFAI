@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2024"
+__date__ = "27/08/2024"
 __status__ = "stable"
 
 import logging
@@ -1248,6 +1248,7 @@ class NexusDetector(Detector):
         txt += f"PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        return txt
 
     def load(self, filename, orientation=0):
         """
