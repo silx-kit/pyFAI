@@ -1651,7 +1651,7 @@ class AzimuthalIntegrator(Geometry):
                         correctSolidAngle=True,
                         mask=None, dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None,
-                        method=("bbox", "csr", "cython"),
+                        method=("no", "histogram", "cython"),
                         normalization_factor=1.0):
         """Calculate the integrated profile curve along a specific FiberUnit
 
@@ -1706,6 +1706,9 @@ class AzimuthalIntegrator(Geometry):
         if reset:
             self.reset()
 
+        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
+            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
+
         res = self.integrate2d_ng(data, npt_rad=npt_integrated, npt_azim=npt_output,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
@@ -1759,7 +1762,7 @@ class AzimuthalIntegrator(Geometry):
                         correctSolidAngle=True,
                         mask=None, dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None,
-                        method=("bbox", "csr", "cython"),
+                        method=("no", "histogram", "cython"),
                         normalization_factor=1.0):
         """Calculate the integrated profile curve along a specific FiberUnit, additional inputs for incident angle and tilt angle
 
