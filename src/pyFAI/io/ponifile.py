@@ -39,6 +39,7 @@ import time
 import json
 import pathlib
 import logging
+from ..io import integration_config
 _logger = logging.getLogger(__name__)
 import numpy
 from .. import detectors
@@ -268,6 +269,40 @@ class PoniFile(object):
         if self._wavelength:
             config["wavelength"] = self._wavelength
         return config
+
+    def as_integration_config(self):
+        config = {
+            "application" : "poni",
+            "version" : 4,
+            "poni" : dict(self.as_dict()),
+            "do_2D" : True,
+            "nbpt_rad" : 500,
+            "nbpt_azim" : 360,
+            "unit" : "q_nm^-1",
+            "do_mask" : False,
+            "mask_file" : None,
+            "do_flat" : False,
+            "flat_field" : None,
+            "do_dark" : False,
+            "dark_current" : None,
+            "method" : ("bbox", "csr", "cython"),
+            "do_dummy" : None,
+            "val_dummy" : None,
+            "delta_dummy" : None,
+            "do_solid_angle" : True,
+            "error_model" : None,
+            "do_radial_range" : False,
+            "radial_range_min" : None,
+            "radial_range_max" : None,
+            "do_azimuthal_range" : False,
+            "azimuth_range_min" : None,
+            "azimuth_range_max" : None,
+            "chi_discontinuity_at_0" : False,
+            "do_polarization" : False,
+            "normalization_factor" : 1.0,
+        }
+        return integration_config.normalize(config=config)
+
 
     @property
     def detector(self):
