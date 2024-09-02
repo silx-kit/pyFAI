@@ -3339,6 +3339,9 @@ class AzimuthalIntegrator(Geometry):
             azimuth_range = self.normalize_azimuth_range(azimuth_range)
 
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
+        if method.split != "no":
+            logger.warning("Method %s is using a pixel-splitting scheme. sigma_clip_ng should be use WITHOUT PIXEL-SPLITTING! Your results are likely to be wrong!", 
+                           method)
 
         if mask is None:
             has_mask = "from detector"
