@@ -9,4 +9,7 @@ then
     echo CL_INCLUDE_PATH ${CL_INCLUDE_PATH}
     pip install wheel pybind11 mako pyopencl
     python3 -c "import pyopencl; print(pyopencl.get_platforms())"
+    pip install silx
+    python3 -c "import silx; print(silx.opencl.ocl)"
+    env
 fi
