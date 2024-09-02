@@ -5,7 +5,7 @@
 URL="http://www.silx.org/pub/OpenCL/"
 FILENAME="intel_opencl_icd-6.4.0.38.tar.gz"
 rm -rf $FILENAME
-wget ${URL}${FILENAME}
+wget -nv ${URL}${FILENAME}
 tar -xzf $FILENAME
 
 echo $(pwd)/intel_opencl_icd/icd/libintelocl.so > intel_opencl_icd/vendors/intel64.icd
