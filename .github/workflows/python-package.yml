@@ -41,6 +41,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=sandbox,third_party,plugins,doc,build
     - name: Run tests
       run: |
+        env
         python3 -c "import pyopencl; print(pyopencl.get_platforms())"
         python3 -c "import silx.opencl; print(silx.opencl.ocl)"
         python run_tests.py
