@@ -3,7 +3,7 @@
 # Download the intel OpenCL ICD and setup the environment for using it.
 
 URL="http://www.silx.org/pub/OpenCL/"
-FILENAME="intel_opencl_icd-6.4.0.37.tar.gz"
+FILENAME="intel_opencl_icd-6.4.0.38.tar.gz"
 rm -rf $FILENAME
 wget ${URL}${FILENAME}
 tar -xzf $FILENAME
