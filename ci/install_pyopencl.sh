@@ -1,6 +1,6 @@
 #!/bin/bash
 # Compile & install pyopencl
-if [ -f ci/intel_opencl_icd.sh ]; 
+if [ -f ci/intel_opencl_icd.sh ];
 then
     source ci/intel_opencl_icd.sh
     CL_LIBRARY_PATH=$(python3 -c "import os; print(os.environ.get('LD_LIBRARY_PATH','').split(':')[-1])")
