@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/08/2024"
+__date__ = "02/09/2024"
 __status__ = "production"
 
 import logging
@@ -208,5 +208,5 @@ def build_geometry(config):
     return load({"detector": detector,
                  "dist": config.get("clen", 1),
                  "poni1":-ymin*detector.pixel1,
-                 "poni2":-xmin*detector.pixel1,
+                 "poni2":-xmin*detector.pixel2,
                  "wavelength":wavelength})

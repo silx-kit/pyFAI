@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "27/08/2024"
 
 import unittest
 import random
@@ -808,6 +808,42 @@ class TestOrientation2(unittest.TestCase):
         self.assertTrue(numpy.all(res), "2th is OK")
 
 
+    class TestCrystFEL(unittest.TestCase):
+        """Simple tests to validate the import from CrystFEL"""
+
+        def test_crystfel(self):
+            results = {"alignment-test.geom": None,
+                       "cspad-cxiformat.geom": None,
+                       "cspad-single.geom": None,
+                       "Eiger16M-binning2-nativefiles.geom": None,
+                       "ev_enum1.geom": None,
+                       "ev_enum2.geom": None,
+                       "ev_enum3.geom": None,
+                       "jf-swissfel-16M.geom": None,
+                       "lcls-dec.geom": None,
+                       "lcls-june-r0013-r0128.geom": None,
+                       "lcls-xpp-estimate.geom": None,
+                       "pilatus.geom": None,
+                       "simple.geom": None,
+                       "stream_roundtrip.geom": None,
+                       "wavelength_geom10.geom": None,
+                       "wavelength_geom11.geom": None,
+                       "wavelength_geom12.geom": None,
+                       "wavelength_geom1.geom": None,
+                       "wavelength_geom2.geom": None,
+                       "wavelength_geom3.geom": None,
+                       "wavelength_geom4.geom": None,
+                       "wavelength_geom5.geom": None,
+                       "wavelength_geom6.geom": None,
+                       "wavelength_geom7.geom": None,
+                       "wavelength_geom8.geom": None,
+                       "wavelength_geom9.geom": None,}
+            from ..geometry.crystfel import build_geometry, parse_crystfel_geom
+            for i in results:
+                print(i)
+                geom = UtilsTest.getimage(i)
+                parse_crystfel_geom(i)
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
@@ -820,6 +856,7 @@ def suite():
     testsuite.addTest(loader(TestFastPath))
     testsuite.addTest(loader(TestOrientation))
     testsuite.addTest(loader(TestOrientation2))
+    testsuite.addTest(loader(TestCrystFEL))
     return testsuite
 
 
