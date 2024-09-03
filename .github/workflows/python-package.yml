@@ -29,7 +29,8 @@ jobs:
         python -m pip install meson-python ninja build wheel
         python -m pip install flake8
         if [ -f ci/requirements_gh.txt ]; then pip install -r ci/requirements_gh.txt; fi
-        if [ -f ci/intel_opencl_icd.sh ]; then source ci/intel_opencl_icd.sh ; fi
+        if [ -f ci/install_pyopencl.sh ]; then bash ci/install_pyopencl.sh ; fi
+        #if [ -f ci/intel_opencl_icd.sh ]; then source ci/intel_opencl_icd.sh ; fi
     - name: Build package
       run: |
         python -m build
@@ -41,6 +42,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=sandbox,third_party,plugins,doc,build
     - name: Run tests
       run: |
+        export OCL_ICD_VENDORS=$(pwd)/intel_opencl_icd/vendors
         env
         python3 -c "import pyopencl; print(pyopencl.get_platforms())"
         python3 -c "import silx.opencl; print(silx.opencl.ocl)"
