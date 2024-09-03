@@ -572,7 +572,9 @@ class Worker(object):
 
         if "monitor_name" in config:
             logger.warning("Monitor name defined but unsupported by the worker.")
-        self.update_processor()
+
+        integrator_name = config.pop("integrator_name", None)
+        self.update_processor(integrator_name=integrator_name)
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
