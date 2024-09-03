@@ -10,6 +10,6 @@ then
     pip install wheel pybind11 mako pyopencl
     python3 -c "import pyopencl; print(pyopencl.get_platforms())"
     pip install silx
-    python3 -c "import silx; print(silx.opencl.ocl)"
+    python3 -c "import silx.opencl; print(silx.opencl.ocl)"
     env
 fi
