@@ -14,9 +14,9 @@ h5py
 fabio
 scipy
 matplotlib
-#mako
-#pybind11
-#pyopencl
+mako
+pybind11
+pyopencl
 numexpr != 2.8.6
 silx >= 2
 psutil
