@@ -26,6 +26,8 @@ An alternative implementation of the *peakfinder8* algorithm from the Cheetah so
 is presented with its application to small molecule Laue crystallography and to
 macromolecular serial crystallography.
 
+Finally, there is a way to retrieve all pixels which were masked out by the sigma-clipping.
+
 .. toctree::
    :maxdepth: 1
 
@@ -33,3 +35,5 @@ macromolecular serial crystallography.
    Wilson
    Laue
    Peakfinder8
+   sigma_clip_mask
+
