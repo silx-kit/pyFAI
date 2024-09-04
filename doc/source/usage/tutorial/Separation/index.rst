@@ -36,4 +36,3 @@ Finally, there is a way to retrieve all pixels which were masked out by the sigm
    Laue
    Peakfinder8
    sigma_clip_mask
-
