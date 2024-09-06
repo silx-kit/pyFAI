@@ -57,7 +57,7 @@ class MultiGeometry(object):
     """
 
     def __init__(self, ais, unit="2th_deg",
-                 radial_range=(0, 180), azimuth_range=None,
+                 radial_range=None, azimuth_range=None,
                  wavelength=None, empty=0.0, chi_disc=180,
                  threadpoolsize=cpu_count()):
         """
@@ -71,8 +71,8 @@ class MultiGeometry(object):
         :param threadpoolsize: By default, use a thread-pool to parallelize histogram/CSC integrator over as many threads as cores,
                                set to False/0 to serialize
         """
-        if azimuth_range is None:
-            azimuth_range = (-180, 180) if chi_disc else (0, 360)
+        # if azimuth_range is None:
+        #     azimuth_range = (-180, 180) if chi_disc else (0, 360)
         self._sem = threading.Semaphore()
         self.abolute_solid_angle = None
         self.ais = [ai if isinstance(ai, AzimuthalIntegrator)
@@ -82,9 +82,14 @@ class MultiGeometry(object):
         self.threadpool = ThreadPool(min(len(self.ais), threadpoolsize)) if threadpoolsize>0 else None
         if wavelength:
             self.set_wavelength(wavelength)
-        self.radial_range = tuple(radial_range[:2])
-        self.azimuth_range = tuple(azimuth_range[:2])
-        self.unit = units.to_unit(unit)
+        # self.radial_range = tuple(radial_range[:2])
+        # self.azimuth_range = tuple(azimuth_range[:2])
+        self.radial_range = radial_range
+        self.azimuth_range = azimuth_range
+        if isinstance(unit, (tuple, list)):
+            self.unit = [units.to_unit(u) for u in unit]
+        else:
+            self.unit = units.to_unit(unit)
         self.abolute_solid_angle = None
         self.empty = empty
         if chi_disc == 0:
