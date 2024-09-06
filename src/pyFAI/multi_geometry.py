@@ -86,10 +86,14 @@ class MultiGeometry(object):
         # self.azimuth_range = tuple(azimuth_range[:2])
         self.radial_range = radial_range
         self.azimuth_range = azimuth_range
-        if isinstance(unit, (tuple, list)):
-            self.unit = [units.to_unit(u) for u in unit]
+        if isinstance(unit, (tuple, list)) and len(unit) == 2:
+            radial_unit, azimuth_unit = unit
         else:
-            self.unit = units.to_unit(unit)
+            radial_unit = unit
+            azimuth_unit = units.CHI_DEG
+        self.unit = (radial_unit, azimuth_unit)
+        self.radial_unit = radial_unit
+        self.azimuth_unit = azimuth_unit
         self.abolute_solid_angle = None
         self.empty = empty
         if chi_disc == 0:
@@ -164,7 +168,7 @@ class MultiGeometry(object):
                                     polarization_factor=polarization_factor,
                                     radial_range=self.radial_range,
                                     azimuth_range=self.azimuth_range,
-                                    method=method, unit=self.unit, safe=True,
+                                    method=method, unit=self.radial_unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
         if self.threadpool is None:
             results = map(_integrate,
@@ -196,7 +200,7 @@ class MultiGeometry(object):
         else:
             result = Integrate1dResult(res.radial, I)
         result._set_compute_engine(res.compute_engine)
-        result._set_unit(self.unit)
+        result._set_unit(self.radial_unit)
         result._set_sum_signal(signal)
         result._set_sum_normalization(normalization)
         result._set_sum_variance(variance)
@@ -292,8 +296,8 @@ class MultiGeometry(object):
             result = Integrate2dResult(I, res.radial, res.azimuthal)
         result._set_sum(signal)
         result._set_compute_engine(res.compute_engine)
-        result._set_radial_unit(self.unit)
-        result._set_azimuthal_unit(units.CHI_DEG)
+        result._set_radial_unit(self.radial_unit)
+        result._set_azimuthal_unit(self.azimuth_unit)
         result._set_sum_signal(signal)
         result._set_sum_normalization(normalization)
         result._set_sum_variance(variance)
