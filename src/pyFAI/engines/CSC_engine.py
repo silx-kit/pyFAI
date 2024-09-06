@@ -507,15 +507,15 @@ class CscIntegrator2d(CSCIntegrator):
                 std = numpy.sqrt(variance / sum_nrm2)
                 sem[mask] = self.empty
                 std[mask] = self.empty
-                # variance = variance.T
+                variance = variance.T
                 sem = sem.T
                 std = std.T
-                # sum_nrm2 = sum_nrm2
+                sum_nrm2 = sum_nrm2.T
             else:
                 variance = std = sem = sum_nrm2 = None
         return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
                               intensity.T, sem,
-                              signal, variance, normalization, count, std, sem, sum_nrm2)
+                              signal.T, variance, normalization.T, count.T, std, sem, sum_nrm2)
 
     integrate_ng = integrate
 
