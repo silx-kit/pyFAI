@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2024"
+__date__ = "06/09/2024"
 __status__ = "development"
 
 import logging
@@ -510,8 +510,8 @@ class CscIntegrator2d(CSCIntegrator):
             else:
                 variance = std = sem = sum_nrm2 = None
         return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
-                              intensity, sem,
-                              signal, variance, normalization, count, std, sem, sum_nrm2)
+                              intensity.T, sem.T,
+                              signal.T, variance.T, normalization.T, count.T, std.T, sem.T, sum_nrm2.T)
 
     integrate_ng = integrate
 
