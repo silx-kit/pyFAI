@@ -116,7 +116,7 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertTrue(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate2d(self):
-        ref = self.ai.integrate2d_ng(self.data, self.N, 360, radial_range=self.range, azimuth_range=(-180, 180), unit="2th_deg",
+        ref = self.ai.integrate2d_ng(self.data, self.N, 360, radial_range=self.range, azimuth_range=None, unit="2th_deg",
                                      method=self.method)
         obt = self.mg.integrate2d(self.lst_data, self.N, 360, method=self.method)
         self.assertEqual(abs(ref.radial - obt.radial).max(), 0, "Bin position is the same")
