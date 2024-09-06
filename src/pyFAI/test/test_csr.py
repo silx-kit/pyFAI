@@ -37,11 +37,13 @@ from . import utilstest
 logger = logging.getLogger(__name__)
 from .utilstest import UtilsTest
 from .. import opencl
+from ..containers import Integrate2dtpl, Integrate1dtpl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
 from ..engines.CSR_engine import CsrIntegrator2d, CsrIntegrator1d
 from ..method_registry import IntegrationMethod
 from .. import azimuthalIntegrator
+from ..containers import ErrorModel
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
 
@@ -73,13 +75,13 @@ class TestCSR(utilstest.ParametricTestCase):
                 else:
                     try:
                         ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, self.data.size, "ALL", profile=True, block_size=workgroup_size)
-                        out_ocl_csr = ocl_csr.integrate(self.data)
+                        out_ocl_csr = ocl_csr.integrate_legacy(self.data)
                     except (opencl.pyopencl.MemoryError, MemoryError):
                         logger.warning("Skipping test due to memory error on device")
                         skip = True
                     else:
                         skip = False
-                out_cyt_csr = csr.integrate(self.data)
+                out_cyt_csr = csr.integrate_legacy(self.data)
                 cmt = "Testing ocl_csr with workgroup_size= %s" % (workgroup_size)
                 logger.debug(cmt)
                 if skip:
@@ -121,10 +123,10 @@ class TestCSR(utilstest.ParametricTestCase):
         res_csr = engine.integrate(self.data)
         res_scipy = scipy_engine.integrate(self.data)
 
-        self.assertTrue(numpy.allclose(res_csr[0], res_scipy.position), "pos0 is the same")
-        self.assertTrue(numpy.allclose(res_csr[3], res_scipy.count), "count is almost the same")
-        self.assertTrue(numpy.allclose(res_csr[3], res_scipy.normalization), "count is same as normalization")
-        self.assertTrue(numpy.allclose(res_csr[2], res_scipy.signal), "sum_data is almost the same")
+        self.assertTrue(numpy.allclose(res_csr.position, res_scipy.position), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr.count, res_scipy.count), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr.normalization, res_scipy.normalization), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr.signal, res_scipy.signal), "sum_data is almost the same")
 
     def test_1d_nosplit(self):
         self.ai.reset()
@@ -147,10 +149,10 @@ class TestCSR(utilstest.ParametricTestCase):
         res_csr = engine.integrate(self.data)
         res_scipy = scipy_engine.integrate(self.data)
 
-        self.assertTrue(numpy.allclose(res_csr[0], res_scipy.position), "pos0 is the same")
-        self.assertTrue(numpy.allclose(res_csr[3], res_scipy.count), "count is almost the same")
-        self.assertTrue(numpy.allclose(res_csr[3], res_scipy.normalization), "count is same as normalization")
-        self.assertTrue(numpy.allclose(res_csr[2], res_scipy.signal), "sum_data is almost the same")
+        self.assertTrue(numpy.allclose(res_csr.position, res_scipy.position), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr.count, res_scipy.count), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr.normalization, res_scipy.normalization), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr.signal, res_scipy.signal), "sum_data is almost the same")
 
     def test_2d_splitbbox(self):
         self.ai.reset()
@@ -173,14 +175,17 @@ class TestCSR(utilstest.ParametricTestCase):
                                        bin_centers0=engine.bin_centers0,
                                        bin_centers1=engine.bin_centers1)
 
-        res_csr = engine.integrate(self.data)
-        res_scipy = scipy_engine.integrate(self.data)
+        res_csr = engine.integrate_ng(self.data, error_model=ErrorModel(2))
+        res_scipy = scipy_engine.integrate(self.data, error_model=ErrorModel(2))
 
-        self.assertTrue(numpy.allclose(res_csr[1], res_scipy.radial), "pos0 is the same")
-        self.assertTrue(numpy.allclose(res_csr[2], res_scipy.azimuthal), "pos1 is the same")
-        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy.count), "count is almost the same")
-        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy.normalization), "count is same as normalization")
-        self.assertTrue(numpy.allclose(res_csr[3].T, res_scipy.signal), "sum_data is almost the same")
+        self.assertTrue(numpy.allclose(res_csr.radial, res_scipy.radial), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr.azimuthal, res_scipy.azimuthal), "pos1 is the same")
+        self.assertTrue(numpy.allclose(res_csr.count, res_scipy.count), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr.normalization, res_scipy.normalization), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr.signal, res_scipy.signal), "sum_data is almost the same")
+        # ensure shapes  are all consistent
+        for key in Integrate2dtpl._fields:
+            self.assertEqual(res_csr.__getattribute__(key).shape, res_scipy.__getattribute__(key).shape, f"shape matches for {key}")
 
     @unittest.skipIf(UtilsTest.TEST_IS32_BIT or (any(platform.win32_ver()) and sys.version_info[:2] == (3, 9)),
                                                  "test unreliable on 32bits processor / Windows+Python3.9")
@@ -213,14 +218,17 @@ class TestCSR(utilstest.ParametricTestCase):
                                        bin_centers0=engine.bin_centers0,
                                        bin_centers1=engine.bin_centers1)
 
-        res_csr = engine.integrate(self.data)
-        res_scipy = scipy_engine.integrate(self.data)
+        res_csr = engine.integrate(self.data, error_model=ErrorModel(2))
+        res_scipy = scipy_engine.integrate(self.data, error_model=ErrorModel(2))
 
-        self.assertTrue(numpy.allclose(res_csr[1], res_scipy.radial), "pos0 is the same")
-        self.assertTrue(numpy.allclose(res_csr[2], res_scipy.azimuthal), "pos1 is the same")
-        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy.count), "count is almost the same")
-        self.assertTrue(numpy.allclose(res_csr[4].T, res_scipy.normalization), "count is same as normalization")
-        self.assertTrue(numpy.allclose(res_csr[3].T, res_scipy.signal), "sum_data is almost the same")
+        self.assertTrue(numpy.allclose(res_csr.radial, res_scipy.radial), "pos0 is the same")
+        self.assertTrue(numpy.allclose(res_csr.azimuthal, res_scipy.azimuthal), "pos1 is the same")
+        self.assertTrue(numpy.allclose(res_csr.count, res_scipy.count), "count is almost the same")
+        self.assertTrue(numpy.allclose(res_csr.normalization, res_scipy.normalization), "count is same as normalization")
+        self.assertTrue(numpy.allclose(res_csr.signal, res_scipy.signal), "sum_data is almost the same")
+        # ensure shapes  are all consistent
+        for key in Integrate2dtpl._fields:
+            self.assertEqual(res_csr.__getattribute__(key).shape, res_scipy.__getattribute__(key).shape, f"shape matches for {key}")
 
 
 def suite():

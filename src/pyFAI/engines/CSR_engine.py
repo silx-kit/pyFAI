@@ -496,11 +496,15 @@ class CsrIntegrator2d(CSRIntegrator):
                 std = numpy.sqrt(variance / sum_nrm2)
                 sem[mask] = self.empty
                 std[mask] = self.empty
+                variance = variance.T
+                sem = sem.T
+                std = std.T
+                sum_nrm2 = sum_nrm2.T
             else:
                 variance = std = sem = sum_nrm2 = None
         return Integrate2dtpl(self.bin_centers0, self.bin_centers1,
-                              intensity.T, sem.T,
-                              signal.T, variance.T, normalization.T, count.T, std.T, sem.T, sum_nrm2.T)
+                              intensity.T, sem,
+                              signal.T, variance, normalization.T, count.T, std, sem, sum_nrm2)
 
     integrate_ng = integrate
 
