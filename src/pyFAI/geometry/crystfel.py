@@ -123,7 +123,7 @@ def build_detector(config):
 
 def coord(string):
     """parse '0.5x and return {'x':0.5}
-    
+
     :param string: a string
     :return: dict with a single key/value
     """
