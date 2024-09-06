@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2024"
+__date__ = "06/09/2024"
 __status__ = "production"
 
 import logging
@@ -57,8 +57,8 @@ def parse_crystfel_geom(fname):
     res = {}
     with open(fname, "r") as f:
         for line in f:
-            eol = line.find(";")-1
-            if eol>0:
+            eol = line.find(";") - 1
+            if eol > 0:
                 line = line[:eol]
             if "=" in line:
                 lhs, rhs = [i.strip() for i in line.split("=", 1)]
@@ -67,13 +67,14 @@ def parse_crystfel_geom(fname):
                 except:
                     pass
                 if "/" in lhs:
-                    grp,val = [i.strip() for i in lhs.split("/", 1)]
+                    grp, val = [i.strip() for i in lhs.split("/", 1)]
                     if grp not in res:
                         res[grp] = {}
                     res[grp][val] = rhs
                 else:
                     res[lhs] = rhs
     return res
+
 
 def build_detector(config):
     """Build a detector from the parsed config
@@ -87,17 +88,24 @@ def build_detector(config):
         if isinstance(module, dict):
             max_ss = max(max_ss, int(module.get("max_ss", 0)))
             max_fs = max(max_fs, int(module.get("max_fs", 0)))
+    pixel_size = 0
     if "res" in config:
-        pixel_size = 1.0/config["res"]
+        pixel_size = 1.0 / config["res"]
     elif "pixel_pitch" in config:
         pixel_size = config["pixel_pitch"]
     else:
-        logger.error("No pixel size in geom file !")
-        pixel_size = 0
+        for name, module in config.items():
+            if isinstance(module, dict) and not name.startswith("bad"):
+                if "res" in module:
+                    pixel_size = 1.0 / module["res"]
+                elif "pixel_pitch" in module:
+                    pixel_size = module["pixel_pitch"]
+        if pixel_size == 0:
+            logger.error("No pixel size in geom file !")
 
     detector = detector_factory("Detector", {"pixel1": pixel_size,
                                              "pixel2": pixel_size,
-                                             "max_shape":(max_ss+1, max_fs+1),
+                                             "max_shape":(max_ss + 1, max_fs + 1),
                                              "orientation":3})
     mask = numpy.zeros(detector.shape, numpy.int8)
     for name, module in config.items():
@@ -106,12 +114,34 @@ def build_detector(config):
                "min_ss" in module and \
                "max_fs" in module and \
                "max_ss" in module:
-                fs_slice = slice(int(module["min_fs"]), int(module["max_fs"])+1)
-                ss_slice = slice(int(module["min_ss"]), int(module["max_ss"])+1)
+                fs_slice = slice(int(module["min_fs"]), int(module["max_fs"]) + 1)
+                ss_slice = slice(int(module["min_ss"]), int(module["max_ss"]) + 1)
                 mask[ss_slice, fs_slice] = 1
     detector.mask = mask
     return detector
 
+
+def coord(string):
+    """parse '0.5x and return {'x':0.5}
+    
+    :param string: a string
+    :return: dict with a single key/value
+    """
+    string = string.strip()
+    res = {}
+    if len(string):
+        key = string[-1]
+        value = string[:-1]
+        if len(value) > 1:
+            value = float(value)
+        elif value in "+ ":
+            value = 1
+        elif value == "-":
+            value = -1
+        else:
+            value = float(value)
+        res[key] = value
+    return res
 
 
 def build_geometry(config):
@@ -125,7 +155,7 @@ def build_geometry(config):
     y = numpy.zeros(detector.shape)
     mask = numpy.ones(detector.shape, numpy.int8)
 
-    for name,module in config.items():
+    for name, module in config.items():
         if isinstance(module, dict) and not (name.startswith("bad") or
                                             name.startswith("group") or
                                             name.startswith("rigid_group")):
@@ -138,35 +168,39 @@ def build_geometry(config):
                 "max_ss" in module and
                 "max_fs" in module):
 
-                sl = (slice(int(module["min_ss"]), int(module["max_ss"]+1)),
-                      slice(int(module["min_fs"]), int(module["max_fs"]+1)))
-                fs = numpy.outer(numpy.ones(sl[0].stop-sl[0].start),
-                                 numpy.arange(sl[1].stop-sl[1].start))
-                ss = numpy.outer(numpy.arange(sl[0].stop-sl[0].start),
-                                 numpy.ones(sl[1].stop-sl[1].start))
+                sl = (slice(int(module["min_ss"]), int(module["max_ss"] + 1)),
+                      slice(int(module["min_fs"]), int(module["max_fs"] + 1)))
+                fs = numpy.outer(numpy.ones(sl[0].stop - sl[0].start),
+                                 numpy.arange(sl[1].stop - sl[1].start))
+                ss = numpy.outer(numpy.arange(sl[0].stop - sl[0].start),
+                                 numpy.ones(sl[1].stop - sl[1].start))
 
                 x[sl] += module["corner_x"]
                 y[sl] += module["corner_y"]
 
-                f = {i[-1]:float(i[:-1]) for i in module["fs"].split()}
-                s = {i[-1]:float(i[:-1]) for i in module["ss"].split()}
+                f = {}
+                s = {}
+                for i in module["fs"].split():
+                    f.update(coord(i))
+                for i in module["ss"].split():
+                    s.update(coord(i))
 
-                rotatation = numpy.array([[f["x"], f["y"]],
-                                          [s["x"], s["y"]]])
+                rotatation = numpy.array([[f.get("x", 0.0), f.get("y", 0.0)],
+                                          [s.get("x", 0.0), s.get("y", 0.0)]])
                 inv_rotation = numpy.linalg.inv(rotatation)
 
-                x[sl] += inv_rotation[0,0] * fs + inv_rotation[0,1] * ss
-                y[sl] += inv_rotation[1,0] * fs + inv_rotation[1,1] * ss
+                x[sl] += inv_rotation[0, 0] * fs + inv_rotation[0, 1] * ss
+                y[sl] += inv_rotation[1, 0] * fs + inv_rotation[1, 1] * ss
                 mask[sl] = 0
     xmin = x.min()
     ymin = y.min()
     detector.mask = numpy.logical_or(detector.mask, mask)
 
-    x-=xmin
-    y-=ymin
+    x -= xmin
+    y -= ymin
 
     # crystfel uses the module/pixel corner, so no half pixel shift
-    pos = numpy.zeros(detector.shape+(4,3))
+    pos = numpy.zeros(detector.shape + (4, 3))
     pos[:,:, 0, 1] = (y - 0.0) * detector.pixel1
     pos[:,:, 0, 2] = (x - 0.0) * detector.pixel2
     pos[:,:, 1, 1] = (y + 1.0) * detector.pixel1
@@ -180,33 +214,61 @@ def build_geometry(config):
     # manage energy/wavelength:
     wavelength = None
     if "photon_energy" in config:
-        energy_split = config["photon_energy"].split()
-        if len(energy_split) >= 2:
-            energy_val, energy_unit = energy_split[:2]
-            pref = 1e-7
-            if energy_unit=="eV":
-                pref = 1e-7
-            elif energy_unit=="keV":
-                pref = 1e-10
-            else:
-                logger.warning("Unknown energy unit %s", energy_unit)
-        elif len(energy_split) == 1:
-            pref = 1e-7
-        wavelength = pref*hc/float(energy_val)
-    elif "wavelength" in config:
-        wl_split = config["wavelength"].split()
-        if len(energy_split) >= 2:
-            wl_val, wl_unit = wl_split[:2]
-            if wl_unit=="A":
+        pref = 1e-7
+        photon_energy = config["photon_energy"]
+        if isinstance(photon_energy, str):
+            energy_split = config["photon_energy"].split()
+            if len(energy_split) >= 2:
+                energy_val, energy_unit = energy_split[:2]
+                if energy_unit == "eV":
+                    pref = 1e-7
+                elif energy_unit == "keV":
                     pref = 1e-10
-            elif wl_unit=="m":
-                    pref = 1.0
+                else:
+                    logger.warning("Unknown energy unit %s", energy_unit)
+            elif len(energy_split) == 1:
+                pref = 1e-7
         else:
-            pref = 1
-        wavelength = pref*float(wl_val)
+            energy_val = photon_energy
 
-    return load({"detector": detector,
-                 "dist": config.get("clen", 1),
-                 "poni1":-ymin*detector.pixel1,
-                 "poni2":-xmin*detector.pixel2,
-                 "wavelength":wavelength})
+        wavelength = pref * hc / float(energy_val)
+    elif "wavelength" in config:
+        pref = 1.0
+        wavelength = config["wavelength"]
+        if isinstance(wavelength, str):
+            wl_split = wavelength.split()
+            if len(wl_split) >= 2:
+                wl_val, wl_unit = wl_split[:2]
+                if wl_unit == "A":
+                        pref = 1e-10
+                elif wl_unit == "m":
+                        pref = 1.0
+            else:
+                pref = 1
+        else:
+            wl_val = wavelength
+        wavelength = pref * float(wl_val)
+
+    clen = config.get("clen", 1)
+    if isinstance(clen, str) and " " in clen:
+        # manage unit:
+        val, unit = clen.split(maxsplit=1)
+        clen = float(val)
+        if unit == "mm":
+            clen %= 1000
+        if unit == "cm":
+            clen %= 100
+        if unit == "um":
+            clen %= 1000000
+
+    dico = {"detector": detector,
+            "dist": clen,
+            "poni1":-ymin * detector.pixel1,
+            "poni2":-xmin * detector.pixel2,
+            "rot1": 0.0,
+            "rot2": 0.0,
+            "rot3": 0.0,
+            }
+    if wavelength:
+        dico["wavelength"] = wavelength
+    return load(dico)

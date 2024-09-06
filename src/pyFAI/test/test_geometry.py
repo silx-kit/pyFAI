@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/08/2024"
+__date__ = "06/09/2024"
 
 import unittest
 import random
@@ -42,11 +42,12 @@ import time
 import numpy
 import itertools
 import logging
-import os.path
-
-from . import utilstest
 logger = logging.getLogger(__name__)
-
+import os.path
+import json
+import fabio
+from . import utilstest
+from ..io.ponifile import PoniFile
 from .. import geometry
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from .. import units
@@ -54,7 +55,7 @@ from ..detectors import detector_factory
 from ..third_party import transformations
 from .utilstest import UtilsTest
 from ..utils.mathutil import allclose_mod
-import fabio
+from ..geometry.crystfel import build_geometry, parse_crystfel_geom
 
 
 class TestSolidAngle(unittest.TestCase):
@@ -643,7 +644,6 @@ class TestOrientation(unittest.TestCase):
         chi3 = r3[..., 1]
         chi4 = r4[..., 1]
 
-
         sin_chi1 = numpy.sin(chi1)
         sin_chi2 = numpy.sin(chi2)
         sin_chi3 = numpy.sin(chi3)
@@ -655,10 +655,10 @@ class TestOrientation(unittest.TestCase):
         cos_chi4 = numpy.cos(chi4)
 
         # Here we use complex numbers
-        z1 = tth1*cos_chi1 + tth1*sin_chi1 *1j
-        z2 = tth2*cos_chi2 + tth2*sin_chi2 *1j
-        z3 = tth3*cos_chi3 + tth3*sin_chi3 *1j
-        z4 = tth4*cos_chi4 + tth4*sin_chi4 *1j
+        z1 = tth1 * cos_chi1 + tth1 * sin_chi1 * 1j
+        z2 = tth2 * cos_chi2 + tth2 * sin_chi2 * 1j
+        z3 = tth3 * cos_chi3 + tth3 * sin_chi3 * 1j
+        z4 = tth4 * cos_chi4 + tth4 * sin_chi4 * 1j
 
         # the mean is not sensitive to 2pi discontinuity in azimuthal direction
         z1 = z1.mean(axis=-1)
@@ -674,14 +674,13 @@ class TestOrientation(unittest.TestCase):
         self.assertFalse(numpy.allclose(z2, z4), "orientation 2,4 differ")
         self.assertFalse(numpy.allclose(z3, z4), "orientation 3,4 differ")
 
-        #Check that the tranformation is OK. This is with complex number thus dense & complicated !
+        # Check that the tranformation is OK. This is with complex number thus dense & complicated !
         self.assertTrue(numpy.allclose(z1, -numpy.fliplr(z2.conj())), "orientation 1,2 flipped")
         self.assertTrue(numpy.allclose(z1, -z3[-1::-1, -1::-1]), "orientation 1,3 inversed")
         self.assertTrue(numpy.allclose(z1, numpy.flipud(z4.conj())), "orientation 1,4 flipped")
         self.assertTrue(numpy.allclose(z2, numpy.flipud(z3.conj())), "orientation 2,3 flipped")
         self.assertTrue(numpy.allclose(z2, -z4[-1::-1, -1::-1]), "orientation 2,4 inversion")
         self.assertTrue(numpy.allclose(z3, -numpy.fliplr(z4.conj())), "orientation 3,4 flipped")
-
 
     def test_chi(self):
         epsilon = 6e-3
@@ -693,7 +692,7 @@ class TestOrientation(unittest.TestCase):
             corners = ai.corner_array(unit="r_mm")
             corners_rad = corners[..., 0]
             corners_ang = corners[..., 1]
-            z = corners_rad*numpy.cos(corners_ang) + corners_rad*numpy.sin(corners_ang)*1j
+            z = corners_rad * numpy.cos(corners_ang) + corners_rad * numpy.sin(corners_ang) * 1j
             chi_m = numpy.angle(z.mean(axis=-1)) / numpy.pi
 
             orient[i] = {"ai": ai, "chi_c": chi_c, "chi_m": chi_m}
@@ -808,41 +807,360 @@ class TestOrientation2(unittest.TestCase):
         self.assertTrue(numpy.all(res), "2th is OK")
 
 
-    class TestCrystFEL(unittest.TestCase):
-        """Simple tests to validate the import from CrystFEL"""
+class TestCrystFEL(unittest.TestCase):
+    """Simple tests to validate the import from CrystFEL"""
 
-        def test_crystfel(self):
-            results = {"alignment-test.geom": None,
-                       "cspad-cxiformat.geom": None,
-                       "cspad-single.geom": None,
-                       "Eiger16M-binning2-nativefiles.geom": None,
-                       "ev_enum1.geom": None,
-                       "ev_enum2.geom": None,
-                       "ev_enum3.geom": None,
-                       "jf-swissfel-16M.geom": None,
-                       "lcls-dec.geom": None,
-                       "lcls-june-r0013-r0128.geom": None,
-                       "lcls-xpp-estimate.geom": None,
-                       "pilatus.geom": None,
-                       "simple.geom": None,
-                       "stream_roundtrip.geom": None,
-                       "wavelength_geom10.geom": None,
-                       "wavelength_geom11.geom": None,
-                       "wavelength_geom12.geom": None,
-                       "wavelength_geom1.geom": None,
-                       "wavelength_geom2.geom": None,
-                       "wavelength_geom3.geom": None,
-                       "wavelength_geom4.geom": None,
-                       "wavelength_geom5.geom": None,
-                       "wavelength_geom6.geom": None,
-                       "wavelength_geom7.geom": None,
-                       "wavelength_geom8.geom": None,
-                       "wavelength_geom9.geom": None,}
-            from ..geometry.crystfel import build_geometry, parse_crystfel_geom
-            for i in results:
-                print(i)
-                geom = UtilsTest.getimage(i)
-                parse_crystfel_geom(i)
+    def test_crystfel(self):
+        results = {"alignment-test.geom": {"poni_version": 2.1,
+                                           "detector": "Detector",
+                                           "detector_config": {
+                                               "pixel1": 0.0001,
+                                               "pixel2": 0.0001,
+                                               "max_shape": [
+                                                   1025,
+                                                   1025
+                                                   ],
+                                               "orientation": 3
+                                               },
+                                           "dist": 100.0,
+                                           "poni1": 0.2048,
+                                           "poni2": 0.2048,
+                                           "rot1": 0,
+                                           "rot2": 0,
+                                           "rot3": 0,
+                                           "wavelength": 1.3776022048133363e-10, },
+                    "cspad-cxiformat.geom": None,  # -> clen in HDF5
+                    "cspad-single.geom": None,  # -> clen in HDF5
+                    "Eiger16M-binning2-nativefiles.geom": {  "poni_version": 2.1,
+                                                            "detector": "Detector",
+                                                            "detector_config": {
+                                                                "pixel1": 7.500018750046876e-05,
+                                                                "pixel2": 7.500018750046876e-05,
+                                                                "max_shape": [
+                                                                    2167,
+                                                                    2070
+                                                                ],
+                                                                "orientation": 3
+                                                            },
+                                                            "dist": 0.1,
+                                                            "poni1": 0.07500018750046876,
+                                                            "poni2": 0.07500018750046876,
+                                                            "rot1": 0,
+                                                            "rot2": 0,
+                                                            "rot3": 0,
+                                                            "wavelength": 5.6356453833272844e-11
+                                                        },
+                    "ev_enum1.geom": None,
+                    "ev_enum2.geom": {  "poni_version": 2.1,
+                                        "detector": "Detector",
+                                        "detector_config": {
+                                            "pixel1": 1e-06,
+                                            "pixel2": 1e-06,
+                                            "max_shape": [
+                                                2,
+                                                1
+                                            ],
+                                            "orientation": 3
+                                        },
+                                        "dist": 50.0,
+                                        "poni1": 9.999999999999999e-05,
+                                        "poni2": 9.999999999999999e-05,
+                                        "rot1": 0,
+                                        "rot2": 0,
+                                        "rot3": 0,
+                                        "wavelength": 1.2398419843320025e-10
+                                    },
+                    "ev_enum3.geom": {  "poni_version": 2.1,
+                                        "detector": "Detector",
+                                        "detector_config": {
+                                            "pixel1": 1e-06,
+                                            "pixel2": 1e-06,
+                                            "max_shape": [
+                                                2,
+                                                1
+                                            ],
+                                            "orientation": 3
+                                        },
+                                        "dist": 50.0,
+                                        "poni1": 9.999999999999999e-05,
+                                        "poni2": 9.999999999999999e-05,
+                                        "rot1": 0,
+                                        "rot2": 0,
+                                        "rot3": 0,
+                                        "wavelength": 1.2398419843320025e-10
+                                    },
+                    "jf-swissfel-16M.geom":{"poni_version": 2.1,
+                                            "detector": "Detector",
+                                            "detector_config": {
+                                                "pixel1": 7.500018750046876e-05,
+                                                "pixel2": 7.500018750046876e-05,
+                                                "max_shape": [
+                                                    16448,
+                                                    1030
+                                                ],
+                                                "orientation": 3
+                                            },
+                                            "dist": 95.3,
+                                            "poni1": 0.1582400308744524,
+                                            "poni2": 0.20740705679872742,
+                                            "rot1": 0,
+                                            "rot2": 0,
+                                            "rot3": 0,
+                                            "wavelength": 2.713002153899349e-10 },
+                    "lcls-dec.geom": {"poni_version": 2.1,
+                                        "detector": "Detector",
+                                        "detector_config": {
+                                            "pixel1": 7.500018750046876e-05,
+                                            "pixel2": 7.500018750046876e-05,
+                                            "max_shape": [
+                                                1024,
+                                                1024
+                                            ],
+                                            "orientation": 3
+                                        },
+                                        "dist": 0.0678,
+                                        "poni1": 0.058477646194115496,
+                                        "poni2": 0.03690009225023063,
+                                        "rot1": 0,
+                                        "rot2": 0,
+                                        "rot3": 0 },
+                    "lcls-june-r0013-r0128.geom": { "poni_version": 2.1,
+                                                    "detector": "Detector",
+                                                    "detector_config": {
+                                                        "pixel1": 7.500018750046876e-05,
+                                                        "pixel2": 7.500018750046876e-05,
+                                                        "max_shape": [
+                                                            1024,
+                                                            1024
+                                                        ],
+                                                        "orientation": 3
+                                                    },
+                                                    "dist": 0.06478,
+                                                    "poni1": 0.06757516893792236,
+                                                    "poni2": 0.03892509731274329,
+                                                    "rot1": 0,
+                                                    "rot2": 0,
+                                                    "rot3": 0},
+                    "lcls-xpp-estimate.geom": {"poni_version": 2.1,
+                                                "detector": "Detector",
+                                                "detector_config": {
+                                                    "pixel1": 0.00011001100110011001,
+                                                    "pixel2": 0.00011001100110011001,
+                                                    "max_shape": [
+                                                        1456,
+                                                        1456
+                                                    ],
+                                                    "orientation": 3
+                                                },
+                                                "dist": 0.08,
+                                                "poni1": 0.08003300330033003,
+                                                "poni2": 0.08003300330033003,
+                                                "rot1": 0,
+                                                "rot2": 0,
+                                                "rot3": 0},
+                    "pilatus.geom": None,  # -> clen in HDF5
+                    "simple.geom": {"poni_version": 2.1,
+                                    "detector": "Detector",
+                                    "detector_config": {
+                                        "pixel1": 7.500018750046876e-05,
+                                        "pixel2": 7.500018750046876e-05,
+                                        "max_shape": [
+                                            1024,
+                                            1024
+                                        ],
+                                        "orientation": 3
+                                    },
+                                    "dist": 0.05,
+                                    "poni1": 0.03915009787524469,
+                                    "poni2": 0.038400096000240004,
+                                    "rot1": 0,
+                                    "rot2": 0,
+                                    "rot3": 0
+                                },
+                    "stream_roundtrip.geom": {"poni_version": 2.1,
+                                                "detector": "Detector",
+                                                "detector_config": {
+                                                    "pixel1": 1e-06,
+                                                    "pixel2": 1e-06,
+                                                    "max_shape": [
+                                                        100,
+                                                        100
+                                                    ],
+                                                    "orientation": 3
+                                                },
+                                                "dist": 50.0,
+                                                "poni1":-0.0,
+                                                "poni2": 0.00019999999999999998,
+                                                "rot1": 0,
+                                                "rot2": 0,
+                                                "rot3": 0,
+                                                "wavelength": 1.2398419843320025e-10
+                                            },
+                    "wavelength_geom1.geom": None,  # -> wavelength in HDF5
+                    "wavelength_geom2.geom": None,  # -> photon_energy in HDF5
+                    "wavelength_geom3.geom": None,  # -> photon_energy in HDF5
+                    "wavelength_geom4.geom": {"poni_version": 2.1,
+                                                "detector": "Detector",
+                                                "detector_config": {
+                                                    "pixel1": 1e-06,
+                                                    "pixel2": 1e-06,
+                                                    "max_shape": [
+                                                        2,
+                                                        1
+                                                    ],
+                                                    "orientation": 3
+                                                },
+                                                "dist": 50.0,
+                                                "poni1": 9.999999999999999e-05,
+                                                "poni2": 9.999999999999999e-05,
+                                                "rot1": 0,
+                                                "rot2": 0,
+                                                "rot3": 0
+                                            },
+                    "wavelength_geom5.geom": {"poni_version": 2.1,
+                                                "detector": "Detector",
+                                                "detector_config": {
+                                                    "pixel1": 1e-06,
+                                                    "pixel2": 1e-06,
+                                                    "max_shape": [
+                                                        2,
+                                                        1
+                                                    ],
+                                                    "orientation": 3
+                                                },
+                                                "dist": 50.0,
+                                                "poni1": 9.999999999999999e-05,
+                                                "poni2": 9.999999999999999e-05,
+                                                "rot1": 0,
+                                                "rot2": 0,
+                                                "rot3": 0
+                                            },
+                    "wavelength_geom6.geom": None,  # -> parameters in HDF5
+                    "wavelength_geom7.geom": {"poni_version": 2.1,
+                                                "detector": "Detector",
+                                                "detector_config": {
+                                                    "pixel1": 1e-06,
+                                                    "pixel2": 1e-06,
+                                                    "max_shape": [
+                                                        2,
+                                                        1
+                                                    ],
+                                                    "orientation": 3
+                                                },
+                                                "dist": 50.0,
+                                                "poni1": 9.999999999999999e-05,
+                                                "poni2": 9.999999999999999e-05,
+                                                "rot1": 0,
+                                                "rot2": 0,
+                                                "rot3": 0,
+                                                "wavelength": 1.3776022048133363e-10
+                                            },
+                    "wavelength_geom8.geom": {"poni_version": 2.1,
+                                                "detector": "Detector",
+                                                "detector_config": {
+                                                    "pixel1": 1e-06,
+                                                    "pixel2": 1e-06,
+                                                    "max_shape": [
+                                                        2,
+                                                        1
+                                                    ],
+                                                    "orientation": 3
+                                                },
+                                                "dist": 50.0,
+                                                "poni1": 9.999999999999999e-05,
+                                                "poni2": 9.999999999999999e-05,
+                                                "rot1": 0,
+                                                "rot2": 0,
+                                                "rot3": 0
+                                            },
+                    "wavelength_geom9.geom": {  "poni_version": 2.1,
+                                                "detector": "Detector",
+                                                "detector_config": {
+                                                    "pixel1": 1e-06,
+                                                    "pixel2": 1e-06,
+                                                    "max_shape": [
+                                                        2,
+                                                        1
+                                                    ],
+                                                    "orientation": 3
+                                                },
+                                                "dist": 50.0,
+                                                "poni1": 9.999999999999999e-05,
+                                                "poni2": 9.999999999999999e-05,
+                                                "rot1": 0,
+                                                "rot2": 0,
+                                                "rot3": 0,
+                                                "wavelength": 1.3776022048133363e-10
+                                            },
+                    "wavelength_geom10.geom": {"poni_version": 2.1,
+                                                "detector": "Detector",
+                                                "detector_config": {
+                                                    "pixel1": 1e-06,
+                                                    "pixel2": 1e-06,
+                                                    "max_shape": [
+                                                        2,
+                                                        1
+                                                    ],
+                                                    "orientation": 3
+                                                },
+                                                "dist": 50.0,
+                                                "poni1": 9.999999999999999e-05,
+                                                "poni2": 9.999999999999999e-05,
+                                                "rot1": 0,
+                                                "rot2": 0,
+                                                "rot3": 0,
+                                                "wavelength": 1.3776022048133363e-10
+                                            },
+                    "wavelength_geom11.geom": {"poni_version": 2.1,
+                                                "detector": "Detector",
+                                                "detector_config": {
+                                                    "pixel1": 1e-06,
+                                                    "pixel2": 1e-06,
+                                                    "max_shape": [
+                                                        2,
+                                                        1
+                                                    ],
+                                                    "orientation": 3
+                                                },
+                                                "dist": 50.0,
+                                                "poni1": 9.999999999999999e-05,
+                                                "poni2": 9.999999999999999e-05,
+                                                "rot1": 0,
+                                                "rot2": 0,
+                                                "rot3": 0,
+                                                "wavelength": 1.125e-10
+                                            },
+                    "wavelength_geom12.geom": { "poni_version": 2.1,
+                                                "detector": "Detector",
+                                                "detector_config": {
+                                                    "pixel1": 1e-06,
+                                                    "pixel2": 1e-06,
+                                                    "max_shape": [
+                                                        2,
+                                                        1
+                                                    ],
+                                                    "orientation": 3
+                                                },
+                                                "dist": 50.0,
+                                                "poni1": 9.999999999999999e-05,
+                                                "poni2": 9.999999999999999e-05,
+                                                "rot1": 0,
+                                                "rot2": 0,
+                                                "rot3": 0,
+                                                "wavelength": 1.125e-10
+                                            },
+                   }
+
+        for i, ref in results.items():
+            geom = UtilsTest.getimage(i)
+            dico = parse_crystfel_geom(geom)
+            if ref is not None:
+                ai = build_geometry(dico)
+                poni_res = PoniFile(ai)
+                poni_ref = PoniFile(ref)
+                self.assertEqual(json.dumps(poni_res.as_dict()),
+                                 json.dumps(poni_ref.as_dict()), f"geometry matches for {i}")
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
