@@ -64,7 +64,7 @@ class TestMultiGeometry(unittest.TestCase):
                    AzimuthalIntegrator(0.1, 0.030, 0.00, detector=cls.sub_det),
                    AzimuthalIntegrator(0.1, 0.005, 0.00, detector=cls.sub_det),
                    ]
-        cls.mg = MultiGeometry(cls.ais, radial_range=cls.range, unit="2th_deg", threadpoolsize=4)
+        cls.mg = MultiGeometry(cls.ais, radial_range=cls.range, unit="2th_deg", threadpoolsize=4, azimuth_range=(-180,180))
         cls.N = 390
         cls.method = ("full", "histogram", "cython")
 
@@ -116,7 +116,7 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertTrue(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate2d(self):
-        ref = self.ai.integrate2d_ng(self.data, self.N, 360, radial_range=self.range, azimuth_range=None, unit="2th_deg",
+        ref = self.ai.integrate2d_ng(self.data, self.N, 360, radial_range=self.range, azimuth_range=(-180,180), unit="2th_deg",
                                      method=self.method)
         obt = self.mg.integrate2d(self.lst_data, self.N, 360, method=self.method)
         self.assertEqual(abs(ref.radial - obt.radial).max(), 0, "Bin position is the same")
