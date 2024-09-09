@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "24/04/2024"
+__date__ = "06/09/2024"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -630,8 +630,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.profile_multi(events)
         return merged, sum_data, sum_count
 
-    integrate = integrate_legacy
-
     def integrate_ng(self, data, dark=None, dummy=None, delta_dummy=None,
                      error_model=ErrorModel.NO, variance=None, dark_variance=None,
                      flat=None, solidangle=None, polarization=None, absorption=None,
@@ -854,6 +852,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         self.profile_multi(events)
         return res
+
+    integrate = integrate_ng
 
     def sigma_clip(self, data, dark=None, dummy=None, delta_dummy=None,
                    variance=None, dark_variance=None,

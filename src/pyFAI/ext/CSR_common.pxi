@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/06/2024"
+__date__ = "06/09/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -257,7 +257,6 @@ cdef class CsrIntegrator(object):
                     numpy.asarray(sum_data),
                     numpy.asarray(sum_count))
 
-    integrate = integrate_legacy
 
     def integrate_ng(self,
                      weights,
@@ -422,6 +421,8 @@ cdef class CsrIntegrator(object):
                                   numpy.asarray(sum_sig),numpy.asarray(sum_var),
                                   numpy.asarray(sum_norm), numpy.asarray(sum_count),
                                   numpy.asarray(std), numpy.asarray(sem), numpy.asarray(sum_norm_sq))
+
+    integrate = integrate_ng
 
     def sigma_clip(self,
                    weights,

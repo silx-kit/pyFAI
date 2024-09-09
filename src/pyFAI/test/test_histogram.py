@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "06/09/2024"
 
 import unittest
 import time
@@ -91,7 +91,7 @@ class TestHistogram1d(unittest.TestCase):
                                  bins=npt, allow_pos0_neg=False,
                                  unit="undefined",)
         t2 = time.perf_counter()
-        cls.bins_csr, cls.I_csr, cls.weight_csr, cls.unweight_csr = integrator.integrate(data)
+        cls.bins_csr, cls.I_csr, cls.weight_csr, cls.unweight_csr = integrator.integrate_legacy(data)
         t4 = time.perf_counter()
         logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
         # Under Linux, windows or MacOSX, up to 1 bin error has been reported...
@@ -258,7 +258,7 @@ class TestHistogram2d(unittest.TestCase):
         integrator = HistoBBox2d(tth, None, chi, delta_pos1=None,
                                  bins=npt, allow_pos0_neg=False, unit="undefined")
         t2 = time.perf_counter()
-        cls.I_csr, cls.tth_csr, cls.chi_csr, cls.weight_csr, cls.unweight_csr = integrator.integrate(data)
+        cls.I_csr, cls.tth_csr, cls.chi_csr, cls.weight_csr, cls.unweight_csr = integrator.integrate_legacy(data)
         t4 = time.perf_counter()
         logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
 
