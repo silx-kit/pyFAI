@@ -87,13 +87,12 @@ class MultiGeometry(object):
         self.radial_range = radial_range
         self.azimuth_range = azimuth_range
         if isinstance(unit, (tuple, list)) and len(unit) == 2:
-            radial_unit, azimuth_unit = unit
+            self.radial_unit = units.to_unit(unit[0])
+            self.azimuth_unit = units.to_unit(unit[1])
         else:
-            radial_unit = unit
-            azimuth_unit = units.CHI_DEG
-        self.unit = (radial_unit, azimuth_unit)
-        self.radial_unit = units.to_unit(radial_unit)
-        self.azimuth_unit = units.to_unit(azimuth_unit)
+            self.radial_unit = units.to_unit(unit)
+            self.azimuth_unit = units.CHI_DEG
+        self.unit = (self.radial_unit, self.azimuth_unit)
         self.abolute_solid_angle = None
         self.empty = empty
         if chi_disc == 0:
