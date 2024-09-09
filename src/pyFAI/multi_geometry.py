@@ -92,8 +92,8 @@ class MultiGeometry(object):
             radial_unit = unit
             azimuth_unit = units.CHI_DEG
         self.unit = (radial_unit, azimuth_unit)
-        self.radial_unit = radial_unit
-        self.azimuth_unit = azimuth_unit
+        self.radial_unit = units.to_unit(radial_unit)
+        self.azimuth_unit = units.to_unit(azimuth_unit)
         self.abolute_solid_angle = None
         self.empty = empty
         if chi_disc == 0:
