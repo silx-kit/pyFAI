@@ -57,7 +57,7 @@ class MultiGeometry(object):
     """
 
     def __init__(self, ais, unit="2th_deg",
-                 radial_range=(0, 180), azimuth_range=None,
+                 radial_range=None, azimuth_range=None,
                  wavelength=None, empty=0.0, chi_disc=180,
                  threadpoolsize=cpu_count()):
         """
@@ -71,8 +71,6 @@ class MultiGeometry(object):
         :param threadpoolsize: By default, use a thread-pool to parallelize histogram/CSC integrator over as many threads as cores,
                                set to False/0 to serialize
         """
-        if azimuth_range is None:
-            azimuth_range = (-180, 180) if chi_disc else (0, 360)
         self._sem = threading.Semaphore()
         self.abolute_solid_angle = None
         self.ais = [ai if isinstance(ai, AzimuthalIntegrator)
@@ -82,9 +80,15 @@ class MultiGeometry(object):
         self.threadpool = ThreadPool(min(len(self.ais), threadpoolsize)) if threadpoolsize>0 else None
         if wavelength:
             self.set_wavelength(wavelength)
-        self.radial_range = tuple(radial_range[:2])
-        self.azimuth_range = tuple(azimuth_range[:2])
-        self.unit = units.to_unit(unit)
+        if isinstance(unit, (tuple, list)) and len(unit) == 2:
+            self.radial_unit = units.to_unit(unit[0])
+            self.azimuth_unit = units.to_unit(unit[1])
+        else:
+            self.radial_unit = units.to_unit(unit)
+            self.azimuth_unit = units.CHI_DEG
+        self.unit = (self.radial_unit, self.azimuth_unit)
+        self.radial_range = radial_range
+        self.azimuth_range = azimuth_range
         self.abolute_solid_angle = None
         self.empty = empty
         if chi_disc == 0:
@@ -103,6 +107,16 @@ class MultiGeometry(object):
     def __repr__(self, *args, **kwargs):
         return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \
             (len(self.ais), self.radial_range, self.unit, self.azimuth_range)
+
+    def _guess_radial_range(self):
+        logger.info(f"Calculating the radial range of MultiGeometry...")
+        radial = numpy.array([ai.array_from_unit(unit=self.radial_unit) for ai in self.ais])
+        return (radial.min(), radial.max())
+
+    def _guess_azimuth_range(self):
+        logger.info(f"Calculating the azimuthal range of MultiGeometry...")
+        azimuthal = numpy.array([ai.array_from_unit(unit=self.azimuth_unit) for ai in self.ais])
+        return (azimuthal.min(), azimuthal.max())
 
     def integrate1d(self, lst_data, npt=1800,
                     correctSolidAngle=True,
@@ -151,6 +165,10 @@ class MultiGeometry(object):
         normalization = numpy.zeros_like(signal)
         count = numpy.zeros_like(signal)
         variance = None
+        if self.radial_range is None:
+            self.radial_range = self._guess_radial_range()
+        if self.azimuth_range is None:
+            self.azimuth_range = self._guess_azimuth_range()
         def _integrate(args):
             ai, data, monitor, var, mask, flat = args
             return ai.integrate1d_ng(data, npt=npt,
@@ -159,7 +177,7 @@ class MultiGeometry(object):
                                     polarization_factor=polarization_factor,
                                     radial_range=self.radial_range,
                                     azimuth_range=self.azimuth_range,
-                                    method=method, unit=self.unit, safe=True,
+                                    method=method, unit=self.radial_unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
         if self.threadpool is None:
             results = map(_integrate,
@@ -191,7 +209,7 @@ class MultiGeometry(object):
         else:
             result = Integrate1dResult(res.radial, I)
         result._set_compute_engine(res.compute_engine)
-        result._set_unit(self.unit)
+        result._set_unit(self.radial_unit)
         result._set_sum_signal(signal)
         result._set_sum_normalization(normalization)
         result._set_sum_variance(variance)
@@ -246,6 +264,10 @@ class MultiGeometry(object):
         count = numpy.zeros_like(signal)
         normalization = numpy.zeros_like(signal)
         variance = None
+        if self.radial_range is None:
+            self.radial_range = self._guess_radial_range()
+        if self.azimuth_range is None:
+            self.azimuth_range = self._guess_azimuth_range()
         def _integrate(args):
             ai, data, monitor, var, mask, flat = args
             return ai.integrate2d_ng(data,npt_rad=npt_rad, npt_azim=npt_azim,
@@ -287,8 +309,8 @@ class MultiGeometry(object):
             result = Integrate2dResult(I, res.radial, res.azimuthal)
         result._set_sum(signal)
         result._set_compute_engine(res.compute_engine)
-        result._set_radial_unit(self.unit)
-        result._set_azimuthal_unit(units.CHI_DEG)
+        result._set_radial_unit(self.radial_unit)
+        result._set_azimuthal_unit(self.azimuth_unit)
         result._set_sum_signal(signal)
         result._set_sum_normalization(normalization)
         result._set_sum_variance(variance)
