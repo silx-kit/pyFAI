@@ -169,8 +169,10 @@ class MultiGeometry(object):
         normalization = numpy.zeros_like(signal)
         count = numpy.zeros_like(signal)
         variance = None
-        self.radial_range = self.radial_range or self._guess_radial_range(lst_data=lst_data)
-        self.azimuth_range = self.azimuth_range or self._guess_azimuth_range(lst_data=lst_data)
+        if self.radial_range is None:
+            self.radial_range = self._guess_radial_range(lst_data=lst_data)
+        if self.azimuth_range is None:
+            self.azimuth_range = self._guess_azimuth_range(lst_data=lst_data)
         def _integrate(args):
             ai, data, monitor, var, mask, flat = args
             return ai.integrate1d_ng(data, npt=npt,
@@ -266,8 +268,10 @@ class MultiGeometry(object):
         count = numpy.zeros_like(signal)
         normalization = numpy.zeros_like(signal)
         variance = None
-        self.radial_range = self.radial_range or self._guess_radial_range(lst_data=lst_data)
-        self.azimuth_range = self.azimuth_range or self._guess_azimuth_range(lst_data=lst_data)
+        if self.radial_range is None:
+            self.radial_range = self._guess_radial_range(lst_data=lst_data)
+        if self.azimuth_range is None:
+            self.azimuth_range = self._guess_azimuth_range(lst_data=lst_data)
         def _integrate(args):
             ai, data, monitor, var, mask, flat = args
             return ai.integrate2d_ng(data,npt_rad=npt_rad, npt_azim=npt_azim,
