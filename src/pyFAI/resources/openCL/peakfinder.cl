@@ -265,7 +265,7 @@ kernel void peakfinder(   const global  float4 *preproc4, // Pixel wise array of
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (valid) {
-        int active = 0;
+        int active = 0; // set to -1 to indicate an invalid neigbourhood
         // value has been already calculated
         if ((value.s0>0.0f) && (value.s0 >= cutoff * value.s1)){
 //            printf("%6.3f %6.3f %6.3f\n", value.s0, value.s1, cutoff);
@@ -284,7 +284,15 @@ kernel void peakfinder(   const global  float4 *preproc4, // Pixel wise array of
                         sum_int += local_value.s0;
                         sum_var += local_value.s1*local_value.s1;
                     }// add pixel to intgral
+                    else{
+                        if (local_value.s1<=0.0f){
+                            // Variance is null, the pixel is masked => complete neighborhood becomes invalid
+                            active = -1;
+                            break;
+                        }
+                    }
                 } // for j
+                if (active<0) break;
             } // for i
             if ((value.s0 == local_max) && (active>=connected)){
                 int position = atomic_inc(local_counter);
