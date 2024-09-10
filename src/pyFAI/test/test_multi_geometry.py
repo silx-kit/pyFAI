@@ -139,6 +139,26 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertTrue(delta_sum.max() < 0.04, "pixel sum is the same delta=%s" % delta_sum.max())
         self.assertTrue(delta.max() < 0.007, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
 
+    def test_range_azimuth(self):
+        azim_min_ref = self.ai.array_from_unit(shape=self.data.shape, unit=self.mg.azimuth_unit).min()
+        azim_min_mg = numpy.min([ai.array_from_unit(shape=self.data.shape, unit=self.mg.azimuth_unit).min() for ai in self.mg.ais])
+        self.assertTrue((azim_min_ref - azim_min_mg) < 0.001, f"Minimums of azimuthal arrays do not match: {azim_min_ref} != {azim_min_mg}")
+
+        azim_max_ref = self.ai.array_from_unit(shape=self.ai.detector.shape, unit=self.mg.azimuth_unit).max()
+        azim_max_mg = numpy.max([ai.array_from_unit(shape=ai.detector.shape, unit=self.mg.azimuth_unit).max() for ai in self.mg.ais])
+        self.assertTrue((azim_max_ref - azim_max_mg) < 0.001, f"Maximums of azimuthal arrays do not match: {azim_max_ref} != {azim_max_mg}")
+
+        radial_range = self.mg._guess_radial_range(lst_data=self.lst_data)
+        azimuth_range = self.mg._guess_azimuth_range(lst_data=self.lst_data)
+
+        res2d_ref = self.ai.integrate2d_ng(self.data, self.N, 360, radial_range=radial_range, azimuth_range=azimuth_range, unit="2th_deg", method=self.method)
+
+        self.mg.radial_range = radial_range
+        self.mg.azimuth_range = azimuth_range
+        res2d_mg = self.mg.integrate2d(lst_data=self.lst_data, npt_rad=self.N, npt_azim=360, method=self.method)
+
+        self.assertTrue(res2d_ref.azimuthal.min() == res2d_mg.azimuthal.min(), f"Azimuthal minimums of results are different: {res2d_ref.azimuthal.min()} != {res2d_mg.azimuthal.min()}")
+        self.assertTrue(res2d_ref.azimuthal.max() == res2d_mg.azimuthal.max(), f"Azimuthal maximums of results are different: {res2d_ref.azimuthal.max()} != {res2d_mg.azimuthal.max()}")
 
 def suite():
     testsuite = unittest.TestSuite()

@@ -82,10 +82,6 @@ class MultiGeometry(object):
         self.threadpool = ThreadPool(min(len(self.ais), threadpoolsize)) if threadpoolsize>0 else None
         if wavelength:
             self.set_wavelength(wavelength)
-        # self.radial_range = tuple(radial_range[:2])
-        # self.azimuth_range = tuple(azimuth_range[:2])
-        self.radial_range = radial_range
-        self.azimuth_range = azimuth_range
         if isinstance(unit, (tuple, list)) and len(unit) == 2:
             self.radial_unit = units.to_unit(unit[0])
             self.azimuth_unit = units.to_unit(unit[1])
@@ -93,6 +89,8 @@ class MultiGeometry(object):
             self.radial_unit = units.to_unit(unit)
             self.azimuth_unit = units.CHI_DEG
         self.unit = (self.radial_unit, self.azimuth_unit)
+        self.radial_range = radial_range
+        self.azimuth_range = azimuth_range            
         self.abolute_solid_angle = None
         self.empty = empty
         if chi_disc == 0:
@@ -111,6 +109,18 @@ class MultiGeometry(object):
     def __repr__(self, *args, **kwargs):
         return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \
             (len(self.ais), self.radial_range, self.unit, self.azimuth_range)
+
+    def _guess_radial_range(self, lst_data):
+        logger.info(f"Calculating the radial range of MultiGeometry...")
+        minimum_radial_range = numpy.min([numpy.min(ai.array_from_unit(shape=data.shape, unit=self.radial_unit)) for ai, data in zip(self.ais, lst_data)])
+        maximum_radial_range = numpy.max([numpy.max(ai.array_from_unit(shape=data.shape, unit=self.radial_unit)) for ai, data in zip(self.ais, lst_data)])
+        return (minimum_radial_range, maximum_radial_range)
+
+    def _guess_azimuth_range(self, lst_data):
+        logger.info(f"Calculating the azimuthal range of MultiGeometry...")
+        minimum_azimuth_range = numpy.min([numpy.min(ai.array_from_unit(shape=data.shape, unit=self.azimuth_unit)) for ai, data in zip(self.ais, lst_data)])
+        maximum_azimuth_range = numpy.max([numpy.max(ai.array_from_unit(shape=data.shape, unit=self.azimuth_unit)) for ai, data in zip(self.ais, lst_data)])
+        return (minimum_azimuth_range, maximum_azimuth_range)
 
     def integrate1d(self, lst_data, npt=1800,
                     correctSolidAngle=True,
@@ -159,6 +169,8 @@ class MultiGeometry(object):
         normalization = numpy.zeros_like(signal)
         count = numpy.zeros_like(signal)
         variance = None
+        self.radial_range = self.radial_range or self._guess_radial_range(lst_data=lst_data)
+        self.azimuth_range = self.azimuth_range or self._guess_azimuth_range(lst_data=lst_data)
         def _integrate(args):
             ai, data, monitor, var, mask, flat = args
             return ai.integrate1d_ng(data, npt=npt,
@@ -254,6 +266,8 @@ class MultiGeometry(object):
         count = numpy.zeros_like(signal)
         normalization = numpy.zeros_like(signal)
         variance = None
+        self.radial_range = self.radial_range or self._guess_radial_range(lst_data=lst_data)
+        self.azimuth_range = self.azimuth_range or self._guess_azimuth_range(lst_data=lst_data)
         def _integrate(args):
             ai, data, monitor, var, mask, flat = args
             return ai.integrate2d_ng(data,npt_rad=npt_rad, npt_azim=npt_azim,
