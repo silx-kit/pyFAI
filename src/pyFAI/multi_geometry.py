@@ -90,7 +90,7 @@ class MultiGeometry(object):
             self.azimuth_unit = units.CHI_DEG
         self.unit = (self.radial_unit, self.azimuth_unit)
         self.radial_range = radial_range
-        self.azimuth_range = azimuth_range            
+        self.azimuth_range = azimuth_range
         self.abolute_solid_angle = None
         self.empty = empty
         if chi_disc == 0:
