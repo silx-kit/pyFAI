@@ -108,13 +108,13 @@ class MultiGeometry(object):
         return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \
             (len(self.ais), self.radial_range, self.unit, self.azimuth_range)
 
-    def _guess_radial_range(self, lst_data):
+    def _guess_radial_range(self):
         logger.info(f"Calculating the radial range of MultiGeometry...")
         radial = numpy.array([ai.array_from_unit(unit=self.radial_unit) for ai in self.ais])
         minimum_radial_range, maximum_radial_range = radial.min(), radial.max()
         return (minimum_radial_range, maximum_radial_range)
 
-    def _guess_azimuth_range(self, lst_data):
+    def _guess_azimuth_range(self):
         logger.info(f"Calculating the azimuthal range of MultiGeometry...")
         azimuthal = numpy.array([ai.array_from_unit(unit=self.azimuth_unit) for ai in self.ais])
         minimum_azimuth_range, maximum_azimuth_range = azimuthal.min(), azimuthal.max()
