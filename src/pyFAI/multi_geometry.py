@@ -110,14 +110,14 @@ class MultiGeometry(object):
 
     def _guess_radial_range(self, lst_data):
         logger.info(f"Calculating the radial range of MultiGeometry...")
-        minimum_radial_range = numpy.min([numpy.min(ai.array_from_unit(shape=data.shape, unit=self.radial_unit)) for ai, data in zip(self.ais, lst_data)])
-        maximum_radial_range = numpy.max([numpy.max(ai.array_from_unit(shape=data.shape, unit=self.radial_unit)) for ai, data in zip(self.ais, lst_data)])
+        radial = numpy.array([ai.array_from_unit(unit=self.radial_unit) for ai in self.ais])
+        minimum_radial_range, maximum_radial_range = radial.min(), radial.max()
         return (minimum_radial_range, maximum_radial_range)
 
     def _guess_azimuth_range(self, lst_data):
         logger.info(f"Calculating the azimuthal range of MultiGeometry...")
-        minimum_azimuth_range = numpy.min([numpy.min(ai.array_from_unit(shape=data.shape, unit=self.azimuth_unit)) for ai, data in zip(self.ais, lst_data)])
-        maximum_azimuth_range = numpy.max([numpy.max(ai.array_from_unit(shape=data.shape, unit=self.azimuth_unit)) for ai, data in zip(self.ais, lst_data)])
+        azimuthal = numpy.array([ai.array_from_unit(unit=self.azimuth_unit) for ai in self.ais])
+        minimum_azimuth_range, maximum_azimuth_range = azimuthal.min(), azimuthal.max()
         return (minimum_azimuth_range, maximum_azimuth_range)
 
     def integrate1d(self, lst_data, npt=1800,
