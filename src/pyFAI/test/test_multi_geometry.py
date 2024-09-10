@@ -148,8 +148,8 @@ class TestMultiGeometry(unittest.TestCase):
         azim_max_mg = numpy.max([ai.array_from_unit(shape=ai.detector.shape, unit=self.mg.azimuth_unit).max() for ai in self.mg.ais])
         self.assertTrue((azim_max_ref - azim_max_mg) < 0.001, f"Maximums of azimuthal arrays do not match: {azim_max_ref} != {azim_max_mg}")
 
-        radial_range = self.mg._guess_radial_range(lst_data=self.lst_data)
-        azimuth_range = self.mg._guess_azimuth_range(lst_data=self.lst_data)
+        radial_range = self.mg._guess_radial_range()
+        azimuth_range = self.mg._guess_azimuth_range()
 
         res2d_ref = self.ai.integrate2d_ng(self.data, self.N, 360, radial_range=radial_range, azimuth_range=azimuth_range, unit="2th_deg", method=self.method)
 
