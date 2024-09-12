@@ -98,7 +98,7 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 3.7, ... 3.12 are well tested and officially supported.
+Python 3.8, ... 3.12 are well tested and officially supported.
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
@@ -145,7 +145,7 @@ using apt-get these can be installed as::
 MacOSX
 ------
 
-One needs to manually install a recent version of `Python` (>=3.7) prior to installing pyFAI.
+One needs to manually install a recent version of `Python` (>=3.8) prior to installing pyFAI.
 Apple provides only an outdated version of Python 2.7 which is now incomatible.
 If you want to build pyFAI from sources, you will also need `Xcode` which is available from the Apple store.
 The compiled extension will use only one core due to the limitation of the compiler.
@@ -158,7 +158,7 @@ Then install the missing dependencies with `pip`::
 Windows
 -------
 
-Under Windows, one needs to install `Python` (>=3.7) prior to pyFAI.
+Under Windows, one needs to install `Python` (>=3.8) prior to pyFAI.
 The Visual Studio C++ compiler is also needed when building from sources.
 Then install the missing dependencies with `pip`::
 
@@ -209,6 +209,7 @@ Indirect contributors (ideas...)
 .. |myBinder Launcher| image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/silx-kit/pyFAI/main?filepath=binder%2Findex.ipynb
 .. |RTD docs| image:: https://readthedocs.org/projects/pyfai/badge/?version=latest
+   :scale: 100%
    :target: https://pyfai.readthedocs.io/en/latest/
 .. |Zenodo DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.832896.svg
    :target: https://doi.org/10.5281/zenodo.832896
