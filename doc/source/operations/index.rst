@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 18/01/2023
+:Date: 12/09/2024
 :Keywords: Installation procedure
 :Target: System administrators
 
@@ -22,7 +22,7 @@ Dependencies
 
 PyFAI is a Python library which relies on the scientific stack (numpy, scipy, matplotlib)
 
-* Python: version 3.7 or newer (version 3.6 was dropped with 0.21)
+* Python: version 3.8 or newer
 * NumPy: version 1.12 or newer
 * SciPy: version 0.18 or newer
 * Matplotlib: verson 2.0 or newer
