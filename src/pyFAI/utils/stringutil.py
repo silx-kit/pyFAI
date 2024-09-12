@@ -193,7 +193,7 @@ def to_eng(value, fmt=None, space=""):
             return ffmt.format(value=value, space=space, pfix=pfix, fmt=fmt)
         else:
             string = f"{value:f}"
-            if "." in str:
+            if "." in string:
                 string = string.rstrip("0")
                 string = string.rstrip(".")
             return string + space + pfix
