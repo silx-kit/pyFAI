@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/06/2024"
+__date__ = "12/09/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -901,10 +901,10 @@ class AzimuthalIntegrator(Geometry):
                             if error_model == "azimuthal":
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                             if variance is not None:
-                                var1d, a, b = ocl_integr.integrate(variance,
-                                                                   solidangle=None,
-                                                                   dummy=dummy,
-                                                                   delta_dummy=delta_dummy)
+                                var1d, a, b = ocl_integr.integrate_legacy(variance,
+                                                                          solidangle=None,
+                                                                          dummy=dummy,
+                                                                          delta_dummy=delta_dummy)
                                 with numpy.errstate(divide='ignore', invalid='ignore'):
                                     sigma = numpy.sqrt(a) / (b * normalization_factor)
                                 sigma[b == 0] = dummy if dummy is not None else self._empty
@@ -2066,27 +2066,27 @@ class AzimuthalIntegrator(Geometry):
                                 ocl_engine.set_engine(ocl_integr)
 
                             if (not error) and (ocl_integr is not None):
-                                I, sum_, count = ocl_integr.integrate(data, dark=dark, flat=flat,
-                                                                      solidangle=solidangle,
-                                                                      solidangle_checksum=self._dssa_crc,
-                                                                      dummy=dummy,
-                                                                      delta_dummy=delta_dummy,
-                                                                      polarization=polarization,
-                                                                      polarization_checksum=polarization_crc,
-                                                                      normalization_factor=normalization_factor,
-                                                                      safe=safe)
+                                I, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
+                                                                             solidangle=solidangle,
+                                                                             solidangle_checksum=self._dssa_crc,
+                                                                             dummy=dummy,
+                                                                             delta_dummy=delta_dummy,
+                                                                             polarization=polarization,
+                                                                             polarization_checksum=polarization_crc,
+                                                                             normalization_factor=normalization_factor,
+                                                                             safe=safe)
                                 I.shape = npt
                                 I = I.T
                                 bins_rad = integr.bin_centers0  # this will be copied later
                                 bins_azim = integr.bin_centers1
                     else:
-                        I, bins_rad, bins_azim, sum_, count = integr.integrate(data, dark=dark, flat=flat,
-                                                                               solidAngle=solidangle,
-                                                                               dummy=dummy,
-                                                                               delta_dummy=delta_dummy,
-                                                                               polarization=polarization,
-                                                                               normalization_factor=normalization_factor
-                                                                               )
+                        I, bins_rad, bins_azim, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
+                                                                                      solidAngle=solidangle,
+                                                                                      dummy=dummy,
+                                                                                      delta_dummy=delta_dummy,
+                                                                                      polarization=polarization,
+                                                                                      normalization_factor=normalization_factor
+                                                                                      )
 
         if method.algo_lower == "csr":
             if EXT_CSR_ENGINE not in self.engines:
@@ -2157,26 +2157,26 @@ class AzimuthalIntegrator(Geometry):
                                                                              checksum=integr.lut_checksum)
                                 ocl_engine.set_engine(ocl_integr)
                         if (not error) and (ocl_integr is not None):
-                                I, sum_, count = ocl_integr.integrate(data, dark=dark, flat=flat,
-                                                                      solidangle=solidangle,
-                                                                      solidangle_checksum=self._dssa_crc,
-                                                                      dummy=dummy,
-                                                                      delta_dummy=delta_dummy,
-                                                                      polarization=polarization,
-                                                                      polarization_checksum=polarization_crc,
-                                                                      safe=safe,
-                                                                      normalization_factor=normalization_factor)
+                                I, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
+                                                                             solidangle=solidangle,
+                                                                             solidangle_checksum=self._dssa_crc,
+                                                                             dummy=dummy,
+                                                                             delta_dummy=delta_dummy,
+                                                                             polarization=polarization,
+                                                                             polarization_checksum=polarization_crc,
+                                                                             safe=safe,
+                                                                             normalization_factor=normalization_factor)
                                 I.shape = npt
                                 I = I.T
                                 bins_rad = integr.bin_centers0  # this will be copied later
                                 bins_azim = integr.bin_centers1
                     else:
-                        I, bins_rad, bins_azim, sum_, count = integr.integrate(data, dark=dark, flat=flat,
-                                                                               solidAngle=solidangle,
-                                                                               dummy=dummy,
-                                                                               delta_dummy=delta_dummy,
-                                                                               polarization=polarization,
-                                                                               normalization_factor=normalization_factor)
+                        I, bins_rad, bins_azim, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
+                                                                                      solidAngle=solidangle,
+                                                                                      dummy=dummy,
+                                                                                      delta_dummy=delta_dummy,
+                                                                                      polarization=polarization,
+                                                                                      normalization_factor=normalization_factor)
 
         if method.method[1:4] in (("pseudo", "histogram", "cython"), ("full", "histogram", "cython")):
             logger.debug("integrate2d uses SplitPixel implementation")

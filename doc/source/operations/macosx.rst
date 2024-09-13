@@ -11,7 +11,7 @@ Install Python3:
 
 To install pyFAI on an *Apple* computer you will need a scientific Python3 stack.
 MacOSX provides by default Python2.7, you will need to install a recent version
-of Python3 (3.7 at least).
+of Python3 (3.8 at least).
 Those distribution are available as *dmg* images from:
 `Python.org <https://www.python.org/downloads/mac-osx/>`_
 

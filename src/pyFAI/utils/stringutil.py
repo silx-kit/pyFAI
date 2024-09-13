@@ -28,7 +28,7 @@
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2024"
+__date__ = "12/09/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -192,4 +192,8 @@ def to_eng(value, fmt=None, space=""):
             ffmt = "{value:%s}{space}{pfix}"%fmt
             return ffmt.format(value=value, space=space, pfix=pfix, fmt=fmt)
         else:
-            return f"{value:f}".rstrip("0.")+space+pfix
+            string = f"{value:f}"
+            if "." in string:
+                string = string.rstrip("0")
+                string = string.rstrip(".")
+            return string + space + pfix

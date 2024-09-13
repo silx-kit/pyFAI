@@ -1,12 +1,46 @@
 :Author: Jérôme Kieffer
-:Date: 21/05/2024
+:Date: 12/09/2024
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2024.5 21/05/2024
------------------
+2024.09 12/09/2024
+------------------
+- New tutorials:
+  + On flatfield calculation from several detector position (ID31)
+  + On dynamic masks when using sigma-clipping (ID15a)
+- New feature in pilx: the tool to view diffraction map
+  + fix/unfix curves
+  + Colors improved
+  + motor position can ge registered
+- Other new feature:
+  + Expose orientation in calib2
+  + Extra comments in PONI-file like the calibration file if available
+  + implement sigma-clipping in pure cython with hybrid error-model
+  + New calibrant (Lysozyme for MX)& integration into calib2
+  + Absorption kwarg in sigma-clip was missing
+  + Engineering notation when printing pixel size
+  + New JSON format for integration configuration (backward compatible)
+  + Import CrystFEL geom-file and generate a detector + geometry
+  + GIWAXS and sigma-clip impose *no* pixel splitting
+  + Sigma-clipping is possible from the GUI and via config files
+  + Peakfinding: discard peaks with masked pixels in the local region
+- New detector: Jungfrau 1M (ID09)
+- Bug fixed:
+  + Close HDF5 files ASAP (risk of hitting the max number of file open)
+  + Bug in medfilt (empty ensemble)
+  + Several bugs fixed in worker (heavily used by ewoks)
+  + Correct some tutorials which had typos
+  + Orientation of interate2d results *legacy* vs *ng*
+  + Compatibility with Numpy2
+  + Compatibility with Eiger2+Lima2 multi-threshold files
+  + Compatibility with GCC14, discarded some deprecated code
+- Validated with Python 3.8-3.12
+
+
+2024.05 21/05/2024
+------------------
 - Implemented unweighted average for 2D integration
  + Integration engines now handle the boolean 'weighted_average' to switch to unweighted mean, similar to legacy methods
 - Implementation of pilx (pyFAI-diffmap-view command): interactive viewer for pyFAI-diffmap files (thanks Loic Huder)
@@ -19,16 +53,16 @@ Change-log of versions
 - Build system moved from bob to cibuildwheels
   + Windows wheels are build with openmp disabled
 
-2024.2 01/02/2024
------------------
+2024.02 01/02/2024
+------------------
 - Include grazing-incidence capabilities + tutorial (thanks Edgar)
 - Fix segmentation-fault in calib2 application #2047 (thanks Thomas & Edgar)
 - Use the dynamic mask to mask-out dead pixels in Eiger images in calib2
 - Extend Poisson+azimuthal uncertainties to all Cython integrators (+ non regression tests)
 - Support for Python 3.7-3.12 (requires silx v2 for 3.12)
 
-2024.1 18/01/2024
------------------
+2024.01 18/01/2024
+------------------
 - Possibility to define the detector orientation:
   + It is the position of the origin of the detector at any of the 4 corners of the image
   + Uses the EXIF nomenclature where pyFAI's (default) orientation is tagged *3*
