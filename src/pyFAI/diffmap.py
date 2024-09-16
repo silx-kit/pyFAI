@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/06/2024"
+__date__ = "16/09/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -601,8 +601,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                     self.process_one_frame(fimg.data)
                     if callable(callback):
                         callback(filename, i + 1)
-        t -= time.perf_counter()
-        print(f"Processing {os.path.basename(filename):30s} took {-1000*t:6.1f}ms ({fimg.nframes} frames)")
+            t -= time.perf_counter()
+            print(f"Processing {os.path.basename(filename):30s} took {-1000*t:6.1f}ms ({fimg.nframes} frames)")
         self.timing.append(-t)
         self.processed_file.append(filename)
 
