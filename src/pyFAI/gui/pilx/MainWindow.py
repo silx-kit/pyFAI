@@ -156,7 +156,7 @@ class MainWindow(qt.QMainWindow):
             try:
                 image_grp = h5file[path]
             except KeyError:
-                error_msg = f"Cannot access diffraction images at {path}: not such path."
+                error_msg = f"Cannot access diffraction images at {path}: no such path."
                 logging.warning(error_msg)
                 status_bar = self.statusBar()
                 if status_bar:
