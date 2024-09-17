@@ -152,7 +152,7 @@ class MainWindow(qt.QMainWindow):
             else:
                 self._offset = 0
 
-            # treat source dataset ...
+            # Find source dataset paths
             try:
                 image_grp = h5file[path]
             except KeyError:
