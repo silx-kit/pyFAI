@@ -119,16 +119,6 @@ class MainWindow(qt.QMainWindow):
                  ):
 
         self._file_name = os.path.abspath(file_name)
-
-        c=0
-        for i in dataset_path[-1::-1]:
-            if i.isdigit():
-                c+=1
-            else:
-                break
-
-        _dataset_path = dataset_path[:-c]
-        path, base = posixpath.split(_dataset_path)
         self._dataset_paths = {}
         self._nxprocess_path = nxprocess_path
 
@@ -153,6 +143,16 @@ class MainWindow(qt.QMainWindow):
                 self._offset = 0
 
             # Find source dataset paths
+            cnt = 0
+            for char in dataset_path[-1::-1]:
+                if char.isdigit():
+                    cnt += 1
+                else:
+                    break
+
+            _dataset_path = dataset_path[:-cnt]
+            path, base = posixpath.split(_dataset_path)
+
             try:
                 image_grp = h5file[path]
             except KeyError:
