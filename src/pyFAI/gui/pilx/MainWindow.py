@@ -33,7 +33,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/04/2024"
+__date__ = "17/09/2024"
 __status__ = "development"
 
 
@@ -41,6 +41,7 @@ from typing import Tuple
 import h5py
 import logging
 import os.path
+import posixpath
 from silx.gui import qt
 from silx.gui.colors import Colormap
 from silx.image.marchingsquares import find_contours
@@ -118,7 +119,7 @@ class MainWindow(qt.QMainWindow):
                  ):
 
         self._file_name = os.path.abspath(file_name)
-        self._dataset_path = dataset_path
+        self._dataset_paths = {}
         self._nxprocess_path = nxprocess_path
 
         self.sigFileChanged.emit(self._file_name)
@@ -140,6 +141,41 @@ class MainWindow(qt.QMainWindow):
                 self._offset = h5file[f"{self._nxprocess_path}/offset"][()]
             else:
                 self._offset = 0
+
+            # Find source dataset paths
+            cnt = 0
+            for char in dataset_path[-1::-1]:
+                if char.isdigit():
+                    cnt += 1
+                else:
+                    break
+
+            _dataset_path = dataset_path[:-cnt]
+            path, base = posixpath.split(_dataset_path)
+
+            try:
+                image_grp = h5file[path]
+            except KeyError:
+                error_msg = f"Cannot access diffraction images at {path}: no such path."
+                logging.warning(error_msg)
+                status_bar = self.statusBar()
+                if status_bar:
+                    status_bar.showMessage(error_msg)
+            else:
+                if not isinstance(image_grp, h5py.Group):
+                    error_msg = f"Cannot access diffraction images at {path}: not a group."
+                    logging.warning(error_msg)
+                    status_bar = self.statusBar()
+                    if status_bar:
+                        status_bar.showMessage(error_msg)
+                else:
+                    lst = []
+                    for key in image_grp:
+                        if key.startswith(base) and isinstance(image_grp[key], h5py.Dataset):
+                            lst.append(key)
+                    lst.sort()
+                    for key in lst:
+                        self._dataset_paths[posixpath.join(path, key)] = len(image_grp[key])
 
         self._radial_matrix = compute_radial_values(pyFAI_config_as_str)
         self._delta_radial_over_2 = delta_radial / 2
@@ -196,12 +232,16 @@ class MainWindow(qt.QMainWindow):
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
             map_shape = get_dataset(nxprocess, "result/intensity").shape
+            image_index = row * map_shape[1] + col + self._offset
+            for dataset_path, size in self._dataset_paths.items():
+                if image_index<size:
+                    break
+                else:
+                    image_index -= size
             try:
-                image_dset = get_dataset(h5file, self._dataset_path)
+                image_dset = get_dataset(h5file, dataset_path)
             except KeyError:
-                image_link = h5file.get(
-                    self._dataset_path, getlink=True
-                )
+                image_link = h5file.get(dataset_path, getlink=True)
                 error_msg = f"Cannot access diffraction images at {image_link}"
                 logging.warning(error_msg)
                 status_bar = self.statusBar()
@@ -209,7 +249,6 @@ class MainWindow(qt.QMainWindow):
                     status_bar.showMessage(error_msg)
                 return
 
-            image_index = row * map_shape[1] + col + self._offset
             if image_index >= len(image_dset):
                 return
 
@@ -229,7 +268,7 @@ class MainWindow(qt.QMainWindow):
 
         image_base = ImageBase(data=image, mask=mask_image)
         self._image_plot_widget.setImageData(image_base.getValueData())
-        self._image_plot_widget.setGraphTitle(f"Frame #{image_index}")
+        self._image_plot_widget.setGraphTitle(f"{posixpath.basename(dataset_path)} #{image_index}")
 
     def selectMapPoint(self, x: float, y: float):
         indices = self._map_plot_widget.getImageIndices(x, y)
