@@ -33,7 +33,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2024"
+__date__ = "17/09/2024"
 __status__ = "development"
 
 import numpy
@@ -45,7 +45,8 @@ from ..models import ROI_COLOR, ImageIndices
 
 _LEGEND = "IMAGE"
 
-DEFAULT_COLORMAP = Colormap(name="viridis")
+DEFAULT_COLORMAP = Colormap(name="viridis")  # TODO: grab the colormap from the application default
+
 
 class DiffractionImagePlotWidget(ImagePlotWidget):
 
