@@ -33,7 +33,7 @@ to the used backend.
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "15/10/2021"
+__date__ = "17/09/2024"
 
 import sys
 import logging
@@ -76,3 +76,6 @@ elif qt.BINDING == 'PyQt5':
 from matplotlib import pyplot  # noqa
 from matplotlib import pylab  # noqa
 from matplotlib import colors
+
+#differs from the silx one (no normalization)
+DEFAULT_MPL_COLORMAP = colors.Colormap(name="inferno")

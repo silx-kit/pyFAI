@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "17/09/2024"
 __status__ = "development"
 
 import logging
@@ -57,7 +57,8 @@ from .utils import projecturl
 from ..utils import get_ui_file
 from ..app import integrate
 from .. import containers
-from pyFAI.gui.utils.eventutils import QtProxifier
+from .utils.eventutils import QtProxifier
+from .utils.colorutils import DEFAULT_COLORMAP
 
 
 class _ThreadSafeIntegrationProcess(QtProxifier):
@@ -148,13 +149,12 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
             self._plot.setGraphXLabel("Radial")
             self._plot.setGraphYLabel("Azimuthal")
             origin, scale = computeLocation(result)
-            colormap = colors.Colormap("inferno", normalization=colors.Colormap.LOGARITHM)
             self._plot.addImage(
                 legend="result2d",
                 data=result.intensity,
                 origin=origin,
                 scale=scale,
-                colormap=colormap,
+                colormap=DEFAULT_COLORMAP,
                 resetzoom=False)
         else:
             logger.error("Unsupported result type %s", type(result))

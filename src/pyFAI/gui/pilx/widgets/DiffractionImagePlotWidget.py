@@ -38,14 +38,12 @@ __status__ = "development"
 
 import numpy
 from silx.gui.plot.items import ImageData
-from silx.gui.colors import Colormap
 
 from .ImagePlotWidget import ImagePlotWidget
 from ..models import ROI_COLOR, ImageIndices
+from ...utils.colorutils import DEFAULT_COLORMAP
 
 _LEGEND = "IMAGE"
-
-DEFAULT_COLORMAP = Colormap(name="viridis")  # TODO: grab the colormap from the application default
 
 
 class DiffractionImagePlotWidget(ImagePlotWidget):

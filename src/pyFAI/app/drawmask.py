@@ -33,7 +33,7 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "17/09/2024"
 __satus__ = "Production"
 
 import os
@@ -42,6 +42,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
+from argparse import ArgumentParser
+
 try:
     import hdf5plugin  # noqa
 except ImportError:
@@ -51,8 +53,9 @@ import fabio
 
 import silx.gui.plot
 from silx.gui import qt
-import pyFAI.utils
-from argparse import ArgumentParser
+from ..version import version as pyFAI_version, date as pyFAI_date
+from .. import utils
+from ..gui.utils.colorutils import DEFAULT_COLORMAP
 
 
 class AbstractMaskImageWidget(qt.QMainWindow):
@@ -104,17 +107,7 @@ class MaskImageWidget(AbstractMaskImageWidget):
         maskAction = self.__plot2D.getMaskAction()
         maskAction.setVisible(False)
         self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(plot=self.__plot2D)
-        try:
-            colormap = {
-                'name': "inferno",
-                'normalization': 'log',
-                'autoscale': True,
-                'vmax': None,
-                'vmin': None,
-            }
-            self.__plot2D.setDefaultColormap(colormap)
-        except Exception:
-            logger.error("Impossible to change the default colormap. Source code not compatible.", exc_info=True)
+        self.__plot2D.setDefaultColormap(DEFAULT_COLORMAP)
         self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
         self.__maskPanel.setMultipleMasks("single")
 
@@ -157,7 +150,7 @@ def postProcessId21(processFile, mask):
 
 def main():
     usage = "pyFAI-drawmask file1.edf file2.edf ..."
-    version = "pyFAI-average version %s from %s" % (pyFAI.version, pyFAI.date)
+    version = f"pyFAI-average version {pyFAI_version} from {pyFAI_date}"
     description = """
     Draw a mask, i.e. an image containing the list of pixels which are considered invalid
     (no scintillator, module gap, beam stop shadow, ...).
@@ -169,7 +162,7 @@ def main():
     Optionally the script will print the number of pixel masked
     and the intensity masked (as well on other files provided in input)"""
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
-    parser.add_argument("-v", "--version", action='version', version=version)
+    parser.add_argument("-v", "--version", action='version', version=pyFAI_version)
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
                         help="Files to be processed")
 
@@ -177,7 +170,7 @@ def main():
     if len(options.args) < 1:
         parser.error("Incorrect number of arguments: please provide an image to draw a mask")
 
-    processFile = pyFAI.utils.expand_args(options.args)
+    processFile = utils.expand_args(options.args)
 
     app = qt.QApplication([])
 
