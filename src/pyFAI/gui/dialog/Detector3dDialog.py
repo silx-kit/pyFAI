@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/12/2021"
+__date__ = "17/09/2024"
 
 import numpy
 import time
@@ -38,7 +38,7 @@ import html
 from silx.gui import qt
 from silx.gui.plot3d.items import mesh
 from silx.gui.plot3d.SceneWindow import SceneWindow
-from silx.gui import colors
+from ..utils.colorutils import DEFAULT_COLORMAP
 
 
 class CreateSceneThread(qt.QThread):
@@ -144,7 +144,7 @@ class CreateSceneThread(qt.QThread):
 
         colormap = self.__colormap
         if colormap is None:
-            colormap = colors.Colormap(name="inferno", normalization=colors.Colormap.LOGARITHM)
+            colormap = DEFAULT_COLORMAP
 
         item = mesh.ColormapMesh()
         item.moveToThread(qt.QApplication.instance().thread())
