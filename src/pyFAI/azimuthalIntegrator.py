@@ -1876,7 +1876,7 @@ class AzimuthalIntegrator(Geometry):
                                     polarization_factor=polarization_factor, dark=dark, flat=flat,
                                     method=method,
                                     normalization_factor=normalization_factor)
-    
+
     def integrate2d_fiber(self, data,
                           npt_horizontal, horizontal_unit=units.Q_IP, horizontal_unit_range=None,
                           npt_vertical=100, vertical_unit=units.Q_OOP, vertical_unit_range=None,
@@ -1938,7 +1938,7 @@ class AzimuthalIntegrator(Geometry):
                                       polarization_factor=None, dark=None, flat=None,
                                       method=("no", "histogram", "cython"),
                                       normalization_factor=1.0):
-        
+
         reset = False
 
         if isinstance(vertical_unit, units.UnitFiber):
