@@ -1879,7 +1879,7 @@ class AzimuthalIntegrator(Geometry):
 
     def integrate2d_fiber(self, data,
                           npt_horizontal, horizontal_unit=units.Q_IP, horizontal_unit_range=None,
-                          npt_vertical=100, vertical_unit=units.Q_OOP, vertical_unit_range=None,
+                          npt_vertical=1000, vertical_unit=units.Q_OOP, vertical_unit_range=None,
                           sample_orientation=None,
                           filename=None,
                           correctSolidAngle=True,
@@ -1930,7 +1930,7 @@ class AzimuthalIntegrator(Geometry):
 
     def integrate2d_grazing_incidence(self, data,
                                       npt_horizontal, horizontal_unit=units.Q_IP, horizontal_unit_range=None,
-                                      npt_vertical=100, vertical_unit=units.Q_OOP, vertical_unit_range=None,
+                                      npt_vertical=1000, vertical_unit=units.Q_OOP, vertical_unit_range=None,
                                       incident_angle=None, tilt_angle=None, sample_orientation=None,
                                       filename=None,
                                       correctSolidAngle=True,
