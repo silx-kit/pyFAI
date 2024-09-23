@@ -360,7 +360,7 @@ def setup_model(model, options):
         settings.wavelength().setValue(value)
 
     if options.polarization_factor:
-        settings.polarizationFactor(options.polarization_factor)
+        settings.polarizationFactor().setValue(options.polarization_factor)
 
     if options.detector_name:
         try:
