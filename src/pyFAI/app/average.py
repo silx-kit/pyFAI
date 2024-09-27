@@ -49,7 +49,7 @@ except ImportError:
 
 from ..utils import logging_utils, stringutil, shell
 from .. import average
-from .. import version as pyFAI_version, date as pyFAI_date
+from .. import version as pyFAI_version, date as pyFAI_date, utils
 
 
 def parse_algorithms(options):
@@ -145,7 +145,7 @@ def parse_writer(input_images, options, algorithms):
         "file_format": file_format,
     }
 
-    output = pyFAI.utils.stringutil.safe_format(template, formats)
+    output = utils.stringutil.safe_format(template, formats)
     return average.MultiFilesAverageWriter(output, file_format)
 
 
@@ -158,7 +158,7 @@ class ShellAverageObserver(average.AverageObserver):
 
     def image_loaded(self, fabio_image, image_index, images_count):
         if self.__bar is None:
-            self.__bar = pyFAI.utils.shell.ProgressBar("Loading", images_count, self.__size)
+            self.__bar = utils.shell.ProgressBar("Loading", images_count, self.__size)
         self.__bar.update(image_index, fabio_image.filename)
 
     def process_started(self):
@@ -175,7 +175,7 @@ class ShellAverageObserver(average.AverageObserver):
         if self.__bar is None:
             title = "Process %s" % algorithm.name
             self.__frames_count = frames_count + 1
-            self.__bar = pyFAI.utils.shell.ProgressBar(title, self.__frames_count, self.__size)
+            self.__bar = utils.shell.ProgressBar(title, self.__frames_count, self.__size)
         self.__bar.update(frame_index, "Feeding frames")
 
     def result_processing(self, algorithm):
@@ -273,15 +273,15 @@ def main(args=None):
         observer = None
 
     # Analyze arguments and options
-    images = pyFAI.utils.expand_args(options.args)
+    images = utils.expand_args(options.args)
 
     if options.flat:
-        flats = pyFAI.utils.expand_args([options.flat])
+        flats = utils.expand_args([options.flat])
     else:
         flats = None
 
     if options.dark:
-        darks = pyFAI.utils.expand_args([options.dark])
+        darks = utils.expand_args([options.dark])
     else:
         darks = None
 
