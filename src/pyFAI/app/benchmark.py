@@ -32,9 +32,10 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel, Edgar Gutierrez-Ferna
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/05/2024"
+__date__ = "27/09/2024"
 __status__ = "development"
 
+from argparse import ArgumentParser
 import logging
 try:
     logging.basicConfig(level=logging.WARNING, force=True)
@@ -52,16 +53,15 @@ try:
     rconsole.spawn_server()
 except ImportError:
     logger.debug("No socket opened for debugging. Please install rfoo")
-import pyFAI.benchmark
+from .. import benchmark, version as pyFAI_version, date as pyFAI_date
 
 
-def main():
-    from argparse import ArgumentParser
+def main(args=None):
     description = """Benchmark for Azimuthal integration
     """
     epilog = """  """
     usage = """benchmark [options] """
-    version = "pyFAI benchmark version " + pyFAI.version
+    version = f"pyFAI benchmark version {pyFAI_version}"
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-v", "--version", action='version', version=version)
     parser.add_argument("-d", "--debug",
@@ -117,7 +117,7 @@ def main():
                         action="store_true", dest="all", default=False,
                         help="Benchmark using all available methods and devices")
 
-    options = parser.parse_args()
+    options = parser.parse_args(args)
     if options.debug:
         pyFAI.logger.setLevel(logging.DEBUG)
 

@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "27/09/2024"
 
 import sys
 import unittest
@@ -78,14 +78,11 @@ class TestScriptsHelp(unittest.TestCase):
             _logger.debug("%s", err)
         self.assertEqual(p.returncode, 0)
 
-    def executeAppHelp(self, script_name, module_name):
-        script = UtilsTest.script_path(script_name, module_name)
+    def executeAppHelp(self, script_name, module_name, function="main", help="--help"):
+        script = f"import {module_name}; {module_name}.{function}(['{help}'])"
         env = UtilsTest.get_test_env()
-        if script.endswith(".exe"):
-            command_line = [script]
-        else:
-            command_line = [sys.executable, script]
-        command_line.append("--help")
+        command_line = [sys.executable, "-c", script]
+        print(command_line)
         self.executeCommandLine(command_line, env)
 
     def testDetector2Nexus(self):
@@ -109,8 +106,17 @@ class TestScriptsHelp(unittest.TestCase):
     def testPyfaiIntegrate(self):
         self.executeAppHelp("pyFAI-integrate", "pyFAI.app.integrate")
 
+    def testPeakfinder(self):
+        self.executeAppHelp("peakfinder", "pyFAI.app.peakfinder")
+
+    def testPilx(self):
+        self.executeAppHelp("pyFAI-diffmap-view", "pyFAI.app.pilx")
+
     def testPyfaiSaxs(self):
         self.executeAppHelp("pyFAI-saxs", "pyFAI.app.saxs")
+
+    def testSparsify(self):
+        self.executeAppHelp("sparsify-Bragg", "pyFAI.app.sparsify")
 
     def testPyfaiWaxs(self):
         self.executeAppHelp("pyFAI-waxs", "pyFAI.app.waxs")

@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2024"
+__date__ = "27/09/2024"
 __satus__ = "Production"
 
 import sys
@@ -46,18 +46,18 @@ try:
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
-from pyFAI.diffmap import DiffMap
+from ..diffmap import DiffMap
 
 
-def main():
+def main(args=None):
 
     dt = DiffMap()
-    options, config = dt.parse(with_config=True)
+    options, config = dt.parse(args, with_config=True)
 
     if options.gui:
         from silx.gui import qt
-        from pyFAI.gui.diffmap_widget import DiffMapWidget
-        from pyFAI.gui.ApplicationContext import ApplicationContext
+        from ..gui.diffmap_widget import DiffMapWidget
+        from ..gui.ApplicationContext import ApplicationContext
         settings = qt.QSettings(qt.QSettings.IniFormat,
                             qt.QSettings.UserScope,
                             "pyfai",

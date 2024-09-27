@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "27/09/2024"
 __status__ = "production"
 
 import os
@@ -47,10 +47,9 @@ try:
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
-import pyFAI.utils.shell
-from pyFAI.utils import logging_utils
-import pyFAI.utils.stringutil
-from pyFAI import average
+from ..utils import logging_utils, stringutil, shell
+from .. import average
+from .. import version as pyFAI_version, date as pyFAI_date
 
 
 def parse_algorithms(options):
@@ -199,9 +198,13 @@ class ShellAverageObserver(average.AverageObserver):
             self.__bar.display()
 
 
-def main():
+def main(args=None):
+    """start the program
+
+    :param args: list of arguments, i.e sys.argv[1:]
+    """
     usage = "pyFAI-average [options] [options] -o output.edf file1.edf file2.edf ..."
-    version = "pyFAI-average version %s from %s" % (pyFAI.version, pyFAI.date)
+    version = "pyFAI-average version %s from %s" % (pyFAI_version, pyFAI_date)
     description = """
     This tool can be used to average out a set of dark current images using
     mean or median filter (along the image stack). One can also reject outliers
@@ -248,7 +251,7 @@ def main():
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
                         help="Files to be processed")
 
-    options = parser.parse_args()
+    options = parser.parse_args(args)
 
     # logging
     if options.verbose is True:

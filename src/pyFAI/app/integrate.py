@@ -29,11 +29,11 @@
 
 """GUI tool for configuring azimuthal integration on series of files."""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2023"
+__date__ = "27/09/2024"
 __satus__ = "production"
 
 import sys
@@ -54,14 +54,11 @@ except ImportError:
 
 import fabio
 
-import pyFAI.utils
-import pyFAI.worker
-import pyFAI.io
-from pyFAI.io import DefaultAiWriter
-from pyFAI.io import HDF5Writer
-from pyFAI.utils.shell import ProgressBar
-from pyFAI.utils import logging_utils
-from pyFAI.utils import header_utils
+from .. import utils, worker, io, version as pyFAI_version, date as pyFAI_date
+from ..io import DefaultAiWriter, HDF5Writer
+from ..utils.shell import ProgressBar
+from ..utils import logging_utils, header_utils
+from ..worker import Worker
 
 try:
     from rfoo.utils import rconsole
@@ -73,12 +70,12 @@ except ImportError:
 
 def integrate_gui(options, args):
     from silx.gui import qt
-    from pyFAI.gui.IntegrationDialog import IntegrationDialog
-    from pyFAI.gui.IntegrationDialog import IntegrationProcess
+    from ..gui.IntegrationDialog import IntegrationDialog
+    from ..gui.IntegrationDialog import IntegrationProcess
 
     app = qt.QApplication([])
 
-    from pyFAI.gui.ApplicationContext import ApplicationContext
+    from ..gui.ApplicationContext import ApplicationContext
     settings = qt.QSettings(qt.QSettings.IniFormat,
                             qt.QSettings.UserScope,
                             "pyfai",
@@ -473,7 +470,7 @@ class DataSource(object):
             next_id += 1
 
 
-class MultiFileWriter(pyFAI.io.Writer):
+class MultiFileWriter(io.Writer):
     """Broadcast writing to differnet files for each frames"""
 
     def __init__(self, output_path, mode=HDF5Writer.MODE_ERROR):
@@ -611,7 +608,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
         # Create a null observer to avoid to deal with None
         observer = IntegrationObserver()
 
-    worker = pyFAI.worker.Worker()
+    worker = Worker()
     worker_config = config.copy()
 
     json_monitor_name = worker_config.pop("monitor_name", None)
@@ -772,7 +769,7 @@ def _main(args):
     :rtype: int
     """
     usage = "pyFAI-integrate [options] file1.edf file2.edf ..."
-    version = "pyFAI-integrate version %s from %s" % (pyFAI.version, pyFAI.date)
+    version = "pyFAI-integrate version %s from %s" % (pyFAI_version, pyFAI_date)
     description = """
     PyFAI-integrate is a graphical interface (based on Python/Qt4) to perform azimuthal integration
 on a set of files. It exposes most of the important options available within pyFAI and allows you
@@ -863,8 +860,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     return result
 
 
-def main():
-    args = sys.argv[1:]
+def main(args=None):
     result = _main(args)
     sys.exit(result)
 
