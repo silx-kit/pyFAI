@@ -91,7 +91,7 @@ def integrate_gui(options, args):
 
     def validateConfig():
         config = window.get_config()
-        reason = pyFAI.worker.Worker.validate_config(config, raise_exception=None)
+        reason = Worker.validate_config(config, raise_exception=None)
         if reason is None:
             processData(config)
         else:
@@ -105,7 +105,7 @@ def integrate_gui(options, args):
             dialog = qt.QFileDialog(directory=os.getcwd())
             dialog.setWindowTitle("Select images to integrate")
 
-            from pyFAI.gui.utils import FilterBuilder
+            from ..gui.utils import FilterBuilder
             builder = FilterBuilder.FilterBuilder()
             builder.addImageFormat("EDF image files", "edf")
             builder.addImageFormat("TIFF image files", "tif tiff")
@@ -769,7 +769,7 @@ def _main(args):
     :rtype: int
     """
     usage = "pyFAI-integrate [options] file1.edf file2.edf ..."
-    version = "pyFAI-integrate version %s from %s" % (pyFAI_version, pyFAI_date)
+    version = f"pyFAI-integrate version {pyFAI_version} from {pyFAI_date}"
     description = """
     PyFAI-integrate is a graphical interface (based on Python/Qt4) to perform azimuthal integration
 on a set of files. It exposes most of the important options available within pyFAI and allows you
@@ -834,7 +834,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     options = parser.parse_args(args)
 
     # Analysis arguments and options
-    args = pyFAI.utils.expand_args(options.args)
+    args = utils.expand_args(options.args)
     args = sorted(args)
 
     if options.verbose:

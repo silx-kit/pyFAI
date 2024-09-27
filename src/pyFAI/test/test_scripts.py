@@ -79,8 +79,10 @@ class TestScriptsHelp(unittest.TestCase):
         self.assertEqual(p.returncode, 0)
 
     def executeAppHelp(self, script_name, module_name, function="main", help="--help"):
+        _logger.info("in executeAppHelp")
         script = f"import {module_name}; {module_name}.{function}(['{help}'])"
         env = UtilsTest.get_test_env()
+        _logger.info(script)
         command_line = [sys.executable, "-c", script]
         print(command_line)
         self.executeCommandLine(command_line, env)
