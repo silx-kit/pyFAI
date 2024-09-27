@@ -38,7 +38,7 @@ import sys
 import unittest
 import logging
 import subprocess
-from pyFAI.test.utilstest import UtilsTest
+from ..test.utilstest import test_options
 
 _logger = logging.getLogger(__name__)
 
@@ -79,12 +79,10 @@ class TestScriptsHelp(unittest.TestCase):
         self.assertEqual(p.returncode, 0)
 
     def executeAppHelp(self, script_name, module_name, function="main", help="--help"):
-        _logger.info("in executeAppHelp")
         script = f"import {module_name}; {module_name}.{function}(['{help}'])"
-        env = UtilsTest.get_test_env()
+        env = test_options.get_test_env()
         _logger.info(script)
         command_line = [sys.executable, "-c", script]
-        print(command_line)
         self.executeCommandLine(command_line, env)
 
     def testDetector2Nexus(self):
@@ -102,15 +100,18 @@ class TestScriptsHelp(unittest.TestCase):
     def testPyfaiAverage(self):
         self.executeAppHelp("pyFAI-average", "pyFAI.app.average")
 
+    @unittest.skipIf(not test_options.gui, "no GUI")
     def testPyfaiBenchmark(self):
         self.executeAppHelp("pyFAI-benchmark", "pyFAI.app.benchmark")
 
+    @unittest.skipIf(not test_options.gui, "no GUI")
     def testPyfaiIntegrate(self):
         self.executeAppHelp("pyFAI-integrate", "pyFAI.app.integrate")
 
     def testPeakfinder(self):
         self.executeAppHelp("peakfinder", "pyFAI.app.peakfinder")
 
+    @unittest.skipIf(not test_options.gui, "no GUI")
     def testPilx(self):
         self.executeAppHelp("pyFAI-diffmap-view", "pyFAI.app.pilx")
 
@@ -122,6 +123,25 @@ class TestScriptsHelp(unittest.TestCase):
 
     def testPyfaiWaxs(self):
         self.executeAppHelp("pyFAI-waxs", "pyFAI.app.waxs")
+
+    @unittest.skipIf(not test_options.gui, "no GUI")
+    def testCheckCalib(self):
+        self.executeAppHelp("check_calib", "pyFAI.app.check_calib")
+
+    def testMxcalibrate(self):
+        self.executeAppHelp("MX-calibrate", "pyFAI.app.mx_calibrate")
+
+    @unittest.skipIf(not test_options.gui, "no GUI")
+    def testPyfaiCalib(self):
+        self.executeAppHelp("pyFAI-calib", "pyFAI.app.calib")
+
+    @unittest.skipIf(not test_options.gui, "no GUI")
+    def testPyfaiDrawmask(self):
+        self.executeAppHelp("pyFAI-drawmask", "pyFAI.app.drawmask")
+
+    @unittest.skipIf(not test_options.gui, "no GUI")
+    def testPyfaiRecalib(self):
+        self.executeAppHelp("pyFAI-recalib", "pyFAI.app.recalib")
 
 
 def suite():
