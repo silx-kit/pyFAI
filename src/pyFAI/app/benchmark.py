@@ -53,7 +53,7 @@ try:
     rconsole.spawn_server()
 except ImportError:
     logger.debug("No socket opened for debugging. Please install rfoo")
-from .. import benchmark, version as pyFAI_version, date as pyFAI_date
+from .. import benchmark, version as pyFAI_version, date as pyFAI_date, logger as pyFAI_logger
 
 
 def main(args=None):
@@ -119,7 +119,7 @@ def main(args=None):
 
     options = parser.parse_args(args)
     if options.debug:
-        pyFAI.logger.setLevel(logging.DEBUG)
+        pyFAI_logger.setLevel(logging.DEBUG)
 
     devices = []
     if options.opencl_cpu:
@@ -129,23 +129,22 @@ def main(args=None):
     if options.opencl_acc:
         devices.append("acc")
 
-    pyFAI.benchmark.run(number=options.number,
-                        repeat=options.repeat,
-                        memprof=options.memprof,
-                        max_size=options.size,
-                        do_1d=options.onedim,
-                        do_2d=options.twodim,
-                        processor=options.processor,
-                        devices=devices,
-                        split_list=options.pixelsplit,
-                        algo_list=options.algorithm,
-                        impl_list=options.implementation,
-                        function=options.function,
-                        all=options.all,
-                        )
+    benchmark.run(number=options.number,
+                  repeat=options.repeat,
+                  memprof=options.memprof,
+                  max_size=options.size,
+                  do_1d=options.onedim,
+                  do_2d=options.twodim,
+                  processor=options.processor,
+                  devices=devices,
+                  split_list=options.pixelsplit,
+                  algo_list=options.algorithm,
+                  impl_list=options.implementation,
+                  function=options.function,
+                  all=options.all)
 
-    if pyFAI.benchmark.pylab is not None:
-        pyFAI.benchmark.pylab.ion()
+    if benchmark.pylab is not None:
+        benchmark.pylab.ion()
     input("Enter to quit")
 
 
