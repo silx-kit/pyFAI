@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "28/09/2024"
 
 import sys
 import unittest
@@ -67,10 +67,10 @@ class TestScriptsHelp(unittest.TestCase):
             pass
 
         if p.returncode != 0:
-            _logger.info("stdout:")
-            _logger.info("%s", out)
-            _logger.info("stderr:")
-            _logger.info("%s", err)
+            _logger.warning("stdout:")
+            _logger.warning("%s", out)
+            _logger.warning("stderr:")
+            _logger.warning("%s", err)
         else:
             _logger.debug("stdout:")
             _logger.debug("%s", out)
