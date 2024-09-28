@@ -14,3 +14,4 @@ numexpr != 2.8.6
 silx >= 2
 psutil
 importlib_resources; python_version < '3.9'
+pyqt5
