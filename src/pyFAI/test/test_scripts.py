@@ -128,6 +128,7 @@ class TestScriptsHelp(unittest.TestCase):
     def testCheckCalib(self):
         self.executeAppHelp("check_calib", "pyFAI.app.check_calib")
 
+    @unittest.skipIf(not test_options.gui, "no GUI")
     def testMxcalibrate(self):
         self.executeAppHelp("MX-calibrate", "pyFAI.app.mx_calibrate")
 
