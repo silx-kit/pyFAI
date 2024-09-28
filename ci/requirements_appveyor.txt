@@ -15,3 +15,4 @@ silx >= 2
 psutil
 importlib_resources; python_version < '3.9'
 pyqt5
+pyopengl
