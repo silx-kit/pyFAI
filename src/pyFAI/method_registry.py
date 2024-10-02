@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2024"
+__date__ = "02/10/2024"
 __status__ = "development"
 
 import inspect
@@ -386,7 +386,7 @@ class IntegrationMethod:
                  old_method=None, extra=None):
         """Constructor of the class, registering the methods.
 
-        /!\ DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI
+        ⚠ DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI ⚠
 
 
         :param dim: 1 or 2 integration engine
