@@ -1884,7 +1884,7 @@ class AzimuthalIntegrator(Geometry):
         if reset:
             self.reset()
             logger.info(f"AzimuthalIntegrator was reset. Current grazing parameters: incident_angle: {incident_angle}, tilt_angle: {tilt_angle}, sample_orientation: {sample_orientation}.")
-            
+
         return self.integrate_fiber(data=data,
                                     npt_output=npt_output, output_unit=output_unit, output_unit_range=output_unit_range,
                                     npt_integrated=npt_integrated, integrated_unit=integrated_unit, integrated_unit_range=integrated_unit_range,
