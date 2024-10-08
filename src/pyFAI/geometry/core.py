@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/02/2024"
+__date__ = "08/10/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -117,6 +117,13 @@ class Geometry(object):
         :language: mathematica
     """
     _LAST_POLARIZATION = "last_polarization"
+
+    # transfer numerical values of the class
+    SCALARS = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
+               "chiDiscAtPi", "_wavelength",
+               '_oversampling', '_correct_solid_angle_for_spline',
+               '_transmission_normal']
+
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None,
@@ -2079,18 +2086,33 @@ class Geometry(object):
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
+    def promote(self, klass_name="pyFAI.azimuthalIntegrator.AzimuthalIntegrator"):
+        """ Promote this instance into one of its derived class another one
+
+        :param klass: Fully qualified name of the class to promote to
+        :return: class instance which derives from Geometry
+
+        Likely to raise ImportError/RuntimeError
+        """
+        import importlib
+        modules = klass_name.split(".")
+        module_name = ".".join(modules[:-1])
+        module = importlib.import_module(module_name)
+        klass = module.__getattribute__(modules[-1])
+        if klass.__mro__[-2] == self.__class__.__mro__[-2]:
+            "Ensure the provided class actually derives from Geometry"
+            new = klass(detector=self.detector.__copy__())
+            for key in self.SCALARS:
+                new.__setattr__(key, self.__getattribute__(key))
+        else:
+            raise RuntimeError("Bad FQN class, it must be a Geometry derivative")
+        return new
+
     def __copy__(self):
         """:return: a shallow copy of itself.
         """
         new = self.__class__(detector=self.detector)
-        # transfer numerical values:
-        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_wavelength",
-                     '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_normal',
-                     ]
-        # array = []
-        for key in numerical:
+        for key in self.SCALARS:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
@@ -2101,11 +2123,6 @@ class Geometry(object):
         """deep copy
         :param memo: dict with modified objects
         :return: a deep copy of itself."""
-        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_dssa_order", "_wavelength",
-                     '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_normal',
-                     ]
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -2113,7 +2130,7 @@ class Geometry(object):
         new_det = self.detector.__deepcopy__(memo)
         new.detector = new_det
 
-        for key in numerical:
+        for key in self.SCALARS:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
