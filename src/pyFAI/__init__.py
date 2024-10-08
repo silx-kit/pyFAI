@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "18/12/2023"
+__date__ = "28/09/2024"
 
 import sys
 import os
@@ -39,10 +39,10 @@ if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
 from .version import __date__ as date
 from .version import version, version_info, hexversion, strictversion, citation, calc_hexversion
 
+logger = logging.getLogger(__name__)
 if sys.version_info < (3, 7):
-    logger = logging.getLogger(__name__)
     logger.error("pyFAI required a python version >= 3.7")
-    raise RuntimeError("pyFAI required a python version >= 3.7, now we are running: %s" % sys.version)
+    raise RuntimeError(f"pyFAI required a python version >= 3.7, now we are running: {sys.version}")
 
 from .utils import decorators
 

@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "27/09/2024"
 __status__ = "production"
 
 import os
@@ -54,6 +54,8 @@ import signal
 import gc
 from collections import OrderedDict, namedtuple
 import numexpr
+from threading import Thread, Semaphore, Event
+from queue import Queue, Empty
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -75,8 +77,6 @@ else:
     from ..opencl.peak_finder import OCL_PeakFinder
 from ..utils.shell import ProgressBar
 from ..io.spots import save_spots_nexus, save_spots_cxi
-from threading import Thread, Semaphore, Event
-from queue import Queue, Empty
 
 # Define few constants:
 EXIT_SUCCESS = 0
@@ -236,7 +236,7 @@ def expand_args(args):
     return new
 
 
-def parse():
+def parse(args=None):
     epilog = "Current status of the program: " + __status__
     parser = argparse.ArgumentParser(prog="peakfinder",
                                      description=__doc__,
@@ -334,7 +334,7 @@ def parse():
     group.add_argument("--device-type", type=str, default="all",
                        help="device type like `cpu` or `gpu` or `acc`. Can help to select the proper device.")
     try:
-        args = parser.parse_args()
+        args = parser.parse_args(args)
 
         if args.debug:
             logger.setLevel(logging.DEBUG)
@@ -491,8 +491,8 @@ def process(options):
     return EXIT_ARGUMENT_FAILURE if abort.is_set() else EXIT_SUCCESS
 
 
-def main():
-    options = parse()
+def main(args=None):
+    options = parse(args)
     if options == EXIT_ARGUMENT_FAILURE:
         sys.exit(EXIT_ARGUMENT_FAILURE)
     res = process(options)

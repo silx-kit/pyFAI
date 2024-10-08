@@ -28,17 +28,14 @@
 #  THE SOFTWARE.
 
 """Converts a detector description into a NeXus detector usable by other pyFAI utilities"""
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "27/09/2024"
 __status__ = "development"
 
 import sys
-import numpy
-import fabio
-import pyFAI
 from argparse import ArgumentParser
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -48,11 +45,14 @@ try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
+import numpy
+import fabio
+from .. import version as pyFAI_version, date as pyFAI_date
+from ..detectors import detector_factory
 
-
-def main():
+def main(args=None):
     usage = "detector2nexus [options] [options] -o nxs.h5"
-    version = "detector2nexus version %s from %s" % (pyFAI.version, pyFAI.date)
+    version = "detector2nexus version %s from %s" % (pyFAI_version, pyFAI_date)
     description = """
     Convert a complex detector definition (multiple modules, possibly in 3D)
     into a single NeXus detector definition together with the mask (and much more in the future)
@@ -94,19 +94,22 @@ def main():
     # parser.add_argument("args", metavar='FILE', type=str, nargs='+',
     #                     help="Files to be processed")
 
-    argv = sys.argv
+    if args is None:
+        argv = sys.argv[1:]
+    else:
+        argv = args
     # hidden backward compatibility for -dx and -dy
     # A short option only expect a single char
     argv = ["-" + a if a.startswith("-dx") else a for a in argv]
     argv = ["-" + a if a.startswith("-dy") else a for a in argv]
-    options = parser.parse_args(args=argv[1:])
+    options = parser.parse_args(args=argv)
 
     if options.verbose:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
 
-    detector = pyFAI.detector_factory(options.detector)
+    detector = detector_factory(options.detector)
     if options.output:
         output = options.output
     else:

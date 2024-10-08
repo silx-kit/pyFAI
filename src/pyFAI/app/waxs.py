@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "27/09/2024"
 __status__ = "production"
 
 import os
@@ -50,18 +50,16 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 import fabio
 
-from pyFAI import date, version as pyFAI_version
-from pyFAI import units
-from pyFAI import utils
-from pyFAI.average import average_dark
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
-from pyFAI.method_registry import IntegrationMethod
+from .. import date as pyFAI_date, version as pyFAI_version, units, utils
+from ..average import average_dark
+from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..method_registry import IntegrationMethod
 hc = units.hc
 
 
-def main():
+def main(args=None):
     usage = "pyFAI-waxs [options] -p ponifile file1.edf file2.edf ..."
-    version = "pyFAI-waxs version %s from %s" % (pyFAI_version, date)
+    version = "pyFAI-waxs version %s from %s" % (pyFAI_version, pyFAI_date)
     description = "Azimuthal integration for powder diffraction."
     epilog = """pyFAI-waxs is the script of pyFAI that allows data reduction
     (azimuthal integration) for Wide Angle Scattering to produce X-Ray Powder
@@ -128,7 +126,7 @@ def main():
                         default=False, action="store_true",
                         help="Perform 2D integration in addition to 1D")
 
-    options = parser.parse_args()
+    options = parser.parse_args(args)
     if len(options.args) < 1:
         logger.error("incorrect number of arguments")
 
