@@ -2088,35 +2088,42 @@ class Geometry(object):
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
-    def promote(self, klass_name="pyFAI.azimuthalIntegrator.AzimuthalIntegrator"):
+    def promote(self, type_="pyFAI.azimuthalIntegrator.AzimuthalIntegrator", kwargs=None):
         """Promote this instance into one of its derived class (deep copy like)
 
-        :param klass: Fully qualified name of the class to promote to
-        :return: class instance which derives from Geometry
+        :param type_: Fully qualified name of the class to promote to, or the class itself
+        :param kwargs: extra kwargs to be passed to the class constructor
+        :return: class instance which derives from Geometry with the same config as the current instance
 
         Likely to raise ImportError/ValueError
         """
         GeometryClass = self.__class__.__mro__[-2]  # actually pyFAI.geometry.core.Geometry
-        if isinstance(klass_name, str):
+        if isinstance(type_, str):
             import importlib
-            modules = klass_name.split(".")
+            modules = type_.split(".")
             module_name = ".".join(modules[:-1])
             module = importlib.import_module(module_name)
             klass = module.__getattribute__(modules[-1])
-        elif isinstance(klass_name, type):
-            klass = klass_name
+        elif isinstance(type_, type):
+            klass = type_
         else:
-            raise ValueError("klass_name must be a class (or a fully qualified class name) of a Geometry derivative")
+            raise ValueError("`type_` must be a class (or a fully qualified class name) of a Geometry derived class")
 
+        if kwargs = None:
+            kwargs = {}
+        else:
+            kwargs = copy.copy(kwargs)
         with self._sem:
             if klass.__mro__[-2] == GeometryClass:
                 "Ensure the provided class actually derives from Geometry"
-                new = klass(detector=copy.deepcopy(self.detector))
+                kwargs["detector"] = copy.deepcopy(self.detector)
+                new = klass(**kwargs)
             else:
                 raise ValueError("Bad FQN class, it must be a Geometry derivative")
 
             for key in self._UNMUTABLE_ATTRS:
                 new.__setattr__(key, self.__getattribute__(key))
+        # TODO: replace param with a property, see #2300
         new.param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
         return new
