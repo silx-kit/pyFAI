@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2024"
+__date__ = "09/10/2024"
 
 import unittest
 import random
@@ -516,6 +516,18 @@ class TestGeometry(utilstest.ParametricTestCase):
         g.energy = 12.4
         self.assertAlmostEqual(g.wavelength, 1e-10, msg="energy conversion works", delta=1e-13)
         self.assertAlmostEqual(g.energy, 12.4, 10, msg="energy conversion is stable")
+
+    def test_promotion(self):
+        g = geometry.Geometry.sload({"detector":"pilatus200k", "poni1":0.05, "poni2":0.06})
+        idmask = id(g.detector.mask)
+        ai = g.promote()
+        self.assertEqual(type(ai).__name__, "AzimuthalIntegrator", "Promote to AzimuthalIntegrator by default")
+        gr = g.promote("pyFAI.geometryRefinement.GeometryRefinement")
+        self.assertEqual(type(gr).__name__, "GeometryRefinement", "Promote to GeometryRefinement when requested")
+        gr = ai.promote("pyFAI.geometryRefinement.GeometryRefinement")
+        self.assertEqual(type(gr).__name__, "GeometryRefinement", "Promote to GeometryRefinement when requested")
+        self.assertNotEqual(id(ai.detector.mask), idmask, "detector mutable attributes got duplicated")
+
 
 
 class TestCalcFrom(unittest.TestCase):
