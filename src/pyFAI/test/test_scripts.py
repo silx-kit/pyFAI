@@ -32,13 +32,13 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "28/09/2024"
 
 import sys
 import unittest
 import logging
 import subprocess
-from pyFAI.test.utilstest import UtilsTest
+from ..test.utilstest import test_options
 
 _logger = logging.getLogger(__name__)
 
@@ -67,10 +67,10 @@ class TestScriptsHelp(unittest.TestCase):
             pass
 
         if p.returncode != 0:
-            _logger.info("stdout:")
-            _logger.info("%s", out)
-            _logger.info("stderr:")
-            _logger.info("%s", err)
+            _logger.warning("stdout:")
+            _logger.warning("%s", out)
+            _logger.warning("stderr:")
+            _logger.warning("%s", err)
         else:
             _logger.debug("stdout:")
             _logger.debug("%s", out)
@@ -78,14 +78,11 @@ class TestScriptsHelp(unittest.TestCase):
             _logger.debug("%s", err)
         self.assertEqual(p.returncode, 0)
 
-    def executeAppHelp(self, script_name, module_name):
-        script = UtilsTest.script_path(script_name, module_name)
-        env = UtilsTest.get_test_env()
-        if script.endswith(".exe"):
-            command_line = [script]
-        else:
-            command_line = [sys.executable, script]
-        command_line.append("--help")
+    def executeAppHelp(self, script_name, module_name, function="main", help="--help"):
+        script = f"import {module_name}; {module_name}.{function}(['{help}'])"
+        env = test_options.get_test_env()
+        _logger.info(script)
+        command_line = [sys.executable, "-c", script]
         self.executeCommandLine(command_line, env)
 
     def testDetector2Nexus(self):
@@ -103,17 +100,49 @@ class TestScriptsHelp(unittest.TestCase):
     def testPyfaiAverage(self):
         self.executeAppHelp("pyFAI-average", "pyFAI.app.average")
 
+    @unittest.skipIf(not test_options.gui, "no GUI")
     def testPyfaiBenchmark(self):
         self.executeAppHelp("pyFAI-benchmark", "pyFAI.app.benchmark")
 
+    @unittest.skipIf(not test_options.gui, "no GUI")
     def testPyfaiIntegrate(self):
         self.executeAppHelp("pyFAI-integrate", "pyFAI.app.integrate")
+
+    def testPeakfinder(self):
+        self.executeAppHelp("peakfinder", "pyFAI.app.peakfinder")
+
+    @unittest.skipIf(not test_options.gui, "no GUI")
+    def testPilx(self):
+        self.executeAppHelp("pyFAI-diffmap-view", "pyFAI.app.pilx")
 
     def testPyfaiSaxs(self):
         self.executeAppHelp("pyFAI-saxs", "pyFAI.app.saxs")
 
+    def testSparsify(self):
+        self.executeAppHelp("sparsify-Bragg", "pyFAI.app.sparsify")
+
     def testPyfaiWaxs(self):
         self.executeAppHelp("pyFAI-waxs", "pyFAI.app.waxs")
+
+    @unittest.skipIf(not test_options.gui, "no GUI")
+    def testCheckCalib(self):
+        self.executeAppHelp("check_calib", "pyFAI.app.check_calib")
+
+    @unittest.skipIf(not test_options.gui, "no GUI")
+    def testMxcalibrate(self):
+        self.executeAppHelp("MX-calibrate", "pyFAI.app.mx_calibrate")
+
+    @unittest.skipIf(not test_options.gui, "no GUI")
+    def testPyfaiCalib(self):
+        self.executeAppHelp("pyFAI-calib", "pyFAI.app.calib")
+
+    @unittest.skipIf(not test_options.gui, "no GUI")
+    def testPyfaiDrawmask(self):
+        self.executeAppHelp("pyFAI-drawmask", "pyFAI.app.drawmask")
+
+    @unittest.skipIf(not test_options.gui, "no GUI")
+    def testPyfaiRecalib(self):
+        self.executeAppHelp("pyFAI-recalib", "pyFAI.app.recalib")
 
 
 def suite():

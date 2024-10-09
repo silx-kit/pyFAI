@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/09/2024"
+__date__ = "27/09/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -143,7 +143,7 @@ class DiffMap(object):
         Parse options from command line in order to setup the object.
         Does not configure the worker, please use
 
-        :param sysargv: list of arguments passed on the command line (mostly for debug/test)
+        :param sysargv: list of arguments passed on the command line (mostly for debug/test), first element removed
         :param with_config: parse also the config (as another dict) and return (options, config)
         :return: options, a dictionary able to setup a DiffMapWidget
         """

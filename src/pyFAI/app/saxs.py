@@ -28,11 +28,11 @@
 #  THE SOFTWARE.
 #
 """Integrate 2D images into SAXS patterns. Also used in PDF measurements"""
-__author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
+__author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "27/09/2024"
 __status__ = "production"
 
 import os
@@ -49,17 +49,16 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 import fabio
-from pyFAI import date, version as pyFAI_version
-from pyFAI import units
-from pyFAI import utils
-from pyFAI.method_registry import IntegrationMethod
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+
+from .. import date as pyFAI_date, version as pyFAI_version, units, utils
+from ..method_registry import IntegrationMethod
+from ..azimuthalIntegrator import AzimuthalIntegrator
 hc = units.hc
 
 
-def main():
+def main(args=None):
     usage = "pyFAI-saxs [options] -n 1000 -p ponifile file1.edf file2.edf ..."
-    version = "PyFAI-saxs version %s from %s " % (pyFAI_version, date)
+    version = "PyFAI-saxs version %s from %s " % (pyFAI_version, pyFAI_date)
     description = """Azimuthal integration for SAXS users."""
     epilog = """pyFAI-saxs is the SAXS script of pyFAI that allows data
     reduction (azimuthal integration) for Small Angle Scattering with output
@@ -115,7 +114,7 @@ def main():
                         type=str, default=None,
                         help="Integration method ")
 
-    options = parser.parse_args()
+    options = parser.parse_args(args)
     if len(options.args) < 1:
         logger.error("incorrect number of arguments")
     to_process = utils.expand_args(options.args)

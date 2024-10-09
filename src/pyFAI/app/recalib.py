@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "27/09/2024"
 __satus__ = "development"
 
 import logging
@@ -44,7 +44,7 @@ try:
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
-from pyFAI.gui.cli_calibration import Recalibration
+from ..gui.cli_calibration import Recalibration
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
@@ -52,9 +52,9 @@ except ImportError:
     logger.debug("No socket opened for debugging -> install rfoo")
 
 
-def main():
+def main(args=None):
     c = Recalibration()
-    c.parse()
+    c.parse(args)
     c.preprocess()
     c.extract_cpt("blob")
     c.refine()
