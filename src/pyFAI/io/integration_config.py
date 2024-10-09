@@ -38,7 +38,7 @@ import logging
 from . import ponifile
 from .. import detectors
 from .. import method_registry
-from ..integrator import load_engines
+from ..integrator import load_engines as load_integrators
 
 _logger = logging.getLogger(__name__)
 
