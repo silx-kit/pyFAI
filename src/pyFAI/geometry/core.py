@@ -36,14 +36,15 @@ detector and transform it. It is rather a description of the experimental setup.
 
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2024"
+__date__ = "09/10/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import copy
 import logging
 from math import pi
 twopi = 2 * pi
@@ -118,11 +119,11 @@ class Geometry(object):
     """
     _LAST_POLARIZATION = "last_polarization"
 
-    # transfer numerical values of the class
-    SCALARS = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-               "chiDiscAtPi", "_wavelength",
-               '_oversampling', '_correct_solid_angle_for_spline',
-               '_transmission_normal']
+    # To ease the copy of an instance. Mutable attributes are caches which are regenerated on use
+    _UNMUTABLE_ATTRS = ("_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
+                        "chiDiscAtPi", "_wavelength", "_dssa_order",
+                        '_oversampling', '_correct_solid_angle_for_spline',
+                        '_transmission_normal')
 
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
@@ -169,7 +170,8 @@ class Geometry(object):
                       self._rot1, self._rot2, self._rot3]
         self.chiDiscAtPi = True  # chi discontinuity (radians), pi by default
         self._cached_array = {}  # dict for caching all arrays
-        self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
+        self._dssa_order = 3  # Used to be 1 (False) in very old version of pyFAI: was a bug.
+        # The correct value is 3 where 2 come from the apparant pixels area and 1 from the incidence angle.
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
@@ -2087,32 +2089,43 @@ class Geometry(object):
         return calcimage
 
     def promote(self, klass_name="pyFAI.azimuthalIntegrator.AzimuthalIntegrator"):
-        """ Promote this instance into one of its derived class another one
+        """Promote this instance into one of its derived class (deep copy like)
 
         :param klass: Fully qualified name of the class to promote to
         :return: class instance which derives from Geometry
 
-        Likely to raise ImportError/RuntimeError
+        Likely to raise ImportError/ValueError
         """
-        import importlib
-        modules = klass_name.split(".")
-        module_name = ".".join(modules[:-1])
-        module = importlib.import_module(module_name)
-        klass = module.__getattribute__(modules[-1])
-        if klass.__mro__[-2] == self.__class__.__mro__[-2]:
-            "Ensure the provided class actually derives from Geometry"
-            new = klass(detector=self.detector.__copy__())
-            for key in self.SCALARS:
-                new.__setattr__(key, self.__getattribute__(key))
+        GeometryClass = self.__class__.__mro__[-2]  # actually pyFAI.geometry.core.Geometry
+        if isinstance(klass_name, str):
+            import importlib
+            modules = klass_name.split(".")
+            module_name = ".".join(modules[:-1])
+            module = importlib.import_module(module_name)
+            klass = module.__getattribute__(modules[-1])
+        elif isinstance(klass_name, type):
+            klass = klass_name
         else:
-            raise RuntimeError("Bad FQN class, it must be a Geometry derivative")
+            raise ValueError("klass_name must be a class (or a fully qualified class name) of a Geometry derivative")
+
+        with self._sem:
+            if klass.__mro__[-2] == GeometryClass:
+                "Ensure the provided class actually derives from Geometry"
+                new = klass(detector=copy.deepcopy(self.detector))
+            else:
+                raise ValueError("Bad FQN class, it must be a Geometry derivative")
+
+            for key in self._UNMUTABLE_ATTRS:
+                new.__setattr__(key, self.__getattribute__(key))
+        new.param = [new._dist, new._poni1, new._poni2,
+                     new._rot1, new._rot2, new._rot3]
         return new
 
     def __copy__(self):
         """:return: a shallow copy of itself.
         """
         new = self.__class__(detector=self.detector)
-        for key in self.SCALARS:
+        for key in self._UNMUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
@@ -2130,7 +2143,7 @@ class Geometry(object):
         new_det = self.detector.__deepcopy__(memo)
         new.detector = new_det
 
-        for key in self.SCALARS:
+        for key in self._UNMUTABLE_ATTRS:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
