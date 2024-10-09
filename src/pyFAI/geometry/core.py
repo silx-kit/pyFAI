@@ -2109,7 +2109,7 @@ class Geometry(object):
         else:
             raise ValueError("`type_` must be a class (or a fully qualified class name) of a Geometry derived class")
 
-        if kwargs = None:
+        if kwargs == None:
             kwargs = {}
         else:
             kwargs = copy.copy(kwargs)
