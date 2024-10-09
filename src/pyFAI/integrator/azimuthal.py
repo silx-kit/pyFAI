@@ -51,10 +51,10 @@ from ..io.ponifile import PoniFile
 error = None
 from ..method_registry import IntegrationMethod
 
-from .load import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
-                  splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
-                  histogram_engine, splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC, \
-                  PREFERED_METHODS_1D, PREFERED_METHODS_2D
+from .load_engines import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
+                          splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
+                          histogram_engine, splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC, \
+                          PREFERED_METHODS_1D, PREFERED_METHODS_2D
 
 from ..engines import Engine
 

@@ -49,7 +49,7 @@ import json
 import __main__ as main
 from .opencl import ocl
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
-from .integrator.load import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
+from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
 from .io import Nexus, get_isotime, h5py
 from .worker import Worker, _reduce_images
 from .method_registry import Method, IntegrationMethod

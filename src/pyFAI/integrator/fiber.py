@@ -39,6 +39,8 @@ logger = logging.getLogger(__name__)
 import numpy
 from .azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult
+from ..method_registry import IntegrationMethod
+from ..io import save_integrate_result
 from .. import units
 
 class FiberIntegrator(AzimuthalIntegrator):

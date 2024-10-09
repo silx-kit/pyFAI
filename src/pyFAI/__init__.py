@@ -28,7 +28,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "28/09/2024"
+__date__ = "09/10/2024"
 
 import sys
 import os
@@ -57,21 +57,26 @@ It must be set before requesting any OpenCL modules.
 """
 
 
-@decorators.deprecated(replacement="pyFAI.azimuthalIntegrator.AzimuthalIntegrator", since_version="0.16")
+@decorators.deprecated(replacement="pyFAI.integrator.azimuthal.AzimuthalIntegrator", since_version="0.16")
 def AzimuthalIntegrator(*args, **kwargs):
-    from .azimuthalIntegrator import AzimuthalIntegrator
+    from .integrator.azimuthal import AzimuthalIntegrator
     return AzimuthalIntegrator(*args, **kwargs)
 
 
-def load(filename):
+def load(filename, type_="AzimuthalIntegrator"):
     """
     Load an azimuthal integrator from a filename description.
 
-    :param str filename: name of the file to load
+    :param str filename: name of the file to load, or dict of config or ponifile ...
     :return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.
     """
-    from .azimuthalIntegrator import AzimuthalIntegrator
-    return AzimuthalIntegrator.sload(filename)
+    if type_=="AzimuthalIntegrator":
+        from .integrator.azimuthal import AzimuthalIntegrator
+        return AzimuthalIntegrator.sload(filename)
+    else:
+        from .geometry import Geometry
+        Geometry.sload(filename).promote(type_)
+
 
 
 def detector_factory(name, config=None):

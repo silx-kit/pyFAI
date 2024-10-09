@@ -40,6 +40,6 @@ This sub-module contains all types of integrator:
 * fiber
 * ...
 """
-from .load import *
+from . import load_engines
 # from .azimuthal import AzimuthalIntegrator
 # from .fiber import FiberIntegrator

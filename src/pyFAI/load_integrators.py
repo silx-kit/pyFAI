@@ -40,4 +40,4 @@ Compatibility layer, the code has been moved to pyFAI.integrator.load
 09/10/2024
 """
 
-from .integrator import load
+from .integrator.load_engines import *
