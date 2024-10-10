@@ -51,7 +51,7 @@ from ..io import spots
 from ..io.ponifile import PoniFile
 import h5py
 import fabio
-import ..integrator.azimuthal as azimuthalIntegrator
+from ..integrator import azimuthal as azimuthalIntegrator
 
 
 class TestPoniFile(unittest.TestCase):
