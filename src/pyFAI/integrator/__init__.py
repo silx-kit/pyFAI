@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2024"
+__date__ = "10/10/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -41,5 +41,6 @@ This sub-module contains all types of integrator:
 * ...
 """
 from . import load_engines
+# from .common import Integrator
 # from .azimuthal import AzimuthalIntegrator
 # from .fiber import FiberIntegrator

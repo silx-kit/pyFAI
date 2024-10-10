@@ -35,9 +35,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2024"
+__date__ = "10/10/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
-
 from .integrator.azimuthal import AzimuthalIntegrator, logger
+from .utils.decorators import deprecated_warning
+deprecated_warning("Module", "pyFAI.azimuthalIntegrator", replacement="pyFAI.integrator.azimuthal", since_version="2024.10", only_once=False)

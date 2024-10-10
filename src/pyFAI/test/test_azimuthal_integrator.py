@@ -45,7 +45,7 @@ import fabio
 import gc
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
 from ..containers import ErrorModel
 from ..detectors import Detector, detector_factory

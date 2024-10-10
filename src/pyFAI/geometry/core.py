@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2024"
+__date__ = "10/10/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -175,7 +175,7 @@ class Geometry(object):
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
-        self._sem = threading.Semaphore()
+        self._sem = threading.Semaphore() # ensure the object remains unchanged while updating
         self._transmission_normal = None
         self._parallax = None
 
