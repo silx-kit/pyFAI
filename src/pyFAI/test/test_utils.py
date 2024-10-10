@@ -43,7 +43,6 @@ import numpy
 from .. import utils
 from ..version import calc_hexversion
 from ..method_registry import IntegrationMethod
-# from .. import azimuthalIntegrator
 from ..detectors import detector_factory
 # to increase test coverage of missing files:
 from .. import directories
