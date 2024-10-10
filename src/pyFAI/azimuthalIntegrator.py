@@ -41,4 +41,5 @@ __docformat__ = 'restructuredtext'
 
 from .integrator.azimuthal import AzimuthalIntegrator, logger
 from .utils.decorators import deprecated_warning
-deprecated_warning("Module", "pyFAI.azimuthalIntegrator", replacement="pyFAI.integrator.azimuthal", since_version="2024.10", only_once=False)
+deprecated_warning("Module", "pyFAI.azimuthalIntegrator", replacement="pyFAI.integrator.azimuthal",
+                   since_version="2024.10", only_once=False, skip_backtrace_count=1)

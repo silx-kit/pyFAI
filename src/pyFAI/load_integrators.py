@@ -44,4 +44,5 @@ Compatibility layer, the code has been moved to pyFAI.integrator.load
 
 from .integrator.load_engines import *
 from .utils.decorators import deprecated_warning
-deprecated_warning("Module", "pyFAI.load_integrators", replacement="pyFAI.integrator.load_engines", since_version="2024.10", only_once=False)
+deprecated_warning("Module", "pyFAI.load_integrators", replacement="pyFAI.integrator.load_engines",
+                   since_version="2024.10", only_once=False, skip_backtrace_count=1)
