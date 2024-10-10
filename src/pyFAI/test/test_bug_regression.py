@@ -50,7 +50,7 @@ from .utilstest import UtilsTest
 from ..utils import mathutil
 import fabio
 from .. import load
-from ..azimuthalIntegrator import AzimuthalIntegrator, logger as ai_logger
+from ..integrator.azimuthal import AzimuthalIntegrator, logger as ai_logger
 from .. import detectors
 from .. import units
 from math import pi

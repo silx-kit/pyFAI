@@ -43,7 +43,7 @@ import numpy
 import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..detectors import Detector
 from ..utils import mathutil
 from ..ext import splitBBox, splitPixel

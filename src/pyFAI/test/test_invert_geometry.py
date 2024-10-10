@@ -35,7 +35,7 @@ __date__ = "16/05/2022"
 
 import unittest
 import numpy
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..ext.invert_geometry import InvertGeometry
 
 

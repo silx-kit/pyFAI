@@ -52,7 +52,7 @@ import fabio
 
 from .. import date as pyFAI_date, version as pyFAI_version, units, utils
 from ..average import average_dark
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
 hc = units.hc
 

@@ -5,6 +5,10 @@
 Change-log of versions
 ======================
 
+Next Version: 2025
+------------------
+- Refactoring of the integrator classes
+
 2024.09 12/09/2024
 ------------------
 - New tutorials:

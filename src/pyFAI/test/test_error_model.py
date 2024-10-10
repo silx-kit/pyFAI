@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 import numpy
 from ..utils.mathutil import cormap
 from ..detectors import Detector
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from .utilstest import UtilsTest
 
 

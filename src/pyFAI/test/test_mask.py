@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 from .. import load, detectors
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 
 
 class TestMask(unittest.TestCase):

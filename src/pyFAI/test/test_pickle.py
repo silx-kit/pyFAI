@@ -35,7 +35,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "05/09/2023"
 
 import numpy
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+from pyFAI.integrator.azimuthal import AzimuthalIntegrator
 from pyFAI.detectors import detector_factory
 from pickle import dumps, loads
 import unittest

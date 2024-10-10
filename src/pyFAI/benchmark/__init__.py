@@ -42,7 +42,7 @@ from math import ceil
 import numpy
 
 from .. import load, detector_factory
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod, Method
 from ..utils import mathutil
 from ..test.utilstest import UtilsTest

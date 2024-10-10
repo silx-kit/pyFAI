@@ -39,7 +39,7 @@ import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 import numpy
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..multi_geometry import MultiGeometry
 from ..detectors import Detector
 

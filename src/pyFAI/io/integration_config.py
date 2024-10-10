@@ -31,14 +31,14 @@
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/07/2024"
+__date__ = "09/10/2024"
 __docformat__ = 'restructuredtext'
 
 import logging
 from . import ponifile
 from .. import detectors
-from .. import load_integrators
 from .. import method_registry
+from ..integrator import load_engines as load_integrators
 
 _logger = logging.getLogger(__name__)
 

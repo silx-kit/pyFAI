@@ -40,7 +40,7 @@ import json
 import h5py
 import numpy
 import os.path
-from ...azimuthalIntegrator import AzimuthalIntegrator
+from ...integrator.azimuthal import AzimuthalIntegrator
 from ...detectors import Detector
 
 

@@ -66,7 +66,7 @@ from .. import average
 from ..utils import measure_offset, expand_args, \
             readFloatFromKeyboard, FixedParameters, round_fft, \
             win32
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..units import hc
 from .. import version as PyFAI_VERSION
 from .. import date as PyFAI_DATE

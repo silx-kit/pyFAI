@@ -95,7 +95,7 @@ logger = logging.getLogger(__name__)
 
 from . import average
 from . import method_registry
-from .azimuthalIntegrator import AzimuthalIntegrator
+from .integrator.azimuthal import AzimuthalIntegrator
 from .containers import ErrorModel
 from .method_registry import IntegrationMethod
 from .distortion import Distortion

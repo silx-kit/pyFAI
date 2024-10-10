@@ -37,7 +37,7 @@ import silx.io
 
 import pyFAI.utils
 from .AbstractCalibrationTask import AbstractCalibrationTask
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+from pyFAI.integrator.azimuthal import AzimuthalIntegrator
 from ..utils import unitutils
 from ..model.DataModel import DataModel
 # from ..model.GeometryModel import GeometryModel

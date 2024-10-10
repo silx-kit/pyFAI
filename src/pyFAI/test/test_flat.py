@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from ..opencl import ocl
 from .utilstest import UtilsTest
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
 
 
