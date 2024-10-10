@@ -294,7 +294,7 @@ class TestSpotWriter(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         detector = pyFAI.detector_factory("pilatus300k")
-        self.ai = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector=detector)
+        self.ai = azimuthalIntegrator.AzimuthalIntegrator(detector=detector)
         nframes = 100
         nspots = UtilsTest.get_rng().uniform(1, nframes, size=nframes).astype(numpy.int64)
         self.spots = [numpy.empty(count, dtype=[("index", numpy.int32),
