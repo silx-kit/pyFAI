@@ -2088,7 +2088,7 @@ class Geometry(object):
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
-    def promote(self, klass_name="pyFAI.azimuthalIntegrator.AzimuthalIntegrator"):
+    def promote(self, klass_name="pyFAI.integrator.azimuthal.AzimuthalIntegrator"):
         """Promote this instance into one of its derived class (deep copy like)
 
         :param klass: Fully qualified name of the class to promote to
