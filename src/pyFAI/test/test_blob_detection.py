@@ -39,7 +39,7 @@ import numpy
 import logging
 logger = logging.getLogger(__name__)
 from ..detectors import detector_factory
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..blob_detection import BlobDetection, local_max
 from ..ext import _blob
 from ..ext import morphology

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2024-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,14 +35,12 @@ __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 """
-Compatibility layer, the code has been moved to pyFAI.integrator.load
-
-09/10/2024
+This sub-module contains all types of integrator:
+* azimuthal
+* fiber
+* ...
 """
-
-# TODO put in place a deprecation warning when importing this module
-
-from .integrator.load_engines import *
-from .utils.decorators import deprecated_warning
-deprecated_warning("Module", "pyFAI.load_integrators", replacement="pyFAI.integrator.load_engines",
-                   since_version="2024.10", only_once=False, skip_backtrace_count=1)
+from . import load_engines
+# from .common import Integrator
+# from .azimuthal import AzimuthalIntegrator
+# from .fiber import FiberIntegrator

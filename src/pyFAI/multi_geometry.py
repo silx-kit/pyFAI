@@ -39,7 +39,7 @@ import collections.abc
 import gc
 import logging
 logger = logging.getLogger(__name__)
-from .azimuthalIntegrator import AzimuthalIntegrator
+from .integrator.azimuthal import AzimuthalIntegrator
 from .containers import Integrate1dResult
 from .containers import Integrate2dResult
 from . import units

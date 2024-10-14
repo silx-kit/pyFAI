@@ -41,7 +41,7 @@ import fabio
 import logging
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult, Integrate2dResult
 from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M

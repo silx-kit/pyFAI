@@ -42,7 +42,7 @@ from ..ext import splitBBox
 from ..ext import splitBBoxCSR
 from ..engines.CSR_engine import CsrIntegrator2d, CsrIntegrator1d
 from ..method_registry import IntegrationMethod
-from .. import azimuthalIntegrator
+from ..integrator import azimuthal as azimuthalIntegrator
 from ..containers import ErrorModel
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr

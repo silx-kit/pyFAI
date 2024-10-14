@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "10/10/2024"
 __status__ = "development"
 
 import os
@@ -43,11 +43,10 @@ import logging
 import numpy
 import math
 from math import pi
-from . import azimuthalIntegrator
+from .integrator.azimuthal import AzimuthalIntegrator
 from .calibrant import Calibrant, CALIBRANT_FACTORY
 from .utils.ellipse import fit_ellipse
 from .utils.decorators import deprecated
-AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
 from scipy.optimize import fmin, leastsq, fmin_slsqp
 
 logger = logging.getLogger(__name__)
@@ -111,10 +110,10 @@ class GeometryRefinement(AzimuthalIntegrator):
 
         if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
             raise RuntimeError("Setting up the geometry refinement without knowing the detector makes little sense")
-        AzimuthalIntegrator.__init__(self, dist, 0, 0,
-                                     rot1, rot2, rot3,
-                                     pixel1, pixel2, splineFile, detector,
-                                     wavelength=wavelength, **kwargs)
+        super().__init__(dist, 0, 0,
+                         rot1, rot2, rot3,
+                         pixel1, pixel2, splineFile, detector,
+                         wavelength=wavelength, **kwargs)
 
         if calibrant is None:
             self.calibrant = Calibrant()

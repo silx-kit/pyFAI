@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/10/2023"
+__date__ = "10/10/2024"
 
 import numpy
 import collections.abc
@@ -51,7 +51,7 @@ def tthToRad(
     :param unit: instance of pyFAI.units.Unit
     :param wavelength: wavelength in m
     :param directDist: distance from sample to beam-center on the detector in _mm_
-    :param ai: instance of pyFAI.azimuthalIntegrator.AzimuthalIntegrator
+    :param ai: instance of pyFAI.integrator.azimuthal.AzimuthalIntegrator
     """
     if isinstance(twoTheta, numpy.ndarray):
         pass
@@ -98,7 +98,7 @@ def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
     :param unit: instance of pyFAI.units.Unit
     :param wavelength: wavelength in m
     :param directDist: distance from sample to beam-center on the detector in _mm_
-    :param ai: instance of pyFAI.azimuthalIntegrator.AzimuthalIntegrator
+    :param ai: instance of pyFAI.integrator.azimuthal.AzimuthalIntegrator
     """
     if isinstance(twoTheta, numpy.ndarray):
         pass

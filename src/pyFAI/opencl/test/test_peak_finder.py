@@ -42,7 +42,7 @@ import unittest
 from .. import ocl
 import fabio
 from ...test.utilstest import UtilsTest
-from ...azimuthalIntegrator import AzimuthalIntegrator
+from ...integrator.azimuthal import AzimuthalIntegrator
 if ocl:
     from ..peak_finder import OCL_SimplePeakFinder, OCL_PeakFinder, densify
 logger = logging.getLogger(__name__)

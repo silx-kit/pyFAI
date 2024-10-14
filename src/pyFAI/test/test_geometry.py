@@ -49,7 +49,7 @@ import fabio
 from . import utilstest
 from ..io.ponifile import PoniFile
 from .. import geometry
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from .. import units
 from ..detectors import detector_factory
 from ..third_party import transformations
