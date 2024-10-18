@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2024-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,42 +26,21 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""calibrate the distance of a detector from a set of powder diffraction patterns"""
-
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
-__satus__ = "development"
+__date__ = "10/10/2024"
+__status__ = "stable"
+__docformat__ = 'restructuredtext'
 
-import logging
-logging.basicConfig(level=logging.INFO)
-logging.captureWarnings(True)
-logger = logging.getLogger(__name__)
-try:
-    import hdf5plugin  # noqa
-except ImportError:
-    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
-
-from ..gui.cli_calibration import MultiCalib
-
-try:
-    from rfoo.utils import rconsole
-    rconsole.spawn_server()
-except ImportError:
-    logger.debug("No socket opened for debugging. Please install rfoo")
-
-
-def main(args=None):
-    c = MultiCalib()
-    c.parse(args=args)
-    c.read_pixelsSize()
-    c.read_dSpacingFile()
-    c.process()
-    c.regression()
-    input("Press enter to quit")
-
-
-if __name__ == "__main__":
-    main()
+"""
+This sub-module contains all types of integrator:
+* azimuthal
+* fiber
+* ...
+"""
+from . import load_engines
+# from .common import Integrator
+# from .azimuthal import AzimuthalIntegrator
+# from .fiber import FiberIntegrator

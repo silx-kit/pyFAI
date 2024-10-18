@@ -50,7 +50,7 @@ from .control_points import ControlPoints
 from .detectors import detector_factory, Detector
 from .geometry import Geometry
 from .geometryRefinement import GeometryRefinement
-from .azimuthalIntegrator import AzimuthalIntegrator
+from .integrator.azimuthal import AzimuthalIntegrator
 from .utils import StringTypes
 from .multi_geometry import MultiGeometry
 from .units import CONST_hc, CONST_q

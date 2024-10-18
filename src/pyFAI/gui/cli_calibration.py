@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "27/09/2024"
 __status__ = "production"
 
 import os
@@ -66,7 +66,7 @@ from .. import average
 from ..utils import measure_offset, expand_args, \
             readFloatFromKeyboard, FixedParameters, round_fft, \
             win32
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..units import hc
 from .. import version as PyFAI_VERSION
 from .. import date as PyFAI_DATE
@@ -365,13 +365,13 @@ class AbstractCalibration(object):
                                  help="force the program to run and exit without prompting"
                                  " for refinements", default=True, action="store_false")
 
-    def analyse_options(self, options=None, args=None):
+    def analyse_options(self, options=None, args=None, sysargv=None):
         """Analyzes options and arguments
 
         :return: option,arguments
         """
         if (options is None) and (args is None):
-            options = self.parser.parse_args()
+            options = self.parser.parse_args(sysargv)
             args = options.args
         if options.debug:
             logger.setLevel(logging.DEBUG)
@@ -1558,7 +1558,7 @@ class Calibration(CliCalibration):
         return CliCalibration.__repr__(self) + \
             "%sgaussian= %s" % (os.linesep, self.gaussianWidth)
 
-    def parse(self):
+    def parse(self, args=None):
         """
         parse options from command line
         """
@@ -1593,7 +1593,7 @@ decrease the value if arcs are mixed together.""", default=None)
         self.parser.add_argument("-p", "--pixel", dest="pixel",
                                  help="size of the pixel in micron", default=None)
 
-        (options, _) = self.analyse_options()
+        (options, _) = self.analyse_options(sysargv=args)
         # Analyse remaining aruments and options
         self.reconstruct = options.reconstruct
         self.gaussianWidth = options.gaussian
@@ -1730,7 +1730,7 @@ class Recalibration(CliCalibration):
                                  wavelength=wavelength,
                                  calibrant=calibrant)
 
-    def parse(self):
+    def parse(self, args=None):
         """
         parse options from command line
         """
@@ -1767,7 +1767,7 @@ and a new option which lets you choose between the original `massif` algorithm a
                                  help="Keep existing control point and append new",
                                  default=False, action="store_true")
 
-        options = self.parser.parse_args()
+        options = self.parser.parse_args(args)
         args = options.args
         # Analyse aruments and options
         if (not options.poni) or (not os.path.isfile(options.poni)):
@@ -1869,7 +1869,7 @@ class MultiCalib(object):
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
-    def parse(self, exe=None, description=None, epilog=None):
+    def parse(self, exe=None, description=None, epilog=None, args=None):
         """
         parse options from command line
         :param exe: name of the program (MX-calibrate)
@@ -2022,7 +2022,7 @@ class MultiCalib(object):
         parser.add_argument("--peak-picker", dest="peakPicker",
                             help="Uses the 'massif', 'blob' or 'watershed' peak-picker algorithm (default: blob)",
                             default="blob", type=str)
-        options = parser.parse_args()
+        options = parser.parse_args(args)
 
         # Analyse aruments and options
         if options.debug:
@@ -2306,7 +2306,7 @@ class CheckCalib(object):
             res.append("ai: " + self.ai.__repr__())
         return os.linesep.join(res)
 
-    def parse(self):
+    def parse(self, args=None):
         logger.debug("in parse")
         usage = "check_calib [options] -p param.poni image.edf"
         description = """Check_calib is a deprecated tool aiming at validating both the geometric
@@ -2341,7 +2341,7 @@ refinement process.
         parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                             help="wavelength of the X-Ray beam in Angstrom", default=None)
 
-        options = parser.parse_args()
+        options = parser.parse_args(args)
         if options.verbose:
             logger.setLevel(logging.DEBUG)
 

@@ -31,11 +31,12 @@
 __author__ = "Valentin Valls"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "30/09/2024"
 
 import unittest
 from silx.utils.testutils import ParametricTestCase
-from ..method_registry import Method
+from .. import load_integrators
+from ..method_registry import Method, IntegrationMethod
 
 
 class TestMethod(ParametricTestCase):
@@ -65,6 +66,9 @@ class TestMethod(ParametricTestCase):
         expected = Method(dim=None, split=None, algo='*', impl='foo', target=None)
         result = value.fixed(split=None, impl="foo")
         self.assertEqual(result, expected)
+
+    def test_2292(self):
+        self.assertNotEqual(IntegrationMethod.select_one_available(("No","Histo","Python"), 2), None, "properly change case and histo->histogram")
 
 
 def suite():
