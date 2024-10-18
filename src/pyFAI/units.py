@@ -342,8 +342,8 @@ def rotation_tilt_angle(tilt_angle=0.0):
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :return: 3x3 rotation matrix along the beam axis
     """
-    return numpy.array([[1 ,0 ,0], 
-                        [0, numpy.cos(tilt_angle), numpy.sin((-1) * tilt_angle)], 
+    return numpy.array([[1 ,0 ,0],
+                        [0, numpy.cos(tilt_angle), numpy.sin((-1) * tilt_angle)],
                         [0, numpy.sin(tilt_angle), numpy.cos(tilt_angle)],
                         ])
 
@@ -354,8 +354,8 @@ def rotation_incident_angle(incident_angle=0.0):
     :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
     :return: 3x3 rotation matrix along the horizontal axis
     """
-    return numpy.array([[numpy.cos(incident_angle), 0, numpy.sin(incident_angle)], 
-                        [0, 1, 0], 
+    return numpy.array([[numpy.cos(incident_angle), 0, numpy.sin(incident_angle)],
+                        [0, 1, 0],
                         [numpy.sin((-1) * incident_angle), 0, numpy.cos(incident_angle)],
                         ])
 
