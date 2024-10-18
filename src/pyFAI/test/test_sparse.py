@@ -41,7 +41,7 @@ from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from .. import load
 from ..detectors import detector_factory
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..ext import sparse_utils
 from ..utils.mathutil import rwp
 import fabio

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,14 +36,15 @@ detector and transform it. It is rather a description of the experimental setup.
 
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/02/2024"
+__date__ = "10/10/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import copy
 import logging
 from math import pi
 twopi = 2 * pi
@@ -118,6 +119,13 @@ class Geometry(object):
     """
     _LAST_POLARIZATION = "last_polarization"
 
+    # To ease the copy of an instance. Mutable attributes are caches which are regenerated on use
+    _UNMUTABLE_ATTRS = ("_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
+                        "chiDiscAtPi", "_wavelength", "_dssa_order",
+                        '_oversampling', '_correct_solid_angle_for_spline',
+                        '_transmission_normal')
+
+
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None,
                  orientation=0):
@@ -162,7 +170,8 @@ class Geometry(object):
                       self._rot1, self._rot2, self._rot3]
         self.chiDiscAtPi = True  # chi discontinuity (radians), pi by default
         self._cached_array = {}  # dict for caching all arrays
-        self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
+        self._dssa_order = 3  # Used to be 1 (False) in very old version of pyFAI: was a bug.
+        # The correct value is 3 where 2 come from the apparant pixels area and 1 from the incidence angle.
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
@@ -2079,18 +2088,51 @@ class Geometry(object):
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
+    def promote(self, type_="pyFAI.azimuthalIntegrator.AzimuthalIntegrator", kwargs=None):
+        """Promote this instance into one of its derived class (deep copy like)
+
+        :param type_: Fully qualified name of the class to promote to, or the class itself
+        :param kwargs: extra kwargs to be passed to the class constructor
+        :return: class instance which derives from Geometry with the same config as the current instance
+
+        Likely to raise ImportError/ValueError
+        """
+        GeometryClass = self.__class__.__mro__[-2]  # actually pyFAI.geometry.core.Geometry
+        if isinstance(type_, str):
+            import importlib
+            modules = type_.split(".")
+            module_name = ".".join(modules[:-1])
+            module = importlib.import_module(module_name)
+            klass = module.__getattribute__(modules[-1])
+        elif isinstance(type_, type):
+            klass = type_
+        else:
+            raise ValueError("`type_` must be a class (or a fully qualified class name) of a Geometry derived class")
+
+        if kwargs == None:
+            kwargs = {}
+        else:
+            kwargs = copy.copy(kwargs)
+        with self._sem:
+            if klass.__mro__[-2] == GeometryClass:
+                "Ensure the provided class actually derives from Geometry"
+                kwargs["detector"] = copy.deepcopy(self.detector)
+                new = klass(**kwargs)
+            else:
+                raise ValueError("Bad FQN class, it must be a Geometry derivative")
+
+            for key in self._UNMUTABLE_ATTRS:
+                new.__setattr__(key, self.__getattribute__(key))
+        # TODO: replace param with a property, see #2300
+        new.param = [new._dist, new._poni1, new._poni2,
+                     new._rot1, new._rot2, new._rot3]
+        return new
+
     def __copy__(self):
         """:return: a shallow copy of itself.
         """
         new = self.__class__(detector=self.detector)
-        # transfer numerical values:
-        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_wavelength",
-                     '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_normal',
-                     ]
-        # array = []
-        for key in numerical:
+        for key in self._UNMUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
@@ -2101,11 +2143,6 @@ class Geometry(object):
         """deep copy
         :param memo: dict with modified objects
         :return: a deep copy of itself."""
-        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_dssa_order", "_wavelength",
-                     '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_normal',
-                     ]
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -2113,7 +2150,7 @@ class Geometry(object):
         new_det = self.detector.__deepcopy__(memo)
         new.detector = new_det
 
-        for key in numerical:
+        for key in self._UNMUTABLE_ATTRS:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)

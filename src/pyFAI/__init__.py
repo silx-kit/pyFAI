@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "18/12/2023"
+__date__ = "09/10/2024"
 
 import sys
 import os
@@ -39,10 +39,10 @@ if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
 from .version import __date__ as date
 from .version import version, version_info, hexversion, strictversion, citation, calc_hexversion
 
+logger = logging.getLogger(__name__)
 if sys.version_info < (3, 7):
-    logger = logging.getLogger(__name__)
     logger.error("pyFAI required a python version >= 3.7")
-    raise RuntimeError("pyFAI required a python version >= 3.7, now we are running: %s" % sys.version)
+    raise RuntimeError(f"pyFAI required a python version >= 3.7, now we are running: {sys.version}")
 
 from .utils import decorators
 
@@ -57,21 +57,26 @@ It must be set before requesting any OpenCL modules.
 """
 
 
-@decorators.deprecated(replacement="pyFAI.azimuthalIntegrator.AzimuthalIntegrator", since_version="0.16")
+@decorators.deprecated(replacement="pyFAI.integrator.azimuthal.AzimuthalIntegrator", since_version="0.16")
 def AzimuthalIntegrator(*args, **kwargs):
-    from .azimuthalIntegrator import AzimuthalIntegrator
+    from .integrator.azimuthal import AzimuthalIntegrator
     return AzimuthalIntegrator(*args, **kwargs)
 
 
-def load(filename):
+def load(filename, type_="AzimuthalIntegrator"):
     """
     Load an azimuthal integrator from a filename description.
 
-    :param str filename: name of the file to load
+    :param str filename: name of the file to load, or dict of config or ponifile ...
     :return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.
     """
-    from .azimuthalIntegrator import AzimuthalIntegrator
-    return AzimuthalIntegrator.sload(filename)
+    if type_=="AzimuthalIntegrator":
+        from .integrator.azimuthal import AzimuthalIntegrator
+        return AzimuthalIntegrator.sload(filename)
+    else:
+        from .geometry import Geometry
+        Geometry.sload(filename).promote(type_)
+
 
 
 def detector_factory(name, config=None):

@@ -43,7 +43,7 @@ import numpy
 from .. import units
 from .. import worker as worker_mdl
 from ..worker import Worker, PixelwiseWorker
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
 from ..io.integration_config import ConfigurationReader

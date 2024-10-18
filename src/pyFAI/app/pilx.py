@@ -32,7 +32,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "27/09/2024"
 __status__ = "development"
 
 from silx.gui import qt
@@ -42,7 +42,7 @@ import argparse
 from ..gui.pilx.MainWindow import MainWindow
 
 
-def main():
+def main(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
     parser.add_argument("-d", "--data", dest="data_path",
@@ -52,7 +52,7 @@ def main():
                         help="inner path to the Nexus process with the integrated Data",
                         default="/entry_0000/pyFAI",)
 
-    options = parser.parse_args(sys.argv[1:])
+    options = parser.parse_args(args)
 
     app = qt.QApplication([])
     window = MainWindow()

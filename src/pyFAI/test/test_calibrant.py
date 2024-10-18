@@ -43,7 +43,7 @@ from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..calibrant import Calibrant, get_calibrant, Cell, CALIBRANT_FACTORY
 from ..detectors import ALL_DETECTORS
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 
 
 class TestCalibrant(unittest.TestCase):

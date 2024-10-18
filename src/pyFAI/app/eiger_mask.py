@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "27/09/2024"
 __satus__ = "development"
 
 import os
@@ -49,7 +49,7 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 import fabio
-import pyFAI
+from .. import version as pyFAI_version, date as pyFAI_date
 
 try:
     import h5py
@@ -72,9 +72,9 @@ def extract_mask(infile):
     return detectorSpecific["pixel_mask"].value
 
 
-def main():
+def main(args=None):
     description = "A tool to extract the mask from an Eiger detector file."
-    version = "eiger-mask version %s from %s" % (pyFAI.version, pyFAI.date)
+    version = f"eiger-mask version {pyFAI_version} from {pyFAI_date}"
     epilog = None
     if h5py is None:
         epilog = "Python h5py module is missing. It has to be installed to use this application"
@@ -82,7 +82,7 @@ def main():
     parser.add_argument("-V", "--version", action='version', version=version)
     parser.add_argument('input_file', help='Input file. Must be an HDF5 file.')
     parser.add_argument('output_file', nargs="?", help='Output file. It can be an msk, tif, or an edf file.')
-    options = parser.parse_args()
+    options = parser.parse_args(args)
 
     if h5py is None:
         logger.error("Python h5py module is expected to use this script")

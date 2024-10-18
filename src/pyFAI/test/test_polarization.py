@@ -38,7 +38,7 @@ import unittest
 import numpy
 import logging
 logger = logging.getLogger(__name__)
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 
 
 class TestPolarization(unittest.TestCase):

@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/09/2024"
+__date__ = "09/10/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -48,7 +48,8 @@ import fabio
 import json
 import __main__ as main
 from .opencl import ocl
-from . import version as PyFAI_VERSION, date as PyFAI_DATE, load, load_integrators
+from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
+from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
 from .io import Nexus, get_isotime, h5py
 from .worker import Worker, _reduce_images
 from .method_registry import Method, IntegrationMethod
@@ -143,7 +144,7 @@ class DiffMap(object):
         Parse options from command line in order to setup the object.
         Does not configure the worker, please use
 
-        :param sysargv: list of arguments passed on the command line (mostly for debug/test)
+        :param sysargv: list of arguments passed on the command line (mostly for debug/test), first element removed
         :param with_config: parse also the config (as another dict) and return (options, config)
         :return: options, a dictionary able to setup a DiffMapWidget
         """
@@ -267,9 +268,9 @@ If the number of files is too large, use double quotes like "*.edf" """
             ai["opencl_device"] = ocl.select_device(type="gpu")
             ndim = ai.get("do_2D", 1)
             if ndim==2:
-                default = load_integrators.PREFERED_METHODS_2D[0].method[1:-1]
+                default = PREFERED_METHODS_2D[0].method[1:-1]
             else:
-                default = load_integrators.PREFERED_METHODS_1D[0].method[1:-1]
+                default = PREFERED_METHODS_1D[0].method[1:-1]
             method = list(ai.get("method", default))
             if len(method) ==  3:  # (split, algo, impl)
                 method[2] = "opencl"

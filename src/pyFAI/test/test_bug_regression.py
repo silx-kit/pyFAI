@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "27/09/2024"
 
 import sys
 import os
@@ -50,7 +50,7 @@ from .utilstest import UtilsTest
 from ..utils import mathutil
 import fabio
 from .. import load
-from ..azimuthalIntegrator import AzimuthalIntegrator, logger as ai_logger
+from ..integrator.azimuthal import AzimuthalIntegrator, logger as ai_logger
 from .. import detectors
 from .. import units
 from math import pi
@@ -146,8 +146,8 @@ class TestBug211(unittest.TestCase):
             self.image_files.append(fn)
         self.res = res / 3.0
         # It is not anymore a script, but a module
-        import pyFAI.app.average
-        self.exe = pyFAI.app.average.__file__
+        from ..app import average
+        self.exe = average.__name__
         self.env = UtilsTest.get_test_env()
 
     def tearDown(self):
@@ -160,7 +160,8 @@ class TestBug211(unittest.TestCase):
         self.exe = self.env = None
 
     def test_quantile(self):
-        command_line = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
+        args = ["--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
+        command_line = [sys.executable, "-c" ,f"""import {self.exe}; {self.exe}.main({args})"""]
 
         p = subprocess.Popen(command_line,
                              shell=False, env=self.env,

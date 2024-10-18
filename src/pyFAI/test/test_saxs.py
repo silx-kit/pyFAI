@@ -39,7 +39,7 @@ import logging
 import fabio
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab

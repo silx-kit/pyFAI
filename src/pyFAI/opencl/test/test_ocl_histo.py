@@ -45,7 +45,7 @@ if ocl:
     import pyopencl.array
 from ...test.utilstest import UtilsTest
 from silx.opencl.common import _measure_workgroup_size
-from ...azimuthalIntegrator import AzimuthalIntegrator
+from ...integrator.azimuthal import AzimuthalIntegrator
 from ...containers import ErrorModel
 from scipy.ndimage import gaussian_filter1d
 logger = logging.getLogger(__name__)

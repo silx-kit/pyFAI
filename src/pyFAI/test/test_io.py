@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2024"
+__date__ = "10/10/2024"
 
 import unittest
 import os
@@ -51,7 +51,7 @@ from ..io import spots
 from ..io.ponifile import PoniFile
 import h5py
 import fabio
-import pyFAI.azimuthalIntegrator
+from ..integrator import azimuthal as azimuthalIntegrator
 
 
 class TestPoniFile(unittest.TestCase):
@@ -294,7 +294,7 @@ class TestSpotWriter(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         detector = pyFAI.detector_factory("pilatus300k")
-        self.ai = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector=detector)
+        self.ai = azimuthalIntegrator.AzimuthalIntegrator(detector=detector)
         nframes = 100
         nspots = UtilsTest.get_rng().uniform(1, nframes, size=nframes).astype(numpy.int64)
         self.spots = [numpy.empty(count, dtype=[("index", numpy.int32),

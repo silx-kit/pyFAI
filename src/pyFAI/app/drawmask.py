@@ -29,11 +29,11 @@
 
 """Use silx library to provide a widget to customize a mask """
 
-__authors__ = ["Jerome Kieffer", "Valentin Valls"]
+__authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/09/2024"
+__date__ = "27/09/2024"
 __satus__ = "Production"
 
 import os
@@ -148,7 +148,7 @@ def postProcessId21(processFile, mask):
         print("On File: %s,\t mean= %s \t std= %s" % (datafile, data.mean(), data.std()))
 
 
-def main():
+def main(args=None):
     usage = "pyFAI-drawmask file1.edf file2.edf ..."
     version = f"pyFAI-average version {pyFAI_version} from {pyFAI_date}"
     description = """
@@ -166,7 +166,7 @@ def main():
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
                         help="Files to be processed")
 
-    options = parser.parse_args()
+    options = parser.parse_args(args)
     if len(options.args) < 1:
         parser.error("Incorrect number of arguments: please provide an image to draw a mask")
 

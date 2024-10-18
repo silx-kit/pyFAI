@@ -29,15 +29,17 @@
 
 """CLI interface for diffraction tomography data reduction"""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "27/09/2024"
 __satus__ = "Production"
 
 import os
 import glob
+from argparse import ArgumentParser
+from urllib.parse import urlparse
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -47,11 +49,8 @@ try:
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
-from pyFAI import version as PyFAI_VERSION
-from pyFAI import date as PyFAI_DATE
-from pyFAI.diffmap import DiffMap
-from argparse import ArgumentParser
-from urllib.parse import urlparse
+from .. import version as PyFAI_VERSION, date as PyFAI_DATE
+from ..diffmap import DiffMap
 
 
 class DiffTomo(DiffMap):
@@ -74,7 +73,7 @@ class DiffTomo(DiffMap):
         self.slow_motor_name = "rotation"
         self.fast_motor_name = "translation"
 
-    def parse(self, with_config=False):
+    def parse(self, args=None, with_config=False):
         """
         parse options from command line
         """
@@ -137,7 +136,7 @@ user interface.
         parser.add_argument("-S", "--stats", dest="stats", action="store_true",
                             help="show statistics at the end", default=False)
 
-        options = parser.parse_args()
+        options = parser.parse_args(args)
         args = options.args
 
         if options.verbose:
@@ -202,9 +201,9 @@ user interface.
         return options
 
 
-def main():
+def main(args=None):
     dt = DiffTomo()
-    dt.parse()
+    dt.parse(args)
     dt.setup_ai()
     dt.makeHDF5()
     dt.process()

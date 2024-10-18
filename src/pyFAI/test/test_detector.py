@@ -357,7 +357,7 @@ class TestDetector(unittest.TestCase):
 
         wl = 1e-10
         from ..calibrant import ALL_CALIBRANTS
-        from ..azimuthalIntegrator import AzimuthalIntegrator
+        from ..integrator.azimuthal import AzimuthalIntegrator
         AgBh = ALL_CALIBRANTS("AgBh")
         AgBh.wavelength = 1e-10
         ai = AzimuthalIntegrator(detector=pix, wavelength=wl)

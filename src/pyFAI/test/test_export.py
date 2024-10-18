@@ -38,7 +38,7 @@ import unittest
 import logging
 import numpy
 from .utilstest import UtilsTest
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 
 logger = logging.getLogger(__name__)
 
