@@ -75,7 +75,7 @@ def load(filename, type_="AzimuthalIntegrator"):
         return AzimuthalIntegrator.sload(filename)
     else:
         from .geometry import Geometry
-        Geometry.sload(filename).promote(type_)
+        return Geometry.sload(filename).promote(type_)
 
 
 
