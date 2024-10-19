@@ -349,7 +349,7 @@ def q_lab(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_o
                         q_lab_horz(x=x, y=y, z=z, wavelength=wavelength),
                         q_lab_vert(x=x, y=y, z=z, wavelength=wavelength),
     ))
-    
+
 
 def rotation_tilt_angle(tilt_angle=0.0):
     """Calculates the rotation matrix along the x axis, (beam axis); represents the tilt angle rotation
@@ -424,7 +424,7 @@ def eq_qbeam(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
                            q_rotated_incident_angle(x=hpos, y=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle),
                            axes=(0,0),
     )
-    
+
 
 def eq_qhorz(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the component of the scattering vector along the horizontal direction in the sample frame (for GI/Fiber diffraction), towards the center of the ring
@@ -443,7 +443,7 @@ def eq_qhorz(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
                            q_rotated_incident_angle(x=hpos, y=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle),
                            axes=(0,0),
     )
-    
+
 
 def eq_qvert(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the component of the scattering vector along the vertical direction in the sample frame (for GI/Fiber diffraction), to the roof
@@ -462,7 +462,7 @@ def eq_qvert(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
                            q_rotated_incident_angle(x=hpos, y=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle),
                            axes=(0,0),
     )
-    
+
 
 def eq_qhorz_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the component of the scattering vector along the horizontal direction in the sample frame (for GI/Fiber diffraction), towards the center of the ring
@@ -977,4 +977,3 @@ def get_unit_fiber(name, incident_angle:float =0.0, tilt_angle:float =0.0, sampl
         unit.set_tilt_angle(tilt_angle)
         unit.set_sample_orientation(sample_orientation)
     return unit
-
