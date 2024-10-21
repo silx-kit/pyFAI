@@ -375,38 +375,6 @@ def rotation_incident_angle(incident_angle=0.0):
                         ])
 
 
-def q_rotated_tilt_angle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the scattering vector in the sample frame (for GI/Fiber diffraction) after tilt_angle rotation
-
-    :param hpos: horizontal position, towards the center of the ring, from sample position
-    :param vpos: vertical position, to the roof, from sample position
-    :param z: distance from sample along the beam
-    :param wavelength: in meter
-    :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-    :return: component of the scattering vector along the beam propagation direction in inverse nm
-    """
-    return numpy.tensordot(rotation_tilt_angle(tilt_angle=tilt_angle),
-                           q_lab(x=x, y=y, z=z, wavelength=wavelength),
-                           axes=(1,0),
-                           )
-
-
-def q_rotated_incident_angle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the scattering vector in the sample frame (for GI/Fiber diffraction) after incident_angle rotation
-
-    :param hpos: horizontal position, towards the center of the ring, from sample position
-    :param vpos: vertical position, to the roof, from sample position
-    :param z: distance from sample along the beam
-    :param wavelength: in meter
-    :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
-    :return: component of the scattering vector along the beam propagation direction in inverse nm
-    """
-    return numpy.tensordot(rotation_incident_angle(incident_angle=incident_angle),
-                           q_lab(x=x, y=y, z=z, wavelength=wavelength),
-                           axes=(1,0),
-                           )
-
-
 def eq_qbeam(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the component of the scattering vector along the beam propagation direction in the sample frame (for GI/Fiber diffraction)
         First, rotates the lab sample reference around the beam axis a tilt_angle value in radians,
@@ -420,8 +388,10 @@ def eq_qbeam(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :return: component of the scattering vector along the beam propagation direction in inverse nm
     """
-    return numpy.tensordot(rotation_tilt_angle(tilt_angle=tilt_angle)[0,:],
-                           q_rotated_incident_angle(x=hpos, y=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle),
+    return numpy.tensordot(numpy.dot(rotation_tilt_angle(tilt_angle=tilt_angle),
+                                     rotation_incident_angle(incident_angle=incident_angle),
+                                     )[0,:],
+                           q_lab(x=hpos, y=vpos, z=z, wavelength=wavelength),
                            axes=(0,0),
     )
 
@@ -439,8 +409,10 @@ def eq_qhorz(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :return: component of the scattering vector along the horizontal direction in inverse nm
     """
-    return numpy.tensordot(rotation_tilt_angle(tilt_angle=tilt_angle)[1,:],
-                           q_rotated_incident_angle(x=hpos, y=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle),
+    return numpy.tensordot(numpy.dot(rotation_tilt_angle(tilt_angle=tilt_angle),
+                                     rotation_incident_angle(incident_angle=incident_angle),
+                                     )[1,:],
+                           q_lab(x=hpos, y=vpos, z=z, wavelength=wavelength),
                            axes=(0,0),
     )
 
@@ -458,9 +430,30 @@ def eq_qvert(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :return: component of the scattering vector along the vertical direction in inverse nm
     """
-    return numpy.tensordot(rotation_tilt_angle(tilt_angle=tilt_angle)[2,:],
-                           q_rotated_incident_angle(x=hpos, y=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle),
+    return numpy.tensordot(numpy.dot(rotation_tilt_angle(tilt_angle=tilt_angle),
+                                     rotation_incident_angle(incident_angle=incident_angle),
+                                     )[2,:],
+                           q_lab(x=hpos, y=vpos, z=z, wavelength=wavelength),
                            axes=(0,0),
+    )
+
+
+def q_sample(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the scattering vector in the sample frame (for GI/Fiber diffraction) after incident angle and tilt angle rotations
+
+    :param hpos: horizontal position, towards the center of the ring, from sample position
+    :param vpos: vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+    :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+    :return: scattering vector in the laboratory frame reference in inverse nm
+    """
+    return numpy.tensordot(numpy.dot(rotation_tilt_angle(tilt_angle=tilt_angle),
+                                     rotation_incident_angle(incident_angle=incident_angle),
+                                     ),
+                           q_lab(x=hpos, y=vpos, z=z, wavelength=wavelength),
+                           axes=(1,0),
     )
 
 
@@ -479,13 +472,17 @@ def eq_qhorz_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
     :return: component of the scattering vector along the horizontal direction in inverse nm
     """
     if sample_orientation == 1:
-        return eq_qhorz(hpos=x, vpos=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
-    elif sample_orientation == 2:
-        return eq_qhorz(hpos=y, vpos=x, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
+        hpos = x ; vpos = y
+    if sample_orientation == 2:
+        hpos = y ; vpos = x
     elif sample_orientation == 3:
-        return eq_qhorz(hpos=-x, vpos=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
+        hpos = -x ; vpos = y
     elif sample_orientation == 4:
-        return eq_qhorz(hpos=-y, vpos=-x, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
+        hpos = -y ; vpos = -x
+# The above code is using multi-line comments in Python, which are denoted by three consecutive pound
+# signs (
+        
+    return eq_qhorz(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
 def eq_qvert_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
@@ -503,13 +500,15 @@ def eq_qvert_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
     :return: component of the scattering vector along the vertical direction in inverse nm
     """
     if sample_orientation == 1:
-        return eq_qvert(hpos=x, vpos=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
-    elif sample_orientation == 2:
-        return eq_qvert(hpos=y, vpos=x, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
+        hpos = x ; vpos = y
+    if sample_orientation == 2:
+        hpos = y ; vpos = x
     elif sample_orientation == 3:
-        return eq_qvert(hpos=-x, vpos=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
+        hpos = -x ; vpos = y
     elif sample_orientation == 4:
-        return eq_qvert(hpos=-y, vpos=-x, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
+        hpos = -y ; vpos = -x
+        
+    return eq_qvert(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
 def eq_qbeam_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
@@ -526,13 +525,15 @@ def eq_qbeam_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
     :return: component of the scattering vector along the beam propagation direction in inverse nm
     """
     if sample_orientation == 1:
-        return eq_qbeam(hpos=x, vpos=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
-    elif sample_orientation == 2:
-        return eq_qbeam(hpos=y, vpos=x, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
+        hpos = x ; vpos = y
+    if sample_orientation == 2:
+        hpos = y ; vpos = x
     elif sample_orientation == 3:
-        return eq_qbeam(hpos=-x, vpos=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
+        hpos = -x ; vpos = y
     elif sample_orientation == 4:
-        return eq_qbeam(hpos=-y, vpos=-x, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
+        hpos = -y ; vpos = -x
+        
+    return eq_qbeam(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
 def eq_qip(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
@@ -549,9 +550,19 @@ def eq_qip(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orien
     :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
     :return: component of the scattering vector in the plane YZ, in inverse nm
     """
-    qxgi = eq_qhorz_gi(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
-    qzgi = eq_qbeam_gi(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
-    return numpy.sqrt(qxgi ** 2 + qzgi ** 2) * numpy.sign(qxgi)
+    if sample_orientation == 1:
+        hpos = x ; vpos = y
+    if sample_orientation == 2:
+        hpos = y ; vpos = x
+    elif sample_orientation == 3:
+        hpos = -x ; vpos = y
+    elif sample_orientation == 4:
+        hpos = -y ; vpos = -x
+    
+    q_sample_ = q_sample(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
+    qsample_beam, qsample_horz = q_sample_[0], q_sample_[1]
+
+    return numpy.sqrt(qsample_beam ** 2 + qsample_horz ** 2) * numpy.sign(qsample_horz)
 
 
 def eq_qoop(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
