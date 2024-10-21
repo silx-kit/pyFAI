@@ -481,7 +481,7 @@ def eq_qhorz_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
         hpos = -y ; vpos = -x
 # The above code is using multi-line comments in Python, which are denoted by three consecutive pound
 # signs (
-        
+
     return eq_qhorz(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
@@ -507,7 +507,7 @@ def eq_qvert_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
         hpos = -x ; vpos = y
     elif sample_orientation == 4:
         hpos = -y ; vpos = -x
-        
+
     return eq_qvert(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
@@ -532,7 +532,7 @@ def eq_qbeam_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
         hpos = -x ; vpos = y
     elif sample_orientation == 4:
         hpos = -y ; vpos = -x
-        
+
     return eq_qbeam(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
@@ -558,7 +558,7 @@ def eq_qip(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orien
         hpos = -x ; vpos = y
     elif sample_orientation == 4:
         hpos = -y ; vpos = -x
-    
+
     q_sample_ = q_sample(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
     qsample_beam, qsample_horz = q_sample_[0], q_sample_[1]
 
