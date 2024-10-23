@@ -27,7 +27,7 @@
 # THE SOFTWARE.
 
 
-"""test suite for Azimuthal integrator class"""
+"""test suite for Fiber integrator class"""
 
 __author__ = "Edgar Gutiérrez Fernández"
 __contact__ = "edgar.gutierrez-fernandez@esrf.fr"
