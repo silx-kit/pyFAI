@@ -44,6 +44,23 @@ from ..io import save_integrate_result
 from .. import units
 
 class FiberIntegrator(AzimuthalIntegrator):
+    _cached_fiber_parameters = {'incident_angle' : 0.0,
+                                'tilt_angle' : 0.0,
+                                'sample_orientation' : 1,
+                                }
+    
+    @property
+    def incident_angle(self):
+        return self._cached_fiber_parameters['incident_angle']
+    
+    @property
+    def tilt_angle(self):
+        return self._cached_fiber_parameters['tilt_angle']
+    
+    @property
+    def sample_orientation(self):
+        return self._cached_fiber_parameters['sample_orientation']
+
     def integrate_fiber(self, data,
                         npt_output, output_unit=units.Q_OOP, output_unit_range=None,
                         npt_integrated=100, integrated_unit=units.Q_IP, integrated_unit_range=None,
@@ -298,52 +315,70 @@ class FiberIntegrator(AzimuthalIntegrator):
                                     normalization_factor=normalization_factor)
 
     def integrate2d_fiber(self, data,
-                          npt_horizontal, horizontal_unit=units.Q_IP, horizontal_unit_range=None,
-                          npt_vertical=1000, vertical_unit=units.Q_OOP, vertical_unit_range=None,
+                          npt_ip, unit_ip=None, horizontal_unit_range=None,
+                          npt_oop=1000, unit_oop=None, vertical_unit_range=None,
                           sample_orientation=None,
                           filename=None,
                           correctSolidAngle=True,
                           mask=None, dummy=None, delta_dummy=None,
                           polarization_factor=None, dark=None, flat=None,
                           method=("no", "histogram", "cython"),
-                          normalization_factor=1.0):
-        if isinstance(vertical_unit, units.UnitFiber):
-            sample_orientation = sample_orientation or vertical_unit.sample_orientation
+                          normalization_factor=1.0, **kwargs):
+
+        if "npt_horizontal" in kwargs:
+            logger.warning(f"npt_horizontal is a valid, but deprecated parameter. Use npt_ip instead")
+            npt_ip = kwargs["npt_horizontal"]
+        if "npt_vertical" in kwargs:
+            logger.warning(f"npt_vertical is a valid, but deprecated parameter. Use npt_oop instead")
+            npt_oop = kwargs["npt_vertical"]
+        if "horizontal_unit" in kwargs:
+            logger.warning(f"horizontal_unit is a valid, but deprecated parameter. Use unit_ip instead")
+            unit_ip = kwargs["horizontal_unit"]
+        if "vertical_unit" in kwargs:
+            logger.warning(f"vertical_unit is a valid, but deprecated parameter. Use unit_oop instead")
+            unit_oop = kwargs["vertical_unit"]
+
+        if unit_ip is None:
+            unit_ip = units.get_unit_fiber("qip_nm^-1")
         else:
-            sample_orientation = sample_orientation or 1
+            unit_ip = units.to_unit(unit_ip)
+
+        if unit_oop is None:
+            unit_oop = units.get_unit_fiber("qoop_nm^-1")
+        else:
+            unit_oop = units.to_unit(unit_oop)
 
         reset = False
-        if isinstance(vertical_unit, units.UnitFiber):
-            if vertical_unit.sample_orientation != sample_orientation:
-                vertical_unit.set_sample_orientation(sample_orientation)
-                logger.info(f"Sample orientation was set to {sample_orientation} for unit {vertical_unit}. AzimuthalIntegrator will be reset.")
-                reset = True
-        else:
-            vertical_unit = units.to_unit(vertical_unit)
-            vertical_unit.set_sample_orientation(sample_orientation)
-            logger.info(f"Sample orientation was set to {sample_orientation} for unit {vertical_unit}. AzimuthalIntegrator will be reset.")
+
+        if sample_orientation is None:
+            if isinstance(unit_ip, units.UnitFiber):
+                sample_orientation = unit_ip.sample_orientation
+            elif isinstance(unit_oop, units.UnitFiber):
+                sample_orientation = unit_oop.sample_orientation
+            else:
+                sample_orientation = 1
+
+        if sample_orientation != self.sample_orientation:
+            logger.info(f"Sample orientation set to {sample_orientation}. AzimuthalIntegrator will be reset.")
             reset = True
 
-        if isinstance(horizontal_unit, units.UnitFiber):
-            if horizontal_unit.sample_orientation != sample_orientation:
-                horizontal_unit.set_sample_orientation(sample_orientation)
-                logger.info(f"Sample orientation was set to {sample_orientation} for unit {horizontal_unit}. AzimuthalIntegrator will be reset.")
-                reset = True
-        else:
-            horizontal_unit = units.to_unit(horizontal_unit)
-            horizontal_unit.set_sample_orientation(sample_orientation)
-            logger.info(f"Sample orientation was set to {sample_orientation} for unit {horizontal_unit}. AzimuthalIntegrator will be reset.")
-            reset = True
+        unit_ip = units.to_unit(unit_ip)
+        unit_ip.set_sample_orientation(sample_orientation)
 
+        unit_oop = units.to_unit(unit_oop)
+        unit_oop.set_sample_orientation(sample_orientation)
+        
         if reset:
             self.reset()
             logger.info(f"AzimuthalIntegrator was reset. Current fiber parameters: sample_orientation: {sample_orientation}.")
 
+        self._cached_fiber_parameters['sample_orientation'] = sample_orientation
 
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
-        return self.integrate2d_ng(data, npt_rad=npt_horizontal, npt_azim=npt_vertical,
+        
+        return self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                   polarization_factor=polarization_factor,
@@ -351,112 +386,106 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   normalization_factor=normalization_factor,
                                   radial_range=horizontal_unit_range,
                                   azimuth_range=vertical_unit_range,
-                                  unit=(horizontal_unit, vertical_unit),
+                                  unit=(unit_ip, unit_oop),
                                   filename=filename)
+    
+    
 
     def integrate2d_grazing_incidence(self, data,
-                                      npt_horizontal, horizontal_unit=units.Q_IP, horizontal_unit_range=None,
-                                      npt_vertical=1000, vertical_unit=units.Q_OOP, vertical_unit_range=None,
+                                      npt_ip=1000, unit_ip=None, horizontal_unit_range=None,
+                                      npt_oop=1000, unit_oop=None, vertical_unit_range=None,
                                       incident_angle=None, tilt_angle=None, sample_orientation=None,
                                       filename=None,
                                       correctSolidAngle=True,
                                       mask=None, dummy=None, delta_dummy=None,
                                       polarization_factor=None, dark=None, flat=None,
                                       method=("no", "histogram", "cython"),
-                                      normalization_factor=1.0):
+                                      normalization_factor=1.0, **kwargs):
+        
+        if "npt_horizontal" in kwargs:
+            logger.warning(f"npt_horizontal is a valid, but deprecated parameter. Use npt_ip instead")
+            npt_ip = kwargs["npt_horizontal"]
+        if "npt_vertical" in kwargs:
+            logger.warning(f"npt_vertical is a valid, but deprecated parameter. Use npt_oop instead")
+            npt_oop = kwargs["npt_vertical"]
+        if "horizontal_unit" in kwargs:
+            logger.warning(f"horizontal_unit is a valid, but deprecated parameter. Use unit_ip instead")
+            unit_ip = kwargs["horizontal_unit"]
+        if "vertical_unit" in kwargs:
+            logger.warning(f"vertical_unit is a valid, but deprecated parameter. Use unit_oop instead")
+            unit_oop = kwargs["vertical_unit"]
+
+        if unit_ip is None:
+            unit_ip = units.get_unit_fiber("qip_nm^-1")
+        else:
+            unit_ip = units.to_unit(unit_ip)
+
+        if unit_oop is None:
+            unit_oop = units.get_unit_fiber("qoop_nm^-1")
+        else:
+            unit_oop = units.to_unit(unit_oop)
 
         reset = False
 
-        if isinstance(vertical_unit, units.UnitFiber):
-            incident_angle = incident_angle or vertical_unit.incident_angle
-        else:
-            incident_angle = incident_angle or 0.0
+        if incident_angle is None:
+            if isinstance(unit_ip, units.UnitFiber):
+                incident_angle = unit_ip.incident_angle
+            elif isinstance(unit_oop, units.UnitFiber):
+                incident_angle = unit_oop.incident_angle
+            else:
+                incident_angle = 0.0
 
-        if isinstance(vertical_unit, units.UnitFiber):
-            if vertical_unit.incident_angle != incident_angle:
-                vertical_unit.set_incident_angle(incident_angle)
-                logger.info(f"Incident angle set to {incident_angle} for unit {vertical_unit}. AzimuthalIntegrator will be reset.")
-                reset = True
-        else:
-            vertical_unit = units.to_unit(vertical_unit)
-            vertical_unit.set_incident_angle(incident_angle)
-            logger.info(f"Incident angle set to {incident_angle} for unit {vertical_unit}. AzimuthalIntegrator will be reset.")
+        if incident_angle != self.incident_angle:
+            logger.info(f"Incident angle set to {incident_angle}. AzimuthalIntegrator will be reset.")
             reset = True
 
-        if isinstance(horizontal_unit, units.UnitFiber):
-            if horizontal_unit.incident_angle != incident_angle:
-                horizontal_unit.set_incident_angle(incident_angle)
-                logger.info(f"Incident angle set to {incident_angle} for unit {horizontal_unit}. AzimuthalIntegrator will be reset.")
-                reset = True
-        else:
-            horizontal_unit = units.to_unit(horizontal_unit)
-            horizontal_unit.set_incident_angle(incident_angle)
-            logger.info(f"Incident angle set to {incident_angle} for unit {horizontal_unit}. AzimuthalIntegrator will be reset.")
+        if tilt_angle is None:
+            if isinstance(unit_ip, units.UnitFiber):
+                tilt_angle = unit_ip.tilt_angle
+            elif isinstance(unit_oop, units.UnitFiber):
+                tilt_angle = unit_oop.tilt_angle
+            else:
+                tilt_angle = 0.0
+
+        if tilt_angle != self.tilt_angle:
+            logger.info(f"Tilt angle set to {tilt_angle}. AzimuthalIntegrator will be reset.")
             reset = True
 
-        if isinstance(vertical_unit, units.UnitFiber):
-            tilt_angle = tilt_angle or vertical_unit.tilt_angle
-        else:
-            tilt_angle = tilt_angle or 0.0
+        if sample_orientation is None:
+            if isinstance(unit_ip, units.UnitFiber):
+                sample_orientation = unit_ip.sample_orientation
+            elif isinstance(unit_oop, units.UnitFiber):
+                sample_orientation = unit_oop.sample_orientation
+            else:
+                sample_orientation = 1
 
-        if isinstance(vertical_unit, units.UnitFiber):
-            if vertical_unit.tilt_angle != tilt_angle:
-                vertical_unit.set_tilt_angle(tilt_angle)
-                logger.info(f"Tilt angle set to {tilt_angle} for unit {vertical_unit}. AzimuthalIntegrator will be reset.")
-                reset = True
-        else:
-            vertical_unit = units.to_unit(vertical_unit)
-            vertical_unit.set_tilt_angle(tilt_angle)
-            logger.info(f"Tilt angle set to {tilt_angle} for unit {vertical_unit}. AzimuthalIntegrator will be reset.")
-            reset = True
-
-        if isinstance(horizontal_unit, units.UnitFiber):
-            if horizontal_unit.tilt_angle != tilt_angle:
-                horizontal_unit.set_tilt_angle(tilt_angle)
-                logger.info(f"Tilt angle set to {tilt_angle} for unit {horizontal_unit}. AzimuthalIntegrator will be reset.")
-                reset = True
-        else:
-            horizontal_unit = units.to_unit(horizontal_unit)
-            horizontal_unit.set_tilt_angle(tilt_angle)
-            logger.info(f"Tilt angle set to {tilt_angle} for unit {horizontal_unit}. AzimuthalIntegrator will be reset.")
-            reset = True
-
-        if isinstance(vertical_unit, units.UnitFiber):
-            sample_orientation = sample_orientation or vertical_unit.sample_orientation
-        else:
-            sample_orientation = sample_orientation or 1
-
-        if isinstance(vertical_unit, units.UnitFiber):
-            if vertical_unit.sample_orientation != sample_orientation:
-                vertical_unit.set_sample_orientation(sample_orientation)
-                logger.info(f"Sample orientation set to {sample_orientation} for unit {vertical_unit}. AzimuthalIntegrator will be reset.")
-                reset = True
-        else:
-            vertical_unit = units.to_unit(vertical_unit)
-            vertical_unit.set_sample_orientation(sample_orientation)
-            logger.info(f"Sample orientation set to {sample_orientation} for unit {vertical_unit}. AzimuthalIntegrator will be reset.")
-            reset = True
-
-        if isinstance(horizontal_unit, units.UnitFiber):
-            if horizontal_unit.sample_orientation != sample_orientation:
-                horizontal_unit.set_sample_orientation(sample_orientation)
-                logger.info(f"Sample orientation set to {sample_orientation} for unit {horizontal_unit}. AzimuthalIntegrator will be reset.")
-                reset = True
-        else:
-            horizontal_unit = units.to_unit(horizontal_unit)
-            horizontal_unit.set_sample_orientation(sample_orientation)
-            logger.info(f"Sample orientation set to {sample_orientation} for unit {horizontal_unit}. AzimuthalIntegrator will be reset.")
+        if sample_orientation != self.sample_orientation:
+            logger.info(f"Sample orientation set to {sample_orientation}. AzimuthalIntegrator will be reset.")
             reset = True
 
         if reset:
             self.reset()
             logger.info(f"AzimuthalIntegrator was reset. Current grazing parameters: incident_angle: {incident_angle}, tilt_angle: {tilt_angle}, sample_orientation: {sample_orientation}.")
 
+        unit_ip = units.to_unit(unit_ip)
+        unit_ip.set_incident_angle(incident_angle)
+        unit_ip.set_tilt_angle(tilt_angle)
+        unit_ip.set_sample_orientation(sample_orientation)
+
+        unit_oop = units.to_unit(unit_oop)
+        unit_oop.set_incident_angle(incident_angle)
+        unit_oop.set_tilt_angle(tilt_angle)
+        unit_oop.set_sample_orientation(sample_orientation)
+        
+        self._cached_fiber_parameters['incident_angle'] = unit_ip.incident_angle
+        self._cached_fiber_parameters['tilt_angle'] = unit_ip.tilt_angle
+        self._cached_fiber_parameters['sample_orientation'] = unit_ip.sample_orientation
+        
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
-        return self.integrate2d_fiber(data=data, npt_horizontal=npt_horizontal, npt_vertical=npt_vertical,
-                                      horizontal_unit=horizontal_unit, vertical_unit=vertical_unit,
+        return self.integrate2d_fiber(data=data, npt_ip=npt_ip, npt_oop=npt_oop,
+                                      unit_ip=unit_ip, unit_oop=unit_oop,
                                       horizontal_unit_range=horizontal_unit_range,
                                       vertical_unit_range=vertical_unit_range,
                                       sample_orientation=sample_orientation,
@@ -467,3 +496,5 @@ class FiberIntegrator(AzimuthalIntegrator):
                                       method=method,
                                       normalization_factor=normalization_factor,
                                       )
+
+    integrate2d = integrate2d_grazing_incidence
