@@ -87,7 +87,7 @@ class TestFiberIntegrator(unittest.TestCase):
         assert numpy.array_equal(res2d_ref.radial, res2d_string_units.radial)
         assert numpy.array_equal(res2d_ref.azimuthal, res2d_string_units.azimuthal)
         assert numpy.array_equal(res2d_ref.intensity, res2d_string_units.intensity)
-        
+
         unit_qip = get_unit_fiber(name="qip_nm^-1")
         unit_qoop = get_unit_fiber(name="qoop_nm^-1")
         res2d_fiber_units = self.fi.integrate2d(data=self.data, unit_ip=unit_qip, unit_oop=unit_qoop)
@@ -109,11 +109,10 @@ class TestFiberIntegrator(unittest.TestCase):
         unit_qip = get_unit_fiber(name="qip_nm^-1", incident_angle=incident_angle_2, tilt_angle=tilt_angle_2, sample_orientation=sample_orientation_2)
         unit_qoop = get_unit_fiber(name="qoop_nm^-1", incident_angle=incident_angle_2, tilt_angle=tilt_angle_2, sample_orientation=sample_orientation_2)
         res2d_explicit_angles = self.fi.integrate2d(data=self.data, unit_ip=unit_qip, unit_oop=unit_qoop,
-                                                     incident_angle=incident_angle, 
+                                                     incident_angle=incident_angle,
                                                      tilt_angle=tilt_angle,
                                                      sample_orientation=sample_orientation)
-        
+
         assert numpy.array_equal(res2d_ref.radial, res2d_explicit_angles.radial)
         assert numpy.array_equal(res2d_ref.azimuthal, res2d_explicit_angles.azimuthal)
         assert numpy.array_equal(res2d_ref.intensity, res2d_explicit_angles.intensity)
-
