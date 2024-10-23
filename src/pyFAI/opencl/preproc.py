@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "23/04/2024"
+__date__ = "23/10/2024"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -511,7 +511,7 @@ def preproc(raw,
             dtype=numpy.float32,
             out=None
             ):
-    """Common preprocessing step, implemented using OpenCL. May be inefficient
+    r"""Common preprocessing step, implemented using OpenCL. May be inefficient
 
     :param data: raw value, as a numpy array, 1D or 2D
     :param mask: array non null  where data should be ignored
@@ -541,13 +541,13 @@ def preproc(raw,
     Split result:
 
     * When set to False, i.e the default, the pixel-wise operation is:
-      I = (raw - dark)/(flat \* solidangle \* polarization \* absorption)
+      :math:`I = (raw - dark)/(flat * solidangle * polarization * absorption)`
       Invalid pixels are set to the dummy or empty value.
 
     * When split_ressult is set to True, each result result is a float2
       or a float3 (with an additional value for the variance) as such:
 
-      I = [(raw - dark), (variance), (flat \* solidangle \* polarization \* absorption)]
+      :math:`I = [(raw - dark), (variance), (flat * solidangle * polarization * absorption)]`
 
       Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
 
