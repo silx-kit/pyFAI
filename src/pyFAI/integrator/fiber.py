@@ -48,15 +48,15 @@ class FiberIntegrator(AzimuthalIntegrator):
                                 'tilt_angle' : 0.0,
                                 'sample_orientation' : 1,
                                 }
-    
+
     @property
     def incident_angle(self):
         return self._cached_fiber_parameters['incident_angle']
-    
+
     @property
     def tilt_angle(self):
         return self._cached_fiber_parameters['tilt_angle']
-    
+
     @property
     def sample_orientation(self):
         return self._cached_fiber_parameters['sample_orientation']
@@ -367,7 +367,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_oop = units.to_unit(unit_oop)
         unit_oop.set_sample_orientation(sample_orientation)
-        
+
         if reset:
             self.reset()
             logger.info(f"AzimuthalIntegrator was reset. Current fiber parameters: sample_orientation: {sample_orientation}.")
@@ -377,7 +377,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
-        
+
         return self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
@@ -388,8 +388,8 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   azimuth_range=vertical_unit_range,
                                   unit=(unit_ip, unit_oop),
                                   filename=filename)
-    
-    
+
+
 
     def integrate2d_grazing_incidence(self, data,
                                       npt_ip=1000, unit_ip=None, horizontal_unit_range=None,
@@ -401,7 +401,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                       polarization_factor=None, dark=None, flat=None,
                                       method=("no", "histogram", "cython"),
                                       normalization_factor=1.0, **kwargs):
-        
+
         if "npt_horizontal" in kwargs:
             logger.warning(f"npt_horizontal is a valid, but deprecated parameter. Use npt_ip instead")
             npt_ip = kwargs["npt_horizontal"]
@@ -476,11 +476,11 @@ class FiberIntegrator(AzimuthalIntegrator):
         unit_oop.set_incident_angle(incident_angle)
         unit_oop.set_tilt_angle(tilt_angle)
         unit_oop.set_sample_orientation(sample_orientation)
-        
+
         self._cached_fiber_parameters['incident_angle'] = unit_ip.incident_angle
         self._cached_fiber_parameters['tilt_angle'] = unit_ip.tilt_angle
         self._cached_fiber_parameters['sample_orientation'] = unit_ip.sample_orientation
-        
+
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
