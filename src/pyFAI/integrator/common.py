@@ -137,6 +137,7 @@ class Integrator(Geometry):
 
         self._lock = threading.Semaphore()
         self.engines = {}  # key: name of the engine,
+        self._cache_parameters = {}
 
         self._empty = 0.0
 

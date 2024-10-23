@@ -44,22 +44,18 @@ from ..io import save_integrate_result
 from .. import units
 
 class FiberIntegrator(AzimuthalIntegrator):
-    _cached_fiber_parameters = {'incident_angle' : 0.0,
-                                'tilt_angle' : 0.0,
-                                'sample_orientation' : 1,
-                                }
 
     @property
     def incident_angle(self):
-        return self._cached_fiber_parameters['incident_angle']
+        return self._cache_parameters.get('incident_angle', 0.0)
 
     @property
     def tilt_angle(self):
-        return self._cached_fiber_parameters['tilt_angle']
+        return self._cache_parameters.get('tilt_angle', 0.0)
 
     @property
     def sample_orientation(self):
-        return self._cached_fiber_parameters['sample_orientation']
+        return self._cache_parameters.get('sample_orientation', 1)
 
     def integrate_fiber(self, data,
                         npt_output, output_unit=units.Q_OOP, output_unit_range=None,
@@ -372,7 +368,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             self.reset()
             logger.info(f"AzimuthalIntegrator was reset. Current fiber parameters: sample_orientation: {sample_orientation}.")
 
-        self._cached_fiber_parameters['sample_orientation'] = sample_orientation
+        self._cache_parameters['sample_orientation'] = sample_orientation
 
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
@@ -477,9 +473,9 @@ class FiberIntegrator(AzimuthalIntegrator):
         unit_oop.set_tilt_angle(tilt_angle)
         unit_oop.set_sample_orientation(sample_orientation)
 
-        self._cached_fiber_parameters['incident_angle'] = unit_ip.incident_angle
-        self._cached_fiber_parameters['tilt_angle'] = unit_ip.tilt_angle
-        self._cached_fiber_parameters['sample_orientation'] = unit_ip.sample_orientation
+        self._cache_parameters['incident_angle'] = unit_ip.incident_angle
+        self._cache_parameters['tilt_angle'] = unit_ip.tilt_angle
+        self._cache_parameters['sample_orientation'] = unit_ip.sample_orientation
 
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
