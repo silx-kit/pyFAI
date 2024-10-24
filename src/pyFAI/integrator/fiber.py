@@ -37,11 +37,13 @@ __docformat__ = 'restructuredtext'
 import logging
 logger = logging.getLogger(__name__)
 import numpy
+import matplotlib.pyplot as plt
 from .azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..method_registry import IntegrationMethod
 from ..io import save_integrate_result
 from .. import units
+from ..gui.jupyter import subplots, plot2d, plot1d
 
 class FiberIntegrator(AzimuthalIntegrator):
 
@@ -136,7 +138,9 @@ class FiberIntegrator(AzimuthalIntegrator):
                         mask=None, dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None,
                         method=("no", "histogram", "cython"),
-                        normalization_factor=1.0, **kwargs):
+                        normalization_factor=1.0,
+                        plot_integrated_area=False,
+                        **kwargs):
         """Calculate the integrated profile curve along a specific FiberUnit
 
         :param ndarray data: 2D array from the Detector/CCD camera
@@ -182,6 +186,41 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
+
+
+        if plot_integrated_area:
+            array_ip_unit = self.array_from_unit(unit=unit_ip)
+            array_oop_unit = self.array_from_unit(unit=unit_oop)            
+            data_masked = data * numpy.logical_and(array_ip_unit > ip_range[0], array_ip_unit < ip_range[1]) \
+                               * numpy.logical_and(array_oop_unit > oop_range[0], array_oop_unit < oop_range[1])
+
+            res2d = self.integrate2d_ng(data, npt_rad=1000,
+                                  correctSolidAngle=correctSolidAngle,
+                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                  polarization_factor=polarization_factor,
+                                  dark=dark, flat=flat, method=method,
+                                  normalization_factor=normalization_factor,
+                                  unit=(unit_ip, unit_oop))            
+
+            res2d_masked = self.integrate2d_ng(data_masked, npt_rad=1000,
+                                  correctSolidAngle=correctSolidAngle,
+                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                  polarization_factor=polarization_factor,
+                                  dark=dark, flat=flat, method=method,
+                                  normalization_factor=normalization_factor,
+                                  unit=(unit_ip, unit_oop))
+            
+            fig, ax = subplots()
+            plot2d(res2d, ax=ax)
+            plot2d(res2d_masked, ax=ax)
+
+            ax.get_images()[0].set_cmap('gray')
+            ax.get_images()[1].set_cmap('viridis')
+            ax.get_images()[1].set_alpha(0.5)
+
+            plt.show()
+            return
+
 
         if vertical_integration:
             npt_integrated = npt_ip
@@ -254,6 +293,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                     polarization_factor=None, dark=None, flat=None,
                                     method=("no", "histogram", "cython"),
                                     normalization_factor=1.0,
+                                    plot_integrated_area = False,
                                     **kwargs):
         """Calculate the integrated profile curve along a specific FiberUnit, additional inputs for incident angle and tilt angle
 
@@ -311,7 +351,9 @@ class FiberIntegrator(AzimuthalIntegrator):
                                     mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                     polarization_factor=polarization_factor, dark=dark, flat=flat,
                                     method=method,
-                                    normalization_factor=normalization_factor)
+                                    normalization_factor=normalization_factor,
+                                    plot_integrated_area=plot_integrated_area,
+                                    )
 
 
     def integrate2d_fiber(self, data,
