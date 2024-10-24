@@ -26,11 +26,11 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-__author__ = "Edgar GUTIERREZ FERNANDEZ "
-__contact__ = "edgar.gutierrez-fernandez@ESRF.eu"
+__author__ = "Edgar Gutiérrez Fernández "
+__contact__ = "edgar.gutierrez-fernandez@esr.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2024"
+__date__ = "24/10/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -131,7 +131,6 @@ class FiberIntegrator(AzimuthalIntegrator):
                         npt_ip, ip_range=None, unit_ip=None,
                         npt_oop=1000, oop_range=None, unit_oop=None,
                         vertical_integration = True,
-                        npt_integrated=100, integrated_unit=units.Q_IP, integrated_unit_range=None,
                         sample_orientation=None,
                         filename=None,
                         correctSolidAngle=True,
@@ -141,16 +140,17 @@ class FiberIntegrator(AzimuthalIntegrator):
                         normalization_factor=1.0,
                         plot_integrated_area=False,
                         **kwargs):
-        """Calculate the integrated profile curve along a specific FiberUnit
+        """Calculate the integrated profile curve along a specific FiberUnit, additional input for sample_orientation
 
         :param ndarray data: 2D array from the Detector/CCD camera
-        :param int npt_output: number of points in the output pattern
-        :param pyFAI.units.UnitFiber output_unit: Output units
-        :param output_unit_range: The lower and upper range of the output unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_integrated: number of points to be integrated along integrated_unit
-        :param pyFAI.units.UnitFiber integrated_unit: unit to be integrated along integrated_unit_range
-        :param integrated_unit_range: The lower and upper range to be integrated. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param int npt_ip: number of points to be used along the in-plane axis
+        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
+        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
+        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
         :param str filename: output filename in 2/3 column ascii format
         :param bool correctSolidAngle: correct for solid angle of each pixel if True
         :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
@@ -164,6 +164,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param ndarray flat: flat field image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
+        :param bool plot_integrated_area: Visual aid to show the integrated area of the pattern and the result. DOES NOT SAVE NOR RETURN THE RESULT!
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
@@ -186,41 +187,6 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
-
-
-        if plot_integrated_area:
-            array_ip_unit = self.array_from_unit(unit=unit_ip)
-            array_oop_unit = self.array_from_unit(unit=unit_oop)            
-            data_masked = data * numpy.logical_and(array_ip_unit > ip_range[0], array_ip_unit < ip_range[1]) \
-                               * numpy.logical_and(array_oop_unit > oop_range[0], array_oop_unit < oop_range[1])
-
-            res2d = self.integrate2d_ng(data, npt_rad=1000,
-                                  correctSolidAngle=correctSolidAngle,
-                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
-                                  polarization_factor=polarization_factor,
-                                  dark=dark, flat=flat, method=method,
-                                  normalization_factor=normalization_factor,
-                                  unit=(unit_ip, unit_oop))            
-
-            res2d_masked = self.integrate2d_ng(data_masked, npt_rad=1000,
-                                  correctSolidAngle=correctSolidAngle,
-                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
-                                  polarization_factor=polarization_factor,
-                                  dark=dark, flat=flat, method=method,
-                                  normalization_factor=normalization_factor,
-                                  unit=(unit_ip, unit_oop))
-            
-            fig, ax = subplots()
-            plot2d(res2d, ax=ax)
-            plot2d(res2d_masked, ax=ax)
-
-            ax.get_images()[0].set_cmap('gray')
-            ax.get_images()[1].set_cmap('viridis')
-            ax.get_images()[1].set_alpha(0.5)
-
-            plt.show()
-            return
-
 
         if vertical_integration:
             npt_integrated = npt_ip
@@ -251,15 +217,15 @@ class FiberIntegrator(AzimuthalIntegrator):
         sum_signal = res.sum_signal.sum(axis=-1)
         count = res.count.sum(axis=-1)
         sum_normalization = res._sum_normalization.sum(axis=-1)
-        mask = numpy.where(count == 0)
+        mask_ = numpy.where(count == 0)
         empty = dummy if dummy is not None else self._empty
         intensity = sum_signal / sum_normalization
-        intensity[mask] = empty
+        intensity[mask_] = empty
 
         if res.sigma is not None:
             sum_variance = res.sum_variance.sum(axis=-1)
             sigma = numpy.sqrt(sum_variance) / sum_normalization
-            sigma[mask] = empty
+            sigma[mask_] = empty
         else:
             sum_variance = None
             sigma = None
@@ -277,14 +243,48 @@ class FiberIntegrator(AzimuthalIntegrator):
         result._set_method = res.method
         result._set_compute_engine = res.compute_engine
 
+        if plot_integrated_area:
+            array_ip_unit = self.array_from_unit(unit=unit_ip)
+            array_oop_unit = self.array_from_unit(unit=unit_oop)            
+            data_masked = data * numpy.logical_and(array_ip_unit > ip_range[0], array_ip_unit < ip_range[1]) \
+                               * numpy.logical_and(array_oop_unit > oop_range[0], array_oop_unit < oop_range[1])
+
+            res2d = self.integrate2d_ng(data, npt_rad=1000,
+                                  correctSolidAngle=correctSolidAngle,
+                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                  polarization_factor=polarization_factor,
+                                  dark=dark, flat=flat, method=method,
+                                  normalization_factor=normalization_factor,
+                                  unit=(unit_ip, unit_oop))            
+
+            res2d_masked = self.integrate2d_ng(data_masked, npt_rad=1000,
+                                  correctSolidAngle=correctSolidAngle,
+                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                  polarization_factor=polarization_factor,
+                                  dark=dark, flat=flat, method=method,
+                                  normalization_factor=normalization_factor,
+                                  unit=(unit_ip, unit_oop))
+            
+            fig, axes = subplots(ncols=2)
+            plot2d(res2d, ax=axes[0])
+            plot2d(res2d_masked, ax=axes[0])
+
+            axes[0].get_images()[0].set_cmap('gray')
+            axes[0].get_images()[1].set_cmap('viridis')
+            axes[0].get_images()[1].set_alpha(0.5)
+
+            plot1d(result, ax=axes[1])
+            plt.show()
+            return
+
         if filename is not None:
             save_integrate_result(filename, result)
 
         return result
 
     def integrate_grazing_incidence(self, data,
-                                    npt_ip, ip_range=None, unit_ip=None,
-                                    npt_oop=1000, oop_range=None, unit_oop=None,
+                                    npt_ip, unit_ip=None, ip_range=None, 
+                                    npt_oop=1000, unit_oop=None, oop_range=None,
                                     vertical_integration = True,
                                     incident_angle=None, tilt_angle=None, sample_orientation=None,
                                     filename=None,
@@ -295,18 +295,19 @@ class FiberIntegrator(AzimuthalIntegrator):
                                     normalization_factor=1.0,
                                     plot_integrated_area = False,
                                     **kwargs):
-        """Calculate the integrated profile curve along a specific FiberUnit, additional inputs for incident angle and tilt angle
+        """Calculate the integrated profile curve along a specific FiberUnit, additional inputs for incident angle, tilt angle and sample_orientation
 
         :param ndarray data: 2D array from the Detector/CCD camera
-        :param int npt_output: number of points in the output pattern
-        :param pyFAI.units.UnitFiber output_unit: Output units
-        :param output_unit_range: The lower and upper range of the output unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_integrated: number of points to be integrated along integrated_unit
-        :param pyFAI.units.UnitFiber integrated_unit: unit to be integrated along integrated_unit_range
-        :param integrated_unit_range: The lower and upper range to be integrated. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_ip: number of points to be used along the in-plane axis
+        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
+        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
         :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
         :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-        :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
         :param str filename: output filename in 2/3 column ascii format
         :param bool correctSolidAngle: correct for solid angle of each pixel if True
         :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
@@ -320,9 +321,11 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param ndarray flat: flat field image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
+        :param bool plot_integrated_area: Visual aid to show the integrated area of the pattern and the result. DOES NOT SAVE NOR RETURN THE RESULT!
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
+
         if "npt_output" or "npt_integrated" in kwargs:
             logger.warning(f"npt_output and npt_integrated are deprecated parameters. Use npt_oop and npt_ip instead")
 
@@ -354,7 +357,9 @@ class FiberIntegrator(AzimuthalIntegrator):
                                     normalization_factor=normalization_factor,
                                     plot_integrated_area=plot_integrated_area,
                                     )
-
+    
+    integrate1d_grazing_incidence = integrate_grazing_incidence
+    integrate1d_fiber = integrate_fiber
 
     def integrate2d_fiber(self, data,
                           npt_ip=1000, unit_ip=None, ip_range=None,
@@ -366,7 +371,32 @@ class FiberIntegrator(AzimuthalIntegrator):
                           polarization_factor=None, dark=None, flat=None,
                           method=("no", "histogram", "cython"),
                           normalization_factor=1.0, **kwargs):
+        """Reshapes the data pattern as a function of two FiberUnits, additional inputs for sample_orientation
 
+        :param ndarray data: 2D array from the Detector/CCD camera
+        :param int npt_ip: number of points to be used along the in-plane axis
+        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
+        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param str filename: output filename in 2/3 column ascii format
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param float normalization_factor: Value of a normalization monitor
+        :return: regrouped intensity and unit arrays
+        :rtype: Integrate2dResult
+        """
         if "npt_horizontal" in kwargs:
             logger.warning(f"npt_horizontal is a valid, but deprecated parameter. Use npt_ip instead")
             npt_ip = kwargs["npt_horizontal"]
@@ -396,7 +426,6 @@ class FiberIntegrator(AzimuthalIntegrator):
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
-
         return self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
@@ -408,7 +437,6 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   unit=(unit_ip, unit_oop),
                                   filename=filename)
 
-
     def integrate2d_grazing_incidence(self, data,
                                       npt_ip=1000, unit_ip=None, ip_range=None,
                                       npt_oop=1000, unit_oop=None, oop_range=None,
@@ -419,6 +447,34 @@ class FiberIntegrator(AzimuthalIntegrator):
                                       polarization_factor=None, dark=None, flat=None,
                                       method=("no", "histogram", "cython"),
                                       normalization_factor=1.0, **kwargs):
+        """Reshapes the data pattern as a function of two FiberUnits, additional inputs for incident angle, tilt angle and sample_orientation
+
+        :param ndarray data: 2D array from the Detector/CCD camera
+        :param int npt_ip: number of points to be used along the in-plane axis
+        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
+        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param str filename: output filename in 2/3 column ascii format
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param float normalization_factor: Value of a normalization monitor
+        :return: regrouped intensity and unit arrays
+        :rtype: Integrate2dResult
+        """
 
         if "npt_horizontal" in kwargs:
             logger.warning(f"npt_horizontal is a valid, but deprecated parameter. Use npt_ip instead")
@@ -463,5 +519,3 @@ class FiberIntegrator(AzimuthalIntegrator):
                                       method=method,
                                       normalization_factor=normalization_factor,
                                       )
-
-    integrate2d = integrate2d_grazing_incidence
