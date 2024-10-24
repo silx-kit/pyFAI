@@ -263,6 +263,8 @@ class TestFiberIntegrator(unittest.TestCase):
         npt_ip = 100
         npt_oop = 100
 
+        threshold = 1.0
+
         sample_orientation = 1
         oop_range_1 = [-5,5]
         ip_range_1 = [0,20]
@@ -283,7 +285,7 @@ class TestFiberIntegrator(unittest.TestCase):
                                                        vertical_integration=True,
         )
 
-        self.assertLess((abs(res_so_1.intensity) - abs(res_so_2.intensity)).max(), 1.0)
+        self.assertLess((abs(res_so_1.intensity) - abs(res_so_2.intensity)).max(), threshold)
 
         sample_orientation = 3
         oop_range_3 = [-5,5]
@@ -295,7 +297,7 @@ class TestFiberIntegrator(unittest.TestCase):
                                                        vertical_integration=False,
         )
 
-        self.assertLess((abs(res_so_3.intensity) - abs(res_so_2.intensity)).max(), 1.0)
+        self.assertLess((abs(res_so_3.intensity) - abs(res_so_2.intensity)).max(), threshold)
 
         sample_orientation = 4
         oop_range_4 = [-20,5]
@@ -307,4 +309,4 @@ class TestFiberIntegrator(unittest.TestCase):
                                                        vertical_integration=True,
         )
 
-        self.assertLess((abs(res_so_4.intensity) - abs(res_so_3.intensity)).max(), 1.0)
+        self.assertLess((abs(res_so_4.intensity) - abs(res_so_3.intensity)).max(), threshold)
