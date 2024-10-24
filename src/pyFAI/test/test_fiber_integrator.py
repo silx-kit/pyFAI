@@ -68,34 +68,36 @@ class TestFiberIntegrator(unittest.TestCase):
         res2d_ref = self.fi.integrate2d_grazing_incidence(data=self.data)
         res2d = self.fi.integrate2d(data=self.data)
 
-        assert numpy.array_equal(res2d_ref.radial, res2d.radial)
-        assert numpy.array_equal(res2d_ref.azimuthal, res2d.azimuthal)
-        assert numpy.array_equal(res2d_ref.intensity, res2d.intensity)
+        self.assertEqual(abs(res2d_ref.radial - res2d.radial).max(), 0)
+        self.assertEqual(abs(res2d_ref.azimuthal - res2d.azimuthal).max(), 0)
+        self.assertEqual(abs(res2d_ref.intensity - res2d.intensity).max(), 0)
 
     def test_integrate2d_deprecated_parameters(self):
         res2d_ref = self.fi.integrate2d_grazing_incidence(data=self.data, npt_ip=500, npt_oop=500)
         res2d_deprecated = self.fi.integrate2d(data=self.data, npt_horizontal=500, npt_vertical=500)
 
-        assert numpy.array_equal(res2d_ref.radial, res2d_deprecated.radial)
-        assert numpy.array_equal(res2d_ref.azimuthal, res2d_deprecated.azimuthal)
-        assert numpy.array_equal(res2d_ref.intensity, res2d_deprecated.intensity)
+        self.assertEqual(abs(res2d_ref.radial - res2d_deprecated.radial).max(), 0)
+        self.assertEqual(abs(res2d_ref.azimuthal - res2d_deprecated.azimuthal).max(), 0)
+        self.assertEqual(abs(res2d_ref.intensity - res2d_deprecated.intensity).max(), 0)
 
     def test_integrate2d_explicit_units(self):
         res2d_ref = self.fi.integrate2d(data=self.data)
 
         res2d_string_units = self.fi.integrate2d(data=self.data, unit_ip="qip_nm^-1", unit_oop="qoop_nm^-1")
-        assert numpy.array_equal(res2d_ref.radial, res2d_string_units.radial)
-        assert numpy.array_equal(res2d_ref.azimuthal, res2d_string_units.azimuthal)
-        assert numpy.array_equal(res2d_ref.intensity, res2d_string_units.intensity)
+
+        self.assertEqual(abs(res2d_ref.radial - res2d_string_units.radial).max(), 0)
+        self.assertEqual(abs(res2d_ref.azimuthal - res2d_string_units.azimuthal).max(), 0)
+        self.assertEqual(abs(res2d_ref.intensity - res2d_string_units.intensity).max(), 0)
 
         unit_qip = get_unit_fiber(name="qip_nm^-1")
         unit_qoop = get_unit_fiber(name="qoop_nm^-1")
         res2d_fiber_units = self.fi.integrate2d(data=self.data, unit_ip=unit_qip, unit_oop=unit_qoop)
-        assert numpy.array_equal(res2d_ref.radial, res2d_fiber_units.radial)
-        assert numpy.array_equal(res2d_ref.azimuthal, res2d_fiber_units.azimuthal)
-        assert numpy.array_equal(res2d_ref.intensity, res2d_fiber_units.intensity)
 
-    def test_integrate2d_preferences(self):
+        self.assertEqual(abs(res2d_ref.radial - res2d_fiber_units.radial).max(), 0)
+        self.assertEqual(abs(res2d_ref.azimuthal - res2d_fiber_units.azimuthal).max(), 0)
+        self.assertEqual(abs(res2d_ref.intensity - res2d_fiber_units.intensity).max(), 0)
+
+    def test_integrate2d_priority(self):
         incident_angle = 0.2
         tilt_angle = 1.0
         sample_orientation = 3
@@ -113,6 +115,108 @@ class TestFiberIntegrator(unittest.TestCase):
                                                      tilt_angle=tilt_angle,
                                                      sample_orientation=sample_orientation)
 
-        assert numpy.array_equal(res2d_ref.radial, res2d_explicit_angles.radial)
-        assert numpy.array_equal(res2d_ref.azimuthal, res2d_explicit_angles.azimuthal)
-        assert numpy.array_equal(res2d_ref.intensity, res2d_explicit_angles.intensity)
+        self.assertEqual(abs(res2d_ref.radial - res2d_explicit_angles.radial).max(), 0)
+        self.assertEqual(abs(res2d_ref.azimuthal - res2d_explicit_angles.azimuthal).max(), 0)
+        self.assertEqual(abs(res2d_ref.intensity - res2d_explicit_angles.intensity).max(), 0)
+
+    def test_integrate2d_fiber(self):
+        sample_orientation = 3
+        res2d_ref = self.fi.integrate2d(data=self.data, sample_orientation=sample_orientation)
+        res2d_fiber = self.fi.integrate2d_fiber(data=self.data, sample_orientation=sample_orientation)
+
+        self.assertEqual(abs(res2d_ref.radial - res2d_fiber.radial).max(), 0)
+        self.assertEqual(abs(res2d_ref.azimuthal - res2d_fiber.azimuthal).max(), 0)
+        self.assertEqual(abs(res2d_ref.intensity - res2d_fiber.intensity).max(), 0)
+
+        incident_angle = 0.2
+        tilt_angle = 1.0
+        sample_orientation = 3
+
+        res2d_ref = self.fi.integrate2d(data=self.data, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+
+        unit_qip = get_unit_fiber(name="qip_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+        unit_qoop = get_unit_fiber(name="qoop_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+        res2d_fiber = self.fi.integrate2d_fiber(data=self.data, unit_ip=unit_qip, unit_oop=unit_qoop)
+
+        self.assertEqual(abs(res2d_ref.radial - res2d_fiber.radial).max(), 0)
+        self.assertEqual(abs(res2d_ref.azimuthal - res2d_fiber.azimuthal).max(), 0)
+        self.assertEqual(abs(res2d_ref.intensity - res2d_fiber.intensity).max(), 0)
+
+    def test_integrate1d_grazing(self):
+        npt_ip = 500
+        res1d_ref = self.fi.integrate_grazing_incidence(data=self.data, npt_ip=npt_ip)
+        res1d = self.fi.integrate_fiber(data=self.data, npt_ip=npt_ip)
+
+        self.assertEqual(abs(res1d_ref.radial - res1d.radial).max(), 0)
+        self.assertEqual(abs(res1d_ref.intensity - res1d.intensity).max(), 0)
+
+    def test_integrate1d_grazing_parameters(self):
+        npt_ip = 500
+        incident_angle = 0.2
+        tilt_angle = 1.0
+        sample_orientation = 3
+
+        res1d_ref = self.fi.integrate_grazing_incidence(data=self.data, npt_ip=npt_ip,
+                                                        incident_angle=incident_angle,
+                                                        tilt_angle=tilt_angle,
+                                                        sample_orientation=sample_orientation,
+                                                        )
+        
+        res1d_string_units = self.fi.integrate_grazing_incidence(data=self.data, npt_ip=npt_ip,
+                                                                 unit_ip="qip_nm^-1", unit_oop="qoop_nm^-1",
+                                                                 incident_angle=incident_angle,
+                                                                 tilt_angle=tilt_angle,
+                                                                 sample_orientation=sample_orientation,
+        )
+
+
+        self.assertEqual(abs(res1d_ref.radial - res1d_string_units.radial).max(), 0)
+        self.assertEqual(abs(res1d_ref.intensity - res1d_string_units.intensity).max(), 0)
+
+        qip = get_unit_fiber(name="qip_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+        qoop = get_unit_fiber(name="qoop_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+
+        res1d_fiber_units = self.fi.integrate_grazing_incidence(data=self.data, npt_ip=npt_ip,
+                                                                unit_ip=qip, unit_oop=qoop,
+        )
+
+        self.assertEqual(abs(res1d_ref.radial - res1d_fiber_units.radial).max(), 0)
+        self.assertEqual(abs(res1d_ref.intensity - res1d_fiber_units.intensity).max(), 0)
+       
+
+    # def test_integrate1d_priority(self):
+        npt_ip = 500
+        incident_angle = 0.2
+        tilt_angle = 1.0
+        sample_orientation = 3
+        res1d_ref = self.fi.integrate_grazing_incidence(data=self.data, npt_ip=npt_ip,
+                                                        incident_angle=incident_angle,
+                                                        tilt_angle=tilt_angle,
+                                                        sample_orientation=sample_orientation,
+                                                        )
+
+        incident_angle_2 = 0.77
+        tilt_angle_2 = -1.0
+        sample_orientation_2 = 2
+
+        qip = get_unit_fiber(name="qip_nm^-1", incident_angle=incident_angle_2, tilt_angle=tilt_angle_2, sample_orientation=sample_orientation_2)
+        qoop = get_unit_fiber(name="qoop_nm^-1", incident_angle=incident_angle_2, tilt_angle=tilt_angle_2, sample_orientation=sample_orientation_2)
+
+        res1d = self.fi.integrate_grazing_incidence(data=self.data, npt_ip=npt_ip,
+                                                    unit_ip=qip, unit_oop=qoop,
+                                                    incident_angle=incident_angle,
+                                                    tilt_angle=tilt_angle,
+                                                    sample_orientation=sample_orientation,
+                                                    )
+
+        self.assertEqual(abs(res1d_ref.radial - res1d.radial).max(), 0)
+        self.assertEqual(abs(res1d_ref.intensity - res1d.intensity).max(), 0)
+
+        res1d_wrong = self.fi.integrate_grazing_incidence(data=self.data, npt_ip=npt_ip,
+                                                    unit_ip=qip, unit_oop=qoop,
+                                                    )
+
+        self.assertFalse(abs(res1d_ref.radial - res1d_wrong.radial).max(), 0)
+        self.assertFalse(abs(res1d_ref.intensity - res1d_wrong.intensity).max(), 0)
+
+        
