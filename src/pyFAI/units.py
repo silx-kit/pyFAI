@@ -172,6 +172,14 @@ class UnitFiber(Unit):
         self._tilt_angle = tilt_angle
         self._sample_orientation = sample_orientation
 
+    def __repr__(self):
+        return f"""
+{self.name} 
+Incident_angle={self.incident_angle}\u00b0
+Tilt_angle={self.tilt_angle}\u00b0
+Sample orientation={self.sample_orientation}
+"""
+    
     @property
     def incident_angle(self):
         return self._incident_angle
