@@ -188,6 +188,41 @@ class FiberIntegrator(AzimuthalIntegrator):
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
+
+        if plot_integrated_area:
+            array_ip_unit = self.array_from_unit(unit=unit_ip)
+            array_oop_unit = self.array_from_unit(unit=unit_oop)
+            data_masked = data * numpy.logical_and(array_ip_unit > ip_range[0], array_ip_unit < ip_range[1]) \
+                               * numpy.logical_and(array_oop_unit > oop_range[0], array_oop_unit < oop_range[1])
+
+            res2d = self.integrate2d_ng(data, npt_rad=1000,
+                                  correctSolidAngle=correctSolidAngle,
+                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                  polarization_factor=polarization_factor,
+                                  dark=dark, flat=flat, method=method,
+                                  normalization_factor=normalization_factor,
+                                  unit=(unit_ip, unit_oop))
+
+            res2d_masked = self.integrate2d_ng(data_masked, npt_rad=1000,
+                                  correctSolidAngle=correctSolidAngle,
+                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                  polarization_factor=polarization_factor,
+                                  dark=dark, flat=flat, method=method,
+                                  normalization_factor=normalization_factor,
+                                  unit=(unit_ip, unit_oop))
+
+            fig, ax = subplots()
+            plot2d(res2d, ax=ax)
+            plot2d(res2d_masked, ax=ax)
+
+            ax.get_images()[0].set_cmap('gray')
+            ax.get_images()[1].set_cmap('viridis')
+            ax.get_images()[1].set_alpha(0.5)
+
+            plt.show()
+            return
+
+
         if vertical_integration:
             npt_integrated = npt_ip
             integrated_unit_range = ip_range
