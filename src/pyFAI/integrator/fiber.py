@@ -190,7 +190,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         if plot_integrated_area:
             array_ip_unit = self.array_from_unit(unit=unit_ip)
-            array_oop_unit = self.array_from_unit(unit=unit_oop)            
+            array_oop_unit = self.array_from_unit(unit=unit_oop)
             data_masked = data * numpy.logical_and(array_ip_unit > ip_range[0], array_ip_unit < ip_range[1]) \
                                * numpy.logical_and(array_oop_unit > oop_range[0], array_oop_unit < oop_range[1])
 
@@ -200,7 +200,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   polarization_factor=polarization_factor,
                                   dark=dark, flat=flat, method=method,
                                   normalization_factor=normalization_factor,
-                                  unit=(unit_ip, unit_oop))            
+                                  unit=(unit_ip, unit_oop))
 
             res2d_masked = self.integrate2d_ng(data_masked, npt_rad=1000,
                                   correctSolidAngle=correctSolidAngle,
@@ -209,7 +209,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   dark=dark, flat=flat, method=method,
                                   normalization_factor=normalization_factor,
                                   unit=(unit_ip, unit_oop))
-            
+
             fig, ax = subplots()
             plot2d(res2d, ax=ax)
             plot2d(res2d_masked, ax=ax)
