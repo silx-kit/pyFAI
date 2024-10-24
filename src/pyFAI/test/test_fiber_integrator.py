@@ -161,7 +161,7 @@ class TestFiberIntegrator(unittest.TestCase):
                                                         tilt_angle=tilt_angle,
                                                         sample_orientation=sample_orientation,
                                                         )
-        
+
         res1d_string_units = self.fi.integrate_grazing_incidence(data=self.data, npt_ip=npt_ip,
                                                                  unit_ip="qip_nm^-1", unit_oop="qoop_nm^-1",
                                                                  incident_angle=incident_angle,
@@ -182,7 +182,7 @@ class TestFiberIntegrator(unittest.TestCase):
 
         self.assertEqual(abs(res1d_ref.radial - res1d_fiber_units.radial).max(), 0)
         self.assertEqual(abs(res1d_ref.intensity - res1d_fiber_units.intensity).max(), 0)
-       
+
 
     # def test_integrate1d_priority(self):
         npt_ip = 500
@@ -218,5 +218,3 @@ class TestFiberIntegrator(unittest.TestCase):
 
         self.assertFalse(abs(res1d_ref.radial - res1d_wrong.radial).max(), 0)
         self.assertFalse(abs(res1d_ref.intensity - res1d_wrong.intensity).max(), 0)
-
-        

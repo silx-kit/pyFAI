@@ -56,7 +56,7 @@ class FiberIntegrator(AzimuthalIntegrator):
     @property
     def sample_orientation(self):
         return self._cache_parameters.get('sample_orientation', 1)
-    
+
     def parse_units(self, unit_ip, unit_oop, incident_angle=None, tilt_angle=None, sample_orientation=None):
         if unit_ip is None:
             unit_ip = units.get_unit_fiber("qip_nm^-1")
@@ -175,7 +175,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_ip, unit_oop = self.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
                                              sample_orientation=sample_orientation)
-        
+
         self.reset_integrator(incident_angle=unit_ip.incident_angle,
                               tilt_angle=unit_ip.tilt_angle,
                               sample_orientation=unit_ip.sample_orientation)
@@ -243,7 +243,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         return result
 
-    def integrate_grazing_incidence(self, data, 
+    def integrate_grazing_incidence(self, data,
                                     npt_ip, ip_range=None, unit_ip=None,
                                     npt_oop=1000, oop_range=None, unit_oop=None,
                                     vertical_integration = True,
@@ -296,11 +296,11 @@ class FiberIntegrator(AzimuthalIntegrator):
                                              incident_angle=incident_angle,
                                              tilt_angle=tilt_angle,
                                              sample_orientation=sample_orientation)
-        
+
         self.reset_integrator(incident_angle=unit_ip.incident_angle,
                               tilt_angle=unit_ip.tilt_angle,
                               sample_orientation=unit_ip.sample_orientation)
-        
+
         return self.integrate_fiber(data=data,
                                     npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
                                     npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
@@ -312,7 +312,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                     polarization_factor=polarization_factor, dark=dark, flat=flat,
                                     method=method,
                                     normalization_factor=normalization_factor)
-    
+
 
     def integrate2d_fiber(self, data,
                           npt_ip=1000, unit_ip=None, ip_range=None,
@@ -346,11 +346,11 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_ip, unit_oop = self.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
                                              sample_orientation=sample_orientation)
-        
+
         self.reset_integrator(incident_angle=unit_ip.incident_angle,
                               tilt_angle=unit_ip.tilt_angle,
                               sample_orientation=unit_ip.sample_orientation)
-        
+
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
@@ -401,7 +401,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                              incident_angle=incident_angle,
                                              tilt_angle=tilt_angle,
                                              sample_orientation=sample_orientation)
-        
+
         self.reset_integrator(incident_angle=unit_ip.incident_angle,
                               tilt_angle=unit_ip.tilt_angle,
                               sample_orientation=unit_ip.sample_orientation)
