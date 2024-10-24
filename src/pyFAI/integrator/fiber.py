@@ -280,7 +280,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         if plot_integrated_area:
             array_ip_unit = self.array_from_unit(unit=unit_ip)
-            array_oop_unit = self.array_from_unit(unit=unit_oop)            
+            array_oop_unit = self.array_from_unit(unit=unit_oop)
             data_masked = data * numpy.logical_and(array_ip_unit > ip_range[0], array_ip_unit < ip_range[1]) \
                                * numpy.logical_and(array_oop_unit > oop_range[0], array_oop_unit < oop_range[1])
 
@@ -290,7 +290,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   polarization_factor=polarization_factor,
                                   dark=dark, flat=flat, method=method,
                                   normalization_factor=normalization_factor,
-                                  unit=(unit_ip, unit_oop))            
+                                  unit=(unit_ip, unit_oop))
 
             res2d_masked = self.integrate2d_ng(data_masked, npt_rad=1000,
                                   correctSolidAngle=correctSolidAngle,
@@ -299,7 +299,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   dark=dark, flat=flat, method=method,
                                   normalization_factor=normalization_factor,
                                   unit=(unit_ip, unit_oop))
-            
+
             fig, axes = subplots(ncols=2)
             plot2d(res2d, ax=axes[0])
             plot2d(res2d_masked, ax=axes[0])
@@ -318,7 +318,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         return result
 
     def integrate_grazing_incidence(self, data,
-                                    npt_ip, unit_ip=None, ip_range=None, 
+                                    npt_ip, unit_ip=None, ip_range=None,
                                     npt_oop=1000, unit_oop=None, oop_range=None,
                                     vertical_integration = True,
                                     incident_angle=None, tilt_angle=None, sample_orientation=None,
@@ -392,7 +392,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                     normalization_factor=normalization_factor,
                                     plot_integrated_area=plot_integrated_area,
                                     )
-    
+
     integrate1d_grazing_incidence = integrate_grazing_incidence
     integrate1d_fiber = integrate_fiber
 
