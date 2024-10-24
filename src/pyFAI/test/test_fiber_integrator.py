@@ -184,7 +184,7 @@ class TestFiberIntegrator(unittest.TestCase):
         self.assertEqual(abs(res1d_ref.intensity - res1d_fiber_units.intensity).max(), 0)
        
 
-    # def test_integrate1d_priority(self):
+    def test_integrate1d_priority(self):
         npt_ip = 500
         incident_angle = 0.2
         tilt_angle = 1.0
