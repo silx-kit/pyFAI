@@ -45,7 +45,7 @@ from .. import units
 from ..utils.decorators import deprecated_warning
 
 class FiberIntegrator(AzimuthalIntegrator):
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._cache_parameters = {}
