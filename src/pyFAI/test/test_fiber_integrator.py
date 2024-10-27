@@ -52,7 +52,7 @@ class TestFiberIntegrator(unittest.TestCase):
         dist = 0.1
         poni1 = 0.02
         poni2 = 0.02
-        detector = detector_factory("Eiger2_4M")
+        detector = detector_factory("Pilatus100k")
         wavelength = 1e-10
         calibrant = get_calibrant("LaB6")
 
