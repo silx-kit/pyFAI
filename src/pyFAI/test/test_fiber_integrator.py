@@ -65,7 +65,7 @@ class TestFiberIntegrator(unittest.TestCase):
                              )
         cls.data = cls.calibrant.fake_calibration_image(ai=cls.fi)
         cls.poni_p1m = UtilsTest.getimage("Pilatus1M.poni")
-        
+
     def test_instantiation(self):
         p1m = detector_factory("Pilatus1M")
         _ai = AzimuthalIntegrator(detector=p1m)
@@ -90,7 +90,7 @@ class TestFiberIntegrator(unittest.TestCase):
         self.assertEqual(abs(res2d_load.radial - res2d_from_ai.radial).max(), 0)
         self.assertEqual(abs(res2d_load.azimuthal - res2d_from_ai.azimuthal).max(), 0)
         self.assertEqual(abs(res2d_load.intensity - res2d_from_ai.intensity).max(), 0)
-        
+
     def test_integrate2d_default(self):
         res2d_ref = self.fi.integrate2d_grazing_incidence(data=self.data)
         res2d_parameters = self.fi.integrate2d_grazing_incidence(data=self.data,
@@ -99,7 +99,7 @@ class TestFiberIntegrator(unittest.TestCase):
                                                                  unit_oop=get_unit_fiber(name="qoop_nm^-1", incident_angle=0.0, tilt_angle=0.0, sample_orientation=1),
                                                                  ip_range=None, oop_range=None,
                                                                  )
-        
+
         self.assertEqual(abs(res2d_ref.radial - res2d_parameters.radial).max(), 0)
         self.assertEqual(abs(res2d_ref.azimuthal - res2d_parameters.azimuthal).max(), 0)
         self.assertEqual(abs(res2d_ref.intensity - res2d_parameters.intensity).max(), 0)
@@ -197,10 +197,10 @@ class TestFiberIntegrator(unittest.TestCase):
     def test_integrate1d_runtimeerror(self):
         def res1d_ref():
             wrong = self.fi.integrate1d_grazing_incidence(data=self.data)
-            
+
         self.assertRaises(RuntimeError, res1d_ref)
         correct = self.fi.integrate1d_grazing_incidence(data=self.data, npt_oop=100)
-        
+
     def test_integrate1d_equivalences(self):
         npt_ip = 200
         npt_oop = 100
