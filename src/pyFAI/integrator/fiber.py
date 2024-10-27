@@ -37,13 +37,11 @@ __docformat__ = 'restructuredtext'
 import logging
 logger = logging.getLogger(__name__)
 import numpy
-import matplotlib.pyplot as plt
 from .azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..method_registry import IntegrationMethod
 from ..io import save_integrate_result
 from .. import units
-from ..gui.jupyter import subplots, plot2d, plot1d
 
 class FiberIntegrator(AzimuthalIntegrator):
 
@@ -138,7 +136,6 @@ class FiberIntegrator(AzimuthalIntegrator):
                         polarization_factor=None, dark=None, flat=None,
                         method=("no", "histogram", "cython"),
                         normalization_factor=1.0,
-                        plot_integrated_area=False,
                         **kwargs):
         """Calculate the integrated profile curve along a specific FiberUnit, additional input for sample_orientation
 
@@ -164,7 +161,6 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param ndarray flat: flat field image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
-        :param bool plot_integrated_area: Visual aid to show the integrated area of the pattern and the result. DOES NOT SAVE NOR RETURN THE RESULT!
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
@@ -243,40 +239,6 @@ class FiberIntegrator(AzimuthalIntegrator):
         result._set_method = res.method
         result._set_compute_engine = res.compute_engine
 
-        if plot_integrated_area:
-            array_ip_unit = self.array_from_unit(unit=unit_ip)
-            array_oop_unit = self.array_from_unit(unit=unit_oop)
-            data_masked = data * numpy.logical_and(array_ip_unit > ip_range[0], array_ip_unit < ip_range[1]) \
-                               * numpy.logical_and(array_oop_unit > oop_range[0], array_oop_unit < oop_range[1])
-
-            res2d = self.integrate2d_ng(data, npt_rad=1000,
-                                  correctSolidAngle=correctSolidAngle,
-                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
-                                  polarization_factor=polarization_factor,
-                                  dark=dark, flat=flat, method=method,
-                                  normalization_factor=normalization_factor,
-                                  unit=(unit_ip, unit_oop))
-
-            res2d_masked = self.integrate2d_ng(data_masked, npt_rad=1000,
-                                  correctSolidAngle=correctSolidAngle,
-                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
-                                  polarization_factor=polarization_factor,
-                                  dark=dark, flat=flat, method=method,
-                                  normalization_factor=normalization_factor,
-                                  unit=(unit_ip, unit_oop))
-
-            fig, axes = subplots(ncols=2)
-            plot2d(res2d, ax=axes[0])
-            plot2d(res2d_masked, ax=axes[0])
-
-            axes[0].get_images()[0].set_cmap('gray')
-            axes[0].get_images()[1].set_cmap('viridis')
-            axes[0].get_images()[1].set_alpha(0.5)
-
-            plot1d(result, ax=axes[1])
-            plt.show()
-            return
-
         if filename is not None:
             save_integrate_result(filename, result)
 
@@ -293,7 +255,6 @@ class FiberIntegrator(AzimuthalIntegrator):
                                     polarization_factor=None, dark=None, flat=None,
                                     method=("no", "histogram", "cython"),
                                     normalization_factor=1.0,
-                                    plot_integrated_area = False,
                                     **kwargs):
         """Calculate the integrated profile curve along a specific FiberUnit, additional inputs for incident angle, tilt angle and sample_orientation
 
@@ -321,7 +282,6 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param ndarray flat: flat field image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
-        :param bool plot_integrated_area: Visual aid to show the integrated area of the pattern and the result. DOES NOT SAVE NOR RETURN THE RESULT!
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
@@ -355,7 +315,6 @@ class FiberIntegrator(AzimuthalIntegrator):
                                     polarization_factor=polarization_factor, dark=dark, flat=flat,
                                     method=method,
                                     normalization_factor=normalization_factor,
-                                    plot_integrated_area=plot_integrated_area,
                                     )
 
     integrate1d_grazing_incidence = integrate_grazing_incidence
