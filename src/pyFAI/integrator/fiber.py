@@ -209,7 +209,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
         elif not vertical_integration and npt_ip is None:
             raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
-        
+
         npt_oop = npt_oop or 500
         npt_ip = npt_ip or 500
 

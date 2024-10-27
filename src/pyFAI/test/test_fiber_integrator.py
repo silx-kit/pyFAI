@@ -207,24 +207,24 @@ class TestFiberIntegrator(unittest.TestCase):
 
         self.assertRaises(RuntimeError, res1d_ref)
         correct = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=100, vertical_integration=False)
-        
+
     def test_integrate1d_defaults(self):
         res1d_vertical_ref = self.fi.integrate1d_grazing_incidence(data=self.data, npt_oop=100, vertical_integration=True)
-        res1d_vertical = self.fi.integrate1d_grazing_incidence(data=self.data, 
+        res1d_vertical = self.fi.integrate1d_grazing_incidence(data=self.data,
                                                                npt_oop=100, npt_ip=500,
                                                                vertical_integration=True)
-        
+
         self.assertEqual(abs(res1d_vertical_ref.radial - res1d_vertical.radial).max(), 0)
         self.assertEqual(abs(res1d_vertical_ref.intensity - res1d_vertical.intensity).max(), 0)
-        
+
         res1d_horizontal_ref = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=100, vertical_integration=False)
-        res1d_horizontal = self.fi.integrate1d_grazing_incidence(data=self.data, 
+        res1d_horizontal = self.fi.integrate1d_grazing_incidence(data=self.data,
                                                                npt_oop=500, npt_ip=100,
                                                                vertical_integration=False)
-        
+
         self.assertEqual(abs(res1d_horizontal_ref.radial - res1d_horizontal.radial).max(), 0)
         self.assertEqual(abs(res1d_horizontal_ref.intensity - res1d_horizontal.intensity).max(), 0)
-        
+
     def test_integrate1d_equivalences(self):
         npt_ip = 200
         npt_oop = 100
