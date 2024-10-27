@@ -126,8 +126,8 @@ class FiberIntegrator(AzimuthalIntegrator):
 
 
     def integrate_fiber(self, data,
-                        npt_ip, ip_range=None, unit_ip=None,
-                        npt_oop=1000, oop_range=None, unit_oop=None,
+                        npt_oop=None, unit_oop=None, oop_range=None,
+                        npt_ip=100, unit_ip=None, ip_range=None,
                         vertical_integration = True,
                         sample_orientation=None,
                         filename=None,
@@ -140,12 +140,12 @@ class FiberIntegrator(AzimuthalIntegrator):
         """Calculate the integrated profile curve along a specific FiberUnit, additional input for sample_orientation
 
         :param ndarray data: 2D array from the Detector/CCD camera
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.        
         :param int npt_ip: number of points to be used along the in-plane axis
         :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
         :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_oop: number of points to be used along the out-of-plane axis
-        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
         :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
         :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
         :param str filename: output filename in 2/3 column ascii format
@@ -164,16 +164,31 @@ class FiberIntegrator(AzimuthalIntegrator):
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
-
-        if "npt_output" or "npt_integrated" in kwargs:
-            logger.warning(f"npt_output and npt_integrated are deprecated parameters. Use npt_oop and npt_ip instead")
-
-        if "output_unit" or "integrated_unit" in kwargs:
-            logger.warning(f"output_unit and integrated_unit are deprecated parameters. Use unit_oop and unit_ip instead")
-
-        if "output_unit_range" or "integrated_unit_range" in kwargs:
-            logger.warning(f"output_unit_range and integrated_unit_range are deprecated parameters. Use oop_range and ip_range instead")
-
+        if "npt_output" in kwargs:
+            logger.warning(f"npt_output and npt_integrated are deprecated parameters. Use npt_oop, npt_ip and vertical_integration instead")
+            npt_oop = kwargs["npt_output"]
+            vertical_integration = True
+        if "npt_integrated" in kwargs:
+            logger.warning(f"npt_output and npt_integrated are deprecated parameters. Use npt_oop, npt_ip and vertical_integration instead")
+            npt_ip = kwargs["npt_integrated"]
+            vertical_integration = True
+        if "output_unit" in kwargs:
+            logger.warning(f"output_unit and integrated_unit are deprecated parameters. Use unit_oop, unit_ip and vertical_integration instead")
+            unit_oop = kwargs["output_unit"]
+            vertical_integration = True
+        if "integrated_unit" in kwargs:
+            logger.warning(f"output_unit and integrated_unit are deprecated parameters. Use unit_oop, unit_ip and vertical_integration instead")
+            unit_ip = kwargs["integrated_unit"]
+            vertical_integration = True
+        if "output_unit_range" in kwargs:
+            logger.warning(f"output_unit_range and integrated_unit_range are deprecated parameters. Use oop_range, ip_range and vertical_integration instead")
+            oop_range = kwargs["output_unit_range"]
+            vertical_integration = True
+        if "integrated_unit_range" in kwargs:
+            logger.warning(f"output_unit_range and integrated_unit_range are deprecated parameters. Use oop_range, ip_range and vertical_integration instead")
+            ip_range = kwargs["integrated_unit_range"]
+            vertical_integration = True
+        
         unit_ip, unit_oop = self.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
                                              sample_orientation=sample_orientation)
 
@@ -245,8 +260,8 @@ class FiberIntegrator(AzimuthalIntegrator):
         return result
 
     def integrate_grazing_incidence(self, data,
-                                    npt_ip, unit_ip=None, ip_range=None,
-                                    npt_oop=1000, unit_oop=None, oop_range=None,
+                                    npt_oop=None, unit_oop=None, oop_range=None,
+                                    npt_ip=100, unit_ip=None, ip_range=None,
                                     vertical_integration = True,
                                     incident_angle=None, tilt_angle=None, sample_orientation=None,
                                     filename=None,
@@ -259,12 +274,12 @@ class FiberIntegrator(AzimuthalIntegrator):
         """Calculate the integrated profile curve along a specific FiberUnit, additional inputs for incident angle, tilt angle and sample_orientation
 
         :param ndarray data: 2D array from the Detector/CCD camera
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.        
         :param int npt_ip: number of points to be used along the in-plane axis
         :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
         :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_oop: number of points to be used along the out-of-plane axis
-        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
         :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
         :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
         :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
@@ -285,15 +300,30 @@ class FiberIntegrator(AzimuthalIntegrator):
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
-
-        if "npt_output" or "npt_integrated" in kwargs:
-            logger.warning(f"npt_output and npt_integrated are deprecated parameters. Use npt_oop and npt_ip instead")
-
-        if "output_unit" or "integrated_unit" in kwargs:
-            logger.warning(f"output_unit and integrated_unit are deprecated parameters. Use unit_oop and unit_ip instead")
-
-        if "output_unit_range" or "integrated_unit_range" in kwargs:
-            logger.warning(f"output_unit_range and integrated_unit_range are deprecated parameters. Use oop_range and ip_range instead")
+        if "npt_output" in kwargs:
+            logger.warning(f"npt_output and npt_integrated are deprecated parameters. Use npt_oop, npt_ip and vertical_integration instead")
+            npt_oop = kwargs["npt_output"]
+            vertical_integration = True
+        if "npt_integrated" in kwargs:
+            logger.warning(f"npt_output and npt_integrated are deprecated parameters. Use npt_oop, npt_ip and vertical_integration instead")
+            npt_ip = kwargs["npt_integrated"]
+            vertical_integration = True
+        if "output_unit" in kwargs:
+            logger.warning(f"output_unit and integrated_unit are deprecated parameters. Use unit_oop, unit_ip and vertical_integration instead")
+            unit_oop = kwargs["output_unit"]
+            vertical_integration = True
+        if "integrated_unit" in kwargs:
+            logger.warning(f"output_unit and integrated_unit are deprecated parameters. Use unit_oop, unit_ip and vertical_integration instead")
+            unit_ip = kwargs["integrated_unit"]
+            vertical_integration = True
+        if "output_unit_range" in kwargs:
+            logger.warning(f"output_unit_range and integrated_unit_range are deprecated parameters. Use oop_range, ip_range and vertical_integration instead")
+            oop_range = kwargs["output_unit_range"]
+            vertical_integration = True
+        if "integrated_unit_range" in kwargs:
+            logger.warning(f"output_unit_range and integrated_unit_range are deprecated parameters. Use oop_range, ip_range and vertical_integration instead")
+            ip_range = kwargs["integrated_unit_range"]
+            vertical_integration = True
 
         unit_ip, unit_oop = self.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
                                              incident_angle=incident_angle,
