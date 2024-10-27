@@ -142,7 +142,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param ndarray data: 2D array from the Detector/CCD camera
         :param int npt_oop: number of points to be used along the out-of-plane axis
         :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.        
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
         :param int npt_ip: number of points to be used along the in-plane axis
         :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
         :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
@@ -188,7 +188,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             logger.warning(f"output_unit_range and integrated_unit_range are deprecated parameters. Use oop_range, ip_range and vertical_integration instead")
             ip_range = kwargs["integrated_unit_range"]
             vertical_integration = True
-        
+
         unit_ip, unit_oop = self.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
                                              sample_orientation=sample_orientation)
 
@@ -276,7 +276,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param ndarray data: 2D array from the Detector/CCD camera
         :param int npt_oop: number of points to be used along the out-of-plane axis
         :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.        
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
         :param int npt_ip: number of points to be used along the in-plane axis
         :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
         :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.

@@ -197,14 +197,14 @@ class TestFiberIntegrator(unittest.TestCase):
         tilt_angle = 1.0
         sample_orientation = 3
 
-        res1d_ref = self.fi.integrate_grazing_incidence(data=self.data, 
+        res1d_ref = self.fi.integrate_grazing_incidence(data=self.data,
                                                         npt_oop=npt_oop, npt_ip=npt_ip,
                                                         incident_angle=incident_angle,
                                                         tilt_angle=tilt_angle,
                                                         sample_orientation=sample_orientation,
                                                         )
 
-        res1d_string_units = self.fi.integrate_grazing_incidence(data=self.data, 
+        res1d_string_units = self.fi.integrate_grazing_incidence(data=self.data,
                                                                  npt_oop=npt_oop, npt_ip=npt_ip,
                                                                  unit_ip="qip_nm^-1", unit_oop="qoop_nm^-1",
                                                                  incident_angle=incident_angle,
@@ -232,7 +232,7 @@ class TestFiberIntegrator(unittest.TestCase):
         incident_angle = 0.2
         tilt_angle = 1.0
         sample_orientation = 3
-        res1d_ref = self.fi.integrate_grazing_incidence(data=self.data, 
+        res1d_ref = self.fi.integrate_grazing_incidence(data=self.data,
                                                         npt_oop=npt_oop, npt_ip=npt_ip,
                                                         incident_angle=incident_angle,
                                                         tilt_angle=tilt_angle,
@@ -246,7 +246,7 @@ class TestFiberIntegrator(unittest.TestCase):
         qip = get_unit_fiber(name="qip_nm^-1", incident_angle=incident_angle_2, tilt_angle=tilt_angle_2, sample_orientation=sample_orientation_2)
         qoop = get_unit_fiber(name="qoop_nm^-1", incident_angle=incident_angle_2, tilt_angle=tilt_angle_2, sample_orientation=sample_orientation_2)
 
-        res1d = self.fi.integrate_grazing_incidence(data=self.data, 
+        res1d = self.fi.integrate_grazing_incidence(data=self.data,
                                                     npt_oop=npt_oop, npt_ip=npt_ip,
                                                     unit_ip=qip, unit_oop=qoop,
                                                     incident_angle=incident_angle,
@@ -264,7 +264,7 @@ class TestFiberIntegrator(unittest.TestCase):
 
         self.assertFalse(abs(res1d_ref.radial - res1d_wrong.radial).max(), 0)
         self.assertFalse(abs(res1d_ref.intensity - res1d_wrong.intensity).max(), 0)
-        
+
     def test_integrate1d_vertical_deprecated_units(self):
         npt_ip = 200
         npt_oop = 100
@@ -272,17 +272,17 @@ class TestFiberIntegrator(unittest.TestCase):
         oop_range = [0,5]
         incident_angle = 0.2
         tilt_angle = 1.0
-        
+
         qip = get_unit_fiber(name="qip_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle)
         qoop = get_unit_fiber(name="qoop_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle)
-        
+
         res1d_ref = self.fi.integrate_grazing_incidence(data=self.data,
                                                         npt_oop=npt_oop, unit_oop=qoop, oop_range=oop_range,
                                                         npt_ip=npt_ip, unit_ip=qip, ip_range=ip_range,
                                                         incident_angle=incident_angle, tilt_angle=tilt_angle,
                                                         vertical_integration=True,
                                                         )
-        
+
         res1d_deprecated = self.fi.integrate1d_grazing_incidence(data=self.data,
                                                                  npt_output=npt_oop, output_unit=qoop, output_unit_range=oop_range,
                                                                  npt_integrated=npt_ip, integrated_unit=qip, integrated_unit_range=ip_range,
@@ -299,17 +299,17 @@ class TestFiberIntegrator(unittest.TestCase):
         oop_range = [0,5]
         incident_angle = 0.2
         tilt_angle = 1.0
-        
+
         qip = get_unit_fiber(name="qip_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle)
         qoop = get_unit_fiber(name="qoop_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle)
-        
+
         res1d_ref = self.fi.integrate_grazing_incidence(data=self.data,
                                                         npt_oop=npt_oop, unit_oop=qoop, oop_range=oop_range,
                                                         npt_ip=npt_ip, unit_ip=qip, ip_range=ip_range,
                                                         incident_angle=incident_angle, tilt_angle=tilt_angle,
                                                         vertical_integration=False,
                                                         )
-        
+
         res1d_deprecated = self.fi.integrate1d_grazing_incidence(data=self.data,
                                                                  npt_output=npt_ip, output_unit=qip, output_unit_range=ip_range,
                                                                  npt_integrated=npt_oop, integrated_unit=qoop, integrated_unit_range=oop_range,
