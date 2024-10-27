@@ -132,7 +132,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
     def integrate_fiber(self, data,
                         npt_oop=None, unit_oop=None, oop_range=None,
-                        npt_ip=100, unit_ip=None, ip_range=None,
+                        npt_ip=None, unit_ip=None, ip_range=None,
                         vertical_integration = True,
                         sample_orientation=None,
                         filename=None,
@@ -205,8 +205,13 @@ class FiberIntegrator(AzimuthalIntegrator):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
 
-        if npt_oop is None:
+        if vertical_integration and npt_oop is None:
             raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
+        elif not vertical_integration and npt_ip is None:
+            raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
+        
+        npt_oop = npt_oop or 500
+        npt_ip = npt_ip or 500
 
         if vertical_integration:
             npt_integrated = npt_ip
@@ -270,7 +275,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
     def integrate_grazing_incidence(self, data,
                                     npt_oop=None, unit_oop=None, oop_range=None,
-                                    npt_ip=100, unit_ip=None, ip_range=None,
+                                    npt_ip=None, unit_ip=None, ip_range=None,
                                     vertical_integration = True,
                                     incident_angle=None, tilt_angle=None, sample_orientation=None,
                                     filename=None,
