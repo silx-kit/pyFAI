@@ -70,23 +70,23 @@ class TestFiberIntegrator(unittest.TestCase):
         p1m = detector_factory("Pilatus1M")
         _ai = AzimuthalIntegrator(detector=p1m)
         p1m_data = self.calibrant.fake_calibration_image(ai=_ai)
-        
+
         fi_load = load(filename=self.poni_p1m, type_="pyFAI.integrator.fiber.FiberIntegrator")
         res2d_load = fi_load.integrate2d_fiber(data=p1m_data)
-        
+
         fi_direct = FiberIntegrator()
         fi_direct.load(self.poni_p1m)
         res2d_direct = fi_direct.integrate2d_fiber(data=p1m_data)
-        
+
         self.assertEqual(abs(res2d_load.radial - res2d_direct.radial).max(), 0)
         self.assertEqual(abs(res2d_load.azimuthal - res2d_direct.azimuthal).max(), 0)
-        self.assertEqual(abs(res2d_load.intensity - res2d_direct.intensity).max(), 0)           
-        
+        self.assertEqual(abs(res2d_load.intensity - res2d_direct.intensity).max(), 0)
+
         ai = AzimuthalIntegrator()
         ai.load(self.poni_p1m)
         fi_from_ai = ai.promote(type_="pyFAI.integrator.fiber.FiberIntegrator")
         res2d_from_ai = fi_from_ai.integrate2d_fiber(data=p1m_data)
-        
+
         self.assertEqual(abs(res2d_load.radial - res2d_from_ai.radial).max(), 0)
         self.assertEqual(abs(res2d_load.azimuthal - res2d_from_ai.azimuthal).max(), 0)
         self.assertEqual(abs(res2d_load.intensity - res2d_from_ai.intensity).max(), 0)
