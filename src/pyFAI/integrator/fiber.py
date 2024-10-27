@@ -204,6 +204,10 @@ class FiberIntegrator(AzimuthalIntegrator):
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
+
+        if npt_oop is None:
+            raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
+
         if vertical_integration:
             npt_integrated = npt_ip
             integrated_unit_range = ip_range
