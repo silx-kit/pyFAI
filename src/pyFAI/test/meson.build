@@ -16,6 +16,7 @@ py.install_sources(
     'test_dummy.py',
     'test_error_model.py',
     'test_export.py',
+    'test_fiber_integrator.py',
     'test_flat.py',
     'test_geometry.py',
     'test_geometry_refinement.py',
