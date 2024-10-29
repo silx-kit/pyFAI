@@ -96,9 +96,9 @@ jobs:
             cibw_archs: "ppc64le"
           - os: windows-2022
             cibw_archs: "auto64"
-          - os: macos-12
+          - os: macos-13
             cibw_archs: "x86_64"
-            macos_target: "10.9"
+            macos_target: "11.0"
           - os: macos-14
             cibw_archs: "arm64"
             macos_target: "11.0"
