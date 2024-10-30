@@ -1,3 +1,5 @@
+subdir('collective')
+
 py.install_sources(
    ['addition.cl',
     'bitonic.cl',

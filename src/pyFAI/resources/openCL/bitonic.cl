@@ -292,7 +292,7 @@ __kernel void bsort_all(__global float4 *g_data,
 // dim0 = y: wg=1
 // dim1 = x: wg=number_of_element/8
 __kernel void bsort_horizontal(__global float *g_data,
-                                __local float4 *l_data) {
+                               __local float4 *l_data) {
     float8 input, output;
     uint id, global_start, offset;
 
