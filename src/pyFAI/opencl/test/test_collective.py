@@ -153,7 +153,7 @@ class TestReduction(unittest.TestCase):
         data_d = pyopencl.array.to_device(self.queue, self.data.astype("float32"))
         scan_d = pyopencl.array.empty_like(data_d)
         maxi = int(round(numpy.log2(min(self.shape, self.max_valid_wg))))+1
-        for i in range(1, maxi):
+        for i in range(0, maxi):
             wg = 1 << i
             try:
                 evt = self.program.test_cumsum(self.queue, (self.shape,), (wg,),
@@ -165,17 +165,14 @@ class TestReduction(unittest.TestCase):
                 logger.error("Error %s on WG=%s: Hillis_Steele", error, wg)
                 break
             else:
-                res = self.sum_d.get().reshape((-1, wg))
+                res = scan_d.get().reshape((-1, wg))
                 ref = numpy.array([numpy.cumsum(i) for i in self.data.reshape((-1, wg))])
                 good = numpy.allclose(res, ref)
                 logger.info("Wg: %s result: cumsum good: %s", wg, good)
-                if not good:
-                    print(ref)
-                    print(res)
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, "Cumsum calculation is correct for WG=%s" % wg)
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
-    @unittest.skip
+    @unittest.skip("Fix me")
     def test_Blelloch(self):
         """
         tests the Blelloch scan function

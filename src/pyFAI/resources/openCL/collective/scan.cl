@@ -47,7 +47,7 @@ kernel void test_cumsum(global float* input,
                         global float* output,
                         local  float* shared)
 {
-    int gid = get_global_id(1);
+    int gid = get_global_id(0);
     int wg = get_local_size(0);
     int tid = get_local_id(0);
 
