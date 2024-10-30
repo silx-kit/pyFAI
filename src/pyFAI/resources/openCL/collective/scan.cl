@@ -52,7 +52,7 @@ kernel void test_cumsum(global float* input,
     int tid = get_local_id(0);
 
     shared[tid] = input[gid];
-    cumsum_reduction(shared);
+    cumsum_scan_float(shared);
     output[gid] = shared[tid];
 }
 
