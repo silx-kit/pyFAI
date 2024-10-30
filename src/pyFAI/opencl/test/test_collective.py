@@ -192,9 +192,12 @@ class TestReduction(unittest.TestCase):
                 logger.error("Error %s on WG=%s: Hillis_Steele", error, wg)
                 break
             else:
-                res = self.sum_d.get()
+                res = scan_d.get().reshape((-1, wg))
                 ref = numpy.array([numpy.cumsum(i) for i in self.data.reshape((-1, wg))])
                 good = numpy.allclose(res, ref)
+                if not good:
+                    print(ref)
+                    print(res)
                 logger.info("Wg: %s result: cumsum good: %s", wg, good)
                 self.assertTrue(good, "calculation is correct for WG=%s" % wg)
 
