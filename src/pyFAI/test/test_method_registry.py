@@ -31,11 +31,11 @@
 __author__ = "Valentin Valls"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2024"
+__date__ = "30/10/2024"
 
 import unittest
 from silx.utils.testutils import ParametricTestCase
-from .. import load_integrators
+from ..integrator import load_engines
 from ..method_registry import Method, IntegrationMethod
 
 
