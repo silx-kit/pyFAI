@@ -64,12 +64,20 @@ class FiberIntegrator(AzimuthalIntegrator):
 
     def parse_units(self, unit_ip, unit_oop, incident_angle=None, tilt_angle=None, sample_orientation=None):
         if unit_ip is None:
-            unit_ip = units.get_unit_fiber("qip_nm^-1")
+            unit_ip = units.get_unit_fiber(name="qip_nm^-1")
+        elif isinstance(unit_ip, str):
+            unit_ip = units.get_unit_fiber(name=unit_ip)
+        elif isinstance(unit_ip, units.UnitFiber):
+            ...
         else:
             unit_ip = units.to_unit(unit_ip)
 
         if unit_oop is None:
-            unit_oop = units.get_unit_fiber("qoop_nm^-1")
+            unit_oop = units.get_unit_fiber(name="qoop_nm^-1")
+        elif isinstance(unit_oop, str):
+            unit_oop = units.get_unit_fiber(name=unit_oop)
+        elif isinstance(unit_oop, units.UnitFiber):
+            ...
         else:
             unit_oop = units.to_unit(unit_oop)
 
