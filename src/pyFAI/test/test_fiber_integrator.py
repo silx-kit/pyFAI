@@ -33,7 +33,7 @@ __author__ = "Edgar Gutiérrez Fernández"
 __contact__ = "edgar.gutierrez-fernandez@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2024"
+__date__ = "30/10/2024"
 
 import unittest
 import logging
@@ -444,3 +444,15 @@ class TestFiberIntegrator(unittest.TestCase):
         )
 
         self.assertLess((abs(res_so_4.intensity) - abs(res_so_3.intensity)).max(), threshold)
+
+
+def suite():
+    testsuite = unittest.TestSuite()
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestFiberIntegrator))
+    return testsuite
+
+
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    runner.run(suite())
