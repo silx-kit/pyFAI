@@ -18,7 +18,7 @@ authors:
     given-name: Frederic Emmanuel
     affiliation: Soleil
   - family-names: Massahud
-    given-name: Emily 
+    given-name: Emily
     affiliation: ANSTO
   - family-names: Gutierrez-Fernandez
     given-name: Edgar
@@ -44,7 +44,7 @@ authors:
     affiliation: ESRF
   - family-names: Paleo
     given-name: Pierre
-    affiliation: ESRF 
+    affiliation: ESRF
   - family-names: Faure
     given-name: Bertrand
     affiliation: Xenocs
@@ -58,7 +58,7 @@ authors:
     given-name: Christopher J.
     affiliation: NSLS-II
   - family-names: Hopkins
-    given-name: Jesse B. 
+    given-name: Jesse B.
     orcid: https://orcid.org/0000-0001-8554-8072
     affiliation: APS
   - family-names: Pascal
