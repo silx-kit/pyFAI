@@ -62,6 +62,7 @@ kernel void test_cumsum(global float* input,
  * Implements Blelloch algorithm
  * https://en.wikipedia.org/wiki/Prefix_sum#cite_ref-offman_10-0
  *
+ * One workgroup calculates the cumsum in an array of twice its size!
  */
 
 
@@ -70,34 +71,32 @@ void static inline blelloch_scan_float(local float *shared)
     int ws = get_local_size(0);
     int lid = get_local_id(0);
     int dp = 1;
+    int w;
 
-    for(int s = ws>>1; s > 0; s >>= 1)
+    for(int s = ws; s > 0; s >>= 1)
     {
         barrier(CLK_LOCAL_MEM_FENCE);
         if(lid < s)
         {
             int i = dp*(2*lid+1)-1;
-            int j = dp*(2*lid+2)-1;
+            int j = i + dp;
             shared[j] += shared[i];
         }
         dp <<= 1;
     }
 
-    if(lid == 0)
-        shared[ws-1] = 0;
-
-    for(int s = 1; s < ws; s <<= 1)
+    dp >>= 1;
+    for(int s = 1; s < ws; s=((s+1)<<1)-1)
     {
+        w = dp;
         dp >>= 1;
+
         barrier(CLK_LOCAL_MEM_FENCE);
 
         if(lid < s) {
-            int i = dp*(2*lid+1)-1;
-            int j = dp*(2*lid+2)-1;
-
-            float t = shared[j];
+            int i = (lid+1)*w - 1;
+            int j = i + dp;
             shared[j] += shared[i];
-            shared[i] = t;
         }
     }
     barrier(CLK_LOCAL_MEM_FENCE);

@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2024"
+__date__ = "06/11/2024"
 
 import logging
 import numpy
@@ -172,7 +172,6 @@ class TestReduction(unittest.TestCase):
                 self.assertTrue(good, "Cumsum calculation is correct for WG=%s" % wg)
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
-    @unittest.skip("Fix me")
     def test_Blelloch(self):
         """
         tests the Blelloch scan function
@@ -192,8 +191,8 @@ class TestReduction(unittest.TestCase):
                 logger.error("Error %s on WG=%s: Hillis_Steele", error, wg)
                 break
             else:
-                res = scan_d.get().reshape((-1, wg))
-                ref = numpy.array([numpy.cumsum(i) for i in self.data.reshape((-1, wg))])
+                res = scan_d.get().reshape((-1, 2*wg))
+                ref = numpy.array([numpy.cumsum(i) for i in self.data.reshape((-1, 2*wg))])
                 good = numpy.allclose(res, ref)
                 if not good:
                     print(ref)
