@@ -178,11 +178,11 @@ class TestReduction(unittest.TestCase):
         """
         data_d = pyopencl.array.to_device(self.queue, self.data.astype("float32"))
         scan_d = pyopencl.array.empty_like(data_d)
-        maxi = int(round(numpy.log2(min(self.shape, self.max_valid_wg))))+1
+        maxi = int(round(numpy.log2(min(self.shape/2, self.max_valid_wg))))+1
         for i in range(maxi):
             wg = 1 << i
             try:
-                evt = self.program.test_blelloch_scan(self.queue, (self.shape,), (wg,),
+                evt = self.program.test_blelloch_scan(self.queue, (self.shape//2,), (wg,),
                                                           data_d.data,
                                                           scan_d.data,
                                                           pyopencl.LocalMemory(2*4*wg))
