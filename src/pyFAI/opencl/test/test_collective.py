@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/11/2024"
+__date__ = "07/11/2024"
 
 import logging
 import numpy
@@ -188,7 +188,7 @@ class TestReduction(unittest.TestCase):
                                                           pyopencl.LocalMemory(2*4*wg))
                 evt.wait()
             except Exception as error:
-                logger.error("Error %s on WG=%s: Hillis_Steele", error, wg)
+                logger.error("Error %s on WG=%s: Blelloch", error, wg)
                 break
             else:
                 res = scan_d.get().reshape((-1, 2*wg))
@@ -200,6 +200,35 @@ class TestReduction(unittest.TestCase):
                 logger.info("Wg: %s result: cumsum good: %s", wg, good)
                 self.assertTrue(good, "calculation is correct for WG=%s" % wg)
 
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_Blelloch_multipass(self):
+        """
+        tests the Blelloch cumsum using multiple passes ...
+        """
+        data_d = pyopencl.array.to_device(self.queue, self.data.astype("float32"))
+        scan_d = pyopencl.array.empty_like(data_d)
+        maxi = int(round(numpy.log2(min(self.shape/2, self.max_valid_wg))))+1
+        for i in range(maxi):
+            wg = 1 << i
+            try:
+                evt = self.program.test_blelloch_multi(self.queue, (wg,), (wg,),
+                                                       data_d.data,
+                                                       scan_d.data,
+                                                       numpy.int32(self.shape),
+                                                       pyopencl.LocalMemory(2*4*wg))
+                evt.wait()
+            except Exception as error:
+                logger.error("Error %s on WG=%s: Blelloch multi", error, wg)
+                break
+            else:
+                res = scan_d.get()
+                ref = numpy.cumsum(self.data)
+                good = numpy.allclose(res, ref)
+                if not good:
+                    print(ref)
+                    print(res)
+                logger.info("Wg: %s result: cumsum good: %s", wg, good)
+                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

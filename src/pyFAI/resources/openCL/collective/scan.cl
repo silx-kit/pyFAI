@@ -117,3 +117,29 @@ kernel void test_blelloch_scan(global float *input,
     output[2*gid] = shared[2*lid];
     output[2*gid+1] = shared[2*lid+1];
 }
+
+kernel void test_blelloch_multi(global float *input,
+                                global float *output,
+                                       int size,
+                                local float *shared)
+{
+    int lid = get_local_id(0);
+    int ws = get_local_size(0);
+    float sum = 0.0f;
+    int target = (size + ws - 1) & ~ (ws - 1);
+    for (int i=lid; i<target; i+=2*ws)
+        {
+            // Load
+            shared[lid] = (i<size)?input[i]:0.0f;
+            shared[lid+ws] = (i+ws<size)?input[i+ws]:0.0f;
+
+            blelloch_scan_float(shared);
+
+            // Store
+            if (i<size)
+                output[i] = sum + shared[lid];
+            if (i+ws<size)
+                output[i+ws] = sum + shared[lid+ws];
+            sum += shared[2*ws-1];
+        }
+}
