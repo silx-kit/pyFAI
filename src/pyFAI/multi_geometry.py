@@ -48,6 +48,7 @@ from multiprocessing.pool import ThreadPool
 import threading
 import numpy
 from .method_registry import IntegrationMethod
+from .utils.decorators import deprecated_warning
 error = None
 
 
@@ -342,3 +343,181 @@ class MultiGeometry(object):
             self.threadpool = ThreadPool(threadpoolsize)
         if collect_garbage:
             gc.collect()
+
+    def integrate2d_grazing_incidence(self, lst_data, 
+                                      npt_ip=1000, unit_ip=None, ip_range=None,
+                                      npt_oop=1000, unit_oop=None, oop_range=None,
+                                      incident_angle=None, tilt_angle=None, sample_orientation=None,
+                                      correctSolidAngle=True,
+                                      lst_mask=None, dummy=None, delta_dummy=None,
+                                      lst_variance=None,
+                                      polarization_factor=None, dark=None, lst_flat=None,
+                                      method=("no", "histogram", "cython"),
+                                      normalization_factor=1.0, **kwargs):
+        
+        """Performs 2D azimuthal integration of multiples frames, one for each geometry
+
+
+        """
+        if "npt_horizontal" in kwargs:
+            deprecated_warning(type_=type(kwargs["npt_horizontal"]), name="npt_horizontal", replacement="npt_ip", since_version="2024.11/12")
+            npt_ip = kwargs["npt_horizontal"]
+        if "npt_vertical" in kwargs:
+            deprecated_warning(type_=type(kwargs["npt_vertical"]), name="npt_vertical", replacement="npt_oop", since_version="2024.11/12")
+            npt_oop = kwargs["npt_vertical"]
+        if "horizontal_unit" in kwargs:
+            deprecated_warning(type_=type(kwargs["horizontal_unit"]), name="horizontal_unit", replacement="unit_ip", since_version="2024.11/12")
+            unit_ip = kwargs["horizontal_unit"]
+        if "vertical_unit" in kwargs:
+            deprecated_warning(type_=type(kwargs["vertical_unit"]), name="vertical_unit", replacement="unit_oop", since_version="2024.11/12")
+            unit_oop = kwargs["vertical_unit"]
+        if "horizontal_unit_range" in kwargs:
+            deprecated_warning(type_=type(kwargs["horizontal_unit_range"]), name="horizontal_unit_range", replacement="ip_range", since_version="2024.11/12")
+            ip_range = kwargs["horizontal_unit_range"]
+        if "vertical_unit_range" in kwargs:
+            deprecated_warning(type_=type(kwargs["vertical_unit_range"]), name="vertical_unit_range", replacement="oop_range", since_version="2024.11/12")
+            oop_range = kwargs["vertical_unit_range"]
+
+        for fi in self.ais:
+            unit_ip, unit_oop = fi.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
+                                             incident_angle=incident_angle,
+                                             tilt_angle=tilt_angle,
+                                             sample_orientation=sample_orientation)
+
+            fi.reset_integrator(incident_angle=unit_ip.incident_angle,
+                                tilt_angle=unit_ip.tilt_angle,
+                                sample_orientation=unit_ip.sample_orientation)
+
+        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
+            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
+
+        return self.integrate2d_fiber(lst_data=lst_data, npt_ip=npt_ip, npt_oop=npt_oop,
+                                      unit_ip=unit_ip, unit_oop=unit_oop,
+                                      ip_range=ip_range,
+                                      oop_range=oop_range,
+                                      sample_orientation=sample_orientation,
+                                      correctSolidAngle=correctSolidAngle,
+                                      lst_mask=lst_mask, dummy=dummy, delta_dummy=delta_dummy,
+                                      polarization_factor=polarization_factor, dark=dark, lst_flat=lst_flat,
+                                      method=method,
+                                      normalization_factor=normalization_factor,
+                                      )
+
+    def integrate2d_fiber(self, lst_data, 
+                                      npt_ip=1000, unit_ip=None, ip_range=None,
+                                      npt_oop=1000, unit_oop=None, oop_range=None,
+                                      incident_angle=None, tilt_angle=None, sample_orientation=None,
+                                      correctSolidAngle=True,
+                                      lst_mask=None, dummy=None, delta_dummy=None,
+                                      lst_variance=None,
+                                      polarization_factor=None, dark=None, lst_flat=None,
+                                      method=("no", "histogram", "cython"),
+                                      normalization_factor=1.0, **kwargs):
+        
+        if "npt_horizontal" in kwargs:
+            deprecated_warning(type_=type(kwargs["npt_horizontal"]), name="npt_horizontal", replacement="npt_ip", since_version="2024.11/12")
+            npt_ip = kwargs["npt_horizontal"]
+        if "npt_vertical" in kwargs:
+            deprecated_warning(type_=type(kwargs["npt_vertical"]), name="npt_vertical", replacement="npt_oop", since_version="2024.11/12")
+            npt_oop = kwargs["npt_vertical"]
+        if "horizontal_unit" in kwargs:
+            deprecated_warning(type_=type(kwargs["horizontal_unit"]), name="horizontal_unit", replacement="unit_ip", since_version="2024.11/12")
+            unit_ip = kwargs["horizontal_unit"]
+        if "vertical_unit" in kwargs:
+            deprecated_warning(type_=type(kwargs["vertical_unit"]), name="vertical_unit", replacement="unit_oop", since_version="2024.11/12")
+            unit_oop = kwargs["vertical_unit"]
+        if "horizontal_unit_range" in kwargs:
+            deprecated_warning(type_=type(kwargs["horizontal_unit_range"]), name="horizontal_unit_range", replacement="ip_range", since_version="2024.11/12")
+            ip_range = kwargs["horizontal_unit_range"]
+        if "vertical_unit_range" in kwargs:
+            deprecated_warning(type_=type(kwargs["vertical_unit_range"]), name="vertical_unit_range", replacement="oop_range", since_version="2024.11/12")
+            oop_range = kwargs["vertical_unit_range"]
+
+        for fi in self.ais:
+            unit_ip, unit_oop = fi.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
+                                             sample_orientation=sample_orientation)
+
+            fi.reset_integrator(incident_angle=unit_ip.incident_angle,
+                                tilt_angle=unit_ip.tilt_angle,
+                                sample_orientation=unit_ip.sample_orientation)
+
+        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
+            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
+
+        if len(lst_data) == 0:
+            raise RuntimeError("List of images cannot be empty")
+        if normalization_factor is None:
+            normalization_factor = [1.0] * len(self.ais)
+        elif not isinstance(normalization_factor, collections.abc.Iterable):
+            normalization_factor = [normalization_factor] * len(self.ais)
+        if lst_variance is None:
+            lst_variance = [None] * len(self.ais)
+        if lst_mask is None:
+            lst_mask = [None] * len(self.ais)
+        elif isinstance(lst_mask, numpy.ndarray):
+            lst_mask = [lst_mask] * len(self.ais)
+        if lst_flat is None:
+            lst_flat = [None] * len(self.ais)
+        elif isinstance(lst_flat, numpy.ndarray):
+            lst_flat = [lst_flat] * len(self.ais)
+
+        method = IntegrationMethod.select_one_available(method, dim=2)
+
+        signal = numpy.zeros((npt_oop, npt_ip), dtype=numpy.float64)
+        count = numpy.zeros_like(signal)
+        normalization = numpy.zeros_like(signal)
+        variance = None
+        if self.radial_range is None:
+            self.radial_range = self._guess_radial_range()
+        if self.azimuth_range is None:
+            self.azimuth_range = self._guess_azimuth_range()
+        def _integrate(args):
+            fi, data, monitor, var, mask, flat = args
+            return fi.integrate2d_fiber(data,
+                                                    npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
+                                                    npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
+                                                    incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation,
+                                                    correctSolidAngle=correctSolidAngle,
+                                                    variance=var,
+                                                    polarization_factor=polarization_factor,
+                                                    method=method, safe=True,
+                                                    dummy=dummy, delta_dummy=delta_dummy,
+                                                    mask=mask, flat=flat, dark=dark, normalization_factor=monitor, **kwargs)
+        if self.threadpool is None:
+            results = map(_integrate,
+                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        else:
+            results = self.threadpool.map(_integrate,
+                zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        for res, ai in zip(results, self.ais):
+            sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
+            count += res.count
+            signal += res.sum_signal
+            normalization += res.sum_normalization * sac
+            if res.sigma is not None:
+                if variance is None:
+                    variance = res.sum_variance.astype(numpy.float64)  # explicit copy !
+                else:
+                    variance += res.sum_variance
+
+        tiny = numpy.finfo("float32").tiny
+        norm = numpy.maximum(normalization, tiny)
+        invalid = count <= 0
+        I = signal / norm
+        I[invalid] = self.empty
+
+        if variance is not None:
+            sigma = numpy.sqrt(variance) / norm
+            sigma[invalid] = self.empty
+            result = Integrate2dResult(I, res.radial, res.azimuthal, sigma)
+        else:
+            result = Integrate2dResult(I, res.radial, res.azimuthal)
+        result._set_sum(signal)
+        result._set_compute_engine(res.compute_engine)
+        result._set_radial_unit(self.radial_unit)
+        result._set_azimuthal_unit(self.azimuth_unit)
+        result._set_sum_signal(signal)
+        result._set_sum_normalization(normalization)
+        result._set_sum_variance(variance)
+        result._set_count(count)
+        return result
