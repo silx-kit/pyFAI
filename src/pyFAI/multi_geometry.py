@@ -398,6 +398,7 @@ class MultiGeometry(object):
                                       sample_orientation=sample_orientation,
                                       correctSolidAngle=correctSolidAngle,
                                       lst_mask=lst_mask, dummy=dummy, delta_dummy=delta_dummy,
+                                      lst_variance=lst_variance,
                                       polarization_factor=polarization_factor, dark=dark, lst_flat=lst_flat,
                                       method=method,
                                       normalization_factor=normalization_factor,
