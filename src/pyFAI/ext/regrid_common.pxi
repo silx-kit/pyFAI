@@ -492,7 +492,7 @@ cdef inline void _integrate1d(buffer_t[::1] buffer,
                 for i in range(max(istart0 + 1, 0), min(istop0, buffer_size)):
                     buffer[i] += _calc_area(<floating>i, <floating>(i + 1), slope, intercept)
                 if buffer_size > stop0 >= 0:
-                    buffer[istop0] += _calc_area(<floating>istop0, stop0, slope, intercept)
+                    buffer[istop0] += _calc_area(<floating> istop0, stop0, slope, intercept)
         else:
             if 0 <= start0 < buffer_size:
                 buffer[istart0] += _calc_area(start0, <floating> istart0, slope, intercept)
@@ -562,7 +562,7 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
                         h += 1
             # subsection P1->Pn
             for i in range((<Py_ssize_t> floor(P)), (<Py_ssize_t> floor(stop0))):
-                segment_area = _calc_area(i, i + 1, slope, intercept)
+                segment_area = _calc_area(<floating> i, <floating> (i + 1), slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
                     h = 0
@@ -623,7 +623,7 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
                         h += 1
             # subsection P1->Pn
             for i in range((<Py_ssize_t> start0), (<Py_ssize_t> ceil(stop0)), -1):
-                segment_area = _calc_area(i, i - 1, slope, intercept)
+                segment_area = _calc_area(<floating> i, <floating> (i - 1), slope, intercept)
                 if segment_area != 0:
                     abs_area = fabs(segment_area)
                     h = 0
