@@ -8,73 +8,79 @@ authors:
   - family-names: Valls
     given-names: Valentin
     affiliation: ESRF
-  - family-names: deschildre
+  - family-names: Gutierrez-Fernandez
+    given-names: Edgar
+    affiliation: ESRF
+  - family-names: Ashiotis
+    given-names: Giannis
+    affiliation: ESRF
+  - family-names: Karkoulis
+    given-names: Dimitris
+    affiliation: ESRF
+  - family-names: Nawaz
+    given-names: Zubair
+    affiliation: ESRF
+  - family-names: Deschildre
     given-names: Aurore
     affiliation: ESRF
   - family-names: Vincent
-    given-name: Thomas
+    given-names: Thomas
     affiliation: ESRF
   - family-names: Picca
-    given-name: Frederic Emmanuel
+    given-names: Frederic Emmanuel
     affiliation: Soleil
   - family-names: Massahud
-    given-name: Emily
+    given-names: Emily
     affiliation: ANSTO
-  - family-names: Gutierrez-Fernandez
-    given-name: Edgar
-    affiliation: ESRF
   - family-names: Payno
-    given-name: Henri
+    given-names: Henri
     affiliation: ESRF
   - family-names: Huder
-    given-name: Loïc
+    given-names: Loïc
     affiliation: ESRF
   - family-names: Wright
-    given-name: Johnathan Paul
+    given-names: Johnathan Paul
     affiliation: ESRF
   - family-names: Pandolfi
-    given-name: Ronald
+    given-names: Ronald
     affiliation: LBL
     orcid: https://orcid.org/0000-0003-0824-8548
   - family-names: Jankowski
-    given-name: Maciej
-    affiliation: ESRF
-  - family-names: Ashiotis
-    given-name: Giannis
+    given-names: Maciej
     affiliation: ESRF
   - family-names: Paleo
-    given-name: Pierre
+    given-names: Pierre
     affiliation: ESRF
   - family-names: Faure
-    given-name: Bertrand
+    given-names: Bertrand
     affiliation: Xenocs
   - family-names: Storm
-    given-name: Malte
+    given-names: Malte
     affiliation: Helmholtz-Zentrum Hereon
   - family-names: De Nolf
-    given-name: Wout
+    given-names: Wout
     affiliation: ESRF
   - family-names:  Wright
-    given-name: Christopher J.
+    given-names: Christopher J.
     affiliation: NSLS-II
   - family-names: Hopkins
-    given-name: Jesse B.
+    given-names: Jesse B.
     orcid: https://orcid.org/0000-0001-8554-8072
     affiliation: APS
   - family-names: Pascal
-    given-name: Elena
+    given-names: Elena
     affiliation: Diamond
   - family-names: Weninger
-    given-name: Clemens
+    given-names: Clemens
     affiliation: MAX IV
   - family-names: Detlefs
-    given-name: Carsten
+    given-names: Carsten
     affiliation: ESRF
   - family-names:  Plaswig
-    given-name: Florian
+    given-names: Florian
     affiliation: ESRF
   - family-names: Lavanchy
-    given-name: Aurelien
+    given-names: Aurelien
   - family-names: gbenecke
   - family-names: zxs-un
   - family-names: iltommi

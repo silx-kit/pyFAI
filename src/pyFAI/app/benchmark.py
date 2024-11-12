@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel, Edgar Gutierrez-Ferna
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "08/11/2024"
 __status__ = "development"
 
 from argparse import ArgumentParser
@@ -91,14 +91,12 @@ def main(args=None):
     parser.add_argument("--no-1dimention",
                         action="store_false", dest="onedim", default=True,
                         help="Do not benchmark algorithms for 1D-regrouping")
-
     parser.add_argument("-m", "--memprof",
                         action="store_true", dest="memprof", default=False,
                         help="Perfrom memory profiling (Linux only)")
     parser.add_argument("-r", "--repeat",
                         dest="repeat", default=1, type=int,
                         help="Repeat each measurement x times to take the best")
-
     parser.add_argument("-ps", "--pixelsplit",
                         dest="pixelsplit", default=["bbox"], type=str, nargs="+",
                         help="Benchmark using specific pixel splitting protocols: no, bbox, pseudo, full, all",)
@@ -108,11 +106,12 @@ def main(args=None):
     parser.add_argument("-i", "--implementation",
                         dest="implementation", default=["cython", "opencl"], type=str, nargs="+",
                         help="Benchmark using specific algorithm implementations: python, cython, opencl, all")
-
     parser.add_argument("-f", "--function",
                         dest="function", default="ng", type=str,
                         help="Benchmark legacy (legacy), engine function (ng), or both (all)")
-
+    parser.add_argument("-o", "--devices",
+                        dest="devices", default=None, type=str,
+                        help="Comma separated list of paires of OpenCL platform:device ids like `0:1,1:0` to benchmark")
     parser.add_argument("--all",
                         action="store_true", dest="all", default=False,
                         help="Benchmark using all available methods and devices")
@@ -122,12 +121,16 @@ def main(args=None):
         pyFAI_logger.setLevel(logging.DEBUG)
 
     devices = []
-    if options.opencl_cpu:
-        devices.append("cpu")
-    if options.opencl_gpu:
-        devices.append("gpu")
-    if options.opencl_acc:
-        devices.append("acc")
+    if options.devices:
+        for pair in options.devices.split(","):
+            devices.append(pair.split(":"))
+    else:
+        if options.opencl_cpu:
+            devices.append("cpu")
+        if options.opencl_gpu:
+            devices.append("gpu")
+        if options.opencl_acc:
+            devices.append("acc")
 
     benchmark.run(number=options.number,
                   repeat=options.repeat,
