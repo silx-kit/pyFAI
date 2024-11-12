@@ -344,77 +344,45 @@ class MultiGeometry(object):
         if collect_garbage:
             gc.collect()
 
-    def integrate2d_grazing_incidence(self, lst_data, 
-                                      npt_ip=1000, unit_ip=None, ip_range=None,
-                                      npt_oop=1000, unit_oop=None, oop_range=None,
-                                      incident_angle=None, tilt_angle=None, sample_orientation=None,
-                                      correctSolidAngle=True,
-                                      lst_mask=None, dummy=None, delta_dummy=None,
-                                      lst_variance=None,
-                                      polarization_factor=None, dark=None, lst_flat=None,
-                                      method=("no", "histogram", "cython"),
-                                      normalization_factor=1.0, **kwargs):
-        
-        """Performs 2D azimuthal integration of multiples frames, one for each geometry
 
+    def integrate2d_fiber(self, lst_data,
+                          npt_ip=1000, unit_ip=None, ip_range=None,
+                          npt_oop=1000, unit_oop=None, oop_range=None,
+                          sample_orientation=None,
+                          correctSolidAngle=True,
+                          lst_mask=None, dummy=None, delta_dummy=None,
+                          lst_variance=None,
+                          polarization_factor=None, dark=None, lst_flat=None,
+                          method=("no", "histogram", "cython"),
+                          normalization_factor=1.0, **kwargs):
+        """Performs 2D azimuthal integration of multiples frames, one for each geometry, 
+        It wraps the method integrate2d_fiber of pyFAI.integrator.fiber.FiberIntegrator
 
+        :param lst_data: list of numpy array
+        :param int npt_ip: number of points to be used along the in-plane axis
+        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
+        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param lst_variance: list of array containing the variance of the data. If not available, no error propagation is done
+        :type lst_variance: list of ndarray
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param float normalization_factor: Value of a normalization monitor
+        :return: regrouped intensity and unit arrays
+        :rtype: Integrate2dResult
         """
-        if "npt_horizontal" in kwargs:
-            deprecated_warning(type_=type(kwargs["npt_horizontal"]), name="npt_horizontal", replacement="npt_ip", since_version="2024.11/12")
-            npt_ip = kwargs["npt_horizontal"]
-        if "npt_vertical" in kwargs:
-            deprecated_warning(type_=type(kwargs["npt_vertical"]), name="npt_vertical", replacement="npt_oop", since_version="2024.11/12")
-            npt_oop = kwargs["npt_vertical"]
-        if "horizontal_unit" in kwargs:
-            deprecated_warning(type_=type(kwargs["horizontal_unit"]), name="horizontal_unit", replacement="unit_ip", since_version="2024.11/12")
-            unit_ip = kwargs["horizontal_unit"]
-        if "vertical_unit" in kwargs:
-            deprecated_warning(type_=type(kwargs["vertical_unit"]), name="vertical_unit", replacement="unit_oop", since_version="2024.11/12")
-            unit_oop = kwargs["vertical_unit"]
-        if "horizontal_unit_range" in kwargs:
-            deprecated_warning(type_=type(kwargs["horizontal_unit_range"]), name="horizontal_unit_range", replacement="ip_range", since_version="2024.11/12")
-            ip_range = kwargs["horizontal_unit_range"]
-        if "vertical_unit_range" in kwargs:
-            deprecated_warning(type_=type(kwargs["vertical_unit_range"]), name="vertical_unit_range", replacement="oop_range", since_version="2024.11/12")
-            oop_range = kwargs["vertical_unit_range"]
-
-        for fi in self.ais:
-            unit_ip, unit_oop = fi.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
-                                             incident_angle=incident_angle,
-                                             tilt_angle=tilt_angle,
-                                             sample_orientation=sample_orientation)
-
-            fi.reset_integrator(incident_angle=unit_ip.incident_angle,
-                                tilt_angle=unit_ip.tilt_angle,
-                                sample_orientation=unit_ip.sample_orientation)
-
-        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
-            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
-
-        return self.integrate2d_fiber(lst_data=lst_data, npt_ip=npt_ip, npt_oop=npt_oop,
-                                      unit_ip=unit_ip, unit_oop=unit_oop,
-                                      ip_range=ip_range,
-                                      oop_range=oop_range,
-                                      sample_orientation=sample_orientation,
-                                      correctSolidAngle=correctSolidAngle,
-                                      lst_mask=lst_mask, dummy=dummy, delta_dummy=delta_dummy,
-                                      lst_variance=lst_variance,
-                                      polarization_factor=polarization_factor, dark=dark, lst_flat=lst_flat,
-                                      method=method,
-                                      normalization_factor=normalization_factor,
-                                      )
-
-    def integrate2d_fiber(self, lst_data, 
-                                      npt_ip=1000, unit_ip=None, ip_range=None,
-                                      npt_oop=1000, unit_oop=None, oop_range=None,
-                                      incident_angle=None, tilt_angle=None, sample_orientation=None,
-                                      correctSolidAngle=True,
-                                      lst_mask=None, dummy=None, delta_dummy=None,
-                                      lst_variance=None,
-                                      polarization_factor=None, dark=None, lst_flat=None,
-                                      method=("no", "histogram", "cython"),
-                                      normalization_factor=1.0, **kwargs):
-        
         if "npt_horizontal" in kwargs:
             deprecated_warning(type_=type(kwargs["npt_horizontal"]), name="npt_horizontal", replacement="npt_ip", since_version="2024.11/12")
             npt_ip = kwargs["npt_horizontal"]
@@ -468,22 +436,23 @@ class MultiGeometry(object):
         count = numpy.zeros_like(signal)
         normalization = numpy.zeros_like(signal)
         variance = None
+
         if self.radial_range is None:
-            self.radial_range = self._guess_radial_range()
+            self.radial_range = ip_range or self._guess_radial_range()
         if self.azimuth_range is None:
-            self.azimuth_range = self._guess_azimuth_range()
+            self.azimuth_range = oop_range or self._guess_azimuth_range()
         def _integrate(args):
             fi, data, monitor, var, mask, flat = args
             return fi.integrate2d_fiber(data,
-                                                    npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
-                                                    npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
-                                                    incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation,
-                                                    correctSolidAngle=correctSolidAngle,
-                                                    variance=var,
-                                                    polarization_factor=polarization_factor,
-                                                    method=method, safe=True,
-                                                    dummy=dummy, delta_dummy=delta_dummy,
-                                                    mask=mask, flat=flat, dark=dark, normalization_factor=monitor, **kwargs)
+                                        npt_ip=npt_ip, unit_ip=unit_ip, ip_range=self.radial_range,
+                                        npt_oop=npt_oop, unit_oop=unit_oop, oop_range=self.azimuth_range,
+                                        sample_orientation=sample_orientation,
+                                        correctSolidAngle=correctSolidAngle,
+                                        variance=var,
+                                        polarization_factor=polarization_factor,
+                                        method=method, safe=True,
+                                        dummy=dummy, delta_dummy=delta_dummy,
+                                        mask=mask, flat=flat, dark=dark, normalization_factor=monitor, **kwargs)
         if self.threadpool is None:
             results = map(_integrate,
                           zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
@@ -522,3 +491,345 @@ class MultiGeometry(object):
         result._set_sum_variance(variance)
         result._set_count(count)
         return result
+
+    def integrate2d_grazing_incidence(self, lst_data, 
+                                      npt_ip=1000, unit_ip=None, ip_range=None,
+                                      npt_oop=1000, unit_oop=None, oop_range=None,
+                                      incident_angle=None, tilt_angle=None, sample_orientation=None,
+                                      correctSolidAngle=True,
+                                      lst_mask=None, dummy=None, delta_dummy=None,
+                                      lst_variance=None,
+                                      polarization_factor=None, dark=None, lst_flat=None,
+                                      method=("no", "histogram", "cython"),
+                                      normalization_factor=1.0, **kwargs):
+        """Performs 2D azimuthal integration of multiples frames, one for each geometry, 
+        It wraps the method integrate2d_grazing_incidence of pyFAI.integrator.fiber.FiberIntegrator
+
+        :param lst_data: list of numpy array
+        :param int npt_ip: number of points to be used along the in-plane axis
+        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
+        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param lst_variance: list of array containing the variance of the data. If not available, no error propagation is done
+        :type lst_variance: list of ndarray
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param float normalization_factor: Value of a normalization monitor
+        :return: regrouped intensity and unit arrays
+        :rtype: Integrate2dResult
+        """
+
+        if "npt_horizontal" in kwargs:
+            deprecated_warning(type_=type(kwargs["npt_horizontal"]), name="npt_horizontal", replacement="npt_ip", since_version="2024.11/12")
+            npt_ip = kwargs["npt_horizontal"]
+        if "npt_vertical" in kwargs:
+            deprecated_warning(type_=type(kwargs["npt_vertical"]), name="npt_vertical", replacement="npt_oop", since_version="2024.11/12")
+            npt_oop = kwargs["npt_vertical"]
+        if "horizontal_unit" in kwargs:
+            deprecated_warning(type_=type(kwargs["horizontal_unit"]), name="horizontal_unit", replacement="unit_ip", since_version="2024.11/12")
+            unit_ip = kwargs["horizontal_unit"]
+        if "vertical_unit" in kwargs:
+            deprecated_warning(type_=type(kwargs["vertical_unit"]), name="vertical_unit", replacement="unit_oop", since_version="2024.11/12")
+            unit_oop = kwargs["vertical_unit"]
+        if "horizontal_unit_range" in kwargs:
+            deprecated_warning(type_=type(kwargs["horizontal_unit_range"]), name="horizontal_unit_range", replacement="ip_range", since_version="2024.11/12")
+            ip_range = kwargs["horizontal_unit_range"]
+        if "vertical_unit_range" in kwargs:
+            deprecated_warning(type_=type(kwargs["vertical_unit_range"]), name="vertical_unit_range", replacement="oop_range", since_version="2024.11/12")
+            oop_range = kwargs["vertical_unit_range"]
+
+        for fi in self.ais:
+            unit_ip, unit_oop = fi.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
+                                             incident_angle=incident_angle,
+                                             tilt_angle=tilt_angle,
+                                             sample_orientation=sample_orientation)
+
+            fi.reset_integrator(incident_angle=unit_ip.incident_angle,
+                                tilt_angle=unit_ip.tilt_angle,
+                                sample_orientation=unit_ip.sample_orientation)
+
+        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
+            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
+
+        return self.integrate2d_fiber(lst_data=lst_data, npt_ip=npt_ip, npt_oop=npt_oop,
+                                      unit_ip=unit_ip, unit_oop=unit_oop,
+                                      ip_range=ip_range,
+                                      oop_range=oop_range,
+                                      sample_orientation=sample_orientation,
+                                      correctSolidAngle=correctSolidAngle,
+                                      lst_mask=lst_mask, dummy=dummy, delta_dummy=delta_dummy,
+                                      lst_variance=lst_variance,
+                                      polarization_factor=polarization_factor, dark=dark, lst_flat=lst_flat,
+                                      method=method,
+                                      normalization_factor=normalization_factor,
+                                      )   
+
+    def integrate1d_fiber(self, lst_data, 
+                                      npt_ip=1000, unit_ip=None, ip_range=None,
+                                      npt_oop=1000, unit_oop=None, oop_range=None,
+                                      sample_orientation=None,
+                                      correctSolidAngle=True,
+                                      vertical_integration = True,
+                                      lst_mask=None, dummy=None, delta_dummy=None,
+                                      lst_variance=None,
+                                      polarization_factor=None, dark=None, lst_flat=None,
+                                      method=("no", "histogram", "cython"),
+                                      normalization_factor=1.0, **kwargs):
+        """Performs 1D fiber integration of multiples frames, one for each geometry, 
+        It wraps the method integrate_fiber of pyFAI.integrator.fiber.FiberIntegrator
+
+        :param lst_data: list of numpy array
+        :param int npt_ip: number of points to be used along the in-plane axis
+        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
+        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param lst_variance: list of array containing the variance of the data. If not available, no error propagation is done
+        :type lst_variance: list of ndarray
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param float normalization_factor: Value of a normalization monitor
+        :return: chi bins center positions and regrouped intensity
+        :rtype: Integrate1dResult
+        """
+
+        if "npt_output" in kwargs:
+            deprecated_warning(type_=type(kwargs["npt_output"]), name="npt_output", replacement=("npt_oop, npt_ip, vertical_integration instead"), since_version="2024.11/12")
+            npt_oop = kwargs["npt_output"]
+            vertical_integration = True
+        if "npt_integrated" in kwargs:
+            deprecated_warning(type_=type(kwargs["npt_integrated"]), name="npt_integrated", replacement=("npt_oop, npt_ip, vertical_integration instead"), since_version="2024.11/12")
+            npt_ip = kwargs["npt_integrated"]
+            vertical_integration = True
+        if "output_unit" in kwargs:
+            deprecated_warning(type_=type(kwargs["output_unit"]), name="output_unit", replacement=("unit_oop, unit_ip, vertical_integration instead"), since_version="2024.11/12")
+            unit_oop = kwargs["output_unit"]
+            vertical_integration = True
+        if "integrated_unit" in kwargs:
+            deprecated_warning(type_=type(kwargs["integrated_unit"]), name="integrated_unit", replacement=("unit_oop, unit_ip, vertical_integration instead"), since_version="2024.11/12")
+            unit_ip = kwargs["integrated_unit"]
+            vertical_integration = True
+        if "output_unit_range" in kwargs:
+            deprecated_warning(type_=type(kwargs["output_unit_range"]), name="output_unit_range", replacement=("oop_range, ip_range, vertical_integration instead"), since_version="2024.11/12")
+            oop_range = kwargs["output_unit_range"]
+            vertical_integration = True
+        if "integrated_unit_range" in kwargs:
+            deprecated_warning(type_=type(kwargs["integrated_unit_range"]), name="integrated_unit_range", replacement=("oop_range, ip_range, vertical_integration instead"), since_version="2024.11/12")
+            ip_range = kwargs["integrated_unit_range"]
+            vertical_integration = True
+
+        for fi in self.ais:
+            unit_ip, unit_oop = fi.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
+                                             sample_orientation=sample_orientation)
+
+            fi.reset_integrator(incident_angle=unit_ip.incident_angle,
+                                tilt_angle=unit_ip.tilt_angle,
+                                sample_orientation=unit_ip.sample_orientation)
+
+        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
+            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
+
+
+        if vertical_integration and npt_oop is None:
+            raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
+        elif not vertical_integration and npt_ip is None:
+            raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
+
+        npt_oop = npt_oop or 500
+        npt_ip = npt_ip or 500
+
+        npt_output = npt_oop
+        self.radial_unit = unit_oop
+        self.radial_range = oop_range or self._guess_radial_range()
+        self.azimuth_unit = unit_ip
+        self.azimuth_range = ip_range or self._guess_azimuth_range()     
+
+        method = IntegrationMethod.select_one_available(method, dim=1)
+
+        if len(lst_data) == 0:
+            raise RuntimeError("List of images cannot be empty")
+        if normalization_factor is None:
+            normalization_factor = [1.0] * len(self.ais)
+        elif not isinstance(normalization_factor, collections.abc.Iterable):
+            normalization_factor = [normalization_factor] * len(self.ais)
+        if lst_variance is None:
+            lst_variance = [None] * len(self.ais)
+        if lst_mask is None:
+            lst_mask = [None] * len(self.ais)
+        elif isinstance(lst_mask, numpy.ndarray):
+            lst_mask = [lst_mask] * len(self.ais)
+        if lst_flat is None:
+            lst_flat = [None] * len(self.ais)
+        elif isinstance(lst_flat, numpy.ndarray):
+            lst_flat = [lst_flat] * len(self.ais)
+        signal = numpy.zeros(npt_output, dtype=numpy.float64)
+        normalization = numpy.zeros_like(signal)
+        count = numpy.zeros_like(signal)
+        variance = None
+
+        def _integrate(args):
+            fi, data, monitor, var, mask, flat = args
+            return fi.integrate_fiber(data=data,
+                                      npt_oop=npt_oop, unit_oop=unit_oop, oop_range=self.radial_range,
+                                      npt_ip=npt_ip, unit_ip=unit_ip, ip_range=self.azimuth_range,
+                                      vertical_integration=vertical_integration,
+                                      sample_orientation=sample_orientation,
+                                      correctSolidAngle=correctSolidAngle,
+                                      mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                      polarization_factor=polarization_factor, dark=dark, flat=flat,
+                                      method=("no", "histogram", "cython"),
+                                      normalization_factor=monitor,
+                                      variance=var,
+                                      )
+        if self.threadpool is None:
+            results = map(_integrate,
+                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        else:
+            results = self.threadpool.map(_integrate,
+                                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        for res, ai in zip(results, self.ais):
+            sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
+            count += res.count
+            normalization += res.sum_normalization * sac
+            signal += res.sum_signal
+            if res.sigma is not None:
+                if variance is None:
+                    variance = res.sum_variance.astype(dtype=numpy.float64)  # explicit copy
+                else:
+                    variance += res.sum_variance
+
+        tiny = numpy.finfo("float32").tiny
+        norm = numpy.maximum(normalization, tiny)
+        invalid = count <= 0.0
+        I = signal / norm
+        I[invalid] = self.empty
+
+        if variance is not None:
+            sigma = numpy.sqrt(variance) / norm
+            sigma[invalid] = self.empty
+            result = Integrate1dResult(res.radial, I, sigma)
+        else:
+            result = Integrate1dResult(res.radial, I)
+        result._set_compute_engine(res.compute_engine)
+        result._set_unit(self.radial_unit)
+        result._set_sum_signal(signal)
+        result._set_sum_normalization(normalization)
+        result._set_sum_variance(variance)
+        result._set_count(count)
+        return result
+    
+    def integrate1d_grazing_incidence(self, lst_data, 
+                                      npt_ip=1000, unit_ip=None, ip_range=None,
+                                      npt_oop=1000, unit_oop=None, oop_range=None,
+                                      incident_angle=None, tilt_angle=None, sample_orientation=None,
+                                      vertical_integration = True,
+                                      correctSolidAngle=True,
+                                      lst_mask=None, dummy=None, delta_dummy=None,
+                                      lst_variance=None,
+                                      polarization_factor=None, dark=None, lst_flat=None,
+                                      method=("no", "histogram", "cython"),
+                                      normalization_factor=1.0, **kwargs):
+        """Performs 1D fiber integration of multiples frames, one for each geometry, 
+        It wraps the method integrate_grazing_incidence of pyFAI.integrator.fiber.FiberIntegrator
+
+        :param lst_data: list of numpy array
+        :param int npt_ip: number of points to be used along the in-plane axis
+        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
+        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
+        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param lst_variance: list of array containing the variance of the data. If not available, no error propagation is done
+        :type lst_variance: list of ndarray
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param float normalization_factor: Value of a normalization monitor
+        :return: chi bins center positions and regrouped intensity
+        :rtype: Integrate1dResult
+        """
+        if "npt_output" in kwargs:
+            deprecated_warning(type_=type(kwargs["npt_output"]), name="npt_output", replacement=("npt_oop, npt_ip, vertical_integration instead"), since_version="2024.11/12")
+            npt_oop = kwargs["npt_output"]
+            vertical_integration = True
+        if "npt_integrated" in kwargs:
+            deprecated_warning(type_=type(kwargs["npt_integrated"]), name="npt_integrated", replacement=("npt_oop, npt_ip, vertical_integration instead"), since_version="2024.11/12")
+            npt_ip = kwargs["npt_integrated"]
+            vertical_integration = True
+        if "output_unit" in kwargs:
+            deprecated_warning(type_=type(kwargs["output_unit"]), name="output_unit", replacement=("unit_oop, unit_ip, vertical_integration instead"), since_version="2024.11/12")
+            unit_oop = kwargs["output_unit"]
+            vertical_integration = True
+        if "integrated_unit" in kwargs:
+            deprecated_warning(type_=type(kwargs["integrated_unit"]), name="integrated_unit", replacement=("unit_oop, unit_ip, vertical_integration instead"), since_version="2024.11/12")
+            unit_ip = kwargs["integrated_unit"]
+            vertical_integration = True
+        if "output_unit_range" in kwargs:
+            deprecated_warning(type_=type(kwargs["output_unit_range"]), name="output_unit_range", replacement=("oop_range, ip_range, vertical_integration instead"), since_version="2024.11/12")
+            oop_range = kwargs["output_unit_range"]
+            vertical_integration = True
+        if "integrated_unit_range" in kwargs:
+            deprecated_warning(type_=type(kwargs["integrated_unit_range"]), name="integrated_unit_range", replacement=("oop_range, ip_range, vertical_integration instead"), since_version="2024.11/12")
+            ip_range = kwargs["integrated_unit_range"]
+            vertical_integration = True
+
+        for fi in self.ais:
+            unit_ip, unit_oop = fi.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
+                                             incident_angle=incident_angle,
+                                             tilt_angle=tilt_angle,
+                                             sample_orientation=sample_orientation)
+
+            fi.reset_integrator(incident_angle=unit_ip.incident_angle,
+                                tilt_angle=unit_ip.tilt_angle,
+                                sample_orientation=unit_ip.sample_orientation)
+
+        return self.integrate1d_fiber(lst_data=lst_data,
+                                    npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
+                                    npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
+                                    vertical_integration=vertical_integration,
+                                    sample_orientation=sample_orientation,
+                                    correctSolidAngle=correctSolidAngle,
+                                    lst_mask=lst_mask, dummy=dummy, delta_dummy=delta_dummy,
+                                    lst_variance=lst_variance,
+                                    polarization_factor=polarization_factor, dark=dark, lst_flat=lst_flat,
+                                    method=method,
+                                    normalization_factor=normalization_factor,
+                                    )
