@@ -355,7 +355,7 @@ class MultiGeometry(object):
                           polarization_factor=None, dark=None, lst_flat=None,
                           method=("no", "histogram", "cython"),
                           normalization_factor=1.0, **kwargs):
-        """Performs 2D azimuthal integration of multiples frames, one for each geometry, 
+        """Performs 2D azimuthal integration of multiples frames, one for each geometry,
         It wraps the method integrate2d_fiber of pyFAI.integrator.fiber.FiberIntegrator
 
         :param lst_data: list of numpy array
@@ -492,7 +492,7 @@ class MultiGeometry(object):
         result._set_count(count)
         return result
 
-    def integrate2d_grazing_incidence(self, lst_data, 
+    def integrate2d_grazing_incidence(self, lst_data,
                                       npt_ip=1000, unit_ip=None, ip_range=None,
                                       npt_oop=1000, unit_oop=None, oop_range=None,
                                       incident_angle=None, tilt_angle=None, sample_orientation=None,
@@ -502,7 +502,7 @@ class MultiGeometry(object):
                                       polarization_factor=None, dark=None, lst_flat=None,
                                       method=("no", "histogram", "cython"),
                                       normalization_factor=1.0, **kwargs):
-        """Performs 2D azimuthal integration of multiples frames, one for each geometry, 
+        """Performs 2D azimuthal integration of multiples frames, one for each geometry,
         It wraps the method integrate2d_grazing_incidence of pyFAI.integrator.fiber.FiberIntegrator
 
         :param lst_data: list of numpy array
@@ -576,9 +576,9 @@ class MultiGeometry(object):
                                       polarization_factor=polarization_factor, dark=dark, lst_flat=lst_flat,
                                       method=method,
                                       normalization_factor=normalization_factor,
-                                      )   
+                                      )
 
-    def integrate1d_fiber(self, lst_data, 
+    def integrate1d_fiber(self, lst_data,
                                       npt_ip=1000, unit_ip=None, ip_range=None,
                                       npt_oop=1000, unit_oop=None, oop_range=None,
                                       sample_orientation=None,
@@ -589,7 +589,7 @@ class MultiGeometry(object):
                                       polarization_factor=None, dark=None, lst_flat=None,
                                       method=("no", "histogram", "cython"),
                                       normalization_factor=1.0, **kwargs):
-        """Performs 1D fiber integration of multiples frames, one for each geometry, 
+        """Performs 1D fiber integration of multiples frames, one for each geometry,
         It wraps the method integrate_fiber of pyFAI.integrator.fiber.FiberIntegrator
 
         :param lst_data: list of numpy array
@@ -668,7 +668,7 @@ class MultiGeometry(object):
         self.radial_unit = unit_oop
         self.radial_range = oop_range or self._guess_radial_range()
         self.azimuth_unit = unit_ip
-        self.azimuth_range = ip_range or self._guess_azimuth_range()     
+        self.azimuth_range = ip_range or self._guess_azimuth_range()
 
         method = IntegrationMethod.select_one_available(method, dim=1)
 
@@ -743,8 +743,8 @@ class MultiGeometry(object):
         result._set_sum_variance(variance)
         result._set_count(count)
         return result
-    
-    def integrate1d_grazing_incidence(self, lst_data, 
+
+    def integrate1d_grazing_incidence(self, lst_data,
                                       npt_ip=1000, unit_ip=None, ip_range=None,
                                       npt_oop=1000, unit_oop=None, oop_range=None,
                                       incident_angle=None, tilt_angle=None, sample_orientation=None,
@@ -755,7 +755,7 @@ class MultiGeometry(object):
                                       polarization_factor=None, dark=None, lst_flat=None,
                                       method=("no", "histogram", "cython"),
                                       normalization_factor=1.0, **kwargs):
-        """Performs 1D fiber integration of multiples frames, one for each geometry, 
+        """Performs 1D fiber integration of multiples frames, one for each geometry,
         It wraps the method integrate_grazing_incidence of pyFAI.integrator.fiber.FiberIntegrator
 
         :param lst_data: list of numpy array
