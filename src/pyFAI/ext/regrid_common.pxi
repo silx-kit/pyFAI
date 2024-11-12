@@ -495,7 +495,7 @@ cdef inline void _integrate1d(buffer_t[::1] buffer,
                     buffer[istop0] += _calc_area(<floating>istop0, stop0, slope, intercept)
         else:
             if 0 <= start0 < buffer_size:
-                buffer[istart0] += _calc_area(<floating>start0, istart0, slope, intercept)
+                buffer[istart0] += _calc_area(start0, <floating> istart0, slope, intercept)
             for i in range(min(istart0, buffer_size) - 1, max(<Py_ssize_t> floor(stop0), -1), -1):
                 buffer[i] += _calc_area(<floating>(i + 1), <floating>i, slope, intercept)
             if buffer_size > stop0 >= 0:
