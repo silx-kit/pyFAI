@@ -180,7 +180,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         oop_range = deprecated_params.get('oop_range', None) or oop_range
         ip_range = deprecated_params.get('ip_range', None) or ip_range
         vertical_integration = deprecated_params.get('vertical_integration', None) or vertical_integration
-        
+
         unit_ip = unit_ip or 'qip_nm^-1'
         unit_oop = unit_oop or 'qoop_nm^-1'
         unit_ip = parse_fiber_unit(unit=unit_ip, sample_orientation=sample_orientation)
@@ -392,7 +392,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
-        
+
         return self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
