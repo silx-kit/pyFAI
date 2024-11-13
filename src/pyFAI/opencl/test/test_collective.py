@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2024"
+__date__ = "07/11/2024"
 
 import logging
 import numpy
@@ -87,7 +87,9 @@ class TestReduction(unittest.TestCase):
         self.data = rng.poisson(10, size=self.shape).astype(numpy.int32)
         self.data_d = pyopencl.array.to_device(self.queue, self.data)
         self.sum_d = pyopencl.array.zeros_like(self.data_d)
-        self.program = pyopencl.Program(self.ctx, get_opencl_code("pyfai:openCL/collective/reduction.cl")).build()
+        self.program = pyopencl.Program(self.ctx, get_opencl_code("pyfai:openCL/collective/reduction.cl")+
+                                        get_opencl_code("pyfai:openCL/collective/scan.cl")
+                                        ).build()
 
     def tearDown(self):
         self.img = self.data = None
@@ -141,6 +143,91 @@ class TestReduction(unittest.TestCase):
                 ref = numpy.outer(self.data.reshape((-1, wg)).sum(axis=-1),numpy.ones(wg)).ravel()
                 good = numpy.allclose(res, ref)
                 logger.info("Wg: %s result: atomic good: %s", wg, good)
+                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_Hillis_Steele(self):
+        """
+        tests the Hillis_Steele scan function
+        """
+        data_d = pyopencl.array.to_device(self.queue, self.data.astype("float32"))
+        scan_d = pyopencl.array.empty_like(data_d)
+        maxi = int(round(numpy.log2(min(self.shape, self.max_valid_wg))))+1
+        for i in range(0, maxi):
+            wg = 1 << i
+            try:
+                evt = self.program.test_cumsum(self.queue, (self.shape,), (wg,),
+                                                          data_d.data,
+                                                          scan_d.data,
+                                                          pyopencl.LocalMemory(2*4*wg))
+                evt.wait()
+            except Exception as error:
+                logger.error("Error %s on WG=%s: Hillis_Steele", error, wg)
+                break
+            else:
+                res = scan_d.get().reshape((-1, wg))
+                ref = numpy.array([numpy.cumsum(i) for i in self.data.reshape((-1, wg))])
+                good = numpy.allclose(res, ref)
+                logger.info("Wg: %s result: cumsum good: %s", wg, good)
+                self.assertTrue(good, "Cumsum calculation is correct for WG=%s" % wg)
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_Blelloch(self):
+        """
+        tests the Blelloch scan function
+        """
+        data_d = pyopencl.array.to_device(self.queue, self.data.astype("float32"))
+        scan_d = pyopencl.array.empty_like(data_d)
+        maxi = int(round(numpy.log2(min(self.shape/2, self.max_valid_wg))))+1
+        for i in range(maxi):
+            wg = 1 << i
+            try:
+                evt = self.program.test_blelloch_scan(self.queue, (self.shape//2,), (wg,),
+                                                          data_d.data,
+                                                          scan_d.data,
+                                                          pyopencl.LocalMemory(2*4*wg))
+                evt.wait()
+            except Exception as error:
+                logger.error("Error %s on WG=%s: Blelloch", error, wg)
+                break
+            else:
+                res = scan_d.get().reshape((-1, 2*wg))
+                ref = numpy.array([numpy.cumsum(i) for i in self.data.reshape((-1, 2*wg))])
+                good = numpy.allclose(res, ref)
+                if not good:
+                    print(ref)
+                    print(res)
+                logger.info("Wg: %s result: cumsum good: %s", wg, good)
+                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_Blelloch_multipass(self):
+        """
+        tests the Blelloch cumsum using multiple passes ...
+        """
+        data_d = pyopencl.array.to_device(self.queue, self.data.astype("float32"))
+        scan_d = pyopencl.array.empty_like(data_d)
+        maxi = int(round(numpy.log2(min(self.shape/2, self.max_valid_wg))))+1
+        for i in range(maxi):
+            wg = 1 << i
+            try:
+                evt = self.program.test_blelloch_multi(self.queue, (wg,), (wg,),
+                                                       data_d.data,
+                                                       scan_d.data,
+                                                       numpy.int32(self.shape),
+                                                       pyopencl.LocalMemory(2*4*wg))
+                evt.wait()
+            except Exception as error:
+                logger.error("Error %s on WG=%s: Blelloch multi", error, wg)
+                break
+            else:
+                res = scan_d.get()
+                ref = numpy.cumsum(self.data)
+                good = numpy.allclose(res, ref)
+                if not good:
+                    print(ref)
+                    print(res)
+                logger.info("Wg: %s result: cumsum good: %s", wg, good)
                 self.assertTrue(good, "calculation is correct for WG=%s" % wg)
 
 def suite():

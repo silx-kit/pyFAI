@@ -1,0 +1,98 @@
+cff-version: 1.2.0
+message: "If you use pyFAI, please cite it as below."
+authors:
+  - family-names: Kieffer
+    given-names: Jerome
+    orcid: https://orcid.org/0000-0002-0730-6577
+    affiliation: ESRF
+  - family-names: Valls
+    given-names: Valentin
+    affiliation: ESRF
+  - family-names: Gutierrez-Fernandez
+    given-names: Edgar
+    affiliation: ESRF
+  - family-names: Ashiotis
+    given-names: Giannis
+    affiliation: ESRF
+  - family-names: Karkoulis
+    given-names: Dimitris
+    affiliation: ESRF
+  - family-names: Nawaz
+    given-names: Zubair
+    affiliation: ESRF
+  - family-names: Deschildre
+    given-names: Aurore
+    affiliation: ESRF
+  - family-names: Vincent
+    given-names: Thomas
+    affiliation: ESRF
+  - family-names: Picca
+    given-names: Frederic Emmanuel
+    affiliation: Soleil
+  - family-names: Massahud
+    given-names: Emily
+    affiliation: ANSTO
+  - family-names: Payno
+    given-names: Henri
+    affiliation: ESRF
+  - family-names: Huder
+    given-names: Loïc
+    affiliation: ESRF
+  - family-names: Wright
+    given-names: Johnathan Paul
+    affiliation: ESRF
+  - family-names: Pandolfi
+    given-names: Ronald
+    affiliation: LBL
+    orcid: https://orcid.org/0000-0003-0824-8548
+  - family-names: Jankowski
+    given-names: Maciej
+    affiliation: ESRF
+  - family-names: Paleo
+    given-names: Pierre
+    affiliation: ESRF
+  - family-names: Faure
+    given-names: Bertrand
+    affiliation: Xenocs
+  - family-names: Storm
+    given-names: Malte
+    affiliation: Helmholtz-Zentrum Hereon
+  - family-names: De Nolf
+    given-names: Wout
+    affiliation: ESRF
+  - family-names:  Wright
+    given-names: Christopher J.
+    affiliation: NSLS-II
+  - family-names: Hopkins
+    given-names: Jesse B.
+    orcid: https://orcid.org/0000-0001-8554-8072
+    affiliation: APS
+  - family-names: Pascal
+    given-names: Elena
+    affiliation: Diamond
+  - family-names: Weninger
+    given-names: Clemens
+    affiliation: MAX IV
+  - family-names: Detlefs
+    given-names: Carsten
+    affiliation: ESRF
+  - family-names:  Plaswig
+    given-names: Florian
+    affiliation: ESRF
+  - family-names: Lavanchy
+    given-names: Aurelien
+  - family-names: gbenecke
+  - family-names: zxs-un
+  - family-names: iltommi
+    affiliation: LULI
+  - family-names: dodogerstlin
+date-released: '2024-09-13'
+doi: 10.5281/zenodo.13756914
+license: MIT
+repository-code: https://github.com/silx-kit/pyFAI/tree/v2024.09
+type: software
+title: "pyFAI: Fast Azimuthal Integration in Python"
+version: v2024.09
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.1234
