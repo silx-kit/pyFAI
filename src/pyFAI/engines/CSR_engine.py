@@ -26,9 +26,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2024"
+__date__ = "13/11/2024"
 __status__ = "development"
 
+from collections.abc import Iterable
 import logging
 import warnings
 logger = logging.getLogger(__name__)
@@ -46,6 +47,7 @@ else:
 from ..utils import calc_checksum
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
+mf_dtype = numpy.dtype([('any', 'f4'),('sig', 'f4'),('var', 'f4'),('norm', 'f4')])
 
 class CSRIntegrator(object):
 
@@ -388,6 +390,125 @@ class CsrIntegrator1d(CSRIntegrator):
 
         # Here we return the standard deviation and not the standard error of the mean !
         return Integrate1dtpl(self.bin_centers, avg, std, sum_sig, sum_var, sum_nrm, cnt, std, sem, sum_nrm2)
+
+    def medfilt(self, data, dark=None, dummy=None, delta_dummy=None,
+                variance=None, dark_variance=None,
+                flat=None, solidangle=None, polarization=None, absorption=None,
+                safe=True, error_model=None,
+                normalization_factor=1.0, percentile=50
+                ):
+        """
+        Perform a median-filter/quantile mean in azimuthal space.
+
+        If the error model is "azimuthal": the variance is the variance within a bin,
+        which is refined at each iteration, can be costly !
+
+        Else, the error is propagated according to:
+
+        .. math::
+
+            signal = (raw - dark)
+            variance = variance + dark_variance
+            normalization  = normalization_factor*(flat * solidangle * polarization * absortoption)
+            count = number of pixel contributing
+
+        Integration is performed using the CSR representation of the look-up table on all
+        arrays: signal, variance, normalization and count
+
+        Formula for azimuthal variance from:
+        https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
+
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param safe: Unused in this implementation
+        :param error_model: Enum or str, "azimuthal" or "poisson"
+        :param normalization_factor: divide raw signal by this value
+        :param percentile: which percentile use for cutting out
+                           percentil can be a 2-tuple to specify a region to
+                           average out
+        :return: namedtuple with "position intensity error signal variance normalization count"
+
+        """
+        if isinstance(percentile, Iterable):
+            q_start = 1e-2 * min(percentile)
+            q_stop = 1e-2 * max(percentile)
+        else:
+            q_stop = q_start = 1e-2*percentile
+
+        shape = data.shape
+        indptr = self._csr.indptr
+        indices = self._csr.indices
+
+
+        error_model = ErrorModel.parse(error_model)
+        if error_model is ErrorModel.NO:
+            logger.error("No variance propagation is incompatible with sigma-clipping. Using `azimuthal` model !")
+            error_model = ErrorModel.AZIMUTHAL
+
+        prep = preproc(data,
+                       dark=dark,
+                       flat=flat,
+                       solidangle=solidangle,
+                       polarization=polarization,
+                       absorption=absorption,
+                       mask=None,
+                       dummy=dummy,
+                       delta_dummy=delta_dummy,
+                       normalization_factor=normalization_factor,
+                       empty=self.empty,
+                       split_result=4,
+                       variance=variance,
+                       dark_variance=dark_variance,
+                       dtype=numpy.float32,
+                       error_model=error_model,
+                       out=self.preprocessed)
+
+        prep_flat = prep.reshape((-1, 4))
+        pixels = prep_flat[indices]
+
+        work0 = numpy.zeros((indices.size,4), dtype=numpy.float32)
+        work0[:, 0] = pixels[:, 0]/ pixels[:, 2]
+        work0[:, 1] = pixels[:, 0] * self._csr.data
+        work0[:, 2] = pixels[:, 0] * self._csr2.data
+        work0[:, 3] = pixels[:, 0] * self._csr.data
+        work1 = work0.view(mf_dtype).ravel()
+
+        size = indptr.size-1
+        signal = numpy.zeros(size, dtype=numpy.float64)
+        norm = numpy.zeros(size, dtype=numpy.float64)
+        norm2 = numpy.zeros(size, dtype=numpy.float64)
+        variance = numpy.zeros(size, dtype=numpy.float64)
+        cnt = numpy.zeros(size, dtype=numpy.int32)
+        for i,start in enumerate(indptr[:-1]):
+            stop = indptr[i+1]
+            tmp = numpy.sort(work1[start:stop])
+            upper = numpy.cumsum(tmp["norm"])
+            last = upper[-1]
+            lower = numpy.concatenate(([0],upper[:-1]))
+            mask = numpy.logical_and(upper>=q_start*last, lower<=q_stop*last)
+            tmp = tmp[mask]
+            cnt[i] = tmp.size
+            signal[i] = tmp["sig"].sum(dtype=numpy.float64)
+            variance[i] = tmp["var"].sum(dtype=numpy.float64)
+            norm[i] = tmp["norm"].sum(dtype=numpy.float64)
+            norm2[i] = (tmp["norm"]**2).sum(dtype=numpy.float64)
+
+        avg = signal / norm
+        std = numpy.sqrt(variance / norm2)
+        sem = numpy.sqrt(variance) / norm
+        # mask out remaining NaNs
+        msk = norm <= 0
+        avg[msk] = self.empty
+        std[msk] = self.empty
+        sem[msk] = self.empty
+
+        return Integrate1dtpl(self.bin_centers, avg, std, signal, variance, norm, cnt, std, sem, norm2)
 
     @property
     def check_mask(self):
