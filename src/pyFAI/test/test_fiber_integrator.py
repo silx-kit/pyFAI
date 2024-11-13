@@ -43,6 +43,8 @@ from ..integrator.fiber import FiberIntegrator
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..detectors import detector_factory
 from ..units import get_unit_fiber
+from ..units import parse_fiber_unit
+from ..units import UnitFiber
 from ..test.utilstest import UtilsTest
 from .. import load
 
@@ -90,6 +92,101 @@ class TestFiberIntegrator(unittest.TestCase):
         self.assertEqual(abs(res2d_load.radial - res2d_from_ai.radial).max(), 0)
         self.assertEqual(abs(res2d_load.azimuthal - res2d_from_ai.azimuthal).max(), 0)
         self.assertEqual(abs(res2d_load.intensity - res2d_from_ai.intensity).max(), 0)
+
+
+    def test_parse_units(self):
+        gi_parameters_default = {"incident_angle" : 0.0,
+                                 "tilt_angle" : 0.0,
+                                 "sample_orientation" : 1,
+        }
+        gi_parameters_1 = {"incident_angle" : 0.2,
+                           "tilt_angle" : 0.4,
+                           "sample_orientation" : 2,
+        }
+
+        qip_str_1 = parse_fiber_unit(unit='qip_nm^-1')
+        qoop_str_1 = parse_fiber_unit(unit='qoop_nm^-1')
+        qip_str_2 = parse_fiber_unit(unit='qip_nm^-1', **gi_parameters_1)
+        qoop_str_2 = parse_fiber_unit(unit='qoop_nm^-1', **gi_parameters_1)
+
+        qip_unit_1 = parse_fiber_unit(unit=get_unit_fiber(name='qip_A^-1'))
+        qoop_unit_1 = parse_fiber_unit(unit=get_unit_fiber(name='qoop_A^-1'))
+        qip_unit_2 = parse_fiber_unit(unit=get_unit_fiber(name='qip_A^-1'), **gi_parameters_1)
+        qoop_unit_2 = parse_fiber_unit(unit=get_unit_fiber(name='qoop_A^-1'), **gi_parameters_1)
+
+        self.assertIsInstance(qip_str_1, UnitFiber)
+        self.assertIsInstance(qoop_str_1, UnitFiber)
+        for k,v in gi_parameters_default.items():
+            self.assertEqual(getattr(qip_str_1, k), v)
+            self.assertEqual(getattr(qoop_str_1, k), v)
+
+        self.assertIsInstance(qip_str_2, UnitFiber)
+        self.assertIsInstance(qoop_str_2, UnitFiber)
+        for k,v in gi_parameters_1.items():
+            self.assertEqual(getattr(qip_str_2, k), v)
+            self.assertEqual(getattr(qoop_str_2, k), v)
+
+        self.assertIsInstance(qip_unit_1, UnitFiber)
+        self.assertIsInstance(qoop_unit_1, UnitFiber)
+        for k,v in gi_parameters_default.items():
+            self.assertEqual(getattr(qip_unit_1, k), v)
+            self.assertEqual(getattr(qoop_unit_1, k), v)
+
+        self.assertIsInstance(qip_unit_2, UnitFiber)
+        self.assertIsInstance(qoop_unit_2, UnitFiber)
+        for k,v in gi_parameters_1.items():
+            self.assertEqual(getattr(qip_unit_2, k), v)
+            self.assertEqual(getattr(qoop_unit_2, k), v)
+
+    def test_parse_wrong_units(self):
+        correct = parse_fiber_unit(unit='qip_nm^-1')
+        def wrong():
+            _ = parse_fiber_unit(unit='q_nm^-1')
+
+        self.assertRaises(Exception, wrong)
+
+    def test_unique_units(self):
+        gi_parameters_1 = {"incident_angle" : 0.2,
+                           "tilt_angle" : 0.4,
+                           "sample_orientation" : 2,
+        }
+
+        gi_parameters_2 = {"incident_angle" : 0.6,
+                           "tilt_angle" : 0.9,
+                           "sample_orientation" : 3,
+        }
+
+        gi_parameters_default = {"incident_angle" : 0.0,
+                                 "tilt_angle" : 0.0,
+                                 "sample_orientation" : 1,
+        }
+
+        qip_1 = get_unit_fiber(name='qip_nm^-1', **gi_parameters_1)
+        qoop_1 = get_unit_fiber(name='qoop_nm^-1', **gi_parameters_1)
+
+        qip_2 = get_unit_fiber(name='qip_nm^-1')
+        qoop_2 = get_unit_fiber(name='qoop_nm^-1')
+        qip_2.set_incident_angle(gi_parameters_2['incident_angle'])
+        qoop_2.set_incident_angle(gi_parameters_2['incident_angle'])
+        qip_2.set_tilt_angle(gi_parameters_2['tilt_angle'])
+        qoop_2.set_tilt_angle(gi_parameters_2['tilt_angle'])
+        qip_2.set_sample_orientation(gi_parameters_2['sample_orientation'])
+        qoop_2.set_sample_orientation(gi_parameters_2['sample_orientation'])
+
+        for k,v in gi_parameters_1.items():
+            self.assertEqual(getattr(qip_1, k), v)
+            self.assertEqual(getattr(qoop_1, k), v)
+
+        for k,v in gi_parameters_2.items():
+            self.assertEqual(getattr(qip_2, k), v)
+            self.assertEqual(getattr(qoop_2, k), v)
+
+        qip_3 = get_unit_fiber(name='qip_nm^-1')
+        qoop_3 = get_unit_fiber(name='qip_nm^-1')
+
+        for k,v in gi_parameters_default.items():
+            self.assertEqual(getattr(qip_3, k), v)
+            self.assertEqual(getattr(qoop_3, k), v)
 
     def test_integrate2d_default(self):
         res2d_ref = self.fi.integrate2d_grazing_incidence(data=self.data)
