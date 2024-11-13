@@ -44,7 +44,7 @@ __license__ = "MIT"
 
 import cython
 import numpy
-from libc.math cimport sqrt, fabs, NAN
+from libc.math cimport sqrtf, fabs, NAN
 from cython.parallel import prange
 from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
                          int32_t, uint32_t, int64_t, uint64_t
@@ -55,7 +55,7 @@ cdef inline float invert_distance(Py_ssize_t i0, Py_ssize_t i1, Py_ssize_t p0, P
     cdef Py_ssize_t d0, d1
     d0 = (i0 - p0)
     d1 = (i1 - p1)
-    return 1. / sqrt(<double> (d0*d0 + d1*d1))
+    return 1.0f / sqrtf(<float> (d0*d0 + d1*d1))
 
 cdef inline float processPoint(float[:, ::1] data,
                                int8_t[:, ::1] mask,
