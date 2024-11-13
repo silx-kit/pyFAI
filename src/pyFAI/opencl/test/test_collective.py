@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/11/2024"
+__date__ = "12/11/2024"
 
 import logging
 import numpy
@@ -51,11 +51,11 @@ logger = logging.getLogger(__name__)
 
 @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
 @unittest.skipUnless(ocl, "PyOpenCl is missing")
-class TestReduction(unittest.TestCase):
+class TestGroupFunction(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestReduction, cls).setUpClass()
+        super(TestGroupFunction, cls).setUpClass()
 
         if ocl:
             cls.ctx = ocl.create_context()
@@ -74,8 +74,8 @@ class TestReduction(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestReduction, cls).tearDownClass()
-        print("Maximum valid workgroup size %s on device %s" % (cls.max_valid_wg, cls.ctx.devices[0]))
+        super(TestGroupFunction, cls).tearDownClass()
+        # print("Maximum valid workgroup size %s on device %s" % (cls.max_valid_wg, cls.ctx.devices[0]))
         cls.ctx = None
         cls.queue = None
 
@@ -88,8 +88,8 @@ class TestReduction(unittest.TestCase):
         self.data_d = pyopencl.array.to_device(self.queue, self.data)
         self.sum_d = pyopencl.array.zeros_like(self.data_d)
         self.program = pyopencl.Program(self.ctx, get_opencl_code("pyfai:openCL/collective/reduction.cl")+
-                                        get_opencl_code("pyfai:openCL/collective/scan.cl")
-                                        ).build()
+                                        get_opencl_code("pyfai:openCL/collective/scan.cl")+
+                                        get_opencl_code("pyfai:openCL/collective/comb_sort.cl")).build()
 
     def tearDown(self):
         self.img = self.data = None
@@ -230,10 +230,94 @@ class TestReduction(unittest.TestCase):
                 logger.info("Wg: %s result: cumsum good: %s", wg, good)
                 self.assertTrue(good, "calculation is correct for WG=%s" % wg)
 
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_sort(self):
+        """
+        tests the sort of floating points in a workgroup
+        """
+        data = numpy.arange(self.shape).astype(numpy.float32)
+        numpy.random.shuffle(data)
+        data_d = pyopencl.array.to_device(self.queue, data)
+
+        maxi = int(round(numpy.log2(self.shape)))+1
+        for i in range(5,maxi):
+            wg = 1 << i
+
+            ref = data.reshape((-1, wg))
+            positions = ((numpy.arange(ref.shape[0])+1)*wg).astype(numpy.int32)
+            positions_d = pyopencl.array.to_device(self.queue, positions)
+            data_d = pyopencl.array.to_device(self.queue, data)
+            # print(ref.shape, (ref.shape[0],min(wg, self.max_valid_wg)), (1, min(wg, self.max_valid_wg)), positions)
+            try:
+                evt = self.program.test_combsort_float(self.queue, (ref.shape[0],min(wg, self.max_valid_wg)), (1, min(wg, self.max_valid_wg)),
+                                                       data_d.data,
+                                                       positions_d.data,
+                                                       pyopencl.LocalMemory(4*min(wg, self.max_valid_wg)))
+                evt.wait()
+            except Exception as error:
+                logger.error("Error %s on WG=%s: test_sort", error, wg)
+                break
+            else:
+                res = data_d.get()
+                ref = numpy.sort(ref)
+                good = numpy.allclose(res, ref.ravel())
+                logger.info("Wg: %s result: sort OK %s", wg, good)
+                if not good:
+                    print(res.reshape(ref.shape))
+                    print(ref)
+                    print(numpy.where(res.reshape(ref.shape)-ref))
+
+                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_sort4(self):
+        """
+        tests the sort of floating points in a workgroup
+        """
+        data = numpy.arange(self.shape).astype(numpy.float32)
+        data = numpy.outer(data, numpy.ones(4, numpy.float32)).view(numpy.dtype([("s0","<f4"),("s1","<f4"),("s2","<f4"),("s3","<f4")]))
+        numpy.random.shuffle(data)
+        data_d = pyopencl.array.to_device(self.queue, data)
+
+        maxi = int(round(numpy.log2(self.shape)))+1
+        for i in range(5,maxi):
+            wg = 1 << i
+
+            ref = data.reshape((-1, wg))
+            positions = ((numpy.arange(ref.shape[0])+1)*wg).astype(numpy.int32)
+            positions_d = pyopencl.array.to_device(self.queue, positions)
+            data_d = pyopencl.array.to_device(self.queue, data)
+            # print(ref.shape, (ref.shape[0],min(wg, self.max_valid_wg)), (1, min(wg, self.max_valid_wg)), positions)
+            try:
+                evt = self.program.test_combsort_float4(self.queue, (ref.shape[0],min(wg, self.max_valid_wg)), (1, min(wg, self.max_valid_wg)),
+                                                       data_d.data,
+                                                       positions_d.data,
+                                                       pyopencl.LocalMemory(4*min(wg, self.max_valid_wg)))
+                evt.wait()
+            except Exception as error:
+                logger.error("Error %s on WG=%s: test_sort", error, wg)
+                break
+            else:
+                res = data_d.get()
+                # print(res.dtype)
+                ref = numpy.sort(ref, order="s0")
+                # print(ref.dtype)
+                good = numpy.allclose(res.view(numpy.float32).ravel(), ref.view(numpy.float32).ravel())
+                logger.info("Wg: %s result: sort OK %s", wg, good)
+                if not good:
+                    print(res.reshape(ref.shape))
+                    print(ref)
+                    print(numpy.where(res.reshape(ref.shape)-ref))
+
+                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testSuite = unittest.TestSuite()
-    testSuite.addTest(loader(TestReduction))
+    testSuite.addTest(loader(TestGroupFunction))
     return testSuite
 
 
