@@ -37,14 +37,14 @@ image (masked) to be able to use more common algorithms.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/03/2023"
+__date__ = "12/11/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
 
 import cython
 import numpy
-from libc.math cimport sqrt, fabs, NAN
+from libc.math cimport sqrtf, fabs, NAN
 from cython.parallel import prange
 from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
                          int32_t, uint32_t, int64_t, uint64_t
@@ -55,11 +55,7 @@ cdef inline float invert_distance(Py_ssize_t i0, Py_ssize_t i1, Py_ssize_t p0, P
     cdef Py_ssize_t d0, d1
     d0 = (i0 - p0)
     d1 = (i1 - p1)
-    return 1. / sqrt(d0*d0 + d1*d1)
-    # if d0*d1:
-    # else:
-    #     return NAN
-
+    return (<float> 1.0) / sqrtf(<float> (d0*d0 + d1*d1))
 
 cdef inline float processPoint(float[:, ::1] data,
                                int8_t[:, ::1] mask,

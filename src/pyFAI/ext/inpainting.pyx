@@ -32,7 +32,7 @@
 Cython module for doing inpaining of images.
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "09/03/2023"
+__date__ = "12/11/2024"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -139,10 +139,10 @@ def polar_inpaint(floating[:, :] img not None,
     :return: image with missing values interpolated from neighbors.
     """
     cdef:
-        int row, col, npt_radial, npt_azim, idx_col, idx_row, tar_row, radius
+        int row, col, npt_radial, npt_azim, idx_col, idx_row, tar_row, radius, dist
         float[:, ::1] res
         bint do_dummy = empty is not None
-        float value, dummy, dist
+        float value, dummy
         double sum, cnt, weight
         list values
 
