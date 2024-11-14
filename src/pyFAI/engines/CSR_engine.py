@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/11/2024"
+__date__ = "14/11/2024"
 __status__ = "development"
 
 from collections.abc import Iterable
@@ -395,7 +395,7 @@ class CsrIntegrator1d(CSRIntegrator):
                 variance=None, dark_variance=None,
                 flat=None, solidangle=None, polarization=None, absorption=None,
                 safe=True, error_model=None,
-                normalization_factor=1.0, percentile=50
+                normalization_factor=1.0, quantile=0.5
                 ):
         """
         Perform a median-filter/quantile mean in azimuthal space.
@@ -429,27 +429,24 @@ class CsrIntegrator1d(CSRIntegrator):
         :param safe: Unused in this implementation
         :param error_model: Enum or str, "azimuthal" or "poisson"
         :param normalization_factor: divide raw signal by this value
-        :param percentile: which percentile use for cutting out
-                           percentil can be a 2-tuple to specify a region to
-                           average out
+        :param quantile: which percentile/100 use for cutting out quantil.
+                         can be a 2-tuple to specify a region to average out.
+                         By default, takes the median
         :return: namedtuple with "position intensity error signal variance normalization count"
 
         """
-        if isinstance(percentile, Iterable):
-            q_start = 1e-2 * min(percentile)
-            q_stop = 1e-2 * max(percentile)
+        if isinstance(quantile, Iterable):
+            q_start = min(quantile)
+            q_stop = max(quantile)
         else:
-            q_stop = q_start = 1e-2*percentile
+            q_stop = q_start = quantile
 
-        shape = data.shape
         indptr = self._csr.indptr
         indices = self._csr.indices
-
+        csr_data = self._csr.data
+        csr_data2 = self._csr2.data
 
         error_model = ErrorModel.parse(error_model)
-        if error_model is ErrorModel.NO:
-            logger.error("No variance propagation is incompatible with sigma-clipping. Using `azimuthal` model !")
-            error_model = ErrorModel.AZIMUTHAL
 
         prep = preproc(data,
                        dark=dark,
@@ -474,9 +471,9 @@ class CsrIntegrator1d(CSRIntegrator):
 
         work0 = numpy.zeros((indices.size,4), dtype=numpy.float32)
         work0[:, 0] = pixels[:, 0]/ pixels[:, 2]
-        work0[:, 1] = pixels[:, 0] * self._csr.data
-        work0[:, 2] = pixels[:, 0] * self._csr2.data
-        work0[:, 3] = pixels[:, 0] * self._csr.data
+        work0[:, 1] = pixels[:, 0] * csr_data
+        work0[:, 2] = pixels[:, 1] * csr_data2
+        work0[:, 3] = pixels[:, 2] * csr_data
         work1 = work0.view(mf_dtype).ravel()
 
         size = indptr.size-1
@@ -499,16 +496,18 @@ class CsrIntegrator1d(CSRIntegrator):
             norm[i] = tmp["norm"].sum(dtype=numpy.float64)
             norm2[i] = (tmp["norm"]**2).sum(dtype=numpy.float64)
 
-        avg = signal / norm
-        std = numpy.sqrt(variance / norm2)
-        sem = numpy.sqrt(variance) / norm
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            avg = signal / norm
+            std = numpy.sqrt(variance / norm2)
+            sem = numpy.sqrt(variance) / norm
         # mask out remaining NaNs
         msk = norm <= 0
         avg[msk] = self.empty
         std[msk] = self.empty
         sem[msk] = self.empty
 
-        return Integrate1dtpl(self.bin_centers, avg, std, signal, variance, norm, cnt, std, sem, norm2)
+        return Integrate1dtpl(self.bin_centers, avg, sem, signal, variance, norm, cnt, std, sem, norm2)
 
     @property
     def check_mask(self):
