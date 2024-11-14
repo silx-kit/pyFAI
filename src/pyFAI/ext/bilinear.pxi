@@ -117,15 +117,12 @@ cdef class Bilinear:
 
         cdef:
             int i0, i1, j0, j1
-            float x0, x1, y0, y1, res
-        if d0 < 0:
-            d0 = 0
-        elif d1 < 0:
-            d1 = 0
-        elif d0 > (self.height - 1):
-            d0 = self.height - 1
-        elif d1 > self.width - 1:
-            d1 = self.width - 1
+            float x0, x1, y0, y1, res,
+            floating d0max, d1max
+        d0max = self.height - 1.0
+        d1max = self.width - 1.0
+        d0 = max(min(d0, d0max), 0.0)
+        d1 = max(min(d1, d1max), 0.0)
         x0 = floor(d0)
         x1 = ceil(d0)
         y0 = floor(d1)

@@ -30,7 +30,7 @@ __author__ = "Edgar Gutiérrez Fernández "
 __contact__ = "edgar.gutierrez-fernandez@esr.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/10/2024"
+__date__ = "13/11/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -41,8 +41,58 @@ from .azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..method_registry import IntegrationMethod
 from ..io import save_integrate_result
-from .. import units
+from ..units import parse_fiber_unit
 from ..utils.decorators import deprecated_warning
+
+def get_deprecated_params_1d(**kwargs) -> dict:
+    deprecated = {}
+    if "npt_output" in kwargs:
+        deprecated_warning(type_=type(kwargs["npt_output"]), name="npt_output", replacement=("npt_oop, npt_ip, vertical_integration instead"), since_version="2024.11/12")
+        deprecated['npt_oop'] = kwargs["npt_output"]
+        deprecated['vertical_integration'] = True
+    if "npt_integrated" in kwargs:
+        deprecated_warning(type_=type(kwargs["npt_integrated"]), name="npt_integrated", replacement=("npt_oop, npt_ip, vertical_integration instead"), since_version="2024.11/12")
+        deprecated['npt_ip'] = kwargs["npt_integrated"]
+        deprecated['vertical_integration'] = True
+    if "output_unit" in kwargs:
+        deprecated_warning(type_=type(kwargs["output_unit"]), name="output_unit", replacement=("unit_oop, unit_ip, vertical_integration instead"), since_version="2024.11/12")
+        deprecated['unit_oop'] = kwargs["output_unit"]
+        deprecated['vertical_integration'] = True
+    if "integrated_unit" in kwargs:
+        deprecated_warning(type_=type(kwargs["integrated_unit"]), name="integrated_unit", replacement=("unit_oop, unit_ip, vertical_integration instead"), since_version="2024.11/12")
+        deprecated['unit_ip'] = kwargs["integrated_unit"]
+        deprecated['vertical_integration'] = True
+    if "output_unit_range" in kwargs:
+        deprecated_warning(type_=type(kwargs["output_unit_range"]), name="output_unit_range", replacement=("oop_range, ip_range, vertical_integration instead"), since_version="2024.11/12")
+        deprecated['oop_range'] = kwargs["output_unit_range"]
+        deprecated['vertical_integration'] = True
+    if "integrated_unit_range" in kwargs:
+        deprecated_warning(type_=type(kwargs["integrated_unit_range"]), name="integrated_unit_range", replacement=("oop_range, ip_range, vertical_integration instead"), since_version="2024.11/12")
+        deprecated['ip_range'] = kwargs["integrated_unit_range"]
+        deprecated['vertical_integration'] = True
+    return deprecated
+
+def get_deprecated_params_2d(**kwargs) -> dict:
+    deprecated = {}
+    if "npt_horizontal" in kwargs:
+        deprecated_warning(type_=type(kwargs["npt_horizontal"]), name="npt_horizontal", replacement="npt_ip", since_version="2024.11/12")
+        deprecated['npt_ip'] = kwargs["npt_horizontal"]
+    if "npt_vertical" in kwargs:
+        deprecated_warning(type_=type(kwargs["npt_vertical"]), name="npt_vertical", replacement="npt_oop", since_version="2024.11/12")
+        deprecated['npt_oop'] = kwargs["npt_vertical"]
+    if "horizontal_unit" in kwargs:
+        deprecated_warning(type_=type(kwargs["horizontal_unit"]), name="horizontal_unit", replacement="unit_ip", since_version="2024.11/12")
+        deprecated['unit_ip'] = kwargs["horizontal_unit"]
+    if "vertical_unit" in kwargs:
+        deprecated_warning(type_=type(kwargs["vertical_unit"]), name="vertical_unit", replacement="unit_oop", since_version="2024.11/12")
+        deprecated['unit_oop'] = kwargs["vertical_unit"]
+    if "horizontal_unit_range" in kwargs:
+        deprecated_warning(type_=type(kwargs["horizontal_unit_range"]), name="horizontal_unit_range", replacement="ip_range", since_version="2024.11/12")
+        deprecated['ip_range'] = kwargs["horizontal_unit_range"]
+    if "vertical_unit_range" in kwargs:
+        deprecated_warning(type_=type(kwargs["vertical_unit_range"]), name="vertical_unit_range", replacement="oop_range", since_version="2024.11/12")
+        deprecated['oop_range'] = kwargs["vertical_unit_range"]
+    return deprecated
 
 class FiberIntegrator(AzimuthalIntegrator):
 
@@ -61,53 +111,6 @@ class FiberIntegrator(AzimuthalIntegrator):
     @property
     def sample_orientation(self):
         return self._cache_parameters.get('sample_orientation', 1)
-
-    def parse_units(self, unit_ip, unit_oop, incident_angle=None, tilt_angle=None, sample_orientation=None):
-        if unit_ip is None:
-            unit_ip = units.get_unit_fiber("qip_nm^-1")
-        else:
-            unit_ip = units.to_unit(unit_ip)
-
-        if unit_oop is None:
-            unit_oop = units.get_unit_fiber("qoop_nm^-1")
-        else:
-            unit_oop = units.to_unit(unit_oop)
-
-        if incident_angle is None:
-            if isinstance(unit_ip, units.UnitFiber):
-                incident_angle = unit_ip.incident_angle
-            elif isinstance(unit_oop, units.UnitFiber):
-                incident_angle = unit_oop.incident_angle
-            else:
-                incident_angle = 0.0
-
-        if tilt_angle is None:
-            if isinstance(unit_ip, units.UnitFiber):
-                tilt_angle = unit_ip.tilt_angle
-            elif isinstance(unit_oop, units.UnitFiber):
-                tilt_angle = unit_oop.tilt_angle
-            else:
-                tilt_angle = 0.0
-
-        if sample_orientation is None:
-            if isinstance(unit_ip, units.UnitFiber):
-                sample_orientation = unit_ip.sample_orientation
-            elif isinstance(unit_oop, units.UnitFiber):
-                sample_orientation = unit_oop.sample_orientation
-            else:
-                sample_orientation = 1
-
-        unit_ip = units.to_unit(unit_ip)
-        unit_ip.set_incident_angle(incident_angle)
-        unit_ip.set_tilt_angle(tilt_angle)
-        unit_ip.set_sample_orientation(sample_orientation)
-
-        unit_oop = units.to_unit(unit_oop)
-        unit_oop.set_incident_angle(incident_angle)
-        unit_oop.set_tilt_angle(tilt_angle)
-        unit_oop.set_sample_orientation(sample_orientation)
-
-        return unit_ip, unit_oop
 
     def reset_integrator(self, incident_angle, tilt_angle, sample_orientation):
         reset = False
@@ -169,33 +172,19 @@ class FiberIntegrator(AzimuthalIntegrator):
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
-        if "npt_output" in kwargs:
-            deprecated_warning(type_=type(kwargs["npt_output"]), name="npt_output", replacement=("npt_oop, npt_ip, vertical_integration instead"), since_version="2024.11/12")
-            npt_oop = kwargs["npt_output"]
-            vertical_integration = True
-        if "npt_integrated" in kwargs:
-            deprecated_warning(type_=type(kwargs["npt_integrated"]), name="npt_integrated", replacement=("npt_oop, npt_ip, vertical_integration instead"), since_version="2024.11/12")
-            npt_ip = kwargs["npt_integrated"]
-            vertical_integration = True
-        if "output_unit" in kwargs:
-            deprecated_warning(type_=type(kwargs["output_unit"]), name="output_unit", replacement=("unit_oop, unit_ip, vertical_integration instead"), since_version="2024.11/12")
-            unit_oop = kwargs["output_unit"]
-            vertical_integration = True
-        if "integrated_unit" in kwargs:
-            deprecated_warning(type_=type(kwargs["integrated_unit"]), name="integrated_unit", replacement=("unit_oop, unit_ip, vertical_integration instead"), since_version="2024.11/12")
-            unit_ip = kwargs["integrated_unit"]
-            vertical_integration = True
-        if "output_unit_range" in kwargs:
-            deprecated_warning(type_=type(kwargs["output_unit_range"]), name="output_unit_range", replacement=("oop_range, ip_range, vertical_integration instead"), since_version="2024.11/12")
-            oop_range = kwargs["output_unit_range"]
-            vertical_integration = True
-        if "integrated_unit_range" in kwargs:
-            deprecated_warning(type_=type(kwargs["integrated_unit_range"]), name="integrated_unit_range", replacement=("oop_range, ip_range, vertical_integration instead"), since_version="2024.11/12")
-            ip_range = kwargs["integrated_unit_range"]
-            vertical_integration = True
+        deprecated_params = get_deprecated_params_1d(**kwargs)
+        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
+        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
+        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
+        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
+        oop_range = deprecated_params.get('oop_range', None) or oop_range
+        ip_range = deprecated_params.get('ip_range', None) or ip_range
+        vertical_integration = deprecated_params.get('vertical_integration', None) or vertical_integration
 
-        unit_ip, unit_oop = self.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
-                                             sample_orientation=sample_orientation)
+        unit_ip = unit_ip or 'qip_nm^-1'
+        unit_oop = unit_oop or 'qoop_nm^-1'
+        unit_ip = parse_fiber_unit(unit=unit_ip, sample_orientation=sample_orientation)
+        unit_oop = parse_fiber_unit(unit=unit_oop, sample_orientation=unit_ip.sample_orientation)
 
         self.reset_integrator(incident_angle=unit_ip.incident_angle,
                               tilt_angle=unit_ip.tilt_angle,
@@ -314,35 +303,19 @@ class FiberIntegrator(AzimuthalIntegrator):
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
-        if "npt_output" in kwargs:
-            deprecated_warning(type_=type(kwargs["npt_output"]), name="npt_output", replacement=("npt_oop, npt_ip, vertical_integration instead"), since_version="2024.11/12")
-            npt_oop = kwargs["npt_output"]
-            vertical_integration = True
-        if "npt_integrated" in kwargs:
-            deprecated_warning(type_=type(kwargs["npt_integrated"]), name="npt_integrated", replacement=("npt_oop, npt_ip, vertical_integration instead"), since_version="2024.11/12")
-            npt_ip = kwargs["npt_integrated"]
-            vertical_integration = True
-        if "output_unit" in kwargs:
-            deprecated_warning(type_=type(kwargs["output_unit"]), name="output_unit", replacement=("unit_oop, unit_ip, vertical_integration instead"), since_version="2024.11/12")
-            unit_oop = kwargs["output_unit"]
-            vertical_integration = True
-        if "integrated_unit" in kwargs:
-            deprecated_warning(type_=type(kwargs["integrated_unit"]), name="integrated_unit", replacement=("unit_oop, unit_ip, vertical_integration instead"), since_version="2024.11/12")
-            unit_ip = kwargs["integrated_unit"]
-            vertical_integration = True
-        if "output_unit_range" in kwargs:
-            deprecated_warning(type_=type(kwargs["output_unit_range"]), name="output_unit_range", replacement=("oop_range, ip_range, vertical_integration instead"), since_version="2024.11/12")
-            oop_range = kwargs["output_unit_range"]
-            vertical_integration = True
-        if "integrated_unit_range" in kwargs:
-            deprecated_warning(type_=type(kwargs["integrated_unit_range"]), name="integrated_unit_range", replacement=("oop_range, ip_range, vertical_integration instead"), since_version="2024.11/12")
-            ip_range = kwargs["integrated_unit_range"]
-            vertical_integration = True
+        deprecated_params = get_deprecated_params_1d(**kwargs)
+        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
+        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
+        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
+        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
+        oop_range = deprecated_params.get('oop_range', None) or oop_range
+        ip_range = deprecated_params.get('ip_range', None) or ip_range
+        vertical_integration = deprecated_params.get('vertical_integration', None) or vertical_integration
 
-        unit_ip, unit_oop = self.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
-                                             incident_angle=incident_angle,
-                                             tilt_angle=tilt_angle,
-                                             sample_orientation=sample_orientation)
+        unit_ip = unit_ip or 'qip_nm^-1'
+        unit_oop = unit_oop or 'qoop_nm^-1'
+        unit_ip = parse_fiber_unit(unit=unit_ip, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+        unit_oop = parse_fiber_unit(unit=unit_oop, incident_angle=unit_ip.incident_angle, tilt_angle=unit_ip.tilt_angle, sample_orientation=unit_ip.sample_orientation)
 
         self.reset_integrator(incident_angle=unit_ip.incident_angle,
                               tilt_angle=unit_ip.tilt_angle,
@@ -400,27 +373,18 @@ class FiberIntegrator(AzimuthalIntegrator):
         :return: regrouped intensity and unit arrays
         :rtype: Integrate2dResult
         """
-        if "npt_horizontal" in kwargs:
-            deprecated_warning(type_=type(kwargs["npt_horizontal"]), name="npt_horizontal", replacement="npt_ip", since_version="2024.11/12")
-            npt_ip = kwargs["npt_horizontal"]
-        if "npt_vertical" in kwargs:
-            deprecated_warning(type_=type(kwargs["npt_vertical"]), name="npt_vertical", replacement="npt_oop", since_version="2024.11/12")
-            npt_oop = kwargs["npt_vertical"]
-        if "horizontal_unit" in kwargs:
-            deprecated_warning(type_=type(kwargs["horizontal_unit"]), name="horizontal_unit", replacement="unit_ip", since_version="2024.11/12")
-            unit_ip = kwargs["horizontal_unit"]
-        if "vertical_unit" in kwargs:
-            deprecated_warning(type_=type(kwargs["vertical_unit"]), name="vertical_unit", replacement="unit_oop", since_version="2024.11/12")
-            unit_oop = kwargs["vertical_unit"]
-        if "horizontal_unit_range" in kwargs:
-            deprecated_warning(type_=type(kwargs["horizontal_unit_range"]), name="horizontal_unit_range", replacement="ip_range", since_version="2024.11/12")
-            ip_range = kwargs["horizontal_unit_range"]
-        if "vertical_unit_range" in kwargs:
-            deprecated_warning(type_=type(kwargs["vertical_unit_range"]), name="vertical_unit_range", replacement="oop_range", since_version="2024.11/12")
-            oop_range = kwargs["vertical_unit_range"]
+        deprecated_params = get_deprecated_params_2d(**kwargs)
+        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
+        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
+        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
+        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
+        oop_range = deprecated_params.get('oop_range', None) or oop_range
+        ip_range = deprecated_params.get('ip_range', None) or ip_range
 
-        unit_ip, unit_oop = self.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
-                                             sample_orientation=sample_orientation)
+        unit_ip = unit_ip or 'qip_nm^-1'
+        unit_oop = unit_oop or 'qoop_nm^-1'
+        unit_ip = parse_fiber_unit(unit=unit_ip, sample_orientation=sample_orientation)
+        unit_oop = parse_fiber_unit(unit=unit_oop, sample_orientation=unit_ip.sample_orientation)
 
         self.reset_integrator(incident_angle=unit_ip.incident_angle,
                               tilt_angle=unit_ip.tilt_angle,
@@ -478,29 +442,18 @@ class FiberIntegrator(AzimuthalIntegrator):
         :return: regrouped intensity and unit arrays
         :rtype: Integrate2dResult
         """
-        if "npt_horizontal" in kwargs:
-            deprecated_warning(type_=type(kwargs["npt_horizontal"]), name="npt_horizontal", replacement="npt_ip", since_version="2024.11/12")
-            npt_ip = kwargs["npt_horizontal"]
-        if "npt_vertical" in kwargs:
-            deprecated_warning(type_=type(kwargs["npt_vertical"]), name="npt_vertical", replacement="npt_oop", since_version="2024.11/12")
-            npt_oop = kwargs["npt_vertical"]
-        if "horizontal_unit" in kwargs:
-            deprecated_warning(type_=type(kwargs["horizontal_unit"]), name="horizontal_unit", replacement="unit_ip", since_version="2024.11/12")
-            unit_ip = kwargs["horizontal_unit"]
-        if "vertical_unit" in kwargs:
-            deprecated_warning(type_=type(kwargs["vertical_unit"]), name="vertical_unit", replacement="unit_oop", since_version="2024.11/12")
-            unit_oop = kwargs["vertical_unit"]
-        if "horizontal_unit_range" in kwargs:
-            deprecated_warning(type_=type(kwargs["horizontal_unit_range"]), name="horizontal_unit_range", replacement="ip_range", since_version="2024.11/12")
-            ip_range = kwargs["horizontal_unit_range"]
-        if "vertical_unit_range" in kwargs:
-            deprecated_warning(type_=type(kwargs["vertical_unit_range"]), name="vertical_unit_range", replacement="oop_range", since_version="2024.11/12")
-            oop_range = kwargs["vertical_unit_range"]
+        deprecated_params = get_deprecated_params_2d(**kwargs)
+        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
+        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
+        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
+        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
+        oop_range = deprecated_params.get('oop_range', None) or oop_range
+        ip_range = deprecated_params.get('ip_range', None) or ip_range
 
-        unit_ip, unit_oop = self.parse_units(unit_ip=unit_ip, unit_oop=unit_oop,
-                                             incident_angle=incident_angle,
-                                             tilt_angle=tilt_angle,
-                                             sample_orientation=sample_orientation)
+        unit_ip = unit_ip or 'qip_nm^-1'
+        unit_oop = unit_oop or 'qoop_nm^-1'
+        unit_ip = parse_fiber_unit(unit=unit_ip, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+        unit_oop = parse_fiber_unit(unit=unit_oop, incident_angle=unit_ip.incident_angle, tilt_angle=unit_ip.tilt_angle, sample_orientation=unit_ip.sample_orientation)
 
         self.reset_integrator(incident_angle=unit_ip.incident_angle,
                               tilt_angle=unit_ip.tilt_angle,
