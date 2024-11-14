@@ -400,10 +400,7 @@ class CsrIntegrator1d(CSRIntegrator):
         """
         Perform a median-filter/quantile mean in azimuthal space.
 
-        If the error model is "azimuthal": the variance is the variance within a bin,
-        which is refined at each iteration, can be costly !
-
-        Else, the error is propagated according to:
+        The error is propagated according to:
 
         .. math::
 
@@ -412,11 +409,10 @@ class CsrIntegrator1d(CSRIntegrator):
             normalization  = normalization_factor*(flat * solidangle * polarization * absortoption)
             count = number of pixel contributing
 
-        Integration is performed using the CSR representation of the look-up table on all
-        arrays: signal, variance, normalization and count
+        Averaging is performed using the CSR representation of the look-up table on all
+        arrays after sorting pixels by apparant intensity and taking only the selected ones
+        based on quantiles and the length of the ensemble.
 
-        Formula for azimuthal variance from:
-        https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
