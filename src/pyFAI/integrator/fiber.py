@@ -185,7 +185,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_ip = unit_ip or 'qip_nm^-1'
         unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip, 
+        unit_ip = parse_fiber_unit(unit=unit_ip,
                                    incident_angle=kwargs.get('incident_angle', None),
                                    tilt_angle=kwargs.get('tilt_angle', None),
                                    sample_orientation=sample_orientation)
@@ -322,7 +322,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_ip = unit_ip or 'qip_nm^-1'
         unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip, 
+        unit_ip = parse_fiber_unit(unit=unit_ip,
                                    sample_orientation=sample_orientation,
                                    incident_angle=kwargs.get('incident_angle', None),
                                    tilt_angle=kwargs.get('tilt_angle', None),
@@ -349,5 +349,5 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   azimuth_range=oop_range,
                                   unit=(unit_ip, unit_oop),
                                   filename=filename)
-    
+
     integrate2d_grazing_incidence = integrate2d_fiber
