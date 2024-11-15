@@ -29,10 +29,14 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "06/09/2024"
+__date__ = "15/11/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
+
+from libcpp cimport bool
+from libcpp.algorithm cimport sort
+from cython cimport floating
 
 import cython
 from cython.parallel import prange
@@ -40,6 +44,23 @@ import numpy
 
 from .preproc import preproc
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
+
+
+cdef struct float4:
+    float s0
+    float s1
+    float s2
+    float s3
+
+cdef bool inline cmp(float4 a, float4 b) noexcept nogil:
+    return True if a.s0<b.s0 else False
+
+cdef void inline sort_float4(float4[::1] ary) noexcept nogil:
+    "Sort in place of an array of float4 along first element"
+    cdef:
+        int size
+    size = ary.shape[0]
+    sort(&ary[0], &ary[size-1]+1, cmp)
 
 
 cdef class CsrIntegrator(object):
