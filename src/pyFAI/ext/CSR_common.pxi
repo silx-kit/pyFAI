@@ -52,10 +52,10 @@ cdef struct float4:
     float s2
     float s3
 
-cdef bool inline cmp(float4 a, float4 b) noexcept nogil:
+cdef inline bool cmp(float4 a, float4 b) noexcept nogil:
     return True if a.s0<b.s0 else False
 
-cdef void inline sort_float4(float4[::1] ary) noexcept nogil:
+cdef inline void sort_float4(float4[::1] ary) noexcept nogil:
     "Sort in place of an array of float4 along first element"
     cdef:
         int size
