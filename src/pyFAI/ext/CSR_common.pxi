@@ -319,8 +319,8 @@ cdef class CsrIntegrator(object):
         :type absorption: ndarray
         :param normalization_factor: divide the valid result by this value
         :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
-        :return: positions, pattern, weighted_histogram and unweighted_histogram
-        :rtype: Integrate1dtpl 4-named-tuple of ndarrays
+        :return: namedtuple with "position intensity sigma signal variance normalization count std sem norm_sq"
+        :rtype: Integrate1dtpl named-tuple of ndarrays
         """
         cdef:
             index_t i, j, idx = 0
@@ -506,8 +506,274 @@ cdef class CsrIntegrator(object):
         :param error_model: set to "poissonian" to use signal as variance (minimum 1), "azimuthal" to use the variance in a ring.
         :param normalization_factor: divide the valid result by this value
 
-        :return: positions, pattern, weighted_histogram and unweighted_histogram
-        :rtype: Integrate1dtpl 4-named-tuple of ndarrays
+        :return: namedtuple with "position intensity sigma signal variance normalization count std sem norm_sq"
+        :rtype: Integrate1dtpl named-tuple of ndarrays
+
+        """
+        error_model = ErrorModel.parse(error_model)
+        cdef:
+            index_t i, j, c, bad_pix, idx = 0
+            acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
+            acc_t sig, norm, count, var
+            acc_t delta1, delta2, b, x, omega_A, omega_B, aver, std, chauvenet_cutoff, omega2_A, omega2_B, w
+            data_t empty
+            acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_norm = numpy.empty(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_norm_sq = numpy.empty(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_count = numpy.empty(self.output_size, dtype=acc_d)
+            data_t[::1] merged = numpy.empty(self.output_size, dtype=data_d)
+            data_t[::1] stda = numpy.empty(self.output_size, dtype=data_d)
+            data_t[::1] sema = numpy.empty(self.output_size, dtype=data_d)
+            data_t[:, ::1] preproc4
+            bint do_azimuthal_variance = error_model == ErrorModel.AZIMUTHAL
+            bint do_hybrid_variance = error_model == ErrorModel.HYBRID
+        assert weights.size == self.input_size, "weights size"
+        empty = dummy if dummy is not None else self.empty
+        #Call the preprocessor ...
+        preproc4 = preproc(weights.ravel(),
+                           dark=dark,
+                           flat=flat,
+                           solidangle=solidangle,
+                           polarization=polarization,
+                           absorption=absorption,
+                           mask=self.cmask if self.check_mask else None,
+                           dummy=dummy,
+                           delta_dummy=delta_dummy,
+                           normalization_factor=normalization_factor,
+                           empty=self.empty,
+                           split_result=4,
+                           variance=variance,
+                           dtype=data_d,
+                           error_model=error_model,
+                           out=self.preprocessed)
+        with nogil:
+            # Integrate once
+            for i in prange(self.output_size, schedule="guided"):
+                acc_sig = 0.0
+                acc_var = 0.0
+                acc_norm = 0.0
+                acc_norm_sq = 0.0
+                acc_count = 0.0
+                for j in range(self._indptr[i], self._indptr[i + 1]):
+                    coef = self._data[j]
+                    if coef == 0.0:
+                        continue
+                    idx = self._indices[j]
+                    sig = preproc4[idx, 0]
+                    var = preproc4[idx, 1]
+                    norm = preproc4[idx, 2]
+                    count = preproc4[idx, 3]
+                    if isnan(sig) or isnan(var) or isnan(norm) or isnan(count) or (norm == 0.0) or (count == 0.0):
+                        continue
+                    w = coef * norm
+                    if do_azimuthal_variance or (do_hybrid_variance and cycle):
+                        if acc_norm == 0.0:
+                            # Initialize the accumulator with data from the pixel
+                            acc_sig = coef * sig
+                            #Variance remains at 0
+                            acc_norm = w
+                            acc_norm_sq = w*w
+                            acc_count = coef * count
+                        else:
+                            omega_A = acc_norm
+                            omega_B = coef * norm # ω_i = c_i * norm_i
+                            omega2_A = acc_norm_sq
+                            omega2_B = omega_B*omega_B
+                            acc_norm = omega_A + omega_B
+                            acc_norm_sq = omega2_A + omega2_B
+                            # omega3 = acc_norm * omega_A * omega2_B
+                            # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                            b = sig / norm
+                            delta1 = acc_sig/omega_A - b
+                            acc_sig = acc_sig + coef * sig
+                            delta2 = acc_sig / acc_norm - b
+                            acc_var = acc_var +  omega2_B * delta1 * delta2
+                            acc_count = acc_count + coef * count
+                    else:
+                        acc_sig = acc_sig + coef * sig
+                        acc_var = acc_var + coef * coef * var
+                        acc_norm = acc_norm + w
+                        acc_norm_sq = acc_norm_sq + w*w
+                        acc_count = acc_count + coef * count
+
+                if (acc_norm_sq > 0.0):
+                    aver = acc_sig / acc_norm
+                    std = sqrt(acc_var / acc_norm_sq)
+                    # sem = sqrt(acc_var) / acc_norm
+                else:
+                    aver = NAN;
+                    std = NAN;
+                    # sem = NAN;
+
+                # cycle for sigma-clipping
+                for c in range(cycle):
+                    # Sigma-clip
+                    if (acc_norm == 0.0) or (acc_count == 0.0):
+                        break
+
+                    #This is for Chauvenet's criterion
+                    acc_count = max(3.0, acc_count)
+                    chauvenet_cutoff = max(cutoff, sqrt(2.0*log(acc_count/sqrt(2.0*M_PI))))
+                    # Discard  outliers
+                    bad_pix = 0
+                    for j in range(self._indptr[i], self._indptr[i + 1]):
+                        coef = self._data[j]
+                        if coef == 0.0:
+                            continue
+                        idx = self._indices[j]
+                        sig = preproc4[idx, 0]
+                        var = preproc4[idx, 1]
+                        norm = preproc4[idx, 2]
+                        count = preproc4[idx, 3]
+                        if isnan(sig) or isnan(var) or isnan(norm) or isnan(count) or (norm == 0.0) or (count == 0.0):
+                            continue
+                        # Check validity (on cnt, i.e. s3) and normalisation (in s2) value to avoid zero division
+                        x = sig / norm
+                        if fabs(x - aver) > chauvenet_cutoff * std:
+                            preproc4[idx, 3] = NAN;
+                            bad_pix = bad_pix + 1
+                    if bad_pix == 0:
+                        if do_hybrid_variance:
+                            c = cycle #enforce the leave of the loop
+                        else:
+                            break
+
+                    #integrate again
+                    acc_sig = 0.0
+                    acc_var = 0.0
+                    acc_norm = 0.0
+                    acc_norm_sq = 0.0
+                    acc_count = 0.0
+
+                    for j in range(self._indptr[i], self._indptr[i + 1]):
+                        coef = self._data[j]
+                        if coef == 0.0:
+                            continue
+                        idx = self._indices[j]
+                        sig = preproc4[idx, 0]
+                        var = preproc4[idx, 1]
+                        norm = preproc4[idx, 2]
+                        count = preproc4[idx, 3]
+                        if isnan(sig) or isnan(var) or isnan(norm) or isnan(count) or (norm == 0.0) or (count == 0.0):
+                            continue
+                        w = coef * norm
+                        if do_azimuthal_variance or (do_hybrid_variance and c+1<cycle):
+                            if acc_norm_sq == 0.0:
+                                # Initialize the accumulator with data from the pixel
+                                acc_sig = coef * sig
+                                #Variance remains at 0
+                                acc_norm = w
+                                acc_norm_sq = w*w
+                                acc_count = coef * count
+                            else:
+                                omega_A = acc_norm
+                                omega_B = coef * norm # ω_i = c_i * norm_i
+                                omega2_A = acc_norm_sq
+                                omega2_B = omega_B*omega_B
+                                acc_norm = omega_A + omega_B
+                                acc_norm_sq = omega2_A + omega2_B
+                                # omega3 = acc_norm * omega_A * omega2_B
+                                # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                                b = sig / norm
+                                delta1 = acc_sig/omega_A - b
+                                acc_sig = acc_sig + coef * sig
+                                delta2 = acc_sig / acc_norm - b
+                                acc_var = acc_var +  omega2_B * delta1 * delta2
+                                acc_count = acc_count + coef * count
+                        else:
+                            acc_sig = acc_sig + coef * sig
+                            acc_var = acc_var + coef * coef * var
+                            acc_norm = acc_norm + w
+                            acc_norm_sq = acc_norm_sq + w*w
+                            acc_count = acc_count + coef * count
+                    if (acc_norm_sq > 0.0):
+                        aver = acc_sig / acc_norm
+                        std = sqrt(acc_var / acc_norm_sq)
+                        # sem = sqrt(acc_var) / acc_norm # Not needed yet
+                    else:
+                        aver = NAN;
+                        std = NAN;
+                        # sem = NAN;
+                    if bad_pix == 0:
+                        break
+
+                #collect things ...
+                sum_sig[i] = acc_sig
+                sum_var[i] = acc_var
+                sum_norm[i] = acc_norm
+                sum_norm_sq[i] = acc_norm_sq
+                sum_count[i] = acc_count
+                if (acc_norm_sq > 0.0):
+                    merged[i] = aver  # calculated previously
+                    stda[i] = std  # sqrt(acc_var / acc_norm_sq) # already calculated previously
+                    sema[i] = sqrt(acc_var) / acc_norm  # not calculated previously since it was not needed
+                else:
+                    merged[i] = empty
+                    stda[i] = empty
+                    sema[i] = empty
+
+        #"position intensity error signal variance normalization count"
+        return Integrate1dtpl(self.bin_centers,
+                              numpy.asarray(merged),numpy.asarray(sema) ,
+                              numpy.asarray(sum_sig),numpy.asarray(sum_var),
+                              numpy.asarray(sum_norm), numpy.asarray(sum_count),
+                              numpy.asarray(stda), numpy.asarray(sema), numpy.asarray(sum_norm_sq))
+
+
+    def medfilt(   self,
+                   weights,
+                   dark=None,
+                   dummy=None,
+                   delta_dummy=None,
+                   variance=None,
+                   dark_variance=None,
+                   flat=None,
+                   solidangle=None,
+                   polarization=None,
+                   absorption=None,
+                   bint safe=True,
+                   error_model=ErrorModel.NO,
+                   data_t normalization_factor=1.0,
+                   double quant_min=0.5,
+                   double quant_max=0.5,
+                   ):
+        """Perform a median filter/quantile averaging in azimuthal space
+
+        Else, the error is propagated like Poisson or pre-defined variance, no azimuthal variance for now.
+
+        Integration is performed using the CSR representation of the look-up table on all
+        arrays: signal, variance, normalization and count
+
+        All data are duplicated, sorted and the relevant values (i.e. within [quant_min..quant_max])
+        are averaged like in integrate_ng
+
+        :param weights: input image
+        :type weights: ndarray
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param variance: the variance associate to the image
+        :type variance: ndarray
+        :param dark_variance: the variance associate to the dark
+        :type dark_variance: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param absorption: Apparent efficiency of a pixel due to parallax effect
+        :type absorption: ndarray
+        :param safe: set to True to save some tests
+        :param error_model: set to "poissonian" to use signal as variance (minimum 1), "azimuthal" to use the variance in a ring.
+        :param normalization_factor: divide the valid result by this value
+
+        :return: namedtuple with "position intensity sigma signal variance normalization count std sem norm_sq"
+        :rtype: Integrate1dtpl named-tuple of ndarrays
         """
         error_model = ErrorModel.parse(error_model)
         cdef:
