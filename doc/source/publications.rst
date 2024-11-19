@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 07/01/2021
+:Date: 19/11/2024
 :Keywords: List of publications
 
 
@@ -34,11 +34,11 @@ Publications about pyFAI
 
 * *Application of signal separation to diffraction image compression and serial crystallography*;
   Jérôme Kieffer, Julien Orlans, Nicolas Coquelle, Samuel Debionne, Shibom Basu, Alejandro Homs, Gianluca Santonia and Daniele De Sanctis;
-  `Accepted <https://doi.org/10.48550/arXiv.2411.09515>`_ in **J. Applied Crystallography** (2024); 
+  `Accepted <https://doi.org/10.48550/arXiv.2411.09515>`_ in **J. Applied Crystallography** (2024);
   In depth explainaion of sigma-clipping background assessment and error models.
 
 The latest paper should be the cited in publications using pyFAI.
 There are already 1400 publications referring to pyFAI, some of them in the most
-prestigious scientific journals (Nature, PNAS, ...) and 
-40 other `applications <https://github.com/silx-kit/pyFAI/network/dependents?dependent_type=PACKAGE>`_ 
+prestigious scientific journals (Nature, PNAS, ...) and
+40 other `applications <https://github.com/silx-kit/pyFAI/network/dependents?dependent_type=PACKAGE>`_
 using pyFAI as a library.
