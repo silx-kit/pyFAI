@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2024"
+__date__ = "14/11/2024"
 
 import sys
 import unittest
@@ -96,6 +96,7 @@ from . import test_units
 from . import test_uncertainties
 from . import test_ring_extraction
 from . import test_fiber_integrator
+from . import test_medfilt_engine
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +159,7 @@ def suite():
     testsuite.addTest(test_uncertainties.suite())
     testsuite.addTest(test_ring_extraction.suite())
     testsuite.addTest(test_fiber_integrator.suite())
+    testsuite.addTest(test_medfilt_engine.suite())
     return testsuite
 
 
