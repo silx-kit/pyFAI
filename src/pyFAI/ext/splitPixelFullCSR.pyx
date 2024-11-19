@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2024"
+__date__ = "19/11/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
