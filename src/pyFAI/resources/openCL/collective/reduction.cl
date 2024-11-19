@@ -6,8 +6,8 @@
 
 int inline sum_int_reduction(local int* shared)
 {
-    int wg = get_local_size(0);
-    int tid = get_local_id(0);
+    int wg = get_local_size(0) * get_local_size(1);
+    int tid = get_local_id(0) + get_local_size(0)*get_local_id(1);
 
     // local reduction based implementation
     for (int stride=wg>>1; stride>0; stride>>=1)

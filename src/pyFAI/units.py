@@ -41,6 +41,7 @@ __date__ = "15/02/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import copy
 import logging
 logger = logging.getLogger(__name__)
 import numpy
@@ -990,9 +991,32 @@ def get_unit_fiber(name, incident_angle:float =0.0, tilt_angle:float =0.0, sampl
     :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
     :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
     """
-    unit = RADIAL_UNITS.get(name, None)
-    if unit is not None:
+    unit = copy.deepcopy(RADIAL_UNITS.get(name, None))
+
+    if isinstance(unit, UnitFiber):
         unit.set_incident_angle(incident_angle)
         unit.set_tilt_angle(tilt_angle)
         unit.set_sample_orientation(sample_orientation)
+    return unit
+
+def parse_fiber_unit(unit, incident_angle=None, tilt_angle=None, sample_orientation=None):
+    if isinstance(unit, str):
+        unit = get_unit_fiber(name=unit)
+    elif isinstance(unit, UnitFiber):
+        pass
+    else:
+        unit = to_unit(unit)
+
+    if not isinstance(unit, UnitFiber):
+        raise Exception(f"{unit} cannot be used as a FiberUnit")
+
+    if incident_angle is not None:
+        unit.set_incident_angle(incident_angle)
+
+    if tilt_angle is not None:
+        unit.set_tilt_angle(tilt_angle)
+
+    if sample_orientation is not None:
+        unit.set_sample_orientation(sample_orientation)
+
     return unit
