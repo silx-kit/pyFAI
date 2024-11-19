@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "19/11/2024"
 
 import unittest
 import os
@@ -53,7 +53,7 @@ if ocl is not None:
 
 from ... import load
 from ...test  import utilstest
-from ... import load_integrators
+from ...integrator import load_engines
 from ...method_registry import IntegrationMethod
 from ...test.utilstest import test_options
 from ...utils import mathutil
