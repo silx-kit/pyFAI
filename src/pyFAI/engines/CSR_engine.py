@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2024"
+__date__ = "19/11/2024"
 __status__ = "development"
 
 from collections.abc import Iterable
@@ -395,7 +395,9 @@ class CsrIntegrator1d(CSRIntegrator):
                 variance=None, dark_variance=None,
                 flat=None, solidangle=None, polarization=None, absorption=None,
                 safe=True, error_model=None,
-                normalization_factor=1.0, quantile=0.5
+                normalization_factor=1.0,
+                quant_min=0.5,
+                quant_max=0.5,
                 ):
         """
         Perform a median-filter/quantile mean in azimuthal space.
@@ -425,18 +427,11 @@ class CsrIntegrator1d(CSRIntegrator):
         :param safe: Unused in this implementation
         :param error_model: Enum or str, "azimuthal" or "poisson"
         :param normalization_factor: divide raw signal by this value
-        :param quantile: which percentile/100 use for cutting out quantil.
-                         can be a 2-tuple to specify a region to average out.
-                         By default, takes the median
+        :param quant_min: start percentile/100 to use. Use 0.5 for the median (default). 0<=quant_min<=1
+        :param quant_max: stop percentile/100 to use. Use 0.5 for the median (default). 0<=quant_max<=1
+
         :return: namedtuple with "position intensity error signal variance normalization count"
-
         """
-        if isinstance(quantile, Iterable):
-            q_start = min(quantile)
-            q_stop = max(quantile)
-        else:
-            q_stop = q_start = quantile
-
         indptr = self._csr.indptr
         indices = self._csr.indices
         csr_data = self._csr.data
@@ -484,7 +479,7 @@ class CsrIntegrator1d(CSRIntegrator):
             upper = numpy.cumsum(tmp["norm"])
             last = upper[-1]
             lower = numpy.concatenate(([0],upper[:-1]))
-            mask = numpy.logical_and(upper>=q_start*last, lower<=q_stop*last)
+            mask = numpy.logical_and(upper>=quant_min*last, lower<=quant_max*last)
             tmp = tmp[mask]
             cnt[i] = tmp.size
             signal[i] = tmp["sig"].sum(dtype=numpy.float64)
