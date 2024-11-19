@@ -431,9 +431,7 @@ class CsrIntegrator1d(CSRIntegrator):
         :param quant_max: stop percentile/100 to use. Use 0.5 for the median (default). 0<=quant_max<=1
 
         :return: namedtuple with "position intensity error signal variance normalization count"
-
         """
-
         indptr = self._csr.indptr
         indices = self._csr.indices
         csr_data = self._csr.data

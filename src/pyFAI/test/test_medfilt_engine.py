@@ -114,7 +114,6 @@ class TestMedfilt(unittest.TestCase):
         self.assertTrue(numpy.allclose(ref.sum_normalization, obt.normalization), "normalization matches")
         self.assertTrue(numpy.allclose(ref.sum_normalization2, obt.norm_sq), "norm_sq matches")
         # self.assertTrue(numpy.allclose(ref.count, obt.count), "count matches") # not valid with pixel splitting
-
         self.assertTrue(numpy.allclose(ref.intensity, obt.intensity), "intensity matches")
         self.assertTrue(numpy.allclose(ref.sigma, obt.sigma), "sigma matches")
         self.assertTrue(numpy.allclose(ref.std, obt.std), "std matches")
