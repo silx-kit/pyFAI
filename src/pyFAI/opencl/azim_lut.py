@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "24/04/2024"
+__date__ = "19/11/2024"
 __copyright__ = "2012-2024, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -205,14 +205,15 @@ class OCL_LUT_Integrator(OpenclProcessing):
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or self.kernel_files[-1]
         kernels = self.kernel_files[:-1] + [kernel_file]
+        try:
+            compile_options = self.get_compiler_options(x87_volatile=True, apple_gpu=True)
+        except (AttributeError, TypeError):  # Silx version too old
+            logger.warning("Please upgrade to silx v2.1+")
+            from . import get_compiler_options
+            compile_options = get_compiler_options(self.ctx, x87_volatile=True, apple_gpu=True)
 
-        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
-                          (self.bins, self.size, self.lut_size, int(self.device.type == "CPU"))
-
-        default_compiler_options = self.get_compiler_options(x87_volatile=True)
-        if default_compiler_options:
-            compile_options += " " + default_compiler_options
-        OpenclProcessing.compile_kernels(self, kernels, compile_options)
+        compile_options += f" -D NBINS={self.bins}  -D NIMAGE={self.size} -D NLUT={self.lut_size} -D ON_CPU={int(self.device.type == 'CPU')}"
+        OpenclProcessing.compile_kernels(self, kernels, compile_options.strip())
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
