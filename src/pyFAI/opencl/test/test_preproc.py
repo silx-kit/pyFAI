@@ -57,7 +57,7 @@ class TestPreproc(unittest.TestCase):
         """
         from ..preproc import preproc
         ary = numpy.arange(12).reshape(4,3)
-        for dtype in (numpy.uint8, numpy.int8, numpy.int16, numpy.uint16, numpy.uint32, numpy.int32):#, numpy.uint64, numpy.int64, numpy.float32):
+        for dtype in (numpy.uint8, numpy.int8, numpy.int16, numpy.uint16, numpy.uint32, numpy.int32, numpy.uint64, numpy.int64, numpy.float32):
             import sys; sys.stderr.write(f"test {dtype}\n")
             self.assertEqual(abs(preproc(ary.astype(dtype),split_result=4)[..., 0]-ary).max(), 0, "Result OK for dtype {dtype}")
 
