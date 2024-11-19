@@ -199,9 +199,13 @@ static float _any2float(const global uchar* input,
     }
     else if (dtype == 64){
 #ifdef cl_khr_fp64
+    #if cl_khr_fp64
         uchar8 rval =  (uchar8) (input[8*position],input[8*position+1], input[8*position+2],input[8*position+3],
                               input[8*position+4],input[8*position+5], input[8*position+6],input[8*position+7]);
         value = convert_float(as_double(rval));
+    #else
+        if (get_global_id(0)==0)printf("Double precision arithmetics is not supported on this device !\n");
+    #endif
 #else
         if (get_global_id(0)==0)printf("Double precision arithmetics is not supported on this device !\n");
 #endif
