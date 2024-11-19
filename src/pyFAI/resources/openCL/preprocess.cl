@@ -147,7 +147,7 @@ s32_to_float(global int  *array_int,
 }
 
 /* Function reading at the given position.
- * Dtype is 1/-1 for char/uchar .... 8/-4 for int64/uint64 and 32/64 for float/double.
+ * Dtype is 1/-1 for char/uchar .... 8/-8 for int64/uint64 and 32/64 for float/double.
  */
 static float _any2float(const global uchar* input,
                        size_t position,
