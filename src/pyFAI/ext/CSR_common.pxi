@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/11/2024"
+__date__ = "19/11/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -787,23 +787,24 @@ cdef class CsrIntegrator(object):
         """
         error_model = ErrorModel.parse(error_model)
         cdef:
-            index_t i, j, c, bad_pix, npix = self._indices.shape[0], idx = 0, start, stop
+            index_t i, j, c, bad_pix, npix = self._indices.shape[0], idx = 0, start, stop, cnt=0
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0,  coef = 0.0, acc_norm_sq=0.0
-            acc_t cumsum, cnt = 0.0, qmin, qmax
+            acc_t cumsum = 0.0
+            data_t qmin, qmax
             data_t empty, sig, var, nrm, weight, nrm2
-            acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
-            acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
-            acc_t[::1] sum_norm = numpy.empty(self.output_size, dtype=acc_d)
-            acc_t[::1] sum_norm_sq = numpy.empty(self.output_size, dtype=acc_d)
-            acc_t[::1] sum_count = numpy.empty(self.output_size, dtype=acc_d)
-            data_t[::1] merged = numpy.empty(self.output_size, dtype=data_d)
-            data_t[::1] stda = numpy.empty(self.output_size, dtype=data_d)
-            data_t[::1] sema = numpy.empty(self.output_size, dtype=data_d)
+            acc_t[::1] sum_sig = numpy.zeros(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_var = numpy.zeros(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_norm = numpy.zeros(self.output_size, dtype=acc_d)
+            acc_t[::1] sum_norm_sq = numpy.zeros(self.output_size, dtype=acc_d)
+            index_t[::1] sum_count = numpy.zeros(self.output_size, dtype=index_d)
+            data_t[::1] merged = numpy.zeros(self.output_size, dtype=data_d)
+            data_t[::1] stda = numpy.zeros(self.output_size, dtype=data_d)
+            data_t[::1] sema = numpy.zeros(self.output_size, dtype=data_d)
             data_t[:, ::1] preproc4
             bint do_azimuthal_variance = error_model == ErrorModel.AZIMUTHAL
             bint do_hybrid_variance = error_model == ErrorModel.HYBRID
             float4_t element, former_element
-            float4_t[::1] work = numpy.empty(npix, dtype=float4_d)
+            float4_t[::1] work = numpy.zeros(npix, dtype=float4_d)
 
         assert weights.size == self.input_size, "weights size"
         empty = dummy if dummy is not None else self.empty
@@ -828,11 +829,11 @@ cdef class CsrIntegrator(object):
         with nogil:
             # Duplicate the input data and populate the large work-array
             for i in range(npix):  # NOT faster in parallel !
+                weight = self._data[i]
                 j = self._indices[i]
                 sig = preproc4[j,0]
                 var = preproc4[j,1]
                 nrm = preproc4[j,2]
-                weight = self._data[i]
                 element.s0 = sig/nrm                 # average signal
                 element.s1 = sig * weight            # weighted raw signal
                 element.s2 = var * weight * weight   # weighted raw variance
@@ -842,12 +843,15 @@ cdef class CsrIntegrator(object):
                 start = self._indptr[idx]
                 stop = self._indptr[idx+1]
                 acc_sig = acc_var = acc_norm = acc_norm_sq = 0.0
+                cnt = 0
+                cumsum = 0.0
+
                 sort_float4(work[start:stop])
 
-                cumsum = 0.0
                 for i in range(start, stop):
                     cumsum = cumsum + work[i].s3
                     work[i].s0 = cumsum
+
                 qmin = quant_min * cumsum
                 qmax = quant_max * cumsum
 
@@ -855,12 +859,13 @@ cdef class CsrIntegrator(object):
                 for i in range(start, stop):
                     former_element = element
                     element = work[i]
-                    if (former_element.s0 >= qmin) and (element.s0 <= qmax):
+                    if (qmin<=former_element.s0) and (element.s0 <= qmax):
                         acc_sig = acc_sig + element.s1
                         acc_var = acc_var + element.s2
                         acc_norm = acc_norm + element.s3
                         acc_norm_sq = acc_norm_sq + element.s3*element.s3
-                        cnt = cnt + 1.0
+                        cnt = cnt + 1
+
                 #collect things ...
                 sum_sig[idx] = acc_sig
                 sum_var[idx] = acc_var
@@ -868,7 +873,7 @@ cdef class CsrIntegrator(object):
                 sum_norm_sq[idx] = acc_norm_sq
                 sum_count[idx] = cnt
                 if (acc_norm_sq):
-                    merged[idx] = acc_sig/acc_var
+                    merged[idx] = acc_sig/acc_norm
                     stda[idx] = sqrt(acc_var / acc_norm_sq)
                     sema[idx] = sqrt(acc_var) / acc_norm
                 else:
