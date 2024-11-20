@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "06/09/2024"
+__date__ = "20/11/2024"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -313,7 +313,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                           ("normalization_factor", numpy.float32(1.0)),
                                                           ("apply_normalization", numpy.int8(0)),
                                                           ("output", self.cl_mem["output"])))
-
         self.cl_kernel_args["csr_integrate"] = OrderedDict((("output", self.cl_mem["output"]),
                                                             ("data", self.cl_mem["data"]),
                                                             ("indices", self.cl_mem["indices"]),
@@ -326,7 +325,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("sum_count", self.cl_mem["sum_count"]),
                                                             ("merged", self.cl_mem["merged"]),
                                                             ("shared", pyopencl.LocalMemory(16))))
-
         self.cl_kernel_args["corrections4a"] = OrderedDict((("image", self.cl_mem["image_raw"]),
                                                             ("dtype", numpy.int8(0)),
                                                            ("error_model", numpy.int8(0)),
@@ -351,7 +349,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("apply_normalization", numpy.int8(0)),
                                                            ("output4", self.cl_mem["output4"])))
-
         self.cl_kernel_args["csr_integrate4"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                             ("data", self.cl_mem["data"]),
                                                             ("indices", self.cl_mem["indices"]),
@@ -365,7 +362,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("sem", self.cl_mem["sem"]),
                                                             ("shared", pyopencl.LocalMemory(32))
                                                              ))
-
         self.cl_kernel_args["csr_sigma_clip4"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                               ("data", self.cl_mem["data"]),
                                                               ("indices", self.cl_mem["indices"]),
@@ -380,9 +376,22 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("sem", self.cl_mem["sem"]),
                                                               ("shared", pyopencl.LocalMemory(32))
                                                              ))
-
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
         self.cl_kernel_args["csr_integrate4_single"] = self.cl_kernel_args["csr_integrate4"]
+        self.cl_kernel_args["csr_medfilt"] =     OrderedDict((("output4", self.cl_mem["output4"]),
+                                                              ("data", self.cl_mem["data"]),
+                                                              ("indices", self.cl_mem["indices"]),
+                                                              ("indptr", self.cl_mem["indptr"]),
+                                                              ("quant_min", numpy.float32(0.5)),
+                                                              ("quant_max", numpy.float32(0.5)),
+                                                              ("error_model", numpy.int8(1)),
+                                                              ("empty", numpy.float32(self.empty)),
+                                                              ("merged8", self.cl_mem["merged8"]),
+                                                              ("averint", self.cl_mem["averint"]),
+                                                              ("std", self.cl_mem["std"]),
+                                                              ("sem", self.cl_mem["sem"]),
+                                                              ("shared", pyopencl.LocalMemory(32))
+                                                             ))
         self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged")))
         self.cl_kernel_args["memset_ng"] = OrderedDict(((i, self.cl_mem[i]) for i in ("averint", "std", "merged8")))
         self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
@@ -1054,6 +1063,196 @@ class OCL_CSR_Integrator(OpenclProcessing):
         res = Integrate1dtpl(self.bin_centers, avgint, sem, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6],
                              std, sem, merged[:, 7])
         return res
+
+    def medfilt(self, data, dark=None, dummy=None, delta_dummy=None,
+                   variance=None, dark_variance=None,
+                   flat=None, solidangle=None, polarization=None, absorption=None,
+                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
+                   polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
+                   safe=True, error_model=ErrorModel.NO,
+                   normalization_factor=1.0,
+                   quant_min=0.5, quant_max=0.5,
+                   out_avgint=None, out_sem=None, out_std=None, out_merged=None):
+        """
+        Perform a median-filter/quantile mean in azimuthal space.
+
+
+        Averaging is performed using the CSR representation of the look-up table on all
+        arrays after sorting pixels by apparant intensity and taking only the selected ones
+        based on quantiles and the length of the ensemble.
+
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param dark_checksum: CRC32 checksum of the given array
+        :param flat_checksum: CRC32 checksum of the given array
+        :param solidangle_checksum: CRC32 checksum of the given array
+        :param polarization_checksum: CRC32 checksum of the given array
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
+        :param error_model: enum ErrorModel
+        :param normalization_factor: divide raw signal by this value
+        :param quant_min: start percentile/100 to use. Use 0.5 for the median (default). 0<=quant_min<=1
+        :param quant_max: stop percentile/100 to use. Use 0.5 for the median (default). 0<=quant_max<=1
+        :param out_avgint: destination array or pyopencl array for sum of all data
+        :param out_sem: destination array or pyopencl array for uncertainty on mean value
+        :param out_std: destination array or pyopencl array for uncertainty on pixel value
+        :param out_merged: destination array or pyopencl array for averaged data (float8!)
+        :return: namedtuple with "position intensity error signal variance normalization count"
+        """
+        error_model = ErrorModel.parse(error_model)
+        events = []
+        with self.sem:
+            kernel_correction_name = "corrections4a"
+            corrections4 = self.kernels.corrections4a
+            kw_corr = self.cl_kernel_args[kernel_correction_name]
+            kw_corr["image"] = self.send_buffer(data, "image", convert=False)
+            kw_corr["dtype"] = numpy.int8(32) if data.dtype.itemsize > 4 else dtype_converter(data.dtype)
+            wg = max(self.workgroup_size["memset_ng"])
+            wdim_bins = int(self.bins + wg - 1) // wg * wg,
+            memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
+            events.append(EventDescription("memset_ng", memset))
+            kw_int = self.cl_kernel_args["csr_sigma_clip4"]
+
+            if dummy is not None:
+                do_dummy = numpy.int8(1)
+                dummy = numpy.float32(dummy)
+                if delta_dummy is None:
+                    delta_dummy = numpy.float32(0.0)
+                else:
+                    delta_dummy = numpy.float32(abs(delta_dummy))
+            else:
+                do_dummy = numpy.int8(0)
+                dummy = numpy.float32(self.empty)
+                delta_dummy = numpy.float32(0.0)
+
+            kw_corr["do_dummy"] = do_dummy
+            kw_corr["dummy"] = dummy
+            kw_corr["delta_dummy"] = delta_dummy
+            kw_corr["normalization_factor"] = numpy.float32(normalization_factor)
+
+            if variance is not None:
+                error_model = ErrorModel.VARIANCE
+                self.send_buffer(variance, "variance")
+            kw_int["error_model"] = kw_corr["error_model"] = numpy.int8(error_model)
+            if dark_variance is not None:
+                if not dark_variance_checksum:
+                    dark_variance_checksum = calc_checksum(dark_variance, safe)
+                if dark_variance_checksum != self.on_device["dark_variance"]:
+                    self.send_buffer(dark_variance, "dark_variance", dark_variance_checksum)
+            else:
+                do_dark = numpy.int8(0)
+            kw_corr["do_dark"] = do_dark
+
+            if dark is not None:
+                do_dark = numpy.int8(1)
+                # TODO: what is do_checksum=False and image not on device ...
+                if not dark_checksum:
+                    dark_checksum = calc_checksum(dark, safe)
+                if dark_checksum != self.on_device["dark"]:
+                    self.send_buffer(dark, "dark", dark_checksum)
+            else:
+                do_dark = numpy.int8(0)
+            kw_corr["do_dark"] = do_dark
+
+            if flat is not None:
+                do_flat = numpy.int8(1)
+                if not flat_checksum:
+                    flat_checksum = calc_checksum(flat, safe)
+                if self.on_device["flat"] != flat_checksum:
+                    self.send_buffer(flat, "flat", flat_checksum)
+            else:
+                do_flat = numpy.int8(0)
+            kw_corr["do_flat"] = do_flat
+
+            if solidangle is not None:
+                do_solidangle = numpy.int8(1)
+                if not solidangle_checksum:
+                    solidangle_checksum = calc_checksum(solidangle, safe)
+                if solidangle_checksum != self.on_device["solidangle"]:
+                    self.send_buffer(solidangle, "solidangle", solidangle_checksum)
+            else:
+                do_solidangle = numpy.int8(0)
+            kw_corr["do_solidangle"] = do_solidangle
+
+            if polarization is not None:
+                do_polarization = numpy.int8(1)
+                if not polarization_checksum:
+                    polarization_checksum = calc_checksum(polarization, safe)
+                if polarization_checksum != self.on_device["polarization"]:
+                    self.send_buffer(polarization, "polarization", polarization_checksum)
+            else:
+                do_polarization = numpy.int8(0)
+            kw_corr["do_polarization"] = do_polarization
+
+            if absorption is not None:
+                do_absorption = numpy.int8(1)
+                if not absorption_checksum:
+                    absorption_checksum = calc_checksum(absorption, safe)
+                if absorption_checksum != self.on_device["absorption"]:
+                    self.send_buffer(absorption, "absorption", absorption_checksum)
+            else:
+                do_absorption = numpy.int8(0)
+            kw_corr["do_absorption"] = do_absorption
+
+            wg = max(self.workgroup_size[kernel_correction_name])
+            wdim_data = int(self.size + wg - 1) // wg * wg,
+            ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
+            events.append(EventDescription(kernel_correction_name, ev))
+
+            kw_int["quant_min"] = numpy.float32(quant_min)
+            kw_int["quant_max"] = numpy.float32(quant_max)
+
+            wg_min = min(self.workgroup_size["csr_sigma_clip4"])
+            kw_int["shared"] = pyopencl.LocalMemory(32 * wg_min)
+            wdim_bins = (self.bins * wg_min),
+            integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
+            events.append(EventDescription("csr_sigma_clip4", integrate))
+
+            if out_merged is None:
+                merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
+            else:
+                merged = out_merged.data
+            if out_avgint is None:
+                avgint = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                avgint = out_avgint.data
+            if out_sem is None:
+                sem = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_sem is  False:
+                sem = None
+            else:
+                sem = out_sem.data
+
+            if out_std is None:
+                std = numpy.empty(self.bins, dtype=numpy.float32)
+            elif out_std is  False:
+                std = None
+            else:
+                std = out_std.data
+
+            if avgint is not None:
+                ev = pyopencl.enqueue_copy(self.queue, avgint, self.cl_mem["averint"])
+                events.append(EventDescription("copy D->H avgint", ev))
+            if std is not None:
+                ev = pyopencl.enqueue_copy(self.queue, std, self.cl_mem["std"])
+                events.append(EventDescription("copy D->H std", ev))
+            if sem is not None:
+                ev = pyopencl.enqueue_copy(self.queue, sem, self.cl_mem["sem"])
+                events.append(EventDescription("copy D->H sem", ev))
+
+            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
+            events.append(EventDescription("copy D->H merged8", ev))
+        self.profile_multi(events)
+        res = Integrate1dtpl(self.bin_centers, avgint, sem, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6],
+                             std, sem, merged[:, 7])
+        return res
+
 
     # Name of the default "process" method
     __call__ = integrate
