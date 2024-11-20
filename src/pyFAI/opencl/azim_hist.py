@@ -260,7 +260,7 @@ class OCL_Histogram1d(OpenclProcessing):
         try:
             compile_options = self.get_compiler_options(x87_volatile=True, apple_gpu=True)
         except (AttributeError, TypeError):  # Silx version too old
-            logger.warning("Please upgrade to silx v2.1+")
+            logger.warning("Please upgrade to silx v2.2+")
             from . import get_compiler_options
             compile_options = get_compiler_options(self.ctx, x87_volatile=True, apple_gpu=True)
 
