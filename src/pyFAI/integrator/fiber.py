@@ -30,7 +30,7 @@ __author__ = "Edgar Gutiérrez Fernández "
 __contact__ = "edgar.gutierrez-fernandez@esr.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2024"
+__date__ = "20/11/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
