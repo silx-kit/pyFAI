@@ -30,7 +30,7 @@ __author__ = "Edgar Gutiérrez Fernández "
 __contact__ = "edgar.gutierrez-fernandez@esr.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/11/2024"
+__date__ = "20/11/2024"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -155,6 +155,8 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
         :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
         :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
+        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
         :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
         :param str filename: output filename in 2/3 column ascii format
         :param bool correctSolidAngle: correct for solid angle of each pixel if True
@@ -183,8 +185,14 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_ip = unit_ip or 'qip_nm^-1'
         unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip, sample_orientation=sample_orientation)
-        unit_oop = parse_fiber_unit(unit=unit_oop, sample_orientation=unit_ip.sample_orientation)
+        unit_ip = parse_fiber_unit(unit=unit_ip,
+                                   incident_angle=kwargs.get('incident_angle', None),
+                                   tilt_angle=kwargs.get('tilt_angle', None),
+                                   sample_orientation=sample_orientation)
+        unit_oop = parse_fiber_unit(unit=unit_oop,
+                                    incident_angle=unit_ip.incident_angle,
+                                    tilt_angle=unit_ip.tilt_angle,
+                                    sample_orientation=unit_ip.sample_orientation)
 
         self.reset_integrator(incident_angle=unit_ip.incident_angle,
                               tilt_angle=unit_ip.tilt_angle,
@@ -262,78 +270,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         return result
 
-    def integrate_grazing_incidence(self, data,
-                                    npt_oop=None, unit_oop=None, oop_range=None,
-                                    npt_ip=None, unit_ip=None, ip_range=None,
-                                    vertical_integration = True,
-                                    incident_angle=None, tilt_angle=None, sample_orientation=None,
-                                    filename=None,
-                                    correctSolidAngle=True,
-                                    mask=None, dummy=None, delta_dummy=None,
-                                    polarization_factor=None, dark=None, flat=None,
-                                    method=("no", "histogram", "cython"),
-                                    normalization_factor=1.0,
-                                    **kwargs):
-        """Calculate the integrated profile curve along a specific FiberUnit, additional inputs for incident angle, tilt angle and sample_orientation
-
-        :param ndarray data: 2D array from the Detector/CCD camera
-        :param int npt_oop: number of points to be used along the out-of-plane axis
-        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_ip: number of points to be used along the in-plane axis
-        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
-        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
-        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
-        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
-        :param str filename: output filename in 2/3 column ascii format
-        :param bool correctSolidAngle: correct for solid angle of each pixel if True
-        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
-        :param float dummy: value for dead/masked pixels
-        :param float delta_dummy: precision for dummy value
-        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
-                * 0 for circular polarization or random,
-                * None for no correction,
-                * True for using the former correction
-        :param ndarray dark: dark noise image
-        :param ndarray flat: flat field image
-        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
-        :param float normalization_factor: Value of a normalization monitor
-        :return: chi bins center positions and regrouped intensity
-        :rtype: Integrate1dResult
-        """
-        deprecated_params = get_deprecated_params_1d(**kwargs)
-        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
-        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
-        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
-        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
-        oop_range = deprecated_params.get('oop_range', None) or oop_range
-        ip_range = deprecated_params.get('ip_range', None) or ip_range
-        vertical_integration = deprecated_params.get('vertical_integration', None) or vertical_integration
-
-        unit_ip = unit_ip or 'qip_nm^-1'
-        unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
-        unit_oop = parse_fiber_unit(unit=unit_oop, incident_angle=unit_ip.incident_angle, tilt_angle=unit_ip.tilt_angle, sample_orientation=unit_ip.sample_orientation)
-
-        self.reset_integrator(incident_angle=unit_ip.incident_angle,
-                              tilt_angle=unit_ip.tilt_angle,
-                              sample_orientation=unit_ip.sample_orientation)
-
-        return self.integrate_fiber(data=data,
-                                    npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
-                                    npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
-                                    vertical_integration=vertical_integration,
-                                    sample_orientation=sample_orientation,
-                                    filename=filename,
-                                    correctSolidAngle=correctSolidAngle,
-                                    mask=mask, dummy=dummy, delta_dummy=delta_dummy,
-                                    polarization_factor=polarization_factor, dark=dark, flat=flat,
-                                    method=method,
-                                    normalization_factor=normalization_factor,
-                                    )
-
+    integrate_grazing_incidence = integrate_fiber
     integrate1d_grazing_incidence = integrate_grazing_incidence
     integrate1d_fiber = integrate_fiber
 
@@ -356,73 +293,6 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param int npt_oop: number of points to be used along the out-of-plane axis
         :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
         :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
-        :param str filename: output filename in 2/3 column ascii format
-        :param bool correctSolidAngle: correct for solid angle of each pixel if True
-        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
-        :param float dummy: value for dead/masked pixels
-        :param float delta_dummy: precision for dummy value
-        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
-                * 0 for circular polarization or random,
-                * None for no correction,
-                * True for using the former correction
-        :param ndarray dark: dark noise image
-        :param ndarray flat: flat field image
-        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
-        :param float normalization_factor: Value of a normalization monitor
-        :return: regrouped intensity and unit arrays
-        :rtype: Integrate2dResult
-        """
-        deprecated_params = get_deprecated_params_2d(**kwargs)
-        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
-        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
-        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
-        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
-        oop_range = deprecated_params.get('oop_range', None) or oop_range
-        ip_range = deprecated_params.get('ip_range', None) or ip_range
-
-        unit_ip = unit_ip or 'qip_nm^-1'
-        unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip, sample_orientation=sample_orientation)
-        unit_oop = parse_fiber_unit(unit=unit_oop, sample_orientation=unit_ip.sample_orientation)
-
-        self.reset_integrator(incident_angle=unit_ip.incident_angle,
-                              tilt_angle=unit_ip.tilt_angle,
-                              sample_orientation=unit_ip.sample_orientation)
-
-        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
-            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
-
-        return self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
-                                  correctSolidAngle=correctSolidAngle,
-                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
-                                  polarization_factor=polarization_factor,
-                                  dark=dark, flat=flat, method=method,
-                                  normalization_factor=normalization_factor,
-                                  radial_range=ip_range,
-                                  azimuth_range=oop_range,
-                                  unit=(unit_ip, unit_oop),
-                                  filename=filename)
-
-    def integrate2d_grazing_incidence(self, data,
-                                      npt_ip=1000, unit_ip=None, ip_range=None,
-                                      npt_oop=1000, unit_oop=None, oop_range=None,
-                                      incident_angle=None, tilt_angle=None, sample_orientation=None,
-                                      filename=None,
-                                      correctSolidAngle=True,
-                                      mask=None, dummy=None, delta_dummy=None,
-                                      polarization_factor=None, dark=None, flat=None,
-                                      method=("no", "histogram", "cython"),
-                                      normalization_factor=1.0, **kwargs):
-        """Reshapes the data pattern as a function of two FiberUnits, additional inputs for incident angle, tilt angle and sample_orientation
-
-        :param ndarray data: 2D array from the Detector/CCD camera
-        :param int npt_ip: number of points to be used along the in-plane axis
-        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
-        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_oop: number of points to be used along the out-of-plane axis
-        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
         :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
         :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
         :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
@@ -452,8 +322,15 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_ip = unit_ip or 'qip_nm^-1'
         unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
-        unit_oop = parse_fiber_unit(unit=unit_oop, incident_angle=unit_ip.incident_angle, tilt_angle=unit_ip.tilt_angle, sample_orientation=unit_ip.sample_orientation)
+        unit_ip = parse_fiber_unit(unit=unit_ip,
+                                   sample_orientation=sample_orientation,
+                                   incident_angle=kwargs.get('incident_angle', None),
+                                   tilt_angle=kwargs.get('tilt_angle', None),
+                                   )
+        unit_oop = parse_fiber_unit(unit=unit_oop,
+                                    incident_angle=unit_ip.incident_angle,
+                                    tilt_angle=unit_ip.tilt_angle,
+                                    sample_orientation=unit_ip.sample_orientation)
 
         self.reset_integrator(incident_angle=unit_ip.incident_angle,
                               tilt_angle=unit_ip.tilt_angle,
@@ -462,15 +339,15 @@ class FiberIntegrator(AzimuthalIntegrator):
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
-        return self.integrate2d_fiber(data=data, npt_ip=npt_ip, npt_oop=npt_oop,
-                                      unit_ip=unit_ip, unit_oop=unit_oop,
-                                      ip_range=ip_range,
-                                      oop_range=oop_range,
-                                      sample_orientation=sample_orientation,
-                                      filename=filename,
-                                      correctSolidAngle=correctSolidAngle,
-                                      mask=mask, dummy=dummy, delta_dummy=delta_dummy,
-                                      polarization_factor=polarization_factor, dark=dark, flat=flat,
-                                      method=method,
-                                      normalization_factor=normalization_factor,
-                                      )
+        return self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
+                                  correctSolidAngle=correctSolidAngle,
+                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                  polarization_factor=polarization_factor,
+                                  dark=dark, flat=flat, method=method,
+                                  normalization_factor=normalization_factor,
+                                  radial_range=ip_range,
+                                  azimuth_range=oop_range,
+                                  unit=(unit_ip, unit_oop),
+                                  filename=filename)
+
+    integrate2d_grazing_incidence = integrate2d_fiber
