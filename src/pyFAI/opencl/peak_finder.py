@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "08/04/2024"
+__date__ = "20/11/2024"
 __copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -40,7 +40,7 @@ import numpy
 from ..containers import SparseFrame, ErrorModel
 from ..utils import EPS32
 from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl, OpenclProcessing
-from . import get_x87_volatile_option, kernel_workgroup_size, dtype_converter
+from . import kernel_workgroup_size, dtype_converter
 
 logger = logging.getLogger(__name__)
 
@@ -908,15 +908,12 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         kernels = self.kernel_files[:-1] + [kernel_file]
 
         try:
-            default_compiler_options = self.get_compiler_options(x87_volatile=True)
-        except AttributeError:  # Silx version too old
-            logger.warning("Please upgrade to silx v0.10+")
-            default_compiler_options = get_x87_volatile_option(self.ctx)
+            compile_options = self.get_compiler_options(x87_volatile=True, apple_gpu=True)
+        except (AttributeError, TypeError):  # Silx version too old
+            logger.warning("Please upgrade to silx v2.2+")
+            from . import get_compiler_options
+            compile_options = get_compiler_options(self.ctx, x87_volatile=True, apple_gpu=True)
 
-        if default_compiler_options:
-            compile_options = default_compiler_options
-        else:
-            compile_options = ""
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
         for kernel_name, kernel in self.kernels.get_kernels().items():
             wg = kernel_workgroup_size(self.program, kernel)
