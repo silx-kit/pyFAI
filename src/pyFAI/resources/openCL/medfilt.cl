@@ -47,7 +47,9 @@
 /**
  * \brief Performs sigma clipping in azimuthal rings based on a LUT in CSR form for background extraction
  *
- * Grid: 1D grid with one workgroup processes one bin in a collaborative manner,
+ * Grid: 2D grid with one workgroup processes one bin in a collaborative manner,
+ *       dim 0: index of bin, size=1
+ *       dim 1: collaboarative working group size, probably optimal in the range 32-128
  *
  * @param weights     Float pointer to global memory storing the input image.
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
@@ -77,18 +79,19 @@ csr_medfilt    (  const   global  float4  *data4,
                           global  float   *averint,
                           global  float   *stdevpix,
                           global  float   *stderrmean,
-                 volatile local   float8  *shared8
+                          local   int*    shared // size of the workgroup size
                           )
 {
     int bin_num = get_group_id(0);
-    int wg = get_local_size(0);
-    int tid = get_local_id(0);
+    int wg = get_local_size(1);
+    int tid = get_local_id(1);
     int start = indptr[bin_num];
     int stop = indptr[bin_num+1];
-    int cnt;
+    int size = stop-start;
+    int cnt, step=11;
     char curr_error_model=error_model;
-    volatile local int counter[1];
     float8 result;
+    float ratio=1.3f;
 
     // first populate the work4 array from data4
     for (int i=start+tid; i<stop; i+=wg)
@@ -97,11 +100,6 @@ csr_medfilt    (  const   global  float4  *data4,
         int idx = indices[i];
         float coef = coefs[i];
         r4 = data4[idx];
-
-//        work0[:, 0] = pixels[:, 0]/ pixels[:, 2]
-//        work0[:, 1] = pixels[:, 0] * csr_data
-//        work0[:, 2] = pixels[:, 1] * csr_data2
-//        work0[:, 3] = pixels[:, 2] * csr_data
 
         w4.s0 = r4.s0 / r4.s2;
         w4.s1 = r4.s0 * coef;
@@ -114,9 +112,21 @@ csr_medfilt    (  const   global  float4  *data4,
     barrier(CLK_GLOBAL_MEM_FENCE);
 
     // then perform the sort in the work space along the s0 component
+    step = first_step(step, size, ratio);
 
-    //TODO
+    for (step=step; step>0; step=previous_step(step, ratio))
+        cnt = passe_float4(&work4[start], size, step, shared);
 
+    while (cnt)
+        cnt = passe_float4(&work4[start], size, 1, shared);
+
+    // Then perform the cumsort of the weights
+    // In blelloch scan, one workgroup can
+
+
+    //
+
+    // finally
 
     barrier(CLK_GLOBAL_MEM_FENCE);
 
