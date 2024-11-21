@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 23/04/2024
+ *   Last revision: 19/11/2024
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -147,7 +147,7 @@ s32_to_float(global int  *array_int,
 }
 
 /* Function reading at the given position.
- * Dtype is 1/-1 for char/uchar .... 8/-4 for int64/uint64 and 32/64 for float/double.
+ * Dtype is 1/-1 for char/uchar .... 8/-8 for int64/uint64 and 32/64 for float/double.
  */
 static float _any2float(const global uchar* input,
                        size_t position,
@@ -199,11 +199,15 @@ static float _any2float(const global uchar* input,
     }
     else if (dtype == 64){
 #ifdef cl_khr_fp64
+    #if cl_khr_fp64
         uchar8 rval =  (uchar8) (input[8*position],input[8*position+1], input[8*position+2],input[8*position+3],
                               input[8*position+4],input[8*position+5], input[8*position+6],input[8*position+7]);
         value = convert_float(as_double(rval));
+    #else
+        if (get_global_id(0)==0)printf("Double precision arithmetics is not supported on this device !\n");
+    #endif
 #else
-        if (get_global_id==0)printf("Doubleprecision arithmetics is not supported on this device !\n");
+        if (get_global_id(0)==0)printf("Double precision arithmetics is not supported on this device !\n");
 #endif
     }
 
