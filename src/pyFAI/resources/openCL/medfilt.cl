@@ -79,7 +79,8 @@ csr_medfilt    (  const   global  float4  *data4,
                           global  float   *averint,
                           global  float   *stdevpix,
                           global  float   *stderrmean,
-                          local   int*    shared // size of the workgroup size
+                          local   int*    shared_int // size of the workgroup size
+                          local   int*    shared_float // size of the workgroup size
                           )
 {
     int bin_num = get_group_id(0);
@@ -89,9 +90,11 @@ csr_medfilt    (  const   global  float4  *data4,
     int stop = indptr[bin_num+1];
     int size = stop-start;
     int cnt, step=11;
+    int niter, idx;
     char curr_error_model=error_model;
     float8 result;
-    float ratio=1.3f;
+    float sum=0.0f, ratio=1.3f;
+    float2 acc_sig, acc_nrm, acc_var;
 
     // first populate the work4 array from data4
     for (int i=start+tid; i<stop; i+=wg)
@@ -120,15 +123,43 @@ csr_medfilt    (  const   global  float4  *data4,
     while (cnt)
         cnt = passe_float4(&work4[start], size, 1, shared);
 
-    // Then perform the cumsort of the weights
-    // In blelloch scan, one workgroup can
+    // Then perform the cumsort of the weights to s0
+    // In blelloch scan, one workgroup can process 2wg in size.
+    niter = (size + 2*wg-1)/(2*wg);
+    sum = 0.0f;
+    for (int i=0; i<niter; i+=1)
+    {
+        idx += start + tid + 2*wg*i;
+
+        shared_float[tid] = (idx<stop)?work4[idx].s3:0.0f;
+        shared_float[tid+wg] = ((idx+wg)<stop)?work4[idx+wg].s3:0.0f;
+
+        blelloch_scan_float(shared_float);
+
+        if (idx<size)
+            work4[idx].s0 = sum + shared[lid];
+        if (i+ws<size)
+            work4[idx+wg].s0 = sum + shared[lid+g];
+        sum += shared[2*ws-1];
+
+    }
+    // Perform the sum for accumulator of signal, variance, normalization and count
+
+    cnt = 0;
+    acc_sig = (float2)(0.0f, 0.0f);
+    acc_nrm = (float2)(0.0f, 0.0f);
+    acc_var = (float2)(0.0f, 0.0f);
+
+    float qmin =
+    float qmax =
+
+    for (int i=start+tid; i<stop; i+=wg)
+    {
+        if valid ...
+    }
 
 
-    //
-
-    // finally
-
-    barrier(CLK_GLOBAL_MEM_FENCE);
+    // Finally store the accumulated value
 
     if (get_local_id(0) == 0) {
         summed[bin_num] = result;
