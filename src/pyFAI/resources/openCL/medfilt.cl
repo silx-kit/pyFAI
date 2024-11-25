@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 20/11/2024
+ *   Last revision: 25/11/2024
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,12 +44,44 @@
 
 #include "for_eclipse.h"
 
+float2 inline sum_float2_reduction(local float* shared)
+{
+    int wg = get_local_size(0) * get_local_size(1);
+    int tid = get_local_id(0) + get_local_size(0)*get_local_id(1);
+
+    // local reduction based implementation
+    for (int stride=wg>>1; stride>0; stride>>=1)
+    {
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if ((tid<stride) && ((tid+stride)<wg))
+        {
+            int pos_here, pos_there;
+            float2 here, there;
+            pos_here = 2*tid;
+            pos_there = pos_here + 2*stride;
+            here.s0 = shared[pos_here];
+            here.s1 = shared[pos_here+1];
+            there.s0 = shared[pos_there];
+            there.s1 = shared[pos_there+1];
+            shared[2*tid+1] = here.s1;
+            here =
+            += shared[tid+stride];
+            shared[2*tid] = here.s0;
+            shared[2*tid+1] = here.s1;
+        }
+
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    return (float2)(shared[0], shared[1]);
+}
+
+
 /**
  * \brief Performs sigma clipping in azimuthal rings based on a LUT in CSR form for background extraction
  *
  * Grid: 2D grid with one workgroup processes one bin in a collaborative manner,
- *       dim 0: index of bin, size=1
- *       dim 1: collaboarative working group size, probably optimal in the range 32-128
+ *       dim 0: collaboarative working group size, probably optimal in the range 32-128
+ *       dim 1: index of bin, size=1
  *
  * @param weights     Float pointer to global memory storing the input image.
  * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
@@ -65,6 +97,8 @@
  * @param shared      Buffer of shared memory of size WORKGROUP_SIZE * 8 * sizeof(float)
  */
 
+
+
 kernel void
 csr_medfilt    (  const   global  float4  *data4,
                           global  float4  *work4,
@@ -79,13 +113,13 @@ csr_medfilt    (  const   global  float4  *data4,
                           global  float   *averint,
                           global  float   *stdevpix,
                           global  float   *stderrmean,
-                          local   int*    shared_int // size of the workgroup size
-                          local   int*    shared_float // size of the workgroup size
+                          local   int*    shared_int   // size of the workgroup size
+                          local   float*  shared_float // size of 2x the workgroup size
                           )
 {
-    int bin_num = get_group_id(0);
-    int wg = get_local_size(1);
-    int tid = get_local_id(1);
+    int bin_num = get_group_id(1);
+    int wg = get_local_size(0);
+    int tid = get_local_id(0);
     int start = indptr[bin_num];
     int stop = indptr[bin_num+1];
     int size = stop-start;
@@ -147,26 +181,58 @@ csr_medfilt    (  const   global  float4  *data4,
 
     cnt = 0;
     acc_sig = (float2)(0.0f, 0.0f);
-    acc_nrm = (float2)(0.0f, 0.0f);
     acc_var = (float2)(0.0f, 0.0f);
+    acc_nrm = (float2)(0.0f, 0.0f);
+    acc_nrm2 = (float2)(0.0f, 0.0f);
 
-    float qmin =
-    float qmax =
+    float qmin = quant_min * sum;
+    float qmax = quant_max * sum;
 
     for (int i=start+tid; i<stop; i+=wg)
     {
-        if valid ...
+        float q_last = (i>start)?work4[i-1].s0:0.0f;
+        float4 w = work4[i];
+        if ((q_last>=qmin) && (w.s0<=qmax)){
+            cnt ++;
+            acc_sig = dw_plus_fp(acc_sig, w.s1);
+            acc_var = dw_plus_fp(acc_var, w.s2);
+            acc_nrm = dw_plus_fp(acc_nrm, w.s3);
+            acc_nrm2 = dw_plus_dw(acc_nrm2, fp_times_fp(w.s3, w.s3));
+        }
+//        Now parallel reductions, one after the other :-/
+        shared_int[tid] = cnt;
+        cnt = sum_int_reduction(shared_int);
+
+        shared_float[2*tid] = acc_sig.s0;
+        shared_float[2*tid+1] = acc_sig.s1;
+        acc_sig = sum_float2_reduction(shared_float);
+
+        shared_float[2*tid] = acc_var.s0;
+        shared_float[2*tid+1] = acc_var.s1;
+        acc_var = sum_float2_reduction(shared_float);
+
+        shared_float[2*tid] = acc_nrm.s0;
+        shared_float[2*tid+1] = acc_nrm.s1;
+        acc_nrm = sum_float2_reduction(shared_float);
+
+        shared_float[2*tid] = acc_nrm2.s0;
+        shared_float[2*tid+1] = acc_nrm2.s1;
+        acc_nrm2 = sum_float2_reduction(shared_float);
+
     }
 
 
     // Finally store the accumulated value
 
     if (get_local_id(0) == 0) {
-        summed[bin_num] = result;
-        if (result.s6 > 0.0f) {
-            averint[bin_num] =  aver;
-            stdevpix[bin_num] = std;
-            stderrmean[bin_num] = sqrt(result.s2) / result.s4;
+        summed[bin_num] = (float8)(acc_sig.s0, acc_sig.s1,
+                                   acc_var.s0, acc_var.s1,
+                                   acc_nrm.s0, acc_nrm.s1,
+                                   (float)cnt, acc_nrm2.s0);
+        if (acc_nrm2.s0 > 0.0f) {
+            averint[bin_num] = acc_sig.s0/acc_nrm.s0 ;
+            stdevpix[bin_num] = sqrt(acc_var.s0/acc_nrm2.s0) ;
+            stderrmean[bin_num] = sqrt(acc_var.s0) / acc_nrm.s0;
         }
         else {
             averint[bin_num] = empty;
@@ -174,4 +240,4 @@ csr_medfilt    (  const   global  float4  *data4,
             stdevpix[bin_num] = empty;
         }
     }
-} //end csr_sigma_clip4 kernel
+} //end csr_medfilt kernel
