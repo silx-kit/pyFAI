@@ -81,19 +81,20 @@ float2 inline sum_float2_reduction(local float* shared)
  *       dim 0: collaboarative working group size, probably optimal in the range 32-128
  *       dim 1: index of bin, size=1
  *
- * @param weights     Float pointer to global memory storing the input image.
- * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
- * @param indices     Integer pointer to global memory holding the corresponding index of the coeficient
- * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
- * @param cutoff      Discard any value with |value - mean| > cutoff*sigma
- * @param cycle       number of cycle
- * @param error_model 0:disable, 1:variance, 2:poisson, 3:azimuthal, 4:hybrid
- * @param summed      contains all the data
- * @param averint     Average signal
- * @param stdevpix    Float pointer to the output 1D array with the propagated error (std)
- * @param stdevpix    Float pointer to the output 1D array with the propagated error (sem)
- * @param shared      Buffer of shared memory of size WORKGROUP_SIZE * 8 * sizeof(float)
- */
+ * @param weights      Float pointer to global memory storing the input image.
+ * @param coefs        Float pointer to global memory holding the coeficient part of the LUT
+ * @param indices      Integer pointer to global memory holding the corresponding index of the coeficient
+ * @param indptr       Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
+ * @param quant_min    start percentile/100 to use. Use 0.5 for the median
+ * @param quant_max    stop percentile/100 to use. Use 0.5 for the median
+ * @param error_model  0:disable, 1:variance, 2:poisson, 3:azimuthal, 4:hybrid
+ * @param summed       contains all the data
+ * @param averint      Average signal
+ * @param stdevpix     Float pointer to the output 1D array with the propagated error (std)
+ * @param stdevpix     Float pointer to the output 1D array with the propagated error (sem)
+ * @param shared_int   Buffer of shared memory of size WORKGROUP_SIZE * sizeof(int)
+ * @param shared_float Buffer of shared memory of size WORKGROUP_SIZE * 2 * sizeof(float)
+ * */
 
 
 

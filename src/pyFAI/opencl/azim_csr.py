@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "20/11/2024"
+__date__ = "04/12/2024"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -70,11 +70,16 @@ class OCL_CSR_Integrator(OpenclProcessing):
                BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
+
                ]
     kernel_files = ["silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
-                    "pyfai:openCL/ocl_azim_CSR.cl"
+                    "pyfai:openCL/ocl_azim_CSR.cl",
+                    "pyfai:openCL/collective/reduction.cl",
+                    "pyfai:openCL/collective/scan.cl",
+                    "pyfai:openCL/collective/comb_sort.cl",
+                    "pyfai:openCL/medfilt.cl"
                     ]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
@@ -162,6 +167,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                          BufferDescription("sem", self.bins, numpy.float32, mf.READ_WRITE),
                          BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged8", (self.bins, 8), numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("work4", (self.data_size, 4), numpy.float32, mf.READ_WRITE),
                          ]
         try:
             self.set_profiling(profile)
@@ -383,6 +389,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
         self.cl_kernel_args["csr_integrate4_single"] = self.cl_kernel_args["csr_integrate4"]
         self.cl_kernel_args["csr_medfilt"] =     OrderedDict((("output4", self.cl_mem["output4"]),
+                                                              ("work4", self.cl_mem["work4"]),
                                                               ("data", self.cl_mem["data"]),
                                                               ("indices", self.cl_mem["indices"]),
                                                               ("indptr", self.cl_mem["indptr"]),
@@ -394,7 +401,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("std", self.cl_mem["std"]),
                                                               ("sem", self.cl_mem["sem"]),
-                                                              ("shared", pyopencl.LocalMemory(32))
+                                                              ("shared_int", pyopencl.LocalMemory(128)),
+                                                              ("shared_float", pyopencl.LocalMemory(128)),
                                                              ))
         self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged")))
         self.cl_kernel_args["memset_ng"] = OrderedDict(((i, self.cl_mem[i]) for i in ("averint", "std", "merged8")))
@@ -607,6 +615,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg_max,), *kw_int.values())
                 events.append(EventDescription("csr_integrate_single", integrate))
             else:
+                #TODO reshape this kernel with (wg, nbin)\(wg,1) rather than (self.bins * wg_min)\(wg_min) #2348
                 wdim_bins = (self.bins * wg_min),
                 kw_int["shared"] = pyopencl.LocalMemory(16 * wg_min)  # sizeof(float4) == 16
                 integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg_min,), *kw_int.values())
@@ -1121,7 +1130,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             wdim_bins = int(self.bins + wg - 1) // wg * wg,
             memset = self.kernels.memset_out(self.queue, wdim_bins, (wg,), *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
-            kw_int = self.cl_kernel_args["csr_sigma_clip4"]
+            kw_int = self.cl_kernel_args["csr_medfilt"]
 
             if dummy is not None:
                 do_dummy = numpy.int8(1)
@@ -1212,11 +1221,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_int["quant_min"] = numpy.float32(quant_min)
             kw_int["quant_max"] = numpy.float32(quant_max)
 
-            wg_min = min(self.workgroup_size["csr_sigma_clip4"])
-            kw_int["shared"] = pyopencl.LocalMemory(32 * wg_min)
-            wdim_bins = (self.bins * wg_min),
-            integrate = self.kernels.csr_sigma_clip4(self.queue, wdim_bins, (wg_min,), *kw_int.values())
-            events.append(EventDescription("csr_sigma_clip4", integrate))
+            wg_min = min(self.workgroup_size["csr_medfilt"])
+            kw_int["shared_int"] = pyopencl.LocalMemory(4 * wg_min)
+            kw_int["shared_float"] = pyopencl.LocalMemory(8 * wg_min)
+            wdim_bins = (wg_min, self.bins)
+            integrate = self.kernels.csr_medfilt(self.queue, wdim_bins, (wg_min,1), *kw_int.values())
+            events.append(EventDescription("medfilt", integrate))
 
             if out_merged is None:
                 merged = numpy.empty((self.bins, 8), dtype=numpy.float32)
