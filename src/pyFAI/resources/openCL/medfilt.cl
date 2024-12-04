@@ -122,8 +122,8 @@ csr_medfilt    (  const   global  float4  *data4,
     int start = indptr[bin_num];
     int stop = indptr[bin_num+1];
     int size = stop-start;
-    int cnt, step=11;
-    int niter, idx;
+    int sum_cnt, cnt, step=11;
+    int idx;
     char curr_error_model=error_model;
     float8 result;
     float sum=0.0f, ratio=1.3f;
@@ -148,6 +148,7 @@ csr_medfilt    (  const   global  float4  *data4,
     barrier(CLK_GLOBAL_MEM_FENCE);
 
     // then perform the sort in the work space along the s0 component
+
     step = first_step(step, size, ratio);
 
     for (step=step; step>0; step=previous_step(step, ratio))
@@ -158,9 +159,10 @@ csr_medfilt    (  const   global  float4  *data4,
 
     // Then perform the cumsort of the weights to s0
     // In blelloch scan, one workgroup can process 2wg in size.
-    niter = (size + 2*wg-1)/(2*wg);
+
+
     sum = 0.0f;
-    for (int i=0; i<niter; i++)
+    for (int i=0; i<(size + 2*wg-1)/(2*wg); i++)
     {
         idx = start + tid + 2*wg*i;
 
@@ -171,11 +173,12 @@ csr_medfilt    (  const   global  float4  *data4,
 
         if (idx<stop)
             work4[idx].s0 = sum + shared_float[tid];
-        if ((i+wg)<stop)
+        if ((idx+wg)<stop)
             work4[idx+wg].s0 = sum + shared_float[tid+wg];
         sum += shared_float[2*wg-1];
 
     }
+
     // Perform the sum for accumulator of signal, variance, normalization and count
 
     cnt = 0;
@@ -198,27 +201,26 @@ csr_medfilt    (  const   global  float4  *data4,
             acc_nrm = dw_plus_fp(acc_nrm, w.s3);
             acc_nrm2 = dw_plus_dw(acc_nrm2, fp_times_fp(w.s3, w.s3));
         }
-//        Now parallel reductions, one after the other :-/
-        shared_int[tid] = cnt;
-        cnt = sum_int_reduction(shared_int);
-
-        shared_float[2*tid] = acc_sig.s0;
-        shared_float[2*tid+1] = acc_sig.s1;
-        acc_sig = sum_float2_reduction(shared_float);
-
-        shared_float[2*tid] = acc_var.s0;
-        shared_float[2*tid+1] = acc_var.s1;
-        acc_var = sum_float2_reduction(shared_float);
-
-        shared_float[2*tid] = acc_nrm.s0;
-        shared_float[2*tid+1] = acc_nrm.s1;
-        acc_nrm = sum_float2_reduction(shared_float);
-
-        shared_float[2*tid] = acc_nrm2.s0;
-        shared_float[2*tid+1] = acc_nrm2.s1;
-        acc_nrm2 = sum_float2_reduction(shared_float);
-
     }
+//  Now parallel reductions, one after the other :-/
+    shared_int[tid] = cnt;
+    cnt += sum_int_reduction(shared_int);
+
+    shared_float[2*tid] = acc_sig.s0;
+    shared_float[2*tid+1] = acc_sig.s1;
+    acc_sig = sum_float2_reduction(shared_float);
+
+    shared_float[2*tid] = acc_var.s0;
+    shared_float[2*tid+1] = acc_var.s1;
+    acc_var = sum_float2_reduction(shared_float);
+
+    shared_float[2*tid] = acc_nrm.s0;
+    shared_float[2*tid+1] = acc_nrm.s1;
+    acc_nrm = sum_float2_reduction(shared_float);
+
+    shared_float[2*tid] = acc_nrm2.s0;
+    shared_float[2*tid+1] = acc_nrm2.s1;
+    acc_nrm2 = sum_float2_reduction(shared_float);
 
 
     // Finally store the accumulated value
