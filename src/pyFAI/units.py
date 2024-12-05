@@ -188,11 +188,11 @@ class UnitFiber(Unit):
                 formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
                 formula_ = formula_.replace('ψ', 'y').replace('ξ', 'x')
             elif self._sample_orientation == 3:
-                formula_ = self.formula_so1.replace('x', '(-1)*x')
+                formula_ = self.formula_so1.replace('x', '(-x)')
             elif self._sample_orientation == 4:
                 formula_ = self.formula_so1
                 formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
-                formula_ = formula_.replace('ψ', '(-1)*y').replace('ξ', '(-1)*x')
+                formula_ = formula_.replace('ψ', '(-y)').replace('ξ', '(-x)')
             self.formula = formula_
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
