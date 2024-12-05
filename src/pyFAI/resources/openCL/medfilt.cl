@@ -105,7 +105,7 @@ csr_medfilt    (  const   global  float4  *data4,
                   const   global  int     *indices,
                   const   global  int     *indptr,
                   const           float    quant_min,
-                  const           float    quant_max,
+                                  float    quant_max,
                   const           char     error_model,
                   const           float    empty,
                           global  float8  *summed,
@@ -128,6 +128,10 @@ csr_medfilt    (  const   global  float4  *data4,
     float8 result;
     float sum=0.0f, ratio=1.3f;
     float2 acc_sig, acc_nrm, acc_var, acc_nrm2;
+
+    // ensure the last element is always taken
+    if (quant_max == 1.0f)
+        quant_max = 1.1f;
 
     // first populate the work4 array from data4
     for (int i=start+tid; i<stop; i+=wg)
@@ -160,6 +164,7 @@ csr_medfilt    (  const   global  float4  *data4,
     // Then perform the cumsort of the weights to s0
     // In blelloch scan, one workgroup can process 2wg in size.
 
+    barrier(CLK_GLOBAL_MEM_FENCE);
 
     sum = 0.0f;
     for (int i=0; i<(size + 2*wg-1)/(2*wg); i++)
@@ -179,6 +184,8 @@ csr_medfilt    (  const   global  float4  *data4,
 
     }
 
+    barrier(CLK_GLOBAL_MEM_FENCE);
+
     // Perform the sum for accumulator of signal, variance, normalization and count
 
     cnt = 0;
@@ -194,7 +201,8 @@ csr_medfilt    (  const   global  float4  *data4,
     {
         float q_last = (i>start)?work4[i-1].s0:0.0f;
         float4 w = work4[i];
-        if ((q_last>=qmin) && (w.s0<=qmax)){
+        if (((q_last>=qmin) && (w.s0<=qmax))||
+            ((q_last<=qmin) && (w.s0>=qmax)))   { // case qmin==qmax
             cnt ++;
             acc_sig = dw_plus_fp(acc_sig, w.s1);
             acc_var = dw_plus_fp(acc_var, w.s2);

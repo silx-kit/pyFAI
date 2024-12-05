@@ -1221,7 +1221,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             events.append(EventDescription(kernel_correction_name, ev))
 
             kw_int["quant_min"] = numpy.float32(quant_min)
-            kw_int["quant_max"] = numpy.float32(quant_max)*EPS32
+            kw_int["quant_max"] = numpy.float32(quant_max)#*EPS32
 
             wg_min = max(self.workgroup_size["csr_medfilt"])
             kw_int["shared_int"] = pyopencl.LocalMemory(4 * wg_min)

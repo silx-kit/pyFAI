@@ -1148,7 +1148,7 @@ class AzimuthalIntegrator(Integrator):
 
     integrate2d = _integrate2d_ng = integrate2d_ng
 
-    @deprecated(since_version="2024.12", only_once=True, replacement="medfilt1d_ng", deprecated_since="2024.12")
+    @deprecated(since_version="2024.12.0", only_once=True, replacement="medfilt1d_ng", deprecated_since="2024.12.0")
     def medfilt1d_legacy(self, data, npt_rad=1024, npt_azim=512,
                   correctSolidAngle=True,
                   radial_range=None, azimuth_range=None,
