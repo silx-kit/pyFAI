@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2024"
+__date__ = "05/12/2024"
 
 import unittest
 import numpy
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 from .utilstest import UtilsTest
 import fabio
 from .. import load
-
+from ..opencl import ocl
 
 class TestMedfilt(unittest.TestCase):
     """Test Azimuthal median filtering results
@@ -119,6 +119,32 @@ class TestMedfilt(unittest.TestCase):
         self.assertTrue(numpy.allclose(ref.std, obt.std), "std matches")
         self.assertTrue(numpy.allclose(ref.sem, obt.sem), "sem matches")
 
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_opencl(self):
+        method = list(self.method)
+        method[-1] = "opencl"
+        method = tuple(method)
+        ref = self.ai.integrate1d(self.img, self.npt, unit="2th_rad", method=method, error_model="poisson")
+        print(ref.method)
+        engine = self.ai.engines[ref.method].engine
+        print(engine)
+        obt = engine.medfilt(self.img,
+                             solidangle=self.ai.solidAngleArray(),
+                             quant_min=0,quant_max=1,  # taking all Like this it works like a normal mean
+                             error_model="poisson")
+
+        # print(ref.count-obt.count)
+        # print()
+        self.assertTrue(numpy.allclose(ref.radial, obt.position), "radial matches")
+        self.assertTrue(numpy.allclose(ref.sum_signal, obt.signal), "signal matches")
+        self.assertTrue(numpy.allclose(ref.sum_variance, obt.variance), "variance matches")
+        self.assertTrue(numpy.allclose(ref.sum_normalization, obt.normalization), "normalization matches")
+        self.assertTrue(numpy.allclose(ref.sum_normalization2, obt.norm_sq), "norm_sq matches")
+        # self.assertTrue(numpy.allclose(ref.count, obt.count), "count matches") # not valid with pixel splitting
+        self.assertTrue(numpy.allclose(ref.intensity, obt.intensity), "intensity matches")
+        self.assertTrue(numpy.allclose(ref.sigma, obt.sigma), "sigma matches")
+        self.assertTrue(numpy.allclose(ref.std, obt.std), "std matches")
+        self.assertTrue(numpy.allclose(ref.sem, obt.sem), "sem matches")
 
 
 def suite():
