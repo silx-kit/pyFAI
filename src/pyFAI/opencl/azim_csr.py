@@ -42,6 +42,7 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
+from ..utils import EPS32
 from . import processing, OpenclProcessing
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
@@ -1220,12 +1221,14 @@ class OCL_CSR_Integrator(OpenclProcessing):
             events.append(EventDescription(kernel_correction_name, ev))
 
             kw_int["quant_min"] = numpy.float32(quant_min)
-            kw_int["quant_max"] = numpy.float32(quant_max)
+            kw_int["quant_max"] = numpy.float32(quant_max)*EPS32
 
             wg_min = max(self.workgroup_size["csr_medfilt"])
             kw_int["shared_int"] = pyopencl.LocalMemory(4 * wg_min)
             kw_int["shared_float"] = pyopencl.LocalMemory(8 * wg_min)
             wdim_bins = (wg_min, self.bins)
+
+
             integrate = self.kernels.csr_medfilt(self.queue, wdim_bins, (wg_min,1), *kw_int.values())
             events.append(EventDescription("medfilt", integrate))
 

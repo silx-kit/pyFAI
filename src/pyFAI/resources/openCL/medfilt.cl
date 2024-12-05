@@ -202,6 +202,11 @@ csr_medfilt    (  const   global  float4  *data4,
             acc_var = dw_plus_fp(acc_var, w.s2);
             acc_nrm = dw_plus_fp(acc_nrm, w.s3);
             acc_nrm2 = dw_plus_dw(acc_nrm2, fp_times_fp(w.s3, w.s3));
+
+        }
+        else{
+            printf("bin:%d tid:%d qmin:%6.3f qlast:%6.3f qcur:%6.3f qmax:%6.3f\n",
+                    bin_num, tid, qmin, q_last, w.s0,qmax);
         }
     }
 //  Now parallel reductions, one after the other :-/

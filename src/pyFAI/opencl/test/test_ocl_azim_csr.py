@@ -119,7 +119,7 @@ class TestOclAzimCSR(unittest.TestCase):
             elif method_called=="medfilt":
                 pix = csr[2][1:]-csr[2][:-1]
                 for i,j in zip(pix,res.count):
-                    print(j-i,i,j)
+                    print(i, j, i-j)
 
             # Intensities are not that different:
             delta = ref.intensity - res.intensity
@@ -159,7 +159,7 @@ class TestOclAzimCSR(unittest.TestCase):
         """
         tests the median filtering kernel, default block size
         """
-        self.integrate_ng(None, "medfilt", {"quant_min":0, "quant_max":1})
+        self.integrate_ng(None, "medfilt", {"quant_min":0, "quant_max":1.0})
 
 
 def suite():
