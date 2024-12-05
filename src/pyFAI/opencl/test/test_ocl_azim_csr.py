@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/06/2022"
+__date__ = "05/12/2024"
 
 import logging
 import numpy
@@ -43,10 +43,9 @@ from .. import ocl, get_opencl_code
 if ocl:
     import pyopencl.array
 from ...test.utilstest import UtilsTest
-from silx.opencl.common import _measure_workgroup_size
 from ...integrator.azimuthal import AzimuthalIntegrator
 from ...method_registry import IntegrationMethod
-from scipy.ndimage import gaussian_filter1d
+from ...containers import ErrorModel
 logger = logging.getLogger(__name__)
 
 
@@ -81,10 +80,12 @@ class TestOclAzimCSR(unittest.TestCase):
         cls.ai = None
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
-    def integrate_ng(self, block_size=None):
+    def integrate_ng(self, block_size=None, method_called="integrate_ng", extra=None):
         """
         tests the 1d histogram kernel, with variable workgroup size
         """
+        if extra is None:
+            extra={}
         from ..azim_csr import OCL_CSR_Integrator
         data = numpy.ones(self.ai.detector.shape)
         npt = 500
@@ -95,14 +96,14 @@ class TestOclAzimCSR(unittest.TestCase):
                                                             dim=1, default=None, degradable=False)
 
         # Retrieve the CSR array
-        cpu_integrate = self.ai._integrate1d_legacy(data, npt, unit=unit, method=csr_method)
+        cpu_integrate = self.ai._integrate1d_ng(data, npt, unit=unit, method=csr_method)
         r_m = cpu_integrate[0]
         csr_engine = list(self.ai.engines.values())[0]
         csr = csr_engine.engine.lut
-        ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method)
-        integrator = OCL_CSR_Integrator(csr, data.size, block_size=block_size)
+        ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method, error_model="poisson")
+        integrator = OCL_CSR_Integrator(csr, data.size, block_size=block_size, empty=-1)
         solidangle = self.ai.solidAngleArray()
-        res = integrator.integrate_ng(data, solidangle=solidangle)
+        res = integrator.__getattribute__(method_called)(data, solidangle=solidangle, error_model=ErrorModel.POISSON, **extra)
         # for info, res contains: position intensity error signal variance normalization count
 
         # Start with smth easy: the position
@@ -112,23 +113,25 @@ class TestOclAzimCSR(unittest.TestCase):
         if "AMD" in integrator.ctx.devices[0].platform.name:
             logger.warning("This test is known to be complicated for AMD-GPU, relax the constrains for them")
         else:
-            self.assertLessEqual(delta.max(), 1, "counts are almost the same")
-            self.assertEqual(delta.sum(), 0, "as much + and -")
+            if method_called=="integrate_ng":
+                self.assertLessEqual(delta.max(), 1, "counts are almost the same")
+                self.assertEqual(delta.sum(), 0, "as much + and -")
+            elif method_called=="medfilt":
+                pix = csr[2][1:]-csr[2][:-1]
+                for i,j in zip(pix,res.count):
+                    print(j-i,i,j)
 
             # Intensities are not that different:
             delta = ref.intensity - res.intensity
-            self.assertLessEqual(abs(delta.max()), 1e-5, "intensity is almost the same")
+            self.assertLessEqual(abs(delta).max(), 1e-5, "intensity is almost the same")
 
             # histogram of normalization
-            ref = self.ai._integrate1d_ng(solidangle, npt, unit=unit, method=method).sum_signal
-            sig = res.normalization
-            err = abs((sig - ref).max())
+            err = abs((res.normalization - ref.sum_normalization).max())
             self.assertLess(err, 5e-4, "normalization content is the same: %s<5e-5" % (err))
 
             # histogram of signal
-            ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method).sum_signal
-            sig = res.signal
-            self.assertLess(abs((sig - ref).sum()), 5e-5, "signal content is the same")
+            print(res.signal - ref.sum_signal)
+            self.assertLess(abs((res.signal - ref.sum_signal).sum()), 5e-5, "signal content is the same")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_integrate_ng(self):
@@ -143,6 +146,20 @@ class TestOclAzimCSR(unittest.TestCase):
         tests the 1d histogram kernel, default block size
         """
         self.integrate_ng(block_size=1)
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_sigma_clip(self):
+        """
+        tests the sigma-clipping kernel, default block size
+        """
+        self.integrate_ng(None, "sigma_clip",{"cutoff":100.0, "cycle":0,})
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_medfilt(self):
+        """
+        tests the median filtering kernel, default block size
+        """
+        self.integrate_ng(None, "medfilt", {"quant_min":0, "quant_max":1})
 
 
 def suite():

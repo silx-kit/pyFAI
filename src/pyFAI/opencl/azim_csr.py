@@ -179,6 +179,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.buffer_dtype = {i.name:numpy.dtype(i.dtype) for i in self.buffers}
         if numpy.allclose(self._data, numpy.ones(self._data.shape)):
             self.cl_mem["data"] = None
+            self.cl_kernel_args["csr_medfilt"]["data"] = None
             self.cl_kernel_args["csr_sigma_clip4"]["data"] = None
             self.cl_kernel_args["csr_integrate"]["data"] = None
             self.cl_kernel_args["csr_integrate4"]["data"] = None
@@ -1263,6 +1264,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged8"])
             events.append(EventDescription("copy D->H merged8", ev))
         self.profile_multi(events)
+
         res = Integrate1dtpl(self.bin_centers, avgint, sem, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6],
                              std, sem, merged[:, 7])
         return res

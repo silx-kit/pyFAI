@@ -129,13 +129,15 @@ csr_medfilt    (  const   global  float4  *data4,
     float sum=0.0f, ratio=1.3f;
     float2 acc_sig, acc_nrm, acc_var, acc_nrm2;
 
+//    if (tid==0)printf("bin %d start %d stop %d\n",bin_num,start, stop);
     // first populate the work4 array from data4
     for (int i=start+tid; i<stop; i+=wg)
     {
         float4 r4, w4;
         int idx = indices[i];
-        float coef = coefs[i];
+        float coef = (coefs == ZERO)?1.0f:coefs[i];
         r4 = data4[idx];
+//        if (tid==0)printf("bin %d start %d stop %d i=%d idx=%d coef=%6.4f\n",bin_num,start, stop,i,idx,coef);
 
         w4.s0 = r4.s0 / r4.s2;
         w4.s1 = r4.s0 * coef;
@@ -203,8 +205,9 @@ csr_medfilt    (  const   global  float4  *data4,
         }
     }
 //  Now parallel reductions, one after the other :-/
+//    if (tid==0)printf("bin %d cnt %d acc_sig %6.1f acc_var %6.1f acc_nrm %6.1f acc_nrm2 %6.1f\n",bin_num, cnt, acc_sig.s0, acc_var.s0, acc_nrm.s0, acc_nrm2.s0);
     shared_int[tid] = cnt;
-    cnt += sum_int_reduction(shared_int);
+    cnt = sum_int_reduction(shared_int);
 
     shared_float[2*tid] = acc_sig.s0;
     shared_float[2*tid+1] = acc_sig.s1;
@@ -225,7 +228,7 @@ csr_medfilt    (  const   global  float4  *data4,
 
     // Finally store the accumulated value
 
-    if (get_local_id(0) == 0) {
+    if (tid == 0) {
         summed[bin_num] = (float8)(acc_sig.s0, acc_sig.s1,
                                    acc_var.s0, acc_var.s1,
                                    acc_nrm.s0, acc_nrm.s1,
