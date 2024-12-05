@@ -118,20 +118,22 @@ class TestOclAzimCSR(unittest.TestCase):
                 self.assertEqual(delta.sum(), 0, "as much + and -")
             elif method_called=="medfilt":
                 pix = csr[2][1:]-csr[2][:-1]
-                for i,j in zip(pix,res.count):
-                    print(i, j, i-j)
+                self.assertTrue(numpy.allclose(res.count, pix), "all pixels have been counted")
 
             # Intensities are not that different:
             delta = ref.intensity - res.intensity
             self.assertLessEqual(abs(delta).max(), 1e-5, "intensity is almost the same")
 
             # histogram of normalization
-            err = abs((res.normalization - ref.sum_normalization).max())
+            err = abs((res.normalization - ref.sum_normalization)).max()
             self.assertLess(err, 5e-4, "normalization content is the same: %s<5e-5" % (err))
 
             # histogram of signal
-            print(res.signal - ref.sum_signal)
-            self.assertLess(abs((res.signal - ref.sum_signal).sum()), 5e-5, "signal content is the same")
+            self.assertLess(abs((res.signal - ref.sum_signal)).max(), 5e-5, "signal content is the same")
+
+            # histogram of variance
+            self.assertLess(abs((res.variance - ref.sum_variance)).max(), 5e-5, "signal content is the same")
+
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_integrate_ng(self):
@@ -159,7 +161,7 @@ class TestOclAzimCSR(unittest.TestCase):
         """
         tests the median filtering kernel, default block size
         """
-        self.integrate_ng(None, "medfilt", {"quant_min":0, "quant_max":1.0})
+        self.integrate_ng(None, "medfilt", {"quant_min":0, "quant_max":1})
 
 
 def suite():
