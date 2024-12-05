@@ -196,10 +196,10 @@ class UnitFiber(Unit):
             self.formula = formula_
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
-            def ne_equation(x, y, z=None, wavelength=None, 
-                            incident_angle=self._incident_angle, 
+            def ne_equation(x, y, z=None, wavelength=None,
+                            incident_angle=self._incident_angle,
                             tilt_angle=self._tilt_angle,
-                            sample_orientation=self._sample_orientation, 
+                            sample_orientation=self._sample_orientation,
                             ne_formula=ne_formula):
                 π = numpy.pi
                 λ = wavelength
