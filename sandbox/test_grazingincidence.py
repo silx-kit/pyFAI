@@ -13,9 +13,9 @@ from pyFAI import load
 
 if __name__ == "__main__":
     fi_1 = FiberIntegrator(dist=0.1, poni1=0.1, poni2=0.1, detector=detector_factory("Eiger_4M"), wavelength=1e-10)
-    poni = UtilsTest.getimage("LaB6_5.poni")    
+    poni = UtilsTest.getimage("LaB6_5.poni")
     fi_2 = load(filename=poni, type_="pyFAI.integrator.fiber.FiberIntegrator")
-    
+
     cal = get_calibrant("LaB6")
     data_1 = cal.fake_calibration_image(ai=fi_1)
     data_file = UtilsTest.getimage("Y6.edf")
