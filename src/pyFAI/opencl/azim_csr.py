@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "04/12/2024"
+__date__ = "05/12/2024"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -1221,7 +1221,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_int["quant_min"] = numpy.float32(quant_min)
             kw_int["quant_max"] = numpy.float32(quant_max)
 
-            wg_min = min(self.workgroup_size["csr_medfilt"])
+            wg_min = max(self.workgroup_size["csr_medfilt"])
             kw_int["shared_int"] = pyopencl.LocalMemory(4 * wg_min)
             kw_int["shared_float"] = pyopencl.LocalMemory(8 * wg_min)
             wdim_bins = (wg_min, self.bins)
