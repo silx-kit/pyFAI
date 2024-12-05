@@ -180,19 +180,20 @@ class UnitFiber(Unit):
         if (numexpr is not None) and isinstance(self.formula, str):
             signature = [(key, numpy.float64) for key in "xyzλπηχ" if key in self.formula]
 
+            formula_ = self.formula
             if self._sample_orientation == 1:
                 ...
             elif self._sample_orientation == 2:
-                self.formula = self.formula_so1.replace('x', 'y_')
-                self.formula = self.formula_so1.replace('y', 'x_')
+                formula_ = self.formula_so1
+                formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
+                formula_ = formula_.replace('ψ', 'y').replace('ξ', 'x')
             elif self._sample_orientation == 3:
-                self.formula = self.formula_so1.replace('x', '(-1)*x_')
+                formula_ = self.formula_so1.replace('x', '(-1)*x')
             elif self._sample_orientation == 4:
-                self.formula = self.formula_so1.replace('x', '(-1)*y_')
-                self.formula = self.formula_so1.replace('y', '(-1)*x_')
-            self.formula = self.formula_so1.replace('x_', 'x')
-            self.formula = self.formula_so1.replace('y_', 'y')
-
+                formula_ = self.formula_so1
+                formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
+                formula_ = formula_.replace('ψ', '(-1)*y').replace('ξ', '(-1)*x')
+            self.formula = formula_
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
             def ne_equation(x, y, z=None, wavelength=None, 
