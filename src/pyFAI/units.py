@@ -160,7 +160,7 @@ class UnitFiber(Unit):
             scale=scale,
             label=label,
             equation=equation,
-            formula=formula,
+            # formula=formula,
             center=center,
             corner=corner,
             delta=delta,
@@ -169,9 +169,48 @@ class UnitFiber(Unit):
             positive=positive,
             period=period,
         )
+        self.formula = formula
+        self.formula_so1 = formula
         self._incident_angle = incident_angle
         self._tilt_angle = tilt_angle
         self._sample_orientation = sample_orientation
+        self._update_ne_equation()
+
+    def _update_ne_equation(self):
+        if (numexpr is not None) and isinstance(self.formula, str):
+            signature = [(key, numpy.float64) for key in "xyzλπηχ" if key in self.formula]
+
+            if self._sample_orientation == 1:
+                ...
+            elif self._sample_orientation == 2:
+                self.formula = self.formula_so1.replace('x', 'y_')
+                self.formula = self.formula_so1.replace('y', 'x_')
+            elif self._sample_orientation == 3:
+                self.formula = self.formula_so1.replace('x', '(-1)*x_')
+            elif self._sample_orientation == 4:
+                self.formula = self.formula_so1.replace('x', '(-1)*y_')
+                self.formula = self.formula_so1.replace('y', '(-1)*x_')
+            self.formula = self.formula_so1.replace('x_', 'x')
+            self.formula = self.formula_so1.replace('y_', 'y')
+
+            ne_formula = numexpr.NumExpr(self.formula, signature)
+
+            def ne_equation(x, y, z=None, wavelength=None, 
+                            incident_angle=self._incident_angle, 
+                            tilt_angle=self._tilt_angle,
+                            sample_orientation=self._sample_orientation, 
+                            ne_formula=ne_formula):
+                π = numpy.pi
+                λ = wavelength
+                η = self._incident_angle
+                χ = self._tilt_angle
+                ldict = locals()
+                args = tuple(ldict[i] for i in ne_formula.input_names)
+                return ne_formula(*args)
+
+            self.equation = ne_equation
+        else:
+            self.equation = self._equation
 
     def __repr__(self):
         return f"""
@@ -195,12 +234,15 @@ Sample orientation={self.sample_orientation}
 
     def set_incident_angle(self, value:float):
         self._incident_angle = value
+        self._update_ne_equation()
 
     def set_tilt_angle(self, value:float):
         self._tilt_angle = value
+        self._update_ne_equation()
 
     def set_sample_orientation(self, value: int):
         self._sample_orientation = value
+        self._update_ne_equation()
 
 
 RADIAL_UNITS = {}
@@ -618,6 +660,17 @@ formula_d2 = "(2.0e-9/λ*sin(0.5*arctan2(sqrt(x * x + y * y), z)))**2"
 formula_qx = "4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"
 formula_qy = "4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"
 
+formula_exit_angle = "arctan2(y,sqrt(z**2+x**2))"
+formula_exit_angle_horz = "arctan2(x,z)"
+formula_qbeam_lab = f"2.0e-9/λ*π*(cos({formula_exit_angle})*cos({formula_exit_angle_horz}) - 1)"
+formula_qhorz_lab = f"2.0e-9/λ*π*cos({formula_exit_angle})*sin({formula_exit_angle_horz})"
+formula_qvert_lab = f"2.0e-9/λ*π*sin({formula_exit_angle})"
+formula_qbeam_rot = f"cos(η)*({formula_qbeam_lab})+sin(η)*({formula_qvert_lab})"
+formula_qhorz_rot = f"cos(χ)*({formula_qhorz_lab})-sin(χ)*sin(η)*({formula_qbeam_lab})+sin(χ)*cos(η)*({formula_qvert_lab})"
+formula_qvert_rot = f"-sin(χ)*({formula_qhorz_lab})-cos(χ)*sin(η)*({formula_qbeam_lab})+cos(χ)*cos(η)*({formula_qvert_lab})"
+formula_qip = f"sqrt(({formula_qbeam_rot})**2+({formula_qhorz_rot})**2)*((({formula_qhorz_rot} > 0) * 2) - 1)"
+formula_qoop = formula_qvert_rot
+
 register_radial_unit("r_mm",
                      center="rArray",
                      delta="deltaR",
@@ -810,6 +863,7 @@ register_radial_fiber_unit("horz_exitangle_rad",
 register_radial_fiber_unit("qxgi_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_x$ ($nm^{-1}$)",
+                     formula=formula_qhorz_rot,
                      equation=eq_qhorz_gi,
                      short_name="qxgi",
                      unit_symbol="nm^{-1}",
@@ -818,6 +872,7 @@ register_radial_fiber_unit("qxgi_nm^-1",
 register_radial_fiber_unit("qygi_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_y$ ($nm^{-1}$)",
+                     formula=formula_qvert_rot,
                      equation=eq_qvert_gi,
                      short_name="qygi",
                      unit_symbol="nm^{-1}",
@@ -826,6 +881,7 @@ register_radial_fiber_unit("qygi_nm^-1",
 register_radial_fiber_unit("qzgi_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_z$ ($nm^{-1}$)",
+                     formula=formula_qbeam_rot,
                      equation=eq_qbeam_gi,
                      short_name="qzgi",
                      unit_symbol="nm^{-1}",
@@ -834,6 +890,7 @@ register_radial_fiber_unit("qzgi_nm^-1",
 register_radial_fiber_unit("qip_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_{IP}$ ($nm^{-1}$)",
+                     formula=formula_qip,
                      equation=eq_qip,
                      short_name="qip",
                      unit_symbol="nm^{-1}",
@@ -842,6 +899,7 @@ register_radial_fiber_unit("qip_nm^-1",
 register_radial_fiber_unit("qoop_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_{OOP}$ ($nm^{-1}$)",
+                     formula=formula_qoop,
                      equation=eq_qoop,
                      short_name="qoop",
                      unit_symbol="nm^{-1}",
