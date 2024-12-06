@@ -40,6 +40,7 @@ import gc
 import logging
 logger = logging.getLogger(__name__)
 from .integrator.azimuthal import AzimuthalIntegrator
+from .integrator.fiber import FiberIntegrator
 from .containers import Integrate1dResult
 from .containers import Integrate2dResult
 from . import units
@@ -347,11 +348,220 @@ class MultiGeometry(object):
         if collect_garbage:
             gc.collect()
 
+class MultiGeometryFiber(object):
+    """This is a Fiber integrator containing multiple geometries,
+    for example when the detector is on a goniometer arm
+    """
+
+    def __init__(self, fis, unit=("qip_nm^-1", "qoop_nm^-1"),
+                 ip_range=None, oop_range=None,
+                 incident_angle=None, tilt_angle=None, sample_orientation=None,
+                 wavelength=None, empty=0.0, chi_disc=180,
+                 threadpoolsize=cpu_count()):
+        """
+        Constructor of the multi-geometry integrator
+
+        :param ais: list of azimuthal integrators
+        :param ip_range: (2-tuple) in-plane range for integration
+        :param oop_range: (2-tuple) out-of-plane range for integration
+        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param empty: value for empty pixels
+        :param chi_disc: if 0, set the chi_discontinuity at 0, else π
+        :param threadpoolsize: By default, use a thread-pool to parallelize histogram/CSC integrator over as many threads as cores,
+                               set to False/0 to serialize
+        """
+        self._sem = threading.Semaphore()
+        self.abolute_solid_angle = None
+        self.fis = [fi if isinstance(fi, FiberIntegrator)
+                    else FiberIntegrator.sload(fi)
+                    for fi in fis]
+        self.wavelength = None
+        self.threadpool = ThreadPool(min(len(self.fis), threadpoolsize)) if threadpoolsize>0 else None
+        if wavelength:
+            self.set_wavelength(wavelength)
+        if isinstance(unit, (tuple, list)) and len(unit) == 2:
+            self.ip_unit = units.parse_fiber_unit(unit=unit[0],
+                                                  incident_angle=incident_angle,
+                                                  tilt_angle=tilt_angle,
+                                                  sample_orientation=sample_orientation,
+                                                  )
+            self.oop_unit = units.parse_fiber_unit(unit=unit[1],
+                                                   incident_angle=self.ip_unit.incident_angle,
+                                                   tilt_angle=self.ip_unit.tilt_angle,
+                                                   sample_orientation=self.ip_unit.sample_orientation,
+                                                   )
+        else:
+            self.ip_unit = units.parse_fiber_unit(unit=unit,
+                                                  incident_angle=incident_angle,
+                                                  tilt_angle=tilt_angle,
+                                                  sample_orientation=sample_orientation,
+                                                  )
+            self.oop_unit = units.parse_fiber_unit(unit="qoop_nm^-1",
+                                                   incident_angle=self.ip_unit.incident_angle,
+                                                   tilt_angle=self.ip_unit.tilt_angle,
+                                                   sample_orientation=self.ip_unit.sample_orientation,
+                                                   )
+            
+        self.unit = (self.ip_unit, self.oop_unit)
+        self.ip_range = ip_range
+        self.oop_range = oop_range
+        self.abolute_solid_angle = None
+        self.empty = empty
+        if chi_disc == 0:
+            for fi in self.fis:
+                fi.setChiDiscAtZero()
+        elif chi_disc == 180:
+            for fi in self.fis:
+                fi.setChiDiscAtPi()
+        else:
+            logger.warning("Unable to set the Chi discontinuity at %s", chi_disc)
+
+    def __del__(self):
+        if self.threadpool and self.threadpool._state == "RUN":
+            self.threadpool.close()
+
+    def __repr__(self, *args, **kwargs):
+        return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \
+            (len(self.fis), self.ip_range, self.unit, self.oop_range)
+
+    def _guess_inplane_range(self):
+        logger.info(f"Calculating the in-plane range of MultiGeometry...")
+        ip = numpy.array([fi.array_from_unit(unit=self.ip_unit) for fi in self.fis])
+        return (ip.min(), ip.max())
+
+    def _guess_outofplane_range(self):
+        logger.info(f"Calculating the out-of-plane range of MultiGeometry...")
+        oop = numpy.array([fi.array_from_unit(unit=self.oop_unit) for fi in self.fis])
+        return (oop.min(), oop.max())
+    
+    def integrate_fiber(self, lst_data,
+                          npt_ip=1000, npt_oop=1000, 
+                          correctSolidAngle=True,
+                          vertical_integration = True,
+                          lst_mask=None, dummy=None, delta_dummy=None,
+                          lst_variance=None,
+                          polarization_factor=None, dark=None, lst_flat=None,
+                          method=("no", "histogram", "cython"),
+                          normalization_factor=1.0, **kwargs):
+        """Performs 1D fiber integration of multiples frames, one for each geometry,
+        It wraps the method integrate_fiber of pyFAI.integrator.fiber.FiberIntegrator
+
+        :param lst_data: list of numpy array
+        :param int npt_ip: number of points to be used along the in-plane axis
+        :param int npt_oop: number of points to be used along the out-of-plane axis
+        :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param lst_variance: list of array containing the variance of the data. If not available, no error propagation is done
+        :type lst_variance: list of ndarray
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
+        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param float normalization_factor: Value of a normalization monitor
+        :return: chi bins center positions and regrouped intensity
+        :rtype: Integrate1dResult
+        """
+        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
+            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
+
+        if vertical_integration and npt_oop is None:
+            raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
+        elif not vertical_integration and npt_ip is None:
+            raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
+
+        if self.ip_range is None:
+            self.ip_range = self.ip_range or self._guess_inplane_range()
+        if self.oop_range is None:
+            self.oop_range = self.oop_range or self._guess_outofplane_range()
+
+        if len(lst_data) == 0:
+            raise RuntimeError("List of images cannot be empty")
+        if normalization_factor is None:
+            normalization_factor = [1.0] * len(self.fis)
+        elif not isinstance(normalization_factor, collections.abc.Iterable):
+            normalization_factor = [normalization_factor] * len(self.fis)
+        if lst_variance is None:
+            lst_variance = [None] * len(self.fis)
+        if lst_mask is None:
+            lst_mask = [None] * len(self.fis)
+        elif isinstance(lst_mask, numpy.ndarray):
+            lst_mask = [lst_mask] * len(self.fis)
+        if lst_flat is None:
+            lst_flat = [None] * len(self.fis)
+        elif isinstance(lst_flat, numpy.ndarray):
+            lst_flat = [lst_flat] * len(self.fis)
+
+        method = IntegrationMethod.select_one_available(method, dim=1)            
+        signal = numpy.zeros(npt_oop, dtype=numpy.float64)
+        normalization = numpy.zeros_like(signal)
+        count = numpy.zeros_like(signal)
+        variance = None
+
+        def _integrate(args):
+            fi, data, monitor, var, mask, flat = args
+            return fi.integrate_fiber(data=data,
+                                      npt_oop=npt_oop, unit_oop=self.oop_unit, oop_range=self.ip_range,
+                                      npt_ip=npt_ip, unit_ip=self.ip_unit, ip_range=self.oop_range,
+                                      vertical_integration=vertical_integration,
+                                      correctSolidAngle=correctSolidAngle,
+                                      mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                      polarization_factor=polarization_factor, dark=dark, flat=flat,
+                                      method=("no", "histogram", "cython"),
+                                      normalization_factor=monitor,
+                                      variance=var,
+                                      )
+        if self.threadpool is None:
+            results = map(_integrate,
+                          zip(self.fis, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        else:
+            results = self.threadpool.map(_integrate,
+                                          zip(self.fis, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        for res, fi in zip(results, self.fis):
+            sac = (fi.pixel1 * fi.pixel2 / fi.dist ** 2) if correctSolidAngle else 1.0
+            count += res.count
+            normalization += res.sum_normalization * sac
+            signal += res.sum_signal
+            if res.sigma is not None:
+                if variance is None:
+                    variance = res.sum_variance.astype(dtype=numpy.float64)  # explicit copy
+                else:
+                    variance += res.sum_variance
+
+        tiny = numpy.finfo("float32").tiny
+        norm = numpy.maximum(normalization, tiny)
+        invalid = count <= 0.0
+        I = signal / norm
+        I[invalid] = self.empty
+
+        if variance is not None:
+            sigma = numpy.sqrt(variance) / norm
+            sigma[invalid] = self.empty
+            result = Integrate1dResult(res.radial, I, sigma)
+        else:
+            result = Integrate1dResult(res.radial, I)
+        result._set_compute_engine(res.compute_engine)
+        result._set_unit(self.ip_unit)
+        result._set_sum_signal(signal)
+        result._set_sum_normalization(normalization)
+        result._set_sum_variance(variance)
+        result._set_count(count)
+        return result
+
+    integrate_grazing_incidence = integrate_fiber
+    integrate1d_grazing_incidence = integrate_grazing_incidence
+    integrate1d_fiber = integrate_fiber
+    integrate1d = integrate1d_fiber
 
     def integrate2d_fiber(self, lst_data,
-                          npt_ip=1000, unit_ip=None, ip_range=None,
-                          npt_oop=1000, unit_oop=None, oop_range=None,
-                          sample_orientation=None,
+                          npt_ip=1000, npt_oop=1000, 
                           correctSolidAngle=True,
                           lst_mask=None, dummy=None, delta_dummy=None,
                           lst_variance=None,
@@ -386,61 +596,42 @@ class MultiGeometry(object):
         :return: regrouped intensity and unit arrays
         :rtype: Integrate2dResult
         """
-        deprecated_params = get_deprecated_params_2d(**kwargs)
-        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
-        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
-        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
-        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
-        oop_range = deprecated_params.get('oop_range', None) or oop_range
-        ip_range = deprecated_params.get('ip_range', None) or ip_range
-
-        unit_ip = unit_ip or 'qip_nm^-1'
-        unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip, sample_orientation=sample_orientation)
-        unit_oop = parse_fiber_unit(unit=unit_oop, sample_orientation=unit_ip.sample_orientation)
-
-        for fi in self.ais:
-            fi.reset_integrator(incident_angle=unit_ip.incident_angle,
-                                tilt_angle=unit_ip.tilt_angle,
-                                sample_orientation=unit_ip.sample_orientation)
-
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
         if len(lst_data) == 0:
             raise RuntimeError("List of images cannot be empty")
         if normalization_factor is None:
-            normalization_factor = [1.0] * len(self.ais)
+            normalization_factor = [1.0] * len(self.fis)
         elif not isinstance(normalization_factor, collections.abc.Iterable):
-            normalization_factor = [normalization_factor] * len(self.ais)
+            normalization_factor = [normalization_factor] * len(self.fis)
         if lst_variance is None:
-            lst_variance = [None] * len(self.ais)
+            lst_variance = [None] * len(self.fis)
         if lst_mask is None:
-            lst_mask = [None] * len(self.ais)
+            lst_mask = [None] * len(self.fis)
         elif isinstance(lst_mask, numpy.ndarray):
-            lst_mask = [lst_mask] * len(self.ais)
+            lst_mask = [lst_mask] * len(self.fis)
         if lst_flat is None:
-            lst_flat = [None] * len(self.ais)
+            lst_flat = [None] * len(self.fis)
         elif isinstance(lst_flat, numpy.ndarray):
-            lst_flat = [lst_flat] * len(self.ais)
+            lst_flat = [lst_flat] * len(self.fis)
 
         method = IntegrationMethod.select_one_available(method, dim=2)
-
         signal = numpy.zeros((npt_oop, npt_ip), dtype=numpy.float64)
         count = numpy.zeros_like(signal)
         normalization = numpy.zeros_like(signal)
         variance = None
 
-        if self.radial_range is None:
-            self.radial_range = ip_range or self._guess_radial_range()
-        if self.azimuth_range is None:
-            self.azimuth_range = oop_range or self._guess_azimuth_range()
+        if self.ip_range is None:
+            self.ip_range = self.ip_range or self._guess_inplane_range()
+        if self.oop_range is None:
+            self.oop_range = self.oop_range or self._guess_outofplane_range()
+
         def _integrate(args):
             fi, data, monitor, var, mask, flat = args
             return fi.integrate2d_fiber(data,
-                                        npt_ip=npt_ip, unit_ip=unit_ip, ip_range=self.radial_range,
-                                        npt_oop=npt_oop, unit_oop=unit_oop, oop_range=self.azimuth_range,
-                                        sample_orientation=sample_orientation,
+                                        npt_ip=npt_ip, unit_ip=self.ip_unit, ip_range=self.ip_range,
+                                        npt_oop=npt_oop, unit_oop=self.oop_unit, oop_range=self.oop_range,
                                         correctSolidAngle=correctSolidAngle,
                                         variance=var,
                                         polarization_factor=polarization_factor,
@@ -449,11 +640,11 @@ class MultiGeometry(object):
                                         mask=mask, flat=flat, dark=dark, normalization_factor=monitor, **kwargs)
         if self.threadpool is None:
             results = map(_integrate,
-                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+                          zip(self.fis, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
         else:
             results = self.threadpool.map(_integrate,
-                zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
-        for res, ai in zip(results, self.ais):
+                zip(self.fis, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+        for res, ai in zip(results, self.fis):
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count
             signal += res.sum_signal
@@ -478,308 +669,13 @@ class MultiGeometry(object):
             result = Integrate2dResult(I, res.radial, res.azimuthal)
         result._set_sum(signal)
         result._set_compute_engine(res.compute_engine)
-        result._set_radial_unit(self.radial_unit)
-        result._set_azimuthal_unit(self.azimuth_unit)
+        result._set_radial_unit(self.ip_unit)
+        result._set_azimuthal_unit(self.oop_unit)
         result._set_sum_signal(signal)
         result._set_sum_normalization(normalization)
         result._set_sum_variance(variance)
         result._set_count(count)
         return result
 
-    def integrate2d_grazing_incidence(self, lst_data,
-                                      npt_ip=1000, unit_ip=None, ip_range=None,
-                                      npt_oop=1000, unit_oop=None, oop_range=None,
-                                      incident_angle=None, tilt_angle=None, sample_orientation=None,
-                                      correctSolidAngle=True,
-                                      lst_mask=None, dummy=None, delta_dummy=None,
-                                      lst_variance=None,
-                                      polarization_factor=None, dark=None, lst_flat=None,
-                                      method=("no", "histogram", "cython"),
-                                      normalization_factor=1.0, **kwargs):
-        """Performs 2D azimuthal integration of multiples frames, one for each geometry,
-        It wraps the method integrate2d_grazing_incidence of pyFAI.integrator.fiber.FiberIntegrator
-
-        :param lst_data: list of numpy array
-        :param int npt_ip: number of points to be used along the in-plane axis
-        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
-        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_oop: number of points to be used along the out-of-plane axis
-        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
-        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
-        :param bool correctSolidAngle: correct for solid angle of each pixel if True
-        :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
-        :param float dummy: value for dead/masked pixels
-        :param float delta_dummy: precision for dummy value
-        :param lst_variance: list of array containing the variance of the data. If not available, no error propagation is done
-        :type lst_variance: list of ndarray
-        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
-                * 0 for circular polarization or random,
-                * None for no correction,
-                * True for using the former correction
-        :param ndarray dark: dark noise image
-        :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
-        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
-        :param float normalization_factor: Value of a normalization monitor
-        :return: regrouped intensity and unit arrays
-        :rtype: Integrate2dResult
-        """
-        deprecated_params = get_deprecated_params_2d(**kwargs)
-        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
-        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
-        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
-        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
-        oop_range = deprecated_params.get('oop_range', None) or oop_range
-        ip_range = deprecated_params.get('ip_range', None) or ip_range
-
-        unit_ip = unit_ip or 'qip_nm^-1'
-        unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
-        unit_oop = parse_fiber_unit(unit=unit_oop, incident_angle=unit_ip.incident_angle, tilt_angle=unit_ip.tilt_angle, sample_orientation=unit_ip.sample_orientation)
-
-        for fi in self.ais:
-            fi.reset_integrator(incident_angle=unit_ip.incident_angle,
-                                tilt_angle=unit_ip.tilt_angle,
-                                sample_orientation=unit_ip.sample_orientation)
-
-        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
-            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
-
-        return self.integrate2d_fiber(lst_data=lst_data, npt_ip=npt_ip, npt_oop=npt_oop,
-                                      unit_ip=unit_ip, unit_oop=unit_oop,
-                                      ip_range=ip_range,
-                                      oop_range=oop_range,
-                                      sample_orientation=sample_orientation,
-                                      correctSolidAngle=correctSolidAngle,
-                                      lst_mask=lst_mask, dummy=dummy, delta_dummy=delta_dummy,
-                                      lst_variance=lst_variance,
-                                      polarization_factor=polarization_factor, dark=dark, lst_flat=lst_flat,
-                                      method=method,
-                                      normalization_factor=normalization_factor,
-                                      )
-
-    def integrate1d_fiber(self, lst_data,
-                                      npt_ip=1000, unit_ip=None, ip_range=None,
-                                      npt_oop=1000, unit_oop=None, oop_range=None,
-                                      sample_orientation=None,
-                                      correctSolidAngle=True,
-                                      vertical_integration = True,
-                                      lst_mask=None, dummy=None, delta_dummy=None,
-                                      lst_variance=None,
-                                      polarization_factor=None, dark=None, lst_flat=None,
-                                      method=("no", "histogram", "cython"),
-                                      normalization_factor=1.0, **kwargs):
-        """Performs 1D fiber integration of multiples frames, one for each geometry,
-        It wraps the method integrate_fiber of pyFAI.integrator.fiber.FiberIntegrator
-
-        :param lst_data: list of numpy array
-        :param int npt_ip: number of points to be used along the in-plane axis
-        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
-        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_oop: number of points to be used along the out-of-plane axis
-        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
-        :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
-        :param bool correctSolidAngle: correct for solid angle of each pixel if True
-        :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
-        :param float dummy: value for dead/masked pixels
-        :param float delta_dummy: precision for dummy value
-        :param lst_variance: list of array containing the variance of the data. If not available, no error propagation is done
-        :type lst_variance: list of ndarray
-        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
-                * 0 for circular polarization or random,
-                * None for no correction,
-                * True for using the former correction
-        :param ndarray dark: dark noise image
-        :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
-        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
-        :param float normalization_factor: Value of a normalization monitor
-        :return: chi bins center positions and regrouped intensity
-        :rtype: Integrate1dResult
-        """
-        deprecated_params = get_deprecated_params_1d(**kwargs)
-        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
-        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
-        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
-        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
-        oop_range = deprecated_params.get('oop_range', None) or oop_range
-        ip_range = deprecated_params.get('ip_range', None) or ip_range
-        vertical_integration = deprecated_params.get('vertical_integration', None) or vertical_integration
-
-        unit_ip = unit_ip or 'qip_nm^-1'
-        unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip, sample_orientation=sample_orientation)
-        unit_oop = parse_fiber_unit(unit=unit_oop, sample_orientation=unit_ip.sample_orientation)
-
-        for fi in self.ais:
-            fi.reset_integrator(incident_angle=unit_ip.incident_angle,
-                                tilt_angle=unit_ip.tilt_angle,
-                                sample_orientation=unit_ip.sample_orientation)
-
-        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
-            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
-
-        if vertical_integration and npt_oop is None:
-            raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
-        elif not vertical_integration and npt_ip is None:
-            raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
-
-        npt_oop = npt_oop or 500
-        npt_ip = npt_ip or 500
-
-        npt_output = npt_oop
-        self.radial_unit = unit_oop
-        self.radial_range = oop_range or self._guess_radial_range()
-        self.azimuth_unit = unit_ip
-        self.azimuth_range = ip_range or self._guess_azimuth_range()
-
-        method = IntegrationMethod.select_one_available(method, dim=1)
-
-        if len(lst_data) == 0:
-            raise RuntimeError("List of images cannot be empty")
-        if normalization_factor is None:
-            normalization_factor = [1.0] * len(self.ais)
-        elif not isinstance(normalization_factor, collections.abc.Iterable):
-            normalization_factor = [normalization_factor] * len(self.ais)
-        if lst_variance is None:
-            lst_variance = [None] * len(self.ais)
-        if lst_mask is None:
-            lst_mask = [None] * len(self.ais)
-        elif isinstance(lst_mask, numpy.ndarray):
-            lst_mask = [lst_mask] * len(self.ais)
-        if lst_flat is None:
-            lst_flat = [None] * len(self.ais)
-        elif isinstance(lst_flat, numpy.ndarray):
-            lst_flat = [lst_flat] * len(self.ais)
-        signal = numpy.zeros(npt_output, dtype=numpy.float64)
-        normalization = numpy.zeros_like(signal)
-        count = numpy.zeros_like(signal)
-        variance = None
-
-        def _integrate(args):
-            fi, data, monitor, var, mask, flat = args
-            return fi.integrate_fiber(data=data,
-                                      npt_oop=npt_oop, unit_oop=unit_oop, oop_range=self.radial_range,
-                                      npt_ip=npt_ip, unit_ip=unit_ip, ip_range=self.azimuth_range,
-                                      vertical_integration=vertical_integration,
-                                      sample_orientation=sample_orientation,
-                                      correctSolidAngle=correctSolidAngle,
-                                      mask=mask, dummy=dummy, delta_dummy=delta_dummy,
-                                      polarization_factor=polarization_factor, dark=dark, flat=flat,
-                                      method=("no", "histogram", "cython"),
-                                      normalization_factor=monitor,
-                                      variance=var,
-                                      )
-        if self.threadpool is None:
-            results = map(_integrate,
-                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
-        else:
-            results = self.threadpool.map(_integrate,
-                                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
-        for res, ai in zip(results, self.ais):
-            sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
-            count += res.count
-            normalization += res.sum_normalization * sac
-            signal += res.sum_signal
-            if res.sigma is not None:
-                if variance is None:
-                    variance = res.sum_variance.astype(dtype=numpy.float64)  # explicit copy
-                else:
-                    variance += res.sum_variance
-
-        tiny = numpy.finfo("float32").tiny
-        norm = numpy.maximum(normalization, tiny)
-        invalid = count <= 0.0
-        I = signal / norm
-        I[invalid] = self.empty
-
-        if variance is not None:
-            sigma = numpy.sqrt(variance) / norm
-            sigma[invalid] = self.empty
-            result = Integrate1dResult(res.radial, I, sigma)
-        else:
-            result = Integrate1dResult(res.radial, I)
-        result._set_compute_engine(res.compute_engine)
-        result._set_unit(self.radial_unit)
-        result._set_sum_signal(signal)
-        result._set_sum_normalization(normalization)
-        result._set_sum_variance(variance)
-        result._set_count(count)
-        return result
-
-    def integrate1d_grazing_incidence(self, lst_data,
-                                      npt_ip=1000, unit_ip=None, ip_range=None,
-                                      npt_oop=1000, unit_oop=None, oop_range=None,
-                                      incident_angle=None, tilt_angle=None, sample_orientation=None,
-                                      vertical_integration = True,
-                                      correctSolidAngle=True,
-                                      lst_mask=None, dummy=None, delta_dummy=None,
-                                      lst_variance=None,
-                                      polarization_factor=None, dark=None, lst_flat=None,
-                                      method=("no", "histogram", "cython"),
-                                      normalization_factor=1.0, **kwargs):
-        """Performs 1D fiber integration of multiples frames, one for each geometry,
-        It wraps the method integrate_grazing_incidence of pyFAI.integrator.fiber.FiberIntegrator
-
-        :param lst_data: list of numpy array
-        :param int npt_ip: number of points to be used along the in-plane axis
-        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
-        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_oop: number of points to be used along the out-of-plane axis
-        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
-        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
-        :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
-        :param bool correctSolidAngle: correct for solid angle of each pixel if True
-        :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
-        :param float dummy: value for dead/masked pixels
-        :param float delta_dummy: precision for dummy value
-        :param lst_variance: list of array containing the variance of the data. If not available, no error propagation is done
-        :type lst_variance: list of ndarray
-        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
-                * 0 for circular polarization or random,
-                * None for no correction,
-                * True for using the former correction
-        :param ndarray dark: dark noise image
-        :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
-        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
-        :param float normalization_factor: Value of a normalization monitor
-        :return: chi bins center positions and regrouped intensity
-        :rtype: Integrate1dResult
-        """
-        deprecated_params = get_deprecated_params_1d(**kwargs)
-        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
-        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
-        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
-        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
-        oop_range = deprecated_params.get('oop_range', None) or oop_range
-        ip_range = deprecated_params.get('ip_range', None) or ip_range
-        vertical_integration = deprecated_params.get('vertical_integration', None) or vertical_integration
-
-        unit_ip = unit_ip or 'qip_nm^-1'
-        unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
-        unit_oop = parse_fiber_unit(unit=unit_oop, incident_angle=unit_ip.incident_angle, tilt_angle=unit_ip.tilt_angle, sample_orientation=unit_ip.sample_orientation)
-
-        for fi in self.ais:
-            fi.reset_integrator(incident_angle=unit_ip.incident_angle,
-                                tilt_angle=unit_ip.tilt_angle,
-                                sample_orientation=unit_ip.sample_orientation)
-
-        return self.integrate1d_fiber(lst_data=lst_data,
-                                    npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
-                                    npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
-                                    vertical_integration=vertical_integration,
-                                    sample_orientation=sample_orientation,
-                                    correctSolidAngle=correctSolidAngle,
-                                    lst_mask=lst_mask, dummy=dummy, delta_dummy=delta_dummy,
-                                    lst_variance=lst_variance,
-                                    polarization_factor=polarization_factor, dark=dark, lst_flat=lst_flat,
-                                    method=method,
-                                    normalization_factor=normalization_factor,
-                                    )
+    integrate2d_grazing_incidence = integrate2d_fiber
+    integrate2d = integrate2d_fiber
