@@ -1293,7 +1293,7 @@ class NexusDetector(Detector):
                 self._delta_dummy = det_grp["delta_dummy"][()]
             for what in ("max_shape", "shape"):
                 if what in det_grp:
-                    self.__setattr__(what, tuple(i for i in det_grp[what][()]))
+                    self.__setattr__(what, tuple(int(i) for i in det_grp[what][()]))
             if "mask" in det_grp:
                 self.mask = det_grp["mask"][()]
             if "pixel_corners" in det_grp:
