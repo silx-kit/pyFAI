@@ -399,7 +399,7 @@ class MultiGeometryFiber(object):
                                                    tilt_angle=self.ip_unit.tilt_angle,
                                                    sample_orientation=self.ip_unit.sample_orientation,
                                                    )
-            
+
         self.unit = (self.ip_unit, self.oop_unit)
         self.ip_range = ip_range
         self.oop_range = oop_range
@@ -431,9 +431,9 @@ class MultiGeometryFiber(object):
         logger.info(f"Calculating the out-of-plane range of MultiGeometry...")
         oop = numpy.array([fi.array_from_unit(unit=self.oop_unit) for fi in self.fis])
         return (oop.min(), oop.max())
-    
+
     def integrate_fiber(self, lst_data,
-                          npt_ip=1000, npt_oop=1000, 
+                          npt_ip=1000, npt_oop=1000,
                           correctSolidAngle=True,
                           vertical_integration = True,
                           lst_mask=None, dummy=None, delta_dummy=None,
@@ -495,7 +495,7 @@ class MultiGeometryFiber(object):
         elif isinstance(lst_flat, numpy.ndarray):
             lst_flat = [lst_flat] * len(self.fis)
 
-        method = IntegrationMethod.select_one_available(method, dim=1)            
+        method = IntegrationMethod.select_one_available(method, dim=1)
         signal = numpy.zeros(npt_oop, dtype=numpy.float64)
         normalization = numpy.zeros_like(signal)
         count = numpy.zeros_like(signal)
@@ -557,7 +557,7 @@ class MultiGeometryFiber(object):
     integrate1d = integrate1d_fiber
 
     def integrate2d_fiber(self, lst_data,
-                          npt_ip=1000, npt_oop=1000, 
+                          npt_ip=1000, npt_oop=1000,
                           correctSolidAngle=True,
                           lst_mask=None, dummy=None, delta_dummy=None,
                           lst_variance=None,
