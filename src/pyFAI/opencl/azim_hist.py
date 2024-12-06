@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "25/04/2024"
+__date__ = "19/11/2024"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -47,7 +47,7 @@ else:
     raise ImportError("pyopencl is not installed")
 
 from . import allocate_cl_buffers, release_cl_buffers, kernel_workgroup_size
-from . import concatenate_cl_kernel, get_x87_volatile_option, processing, OpenclProcessing
+from . import concatenate_cl_kernel, processing, OpenclProcessing
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from ..utils.decorators import deprecated
 EventDescription = processing.EventDescription
@@ -257,13 +257,17 @@ class OCL_Histogram1d(OpenclProcessing):
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or self.kernel_files[-1]
         kernels = self.kernel_files[:-1] + [kernel_file]
-        default_compiler_options = get_x87_volatile_option(self.ctx)
-        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
-                          (self.bins, self.size, self.BLOCK_SIZE)
-        if default_compiler_options:
-            compile_options += " " + default_compiler_options
         try:
-            OpenclProcessing.compile_kernels(self, kernels, compile_options)
+            compile_options = self.get_compiler_options(x87_volatile=True, apple_gpu=True)
+        except (AttributeError, TypeError):  # Silx version too old
+            logger.warning("Please upgrade to silx v2.2+")
+            from . import get_compiler_options
+            compile_options = get_compiler_options(self.ctx, x87_volatile=True, apple_gpu=True)
+
+
+        compile_options += f" -D NBINS={self.bins}  -D NIMAGE={self.size} -D WORKGROUP_SIZE={self.BLOCK_SIZE}"
+        try:
+            OpenclProcessing.compile_kernels(self, kernels, compile_options.strip())
         except Exception as error:
             # This error may be related to issue #1219. Provides an ugly work around.
             if "cl_khr_int64_base_atomics" in self.ctx.devices[0].extensions:

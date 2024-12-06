@@ -83,8 +83,9 @@ py.extension_module('watershed', 'watershed.pyx',
 py.extension_module('_tree', '_tree.pyx',
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
-py.extension_module('sparse_utils', 'sparse_utils.pyx', #Deprecated
-        dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
+py.extension_module('sparse_utils', 'sparse_utils.pyx',
+        override_options : ['cython_language=cpp'],
+        dependencies : [py_dep, omp], install: true, subdir: 'pyFAI/ext')
 
 py.extension_module('inpainting', 'inpainting.pyx',
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')

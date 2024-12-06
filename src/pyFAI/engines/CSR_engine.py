@@ -26,9 +26,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2024"
+__date__ = "19/11/2024"
 __status__ = "development"
 
+from collections.abc import Iterable
 import logging
 import warnings
 logger = logging.getLogger(__name__)
@@ -46,6 +47,7 @@ else:
 from ..utils import calc_checksum
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
+mf_dtype = numpy.dtype([('any', 'f4'),('sig', 'f4'),('var', 'f4'),('norm', 'f4')])
 
 class CSRIntegrator(object):
 
@@ -388,6 +390,115 @@ class CsrIntegrator1d(CSRIntegrator):
 
         # Here we return the standard deviation and not the standard error of the mean !
         return Integrate1dtpl(self.bin_centers, avg, std, sum_sig, sum_var, sum_nrm, cnt, std, sem, sum_nrm2)
+
+    def medfilt(self, data, dark=None, dummy=None, delta_dummy=None,
+                variance=None, dark_variance=None,
+                flat=None, solidangle=None, polarization=None, absorption=None,
+                safe=True, error_model=None,
+                normalization_factor=1.0,
+                quant_min=0.5,
+                quant_max=0.5,
+                ):
+        """
+        Perform a median-filter/quantile mean in azimuthal space.
+
+        The error is propagated according to:
+
+        .. math::
+
+            signal = (raw - dark)
+            variance = variance + dark_variance
+            normalization  = normalization_factor*(flat * solidangle * polarization * absortoption)
+            count = number of pixel contributing
+
+        Averaging is performed using the CSR representation of the look-up table on all
+        arrays after sorting pixels by apparant intensity and taking only the selected ones
+        based on quantiles and the length of the ensemble.
+
+
+        :param dark: array of same shape as data for pre-processing
+        :param dummy: value for invalid data
+        :param delta_dummy: precesion for dummy assessement
+        :param variance: array of same shape as data for pre-processing
+        :param dark_variance: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidangle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param safe: Unused in this implementation
+        :param error_model: Enum or str, "azimuthal" or "poisson"
+        :param normalization_factor: divide raw signal by this value
+        :param quant_min: start percentile/100 to use. Use 0.5 for the median (default). 0<=quant_min<=1
+        :param quant_max: stop percentile/100 to use. Use 0.5 for the median (default). 0<=quant_max<=1
+
+        :return: namedtuple with "position intensity error signal variance normalization count"
+        """
+        indptr = self._csr.indptr
+        indices = self._csr.indices
+        csr_data = self._csr.data
+        csr_data2 = self._csr2.data
+
+        error_model = ErrorModel.parse(error_model)
+
+        prep = preproc(data,
+                       dark=dark,
+                       flat=flat,
+                       solidangle=solidangle,
+                       polarization=polarization,
+                       absorption=absorption,
+                       mask=None,
+                       dummy=dummy,
+                       delta_dummy=delta_dummy,
+                       normalization_factor=normalization_factor,
+                       empty=self.empty,
+                       split_result=4,
+                       variance=variance,
+                       dark_variance=dark_variance,
+                       dtype=numpy.float32,
+                       error_model=error_model,
+                       out=self.preprocessed)
+
+        prep_flat = prep.reshape((-1, 4))
+        pixels = prep_flat[indices]
+
+        work0 = numpy.zeros((indices.size,4), dtype=numpy.float32)
+        work0[:, 0] = pixels[:, 0]/ pixels[:, 2]
+        work0[:, 1] = pixels[:, 0] * csr_data
+        work0[:, 2] = pixels[:, 1] * csr_data2
+        work0[:, 3] = pixels[:, 2] * csr_data
+        work1 = work0.view(mf_dtype).ravel()
+
+        size = indptr.size-1
+        signal = numpy.zeros(size, dtype=numpy.float64)
+        norm = numpy.zeros(size, dtype=numpy.float64)
+        norm2 = numpy.zeros(size, dtype=numpy.float64)
+        variance = numpy.zeros(size, dtype=numpy.float64)
+        cnt = numpy.zeros(size, dtype=numpy.int32)
+        for i,start in enumerate(indptr[:-1]):
+            stop = indptr[i+1]
+            tmp = numpy.sort(work1[start:stop])
+            upper = numpy.cumsum(tmp["norm"])
+            last = upper[-1]
+            lower = numpy.concatenate(([0],upper[:-1]))
+            mask = numpy.logical_and(upper>=quant_min*last, lower<=quant_max*last)
+            tmp = tmp[mask]
+            cnt[i] = tmp.size
+            signal[i] = tmp["sig"].sum(dtype=numpy.float64)
+            variance[i] = tmp["var"].sum(dtype=numpy.float64)
+            norm[i] = tmp["norm"].sum(dtype=numpy.float64)
+            norm2[i] = (tmp["norm"]**2).sum(dtype=numpy.float64)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            avg = signal / norm
+            std = numpy.sqrt(variance / norm2)
+            sem = numpy.sqrt(variance) / norm
+        # mask out remaining NaNs
+        msk = norm <= 0
+        avg[msk] = self.empty
+        std[msk] = self.empty
+        sem[msk] = self.empty
+
+        return Integrate1dtpl(self.bin_centers, avg, sem, signal, variance, norm, cnt, std, sem, norm2)
 
     @property
     def check_mask(self):

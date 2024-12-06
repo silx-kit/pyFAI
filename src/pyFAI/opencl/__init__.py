@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/04/2024"
+__date__ = "19/11/2024"
 __status__ = "stable"
 
 import os
@@ -78,6 +78,24 @@ def get_x87_volatile_option(ctx):
             return "-DX87_VOLATILE=volatile"
         else:
             return ""
+
+def get_compiler_options(ctx, x87_volatile=False, apple_gpu=False):
+    """Provide a set of common compiler options to work around known bugs:
+
+    :x87_volatile: set to true to declare all x87 operation as volatile, needed on PoCL x86 32bits
+    :apple_gpu: redefine the cl_khr_fp64 to zero when the device is Apple GPU
+                which wrongly declares fp64 compatibility. See #2339
+    :return: compilation directive as string.
+    """
+
+    if x87_volatile:
+        options = get_x87_volatile_option(ctx)
+    else:
+        options = ""
+    if apple_gpu:
+        fp64_support = 1 if "cl_khr_fp64" in ctx.devices[0].extensions else 0
+        options += f" -D cl_khr_fp64={fp64_support}"
+    return options.strip()
 
 
 def dtype_converter(dtype):

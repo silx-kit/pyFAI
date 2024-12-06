@@ -21,7 +21,8 @@ References
 * The philosophy of pyFAI is described in the proceedings of SRI2012: https://doi.org/10.1088/1742-6596/425/20/202012
 * Implementation in parallel is described in the proceedings of EPDIC13: https://doi.org/10.1017/S0885715613000924
 * Benchmarks and optimization procedure is described in the proceedings of EuroSciPy2014: https://doi.org/10.48550/arXiv.1412.6367
-* Calibration procedures are described in J. Synch. Radiation 2020: https://doi.org/10.1107/S1600577520000776
+* Calibration procedures are described in J. Synch. Radiation (2020): https://doi.org/10.1107/S1600577520000776
+* Application of signal separation to diffraction image compression and serial crystallography. Accepted in J. Appl. Cryst. (2024): https://doi.org/10.48550/arXiv.2411.09515
 
 Installation
 ------------

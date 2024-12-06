@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "23/10/2024"
+__date__ = "19/11/2024"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -328,7 +328,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("output", self.cl_mem["output"])))
 
 
-    def compile_kernels(self, kernel_files=None, compile_options=None):
+    def compile_kernels(self, kernel_files=None):
         """Call the OpenCL compiler
 
         :param kernel_files: list of path to the kernel
@@ -336,7 +336,9 @@ class OCL_Preproc(OpenclProcessing):
         """
         # concatenate all needed source files into a single openCL module
         kernel_files = kernel_files or self.kernel_files
-        compile_options = "-D NIMAGE=%i" % (self.size)
+        # Explicit handling of fp64 since Apple silicon compiler wrongly clams fp64 support see issue #2339
+        fp64_support = 1 if "cl_khr_fp64" in self.ctx.devices[0].extensions else 0
+        compile_options = f"-D NIMAGE={self.size} -D cl_khr_fp64={fp64_support}"
         OpenclProcessing.compile_kernels(self, kernel_files, compile_options)
 
     def send_buffer(self, data, dest, convert=True):

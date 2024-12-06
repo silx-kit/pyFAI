@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "06/09/2024"
+__date__ = "19/11/2024"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -275,11 +275,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
         kernel_file = kernel_file or self.kernel_files[-1]
         kernels = self.kernel_files[:-1] + [kernel_file]
 
-        compile_options = f"-D NBINS={self.bins} -D NIMAGE={self.size}"
-        default_compiler_options = self.get_compiler_options(x87_volatile=True)
-        if default_compiler_options:
-            compile_options += " " + default_compiler_options
-        OpenclProcessing.compile_kernels(self, kernels, compile_options)
+        try:
+            compile_options = self.get_compiler_options(x87_volatile=True, apple_gpu=True)
+        except (AttributeError, TypeError):  # Silx version too old
+            logger.warning("Please upgrade to silx v2.2+")
+            from . import get_compiler_options
+            compile_options = get_compiler_options(self.ctx, x87_volatile=True, apple_gpu=True)
+
+        compile_options += f" -D NBINS={self.bins} -D NIMAGE={self.size}"
+        OpenclProcessing.compile_kernels(self, kernels, compile_options.strip())
         for kernel_name in self.kernels.__dict__:
             if kernel_name.startswith("_"):
                 continue
