@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 25/11/2024
+ *   Last revision: 06/12/2024
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -131,7 +131,7 @@ csr_medfilt    (  const   global  float4  *data4,
 
     // ensure the last element is always taken
     if (quant_max == 1.0f)
-        quant_max = 1.1f;
+        quant_max = 1.000001f;
 
     // first populate the work4 array from data4
     for (int i=start+tid; i<stop; i+=wg)
@@ -181,7 +181,7 @@ csr_medfilt    (  const   global  float4  *data4,
         if ((idx+wg)<stop)
             work4[idx+wg].s0 = sum + shared_float[tid+wg];
         sum += shared_float[2*wg-1];
-
+		barrier(CLK_LOCAL_MEM_FENCE);
     }
 
     barrier(CLK_GLOBAL_MEM_FENCE);
@@ -201,8 +201,9 @@ csr_medfilt    (  const   global  float4  *data4,
     {
         float q_last = (i>start)?work4[i-1].s0:0.0f;
         float4 w = work4[i];
-        if (((q_last>=qmin) && (w.s0<=qmax))||
-            ((q_last<=qmin) && (w.s0>=qmax)))   { // case qmin==qmax
+        if((((q_last>=qmin) && (w.s0<=qmax))  // case several contribution
+         || ((q_last<=qmin) && (w.s0>=qmax))) // case unique contribution qmin==qmax
+         && (w.s3)) {                         // non empty
             cnt ++;
             acc_sig = dw_plus_fp(acc_sig, w.s1);
             acc_var = dw_plus_fp(acc_var, w.s2);

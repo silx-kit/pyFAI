@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "05/12/2024"
+__date__ = "06/12/2024"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -188,6 +188,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             self.send_buffer(self._data, "data")
         self.send_buffer(self._indices, "indices")
         self.send_buffer(self._indptr, "indptr")
+
         if "amd" in  self.ctx.devices[0].platform.name.lower():
             self.workgroup_size["csr_integrate4_single"] = (1, 1)  # Very bad performances on AMD GPU for diverging threads!
 
@@ -480,6 +481,27 @@ class OCL_CSR_Integrator(OpenclProcessing):
         if checksum is not None:
             self.on_device[dest] = checksum
         return dest_buffer
+
+    def get_buffer(self, name, out=None):
+        """retrive a Send a numpy array to the device, including the type conversion on the device if possible
+
+        :param name: name of the buffer
+        :param out: pre-allocated destination numpy array
+        :return: the numpy array
+        """
+        if out is None:
+            if name in self.cl_mem:
+                for buf in self.buffers:
+                    if buf.name == name:
+                        shape = buf.size
+                        dtype = buf.dtype
+                        out = numpy.empty(shape, dtype)
+            else:
+                logger.error("No such buffer declared")
+
+        ev = pyopencl.enqueue_copy(self.queue, out, self.cl_mem[name])
+        self.events.append(EventDescription(f"copy D->H {name}", ev))
+        return out
 
     def integrate_legacy(self, data, dummy=None, delta_dummy=None,
                          dark=None, flat=None, solidangle=None, polarization=None, absorption=None,

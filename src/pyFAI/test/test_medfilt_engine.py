@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2024"
+__date__ = "06/12/2024"
 
 import unittest
 import numpy
@@ -125,25 +125,33 @@ class TestMedfilt(unittest.TestCase):
         method[-1] = "opencl"
         method = tuple(method)
         ref = self.ai.integrate1d(self.img, self.npt, unit="2th_rad", method=method, error_model="poisson")
-        print(ref.method)
         engine = self.ai.engines[ref.method].engine
-        print(engine)
         obt = engine.medfilt(self.img,
                              solidangle=self.ai.solidAngleArray(),
                              quant_min=0,quant_max=1,  # taking all like this: it works like a normal mean
                              error_model="poisson")
         self.assertTrue(numpy.allclose(ref.radial, obt.position), "radial matches")
-        print(ref.sum_signal- obt.signal)
-        thres = 1e-6
-        self.assertLessEqual(numpy.sum(abs(ref.sum_signal-obt.signal)>thres), 3, "signal matches")
-        self.assertLessEqual(numpy.sum(abs(ref.sum_variance-obt.variance)>thres), 10, "variance matches")
-        self.assertLessEqual(numpy.sum(abs(ref.sum_normalization-obt.normalization)>thres), 3, "normalization matches")
-        self.assertLessEqual(numpy.sum(abs(ref.sum_normalization2-obt.norm_sq)>1e6), 50, "norm_sq matches")
-        # self.assertTrue(numpy.allclose(engine._indptr[1:]-engine._indptr[:-1], obt.count), "count matches") # not valid with pixel splitting
-        self.assertLessEqual(numpy.sum(ref.intensity!=obt.intensity), 3, "intensity matches")
-        self.assertLessEqual(numpy.sum(ref.sigma!=obt.sigma), 50, "sigma matches")
-        self.assertLessEqual(numpy.sum(ref.std!=obt.std), 50, "std matches")
-        self.assertLessEqual(numpy.sum(ref.sem!=obt.sem), 50, "sem matches")
+
+
+
+        thres = 1e-4
+        thres_cnt = 1
+
+
+        # self.assertLessEqual(numpy.sum(abs(ref.sum_signal-obt.signal)>thres), thres_cnt, "signal matches")
+        # self.assertLessEqual(numpy.sum(abs(ref.sum_variance-obt.variance)>thres), thres_cnt, "variance matches")
+        # self.assertLessEqual(numpy.sum(abs(ref.sum_normalization-obt.normalization)>thres), thres_cnt, "normalization matches")
+        # self.assertLessEqual(numpy.sum(abs(ref.sum_normalization2-obt.norm_sq)>thres), thres_cnt, "norm_sq matches")
+        self.assertTrue(numpy.allclose(engine._indptr[1:]-engine._indptr[:-1], obt.count), "count matches") # not valid with pixel splitting
+        self.assertTrue(numpy.allclose(ref.sum_signal, obt.signal, atol=1e-4, rtol=1e-6), "signal matches")
+        self.assertTrue(numpy.allclose(ref.sum_variance, obt.variance, atol=1e-4, rtol=1e-6), "variance matches")
+        self.assertTrue(numpy.allclose(ref.sum_normalization, obt.normalization, atol=1e-4, rtol=1e-6), "normalization matches")
+        self.assertTrue(numpy.allclose(ref.sum_normalization2, obt.norm_sq, atol=1e-2, rtol=1e-3), "norm_sq matches")
+
+        self.assertLessEqual(numpy.sum(abs(ref.intensity-obt.intensity)>thres), thres_cnt, "intensity matches")
+        self.assertLessEqual(numpy.sum(abs(ref.sigma-obt.sigma)>thres), thres_cnt, "sigma matches")
+        self.assertLessEqual(numpy.sum(abs(ref.std-obt.std>thres)), thres_cnt, "std matches")
+        self.assertLessEqual(numpy.sum(abs(ref.sem-obt.sem>thres)), thres_cnt, "sem matches")
 
 
 def suite():
