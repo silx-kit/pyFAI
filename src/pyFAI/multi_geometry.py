@@ -49,10 +49,6 @@ from multiprocessing.pool import ThreadPool
 import threading
 import numpy
 from .method_registry import IntegrationMethod
-from .utils.decorators import deprecated_warning
-from .integrator.fiber import get_deprecated_params_1d
-from .integrator.fiber import get_deprecated_params_2d
-from .integrator.fiber import parse_fiber_unit
 error = None
 
 
