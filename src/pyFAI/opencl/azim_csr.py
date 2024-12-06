@@ -32,6 +32,7 @@ __date__ = "06/12/2024"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
+import math
 import logging
 from collections import OrderedDict
 import numpy
@@ -301,7 +302,16 @@ class OCL_CSR_Integrator(OpenclProcessing):
             else:
                 wg_max = self.kernels.max_workgroup_size(kernel_name)
                 wg_min = self.kernels.min_workgroup_size(kernel_name)
-                self.workgroup_size[kernel_name] = (wg_min, wg_max)
+                if kernel_name=="csr_medfilt":
+                    # limit the wg size due to
+                    device = self.ctx.devices[0]
+                    maxthreads = device.local_mem_size/12/4
+                    self.workgroup_size[kernel_name] = (wg_min,
+                                                        min(wg_max, 2**(int(math.log2(maxthreads)))))
+                else:
+                    self.workgroup_size[kernel_name] = (wg_min, wg_max)
+
+
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -1243,8 +1253,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             events.append(EventDescription(kernel_correction_name, ev))
 
             kw_int["quant_min"] = numpy.float32(quant_min)
-            kw_int["quant_max"] = numpy.float32(quant_max)#*EPS32
-
+            kw_int["quant_max"] = numpy.float32(quant_max)
             wg_min = max(self.workgroup_size["csr_medfilt"])
             kw_int["shared_int"] = pyopencl.LocalMemory(4 * wg_min)
             kw_int["shared_float"] = pyopencl.LocalMemory(8 * wg_min)
@@ -1292,6 +1301,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         res = Integrate1dtpl(self.bin_centers, avgint, sem, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6],
                              std, sem, merged[:, 7])
+        # print(self.get_buffer("merged8")[0])
+        # raise RuntimeError()
         return res
 
 

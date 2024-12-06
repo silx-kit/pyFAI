@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2024"
+__date__ = "06/12/2024"
 
 import logging
 import numpy
@@ -120,19 +120,24 @@ class TestOclAzimCSR(unittest.TestCase):
                 pix = csr[2][1:]-csr[2][:-1]
                 self.assertTrue(numpy.allclose(res.count, pix), "all pixels have been counted")
 
-            # Intensities are not that different:
-            delta = ref.intensity - res.intensity
-            self.assertLessEqual(abs(delta).max(), 1e-5, "intensity is almost the same")
 
             # histogram of normalization
-            err = abs((res.normalization - ref.sum_normalization)).max()
-            self.assertLess(err, 5e-4, "normalization content is the same: %s<5e-5" % (err))
+            print(ref.sum_normalization)
+            print(res.normalization)
+            err = abs((res.normalization - ref.sum_normalization))
+            print(err)
+            self.assertLess(err.max(), 5e-4, "normalization content is the same: %s<5e-5" % (err.max))
 
             # histogram of signal
             self.assertLess(abs((res.signal - ref.sum_signal)).max(), 5e-5, "signal content is the same")
 
             # histogram of variance
             self.assertLess(abs((res.variance - ref.sum_variance)).max(), 5e-5, "signal content is the same")
+
+            # Intensities are not that different:
+            delta = ref.intensity - res.intensity
+            print(delta)
+            self.assertLessEqual(abs(delta).max(), 1e-5, "intensity is almost the same")
 
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
