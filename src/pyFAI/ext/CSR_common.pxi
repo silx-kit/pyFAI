@@ -859,8 +859,8 @@ cdef class CsrIntegrator(object):
                 for i in range(start, stop):
                     former_element = element
                     element = work[i]
-                    if ((element.s3!=0) and 
-                        (((qmin<=former_element.s0) and (element.s0 <= qmax)) or 
+                    if ((element.s3!=0) and
+                        (((qmin<=former_element.s0) and (element.s0 <= qmax)) or
                         ((qmin>=former_element.s0)  and (element.s0 >= qmax))):   #specific case where qmin==qmax
                         acc_sig = acc_sig + element.s1
                         acc_var = acc_var + element.s2
