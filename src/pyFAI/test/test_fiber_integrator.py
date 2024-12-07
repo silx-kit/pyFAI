@@ -542,6 +542,52 @@ class TestFiberIntegrator(unittest.TestCase):
 
         self.assertLess((abs(res_so_4.intensity) - abs(res_so_3.intensity)).max(), threshold)
 
+    def test_numexpr_equations(self):
+        incident_angle = 0.2
+        tilt_angle = -1.0
+        sample_orientation = 3
+
+        qhorz = get_unit_fiber(name="qxgi_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+        qvert = get_unit_fiber(name="qygi_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+        qbeam = get_unit_fiber(name="qzgi_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+        qip = get_unit_fiber(name="qip_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+        qoop = get_unit_fiber(name="qoop_nm^-1", incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+
+        self.fi.reset()
+        arr_qhorz_fast = self.fi.array_from_unit(unit=qhorz)
+        arr_qvert_fast = self.fi.array_from_unit(unit=qvert)
+        arr_qbeam_fast = self.fi.array_from_unit(unit=qbeam)
+        arr_qip_fast = self.fi.array_from_unit(unit=qip)
+        arr_qoop_fast = self.fi.array_from_unit(unit=qoop)
+        res2d_fast = self.fi.integrate2d_grazing_incidence(data=self.data, unit_ip=qip, unit_oop=qoop)
+
+        qhorz.formula = None
+        qhorz.equation = qhorz._equation
+        qvert.formula = None
+        qvert.equation = qvert._equation
+        qbeam.formula = None
+        qbeam.equation = qbeam._equation
+        qip.formula = None
+        qip.equation = qip._equation
+        qoop.formula = None
+        qoop.equation = qoop._equation
+
+        self.fi.reset()
+        arr_qhorz_slow = self.fi.array_from_unit(unit=qhorz)
+        arr_qvert_slow = self.fi.array_from_unit(unit=qvert)
+        arr_qbeam_slow = self.fi.array_from_unit(unit=qbeam)
+        arr_qip_slow = self.fi.array_from_unit(unit=qip)
+        arr_qoop_slow = self.fi.array_from_unit(unit=qoop)
+        res2d_slow = self.fi.integrate2d_grazing_incidence(data=self.data, unit_ip=qip, unit_oop=qoop)
+
+        self.assertAlmostEqual((arr_qhorz_fast - arr_qhorz_slow).max(), 0.0)
+        self.assertAlmostEqual((arr_qvert_fast - arr_qvert_slow).max(), 0.0)
+        self.assertAlmostEqual((arr_qbeam_fast - arr_qbeam_slow).max(), 0.0)
+        self.assertAlmostEqual((arr_qip_fast - arr_qip_slow).max(), 0.0)
+        self.assertAlmostEqual((arr_qoop_fast - arr_qoop_slow).max(), 0.0)
+        self.assertAlmostEqual((res2d_fast.intensity - res2d_slow.intensity).max(), 0.0)
+        self.assertAlmostEqual((res2d_fast.radial - res2d_slow.radial).max(), 0.0)
+        self.assertAlmostEqual((res2d_fast.azimuthal - res2d_slow.azimuthal).max(), 0.0)
 
 def suite():
     testsuite = unittest.TestSuite()
