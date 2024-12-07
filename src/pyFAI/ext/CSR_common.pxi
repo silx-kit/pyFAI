@@ -861,7 +861,7 @@ cdef class CsrIntegrator(object):
                     element = work[i]
                     if ((element.s3!=0) and
                         (((qmin<=former_element.s0) and (element.s0 <= qmax)) or
-                        ((qmin>=former_element.s0)  and (element.s0 >= qmax))):   #specific case where qmin==qmax
+                        ((qmin>=former_element.s0)  and (element.s0 >= qmax)))):   #specific case where qmin==qmax
                         acc_sig = acc_sig + element.s1
                         acc_var = acc_var + element.s2
                         acc_norm = acc_norm + element.s3
