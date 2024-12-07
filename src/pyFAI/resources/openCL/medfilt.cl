@@ -70,7 +70,9 @@ float2 inline sum_float2_reduction(local float* shared)
 
     }
     barrier(CLK_LOCAL_MEM_FENCE);
-    return (float2)(shared[0], shared[1]);
+    float2 res = (float2)(shared[0], shared[1]);
+    barrier(CLK_LOCAL_MEM_FENCE);
+    return res;
 }
 
 

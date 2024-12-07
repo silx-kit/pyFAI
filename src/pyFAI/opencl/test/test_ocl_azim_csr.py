@@ -122,10 +122,10 @@ class TestOclAzimCSR(unittest.TestCase):
 
 
             # histogram of normalization
-            print(ref.sum_normalization)
-            print(res.normalization)
+            # print(ref.sum_normalization)
+            # print(res.normalization)
             err = abs((res.normalization - ref.sum_normalization))
-            print(err)
+            # print(err)
             self.assertLess(err.max(), 5e-4, "normalization content is the same: %s<5e-5" % (err.max))
 
             # histogram of signal
@@ -136,7 +136,7 @@ class TestOclAzimCSR(unittest.TestCase):
 
             # Intensities are not that different:
             delta = ref.intensity - res.intensity
-            print(delta)
+            # print(delta)
             self.assertLessEqual(abs(delta).max(), 1e-5, "intensity is almost the same")
 
 

@@ -1301,8 +1301,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         res = Integrate1dtpl(self.bin_centers, avgint, sem, merged[:, 0], merged[:, 2], merged[:, 4], merged[:, 6],
                              std, sem, merged[:, 7])
-        # print(self.get_buffer("merged8")[0])
-        # raise RuntimeError()
         return res
 
 
