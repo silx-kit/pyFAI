@@ -58,7 +58,7 @@ class Fairchild(Detector):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
     def __repr__(self):
-        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
+        return f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
 
     def get_config(self):
         """Return the configuration with arguments to the constructor

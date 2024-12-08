@@ -5,6 +5,7 @@ py.install_sources(
     'bitonic.cl',
     'deactivate_atomic64.cl',
     'kahan.cl',
+    'medfilt.cl',
     'memset.cl',
     'ocl_azim_CSR.cl',
     'ocl_azim_LUT.cl',

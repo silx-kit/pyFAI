@@ -27,6 +27,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Flatfield
    Ellipse/ellipse
    PixelSplitting
+   AzimuthalFilter
    Variance/uncertainties
    LogScale/Guinier
    multi-geometry

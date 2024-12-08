@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/11/2024"
+__date__ = "21/11/2024"
 
 import logging
 import numpy
@@ -250,7 +250,7 @@ class TestGroupFunction(unittest.TestCase):
             data_d = pyopencl.array.to_device(self.queue, data)
             # print(ref.shape, (ref.shape[0],min(wg, self.max_valid_wg)), (1, min(wg, self.max_valid_wg)), positions)
             try:
-                evt = self.program.test_combsort_float(self.queue, (ref.shape[0],min(wg, self.max_valid_wg)), (1, min(wg, self.max_valid_wg)),
+                evt = self.program.test_combsort_float(self.queue, (min(wg, self.max_valid_wg), ref.shape[0]), (min(wg, self.max_valid_wg), 1),
                                                        data_d.data,
                                                        positions_d.data,
                                                        pyopencl.LocalMemory(4*min(wg, self.max_valid_wg)))
@@ -290,7 +290,7 @@ class TestGroupFunction(unittest.TestCase):
             data_d = pyopencl.array.to_device(self.queue, data)
             # print(ref.shape, (ref.shape[0],min(wg, self.max_valid_wg)), (1, min(wg, self.max_valid_wg)), positions)
             try:
-                evt = self.program.test_combsort_float4(self.queue, (ref.shape[0],min(wg, self.max_valid_wg)), (1, min(wg, self.max_valid_wg)),
+                evt = self.program.test_combsort_float4(self.queue, (min(wg, self.max_valid_wg), ref.shape[0]), (min(wg, self.max_valid_wg),1),
                                                        data_d.data,
                                                        positions_d.data,
                                                        pyopencl.LocalMemory(4*min(wg, self.max_valid_wg)))
