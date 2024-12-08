@@ -827,7 +827,7 @@ csr_integrate4_single(  const   global  float4  *weights,
  * @param indptr      Integer pointer to global memory holding the pointers to the coefs and indices for the CSR matrix
  * @param cutoff      Discard any value with |value - mean| > cutoff*sigma
  * @param cycle       number of cycle
- * @param error_model 0:diable, 1:variance, 2:poisson, 3:azimuthal, 4:hybrid
+ * @param error_model 0:disable, 1:variance, 2:poisson, 3:azimuthal, 4:hybrid
  * @param summed      contains all the data
  * @param averint     Average signal
  * @param stdevpix    Float pointer to the output 1D array with the propagated error (std)
