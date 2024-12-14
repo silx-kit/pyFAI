@@ -28,6 +28,14 @@
 """Module function to read images.
 """
 
+__author__ = "Valentin Valls"
+__contact__ = "jerome.kieffer@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "11/12/2024"
+__status__ = "development"
+
+
 import os.path
 import fabio
 import silx.io
@@ -53,7 +61,7 @@ def read_data(image_path):
         with fabio.open(image_path) as image:
             data = image.data
     else:
-        raise IOError("Data from path '%s' is not supported or missing" % image_path)
+        raise IOError(f"Data from path '{image_path}' is not supported or missing")
     return data
 
 
@@ -68,7 +76,9 @@ def read_image_data(image_path):
     """
     data = read_data(image_path)
     if len(data.shape) != 2:
-        raise TypeError("Path %s identify a %dd-array, but a 2d is array is expected" % (image_path, len(data.shape)))
-    if data.dtype.kind not in "fui":
-        raise TypeError("Path %s identify an %s-kind array, but a numerical kind is expected" % (image_path, data.dtype.kind))
+        raise TypeError(f"Path {image_path} identify a {len(data.shape)}d-array, but a 2d is array is expected")
+    if data.dtype.kind == "b":
+        data = data.astype("int8")
+    elif data.dtype.kind not in "fui":
+        raise TypeError(f"Path {image_path} identify an {data.dtype.kind}-kind array, but a numerical kind is expected")
     return data
