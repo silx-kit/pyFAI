@@ -32,15 +32,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2024"
+__date__ = "14/12/2024"
 
 import unittest
 import numpy
 import logging
 logger = logging.getLogger(__name__)
+import fabio
+from .utilstest import UtilsTest
 from ..ext import _convolution
 import scipy.ndimage
-import scipy.misc
 import scipy.signal
 
 
@@ -56,10 +57,7 @@ class TestConvolution(unittest.TestCase):
         else:
             self.gauss = scipy.signal.gaussian(self.width, self.sigma)
         self.gauss /= self.gauss.sum()
-        if "ascent" in dir(scipy.misc):
-            self.lena = scipy.misc.ascent().astype("float32")
-        else:
-            self.lena = scipy.misc.lena().astype("float32")
+        self.lena = fabio.open(UtilsTest.getimage("mock.tif")).data.astype("float32")
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
