@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2024"
+__date__ = "13/12/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -48,11 +48,10 @@ import fabio
 import json
 import __main__ as main
 from .opencl import ocl
-from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
+from . import version as PyFAI_VERSION, date as PyFAI_DATE
 from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
 from .io import Nexus, get_isotime, h5py
-from .worker import Worker, _reduce_images
-from .method_registry import Method, IntegrationMethod
+from .worker import Worker
 from .utils.decorators import deprecated, deprecated_warning
 
 DIGITS = [str(i) for i in range(10)]
@@ -267,14 +266,14 @@ If the number of files is too large, use double quotes like "*.edf" """
         if ocl and options.gpu:
             ai["opencl_device"] = ocl.select_device(type="gpu")
             ndim = ai.get("do_2D", 1)
-            if ndim==2:
+            if ndim == 2:
                 default = PREFERED_METHODS_2D[0].method[1:-1]
             else:
                 default = PREFERED_METHODS_1D[0].method[1:-1]
             method = list(ai.get("method", default))
-            if len(method) ==  3:  # (split, algo, impl)
+            if len(method) == 3:  # (split, algo, impl)
                 method[2] = "opencl"
-            elif len(method) ==  5:  # (dim, split, algo, impl, target)
+            elif len(method) == 5:  # (dim, split, algo, impl, target)
                 method[3] = "opencl"
             else:
                 logger.warning(f"Unexpected method found in configuration file: {method}")
@@ -313,8 +312,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                 logger.warning("No such poni file %s", options.poni)
 
         deprecated_keys = {
-            "fast_motor_points" : "nbpt_fast",
-            "slow_motor_points" : "nbpt_slow",
+            "fast_motor_points": "nbpt_fast",
+            "slow_motor_points": "nbpt_slow",
             }
         for key in deprecated_keys:
             if key in config.keys():
@@ -352,7 +351,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.fast_motor_name = config.get("fast_motor_name", self.fast_motor_name)
         self.slow_motor_range = config.get("slow_motor_range")
         self.fast_motor_range = config.get("fast_motor_range")
-
 
         self.stats = options.stats
 
@@ -394,9 +392,9 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         # create motor range if not yet existing ...
         if self.fast_motor_range is None:
-            self.fast_motor_range=(0, self.nbpt_fast-1)
+            self.fast_motor_range=(0, self.nbpt_fast - 1)
         if self.slow_motor_range is None:
-            self.slow_motor_range=(0, self.nbpt_slow-1)
+            self.slow_motor_range=(0, self.nbpt_slow - 1)
 
         nxs = Nexus(self.hdf5, mode="w", creator="pyFAI")
         self.entry_grp = entry_grp = nxs.new_entry(entry="entry",
@@ -455,7 +453,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             source = h5py.VirtualSource(self.dataset)
             for i in range(self.nbpt_slow):
                 for j in range(self.nbpt_fast):
-                    layout[:,:, i, j] = source[i, j]
+                    layout[:, :, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
 
         else:
@@ -581,7 +579,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         :return: None
         """
         if self.ai is None:
-            self.setup_ai()
+            self.configure_worker(self.poni)
         if self.dataset is None:
             self.makeHDF5()
 
