@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2024"
+__date__ = "19/12/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -291,18 +291,27 @@ If the number of files is too large, use double quotes like "*.edf" """
         config["input_data"] = [(i, None) for i in self.inputfiles]
 
         if options.mask:
-            mask = urlparse(options.mask).path
+            urlmask = urlparse(options.mask)
+        elif ai.get("do_mask", False) or ai.get("mask_file", None):
+            urlmask = urlparse(ai.get("mask_file", None))
         elif config.get("do_mask", False) or config.get("mask_file", None):
-            mask = urlparse(config.get("mask_file", None)).path
+            # compatibility with elder config files...
+            deprecated_warning("Config of mask no more top-level, but in ai config group", "mask_file", deprecated_since="2024.12.0")
+            urlmask = urlparse(config.get("mask_file", None))
         else:
-            mask = ""
-        if os.path.isfile(mask):
-            logger.info("Reading Mask file from: %s", mask)
-            self.mask = os.path.abspath(mask)
+            urlmask = urlparse("")
+        if "::" in  urlmask.path:
+            mask_filename, idx = urlmask.path.split("::", 1)
+            mask_filename = os.path.abspath(mask_filename)
+            urlmask = urlparse(f"fabio://{mask_filename}?slice={idx}")
+
+        if os.path.isfile(urlmask.path):
+            logger.info("Reading Mask file from: %s", urlmask.path)
+            self.mask = urlmask.geturl()
             ai["mask_file"] = self.mask
             ai["do_mask"] = True
         else:
-            logger.warning("No such mask file %s", mask)
+            logger.warning("No such mask file %s", urlmask.path)
         if options.poni:
             if os.path.isfile(options.poni):
                 logger.info("Reading PONI file from: %s", options.poni)

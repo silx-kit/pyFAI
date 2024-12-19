@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "jerome.kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2024"
+__date__ = "19/12/2024"
 __status__ = "development"
 
 
