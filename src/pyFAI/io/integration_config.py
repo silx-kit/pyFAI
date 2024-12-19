@@ -28,13 +28,15 @@
 """Module function to manage configuration files, all serialisable to JSON.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2024"
+__date__ = "19/12/2024"
 __docformat__ = 'restructuredtext'
 
 import logging
+from dataclasses import dataclass, fields
+from typing import ClassVar
 from . import ponifile
 from .. import detectors
 from .. import method_registry
@@ -333,3 +335,54 @@ class ConfigurationReader(object):
         else:
             raise TypeError(f"Method type {type(method)} unsupported, method={method}.")
         return method
+
+
+@dataclass(slots=True)
+class WorkerConfig:
+    """Class with the configuration from the worker."""
+
+    poni: object = None
+    nbpt_azim: int = None
+    nbpt_rad: int = None
+    unit: object = None
+    polarization_factor: float = None
+    polarization_offset: float = None
+    dummy: float = None
+    delta_dummy: float = None
+    correct_solid_angle: bool = True
+    dark_current_image: str = None
+    flat_field_image: str = None
+    mask_image: str = None
+    error_model: str = None
+    method: object = None
+    azimuth_range: list = None
+    radial_range: list = None
+    integrator_class: str = "AzimuthalIntegrator"
+    application: str="worker"
+    version: int = 4
+    OPTIONAL: ClassVar[list] = ["radial_range_min", "radial_range_max"]
+    GUESSED:  ClassVar[list] = ["shape", ]
+    def as_dict(self):
+        dico = self.asdict()
+        #fiddle with the object ?
+        return dico
+
+    @classmethod
+    def from_dict(cls, dico, consume=False):
+        "Alternative constructor, accepts everything which is in OPTIONAL"
+        if consume:
+            dico = copy.copy(dico)
+        to_init = {field.name:dict.pop(field.name) for field in dataclasses.fields(cls) if field.name in dict}
+        self = cls(to_init)
+        for key in cls.OPTIONAL:
+            if key in dico:
+                value = dict.pop(key)
+                self.__setattr__(key, value)
+        if len(dico):
+            print("Those are the parameters which have not been converted !", dico)
+        return self
+
+
+    def _upgrade(self):
+        """Upgrade an elder version of the config ot the latest one"""
+        pass
