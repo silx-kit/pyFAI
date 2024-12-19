@@ -35,6 +35,7 @@ __date__ = "19/12/2024"
 __docformat__ = 'restructuredtext'
 
 import logging
+import copy
 from dataclasses import dataclass, fields
 from typing import ClassVar
 from . import ponifile
@@ -372,7 +373,7 @@ class WorkerConfig:
         "Alternative constructor, accepts everything which is in OPTIONAL"
         if consume:
             dico = copy.copy(dico)
-        to_init = {field.name:dict.pop(field.name) for field in dataclasses.fields(cls) if field.name in dict}
+        to_init = {field.name:dict.pop(field.name) for field in fields(cls) if field.name in dict}
         self = cls(to_init)
         for key in cls.OPTIONAL:
             if key in dico:
