@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2024"
+__date__ = "20/12/2024"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -39,7 +39,6 @@ import time
 import json
 import pathlib
 import logging
-from ..io import integration_config
 _logger = logging.getLogger(__name__)
 import numpy
 from .. import detectors
@@ -271,6 +270,7 @@ class PoniFile(object):
         return config
 
     def as_integration_config(self):
+        from .integration_config import normalize
         config = {
             "application" : "poni",
             "version" : 4,
@@ -301,7 +301,7 @@ class PoniFile(object):
             "do_polarization" : False,
             "normalization_factor" : 1.0,
         }
-        return integration_config.normalize(config=config)
+        return normalize(config=config)
 
 
     @property

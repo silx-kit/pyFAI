@@ -30,12 +30,17 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2024"
+__date__ = "20/12/2024"
 __status__ = "development"
 
 from collections import namedtuple
 from enum import IntEnum
 from .utils.decorators import deprecated_warning
+
+PolarizationArray = namedtuple("PolarizationArray",
+                               ["array", "checksum"])
+PolarizationDescription = namedtuple("PolarizationDescription",
+                                     ["polarization_factor", "axis_offset"])
 
 Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
 Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)

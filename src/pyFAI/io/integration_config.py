@@ -25,26 +25,63 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Module function to manage configuration files, all serialisable to JSON.
+"""
+The WorkerConfig dataclass manages all options for the pyFAI.worker.
+
+List of attributes as function of the version:
+0: dist poni1 poni2 rot1 rot3 rot2 pixel1 pixel2 splineFile wavelength
+   poni (path of the file) chi_discontinuity_at_0 do_mask do_dark
+   do_azimuthal_range do_flat do_2D azimuth_range_min azimuth_range_max
+   polarization_factor nbpt_rad do_solid_angle do_radial_range error_model
+   delta_dummy nbpt_azim flat_field radial_range_min dark_current do_polarization
+   mask_file detector unit radial_range_max val_dummy do_dummy method do_OpenCL
+
+1: dark_current, flat_field can now be lists of files, used to be coma-separated strings
+
+2: detector/detector_config are now defined
+   As a consequence, all those keys are now invalid: pixel1 pixel2 splineFile
+   and are integrated into those keys: detector detector_config
+
+3: method becoms a 3-tuple like ("full", "csr", "cython")
+   opencl_device contains the device id as 2-tuple of integer
+
+4: poni is now a serialization of the poni, no more the path to the poni-file.
+The detector is integrated into it
+   As a consequence, all those keys are now invalid:
+   dist poni1 poni2 rot1 rot3 rot2 pixel1 pixel2 splineFile wavelength detector detector_config
+
+5: Migrate to dataclass
+   Support for integrator_name/integrator_method and extra_options.
+
+In a similar way, PixelwiseWorkerConfig and DistortionWorkerConfig are dataclasses
+to hold parameters for handling PixelwiseWorker and DistortionWorker, respectively.
+
+All those data-classes are serialisable to JSON.
 """
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/12/2024"
+__date__ = "20/12/2024"
 __docformat__ = 'restructuredtext'
 
+import os
+import json
 import logging
 import copy
-from dataclasses import dataclass, fields
-from typing import ClassVar
+from dataclasses import dataclass, fields, asdict
+from typing import ClassVar, Union
+import numpy
+import h5py
 from . import ponifile
+from ..containers import PolarizationDescription, ErrorModel
 from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
 
 _logger = logging.getLogger(__name__)
 
+CURRENT_VERSION = 5
 
 def _normalize_v1_darkflat_files(config, key):
     """Normalize dark and flat filename list from the version 1 to version 2.
@@ -216,11 +253,43 @@ def _patch_v3_to_v4(config):
                        "poni_version",
                        ]
     for poni_param in poni_parameters:
-        if config.get(poni_param, None) is not None:
+        if poni_param in config:
             poni_dict[poni_param] = config.pop(poni_param)
 
     config["poni"] = poni_dict
     config["version"] = 4
+
+def _patch_v4_to_v5(config):
+    """Support for integrator_name/integrator_method and extra_options.
+
+    :param dict config: Dictionary reworked inplace.
+    """
+    config["version"] = 5
+    config["integrator_method"] = None
+    config["extra_options"] = None
+    # Invalidation of certain keys:
+    for key1, key2 in [("do_mask", ["mask_image", "mask_file"]),
+                       ("do_flat", ["flat_field", "flat_field_image"]),
+                       ("do_dark", ["dark_current", "dark_current_image"]),
+                       ('do_polarization', ["polarization_factor"]),
+                       ('do_dummy', ["val_dummy", "delta_dummy"]),
+                       ("do_radial_range", ["radial_range_min", "radial_range_max"]),
+                       ("do_radial_range", ["azimuth_range_min", "azimuth_range_max", "azimuthal_range_min", "azimuthal_range_max"])]:
+        if key1 in config and not config[key1]:
+            "there are keys to be removed"
+            for key in key2:
+                if key in config:
+                    config.pop(key)
+    # Here we deal with keys which have been renamed:
+    for key1, key2 in[("azimuth_range_min", "azimuthal_range_min"),
+                      ("azimuth_range_max", "azimuthal_range_max"),
+                      ('do_azimuthal_range', 'do_azimuth_range'),
+                      ("flat_field_image","flat_field"),
+                      ("dark_current_image", "dark_current"),
+                      ("mask_image", "mask_file"),
+                      ("val_dummy", "dummy")]:
+        if key2 in config and not key1 in config:
+            config[key1] = config.pop(key2)
 
 
 def normalize(config, inplace=False, do_raise=False):
@@ -251,11 +320,15 @@ def normalize(config, inplace=False, do_raise=False):
         else:
             _logger.error(txt)
 
-    if version == 3:
+    if config["version"] == 3:
         _patch_v3_to_v4(config)
 
-    if version > 4:
-        _logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read this configuration", version)
+    if config["version"] == 4:
+        _patch_v4_to_v5(config)
+
+    if version > CURRENT_VERSION:
+        _logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read this configuration (max=%d)",
+                      version, CURRENT_VERSION)
 
     return config
 
@@ -341,49 +414,184 @@ class ConfigurationReader(object):
 @dataclass(slots=True)
 class WorkerConfig:
     """Class with the configuration from the worker."""
-
+    application: str="worker"
+    version: int = CURRENT_VERSION
     poni: object = None
-    nbpt_azim: int = None
     nbpt_rad: int = None
+    nbpt_azim: int = None
     unit: object = None
-    polarization_factor: float = None
-    polarization_offset: float = None
-    dummy: float = None
+    chi_discontinuity_at_0: bool=False
+    do_solid_angle: bool=True
+    polarization_factor: PolarizationDescription = None
+    val_dummy: float = None
     delta_dummy: float = None
     correct_solid_angle: bool = True
     dark_current_image: str = None
     flat_field_image: str = None
     mask_image: str = None
-    error_model: str = None
+    error_model: ErrorModel = None
     method: object = None
+    opencl_device: list = None
     azimuth_range: list = None
     radial_range: list = None
     integrator_class: str = "AzimuthalIntegrator"
-    application: str="worker"
-    version: int = 4
-    OPTIONAL: ClassVar[list] = ["radial_range_min", "radial_range_max"]
-    GUESSED:  ClassVar[list] = ["shape", ]
+    integrator_method: str = None
+    extra_options: dict = None
+    OPTIONAL: ClassVar[list] = ["radial_range_min", "radial_range_max",
+                                "azimuth_range_min", "azimuth_range_max",
+                                "integrator_name", "do_poisson"]
+    GUESSED:  ClassVar[list] = ["do_2D", "do_mask", "do_dark", "do_flat", 'do_polarization',
+                                'do_dummy', "do_radial_range", 'do_azimuthal_range', "shape"]
     def as_dict(self):
-        dico = self.asdict()
+        "Like asdict, but with possibly some more "
+        dico = asdict(self)
         #fiddle with the object ?
         return dico
 
     @classmethod
-    def from_dict(cls, dico, consume=False):
-        "Alternative constructor, accepts everything which is in OPTIONAL"
-        if consume:
+    def from_dict(cls, dico, inplace=False):
+        """Alternative constructor,
+            * Normalize the dico (i.e. upgrade to the most recent version)
+            * accepts everything which is in OPTIONAL
+
+        :param dico: dict with the config
+        :param inplace: modify the dico in place ?
+        :return: instance of the dataclass
+        """
+        if not inplace:
             dico = copy.copy(dico)
-        to_init = {field.name:dict.pop(field.name) for field in fields(cls) if field.name in dict}
-        self = cls(to_init)
+        normalize(dico, inplace=True)
+        # for key,value in dico.items():print(key, value)
+        to_init = {field.name:dico.pop(field.name)
+                   for field in fields(cls)
+                   if field.name in dico}
+        self = cls(**to_init)
+        for key in cls.GUESSED:
+            if key in dico:
+                dico.pop(key)
         for key in cls.OPTIONAL:
             if key in dico:
-                value = dict.pop(key)
+                # print(key, dico[key])
+                value = dico.pop(key)
                 self.__setattr__(key, value)
         if len(dico):
-            print("Those are the parameters which have not been converted !", dico)
+            _logger.warning("Those are the parameters which have not been converted !"+ "\n".join(f"{key}: {val}" for key,val in dico.items()))
         return self
 
 
     def _upgrade(self):
         """Upgrade an elder version of the config ot the latest one"""
         pass
+
+    def save(self, filename):
+        """Dump the content of the dataclass as JSON file"""
+        with open(filename, "w") as w:
+            w.write(json.dumps(self.as_dict()))
+
+    @classmethod
+    def load(cls, filename):
+        """load the content of a JSON file and provide a dataclass instance"""
+        with open(filename, "r") as f:
+            dico = json.loads(f.read())
+        return cls.from_dict(dico, inplace=True)
+
+    @property
+    def do_2D(self):
+        return self.nbpt_azim > 1
+
+    @property
+    def do_azimuthal_range(self):
+        if self.azimuth_range:
+            return bool(numpy.isfinite(self.azimuth_range[0]) and numpy.isfinite(self.azimuth_range[1]))
+        else:
+            return False
+    @property
+    def azimuth_range_min(self):
+        if self.azimuth_range:
+            self.azimuth_range[0]
+        else:
+            return -numpy.inf
+    @azimuth_range_min.setter
+    def azimuth_range_min(self, value):
+        if not self.azimuth_range:
+            self.azimuth_range = [-numpy.inf, numpy.inf]
+        self.azimuth_range[0] = value
+    @property
+    def azimuth_range_max(self):
+        if self.azimuth_range:
+            self.azimuth_range[1]
+        else:
+            return numpy.inf
+    @azimuth_range_max.setter
+    def azimuth_range_max(self, value):
+        if not self.azimuth_range:
+            self.azimuth_range = [-numpy.inf, numpy.inf]
+        self.azimuth_range[1] = value
+
+    @property
+    def do_radial_range(self):
+        if self.radial_range:
+            return bool(numpy.isfinite(self.radial_range[0]) and numpy.isfinite(self.radial_range[1]))
+        else:
+            return False
+    @property
+    def radial_range_min(self):
+        if self.radial_range:
+            self.radial_range[0]
+        else:
+            return -numpy.inf
+    @radial_range_min.setter
+    def radial_range_min(self, value):
+        if not self.radial_range:
+            self.radial_range = [-numpy.inf, numpy.inf]
+        self.radial_range[0] = -numpy.inf if value is None else value
+    @property
+    def radial_range_max(self):
+        if self.radial_range:
+            self.radial_range[1]
+        else:
+            return numpy.inf
+    @radial_range_max.setter
+    def radial_range_max(self, value):
+        if not self.radial_range:
+            self.radial_range = [-numpy.inf, numpy.inf]
+        self.radial_range[1] = numpy.inf if value is None else value
+    @property
+    def integrator_name(self):
+        return self.integrator_method
+    @integrator_name.setter
+    def integrator_name(self, value):
+        self.integrator_method = value
+
+    @property
+    def do_mask(self):
+        return self.mask_image is not None
+    @property
+    def do_poisson(self):
+        return int(self.error_model) == int(ErrorModel.POISSON)
+    @do_poisson.setter
+    def do_poisson(self, value):
+        if value:
+            self.error_model = ErrorModel.POISSON
+    @property
+    def dummy(self):
+        return self.val_dummy
+    @dummy.setter
+    def dummy(self, value):
+        if value:
+            self.val_dummy = float(value) if value is not None else value
+
+
+# @dataclass(slots=True)
+# class PixelwiseWorkerConfig:
+#     """Configuration for pyFAI.worker.PixelwiseWorker
+#     """
+#     dark_file: Union[str, os.PathLike]=None
+#     flat_file: Union[str, os.PathLike]=None
+#     solidangle_file: Union[str, os.PathLike]=None
+#     polarization: float=None
+#
+#     dummy: float=None
+#     delta_dummy: float=None
+#     empty: float=None
+#     dtype: str=None
