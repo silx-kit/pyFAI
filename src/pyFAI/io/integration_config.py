@@ -299,13 +299,14 @@ def _patch_v4_to_v5(config):
             config[key1] = config.pop(key2)
 
 
-def normalize(config, inplace=False, do_raise=False):
+def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERSION):
     """Normalize the configuration file to the one supported internally\
     (the last one).
 
     :param dict config: The configuration dictionary to read
     :param bool inplace: In true, the dictionary is edited inplace
     :param bool do_raise: raise ValueError if set. Else use logger.error
+    :param int target_version: stop updating when version has been reached.
     :raise ValueError: If the configuration do not match & do_raise is set
     """
     if not inplace:
@@ -315,8 +316,9 @@ def normalize(config, inplace=False, do_raise=False):
     if version == 1:
         # NOTE: Previous way to describe an integration process before pyFAI 0.17
         _patch_v1_to_v2(config)
-    version = config["version"]
-    if version == 2:
+
+    if config["version"] == target_version: return config
+    if config["version"] == 2:
         _patch_v2_to_v3(config)
 
     application = config.get("application", None)
@@ -326,10 +328,11 @@ def normalize(config, inplace=False, do_raise=False):
             raise ValueError(txt)
         else:
             _logger.error(txt)
-
+    if config["version"] == target_version: return config
     if config["version"] == 3:
         _patch_v3_to_v4(config)
 
+    if config["version"] == target_version: return config
     if config["version"] == 4:
         _patch_v4_to_v5(config)
 
