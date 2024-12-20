@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2024"
+__date__ = "20/12/2024"
 __status__ = "development"
 
 import threading
@@ -463,10 +463,11 @@ class Worker(object):
             consumed when used.
         """
         config = integration_config.normalize(config, inplace=consume_keys, do_raise=False)
+        print(config)
         _init_ai(self.ai, config, consume_keys=True, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
-        filename = config.pop("mask_file", "")
+        filename = config.pop("mask_image", "")
         apply_process = config.pop("do_mask", True)
         if filename and apply_process:
             try:
@@ -478,24 +479,24 @@ class Worker(object):
                 self.mask_image = filename
 
         # Do it here while we have to store metadata
-        filename = config.pop("dark_current", "")
+        filename = config.pop("dark_current_image", "")
         apply_process = config.pop("do_dark", True)
         if filename and apply_process:
             filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
             self.ai.detector.set_darkcurrent(data)
-            self.dark_current_image = "%s(%s)" % (method, ",".join(filenames))
+            self.dark_current_image = filenames #"%s(%s)" % (method, ",".join(filenames))
 
         # Do it here while we have to store metadata
-        filename = config.pop("flat_field", "")
+        filename = config.pop("flat_field_image", "")
         apply_process = config.pop("do_flat", True)
         if filename and apply_process:
             filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
             self.ai.detector.set_flatfield(data)
-            self.flat_field_image = "%s(%s)" % (method, ",".join(filenames))
+            self.flat_field_image = filenames# "%s(%s)" % (method, ",".join(filenames))
 
         # Uses it anyway in case do_2D is customed after the configuration
         value = config.pop("nbpt_azim", None)

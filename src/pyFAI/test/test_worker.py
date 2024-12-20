@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/07/2024"
+__date__ = "20/12/2024"
 
 import unittest
 import logging
@@ -46,7 +46,7 @@ from ..worker import Worker, PixelwiseWorker
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
-from ..io.integration_config import ConfigurationReader
+from ..io.integration_config import ConfigurationReader, WorkerConfig
 from ..io.ponifile import PoniFile
 from .. import detector_factory
 from . import utilstest
@@ -556,6 +556,15 @@ class TestWorkerConfig(unittest.TestCase):
         poni_v3_from_config = PoniFile(data=config_v3)
         poni_v4_from_config = PoniFile(data=config_v4)
         self.assertEqual(poni_v3_from_config.as_dict(), poni_v4_from_config.as_dict(), "PONI dictionaries from config match")
+
+    def test_dataclass(self):
+        test_files = "0.14_verson0.json  id11_v0.json  id13_v0.json  id15_1_v0.json  id15_v0.json  id16_v3.json  id21_v0.json  version0.json    version3.json  version4.json"
+        for fn in test_files.split():
+            js = utilstest.UtilsTest.getimage(fn)
+            with utilstest.TestLogging(logger='pyFAI.io.integrarion_config', warning=0):
+            # with self.assertLogs('pyFAI.io.integrarion_config', level='WARNING') as cm:
+                wc = WorkerConfig.load(js)
+            self.assertEqual(wc, WorkerConfig.from_dict(wc.as_dict()), f"Idempotent {fn}")
 
 
 

@@ -52,6 +52,7 @@ The detector is integrated into it
 
 5: Migrate to dataclass
    Support for integrator_name/integrator_method and extra_options.
+   rename some attributes
 
 In a similar way, PixelwiseWorkerConfig and DistortionWorkerConfig are dataclasses
 to hold parameters for handling PixelwiseWorker and DistortionWorker, respectively.
@@ -65,6 +66,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "20/12/2024"
 __docformat__ = 'restructuredtext'
 
+import sys
 import os
 import json
 import logging
@@ -80,8 +82,13 @@ from .. import method_registry
 from ..integrator import load_engines as load_integrators
 
 _logger = logging.getLogger(__name__)
-
 CURRENT_VERSION = 5
+
+if sys.version_info>=(3,10):
+    mydataclass = dataclass(slots=True)
+else:
+    mydataclass = dataclass
+
 
 def _normalize_v1_darkflat_files(config, key):
     """Normalize dark and flat filename list from the version 1 to version 2.
@@ -411,7 +418,7 @@ class ConfigurationReader(object):
         return method
 
 
-@dataclass(slots=True)
+@mydataclass
 class WorkerConfig:
     """Class with the configuration from the worker."""
     application: str="worker"
@@ -478,10 +485,6 @@ class WorkerConfig:
             _logger.warning("Those are the parameters which have not been converted !"+ "\n".join(f"{key}: {val}" for key,val in dico.items()))
         return self
 
-
-    def _upgrade(self):
-        """Upgrade an elder version of the config ot the latest one"""
-        pass
 
     def save(self, filename):
         """Dump the content of the dataclass as JSON file"""
