@@ -291,9 +291,9 @@ def _patch_v4_to_v5(config):
     for key1, key2 in[("azimuth_range_min", "azimuthal_range_min"),
                       ("azimuth_range_max", "azimuthal_range_max"),
                       ('do_azimuthal_range', 'do_azimuth_range'),
-                      ("flat_field_image","flat_field"),
-                      ("dark_current_image", "dark_current"),
-                      ("mask_image", "mask_file"),
+                      ("flat_field", "flat_field_image"),
+                      ("dark_current", "dark_current_image"),
+                      ("mask_file", "mask_image"),
                       ("val_dummy", "dummy")]:
         if key2 in config and not key1 in config:
             config[key1] = config.pop(key2)
@@ -344,7 +344,7 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
 
 
 class ConfigurationReader(object):
-
+    "This class should be deprecated now ..."
     def __init__(self, config):
         ":param config: dictonary"
         self._config = config
@@ -433,12 +433,13 @@ class WorkerConfig:
     chi_discontinuity_at_0: bool=False
     do_solid_angle: bool=True
     polarization_factor: PolarizationDescription = None
+    normalization_factor: float=1.0
     val_dummy: float = None
     delta_dummy: float = None
     correct_solid_angle: bool = True
-    dark_current_image: str = None
-    flat_field_image: str = None
-    mask_image: str = None
+    dark_current: Union[str, list] = None
+    flat_field: Union[str, list] = None
+    mask_file: str = None
     error_model: ErrorModel = None
     method: object = None
     opencl_device: list = None
@@ -447,6 +448,7 @@ class WorkerConfig:
     integrator_class: str = "AzimuthalIntegrator"
     integrator_method: str = None
     extra_options: dict = None
+    monitor_name: str = None
     OPTIONAL: ClassVar[list] = ["radial_range_min", "radial_range_max",
                                 "azimuth_range_min", "azimuth_range_max",
                                 "integrator_name", "do_poisson"]
@@ -471,7 +473,6 @@ class WorkerConfig:
         if not inplace:
             dico = copy.copy(dico)
         normalize(dico, inplace=True)
-        # for key,value in dico.items():print(key, value)
         to_init = {field.name:dico.pop(field.name)
                    for field in fields(cls)
                    if field.name in dico}
@@ -481,7 +482,6 @@ class WorkerConfig:
                 dico.pop(key)
         for key in cls.OPTIONAL:
             if key in dico:
-                # print(key, dico[key])
                 value = dico.pop(key)
                 self.__setattr__(key, value)
         if len(dico):
@@ -503,7 +503,7 @@ class WorkerConfig:
 
     @property
     def do_2D(self):
-        return self.nbpt_azim > 1
+        return False if self.nbpt_azim is None else self.nbpt_azim > 1
 
     @property
     def do_azimuthal_range(self):
@@ -514,7 +514,7 @@ class WorkerConfig:
     @property
     def azimuth_range_min(self):
         if self.azimuth_range:
-            self.azimuth_range[0]
+            return self.azimuth_range[0]
         else:
             return -numpy.inf
     @azimuth_range_min.setter
@@ -525,7 +525,7 @@ class WorkerConfig:
     @property
     def azimuth_range_max(self):
         if self.azimuth_range:
-            self.azimuth_range[1]
+            return self.azimuth_range[1]
         else:
             return numpy.inf
     @azimuth_range_max.setter
@@ -543,7 +543,7 @@ class WorkerConfig:
     @property
     def radial_range_min(self):
         if self.radial_range:
-            self.radial_range[0]
+            return self.radial_range[0]
         else:
             return -numpy.inf
     @radial_range_min.setter
@@ -554,7 +554,7 @@ class WorkerConfig:
     @property
     def radial_range_max(self):
         if self.radial_range:
-            self.radial_range[1]
+            return self.radial_range[1]
         else:
             return numpy.inf
     @radial_range_max.setter
@@ -571,7 +571,7 @@ class WorkerConfig:
 
     @property
     def do_mask(self):
-        return self.mask_image is not None
+        return self.mask_file is not None
     @property
     def do_poisson(self):
         return int(self.error_model) == int(ErrorModel.POISSON)
@@ -586,8 +586,41 @@ class WorkerConfig:
     def dummy(self, value):
         if value:
             self.val_dummy = float(value) if value is not None else value
-
-
+    @property
+    def do_dummy(self):
+        return self.val_dummy is not None
+    @property
+    def mask_image(self):
+        return self.mask_file
+    @mask_image.setter
+    def mask_image(self, value):
+        self.mask_file = None if not value else value
+    @property
+    def do_dark(self):
+        return bool(self.dark_current)
+    @property
+    def do_flat(self):
+        return bool(self.flat_field)
+    @property
+    def do_polarization(self):
+        if self.polarization_factor is None:
+            return False
+        if "__len__" in dir(self.polarization_factor):
+            return bool(self.polarization_factor)
+        else:
+            return True
+    @property
+    def dark_current_image(self):
+        return self.dark_current
+    @dark_current_image.setter
+    def dark_current_image(self, value):
+        self.dark_current = None if not value else value
+    @property
+    def flat_field_image(self):
+        return self.flat_field
+    @flat_field_image.setter
+    def flat_field_image(self, value):
+        self.flat_field = None if not value else value
 # @dataclass(slots=True)
 # class PixelwiseWorkerConfig:
 #     """Configuration for pyFAI.worker.PixelwiseWorker

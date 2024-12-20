@@ -381,6 +381,7 @@ class TestWorkerConfig(unittest.TestCase):
         worker.set_config(config)
         data = numpy.ones(shape=self.shape)
         worker.process(data=data)
+        print(worker.ai.detector)
         self.assertTrue(numpy.isclose(worker.ai.detector.get_darkcurrent()[0, 0], (1 + 2 + 3) / 3))
         self.assertTrue(numpy.isclose(worker.ai.detector.get_flatfield()[0, 0], (1 + 2 + 4) / 3))
 

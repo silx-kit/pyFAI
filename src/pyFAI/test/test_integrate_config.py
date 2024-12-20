@@ -60,15 +60,15 @@ class TestIntegrationConfigV1(unittest.TestCase):
         config = {"dark_current": "abc",
                   "flat_field": "abd"}
         config = integration_config.normalize(config)
-        self.assertEqual(config["dark_current_image"], "abc")
-        self.assertEqual(config["flat_field_image"], "abd")
+        self.assertEqual(config["dark_current"], "abc")
+        self.assertEqual(config["flat_field"], "abd")
 
     def test_coma_flatdark(self):
         config = {"dark_current": "a,b,c",
                   "flat_field": "a,b,d"}
         config = integration_config.normalize(config)
-        self.assertEqual(config["dark_current_image"], ["a", "b", "c"])
-        self.assertEqual(config["flat_field_image"], ["a", "b", "d"])
+        self.assertEqual(config["dark_current"], ["a", "b", "c"])
+        self.assertEqual(config["flat_field"], ["a", "b", "d"])
 
     def test_pilatus(self):
         config = {"detector": "pilatus2m"}

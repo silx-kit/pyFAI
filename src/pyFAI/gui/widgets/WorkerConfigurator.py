@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,14 +33,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/07/2024"
+__date__ = "20/12/2024"
 __status__ = "development"
 
 import logging
 import json
 import os.path
 import collections
-
+import numpy
 logger = logging.getLogger(__name__)
 
 from silx.gui import qt
@@ -61,6 +61,9 @@ from ..utils import validators
 from ...io.ponifile import PoniFile
 from ...io import integration_config
 from ... import method_registry
+from ...containers import PolarizationDescription
+from ... import detector_factory
+from ...integrator import load_engines
 
 
 class _WorkerModel(object):
@@ -241,7 +244,6 @@ class WorkerConfigurator(qt.QWidget):
 
         :return: dict with all information.
         """
-
         def splitFiles(filenames):
             """In case files was provided with comma.
 
@@ -253,56 +255,43 @@ class WorkerConfigurator(qt.QWidget):
                 return None
             return [name.strip() for name in filenames.split("|")]
 
-        config = collections.OrderedDict()
-
-        # file-version
-        config["application"] = "pyfai-integrate"
-        config["version"] = 4
-
-        # geometry
-        config["poni"] = self.getPoniDict()
-
+        wc = integration_config.WorkerConfig(application="pyfai-integrate",
+                                             poni=self.getPoniDict())
         # pre-processing
-        config["do_mask"] = bool(self.do_mask.isChecked())
-        config["mask_file"] = str_(self.mask_file.text()).strip()
-        config["do_dark"] = bool(self.do_dark.isChecked())
-        config["dark_current"] = splitFiles(self.dark_current.text())
-        config["do_flat"] = bool(self.do_flat.isChecked())
-        config["flat_field"] = splitFiles(self.flat_field.text())
-        config["do_polarization"] = bool(self.do_polarization.isChecked())
-        config["polarization_factor"] = float_(self.polarization_factor.value())
-        config["do_dummy"] = bool(self.do_dummy.isChecked())
-        config["val_dummy"] = self._float("val_dummy", None)
-        config["delta_dummy"] = self._float("delta_dummy", None)
+        if self.do_mask.isChecked():
+            wc.mask_image = str_(self.mask_file.text()).strip()
+        if self.do_dark.isChecked():
+            wc.dark_current_image = splitFiles(self.dark_current.text())
+        if self.do_flat.isChecked():
+            wc.flat_field_image = splitFiles(self.flat_field.text())
+        if self.do_polarization.isChecked():
+            wc.polarization_factor = PolarizationDescription(float_(self.polarization_factor.value()), 0.0)
+        if self.do_dummy.isChecked():
+            wc.val_dummy = self._float("val_dummy", None)
+            wc.delta_dummy = self._float("delta_dummy", None)
 
         # integration
-        config["do_2D"] = bool(self.do_2D.isChecked())
-        value = self.__getRadialNbpt()
-        if value is not None:
-            config["nbpt_rad"] = value
-
-        value = self.__getAzimuthalNbpt()
-        if value is not None:
-            config["nbpt_azim"] = value
-
-        config["unit"] = str(self.radial_unit.model().value())
-        config["do_radial_range"] = bool(self.do_radial_range.isChecked())
-        config["radial_range_min"] = self._float("radial_range_min", None)
-        config["radial_range_max"] = self._float("radial_range_max", None)
-        config["do_azimuthal_range"] = bool(self.do_azimuthal_range.isChecked())
-        config["azimuth_range_min"] = self._float("azimuth_range_min", None)
-        config["azimuth_range_max"] = self._float("azimuth_range_max", None)
+        if self.do_2D.isChecked():
+            wc.nbpt_azim = self.__getAzimuthalNbpt()
+        wc.nbpt_rad = self.__getRadialNbpt()
+        wc.unit = str(self.radial_unit.model().value())
+        if self.do_radial_range.isChecked():
+            wc.radial_range = [self._float("radial_range_min", -numpy.inf),
+                               self._float("radial_range_max", numpy.inf)]
+        if self.do_azimuthal_range.isChecked():
+            wc.azimuth_range = [self._float("azimuth_range_min", -numpy.inf),
+                                self._float("azimuth_range_max", numpy.inf)]
 
         # processing-config
-        config["chi_discontinuity_at_0"] = bool(self.chi_discontinuity_at_0.isChecked())
-        config["do_solid_angle"] = bool(self.do_solid_angle.isChecked())
-        config["error_model"] = self.error_model.currentData()
+        wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
+        wc.do_solid_angle = bool(self.do_solid_angle.isChecked())
+        wc.error_model = self.error_model.currentData()
 
         method = self.__method
         if method is not None:
-            config["method"] = method.split, method.algo, method.impl
+            wc.method = (method.split, method.algo, method.impl)
             if method.impl == "opencl":
-                config["opencl_device"] = self.__openclDevice
+                wc.opencl_device = self.__openclDevice
 
         if self.do_normalization.isChecked():
             value = self.normalization_factor.text()
@@ -312,21 +301,20 @@ class WorkerConfigurator(qt.QWidget):
                 except ValueError:
                     value = None
                 if value not in [1.0, None]:
-                    config["normalization_factor"] = value
+                    wc.normalization_factor = value
 
             value = self.monitor_name.text()
             if value != "":
                 value = str(value)
-                config["monitor_name"] = value
+                wc.monitor_name = value
 
         if self.integrator_name.currentText() == "sigma_clip_ng":
-            config["do_2D"] = False
-            config["integrator_name"] = "sigma_clip_ng"
-            config["extra_options"] = {"thres" : float(self.sigmaclip_threshold.text()),
-                                       "max_iter" : float(self.sigmaclip_maxiter.text()),
-                                       }
-
-        return config
+            wc.nbpt_azim = 1
+            wc.integrator_method = "sigma_clip_ng"
+            wc.extra_options = {"thres" : float(self.sigmaclip_threshold.text()),
+                                "max_iter" : float(self.sigmaclip_maxiter.text()),
+                               }
+        return wc.as_dict()
 
     def setConfig(self, dico):
         """Setup the widget from its description
@@ -334,81 +322,6 @@ class WorkerConfigurator(qt.QWidget):
         :param dico: dictionary with description of the widget
         :type dico: dict
         """
-        dico = dico.copy()
-        dico = integration_config.normalize(dico, inplace=True)
-
-        version = dico.pop("version")
-        if version >= 2:
-            application = dico.pop("application", None)
-            if application != "pyfai-integrate":
-                logger.error("It is not a configuration file from pyFAI-integrate.")
-        if version > 4:
-            logger.error("Configuration file %d too recent. This version of pyFAI maybe too old to read the configuration", version)
-
-        # Clean up the GUI
-        self.setDetector(None)
-        self.__geometryModel.wavelength().setValue(None)
-        self.__geometryModel.distance().setValue(None)
-        self.__geometryModel.poni1().setValue(None)
-        self.__geometryModel.poni2().setValue(None)
-        self.__geometryModel.rotation1().setValue(None)
-        self.__geometryModel.rotation2().setValue(None)
-        self.__geometryModel.rotation3().setValue(None)
-
-        # patch for version 4
-        poni_dict = dico.get("poni", None)
-        if isinstance(poni_dict, dict) and version > 3:
-            if "wavelength" in poni_dict:
-                value = poni_dict.pop("wavelength")
-                self.__geometryModel.wavelength().setValue(value)
-            if "dist" in poni_dict:
-                value = poni_dict.pop("dist")
-                self.__geometryModel.distance().setValue(value)
-            if "poni1" in poni_dict:
-                value = poni_dict.pop("poni1")
-                self.__geometryModel.poni1().setValue(value)
-            if "poni2" in poni_dict:
-                value = poni_dict.pop("poni2")
-                self.__geometryModel.poni2().setValue(value)
-            if "rot1" in poni_dict:
-                value = poni_dict.pop("rot1")
-                self.__geometryModel.rotation1().setValue(value)
-            if "rot2" in poni_dict:
-                value = poni_dict.pop("rot2")
-                self.__geometryModel.rotation2().setValue(value)
-            if "rot3" in poni_dict:
-                value = poni_dict.pop("rot3")
-                self.__geometryModel.rotation3().setValue(value)
-
-        # For older versions (<4)
-        if "wavelength" in dico:
-            value = dico.pop("wavelength")
-            self.__geometryModel.wavelength().setValue(value)
-        if "dist" in dico:
-            value = dico.pop("dist")
-            self.__geometryModel.distance().setValue(value)
-        if "poni1" in dico:
-            value = dico.pop("poni1")
-            self.__geometryModel.poni1().setValue(value)
-        if "poni2" in dico:
-            value = dico.pop("poni2")
-            self.__geometryModel.poni2().setValue(value)
-        if "rot1" in dico:
-            value = dico.pop("rot1")
-            self.__geometryModel.rotation1().setValue(value)
-        if "rot2" in dico:
-            value = dico.pop("rot2")
-            self.__geometryModel.rotation2().setValue(value)
-        if "rot3" in dico:
-            value = dico.pop("rot3")
-            self.__geometryModel.rotation3().setValue(value)
-
-        reader = integration_config.ConfigurationReader(dico)
-
-        # detector
-        detector = reader.pop_detector()
-        self.setDetector(detector)
-
         def normalizeFiles(filenames):
             """Normalize different versions of the filename list.
 
@@ -422,67 +335,114 @@ class WorkerConfigurator(qt.QWidget):
             filenames = filenames.strip()
             return filenames
 
-        setup_data = collections.OrderedDict()
-        setup_data["val_dummy"] = lambda a: self.val_dummy.setText(str_(a))
-        setup_data["delta_dummy"] = lambda a: self.delta_dummy.setText(str_(a))
-        setup_data["mask_file"] = lambda a: self.__model.maskFileModel.setFilename(str_(a))
-        setup_data["dark_current"] = lambda a: self.__model.darkFileModel.setFilename(normalizeFiles(a))
-        setup_data["flat_field"] = lambda a: self.__model.flatFileModel.setFilename(normalizeFiles(a))
-        setup_data["polarization_factor"] = self.polarization_factor.setValue
-        setup_data["nbpt_rad"] = lambda a: self.nbpt_rad.setText(str_(a))
-        setup_data["nbpt_azim"] = lambda a: self.nbpt_azim.setText(str_(a))
-        setup_data["chi_discontinuity_at_0"] = self.chi_discontinuity_at_0.setChecked
-        setup_data["radial_range_min"] = lambda a: self.radial_range_min.setText(str_(a))
-        setup_data["radial_range_max"] = lambda a: self.radial_range_max.setText(str_(a))
-        setup_data["azimuth_range_min"] = lambda a: self.azimuth_range_min.setText(str_(a))
-        setup_data["azimuth_range_max"] = lambda a: self.azimuth_range_max.setText(str_(a))
-        setup_data["do_solid_angle"] = self.do_solid_angle.setChecked
-        setup_data["do_dummy"] = self.do_dummy.setChecked
-        setup_data["do_dark"] = self.do_dark.setChecked
-        setup_data["do_flat"] = self.do_flat.setChecked
-        setup_data["do_polarization"] = self.do_polarization.setChecked
-        setup_data["do_mask"] = self.do_mask.setChecked
-        setup_data["do_radial_range"] = self.do_radial_range.setChecked
-        setup_data["do_azimuthal_range"] = self.do_azimuthal_range.setChecked
+        wc = integration_config.WorkerConfig.from_dict(dico, inplace=False)
 
-        for key, value in setup_data.items():
-            if key in dico and (value is not None):
-                if key == "polarization_factor" and not isinstance(dico[key], (float, int)):
-                    continue
-                value(dico.pop(key))
+        # Clean up the GUI
+        self.setDetector(None)
+        self.__geometryModel.wavelength().setValue(None)
+        self.__geometryModel.distance().setValue(None)
+        self.__geometryModel.poni1().setValue(None)
+        self.__geometryModel.poni2().setValue(None)
+        self.__geometryModel.rotation1().setValue(None)
+        self.__geometryModel.rotation2().setValue(None)
+        self.__geometryModel.rotation3().setValue(None)
 
-        normalizationFactor = dico.pop("normalization_factor", None)
-        monitorName = dico.pop("monitor_name", None)
-        self.__setNormalization(normalizationFactor, monitorName)
+        poni_dict = wc.poni
+        if isinstance(poni_dict, dict):
+            if "wavelength" in poni_dict:
+                self.__geometryModel.wavelength().setValue(poni_dict["wavelength"])
+            if "dist" in poni_dict:
+                self.__geometryModel.distance().setValue(poni_dict["dist"])
+            if "poni1" in poni_dict:
+                self.__geometryModel.poni1().setValue(poni_dict["poni1"])
+            if "poni2" in poni_dict:
+                self.__geometryModel.poni2().setValue(poni_dict["poni2"])
+            if "rot1" in poni_dict:
+                self.__geometryModel.rotation1().setValue(poni_dict["rot1"])
+            if "rot2" in poni_dict:
+                self.__geometryModel.rotation2().setValue(poni_dict["rot2"])
+            if "rot3" in poni_dict:
+                self.__geometryModel.rotation3().setValue(poni_dict["rot3"])
 
-        value = dico.pop("unit", None)
+
+        #reader = integration_config.ConfigurationReader(dico)
+
+        # detector
+        if "detector" in poni_dict:
+            detector = detector_factory(poni_dict["detector"], poni_dict.get("detector_config"))
+            self.setDetector(detector)
+
+        self.val_dummy.setText(str_(wc.val_dummy))
+        self.delta_dummy.setText(str_(wc.delta_dummy))
+        self.__model.maskFileModel.setFilename(str_(wc.mask_image))
+        self.__model.darkFileModel.setFilename(normalizeFiles(wc.dark_current_image))
+        self.__model.flatFileModel.setFilename(normalizeFiles(wc.flat_field_image))
+        if isinstance(wc.polarization_factor, float):
+            self.polarization_factor.setValue(wc.polarization_factor)
+        elif isinstance(wc.polarization_factor, (tuple, list)):
+            self.polarization_factor.setValue(wc.polarization_factor[0])
+        self.nbpt_rad.setText(str_(wc.nbpt_rad))
+        self.nbpt_azim.setText(str_(wc.nbpt_azim))
+        self.chi_discontinuity_at_0.setChecked(wc.chi_discontinuity_at_0)
+        self.radial_range_min.setText(str_(wc.radial_range_min))
+        self.radial_range_max.setText(str_(wc.radial_range_max))
+        self.azimuth_range_min.setText(str_(wc.azimuth_range_min))
+        self.azimuth_range_max.setText(str_(wc.azimuth_range_max))
+        self.do_solid_angle.setChecked(wc.do_solid_angle)
+        self.do_dummy.setChecked(wc.do_dummy)
+        self.do_dark.setChecked(wc.do_dark)
+        self.do_flat.setChecked(wc.do_flat)
+        self.do_polarization.setChecked(wc.do_polarization)
+        self.do_mask.setChecked(wc.do_mask)
+        self.do_radial_range.setChecked(wc.do_radial_range)
+        self.do_azimuthal_range.setChecked(wc.do_azimuthal_range)
+        self.__setNormalization(wc.normalization_factor, wc.monitor_name)
+
+        value = wc.unit
         if value is not None:
             unit = to_unit(value)
             self.radial_unit.model().setValue(unit)
 
-        value = dico.pop("error_model", None)
+        value = wc.error_model
         index = self.error_model.findData(value)
         self.error_model.setCurrentIndex(index)
 
-        method = reader.pop_method()
+
+        dim = 2 if wc.do_2D else 1
+        method = wc.method
+        target = wc.opencl_device
+        if isinstance(target, list):
+            target = tuple(target)
+
+        if method is None:
+            lngm = load_engines.PREFERED_METHODS_2D[0] if dim==2 else load_engines.PREFERED_METHODS_1D[0]
+            method = lngm.method
+        elif isinstance(method, (str,)):
+            method = method_registry.Method.parsed(method)
+            method = method.fixed(dim=dim, target=target)
+        elif isinstance(method, (list, tuple)):
+            if len(method) == 3:
+                split, algo, impl = method
+                method = method_registry.Method(dim, split, algo, impl, target)
+            elif 3 < len(method) <= 5:
+                method = method_registry.Method(*method)
+            else:
+                raise TypeError(f"Method size {len(method)} is unsupported, method={method}.")
+
         self.__setMethod(method)
         self.__setOpenclDevice(method.target)
 
-        self.do_2D.setChecked(method.dim == 2)
+        self.do_2D.setChecked(wc.do_2D)
         if self.__only1dIntegration:
             # Force unchecked
             self.do_2D.setChecked(False)
 
-        integrator_name = dico.pop("integrator_name", "integrate")
+        integrator_name = wc.integrator_method or "integrate"
         self.integrator_name.setCurrentText(integrator_name)
-        if integrator_name == "sigma_clip_ng":
-            extra_options = dico.pop("extra_options", {})
+        if integrator_name.startswith("sigma_clip"):
+            extra_options = wc.extra_options or {}
             self.sigmaclip_threshold.setText(str(extra_options.get("thres", 5.0)))
             self.sigmaclip_maxiter.setText(str(extra_options.get("max_iter", 5)))
-
-        if len(dico) != 0:
-            for key, value in dico.items():
-                logger.warning("json key '%s' unused", key)
 
         self.__updateDisabledStates()
 

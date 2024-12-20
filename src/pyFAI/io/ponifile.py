@@ -270,39 +270,15 @@ class PoniFile(object):
         return config
 
     def as_integration_config(self):
-        from .integration_config import normalize
-        config = {
-            "application" : "poni",
-            "version" : 4,
-            "poni" : dict(self.as_dict()),
-            "do_2D" : True,
-            "nbpt_rad" : 500,
-            "nbpt_azim" : 360,
-            "unit" : "q_nm^-1",
-            "do_mask" : False,
-            "mask_file" : None,
-            "do_flat" : False,
-            "flat_field" : None,
-            "do_dark" : False,
-            "dark_current" : None,
-            "method" : ("bbox", "csr", "cython"),
-            "do_dummy" : None,
-            "val_dummy" : None,
-            "delta_dummy" : None,
-            "do_solid_angle" : True,
-            "error_model" : None,
-            "do_radial_range" : False,
-            "radial_range_min" : None,
-            "radial_range_max" : None,
-            "do_azimuthal_range" : False,
-            "azimuth_range_min" : None,
-            "azimuth_range_max" : None,
-            "chi_discontinuity_at_0" : False,
-            "do_polarization" : False,
-            "normalization_factor" : 1.0,
-        }
-        return normalize(config=config)
-
+        from .integration_config import WorkerConfig
+        wc = WorkerConfig(application="poni",
+                          poni=dict(self.as_dict()),
+                          nbpt_rad=500,
+                          nbpt_azim=360,
+                          unit="q_nm^-1",
+                          method=("full", "csr", "cython"),
+                          normalization_factor=1.0)
+        return wc
 
     @property
     def detector(self):
