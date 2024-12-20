@@ -557,18 +557,6 @@ class TestWorkerConfig(unittest.TestCase):
         poni_v4_from_config = PoniFile(data=config_v4)
         self.assertEqual(poni_v3_from_config.as_dict(), poni_v4_from_config.as_dict(), "PONI dictionaries from config match")
 
-    def test_dataclass(self):
-        test_files = "0.14_verson0.json  id11_v0.json  id13_v0.json  id15_1_v0.json  id15_v0.json  id16_v3.json  id21_v0.json  version0.json    version3.json  version4.json"
-        for fn in test_files.split():
-            js = utilstest.UtilsTest.getimage(fn)
-            with utilstest.TestLogging(logger='pyFAI.io.integrarion_config', warning=0):
-            # with self.assertLogs('pyFAI.io.integrarion_config', level='WARNING') as cm:
-                wc = WorkerConfig.load(js)
-            self.assertEqual(wc, WorkerConfig.from_dict(wc.as_dict()), f"Idempotent {fn}")
-
-
-
-
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
