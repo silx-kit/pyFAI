@@ -1,13 +1,33 @@
 :Author: Jérôme Kieffer
-:Date: 12/09/2024
+:Date: 23/12/2024
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-Next Version: 2025
-------------------
-- Refactoring of the integrator classes
+2025.01 In time for the User-Meeting
+------------------------------------
+
+- Refactoring of the integrator classes:
+
+  * Azimuthal integrator moved to ``pyFAI.integrator.azimuthal``
+  * Most common code into ``pyFAI.integrator.common`` (including deprecated stuff)
+  * New sub-module dedicated to fiber/surface diffraction (``pyFAI.integrator.fiber``)
+  * Engine loading is now in ``pyFAI.integrator.load_engines``
+  * Those are all (still) sub-classes of each-other but it will change in the futrure where they will need to be **promoted** to transfer all the geometry and enable other's class feature. For example: ``ai.promote("FiberIntegrator")`` or ``ai.promote("GeometryRefinement")``
+
+- Refactoring of the handling of the serialization of the ``pyFAI-integrate`` GUI into a JSON file.
+
+  * Use a **dataclass** in ``pyFAI.io.integration_config.WorkerConfig`` to manage all parameters to configure the Worker
+  * New format version 5, enables the handling of sigma-clip & median filtering
+  * Provides better compatibility with `Ewoks <https://ewoks.esrf.fr>`_
+
+- Median filtering for 1D filtering:
+
+  * includes quantile average
+  * available in Python, Cython & OpenCL
+  * `Performances charts for sigma-clip & median filter <https://github.com/silx-kit/pyFAI/blob/main/doc/source/usage/tutorial/AzimuthalFilter.ipynb>`_.
+- Several bug-fixes
 
 2024.09 12/09/2024
 ------------------
