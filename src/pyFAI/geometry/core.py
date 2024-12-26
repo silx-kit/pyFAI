@@ -124,7 +124,10 @@ class Geometry(object):
                         "chiDiscAtPi", "_wavelength", "_dssa_order",
                         '_oversampling', '_correct_solid_angle_for_spline',
                         '_transmission_normal')
-
+    PROMOTION = {"AzimuthalIntegrator": "pyFAI.integrator.azimuthal.AzimuthalIntegrator",
+                 "FiberIntegrator": "pyFAI.intrgator.fiber.FiberIntegrator", 
+                 "GeometryRefinement": "pyFAI.geometryRefinement.GeometryRefinement",
+                 "Geometry": "pyFAI.geometry.core.Geometry"}
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None,
@@ -2088,7 +2091,7 @@ class Geometry(object):
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
-    def promote(self, type_="pyFAI.azimuthalIntegrator.AzimuthalIntegrator", kwargs=None):
+    def promote(self, type_="pyFAI.integrator.azimuthal.AzimuthalIntegrator", kwargs=None):
         """Promote this instance into one of its derived class (deep copy like)
 
         :param type_: Fully qualified name of the class to promote to, or the class itself
@@ -2099,6 +2102,9 @@ class Geometry(object):
         """
         GeometryClass = self.__class__.__mro__[-2]  # actually pyFAI.geometry.core.Geometry
         if isinstance(type_, str):
+            if "." not in type_:
+                if type_ in self.PROMOTION:
+                    type_ = self.PROMOTION[type_]
             import importlib
             modules = type_.split(".")
             module_name = ".".join(modules[:-1])
@@ -2107,7 +2113,7 @@ class Geometry(object):
         elif isinstance(type_, type):
             klass = type_
         else:
-            raise ValueError("`type_` must be a class (or a fully qualified class name) of a Geometry derived class")
+            raise ValueError("`type_` must be a class (or class name) of a Geometry derived class")
 
         if kwargs == None:
             kwargs = {}
