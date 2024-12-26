@@ -125,7 +125,7 @@ class Geometry(object):
                         '_oversampling', '_correct_solid_angle_for_spline',
                         '_transmission_normal')
     PROMOTION = {"AzimuthalIntegrator": "pyFAI.integrator.azimuthal.AzimuthalIntegrator",
-                 "FiberIntegrator": "pyFAI.intrgator.fiber.FiberIntegrator", 
+                 "FiberIntegrator": "pyFAI.integrator.fiber.FiberIntegrator", 
                  "GeometryRefinement": "pyFAI.geometryRefinement.GeometryRefinement",
                  "Geometry": "pyFAI.geometry.core.Geometry"}
 
