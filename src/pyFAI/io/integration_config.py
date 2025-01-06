@@ -149,7 +149,6 @@ def _patch_v1_to_v2(config):
             config["rot3"] = poni.rot3
         if "detector" not in config:
             detector = poni.detector
-
     # detector
     value = config.pop("detector", None)
     if value:
@@ -215,7 +214,7 @@ def _patch_v2_to_v3(config):
 
     :param dict config: Dictionary reworked inplace.
     """
-    old_method = config.pop("method")
+    old_method = config.pop("method", "")
     if isinstance(old_method, (list, tuple)):
         if len(old_method)==5:
             method = method_registry.Method(*old_method)
@@ -234,7 +233,6 @@ def _patch_v2_to_v3(config):
         method = method_registry.Method.parsed(old_method)
     config["method"] = method.split, method.algo, method.impl
     config["opencl_device"] = method.target
-
     config["version"] = 3
 
 def _patch_v3_to_v4(config):
@@ -272,8 +270,10 @@ def _patch_v4_to_v5(config):
     :param dict config: Dictionary reworked inplace.
     """
     config["version"] = 5
-    config["integrator_method"] = None
-    config["extra_options"] = None
+    if "integrator_method" not in config:
+        config["integrator_method"] = None
+    if "extra_options" not in config:
+        config["extra_options"] = None
     # Invalidation of certain keys:
     for key1, key2 in [("do_mask", ["mask_image", "mask_file"]),
                        ("do_flat", ["flat_field", "flat_field_image"]),
@@ -311,12 +311,10 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
     """
     if not inplace:
         config = config.copy()
-
     version = config.get("version", 1)
     if version == 1:
         # NOTE: Previous way to describe an integration process before pyFAI 0.17
         _patch_v1_to_v2(config)
-
     if config["version"] == target_version: return config
     if config["version"] == 2:
         _patch_v2_to_v3(config)

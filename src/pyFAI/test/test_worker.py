@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2024"
+__date__ = "06/01/2025"
 
 import unittest
 import logging
@@ -319,7 +319,7 @@ class TestWorker(unittest.TestCase):
                         integrator_name="sigma_clip_ng",
                         shapeOut=(1, 100))
 
-        self.assertEqual(worker.error_model, "azimuthal", "error model is OK")
+        self.assertEqual(worker.error_model.as_str(), "azimuthal", "error model is OK")
         img = self.rng.random(ai.detector.shape)
         worker(img)
 
@@ -557,6 +557,28 @@ class TestWorkerConfig(unittest.TestCase):
         poni_v3_from_config = PoniFile(data=config_v3)
         poni_v4_from_config = PoniFile(data=config_v4)
         self.assertEqual(poni_v3_from_config.as_dict(), poni_v4_from_config.as_dict(), "PONI dictionaries from config match")
+
+    def test_bug2230(self):
+        integration_options = {'version': 2,
+                               'poni_version': 2,
+                               'detector': 'Maxipix2x2',
+                               'detector_config': {},
+                               'dist': 0.029697341310368504,
+                               'poni1': 0.03075830660872356,
+                               'poni2': 0.008514191495847496,
+                               'rot1': 0.2993182762142924,
+                               'rot2': 0.11405876271088071,
+                               'rot3': -4.950942273187188e-07,
+                               'wavelength': 1.0332016449700598e-10,
+                               'integrator_name' : "sigma_clip_ng",
+                               'extra_options' : {"max_iter": 3, "thres": 0} }
+        worker = Worker()
+        worker.set_config(integration_options)
+        print(worker.extra_options, worker.integrator_name)
+        result = worker.get_config()
+        print(result)
+        self.assertEqual(result['extra_options'],  integration_options['extra_options'], "'extra_options' matches")
+        self.assertEqual(result['integrator_method'],  integration_options['integrator_name'], "'integrator_name' matches")
 
 
 def suite():

@@ -144,7 +144,6 @@ def _init_ai(ai, config, read_maps=True):
     :param bool read_maps: If true mask, flat, dark will be read.
     :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
-    print(config.poni)
     ai._init_from_poni(ponifile.PoniFile(config.poni))
 
     if config.chi_discontinuity_at_0:
@@ -251,9 +250,9 @@ class Worker(object):
         self.azimuthal = None
         self.safe = True
         self.extra_options = {} if extra_options is None else extra_options.copy()
-        self.radial_range = self.extra_options.get("radial_range")
-        self.azimuth_range = self.extra_options.get("azimuth_range")
-        self.error_model = self.extra_options.get("error_model")
+        self.radial_range = self.extra_options.pop("radial_range", None)
+        self.azimuth_range = self.extra_options.pop("azimuth_range", None)
+        self.error_model = ErrorModel.parse(self.extra_options.pop("error_model", None))
 
 
     def __repr__(self):
@@ -453,7 +452,6 @@ class Worker(object):
         """
         if not isinstance(config, integration_config.WorkerConfig):
             config = integration_config.WorkerConfig.from_dict(config, inplace=consume_keys)
-        print(type(config))
         _init_ai(self.ai, config, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
@@ -497,6 +495,7 @@ class Worker(object):
         self.dummy = config.val_dummy
         self.delta_dummy = config.delta_dummy
         self._normalization_factor = config.normalization_factor
+        self.extra_options = config.extra_options or {}
 
         if config.monitor_name:
             logger.warning("Monitor name defined but unsupported by the worker.")
@@ -526,7 +525,7 @@ class Worker(object):
             "poni": dict(self.ai.get_config())
             }
 
-        for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "delta_dummy",
+        for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "delta_dummy", "extra_options",
                     "correct_solid_angle", "error_model", "method", "azimuth_range", "radial_range"]:
             try:
                 dico[key] = self.__getattribute__(key)
@@ -543,8 +542,9 @@ class Worker(object):
             try:
                 dico[there] = self.__getattribute__(here)
             except Exception:
+                print(f"exception at {here} -> {there}")
                 pass
-        #finally re-normali
+        print(dico)
         config = integration_config.WorkerConfig(**dico)
         if as_dict:
             return config.as_dict()
