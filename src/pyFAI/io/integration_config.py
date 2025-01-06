@@ -283,7 +283,7 @@ def _patch_v4_to_v5(config):
                        ("do_radial_range", ["radial_range_min", "radial_range_max"]),
                        ("do_radial_range", ["azimuth_range_min", "azimuth_range_max", "azimuthal_range_min", "azimuthal_range_max"])]:
         if key1 in config and not config[key1]:
-            "there are keys to be removed"
+            # there are keys to be removed
             for key in key2:
                 if key in config:
                     config.pop(key)
