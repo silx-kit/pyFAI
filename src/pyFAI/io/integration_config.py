@@ -63,7 +63,7 @@ All those data-classes are serialisable to JSON.
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2024"
+__date__ = "06/01/2025"
 __docformat__ = 'restructuredtext'
 
 import sys
@@ -80,7 +80,7 @@ from ..containers import PolarizationDescription, ErrorModel
 from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
-
+from ..utils import decorators
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
@@ -347,6 +347,8 @@ class ConfigurationReader(object):
     "This class should be deprecated now ..."
     def __init__(self, config):
         ":param config: dictonary"
+        decorators.deprecated_warning("Class", "ConfigurationReader", reason=None, replacement=None,
+                       since_version="2025.01", only_once=True)
         self._config = config
 
     def pop_ponifile(self):
@@ -455,7 +457,7 @@ class WorkerConfig:
     GUESSED:  ClassVar[list] = ["do_2D", "do_mask", "do_dark", "do_flat", 'do_polarization',
                                 'do_dummy', "do_radial_range", 'do_azimuthal_range', "shape"]
     def as_dict(self):
-        "Like asdict, but with possibly some more "
+        "Like asdict, but with possibly some more features ... "
         dico = asdict(self)
         #fiddle with the object ?
         return dico
