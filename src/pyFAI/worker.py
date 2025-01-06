@@ -463,7 +463,6 @@ class Worker(object):
             consumed when used.
         """
         config = integration_config.normalize(config, inplace=consume_keys, do_raise=False)
-        print(config)
         _init_ai(self.ai, config, consume_keys=True, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
