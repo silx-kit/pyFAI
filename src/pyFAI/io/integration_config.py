@@ -42,7 +42,7 @@ List of attributes as function of the version:
    As a consequence, all those keys are now invalid: pixel1 pixel2 splineFile
    and are integrated into those keys: detector detector_config
 
-3: method becoms a 3-tuple like ("full", "csr", "cython")
+3: method becomes a 3-tuple like ("full", "csr", "cython")
    opencl_device contains the device id as 2-tuple of integer
 
 4: poni is now a serialization of the poni, no more the path to the poni-file.
