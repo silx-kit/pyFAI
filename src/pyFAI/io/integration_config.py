@@ -54,8 +54,8 @@ The detector is integrated into it
    Support for integrator_name/integrator_method and extra_options.
    rename some attributes
 
-In a similar way, PixelwiseWorkerConfig and DistortionWorkerConfig are dataclasses
-to hold parameters for handling PixelwiseWorker and DistortionWorker, respectively.
+In a similar way, PixelWiseWorkerConfig and DistortionWorkerConfig are dataclasses
+to hold parameters for handling PixelWiseWorker and DistortionWorker, respectively.
 
 All those data-classes are serialisable to JSON.
 """
