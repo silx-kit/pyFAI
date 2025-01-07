@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -30,12 +30,13 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2024"
+__date__ = "07/01/2025"
 __status__ = "development"
 
 from collections import namedtuple
 from enum import IntEnum
 from .utils.decorators import deprecated_warning
+import numpy
 
 Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
 Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
@@ -1029,3 +1030,42 @@ class SparseFrame(tuple):
     @property
     def unit(self):
         return self._unit
+
+def rebin1d(res2d):
+    """Function that rebins an Integrate2dResult into a Integrate2dResult
+
+    :param res2d: Integrate2dResult instance obtained from ai.integrate2d
+    :return: Integrate1dResult
+    """
+    bins_rad = res2d.radial
+    sum_signal =  res2d.sum_signal.sum(axis=0)
+    sum_normalization =  res2d.sum_normalization.sum(axis=0)
+    I = sum_signal / sum_normalization
+    if res2d.sum_variance is not None:
+        sum_variance =  res2d.sum_variance.sum(axis=0)
+        sem = numpy.sqrt(sum_variance) / sum_normalization  
+        result = Integrate1dResult(bins_rad, I, sem)
+        result._set_sum_normalization2(res2d.sum_normalization2.sum(axis=0))
+        result._set_sum_variance(sum_variance)
+        result._set_std(numpy.sqrt(sum_variance) / sum_normalization  )
+        result._set_std(sem)
+    else:    
+        result = Integrate1dResult(bins_rad, I)
+
+    result._set_sum_signal(sum_signal)
+    result._set_sum_normalization(sum_normalization)
+
+    result._set_method_called("integrate1d")
+    result._set_compute_engine(res2d.compute_engine)
+    result._set_method(res2d.method)
+    result._set_radial_unit(res2d.radial_unit)
+    result._set_azimuthal_unit(res2d.azimuth_unit)
+    result._set_count(res2d.count.sum(axis=0))
+    # result._set_sum(sum_)
+    result._set_has_dark_correction(res2d.has_dark_correction)
+    result._set_has_flat_correction(res2d.has_flat)
+    result._set_has_mask_applied(res2d.has_mask)
+    result._set_polarization_factor(res2d.polarization_factor)
+    result._set_normalization_factor(res2d.normalization_factor)
+    result._set_metadata(res2d.metadata)
+
