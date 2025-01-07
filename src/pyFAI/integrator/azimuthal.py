@@ -2099,7 +2099,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_method_called("medfilt1d")
         result._set_compute_engine(str(method))
         result._set_percentile(percentile)
-        result._set_npt_azim(npt_azim)
+        result._set_npt_azim(npt)
         result._set_unit(unit)
         result._set_has_mask_applied(filter_result.has_mask_applied)
         result._set_metadata(filter_result.metadata)
