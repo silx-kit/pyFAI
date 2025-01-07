@@ -37,7 +37,7 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "04/12/2023"
+__date__ = "07/01/2025"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -635,7 +635,7 @@ def calc_rad_azim(double L,
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
         double[::1] c3
         float[:, ::1] out = numpy.empty((size, 2), dtype=numpy.float32)
-        double t1, t2, t3, fwavelength, chi
+        double t1, t2, t3, chi, fwavelength=0.0
 
     if space == "2th":
         cspace = 1

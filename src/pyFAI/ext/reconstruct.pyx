@@ -37,7 +37,7 @@ image (masked) to be able to use more common algorithms.
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/11/2024"
+__date__ = "07/01/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -131,7 +131,7 @@ def reconstruct(data,
         float[:, ::1] cdata
         int8_t[:, ::1] cmask
         bint is_masked, do_dummy
-        float cdummy, cddummy, value
+        float cdummy=0.0, cddummy=0.0, value
         float[:, ::1] out = numpy.zeros_like(data)
 
     cdata = numpy.ascontiguousarray(data, dtype=numpy.float32)
