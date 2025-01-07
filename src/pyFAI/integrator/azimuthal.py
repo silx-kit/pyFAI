@@ -2069,7 +2069,7 @@ class AzimuthalIntegrator(Integrator):
         SeparateResult.radial and SeparateResult.intensity
         """
 
-        filter_result = self.medfilt1d_ng(data, npt=npt_rad,
+        filter_result = self.medfilt1d_ng(data, npt=npt,
                                        unit=unit, method=method,
                                        percentile=percentile,
                                        polarization_factor=polarization_factor,
