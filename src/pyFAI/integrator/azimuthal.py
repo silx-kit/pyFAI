@@ -1747,17 +1747,19 @@ class AzimuthalIntegrator(Integrator):
 
     sigma_clip_ng = sigma_clip
 
-    def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
+    def separate(self, data, npt_rad=1024, 
+                 unit="2th_deg", method=("full", "csr", "cython"),
+                 polarization_factor=None,
                  percentile=50, mask=None, restore_mask=True):
         """
-        Separate bragg signal from powder/amorphous signal using azimuthal integration,
-        median filering and projected back before subtraction.
+        Separate bragg signal from powder/amorphous signal using azimuthal median filering and projected back before subtraction.
 
         :param data: input image as numpy array
         :param npt_rad: number of radial points
         :param npt_azim: number of azimuthal points
         :param unit: unit to be used for integration
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
+        :param polarization_factor: Value of the polarization factor (from -1 to +1), None to disable correction.
         :param percentile: which percentile use for cutting out
         :param mask: masked out pixels array
         :param restore_mask: masked pixels have the same value as input data provided
@@ -1767,14 +1769,16 @@ class AzimuthalIntegrator(Integrator):
         SeparateResult.radial and SeparateResult.intensity
         """
 
-        filter_result = self.medfilt1d(data, npt_rad=npt_rad, npt_azim=npt_azim,
+        filter_result = self.medfilt1d_ng(data, npt_rad=npt_rad,
                                        unit=unit, method=method,
-                                       percentile=percentile, mask=mask)
+                                       percentile=percentile, 
+                                       polarization_factor=polarization_factor,
+                                       mask=mask)
         # This takes 100ms and is the next to be optimized.
         amorphous = self.calcfrom1d(filter_result.radial, filter_result.intensity,
                                     data.shape, mask=None,
                                     dim1_unit=unit,
-                                    correctSolidAngle=True)
+                                    correctSolidAngle=True, polarization_factor=polarization_factor)
         bragg = data - amorphous
         if restore_mask:
             wmask = numpy.where(mask)
