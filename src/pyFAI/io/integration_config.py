@@ -502,7 +502,7 @@ class WorkerConfig:
             w.write(json.dumps(self.as_dict(), indent=2))
 
     @classmethod
-    def load(cls, filename):
+    def from_file(cls, filename: str) -> WorkerConfig:
         """load the content of a JSON file and provide a dataclass instance"""
         with open(filename, "r") as f:
             dico = json.loads(f.read())
