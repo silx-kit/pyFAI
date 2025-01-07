@@ -36,46 +36,8 @@ additional saving capabilities like
 
 Aims at being integrated into a plugin like LImA or as model for the GUI
 
-The configuration of this class is mainly done via a dictionary transmitted as a JSON string:
-For the valid keyx, please refer to the doc of the dataclass pyFAI.io.integration_config.Here are the valid keys:
-
-- "dist"
-- "poni1"
-- "poni2"
-- "rot1"
-- "rot3"
-- "rot2"
-- "pixel1"
-- "pixel2"
-- "splineFile"
-- "wavelength"
-- "poni" #path of the file
-- "chi_discontinuity_at_0"
-- "do_mask"
-- "do_dark"
-- "do_azimuthal_range"
-- "do_flat"
-- "do_2D"
-- "azimuth_range_min"
-- "azimuth_range_max"
-- "polarization_factor"
-- "nbpt_rad"
-- "do_solid_angle"
-- "do_radial_range"
-- "error_model"
-- "delta_dummy"
-- "nbpt_azim"
-- "flat_field"
-- "radial_range_min"
-- "dark_current"
-- "do_polarization"
-- "mask_file"
-- "detector"
-- "unit"
-- "radial_range_max"
-- "val_dummy"
-- "do_dummy"
-- "method"
+The configuration of this class is mainly done via a WorkerConfig object serialized as a JSON string.
+For the valid keys, please refer to the doc of the dataclass `pyFAI.io.integration_config.WorkerConfig`
 """
 
 __author__ = "Jérôme Kieffer"
@@ -500,9 +462,7 @@ class Worker(object):
         self.delta_dummy = config.delta_dummy
         self._normalization_factor = config.normalization_factor
         self.extra_options = config.extra_options or {}
-        print(self.nbpt_rad,self.nbpt_azim, self.do_2D())
         self.update_processor(integrator_name=config.integrator_method)
-        print(self.nbpt_rad,self.nbpt_azim, self.do_2D())
         if config.monitor_name:
             logger.warning("Monitor name defined but unsupported by the worker.")
 
@@ -518,11 +478,9 @@ class Worker(object):
 
     unit = property(get_unit, set_unit)
 
-    def get_config(self, as_dict=True):
-        """Returns the configuration as a dictionary or as a WorkerConfig dataclass instance.
-
-        :param as_dict: return the config as a JSON-serialisable dictionnary (True) or as a WorkerConfig object (if False)
-        :return: dict/dataclass with the config to be de-serialized with set_config/loaded with pyFAI.load
+    def get_worker_config(self):
+        """Returns the configuration as a WorkerConfig dataclass instance.
+        :return: WorkerConfig dataclass instance
         """
         dico = {
             "application" : "worker",
@@ -534,8 +492,8 @@ class Worker(object):
                     "correct_solid_angle", "error_model", "method", "azimuth_range", "radial_range"]:
             try:
                 dico[key] = self.__getattribute__(key)
-            except Exception:
-                pass
+            except Exception as err:
+                logger.error(f"exception {type(err)} at {key} -> {key}")
 
         for here, there in {"dummy": "val_dummy",
                             "_normalization_factor": "normalization_factor",
@@ -546,19 +504,23 @@ class Worker(object):
             # More complicated mappings
             try:
                 dico[there] = self.__getattribute__(here)
-            except Exception:
-                print(f"exception at {here} -> {there}")
-                pass
-        print(dico)
+            except Exception as err:
+                logger.error(f"exception {type(err)} at {here} -> {there}")
+
         config = integration_config.WorkerConfig(**dico)
-        if as_dict:
-            return config.as_dict()
-        else:
-            return config
+        return config
+
+    def get_config(self):
+        """Returns the configuration as a JSON-serializable dictionary.
+        :return: JSON-serializable dictionary
+        """
+        return self.get_worker_config().as_dict()
+
 
     def get_json_config(self):
         """return configuration as a JSON string"""
-        return json.dumps(self.get_config(as_dict=True), indent=2)
+        return json.dumps(self.get_config(),
+                          indent=2)
 
     def set_json_config(self, json_file):
         if os.path.isfile(json_file):
@@ -572,7 +534,7 @@ class Worker(object):
 
     def save_config(self, filename=None):
         """Save the configuration as a JSON file"""
-        self.get_config(as_dict=False).save(filename or self.config_file)
+        self.get_worker_config().save(filename or self.config_file)
 
     def warmup(self, sync=False):
         """
