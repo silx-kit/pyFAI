@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2024"
+__date__ = "07/01/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2047,7 +2047,7 @@ class AzimuthalIntegrator(Integrator):
 
     sigma_clip_ng = sigma_clip
 
-    def separate(self, data, npt_rad=1024, 
+    def separate(self, data, npt=1024,
                  unit="2th_deg", method=("full", "csr", "cython"),
                  polarization_factor=None,
                  percentile=50, mask=None, restore_mask=True):
@@ -2055,8 +2055,8 @@ class AzimuthalIntegrator(Integrator):
         Separate bragg signal from powder/amorphous signal using azimuthal median filering and projected back before subtraction.
 
         :param data: input image as numpy array
-        :param npt_rad: number of radial points
-        :param npt_azim: number of azimuthal points
+        :param npt: number of radial points
+        # :param npt_azim: number of azimuthal points
         :param unit: unit to be used for integration
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param polarization_factor: Value of the polarization factor (from -1 to +1), None to disable correction.
@@ -2069,9 +2069,9 @@ class AzimuthalIntegrator(Integrator):
         SeparateResult.radial and SeparateResult.intensity
         """
 
-        filter_result = self.medfilt1d_ng(data, npt_rad=npt_rad,
+        filter_result = self.medfilt1d_ng(data, npt=npt_rad,
                                        unit=unit, method=method,
-                                       percentile=percentile, 
+                                       percentile=percentile,
                                        polarization_factor=polarization_factor,
                                        mask=mask)
         # This takes 100ms and is the next to be optimized.
