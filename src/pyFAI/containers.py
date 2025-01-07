@@ -1032,7 +1032,7 @@ class SparseFrame(tuple):
         return self._unit
 
 def rebin1d(res2d):
-    """Function that rebins an Integrate2dResult into a Integrate2dResult
+    """Function that rebins an Integrate2dResult into a Integrate1dResult
 
     :param res2d: Integrate2dResult instance obtained from ai.integrate2d
     :return: Integrate1dResult
