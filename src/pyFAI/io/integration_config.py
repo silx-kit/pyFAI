@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -74,7 +74,6 @@ import copy
 from dataclasses import dataclass, fields, asdict
 from typing import ClassVar, Union
 import numpy
-import h5py
 from . import ponifile
 from ..containers import PolarizationDescription, ErrorModel
 from .. import detectors
