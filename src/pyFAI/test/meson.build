@@ -57,6 +57,7 @@ py.install_sources(
     'test_watershed.py',
     'test_worker.py',
     'test_medfilt_engine.py',
+    'test_containers.py',
     'utilstest.py'],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/test'  # Folder relative to site-packages to install to

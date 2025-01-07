@@ -904,7 +904,7 @@ class SparseFrame(tuple):
         self._dtype = None
         self._mask = None
         self._dummy = None
-        self._radial = None
+        self._radius = None
         self._background_avg = None
         self._background_std = None
         self._unit = None
@@ -1043,13 +1043,13 @@ def rebin1d(res2d):
     I = sum_signal / sum_normalization
     if res2d.sum_variance is not None:
         sum_variance =  res2d.sum_variance.sum(axis=0)
-        sem = numpy.sqrt(sum_variance) / sum_normalization  
+        sem = numpy.sqrt(sum_variance) / sum_normalization
         result = Integrate1dResult(bins_rad, I, sem)
         result._set_sum_normalization2(res2d.sum_normalization2.sum(axis=0))
         result._set_sum_variance(sum_variance)
         result._set_std(numpy.sqrt(sum_variance) / sum_normalization  )
         result._set_std(sem)
-    else:    
+    else:
         result = Integrate1dResult(bins_rad, I)
 
     result._set_sum_signal(sum_signal)
@@ -1058,14 +1058,14 @@ def rebin1d(res2d):
     result._set_method_called("integrate1d")
     result._set_compute_engine(res2d.compute_engine)
     result._set_method(res2d.method)
-    result._set_radial_unit(res2d.radial_unit)
-    result._set_azimuthal_unit(res2d.azimuth_unit)
+    result._set_unit(res2d.radial_unit)
+    # result._set_azimuthal_unit(res2d.azimuth_unit)
     result._set_count(res2d.count.sum(axis=0))
     # result._set_sum(sum_)
     result._set_has_dark_correction(res2d.has_dark_correction)
-    result._set_has_flat_correction(res2d.has_flat)
-    result._set_has_mask_applied(res2d.has_mask)
+    result._set_has_flat_correction(res2d.has_flat_correction)
+    result._set_has_mask_applied(res2d.has_mask_applied)
     result._set_polarization_factor(res2d.polarization_factor)
     result._set_normalization_factor(res2d.normalization_factor)
     result._set_metadata(res2d.metadata)
-
+    return result
