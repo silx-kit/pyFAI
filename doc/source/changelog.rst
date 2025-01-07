@@ -8,6 +8,7 @@ Change-log of versions
 Next Version: 2025
 ------------------
 - Refactoring of the integrator classes
+- New dataclass `pyFAI.io.integration_config.WorkerConfig` which is in charge of the serialization of worker configuration.
 
 2024.09 12/09/2024
 ------------------
