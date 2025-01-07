@@ -63,7 +63,7 @@ All those data-classes are serialisable to JSON.
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2024"
+__date__ = "07/01/2025"
 __docformat__ = 'restructuredtext'
 
 import sys
@@ -80,7 +80,7 @@ from ..containers import PolarizationDescription, ErrorModel
 from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
-
+from ..utils import decorators
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
@@ -128,9 +128,15 @@ def _patch_v1_to_v2(config):
     if value is None and "poni_version" in config:
         # Anachronistic configuration, bug found in #2227
         value = config.copy()
+        #warn user about unexpected keys that's gonna be distroyed:
+        valid = ('wavelength', 'dist', 'poni1', 'poni2', 'rot1' ,'rot2' ,'rot3', 'detector', "shape", "pixel1", "pixel2", "splineFile")
+        delta = set(config.keys()).difference(valid)
+        if delta:
+            _logger.warning("Integration_config v1 contains unexpected keys which will be discared: %s%s", os.linesep,
+                            os.linesep.join([f"{key}: {config[key]}" for key in delta]))
         config.clear()  # Do not change the object: empty in place
     if value:
-        # Use the poni file while it is not overwrited by a key of the config
+        # Use the poni file while it is not overwritten by a key of the config
         # dictionary
         poni = ponifile.PoniFile(value)
         if "wavelength" not in config:
@@ -149,7 +155,6 @@ def _patch_v1_to_v2(config):
             config["rot3"] = poni.rot3
         if "detector" not in config:
             detector = poni.detector
-
     # detector
     value = config.pop("detector", None)
     if value:
@@ -215,7 +220,7 @@ def _patch_v2_to_v3(config):
 
     :param dict config: Dictionary reworked inplace.
     """
-    old_method = config.pop("method")
+    old_method = config.pop("method", "")
     if isinstance(old_method, (list, tuple)):
         if len(old_method)==5:
             method = method_registry.Method(*old_method)
@@ -234,7 +239,6 @@ def _patch_v2_to_v3(config):
         method = method_registry.Method.parsed(old_method)
     config["method"] = method.split, method.algo, method.impl
     config["opencl_device"] = method.target
-
     config["version"] = 3
 
 def _patch_v3_to_v4(config):
@@ -272,8 +276,10 @@ def _patch_v4_to_v5(config):
     :param dict config: Dictionary reworked inplace.
     """
     config["version"] = 5
-    config["integrator_method"] = None
-    config["extra_options"] = None
+    if "integrator_method" not in config:
+        config["integrator_method"] = config.pop("integrator_name", None)
+    if "extra_options" not in config:
+        config["extra_options"] = None
     # Invalidation of certain keys:
     for key1, key2 in [("do_mask", ["mask_image", "mask_file"]),
                        ("do_flat", ["flat_field", "flat_field_image"]),
@@ -311,12 +317,10 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
     """
     if not inplace:
         config = config.copy()
-
     version = config.get("version", 1)
     if version == 1:
         # NOTE: Previous way to describe an integration process before pyFAI 0.17
         _patch_v1_to_v2(config)
-
     if config["version"] == target_version: return config
     if config["version"] == 2:
         _patch_v2_to_v3(config)
@@ -347,6 +351,8 @@ class ConfigurationReader(object):
     "This class should be deprecated now ..."
     def __init__(self, config):
         ":param config: dictonary"
+        decorators.deprecated_warning("Class", "ConfigurationReader", reason=None, replacement=None,
+                       since_version="2025.01", only_once=True)
         self._config = config
 
     def pop_ponifile(self):
@@ -455,7 +461,7 @@ class WorkerConfig:
     GUESSED:  ClassVar[list] = ["do_2D", "do_mask", "do_dark", "do_flat", 'do_polarization',
                                 'do_dummy', "do_radial_range", 'do_azimuthal_range', "shape"]
     def as_dict(self):
-        "Like asdict, but with possibly some more "
+        "Like asdict, but with possibly some more features ... "
         dico = asdict(self)
         #fiddle with the object ?
         return dico
@@ -472,7 +478,9 @@ class WorkerConfig:
         """
         if not inplace:
             dico = copy.copy(dico)
+        print(list(dico.keys()))
         normalize(dico, inplace=True)
+        print(dico)
         to_init = {field.name:dico.pop(field.name)
                    for field in fields(cls)
                    if field.name in dico}
@@ -492,7 +500,7 @@ class WorkerConfig:
     def save(self, filename):
         """Dump the content of the dataclass as JSON file"""
         with open(filename, "w") as w:
-            w.write(json.dumps(self.as_dict()))
+            w.write(json.dumps(self.as_dict(), indent=2))
 
     @classmethod
     def load(cls, filename):
