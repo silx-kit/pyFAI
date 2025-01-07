@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2025"
+__date__ = "07/01/2025"
 
 import unittest
 import logging
@@ -570,13 +570,11 @@ class TestWorkerConfig(unittest.TestCase):
                                'rot2': 0.11405876271088071,
                                'rot3': -4.950942273187188e-07,
                                'wavelength': 1.0332016449700598e-10,
-                               'integrator_name' : "sigma_clip_ng",
+                               'integrator_name' : "sigma_clip",
                                'extra_options' : {"max_iter": 3, "thres": 0} }
         worker = Worker()
         worker.set_config(integration_options)
-        print(worker.extra_options, worker.integrator_name)
         result = worker.get_config()
-        print(result)
         self.assertEqual(result['extra_options'],  integration_options['extra_options'], "'extra_options' matches")
         self.assertEqual(result['integrator_method'],  integration_options['integrator_name'], "'integrator_name' matches")
 

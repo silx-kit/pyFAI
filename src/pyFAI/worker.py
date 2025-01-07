@@ -82,7 +82,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2025"
+__date__ = "07/01/2025"
 __status__ = "development"
 
 import threading
@@ -288,6 +288,7 @@ class Worker(object):
                 integrator_name = "integrate1d"
         self._processor = self.ai.__getattribute__(integrator_name)
         self._method = IntegrationMethod.select_one_available(self.method, dim=2 if self.do_2D() else 1)
+        self.integrator_name = self._processor.__name__
 
     @property
     def nbpt_azim(self):
@@ -496,11 +497,12 @@ class Worker(object):
         self.delta_dummy = config.delta_dummy
         self._normalization_factor = config.normalization_factor
         self.extra_options = config.extra_options or {}
+        print(config.integrator_method)
+        self.update_processor(integrator_name=config.integrator_method)
 
         if config.monitor_name:
             logger.warning("Monitor name defined but unsupported by the worker.")
 
-        self.update_processor(integrator_name=config.integrator_method)
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
@@ -567,10 +569,7 @@ class Worker(object):
 
     def save_config(self, filename=None):
         """Save the configuration as a JSON file"""
-        if not filename:
-            filename = self.config_file
-        with open(filename, "w") as w:
-            w.write(self.get_json_config())
+        self.get_config(as_dict=False).save(filename or self.config_file)
 
     def warmup(self, sync=False):
         """

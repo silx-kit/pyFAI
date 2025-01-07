@@ -63,7 +63,7 @@ All those data-classes are serialisable to JSON.
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2025"
+__date__ = "07/01/2025"
 __docformat__ = 'restructuredtext'
 
 import sys
@@ -128,9 +128,15 @@ def _patch_v1_to_v2(config):
     if value is None and "poni_version" in config:
         # Anachronistic configuration, bug found in #2227
         value = config.copy()
+        #warn user about unexpected keys that's gonna be distroyed:
+        valid = ('wavelength', 'dist', 'poni1', 'poni2', 'rot1' ,'rot2' ,'rot3', 'detector', "shape", "pixel1", "pixel2", "splineFile")
+        delta = set(config.keys()).difference(valid)
+        if delta:
+            _logger.warning("Integration_config v1 contains unexpected keys which will be discared: %s%s", os.linesep,
+                            os.linesep.join([f"{key}: {config[key]}" for key in delta]))
         config.clear()  # Do not change the object: empty in place
     if value:
-        # Use the poni file while it is not overwrited by a key of the config
+        # Use the poni file while it is not overwritten by a key of the config
         # dictionary
         poni = ponifile.PoniFile(value)
         if "wavelength" not in config:
@@ -271,7 +277,7 @@ def _patch_v4_to_v5(config):
     """
     config["version"] = 5
     if "integrator_method" not in config:
-        config["integrator_method"] = None
+        config["integrator_method"] = config.pop("integrator_name", None)
     if "extra_options" not in config:
         config["extra_options"] = None
     # Invalidation of certain keys:
@@ -472,7 +478,9 @@ class WorkerConfig:
         """
         if not inplace:
             dico = copy.copy(dico)
+        print(list(dico.keys()))
         normalize(dico, inplace=True)
+        print(dico)
         to_init = {field.name:dico.pop(field.name)
                    for field in fields(cls)
                    if field.name in dico}
@@ -492,7 +500,7 @@ class WorkerConfig:
     def save(self, filename):
         """Dump the content of the dataclass as JSON file"""
         with open(filename, "w") as w:
-            w.write(json.dumps(self.as_dict()))
+            w.write(json.dumps(self.as_dict(), indent=2))
 
     @classmethod
     def load(cls, filename):
