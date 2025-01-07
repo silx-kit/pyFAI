@@ -51,8 +51,8 @@ The detector is integrated into it
    dist poni1 poni2 rot1 rot3 rot2 pixel1 pixel2 splineFile wavelength detector detector_config
 
 5: Migrate to dataclass
-   Support for integrator_name/integrator_method and extra_options.
-   rename some attributes
+   Support for `extra_options`
+   rename some attributes `integrator_name` -> `integrator_method`
 
 In a similar way, PixelWiseWorkerConfig and DistortionWorkerConfig are dataclasses
 to hold parameters for handling PixelWiseWorker and DistortionWorker, respectively.

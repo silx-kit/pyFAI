@@ -279,15 +279,18 @@ class Worker(object):
         return self.nbpt_azim > 1
 
     def update_processor(self, integrator_name=None):
+        dim = 2 if self.do_2D() else 1
         if integrator_name is None:
             integrator_name = self.integrator_name
         if integrator_name is None:
-            if self.do_2D():
-                integrator_name = "integrate2d"
-            else:
-                integrator_name = "integrate1d"
+            integrator_name = f"integrate{dim}d"
+        else:
+            if "2d" in integrator_name and dim == 1:
+                integrator_name = integrator_name.replace("2d", "1d")
+            elif "1d" in integrator_name and dim == 2:
+                integrator_name = integrator_name.replace("1d", "2d")
         self._processor = self.ai.__getattribute__(integrator_name)
-        self._method = IntegrationMethod.select_one_available(self.method, dim=2 if self.do_2D() else 1)
+        self._method = IntegrationMethod.select_one_available(self.method, dim=dim)
         self.integrator_name = self._processor.__name__
 
     @property
@@ -484,7 +487,7 @@ class Worker(object):
             self.ai.detector.set_flatfield(data)
             self.flat_field_image = filenames
 
-        self.nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
+        self._nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
         self.method = config.method # expand to Method ?
         self.nbpt_rad = config.nbpt_rad
         self.unit = units.to_unit(config.unit or "2th_deg")
@@ -497,9 +500,9 @@ class Worker(object):
         self.delta_dummy = config.delta_dummy
         self._normalization_factor = config.normalization_factor
         self.extra_options = config.extra_options or {}
-        print(config.integrator_method)
+        print(self.nbpt_rad,self.nbpt_azim, self.do_2D())
         self.update_processor(integrator_name=config.integrator_method)
-
+        print(self.nbpt_rad,self.nbpt_azim, self.do_2D())
         if config.monitor_name:
             logger.warning("Monitor name defined but unsupported by the worker.")
 
