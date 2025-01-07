@@ -15,11 +15,9 @@ int inline first_step(int step, int size, float ratio)
 {
     while (step<size)
         step=next_step(step, ratio);
-    // if (get_local_id(0) == 0) printf("+ %d %d\n", step, size);
 
     while (step>=size)
         step=previous_step(step, ratio);
-    // if (get_local_id(0) == 0) printf("- %d %d\n", step, size);
     return step;
 }
 
@@ -61,8 +59,8 @@ int passe(global volatile float* elements,
           int step,
           local int* shared)
 {
-    int wg = get_local_size(1);
-    int tid = get_local_id(1);
+    int wg = get_local_size(0);
+    int tid = get_local_id(0);
     int cnt = 0;
     int i, j, k;
     barrier(CLK_GLOBAL_MEM_FENCE);
@@ -120,8 +118,8 @@ int passe_float4(global volatile float4* elements,
                  int step,
                  local int* shared)
 {
-    int wg = get_local_size(1);
-    int tid = get_local_id(1);
+    int wg = get_local_size(0);
+    int tid = get_local_id(0);
     int cnt = 0;
     int i, j, k;
 
@@ -171,14 +169,14 @@ int passe_float4(global volatile float4* elements,
         return 0;
 }
 
-// workgroup: (1, wg)
-// grid: (nb_lines, wg)
+// workgroup: (wg, 1)
+// grid:      (wg, nb_lines)
 // shared: wg*sizeof(int)
 kernel void test_combsort_float(global volatile float* elements,
                                 global int* positions,
                                 local  int* shared)
 {
-    int gid = get_group_id(0);
+    int gid = get_group_id(1);
     int step = 11;     // magic value
     float ratio=1.3f;  // magic value
     int cnt;
@@ -202,14 +200,14 @@ kernel void test_combsort_float(global volatile float* elements,
 
 }
 
-// workgroup: (1, wg)
-// grid: (nb_lines, wg)
+// workgroup: (wg, 1)
+// grid:      (wg, nb_lines)
 // shared: wg*sizeof(int)
 kernel void test_combsort_float4(global volatile float4* elements,
                                  global int* positions,
                                  local  int* shared)
 {
-    int gid = get_group_id(0);
+    int gid = get_group_id(1);
     int step = 11;     // magic value
     float ratio=1.3f;  // magic value
     int cnt;
