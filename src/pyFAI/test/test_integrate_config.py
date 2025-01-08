@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -156,8 +156,7 @@ class TestRegression(unittest.TestCase):
         for fn in test_files.split():
             js = utilstest.UtilsTest.getimage(fn)
             with utilstest.TestLogging(logger='pyFAI.io.integrarion_config', warning=0):
-            # with self.assertLogs('pyFAI.io.integrarion_config', level='WARNING') as cm:
-                wc = integration_config.WorkerConfig.load(js)
+                wc = integration_config.WorkerConfig.from_file(js)
             self.assertEqual(wc, integration_config.WorkerConfig.from_dict(wc.as_dict()), f"Idempotent {fn}")
 
 
