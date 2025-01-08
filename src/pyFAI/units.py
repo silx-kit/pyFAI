@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author: Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
 #
@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/02/2024"
+__date__ = "24/12/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -653,15 +653,15 @@ def eq_q_total(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_o
     )
 
 formula_r = "sqrt(x * x + y * y)"
-formula_2th = "arctan2(sqrt(x * x + y * y), z)"
+formula_2th = f"arctan2({formula_r}, z)"
 formula_chi = "arctan2(y, x)"
-formula_q = "4.0e-9*π/λ*sin(0.5*arctan2(sqrt(x * x + y * y), z))"
-formula_d = "0.5*λ/sin(0.5*arctan2(sqrt(x * x + y * y), z))"
-formula_d2 = "(2.0e-9/λ*sin(0.5*arctan2(sqrt(x * x + y * y), z)))**2"
-formula_qx = "4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"
-formula_qy = "4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"
+formula_q = f"4.0e-9*π/λ*sin(0.5*{formula_2th})"
+formula_d = f"0.5*λ/sin(0.5*{formula_2th})"
+formula_d2 = f"(2.0e-9/λ*sin(0.5*{formula_2th}))**2"
+formula_qx = f"4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
+formula_qy = f"4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
 
-formula_exit_angle = "arctan2(y,sqrt(z**2+x**2))"
+formula_exit_angle = "arctan2(y, sqrt(z*z + x*x))"
 formula_exit_angle_horz = "arctan2(x,z)"
 formula_qbeam_lab = f"2.0e-9/λ*π*(cos({formula_exit_angle})*cos({formula_exit_angle_horz}) - 1)"
 formula_qhorz_lab = f"2.0e-9/λ*π*cos({formula_exit_angle})*sin({formula_exit_angle_horz})"
