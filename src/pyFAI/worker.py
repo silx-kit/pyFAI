@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2025"
+__date__ = "08/01/2025"
 __status__ = "development"
 
 import threading
@@ -222,19 +222,19 @@ class Worker(object):
         pretty print of myself
         """
         lstout = ["Azimuthal Integrator:", self.ai.__repr__(),
-                  "Input image shape: %s" % list(self.shape),
-                  "Number of points in radial direction: %s" % self.nbpt_rad,
-                  "Number of points in azimuthal direction: %s" % self.nbpt_azim,
-                  "Unit in radial dimension: %s" % self.unit,
-                  "Correct for solid angle: %s" % self.correct_solid_angle,
-                  "Polarization factor: %s" % self.polarization_factor,
-                  "Dark current image: %s" % self.dark_current_image,
-                  "Flat field image: %s" % self.flat_field_image,
-                  "Mask image: %s" % self.mask_image,
-                  "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
-                  "Directory: %s, \tExtension: %s" % (self.subdir, self.extension),
-                  "Radial range: %s" % self.radial_range,
-                  "Azimuth range: %s" % self.azimuth_range]
+                  f"Input image shape: {self.shape}",
+                  f"Number of points in radial direction: {self.nbpt_rad}",
+                  f"Number of points in azimuthal direction: {self.nbpt_azim}",
+                  f"Unit in radial dimension: {self.unit}",
+                  f"Correct for solid angle: {self.correct_solid_angle}",
+                  f"Polarization factor: {self.polarization_factor}",
+                  f"Dark current image: {self.dark_current_image}",
+                  f"Flat field image: {self.flat_field_image}",
+                  f"Mask image: {self.mask_image}",
+                  f"Dummy: {self.dummy},\tDelta_Dummy: {self.delta_dummy}",
+                  f"Directory: {self.subdir}, \tExtension: {self.extension}",
+                  f"Radial range: {self.radial_range}",
+                  f"Azimuth range: {self.azimuth_range}"]
         return os.linesep.join(lstout)
 
     def do_2D(self):
@@ -584,10 +584,10 @@ class Worker(object):
     @staticmethod
     def validate_config(config, raise_exception=RuntimeError):
         """
-        Validates a configuration for any inconsitencies
+        Validates a configuration for any inconsistencies
 
-        :param config: dict contraining the configuration
-        :param raise_exception: Exception class to raise when configuration is not consistant
+        :param config: dict containing the configuration
+        :param raise_exception: Exception class to raise when configuration is not consistent
         :return: None or reason as a string when raise_exception is None, else raise the given exception
         """
         reason = None
@@ -646,7 +646,7 @@ class PixelwiseWorker(object):
         :param flat: array
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
-        :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
+        :param device: Used to influence OpenCL behavior: can be "cpu", "GPU", "Acc" or even an OpenCL context
         :param empty: value given for empty pixels by default
         :param dtype: unit (and precision) in which to perform calculation: float32 or float64
         """
@@ -687,7 +687,7 @@ class PixelwiseWorker(object):
         :param data: input data
         :param variance: the variance associated to the data
         :param normalization: normalization factor
-        :return: processed data, optionally with the assiciated error if variance is provided
+        :return: processed data, optionally with the associated error if variance is provided
         """
         propagate_error = (variance is not None)
         if use_cython:
@@ -737,7 +737,7 @@ class DistortionWorker(object):
         :param dummy: value for bad pixels
         :param delta_dummy: precision for dummies
         :param method: LUT or CSR for the correction
-        :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
+        :param device: Used to influence OpenCL behavior: can be "cpu", "GPU", "Acc" or even an OpenCL context
         """
 
         self.ctx = None
@@ -772,7 +772,7 @@ class DistortionWorker(object):
         if detector is not None:
             self.distortion = Distortion(detector, method=method, device=device,
                                      mask=mask, empty=self.dummy or 0)
-            self.distortion.reset(prepare=True)  # enfoce initization
+            self.distortion.reset(prepare=True)  # enforce initialization
         else:
             self.distortion = None
 
@@ -815,7 +815,7 @@ class DistortionWorker(object):
                 pp_variance = proc_data[..., 1]
                 pp_normalisation = proc_data[..., 2]
                 if numexpr is None:
-                    # Cheap, muthithreaded way:
+                    # Cheap, multi-threaded way:
                     res_signal = numexpr.evaluate("where(pp_normalisation==0.0, 0.0, pp_signal / pp_normalisation)")
                     res_error = numexpr.evaluate("where(pp_normalisation==0.0, 0.0, sqrt(pp_variance) / abs(pp_normalisation))")
                 else:
