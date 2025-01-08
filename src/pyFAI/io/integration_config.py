@@ -57,13 +57,13 @@ The detector is integrated into it
 In a similar way, PixelWiseWorkerConfig and DistortionWorkerConfig are dataclasses
 to hold parameters for handling PixelWiseWorker and DistortionWorker, respectively.
 
-All those data-classes are serialisable to JSON.
+All those data-classes are serializable to JSON.
 """
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2025"
+__date__ = "08/01/2025"
 __docformat__ = 'restructuredtext'
 
 import sys
@@ -120,14 +120,14 @@ def _patch_v1_to_v2(config):
     * do_openCL is now deprecated, replaced with the method (which can still be a string)
     * replace comma-separated list of flat/dark with a python list of files.
 
-    :param dict config: Dictionary reworked inplace.
+    :param dict config: Dictionary reworked in-place.
     """
     detector = None
     value = config.pop("poni", None)
     if value is None and "poni_version" in config:
         # Anachronistic configuration, bug found in #2227
         value = config.copy()
-        #warn user about unexpected keys that's gonna be distroyed:
+        #warn user about unexpected keys that's gonna be destroyed:
         valid = ('wavelength', 'dist', 'poni1', 'poni2', 'rot1' ,'rot2' ,'rot3', 'detector', "shape", "pixel1", "pixel2", "splineFile")
         delta = set(config.keys()).difference(valid)
         if delta:
@@ -215,9 +215,9 @@ def _patch_v2_to_v3(config):
     The main difference is in the management of the "method" which was a string
     and is now parsed into a 3- or 5-tuple containing the splitting scheme, the algorithm and the implementation.
     when 5-tuple, there is a reference to the opencl-target as well.
-    The prefered version is to have method and opencl_device separated for ease of parsing.
+    The preferred version is to have method and opencl_device separated for ease of parsing.
 
-    :param dict config: Dictionary reworked inplace.
+    :param dict config: Dictionary reworked in-place.
     """
     old_method = config.pop("method", "")
     if isinstance(old_method, (list, tuple)):
@@ -248,7 +248,7 @@ def _patch_v3_to_v4(config):
     that now they can be retrieved just by getting the value of the key "poni" from the config. The rest of the parameters are
     characteristic of the integration protocol.
 
-    :param dict config: Dictionary reworked inplace.
+    :param dict config: Dictionary reworked in-place.
     """
     poni_dict = {}
     poni_parameters = ["dist",
@@ -272,7 +272,7 @@ def _patch_v3_to_v4(config):
 def _patch_v4_to_v5(config):
     """Support for integrator_name/integrator_method and extra_options.
 
-    :param dict config: Dictionary reworked inplace.
+    :param dict config: Dictionary reworked in-place.
     """
     config["version"] = 5
     if "integrator_method" not in config:
@@ -309,7 +309,7 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
     (the last one).
 
     :param dict config: The configuration dictionary to read
-    :param bool inplace: In true, the dictionary is edited inplace
+    :param bool inplace: If True, the dictionary is edited in-place, else one works on a copy.
     :param bool do_raise: raise ValueError if set. Else use logger.error
     :param int target_version: stop updating when version has been reached.
     :raise ValueError: If the configuration do not match & do_raise is set
@@ -349,7 +349,7 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
 class ConfigurationReader(object):
     "This class should be deprecated now ..."
     def __init__(self, config):
-        ":param config: dictonary"
+        ":param config: dictionary"
         decorators.deprecated_warning("Class", "ConfigurationReader", reason=None, replacement=None,
                        since_version="2025.01", only_once=True)
         self._config = config
@@ -472,7 +472,7 @@ class WorkerConfig:
             * accepts everything which is in OPTIONAL
 
         :param dico: dict with the config
-        :param inplace: modify the dico in place ?
+        :param in-place: modify the dico in place ?
         :return: instance of the dataclass
         """
         if not inplace:
