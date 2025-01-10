@@ -38,6 +38,11 @@ from enum import IntEnum
 from .utils.decorators import deprecated_warning
 import numpy
 
+PolarizationArray = namedtuple("PolarizationArray",
+                               ["array", "checksum"])
+PolarizationDescription = namedtuple("PolarizationDescription",
+                                     ["polarization_factor", "axis_offset"])
+
 Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
 Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
 
