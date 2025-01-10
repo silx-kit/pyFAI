@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2025"
+__date__ = "10/01/2025"
 __status__ = "development"
 
 import threading
@@ -480,34 +480,20 @@ class Worker(object):
 
     def get_worker_config(self):
         """Returns the configuration as a WorkerConfig dataclass instance.
+
         :return: WorkerConfig dataclass instance
         """
-        dico = {
-            "application" : "worker",
-            "unit": str(self.unit),
-            "poni": dict(self.ai.get_config())
-            }
-
+        config = integration_config.WorkerConfig(application="worker",
+                                                 poni = dict(self.ai.get_config()),
+                                                 unit = str(self._unit))
         for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "delta_dummy", "extra_options",
-                    "correct_solid_angle", "error_model", "method", "azimuth_range", "radial_range"]:
+                    "correct_solid_angle", "error_model", "method", "azimuth_range", "radial_range",
+                    "dummy", "normalization_factor", "dark_current_image", "flat_field_image",
+                    "mask_image", "integrator_name"]:
             try:
-                dico[key] = self.__getattribute__(key)
+                config.__setattr__(key, self.__getattribute__(key))
             except Exception as err:
-                logger.error(f"exception {type(err)} at {key} -> {key}")
-
-        for here, there in {"dummy": "val_dummy",
-                            "_normalization_factor": "normalization_factor",
-                            "dark_current_image": "dark_current",
-                            "flat_field_image": "flat_field",
-                            "mask_image": "mask_file",
-                            "integrator_name": "integrator_method"}.items():
-            # More complicated mappings
-            try:
-                dico[there] = self.__getattribute__(here)
-            except Exception as err:
-                logger.error(f"exception {type(err)} at {here} -> {there}")
-
-        config = integration_config.WorkerConfig(**dico)
+                logger.error(f"exception {type(err)} at {key} ({err})")
         return config
 
     def get_config(self):
