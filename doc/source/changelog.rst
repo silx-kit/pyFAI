@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 12/09/2024
+:Date: 07/01/2025
 :Keywords: changelog
 
 Change-log of versions
@@ -9,6 +9,7 @@ Next Version: 2025
 ------------------
 - Refactoring of the integrator classes
 - New dataclass `pyFAI.io.integration_config.WorkerConfig` which is in charge of the serialization of worker configuration.
+- Tool to rebin 2d-result into 1d-result (`pyFAI.containers.rebin1d`)
 
 2024.09 12/09/2024
 ------------------
