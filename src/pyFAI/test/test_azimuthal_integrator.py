@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2025"
+__date__ = "13/01/2025"
 
 import unittest
 import os
@@ -415,11 +415,14 @@ class TestSaxs(unittest.TestCase):
         ai.USE_LEGACY_MASK_NORMALIZATION = True
         data = numpy.array([[0, 1, 2, 3]])
         mask = numpy.array([[0, 1, 1, 1]])
-        result = ai.create_mask(data, mask, mode="numpy")
+        with logging_disabled(logging.WARNING):
+            result = ai.create_mask(data, mask, mode="numpy")
         self.assertEqual(list(result[0]), [False, True, True, True])
+
         data = numpy.array([[0, 1, 2, 3]])
         mask = numpy.array([[1, 0, 0, 0]])
-        result = ai.create_mask(data, mask, mode="numpy")
+        with logging_disabled(logging.WARNING):
+            result = ai.create_mask(data, mask, mode="numpy")
         self.assertEqual(list(result[0]), [False, True, True, True])
 
     def test_no_legacy_mask(self):
@@ -486,8 +489,7 @@ class TestSaxs(unittest.TestCase):
         mask = img < 0
         res_poisson = ai.integrate1d_ng(img, 1000, mask=mask, error_model="poisson")
         self.assertGreater(res_poisson.sigma.min(), 0, "Poisson error are positive")
-# TODO bug 1446 error-model "azimuthal" is not implemented in `integrate1d_ng`
-        res_azimuthal = ai.integrate1d_legacy(img, 1000, mask=mask, error_model="azimuthal")
+        res_azimuthal = ai.integrate1d_ng(img, 1000, mask=mask, error_model="azimuthal")
         self.assertGreater(res_azimuthal.sigma.min(), 0, "Azimuthal error are positive")
 
     def test_empty(self):
@@ -539,8 +541,9 @@ class TestSetter(unittest.TestCase):
         fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
 
     def test_flat(self):
-        self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")
-        self.assertTrue(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
+        with logging_disabled(logging.WARNING):
+            self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")
+            self.assertTrue(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
         self.assertTrue(abs(self.ai.flatfield - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Flat array is OK")
 
     def test_dark(self):
@@ -620,12 +623,26 @@ class TestRange(unittest.TestCase):
         self.ai.reset()
 
     def test_medfilt(self):
-        res = self.ai.medfilt1d(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+        # legacy
+        with logging_disabled(logging.WARNING):
+            res = self.ai.medfilt1d_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+        self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
+        self.assertLessEqual(res.radial.max(), max(self.rad_range))
+        # new generation
+        res = self.ai.medfilt1d_ng(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
-    def test_sigma_clip_legacy(self):
-        res = self.ai._sigma_clip_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+
+    def test_sigma_clip(self):
+        # legacy
+        with logging_disabled(logging.WARNING):
+            res = self.ai._sigma_clip_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+        self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
+        self.assertLessEqual(res.radial.max(), max(self.rad_range))
+
+        # new generation
+        res = self.ai.sigma_clip_ng(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
