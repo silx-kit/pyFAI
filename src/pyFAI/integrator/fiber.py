@@ -155,9 +155,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
         :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
         :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
-        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
-        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param int sample_orientation: 1-8, orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º, from 5 to 8 (flipped) -90º
         :param str filename: output filename in 2/3 column ascii format
         :param bool correctSolidAngle: correct for solid angle of each pixel if True
         :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
