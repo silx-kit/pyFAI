@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2024"
+__date__ = "13/01/2025"
 __status__ = "production"
 
 import logging
@@ -141,7 +141,7 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0, use_scipy=True):
         Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
     """
     if use_scipy:
-        res = scipy.ndimage.filters.gaussian_filter(input_img, sigma, mode=(mode or "reflect"))
+        res = scipy.ndimage.gaussian_filter(input_img, sigma, mode=(mode or "reflect"))
     else:
         if isinstance(sigma, (list, tuple)):
             sigma = (float(sigma[0]), float(sigma[1]))
