@@ -100,6 +100,10 @@ class FiberIntegrator(AzimuthalIntegrator):
         super().__init__(*args, **kwargs)
         self._cache_parameters = {}
 
+    def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="m"):
+        core_repr = super().__repr__(dist_unit=dist_unit, ang_unit=ang_unit, wl_unit=wl_unit)
+        return f"{core_repr}\nIncident angle: {self.incident_angle:.2f}° Tilt angle {self.tilt_angle}° Sample orientation {self.sample_orientation}"
+
     @property
     def incident_angle(self):
         return self._cache_parameters.get('incident_angle', 0.0)
