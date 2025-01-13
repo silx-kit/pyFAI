@@ -184,15 +184,24 @@ class UnitFiber(Unit):
             if self._sample_orientation == 1:
                 ...
             elif self._sample_orientation == 2:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
-                formula_ = formula_.replace('ψ', 'y').replace('ξ', 'x')
-            elif self._sample_orientation == 3:
                 formula_ = self.formula_so1.replace('x', '(-x)')
+            elif self._sample_orientation == 3:
+                formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
+                formula_ = formula_.replace('ψ', '(-x)').replace('ξ', '(-y)')
             elif self._sample_orientation == 4:
-                formula_ = self.formula_so1
+                formula_ = self.formula_so1.replace('y', '(-y)')
+            elif self._sample_orientation == 5:
                 formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
                 formula_ = formula_.replace('ψ', '(-y)').replace('ξ', '(-x)')
+            elif self._sample_orientation == 6:
+                formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
+                formula_ = formula_.replace('ψ', '(-y)').replace('ξ', '(x)')
+            elif self._sample_orientation == 7:
+                formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
+                formula_ = formula_.replace('ψ', '(y)').replace('ξ', '(x)')
+            elif self._sample_orientation == 8:
+                formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
+                formula_ = formula_.replace('ψ', '(y)').replace('ξ', '(-x)')
             self.formula = formula_
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
