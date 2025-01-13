@@ -40,21 +40,21 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2024"
+__date__ = "20/12/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import copy
 import logging
 from math import pi
-twopi = 2 * pi
 from numpy import arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
 import threading
 import json
 import gc
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
+from ..containers import PolarizationArray, PolarizationDescription
 from .fit2d import convert_to_Fit2d, convert_from_Fit2d
 from .imaged11 import convert_from_ImageD11, convert_to_ImageD11
 from .. import detectors
@@ -64,6 +64,7 @@ from ..utils import crc32, deg2rad
 from .. import utils
 from ..io import ponifile, integration_config
 from ..units import CONST_hc, to_unit, UnitFiber
+TWO_PI = 2 * pi
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +86,6 @@ except ImportError:
     logger.debug("Backtrace", exc_info=True)
     bilinear = None
 
-PolarizationArray = namedtuple("PolarizationArray", ["array", "checksum"])
-PolarizationDescription = namedtuple("PolarizationDescription",
-                                     ["polarization_factor", "axis_offset"])
 
 
 class Geometry(object):
@@ -124,7 +122,10 @@ class Geometry(object):
                         "chiDiscAtPi", "_wavelength", "_dssa_order",
                         '_oversampling', '_correct_solid_angle_for_spline',
                         '_transmission_normal')
-
+    PROMOTION = {"AzimuthalIntegrator": "pyFAI.integrator.azimuthal.AzimuthalIntegrator",
+                 "FiberIntegrator": "pyFAI.integrator.fiber.FiberIntegrator",
+                 "GeometryRefinement": "pyFAI.geometryRefinement.GeometryRefinement",
+                 "Geometry": "pyFAI.geometry.core.Geometry"}
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None,
@@ -263,7 +264,7 @@ class Geometry(object):
             return
         azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
         if azimuth_range[1] <= azimuth_range[0]:
-            azimuth_range = (azimuth_range[0], azimuth_range[1] + twopi)
+            azimuth_range = (azimuth_range[0], azimuth_range[1] + TWO_PI)
             self.check_chi_disc(azimuth_range)
         return azimuth_range
 
@@ -558,7 +559,7 @@ class Geometry(object):
         if self._cached_array.get("d*2_center") is None:
             with self._sem:
                 if self._cached_array.get("d*2_center") is None:
-                    self._cached_array["d*2_center"] = (qArray / (twopi)) ** 2
+                    self._cached_array["d*2_center"] = (qArray / (TWO_PI)) ** 2
         return self._cached_array["d*2_center"]
 
     @deprecated
@@ -638,7 +639,7 @@ class Geometry(object):
             _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False, use_cython=True, do_parallax=True)
             chi = numpy.arctan2(t1, t2)
             if not self.chiDiscAtPi:
-                numpy.mod(chi, (twopi), out=chi)
+                numpy.mod(chi, (TWO_PI), out=chi)
         return chi
 
     def chi_corner(self, d1, d2):
@@ -675,7 +676,7 @@ class Geometry(object):
                     chia = numpy.fromfunction(self.chi, shape,
                                               dtype=numpy.float32)
                     if not self.chiDiscAtPi:
-                        chia = chia % (twopi)
+                        chia = chia % (TWO_PI)
                     self._cached_array["chi_center"] = chia
         return self._cached_array["chi_center"]
 
@@ -821,10 +822,10 @@ class Geometry(object):
                             # numpy path
                             chi = numpy.arctan2(y, x)
                             if not self.chiDiscAtPi:
-                                numpy.mod(chi, (twopi), out=chi)
+                                numpy.mod(chi, (TWO_PI), out=chi)
                         else:
                             # numexpr path
-                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%twopi")
+                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%TWO_PI")
                         corners = numpy.zeros((shape[0], shape[1], nb_corners, 2),
                                               dtype=numpy.float32)
                         if chi.shape[:2] == shape:
@@ -945,7 +946,7 @@ class Geometry(object):
             ary = unit.equation(x, y, z, self.wavelength)
 
         if unit.space == "chi" and not self.chiDiscAtPi:
-            numpy.mod(ary, twopi, out=ary)
+            numpy.mod(ary, TWO_PI, out=ary)
         self._cached_array[key] = ary
         if scale and unit:
                 return ary * unit.scale
@@ -983,9 +984,9 @@ class Geometry(object):
         delta = abs(corners[..., 0] - numpy.atleast_3d(center))
         if space == "chi_delta":
             if numexpr:
-                delta = numexpr.evaluate("where(delta<twopi-delta, delta, twopi-delta)")
+                delta = numexpr.evaluate("where(delta<TWO_PI-delta, delta, TWO_PI-delta)")
             else:
-                numpy.minimum(delta, twopi - delta, out=delta)
+                numpy.minimum(delta, TWO_PI - delta, out=delta)
 
         ary = delta.max(axis=-1)
         self._cached_array[space] = ary
@@ -1021,8 +1022,8 @@ class Geometry(object):
                         self._cached_array[key] = delta
                     else:
                         center = numpy.atleast_3d(center)
-                        delta = numpy.minimum(((corner[:,:,:, 1] - center) % twopi),
-                                              ((center - corner[:,:,:, 1]) % twopi))
+                        delta = numpy.minimum(((corner[:,:,:, 1] - center) % TWO_PI),
+                                              ((center - corner[:,:,:, 1]) % TWO_PI))
                         self._cached_array[key] = delta.max(axis=-1)
         return self._cached_array[key]
 
@@ -2088,7 +2089,7 @@ class Geometry(object):
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
-    def promote(self, type_="pyFAI.azimuthalIntegrator.AzimuthalIntegrator", kwargs=None):
+    def promote(self, type_="pyFAI.integrator.azimuthal.AzimuthalIntegrator", kwargs=None):
         """Promote this instance into one of its derived class (deep copy like)
 
         :param type_: Fully qualified name of the class to promote to, or the class itself
@@ -2099,6 +2100,9 @@ class Geometry(object):
         """
         GeometryClass = self.__class__.__mro__[-2]  # actually pyFAI.geometry.core.Geometry
         if isinstance(type_, str):
+            if "." not in type_:
+                if type_ in self.PROMOTION:
+                    type_ = self.PROMOTION[type_]
             import importlib
             modules = type_.split(".")
             module_name = ".".join(modules[:-1])
@@ -2107,7 +2111,7 @@ class Geometry(object):
         elif isinstance(type_, type):
             klass = type_
         else:
-            raise ValueError("`type_` must be a class (or a fully qualified class name) of a Geometry derived class")
+            raise ValueError("`type_` must be a class (or class name) of a Geometry derived class")
 
         if kwargs == None:
             kwargs = {}
