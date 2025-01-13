@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "10/01/2025"
 
 import unittest
 import os
@@ -53,6 +53,7 @@ if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
 from pyFAI import units
 from ..utils import mathutil
+from ..utils.logging_utils import logging_disabled
 
 
 class TestAzimHalfFrelon(unittest.TestCase):
@@ -543,8 +544,9 @@ class TestSetter(unittest.TestCase):
         self.assertTrue(abs(self.ai.flatfield - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Flat array is OK")
 
     def test_dark(self):
-        self.ai.set_darkfiles((self.edf1, self.edf2), method="mean")
-        self.assertTrue(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
+        with logging_disabled(logging.WARNING):
+            self.ai.set_darkfiles((self.edf1, self.edf2), method="mean")
+            self.assertTrue(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
         self.assertTrue(abs(self.ai.darkcurrent - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Dark array is OK")
 
 

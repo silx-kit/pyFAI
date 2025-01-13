@@ -33,7 +33,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "10/01/2025"
 
 import logging
 import contextlib
@@ -103,3 +103,21 @@ def prepost_emit_callback(logger, pre_callback, post_callback):
     # use the previous handler
     logger.addHandler(previous_handler)
     logger.setLevel(logging.INFO)
+
+
+@contextlib.contextmanager
+def logging_disabled(highest_level=logging.CRITICAL):
+    """
+    A context manager that will prevent any logging messages
+    triggered during the body from being processed.
+
+    :param highest_level: the maximum logging level in use.
+    """
+    previous_level = logging.root.manager.disable
+
+    logging.disable(highest_level)
+
+    try:
+        yield
+    finally:
+        logging.disable(previous_level)
