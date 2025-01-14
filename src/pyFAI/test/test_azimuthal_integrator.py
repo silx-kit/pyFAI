@@ -54,6 +54,7 @@ if logger.getEffectiveLevel() <= logging.DEBUG:
 from pyFAI import units
 from ..utils import mathutil
 from ..utils.logging_utils import logging_disabled
+from ..opencl import pyopencl
 
 
 class TestAzimHalfFrelon(unittest.TestCase):
@@ -277,24 +278,26 @@ class TestAzimHalfFrelon(unittest.TestCase):
         self.assertLess(rwp, 3, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp)
 
         # new version"
+        opencl = "opencl" if pyopencl else "python"
         try:
             ref = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "cython"))
-            ocl = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "opencl"))
+            ocl = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", opencl))
         except Exception as err:
-            print(f"UtilsTest.opencl: {UtilsTest.opencl}")
-            #import pyFAI
-            #print(os.linesep.join(pyFAI.method_registry.IntegrationMethod.list_available()))
+            print(f"UtilsTest.opencl: {UtilsTest.opencl}, opencl: {opencl}")
             raise err
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d ng median Rwp = %.3f", rwp)
-        self.assertLess(rwp, 0.1, "Rwp medfilt1d Cython/OpenCL: %.3f" % rwp)
+        self.assertLess(rwp, 0.1, "Rwp medfilt1d_ng Cython/OpenCL: %.3f" % rwp)
 
-        ref = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "cython"), percentile=(20, 80))
-        ocl = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "opencl"), percentile=(20, 80))
+        try:
+            ref = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "cython"), percentile=(20, 80))
+            ocl = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", opencl), percentile=(20, 80))
+        except Exception as err:
+            print(f"UtilsTest.opencl: {UtilsTest.opencl}, opencl: {opencl}")
+            raise err
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d ngtrimmed-mean Rwp = %.3f", rwp)
         self.assertLess(rwp, 0.1, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp)
-
         ref = ocl = rwp = None
 
     def test_radial(self):
