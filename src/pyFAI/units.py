@@ -144,8 +144,8 @@ class UnitFiber(Unit):
     """Represents a unit + two rotation axis. To be used in a Grazing-Incidence or Fiber Diffraction/Scattering experiment.
 
     Fiber parameters:
-    :param float incident_angle: projection angle of the beam in the sample. Its rotation axis is the fiber axis or the normal vector of the thin film
-    :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
+    :param float incident_angle: pitch angle; projection angle of the beam in the sample. Its rotation axis is the horizontal axis of the lab system.
+    :param float tilt angle: roll angle; its rotation axis is the beam axis. Tilting of the horizon for grazing incidence in thin films.
     :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
 
     It has at least a name and a scale (in SI-unit)
