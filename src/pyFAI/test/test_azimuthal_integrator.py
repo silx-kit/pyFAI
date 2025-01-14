@@ -281,8 +281,9 @@ class TestAzimHalfFrelon(unittest.TestCase):
             ref = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "cython"))
             ocl = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "opencl"))
         except Exception as err:
-            import pyFAI
-            print(os.linesep.join(pyFAI.method_registry.IntegrationMethod.list_available()))
+            print(f"UtilsTest.opencl: {UtilsTest.opencl}")
+            #import pyFAI
+            #print(os.linesep.join(pyFAI.method_registry.IntegrationMethod.list_available()))
             raise err
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d ng median Rwp = %.3f", rwp)
