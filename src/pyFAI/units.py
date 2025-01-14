@@ -185,9 +185,9 @@ class UnitFiber(Unit):
         3 - Image is rotated 180 degrees
         4 - Image is rotated 180 degrees and mirrored
         5 - Image is mirrored and rotated 90 degrees counter clockwise
-        6 - Image is rotated 90 degrees counter clockwise 
-        7 - Image is mirrored and rotated 90 degrees clockwise 
-        8 - Image is rotated 90 degrees clockwise 
+        6 - Image is rotated 90 degrees counter clockwise
+        7 - Image is mirrored and rotated 90 degrees clockwise
+        8 - Image is rotated 90 degrees clockwise
         """
         if (numexpr is not None) and isinstance(self.formula, str):
             signature = [(key, numpy.float64) for key in "xyzλπηχ" if key in self.formula]
@@ -549,9 +549,9 @@ def rotate_sample_orientation(x, y, sample_orientation=1):
     3 - Image is rotated 180 degrees
     4 - Image is rotated 180 degrees and mirrored
     5 - Image is mirrored and rotated 90 degrees counter clockwise
-    6 - Image is rotated 90 degrees counter clockwise 
-    7 - Image is mirrored and rotated 90 degrees clockwise 
-    8 - Image is rotated 90 degrees clockwise 
+    6 - Image is rotated 90 degrees counter clockwise
+    7 - Image is mirrored and rotated 90 degrees clockwise
+    8 - Image is rotated 90 degrees clockwise
     """
     if sample_orientation == 1:
         hpos = x; vpos = y
