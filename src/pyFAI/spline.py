@@ -445,7 +445,7 @@ class Spline(object):
         if timing:
             startTime = time.perf_counter()
 
-        xRectBivariateSpline = fitpack.RectBivariateSpline(
+        xRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(
             numpy.arange(self.xmax + 1.0),
             numpy.arange(self.ymax + 1.0),
             self.xDispArray.transpose(),
@@ -454,7 +454,7 @@ class Spline(object):
         if timing:
             intermediateTime = time.perf_counter()
 
-        yRectBivariateSpline = fitpack.RectBivariateSpline(
+        yRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(
             numpy.arange(self.xmax + 1.0),
             numpy.arange(self.ymax + 1.0),
             self.yDispArray.transpose(),
