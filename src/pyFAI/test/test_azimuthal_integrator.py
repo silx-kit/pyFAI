@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2025"
+__date__ = "14/01/2025"
 
 import unittest
 import os
@@ -277,8 +277,13 @@ class TestAzimHalfFrelon(unittest.TestCase):
         self.assertLess(rwp, 3, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp)
 
         # new version"
-        ref = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "cython"))
-        ocl = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "opencl"))
+        try:
+            ref = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "cython"))
+            ocl = self.ai.medfilt1d_ng(self.data, 1000, unit="2th_deg", method=("full", "csr", "opencl"))
+        except Exception as err:
+            import pyFAI
+            print(os.linesep.join(pyFAI.method_registry.IntegrationMethod.list_available()))
+            raise err
         rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d ng median Rwp = %.3f", rwp)
         self.assertLess(rwp, 0.1, "Rwp medfilt1d Cython/OpenCL: %.3f" % rwp)
