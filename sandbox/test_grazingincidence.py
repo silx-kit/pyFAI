@@ -30,7 +30,7 @@ if __name__ == "__main__":
     plt.show()
 
 
-    
+
 
     for fi, data in zip((fi_1, fi_2), (data_1, data_2)):
         res2d_1 = fi.integrate2d_grazing_incidence(data=data, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1)
