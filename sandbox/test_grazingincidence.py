@@ -21,6 +21,17 @@ if __name__ == "__main__":
     data_file = UtilsTest.getimage("Y6.edf")
     data_2 = fabio.open(data_file).data
 
+    results = []
+    fig, axes = subplots(ncols=4, nrows=2)
+    for sample_orientation in range(1, 9):
+        res = fi_2.integrate2d_grazing_incidence(data=data_2, incident_angle=0.0, tilt_angle=0.0, sample_orientation=sample_orientation)
+        results.append(res)
+        plot2d(res, ax=axes.ravel()[sample_orientation-1])
+    plt.show()
+
+
+    
+
     for fi, data in zip((fi_1, fi_2), (data_1, data_2)):
         res2d_1 = fi.integrate2d_grazing_incidence(data=data, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1)
         res2d_2 = fi.integrate2d_grazing_incidence(data=data, incident_angle=0.2, tilt_angle=0.0, sample_orientation=1)
