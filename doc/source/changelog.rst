@@ -5,11 +5,33 @@
 Change-log of versions
 ======================
 
-Next Version: 2025
-------------------
-- Refactoring of the integrator classes
-- New dataclass `pyFAI.io.integration_config.WorkerConfig` which is in charge of the serialization of worker configuration.
+2025.01 In time for the User-Meeting
+------------------------------------
+
+- Refactoring of the integrator classes:
+
+  * Azimuthal integrator moved to ``pyFAI.integrator.azimuthal``
+  * Most common code into ``pyFAI.integrator.common`` (including a lot of *deprecated* stuff)
+  * New sub-module dedicated to fiber/surface diffraction (``pyFAI.integrator.fiber``)
+  * Engine loading is now in ``pyFAI.integrator.load_engines``
+  * Those are all (still) sub-classes of each-other but it will change in the futrure where they will need to be **promoted** to transfer all the geometry and enable other's class feature. For example: ``ai.promote("FiberIntegrator")`` or ``ai.promote("GeometryRefinement")``
+
+- Refactoring of the handling of the serialization of the ``pyFAI-integrate`` GUI and ``pyFAI.worker.Worker`` into a JSON file.
+
+  * Use a **dataclass** defined in ``pyFAI.io.integration_config.WorkerConfig`` to manage all parameters to configure the ``Worker``
+  * New format version 5, enables the handling of sigma-clip & median filtering
+  * Provides better compatibility with `Ewoks <https://ewoks.esrf.fr>`_
+
+- Median filtering for 1D filtering:
+
+  * includes quantile average
+  * available in Python, Cython & OpenCL
+  * `Performances charts for sigma-clip & median filter <https://github.com/silx-kit/pyFAI/blob/main/doc/source/usage/tutorial/AzimuthalFilter.ipynb>`_.
+  
 - Tool to rebin 2d-result into 1d-result (`pyFAI.containers.rebin1d`)
+- Several bug-fixes & better code coverage
+- Supports python 3.8 .. 3.13. The GIL-free version on python 3.13 is untested
+- Tested by the developers on Windows (amd64), linux (amd64, arm64 and ppc64le) and MacOS (amd64 and arm64). Thanks to Debian for extending this matrix.
 
 2024.09 12/09/2024
 ------------------
