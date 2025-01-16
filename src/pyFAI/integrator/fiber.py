@@ -105,18 +105,39 @@ class FiberIntegrator(AzimuthalIntegrator):
         return f"{core_repr}\nIncident angle: {self.incident_angle:.2f}° Tilt angle {self.tilt_angle:.2f}° Sample orientation {self.sample_orientation}"
 
     @property
-    def incident_angle(self):
+    def incident_angle(self) -> float:
+        """Pitch angle: projection angle of the beam in the sample. Its rotation axis is the horizontal axis of the lab system.
+        """
         return self._cache_parameters.get('incident_angle', 0.0)
 
     @property
-    def tilt_angle(self):
+    def tilt_angle(self) -> float:
+        """Roll angle. Its rotation axis is the beam axis. Tilting of the horizon for grazing incidence in thin films.
+        """
         return self._cache_parameters.get('tilt_angle', 0.0)
 
     @property
-    def sample_orientation(self):
+    def sample_orientation(self) -> int:
+        """Orientation of the fiber axis according to EXIF orientation values
+
+        Sample orientations
+        1 - No changes are applied to the image
+        2 - Image is mirrored (flipped horizontally)
+        3 - Image is rotated 180 degrees
+        4 - Image is rotated 180 degrees and mirrored
+        5 - Image is mirrored and rotated 90 degrees counter clockwise
+        6 - Image is rotated 90 degrees counter clockwise
+        7 - Image is mirrored and rotated 90 degrees clockwise
+        8 - Image is rotated 90 degrees clockwise
+        """
         return self._cache_parameters.get('sample_orientation', 1)
 
     def reset_integrator(self, incident_angle, tilt_angle, sample_orientation):
+        """Reset the cache values for the gi/fiber parameters
+        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+        :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def sample_orientation)
+        """
         reset = False
         if incident_angle != self.incident_angle:
             logger.info(f"Incident angle set to {incident_angle}. AzimuthalIntegrator will be reset.")
@@ -161,7 +182,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param bool vertical_integration: If True, integrates along unit_ip; if False, integrates along unit_oop
         :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
         :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def sample_orientation)
         :param str filename: output filename in 2/3 column ascii format
         :param bool correctSolidAngle: correct for solid angle of each pixel if True
         :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
@@ -299,7 +320,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
         :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
         :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-        :param int sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+        :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def sample_orientation)
         :param str filename: output filename in 2/3 column ascii format
         :param bool correctSolidAngle: correct for solid angle of each pixel if True
         :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
