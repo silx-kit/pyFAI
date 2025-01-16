@@ -27,7 +27,7 @@ Change-log of versions
   * includes quantile average
   * available in Python, Cython & OpenCL
   * `Performances charts for sigma-clip & median filter <https://github.com/silx-kit/pyFAI/blob/main/doc/source/usage/tutorial/AzimuthalFilter.ipynb>`_.
-  
+
 - Tool to rebin 2d-result into 1d-result (`pyFAI.containers.rebin1d`)
 - Several bug-fixes & better code coverage
 - Supports python 3.8 .. 3.13. The GIL-free version on python 3.13 is untested
