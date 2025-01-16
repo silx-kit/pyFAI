@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author: Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
 #
@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/02/2024"
+__date__ = "24/12/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -144,10 +144,9 @@ class UnitFiber(Unit):
     """Represents a unit + two rotation axis. To be used in a Grazing-Incidence or Fiber Diffraction/Scattering experiment.
 
     Fiber parameters:
-    :param float incident_angle: projection angle of the beam in the sample. Its rotation axis is the fiber axis or the normal vector of the thin film
-    :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
-    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
-    # Sample orientation inspired by pygix by T.G.Dane: https://github.com/tgdane/pygix
+    :param float incident_angle: pitch angle; projection angle of the beam in the sample. Its rotation axis is the horizontal axis of the lab system.
+    :param float tilt angle: roll angle; its rotation axis is the beam axis. Tilting of the horizon for grazing incidence in thin films.
+    :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
 
     It has at least a name and a scale (in SI-unit)
     """
@@ -177,6 +176,19 @@ class UnitFiber(Unit):
         self._update_ne_equation()
 
     def _update_ne_equation(self):
+        """Updates the string-equation for the current used sample orientation following the EXIF orientation values
+        https://sirv.com/help/articles/rotate-photos-to-be-upright/
+
+        Sample orientations
+        1 - No changes are applied to the image
+        2 - Image is mirrored (flipped horizontally)
+        3 - Image is rotated 180 degrees
+        4 - Image is rotated 180 degrees and mirrored
+        5 - Image is mirrored and rotated 90 degrees counter clockwise
+        6 - Image is rotated 90 degrees counter clockwise
+        7 - Image is mirrored and rotated 90 degrees clockwise
+        8 - Image is rotated 90 degrees clockwise
+        """
         if (numexpr is not None) and isinstance(self.formula, str):
             signature = [(key, numpy.float64) for key in "xyzλπηχ" if key in self.formula]
 
@@ -184,15 +196,29 @@ class UnitFiber(Unit):
             if self._sample_orientation == 1:
                 ...
             elif self._sample_orientation == 2:
+                formula_ = self.formula_so1.replace('x', '(-x)')
+            elif self._sample_orientation == 3:
                 formula_ = self.formula_so1
                 formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
-                formula_ = formula_.replace('ψ', 'y').replace('ξ', 'x')
-            elif self._sample_orientation == 3:
-                formula_ = self.formula_so1.replace('x', '(-x)')
+                formula_ = formula_.replace('ψ', '(-x)').replace('ξ', '(-y)')
             elif self._sample_orientation == 4:
+                formula_ = self.formula_so1.replace('y', '(-y)')
+            elif self._sample_orientation == 5:
                 formula_ = self.formula_so1
                 formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
                 formula_ = formula_.replace('ψ', '(-y)').replace('ξ', '(-x)')
+            elif self._sample_orientation == 6:
+                formula_ = self.formula_so1
+                formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
+                formula_ = formula_.replace('ψ', '(-y)').replace('ξ', '(x)')
+            elif self._sample_orientation == 7:
+                formula_ = self.formula_so1
+                formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
+                formula_ = formula_.replace('ψ', '(y)').replace('ξ', '(x)')
+            elif self._sample_orientation == 8:
+                formula_ = self.formula_so1
+                formula_ = formula_.replace('x', 'ψ').replace('y', 'ξ')
+                formula_ = formula_.replace('ψ', '(y)').replace('ξ', '(-x)')
             self.formula = formula_
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
@@ -509,6 +535,43 @@ def q_sample(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
     )
 
 
+def rotate_sample_orientation(x, y, sample_orientation=1):
+    """Rotates/Flips the axis x and y following the EXIF orientation values:
+    https://sirv.com/help/articles/rotate-photos-to-be-upright/
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: vertical position, to the roof, from sample position
+    :param int sample_orientation: 1-8, orientation of the fiber axis regarding the detector main axis
+
+    Sample orientations
+    1 - No changes are applied to the image
+    2 - Image is mirrored (flipped horizontally)
+    3 - Image is rotated 180 degrees
+    4 - Image is rotated 180 degrees and mirrored
+    5 - Image is mirrored and rotated 90 degrees counter clockwise
+    6 - Image is rotated 90 degrees counter clockwise
+    7 - Image is mirrored and rotated 90 degrees clockwise
+    8 - Image is rotated 90 degrees clockwise
+    """
+    if sample_orientation == 1:
+        hpos = x; vpos = y
+    elif sample_orientation == 2:
+        hpos = -x; vpos = y
+    elif sample_orientation == 3:
+        hpos = -x ; vpos = -y
+    elif sample_orientation == 4:
+        hpos = x ; vpos = -y
+    elif sample_orientation == 5:
+        hpos = -y ; vpos = -x
+    elif sample_orientation == 6:
+        hpos = -y; vpos = x
+    elif sample_orientation == 7:
+        hpos = y ; vpos = x
+    elif sample_orientation == 8:
+        hpos = y ; vpos = -x
+    return hpos, vpos
+
+
 def eq_qhorz_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the component of the scattering vector along the horizontal direction in the sample frame (for GI/Fiber diffraction), towards the center of the ring
         First, rotates the lab sample reference around the beam axis a tilt_angle value in radians,
@@ -520,17 +583,10 @@ def eq_qhorz_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
     :param wavelength: in meter
     :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+    :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     :return: component of the scattering vector along the horizontal direction in inverse nm
     """
-    if sample_orientation == 1:
-        hpos = x ; vpos = y
-    if sample_orientation == 2:
-        hpos = y ; vpos = x
-    elif sample_orientation == 3:
-        hpos = -x ; vpos = y
-    elif sample_orientation == 4:
-        hpos = -y ; vpos = -x
+    hpos, vpos = rotate_sample_orientation(x=x, y=y, sample_orientation=sample_orientation)
 # The above code is using multi-line comments in Python, which are denoted by three consecutive pound
 # signs (
 
@@ -548,18 +604,10 @@ def eq_qvert_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
     :param wavelength: in meter
     :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+    :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     :return: component of the scattering vector along the vertical direction in inverse nm
     """
-    if sample_orientation == 1:
-        hpos = x ; vpos = y
-    if sample_orientation == 2:
-        hpos = y ; vpos = x
-    elif sample_orientation == 3:
-        hpos = -x ; vpos = y
-    elif sample_orientation == 4:
-        hpos = -y ; vpos = -x
-
+    hpos, vpos = rotate_sample_orientation(x=x, y=y, sample_orientation=sample_orientation)
     return eq_qvert(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
@@ -573,18 +621,10 @@ def eq_qbeam_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
     :param z: distance from sample along the beam
     :param wavelength: in meter
     :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
-    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+    :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     :return: component of the scattering vector along the beam propagation direction in inverse nm
     """
-    if sample_orientation == 1:
-        hpos = x ; vpos = y
-    if sample_orientation == 2:
-        hpos = y ; vpos = x
-    elif sample_orientation == 3:
-        hpos = -x ; vpos = y
-    elif sample_orientation == 4:
-        hpos = -y ; vpos = -x
-
+    hpos, vpos = rotate_sample_orientation(x=x, y=y, sample_orientation=sample_orientation)
     return eq_qbeam(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
@@ -599,18 +639,10 @@ def eq_qip(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orien
     :param wavelength: in meter
     :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+    :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     :return: component of the scattering vector in the plane YZ, in inverse nm
     """
-    if sample_orientation == 1:
-        hpos = x ; vpos = y
-    if sample_orientation == 2:
-        hpos = y ; vpos = x
-    elif sample_orientation == 3:
-        hpos = -x ; vpos = y
-    elif sample_orientation == 4:
-        hpos = -y ; vpos = -x
-
+    hpos, vpos = rotate_sample_orientation(x=x, y=y, sample_orientation=sample_orientation)
     q_sample_ = q_sample(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
     qsample_beam, qsample_horz = q_sample_[0], q_sample_[1]
 
@@ -628,7 +660,7 @@ def eq_qoop(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orie
     :param wavelength: in meter
     :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+    :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     :return: component of the scattering vector in the plane YZ, in inverse nm
     """
     return eq_qvert_gi(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
@@ -644,7 +676,7 @@ def eq_q_total(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_o
     :param wavelength: in meter
     :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+    :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     :return: component of the scattering vector in the plane YZ, in inverse nm
     """
     return numpy.sqrt(
@@ -653,15 +685,15 @@ def eq_q_total(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_o
     )
 
 formula_r = "sqrt(x * x + y * y)"
-formula_2th = "arctan2(sqrt(x * x + y * y), z)"
+formula_2th = f"arctan2({formula_r}, z)"
 formula_chi = "arctan2(y, x)"
-formula_q = "4.0e-9*π/λ*sin(0.5*arctan2(sqrt(x * x + y * y), z))"
-formula_d = "0.5*λ/sin(0.5*arctan2(sqrt(x * x + y * y), z))"
-formula_d2 = "(2.0e-9/λ*sin(0.5*arctan2(sqrt(x * x + y * y), z)))**2"
-formula_qx = "4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"
-formula_qy = "4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"
+formula_q = f"4.0e-9*π/λ*sin(0.5*{formula_2th})"
+formula_d = f"0.5*λ/sin(0.5*{formula_2th})"
+formula_d2 = f"(2.0e-9/λ*sin(0.5*{formula_2th}))**2"
+formula_qx = f"4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
+formula_qy = f"4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
 
-formula_exit_angle = "arctan2(y,sqrt(z**2+x**2))"
+formula_exit_angle = "arctan2(y, sqrt(z*z + x*x))"
 formula_exit_angle_horz = "arctan2(x,z)"
 formula_qbeam_lab = f"2.0e-9/λ*π*(cos({formula_exit_angle})*cos({formula_exit_angle_horz}) - 1)"
 formula_qhorz_lab = f"2.0e-9/λ*π*cos({formula_exit_angle})*sin({formula_exit_angle_horz})"
@@ -1048,7 +1080,7 @@ def get_unit_fiber(name, incident_angle:float =0.0, tilt_angle:float =0.0, sampl
 
     :param float incident_angle: projection angle of the beam in the sample. Its rotation axis is the fiber axis or the normal vector of the thin film
     :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
-    :param sample_orientation: 1-4, four different orientation of the fiber axis regarding the detector main axis, from 1 to 4 is +90º
+    :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     """
     unit = copy.deepcopy(RADIAL_UNITS.get(name, None))
 

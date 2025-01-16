@@ -38,7 +38,7 @@ algorithm.
 
 __authors__ = ["Pierre Paleo", "Jérôme Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/03/2023"
+__date__ = "06/01/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -63,7 +63,7 @@ def horizontal_convolution(float[:, ::1] img,
         int FILTER_SIZE, HALF_FILTER_SIZE
         int IMAGE_H, IMAGE_W
         int x, y, fIndex, newpos
-        double acc
+        double acc=0.0
         float[:, ::1] output
 
     FILTER_SIZE = filter.shape[0]
@@ -104,7 +104,7 @@ def vertical_convolution(float[:, ::1] img, float[::1] filter):
         int FILTER_SIZE, HALF_FILTER_SIZE
         int IMAGE_H, IMAGE_W
         int x, y, fIndex, newpos
-        double acc
+        double acc=0.0
         float[:, ::1] output
 
     FILTER_SIZE = filter.shape[0]

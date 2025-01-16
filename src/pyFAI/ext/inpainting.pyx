@@ -8,7 +8,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2017-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 Cython module for doing inpaining of images.
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "12/11/2024"
+__date__ = "07/01/2025"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -142,7 +142,7 @@ def polar_inpaint(floating[:, :] img not None,
         int row, col, npt_radial, npt_azim, idx_col, idx_row, tar_row, radius, dist
         float[:, ::1] res
         bint do_dummy = empty is not None
-        float value, dummy
+        float value, dummy=0.0
         double sum, cnt, weight
         list values
 
