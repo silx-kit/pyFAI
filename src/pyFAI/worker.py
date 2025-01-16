@@ -36,53 +36,15 @@ additional saving capabilities like
 
 Aims at being integrated into a plugin like LImA or as model for the GUI
 
-The configuration of this class is mainly done via a dictionary transmitted as a JSON string:
-Here are the valid keys:
-
-- "dist"
-- "poni1"
-- "poni2"
-- "rot1"
-- "rot3"
-- "rot2"
-- "pixel1"
-- "pixel2"
-- "splineFile"
-- "wavelength"
-- "poni" #path of the file
-- "chi_discontinuity_at_0"
-- "do_mask"
-- "do_dark"
-- "do_azimuthal_range"
-- "do_flat"
-- "do_2D"
-- "azimuth_range_min"
-- "azimuth_range_max"
-- "polarization_factor"
-- "nbpt_rad"
-- "do_solid_angle"
-- "do_radial_range"
-- "error_model"
-- "delta_dummy"
-- "nbpt_azim"
-- "flat_field"
-- "radial_range_min"
-- "dark_current"
-- "do_polarization"
-- "mask_file"
-- "detector"
-- "unit"
-- "radial_range_max"
-- "val_dummy"
-- "do_dummy"
-- "method"
+The configuration of this class is mainly done via a WorkerConfig object serialized as a JSON string.
+For the valid keys, please refer to the doc of the dataclass `pyFAI.io.integration_config.WorkerConfig`
 """
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2024"
+__date__ = "10/01/2025"
 __status__ = "development"
 
 import threading
@@ -100,8 +62,7 @@ from .containers import ErrorModel
 from .method_registry import IntegrationMethod
 from .distortion import Distortion
 from . import units
-from .io import integration_config
-import pyFAI.io.image
+from .io import integration_config, ponifile, image as io_image
 from .engines.preproc import preproc as preproc_numpy
 from .utils.decorators import deprecated_warning
 try:
@@ -130,55 +91,44 @@ def make_ai(config, consume_keys=False):
         consumed when used.
     :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
-    config = integration_config.normalize(config, inplace=consume_keys)
+    if not isinstance(config, integration_config.WorkerConfig):
+        config = integration_config.WorkerConfig.from_dict(config, inplace=consume_keys)
     ai = AzimuthalIntegrator()
-    _init_ai(ai, config, consume_keys)
+    _init_ai(ai, config)
     return ai
 
 
-def _init_ai(ai, config, consume_keys=False, read_maps=True):
+def _init_ai(ai, config, read_maps=True):
     """Initialize an :class:`AzimuthalIntegrator` from a configuration.
 
     :param AzimuthalIntegrator ai: An :class:`AzimuthalIntegrator`.
-    :param config: Key-value dictionary with all parameters
-    :param bool consume_keys: If true the keys from the dictionary will be
-        consumed when used.
+    :param config: integration_config.WorkerConfig dataclass instance
     :param bool read_maps: If true mask, flat, dark will be read.
     :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
-    if not consume_keys:
-        config = dict(config)
+    ai._init_from_poni(ponifile.PoniFile(config.poni))
 
-#   #This sets only what is part of the poni-file
-    config_reader = integration_config.ConfigurationReader(config)
-    poni = config_reader.pop_ponifile()
-    ai._init_from_poni(poni)
-
-    value = config.pop("chi_discontinuity_at_0", False)
-    if value:
+    if config.chi_discontinuity_at_0:
         ai.setChiDiscAtZero()
     else:
         ai.setChiDiscAtPi()
 
     if read_maps:
-        filename = config.pop("mask_file", "")
-        apply_process = config.pop("do_mask", True)
-        if filename and apply_process:
+        filename = config.mask_file
+        if filename:
             try:
-                data = pyFAI.io.image.read_image_data(filename)
+                data = io_image.read_image_data(filename)
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
                 ai.detector.mask = data
 
-        filename = config.pop("dark_current", "")
-        apply_process = config.pop("do_dark", True)
-        if filename and apply_process:
+        filename = config.dark_current
+        if filename:
             ai.detector.set_darkcurrent(_reduce_images(_normalize_filenames(filename)))
 
-        filename = config.pop("flat_field", "")
-        apply_process = config.pop("do_flat", True)
-        if filename and apply_process:
+        filename = config.flat_field
+        if filename:
             ai.detector.set_flatfield(_reduce_images(_normalize_filenames(filename)))
     return ai
 
@@ -206,11 +156,11 @@ def _reduce_images(filenames, method="mean"):
     :param str method: method used to compute the dark, "mean" or "median"
     """
     if isinstance(filenames, str):
-        return pyFAI.io.image.read_image_data(filenames).astype(numpy.float32)
+        return io_image.read_image_data(filenames).astype(numpy.float32)
     if len(filenames) == 0:
         return None
     if len(filenames) == 1:
-        return pyFAI.io.image.read_image_data(filenames[0]).astype(numpy.float32)
+        return io_image.read_image_data(filenames[0]).astype(numpy.float32)
     else:
         return average.average_images(filenames, filter_=method, fformat=None, threshold=0)
 
@@ -262,9 +212,9 @@ class Worker(object):
         self.azimuthal = None
         self.safe = True
         self.extra_options = {} if extra_options is None else extra_options.copy()
-        self.radial_range = self.extra_options.get("radial_range")
-        self.azimuth_range = self.extra_options.get("azimuth_range")
-        self.error_model = self.extra_options.get("error_model")
+        self.radial_range = self.extra_options.pop("radial_range", None)
+        self.azimuth_range = self.extra_options.pop("azimuth_range", None)
+        self.error_model = ErrorModel.parse(self.extra_options.pop("error_model", None))
 
 
     def __repr__(self):
@@ -272,34 +222,38 @@ class Worker(object):
         pretty print of myself
         """
         lstout = ["Azimuthal Integrator:", self.ai.__repr__(),
-                  "Input image shape: %s" % list(self.shape),
-                  "Number of points in radial direction: %s" % self.nbpt_rad,
-                  "Number of points in azimuthal direction: %s" % self.nbpt_azim,
-                  "Unit in radial dimension: %s" % self.unit,
-                  "Correct for solid angle: %s" % self.correct_solid_angle,
-                  "Polarization factor: %s" % self.polarization_factor,
-                  "Dark current image: %s" % self.dark_current_image,
-                  "Flat field image: %s" % self.flat_field_image,
-                  "Mask image: %s" % self.mask_image,
-                  "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
-                  "Directory: %s, \tExtension: %s" % (self.subdir, self.extension),
-                  "Radial range: %s" % self.radial_range,
-                  "Azimuth range: %s" % self.azimuth_range]
+                  f"Input image shape: {self.shape}",
+                  f"Number of points in radial direction: {self.nbpt_rad}",
+                  f"Number of points in azimuthal direction: {self.nbpt_azim}",
+                  f"Unit in radial dimension: {self.unit}",
+                  f"Correct for solid angle: {self.correct_solid_angle}",
+                  f"Polarization factor: {self.polarization_factor}",
+                  f"Dark current image: {self.dark_current_image}",
+                  f"Flat field image: {self.flat_field_image}",
+                  f"Mask image: {self.mask_image}",
+                  f"Dummy: {self.dummy},\tDelta_Dummy: {self.delta_dummy}",
+                  f"Directory: {self.subdir}, \tExtension: {self.extension}",
+                  f"Radial range: {self.radial_range}",
+                  f"Azimuth range: {self.azimuth_range}"]
         return os.linesep.join(lstout)
 
     def do_2D(self):
         return self.nbpt_azim > 1
 
     def update_processor(self, integrator_name=None):
+        dim = 2 if self.do_2D() else 1
         if integrator_name is None:
             integrator_name = self.integrator_name
         if integrator_name is None:
-            if self.do_2D():
-                integrator_name = "integrate2d"
-            else:
-                integrator_name = "integrate1d"
+            integrator_name = f"integrate{dim}d"
+        else:
+            if "2d" in integrator_name and dim == 1:
+                integrator_name = integrator_name.replace("2d", "1d")
+            elif "1d" in integrator_name and dim == 2:
+                integrator_name = integrator_name.replace("1d", "2d")
         self._processor = self.ai.__getattribute__(integrator_name)
-        self._method = IntegrationMethod.select_one_available(self.method, dim=2 if self.do_2D() else 1)
+        self._method = IntegrationMethod.select_one_available(self.method, dim=dim)
+        self.integrator_name = self._processor.__name__
 
     @property
     def nbpt_azim(self):
@@ -458,19 +412,19 @@ class Worker(object):
         """
         Configure the working from the dictionary.
 
-        :param dict config: Key-value configuration
+        :param dict config: Key-value configuration or integration_config.WorkerConfig dataclass instance
         :param bool consume_keys: If true the keys from the dictionary will be
             consumed when used.
         """
-        config = integration_config.normalize(config, inplace=consume_keys, do_raise=False)
-        _init_ai(self.ai, config, consume_keys=True, read_maps=False)
+        if not isinstance(config, integration_config.WorkerConfig):
+            config = integration_config.WorkerConfig.from_dict(config, inplace=consume_keys)
+        _init_ai(self.ai, config, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
-        filename = config.pop("mask_file", "")
-        apply_process = config.pop("do_mask", True)
-        if filename and apply_process:
+        filename = config.mask_file
+        if filename:
             try:
-                data = pyFAI.io.image.read_image_data(filename)
+                data = io_image.read_image_data(filename)
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s", filename, error)
             else:
@@ -478,103 +432,40 @@ class Worker(object):
                 self.mask_image = filename
 
         # Do it here while we have to store metadata
-        filename = config.pop("dark_current", "")
-        apply_process = config.pop("do_dark", True)
-        if filename and apply_process:
+        filename = config.dark_current
+        if filename:
             filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
             self.ai.detector.set_darkcurrent(data)
-            self.dark_current_image = "%s(%s)" % (method, ",".join(filenames))
+            self.dark_current_image = filenames
 
         # Do it here while we have to store metadata
-        filename = config.pop("flat_field", "")
-        apply_process = config.pop("do_flat", True)
-        if filename and apply_process:
+        filename = config.flat_field
+        if filename:
             filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
             self.ai.detector.set_flatfield(data)
-            self.flat_field_image = "%s(%s)" % (method, ",".join(filenames))
+            self.flat_field_image = filenames
 
-        # Uses it anyway in case do_2D is customed after the configuration
-        value = config.pop("nbpt_azim", None)
-        if value:
-            self.nbpt_azim = int(value)
-        else:
-            self.nbpt_azim = 1
-
-        reader = integration_config.ConfigurationReader(config)
-        self.method = reader.pop_method("csr")
-
-        if self.method.dim == 1:
-            self.nbpt_azim = 1
-
-        value = config.pop("nbpt_rad", None)
-        if value:
-            self.nbpt_rad = int(value)
-
-        value = config.pop("unit", units.TTH_DEG)
-        self.unit = units.to_unit(value)
-
-        value = config.pop("do_poisson", None)
-        if value is not None:
-            deprecated_warning(
-                __name__,
-                name="do_poisson",
-                reason='do_poisson=True is replaced by error_model="poisson"'
-            )
-            self.do_poisson = value
-
-        value = config.pop("do_azimuthal_error", None)
-        if value is not None:
-            deprecated_warning(
-                __name__,
-                name="do_azimuthal_error",
-                reason='do_azimuthal_error=True is replaced by error_model="azimuthal"'
-            )
-            self.do_azimuthal_error = value
-
-        value = config.pop("error_model", None)
-        if value:
-            value = value.lower()
-        self.error_model = value
-
-        value = config.pop("polarization_factor", None)
-        apply_value = config.pop("do_polarization", True)
-        if value and apply_value:
-            self.polarization_factor = value
-        else:
-            self.polarization_factor = None
-
-        value1 = config.pop("azimuth_range_min", None)
-        value2 = config.pop("azimuth_range_max", None)
-        apply_values = config.pop("do_azimuthal_range", True)
-        if apply_values and value1 is not None and value2 is not None:
-            self.azimuth_range = float(value1), float(value2)
-
-        value1 = config.pop("radial_range_min", None)
-        value2 = config.pop("radial_range_max", None)
-        apply_values = config.pop("do_radial_range", True)
-        if apply_values and value1 is not None and value2 is not None:
-            self.radial_range = float(value1), float(value2)
-
-        value = config.pop("do_solid_angle", True)
-        self.correct_solid_angle = bool(value)
-
-        self.dummy = config.pop("val_dummy", None)
-        self.delta_dummy = config.pop("delta_dummy", None)
-        apply_values = config.pop("do_dummy", True)
-        if not apply_values:
-            self.dummy, self.delta_dummy = None, None
-
-        self._normalization_factor = config.pop("normalization_factor", None)
-
-        if "monitor_name" in config:
+        self._nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
+        self.method = config.method # expand to Method ?
+        self.nbpt_rad = config.nbpt_rad
+        self.unit = units.to_unit(config.unit or "2th_deg")
+        self.error_model = ErrorModel.parse(config.error_model)
+        self.polarization_factor = config.polarization_factor
+        self.azimuth_range = config.azimuth_range
+        self.radial_range = config.radial_range
+        self.correct_solid_angle = True if config.do_solid_angle is None else bool(config.do_solid_angle)
+        self.dummy = config.val_dummy
+        self.delta_dummy = config.delta_dummy
+        self._normalization_factor = config.normalization_factor
+        self.extra_options = config.extra_options or {}
+        self.update_processor(integrator_name=config.integrator_method)
+        if config.monitor_name:
             logger.warning("Monitor name defined but unsupported by the worker.")
 
-        integrator_name = config.pop("integrator_name", None)
-        self.update_processor(integrator_name=integrator_name)
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
@@ -587,45 +478,35 @@ class Worker(object):
 
     unit = property(get_unit, set_unit)
 
-    def get_config(self):
-        """Returns the configuration as a dictionary.
+    def get_worker_config(self):
+        """Returns the configuration as a WorkerConfig dataclass instance.
 
-        :return: dict with the config to be de-serialized with set_config/loaded with pyFAI.load
+        :return: WorkerConfig dataclass instance
         """
-        config = {
-            "version": 4,
-            "application" : "worker",
-            "unit": str(self.unit),
-            }
-
-        config["poni"] = dict(self.ai.get_config())
-
-        for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "dummy", "delta_dummy",
-                    "correct_solid_angle", "dark_current_image", "flat_field_image",
-                    "mask_image", "error_model", "shape", "method"]:
+        config = integration_config.WorkerConfig(application="worker",
+                                                 poni = dict(self.ai.get_config()),
+                                                 unit = str(self._unit))
+        for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "delta_dummy", "extra_options",
+                    "correct_solid_angle", "error_model", "method", "azimuth_range", "radial_range",
+                    "dummy", "normalization_factor", "dark_current_image", "flat_field_image",
+                    "mask_image", "integrator_name"]:
             try:
-                config[key] = self.__getattribute__(key)
-            except Exception:
-                pass
-
-        for key in ["azimuth_range", "radial_range"]:
-            try:
-                value = self.__getattribute__(key)
-            except Exception:
-                pass
-            else:
-                if value is not None:
-                    config["do_" + key] = True
-                    config[key + "_min"] = min(value)
-                    config[key + "_max"] = max(value)
-                else:
-                    config["do_" + key] = False
-
+                config.__setattr__(key, self.__getattribute__(key))
+            except Exception as err:
+                logger.error(f"exception {type(err)} at {key} ({err})")
         return config
+
+    def get_config(self):
+        """Returns the configuration as a JSON-serializable dictionary.
+        :return: JSON-serializable dictionary
+        """
+        return self.get_worker_config().as_dict()
+
 
     def get_json_config(self):
         """return configuration as a JSON string"""
-        return json.dumps(self.get_config(), indent=2)
+        return json.dumps(self.get_config(),
+                          indent=2)
 
     def set_json_config(self, json_file):
         if os.path.isfile(json_file):
@@ -639,10 +520,7 @@ class Worker(object):
 
     def save_config(self, filename=None):
         """Save the configuration as a JSON file"""
-        if not filename:
-            filename = self.config_file
-        with open(filename, "w") as w:
-            w.write(self.get_json_config())
+        self.get_worker_config().save(filename or self.config_file)
 
     def warmup(self, sync=False):
         """
@@ -692,10 +570,10 @@ class Worker(object):
     @staticmethod
     def validate_config(config, raise_exception=RuntimeError):
         """
-        Validates a configuration for any inconsitencies
+        Validates a configuration for any inconsistencies
 
-        :param config: dict contraining the configuration
-        :param raise_exception: Exception class to raise when configuration is not consistant
+        :param config: dict containing the configuration
+        :param raise_exception: Exception class to raise when configuration is not consistent
         :return: None or reason as a string when raise_exception is None, else raise the given exception
         """
         reason = None
@@ -754,7 +632,7 @@ class PixelwiseWorker(object):
         :param flat: array
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
-        :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
+        :param device: Used to influence OpenCL behavior: can be "cpu", "GPU", "Acc" or even an OpenCL context
         :param empty: value given for empty pixels by default
         :param dtype: unit (and precision) in which to perform calculation: float32 or float64
         """
@@ -795,7 +673,7 @@ class PixelwiseWorker(object):
         :param data: input data
         :param variance: the variance associated to the data
         :param normalization: normalization factor
-        :return: processed data, optionally with the assiciated error if variance is provided
+        :return: processed data, optionally with the associated error if variance is provided
         """
         propagate_error = (variance is not None)
         if use_cython:
@@ -845,7 +723,7 @@ class DistortionWorker(object):
         :param dummy: value for bad pixels
         :param delta_dummy: precision for dummies
         :param method: LUT or CSR for the correction
-        :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
+        :param device: Used to influence OpenCL behavior: can be "cpu", "GPU", "Acc" or even an OpenCL context
         """
 
         self.ctx = None
@@ -880,7 +758,7 @@ class DistortionWorker(object):
         if detector is not None:
             self.distortion = Distortion(detector, method=method, device=device,
                                      mask=mask, empty=self.dummy or 0)
-            self.distortion.reset(prepare=True)  # enfoce initization
+            self.distortion.reset(prepare=True)  # enforce initialization
         else:
             self.distortion = None
 
@@ -923,7 +801,7 @@ class DistortionWorker(object):
                 pp_variance = proc_data[..., 1]
                 pp_normalisation = proc_data[..., 2]
                 if numexpr is None:
-                    # Cheap, muthithreaded way:
+                    # Cheap, multi-threaded way:
                     res_signal = numexpr.evaluate("where(pp_normalisation==0.0, 0.0, pp_signal / pp_normalisation)")
                     res_error = numexpr.evaluate("where(pp_normalisation==0.0, 0.0, sqrt(pp_variance) / abs(pp_normalisation))")
                 else:
