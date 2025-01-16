@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2024"
+__date__ = "13/01/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1358,7 +1358,7 @@ class Geometry(object):
         """
         Load the refined parameters from a file.
 
-        :param filename: name of the file to load
+        :param filename: name of the file to load. Can also be a JSON string with a dict or dict
         :type filename: string
         :return: itself with updated parameters
         """
