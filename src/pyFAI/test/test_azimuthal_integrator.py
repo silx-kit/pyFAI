@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "15/01/2025"
 
 import unittest
 import os
@@ -53,6 +53,8 @@ if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
 from pyFAI import units
 from ..utils import mathutil
+from ..utils.logging_utils import logging_disabled
+from ..opencl import pyopencl
 
 
 class TestAzimHalfFrelon(unittest.TestCase):
@@ -257,21 +259,50 @@ class TestAzimHalfFrelon(unittest.TestCase):
         self.assertGreater(numpy.diff(res.radial).min(), 0, "radial position is stricly monotonic")
         self.assertEqual(res.radial.shape, res.intensity.shape, "1D intensities are of proper shape")
 
-    @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_medfilt1d(self):
-        ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_csr")
-        ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_ocl_csr")
-        rwp = mathutil.rwp(ref, ocl)
-        logger.info("test_medfilt1d median Rwp = %.3f", rwp)
-        self.assertLess(rwp, 1, "Rwp medfilt1d Cython/OpenCL: %.3f" % rwp)
+        N = 1000
+        param = {"unit": "2th_deg"}
+        # legacy version"
+        if UtilsTest.opencl and pyopencl:
+            with logging_disabled(logging.WARNING):
+                ref = self.ai.medfilt1d_legacy(self.data, N, method="bbox_csr", **param)
+                ocl = self.ai.medfilt1d_legacy(self.data, N, method="bbox_ocl_csr", **param)
+            rwp = mathutil.rwp(ref, ocl)
+            logger.info("test_medfilt1d legacy median Rwp = %.3f", rwp)
+            self.assertLess(rwp, 1, "Rwp medfilt1d Cython/OpenCL: %.3f" % rwp)
 
-        ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_csr", percentile=(20, 80))
-        ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="bbox_ocl_csr", percentile=(20, 80))
-        rwp = mathutil.rwp(ref, ocl)
-        logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
-        self.assertLess(rwp, 3, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp)
-        ref = ocl = rwp = None
+            with logging_disabled(logging.WARNING):
+                ref = self.ai.medfilt1d_legacy(self.data, N, method="bbox_csr", percentile=(20, 80), **param)
+                ocl = self.ai.medfilt1d_legacy(self.data, N, method="bbox_ocl_csr", percentile=(20, 80), **param)
+            rwp = mathutil.rwp(ref, ocl)
+            logger.info("test_medfilt1d legacy trimmed-mean Rwp = %.3f", rwp)
+            self.assertLess(rwp, 3, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp)
+
+        # new version"
+        ref = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "cython"), **param)
+        pyt = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "python"), **param)
+        rwp_pyt = mathutil.rwp(ref, pyt)
+        logger.info("test_medfilt1d ng median Rwp_python = %.3f", rwp_pyt)
+        self.assertLess(rwp_pyt, 0.1, "Rwp medfilt1d_ng Cython/Python: %.3f" % rwp_pyt)
+
+        if UtilsTest.opencl and pyopencl:
+            ocl = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "opencl"), **param)
+            rwp_ocl = mathutil.rwp(ref, ocl)
+            logger.info("test_medfilt1d ng median Rwp_opencl = %.3f", rwp_ocl)
+            self.assertLess(rwp_ocl, 0.1, "Rwp medfilt1d_ng Cython/OpenCL: %.3f" % rwp_ocl)
+
+        ref = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "cython"), percentile=(20, 80), **param)
+        ref = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "python"), percentile=(20, 80), **param)
+        rwp_pyt = mathutil.rwp(ref, pyt)
+        logger.info("test_medfilt1d ng trimmed-mean Rwp_python = %.3f", rwp_pyt)
+        self.assertLess(rwp_pyt, 2, "Rwp trimmed-mean Cython/Python: %.3f" % rwp_pyt)
+        if UtilsTest.opencl and pyopencl:
+            ocl = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", 'opencl'), percentile=(20, 80), **param)
+            rwp_ocl = mathutil.rwp(ref, ocl)
+            logger.info("test_medfilt1d ng trimmed-mean Rwp_opencl = %.3f", rwp_ocl)
+            self.assertLess(rwp, 0.1, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp_ocl)
+        ref = ocl = pyt = rwp = rwp_ocl = rwp_pyt = None
 
     def test_radial(self):
         "Non regression for #1602"
@@ -414,11 +445,14 @@ class TestSaxs(unittest.TestCase):
         ai.USE_LEGACY_MASK_NORMALIZATION = True
         data = numpy.array([[0, 1, 2, 3]])
         mask = numpy.array([[0, 1, 1, 1]])
-        result = ai.create_mask(data, mask, mode="numpy")
+        with logging_disabled(logging.WARNING):
+            result = ai.create_mask(data, mask, mode="numpy")
         self.assertEqual(list(result[0]), [False, True, True, True])
+
         data = numpy.array([[0, 1, 2, 3]])
         mask = numpy.array([[1, 0, 0, 0]])
-        result = ai.create_mask(data, mask, mode="numpy")
+        with logging_disabled(logging.WARNING):
+            result = ai.create_mask(data, mask, mode="numpy")
         self.assertEqual(list(result[0]), [False, True, True, True])
 
     def test_no_legacy_mask(self):
@@ -485,8 +519,7 @@ class TestSaxs(unittest.TestCase):
         mask = img < 0
         res_poisson = ai.integrate1d_ng(img, 1000, mask=mask, error_model="poisson")
         self.assertGreater(res_poisson.sigma.min(), 0, "Poisson error are positive")
-# TODO bug 1446 error-model "azimuthal" is not implemented in `integrate1d_ng`
-        res_azimuthal = ai.integrate1d_legacy(img, 1000, mask=mask, error_model="azimuthal")
+        res_azimuthal = ai.integrate1d_ng(img, 1000, mask=mask, error_model="azimuthal")
         self.assertGreater(res_azimuthal.sigma.min(), 0, "Azimuthal error are positive")
 
     def test_empty(self):
@@ -538,13 +571,15 @@ class TestSetter(unittest.TestCase):
         fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
 
     def test_flat(self):
-        self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")
-        self.assertTrue(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
+        with logging_disabled(logging.WARNING):
+            self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")
+            self.assertTrue(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
         self.assertTrue(abs(self.ai.flatfield - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Flat array is OK")
 
     def test_dark(self):
-        self.ai.set_darkfiles((self.edf1, self.edf2), method="mean")
-        self.assertTrue(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
+        with logging_disabled(logging.WARNING):
+            self.ai.set_darkfiles((self.edf1, self.edf2), method="mean")
+            self.assertTrue(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
         self.assertTrue(abs(self.ai.darkcurrent - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Dark array is OK")
 
 
@@ -618,12 +653,26 @@ class TestRange(unittest.TestCase):
         self.ai.reset()
 
     def test_medfilt(self):
-        res = self.ai.medfilt1d(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+        # legacy
+        with logging_disabled(logging.WARNING):
+            res = self.ai.medfilt1d_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+        self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
+        self.assertLessEqual(res.radial.max(), max(self.rad_range))
+        # new generation
+        res = self.ai.medfilt1d_ng(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
-    def test_sigma_clip_legacy(self):
-        res = self.ai._sigma_clip_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+
+    def test_sigma_clip(self):
+        # legacy
+        with logging_disabled(logging.WARNING):
+            res = self.ai._sigma_clip_legacy(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
+        self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
+        self.assertLessEqual(res.radial.max(), max(self.rad_range))
+
+        # new generation
+        res = self.ai.sigma_clip_ng(self.img, self.npt, unit=self.unit, azimuth_range=self.azim_range, radial_range=self.rad_range)
         self.assertGreaterEqual(res.radial.min(), min(self.rad_range))
         self.assertLessEqual(res.radial.max(), max(self.rad_range))
 
