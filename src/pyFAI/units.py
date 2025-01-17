@@ -374,7 +374,7 @@ def eq_scattering_angle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_
 
 
 def eq_exit_angle_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the vertical exit angle relative to the horizon (for thin films), used for GI/Fiber diffraction
+    """Calculates the vertical exit angle in radians relative to the horizon (for thin films), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -398,7 +398,7 @@ def eq_exit_angle_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=
 
 
 def eq_exit_angle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the horizontal exit angle relative to the horizon (for thin films), used for GI/Fiber diffraction
+    """Calculates the horizontal exit angle in radians relative to the horizon (for thin films), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -954,10 +954,26 @@ register_radial_fiber_unit("exit_angle_vert",
 
 register_radial_fiber_unit("exit_angle_horz",
                      scale=1.0,
-                     label=r"Exit angle(rad)",
+                     label=r"Horizontal exit angle (rad)",
                      equation=eq_exit_angle_horz,
                      short_name="exitangle_horz",
                      unit_symbol="rad",
+                     positive=False)
+
+register_radial_fiber_unit("exit_angle_vert_deg",
+                     scale=180.0 / numpy.pi,
+                     label=r"Vertical exit angle (deg)",
+                     equation=eq_exit_angle_vert,
+                     short_name="exitangle_vert_deg",
+                     unit_symbol="deg",
+                     positive=False)
+
+register_radial_fiber_unit("exit_angle_horz_deg",
+                     scale=180.0 / numpy.pi,
+                     label=r"Horizontal exit angle (deg)",
+                     equation=eq_exit_angle_horz,
+                     short_name="exitangle_horz_deg",
+                     unit_symbol="deg",
                      positive=False)
 
 register_radial_fiber_unit("qxgi_nm^-1",
