@@ -373,7 +373,7 @@ def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, s
     rot_incident_angle = numpy.array([[1,0,0],
                               [0,numpy.cos(incident_angle), numpy.sin(-incident_angle)],
                               [0, numpy.sin(incident_angle), numpy.cos(incident_angle)]],
-    ) 
+    )
     rot_tilt_angle = numpy.array([[numpy.cos(tilt_angle), numpy.sin(-tilt_angle), 0],
                               [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
                               [0, 0, 1]],
