@@ -638,9 +638,6 @@ def eq_qhorz_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
     :return: component of the scattering vector along the horizontal direction in inverse nm
     """
     hpos, vpos = rotate_sample_orientation(x=x, y=y, sample_orientation=sample_orientation)
-# The above code is using multi-line comments in Python, which are denoted by three consecutive pound
-# signs (
-
     return eq_qhorz(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
@@ -744,11 +741,20 @@ formula_d2 = f"(2.0e-9/λ*sin(0.5*{formula_2th}))**2"
 formula_qx = f"4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
 formula_qy = f"4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
 
-formula_exit_angle = "arctan2(y, sqrt(z*z + x*x))"
-formula_exit_angle_horz = "arctan2(x,z)"
-formula_qbeam_lab = f"2.0e-9/λ*π*(cos({formula_exit_angle})*cos({formula_exit_angle_horz}) - 1)"
-formula_qhorz_lab = f"2.0e-9/λ*π*cos({formula_exit_angle})*sin({formula_exit_angle_horz})"
-formula_qvert_lab = f"2.0e-9/λ*π*sin({formula_exit_angle})"
+formula_scattering_angle_vert = "arctan2(y, sqrt(z*z + x*x))"
+formula_scattering_angle_horz = "arctan2(x,z)"
+# formula_x_rot_iangle = "x"
+# formula_y_rot_iangle = "y * cos(η) - z * sin(η)"
+# formula_z_rot_iangle = "y * sin(η) + z * cos(η)"
+# formula_x_rot_tangle = f"({formula_x_rot_iangle}) * cos(χ) - ({formula_y_rot_iangle}) * sin(χ)"
+# formula_y_rot_tangle = f"({formula_x_rot_iangle}) * sin(χ) + ({formula_y_rot_iangle}) * cos(χ)"
+# formula_z_rot_tangle = formula_z_rot_iangle
+# formula_exit_angle_vert = f"arctan2({formula_y_rot_tangle}, sqrt({formula_z_rot_tangle} ** {formula_z_rot_tangle} + {formula_x_rot_tangle} ** {formula_x_rot_tangle}))"
+# formula_exit_angle_horz = f"arctan2(({formula_x_rot_tangle}), ({formula_z_rot_tangle}))"
+
+formula_qbeam_lab = f"2.0e-9/λ*π*(cos({formula_scattering_angle_vert})*cos({formula_scattering_angle_horz}) - 1)"
+formula_qhorz_lab = f"2.0e-9/λ*π*cos({formula_scattering_angle_vert})*sin({formula_scattering_angle_horz})"
+formula_qvert_lab = f"2.0e-9/λ*π*sin({formula_scattering_angle_vert})"
 formula_qbeam_rot = f"cos(η)*({formula_qbeam_lab})+sin(η)*({formula_qvert_lab})"
 formula_qhorz_rot = f"cos(χ)*({formula_qhorz_lab})-sin(χ)*sin(η)*({formula_qbeam_lab})+sin(χ)*cos(η)*({formula_qvert_lab})"
 formula_qvert_rot = f"-sin(χ)*({formula_qhorz_lab})-cos(χ)*sin(η)*({formula_qbeam_lab})+cos(χ)*cos(η)*({formula_qvert_lab})"
@@ -931,6 +937,7 @@ register_radial_unit("qy_nm^-1",
 register_radial_fiber_unit("scattering_angle_vert",
                      scale=1.0,
                      label=r"Vertical scattering angle (rad)",
+                    #  formula=formula_scattering_angle_vert,
                      equation=eq_scattering_angle_vertical,
                      short_name="scatangle_vert",
                      unit_symbol="rad",
@@ -939,6 +946,7 @@ register_radial_fiber_unit("scattering_angle_vert",
 register_radial_fiber_unit("scattering_angle_horz",
                      scale=1.0,
                      label=r"Horizontal scattering angle (rad)",
+                    #  formula=formula_scattering_angle_horz,
                      equation=eq_scattering_angle_horz,
                      short_name="scatangle_horz",
                      unit_symbol="rad",
