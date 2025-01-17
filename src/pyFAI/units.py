@@ -758,7 +758,7 @@ def eq_chi_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_or
     """
     qoop = eq_qoop(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
     qip = eq_qip(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
-    return numpy.arctan2(qoop, qip)
+    return numpy.arctan2(qip, qoop)
 
 formula_r = "sqrt(x * x + y * y)"
 formula_2th = f"arctan2({formula_r}, z)"
