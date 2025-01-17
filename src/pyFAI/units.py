@@ -743,14 +743,14 @@ formula_qy = f"4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
 
 formula_scattering_angle_vert = "arctan2(y, sqrt(z*z + x*x))"
 formula_scattering_angle_horz = "arctan2(x,z)"
-# formula_x_rot_iangle = "x"
-# formula_y_rot_iangle = "y * cos(η) - z * sin(η)"
-# formula_z_rot_iangle = "y * sin(η) + z * cos(η)"
-# formula_x_rot_tangle = f"({formula_x_rot_iangle}) * cos(χ) - ({formula_y_rot_iangle}) * sin(χ)"
-# formula_y_rot_tangle = f"({formula_x_rot_iangle}) * sin(χ) + ({formula_y_rot_iangle}) * cos(χ)"
-# formula_z_rot_tangle = formula_z_rot_iangle
-# formula_exit_angle_vert = f"arctan2({formula_y_rot_tangle}, sqrt({formula_z_rot_tangle} ** {formula_z_rot_tangle} + {formula_x_rot_tangle} ** {formula_x_rot_tangle}))"
-# formula_exit_angle_horz = f"arctan2(({formula_x_rot_tangle}), ({formula_z_rot_tangle}))"
+formula_x_rot_iangle = "x"
+formula_y_rot_iangle = "y * cos(η) - z * sin(η)"
+formula_z_rot_iangle = "y * sin(η) + z * cos(η)"
+formula_x_rot_tangle = f"({formula_x_rot_iangle}) * cos(χ) - ({formula_y_rot_iangle}) * sin(χ)"
+formula_y_rot_tangle = f"({formula_x_rot_iangle}) * sin(χ) + ({formula_y_rot_iangle}) * cos(χ)"
+formula_z_rot_tangle = formula_z_rot_iangle
+formula_exit_angle_vert = f"arctan2({formula_y_rot_tangle}, sqrt({formula_z_rot_tangle} ** {formula_z_rot_tangle} + {formula_x_rot_tangle} ** {formula_x_rot_tangle}))"
+formula_exit_angle_horz = f"arctan2(({formula_x_rot_tangle}), ({formula_z_rot_tangle}))"
 
 formula_qbeam_lab = f"2.0e-9/λ*π*(cos({formula_scattering_angle_vert})*cos({formula_scattering_angle_horz}) - 1)"
 formula_qhorz_lab = f"2.0e-9/λ*π*cos({formula_scattering_angle_vert})*sin({formula_scattering_angle_horz})"
@@ -937,7 +937,7 @@ register_radial_unit("qy_nm^-1",
 register_radial_fiber_unit("scattering_angle_vert",
                      scale=1.0,
                      label=r"Vertical scattering angle (rad)",
-                    #  formula=formula_scattering_angle_vert,
+                     formula=formula_scattering_angle_vert,
                      equation=eq_scattering_angle_vertical,
                      short_name="scatangle_vert",
                      unit_symbol="rad",
@@ -946,7 +946,7 @@ register_radial_fiber_unit("scattering_angle_vert",
 register_radial_fiber_unit("scattering_angle_horz",
                      scale=1.0,
                      label=r"Horizontal scattering angle (rad)",
-                    #  formula=formula_scattering_angle_horz,
+                     formula=formula_scattering_angle_horz,
                      equation=eq_scattering_angle_horz,
                      short_name="scatangle_horz",
                      unit_symbol="rad",
@@ -955,6 +955,7 @@ register_radial_fiber_unit("scattering_angle_horz",
 register_radial_fiber_unit("exit_angle_vert_rad",
                      scale=1.0,
                      label=r"Vertical exit angle (rad)",
+                     formula=formula_exit_angle_vert,
                      equation=eq_exit_angle_vert,
                      short_name="exitangle_vert_rad",
                      unit_symbol="rad",
@@ -963,6 +964,7 @@ register_radial_fiber_unit("exit_angle_vert_rad",
 register_radial_fiber_unit("exit_angle_horz_rad",
                      scale=1.0,
                      label=r"Horizontal exit angle (rad)",
+                     formula=formula_exit_angle_horz,
                      equation=eq_exit_angle_horz,
                      short_name="exitangle_horz_rad",
                      unit_symbol="rad",
@@ -971,6 +973,7 @@ register_radial_fiber_unit("exit_angle_horz_rad",
 register_radial_fiber_unit("exit_angle_vert",
                      scale=180.0 / numpy.pi,
                      label=r"Vertical exit angle (deg)",
+                     formula=formula_exit_angle_vert,
                      equation=eq_exit_angle_vert,
                      short_name="exitangle_vert",
                      unit_symbol="deg",
@@ -979,6 +982,7 @@ register_radial_fiber_unit("exit_angle_vert",
 register_radial_fiber_unit("exit_angle_horz",
                      scale=180.0 / numpy.pi,
                      label=r"Horizontal exit angle (deg)",
+                     formula=formula_exit_angle_horz,
                      equation=eq_exit_angle_horz,
                      short_name="exitangle_horz",
                      unit_symbol="deg",
