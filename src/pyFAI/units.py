@@ -312,6 +312,18 @@ def register_azimuthal_unit(name, scale=1, label=None, equation=None, formula=No
                                  corner, delta, short_name, unit_symbol, positive, period)
     ANY_UNITS.update(AZIMUTHAL_UNITS)
 
+def register_azimuthal_fiber_unit(name, scale=1, label=None, equation=None, formula=None,
+                                  incident_angle=0.0, tilt_angle=0.0, sample_orientation=1,
+                                  center=None, corner=None, delta=None, short_name=None,
+                                  unit_symbol=None, positive=False, period=None):
+    AZIMUTHAL_UNITS[name] = UnitFiber(name=name, scale=scale, label=label, 
+                                      equation=equation, formula=formula, 
+                                      incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation,
+                                      center=center, corner=corner, delta=delta,
+                                      short_name=short_name, unit_symbol=unit_symbol,
+                                      positive=positive, period=period,
+    )
+    ANY_UNITS.update(AZIMUTHAL_UNITS)
 
 def eq_r(x, y, z=None, wavelength=None):
     """Calculates the radius in meter
@@ -731,6 +743,22 @@ def eq_q_total(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_o
         eq_qip(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation) ** 2 +
         eq_qoop(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation) ** 2
     )
+    
+def eq_chi_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the polar angle from the vertical axis (fiber or thin-film main axis)
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+    :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+    :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
+    :return: component of the scattering vector in the plane YZ, in inverse nm
+    """
+    qoop = eq_qoop(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+    qip = eq_qip(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+    return numpy.arctan2(qoop, qip)
 
 formula_r = "sqrt(x * x + y * y)"
 formula_2th = f"arctan2({formula_r}, z)"
@@ -762,6 +790,8 @@ formula_qhorz_rot = f"cos(χ)*({formula_qhorz_lab})-sin(χ)*sin(η)*({formula_qb
 formula_qvert_rot = f"-sin(χ)*({formula_qhorz_lab})-cos(χ)*sin(η)*({formula_qbeam_lab})+cos(χ)*cos(η)*({formula_qvert_lab})"
 formula_qip = f"sqrt(({formula_qbeam_rot})**2+({formula_qhorz_rot})**2)*((({formula_qhorz_rot} > 0) * 2) - 1)"
 formula_qoop = formula_qvert_rot
+formula_qtot = f"sqrt(({formula_qip}) * ({formula_qip}) + ({formula_qoop}) * ({formula_qoop}))"
+formula_chi_gi = f"arctan2(({formula_qip}), ({formula_qoop}))"
 
 register_radial_unit("r_mm",
                      center="rArray",
@@ -1038,6 +1068,7 @@ register_radial_fiber_unit("qoop_nm^-1",
 register_radial_fiber_unit("qtot_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_{xyz}$ ($nm^{-1}$)",
+                     formula=formula_qtot,
                      equation=eq_q_total,
                      short_name="q",
                      unit_symbol="nm^{-1}",
@@ -1116,6 +1147,20 @@ register_azimuthal_unit("chi_deg",
                         formula=formula_chi,
                         positive=False,
                         period=360)
+register_azimuthal_fiber_unit(name="chigi_rad",
+                              scale=1.0,
+                              label=r"Polar angle $\chi$ ($rad$)",
+                              formula=formula_chi_gi,
+                              equation=eq_chi_gi,
+                              positive=False,
+                              period=2.*pi)
+register_azimuthal_fiber_unit(name="chigi_deg",
+                              scale=180. / pi,
+                              label=r"Polar angle $\chi$ ($^{o}$)",
+                              formula=formula_chi_gi,
+                              equation=eq_chi_gi,
+                              positive=False,
+                              period=360)
 
 AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
 AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
@@ -1179,7 +1224,12 @@ def get_unit_fiber(name, incident_angle:float =0.0, tilt_angle:float =0.0, sampl
     :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
     :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     """
-    unit = copy.deepcopy(RADIAL_UNITS.get(name, None))
+    if name in RADIAL_UNITS:
+        unit = copy.deepcopy(RADIAL_UNITS.get(name, None))
+    elif name in AZIMUTHAL_UNITS:
+        unit = copy.deepcopy(AZIMUTHAL_UNITS.get(name, None))
+    else:
+        unit = None
 
     if isinstance(unit, UnitFiber):
         unit.set_incident_angle(incident_angle)
