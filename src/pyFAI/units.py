@@ -361,7 +361,7 @@ def eq_scattering_angle_vertical(x, y, z, wavelength=None, incident_angle=0.0, t
     return numpy.arctan2(y, numpy.sqrt(z ** 2 + x ** 2))
 
 
-def eq_exit_angle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the vertical exit scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
@@ -918,7 +918,7 @@ register_radial_fiber_unit("scattering_angle_horz",
 register_radial_fiber_unit("exit_angle",
                      scale=1.0,
                      label=r"Exit angle(rad)",
-                     equation=eq_exit_angle,
+                     equation=eq_exitangle,
                      short_name="exitangle",
                      unit_symbol="rad",
                      positive=False)
