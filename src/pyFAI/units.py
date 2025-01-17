@@ -385,12 +385,12 @@ def eq_exit_angle_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=
     :return: vertical exit angle in radians
     """
     rot_incident_angle = numpy.array([[1,0,0],
-                              [0,numpy.cos(incident_angle), numpy.sin(-incident_angle)],
-                              [0, numpy.sin(incident_angle), numpy.cos(incident_angle)]],
+                                      [0,numpy.cos(incident_angle), numpy.sin(-incident_angle)],
+                                      [0, numpy.sin(incident_angle), numpy.cos(incident_angle)]],
     )
     rot_tilt_angle = numpy.array([[numpy.cos(tilt_angle), numpy.sin(-tilt_angle), 0],
-                              [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
-                              [0, 0, 1]],
+                                  [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
+                                  [0, 0, 1]],
     )
     rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x,y,z)), axes=1)
     xp, yp, zp = numpy.tensordot(rot_tilt_angle, rotated_xyz, axes=1)
@@ -741,16 +741,16 @@ formula_d2 = f"(2.0e-9/λ*sin(0.5*{formula_2th}))**2"
 formula_qx = f"4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
 formula_qy = f"4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
 
-formula_scattering_angle_vert = "arctan2(y, sqrt(z*z + x*x))"
+formula_scattering_angle_vert = "arctan2(y, sqrt(z*z+x*x))"
 formula_scattering_angle_horz = "arctan2(x,z)"
 formula_x_rot_iangle = "x"
-formula_y_rot_iangle = "y * cos(η) - z * sin(η)"
-formula_z_rot_iangle = "y * sin(η) + z * cos(η)"
-formula_x_rot_tangle = f"({formula_x_rot_iangle}) * cos(χ) - ({formula_y_rot_iangle}) * sin(χ)"
-formula_y_rot_tangle = f"({formula_x_rot_iangle}) * sin(χ) + ({formula_y_rot_iangle}) * cos(χ)"
+formula_y_rot_iangle = "(y*cos(η)-z*sin(η))"
+formula_z_rot_iangle = "(y*sin(η)+z*cos(η))"
+formula_x_rot_tangle = f"({formula_x_rot_iangle} * cos(χ) - {formula_y_rot_iangle} * sin(χ))"
+formula_y_rot_tangle = f"({formula_x_rot_iangle} * sin(χ) + {formula_y_rot_iangle} * cos(χ))"
 formula_z_rot_tangle = formula_z_rot_iangle
-formula_exit_angle_vert = f"arctan2({formula_y_rot_tangle}, sqrt({formula_z_rot_tangle} ** {formula_z_rot_tangle} + {formula_x_rot_tangle} ** {formula_x_rot_tangle}))"
-formula_exit_angle_horz = f"arctan2(({formula_x_rot_tangle}), ({formula_z_rot_tangle}))"
+formula_exit_angle_vert = f"arctan2({formula_y_rot_tangle}, sqrt({formula_z_rot_tangle} * {formula_z_rot_tangle} + {formula_x_rot_tangle} * {formula_x_rot_tangle}))"
+formula_exit_angle_horz = f"arctan2({formula_x_rot_tangle}, ({formula_z_rot_tangle}))"
 formula_exit_angle = formula_scattering_angle_vert
 formula_exit_angle_horz = formula_scattering_angle_horz
 
