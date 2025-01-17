@@ -350,7 +350,7 @@ def eq_q(x, y, z, wavelength):
 
 
 def eq_scattering_angle_vertical(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the vertical exit scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
+    """Calculates the vertical scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -361,12 +361,26 @@ def eq_scattering_angle_vertical(x, y, z, wavelength=None, incident_angle=0.0, t
     return numpy.arctan2(y, numpy.sqrt(z ** 2 + x ** 2))
 
 
-def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the vertical exit scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
+def eq_scattering_angle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the horizontal scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
+    :param wavelength: in meter
+    :return: horizontal exit angle in radians
+    """
+    return numpy.arctan2(x, z)
+
+
+def eq_exit_angle_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the vertical exit angle relative to the horizon (for thin films), used for GI/Fiber diffraction
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+    :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :param wavelength: in meter
     :return: vertical exit angle in radians
     """
@@ -383,16 +397,31 @@ def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, s
     return numpy.arctan2(yp, numpy.sqrt(zp ** 2 + xp ** 2))
 
 
-def eq_scattering_angle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the horizontal exit scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
+def eq_exit_angle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the horizontal exit angle relative to the horizon (for thin films), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
+    :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+    :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :param wavelength: in meter
     :return: horizontal exit angle in radians
     """
-    return numpy.arctan2(x, z)
+    rot_incident_angle = numpy.array([[1,0,0],
+                              [0,numpy.cos(incident_angle), numpy.sin(-incident_angle)],
+                              [0, numpy.sin(incident_angle), numpy.cos(incident_angle)]],
+    )
+    rot_tilt_angle = numpy.array([[numpy.cos(tilt_angle), numpy.sin(-tilt_angle), 0],
+                              [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
+                              [0, 0, 1]],
+    )
+    rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x,y,z)), axes=1)
+    xp, yp, zp = numpy.tensordot(rot_tilt_angle, rotated_xyz, axes=1)
+    return numpy.arctan2(xp, zp)
+
+
+eq_exitangle = eq_exit_angle_vert
 
 
 def q_lab_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
@@ -909,17 +938,25 @@ register_radial_fiber_unit("scattering_angle_vert",
 
 register_radial_fiber_unit("scattering_angle_horz",
                      scale=1.0,
-                     label=r"Horizontal scattering angle(rad)",
+                     label=r"Horizontal scattering angle (rad)",
                      equation=eq_scattering_angle_horz,
                      short_name="scatangle_horz",
                      unit_symbol="rad",
                      positive=False)
 
-register_radial_fiber_unit("exit_angle",
+register_radial_fiber_unit("exit_angle_vert",
+                     scale=1.0,
+                     label=r"Vertical exit angle (rad)",
+                     equation=eq_exit_angle_vert,
+                     short_name="exitangle_vert",
+                     unit_symbol="rad",
+                     positive=False)
+
+register_radial_fiber_unit("exit_angle_horz",
                      scale=1.0,
                      label=r"Exit angle(rad)",
-                     equation=eq_exitangle,
-                     short_name="exitangle",
+                     equation=eq_exit_angle_horz,
+                     short_name="exitangle_horz",
                      unit_symbol="rad",
                      positive=False)
 
