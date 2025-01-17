@@ -751,6 +751,8 @@ formula_y_rot_tangle = f"({formula_x_rot_iangle}) * sin(χ) + ({formula_y_rot_ia
 formula_z_rot_tangle = formula_z_rot_iangle
 formula_exit_angle_vert = f"arctan2({formula_y_rot_tangle}, sqrt({formula_z_rot_tangle} ** {formula_z_rot_tangle} + {formula_x_rot_tangle} ** {formula_x_rot_tangle}))"
 formula_exit_angle_horz = f"arctan2(({formula_x_rot_tangle}), ({formula_z_rot_tangle}))"
+formula_exit_angle = formula_scattering_angle_vert
+formula_exit_angle_horz = formula_scattering_angle_horz
 
 formula_qbeam_lab = f"2.0e-9/λ*π*(cos({formula_scattering_angle_vert})*cos({formula_scattering_angle_horz}) - 1)"
 formula_qhorz_lab = f"2.0e-9/λ*π*cos({formula_scattering_angle_vert})*sin({formula_scattering_angle_horz})"
