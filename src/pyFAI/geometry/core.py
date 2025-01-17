@@ -766,10 +766,10 @@ class Geometry(object):
             space = "r"
             # unit = to_unit("r_m")
         key = space + "_corner"
-        
+
         if isinstance(unit, UnitFiber):
-            key = f"{unit.name}_corner"        
-        
+            key = f"{unit.name}_corner"
+
         if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
                 if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
