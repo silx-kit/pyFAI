@@ -944,35 +944,35 @@ register_radial_fiber_unit("scattering_angle_horz",
                      unit_symbol="rad",
                      positive=False)
 
-register_radial_fiber_unit("exit_angle_vert",
+register_radial_fiber_unit("exit_angle_vert_rad",
                      scale=1.0,
                      label=r"Vertical exit angle (rad)",
                      equation=eq_exit_angle_vert,
-                     short_name="exitangle_vert",
+                     short_name="exitangle_vert_rad",
                      unit_symbol="rad",
                      positive=False)
 
-register_radial_fiber_unit("exit_angle_horz",
+register_radial_fiber_unit("exit_angle_horz_rad",
                      scale=1.0,
                      label=r"Horizontal exit angle (rad)",
                      equation=eq_exit_angle_horz,
-                     short_name="exitangle_horz",
+                     short_name="exitangle_horz_rad",
                      unit_symbol="rad",
                      positive=False)
 
-register_radial_fiber_unit("exit_angle_vert_deg",
+register_radial_fiber_unit("exit_angle_vert",
                      scale=180.0 / numpy.pi,
                      label=r"Vertical exit angle (deg)",
                      equation=eq_exit_angle_vert,
-                     short_name="exitangle_vert_deg",
+                     short_name="exitangle_vert",
                      unit_symbol="deg",
                      positive=False)
 
-register_radial_fiber_unit("exit_angle_horz_deg",
+register_radial_fiber_unit("exit_angle_horz",
                      scale=180.0 / numpy.pi,
                      label=r"Horizontal exit angle (deg)",
                      equation=eq_exit_angle_horz,
-                     short_name="exitangle_horz_deg",
+                     short_name="exitangle_horz",
                      unit_symbol="deg",
                      positive=False)
 
