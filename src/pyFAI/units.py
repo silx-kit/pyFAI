@@ -349,7 +349,7 @@ def eq_q(x, y, z, wavelength):
     return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
 
 
-def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+def eq_scattering_angle_vertical(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the vertical exit scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
@@ -361,7 +361,29 @@ def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, s
     return numpy.arctan2(y, numpy.sqrt(z ** 2 + x ** 2))
 
 
-def eq_exitangle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+def eq_exit_angle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the vertical exit scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    :return: vertical exit angle in radians
+    """
+    rot_incident_angle = numpy.array([[1,0,0],
+                              [0,numpy.cos(incident_angle), numpy.sin(-incident_angle)],
+                              [0, numpy.sin(incident_angle), numpy.cos(incident_angle)]],
+    ) 
+    rot_tilt_angle = numpy.array([[numpy.cos(tilt_angle), numpy.sin(-tilt_angle), 0],
+                              [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
+                              [0, 0, 1]],
+    )
+    rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x,y,z)), axes=1)
+    xp, yp, zp = numpy.tensordot(rot_tilt_angle, rotated_xyz, axes=1)
+    return numpy.arctan2(yp, numpy.sqrt(zp ** 2 + xp ** 2))
+
+
+def eq_scattering_angle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the horizontal exit scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
@@ -382,9 +404,9 @@ def q_lab_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sam
     :param wavelength: in meter
     :return: horizontal scattering vector in inverse nm
     """
-    exit_angle = eq_exitangle(x=x, y=y, z=z, wavelength=wavelength)
-    exit_angle_horz = eq_exitangle_horz(x=x, y=y, z=z, wavelength=wavelength)
-    return 2.0e-9 / wavelength * numpy.pi * numpy.cos(exit_angle) * numpy.sin(exit_angle_horz)
+    scattering_angle_vertical = eq_scattering_angle_vertical(x=x, y=y, z=z, wavelength=wavelength)
+    scattering_angle_horz = eq_scattering_angle_horz(x=x, y=y, z=z, wavelength=wavelength)
+    return 2.0e-9 / wavelength * numpy.pi * numpy.cos(scattering_angle_vertical) * numpy.sin(scattering_angle_horz)
 
 
 def q_lab_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
@@ -396,7 +418,7 @@ def q_lab_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sam
     :param wavelength: in meter
     :return: vertical scattering vector in inverse nm
     """
-    exit_angle = eq_exitangle(x=x, y=y, z=z, wavelength=wavelength)
+    exit_angle = eq_scattering_angle_vertical(x=x, y=y, z=z, wavelength=wavelength)
     return 2.0e-9 / wavelength * numpy.pi * numpy.sin(exit_angle)
 
 
@@ -409,8 +431,8 @@ def q_lab_beam(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sam
     :param wavelength: in meter
     :return: beam scattering vector in inverse nm
     """
-    exit_angle = eq_exitangle(x=x, y=y, z=z, wavelength=wavelength)
-    exit_angle_horz = eq_exitangle_horz(x=x, y=y, z=z, wavelength=wavelength)
+    exit_angle = eq_scattering_angle_vertical(x=x, y=y, z=z, wavelength=wavelength)
+    exit_angle_horz = eq_scattering_angle_horz(x=x, y=y, z=z, wavelength=wavelength)
     return 2.0e-9 / wavelength * numpy.pi * (numpy.cos(exit_angle) * numpy.cos(exit_angle_horz) - 1)
 
 
@@ -877,19 +899,27 @@ register_radial_unit("qy_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_fiber_unit("exitangle_rad",
+register_radial_fiber_unit("scattering_angle_vert",
                      scale=1.0,
-                     label=r"Exit scattering angle (rad)",
-                     equation=eq_exitangle,
-                     short_name="exitangle",
+                     label=r"Vertical scattering angle (rad)",
+                     equation=eq_scattering_angle_vertical,
+                     short_name="scatangle_vert",
                      unit_symbol="rad",
                      positive=False)
 
-register_radial_fiber_unit("horz_exitangle_rad",
+register_radial_fiber_unit("scattering_angle_horz",
                      scale=1.0,
-                     label=r"Exit scattering angle (rad) in the horizontal axis",
-                     equation=eq_exitangle_horz,
-                     short_name="exitangle_horz",
+                     label=r"Horizontal scattering angle(rad)",
+                     equation=eq_scattering_angle_horz,
+                     short_name="scatangle_horz",
+                     unit_symbol="rad",
+                     positive=False)
+
+register_radial_fiber_unit("exit_angle",
+                     scale=1.0,
+                     label=r"Exit angle(rad)",
+                     equation=eq_exit_angle,
+                     short_name="exitangle",
                      unit_symbol="rad",
                      positive=False)
 
