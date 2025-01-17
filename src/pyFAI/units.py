@@ -447,8 +447,8 @@ def q_lab_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sam
     :param wavelength: in meter
     :return: vertical scattering vector in inverse nm
     """
-    exit_angle = eq_scattering_angle_vertical(x=x, y=y, z=z, wavelength=wavelength)
-    return 2.0e-9 / wavelength * numpy.pi * numpy.sin(exit_angle)
+    scattering_angle_vertical = eq_scattering_angle_vertical(x=x, y=y, z=z, wavelength=wavelength)
+    return 2.0e-9 / wavelength * numpy.pi * numpy.sin(scattering_angle_vertical)
 
 
 def q_lab_beam(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
@@ -460,9 +460,9 @@ def q_lab_beam(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sam
     :param wavelength: in meter
     :return: beam scattering vector in inverse nm
     """
-    exit_angle = eq_scattering_angle_vertical(x=x, y=y, z=z, wavelength=wavelength)
-    exit_angle_horz = eq_scattering_angle_horz(x=x, y=y, z=z, wavelength=wavelength)
-    return 2.0e-9 / wavelength * numpy.pi * (numpy.cos(exit_angle) * numpy.cos(exit_angle_horz) - 1)
+    scattering_angle_vertical = eq_scattering_angle_vertical(x=x, y=y, z=z, wavelength=wavelength)
+    scattering_angle_horz = eq_scattering_angle_horz(x=x, y=y, z=z, wavelength=wavelength)
+    return 2.0e-9 / wavelength * numpy.pi * (numpy.cos(scattering_angle_vertical) * numpy.cos(scattering_angle_horz) - 1)
 
 
 def q_lab(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
