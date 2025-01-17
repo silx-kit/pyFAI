@@ -316,8 +316,8 @@ def register_azimuthal_fiber_unit(name, scale=1, label=None, equation=None, form
                                   incident_angle=0.0, tilt_angle=0.0, sample_orientation=1,
                                   center=None, corner=None, delta=None, short_name=None,
                                   unit_symbol=None, positive=False, period=None):
-    AZIMUTHAL_UNITS[name] = UnitFiber(name=name, scale=scale, label=label, 
-                                      equation=equation, formula=formula, 
+    AZIMUTHAL_UNITS[name] = UnitFiber(name=name, scale=scale, label=label,
+                                      equation=equation, formula=formula,
                                       incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation,
                                       center=center, corner=corner, delta=delta,
                                       short_name=short_name, unit_symbol=unit_symbol,
@@ -743,7 +743,7 @@ def eq_q_total(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_o
         eq_qip(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation) ** 2 +
         eq_qoop(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation) ** 2
     )
-    
+
 def eq_chi_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the polar angle from the vertical axis (fiber or thin-film main axis)
 
