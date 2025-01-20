@@ -95,7 +95,7 @@ class Unit(object):
         :param period: None or the periodicity of the unit (angles are periodic)
         """
         self.name = name
-        self.space = name.split("_")[0]  # used to idenfify compatible spaces.
+        self.space = "_".join(self.name.split("_")[:-1])  # used to idenfify compatible spaces.
         self.scale = scale
         self.label = label if label is not None else name
         self.corner = corner
