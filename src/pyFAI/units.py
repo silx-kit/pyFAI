@@ -966,7 +966,7 @@ register_radial_unit("qy_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_fiber_unit("scattering_angle_vert",
+register_radial_fiber_unit("scattering_angle_vert_rad",
                      scale=1.0,
                      label=r"Vertical scattering angle (rad)",
                      formula=formula_scattering_angle_vert,
@@ -975,7 +975,7 @@ register_radial_fiber_unit("scattering_angle_vert",
                      unit_symbol="rad",
                      positive=False)
 
-register_radial_fiber_unit("scattering_angle_horz",
+register_radial_fiber_unit("scattering_angle_horz_rad",
                      scale=1.0,
                      label=r"Horizontal scattering angle (rad)",
                      formula=formula_scattering_angle_horz,
@@ -1002,7 +1002,7 @@ register_radial_fiber_unit("exit_angle_horz_rad",
                      unit_symbol="rad",
                      positive=False)
 
-register_radial_fiber_unit("exit_angle_vert",
+register_radial_fiber_unit("exit_angle_vert_deg",
                      scale=180.0 / numpy.pi,
                      label=r"Vertical exit angle (deg)",
                      formula=formula_exit_angle_vert,
@@ -1011,7 +1011,7 @@ register_radial_fiber_unit("exit_angle_vert",
                      unit_symbol="deg",
                      positive=False)
 
-register_radial_fiber_unit("exit_angle_horz",
+register_radial_fiber_unit("exit_angle_horz_deg",
                      scale=180.0 / numpy.pi,
                      label=r"Horizontal exit angle (deg)",
                      formula=formula_exit_angle_horz,
