@@ -767,9 +767,6 @@ class Geometry(object):
             # unit = to_unit("r_m")
         key = space + "_corner"
 
-        if isinstance(unit, UnitFiber):
-            key = f"{unit.name}_corner"
-
         if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
                 if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
@@ -924,11 +921,8 @@ class Geometry(object):
         """
 
         unit = to_unit(unit)
-        if isinstance(unit, UnitFiber):
-            key = f"{unit.name}_center"
-        else:
-            space = unit.name.split("_")[0]
-            key = space + "_center"
+        space = "_".join(unit.name.split("_")[:-1])
+        key = space + "_center"
         ary = self._cached_array.get(key)
 
         shape = self.get_shape(shape)
@@ -973,10 +967,7 @@ class Geometry(object):
         """
 
         unit = to_unit(unit)
-        if isinstance(unit, UnitFiber):
-            space = f"{unit.name}_delta"
-        else:
-            space = unit.name.split("_")[0] + "_delta"
+        space = "_".join(unit.name.split("_")[:-1]) + "_delta"
         ary = self._cached_array.get(space)
 
         shape = self.get_shape(shape)
