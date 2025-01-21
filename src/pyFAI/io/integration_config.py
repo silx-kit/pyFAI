@@ -477,9 +477,7 @@ class WorkerConfig:
         """
         if not inplace:
             dico = copy.copy(dico)
-        print(list(dico.keys()))
         normalize(dico, inplace=True)
-        print(dico)
         to_init = {field.name:dico.pop(field.name)
                    for field in fields(cls)
                    if field.name in dico}
