@@ -920,8 +920,7 @@ class Geometry(object):
         """
 
         unit = to_unit(unit)
-        space = unit.name.split("_")[0]
-        key = space + "_center"
+        key = f"{unit.space}_center"
         ary = self._cached_array.get(key)
 
         shape = self.get_shape(shape)
@@ -966,7 +965,7 @@ class Geometry(object):
         """
 
         unit = to_unit(unit)
-        space = unit.name.split("_")[0] + "_delta"
+        space = f"{unit.space}_delta"
         ary = self._cached_array.get(space)
 
         shape = self.get_shape(shape)
