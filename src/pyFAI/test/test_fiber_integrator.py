@@ -33,10 +33,11 @@ __author__ = "Edgar Gutiérrez Fernández"
 __contact__ = "edgar.gutierrez-fernandez@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2024"
+__date__ = "16/01/2025"
 
 import unittest
 import logging
+import numpy
 from ..calibrant import get_calibrant
 logger = logging.getLogger(__name__)
 from ..integrator.fiber import FiberIntegrator
@@ -487,6 +488,73 @@ class TestFiberIntegrator(unittest.TestCase):
 
         self.assertFalse(abs(res1d_ref.radial - res1d_deprecated.radial).max(), 0)
         self.assertFalse(abs(res1d_ref.intensity - res1d_deprecated.intensity).max(), 0)
+
+    def test_eight_orientations(self):
+        npt_ip = 200
+        npt_oop = 200
+        ranges = {1 : {"ip" : [2,20], "oop" : [-11,-10], "vertical_integration" : False},
+                  2 : {"ip" : [-20,-2], "oop" : [-11,-10], "vertical_integration" : False},
+                  3 : {"ip" : [-20,-2], "oop" : [10,11], "vertical_integration" : False},
+                  4 : {"ip" : [2,20], "oop" : [10,11], "vertical_integration" : False},
+                  5 : {"ip" : [10,11], "oop" : [-20,-2], "vertical_integration" : True},
+                  6 : {"ip" : [10,11], "oop" : [2,20], "vertical_integration" : True},
+                  7 : {"ip" : [-11,-10], "oop" : [2,20], "vertical_integration" : True},
+                  8 : {"ip" : [-11,-10], "oop" : [-20,-2], "vertical_integration" : True},
+        }
+        result_ref = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=npt_ip, npt_oop=npt_oop,
+                                                              ip_range=ranges[1]["ip"], oop_range=ranges[1]["oop"],
+                                                              vertical_integration=ranges[1]["vertical_integration"], sample_orientation=int(1),
+                                                              method=("bbox", "csr", "cython"),
+        )
+
+        for so in ranges:
+            if so == 1:
+                continue
+            result = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=npt_ip, npt_oop=npt_oop,
+                                                              ip_range=ranges[so]["ip"], oop_range=ranges[so]["oop"],
+                                                              vertical_integration=ranges[so]["vertical_integration"], sample_orientation=int(so),
+                                                              method=("bbox", "csr", "cython"),
+            )
+            if result.radial.max() < 0:
+                intensity = numpy.flip(result.intensity)
+            else:
+                intensity = result.intensity
+            diff = numpy.abs(intensity - result_ref.intensity)
+            self.assertLessEqual(diff.max(), 6e-2)
+
+    def test_eight_orientations_fail(self):
+        npt_ip = 200
+        npt_oop = 200
+        ranges = {1 : {"ip" : [2,20], "oop" : [-11,-10], "vertical_integration" : False},
+                  2 : {"ip" : [-20,-2], "oop" : [-11,-10], "vertical_integration" : True},
+                  3 : {"ip" : [-20,-2], "oop" : [10,11], "vertical_integration" : True},
+                  4 : {"ip" : [2,20], "oop" : [10,11], "vertical_integration" : True},
+                  5 : {"ip" : [10,11], "oop" : [-20,-2], "vertical_integration" : False},
+                  6 : {"ip" : [10,11], "oop" : [2,20], "vertical_integration" : False},
+                  7 : {"ip" : [-11,-10], "oop" : [2,20], "vertical_integration" : False},
+                  8 : {"ip" : [-11,-10], "oop" : [-20,-2], "vertical_integration" : False},
+        }
+
+        result_ref = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=npt_ip, npt_oop=npt_oop,
+                                                              ip_range=ranges[1]["ip"], oop_range=ranges[1]["oop"],
+                                                              vertical_integration=ranges[1]["vertical_integration"], sample_orientation=int(1),
+                                                              method=("bbox", "csr", "cython"),
+        )
+
+        for so in ranges:
+            if so == 1:
+                continue
+            result = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=npt_ip, npt_oop=npt_oop,
+                                                              ip_range=ranges[so]["ip"], oop_range=ranges[so]["oop"],
+                                                              vertical_integration=ranges[so]["vertical_integration"], sample_orientation=int(so),
+                                                              method=("bbox", "csr", "cython"),
+            )
+            if result.radial.max() < 0:
+                intensity = numpy.flip(result.intensity)
+            else:
+                intensity = result.intensity
+            diff = numpy.abs(intensity - result_ref.intensity)
+            self.assertGreater(diff.max(), 6e-2)
 
 def suite():
     testsuite = unittest.TestSuite()
