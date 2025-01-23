@@ -532,7 +532,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                                                                 maxshape=(None,) + self.dataset.shape[1:])
             self.dataset_error.attrs["interpretation"] = "image" if self.dataset.ndim == 4 else "spectrum"
         space = self.unit.space
-        unit = str(self.unit)[len(space)+1:]        
+        unit = str(self.unit)[len(space)+1:]
         if space not in self.nxdata_grp:
             self.nxdata_grp[space] = tth
             self.nxdata_grp[space].attrs["axes"] = 3
