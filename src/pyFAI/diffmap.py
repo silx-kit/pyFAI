@@ -481,7 +481,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "spectrum"
-            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, self.unit.space]
+            self.nxdata_grp.attrs["axes"] = [self.unit.space, self.slow_motor_name, self.fast_motor_name]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
@@ -543,7 +543,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         unit = str(self.unit)[len(space)+1:]
         if space not in self.nxdata_grp:
             self.nxdata_grp[space] = tth
-            self.nxdata_grp[space].attrs["axes"] = 3
             self.nxdata_grp[space].attrs["unit"] = unit
             self.nxdata_grp[space].attrs["long_name"] = self.unit.label
             self.nxdata_grp[space].attrs["interpretation"] = "scalar"
@@ -551,8 +550,11 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.nxdata_grp["azimuthal"] = res.azimuthal
             self.nxdata_grp["azimuthal"].attrs["unit"] = "deg"
             self.nxdata_grp["azimuthal"].attrs["interpretation"] = "scalar"
+            self.nxdata_grp["azimuthal"].attrs["axes"] = 1
             azim = res.azimuthal
+            self.nxdata_grp[space].attrs["axes"] = 2
         else:
+            self.nxdata_grp[space].attrs["axes"] = 1
             azim = None
         return tth, azim
 
