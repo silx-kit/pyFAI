@@ -456,7 +456,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_azim, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "image"
-            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, "azimuthal", str(self.unit).split("_")[0]]
+            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, "azimuthal", self.unit.space]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_azim, self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
@@ -475,7 +475,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "spectrum"
-            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, str(self.unit).split("_")[0]]
+            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, self.unit.space]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
@@ -531,7 +531,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                                                                 chunks=(1,) + self.dataset.shape[1:],
                                                                 maxshape=(None,) + self.dataset.shape[1:])
             self.dataset_error.attrs["interpretation"] = "image" if self.dataset.ndim == 4 else "spectrum"
-        space, unit = str(self.unit).split("_")
+        space = self.unit.space
+        unit = str(self.unit)[len(space)+1:]        
         if space not in self.nxdata_grp:
             self.nxdata_grp[space] = tth
             self.nxdata_grp[space].attrs["axes"] = 3
