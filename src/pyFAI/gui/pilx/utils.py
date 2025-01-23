@@ -53,8 +53,11 @@ def compute_radial_values(pyFAI_config_as_str: str) -> numpy.ndarray:
                                       "pixel2": pyFAI_config.get("pixel2"),
                                       "splineFile": pyFAI_config.get("splineFile"),
                                       "max_shape": pyFAI_config.get("max_shape")})
-
-    scaled_values = ai.center_array(pyFAI_config["shape"],
+    
+    shape = pyFAI_config.get("shape")
+    if shape is None:
+        shape = ai.detector.shape
+    scaled_values = ai.center_array(shape,
                                     pyFAI_config["unit"])
     return scaled_values
 
