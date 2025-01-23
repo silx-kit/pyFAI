@@ -444,8 +444,12 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
         entry_grp.attrs["default"] = self.nxdata_grp.name.split("/", 2)[2]
-        self.nxdata_grp[self.slow_motor_name] = numpy.linspace(*self.slow_motor_range, self.nbpt_slow)
-        self.nxdata_grp[self.fast_motor_name] = numpy.linspace(*self.fast_motor_range, self.nbpt_fast)
+        slow_motor_ds = self.nxdata_grp.create_dataset(self.slow_motor_name, data=numpy.linspace(*self.slow_motor_range, self.nbpt_slow))
+        slow_motor_ds.attrs["interpretation"] = "scalar"
+        slow_motor_ds.attrs["long_name"] = "slow/outer motor movement"
+        fast_motor_ds = self.nxdata_grp.create_dataset(self.fast_motor_name, data=numpy.linspace(*self.fast_motor_range, self.nbpt_fast))
+        fast_motor_ds.attrs["interpretation"] = "scalar"
+        fast_motor_ds.attrs["long_name"] = "fast/inner motor movement"
 
         if self.worker.do_2D():
             self.dataset = self.nxdata_grp.create_dataset(
@@ -456,7 +460,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_azim, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "image"
-            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, "azimuthal", self.unit.space]
+            self.nxdata_grp.attrs["axes"] = ["azimuthal", self.unit.space, self.slow_motor_name, self.fast_motor_name]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_azim, self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
@@ -464,6 +468,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                 for j in range(self.nbpt_fast):
                     layout[:, :, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
+            slow_motor_ds.attrs["axes"] = 3
+            fast_motor_ds.attrs["axes"] = 4
 
         else:
             print(f"shape for dataset: {self.nbpt_slow}, {self.nbpt_fast}, {self.nbpt_rad}")
@@ -483,8 +489,10 @@ If the number of files is too large, use double quotes like "*.edf" """
                 for j in range(self.nbpt_fast):
                     layout[:, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
+            slow_motor_ds.attrs["axes"] = 2
+            fast_motor_ds.attrs["axes"] = 3
 
-        self.nxdata_grp.attrs["signal"] = self.dataset.name.split("/")[-1]
+        self.nxdata_grp.attrs["signal"] = 'map'
 
         self.dataset.attrs["title"] = str(self)
         self.nxs = nxs

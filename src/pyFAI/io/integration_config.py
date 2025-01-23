@@ -52,7 +52,9 @@ The detector is integrated into it
 
 5: Migrate to dataclass
    Support for `extra_options`
-   rename some attributes `integrator_name` -> `integrator_method`
+   rename some attributes
+   * `integrator_name` -> `integrator_method`
+   * `polarization_factor` -> `polarization_description`
 
 In a similar way, PixelWiseWorkerConfig and DistortionWorkerConfig are dataclasses
 to hold parameters for handling PixelWiseWorker and DistortionWorker, respectively.
@@ -279,11 +281,22 @@ def _patch_v4_to_v5(config):
         config["integrator_method"] = config.pop("integrator_name", None)
     if "extra_options" not in config:
         config["extra_options"] = None
+    if "polarization_factor" in config:
+        pf = config.pop("polarization_factor")
+        if "polarization_offset" in config:
+            config["Polarization_description"]= PolarizationDescription(pf, config.pop("polarization_offset"))
+        elif "__len__" in dir(pf):
+            config["polarization_description"] = PolarizationDescription(*pf)
+        elif pf is None:
+            config["polarization_description"] = pf
+        else:
+            config["polarization_description"] = PolarizationDescription(float(pf), 0)
+
     # Invalidation of certain keys:
     for key1, key2 in [("do_mask", ["mask_image", "mask_file"]),
                        ("do_flat", ["flat_field", "flat_field_image"]),
                        ("do_dark", ["dark_current", "dark_current_image"]),
-                       ('do_polarization', ["polarization_factor"]),
+                       ('do_polarization', ["polarization_description"]),
                        ('do_dummy', ["val_dummy", "delta_dummy"]),
                        ("do_radial_range", ["radial_range_min", "radial_range_max"]),
                        ("do_radial_range", ["azimuth_range_min", "azimuth_range_max", "azimuthal_range_min", "azimuthal_range_max"])]:
@@ -437,7 +450,7 @@ class WorkerConfig:
     unit: object = None
     chi_discontinuity_at_0: bool=False
     do_solid_angle: bool=True
-    polarization_factor: PolarizationDescription = None
+    polarization_description: PolarizationDescription = None
     normalization_factor: float=1.0
     val_dummy: float = None
     delta_dummy: float = None
@@ -454,11 +467,12 @@ class WorkerConfig:
     integrator_method: str = None
     extra_options: dict = None
     monitor_name: str = None
+    shape: list = None
     OPTIONAL: ClassVar[list] = ["radial_range_min", "radial_range_max",
                                 "azimuth_range_min", "azimuth_range_max",
                                 "integrator_name", "do_poisson"]
     GUESSED:  ClassVar[list] = ["do_2D", "do_mask", "do_dark", "do_flat", 'do_polarization',
-                                'do_dummy', "do_radial_range", 'do_azimuthal_range', "shape"]
+                                'do_dummy', "do_radial_range", 'do_azimuthal_range']
     def as_dict(self):
         "Like asdict, but with possibly some more features ... "
         dico = asdict(self)
@@ -608,12 +622,38 @@ class WorkerConfig:
         return bool(self.flat_field)
     @property
     def do_polarization(self):
-        if self.polarization_factor is None:
+        if self.polarization_description is None:
             return False
+        else:
+            return True
         if "__len__" in dir(self.polarization_factor):
             return bool(self.polarization_factor)
         else:
             return True
+    @property
+    def polarization_factor(self):
+        if self.polarization_description is None:
+            return None
+        else:
+            return self.polarization_description[0]
+    @polarization_factor.setter
+    def polarization_factor(self, value):
+        if self.polarization_description is None:
+            self.polarization_description = PolarizationDescription(value, 0)
+        else:
+            self.polarization_description = PolarizationDescription(value, self.polarization_description[1])
+    @property
+    def polarization_offset(self):
+        if self.polarization_description is None:
+            return None
+        else:
+            return self.polarization_description[1]
+    @polarization_offset.setter
+    def polarization_offset(self, value):
+        if self.polarization_description is None:
+            self.polarization_description = PolarizationDescription(0, value)
+        else:
+            self.polarization_description = PolarizationDescription(self.polarization_description[0], value)
     @property
     def dark_current_image(self):
         return self.dark_current
