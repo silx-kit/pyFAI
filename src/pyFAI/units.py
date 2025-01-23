@@ -739,10 +739,8 @@ def eq_q_total(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_o
     :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     :return: component of the scattering vector in the plane YZ, in inverse nm
     """
-    return numpy.sqrt(
-        eq_qip(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation) ** 2 +
-        eq_qoop(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation) ** 2
-    )
+    hpos, vpos = rotate_sample_orientation(x=x, y=y, sample_orientation=sample_orientation)
+    return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(hpos, vpos, z) / 2.0) / wavelength
 
 def eq_chi_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the polar angle from the vertical axis (fiber or thin-film main axis)
@@ -790,7 +788,7 @@ formula_qhorz_rot = f"cos(χ)*({formula_qhorz_lab})-sin(χ)*sin(η)*({formula_qb
 formula_qvert_rot = f"-sin(χ)*({formula_qhorz_lab})-cos(χ)*sin(η)*({formula_qbeam_lab})+cos(χ)*cos(η)*({formula_qvert_lab})"
 formula_qip = f"sqrt(({formula_qbeam_rot})**2+({formula_qhorz_rot})**2)*((({formula_qhorz_rot} > 0) * 2) - 1)"
 formula_qoop = formula_qvert_rot
-formula_qtot = f"sqrt(({formula_qip}) * ({formula_qip}) + ({formula_qoop}) * ({formula_qoop}))"
+formula_qtot = formula_q
 formula_chi_gi = f"arctan2(({formula_qip}), ({formula_qoop}))"
 
 register_radial_unit("r_mm",
@@ -1101,6 +1099,7 @@ register_radial_fiber_unit("qzgi_A^-1",
 register_radial_fiber_unit("qip_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_{IP}$ ($A^{-1}$)",
+                     formula=formula_qip,
                      equation=eq_qip,
                      short_name="qip",
                      unit_symbol="A^{-1}",
@@ -1109,6 +1108,7 @@ register_radial_fiber_unit("qip_A^-1",
 register_radial_fiber_unit("qoop_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_{OOP}$ ($A^{-1}$)",
+                     formula=formula_qoop,
                      equation=eq_qoop,
                      short_name="qoop",
                      unit_symbol="A^{-1}",
