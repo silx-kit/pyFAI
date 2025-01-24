@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/06/2024"
+__date__ = "24/01/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -411,6 +411,8 @@ class DiffMapWidget(qt.QWidget):
         self.numberOfFrames.setText(str(total_frames))
         if shape:
             self.frameShape.setText(f"{shape[1]} x {shape[0]}")
+            if self.integration_config is not None:
+                self.integration_config["shape"] = shape
         return total_frames
 
     def get_config(self):
