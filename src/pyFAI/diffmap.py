@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/12/2024"
+__date__ = "24/01/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -401,9 +401,9 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         # create motor range if not yet existing ...
         if self.fast_motor_range is None:
-            self.fast_motor_range=(0, self.nbpt_fast - 1)
+            self.fast_motor_range = (0, self.nbpt_fast - 1)
         if self.slow_motor_range is None:
-            self.slow_motor_range=(0, self.nbpt_slow - 1)
+            self.slow_motor_range = (0, self.nbpt_slow - 1)
 
         nxs = Nexus(self.hdf5, mode="w", creator="pyFAI")
         self.entry_grp = entry_grp = nxs.new_entry(entry="entry",
@@ -444,12 +444,12 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
         entry_grp.attrs["default"] = self.nxdata_grp.name.split("/", 2)[2]
-        slow_motor_ds = self.nxdata_grp.create_dataset(self.slow_motor_name, data=numpy.linspace(*self.slow_motor_range, self.nbpt_slow))
+        slow_motor_ds = self.nxdata_grp.create_dataset("slow", data=numpy.linspace(*self.slow_motor_range, self.nbpt_slow))
         slow_motor_ds.attrs["interpretation"] = "scalar"
-        slow_motor_ds.attrs["long_name"] = "slow/outer motor movement"
-        fast_motor_ds = self.nxdata_grp.create_dataset(self.fast_motor_name, data=numpy.linspace(*self.fast_motor_range, self.nbpt_fast))
+        slow_motor_ds.attrs["long_name"] = self.slow_motor_name
+        fast_motor_ds = self.nxdata_grp.create_dataset("fast", data=numpy.linspace(*self.fast_motor_range, self.nbpt_fast))
         fast_motor_ds.attrs["interpretation"] = "scalar"
-        fast_motor_ds.attrs["long_name"] = "fast/inner motor movement"
+        fast_motor_ds.attrs["long_name"] = self.fast_motor_name
 
         if self.worker.do_2D():
             self.dataset = self.nxdata_grp.create_dataset(
@@ -466,7 +466,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             source = h5py.VirtualSource(self.dataset)
             for i in range(self.nbpt_slow):
                 for j in range(self.nbpt_fast):
-                    layout[:, :, i, j] = source[i, j]
+                    layout[:,:, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
             slow_motor_ds.attrs["axes"] = 3
             fast_motor_ds.attrs["axes"] = 4
@@ -540,7 +540,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                                                                 maxshape=(None,) + self.dataset.shape[1:])
             self.dataset_error.attrs["interpretation"] = "image" if self.dataset.ndim == 4 else "spectrum"
         space = self.unit.space
-        unit = str(self.unit)[len(space)+1:]
+        unit = str(self.unit)[len(space) + 1:]
         if space not in self.nxdata_grp:
             self.nxdata_grp[space] = tth
             self.nxdata_grp[space].attrs["unit"] = unit

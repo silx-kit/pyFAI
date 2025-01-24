@@ -29,15 +29,15 @@
 """Tool to visualize diffraction maps."""
 from __future__ import annotations
 
-__authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez"]
+__authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/09/2024"
+__date__ = "24/01/2025"
 __status__ = "development"
 
-
 from typing import Tuple
+import json
 import h5py
 import logging
 import os.path
@@ -61,6 +61,7 @@ from .widgets.DiffractionImagePlotWidget import DiffractionImagePlotWidget
 from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
 from .widgets.TitleWidget import TitleWidget
+from ...io.integration_config import WorkerConfig
 
 
 class MainWindow(qt.QMainWindow):
@@ -111,11 +112,12 @@ class MainWindow(qt.QMainWindow):
         self._unfixed_indices = None
         self._fixed_indices = set()
         self._background_point = None
+        self.worker_config = None
 
     def initData(self,
                  file_name: str,
-                 dataset_path: str = "/entry_0000/measurement/images_0001",
-                 nxprocess_path: str = "/entry_0000/pyFAI",
+                 dataset_path: str="/entry_0000/measurement/images_0001",
+                 nxprocess_path: str="/entry_0000/pyFAI",
                  ):
 
         self._file_name = os.path.abspath(file_name)
@@ -126,11 +128,12 @@ class MainWindow(qt.QMainWindow):
 
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
-            map = get_dataset(nxprocess, "result/intensity")[:, :, 0]
+            map = get_dataset(nxprocess, "result/intensity")[:,:, 0]
             pyFAI_config_as_str = get_dataset(
                 parent=nxprocess,
                 path=f"configuration/data"
             )[()]
+            self.worker_config = WorkerConfig.from_dict(json.loads(pyFAI_config_as_str), inplace=True)
 
             radial_dset = get_radial_dataset(
                 h5file, nxdata_path=f"{self._nxprocess_path}/result"
@@ -199,7 +202,7 @@ class MainWindow(qt.QMainWindow):
         return self._integrated_plot_widget.roi.getRange()
 
     def displayPatternAtIndices(
-        self, indices: ImageIndices, legend: str, color: str = None
+        self, indices: ImageIndices, legend: str, color: str=None
     ):
         if self._file_name is None:
             return
@@ -234,7 +237,7 @@ class MainWindow(qt.QMainWindow):
             map_shape = get_dataset(nxprocess, "result/intensity").shape
             image_index = row * map_shape[1] + col + self._offset
             for dataset_path, size in self._dataset_paths.items():
-                if image_index<size:
+                if image_index < size:
                     break
                 else:
                     image_index -= size
@@ -375,8 +378,7 @@ class MainWindow(qt.QMainWindow):
                 ()
             ]
             i_min, i_max = get_indices_from_values(v_min, v_max, radial)
-            map_data = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity")[
-                :, :, i_min:i_max
+            map_data = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity")[:,:, i_min:i_max
             ].mean(axis=2)
 
         self._map_plot_widget.setScatterData(map_data)
