@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2023-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2023-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Loïc Huder (loic.huder@ESRF.eu)
 #
@@ -136,7 +136,8 @@ class MainWindow(qt.QMainWindow):
             self.worker_config = WorkerConfig.from_dict(json.loads(pyFAI_config_as_str), inplace=True)
 
             radial_dset = get_radial_dataset(
-                h5file, nxdata_path=f"{self._nxprocess_path}/result"
+                h5file, nxdata_path=f"{self._nxprocess_path}/result",
+                size = self.worker_config.nbpt_rad
             )
             delta_radial = (radial_dset[-1] - radial_dset[0]) / len(radial_dset)
 
@@ -180,7 +181,7 @@ class MainWindow(qt.QMainWindow):
                     for key in lst:
                         self._dataset_paths[posixpath.join(path, key)] = len(image_grp[key])
 
-        self._radial_matrix = compute_radial_values(pyFAI_config_as_str)
+        self._radial_matrix = compute_radial_values(self.worker_config)
         self._delta_radial_over_2 = delta_radial / 2
 
         self._title_widget.setText(os.path.basename(file_name))
