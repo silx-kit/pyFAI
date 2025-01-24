@@ -735,13 +735,23 @@ class AzimuthalIntegrator(Integrator):
             else:
                 variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
 
-        for unit_, unit_range in zip((radial_unit, azimuth_unit), (radial_range, azimuth_range)):
-            if unit_range is not None and unit_.period:
-                if unit_.name.split("_")[0] == "deg":
-                    unit_range = tuple(deg2rad(unit_range[i], self.chiDiscAtPi) for i in (0, -1))
-                if unit_range[1] <= unit_range[0]:
-                    unit_range = (unit_range[0], unit_range[1] + 2 * pi)
-                self.check_chi_disc(unit_range)
+        if azimuth_range is not None and azimuth_unit.period:
+            if azimuth_unit.name.split("_")[-1] == "deg":
+                azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
+            if azimuth_range[1] <= azimuth_range[0]:
+                azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
+            self.check_chi_disc(azimuth_range)
+            if azimuth_unit.name.split("_")[-1] == "deg":
+                azimuth_range = [numpy.rad2deg(i) for i in azimuth_range]
+
+        if radial_range is not None and radial_unit.period:
+            if radial_unit.name.split("_")[-1] == "deg":
+                radial_range = tuple(deg2rad(radial_range[i], self.chiDiscAtPi) for i in (0, -1))
+            if radial_range[1] <= radial_range[0]:
+                radial_range = (radial_range[0], radial_range[1] + 2 * pi)
+            self.check_chi_disc(radial_range)
+            if radial_unit.name.split("_")[-1] == "deg":
+                radial_range = [numpy.rad2deg(i) for i in radial_range]
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
