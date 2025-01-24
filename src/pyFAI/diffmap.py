@@ -460,7 +460,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_azim, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "image"
-            self.nxdata_grp.attrs["axes"] = ["azimuthal", self.unit.space, self.slow_motor_name, self.fast_motor_name]
+            self.nxdata_grp.attrs["axes"] = ["azimuthal", self.unit.space, "slow", "fast"]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_azim, self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
@@ -481,7 +481,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "spectrum"
-            self.nxdata_grp.attrs["axes"] = [self.unit.space, self.slow_motor_name, self.fast_motor_name]
+            self.nxdata_grp.attrs["axes"] = [self.unit.space, "slow", "fast"]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
@@ -493,8 +493,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             fast_motor_ds.attrs["axes"] = 3
 
         self.nxdata_grp.attrs["signal"] = 'map'
-
-        self.dataset.attrs["title"] = str(self)
+        self.dataset.attrs["title"] = self.nxdata_grp["map"].attrs["title"] = str(self)
         self.nxs = nxs
 
     def init_shape(self):
