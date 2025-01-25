@@ -22,7 +22,7 @@ References
 * Implementation in parallel is described in the proceedings of EPDIC13: https://doi.org/10.1017/S0885715613000924
 * Benchmarks and optimization procedure is described in the proceedings of EuroSciPy2014: https://doi.org/10.48550/arXiv.1412.6367
 * Calibration procedures are described in J. Synch. Radiation (2020): https://doi.org/10.1107/S1600577520000776
-* Application of signal separation to diffraction image compression and serial crystallography. Accepted in J. Appl. Cryst. (2024): https://doi.org/10.48550/arXiv.2411.09515
+* Application of signal separation to diffraction image compression and serial crystallography. J. Appl. Cryst. (2025): https://doi.org/10.1107/S1600576724011038
 
 Installation
 ------------
