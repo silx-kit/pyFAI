@@ -53,8 +53,8 @@ from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
 from .dialog import MessageBox
+
 from .pilx import MainWindow as pilx_main
-from ..io.integration_config import WorkerConfig
 logger = logging.getLogger(__name__)
 lognorm = colors.LogNorm()
 
@@ -155,7 +155,7 @@ class DiffMapWidget(qt.QWidget):
     def __init__(self):
         qt.QWidget.__init__(self)
 
-        self.integration_config = None  # can be a WorkConfig dataclass instance
+        self.integration_config = {}
         self.list_dataset = ListDataSet()  # Contains all datasets to be treated.
 
         try:
@@ -411,6 +411,8 @@ class DiffMapWidget(qt.QWidget):
         self.numberOfFrames.setText(str(total_frames))
         if shape:
             self.frameShape.setText(f"{shape[1]} x {shape[0]}")
+            if self.integration_config is not None:
+                self.integration_config["shape"] = shape
         return total_frames
 
     def get_config(self):

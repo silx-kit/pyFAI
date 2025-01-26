@@ -44,26 +44,19 @@ import numpy
 import os.path
 from ...integrator.azimuthal import AzimuthalIntegrator
 from ...detectors import Detector
+from ...io.integration_config import WorkerConfig
 
 
-def compute_radial_values(pyFAI_config_as_str: str) -> numpy.ndarray:
-    pyFAI_config: dict = json.loads(pyFAI_config_as_str)
-    ai = AzimuthalIntegrator.sload(pyFAI_config)
-    if "detector" not in pyFAI_config and "detector" not in pyFAI_config.get("poni", {}):
-        ai.detector = Detector.factory("detector", {
-                                      "pixel1": pyFAI_config.get("pixel1"),
-                                      "pixel2": pyFAI_config.get("pixel2"),
-                                      "splineFile": pyFAI_config.get("splineFile"),
-                                      "max_shape": pyFAI_config.get("max_shape")})
-
-    scaled_values = ai.center_array(pyFAI_config.get("shape"),
-                                    pyFAI_config["unit"])
+def compute_radial_values(worker_config: WorkerConfig) -> numpy.ndarray:
+    ai = AzimuthalIntegrator.sload(worker_config.poni)
+    scaled_values = ai.center_array(worker_config.shape, worker_config.unit)
     return scaled_values
 
 
-def get_indices_from_values(
-    vmin: float, vmax: float, radial_values: numpy.ndarray
-) -> tuple[int, int]:
+def get_indices_from_values(vmin: float,
+                            vmax: float,
+                            radial_values: numpy.ndarray
+                            ) -> tuple[int, int]:
     step = (radial_values[-1] - radial_values[0]) / len(radial_values)
     init_val = radial_values[0]
 
