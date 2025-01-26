@@ -239,7 +239,7 @@ class WorkerConfigurator(qt.QWidget):
 
     def getWorkerConfig(self):
         """Read the configuration of the plugin and returns it as a WorkerConfig instance
-        
+
         :return: WorkerConfig instance
         """
 
@@ -317,7 +317,7 @@ class WorkerConfigurator(qt.QWidget):
 
     def getConfig(self):
         """Read the configuration of the plugin and returns it as a dictionary
-        
+
         :return: dict with all information
         """
         return self.getWorkerConfig().as_dict()
