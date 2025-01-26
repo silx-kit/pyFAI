@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/06/2024"
+__date__ = "26/01/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -53,8 +53,8 @@ from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
 from .dialog import MessageBox
-
 from .pilx import MainWindow as pilx_main
+from ..io.integration_config import WorkerConfig
 logger = logging.getLogger(__name__)
 lognorm = colors.LogNorm()
 
@@ -155,7 +155,7 @@ class DiffMapWidget(qt.QWidget):
     def __init__(self):
         qt.QWidget.__init__(self)
 
-        self.integration_config = {}
+        self.integration_config = None  # can be a WorkConfig dataclass instance
         self.list_dataset = ListDataSet()  # Contains all datasets to be treated.
 
         try:
@@ -299,13 +299,13 @@ class DiffMapWidget(qt.QWidget):
         """
         logger.info("in configure_diffraction")
         iw = IntegrateDialog(self)
-        if self.integration_config:
-            iw.widget.setConfig(self.integration_config)
+        if self.integration_config is not None:
+            iw.widget.setWorkerConfig(self.integration_config)
         while True:
             res = iw.exec_()
             if res == qt.QDialog.Accepted:
-                self.integration_config = iw.widget.getConfig()
-                if self.integration_config.get("nbpt_rad"):
+                self.integration_config = iw.widget.getWorkerConfig()
+                if self.integration_config.nbpt_rad:
                     break
                 else:
                     qt.QMessageBox.about(self, "Unconsistent configuration", "Some essential parameters are missing ... Did you set the radial number of points ?")
@@ -416,7 +416,7 @@ class DiffMapWidget(qt.QWidget):
     def get_config(self):
         """Return a dict with the plugin configuration which is JSON-serializable
         """
-        res = {"ai": self.integration_config,
+        res = {"ai": self.integration_config.as_dict(),
                "experiment_title": str_(self.experimentTitle.text()).strip(),
                "fast_motor_name": str_(self.fastMotorName.text()).strip(),
                "slow_motor_name": str_(self.slowMotorName.text()).strip(),
@@ -441,7 +441,7 @@ class DiffMapWidget(qt.QWidget):
 
         :param  dico: dictionary
         """
-        self.integration_config = dico.get("ai", {})
+        self.integration_config = WorkerConfig.from_dict(dico.get("ai", {}))
         setup_data = {"experiment_title": self.experimentTitle.setText,
                       "fast_motor_name": self.fastMotorName.setText,
                       "slow_motor_name": self.slowMotorName.setText,
@@ -452,8 +452,8 @@ class DiffMapWidget(qt.QWidget):
                       }
 
         deprecated_keys = {
-            "fast_motor_points" : "nbpt_fast",
-            "slow_motor_points" : "nbpt_slow",
+            "fast_motor_points": "nbpt_fast",
+            "slow_motor_points": "nbpt_slow",
             }
 
         for key in dico.keys():
