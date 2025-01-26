@@ -53,7 +53,7 @@ from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
 from .dialog import MessageBox
-
+from ..io.integration_config import WorkerConfig
 from .pilx import MainWindow as pilx_main
 logger = logging.getLogger(__name__)
 lognorm = colors.LogNorm()
