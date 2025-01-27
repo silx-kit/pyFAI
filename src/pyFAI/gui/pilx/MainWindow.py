@@ -128,32 +128,21 @@ class MainWindow(qt.QMainWindow):
 
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
-            map = get_dataset(nxprocess, "result/intensity")[()].sum(axis=-1)
+            map_data = get_dataset(nxprocess, "result/intensity")[()].sum(axis=-1)
             try:
                 slow = get_dataset(nxprocess, "result/slow")
             except Exception:
-                Ylabel = "Y"
-                Yvalues = list(range(map.shape[0]))
-                # origin = 0
-                # Yscale = 1
+                slow_label = slow_values = None
             else:
-                Ylabel = slow.attrs.get("long_name", "Y")
-                Yvalues = slow[()]
-                # Yorigin = Yvalues[0]
-                # Yscale = (Yvalues[-1]-Yvalues[0])/Yvalues.size
-
+                slow_label = slow.attrs.get("long_name", "Y")
+                slow_values = slow[()]
             try:
                 fast = get_dataset(nxprocess, "result/fast")
             except Exception:
-                Xlabel = "X"
-                Xvalues = list(range(map.shape[1]))
-                # Xorigin = 0
-                # Xscale = 1
+                fast_values = fast_label = None
             else:
-                Xlabel = fast.attrs.get("long_name", "X")
-                Xvalues = fast[()]
-                # Xorigin = Xvalues[0]
-                # Xscale = (Xvalues[-1]-Xvalues[0])/Xvalues.size
+                fast_label = fast.attrs.get("long_name", "X")
+                fast_values = fast[()]
 
             pyFAI_config_as_str = get_dataset(
                 parent=nxprocess,
@@ -163,7 +152,7 @@ class MainWindow(qt.QMainWindow):
 
             radial_dset = get_radial_dataset(
                 h5file, nxdata_path=f"{self._nxprocess_path}/result",
-                size = self.worker_config.nbpt_rad
+                size=self.worker_config.nbpt_rad
             )
             delta_radial = (radial_dset[-1] - radial_dset[0]) / len(radial_dset)
 
@@ -211,8 +200,7 @@ class MainWindow(qt.QMainWindow):
         self._delta_radial_over_2 = delta_radial / 2
 
         self._title_widget.setText(os.path.basename(file_name))
-        self._map_plot_widget.setScatterData(map)
-        self._map_plot_widget.setAxes(Xlabel, Xvalues, Ylabel, Yvalues)
+        self._map_plot_widget.setScatterData(map_data, fast_values, slow_values, fast_label, slow_label)
         # BUG: selectMapPoint(0, 0) does not work at first render cause the picking fails
         initial_indices = ImageIndices(0, 0)
         self._unfixed_indices = initial_indices
@@ -414,11 +402,7 @@ class MainWindow(qt.QMainWindow):
             fast_values = fast[()]
             slow_name = slow.attrs.get("long_name", "Y")
             slow_values = slow[()]
-        self._map_plot_widget.setScatterData(map_data)
-        self._map_plot_widget.setAxes(fast_name,
-                                      fast_values,
-                                      slow_name,
-                                      slow_values)
+        self._map_plot_widget.setScatterData(map_data, fast_values, slow_values, fast_name, slow_name)
 
     def onMouseClickOnImage(self, x: float, y: float):
         indices = self._image_plot_widget.getImageIndices(x, y)

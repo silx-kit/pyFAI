@@ -36,8 +36,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "27/01/2025"
 __status__ = "development"
 
-
-
+from typing import Optional
 import numpy
 import os.path
 import h5py
@@ -129,8 +128,8 @@ class MapPlotWidget(ImagePlotWidget):
         z = self._scatter_item.getValueData(copy=False)
         Xvalues = numpy.atleast_1d(Xvalues)
         Yvalues = numpy.atleast_1d(Yvalues)
-        assert z.size == Xvalues.size*Yvalues.size
-        x = numpy.outer(numpy.ones(Yvalues.size),Xvalues).ravel()
+        assert z.size == Xvalues.size * Yvalues.size
+        x = numpy.outer(numpy.ones(Yvalues.size), Xvalues).ravel()
         y = numpy.outer(Yvalues, numpy.ones(Xvalues.size)).ravel()
         self._scatter_item.setData(x, y, z)
         self.resetZoom()
@@ -162,30 +161,49 @@ class MapPlotWidget(ImagePlotWidget):
     def clearPoints(self):
         self.clearPointsSignal.emit()
 
-    def setScatterData(self, image: numpy.ndarray):
+    def setScatterData(self,
+                       image: numpy.ndarray,
+                       x: Optional[numpy.ndarray]=None,
+                       y: Optional[numpy.ndarray]=None,
+                       xlabel: Optional[str]="X",
+                       ylabel: Optional[str]="Y"):
+        self.setGraphXLabel(xlabel)
+        self.setGraphYLabel(ylabel)
+
         z = image.flatten()
+        rows, cols = image.shape[:2]
+        if x and y:
+            assert x.size == cols
+            assert y.size == rows
 
         if self._first_plot:
-            rows, cols = image.shape[:2]
-            x = numpy.tile(numpy.arange(0, cols), (rows))
-            y = numpy.tile(numpy.arange(0, rows), (cols, 1)).T.flatten()
-            self._scatter_item.setData(x, y, z)
-            self.setDataMargins(0.5 / cols, 0.5 / cols, 0.5 / rows, 0.5 / rows)
+            if not(x and y):
+                x = numpy.arange(cols)
+                y = numpy.arange(rows)
+            x2 = numpy.outer(numpy.ones(rows), x).ravel()
+            y2 = numpy.outer(y, numpy.ones(cols)).ravel()
+
+            self._scatter_item.setData(x2, y2, z)
+            dx = 0.5 * ((x[1:] - x[:-1]).mean()) / cols
+            dy = 0.5 * ((y[1:] - y[:-1]).mean()) / rows
+            self.setDataMargins(dx, dx, dy, dy)
             self.resetZoom()
             self._first_plot = False
-            return
-
-        x = self._scatter_item.getXData(copy=False)
-        y = self._scatter_item.getYData(copy=False)
-
-        self._scatter_item.setData(x, y, z)
+        else:
+            if (x and y):
+                x2 = numpy.outer(numpy.ones(rows), x).ravel()
+                y2 = numpy.outer(y, numpy.ones(cols)).ravel()
+            else:
+                x2 = self._scatter_item.getXData(copy=False)
+                y2 = self._scatter_item.getYData(copy=False)
+            self._scatter_item.setData(x2, y2, z)
 
     def getImageIndices(self, x_data: float, y_data: float) -> ImageIndices | None:
         pixels = self.dataToPixel(x_data, y_data)
         if pixels is None:
             return
 
-        pixel_x, pixel_y  = pixels
+        pixel_x, pixel_y = pixels
         # Use the base class `pick` to retrieve row and col indices instead of the scatter index
         picking_result = super(Scatter, self._scatter_item).pick(pixel_x, pixel_y)
         if picking_result is None:
