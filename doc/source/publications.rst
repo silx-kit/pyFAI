@@ -35,7 +35,6 @@ Publications about pyFAI
 * *Application of signal separation to diffraction image compression and serial crystallography*;
   Jérôme Kieffer, Julien Orlans, Nicolas Coquelle, Samuel Debionne, Shibom Basu, Alejandro Homs, Gianluca Santonia and Daniele De Sanctis;
   **Journal of Applied Crystallography** (2025) 58, https://doi.org/10.1107/S1600576724011038.
-  `Accepted <https://arxiv.org/abs/2411.09515>`_
   In depth explainaion of sigma-clipping background assessment and error models.
 
 The latest paper should be the cited in publications using pyFAI.
