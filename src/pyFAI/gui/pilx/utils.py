@@ -32,7 +32,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2025"
+__date__ = "27/01/2025"
 __status__ = "development"
 
 from typing import Iterable, Optional
@@ -94,9 +94,9 @@ def get_dataset_name(dataset: h5py.Dataset):
 
 def guess_axis_path(existing_axis_path: str, parent: h5py.Group) -> str | None:
     options: set[str] = {"x", "y", "z"}
-
     axis_template, existing_axis = existing_axis_path[:-1], existing_axis_path[-1:]
-    options.remove(existing_axis)
+    if existing_axis in options:
+        options.remove(existing_axis)
 
     for axis in options:
         guessed_axis_path = axis_template + axis

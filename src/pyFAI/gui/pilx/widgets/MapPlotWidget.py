@@ -33,7 +33,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/04/2024"
+__date__ = "27/01/2025"
 __status__ = "development"
 
 
@@ -121,6 +121,19 @@ class MapPlotWidget(ImagePlotWidget):
         y_data: numpy.ndarray = self._scatter_item.getYData(copy=False)
 
         return (x_data[index], y_data[index])
+
+    def setAxes(self, Xname, Xvalues, Yname, Yvalues):
+        """Changes the label (name) and numerical values for axis of the map"""
+        self.setGraphXLabel(Xname)
+        self.setGraphYLabel(Yname)
+        z = self._scatter_item.getValueData(copy=False)
+        Xvalues = numpy.atleast_1d(Xvalues)
+        Yvalues = numpy.atleast_1d(Yvalues)
+        assert z.size == Xvalues.size*Yvalues.size
+        x = numpy.outer(numpy.ones(Yvalues.size),Xvalues).ravel()
+        y = numpy.outer(Yvalues, numpy.ones(Xvalues.size)).ravel()
+        self._scatter_item.setData(x, y, z)
+        self.resetZoom()
 
     def changeAxes(self, axis_data_url: DataUrl):
         with silx.io.open(axis_data_url.file_path()) as h5:

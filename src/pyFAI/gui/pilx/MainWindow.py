@@ -33,7 +33,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2025"
+__date__ = "27/01/2025"
 __status__ = "development"
 
 from typing import Tuple
@@ -128,7 +128,33 @@ class MainWindow(qt.QMainWindow):
 
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
-            map = get_dataset(nxprocess, "result/intensity")[:,:, 0]
+            map = get_dataset(nxprocess, "result/intensity")[()].sum(axis=-1)
+            try:
+                slow = get_dataset(nxprocess, "result/slow")
+            except Exception:
+                Ylabel = "Y"
+                Yvalues = list(range(map.shape[0]))
+                # origin = 0
+                # Yscale = 1
+            else:
+                Ylabel = slow.attrs.get("long_name", "Y")
+                Yvalues = slow[()]
+                # Yorigin = Yvalues[0]
+                # Yscale = (Yvalues[-1]-Yvalues[0])/Yvalues.size
+
+            try:
+                fast = get_dataset(nxprocess, "result/fast")
+            except Exception:
+                Xlabel = "X"
+                Xvalues = list(range(map.shape[1]))
+                # Xorigin = 0
+                # Xscale = 1
+            else:
+                Xlabel = fast.attrs.get("long_name", "X")
+                Xvalues = fast[()]
+                # Xorigin = Xvalues[0]
+                # Xscale = (Xvalues[-1]-Xvalues[0])/Xvalues.size
+
             pyFAI_config_as_str = get_dataset(
                 parent=nxprocess,
                 path=f"configuration/data"
@@ -186,6 +212,7 @@ class MainWindow(qt.QMainWindow):
 
         self._title_widget.setText(os.path.basename(file_name))
         self._map_plot_widget.setScatterData(map)
+        self._map_plot_widget.setAxes(Xlabel, Xvalues, Ylabel, Yvalues)
         # BUG: selectMapPoint(0, 0) does not work at first render cause the picking fails
         initial_indices = ImageIndices(0, 0)
         self._unfixed_indices = initial_indices
@@ -381,8 +408,17 @@ class MainWindow(qt.QMainWindow):
             i_min, i_max = get_indices_from_values(v_min, v_max, radial)
             map_data = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity")[:,:, i_min:i_max
             ].mean(axis=2)
-
+            fast = get_dataset(h5file, f"{self._nxprocess_path}/result/fast")
+            slow = get_dataset(h5file, f"{self._nxprocess_path}/result/slow")
+            fast_name = fast.attrs.get("long_name", "X")
+            fast_values = fast[()]
+            slow_name = slow.attrs.get("long_name", "Y")
+            slow_values = slow[()]
         self._map_plot_widget.setScatterData(map_data)
+        self._map_plot_widget.setAxes(fast_name,
+                                      fast_values,
+                                      slow_name,
+                                      slow_values)
 
     def onMouseClickOnImage(self, x: float, y: float):
         indices = self._image_plot_widget.getImageIndices(x, y)
