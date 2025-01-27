@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2025"
+__date__ = "27/01/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -47,6 +47,8 @@ import numpy
 import fabio
 import json
 import __main__ as main
+from queue import Queue
+import threading
 from .opencl import ocl
 from . import version as PyFAI_VERSION, date as PyFAI_DATE
 from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
@@ -56,6 +58,7 @@ from .utils.decorators import deprecated, deprecated_warning
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index slow fast')
+Frame = collections.namedtuple('Frame', 'index data')
 
 
 class DiffMap(object):
@@ -114,6 +117,12 @@ class DiffMap(object):
         self.slow_motor_range = None
         self.fast_motor_range = None
         # method is a property from worker
+        self.file_queue = Queue()
+        self.raw_queue = Queue()
+        # self.red_queue = Queue()
+        self.sem = threading.Semaphore()
+        self.finished = threading.Event()
+        self.barrier = None#threading.Barrier()
 
     def __repr__(self):
         return f"{self.experiment_title} experiment with nbpt_slow: {self.nbpt_slow} nbpt_fast: {self.nbpt_fast}, nbpt_diff: {self.nbpt_rad}"
@@ -593,8 +602,8 @@ If the number of files is too large, use double quotes like "*.edf" """
     def process_one_file(self, filename, callback=None):
         """
         :param filename: name of the input filename
-        :param idx: index of file
         :param callback: function to be called after every frame has been processed.
+        :param indices: this is a slice object, frames in this file should have the given indices.
         :return: None
         """
         if self.ai is None:
@@ -624,6 +633,48 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.timing.append(-t)
         self.processed_file.append(filename)
 
+    def process_one_file_mt(self):
+        """MultiThreaded version of `process_one_file`
+
+        Gets filename and indices from the self.file_queue
+        Put read frames in self.raw_queue.
+        Returns when gets an "None" as kill pill
+        """
+        while True:
+            elem = self.file_queue.get()
+            if elem is None:
+                #Kill-pill
+                self.file_queue.task_done()
+                self.barrier.wait()
+                self.raw_queue.put(None)
+                break
+            else:
+                indices, filename = elem
+                # print(f"start reading {filename} {indices}")
+                t = -time.perf_counter()
+                with fabio.open(filename) as fimg:
+                    with self.sem:
+                        if "dataset" in dir(fimg):
+                            if isinstance(fimg.dataset, list):
+                                for ds in fimg.dataset:
+                                    self.set_hdf5_input_dataset(ds)
+                            else:
+                                self.set_hdf5_input_dataset(fimg.dataset)
+                    while self.raw_queue.qsize() > 1000:
+                        time.sleep(0.1)
+                    self.raw_queue.put(Frame(indices[0], fimg.data))
+                    if fimg.nframes > 1:
+                        for i in range(1, fimg.nframes):
+                            fimg = fimg.next()
+                            while self.raw_queue.qsize() > 1000:
+                                time.sleep(0.1)
+                            self.raw_queue.put(Frame(indices[i], fimg.data))
+                    t += time.perf_counter()
+                    print(f"Reading {os.path.basename(filename):30s} took {1000*t:6.1f}ms ({fimg.nframes} frames)")
+                with self.sem:
+                    self.timing.append(t)
+                    self.processed_file.append(filename)
+
     def set_hdf5_input_dataset(self, dataset):
         "record the input dataset with an external link"
         if not isinstance(dataset, h5py.Dataset):
@@ -642,7 +693,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             measurement_grp = self.nxs.new_class(self.entry_grp, "measurement", "NXdata")
         here = os.path.dirname(os.path.abspath(self.nxs.filename))
         there = os.path.abspath(dataset.file.filename)
-        name = "images_%04i" % len(self.stored_input)
+        name = f"images_{len(self.stored_input):04d}"
         measurement_grp[name] = h5py.ExternalLink(os.path.relpath(there, here), dataset.name)
         if "signal" not in measurement_grp.attrs:
             measurement_grp.attrs["signal"] = name
@@ -666,7 +717,37 @@ If the number of files is too large, use double quotes like "*.edf" """
         if res.sigma is not None:
             self.dataset_error[pos.slow, pos.fast, ...] = res.sigma
 
-    def process(self):
+    def process_one_frame_mt(self):
+        """
+        """
+        while True:
+            elem = self.raw_queue.get()
+            if elem is None:
+                #Kill-pill
+                self.raw_queue.task_done()
+                while not self.raw_queue.empty():
+                    assert self.raw_queue.get() is None
+                    self.raw_queue.task_done()
+                self.finished.set()
+                break
+            else:
+                idx, frame  = elem
+                pos = self.get_pos(None, idx)
+                # print(f"process frame {pos}, {self.raw_queue.qsize()}")
+                shape = self.dataset.shape
+                if pos.slow + 1 > shape[0]:
+                    self.dataset.resize((pos.slow + 1,) + shape[1:])
+                    if self.dataset_error is not None:
+                        self.dataset_error.resize((pos.slow + 1,) + shape[1:])
+
+                res = self.worker.process(frame)
+                self.dataset[pos.slow, pos.fast, ...] = res.intensity
+                if res.sigma is not None:
+                    self.dataset_error[pos.slow, pos.fast, ...] = res.sigma
+                self.raw_queue.task_done()
+
+
+    def process_serial(self):
         if self.dataset is None:
             self.makeHDF5()
         self.init_ai()
@@ -679,6 +760,51 @@ If the number of files is too large, use double quotes like "*.edf" """
         print(f"Execution time for {cnt} frames: {tot:.3f} s; "
               f"Average execution time: {1000. * tot / cnt:.1f} ms/img")
         self.nxs.close()
+
+    def process_parallel(self, nproc=0):
+        """Same a `process` but multithreaded.
+        The thread management is performed here
+
+        :param nproc: max number of reader threads
+
+        """
+        def build_pool(fct, size):
+            pool = []
+            for i in range(size):
+                t = threading.Thread(target=fct)
+                t.start()
+                pool.append(t)
+            return pool
+        nproc = min(nproc, os.cpu_count())if nproc>0 else os.cpu_count()
+        if len(self.inputfiles)>nproc:
+            nproc = len(self.inputfiles)
+        self.barrier = threading.Barrier(nproc)
+
+        if self.dataset is None:
+            self.makeHDF5()
+        self.init_ai()
+        t0 = -time.perf_counter()
+        print(self.inputfiles)
+        reader_pool = build_pool(self.process_one_file_mt, nproc)
+        reducer_pool = build_pool(self.process_one_frame_mt, 1)
+        start = 0
+        for f in self.inputfiles:
+            with fabio.open(f) as fimg:
+                stop = start + fimg.nframes
+            self.file_queue.put(Frame(list(range(start, stop)), f))
+            start = stop
+        cnt = stop
+        for i in range(nproc):
+            #Kill pill
+            self.file_queue.put(None)
+        self.finished.wait()
+        t0 += time.perf_counter()
+        print(f"Execution time for {cnt} frames: {t0:.3f} s; "
+              f"Average execution time: {1000. * t0 / cnt:.1f} ms/img")
+        self.nxs.close()
+
+    process = process_parallel
+    # process = process_serial
 
     def get_use_gpu(self):
         return self.worker._method.impl_lower == "opencl"

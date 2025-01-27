@@ -65,7 +65,7 @@ All those data-classes are serializable to JSON.
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2025"
+__date__ = "27/01/2025"
 __docformat__ = 'restructuredtext'
 
 import sys
@@ -666,6 +666,15 @@ class WorkerConfig:
     @flat_field_image.setter
     def flat_field_image(self, value):
         self.flat_field = None if not value else value
+
+    # Dict-like API, for (partial) compatibility
+    @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
+    def __setitem__(self, key, value):
+        self.__setattr__(key, value)
+    @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
+    def __getitem__(self, key):
+        return self.__getattribute__(key)
+
 # @dataclass(slots=True)
 # class PixelwiseWorkerConfig:
 #     """Configuration for pyFAI.worker.PixelwiseWorker
