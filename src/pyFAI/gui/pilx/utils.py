@@ -86,8 +86,10 @@ def get_radial_dataset(parent: h5py.Group,
         if size is not None:
             for idx in [0, -1, 1, -2]:
                 radial_path = axes[idx]
-                if get_dataset(nxdata, radial_path).shape[0] == size:
-                    break
+                if radial_path in nxdata and isinstance(nxdata[radial_path], h5py.Dataset):
+                    ds = get_dataset(nxdata, radial_path)
+                    if ds.shape[0] == size:
+                        break
             else:
                 logger.warning("No dataset matchs radial size !")
     else:
