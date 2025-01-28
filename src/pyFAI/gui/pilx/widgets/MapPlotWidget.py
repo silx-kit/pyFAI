@@ -172,12 +172,12 @@ class MapPlotWidget(ImagePlotWidget):
 
         z = image.flatten()
         rows, cols = image.shape[:2]
-        if x and y:
+        if (x is not None)  and (y is not None):
             assert x.size == cols
             assert y.size == rows
 
         if self._first_plot:
-            if not(x and y):
+            if (x is None) or (y is None):
                 x = numpy.arange(cols)
                 y = numpy.arange(rows)
             x2 = numpy.outer(numpy.ones(rows), x).ravel()
@@ -190,7 +190,7 @@ class MapPlotWidget(ImagePlotWidget):
             self.resetZoom()
             self._first_plot = False
         else:
-            if (x and y):
+            if (x is not None) and (y is not None):
                 x2 = numpy.outer(numpy.ones(rows), x).ravel()
                 y2 = numpy.outer(y, numpy.ones(cols)).ravel()
             else:
