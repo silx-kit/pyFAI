@@ -9,7 +9,7 @@ Project
 PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
 
-PyFAI is an open source project licensed under the MIT license mainly written 
+PyFAI is an open source project licensed under the MIT license mainly written
 in Python (3.9 or newer).
 It is managed by the Silx team and is heavily relying on the
 Python scientific ecosystem: numpy, scipy, h5py and matplotlib.
@@ -197,7 +197,7 @@ Linux
 .....
 
 `Github workflows provides continuous integration on Linux <https://github.com/silx-kit/pyFAI/actions>`_,
-64 bits computer with Python 3.9 to 3.13 and is also used to build the wheels for the release. 
+64 bits computer with Python 3.9 to 3.13 and is also used to build the wheels for the release.
 
 AppVeyor
 ........
