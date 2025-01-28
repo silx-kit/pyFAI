@@ -32,7 +32,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2025"
+__date__ = "28/01/2025"
 __status__ = "development"
 
 from typing import Iterable, Optional
@@ -69,10 +69,17 @@ def get_dataset(parent: h5py.Group | h5py.File, path: str) -> h5py.Dataset:
     return dset
 
 
-def get_radial_dataset(parent: h5py.Group, nxdata_path: str, size: Optional[int]=None) -> h5py.Dataset:
+def get_radial_dataset(parent: h5py.Group,
+                       nxdata_path: str,
+                       size: Optional[int]=None) -> h5py.Dataset:
     nxdata = parent[nxdata_path]
     assert isinstance(nxdata, h5py.Group)
     assert nxdata.attrs["NX_class"] == "NXdata"
+    if size is None:
+        if "intensity" in nxdata:
+            size = nxdata["intensity"].shape[-1]
+        else:
+            size = nxdata[nxdata.attrs["signal"]].shape[0]
     axes = nxdata.attrs["axes"]
     if isinstance(axes, Iterable):
         radial_path = axes[0]

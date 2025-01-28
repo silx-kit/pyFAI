@@ -217,12 +217,12 @@ class MainWindow(qt.QMainWindow):
     def getRoiRadialRange(self) -> Tuple[float | None, float | None]:
         return self._integrated_plot_widget.roi.getRange()
 
-    def displayPatternAtIndices(
-        self, indices: ImageIndices, legend: str, color: str=None
-    ):
+    def displayPatternAtIndices(self,
+                                indices: ImageIndices,
+                                legend: str,
+                                color: str=None):
         if self._file_name is None:
             return
-
         point = Point(indices,
                       url_nxdata_path=f"{self._file_name}?{self._nxprocess_path}/result"
         )
