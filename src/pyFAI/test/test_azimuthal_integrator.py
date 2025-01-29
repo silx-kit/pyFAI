@@ -930,8 +930,8 @@ class TestRadialAzimuthalScale(unittest.TestCase):
 
             # assert(numpy.allclose(res.radial.max(), config["radial_range"][1], atol=atol))
             # assert(numpy.allclose(res.azimuthal.min(), config["azimuth_range"][0], atol=atol))
-            # assert(numpy.allclose(res.azimuthal.max(), config["azimuth_range"][1], atol=atol))       
-        
+            # assert(numpy.allclose(res.azimuthal.max(), config["azimuth_range"][1], atol=atol))
+
 
 
     def test_limits_fiber_units(self):
