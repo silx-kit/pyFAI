@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "29/01/2025"
 __satus__ = "development"
 
 import logging
@@ -45,12 +45,6 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 from ..gui.cli_calibration import MultiCalib
-
-try:
-    from rfoo.utils import rconsole
-    rconsole.spawn_server()
-except ImportError:
-    logger.debug("No socket opened for debugging. Please install rfoo")
 
 
 def main(args=None):
