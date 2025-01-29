@@ -42,7 +42,7 @@ import numpy
 from .common import Integrator
 # from ..geometry import Geometry
 from .. import units
-from ..utils import EPS32, deg2rad, crc32
+from ..utils import EPS32, deg2rad, crc32, rad2rad
 # from ..utils.decorators import deprecated, deprecated_warning
 from ..containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
 from ..io import DefaultAiWriter, save_integrate_result
@@ -732,6 +732,8 @@ class AzimuthalIntegrator(Integrator):
         if azimuth_range is not None and azimuth_unit.period:
             if azimuth_unit.name.split("_")[-1] == "deg":
                 azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
+            elif azimuth_unit.name.split("_")[-1] == "rad":
+                azimuth_range = tuple(rad2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             self.check_chi_disc(azimuth_range)
@@ -741,6 +743,8 @@ class AzimuthalIntegrator(Integrator):
         if radial_range is not None and radial_unit.period:
             if radial_unit.name.split("_")[-1] == "deg":
                 radial_range = tuple(deg2rad(radial_range[i], self.chiDiscAtPi) for i in (0, -1))
+            elif azimuth_unit.name.split("_")[-1] == "rad":
+                azimuth_range = tuple(rad2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
             if radial_range[1] <= radial_range[0]:
                 radial_range = (radial_range[0], radial_range[1] + 2 * pi)
             self.check_chi_disc(radial_range)

@@ -69,6 +69,16 @@ def deg2rad(dd, disc=1):
             rp -= 2.0
     return rp * math.pi
 
+def rad2rad(r, disc=1):
+    """
+
+    """
+    # Set r between (0,2pi)
+    r = r % (2*math.pi)
+    if disc:
+        if r > math.pi:
+            r = r - 2 * math.pi
+    return r
 
 def expand2d(vect, size2, vertical=True):
     """
