@@ -718,12 +718,6 @@ class AzimuthalIntegrator(Integrator):
 
         shape = data.shape
 
-        if radial_range:
-            radial_range = tuple([i / pos0_scale for i in radial_range])
-
-        if azimuth_range:
-            azimuth_range = tuple([i / pos1_scale for i in azimuth_range])
-
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
             assert variance.size == data.size
@@ -741,8 +735,8 @@ class AzimuthalIntegrator(Integrator):
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             self.check_chi_disc(azimuth_range)
-            if azimuth_unit.name.split("_")[-1] == "deg":
-                azimuth_range = [numpy.rad2deg(i) for i in azimuth_range]
+        elif azimuth_range is not None:
+            azimuth_range = tuple([i / pos1_scale for i in azimuth_range])
 
         if radial_range is not None and radial_unit.period:
             if radial_unit.name.split("_")[-1] == "deg":
@@ -750,8 +744,8 @@ class AzimuthalIntegrator(Integrator):
             if radial_range[1] <= radial_range[0]:
                 radial_range = (radial_range[0], radial_range[1] + 2 * pi)
             self.check_chi_disc(radial_range)
-            if radial_unit.name.split("_")[-1] == "deg":
-                radial_range = [numpy.rad2deg(i) for i in radial_range]
+        elif radial_range is not None:
+            radial_range = tuple([i / pos0_scale for i in radial_range])
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)

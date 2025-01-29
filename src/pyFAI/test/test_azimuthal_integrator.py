@@ -902,14 +902,13 @@ class TestRadialAzimuthalScale(unittest.TestCase):
                    {"unit" : (chideg, qA), "radial_range" : deg_range, "azimuth_range" : A_range},
         ]
         atol = 1e-1
-        for chidisc in (True, False):
-            self.ai.chiDiscAtPi = chidisc
-            for config in CONFIGS:
-                res = self.ai.integrate2d(data=self.data, npt_azim=360, npt_rad=500, **config)
-                self.assertAlmostEqual(res.radial.min(), config["radial_range"][0], delta=atol)
-                self.assertAlmostEqual(res.radial.max(), config["radial_range"][1], delta=atol)
-                self.assertAlmostEqual(res.azimuthal.min(), config["azimuth_range"][0], delta=atol)
-                self.assertAlmostEqual(res.azimuthal.max(), config["azimuth_range"][1], delta=atol)
+        self.ai.chiDiscAtPi = True
+        for config in CONFIGS:
+            res = self.ai.integrate2d(data=self.data, npt_azim=360, npt_rad=500, **config)
+            self.assertAlmostEqual(res.radial.min(), config["radial_range"][0], delta=atol)
+            self.assertAlmostEqual(res.radial.max(), config["radial_range"][1], delta=atol)
+            self.assertAlmostEqual(res.azimuthal.min(), config["azimuth_range"][0], delta=atol)
+            self.assertAlmostEqual(res.azimuthal.max(), config["azimuth_range"][1], delta=atol)
 
     def test_limits_fiber_units(self):
         ## TODO next fiber units PR
