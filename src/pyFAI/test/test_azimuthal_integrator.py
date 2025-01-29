@@ -866,9 +866,8 @@ class TestUnweighted(unittest.TestCase):
             except Exception as err:
                 self.fail(f"Unweighted failed for {method} with exception {err}")
 
-
+# Non-regression tests added for pyFAI version 2025.01
 class TestRadialAzimuthalScale(unittest.TestCase):
-    # Non-regression tests added for pyFAI version 2025.01
     @classmethod
     def setUpClass(cls):
         dist = 0.1
@@ -877,7 +876,6 @@ class TestRadialAzimuthalScale(unittest.TestCase):
         detector = detector_factory("Pilatus100k")
         wavelength = 1e-10
         cls.data = UtilsTest.get_rng().random(detector.shape)
-
         cls.ai = AzimuthalIntegrator(dist=dist,
                                  poni1=poni1,
                                  poni2=poni2,
@@ -886,46 +884,32 @@ class TestRadialAzimuthalScale(unittest.TestCase):
                              )
 
     def test_limits_normal_units(self):
-        CONFIGS = [
-        {
-                "unit" : (units.to_unit("q_nm^-1"), units.to_unit("chi_deg")),
-                "radial_range" : [10,20],
-                "azimuth_range" : [-30,30],
-            },
-            {
-                "unit" : (units.to_unit("chi_deg"), units.to_unit("q_nm^-1")),
-                "radial_range" : [-30,30],
-                "azimuth_range" : [10,20],
-            },
-            {
-                "unit" : (units.to_unit("q_A^-1"), units.to_unit("chi_deg")),
-                "radial_range" : [1,2],
-                "azimuth_range" : [-30,30],
-            },
-            {
-                "unit" : (units.to_unit("chi_deg"), units.to_unit("q_A^-1")),
-                "radial_range" : [-30,30],
-                "azimuth_range" : [1,2],
-            },
-            {
-                "unit" : (units.to_unit("q_A^-1"), units.to_unit("chi_rad")),
-                "radial_range" : [1,2],
-                "azimuth_range" : [-1,1],
-            },
-            {
-                "unit" : (units.to_unit("chi_rad"), units.to_unit("q_A^-1")),
-                "radial_range" : [-1,1],
-                "azimuth_range" : [1,2],
-            },
+        qnm = units.to_unit("q_nm^-1")
+        qA = units.to_unit("q_A^-1")
+        chideg = units.to_unit("chi_deg")
+        chirad = units.to_unit("chi_rad")
+        nm_range = [10,20]
+        A_range = [1,2]
+        deg_range = [-30,30]
+        rad_range = [-1,1]
+        CONFIGS = [{"unit" : (qnm, chideg), "radial_range" : nm_range, "azimuth_range" : deg_range},
+                   {"unit" : (chideg, qnm), "radial_range" : deg_range, "azimuth_range" : nm_range},
+                   {"unit" : (qA, chideg), "radial_range" : A_range, "azimuth_range" : deg_range},
+                   {"unit" : (chideg, qA), "radial_range" : deg_range, "azimuth_range" : A_range},
+                   {"unit" : (qA, chirad), "radial_range" : A_range, "azimuth_range" : rad_range},
+                   {"unit" : (chirad, qA), "radial_range" : rad_range, "azimuth_range" : A_range},
+                   {"unit" : (qA, chideg), "radial_range" : A_range, "azimuth_range" : deg_range},
+                   {"unit" : (chideg, qA), "radial_range" : deg_range, "azimuth_range" : A_range},
         ]
-
         atol = 1e-1
-        for config in CONFIGS:
-            res = self.ai.integrate2d(data=self.data, npt_azim=360, npt_rad=500, **config)
-            self.assertAlmostEqual(res.radial.min(), config["radial_range"][0], delta=atol)
-            self.assertAlmostEqual(res.radial.max(), config["radial_range"][1], delta=atol)
-            self.assertAlmostEqual(res.azimuthal.min(), config["azimuth_range"][0], delta=atol)
-            self.assertAlmostEqual(res.azimuthal.max(), config["azimuth_range"][1], delta=atol)
+        for chidisc in (True, False):
+            self.ai.chiDiscAtPi = chidisc
+            for config in CONFIGS:
+                res = self.ai.integrate2d(data=self.data, npt_azim=360, npt_rad=500, **config)
+                self.assertAlmostEqual(res.radial.min(), config["radial_range"][0], delta=atol)
+                self.assertAlmostEqual(res.radial.max(), config["radial_range"][1], delta=atol)
+                self.assertAlmostEqual(res.azimuthal.min(), config["azimuth_range"][0], delta=atol)
+                self.assertAlmostEqual(res.azimuthal.max(), config["azimuth_range"][1], delta=atol)
 
     def test_limits_fiber_units(self):
         ## TODO next fiber units PR
