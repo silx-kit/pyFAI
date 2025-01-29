@@ -867,6 +867,78 @@ class TestUnweighted(unittest.TestCase):
                 self.fail(f"Unweighted failed for {method} with exception {err}")
 
 
+class TestRadialAzimuthalScale(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        dist = 0.1
+        poni1 = 0.02
+        poni2 = 0.02
+        detector = detector_factory("Pilatus100k")
+        wavelength = 1e-10
+        cls.data = UtilsTest.get_rng().random(detector.shape)
+
+        cls.ai = AzimuthalIntegrator(dist=dist,
+                                 poni1=poni1,
+                                 poni2=poni2,
+                                 wavelength=wavelength,
+                                 detector=detector,
+                             )
+
+    def test_limits_normal_units(self):
+        CONFIGS = [
+        {
+                "unit" : (units.to_unit("q_nm^-1"), units.to_unit("chi_deg")),
+                "radial_range" : [10,20],
+                "azimuth_range" : [-30,30],
+            },
+            {
+                "unit" : (units.to_unit("chi_deg"), units.to_unit("q_nm^-1")),
+                "radial_range" : [-30,30],
+                "azimuth_range" : [10,20],
+            },
+            {
+                "unit" : (units.to_unit("q_A^-1"), units.to_unit("chi_deg")),
+                "radial_range" : [1,2],
+                "azimuth_range" : [-30,30],
+            },
+            {
+                "unit" : (units.to_unit("chi_deg"), units.to_unit("q_A^-1")),
+                "radial_range" : [-30,30],
+                "azimuth_range" : [1,2],
+            },
+            {
+                "unit" : (units.to_unit("q_A^-1"), units.to_unit("chi_rad")),
+                "radial_range" : [1,2],
+                "azimuth_range" : [-1,1],
+            },
+            {
+                "unit" : (units.to_unit("chi_rad"), units.to_unit("q_A^-1")),
+                "radial_range" : [-1,1],
+                "azimuth_range" : [1,2],
+            },
+        ]
+
+        atol = 1e-1
+        for config in CONFIGS:
+            res = self.ai.integrate2d(data=self.data, npt_azim=360, npt_rad=500, **config)
+            self.assertAlmostEqual(res.radial.min(), config["radial_range"][0], delta=atol)
+            self.assertAlmostEqual(res.radial.max(), config["radial_range"][1], delta=atol)
+            self.assertAlmostEqual(res.azimuthal.min(), config["azimuth_range"][0], delta=atol)
+            self.assertAlmostEqual(res.azimuthal.max(), config["azimuth_range"][1], delta=atol)
+
+
+
+            # assert(numpy.allclose(res.radial.max(), config["radial_range"][1], atol=atol))
+            # assert(numpy.allclose(res.azimuthal.min(), config["azimuth_range"][0], atol=atol))
+            # assert(numpy.allclose(res.azimuthal.max(), config["azimuth_range"][1], atol=atol))       
+        
+
+
+    def test_limits_fiber_units(self):
+        ## TODO next fiber units PR
+        ...
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
