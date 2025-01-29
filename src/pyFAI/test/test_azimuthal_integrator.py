@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2025"
+__date__ = "29/01/2025"
 
 import unittest
 import os
@@ -868,6 +868,7 @@ class TestUnweighted(unittest.TestCase):
 
 
 class TestRadialAzimuthalScale(unittest.TestCase):
+    # Non-regression tests added for pyFAI version 2025.01
     @classmethod
     def setUpClass(cls):
         dist = 0.1
