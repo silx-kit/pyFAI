@@ -926,14 +926,6 @@ class TestRadialAzimuthalScale(unittest.TestCase):
             self.assertAlmostEqual(res.azimuthal.min(), config["azimuth_range"][0], delta=atol)
             self.assertAlmostEqual(res.azimuthal.max(), config["azimuth_range"][1], delta=atol)
 
-
-
-            # assert(numpy.allclose(res.radial.max(), config["radial_range"][1], atol=atol))
-            # assert(numpy.allclose(res.azimuthal.min(), config["azimuth_range"][0], atol=atol))
-            # assert(numpy.allclose(res.azimuthal.max(), config["azimuth_range"][1], atol=atol))
-
-
-
     def test_limits_fiber_units(self):
         ## TODO next fiber units PR
         ...
