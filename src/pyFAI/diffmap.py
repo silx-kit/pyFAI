@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/12/2024"
+__date__ = "27/01/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -47,6 +47,8 @@ import numpy
 import fabio
 import json
 import __main__ as main
+from queue import Queue
+import threading
 from .opencl import ocl
 from . import version as PyFAI_VERSION, date as PyFAI_DATE
 from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
@@ -113,7 +115,6 @@ class DiffMap(object):
         self.experiment_title = "Diffraction Mapping"
         self.slow_motor_range = None
         self.fast_motor_range = None
-        # method is a property from worker
 
     def __repr__(self):
         return f"{self.experiment_title} experiment with nbpt_slow: {self.nbpt_slow} nbpt_fast: {self.nbpt_fast}, nbpt_diff: {self.nbpt_rad}"
@@ -401,9 +402,9 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         # create motor range if not yet existing ...
         if self.fast_motor_range is None:
-            self.fast_motor_range=(0, self.nbpt_fast - 1)
+            self.fast_motor_range = (0, self.nbpt_fast - 1)
         if self.slow_motor_range is None:
-            self.slow_motor_range=(0, self.nbpt_slow - 1)
+            self.slow_motor_range = (0, self.nbpt_slow - 1)
 
         nxs = Nexus(self.hdf5, mode="w", creator="pyFAI")
         self.entry_grp = entry_grp = nxs.new_entry(entry="entry",
@@ -444,8 +445,12 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
         entry_grp.attrs["default"] = self.nxdata_grp.name.split("/", 2)[2]
-        self.nxdata_grp[self.slow_motor_name] = numpy.linspace(*self.slow_motor_range, self.nbpt_slow)
-        self.nxdata_grp[self.fast_motor_name] = numpy.linspace(*self.fast_motor_range, self.nbpt_fast)
+        slow_motor_ds = self.nxdata_grp.create_dataset("slow", data=numpy.linspace(*self.slow_motor_range, self.nbpt_slow))
+        slow_motor_ds.attrs["interpretation"] = "scalar"
+        slow_motor_ds.attrs["long_name"] = self.slow_motor_name
+        fast_motor_ds = self.nxdata_grp.create_dataset("fast", data=numpy.linspace(*self.fast_motor_range, self.nbpt_fast))
+        fast_motor_ds.attrs["interpretation"] = "scalar"
+        fast_motor_ds.attrs["long_name"] = self.fast_motor_name
 
         if self.worker.do_2D():
             self.dataset = self.nxdata_grp.create_dataset(
@@ -456,14 +461,16 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_azim, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "image"
-            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, "azimuthal", self.unit.space]
+            self.nxdata_grp.attrs["axes"] = ["azimuthal", self.unit.space, "slow", "fast"]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_azim, self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
             for i in range(self.nbpt_slow):
                 for j in range(self.nbpt_fast):
-                    layout[:, :, i, j] = source[i, j]
+                    layout[:,:, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
+            slow_motor_ds.attrs["axes"] = 3
+            fast_motor_ds.attrs["axes"] = 4
 
         else:
             print(f"shape for dataset: {self.nbpt_slow}, {self.nbpt_fast}, {self.nbpt_rad}")
@@ -475,7 +482,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "spectrum"
-            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, self.unit.space]
+            self.nxdata_grp.attrs["axes"] = [self.unit.space, "slow", "fast"]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
@@ -483,10 +490,11 @@ If the number of files is too large, use double quotes like "*.edf" """
                 for j in range(self.nbpt_fast):
                     layout[:, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
+            slow_motor_ds.attrs["axes"] = 2
+            fast_motor_ds.attrs["axes"] = 3
 
-        self.nxdata_grp.attrs["signal"] = self.dataset.name.split("/")[-1]
-
-        self.dataset.attrs["title"] = str(self)
+        self.nxdata_grp.attrs["signal"] = 'map'
+        self.dataset.attrs["title"] = self.nxdata_grp["map"].attrs["title"] = str(self)
         self.nxs = nxs
 
     def init_shape(self):
@@ -532,10 +540,9 @@ If the number of files is too large, use double quotes like "*.edf" """
                                                                 maxshape=(None,) + self.dataset.shape[1:])
             self.dataset_error.attrs["interpretation"] = "image" if self.dataset.ndim == 4 else "spectrum"
         space = self.unit.space
-        unit = str(self.unit)[len(space)+1:]
+        unit = str(self.unit)[len(space) + 1:]
         if space not in self.nxdata_grp:
             self.nxdata_grp[space] = tth
-            self.nxdata_grp[space].attrs["axes"] = 3
             self.nxdata_grp[space].attrs["unit"] = unit
             self.nxdata_grp[space].attrs["long_name"] = self.unit.label
             self.nxdata_grp[space].attrs["interpretation"] = "scalar"
@@ -543,8 +550,11 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.nxdata_grp["azimuthal"] = res.azimuthal
             self.nxdata_grp["azimuthal"].attrs["unit"] = "deg"
             self.nxdata_grp["azimuthal"].attrs["interpretation"] = "scalar"
+            self.nxdata_grp["azimuthal"].attrs["axes"] = 1
             azim = res.azimuthal
+            self.nxdata_grp[space].attrs["axes"] = 2
         else:
+            self.nxdata_grp[space].attrs["axes"] = 1
             azim = None
         return tth, azim
 
@@ -584,8 +594,8 @@ If the number of files is too large, use double quotes like "*.edf" """
     def process_one_file(self, filename, callback=None):
         """
         :param filename: name of the input filename
-        :param idx: index of file
         :param callback: function to be called after every frame has been processed.
+        :param indices: this is a slice object, frames in this file should have the given indices.
         :return: None
         """
         if self.ai is None:
@@ -593,7 +603,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.dataset is None:
             self.makeHDF5()
 
-        t = time.perf_counter()
+        t = -time.perf_counter()
         with fabio.open(filename) as fimg:
             if "dataset" in dir(fimg):
                 if isinstance(fimg.dataset, list):
@@ -610,9 +620,9 @@ If the number of files is too large, use double quotes like "*.edf" """
                     self.process_one_frame(fimg.data)
                     if callable(callback):
                         callback(filename, i + 1)
-            t -= time.perf_counter()
-            print(f"Processing {os.path.basename(filename):30s} took {-1000*t:6.1f}ms ({fimg.nframes} frames)")
-        self.timing.append(-t)
+            t += time.perf_counter()
+            print(f"Processing {os.path.basename(filename):30s} took {1000*t:6.1f}ms ({fimg.nframes} frames)")
+        self.timing.append(t)
         self.processed_file.append(filename)
 
     def set_hdf5_input_dataset(self, dataset):
@@ -633,7 +643,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             measurement_grp = self.nxs.new_class(self.entry_grp, "measurement", "NXdata")
         here = os.path.dirname(os.path.abspath(self.nxs.filename))
         there = os.path.abspath(dataset.file.filename)
-        name = "images_%04i" % len(self.stored_input)
+        name = f"images_{len(self.stored_input):04d}"
         measurement_grp[name] = h5py.ExternalLink(os.path.relpath(there, here), dataset.name)
         if "signal" not in measurement_grp.attrs:
             measurement_grp.attrs["signal"] = name
@@ -661,14 +671,14 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.dataset is None:
             self.makeHDF5()
         self.init_ai()
-        t0 = time.perf_counter()
+        t0 = -time.perf_counter()
         print(self.inputfiles)
         for f in self.inputfiles:
             self.process_one_file(f)
-        tot = time.perf_counter() - t0
+        t0 -= time.perf_counter()
         cnt = max(self._idx, 0) + 1
-        print(f"Execution time for {cnt} frames: {tot:.3f} s; "
-              f"Average execution time: {1000. * tot / cnt:.1f} ms/img")
+        print(f"Execution time for {cnt} frames: {t0:.3f} s; "
+              f"Average execution time: {1000. * t0 / cnt:.1f} ms/img")
         self.nxs.close()
 
     def get_use_gpu(self):

@@ -1888,10 +1888,13 @@ class Geometry(object):
               (self._LAST_POLARIZATION in self._cached_array)):
             pol = self._cached_array[self._LAST_POLARIZATION]
             return pol if with_checksum else pol.array
-
-        factor = float(factor)
-        axis_offset = float(axis_offset)
-        desc = PolarizationDescription(factor, axis_offset)
+        if isinstance(factor, PolarizationDescription):
+            desc = factor
+            factor, axis_offset = desc
+        else:
+            factor = float(factor)
+            axis_offset = float(axis_offset)
+            desc = PolarizationDescription(factor, axis_offset)
         pol = self._cached_array.get(desc)
         if pol is None or (pol.array.shape != shape):
             tth = self.twoThetaArray(shape)
