@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2025"
+__date__ = "21/01/2025"
 __status__ = "production"
 
 import logging
@@ -44,6 +44,7 @@ import math
 import numpy
 import time
 import scipy.ndimage
+from scipy.signal import peak_widths
 from .decorators import deprecated
 
 try:
@@ -952,3 +953,65 @@ def allclose_mod(a, b, modulo=2*numpy.pi, **kwargs):
     """
     di = numpy.minimum((a-b)%modulo, (b-a)%modulo)
     return numpy.allclose(modulo*0.5, (di+modulo*0.5), **kwargs)
+
+
+def quality_of_fit(img, ai, calibrant,
+                   npt_rad=1000, npt_azim=360,
+                   unit="q_nm^-1",
+                   method=("full", "csr", "cython"),
+                   empty = numpy.nan, rings=None):
+    """Provide an indicator for the quality of fit of a given geometry for an image
+
+    :param img: 2D image with a calibration image (containing rings)
+    :param ai: azimuthal integrator object (instance of pyFAI.integrator.azimuthal.AzimuthalIntegrator)
+    :param calibrant: calibration object, instance of pyFAI.calibrant.Calibrant
+    :param npt_rad: int with the number of radial bins
+    :param npt_azim: int with the number of azimuthal bins
+    :param unit: typically "2th_deg" or "q_nm^-1", the quality of fit should be largely independant from the space.
+    :param method: integration method
+    :param empty: value of the empy bins, discarded values
+    :param rings: list of rings to evaluate (0-based)
+    :return: QoF indicator, similar to reduced χ²,  the smaller, the better
+    """
+
+    ai.empty = empty
+    q_theo = calibrant.get_peaks(unit=unit)
+    res = ai.integrate2d(img, npt_rad, npt_azim, method=method, unit=unit)
+    if rings is None:
+        rings = list(range(len(calibrant.get_2th())))
+    q_theo = q_theo[rings]
+    idx_theo = abs(numpy.add.outer(res.radial,-q_theo)).argmin(axis=0)
+    idx_maxi = numpy.empty((res.azimuthal.size, q_theo.size))+numpy.nan
+    idx_fwhm = numpy.empty((res.azimuthal.size, q_theo.size))+numpy.nan
+    signal = res.intensity
+    gradient = numpy.gradient(signal, axis=-1)
+    minima = numpy.where(numpy.logical_and(gradient[:,:-1]<0, gradient[:,1:]>=0))
+    maxima = numpy.where(numpy.logical_and(gradient[:,:-1]>0, gradient[:,1:]<0))
+    for idx in range(res.azimuthal.size):
+        for ring in rings:
+            q_th = q_theo[ring]
+            idx_th = idx_theo[ring]
+            if (q_th<=res.radial[0]) or (q_th>=res.radial[-1]):
+                continue
+            maxi = maxima[1][maxima[0]==idx]
+            mini = minima[1][minima[0]==idx]
+            idx_max = maxi[abs(maxi-idx_th).argmin()]
+            idx_inf = mini[mini<idx_max]
+            if idx_inf.size:
+                idx_inf = idx_inf[-1]
+                idx_sup = mini[mini>idx_max]
+                if idx_sup.size:
+                    idx_sup = idx_sup[0]
+                    if idx_inf< idx_th< idx_sup:
+                        sub = signal[idx, idx_inf:idx_sup+1] - numpy.linspace(signal[idx, idx_inf],signal[idx, idx_sup], 1+idx_sup-idx_inf)
+                        com = (sub*numpy.linspace(idx_inf, idx_sup, 1+idx_sup-idx_inf)).sum()/sub.sum()
+                        if numpy.isfinite(com):
+                            width = peak_widths(sub, [numpy.argmax(sub)])[0][0]
+                            if width==0:
+                                print(f" #{idx},{ring}: {idx_inf} < th:{idx_th} max:{idx_max} com:{com:.3f} < {idx_sup}; fwhm={width}")
+                                print(signal[idx, idx_inf:idx_sup+1])
+                                print(sub)
+                            else:
+                                idx_fwhm[idx, ring] = width
+                                idx_maxi[idx, ring] = idx_max
+    return numpy.nanmean((2.355*(idx_maxi-idx_theo)/idx_fwhm)**2)
