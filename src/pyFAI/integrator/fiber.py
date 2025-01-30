@@ -389,7 +389,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             kwargs["unit_oop"] = unit_oop
 
         return self.integrate2d_grazing_incidence(**kwargs)
-    
+
     def integrate2d_exitangles(self, unit="deg", **kwargs):
         if unit == "rad":
             unit_ip = "exit_angle_horz_rad"
