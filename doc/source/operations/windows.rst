@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 10/10/2023
+:Date: 28/01/2025
 :Keywords: Installation procedure
 :Target: System administrators under windows
 
@@ -8,7 +8,7 @@ Installation procedure on Windows
 =================================
 
 PyFAI is a Python library. Even if you are only interested in some tool like
-pyFAI-calib or pyFAI-integrate, you need to install the complete library (for now).
+pyFAI-calib3 or pyFAI-integrate, you need to install the complete library (for now).
 This is usually performed in 3 steps:
 
 #. install Python,
@@ -50,7 +50,7 @@ This will install:
 * h5py
 * silx
 * h5py
-* PyQt5
+* PyQt6
 
 
 Install pyFAI from sources
@@ -87,6 +87,7 @@ Solutions exist but they all represent a substential amount of work !
 
 Side-by-side error
 ..................
+
 When starting pyFAI you get a side-by-side error like::
 
     ImportError: DLL load failed: The application has failed to start because its
