@@ -376,3 +376,28 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   filename=filename)
 
     integrate2d_grazing_incidence = integrate2d_fiber
+
+    def integrate2d_polar(self, polar_unit="deg", radial_unit="nm^-1", rotate=False, **kwargs):
+        unit_ip = "chigi_rad" if polar_unit == "rad" else "chigi_deg"
+        unit_oop = "qtot_A^-1" if radial_unit == "A^-1" else "qtot_nm^-1"
+
+        if rotate:
+            kwargs["unit_ip"] = unit_oop
+            kwargs["unit_oop"] = unit_ip
+        else:
+            kwargs["unit_ip"] = unit_ip
+            kwargs["unit_oop"] = unit_oop
+
+        return self.integrate2d_grazing_incidence(**kwargs)
+    
+    def integrate2d_exitangles(self, unit="deg", **kwargs):
+        if unit == "rad":
+            unit_ip = "exit_angle_horz_rad"
+            unit_oop = "exit_angle_vert_rad"
+        else:
+            unit_ip = "exit_angle_horz_deg"
+            unit_oop = "exit_angle_vert_deg"
+
+        kwargs["unit_ip"] = unit_ip
+        kwargs["unit_oop"] = unit_oop
+        return self.integrate2d_grazing_incidence(**kwargs)
