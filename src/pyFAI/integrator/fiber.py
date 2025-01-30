@@ -276,7 +276,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         else:
             sum_variance = None
             sigma = None
-        result = Integrate1dResult(res.azimuthal * unit_scale, intensity, sigma)
+        result = Integrate1dResult(res.azimuthal, intensity, sigma)
         result._set_method_called("integrate_radial")
         result._set_unit(output_unit)
         result._set_sum_normalization(sum_normalization)

@@ -312,6 +312,18 @@ def register_azimuthal_unit(name, scale=1, label=None, equation=None, formula=No
                                  corner, delta, short_name, unit_symbol, positive, period)
     ANY_UNITS.update(AZIMUTHAL_UNITS)
 
+def register_azimuthal_fiber_unit(name, scale=1, label=None, equation=None, formula=None,
+                                  incident_angle=0.0, tilt_angle=0.0, sample_orientation=1,
+                                  center=None, corner=None, delta=None, short_name=None,
+                                  unit_symbol=None, positive=False, period=None):
+    AZIMUTHAL_UNITS[name] = UnitFiber(name=name, scale=scale, label=label,
+                                      equation=equation, formula=formula,
+                                      incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation,
+                                      center=center, corner=corner, delta=delta,
+                                      short_name=short_name, unit_symbol=unit_symbol,
+                                      positive=positive, period=period,
+    )
+    ANY_UNITS.update(AZIMUTHAL_UNITS)
 
 def eq_r(x, y, z=None, wavelength=None):
     """Calculates the radius in meter
@@ -349,8 +361,8 @@ def eq_q(x, y, z, wavelength):
     return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
 
 
-def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the vertical exit scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
+def eq_scattering_angle_vertical(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the vertical scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -361,8 +373,8 @@ def eq_exitangle(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, s
     return numpy.arctan2(y, numpy.sqrt(z ** 2 + x ** 2))
 
 
-def eq_exitangle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
-    """Calculates the horizontal exit scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
+def eq_scattering_angle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the horizontal scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: vertical position, to the roof, from sample position
@@ -371,6 +383,57 @@ def eq_exitangle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0
     :return: horizontal exit angle in radians
     """
     return numpy.arctan2(x, z)
+
+
+def eq_exit_angle_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the vertical exit angle in radians relative to the horizon (for thin films), used for GI/Fiber diffraction
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+    :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+    :param wavelength: in meter
+    :return: vertical exit angle in radians
+    """
+    rot_incident_angle = numpy.array([[1,0,0],
+                                      [0,numpy.cos(incident_angle), numpy.sin(-incident_angle)],
+                                      [0, numpy.sin(incident_angle), numpy.cos(incident_angle)]],
+    )
+    rot_tilt_angle = numpy.array([[numpy.cos(tilt_angle), numpy.sin(-tilt_angle), 0],
+                                  [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
+                                  [0, 0, 1]],
+    )
+    rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x,y,z)), axes=1)
+    xp, yp, zp = numpy.tensordot(rot_tilt_angle, rotated_xyz, axes=1)
+    return numpy.arctan2(yp, numpy.sqrt(zp ** 2 + xp ** 2))
+
+
+def eq_exit_angle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the horizontal exit angle in radians relative to the horizon (for thin films), used for GI/Fiber diffraction
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+    :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+    :param wavelength: in meter
+    :return: horizontal exit angle in radians
+    """
+    rot_incident_angle = numpy.array([[1,0,0],
+                              [0,numpy.cos(incident_angle), numpy.sin(-incident_angle)],
+                              [0, numpy.sin(incident_angle), numpy.cos(incident_angle)]],
+    )
+    rot_tilt_angle = numpy.array([[numpy.cos(tilt_angle), numpy.sin(-tilt_angle), 0],
+                              [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
+                              [0, 0, 1]],
+    )
+    rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x,y,z)), axes=1)
+    xp, yp, zp = numpy.tensordot(rot_tilt_angle, rotated_xyz, axes=1)
+    return numpy.arctan2(xp, zp)
+
+
+eq_exitangle = eq_exit_angle_vert
 
 
 def q_lab_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
@@ -382,9 +445,9 @@ def q_lab_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sam
     :param wavelength: in meter
     :return: horizontal scattering vector in inverse nm
     """
-    exit_angle = eq_exitangle(x=x, y=y, z=z, wavelength=wavelength)
-    exit_angle_horz = eq_exitangle_horz(x=x, y=y, z=z, wavelength=wavelength)
-    return 2.0e-9 / wavelength * numpy.pi * numpy.cos(exit_angle) * numpy.sin(exit_angle_horz)
+    scattering_angle_vertical = eq_scattering_angle_vertical(x=x, y=y, z=z, wavelength=wavelength)
+    scattering_angle_horz = eq_scattering_angle_horz(x=x, y=y, z=z, wavelength=wavelength)
+    return 2.0e-9 / wavelength * numpy.pi * numpy.cos(scattering_angle_vertical) * numpy.sin(scattering_angle_horz)
 
 
 def q_lab_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
@@ -396,8 +459,8 @@ def q_lab_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sam
     :param wavelength: in meter
     :return: vertical scattering vector in inverse nm
     """
-    exit_angle = eq_exitangle(x=x, y=y, z=z, wavelength=wavelength)
-    return 2.0e-9 / wavelength * numpy.pi * numpy.sin(exit_angle)
+    scattering_angle_vertical = eq_scattering_angle_vertical(x=x, y=y, z=z, wavelength=wavelength)
+    return 2.0e-9 / wavelength * numpy.pi * numpy.sin(scattering_angle_vertical)
 
 
 def q_lab_beam(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
@@ -409,9 +472,9 @@ def q_lab_beam(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sam
     :param wavelength: in meter
     :return: beam scattering vector in inverse nm
     """
-    exit_angle = eq_exitangle(x=x, y=y, z=z, wavelength=wavelength)
-    exit_angle_horz = eq_exitangle_horz(x=x, y=y, z=z, wavelength=wavelength)
-    return 2.0e-9 / wavelength * numpy.pi * (numpy.cos(exit_angle) * numpy.cos(exit_angle_horz) - 1)
+    scattering_angle_vertical = eq_scattering_angle_vertical(x=x, y=y, z=z, wavelength=wavelength)
+    scattering_angle_horz = eq_scattering_angle_horz(x=x, y=y, z=z, wavelength=wavelength)
+    return 2.0e-9 / wavelength * numpy.pi * (numpy.cos(scattering_angle_vertical) * numpy.cos(scattering_angle_horz) - 1)
 
 
 def q_lab(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
@@ -587,9 +650,6 @@ def eq_qhorz_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_
     :return: component of the scattering vector along the horizontal direction in inverse nm
     """
     hpos, vpos = rotate_sample_orientation(x=x, y=y, sample_orientation=sample_orientation)
-# The above code is using multi-line comments in Python, which are denoted by three consecutive pound
-# signs (
-
     return eq_qhorz(hpos=hpos, vpos=vpos, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle)
 
 
@@ -679,10 +739,24 @@ def eq_q_total(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_o
     :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     :return: component of the scattering vector in the plane YZ, in inverse nm
     """
-    return numpy.sqrt(
-        eq_qip(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation) ** 2 +
-        eq_qoop(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation) ** 2
-    )
+    hpos, vpos = rotate_sample_orientation(x=x, y=y, sample_orientation=sample_orientation)
+    return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(hpos, vpos, z) / 2.0) / wavelength
+
+def eq_chi_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
+    """Calculates the polar angle from the vertical axis (fiber or thin-film main axis)
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
+    :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
+    :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
+    :return: component of the scattering vector in the plane YZ, in inverse nm
+    """
+    qoop = eq_qoop(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+    qip = eq_qip(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
+    return numpy.arctan2(qip, qoop)
 
 formula_r = "sqrt(x * x + y * y)"
 formula_2th = f"arctan2({formula_r}, z)"
@@ -693,16 +767,29 @@ formula_d2 = f"(2.0e-9/λ*sin(0.5*{formula_2th}))**2"
 formula_qx = f"4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
 formula_qy = f"4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
 
-formula_exit_angle = "arctan2(y, sqrt(z*z + x*x))"
-formula_exit_angle_horz = "arctan2(x,z)"
-formula_qbeam_lab = f"2.0e-9/λ*π*(cos({formula_exit_angle})*cos({formula_exit_angle_horz}) - 1)"
-formula_qhorz_lab = f"2.0e-9/λ*π*cos({formula_exit_angle})*sin({formula_exit_angle_horz})"
-formula_qvert_lab = f"2.0e-9/λ*π*sin({formula_exit_angle})"
+formula_scattering_angle_vert = "arctan2(y, sqrt(z*z+x*x))"
+formula_scattering_angle_horz = "arctan2(x,z)"
+formula_x_rot_iangle = "x"
+formula_y_rot_iangle = "(y*cos(η)-z*sin(η))"
+formula_z_rot_iangle = "(y*sin(η)+z*cos(η))"
+formula_x_rot_tangle = f"({formula_x_rot_iangle} * cos(χ) - {formula_y_rot_iangle} * sin(χ))"
+formula_y_rot_tangle = f"({formula_x_rot_iangle} * sin(χ) + {formula_y_rot_iangle} * cos(χ))"
+formula_z_rot_tangle = formula_z_rot_iangle
+formula_exit_angle_vert = f"arctan2({formula_y_rot_tangle}, sqrt({formula_z_rot_tangle} * {formula_z_rot_tangle} + {formula_x_rot_tangle} * {formula_x_rot_tangle}))"
+formula_exit_angle_horz = f"arctan2({formula_x_rot_tangle}, ({formula_z_rot_tangle}))"
+formula_exit_angle = formula_scattering_angle_vert
+formula_exit_angle_horz = formula_scattering_angle_horz
+
+formula_qbeam_lab = f"2.0e-9/λ*π*(cos({formula_scattering_angle_vert})*cos({formula_scattering_angle_horz}) - 1)"
+formula_qhorz_lab = f"2.0e-9/λ*π*cos({formula_scattering_angle_vert})*sin({formula_scattering_angle_horz})"
+formula_qvert_lab = f"2.0e-9/λ*π*sin({formula_scattering_angle_vert})"
 formula_qbeam_rot = f"cos(η)*({formula_qbeam_lab})+sin(η)*({formula_qvert_lab})"
 formula_qhorz_rot = f"cos(χ)*({formula_qhorz_lab})-sin(χ)*sin(η)*({formula_qbeam_lab})+sin(χ)*cos(η)*({formula_qvert_lab})"
 formula_qvert_rot = f"-sin(χ)*({formula_qhorz_lab})-cos(χ)*sin(η)*({formula_qbeam_lab})+cos(χ)*cos(η)*({formula_qvert_lab})"
 formula_qip = f"sqrt(({formula_qbeam_rot})**2+({formula_qhorz_rot})**2)*((({formula_qhorz_rot} > 0) * 2) - 1)"
 formula_qoop = formula_qvert_rot
+formula_qtot = formula_q
+formula_chi_gi = f"arctan2(({formula_qip}), ({formula_qoop}))"
 
 register_radial_unit("r_mm",
                      center="rArray",
@@ -877,20 +964,58 @@ register_radial_unit("qy_nm^-1",
                      unit_symbol="nm^{-1}",
                      positive=False)
 
-register_radial_fiber_unit("exitangle_rad",
+register_radial_fiber_unit("scattering_angle_vert_rad",
                      scale=1.0,
-                     label=r"Exit scattering angle (rad)",
-                     equation=eq_exitangle,
-                     short_name="exitangle",
+                     label=r"Vertical scattering angle (rad)",
+                     formula=formula_scattering_angle_vert,
+                     equation=eq_scattering_angle_vertical,
+                     short_name="scatangle_vert",
                      unit_symbol="rad",
                      positive=False)
 
-register_radial_fiber_unit("horz_exitangle_rad",
+register_radial_fiber_unit("scattering_angle_horz_rad",
                      scale=1.0,
-                     label=r"Exit scattering angle (rad) in the horizontal axis",
-                     equation=eq_exitangle_horz,
-                     short_name="exitangle_horz",
+                     label=r"Horizontal scattering angle (rad)",
+                     formula=formula_scattering_angle_horz,
+                     equation=eq_scattering_angle_horz,
+                     short_name="scatangle_horz",
                      unit_symbol="rad",
+                     positive=False)
+
+register_radial_fiber_unit("exit_angle_vert_rad",
+                     scale=1.0,
+                     label=r"Vertical exit angle (rad)",
+                     formula=formula_exit_angle_vert,
+                     equation=eq_exit_angle_vert,
+                     short_name="exitangle_vert_rad",
+                     unit_symbol="rad",
+                     positive=False)
+
+register_radial_fiber_unit("exit_angle_horz_rad",
+                     scale=1.0,
+                     label=r"Horizontal exit angle (rad)",
+                     formula=formula_exit_angle_horz,
+                     equation=eq_exit_angle_horz,
+                     short_name="exitangle_horz_rad",
+                     unit_symbol="rad",
+                     positive=False)
+
+register_radial_fiber_unit("exit_angle_vert_deg",
+                     scale=180.0 / numpy.pi,
+                     label=r"Vertical exit angle (deg)",
+                     formula=formula_exit_angle_vert,
+                     equation=eq_exit_angle_vert,
+                     short_name="exitangle_vert",
+                     unit_symbol="deg",
+                     positive=False)
+
+register_radial_fiber_unit("exit_angle_horz_deg",
+                     scale=180.0 / numpy.pi,
+                     label=r"Horizontal exit angle (deg)",
+                     formula=formula_exit_angle_horz,
+                     equation=eq_exit_angle_horz,
+                     short_name="exitangle_horz",
+                     unit_symbol="deg",
                      positive=False)
 
 register_radial_fiber_unit("qxgi_nm^-1",
@@ -941,6 +1066,7 @@ register_radial_fiber_unit("qoop_nm^-1",
 register_radial_fiber_unit("qtot_nm^-1",
                      scale=1.0,
                      label=r"Scattering vector $q_{xyz}$ ($nm^{-1}$)",
+                     formula=formula_qtot,
                      equation=eq_q_total,
                      short_name="q",
                      unit_symbol="nm^{-1}",
@@ -973,6 +1099,7 @@ register_radial_fiber_unit("qzgi_A^-1",
 register_radial_fiber_unit("qip_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_{IP}$ ($A^{-1}$)",
+                     formula=formula_qip,
                      equation=eq_qip,
                      short_name="qip",
                      unit_symbol="A^{-1}",
@@ -981,6 +1108,7 @@ register_radial_fiber_unit("qip_A^-1",
 register_radial_fiber_unit("qoop_A^-1",
                      scale=0.1,
                      label=r"Scattering vector $q_{OOP}$ ($A^{-1}$)",
+                     formula=formula_qoop,
                      equation=eq_qoop,
                      short_name="qoop",
                      unit_symbol="A^{-1}",
@@ -1019,6 +1147,20 @@ register_azimuthal_unit("chi_deg",
                         formula=formula_chi,
                         positive=False,
                         period=360)
+register_azimuthal_fiber_unit(name="chigi_rad",
+                              scale=1.0,
+                              label=r"Polar angle $\chi$ ($rad$)",
+                              formula=formula_chi_gi,
+                              equation=eq_chi_gi,
+                              positive=False,
+                              period=2.*pi)
+register_azimuthal_fiber_unit(name="chigi_deg",
+                              scale=180. / pi,
+                              label=r"Polar angle $\chi$ ($^{o}$)",
+                              formula=formula_chi_gi,
+                              equation=eq_chi_gi,
+                              positive=False,
+                              period=360)
 
 AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
 AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
@@ -1082,7 +1224,12 @@ def get_unit_fiber(name, incident_angle:float =0.0, tilt_angle:float =0.0, sampl
     :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
     :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
     """
-    unit = copy.deepcopy(RADIAL_UNITS.get(name, None))
+    if name in RADIAL_UNITS:
+        unit = copy.deepcopy(RADIAL_UNITS.get(name, None))
+    elif name in AZIMUTHAL_UNITS:
+        unit = copy.deepcopy(AZIMUTHAL_UNITS.get(name, None))
+    else:
+        unit = None
 
     if isinstance(unit, UnitFiber):
         unit.set_incident_angle(incident_angle)
