@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2025"
+__date__ = "29/01/2025"
 
 import unittest
 import os
@@ -865,6 +865,54 @@ class TestUnweighted(unittest.TestCase):
                 raise err
             except Exception as err:
                 self.fail(f"Unweighted failed for {method} with exception {err}")
+
+# Non-regression tests added for pyFAI version 2025.01
+class TestRadialAzimuthalScale(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        dist = 0.1
+        poni1 = 0.02
+        poni2 = 0.02
+        detector = detector_factory("Pilatus100k")
+        wavelength = 1e-10
+        cls.data = UtilsTest.get_rng().random(detector.shape)
+        cls.ai = AzimuthalIntegrator(dist=dist,
+                                 poni1=poni1,
+                                 poni2=poni2,
+                                 wavelength=wavelength,
+                                 detector=detector,
+                             )
+
+    def test_limits_normal_units(self):
+        qnm = units.to_unit("q_nm^-1")
+        qA = units.to_unit("q_A^-1")
+        chideg = units.to_unit("chi_deg")
+        chirad = units.to_unit("chi_rad")
+        nm_range = [10,20]
+        A_range = [1,2]
+        deg_range = [-30,30]
+        rad_range = [-1,1]
+        CONFIGS = [{"unit" : (qnm, chideg), "radial_range" : nm_range, "azimuth_range" : deg_range},
+                   {"unit" : (chideg, qnm), "radial_range" : deg_range, "azimuth_range" : nm_range},
+                   {"unit" : (qA, chideg), "radial_range" : A_range, "azimuth_range" : deg_range},
+                   {"unit" : (chideg, qA), "radial_range" : deg_range, "azimuth_range" : A_range},
+                   {"unit" : (qA, chirad), "radial_range" : A_range, "azimuth_range" : rad_range},
+                   {"unit" : (chirad, qA), "radial_range" : rad_range, "azimuth_range" : A_range},
+                   {"unit" : (qA, chideg), "radial_range" : A_range, "azimuth_range" : deg_range},
+                   {"unit" : (chideg, qA), "radial_range" : deg_range, "azimuth_range" : A_range},
+        ]
+        atol = 1e-1
+        self.ai.chiDiscAtPi = True
+        for config in CONFIGS:
+            res = self.ai.integrate2d(data=self.data, npt_azim=360, npt_rad=500, **config)
+            self.assertAlmostEqual(res.radial.min(), config["radial_range"][0], delta=atol)
+            self.assertAlmostEqual(res.radial.max(), config["radial_range"][1], delta=atol)
+            self.assertAlmostEqual(res.azimuthal.min(), config["azimuth_range"][0], delta=atol)
+            self.assertAlmostEqual(res.azimuthal.max(), config["azimuth_range"][1], delta=atol)
+
+    def test_limits_fiber_units(self):
+        ## TODO next fiber units PR
+        ...
 
 
 def suite():
