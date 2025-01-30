@@ -71,7 +71,10 @@ def deg2rad(dd, disc=1):
 
 def rad2rad(r, disc=1):
     """
+    Transform radians in the range [-π->π[ or [0->2π[
 
+    :param r: angle in radians
+    :return: angle in radians in the selected range
     """
     # Set r between (0,2pi)
     r = r % (2*math.pi)
