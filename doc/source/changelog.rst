@@ -1,12 +1,12 @@
 :Author: Jérôme Kieffer
-:Date: 07/01/2025
+:Date: 30/01/2025
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2025.01 In time for the User-Meeting
-------------------------------------
+2025.01 31/01/2025
+------------------
 
 - Refactoring of the integrator classes:
 
@@ -30,7 +30,7 @@ Change-log of versions
 
 - Tool to rebin 2d-result into 1d-result (`pyFAI.containers.rebin1d`)
 - Several bug-fixes & better code coverage
-- Supports python 3.8 .. 3.13. The GIL-free version on python 3.13 is untested
+- Supports python 3.9 .. 3.13. The GIL-free version on python 3.13 is untested
 - Tested by the developers on Windows (amd64), linux (amd64, arm64 and ppc64le) and MacOS (amd64 and arm64). Thanks to Debian for extending this matrix.
 
 2024.09 12/09/2024
