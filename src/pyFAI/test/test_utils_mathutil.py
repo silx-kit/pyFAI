@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2024"
+__date__ = "21/01/2025"
 
 import unittest
 import numpy
@@ -40,7 +40,12 @@ import os
 import logging
 from . import utilstest
 logger = logging.getLogger(__name__)
+import fabio
 from .. import utils
+from .. import load
+from .. import calibrant
+from ..utils import mathutil
+
 
 import scipy.ndimage
 
@@ -148,19 +153,24 @@ class TestMathUtil(utilstest.ParametricTestCase):
         self.assertLess(abs(y - utils.mathutil.interp_filter(z)).max(), 0.01, "error is small")
 
     def test_is_far_from_group_cython(self):
-        from ..utils.mathutil import is_far_from_group_python, is_far_from_group_cython
         rng = utilstest.UtilsTest.get_rng()
         pt = rng.uniform(size=2)
         pts = list(rng.uniform(size=(10,2)))
         dst2 = rng.uniform()**2
-        ref = is_far_from_group_python(pt, pts, dst2)
-        res = is_far_from_group_cython(pt, pts, dst2)
+        ref = mathutil.is_far_from_group_python(pt, pts, dst2)
+        res = mathutil.is_far_from_group_cython(pt, pts, dst2)
         self.assertEqual(ref, res, "cython implementation matches *is_far_from_group*")
 
     def test_allclose_mod(self):
-        from ..utils.mathutil import allclose_mod
-        self.assertTrue(allclose_mod(numpy.arctan2(+1e-10, -1), numpy.arctan2(-1e-10, -1)),"angles matches modulo 2pi")
+        self.assertTrue(mathutil.allclose_mod(numpy.arctan2(+1e-10, -1), numpy.arctan2(-1e-10, -1)),"angles matches modulo 2pi")
 
+    def test_quality_of_fit(self):
+        img = fabio.open(utilstest.UtilsTest.getimage("Pilatus1M.edf")).data
+        ai = load(utilstest.UtilsTest.getimage("Pilatus1M.poni"))
+        cal = calibrant.get_calibrant("AgBh")
+        cal.wavelength = ai.wavelength
+        res = mathutil.quality_of_fit(img, ai, cal, rings=[0,1], npt_azim=36, npt_rad=100)
+        self.assertLess(res, 0.3, "Fit of good quality")
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

@@ -42,7 +42,7 @@ import numpy
 from .common import Integrator
 # from ..geometry import Geometry
 from .. import units
-from ..utils import EPS32, deg2rad, crc32
+from ..utils import EPS32, deg2rad, crc32, rad2rad
 # from ..utils.decorators import deprecated, deprecated_warning
 from ..containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
 from ..io import DefaultAiWriter, save_integrate_result
@@ -718,9 +718,6 @@ class AzimuthalIntegrator(Integrator):
 
         shape = data.shape
 
-        if radial_range:
-            radial_range = tuple([i / pos0_scale for i in radial_range])
-
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
             assert variance.size == data.size
@@ -733,10 +730,26 @@ class AzimuthalIntegrator(Integrator):
                 variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
 
         if azimuth_range is not None and azimuth_unit.period:
-            azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
+            if azimuth_unit.name.split("_")[-1] == "deg":
+                azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
+            elif azimuth_unit.name.split("_")[-1] == "rad":
+                azimuth_range = tuple(rad2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
             if azimuth_range[1] <= azimuth_range[0]:
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             self.check_chi_disc(azimuth_range)
+        elif azimuth_range is not None:
+            azimuth_range = tuple([i / pos1_scale for i in azimuth_range])
+
+        if radial_range is not None and radial_unit.period:
+            if radial_unit.name.split("_")[-1] == "deg":
+                radial_range = tuple(deg2rad(radial_range[i], self.chiDiscAtPi) for i in (0, -1))
+            elif azimuth_unit.name.split("_")[-1] == "rad":
+                azimuth_range = tuple(rad2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
+            if radial_range[1] <= radial_range[0]:
+                radial_range = (radial_range[0], radial_range[1] + 2 * pi)
+            self.check_chi_disc(radial_range)
+        elif radial_range is not None:
+            radial_range = tuple([i / pos0_scale for i in radial_range])
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)

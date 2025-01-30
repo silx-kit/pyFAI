@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/03/2024"
+__date__ = "29/01/2025"
 __status__ = "production"
 
 import os
@@ -46,18 +46,11 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
-
 import pyFAI.resources
 import pyFAI.calibrant
 import pyFAI.detectors
 import pyFAI.io.image
 from pyFAI.io.ponifile import PoniFile
-
-try:
-    from rfoo.utils import rconsole
-    rconsole.spawn_server()
-except ImportError:
-    logger.debug("No socket opened for debugging. Please install rfoo")
 
 
 def configure_parser_arguments(parser):

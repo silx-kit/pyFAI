@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 16/05/2023
+:Date: 28/01/2025
 :Keywords: Project management description
 :Target: developers
 
@@ -9,30 +9,30 @@ Project
 PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
 
-PyFAI is an open source project licensed under the MIT license (previously
-under GPL) mainly written in Python (3.6 or newer).
+PyFAI is an open source project licensed under the MIT license mainly written
+in Python (3.9 or newer).
 It is managed by the Silx team and is heavily relying on the
-Python scientific ecosystem: numpy, scipy and matplotlib.
+Python scientific ecosystem: numpy, scipy, h5py and matplotlib.
 It provides high performances image treatment thanks to Cython and
-OpenCL... but only a C-compiler is needed to build it.
+OpenCL... but only a C/C++-compiler is needed to build it.
 
 Programming language
 --------------------
 
 PyFAI is a Python project but uses many programming languages:
 
-* 50000 lines of Python (of which 8000 are for the test)
+* 130000 lines of Python (of which 12000 are for the test)
 * 16000 lines of Cython which are converted into ... C or C++
-* 8000 lines of OpenCL kernels
+* 12000 lines of OpenCL kernels
 
 The OpenCL code has been tested using:
 
-* Nvidia OpenCL v1.1 and v1.2 on Linux, Windows (GPU device)
-* Intel OpenCL v1.2 on Linux and Windows (CPU and ACC (Phi) devices)
-* AMD OpenCL v1.2 on Linux and Windows (CPU and GPU device)
+* Nvidia OpenCL v1.1+ on Linux, Windows (GPU device)
+* Intel OpenCL v1.2+ on Linux and Windows (CPU and ACC (Phi) devices)
+* AMD OpenCL v1.2+ on Linux and Windows (CPU and GPU device)
 * Apple OpenCL v1.2 on MacOSX  (CPU and GPU)
 * Beignet OpenCL v1.2 on Linux (GPU device)
-* Pocl OpenCL v1.2 on Linux (CPU device)
+* Pocl OpenCL v1.2+ on Linux (CPU device)
 
 Repository
 ----------
@@ -70,6 +70,8 @@ too much spammed. As the mailing list is archived, and can be consulted at:
 `http://www.edna-site.org/lurker <http://www.edna-site.org/lurker/list/pyfai.en.html>`_,
 you can also check the volume of the list.
 
+You can also ask your question publicly on the ``Discussion`` page of `Github <https://github.com/silx-kit/pyFAI/discussions>`_ (you will need a GitHub account for that).
+
 If you think you are facing a bug, the best is to
 `create a new issue on the GitHub page <https://github.com/silx-kit/pyFAI/issues>`_
 (you will need a GitHub account for that).
@@ -88,35 +90,20 @@ continue funding development.
 Run dependencies
 ----------------
 
-* Python version 3.6, 3.7, 3.8 or 3.9
+* Python version 3.9 to 3.13
 * NumPy
 * SciPy
 * Matplotlib
 * FabIO
 * h5py
 * pyopencl (optional)
-* PyQt5 or PySide2 (for the graphical user interface)
+* PyQt5/6 or PySide2/6 (for the graphical user interface)
 * Silx
 
 Build dependencies
 ------------------
 
-In addition to the run dependencies, pyFAI needs a C compiler.
-
-There is an issue with MacOS (v10.8 onwards) where the default compiler
-(Xcode5 or newer) dropped the support for OpenMP.
-On this platform pyFAI will enforce the generation of C-files from Cython sources
-(making Cython a build-dependency on MacOS) without support of OpenMP
-(options: --no-openmp --force-cython).
-On OSX, an alternative is to install a recent version of GCC (>=4.2) and to use
-it for compiling pyFAI.
-The options to be used then are * --force-cython --openmp*.
-
-Otherwise, C files which are provided with pyFAI sources are directly useable
-and Cython is only needed for developing new binary modules.
-If you want to generate your own C files, make sure your local Cython version
-is recent enough (v0.21 and newer),
-otherwise your Cython files will not be translated to C, nor used.
+In addition to the run dependencies, pyFAI needs a C compiler & Cython.
 
 Building procedure
 ------------------
@@ -187,8 +174,9 @@ This software engineering practice consists in merging all developer working cop
 to a shared mainline several times a day and build the whole project for multiple
 targets.
 
-On Debian 11
-............
+On Debian
+.........
+
 Continuous integration is made by a home-made scripts which checks out the latest release and builds and runs the test every night.
 `Nightly builds <http://www.silx.org/pub/debian/binary/>`_ are available for debian8-64 bits. To install them:
 
@@ -202,22 +190,19 @@ You have to accept non-signed packages because they are automatically built.
 In addition some "cloud-based" tools are used to ensure a larger coverage of operating systems/environment.
 They rely on a `"local wheelhouse" <http://www.silx.org/pub/wheelhouse/>`_.
 
-Those wheels are optimized for Travis-CI, AppVeyor and ReadTheDocs, using them is not recommended as your Python configuration may differ
+Those wheels are optimized for github-actions, AppVeyor and ReadTheDocs, using them is not recommended as your Python configuration may differ
 (and those libraries could even crash your system).
 
 Linux
 .....
 
-
 `Github workflows provides continuous integration on Linux <https://github.com/silx-kit/pyFAI/actions>`_,
-64 bits computer with Python 3.7 to 3.11. Travis.org is now dead since the service was discontinued.
-
-`Gitlab runners <https://gitlab.esrf.fr/silx/bob/pyfai/-/pipelines>`_ are periodically triggered to build the project and provide *wheels* for all kind of systems.
+64 bits computer with Python 3.9 to 3.13 and is also used to build the wheels for the release.
 
 AppVeyor
 ........
 
-`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 3.8 to 3.10.
+`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 3.9 to 3.13.
 Successful builds provide installers for pyFAI as *wheels* and *msi*, they are anonymously available as *artifacts*.
 Due to the limitation of AppVeyor's build system, those installers have openMP disabled.
 
@@ -228,13 +213,15 @@ List of contributors in code
 
     git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn
 
-As of 01/2021:
+As of 01/2025:
  * Jérôme Kieffer (ESRF)
  * Valentin Valls (ESRF)
+ * Edgar GUTIERREZ FERNANDEZ (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)
  * Aurore Deschildre (ESRF)
  * Giannis Ashiotis (ESRF)
  * Thomas Vincent (ESRF)
+ * Emily Massahud (ANSTO)
  * Dimitrios Karkoulis (ESRF)
  * Alexandre Marie (Soleil)
  * Jon Wright (ESRF)
