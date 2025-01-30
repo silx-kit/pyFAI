@@ -376,3 +376,88 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   filename=filename)
 
     integrate2d_grazing_incidence = integrate2d_fiber
+
+    def integrate2d_polar(self, polar_degrees=True, radial_unit="nm^-1", rotate=False, **kwargs):
+        """Reshapes the data pattern as a function of polar angle=arctan(qOOP / qIP) versus q modulus.
+
+        :param polar_degrees bool: if True, polar angle in degrees, else in radians
+        :param radial_unit str: unit of q modulus:  nm^-1 or A^-1
+        :param rotate bool: if False, polar_angle vs q, if True q vs polar_angle
+
+        Calls method integrate2d_fiber ->
+        """
+        unit_oop = "chigi_deg" if polar_degrees else "chigi_rad"
+        unit_ip = "qtot_A^-1" if radial_unit == "A^-1" else "qtot_nm^-1"
+
+        if rotate:
+            kwargs["unit_ip"] = unit_oop
+            kwargs["unit_oop"] = unit_ip
+        else:
+            kwargs["unit_ip"] = unit_ip
+            kwargs["unit_oop"] = unit_oop
+        return self.integrate2d_fiber(**kwargs)
+
+    integrate2d_polar.__doc__ += "\n" + integrate2d_fiber.__doc__
+
+    def integrate2d_exitangles(self, angle_degrees=True, **kwargs):
+        """Reshapes the data pattern as a function of exit angles with the origin at the sample horizon
+
+        :param angle_degrees bool: if True, exit angles in degrees, else in radians
+
+        Calls method integrate2d_fiber ->
+        """
+        if angle_degrees:
+            unit_ip = "exit_angle_horz_deg"
+            unit_oop = "exit_angle_vert_deg"
+        else:
+            unit_ip = "exit_angle_horz_rad"
+            unit_oop = "exit_angle_vert_rad"
+
+        kwargs["unit_ip"] = unit_ip
+        kwargs["unit_oop"] = unit_oop
+        return self.integrate2d_fiber(**kwargs)
+
+    integrate2d_exitangles.__doc__ += "\n" + integrate2d_fiber.__doc__
+
+    def integrate1d_polar(self, polar_degrees=True, radial_unit="nm^-1", radial_integration=False, **kwargs):
+        """Calculate the integrated profile curve along the polar angle=arctan(qOOP / qIP) or as a function of the polar angle along q modulus
+
+        :param polar_degrees bool: if True, polar angle in degrees, else in radians
+        :param radial_unit str: unit of q modulus:  nm^-1 or A^-1
+        :param radial_integration bool: if False, the output profile is I vs q, if True (I vs polar_angle)
+
+        Calls method integrate_fiber ->
+        """
+        unit_oop = "chigi_deg" if polar_degrees else "chigi_rad"
+        unit_ip = "qtot_A^-1" if radial_unit == "A^-1" else "qtot_nm^-1"
+        kwargs["unit_ip"] = unit_ip
+        kwargs["unit_oop"] = unit_oop
+        if radial_integration:
+            kwargs["vertical_integration"] = True
+        else:
+            kwargs["vertical_integration"] = False
+        return self.integrate_fiber(**kwargs)
+
+    integrate1d_polar.__doc__ += "\n" + integrate_fiber.__doc__
+
+    def integrate1d_exitangles(self, angle_degrees=True, vertical_integration=True, **kwargs):
+        """Calculate the integrated profile curve along the one of the exit angles (with the origin at the sample horizon)
+
+        :param angle_degrees bool: if True, exit angles in degrees, else in radians
+        :param vertical_integration bool: if True, the output profile is I vs vertical_angle, if False (I vs horizontal_angle)
+
+        Calls method integrate_fiber ->
+        """
+        if angle_degrees:
+            unit_ip = "exit_angle_horz_deg"
+            unit_oop = "exit_angle_vert_deg"
+        else:
+            unit_ip = "exit_angle_horz_rad"
+            unit_oop = "exit_angle_vert_rad"
+
+        kwargs["unit_ip"] = unit_ip
+        kwargs["unit_oop"] = unit_oop
+        kwargs["vertical_integration"] = vertical_integration
+        return self.integrate_fiber(**kwargs)
+
+    integrate1d_exitangles.__doc__ += "\n" + integrate_fiber.__doc__
