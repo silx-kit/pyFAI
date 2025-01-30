@@ -396,7 +396,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             kwargs["unit_ip"] = unit_ip
             kwargs["unit_oop"] = unit_oop
         return self.integrate2d_fiber(**kwargs)
-    
+
     integrate2d_polar.__doc__ += "\n" + integrate2d_fiber.__doc__
 
     def integrate2d_exitangles(self, angle_degrees=True, **kwargs):
@@ -416,6 +416,5 @@ class FiberIntegrator(AzimuthalIntegrator):
         kwargs["unit_ip"] = unit_ip
         kwargs["unit_oop"] = unit_oop
         return self.integrate2d_fiber(**kwargs)
-    
+
     integrate2d_exitangles.__doc__ += "\n" + integrate2d_fiber.__doc__
-    
