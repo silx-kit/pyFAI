@@ -437,7 +437,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         else:
             kwargs["vertical_integration"] = False
         return self.integrate_fiber(**kwargs)
-    
+
     integrate1d_polar.__doc__ += "\n" + integrate_fiber.__doc__
 
     def integrate1d_exitangles(self, angle_degrees=True, vertical_integration=True, **kwargs):
@@ -459,6 +459,5 @@ class FiberIntegrator(AzimuthalIntegrator):
         kwargs["unit_oop"] = unit_oop
         kwargs["vertical_integration"] = vertical_integration
         return self.integrate_fiber(**kwargs)
-    
+
     integrate1d_exitangles.__doc__ += "\n" + integrate_fiber.__doc__
-    
