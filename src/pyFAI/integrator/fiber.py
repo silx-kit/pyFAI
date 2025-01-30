@@ -408,7 +408,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
     def integrate2d_polar(self, polar_degrees=True, radial_unit="nm^-1", rotate=False, **kwargs):
         f"""Reshapes the data pattern as a function of polar angle=arctan(qOOP / qIP) versus q modulus
-        
+
         :param polar_degrees bool: if True, polar angle in degrees, else in radians
         :param radial_unit str: unit of q modulus:  nm^-1 or A^-1
         :param rotate bool: if False, polar_angle vs q, if True q vs polar_angle
@@ -425,10 +425,10 @@ class FiberIntegrator(AzimuthalIntegrator):
             kwargs["unit_ip"] = unit_ip
             kwargs["unit_oop"] = unit_oop
         return self.integrate2d_grazing_incidence(**kwargs)
-    
+
     def integrate2d_exitangles(self, angle_degrees=True, **kwargs):
         f"""Reshapes the data pattern as a function of exit angles with the origin at the sample horizon
-        
+
         :param angle_degrees bool: if True, exit angles in degrees, else in radians
         {docs_params_integrate2d}
         """
