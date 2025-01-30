@@ -33,13 +33,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2024"
+__date__ = "26/01/2025"
 __status__ = "development"
 
 import logging
 import json
 import os.path
-import collections
 import numpy
 logger = logging.getLogger(__name__)
 
@@ -162,7 +161,6 @@ class WorkerConfigurator(qt.QWidget):
         self.sigmaclip_threshold.setText("5.0")
         self.sigmaclip_maxiter.setText("5")
 
-
         self.__configureDisabledStates()
 
         self.setDetector(None)
@@ -239,11 +237,12 @@ class WorkerConfigurator(qt.QWidget):
             poni["detector_config"] = self.__detector.get_config()
         return poni
 
-    def getConfig(self):
-        """Read the configuration of the plugin and returns it as a dictionary
+    def getWorkerConfig(self):
+        """Read the configuration of the plugin and returns it as a WorkerConfig instance
 
-        :return: dict with all information.
+        :return: WorkerConfig instance
         """
+
         def splitFiles(filenames):
             """In case files was provided with comma.
 
@@ -311,10 +310,17 @@ class WorkerConfigurator(qt.QWidget):
         if self.integrator_name.currentText() == "sigma_clip_ng":
             wc.nbpt_azim = 1
             wc.integrator_method = "sigma_clip_ng"
-            wc.extra_options = {"thres" : float(self.sigmaclip_threshold.text()),
-                                "max_iter" : float(self.sigmaclip_maxiter.text()),
+            wc.extra_options = {"thres": float(self.sigmaclip_threshold.text()),
+                                "max_iter": float(self.sigmaclip_maxiter.text()),
                                }
-        return wc.as_dict()
+        return wc
+
+    def getConfig(self):
+        """Read the configuration of the plugin and returns it as a dictionary
+
+        :return: dict with all information
+        """
+        return self.getWorkerConfig().as_dict()
 
     def setConfig(self, dico):
         """Setup the widget from its description
@@ -322,6 +328,16 @@ class WorkerConfigurator(qt.QWidget):
         :param dico: dictionary with description of the widget
         :type dico: dict
         """
+
+        self.setWorkerConfig(integration_config.WorkerConfig.from_dict(dico, inplace=False))
+
+    def setWorkerConfig(self, wc):
+        """Setup the widget from its description
+
+        :param wc: WorkerConfig instance with the description of the widget
+        :type dico: WorkerConfig
+        """
+
         def normalizeFiles(filenames):
             """Normalize different versions of the filename list.
 
@@ -334,8 +350,6 @@ class WorkerConfigurator(qt.QWidget):
                 return "|".join(filenames)
             filenames = filenames.strip()
             return filenames
-
-        wc = integration_config.WorkerConfig.from_dict(dico, inplace=False)
 
         # Clean up the GUI
         self.setDetector(None)
@@ -364,8 +378,7 @@ class WorkerConfigurator(qt.QWidget):
             if "rot3" in poni_dict:
                 self.__geometryModel.rotation3().setValue(poni_dict["rot3"])
 
-
-        #reader = integration_config.ConfigurationReader(dico)
+        # reader = integration_config.ConfigurationReader(dico)
 
         # detector
         if "detector" in poni_dict:
@@ -407,7 +420,6 @@ class WorkerConfigurator(qt.QWidget):
         index = self.error_model.findData(value)
         self.error_model.setCurrentIndex(index)
 
-
         dim = 2 if wc.do_2D else 1
         method = wc.method
         target = wc.opencl_device
@@ -415,7 +427,7 @@ class WorkerConfigurator(qt.QWidget):
             target = tuple(target)
 
         if method is None:
-            lngm = load_engines.PREFERED_METHODS_2D[0] if dim==2 else load_engines.PREFERED_METHODS_1D[0]
+            lngm = load_engines.PREFERED_METHODS_2D[0] if dim == 2 else load_engines.PREFERED_METHODS_1D[0]
             method = lngm.method
         elif isinstance(method, (str,)):
             method = method_registry.Method.parsed(method)

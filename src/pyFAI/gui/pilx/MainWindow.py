@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2023-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2023-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Loïc Huder (loic.huder@ESRF.eu)
 #
@@ -29,15 +29,15 @@
 """Tool to visualize diffraction maps."""
 from __future__ import annotations
 
-__authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez"]
+__authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/09/2024"
+__date__ = "27/01/2025"
 __status__ = "development"
 
-
 from typing import Tuple
+import json
 import h5py
 import logging
 import os.path
@@ -61,6 +61,7 @@ from .widgets.DiffractionImagePlotWidget import DiffractionImagePlotWidget
 from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
 from .widgets.TitleWidget import TitleWidget
+from ...io.integration_config import WorkerConfig
 
 
 class MainWindow(qt.QMainWindow):
@@ -111,11 +112,12 @@ class MainWindow(qt.QMainWindow):
         self._unfixed_indices = None
         self._fixed_indices = set()
         self._background_point = None
+        self.worker_config = None
 
     def initData(self,
                  file_name: str,
-                 dataset_path: str = "/entry_0000/measurement/images_0001",
-                 nxprocess_path: str = "/entry_0000/pyFAI",
+                 dataset_path: str="/entry_0000/measurement/images_0001",
+                 nxprocess_path: str="/entry_0000/pyFAI",
                  ):
 
         self._file_name = os.path.abspath(file_name)
@@ -126,14 +128,31 @@ class MainWindow(qt.QMainWindow):
 
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
-            map = get_dataset(nxprocess, "result/intensity")[:, :, 0]
+            map_data = get_dataset(nxprocess, "result/intensity")[()].sum(axis=-1)
+            try:
+                slow = get_dataset(nxprocess, "result/slow")
+            except Exception:
+                slow_label = slow_values = None
+            else:
+                slow_label = slow.attrs.get("long_name", "Y")
+                slow_values = slow[()]
+            try:
+                fast = get_dataset(nxprocess, "result/fast")
+            except Exception:
+                fast_values = fast_label = None
+            else:
+                fast_label = fast.attrs.get("long_name", "X")
+                fast_values = fast[()]
+
             pyFAI_config_as_str = get_dataset(
                 parent=nxprocess,
                 path=f"configuration/data"
             )[()]
+            self.worker_config = WorkerConfig.from_dict(json.loads(pyFAI_config_as_str), inplace=True)
 
             radial_dset = get_radial_dataset(
-                h5file, nxdata_path=f"{self._nxprocess_path}/result"
+                h5file, nxdata_path=f"{self._nxprocess_path}/result",
+                size=self.worker_config.nbpt_rad
             )
             delta_radial = (radial_dset[-1] - radial_dset[0]) / len(radial_dset)
 
@@ -177,11 +196,11 @@ class MainWindow(qt.QMainWindow):
                     for key in lst:
                         self._dataset_paths[posixpath.join(path, key)] = len(image_grp[key])
 
-        self._radial_matrix = compute_radial_values(pyFAI_config_as_str)
+        self._radial_matrix = compute_radial_values(self.worker_config)
         self._delta_radial_over_2 = delta_radial / 2
 
         self._title_widget.setText(os.path.basename(file_name))
-        self._map_plot_widget.setScatterData(map)
+        self._map_plot_widget.setScatterData(map_data, fast_values, slow_values, fast_label, slow_label)
         # BUG: selectMapPoint(0, 0) does not work at first render cause the picking fails
         initial_indices = ImageIndices(0, 0)
         self._unfixed_indices = initial_indices
@@ -198,12 +217,12 @@ class MainWindow(qt.QMainWindow):
     def getRoiRadialRange(self) -> Tuple[float | None, float | None]:
         return self._integrated_plot_widget.roi.getRange()
 
-    def displayPatternAtIndices(
-        self, indices: ImageIndices, legend: str, color: str = None
-    ):
+    def displayPatternAtIndices(self,
+                                indices: ImageIndices,
+                                legend: str,
+                                color: str=None):
         if self._file_name is None:
             return
-
         point = Point(indices,
                       url_nxdata_path=f"{self._file_name}?{self._nxprocess_path}/result"
         )
@@ -234,7 +253,7 @@ class MainWindow(qt.QMainWindow):
             map_shape = get_dataset(nxprocess, "result/intensity").shape
             image_index = row * map_shape[1] + col + self._offset
             for dataset_path, size in self._dataset_paths.items():
-                if image_index<size:
+                if image_index < size:
                     break
                 else:
                     image_index -= size
@@ -375,11 +394,15 @@ class MainWindow(qt.QMainWindow):
                 ()
             ]
             i_min, i_max = get_indices_from_values(v_min, v_max, radial)
-            map_data = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity")[
-                :, :, i_min:i_max
+            map_data = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity")[:,:, i_min:i_max
             ].mean(axis=2)
-
-        self._map_plot_widget.setScatterData(map_data)
+            fast = get_dataset(h5file, f"{self._nxprocess_path}/result/fast")
+            slow = get_dataset(h5file, f"{self._nxprocess_path}/result/slow")
+            fast_name = fast.attrs.get("long_name", "X")
+            fast_values = fast[()]
+            slow_name = slow.attrs.get("long_name", "Y")
+            slow_values = slow[()]
+        self._map_plot_widget.setScatterData(map_data, fast_values, slow_values, fast_name, slow_name)
 
     def onMouseClickOnImage(self, x: float, y: float):
         indices = self._image_plot_widget.getImageIndices(x, y)

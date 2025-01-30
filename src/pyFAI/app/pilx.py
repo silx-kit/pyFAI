@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2024-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2024-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Loïc Huder (loic.huder@ESRF.eu)
 #
@@ -32,14 +32,14 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "28/01/2025"
 __status__ = "development"
 
 from silx.gui import qt
 import sys
 import argparse
-
 from ..gui.pilx.MainWindow import MainWindow
+from .. import version as pyFAI_version, __date__ as pyFAI_date
 
 
 def main(args=None):
@@ -51,6 +51,8 @@ def main(args=None):
     parser.add_argument("-p", "--nxprocess", dest="nxprocess_path",
                         help="inner path to the Nexus process with the integrated Data",
                         default="/entry_0000/pyFAI",)
+    version = f"pyFAI-diffmap-view version {pyFAI_version}: {pyFAI_date}"
+    parser.add_argument("-V", "--version", action='version', version=version)
 
     options = parser.parse_args(args)
 
