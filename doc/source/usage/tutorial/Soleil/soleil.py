@@ -189,7 +189,7 @@ def get_calibrant(calibrant: Calibrant,
     return pyFAI_calibrant
 
 
-def get_detector(detector: Detector) -> pyFAI.Detector:
+def get_detector(detector: Detector) -> pyFAI.detectors.Detector:
     return pyFAI.detector_factory(detector)
 
 

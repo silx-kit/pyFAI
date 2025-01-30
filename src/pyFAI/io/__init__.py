@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/09/2023"
+__date__ = "11/01/2024"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -999,6 +999,9 @@ def save_integrate_result(filename, result, title="title", sample="sample", inst
     """
     if filename.endswith(".nxs"):
         raise RuntimeError("Implement Nexus writer")
+    elif filename.endswith(".xrdml"):
+        from .xrdml import save_xrdml
+        save_xrdml(filename, result)
     else:
-            writer = DefaultAiWriter(filename, result.poni)
-            writer.write(result)
+        writer = DefaultAiWriter(filename, result.poni)
+        writer.write(result)

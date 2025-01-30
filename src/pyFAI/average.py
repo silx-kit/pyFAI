@@ -29,13 +29,14 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2023"
+__date__ = "21/05/2024"
 __status__ = "production"
 
 import logging
 import numpy
 import fabio
 import weakref
+import os
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
@@ -559,10 +560,36 @@ class MultiFilesAverageWriter(AverageWriter):
         filter_parameters = algorithm.get_parameters()
         for name, value in filter_parameters.items():
             header[name] = str(value)
-        image = self._fabio_class.__class__(data=data, header=header)
+
         if not self._dry_run:
-            image.write(file_name)
-            logger.info("Wrote %s", file_name)
+            dim = len(data.shape)
+
+            try:
+                image = self._fabio_class.__class__(data=data, header=header)
+                image.write(f"{file_name}")
+                logger.info("Wrote %s", file_name)
+
+            except:
+                if dim == 3:
+                    image = self._fabio_class.__class__(data=data[0], header=header)
+                    if hasattr(image, 'append_frame'):
+                        for i in range(1, data.shape[0]):
+                            image.append_frame(data=data[i])
+                        image.write(f"{file_name}")
+                        logger.info("Wrote %s", file_name)
+
+                    else:
+                        base_name, ext = os.path.splitext(file_name)
+                        image.write(f"{base_name}_channel_0{ext}")
+                        logger.info("Wrote %s", file_name)
+                        for i in range(1, data.shape[0]):
+                            image = self._fabio_class.__class__(data=data[i], header=header)
+                            file_name=f"{base_name}_channel_{i}{ext}"
+                            image.write(file_name)
+                            logger.info("Wrote %s", file_name)
+
+        if self._dry_run:
+            image = self._fabio_class.__class__(data=data, header=header)
         self._fabio_images[algorithm] = image
 
     def get_fabio_image(self, algorithm):

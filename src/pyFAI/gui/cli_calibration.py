@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/04/2022"
+__date__ = "27/09/2024"
 __status__ = "production"
 
 import os
@@ -66,7 +66,7 @@ from .. import average
 from ..utils import measure_offset, expand_args, \
             readFloatFromKeyboard, FixedParameters, round_fft, \
             win32
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..units import hc
 from .. import version as PyFAI_VERSION
 from .. import date as PyFAI_DATE
@@ -107,7 +107,8 @@ def get_detector(detector, datafiles=None):
     else:
         res = Detector()
     if datafiles and os.path.exists(datafiles[0]):
-        shape = fabio.open(datafiles[0]).data.shape
+        with fabio.open(datafiles[0]) as fimg:
+            shape = fimg.shape
         res.guess_binning(shape)
     return res
 
@@ -364,13 +365,13 @@ class AbstractCalibration(object):
                                  help="force the program to run and exit without prompting"
                                  " for refinements", default=True, action="store_false")
 
-    def analyse_options(self, options=None, args=None):
+    def analyse_options(self, options=None, args=None, sysargv=None):
         """Analyzes options and arguments
 
         :return: option,arguments
         """
         if (options is None) and (args is None):
-            options = self.parser.parse_args()
+            options = self.parser.parse_args(sysargv)
             args = options.args
         if options.debug:
             logger.setLevel(logging.DEBUG)
@@ -398,7 +399,8 @@ class AbstractCalibration(object):
                 logger.error("Unknown spline file %s", options.spline)
 
         if options.mask and os.path.isfile(options.mask):
-            self.mask = (fabio.open(options.mask).data != 0)
+            with fabio.open(options.mask) as fimg:
+                self.mask = (fimg.data != 0)
         else:  # Use default mask provided by detector
             self.mask = self.detector.mask
 
@@ -561,14 +563,16 @@ class AbstractCalibration(object):
         else:
             self.peakPicker.massif.init_valley_size()
 
-    def extract_cpt(self, method="massif", pts_per_deg=1.0):
+    def extract_cpt(self, method="massif", pts_per_deg=1.0, max_rings=numpy.iinfo(int).max):
         """
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed.
 
         :param method: method for keypoint extraction
         :param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
+        :param max_rings: extract at most max_rings
         """
+
         logger.info("in extract_cpt with method %s", method)
         assert self.ai
         assert self.calibrant
@@ -605,13 +609,13 @@ class AbstractCalibration(object):
             self.max_rings = tth.size
 
         ms = marchingsquares.MarchingSquaresMergeImpl(ttha, self.mask, use_minmax_cache=True)
-
         for i in range(tth.size):
-            if rings >= self.max_rings:
+            if rings >= min(self.max_rings, max_rings):
                 break
             mask = numpy.logical_and(ttha >= tth_min[i], ttha < tth_max[i])
             if self.mask is not None:
                 mask = numpy.logical_and(mask, numpy.logical_not(self.mask))
+
             size = mask.sum(dtype=int)
             if (size > 0):
                 rings += 1
@@ -1350,31 +1354,39 @@ class AbstractCalibration(object):
             self.geoRef.set_rot3_max(math.pi)
             self.geoRef.set_rot3(self.ai.rot3)
 
-    def initgeoRef(self):
+    def initgeoRef(self, defaults=None):
         """
         Tries to initialise the GeometryRefinement (dist, poni, rot)
-        Returns a dictionary of key value pairs
+
+        :param: default parameters as a dict to be passed to constructor of GeometryRefinement
+        :return: initialized geometry refinement
         """
-        defaults = {"dist": 0.1, "poni1": 0.0, "poni2": 0.0,
-                    "rot1": 0.0, "rot2": 0.0, "rot3": 0.0}
+        if defaults is None:
+            defaults = {"dist": 0.1, "poni1": 0.0, "poni2": 0.0,
+                        "rot1": 0.0, "rot2": 0.0, "rot3": 0.0}
+        else:
+            defaults = defaults.copy()
         if self.detector:
-            try:
-                p1, p2, _p3 = self.detector.calc_cartesian_positions()
-                defaults["poni1"] = p1.max() / 2.
-                defaults["poni2"] = p2.max() / 2.
-            except Exception as err:
-                logger.warning(err)
+            if not (defaults.get("poni1") or defaults.get("poni2")):
+                try:
+                    p1, p2, _p3 = self.detector.calc_cartesian_positions()
+                    defaults["poni1"] = p1.max() / 2.
+                    defaults["poni2"] = p2.max() / 2.
+                except Exception as err:
+                    logger.warning(err)
+            defaults["detector"] = self.detector
         if self.ai:
             for key in defaults.keys():  # not PARAMETERS which holds wavelength
                 val = getattr(self.ai, key, None)
                 if val is not None:
                     defaults[key] = val
-
-        georef = GeometryRefinement(self.data,
-                                    detector=self.detector,
-                                    wavelength=self.wavelength,
-                                    calibrant=self.calibrant,
-                                    **defaults)
+        if self.wavelength:
+            defaults["wavelength"] = self.wavelength
+        if self.calibrant:
+            defaults["calibrant"] = self.calibrant
+        if len(self.data):
+            defaults["data"] = self.data
+        georef = GeometryRefinement(**defaults)
         return  georef
 
 
@@ -1483,7 +1495,8 @@ class CliCalibration(AbstractCalibration):
         if self.wavelength is None:
             self.wavelength = self.ai.wavelength
 
-        self.img = fabio.open(self.outfile).data
+        with fabio.open(self.outfile) as fimg:
+            self.img = fimg.data
 
         AbstractCalibration.preprocess(self)
 
@@ -1545,7 +1558,7 @@ class Calibration(CliCalibration):
         return CliCalibration.__repr__(self) + \
             "%sgaussian= %s" % (os.linesep, self.gaussianWidth)
 
-    def parse(self):
+    def parse(self, args=None):
         """
         parse options from command line
         """
@@ -1580,7 +1593,7 @@ decrease the value if arcs are mixed together.""", default=None)
         self.parser.add_argument("-p", "--pixel", dest="pixel",
                                  help="size of the pixel in micron", default=None)
 
-        (options, _) = self.analyse_options()
+        (options, _) = self.analyse_options(sysargv=args)
         # Analyse remaining aruments and options
         self.reconstruct = options.reconstruct
         self.gaussianWidth = options.gaussian
@@ -1717,7 +1730,7 @@ class Recalibration(CliCalibration):
                                  wavelength=wavelength,
                                  calibrant=calibrant)
 
-    def parse(self):
+    def parse(self, args=None):
         """
         parse options from command line
         """
@@ -1754,7 +1767,7 @@ and a new option which lets you choose between the original `massif` algorithm a
                                  help="Keep existing control point and append new",
                                  default=False, action="store_true")
 
-        options = self.parser.parse_args()
+        options = self.parser.parse_args(args)
         args = options.args
         # Analyse aruments and options
         if (not options.poni) or (not os.path.isfile(options.poni)):
@@ -1856,7 +1869,7 @@ class MultiCalib(object):
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
-    def parse(self, exe=None, description=None, epilog=None):
+    def parse(self, exe=None, description=None, epilog=None, args=None):
         """
         parse options from command line
         :param exe: name of the program (MX-calibrate)
@@ -2009,7 +2022,7 @@ class MultiCalib(object):
         parser.add_argument("--peak-picker", dest="peakPicker",
                             help="Uses the 'massif', 'blob' or 'watershed' peak-picker algorithm (default: blob)",
                             default="blob", type=str)
-        options = parser.parse_args()
+        options = parser.parse_args(args)
 
         # Analyse aruments and options
         if options.debug:
@@ -2024,7 +2037,8 @@ class MultiCalib(object):
         if options.flat:
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
         if options.mask and os.path.isfile(options.mask):
-            self.mask = fabio.open(options.mask).data
+            with fabio.open(options.mask) as fimg:
+                self.mask = fimg.data
 
         if options.detector_name:
             self.detector = get_detector(options.detector_name, options.args)
@@ -2157,40 +2171,40 @@ class MultiCalib(object):
         """
         self.dataFiles.sort()
         for fn in self.dataFiles:
-            fabimg = fabio.open(fn)
-            wavelength = self.wavelength
-            dist = self.dist
-            if self.poni2:
-                centerX = self.poni2 / self.detector.pixel2
-            else:
-                centerX = None
-            if self.poni1:
-                centerY = self.poni1 / self.detector.pixel1
-            else:
-                centerY = None
-            if "_array_data.header_contents" in fabimg.header:
-                headers = fabimg.header["_array_data.header_contents"].lower().split()
-                if "detector_distance" in headers:
-                    dist = float(headers[headers.index("detector_distance") + 1])
-                if "wavelength" in headers:
-                    wavelength = float(headers[headers.index("wavelength") + 1]) * 1e-10
-                if "beam_xy" in headers:
-                    centerX = float(headers[headers.index("beam_xy") + 1][1:-1])
-                    centerY = float(headers[headers.index("beam_xy") + 2][:-1])
-            if dist is None:
-                digits = ""
-                for i in os.path.basename(fn):
-                    if i.isdigit() and not digits:
-                        digits += i
-                    elif i.isdigit():
-                        digits += i
-                    elif not i.isdigit() and digits:
-                        break
-                dist = int(digits) * 0.001
-            if centerX is None:
-                centerX = fabimg.data.shape[1] // 2
-            if centerY is None:
-                centerY = fabimg.data.shape[0] // 2
+            with fabio.open(fn) as fabimg:
+                wavelength = self.wavelength
+                dist = self.dist
+                if self.poni2:
+                    centerX = self.poni2 / self.detector.pixel2
+                else:
+                    centerX = None
+                if self.poni1:
+                    centerY = self.poni1 / self.detector.pixel1
+                else:
+                    centerY = None
+                if "_array_data.header_contents" in fabimg.header:
+                    headers = fabimg.header["_array_data.header_contents"].lower().split()
+                    if "detector_distance" in headers:
+                        dist = float(headers[headers.index("detector_distance") + 1])
+                    if "wavelength" in headers:
+                        wavelength = float(headers[headers.index("wavelength") + 1]) * 1e-10
+                    if "beam_xy" in headers:
+                        centerX = float(headers[headers.index("beam_xy") + 1][1:-1])
+                        centerY = float(headers[headers.index("beam_xy") + 2][:-1])
+                if dist is None:
+                    digits = ""
+                    for i in os.path.basename(fn):
+                        if i.isdigit() and not digits:
+                            digits += i
+                        elif i.isdigit():
+                            digits += i
+                        elif not i.isdigit() and digits:
+                            break
+                    dist = int(digits) * 0.001
+                if centerX is None:
+                    centerX = fabimg.data.shape[1] // 2
+                if centerY is None:
+                    centerY = fabimg.data.shape[0] // 2
             self.results[fn] = {"wavelength": wavelength, "dist": dist}
             rec = Recalibration(dataFiles=[fn], darkFiles=self.darkFiles,
                                 flatFiles=self.flatFiles, detector=self.detector,
@@ -2269,7 +2283,8 @@ class CheckCalib(object):
         else:
             self.ai = None
         if img:
-            self.img = fabio.open(img).data
+            with fabio.open(img) as fimg:
+                self.img = fimg.data
         else:
             self.img = None
         self.mask = None
@@ -2291,7 +2306,7 @@ class CheckCalib(object):
             res.append("ai: " + self.ai.__repr__())
         return os.linesep.join(res)
 
-    def parse(self):
+    def parse(self, args=None):
         logger.debug("in parse")
         usage = "check_calib [options] -p param.poni image.edf"
         description = """Check_calib is a deprecated tool aiming at validating both the geometric
@@ -2326,26 +2341,31 @@ refinement process.
         parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                             help="wavelength of the X-Ray beam in Angstrom", default=None)
 
-        options = parser.parse_args()
+        options = parser.parse_args(args)
         if options.verbose:
             logger.setLevel(logging.DEBUG)
 
         if options.mask is not None:
-            self.mask = (fabio.open(options.mask).data != 0)
+            with fabio.open(options.mask) as fimg:
+                self.mask = (fimg.data != 0)
         args = expand_args(options.args)
         if len(args) > 0:
             f = args[0]
             if os.path.isfile(f):
-                self.img = fabio.open(f).data.astype(numpy.float32)
+                with fabio.open(f) as fimg:
+                    self.img = fimg.data.astype(numpy.float32)
             else:
                 print("Please enter diffraction images as arguments")
                 return False
             for f in args[1:]:
-                self.img += fabio.open(f).data
+                with fabio.open(f) as fimg:
+                    self.img += fimg.data
         if options.dark and os.path.exists(options.dark):
-            self.img -= fabio.open(options.dark).data
+            with fabio.open(options.dark) as fimg:
+                self.img -= fimg.data
         if options.flat and os.path.exists(options.flat):
-            self.img /= fabio.open(options.flat).data
+            with fabio.open(options.flat) as fimg:
+                self.img /= fimg.data
         if options.poni:
             self.ai = AzimuthalIntegrator.sload(options.poni)
         self.data = [f for f in args if os.path.isfile(f)]

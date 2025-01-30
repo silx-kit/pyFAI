@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2022"
+__date__ = "07/05/2024"
 
 import sys
 import os
@@ -64,11 +64,17 @@ def suite():
     return test_suite
 
 
-def run_tests():
-    """Run test complete test_suite"""
+def run_tests(test=None):
+    """Run complete test suite (or only a fraction of it).
+
+    :param test: test-suite
+    :return: 0 when successful, 1 when failed
+    """
     test_options.configure()
     runner = unittest.TextTestRunner()
-    if not runner.run(suite()).wasSuccessful():
+    if not test:
+        test = suite()
+    if not runner.run(test).wasSuccessful():
         print("Test suite failed")
         return 1
     else:

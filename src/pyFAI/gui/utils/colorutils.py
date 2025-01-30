@@ -25,10 +25,13 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "17/09/2024"
 
 from silx.gui import qt
 from silx.gui.colors import Colormap
+
+
+DEFAULT_COLORMAP = Colormap(name="inferno", normalization=Colormap.ARCSINH)
 
 
 def getFreeColorRange(colormap):

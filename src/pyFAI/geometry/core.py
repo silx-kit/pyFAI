@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,31 +36,35 @@ detector and transform it. It is rather a description of the experimental setup.
 
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/12/2023"
+__date__ = "13/01/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import copy
 import logging
 from math import pi
-twopi = 2 * pi
 from numpy import arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
 import threading
 import json
-from collections import namedtuple, OrderedDict
+import gc
+from collections import OrderedDict
+from ..containers import PolarizationArray, PolarizationDescription
 from .fit2d import convert_to_Fit2d, convert_from_Fit2d
+from .imaged11 import convert_from_ImageD11, convert_to_ImageD11
 from .. import detectors
 from .. import units
 from ..utils.decorators import deprecated
 from ..utils import crc32, deg2rad
 from .. import utils
 from ..io import ponifile, integration_config
-from ..units import CONST_hc, to_unit
+from ..units import CONST_hc, to_unit, UnitFiber
+TWO_PI = 2 * pi
 
 logger = logging.getLogger(__name__)
 
@@ -82,9 +86,6 @@ except ImportError:
     logger.debug("Backtrace", exc_info=True)
     bilinear = None
 
-PolarizationArray = namedtuple("PolarizationArray", ["array", "checksum"])
-PolarizationDescription = namedtuple("PolarizationDescription",
-                                     ["polarization_factor", "axis_offset"])
 
 
 class Geometry(object):
@@ -115,6 +116,16 @@ class Geometry(object):
         :language: mathematica
     """
     _LAST_POLARIZATION = "last_polarization"
+
+    # To ease the copy of an instance. Mutable attributes are caches which are regenerated on use
+    _UNMUTABLE_ATTRS = ("_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
+                        "chiDiscAtPi", "_wavelength", "_dssa_order",
+                        '_oversampling', '_correct_solid_angle_for_spline',
+                        '_transmission_normal')
+    PROMOTION = {"AzimuthalIntegrator": "pyFAI.integrator.azimuthal.AzimuthalIntegrator",
+                 "FiberIntegrator": "pyFAI.integrator.fiber.FiberIntegrator",
+                 "GeometryRefinement": "pyFAI.geometryRefinement.GeometryRefinement",
+                 "Geometry": "pyFAI.geometry.core.Geometry"}
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None,
@@ -160,7 +171,8 @@ class Geometry(object):
                       self._rot1, self._rot2, self._rot3]
         self.chiDiscAtPi = True  # chi discontinuity (radians), pi by default
         self._cached_array = {}  # dict for caching all arrays
-        self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
+        self._dssa_order = 3  # Used to be 1 (False) in very old version of pyFAI: was a bug.
+        # The correct value is 3 where 2 come from the apparant pixels area and 1 from the incidence angle.
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
@@ -252,7 +264,7 @@ class Geometry(object):
             return
         azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
         if azimuth_range[1] <= azimuth_range[0]:
-            azimuth_range = (azimuth_range[0], azimuth_range[1] + twopi)
+            azimuth_range = (azimuth_range[0], azimuth_range[1] + TWO_PI)
             self.check_chi_disc(azimuth_range)
         return azimuth_range
 
@@ -547,7 +559,7 @@ class Geometry(object):
         if self._cached_array.get("d*2_center") is None:
             with self._sem:
                 if self._cached_array.get("d*2_center") is None:
-                    self._cached_array["d*2_center"] = (qArray / (twopi)) ** 2
+                    self._cached_array["d*2_center"] = (qArray / (TWO_PI)) ** 2
         return self._cached_array["d*2_center"]
 
     @deprecated
@@ -627,7 +639,7 @@ class Geometry(object):
             _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False, use_cython=True, do_parallax=True)
             chi = numpy.arctan2(t1, t2)
             if not self.chiDiscAtPi:
-                numpy.mod(chi, (twopi), out=chi)
+                numpy.mod(chi, (TWO_PI), out=chi)
         return chi
 
     def chi_corner(self, d1, d2):
@@ -664,7 +676,7 @@ class Geometry(object):
                     chia = numpy.fromfunction(self.chi, shape,
                                               dtype=numpy.float32)
                     if not self.chiDiscAtPi:
-                        chia = chia % (twopi)
+                        chia = chia % (TWO_PI)
                     self._cached_array["chi_center"] = chia
         return self._cached_array["chi_center"]
 
@@ -810,10 +822,10 @@ class Geometry(object):
                             # numpy path
                             chi = numpy.arctan2(y, x)
                             if not self.chiDiscAtPi:
-                                numpy.mod(chi, (twopi), out=chi)
+                                numpy.mod(chi, (TWO_PI), out=chi)
                         else:
                             # numexpr path
-                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%twopi")
+                            chi = numexpr.evaluate("arctan2(y, x)") if self.chiDiscAtPi else numexpr.evaluate("arctan2(y, x)%TWO_PI")
                         corners = numpy.zeros((shape[0], shape[1], nb_corners, 2),
                                               dtype=numpy.float32)
                         if chi.shape[:2] == shape:
@@ -821,7 +833,10 @@ class Geometry(object):
                         else:
                             corners[:shape[0],:shape[1],:, 1] = chi[:shape[0],:shape[1],:]
                         if space is not None:
-                            rad = unit.equation(x, y, z, self._wavelength)
+                            if isinstance(unit, UnitFiber):
+                                rad = unit.equation(x, y, z, self.wavelength, unit.incident_angle, unit.tilt_angle, unit.sample_orientation)
+                            else:
+                                rad = unit.equation(x, y, z, self.wavelength)
                             if rad.shape[:2] == shape:
                                 corners[..., 0] = rad
                             else:
@@ -905,8 +920,7 @@ class Geometry(object):
         """
 
         unit = to_unit(unit)
-        space = unit.name.split("_")[0]
-        key = space + "_center"
+        key = f"{unit.space}_center"
         ary = self._cached_array.get(key)
 
         shape = self.get_shape(shape)
@@ -924,9 +938,14 @@ class Geometry(object):
         x = pos[..., 2]
         y = pos[..., 1]
         z = pos[..., 0]
-        ary = unit.equation(x, y, z, self.wavelength)
+
+        if isinstance(unit, UnitFiber):
+            ary = unit.equation(x, y, z, self.wavelength, unit.incident_angle, unit.tilt_angle, unit.sample_orientation)
+        else:
+            ary = unit.equation(x, y, z, self.wavelength)
+
         if unit.space == "chi" and not self.chiDiscAtPi:
-            numpy.mod(ary, twopi, out=ary)
+            numpy.mod(ary, TWO_PI, out=ary)
         self._cached_array[key] = ary
         if scale and unit:
                 return ary * unit.scale
@@ -946,7 +965,7 @@ class Geometry(object):
         """
 
         unit = to_unit(unit)
-        space = unit.name.split("_")[0] + "_delta"
+        space = f"{unit.space}_delta"
         ary = self._cached_array.get(space)
 
         shape = self.get_shape(shape)
@@ -964,9 +983,9 @@ class Geometry(object):
         delta = abs(corners[..., 0] - numpy.atleast_3d(center))
         if space == "chi_delta":
             if numexpr:
-                delta = numexpr.evaluate("where(delta<twopi-delta, delta, twopi-delta)")
+                delta = numexpr.evaluate("where(delta<TWO_PI-delta, delta, TWO_PI-delta)")
             else:
-                numpy.minimum(delta, twopi - delta, out=delta)
+                numpy.minimum(delta, TWO_PI - delta, out=delta)
 
         ary = delta.max(axis=-1)
         self._cached_array[space] = ary
@@ -1002,8 +1021,8 @@ class Geometry(object):
                         self._cached_array[key] = delta
                     else:
                         center = numpy.atleast_3d(center)
-                        delta = numpy.minimum(((corner[:,:,:, 1] - center) % twopi),
-                                              ((center - corner[:,:,:, 1]) % twopi))
+                        delta = numpy.minimum(((corner[:,:,:, 1] - center) % TWO_PI),
+                                              ((center - corner[:,:,:, 1]) % TWO_PI))
                         self._cached_array[key] = delta.max(axis=-1)
         return self._cached_array[key]
 
@@ -1338,7 +1357,7 @@ class Geometry(object):
         """
         Load the refined parameters from a file.
 
-        :param filename: name of the file to load
+        :param filename: name of the file to load. Can also be a JSON string with a dict or dict
         :type filename: string
         :return: itself with updated parameters
         """
@@ -1552,54 +1571,32 @@ class Geometry(object):
             logger.warning("Rotation conversion from pyFAI to SPD is not yet implemented")
         return res
 
-    def getImageD11(self):
+    def getImageD11(self, distance_unit="µm", wavelength_unit="nm"):
         """Export the current geometry in ImageD11 format.
         Please refer to the documentation in doc/source/geometry_conversion.rst
         for the orientation and units of those values.
 
+        :param distance_unit: expected units for the distances (also pixel size, µm by default)
+        :param wavelength_unit: expected units for the wavelength (nm by default)
         :return: an Ordered dict with those parameters:
-            distance 294662.658 #in nm
+            distance 294662.658   #µm
             o11 1
             o12 0
             o21 0
             o22 -1
-            tilt_x 0.00000
-            tilt_y -0.013173
-            tilt_z 0.002378
-            wavelength 0.154
-            y_center 1016.328171
-            y_size 48.0815
-            z_center 984.924425
-            z_size 46.77648
+            tilt_x 0.00000        #rad
+            tilt_y -0.013173      #rad
+            tilt_z 0.002378       #rad
+            wavelength 0.154      #nm
+            y_center 1016.328171  #pixels
+            y_size 48.0815        #µm
+            z_center 984.924425   #pixels
+            z_size 46.77648       #µm
         """
-        f2d = self.getFit2D()
-        distance = f2d.get("directDist", 0) * 1e3  # mm -> µm
-        y_center = f2d.get("centerX", 0)  # in pixel
-        z_center = f2d.get("centerY", 0)  # in pixel
+        id11 = convert_to_ImageD11(self, distance_unit=distance_unit, wavelength_unit=wavelength_unit)
+        return id11._asdict()
 
-        tilt_x = self.rot3
-        tilt_y = self.rot2
-        tilt_z = -self.rot1
-        out = OrderedDict([("distance", distance),
-                           ("o11", 1),
-                           ("o12", 0),
-                           ("o21", 0),
-                           ("o22", -1),
-                           ("tilt_x", tilt_x),
-                           ("tilt_y", tilt_y),
-                           ("tilt_z", tilt_z),
-                           ])
-        if self._wavelength:
-            out["wavelength"] = self.wavelength * 1e9  # nm
-        if y_center:
-            out["y_center"] = y_center
-        out["y_size"] = self.detector.pixel2 * 1e6  # µm
-        if z_center:
-            out["z_center"] = z_center
-        out["z_size"] = self.detector.pixel1 * 1e6  # µm
-        return out
-
-    def setImageD11(self, param):
+    def setImageD11(self, param, distance_unit="µm", wavelength_unit="nm"):
         """Set the geometry from the parameter set which contains distance,
         o11, o12, o21, o22, tilt_x, tilt_y tilt_z, wavelength, y_center, y_size,
         z_center and z_size.
@@ -1607,33 +1604,23 @@ class Geometry(object):
         for the orientation and units of those values.
 
         :param param: dict with the values to set.
-        """
-        o11 = param.get("o11")
-        if o11 is not None:
-            assert o11 == 1, "Only canonical orientation is supported"
-        o12 = param.get("o12")
-        if o12 is not None:
-            assert o12 == 0, "Only canonical orientation is supported"
-        o21 = param.get("o21")
-        if o21 is not None:
-            assert o21 == 0, "Only canonical orientation is supported"
-        o22 = param.get("o22")
-        if o22 is not None:
-            assert o22 == -1, "Only canonical orientation is supported"
+        :param distance_unit: expected units for the distances (also pixel size, µm by default)
+        :param wavelength_unit: expected units for the wavelength (nm by default)
 
-        self.rot3 = param.get("tilt_x", 0.0)
-        self.rot2 = param.get("tilt_y", 0.0)
-        self.rot1 = -param.get("tilt_z", 0.0)
-        distance = param.get("distance", 0.0) * 1e-6  # ->m
-        self.dist = distance * cos(self.rot2) * cos(self.rot1)
-        pixel_v = param.get("z_size", 0.0) * 1e-6
-        pixel_h = param.get("y_size", 0.0) * 1e-6
-        self.poni1 = -distance * sin(self.rot2) + pixel_v * param.get("z_center", 0.0)
-        self.poni2 = +distance * cos(self.rot2) * sin(self.rot1) + pixel_h * param.get("y_center", 0.0)
-        self.detector = detectors.Detector(pixel1=pixel_v, pixel2=pixel_h)
-        wl = param.get("wavelength")
-        if wl:
-            self.wavelength = wl * 1e-9
+        """
+        if "wavelength_unit" not in param:
+            param["wavelength_unit"] = wavelength_unit
+        if "distance_unit" not in param:
+            param["distance_unit"] = distance_unit
+        poni = convert_from_ImageD11(param)
+        for key in ("_detector", "_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3", "_wavelength"):
+            setattr(self, key, getattr(poni, key))
+
+        # keep detector since it is more precisise than what ImageD11 object contains
+        if not(poni.detector.pixel1 == self.detector.pixel1 and
+               poni.detector.pixel2 == self.detector.pixel2 and
+               poni.detector.orientation == self.detector.orientation):
+            self.detector = poni.detector
         self.reset()
         return self
 
@@ -1901,10 +1888,13 @@ class Geometry(object):
               (self._LAST_POLARIZATION in self._cached_array)):
             pol = self._cached_array[self._LAST_POLARIZATION]
             return pol if with_checksum else pol.array
-
-        factor = float(factor)
-        axis_offset = float(axis_offset)
-        desc = PolarizationDescription(factor, axis_offset)
+        if isinstance(factor, PolarizationDescription):
+            desc = factor
+            factor, axis_offset = desc
+        else:
+            factor = float(factor)
+            axis_offset = float(axis_offset)
+            desc = PolarizationDescription(factor, axis_offset)
         pol = self._cached_array.get(desc)
         if pol is None or (pol.array.shape != shape):
             tth = self.twoThetaArray(shape)
@@ -1972,15 +1962,18 @@ class Geometry(object):
 
         return transmission_corr
 
-    def reset(self):
+    def reset(self, collect_garbage=True):
         """
-        reset most arrays that are cached: used when a parameter
-        changes.
+        reset most arrays that are cached: used when a parameter changes.
+
+        :param collect_garbage: set to False to prevent garbage collection, faster
         """
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         self._transmission_normal = None
         self._cached_array = {}
+        if collect_garbage:
+            gc.collect()
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True,
@@ -2098,18 +2091,54 @@ class Geometry(object):
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
+    def promote(self, type_="pyFAI.integrator.azimuthal.AzimuthalIntegrator", kwargs=None):
+        """Promote this instance into one of its derived class (deep copy like)
+
+        :param type_: Fully qualified name of the class to promote to, or the class itself
+        :param kwargs: extra kwargs to be passed to the class constructor
+        :return: class instance which derives from Geometry with the same config as the current instance
+
+        Likely to raise ImportError/ValueError
+        """
+        GeometryClass = self.__class__.__mro__[-2]  # actually pyFAI.geometry.core.Geometry
+        if isinstance(type_, str):
+            if "." not in type_:
+                if type_ in self.PROMOTION:
+                    type_ = self.PROMOTION[type_]
+            import importlib
+            modules = type_.split(".")
+            module_name = ".".join(modules[:-1])
+            module = importlib.import_module(module_name)
+            klass = module.__getattribute__(modules[-1])
+        elif isinstance(type_, type):
+            klass = type_
+        else:
+            raise ValueError("`type_` must be a class (or class name) of a Geometry derived class")
+
+        if kwargs == None:
+            kwargs = {}
+        else:
+            kwargs = copy.copy(kwargs)
+        with self._sem:
+            if klass.__mro__[-2] == GeometryClass:
+                "Ensure the provided class actually derives from Geometry"
+                kwargs["detector"] = copy.deepcopy(self.detector)
+                new = klass(**kwargs)
+            else:
+                raise ValueError("Bad FQN class, it must be a Geometry derivative")
+
+            for key in self._UNMUTABLE_ATTRS:
+                new.__setattr__(key, self.__getattribute__(key))
+        # TODO: replace param with a property, see #2300
+        new.param = [new._dist, new._poni1, new._poni2,
+                     new._rot1, new._rot2, new._rot3]
+        return new
+
     def __copy__(self):
         """:return: a shallow copy of itself.
         """
         new = self.__class__(detector=self.detector)
-        # transfer numerical values:
-        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_wavelength",
-                     '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_normal',
-                     ]
-        # array = []
-        for key in numerical:
+        for key in self._UNMUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
@@ -2120,11 +2149,6 @@ class Geometry(object):
         """deep copy
         :param memo: dict with modified objects
         :return: a deep copy of itself."""
-        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_dssa_order", "_wavelength",
-                     '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_normal',
-                     ]
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -2132,7 +2156,7 @@ class Geometry(object):
         new_det = self.detector.__deepcopy__(memo)
         new.detector = new_det
 
-        for key in numerical:
+        for key in self._UNMUTABLE_ATTRS:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)

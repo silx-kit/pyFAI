@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2024"
+__date__ = "10/10/2024"
 
 import unittest
 import os
@@ -41,18 +41,17 @@ import numpy
 import time
 import sys
 import logging
-import json
 import pathlib
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
-import pyFAI.io.spots
-from pyFAI.io.ponifile import PoniFile
+from ..io import spots
+from ..io.ponifile import PoniFile
 import h5py
 import fabio
-import pyFAI.azimuthalIntegrator
+from ..integrator import azimuthal as azimuthalIntegrator
 
 
 class TestPoniFile(unittest.TestCase):
@@ -60,6 +59,7 @@ class TestPoniFile(unittest.TestCase):
     def setUpClass(cls)->None:
         super(TestPoniFile, cls).setUpClass()
         cls.ponifile = UtilsTest.getimage("Pilatus1M.poni")
+
 
     @classmethod
     def tearDownClass(cls)->None:
@@ -76,6 +76,22 @@ class TestPoniFile(unittest.TestCase):
         self.assertAlmostEqual(poni.wavelength, 1e-10, msg="wavelength matches")
         self.assertAlmostEqual(poni.dist, 1.6, places=1, msg="dist matches")
 
+    def test_write(self):
+        poni = PoniFile(self.ponifile)
+        test_file1 = os.path.join(UtilsTest.tempdir, "test1.poni")
+        test_file2 = os.path.join(UtilsTest.tempdir, "test2.poni")
+        with open(test_file1, "w") as fd:
+            poni.write(fd, comments="lorem ipsus")
+        with open(test_file1, "r") as fd:
+            content1 = fd.readlines()
+        self.assertTrue("# lorem ipsus\n" in content1, 'Write comment as string')
+        with open(test_file2, "w") as fd:
+            poni.write(fd, comments=("lorem","ipsus"))
+        with open(test_file2, "r") as fd:
+            content2 = fd.readlines()
+        self.assertTrue("# lorem\n" in content2, 'Write comment as list')
+        self.assertTrue("# ipsus\n" in content2, 'Write comment as list')
+
 
 class TestIsoTime(unittest.TestCase):
 
@@ -90,16 +106,19 @@ class TestIsoTime(unittest.TestCase):
 
 class TestNexus(unittest.TestCase):
 
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.tmpdir = os.path.join(UtilsTest.tempdir, "io_nexus")
-        if not os.path.isdir(self.tmpdir):
-            os.mkdir(self.tmpdir)
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestNexus, cls).setUpClass()
+        cls.tmpdir = os.path.join(UtilsTest.tempdir, "io_nexus")
+        if not os.path.isdir(cls.tmpdir):
+            os.mkdir(cls.tmpdir)
+        # print(cls.tmpdir)
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        shutil.rmtree(self.tmpdir)
-        self.tmpdir = None
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestNexus, cls).tearDownClass()
+        # shutil.rmtree(cls.tmpdir)
+        cls.tmpdir = None
 
     def test_new_detector(self):
         if io.h5py is None:
@@ -115,9 +134,10 @@ class TestNexus(unittest.TestCase):
 
     @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
     def test_NXmonopd(self):
-        img = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            img = fimg.data
         ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
-        ref = ai.integrate1d(img.data, 1000, unit="2th_deg", error_model="poisson")
+        ref = ai.integrate1d(img, 1000, unit="2th_deg", error_model="poisson")
         fname = os.path.join(self.tmpdir, "NXmonopd.h5")
         io.nexus.save_NXmonpd(fname, ref, sample="AgBh", instrument="Dubble")
         res = io.nexus.load_nexus(fname)
@@ -152,9 +172,10 @@ class TestNexus(unittest.TestCase):
 
     @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
     def test_NXcansas(self):
-        img = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            img = fimg.data
         ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
-        ref = ai.integrate1d(img.data, 1000, unit="q_nm^-1", error_model="poisson")
+        ref = ai.integrate1d(img, 1000, unit="q_nm^-1", error_model="poisson")
         fname = os.path.join(self.tmpdir, "NXcansas.h5")
         io.nexus.save_NXcansas(fname, ref, sample="AgBh", instrument="Dubble")
         res = io.nexus.load_nexus(fname)
@@ -273,7 +294,7 @@ class TestSpotWriter(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         detector = pyFAI.detector_factory("pilatus300k")
-        self.ai = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector=detector)
+        self.ai = azimuthalIntegrator.AzimuthalIntegrator(detector=detector)
         nframes = 100
         nspots = UtilsTest.get_rng().uniform(1, nframes, size=nframes).astype(numpy.int64)
         self.spots = [numpy.empty(count, dtype=[("index", numpy.int32),
@@ -296,6 +317,39 @@ class TestSpotWriter(unittest.TestCase):
         self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
 
+class TestXrdmlWriter(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls)->None:
+        super(TestXrdmlWriter, cls).setUpClass()
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            cls.img = fimg.data
+        cls.ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
+        cls.result = cls.ai.integrate1d(cls.img, 200, method=("no", "histogram", "cython"), unit="2th_deg")
+    @classmethod
+    def tearDownClass(cls)->None:
+        super(TestXrdmlWriter, cls).tearDownClass()
+        cls.ai = cls.img = cls.result=None
+
+    def test_xrdml(self):
+        from ..io.xrdml import save_xrdml
+        fd, tmpfile = UtilsTest.tempfile(".xrdml")
+        os.close(fd)
+        save_xrdml(tmpfile, self.result)
+        self.assertGreater(os.path.getsize(tmpfile), 3000)
+
+    def test_integration(self):
+        fd, tmpfile = UtilsTest.tempfile(".xrdml")
+        os.close(fd)
+        self.ai.integrate1d(self.img, 200, method=("no", "histogram", "cython"), unit="2th_deg",
+                            filename=tmpfile)
+        self.assertGreater(os.path.getsize(tmpfile), 3000)
+        from xml.etree import ElementTree as et
+        with open(tmpfile, "rb") as f:
+            xml = et.fromstring(f.read())
+
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -304,6 +358,7 @@ def suite():
     testsuite.addTest(loader(TestHDF5Writer))
     testsuite.addTest(loader(TestFabIOWriter))
     testsuite.addTest(loader(TestSpotWriter))
+    testsuite.addTest(loader(TestXrdmlWriter))
     testsuite.addTest(loader(TestPoniFile))
     return testsuite
 

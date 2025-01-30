@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration using single threaded CSC integrators
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2022-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2022-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/05/2023"
+__date__ = "24/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -101,7 +101,7 @@ cdef class CscIntegrator(object):
     def integrate_ng(self,
                      weights,
                      variance=None,
-                     int error_model=ErrorModel.NO,
+                     error_model=ErrorModel.NO,
                      dummy=None,
                      delta_dummy=None,
                      dark=None,
@@ -110,6 +110,7 @@ cdef class CscIntegrator(object):
                      polarization=None,
                      absorption=None,
                      data_t normalization_factor=1.0,
+                     bint weighted_average=True,
                      ):
         """
         Actually perform the integration which in this case consists of:
@@ -136,7 +137,7 @@ cdef class CscIntegrator(object):
         :param absorption: Apparent efficiency of a pixel due to parallax effect
         :type absorption: ndarray
         :param normalization_factor: divide the valid result by this value
-
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average WIP
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
@@ -155,11 +156,10 @@ cdef class CscIntegrator(object):
             data_t[::1] sem = numpy.empty(self.output_size, dtype=data_d)
             data_t[::1] cvariance, cdark, cflat, cpolarization, csolidangle, cabsorption
             bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
+            int c_error_model
             bint is_valid, do_dark, do_flat, do_polarization, check_dummy, do_solidangle, do_absorption
             preproc_t value
             acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B, omega_AB
-
-
 
         assert weights.size == self.input_size, "weights size"
         empty = dummy if dummy is not None else self.empty
@@ -213,7 +213,7 @@ cdef class CscIntegrator(object):
             cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=data_d)
         else:
             do_absorption = False
-
+        c_error_model = <int> error_model
         with nogil:
             #first loop for pixel in input image
             for idx in range(self._indptr.shape[0]-1):
@@ -224,7 +224,7 @@ cdef class CscIntegrator(object):
                     continue
                 is_valid = preproc_value_inplace(&value,
                                                  cdata[idx],
-                                                 variance=cvariance[idx] if error_model==1 else 0.0,
+                                                 variance=cvariance[idx] if c_error_model==1 else 0.0,
                                                  dark=cdark[idx] if do_dark else 0.0,
                                                  flat=cflat[idx] if do_flat else 1.0,
                                                  solidangle=csolidangle[idx] if do_solidangle else 1.0,
@@ -236,7 +236,9 @@ cdef class CscIntegrator(object):
                                                  check_dummy=check_dummy,
                                                  normalization_factor=normalization_factor,
                                                  dark_variance=0.0,
-                                                 error_model=error_model)
+                                                 error_model=c_error_model,
+                                                 apply_normalization=not weighted_average
+                                                 )
                 if not is_valid:
                     continue
                 for j in range(start, stop):
@@ -270,7 +272,7 @@ cdef class CscIntegrator(object):
                     else:
                         sum_sig[bin_idx] += coef * value.signal
                         sum_norm[bin_idx] += w
-                        if error_model:
+                        if c_error_model:
                             sum_norm_sq[bin_idx] += w * w
                             sum_var[bin_idx] += coef * coef * value.variance
 
@@ -278,14 +280,14 @@ cdef class CscIntegrator(object):
             for bin_idx in range(self.output_size):
                 if sum_count[bin_idx]:
                     merged[bin_idx] = sum_sig[bin_idx] / sum_norm[bin_idx]
-                    if error_model:
+                    if c_error_model:
                         sem[bin_idx] = sqrt(sum_var[bin_idx]) / sum_norm[bin_idx]
                         std[bin_idx] = sqrt(sum_var[bin_idx] / sum_norm_sq[bin_idx])
                     else:
                         std[bin_idx] = sem[bin_idx] = empty
                 else:
                     merged[bin_idx] = empty
-                    if error_model:
+                    if c_error_model:
                         std[bin_idx] = sem[bin_idx] = empty
 
         if self.bin_centers is None:

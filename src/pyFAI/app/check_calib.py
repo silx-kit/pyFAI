@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,11 +28,11 @@
 
 """DEPRECATED tool that checks a calibratation at the sub-pixel level"""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/01/2021"
+__date__ = "27/09/2024"
 __satus__ = "production"
 
 import warnings
@@ -47,15 +47,15 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 with warnings.catch_warnings():
-    from pyFAI.gui.cli_calibration import CheckCalib
+    from ..gui.cli_calibration import CheckCalib
     warnings.simplefilter("ignore")
     import pylab
 
 
-def main():
+def main(args=None):
     pylab.ion()
     cc = CheckCalib()
-    if cc.parse():
+    if cc.parse(args):
         cc.integrate()
         cc.rebuild()
         cc.show()

@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/09/2023"
+__date__ = "15/06/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -279,9 +279,11 @@ def histoBBox1d_engine(weights,
                        flat=None,
                        solidangle=None,
                        polarization=None,
+                       absorption=None,
                        bint allow_pos0_neg=False,
                        data_t empty=0.0,
-                       double normalization_factor=1.0):
+                       double normalization_factor=1.0,
+                       bint weighted_average=True,):
 
     """
     Calculates histogram of pos0 (tth) weighted by weights
@@ -304,9 +306,11 @@ def histoBBox1d_engine(weights,
     :param flat: array (of float32) with flat-field image
     :param solidangle: array (of float32) with solid angle corrections
     :param polarization: array (of float32) with polarization corrections
+    :param ndarray absorption: detector absorption
     :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
     :param empty: value of output bins without any contribution when dummy is None
-    :param normalization_factor: divide the result by this value
+    :param float normalization_factor: divide the result by this value
+    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
     :return: namedtuple with "position intensity error signal variance normalization count"
     """
     cdef Py_ssize_t size = weights.size
@@ -337,7 +341,8 @@ def histoBBox1d_engine(weights,
         acc_t  inv_area, delta_right, delta_left
         Py_ssize_t  bin0_max, bin0_min
         bint is_valid, check_mask = False, check_dummy = False, check_pos1=False
-        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, do_dark_variance=False
+        bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False,
+        bint do_dark_variance = False, do_absorption = False
         preproc_t value
 
     if variance is not None:
@@ -385,6 +390,11 @@ def histoBBox1d_engine(weights,
         do_solidangle = True
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
+    if absorption is not None:
+        do_absorption = True
+        assert absorption.size == size, "absorption array size"
+        cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=numpy.float32)
+
 
     if pos1_range is not None:
         assert pos1.size == size, "pos1.size == size"
@@ -418,14 +428,15 @@ def histoBBox1d_engine(weights,
                                  flat=cflat[idx] if do_flat else 1.0,
                                  solidangle=csolidangle[idx] if do_solidangle else 1.0,
                                  polarization=cpolarization[idx] if do_polarization else 1.0,
-                                 absorption=1.0,
+                                 absorption=cabsorption[idx] if do_absorption else 1.0,
                                  mask=0, #previously checked
                                  dummy=cdummy,
                                  delta_dummy=ddummy,
                                  check_dummy=check_dummy,
                                  normalization_factor=normalization_factor,
                                  dark_variance=cdark_variance[idx] if do_dark_variance else 0.0,
-                                 error_model=error_model)
+                                 error_model=error_model,
+                                 apply_normalization=not weighted_average,)
             if not is_valid:
                 continue
             c0 = cpos0[idx]
@@ -451,7 +462,7 @@ def histoBBox1d_engine(weights,
             # Here starts the pixel distribution
             if bin0_min == bin0_max:
                 # All pixel is within a single bin
-                update_1d_accumulator(out_data, bin0_max, value, 1.0)
+                update_1d_accumulator(out_data, bin0_max, value, 1.0, error_model)
 
             else:
                 # we have pixel splitting.
@@ -460,10 +471,10 @@ def histoBBox1d_engine(weights,
                 delta_left = < float > (bin0_min + 1) - fbin0_min
                 delta_right = fbin0_max - (<float> bin0_max)
 
-                update_1d_accumulator(out_data, bin0_min, value, inv_area * delta_left)
-                update_1d_accumulator(out_data, bin0_max, value, inv_area * delta_right)
+                update_1d_accumulator(out_data, bin0_min, value, inv_area * delta_left, error_model)
+                update_1d_accumulator(out_data, bin0_max, value, inv_area * delta_right, error_model)
                 for idx in range(bin0_min + 1, bin0_max):
-                    update_1d_accumulator(out_data, idx, value, inv_area)
+                    update_1d_accumulator(out_data, idx, value, inv_area, error_model)
 
         for i in range(bins):
             sig = out_data[i, 0]
@@ -797,10 +808,12 @@ def histoBBox2d_engine(weights,
                        flat=None,
                        solidangle=None,
                        polarization=None,
+                       absorption=None,
                        bint allow_pos0_neg=False,
                        bint chiDiscAtPi=1,
                        data_t empty=0.0,
                        double normalization_factor=1.0,
+                       bint weighted_average=True,
                        bint clip_pos1=True
                        ):
     """
@@ -821,14 +834,17 @@ def histoBBox2d_engine(weights,
     :param delta_dummy: precision of dummy value
     :param mask: array (of int8) with masked pixels with 1 (0=not masked)
     :param variance: variance associated with the weights
+    :param dark_variance: variance associated with the dark-field
+    :param error_model: 0 for no error propagation, 1 for variance, 2 for Poisson, 3,4 not implemented
     :param dark: array (of float32) with dark noise to be subtracted (or None)
     :param flat: array (of float32) with flat-field image
     :param solidangle: array (of float32) with solid angle corrections
     :param polarization: array (of float32) with polarization corrections
-    :param error_model: 0 for no error propagation, 1 for variance, 2 for Poisson, 3,4 not implemented
+    :param ndarray absorption: detector absorption
+    :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
-    :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+    :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
     :param clip_pos1: clip the azimuthal range to [-pi pi] (or [0 2pi]), set to False to deactivate behavior
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
@@ -848,7 +864,7 @@ def histoBBox2d_engine(weights,
     cdef:
         # Related to data: single precision
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
-        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance
+        data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption
         data_t cdummy, ddummy=0.0
         # Related to positions: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
@@ -869,6 +885,7 @@ def histoBBox2d_engine(weights,
         Py_ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
         bint check_mask = False, check_dummy = False, is_valid
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
+        bint do_absorption = False
         preproc_t value
 
     if variance is not None:
@@ -915,6 +932,10 @@ def histoBBox2d_engine(weights,
         do_solidangle = True
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
+    if absorption is not None:
+        do_absorption = True
+        assert absorption.size == size, "absorption array size"
+        cabsorption = numpy.ascontiguousarray(absorption.ravel(), dtype=numpy.float32)
 
     pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(cpos0, dpos0,
                                                                  cpos1, dpos1,
@@ -938,14 +959,16 @@ def histoBBox2d_engine(weights,
                                              flat=cflat[idx] if do_flat else 1.0,
                                              solidangle=csolidangle[idx] if do_solidangle else 1.0,
                                              polarization=cpolarization[idx] if do_polarization else 1.0,
-                                             absorption=1.0,
+                                             absorption=cabsorption[idx] if do_absorption else 1.0,
                                              mask=0, #previously checked
                                              dummy=cdummy,
                                              delta_dummy=ddummy,
                                              check_dummy=check_dummy,
                                              normalization_factor=normalization_factor,
                                              dark_variance=0.0,
-                                             error_model=error_model)
+                                             error_model=error_model,
+                                             apply_normalization=not weighted_average,
+                                             )
 
             if not is_valid:
                 continue

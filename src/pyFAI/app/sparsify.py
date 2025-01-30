@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2023"
+__date__ = "27/09/2024"
 __status__ = "production"
 
 import os
@@ -244,7 +244,7 @@ def expand_args(args):
     return new
 
 
-def parse():
+def parse(args=None):
     epilog = "Current status of the program: " + __status__
     parser = argparse.ArgumentParser(prog="spasify-Bragg",
                                      description=__doc__,
@@ -327,7 +327,7 @@ def parse():
     group.add_argument("--peak-patch-size", dest="patch_size", type=int, default=3,
                        help="size of the local patch for searching for a peak, typically 3(default) or 5. Used only with `--cutoff-peak`")
     group.add_argument("--peak-connected", dest="connected", default=2, type=int,
-                       help="number of high pixels in the patch to be considered as a peak. efault: 3. Used only with `--cutoff-peak`")
+                       help="number of high pixels in the patch to be considered as a peak. default: 3. Used only with `--cutoff-peak`")
     group = parser.add_argument_group("Opencl setup options")
     group.add_argument("--workgroup", type=int, default=None,
                        help="Enforce the workgroup size for OpenCL kernel. Impacts only on the execution speed, not on the result.")
@@ -336,12 +336,12 @@ def parse():
     group.add_argument("--device-type", type=str, default="all",
                        help="device type like `cpu` or `gpu` or `acc`. Can help to select the proper device.")
     try:
-        args = parser.parse_args()
+        arguments = parser.parse_args(args=args)
 
-        if args.debug:
+        if arguments.debug:
             logger.setLevel(logging.DEBUG)
 
-        if len(args.IMAGE) == 0:
+        if len(arguments.IMAGE) == 0:
             raise argparse.ArgumentError(None, "No input file specified.")
         if ocl is None:
             raise RuntimeError("sparsify-Brgg requires _really_ a valide OpenCL environment. Please install pyopencl !")
@@ -352,9 +352,9 @@ def parse():
         return EXIT_ARGUMENT_FAILURE
     else:
         # the upper case IMAGE is used for the --help auto-documentation
-        args.images = expand_args(args.IMAGE)
-        args.images.sort()
-        return args
+        arguments.images = expand_args(arguments.IMAGE)
+        arguments.images.sort()
+        return arguments
 
 
 def process(options):
@@ -379,7 +379,8 @@ def process(options):
         pb.update(0, message="Initialize the geometry", max_value=nframes)
     ai = load(options.poni)
     if options.mask is not None:
-        mask = fabio.open(options.mask).data
+        with fabio.open(options.mask) as fimg:
+            mask = fimg.data
         ai.detector.mask = mask
     else:
         mask = ai.detector.mask
@@ -487,8 +488,8 @@ def process(options):
     return EXIT_ARGUMENT_FAILURE if abort.is_set() else EXIT_SUCCESS
 
 
-def main():
-    options = parse()
+def main(args=None):
+    options = parse(args)
     if options == EXIT_ARGUMENT_FAILURE:
         sys.exit(EXIT_ARGUMENT_FAILURE)
     res = process(options)

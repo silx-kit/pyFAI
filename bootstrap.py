@@ -47,7 +47,6 @@ def build_project(name, root_dir):
     libdir = "lib"
     if sys.platform == "win32":
         libdir = "Lib"
-        # extra = ["--buildtype", "plain"]
 
     build = os.path.join(root_dir, "build")
     if not(os.path.isdir(build) and os.path.isdir(os.path.join(build, name))):

@@ -3,8 +3,7 @@
 --find-links http://www.edna-site.org/pub/wheelhouse
 
 wheel
-numpy <1.19 ; python_version <= '3.5'
-numpy; python_version>= '3.6'
+numpy >=1.10
 cython (>=0.29.31)
 pillow
 lxml
@@ -17,4 +16,5 @@ matplotlib
 #pybind11
 #pyopencl
 numexpr != 2.8.6
-silx
+silx >= 2
+importlib_resources; python_version < '3.9'

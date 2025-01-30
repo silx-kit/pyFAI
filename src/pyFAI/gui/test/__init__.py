@@ -30,7 +30,7 @@
 
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "28/09/2024"
 
 import sys
 import os
@@ -79,7 +79,6 @@ def suite():
 
     from . import test_model
     from . import test_integrate_widget
-    from . import test_scripts
     from . import test_calibration
     from . import test_detector_dialog
     from ..utils import test as test_utils
@@ -88,7 +87,6 @@ def suite():
     test_suite = unittest.TestSuite()
     test_suite.addTest(test_model.suite())
     test_suite.addTest(test_integrate_widget.suite())
-    test_suite.addTest(test_scripts.suite())
     test_suite.addTest(test_calibration.suite())
     test_suite.addTest(test_detector_dialog.suite())
     test_suite.addTest(test_utils.suite())

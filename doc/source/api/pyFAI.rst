@@ -9,6 +9,23 @@ pyFAI package
     :undoc-members:
     :show-inheritance:
 
+:mod:`integrator.azimuthal` Module
+---------------------------------
+
+.. automodule:: pyFAI.integrator.azimuthal
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`integrator.fiber` Module
+---------------------------------
+
+.. automodule:: pyFAI.integrator.fiber
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 :mod:`azimuthalIntegrator` Module
 ---------------------------------
 

@@ -34,12 +34,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2023"
+__date__ = "25/06/2024"
 __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector
+from ._common import Detector, to_eng
 from ._dectris import _Dectris
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
@@ -92,8 +92,7 @@ class Jungfrau(Detector):
             self.module_size = module_size
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self.pixel1, self.pixel2)
+        return f"Detector {self.name}%s\t PixelSize= {to_eng(self.pixel1)}m, {to_eng(self.pixel2)}m"
 
     def calc_pixels_edges(self):
         """
@@ -217,6 +216,21 @@ class Jungfrau4M(_Dectris):
         else:
             self.module_size = module_size
         self.offset1 = self.offset2 = None
+
+
+class Jungfrau1M(Jungfrau4M):
+    """
+    Jungfrau 1M module without sub-module pixel expension applied.
+    """
+    MANUFACTURER = "PSI"
+    MODULE_SIZE = (514, 1030)  # number of pixels per module (y, x)
+    MAX_SHAPE = (1064, 1030)  # max size of the detector
+    MODULE_GAP = (36, 8)
+    PIXEL_SIZE = (75e-6, 75e-6)
+    force_pixel = True
+    aliases = ["Jungfrau 1M"]
+    uniform_pixel = True
+
 
 class Jungfrau8M(Jungfrau):
     """

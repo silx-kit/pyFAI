@@ -5,6 +5,7 @@ subdir('engines')
 subdir('ext')
 subdir('geometry')
 subdir('gui')
+subdir('integrator')
 subdir('io')
 subdir('opencl')
 subdir('resources')
@@ -32,6 +33,7 @@ py.install_sources(
     'method_registry.py',
     'multi_geometry.py',
     'parallax.py',
+    'ring_extraction.py',
     'spline.py',
     'units.py',
     'worker.py'],

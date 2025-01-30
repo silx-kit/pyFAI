@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2023"
+__date__ = "07/06/2024"
 
 import os
 import shutil
@@ -210,12 +210,12 @@ class TestDetector(unittest.TestCase):
             if err2 > 1e-6:
                 logger.error("%s precision on pixel position 1 is better than 1µm, got %e", det_name, err2)
 
-            self.assertTrue(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err1))
-            self.assertTrue(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
+            self.assertLess(err1, 1e-6, f"{det_name} precision on pixel position 1 is better than 1µm, got {err1:e}")
+            self.assertLess(err2, 1e-6, f"{det_name} precision on pixel position 2 is better than 1µm, got {err1:e}")
             if not det.IS_FLAT:
                 err = abs(r[2] - o[2]).max()
                 self.assertTrue(err < 1e-6, "%s precision on pixel position 3 is better than 1µm, got %e" % (det_name, err))
-
+            self.assertEqual(det.CORNERS, new_det.CORNERS, "Number of pixel corner is consistent")
         # check Pilatus with displacement maps
         # check spline
         # check SPD displacement
@@ -353,9 +353,11 @@ class TestDetector(unittest.TestCase):
 
     def test_hexagonal_detector(self):
         pix = detector_factory("Pixirad1")
+        self.assertEqual(pix.CORNERS, 6, "detector has 6 corners")
+
         wl = 1e-10
         from ..calibrant import ALL_CALIBRANTS
-        from ..azimuthalIntegrator import AzimuthalIntegrator
+        from ..integrator.azimuthal import AzimuthalIntegrator
         AgBh = ALL_CALIBRANTS("AgBh")
         AgBh.wavelength = 1e-10
         ai = AzimuthalIntegrator(detector=pix, wavelength=wl)
@@ -386,6 +388,15 @@ class TestDetector(unittest.TestCase):
             self.assertEqual(d.pixel1, 1, "taken into account")
             self.assertNotEqual(d.pixel2, 1, "default value")
             self.assertTrue("Factory: Left-over config parameters in" in  cm.output[0], "emits an error")
+
+    def test_regression_2140(self):
+        """the mask has the max_shape and not shape.
+        Binning not taken into account.
+        """
+        d = detector_factory("Eiger2_CdTe_9M")
+        binned = tuple(i//2 for i in d.shape)
+        d.guess_binning(binned)
+        self.assertEqual(binned, d.mask.shape, "mask has been binned as well ")
 
 
 class TestOrientation(unittest.TestCase):
@@ -501,6 +512,13 @@ class TestOrientation(unittest.TestCase):
         p2 = ref2[Y, X]
         self.assertTrue(numpy.allclose(r1, p1), "orient 4 dim1,y points")
         self.assertTrue(numpy.allclose(r2, p2), "orient 4 dim2,x points")
+
+    def test_origin(self):
+        self.assertEqual(detector_factory("Pilatus100k", {"orientation":0}).origin, (0, 0))
+        self.assertEqual(detector_factory("Pilatus100k", {"orientation":1}).origin,(195, 487))
+        self.assertEqual(detector_factory("Pilatus100k", {"orientation":2}).origin,(195, 0))
+        self.assertEqual(detector_factory("Pilatus100k", {"orientation":3}).origin,(0, 0))
+        self.assertEqual(detector_factory("Pilatus100k", {"orientation":4}).origin,(0, 487))
 
 
 def suite():

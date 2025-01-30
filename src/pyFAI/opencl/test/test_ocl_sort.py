@@ -52,7 +52,7 @@ def sigma_clip(image, sigma_lo=3, sigma_hi=3, max_iter=5, axis=0):
     image = image.copy()
     mask = numpy.logical_not(numpy.isfinite(image))
     dummies = mask.sum()
-    image[mask] = numpy.NaN
+    image[mask] = numpy.nan
     mean = numpy.nanmean(image, axis=axis, dtype="float64")
     std = numpy.nanstd(image, axis=axis, dtype="float64")
     for _ in range(max_iter):
@@ -70,7 +70,7 @@ def sigma_clip(image, sigma_lo=3, sigma_hi=3, max_iter=5, axis=0):
         dummies = mask.sum()
         if dummies == 0:
             break
-        image[mask] = numpy.NaN
+        image[mask] = numpy.nan
         mean = numpy.nanmean(image, axis=axis, dtype="float64")
         std = numpy.nanstd(image, axis=axis, dtype="float64")
     return mean, std

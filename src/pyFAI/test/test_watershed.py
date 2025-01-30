@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "21/05/2024"
 
 import unittest
 import fabio
@@ -46,7 +46,8 @@ class TestWatershed(unittest.TestCase):
     fname = "Pilatus1M.edf"
 
     def setUp(self):
-        self.data = fabio.open(UtilsTest.getimage(self.fname)).data
+        with fabio.open(UtilsTest.getimage(self.fname)) as fimg:
+            self.data = fimg.data
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)

@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "21/05/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -63,13 +63,15 @@ class Grid(object):
         if isinstance(image, numpy.ndarray):
             self.image = image
         else:
-            self.image = fabio.open(image).data
+            with fabio.open(image) as fimg:
+                self.image = fimg.data
 
         if mask is not None:
             if isinstance(mask, numpy.ndarray):
                 self.mask = mask
             else:
-                self.mask = fabio.open(mask).data.astype(bool)
+                with fabio.open(mask) as fimg:
+                    self.mask = fimg.data.astype(bool)
             if self.detector.mask is not None:
                 self.mask = numpy.logical_or(self.detector.mask, self.mask)
         else:

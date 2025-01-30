@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:   Zubair Nawaz <zubair.nawaz@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -34,9 +34,9 @@
 """Module containing a re-implementation of bi-cubic spline evaluation from
 scipy."""
 
-__authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
+__authors__ = ["Zubair Nawaz", "Jérôme Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/03/2023"
+__date__ = "17/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -105,21 +105,22 @@ def bisplev(x, y, tck, dx=0, dy=0):
     x = numpy.atleast_1d(x)
     y = numpy.atleast_1d(y)
 
-    if (len(x.shape) != 1) or (len(y.shape) != 1):
+    if (x.ndim != 1) or (y.ndim != 1):
         raise ValueError("First two entries should be rank-1 arrays.")
 
     cy_x = numpy.ascontiguousarray(x, dtype=numpy.float32)
     cy_y = numpy.ascontiguousarray(y, dtype=numpy.float32)
 
-    z = cy_bispev(tx, ty, c, kx, ky, cy_x, cy_y)
-    z.shape = len(y), len(x)
+    z2d = numpy.zeros((y.size, x.size), dtype=numpy.float32)
+
+    cy_bispev(tx, ty, c, kx, ky, cy_x, cy_y, z2d.ravel())
 
     # Transpose again afterwards to retrieve a memory-contiguous object
-    if len(z) > 1:
-        return z.T
-    if len(z[0]) > 1:
-        return z[0]
-    return z[0][0]
+    if len(z2d) > 1:
+        return z2d.T
+    if len(z2d[0]) > 1:
+        return z2d[0]
+    return z2d[0][0]
 
 
 cdef void fpbspl(float[::1]t,
@@ -190,18 +191,25 @@ cdef void init_w(float[::1] t, int k, float[::1] x, int32_t[::1] lx, float[:, ::
             w[i, j] = h[j]
 
 
-cdef cy_bispev(float[::1] tx,
-               float[::1] ty,
-               float[::1] c,
-               int kx,
-               int ky,
-               float[::1] x,
-               float[::1] y) noexcept:
+cdef void cy_bispev(float[::1] tx,
+                    float[::1] ty,
+                    float[::1] c,
+                    int kx,
+                    int ky,
+                    float[::1] x,
+                    float[::1] y,
+                    float[::1] z
+                    ) noexcept:
     """
     Actual implementation of bispev in Cython
 
     :param tx: array of float size nx containing position of knots in x
     :param ty: array of float size ny containing position of knots in y
+    [...]
+    :param x: input array with x
+    :param y: input array with y
+    :param z: output array of size sy*sx (flat), initialized and zeroed
+    :return: None
     """
     cdef:
         #int nx = tx.shape[0]
@@ -223,10 +231,10 @@ cdef cy_bispev(float[::1] tx,
         int32_t[::1] ly = numpy.empty(my, dtype=numpy.int32)
 
         int i, j, i1, l2, j1
-        int size_z = mx * my
+        # int size_z = mx * my
 
         # initializing z and h
-        float[::1] z = numpy.zeros(size_z, dtype=numpy.float32)
+        # float[::1] z = numpy.zeros(size_z, dtype=numpy.float32)
         float sp, err, tmp, a
 
     with nogil:
@@ -247,4 +255,3 @@ cdef cy_bispev(float[::1] tx,
                         err = (tmp - sp) - a
                         sp = tmp
                 z[j * mx + i] += sp
-    return numpy.asarray(z)

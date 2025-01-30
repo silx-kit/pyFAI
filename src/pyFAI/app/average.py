@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2020"
+__date__ = "27/09/2024"
 __status__ = "production"
 
 import os
@@ -47,10 +47,9 @@ try:
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
-import pyFAI.utils.shell
-from pyFAI.utils import logging_utils
-import pyFAI.utils.stringutil
-from pyFAI import average
+from ..utils import logging_utils, stringutil, shell
+from .. import average
+from .. import version as pyFAI_version, date as pyFAI_date, utils
 
 
 def parse_algorithms(options):
@@ -146,7 +145,7 @@ def parse_writer(input_images, options, algorithms):
         "file_format": file_format,
     }
 
-    output = pyFAI.utils.stringutil.safe_format(template, formats)
+    output = utils.stringutil.safe_format(template, formats)
     return average.MultiFilesAverageWriter(output, file_format)
 
 
@@ -159,7 +158,7 @@ class ShellAverageObserver(average.AverageObserver):
 
     def image_loaded(self, fabio_image, image_index, images_count):
         if self.__bar is None:
-            self.__bar = pyFAI.utils.shell.ProgressBar("Loading", images_count, self.__size)
+            self.__bar = utils.shell.ProgressBar("Loading", images_count, self.__size)
         self.__bar.update(image_index, fabio_image.filename)
 
     def process_started(self):
@@ -176,7 +175,7 @@ class ShellAverageObserver(average.AverageObserver):
         if self.__bar is None:
             title = "Process %s" % algorithm.name
             self.__frames_count = frames_count + 1
-            self.__bar = pyFAI.utils.shell.ProgressBar(title, self.__frames_count, self.__size)
+            self.__bar = utils.shell.ProgressBar(title, self.__frames_count, self.__size)
         self.__bar.update(frame_index, "Feeding frames")
 
     def result_processing(self, algorithm):
@@ -199,9 +198,13 @@ class ShellAverageObserver(average.AverageObserver):
             self.__bar.display()
 
 
-def main():
+def main(args=None):
+    """start the program
+
+    :param args: list of arguments, i.e sys.argv[1:]
+    """
     usage = "pyFAI-average [options] [options] -o output.edf file1.edf file2.edf ..."
-    version = "pyFAI-average version %s from %s" % (pyFAI.version, pyFAI.date)
+    version = "pyFAI-average version %s from %s" % (pyFAI_version, pyFAI_date)
     description = """
     This tool can be used to average out a set of dark current images using
     mean or median filter (along the image stack). One can also reject outliers
@@ -248,7 +251,7 @@ def main():
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
                         help="Files to be processed")
 
-    options = parser.parse_args()
+    options = parser.parse_args(args)
 
     # logging
     if options.verbose is True:
@@ -270,15 +273,15 @@ def main():
         observer = None
 
     # Analyze arguments and options
-    images = pyFAI.utils.expand_args(options.args)
+    images = utils.expand_args(options.args)
 
     if options.flat:
-        flats = pyFAI.utils.expand_args([options.flat])
+        flats = utils.expand_args([options.flat])
     else:
         flats = None
 
     if options.dark:
-        darks = pyFAI.utils.expand_args([options.dark])
+        darks = utils.expand_args([options.dark])
     else:
         darks = None
 

@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            D. Karkoulis (dimitris.karkoulis@gmail.com)
@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2023"
+__date__ = "19/11/2024"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -47,7 +47,7 @@ else:
     raise ImportError("pyopencl is not installed")
 
 from . import allocate_cl_buffers, release_cl_buffers, kernel_workgroup_size
-from . import concatenate_cl_kernel, get_x87_volatile_option, processing, OpenclProcessing
+from . import concatenate_cl_kernel, processing, OpenclProcessing
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from ..utils.decorators import deprecated
 EventDescription = processing.EventDescription
@@ -152,8 +152,8 @@ class OCL_Histogram1d(OpenclProcessing):
 
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = {}
-        self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
-        self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+        self.wdim_bins = int(self.bins + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE,
+        self.wdim_data = int(self.size + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE,
 
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
@@ -257,13 +257,17 @@ class OCL_Histogram1d(OpenclProcessing):
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or self.kernel_files[-1]
         kernels = self.kernel_files[:-1] + [kernel_file]
-        default_compiler_options = get_x87_volatile_option(self.ctx)
-        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
-                          (self.bins, self.size, self.BLOCK_SIZE)
-        if default_compiler_options:
-            compile_options += " " + default_compiler_options
         try:
-            OpenclProcessing.compile_kernels(self, kernels, compile_options)
+            compile_options = self.get_compiler_options(x87_volatile=True, apple_gpu=True)
+        except (AttributeError, TypeError):  # Silx version too old
+            logger.warning("Please upgrade to silx v2.2+")
+            from . import get_compiler_options
+            compile_options = get_compiler_options(self.ctx, x87_volatile=True, apple_gpu=True)
+
+
+        compile_options += f" -D NBINS={self.bins}  -D NIMAGE={self.size} -D WORKGROUP_SIZE={self.BLOCK_SIZE}"
+        try:
+            OpenclProcessing.compile_kernels(self, kernels, compile_options.strip())
         except Exception as error:
             # This error may be related to issue #1219. Provides an ugly work around.
             if "cl_khr_int64_base_atomics" in self.ctx.devices[0].extensions:
@@ -303,6 +307,7 @@ class OCL_Histogram1d(OpenclProcessing):
                                                            ("dummy", numpy.float32(0)),
                                                            ("delta_dummy", numpy.float32(0)),
                                                            ("normalization_factor", numpy.float32(1.0)),
+                                                           ("apply_normalization", numpy.int8(0)),
                                                            ("preproc4", self.cl_mem["output4"])))
 
         self.cl_kernel_args["histogram_1d_preproc"] = OrderedDict((("radial", self.cl_mem["radial"]),
@@ -389,7 +394,7 @@ class OCL_Histogram1d(OpenclProcessing):
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
                   preprocess_only=False, safe=True,
-                  normalization_factor=1.0,
+                  normalization_factor=1.0, weighted_average=True,
                   radial_range=None, azimuth_range=None,
                   histo_signal=None, histo_variance=None,
                   histo_normalization=None, histo_normalization_sq=None, histo_count=None,
@@ -422,6 +427,7 @@ class OCL_Histogram1d(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
         :param radial_range: provide lower and upper bound for radial array
         :param azimuth_range: provide lower and upper bound for azimuthal array
         :param histo_signal: destination array or pyopencl array for sum of signals
@@ -462,6 +468,7 @@ class OCL_Histogram1d(OpenclProcessing):
             kw_correction["dummy"] = dummy
             kw_correction["delta_dummy"] = delta_dummy
             kw_correction["normalization_factor"] = numpy.float32(normalization_factor)
+            kw_correction["apply_normalization"] = numpy.int8(not weighted_average)
 
             if dark is not None:
                 do_dark = numpy.int8(1)
@@ -766,7 +773,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
                   preprocess_only=False, safe=True,
-                  normalization_factor=1.0,
+                  normalization_factor=1.0, weighted_average=True,
                   radial_range=None, azimuthal_range=None,
                   histo_signal=None, histo_variance=None,
                   histo_normalization=None, histo_count=None, histo_normalization_sq=None,
@@ -798,6 +805,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
         :param radial_range: provide lower and upper bound for radial array
         :param azimuth_range: provide lower and upper bound for azimuthal array
         :param histo_signal: destination array or pyopencl array for sum of signals
@@ -841,6 +849,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
             kw_correction["delta_dummy"] = delta_dummy
             kw_correction["normalization_factor"] = numpy.float32(normalization_factor)
             kw_correction["error_model"] = numpy.int8(error_model.value)
+            kw_correction["apply_normalization"] = numpy.int8(not weighted_average)
             if dark is not None:
                 do_dark = numpy.int8(1)
                 # TODO: what is do_checksum=False and image not on device ...

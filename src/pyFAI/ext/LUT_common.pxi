@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/03/2023"
+__date__ = "26/04/2024"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -89,10 +89,9 @@ cdef class LutIntegrator(object):
         """Getter a copy of the LUT as an actual numpy array"""
         cdef double[:, ::1] tmp_ary = numpy.empty((self.output_size, self.lut_size), dtype=numpy.float64)
         memcpy(&tmp_ary[0, 0], &self._lut[0, 0], self._lut.nbytes)
-
-        return numpy.core.records.array(numpy.asarray(tmp_ary).view(dtype=lut_d),
-                                        shape=(self.output_size, self.lut_size), dtype=lut_d,
-                                        copy=True)
+        return numpy.recarray(buf=numpy.array(tmp_ary, copy=True).view(dtype=lut_d),
+                              shape=(self.output_size, self.lut_size),
+                              dtype=lut_d)
 
 
     def integrate_legacy(self, weights,
@@ -259,6 +258,7 @@ cdef class LutIntegrator(object):
                      polarization=None,
                      absorption=None,
                      data_t normalization_factor=1.0,
+                     bint weighted_average=True,
                      ):
         """
         Actually perform the integration which in this case consists of:
@@ -269,7 +269,7 @@ cdef class LutIntegrator(object):
         :type weights: ndarray
         :param variance: the variance associate to the image
         :type variance: ndarray
-        :param erro_model: enum ErrorModel.
+        :param error_model: enum ErrorModel
         :param dummy: value for dead pixels (optional)
         :type dummy: float
         :param delta_dummy: precision for dead-pixel value in dynamic masking
@@ -285,15 +285,15 @@ cdef class LutIntegrator(object):
         :param absorption: Apparent efficiency of a pixel due to parallax effect
         :type absorption: ndarray
         :param normalization_factor: divide the valid result by this value
-
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
         :return: positions, pattern, weighted_histogram and unweighted_histogram
         :rtype: Integrate1dtpl 4-named-tuple of ndarrays
         """
         cdef:
-            int32_t i, j, idx = 0,
+            int32_t i, j, idx = 0
             index_t lut_size = self.lut_size
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
-            acc_t delta, x, omega_A, omega_B, omega3, omega2_A, omega2_B, w
+            acc_t delta1, delta2, b, omega_A, omega_B, omega3, omega2_A, omega2_B, w, norm, sig, var, count
             data_t empty
             acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
@@ -304,8 +304,8 @@ cdef class LutIntegrator(object):
             data_t[::1] std = numpy.empty(self.output_size, dtype=data_d)
             data_t[::1] sem = numpy.empty(self.output_size, dtype=data_d)
             data_t[:, ::1] preproc4
-            bint do_azimuthal_variance = ErrorModel.AZIMUTHAL
-
+            bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
+            bint do_variance = error_model is not ErrorModel.NO
         assert weights.size == self.input_size, "weights size"
         empty = dummy if dummy is not None else self.empty
         #Call the preprocessor ...
@@ -324,6 +324,7 @@ cdef class LutIntegrator(object):
                            variance=variance,
                            dtype=data_d,
                            error_model=error_model,
+                           apply_normalization=not weighted_average,
                            out=self.preprocessed)
 
         for i in prange(self.output_size, nogil=True):
@@ -338,34 +339,44 @@ cdef class LutIntegrator(object):
                 if idx<0 or coef == 0.0:
                     continue
 
+                sig = preproc4[idx, 0]
+                var = preproc4[idx, 1]
+                norm = preproc4[idx, 2]
+                count = preproc4[idx, 3]
+
+                acc_count = acc_count + coef * count
                 if do_azimuthal_variance:
                     if acc_norm_sq <= 0.0:
-                        acc_sig = coef * preproc4[idx, 0]
+                        acc_sig = coef * sig
                         #Variance remains at 0
-                        acc_norm = coef * preproc4[idx, 2]
-                        acc_norm_sq = pown(coef * preproc4[idx, 2], 2)
-                        acc_count = coef * preproc4[idx, 3]
+                        acc_norm = coef * norm
+                        acc_norm_sq = acc_norm * acc_norm
                     else:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
+                        # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
+                        # Emprically validated against 2-pass implementation in Python/scipy-sparse
+
                         omega_A = acc_norm
-                        omega_B = coef * preproc4[idx, 2]
+                        omega_B = coef * norm # ω_i = c_i * norm_i
                         omega2_A = acc_norm_sq
                         omega2_B = omega_B*omega_B
                         acc_norm = omega_A + omega_B
                         acc_norm_sq = omega2_A + omega2_B
-                        omega3 = acc_norm_sq * omega_A * omega_B
-                        x = coef * preproc4[idx, 0]
-                        delta = omega2_B*acc_sig - omega2_A*x
-                        acc_var = acc_var +  delta*delta/omega3
-                        acc_sig = acc_sig + x
-                        acc_count = acc_count + coef * preproc4[idx, 3]
+                        # omega3 = acc_norm * omega_A * omega2_B
+                        # VV_{AUb} = VV_A + ω_b^2 * (b-<A>) * (b-<AUb>)
+                        b = sig / norm
+                        delta1 = acc_sig/omega_A - b
+                        acc_sig = acc_sig + coef * sig
+                        delta2 = acc_sig / acc_norm - b
+                        acc_var = acc_var +  omega2_B * delta1 * delta2
                 else:
-                    acc_sig = acc_sig + coef * preproc4[idx, 0]
-                    acc_var = acc_var + coef * coef * preproc4[idx, 1]
-                    w = coef * preproc4[idx, 2]
+                    acc_sig = acc_sig + coef * sig
+                    if do_variance:
+                        acc_var = acc_var + coef * coef * var
+                    w = coef * norm
                     acc_norm = acc_norm + w
                     acc_norm_sq = acc_norm_sq + w*w
-                    acc_count = acc_count + coef * preproc4[idx, 3]
+
             sum_sig[i] = acc_sig
             sum_var[i] = acc_var
             sum_norm[i] = acc_norm
@@ -373,12 +384,13 @@ cdef class LutIntegrator(object):
             sum_count[i] = acc_count
             if acc_norm_sq > 0.0:
                 merged[i] = acc_sig / acc_norm
-                std[i] = sqrt(acc_var / acc_norm_sq)
-                sem[i] = sqrt(acc_var) / acc_norm
+                if do_variance:
+                    std[i] = sqrt(acc_var / acc_norm_sq)
+                    sem[i] = sqrt(acc_var) / acc_norm
+                else:
+                    std[i] = sem[i] = empty
             else:
-                merged[i] = empty
-                std[i] = empty
-                sem[i] = empty
+                merged[i] = std[i] = sem[i] = empty
         if self.bin_centers is None:
             # 2D integration case
             return Integrate2dtpl(self.bin_centers0, self.bin_centers1,

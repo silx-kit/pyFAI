@@ -32,16 +32,20 @@ environment:
 
     matrix:
 
-        # Python 3.7
-        - PYTHON_DIR: "C:\\Python37-x64"
-          PYTHON_ARCH: "64"
-
-        # Python 3.8
-        - PYTHON_DIR: "C:\\Python38-x64"
-          PYTHON_ARCH: "64"
+#         # Python 3.7
+#         - PYTHON_DIR: "C:\\Python37-x64"
+#           PYTHON_ARCH: "64"
 
         # Python 3.9
         - PYTHON_DIR: "C:\\Python39-x64"
+          PYTHON_ARCH: "64"
+
+        # Python 3.11
+        - PYTHON_DIR: "C:\\Python311-x64"
+          PYTHON_ARCH: "64"
+
+        # Python 3.13
+        - PYTHON_DIR: "C:\\Python313-x64"
           PYTHON_ARCH: "64"
 
 init:

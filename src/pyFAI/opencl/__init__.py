@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: S I L X project
-#             https://github.com/silx-kit/silx
+#    Project: python fast azimuthal integration project
+#             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,11 +32,11 @@
 
 """Contains all OpenCL implementation."""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
-__copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2023"
+__copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "19/11/2024"
 __status__ = "stable"
 
 import os
@@ -57,7 +57,11 @@ elif os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
     ocl = None
     OpenclProcessing = None
 else:
-    from silx.opencl.common import *
+    from silx.opencl import common
+    ocl = common.ocl    # /!\ lasy loading of ocl at the silx level !!!
+    from silx.opencl.common import pyopencl, mf, release_cl_buffers, allocate_cl_buffers, \
+                                    measure_workgroup_size, kernel_workgroup_size
+
     from .. import resources
     resources.silx_integration()
 
@@ -75,6 +79,24 @@ def get_x87_volatile_option(ctx):
         else:
             return ""
 
+def get_compiler_options(ctx, x87_volatile=False, apple_gpu=False):
+    """Provide a set of common compiler options to work around known bugs:
+
+    :x87_volatile: set to true to declare all x87 operation as volatile, needed on PoCL x86 32bits
+    :apple_gpu: redefine the cl_khr_fp64 to zero when the device is Apple GPU
+                which wrongly declares fp64 compatibility. See #2339
+    :return: compilation directive as string.
+    """
+
+    if x87_volatile:
+        options = get_x87_volatile_option(ctx)
+    else:
+        options = ""
+    if apple_gpu:
+        fp64_support = 1 if "cl_khr_fp64" in ctx.devices[0].extensions else 0
+        options += f" -D cl_khr_fp64={fp64_support}"
+    return options.strip()
+
 
 def dtype_converter(dtype):
     "convert a numpy dtype as a int8"
@@ -84,4 +106,4 @@ def dtype_converter(dtype):
     elif numpy.issubdtype(dtype, numpy.unsignedinteger):
         return numpy.int8(dtype.itemsize)
     else:
-        return numpy.int8(8*dtype.itemsize)
+        return numpy.int8(8 * dtype.itemsize)

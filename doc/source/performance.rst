@@ -18,14 +18,15 @@ Other splitting schemes have similar behavior.
 
 By default the histogram and CSR algorithm implemented in cython are compared.
 All those cython engines accumulate information in `float64` containers while
-OpenCL implementations accumulates using Kahan_summation_ with 4 `float32` operations
-per addition.
+OpenCL implementations accumulates using error-compensated_arithmetics_ with
+10 `float32` operations per addition.
 
+.. _error-compensated_arithmetics: http://www.theses.fr/2017LYSEN036
 .. _Kahan_summation: http://en.wikipedia.org/wiki/Kahan_summation_algorithm
 
 The benchmarking tool provides plots like this:
 
-.. figure:: img/benchmark_2023.1.svg
+.. figure:: img/benchmark_2024.01.svg
    :align: center
    :alt: Benchmark performed on a 2016 single-socket workstation and two graphics card.
 

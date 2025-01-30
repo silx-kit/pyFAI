@@ -34,12 +34,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "25/06/2024"
 __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector
+from ._common import Detector, to_eng
 logger = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ class _Lambda(Detector):
             self.module_size = module_size
 
     def __repr__(self):
-        return f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+        return f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
 
     def calc_mask(self):
         """

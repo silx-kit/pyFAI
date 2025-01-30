@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/11/2023"
+__date__ = "19/01/2024"
 
 import logging
 import numpy
@@ -717,7 +717,7 @@ class GeometryTask(AbstractCalibrationTask):
         plot.addToolBar(toolBar)
         toolBar = tools.ImageToolBar(parent=self, plot=plot)
         colormapDialog = CalibrationContext.instance().getColormapDialog()
-        toolBar.getColormapAction().setColorDialog(colormapDialog)
+        toolBar.getColormapAction().setColormapDialog(colormapDialog)
         plot.addToolBar(toolBar)
 
         toolBar = qt.QToolBar(self)
@@ -1045,6 +1045,7 @@ class GeometryTask(AbstractCalibrationTask):
         self._geometryHistoryCombo.setHistoryModel(model.geometryHistoryModel())
         settings = model.experimentSettingsModel()
         settings.maskedImage().changed.connect(self.__imageUpdated)
+        settings.preprocessedImage().changed.connect(self.__imageUpdated)
         settings.wavelength().changed.connect(self.__invalidateWavelength)
 
         geometry = model.fittedGeometry()
@@ -1077,7 +1078,12 @@ class GeometryTask(AbstractCalibrationTask):
         self.__imageUpdated()
 
     def __imageUpdated(self):
-        image = self.model().experimentSettingsModel().maskedImage().value()
+        try:
+            image = self.model().experimentSettingsModel().preprocessedImage().value()
+        except Exception as e:
+            _logger.warning(f"Error with PreProcessedImageModel: {e}")
+            image = self.model().experimentSettingsModel().maskedImage().value()
+
         if image is not None:
             self.__plot.addImage(image, legend="image", copy=False)
             self.__plot.setGraphXLimits(0, image.shape[0])

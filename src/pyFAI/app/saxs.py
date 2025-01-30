@@ -28,11 +28,11 @@
 #  THE SOFTWARE.
 #
 """Integrate 2D images into SAXS patterns. Also used in PDF measurements"""
-__author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
+__author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "27/09/2024"
 __status__ = "production"
 
 import os
@@ -49,17 +49,16 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 import fabio
-from pyFAI import date, version as pyFAI_version
-from pyFAI import units
-from pyFAI import utils
-from pyFAI.method_registry import IntegrationMethod
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+
+from .. import date as pyFAI_date, version as pyFAI_version, units, utils
+from ..method_registry import IntegrationMethod
+from ..integrator.azimuthal import AzimuthalIntegrator
 hc = units.hc
 
 
-def main():
+def main(args=None):
     usage = "pyFAI-saxs [options] -n 1000 -p ponifile file1.edf file2.edf ..."
-    version = "PyFAI-saxs version %s from %s " % (pyFAI_version, date)
+    version = "PyFAI-saxs version %s from %s " % (pyFAI_version, pyFAI_date)
     description = """Azimuthal integration for SAXS users."""
     epilog = """pyFAI-saxs is the SAXS script of pyFAI that allows data
     reduction (azimuthal integration) for Small Angle Scattering with output
@@ -115,7 +114,7 @@ def main():
                         type=str, default=None,
                         help="Integration method ")
 
-    options = parser.parse_args()
+    options = parser.parse_args(args)
     if len(options.args) < 1:
         logger.error("incorrect number of arguments")
     to_process = utils.expand_args(options.args)
@@ -125,8 +124,8 @@ def main():
 
         if to_process:
             first = to_process[0]
-            fabimg = fabio.open(first)
-            integrator.detector.guess_binning(fabimg.data)
+            with fabio.open(first) as fabimg:
+                integrator.detector.guess_binning(fabimg.data)
         if options.wavelength:
             integrator.wavelength = options.wavelength * 1e-10
         elif options.energy:
@@ -134,9 +133,12 @@ def main():
         if options.mask and os.path.exists(options.mask):  # override with the command line mask
             integrator.maskfile = options.mask
         if options.dark and os.path.exists(options.dark):  # set dark current
-            integrator.darkcurrent = fabio.open(options.dark).data
+            with fabio.open(options.dark) as fimg:
+                integrator.darkcurrent = fimg.data
         if options.flat and os.path.exists(options.flat):  # set Flat field
-            integrator.flatfield = fabio.open(options.flat).data
+            with fabio.open(options.flat) as fimg:
+                integrator.flatfield = fimg.data
+
         if options.method:
             method = options.method
         else:
@@ -151,36 +153,35 @@ def main():
             sys.stdout.write("Integrating %s --> " % afile)
             outfile = os.path.splitext(afile)[0] + options.ext
             t0 = time.perf_counter()
-            fimg = fabio.open(afile)
-            t1 = time.perf_counter()
-            if fimg.nframes > 1:
-                integrator.integrate1d_ng(data=fimg.data,
-                                          npt=options.npt or min(fimg.data.shape),
-                                          dummy=options.dummy,
-                                          delta_dummy=options.delta_dummy,
-                                          filename=outfile,
-                                          variance=fimg.next().data,
-                                          method=method,
-                                          unit=options.unit,
-                                          error_model=options.error_model,
-                                          polarization_factor=options.polarization_factor,
-                                          metadata=fimg.header
-                                          )
-            else:
-                integrator.integrate1d_ng(data=fimg.data,
-                                          npt=options.npt or min(fimg.data.shape),
-                                          dummy=options.dummy,
-                                          delta_dummy=options.delta_dummy,
-                                          filename=outfile,
-                                          method=method,
-                                          unit=options.unit,
-                                          error_model=options.error_model,
-                                          polarization_factor=options.polarization_factor,
-                                          metadata=fimg.header)
-            t2 = time.perf_counter()
+            with fabio.open(afile) as fimg:
+                t1 = time.perf_counter()
+                if fimg.nframes > 1:
+                    integrator.integrate1d_ng(data=fimg.data,
+                                              npt=options.npt or min(fimg.data.shape),
+                                              dummy=options.dummy,
+                                              delta_dummy=options.delta_dummy,
+                                              filename=outfile,
+                                              variance=fimg.next().data,
+                                              method=method,
+                                              unit=options.unit,
+                                              error_model=options.error_model,
+                                              polarization_factor=options.polarization_factor,
+                                              metadata=fimg.header
+                                              )
+                else:
+                    integrator.integrate1d_ng(data=fimg.data,
+                                              npt=options.npt or min(fimg.data.shape),
+                                              dummy=options.dummy,
+                                              delta_dummy=options.delta_dummy,
+                                              filename=outfile,
+                                              method=method,
+                                              unit=options.unit,
+                                              error_model=options.error_model,
+                                              polarization_factor=options.polarization_factor,
+                                              metadata=fimg.header)
+                t2 = time.perf_counter()
 
-            msg = "%s,\t reading: %.3fs\t 1D integration: %.3fs."
-            print(msg % (outfile, t1 - t0, t2 - t1))
+            print(f"{outfile},\t reading: {t1 - t0:.3f}s\t 1D integration: {t2 - t1:.3f}s.")
 
 
 if __name__ == "__main__":

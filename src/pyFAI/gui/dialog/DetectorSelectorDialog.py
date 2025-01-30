@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,13 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "18/12/2023"
+__date__ = "06/06/2024"
 
 import os
 import logging
-
+import textwrap
 from silx.gui import qt
 
 import pyFAI.utils
@@ -57,6 +57,9 @@ class DetectorSelectorDrop(qt.QWidget):
 
         self.__detector = None
         self.__dialogState = None
+        self.__detector = None
+        self.__customDetector = None
+        self.__detectorFromFile = None
 
         model = self.__createManufacturerModel()
         self._manufacturerList.setModel(model)
@@ -134,19 +137,17 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight.changed.connect(self.__customDetectorChanged)
         self.__pixelWidth.changed.connect(self.__customDetectorChanged)
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
-        self._initOrientation()
-        self.__customDetector = None
 
+        self._initOrientation()
         # By default select all the manufacturers
         self.__selectAllRegistreredDetector()
 
     def _initOrientation(self):
         for item in pyFAI.detectors.orientation.Orientation:
             if item.available:
-                self._detectorOrientation.addItem(f"{item.value}: {item.name} ",  userData=item)
+                self._detectorOrientation.addItem(f"{item.value}: {item.name} ", userData=item)
 
         self._detectorOrientation.currentIndexChanged.connect(self.__orientationChanged)
-        self._detectorOrientation.currentIndexChanged.connect(self.__customDetectorChanged)
         default = pyFAI.detectors.orientation.Orientation(3)
         self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(default))
 
@@ -158,7 +159,15 @@ class DetectorSelectorDrop(qt.QWidget):
 
     def __orientationChanged(self, idx):
         orientation = self._detectorOrientation.itemData(idx)
-        self._detectorOrientationLabel.setText(orientation.__doc__)
+        self._detectorOrientationLabel.setText(textwrap.fill(orientation.__doc__, 30))
+
+        # Finally set the detector orientation
+        if self.__customDetector:
+            self.__customDetector._orientation = orientation
+        if self.__detectorFromFile:
+            self.__detectorFromFile._orientation = orientation
+        if self.__detector:
+            self.__detector._orientation = orientation
 
     def __selectAndAccept(self):
         # FIXME: This has to be part of the dialog, and not here
@@ -266,7 +275,8 @@ class DetectorSelectorDrop(qt.QWidget):
         # TODO: this test should be reworked in case of another extension
         if filename.endswith(".spline"):
             try:
-                self.__detectorFromFile = pyFAI.detectors.Detector(splineFile=filename)
+                self.__detectorFromFile = pyFAI.detectors.Detector(splineFile=filename,
+                                                                   orientation=self.getOrientation())
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("Spline detector loaded")
             except Exception as e:
@@ -280,7 +290,8 @@ class DetectorSelectorDrop(qt.QWidget):
             return
         else:
             try:
-                self.__detectorFromFile = pyFAI.detectors.NexusDetector(filename=filename)
+                self.__detectorFromFile = pyFAI.detectors.NexusDetector(filename=filename,
+                                                                        orientation=self.getOrientation())
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("HDF5 detector loaded")
             except Exception as e:
@@ -320,6 +331,9 @@ class DetectorSelectorDrop(qt.QWidget):
         if self.__detector == detector:
             return
         self.__detector = detector
+        # set orientation:
+        orientation = detector.orientation
+        self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(orientation))
         if self.__detector is None:
             self.__selectNoDetector()
         elif self.__detector.__class__ is pyFAI.detectors.NexusDetector:
@@ -342,7 +356,7 @@ class DetectorSelectorDrop(qt.QWidget):
             classDetector = self.currentDetectorClass()
             if classDetector is None:
                 return None
-            detector = classDetector()
+            detector = classDetector(orientation=self.getOrientation())
             if detector.HAVE_TAPER:
                 splineFile = self.__splineFile.value()
                 if splineFile is not None:

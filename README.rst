@@ -3,7 +3,7 @@ pyFAI: Fast Azimuthal Integration in Python
 
 Main development website: https://github.com/silx-kit/pyFAI
 
-|Github Actions| |Appveyor Status| |myBinder Launcher| |RTD docs| |Zenodo DOI|
+|Github Actions| |Appveyor Status| |myBinder Launcher| |Zenodo DOI| |RTD docs|
 
 PyFAI is an azimuthal integration library that tries to be fast (as fast as C
 and even more using OpenCL and GPU).
@@ -21,7 +21,8 @@ References
 * The philosophy of pyFAI is described in the proceedings of SRI2012: https://doi.org/10.1088/1742-6596/425/20/202012
 * Implementation in parallel is described in the proceedings of EPDIC13: https://doi.org/10.1017/S0885715613000924
 * Benchmarks and optimization procedure is described in the proceedings of EuroSciPy2014: https://doi.org/10.48550/arXiv.1412.6367
-* Calibration procedures are described in J. Synch. Radiation 2020: https://doi.org/10.1107/S1600577520000776
+* Calibration procedures are described in J. Synch. Radiation (2020): https://doi.org/10.1107/S1600577520000776
+* Application of signal separation to diffraction image compression and serial crystallography. J. Appl. Cryst. (2025): https://doi.org/10.1107/S1600576724011038
 
 Installation
 ------------
@@ -33,11 +34,9 @@ As most Python packages, pyFAI is available via PIP::
 
    pip install pyFAI[gui]
 
-It is advised to run this in a vitural environment.
-Provide the *--user* to perform an installation local to your user (not recommended).
-Under UNIX, you may have to run the command via *sudo* to gain root access an
-perform a system wide installation (neither recommended).
-
+It is advised to run this in a `vitural environment <https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments>`_ .
+Provide the *--user* option to perform an installation local to your user-space (**not recommended**).
+Under UNIX, you may have to run the command via *sudo* to gain root access and perform a system wide installation (which is **neither recommended**).
 
 With conda
 ..........
@@ -51,19 +50,20 @@ To install conda please see either `conda <https://conda.io/docs/install/quick.h
 From source code
 ................
 
-The latest release of pyFAI can be downloaded from
+The current development version of pyFAI can be downloaded from
 `Github <https://github.com/silx-kit/pyFAI/archive/main.zip>`_.
 Presently the source code has been distributed as a zip package.
 Download it one and unpack it::
 
     unzip pyFAI-main.zip
 
-As developement is also done on Github,
-`development branch is also available <https://github.com/silx-kit/pyFAI/archive/main.zip>`_
-
 All files are unpacked into the directory pyFAI-main::
 
     cd pyFAI-main
+
+Install dependencies::
+
+    pip install -r requirements.txt
 
 Build it & test it::
 
@@ -71,20 +71,20 @@ Build it & test it::
 
 For its tests, pyFAI downloads test images from the internet.
 Depending on your network connection and your local network configuration,
-you may have to setup a proxy configuration like this (no more needed at ESRF)::
+you may have to setup a proxy configuration like this (not needed at ESRF)::
 
    export http_proxy=http://proxy.site.org:3128
 
 Finally, install pyFAI in the virtualenv after testing it::
 
-    pip install --upgrade .
+    pip install .
 
 The newest development version can also be obtained by checking out from the git
 repository::
 
     git clone https://github.com/silx-kit/pyFAI.git
     cd pyFAI
-    pip install --upgrade .
+    pip install .
 
 If you want pyFAI to make use of your graphic card, please install
 `pyopencl <http://mathema.tician.de/software/pyopencl>`_
@@ -96,11 +96,10 @@ Documentation can be build using this command and Sphinx (installed on your comp
 
     python3 build-doc.py
 
-
 Dependencies
 ------------
 
-Python 3.7, ... 3.10 are well tested and officially supported.
+Python 3.8, ... 3.12 are well tested and officially supported.
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
@@ -147,7 +146,9 @@ using apt-get these can be installed as::
 MacOSX
 ------
 
-One needs to install `Python` (>=3.7) and `Xcode` prior to start installing pyFAI.
+One needs to manually install a recent version of `Python` (>=3.8) prior to installing pyFAI.
+Apple provides only an outdated version of Python 2.7 which is now incomatible.
+If you want to build pyFAI from sources, you will also need `Xcode` which is available from the Apple store.
 The compiled extension will use only one core due to the limitation of the compiler.
 OpenCL is hence greately adviced on Apple systems.
 Then install the missing dependencies with `pip`::
@@ -158,7 +159,8 @@ Then install the missing dependencies with `pip`::
 Windows
 -------
 
-Under Windows, one needs to install `Python` (>=3.7) and the Visual Studio C++ compiler.
+Under Windows, one needs to install `Python` (>=3.8) prior to pyFAI.
+The Visual Studio C++ compiler is also needed when building from sources.
 Then install the missing dependencies with `pip`::
 
    pip install  -r requirements.txt
@@ -174,6 +176,8 @@ Maintainers
 -----------
 
 * Jérôme Kieffer (ESRF)
+* Edgar Gutierrez Fernandez (ESRF)
+* Maciej Jankowski (ESRF)
 
 Contributors
 ------------
@@ -181,12 +185,12 @@ Contributors
 * Valentin Valls (ESRF)
 * Frédéric-Emmanuel Picca (Soleil)
 * Thomas Vincent (ESRF)
-* Dimitris Karkoulis (ESRF)
-* Aurore Deschildre (ESRF)
-* Giannis Ashiotis (ESRF)
-* Zubair Nawaz (Sesame)
+* Dimitris Karkoulis (Formerly ESRF)
+* Aurore Deschildre (Formerly ESRF)
+* Giannis Ashiotis (Formerly ESRF)
+* Zubair Nawaz (Formerly Sesame)
 * Jon Wright (ESRF)
-* Amund Hov (ESRF)
+* Amund Hov (Formerly ESRF)
 * Dodogerstlin @github
 * Gunthard Benecke (Desy)
 * Gero Flucke (Desy)
@@ -205,9 +209,7 @@ Indirect contributors (ideas...)
    :target: https://ci.appveyor.com/project/ESRF/pyfai
 .. |myBinder Launcher| image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/silx-kit/pyFAI/main?filepath=binder%2Findex.ipynb
-.. |RTD docs| image:: https://readthedocs.org/projects/pyFAI/badge/?version=main
-    :alt: Documentation Status
-    :scale: 100%
-    :target: https://pyfai.readthedocs.io/en/main/?badge=main
+.. |RTD docs| image:: https://readthedocs.org/projects/pyfai/badge/?version=latest
+   :target: https://pyfai.readthedocs.io/en/latest/
 .. |Zenodo DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.832896.svg
    :target: https://doi.org/10.5281/zenodo.832896

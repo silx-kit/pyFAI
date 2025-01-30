@@ -37,8 +37,8 @@ coordinate.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "03/03/2023"
-__copyright__ = "2018-2018, ESRF"
+__date__ = "20/02/2024"
+__copyright__ = "2018-2024, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 include "regrid_common.pxi"

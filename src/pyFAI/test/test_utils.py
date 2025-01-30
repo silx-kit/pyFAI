@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2023"
+__date__ = "10/10/2024"
 
 import os
 import unittest
@@ -43,7 +43,6 @@ import numpy
 from .. import utils
 from ..version import calc_hexversion
 from ..method_registry import IntegrationMethod
-from .. import azimuthalIntegrator
 from ..detectors import detector_factory
 # to increase test coverage of missing files:
 from .. import directories
@@ -105,7 +104,7 @@ class TestUtils(unittest.TestCase):
 
     def test_to_scientific(self):
         self.assertEqual(to_scientific_unicode(numpy.pi), '3.142·10⁺⁰⁰', "pi is properly represented")
-        self.assertEqual(to_scientific_unicode(numpy.NaN), 'nan', "NaN are properly represented")
+        self.assertEqual(to_scientific_unicode(numpy.nan), 'nan', "NaN are properly represented")
         self.assertEqual(to_scientific_unicode(numpy.inf), 'inf', "infinite values are properly represented")
 
     def test_multiprocessing(self):

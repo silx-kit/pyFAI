@@ -1,28 +1,141 @@
 :Author: Jérôme Kieffer
-:Date: 11/01/2024
+:Date: 07/01/2025
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2024.01 UNRELEASED
-------------------
+2025.01 In time for the User-Meeting
+------------------------------------
+
+- Refactoring of the integrator classes:
+
+  * Azimuthal integrator moved to ``pyFAI.integrator.azimuthal``
+  * Most common code into ``pyFAI.integrator.common`` (including a lot of *deprecated* stuff)
+  * New sub-module dedicated to fiber/surface diffraction (``pyFAI.integrator.fiber``)
+  * Engine loading is now in ``pyFAI.integrator.load_engines``
+  * Those are all (still) sub-classes of each-other but it will change in the futrure where they will need to be **promoted** to transfer all the geometry and enable other's class feature. For example: ``ai.promote("FiberIntegrator")`` or ``ai.promote("GeometryRefinement")``
+
+- Refactoring of the handling of the serialization of the ``pyFAI-integrate`` GUI and ``pyFAI.worker.Worker`` into a JSON file.
+
+  * Use a **dataclass** defined in ``pyFAI.io.integration_config.WorkerConfig`` to manage all parameters to configure the ``Worker``
+  * New format version 5, enables the handling of sigma-clip & median filtering
+  * Provides better compatibility with `Ewoks <https://ewoks.esrf.fr>`_
+
+- Median filtering for 1D filtering:
+
+  * includes quantile average
+  * available in Python, Cython & OpenCL
+  * `Performances charts for sigma-clip & median filter <https://github.com/silx-kit/pyFAI/blob/main/doc/source/usage/tutorial/AzimuthalFilter.ipynb>`_.
+
+- New FiberIntegrator class for grazing-incidence/fiber scattering data (former fiber/gi methods in a new API)
+
+  * FiberIntegrator located in ``pyFAI.integrator.fiber``
+  * Usage tutorial in `doc/source/usage/tutorial/FiberGrazingIncidence.ipynb` or https://www.silx.org/doc/pyFAI/dev/usage/tutorial/FiberGrazingIncidence.html
+  * `integrate2d_grazing_incidence` method to display qIP - qOOP patterns. New API with minimum inputs
+  * `integrate1d_grazing_incidence` method to perform qIP or qOOP slices. New API with minimum inputs
+  * Corrected equations to handle `incident_angle` and `tilt_angle` parameters
+  * 8 possible `sample_orientation` (1-8), to rotate and flip the qIP-qOOP maps (or other units)
+  * `integrate2d_polar` to represent the polar angle (arctan(qOOP/qIP)) versus the q modulus
+  * `integrate1d_polar` to integrate the polar angle map (vertical or horizontal)
+  * `integrate2d_exitangles` to reshape the diffraction pattern into horizontal and vertical exit angles, with the origin in the sample horizon
+  * `integrate1d_exitangles` to perform an integration across one of the exit angles
+  * Faster calculation with `numexpr` package formulas
+
+- New MultiGeometryFiber in `pyFAI.multi_geometry`
+
+  * Analog to MultiGeometry class.
+  * Instead of taking a list of AzimuthalIntegrators, it takes a list of FiberIntegrators
+  * Access to integrate1d and integrate2d grazing_incidence/fiber methods
+  * New tutorial of usage in doc/source/usage/tutorial/MultiGeometry/MultiGeometryFiber.ipynb`
+
+- Tool to rebin 2d-result into 1d-result (`pyFAI.containers.rebin1d`)
 - Change documentation template to `pydata`
-- Support XRDML formt (compatibility with MAUD software)
-- Support pathlib for reading PONI files
-- Refactor `pyFAI-benchmark` tool (Thanks Edgar)
+- Several bug-fixes & better code coverage
+- Supports python 3.8 .. 3.13. The GIL-free version on python 3.13 is untested
+- Tested by the developers on Windows (amd64), linux (amd64, arm64 and ppc64le) and MacOS (amd64 and arm64). Thanks to Debian for extending this matrix.
+
+2024.09 12/09/2024
+------------------
+- New tutorials:
+  + On flatfield calculation from several detector position (ID31)
+  + On dynamic masks when using sigma-clipping (ID15a)
+- New feature in pilx: the tool to view diffraction map
+  + fix/unfix curves
+  + Colors improved
+  + motor position can ge registered
+- Other new feature:
+  + Expose orientation in calib2
+  + Extra comments in PONI-file like the calibration file if available
+  + implement sigma-clipping in pure cython with hybrid error-model
+  + New calibrant (Lysozyme for MX)& integration into calib2
+  + Absorption kwarg in sigma-clip was missing
+  + Engineering notation when printing pixel size
+  + New JSON format for integration configuration (backward compatible)
+  + Import CrystFEL geom-file and generate a detector + geometry
+  + GIWAXS and sigma-clip impose *no* pixel splitting
+  + Sigma-clipping is possible from the GUI and via config files
+  + Peakfinding: discard peaks with masked pixels in the local region
+- New detector: Jungfrau 1M (ID09)
+- Bug fixed:
+  + Close HDF5 files ASAP (risk of hitting the max number of file open)
+  + Bug in medfilt (empty ensemble)
+  + Several bugs fixed in worker (heavily used by ewoks)
+  + Correct some tutorials which had typos
+  + Orientation of interate2d results *legacy* vs *ng*
+  + Compatibility with Numpy2
+  + Compatibility with Eiger2+Lima2 multi-threshold files
+  + Compatibility with GCC14, discarded some deprecated code
+- Validated with Python 3.8-3.12
+
+
+2024.05 21/05/2024
+------------------
+- Implemented unweighted average for 2D integration
+ + Integration engines now handle the boolean 'weighted_average' to switch to unweighted mean, similar to legacy methods
+- Implementation of pilx (pyFAI-diffmap-view command): interactive viewer for pyFAI-diffmap files (thanks Loic Huder)
+- Creation of a RingExtraction class based on multi-threading (thanks Emily Massahud)
+- Flat-field and dark current corrections for pyFAI-calib2
+- Tunable units and integration methods for fiber/grazing-incidence scattering
+- Fix several bugs related to pyFAI-diffmap GUI/no-GUI options
+- Compatibility with numpy2
+- Fix numerical precision issue on MacOS/arm64
+- Build system moved from bob to cibuildwheels
+  + Windows wheels are build with openmp disabled
+
+2024.02 01/02/2024
+------------------
+- Include grazing-incidence capabilities + tutorial (thanks Edgar)
+- Fix segmentation-fault in calib2 application #2047 (thanks Thomas & Edgar)
+- Use the dynamic mask to mask-out dead pixels in Eiger images in calib2
+- Extend Poisson+azimuthal uncertainties to all Cython integrators (+ non regression tests)
+- Support for Python 3.7-3.12 (requires silx v2 for 3.12)
+
+2024.01 18/01/2024
+------------------
 - Possibility to define the detector orientation:
-  + It is the position of the origin of the detector at any of the 4 corner of the image
+  + It is the position of the origin of the detector at any of the 4 corners of the image
   + Uses the EXIF nomenclature where pyFAI's (default) orientation is tagged *3*
-  + Offers compatibility with calibration made by Diotas (where orientation=2)
+  + Offers compatibility with calibration made by Dioptas (where orientation=2 since images are flipped)
   + Expose the feature in the `calib2` GUI for custom detectors.
   + Tutorial on the usage
-- Possibility to integrate in 2D any second dimension, offers the qx/qy integration among many others.
-- Support for Detris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
-- Several new units have been added
-- Drop of `setup.py` the build system based on distutils/numpy.distutils/setuptools. Use meson-python.
-- Move the sources of the code into `src` directory
-- Support for Python 3.7-3.12
+  + New sub-version of the PoniFile API (2.1) for this feature
+- Expose the number of corners of a detector pixel (feature unused for now)
+- Refactor `pyFAI-benchmark` tool with better looking results (Thanks Edgar)
+- Possibility to integrate in 2D with any second dimension unit:
+  + No more limited to the azimuthal angle `chi`
+  + Several new units have been added
+  + Offers the qx/qy integration as example
+- Support for Dectris Pilatus4 detector both with Si and CdTe sensors (thanks to Max Burian)
+- Support XRDML format (compatibility with MAUD software)
+- Multigeometry gains a `reset()` method to free some memory with optimized garbage collection
+- Support pathlib when reading-PONI files
+- Change in the build system:
+  + Drop of `setup.py` the build system based on distutils/numpy.distutils/setuptools
+  + Enforce the use of meson-python
+  + Move the sources of the code into `src` directory
+  + Support for Python 3.7-3.12 (requires silx v2 for 3.12)
+  + Provide debian packages for debian12 but ubuntu 20.04 is too old and lack meson-python
 
 2023.09 08/09/2023
 ------------------

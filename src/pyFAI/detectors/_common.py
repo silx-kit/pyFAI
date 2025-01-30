@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,12 +29,11 @@
 
 """Description of all detectors with a factory to instantiate them"""
 
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2023"
+__date__ = "27/08/2024"
 __status__ = "stable"
 
 import logging
@@ -51,8 +50,9 @@ from .. import io
 from .. import spline
 from .. import utils
 from .. import average
-from ..utils import expand2d, crc32
+from ..utils import expand2d, crc32, binning as rebin
 from ..utils.decorators import deprecated
+from ..utils.stringutil import to_eng
 
 logger = logging.getLogger(__name__)
 
@@ -100,14 +100,15 @@ class Detector(metaclass=DetectorMeta):
     Generic class representing a 2D detector
     """
     MANUFACTURER = None
-
+    CORNERS = 4
     force_pixel = False  # Used to specify pixel size should be defined by the class itself.
     aliases = []  # list of alternative names
     registry = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
     IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
-    API_VERSION = "1.0"
+    API_VERSION = "1.1"
+    # 1.1: support for CORNER attribute
 
     HAVE_TAPER = False
     """If true a spline file is mandatory to correct the geometry"""
@@ -119,7 +120,6 @@ class Detector(metaclass=DetectorMeta):
                         "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy",
                         "_orientation")
     _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners")
-
 
     @classmethod
     def factory(cls, name: str, config: Union[None, str, Dict[str, Any]]=None):
@@ -185,7 +185,7 @@ class Detector(metaclass=DetectorMeta):
                                  name, config, err)
                     raise err
             binning = config.pop("binning", None)
-            kwargs = { key:config.pop(key) for key in inspect.getfullargspec(detectorClass).args if key in config}
+            kwargs = {key:config.pop(key) for key in inspect.getfullargspec(detectorClass).args if key in config}
             if config:
                 logger.error(f"Factory: Left-over config parameters in detector {detectorClass.__name__}: {config}")
 
@@ -247,8 +247,8 @@ class Detector(metaclass=DetectorMeta):
             self.set_splineFile(splineFile)
 
         orientation = Orientation(orientation or self.ORIENTATION or 3)
-        if orientation<0 or orientation>4:
-            raise RuntimeError("Unsupported orientation: "+orientation.__doc__)
+        if (orientation < 0) or (orientation > 4):
+            raise RuntimeError("Unsupported orientation: " + orientation.__doc__)
         self._orientation = orientation
 
     def __repr__(self):
@@ -260,7 +260,7 @@ class Detector(metaclass=DetectorMeta):
         if (self._pixel1 is None) or (self._pixel2 is None):
             return "Undefined detector"
         else:
-            txt += f"\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
+            txt += f"\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
         return txt
@@ -554,7 +554,7 @@ class Detector(metaclass=DetectorMeta):
             dico = dico.copy()
             name = dico.pop("detector")
         else:
-            name=None
+            name = None
         return cls.factory(name, dico)
 
     def setFit2D(self, **kwarg):
@@ -577,17 +577,17 @@ class Detector(metaclass=DetectorMeta):
         if center:
             m1 = self.shape[0]
             m2 = self.shape[1]
-        else: #corner
+        else:  # corner
             m1 = self.shape[0] + 1
             m2 = self.shape[1] + 1
 
-        if self.orientation in (0,3):
+        if self.orientation in (0, 3):
             r1 = numpy.arange(m1, dtype="float32")
             r2 = numpy.arange(m2, dtype="float32")
-        elif self.orientation==1:
+        elif self.orientation == 1:
             r1 = numpy.arange(m1 - 1, -1, -1, dtype="float32")
             r2 = numpy.arange(m2 - 1, -1, -1, dtype="float32")
-        elif self.orientation==2:
+        elif self.orientation == 2:
             r1 = numpy.arange(m1 - 1, -1, -1, dtype="float32")
             r2 = numpy.arange(m2, dtype="float32")
         elif self.orientation == 4:
@@ -600,26 +600,25 @@ class Detector(metaclass=DetectorMeta):
     def _reorder_indexes_from_orientation(self, d1, d2, center=True):
         """Helper function to recalculate the index of pixels considering orientation
         # Not +=: do not mangle in place arrays"""
-        if self.orientation in (0,3):
+        if self.orientation in (0, 3):
             return d1, d2
         if center:
             shape1 = self.shape[0] - 1
             shape2 = self.shape[1] - 1
-        else: #corner
+        else:  # corner
             shape1 = self.shape[0]
             shape2 = self.shape[1]
 
-        if self.orientation==1:
+        if self.orientation == 1:
             d1 = shape1 - d1
             d2 = shape2 - d2
-        elif self.orientation==2:
+        elif self.orientation == 2:
             d1 = shape1 - d1
         elif self.orientation == 4:
             d2 = shape2 - d2
         else:
             raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
         return d1, d2
-
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -654,14 +653,14 @@ class Detector(metaclass=DetectorMeta):
             if d1.ndim == 2:
                 if center:
                     self.shape = d1.shape
-                else: #corner
-                    self.shape = tuple(i-1 for i in d1.shape)
+                else:  # corner
+                    self.shape = tuple(i - 1 for i in d1.shape)
         elif "ndim" in dir(d2):
             if d2.ndim == 2:
                 if center:
                     self.shape = d2.shape
-                else: #corner
-                    self.shape = tuple(i-1 for i in d2.shape)
+                else:  # corner
+                    self.shape = tuple(i - 1 for i in d2.shape)
 
         if center:
             # avoid += It modifies in place then segfaults
@@ -756,6 +755,7 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
+                    assert self.CORNERS == 4, "overwrite this method when hexagonal !"
                     # r1, r2 = self._calc_pixel_index_from_orientation(False)
                     # like numpy.ogrid
                     # d1 = expand2d(r1, self.shape[1] + 1, False)
@@ -790,6 +790,7 @@ class Detector(metaclass=DetectorMeta):
             r1 = self._pixel_corners.shape[1] // self.shape[1]
             if r0 == 0 or r1 == 0:
                 raise RuntimeError("Cannot unbin an image ")
+            assert self.CORNERS == 4, "Only valid with quadrilateral pixels"
             pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
             pixel_corners[:,:, 0,:] = self._pixel_corners[::r0,::r1, 0,:]
             pixel_corners[:,:, 1,:] = self._pixel_corners[r0 - 1::r0,::r1, 1,:]
@@ -815,7 +816,7 @@ class Detector(metaclass=DetectorMeta):
             # Validation for the array
             assert ary.ndim == 4
             assert ary.shape[3] == 3  # 3 coordinates in Z Y X
-            assert ary.shape[2] >= 3  # at least 3 corners per pixel
+            assert ary.shape[2] == self.CORNERS  # at least 3 corners per pixel
 
             z = ary[..., 0]
             is_flat = (z.max() == z.min() == 0.0)
@@ -842,9 +843,10 @@ class Detector(metaclass=DetectorMeta):
 
         with io.Nexus(filename, "a") as nxs:
             det_grp = nxs.new_detector(name=self.name.replace(" ", "_"))
-            det_grp["API_VERSION"] = numpy.string_(self.API_VERSION)
+            det_grp["API_VERSION"] = numpy.bytes_(self.API_VERSION)
             det_grp["IS_FLAT"] = self.IS_FLAT
             det_grp["IS_CONTIGUOUS"] = self.IS_CONTIGUOUS
+            det_grp["CORNERS"] = self.CORNERS
             if self.dummy is not None:
                 det_grp["dummy"] = self.dummy
             if self.delta_dummy is not None:
@@ -949,21 +951,24 @@ class Detector(metaclass=DetectorMeta):
 
         This uses the `dummy` and `delta_dummy` properties in addition to the static mask.
 
-        :param img: 2D array with the image to analyze
+        :param img: 2D array with the image to analyse
         :return: the mask with valid pixel to 0
         :rtype: numpy ndarray of int8 or None
         """
-        if self.shape is None:
+        if not self.guess_binning(img):
             self.shape = img.shape
-        assert img.shape == self.shape
+
         static_mask = self.mask
         if static_mask is None:
             static_mask = numpy.zeros(self.shape, numpy.int8)
+        if img.shape != self.shape:
+            logger.warning(f"Detector {self.name} has shape {self.shape} while image has shape {img.shape}. Use static mask only !")
+            return static_mask
         if self.dummy is None:
             logger.info("dynamic_mask makes sense only when dummy is defined !")
             return static_mask
         else:
-            actual_dummy = numpy.dtype(img.dtype).type(self.dummy)
+            actual_dummy = numpy.dtype(img.dtype).type(numpy.int64(self.dummy))
         delta_dummy = self.delta_dummy
         if delta_dummy is None:
             dummy_mask = (actual_dummy == img)
@@ -971,7 +976,6 @@ class Detector(metaclass=DetectorMeta):
             dummy_mask = abs(float(actual_dummy) - img) < delta_dummy
         dynamic_mask = numpy.logical_or(static_mask, dummy_mask, out=static_mask)
         return dynamic_mask.astype(numpy.int8)
-
 
     ############################################################################
     # Few properties
@@ -982,6 +986,8 @@ class Detector(metaclass=DetectorMeta):
                 if self._mask is False:
                     self._mask = self.calc_mask()  # gets None in worse cases
                     if self._mask is not None:
+                        if self._mask.shape != self.shape:
+                            self._mask = rebin(self._mask, self.binning) != 0
                         self._mask = numpy.ascontiguousarray(self._mask, numpy.int8)
                         self._mask_crc = crc32(self._mask)
         return self._mask
@@ -1004,8 +1010,9 @@ class Detector(metaclass=DetectorMeta):
 
     def set_maskfile(self, maskfile):
         if fabio:
-            mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
-                                           dtype=numpy.int8)
+            with fabio.open(maskfile) as fimg:
+                mask = numpy.ascontiguousarray(fimg.data,
+                                               dtype=numpy.int8)
             self.set_mask(mask)
             self._maskfile = maskfile
         else:
@@ -1102,7 +1109,8 @@ class Detector(metaclass=DetectorMeta):
         elif len(files) == 1:
             if fabio is None:
                 raise RuntimeError("FabIO is missing")
-            self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
+            with fabio.open(files[0]) as fimg:
+                self.set_flatfield(fimg.data.astype(numpy.float32))
             self.flatfiles = files[0]
         else:
             self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
@@ -1144,7 +1152,8 @@ class Detector(metaclass=DetectorMeta):
         elif len(files) == 1:
             if fabio is None:
                 raise RuntimeError("FabIO is missing")
-            self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
+            with fabio.open(files[0]) as fimg:
+                self.set_darkcurrent(fimg.data.astype(numpy.float32))
             self.darkfiles = files[0]
         else:
             self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
@@ -1181,6 +1190,7 @@ class Detector(metaclass=DetectorMeta):
         if self._dummy is not None:
             dummy = self._dummy
         return dummy
+
     @dummy.setter
     def dummy(self, value=None):
         self._dummy = value
@@ -1191,6 +1201,7 @@ class Detector(metaclass=DetectorMeta):
         if self._delta_dummy is not None:
             delta_dummy = self._delta_dummy
         return delta_dummy
+
     @delta_dummy.setter
     def delta_dummy(self, value=None):
         self._delta_dummy = value
@@ -1198,6 +1209,18 @@ class Detector(metaclass=DetectorMeta):
     @property
     def orientation(self):
         return self._orientation
+
+    @property
+    def origin(self):
+        "What are the coordinnates of the detector's origin ?"
+        if self.orientation == 1 :
+            return self.shape
+        elif self.orientation == 2 :
+            return (self.shape[0],0)
+        elif self.orientation == 4 :
+            return (0, self.shape[1])
+        # else self.orientation in (0,3):
+        return (0,0)
 
 class NexusDetector(Detector):
     """
@@ -1208,27 +1231,33 @@ class NexusDetector(Detector):
         "aliases",
         "IS_FLAT",
         "IS_CONTIGUOUS",
+        "CORNERS"
         "force_pixel",
         "_filename",
         "uniform_pixel") + Detector._UNMUTABLE_ATTRS + Detector._MUTABLE_ATTRS
 
-    def __init__(self, filename=None):
-        Detector.__init__(self)
+    def __init__(self, filename=None, orientation=0):
+        Detector.__init__(self, orientation=orientation)
         self.uniform_pixel = True
         self._filename = None
         if filename is not None:
-            self.load(filename)
+            self.load(filename, orientation=orientation)
 
     def __repr__(self):
-        return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._filename, self._pixel1, self._pixel2)
+        txt = f"{self.name} detector from NeXus file: {self._filename}\t"
+        txt += f"PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
+        if self.orientation:
+            txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        return txt
 
-    def load(self, filename):
+    def load(self, filename, orientation=0):
         """
         Loads the detector description from a NeXus file, adapted from:
         http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
 
         :param filename: name of the file on the disk
+        :param orientation: overwrite the orientation (if provided in the file)
+        :return: None
         """
         if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
@@ -1239,6 +1268,11 @@ class NexusDetector(Detector):
                 raise RuntimeError("No detector definition in this file %s" % filename)
             name = posixpath.split(det_grp.name)[-1]
             self.aliases = [name.replace("_", " "), det_grp.name]
+            if "API_VERSION" in det_grp:
+                self.API_VERSION = det_grp["API_VERSION"][()].decode()
+                api = [int(i) for i in self.API_VERSION.split(".")]
+                if api >= [1, 1] and "CORNERS" in det_grp:
+                    self.CORNERS = det_grp["CORNERS"][()]
             if "IS_FLAT" in det_grp:
                 self.IS_FLAT = det_grp["IS_FLAT"][()]
             if "IS_CONTIGUOUS" in det_grp:
@@ -1259,7 +1293,7 @@ class NexusDetector(Detector):
                 self._delta_dummy = det_grp["delta_dummy"][()]
             for what in ("max_shape", "shape"):
                 if what in det_grp:
-                    self.__setattr__(what, tuple(i for i in det_grp[what][()]))
+                    self.__setattr__(what, tuple(int(i) for i in det_grp[what][()]))
             if "mask" in det_grp:
                 self.mask = det_grp["mask"][()]
             if "pixel_corners" in det_grp:
@@ -1275,10 +1309,12 @@ class NexusDetector(Detector):
                     self.mask = numpy.logical_or(previous_mask, new_mask).astype(numpy.int8)
             else:
                 self.uniform_pixel = True
-            if "orientation" in det_grp:
+            if orientation:  # Highest priority
+                self._orientation = Orientation(orientation)
+            elif "orientation" in det_grp:  # Restore what was stored in the HDF5 file
                 self._orientation = Orientation(det_grp["orientation"][()])
-            else:
-                self._orientation = Orientation(3)
+            else:  # Initialize with default value
+                self._orientation = Orientation(self.ORIENTATION or 3)
         # Populate shape and max_shape if needed
         if self.max_shape is None:
             if self.shape is None:
@@ -1366,7 +1402,8 @@ class NexusDetector(Detector):
 
         :return: dict with param for serialization
         """
-        return {"filename": self._filename}
+        return {"filename": self._filename,
+                "orientation": self.orientation or 3}
 
     def getPyFAI(self):
         """

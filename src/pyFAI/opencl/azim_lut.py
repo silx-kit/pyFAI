@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -27,8 +27,8 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "04/10/2023"
-__copyright__ = "2012-2021, ESRF, Grenoble"
+__date__ = "19/11/2024"
+__copyright__ = "2012-2024, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
@@ -44,7 +44,6 @@ from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 from . import processing, OpenclProcessing
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
-
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +113,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.nbytes = lut.nbytes
         self.bins, self.lut_size = lut.shape
         self.size = image_size
-        self.empty = empty or 0  # numpy.NaN
+        self.empty = empty or 0  # numpy.nan
         self.unit = unit
         self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = bin_centers
@@ -134,8 +133,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
 
         self.BLOCK_SIZE = min(self.BLOCK_SIZE, self.device.max_work_group_size)
         self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
-        self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
-        self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+        self.wdim_bins = int(self.bins + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE,
+        self.wdim_data = int(self.size + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE,
 
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
@@ -206,14 +205,15 @@ class OCL_LUT_Integrator(OpenclProcessing):
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or self.kernel_files[-1]
         kernels = self.kernel_files[:-1] + [kernel_file]
+        try:
+            compile_options = self.get_compiler_options(x87_volatile=True, apple_gpu=True)
+        except (AttributeError, TypeError):  # Silx version too old
+            logger.warning("Please upgrade to silx v2.2+")
+            from . import get_compiler_options
+            compile_options = get_compiler_options(self.ctx, x87_volatile=True, apple_gpu=True)
 
-        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
-                          (self.bins, self.size, self.lut_size, int(self.device.type == "CPU"))
-
-        default_compiler_options = self.get_compiler_options(x87_volatile=True)
-        if default_compiler_options:
-            compile_options += " " + default_compiler_options
-        OpenclProcessing.compile_kernels(self, kernels, compile_options)
+        compile_options += f" -D NBINS={self.bins}  -D NIMAGE={self.size} -D NLUT={self.lut_size} -D ON_CPU={int(self.device.type == 'CPU')}"
+        OpenclProcessing.compile_kernels(self, kernels, compile_options.strip())
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -241,6 +241,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                           ("dummy", numpy.float32(0)),
                                                           ("delta_dummy", numpy.float32(0)),
                                                           ("normalization_factor", numpy.float32(1.0)),
+                                                          ("apply_normalization", numpy.int8(0)),
                                                           ("output", self.cl_mem["output"])))
 
         self.cl_kernel_args["lut_integrate"] = OrderedDict((("output", self.cl_mem["output"]),
@@ -272,6 +273,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                            ("dummy", numpy.float32(0)),
                                                            ("delta_dummy", numpy.float32(0)),
                                                            ("normalization_factor", numpy.float32(1.0)),
+                                                           ("apply_normalization", numpy.int8(0)),
                                                            ("output4", self.cl_mem["output4"])))
         self.cl_kernel_args["lut_integrate4"] = OrderedDict((("output4", self.cl_mem["output4"]),
                                                             ("lut", self.cl_mem["lut"]),
@@ -475,7 +477,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                      dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                      polarization_checksum=None, absorption_checksum=None, dark_variance_checksum=None,
                      safe=True,
-                     normalization_factor=1.0,
+                     normalization_factor=1.0, weighted_average=True,
                      out_avgint=None, out_sem=None, out_std=None, out_merged=None):
         """
         Before performing azimuthal integration with proper variance propagation, the preprocessing is:
@@ -506,6 +508,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
+        :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average. WIP
         :param out_avgint: destination array or pyopencl array for average intensity
         :param out_sem: destination array or pyopencl array for standard deviation (of mean)
         :param out_std: destination array or pyopencl array for standard deviation (of pixels)
@@ -520,7 +523,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             self.send_buffer(data, "image")
 
             wg = self.workgroup_size
-            wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
+            wdim_bins = int(self.bins + wg[0] - 1) // wg[0] * wg[0],
             memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_ng"].values()))
             events.append(EventDescription("memset_ng", memset))
 
@@ -604,6 +607,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             else:
                 do_absorption = numpy.int8(0)
             kw_corr["do_absorption"] = do_absorption
+            kw_corr["apply_normalization"] = numpy.int8(not weighted_average)
 
             ev = corrections4(self.queue, self.wdim_data, self.workgroup_size, *list(kw_corr.values()))
             events.append(EventDescription(kernel_correction_name, ev))

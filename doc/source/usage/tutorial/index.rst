@@ -24,8 +24,10 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Detector/detector
    Calibrant/index
    Recalib/Recalib_notebook
+   Flatfield
    Ellipse/ellipse
    PixelSplitting
+   AzimuthalFilter
    Variance/uncertainties
    LogScale/Guinier
    multi-geometry
@@ -33,7 +35,9 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Inpainting/Inpainting
    ThickDetector/index
    Variance/Variance
+   Variance/Unweighted
    Separation/index
    Parallelization/index
    integrate2d
+   FiberGrazingIncidence
    Soleil/index

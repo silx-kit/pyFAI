@@ -38,7 +38,7 @@ flat-field normalization... taking care of masked values and normalization.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/10/2023"
+__date__ = "26/04/2024"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -60,6 +60,7 @@ cdef floating[:, ::1] c1_preproc(floating[::1] data,
                               floating delta_dummy=0.0,
                               bint check_dummy=False,
                               floating normalization_factor=1.0,
+                              bint apply_normalization=True,
                               floating[:, ::1] result = None
                               ) noexcept with gil:
     """Common preprocessing step for all routines: C-implementation
@@ -74,6 +75,7 @@ cdef floating[:, ::1] c1_preproc(floating[::1] data,
     :param dummy: value of invalid data
     :param delta_dummy: precision for invalid data
     :param normalization_factor: final value is divided by this
+    :param apply_normalization: correct (directly) the raw signal & variance with normalization, WIP
     :param result: output array
 
     NaN are always considered as invalid
@@ -149,6 +151,7 @@ cdef floating[:, ::1] c2_preproc(floating[::1] data,
                                  floating delta_dummy=0,
                                  bint check_dummy=False,
                                  floating normalization_factor=1.0,
+                                 bint apply_normalization=False,
                                  floating[:, ::1] result=None
                                  ) noexcept with gil:
     """Common preprocessing step for all routines: C-implementation
@@ -164,6 +167,7 @@ cdef floating[:, ::1] c2_preproc(floating[::1] data,
     :param dummy: value of invalid data
     :param delta_dummy: precision for invalid data
     :param normalization_factor: final value is divided by this value
+    :param apply_normalization: correct (directly) the raw signal & variance with normalization, WIP
     :param out: output array pre-allocated
 
     NaN are always considered as invalid
@@ -223,6 +227,10 @@ cdef floating[:, ::1] c2_preproc(floating[::1] data,
                 if not (isfinite(one_num) and isfinite(one_den) and (one_den != 0)):
                     one_num = 0.0
                     one_den = 0.0
+                elif apply_normalization:
+                    one_num /= one_den
+                    one_den = 1.0
+
             else:
                 one_num = 0.0
                 one_den = 0.0
@@ -246,6 +254,7 @@ cdef floating[:, ::1] c3_preproc(floating[::1] data,
                                  floating[::1] variance=None,
                                  floating[::1] dark_variance=None,
                                  bint poissonian=False,
+                                 bint apply_normalization=False,
                                  floating[:, ::1] result=None,
                                  ) noexcept with gil:
     """Common preprocessing step for all routines: C-implementation
@@ -264,7 +273,8 @@ cdef floating[:, ::1] c3_preproc(floating[::1] data,
     :param variance: variance of the data
     :param dark_variance: variance of the dark
     :param poissonian: if True, the variance is the signal (minimum 1)
-    :param result: ooutput array pre-allocated
+    :param apply_normalization: correct (directly) the raw signal & variance with normalization, WIP
+    :param result: output array pre-allocated
     NaN are always considered as invalid
 
     Empty pixels are 0.0 for both signal, variance and normalization
@@ -336,6 +346,10 @@ cdef floating[:, ::1] c3_preproc(floating[::1] data,
                     one_num = 0.0
                     one_var = 0.0
                     one_den = 0.0
+                elif apply_normalization:
+                    one_num /= one_den
+                    one_var /= one_den * one_den
+                    one_den = 1.0
             else:
                 one_num = 0.0
                 one_var = 0.0
@@ -361,6 +375,7 @@ cdef floating[:, ::1] c4_preproc(floating[::1] data,
                                  floating[::1] variance=None,
                                  floating[::1] dark_variance=None,
                                  bint poissonian=False,
+                                 bint apply_normalization=False,
                                  floating[:, ::1] result=None,
                                  ) noexcept with gil:
     """Common preprocessing step for all routines: C-implementation
@@ -379,6 +394,7 @@ cdef floating[:, ::1] c4_preproc(floating[::1] data,
     :param variance: variance of the data
     :param dark_variance: variance of the dark
     :param poissonian: if True, the variance is the signal (minimum 1)
+    :param apply_normalization: correct (directly) the raw signal & variance with normalization, WIP
     :param result: pre-allocated array
     NaN are always considered as invalid
 
@@ -446,6 +462,10 @@ cdef floating[:, ::1] c4_preproc(floating[::1] data,
                     one_count = 0.0
                 else:
                     one_count = 1.0
+                    if apply_normalization:
+                        one_num /= one_den
+                        one_var /= one_den * one_den
+                        one_den = 1.0
             else:
                 one_num = 0.0
                 one_var = 0.0
@@ -473,6 +493,7 @@ def _preproc(floating[::1] raw,
              floating[::1] variance=None,
              floating[::1] dark_variance=None,
              bint poissonian=False,
+             bint apply_normalization=False,
              floating[:, ::1] result=None
              ):
     """specialized preprocessing step for all corrections
@@ -491,6 +512,7 @@ def _preproc(floating[::1] raw,
     :param variance: variance of the data
     :param dark_variance: variance of the dark
     :param poissonian: set to True to consider the variance is equal to raw signal (minimum 1)
+    :param apply_normalization: correct (directly) the raw signal & variance with normalization, WIP
     :param result: pre-allocated array
 
     All calculation are performed in the precision of raw dtype
@@ -501,17 +523,19 @@ def _preproc(floating[::1] raw,
     if split == 4:
         result = c4_preproc(raw, dark, flat, solidangle, polarization, absorption,
                    mask, dummy, delta_dummy, check_dummy, normalization_factor,
-                   variance, dark_variance, poissonian, result)
+                   variance, dark_variance, poissonian, apply_normalization, result)
     elif split == 3:
         result = c3_preproc(raw, dark, flat, solidangle, polarization, absorption,
                    mask, dummy, delta_dummy, check_dummy, normalization_factor,
-                   variance, dark_variance, poissonian, result)
+                   variance, dark_variance, poissonian, apply_normalization, result)
     elif split == 2:
         result = c2_preproc(raw, dark, flat, solidangle, polarization, absorption,
-                   mask, dummy, delta_dummy, check_dummy, normalization_factor, result)
+                   mask, dummy, delta_dummy, check_dummy, normalization_factor,
+                   apply_normalization, result)
     elif split == 1:
         result = c1_preproc(raw, dark, flat, solidangle, polarization, absorption,
-                   mask, dummy, delta_dummy, check_dummy, normalization_factor, result)
+                   mask, dummy, delta_dummy, check_dummy, normalization_factor,
+                   apply_normalization, result)
     return result
 
 
@@ -530,6 +554,7 @@ def preproc(raw,
             variance=None,
             dark_variance=None,
             error_model=ErrorModel.NO,
+            bint apply_normalization=False,
             dtype=numpy.float32,
             out=None
             ):
@@ -549,7 +574,9 @@ def preproc(raw,
     :param variance: variance of the data
     :param dark_variance: variance of the dark
     :param error_model: set to "poisson" to consider the variance is equal to raw signal (minimum 1)
+    :param apply_normalization: correct (directly) the raw signal & variance with normalization, WIP
     :param dtype: type for working: float32 or float64
+    :param out: output buffer to save a malloc
 
     All calculation are performed in the `dtype` precision
 
@@ -652,6 +679,7 @@ def preproc(raw,
              variance,
              dark_variance,
              poissonian,
+             apply_normalization,
              result)
 
     if ndim == 1:

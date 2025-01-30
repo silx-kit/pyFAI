@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,11 +28,11 @@
 
 """CLI tool for determining the geometry of a detector using a reference sample."""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2021"
+__date__ = "29/01/2025"
 __satus__ = "development"
 
 import logging
@@ -43,22 +43,12 @@ try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
-
-from pyFAI.gui.cli_calibration import Calibration
-try:
-    from rfoo.utils import rconsole
-    rconsole.spawn_server()
-except ImportError:
-    logger.debug("No socket opened for debugging. Please install rfoo")
+from ..gui.cli_calibration import Calibration
 
 
-# This is for debugging with rconsole
-c = None
-
-def main():
-    global c
+def main(args=None):
     c = Calibration()
-    c.parse()
+    c.parse(args)
     c.read_pixelsSize()
     c.preprocess()
     c.gui_peakPicker()

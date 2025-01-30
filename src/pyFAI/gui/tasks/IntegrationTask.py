@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "05/10/2023"
+__date__ = "03/06/2024"
 
 import logging
 import numpy
@@ -37,7 +37,7 @@ import silx.io
 
 import pyFAI.utils
 from .AbstractCalibrationTask import AbstractCalibrationTask
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+from pyFAI.integrator.azimuthal import AzimuthalIntegrator
 from ..utils import unitutils
 from ..model.DataModel import DataModel
 # from ..model.GeometryModel import GeometryModel
@@ -58,7 +58,9 @@ from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
 from pyFAI.io import ponifile
+from pyFAI.worker import Worker
 import pyFAI.geometry
+import json
 
 _logger = logging.getLogger(__name__)
 
@@ -118,6 +120,9 @@ class IntegrationProcess(object):
             return False
         mask = model.experimentSettingsModel().mask().value()
         detector = model.experimentSettingsModel().detector()
+        dark = model.experimentSettingsModel().dark().value()
+        flat = model.experimentSettingsModel().flat().value()
+
         if detector is None:
             return
         if altGeometry:
@@ -143,11 +148,17 @@ class IntegrationProcess(object):
             mask = numpy.array(mask)
         if image is not None:
             image = numpy.array(image)
+        if dark is not None:
+            dark = numpy.array(dark)
+        if flat is not None:
+            flat = numpy.array(flat)
 
         # FIXME calibrant and detector have to be cloned
         self.__detector = detector
         self.__image = image
         self.__mask = mask
+        self.__dark = dark
+        self.__flat = flat
 
         self.__wavelength = geometry.wavelength().value()
         self.__distance = geometry.distance().value()
@@ -212,7 +223,10 @@ class IntegrationProcess(object):
                 npt=self.__nPointsRadial,
                 unit=self.__radialUnit,
                 mask=self.__mask,
-                polarization_factor=self.__polarizationFactor)
+                polarization_factor=self.__polarizationFactor,
+                dark=self.__dark,
+                flat=self.__flat,
+                )
 
             self.__result2d = ai.integrate2d(
                 method=method2d,
@@ -221,7 +235,10 @@ class IntegrationProcess(object):
                 npt_azim=self.__nPointsAzimuthal,
                 unit=self.__radialUnit,
                 mask=self.__mask,
-                polarization_factor=self.__polarizationFactor)
+                polarization_factor=self.__polarizationFactor,
+                dark=self.__dark,
+                flat=self.__flat,
+                )
 
             # Create an image masked where data exists
             self.__resultMask2d = None
@@ -699,7 +716,7 @@ class IntegrationPlot(qt.QFrame):
 
         toolBar = tools.ImageToolBar(parent=self, plot=plot2d)
         colormapDialog = CalibrationContext.instance().getColormapDialog()
-        toolBar.getColormapAction().setColorDialog(colormapDialog)
+        toolBar.getColormapAction().setColormapDialog(colormapDialog)
         previousResetZoomAction = toolBar.getResetZoomAction()
         resetZoomAction = qt.QAction(toolBar)
         resetZoomAction.triggered.connect(self.resetZoom)
@@ -937,6 +954,7 @@ class IntegrationTask(AbstractCalibrationTask):
         self._customMethodButton.clicked.connect(self.__customIntegrationMethod)
 
         self._savePoniButton.clicked.connect(self.__saveAsPoni)
+        self._saveJsonButton.clicked.connect(self.__saveJsonFile)
 
         super()._initGui()
 
@@ -1108,15 +1126,99 @@ class IntegrationTask(AbstractCalibrationTask):
             wavelength=geometry.wavelength().value(),
             detector=detector
             )
+        comments = [f"Calibrant: {experimentSettingsModel.calibrantModel().calibrant().name}",
+                    f"Image: {experimentSettingsModel.image().filename()}"]
         try:
             writer = ponifile.PoniFile(pyfaiGeometry)
             with open(filename, "wt") as fd:
-                writer.write(fd)
+                writer.write(fd, comments=comments)
             with poniFile.lockContext():
                 poniFile.setValue(filename)
                 poniFile.setSynchronized(True)
         except Exception as e:
             MessageBox.exception(self, "Error while saving poni file", e, _logger)
+
+    def __saveJsonFile(self):
+        dialog = createSaveDialog(self, "Save as JSON file", json=True)
+        # Disable the warning as the data is append to the file
+        dialog.setOption(qt.QFileDialog.DontConfirmOverwrite, True)
+        model = self.model()
+        jsonFile = model.experimentSettingsModel().jsonFile()
+        previousJsonFile = jsonFile.value()
+        if previousJsonFile is not None:
+            dialog.selectFile(previousJsonFile)
+
+        result = dialog.exec_()
+        if not result:
+            return
+        filename = dialog.selectedFiles()[0]
+        nameFilter = dialog.selectedNameFilter()
+        isJsonFilter = ".json" in nameFilter
+        if isJsonFilter and not filename.endswith(".json"):
+            filename = filename + ".json"
+        with jsonFile.lockContext():
+            jsonFile.setValue(filename)
+
+        geometry = self._geometryTabs.geometryModel()
+        experimentSettingsModel = model.experimentSettingsModel()
+        detector = experimentSettingsModel.detector()
+
+        ai = AzimuthalIntegrator(
+            dist=geometry.distance().value(),
+            poni1=geometry.poni1().value(),
+            poni2=geometry.poni2().value(),
+            rot1=geometry.rotation1().value(),
+            rot2=geometry.rotation2().value(),
+            rot3=geometry.rotation3().value(),
+            detector=detector,
+            wavelength=geometry.wavelength().value(),
+        )
+
+        nbpt_rad = self.model().integrationSettingsModel().nPointsRadial().value()
+        nbpt_azim = self.model().integrationSettingsModel().nPointsAzimuthal().value()
+        unit = self.model().integrationSettingsModel().radialUnit().value()
+        method = method_registry.Method(0, self.__method.split, self.__method.algo, self.__method.impl, None)
+        if nbpt_azim == 1:
+            method = method.fixed(dim=1)
+        else:
+            method = method.fixed(dim=2)
+        worker = Worker(azimuthalIntegrator=ai,
+                        shapeOut=(nbpt_azim, nbpt_rad),
+                        unit=unit,
+                        method=method,
+                        )
+        config_dictionary = worker.get_config()
+        config_dictionary["application"] = "pyFAI-calib2"
+        config_dictionary["do_polarization"] = True
+        config_dictionary["polarization_factor"] = self.model().experimentSettingsModel().polarizationFactor().value()
+        mask_filename = model.experimentSettingsModel().mask().filename()
+        flat_filename = model.experimentSettingsModel().flat().filename()
+        dark_filename = model.experimentSettingsModel().dark().filename()
+        if mask_filename:
+            config_dictionary["do_mask"] = True
+            config_dictionary["mask_file"] = mask_filename
+        else:
+            config_dictionary["do_mask"] = False
+        if flat_filename:
+            config_dictionary["do_flat"] = True
+            config_dictionary["flat_field"] = flat_filename
+        else:
+            config_dictionary["do_flat"] = False
+        if dark_filename:
+            config_dictionary["do_dark"] = True
+            config_dictionary["dark_current"] = dark_filename
+        else:
+            config_dictionary["do_dark"] = False
+
+        try:
+            with open(filename, "wt") as fd:
+                fd.write(json.dumps(config_dictionary, indent=2))
+
+            with jsonFile.lockContext():
+                jsonFile.setValue(filename)
+                jsonFile.setSynchronized(True)
+        except Exception as e:
+            MessageBox.exception(self, "Error while saving json file", e, _logger)
 
     def __updateDisplayedGeometry(self):
         "Called after the fit"

@@ -16,6 +16,7 @@ py.install_sources(
     'test_dummy.py',
     'test_error_model.py',
     'test_export.py',
+    'test_fiber_integrator.py',
     'test_flat.py',
     'test_geometry.py',
     'test_geometry_refinement.py',
@@ -38,6 +39,7 @@ py.install_sources(
     'test_preproc.py',
     'test_pyfai_api.py',
     'test_rectangle.py',
+    'test_ring_extraction.py',
     'test_saxs.py',
     'test_scripts.py',
     'test_sparse.py',
@@ -51,8 +53,11 @@ py.install_sources(
     'test_utils_mathutil.py',
     'test_utils_shell.py',
     'test_utils_stringutil.py',
+    'test_uncertainties.py',
     'test_watershed.py',
     'test_worker.py',
+    'test_medfilt_engine.py',
+    'test_containers.py',
     'utilstest.py'],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/test'  # Folder relative to site-packages to install to

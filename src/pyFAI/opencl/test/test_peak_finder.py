@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2020-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2022"
+__date__ = "21/05/2024"
 
 import logging
 import numpy
@@ -42,7 +42,7 @@ import unittest
 from .. import ocl
 import fabio
 from ...test.utilstest import UtilsTest
-from ...azimuthalIntegrator import AzimuthalIntegrator
+from ...integrator.azimuthal import AzimuthalIntegrator
 if ocl:
     from ..peak_finder import OCL_SimplePeakFinder, OCL_PeakFinder, densify
 logger = logging.getLogger(__name__)
@@ -65,7 +65,8 @@ class TestOclPeakFinder(unittest.TestCase):
                                (165, 1433), (304, 1423), (1058, 1449), (1260, 1839),
                                (806, 2006), (129, 2149), (1981, 2272), (1045, 2446)],
                                dtype=[('x', '<i4'), ('y', '<i4')])
-        cls.img = fabio.open(UtilsTest.getimage("Pilatus6M.cbf")).data
+        with fabio.open(UtilsTest.getimage("Pilatus6M.cbf")) as fimg:
+            cls.img = fimg.data
         cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Pilatus6M.poni"))
 
     @classmethod

@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "10/10/2024"
 
 PACKAGE = "pyFAI"
 
@@ -508,12 +508,12 @@ def create_fake_data(dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
     :return: image, azimuthalIngtegrator
     """
     from .. import calibrant as pyFAI_calibrant
-    from .. import azimuthalIntegrator
+    from ..integrator.azimuthal import AzimuthalIntegrator
     cal = pyFAI_calibrant.get_calibrant(calibrant)
     cal.wavelength = wavelength
-    ai = azimuthalIntegrator.AzimuthalIntegrator(dist, poni1, poni2,
-                                                 rot1, rot2, rot3,
-                                                 detector=detector, wavelength=wavelength)
+    ai = AzimuthalIntegrator(dist, poni1, poni2,
+                             rot1, rot2, rot3,
+                             detector=detector, wavelength=wavelength)
     img = cal.fake_calibration_image(ai, Imax=Imax) + offset
     if poissonian and test_options.TEST_RANDOM:
         rng = test_options.get_rng()

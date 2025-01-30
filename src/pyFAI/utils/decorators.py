@@ -30,7 +30,7 @@ __authors__ = ["Jerome Kieffer", "H. Payno", "P. Knobel", "V. Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2023"
+__date__ = "10/10/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -128,7 +128,9 @@ def deprecated_warning(type_, name, reason=None, replacement=None,
         msg += f" Use '{replacement}' instead."
     msg += "\n%s"
     limit = 2 + skip_backtrace_count
-    backtrace = "".join(traceback.format_stack(limit=limit)[0])
+    # print(limit)
+    # print(traceback.format_stack(limit=limit))
+    backtrace = "".join(traceback.format_stack()[:-limit])
     backtrace = backtrace.rstrip()
     if only_once:
         data = (msg, type_, name, backtrace)

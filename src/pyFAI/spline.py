@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Written 2009-12-22 by Jérôme Kieffer
-# Copyright (C) 2009-2016  European Synchrotron Radiation Facility
+# Copyright (C) 2009-2025  European Synchrotron Radiation Facility
 #                          Grenoble, France
 #
 #    Principal authors: Jérôme Kieffer  (jerome.kieffer@esrf.fr)
@@ -34,7 +34,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "13/01/2025"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -51,7 +51,7 @@ try:
     from .ext import _bispev as fitpack
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
-    from scipy.interpolate import fitpack
+    from scipy import interpolate as fitpack
 
 
 class Spline(object):

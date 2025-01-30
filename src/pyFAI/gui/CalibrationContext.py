@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/05/2019"
+__date__ = "17/09/2024"
 
 import logging
 import numpy
@@ -71,7 +71,7 @@ class CalibrationContext(ApplicationContext):
         self.__defaultColormapDialog = None
         CalibrationContext.__instance = self
         self.__calibrationModel = None
-        self.__rawColormap = Colormap("inferno", normalization=Colormap.LOGARITHM)
+        self.__rawColormap = colorutils.DEFAULT_COLORMAP
         self.__settings = settings
         self.__angleUnit = DataModel()
         self.__angleUnit.setValue(units.Unit.RADIAN)

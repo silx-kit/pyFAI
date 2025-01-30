@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/05/2022"
+__date__ = "19/01/2024"
 
 import logging
 import os.path
@@ -218,7 +218,7 @@ class MaskTask(AbstractCalibrationTask):
         plot.addToolBar(toolBar)
         toolBar = tools.ImageToolBar(parent=self, plot=plot)
         colormapDialog = CalibrationContext.instance().getColormapDialog()
-        toolBar.getColormapAction().setColorDialog(colormapDialog)
+        toolBar.getColormapAction().setColormapDialog(colormapDialog)
         plot.addToolBar(toolBar)
 
         statusBar = self.__createPlotStatusBar(plot)

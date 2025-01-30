@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,9 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "29/01/2024"
+
+import logging
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
@@ -34,7 +36,8 @@ from .DataModel import DataModel
 from .MaskedImageModel import MaskedImageModel
 from .ImageModel import ImageFromFilenameModel
 from .FilenameModel import FilenameModel
-
+from .PreProcessedImageModel import PreProcessedImageModel
+_logger = logging.getLogger(__name__)
 
 class ExperimentSettingsModel(AbstractModel):
 
@@ -44,12 +47,22 @@ class ExperimentSettingsModel(AbstractModel):
         self.__mask = ImageFromFilenameModel()
         self.__maskedImage = MaskedImageModel(None, self.__image, self.__mask)
         self.__isDetectorMask = True
+        self.__dark = ImageFromFilenameModel()
+        self.__flat = ImageFromFilenameModel()
+        self.__preprocessed_image = PreProcessedImageModel(
+            parent=None,
+            image=self.__image,
+            mask=self.__mask,
+            dark=self.__dark,
+            flat=self.__flat,
+        )
 
         self.__wavelength = DataModel()
         self.__polarizationFactor = DataModel()
         self.__calibrantModel = CalibrantModel()
         self.__detectorModel = DetectorModel()
         self.__poniFile = FilenameModel()
+        self.__jsonFile = FilenameModel()
 
         self.__image.changed.connect(self.wasChanged)
         self.__image.filenameChanged.connect(self.wasChanged)
@@ -60,6 +73,12 @@ class ExperimentSettingsModel(AbstractModel):
         self.__calibrantModel.changed.connect(self.wasChanged)
         self.__detectorModel.changed.connect(self.wasChanged)
         self.__poniFile.changed.connect(self.wasChanged)
+        self.__jsonFile.changed.connect(self.wasChanged)
+
+        self.__dark.changed.connect(self.wasChanged)
+        self.__dark.filenameChanged.connect(self.wasChanged)
+        self.__flat.changed.connect(self.wasChanged)
+        self.__flat.filenameChanged.connect(self.wasChanged)
 
         self.__image.changed.connect(self.__updateDetectorMask)
         self.__detectorModel.changed.connect(self.__updateDetectorMask)
@@ -82,8 +101,13 @@ class ExperimentSettingsModel(AbstractModel):
             image = self.__image.value()
             if image is not None:
                 detector.guess_binning(image)
-
-            mask = detector.mask
+                try:
+                    mask = detector.dynamic_mask(image)
+                except ValueError as err:
+                    _logger.warning(f"{type(err)}: {err} \nDetector shape: {detector.shape} and image shape: {image.shape}")
+                    mask = detector.mask
+            else:
+                mask = detector.mask
             # Here mask can be None
             # For example if image do not feet the detector
 
@@ -143,3 +167,15 @@ class ExperimentSettingsModel(AbstractModel):
 
     def poniFile(self):
         return self.__poniFile
+
+    def jsonFile(self):
+        return self.__jsonFile
+
+    def dark(self):
+        return self.__dark
+
+    def flat(self):
+        return self.__flat
+
+    def preprocessedImage(self):
+        return self.__preprocessed_image

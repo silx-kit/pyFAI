@@ -33,7 +33,7 @@ Deprecated ... restore or delete !
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "06/10/2022"
+__date__ = "08/04/2024"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -126,7 +126,7 @@ class OCLFullSplit1d(object):
         self._cl_kernel_args = {}
         self._cl_mem = {}
         self.events = []
-        self.workgroup_size = workgroup_size
+        self.workgroup_size = int(workgroup_size)
         if self.size < self.workgroup_size:
             raise RuntimeError("Fatal error in workgroup size selection. Size (%d) must be >= workgroup size (%d)\n", self.size, self.workgroup_size)
         if (platformid is None) and (deviceid is None):
@@ -237,8 +237,8 @@ class OCLFullSplit1d(object):
         self._cl_kernel_args["memset_outMax"] = [self._cl_mem["outMax"]]
         self._cl_kernel_args["lut_1"] = [self._cl_mem["pos"], self._cl_mem["minmax"], self.pos0_range.data, self.pos1_range.data, self._cl_mem["outMax"]]
         self._cl_kernel_args["lut_2"] = [self._cl_mem["outMax"], self._cl_mem["idx_ptr"], self._cl_mem["lutsize"]]
-        memset_size = (self.bins + self.workgroup_size - 1) & ~(self.workgroup_size - 1),
-        global_size = (self.size + self.workgroup_size - 1) & ~(self.workgroup_size - 1),
+        memset_size = int(self.bins + self.workgroup_size - 1) // self.workgroup_size * self.workgroup_size,
+        global_size = int(self.size + self.workgroup_size - 1) // self.workgroup_size * self.workgroup_size,
         with self._sem:
             memset_outMax = self._program.memset_outMax(self._queue, memset_size, (self.workgroup_size,), *self._cl_kernel_args["memset_outMax"])
             self.profile_add("memset_outMax", memset_outMax)

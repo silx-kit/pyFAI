@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,8 +35,8 @@ https://github.com/silx-kit/pyFAI/issues
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
-__copyright__ = "2015-2022 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "27/09/2024"
 
 import sys
 import os
@@ -50,7 +50,7 @@ from .utilstest import UtilsTest
 from ..utils import mathutil
 import fabio
 from .. import load
-from ..azimuthalIntegrator import AzimuthalIntegrator, logger as ai_logger
+from ..integrator.azimuthal import AzimuthalIntegrator, logger as ai_logger
 from .. import detectors
 from .. import units
 from math import pi
@@ -146,8 +146,8 @@ class TestBug211(unittest.TestCase):
             self.image_files.append(fn)
         self.res = res / 3.0
         # It is not anymore a script, but a module
-        import pyFAI.app.average
-        self.exe = pyFAI.app.average.__file__
+        from ..app import average
+        self.exe = average.__name__
         self.env = UtilsTest.get_test_env()
 
     def tearDown(self):
@@ -160,7 +160,8 @@ class TestBug211(unittest.TestCase):
         self.exe = self.env = None
 
     def test_quantile(self):
-        command_line = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
+        args = ["--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
+        command_line = [sys.executable, "-c" ,f"""import {self.exe}; {self.exe}.main({args})"""]
 
         p = subprocess.Popen(command_line,
                              shell=False, env=self.env,
@@ -181,7 +182,8 @@ class TestBug211(unittest.TestCase):
             return
 
         self.assertEqual(rc, 0, msg="pyFAI-average return code %i != 0" % rc)
-        self.assertTrue(numpy.allclose(fabio.open(self.outfile).data, self.res),
+        with fabio.open(self.outfile) as fimg:
+            self.assertTrue(numpy.allclose(fimg.data, self.res),
                         "pyFAI-average with quantiles gives good results")
 
 
@@ -211,7 +213,8 @@ class TestBugRegression(unittest.TestCase):
         wavelength change not taken into account (memoization error)
         """
         ai = load(UtilsTest.getimage("Pilatus1M.poni"))
-        data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            data = fimg.data
         wl1 = 1e-10
         wl2 = 2e-10
         ai.wavelength = wl1
@@ -337,7 +340,7 @@ class TestBugRegression(unittest.TestCase):
 
     def test_bug_924(self):
         "Regression on spline calculation for single pixel coordinate"
-        dp = detectors.detector_factory("Pilatus100k")
+        dp = detectors.detector_factory("Imxpad S10")
         aip = AzimuthalIntegrator(detector=dp)
         aip.chi(numpy.array([1, 2]), numpy.array([3, 4]))
         aip.chi(numpy.array([1]), numpy.array([3]))
@@ -368,7 +371,8 @@ class TestBugRegression(unittest.TestCase):
         for method in [("no", "histogram", "python"),
                        ("no", "histogram", "cython"),
                        ("no", "csr", "cython"),
-                       ("no", "lut", "cython")]:
+                       ("no", "lut", "cython"),
+                       ]:
             for angle in angles:
                 res0 = ai.integrate1d_ng(data, 100, azimuth_range=(angle - delta, angle + delta), method=method)
                 # try:
@@ -376,6 +380,7 @@ class TestBugRegression(unittest.TestCase):
                 # except:
                 #     pass
                 res = res0.count.sum()
+                # print("disc at π",  method, angle, res)
                 if angle in (-180, 180):
                     # We expect only half of the pixel
                     self.assertLess(abs(res / target - 0.5), 0.1, f"ChiDiscAtPi with {method} at {angle} expect half of the pixels ({target}/2), got {res}")
@@ -394,6 +399,7 @@ class TestBugRegression(unittest.TestCase):
                 #     print(ai.engines[res0.method].engine.pos1_range, ai.engines[res0.method].engine.pos1_min, ai.engines[res0.method].engine.pos1_maxin, ai.engines[res0.method].engine.pos1_max)
                 # except: pass
                 res = res0.count.sum()
+                # print("disc at 0",  method, angle, res)
                 if angle in (0, 360):
                     # We expect only half of the pixel
                     self.assertLess(abs(res / target - 0.5), 0.1, f"ChiDiscAtZero with {method} at {angle} expect half of the pixels ({target}/2), got {res}")
@@ -408,7 +414,8 @@ class TestBugRegression(unittest.TestCase):
         from ..calibrant import CALIBRANT_FACTORY
         from ..goniometer import SingleGeometry
         filename = UtilsTest.getimage("Pilatus1M.edf")
-        frame = fabio.open(filename).data
+        with fabio.open(filename) as fimg:
+            frame = fimg.data
 
         # Approximatively the position of the beam center ...
         x = 200  # x-coordinate of the beam-center in pixels
@@ -503,7 +510,7 @@ class TestBugRegression(unittest.TestCase):
         CSR engine got systematically discarded when radial range is provided
         """
         method = ("no", "csr", "cython")
-        detector = detectors.Pilatus100k()
+        detector = detectors.ImXPadS10()
         ai = AzimuthalIntegrator(detector=detector)
         rm = max(detector.shape) * detector.pixel1 * 1000
         img = UtilsTest.get_rng().random(detector.shape)
@@ -537,17 +544,16 @@ class TestBugRegression(unittest.TestCase):
 
     def test_bug_1810(self):
         "impossible to deepcopy goniometer calibration"
-        import copy
         import pyFAI.control_points
         cp = pyFAI.control_points.ControlPoints(calibrant="LaB6", wavelength=1e-10)
         self.assertNotEqual(id(cp), id(copy.deepcopy(cp)), "control_points copy works and id differs")
 
         import pyFAI.geometryRefinement
-        gr = pyFAI.geometryRefinement.GeometryRefinement([[1,2,3]], detector="Pilatus100k", wavelength=1e-10, calibrant="LaB6")
+        gr = pyFAI.geometryRefinement.GeometryRefinement([[1, 2, 3]], detector="Imxpad S10", wavelength=1e-10, calibrant="LaB6")
         self.assertNotEqual(id(gr), id(copy.deepcopy(gr)), "geometryRefinement copy works and id differs")
 
         import pyFAI.massif
-        ary = numpy.arange(100).reshape(10,10)
+        ary = numpy.arange(100).reshape(10, 10)
         massif = pyFAI.massif.Massif(ary)
         self.assertNotEqual(id(massif), id(copy.deepcopy(massif)), "Massif copy works and id differs")
 
@@ -558,20 +564,20 @@ class TestBugRegression(unittest.TestCase):
         from pyFAI.goniometer import SingleGeometry
         import pyFAI.calibrant
         lab6 = pyFAI.calibrant.get_calibrant("LaB6", 1e-10)
-        cp.append([[1,2],[3,4]], 0)
-        sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "pilatus100k")
+        cp.append([[1, 2], [3, 4]], 0)
+        sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "Imxpad S10")
         self.assertNotEqual(id(sg), id(copy.deepcopy(sg)), "SingleGeometry copy works and id differs")
 
     def test_bug_1889(self):
         "reset cached arrays"
-        ai = load({"detector": "Pilatus100k", "wavelength": 1.54e-10})
+        ai = load({"detector": "Imxpad S10", "wavelength": 1.54e-10})
         ai.polarization(factor=0.9)
         img = numpy.empty(ai.detector.shape, "float32")
-        ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
-        ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
+        ai.integrate2d(img, 10, 9, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 10, 9, method=("bbox", "histogram", "cython"))
         ai.setChiDiscAtZero()
-        ai.integrate2d(img, 10,9, method=("no", "histogram", "cython"))
-        ai.integrate2d(img, 10,9, method=("bbox", "histogram", "cython"))
+        ai.integrate2d(img, 10, 9, method=("no", "histogram", "cython"))
+        ai.integrate2d(img, 10, 9, method=("bbox", "histogram", "cython"))
         ai.setChiDiscAtPi()
 
     def test_bug_1946(self):
@@ -582,6 +588,20 @@ class TestBugRegression(unittest.TestCase):
         res = IntegrationMethod.select_method(dim=1, split="full", algo="csc", impl="python", degradable=False)
         self.assertGreater(len(res), 0, "method actually exists")
 
+    def test_bug_2072(self):
+        from ..diffmap import DiffMap
+        d = DiffMap()
+        d.use_gpu # used to raise AttributeError
+        d.use_gpu = True # used to raise AttributeError
+
+    def test_bug_2151(self):
+        """Some detector fail to integrate in 2D, the CSC matrix produced by cython has wrong shape.
+        Faulty detectors: S10
+        """
+        ai = load({"detector": "imxpad_s10"})
+        img=numpy.ones(ai.detector.shape);
+        ai.integrate2d(img, 10, method=("full","csc","python"), unit="r_mm")
+        #used to raise AssertionError assert self.size == len(indptr) - 1
 
 class TestBug1703(unittest.TestCase):
     """

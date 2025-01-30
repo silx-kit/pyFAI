@@ -5,7 +5,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2012-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #
@@ -32,9 +32,10 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel, Edgar Gutierrez-Ferna
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2023"
+__date__ = "29/01/2025"
 __status__ = "development"
 
+from argparse import ArgumentParser
 import logging
 try:
     logging.basicConfig(level=logging.WARNING, force=True)
@@ -46,22 +47,15 @@ try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
-
-try:
-    from rfoo.utils import rconsole
-    rconsole.spawn_server()
-except ImportError:
-    logger.debug("No socket opened for debugging. Please install rfoo")
-import pyFAI.benchmark
+from .. import benchmark, version as pyFAI_version, date as pyFAI_date, logger as pyFAI_logger
 
 
-def main():
-    from argparse import ArgumentParser
+def main(args=None):
     description = """Benchmark for Azimuthal integration
     """
     epilog = """  """
     usage = """benchmark [options] """
-    version = "pyFAI benchmark version " + pyFAI.version
+    version = f"pyFAI benchmark version {pyFAI_version}"
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-v", "--version", action='version', version=version)
     parser.add_argument("-d", "--debug",
@@ -91,14 +85,12 @@ def main():
     parser.add_argument("--no-1dimention",
                         action="store_false", dest="onedim", default=True,
                         help="Do not benchmark algorithms for 1D-regrouping")
-
     parser.add_argument("-m", "--memprof",
                         action="store_true", dest="memprof", default=False,
                         help="Perfrom memory profiling (Linux only)")
     parser.add_argument("-r", "--repeat",
                         dest="repeat", default=1, type=int,
                         help="Repeat each measurement x times to take the best")
-
     parser.add_argument("-ps", "--pixelsplit",
                         dest="pixelsplit", default=["bbox"], type=str, nargs="+",
                         help="Benchmark using specific pixel splitting protocols: no, bbox, pseudo, full, all",)
@@ -108,44 +100,48 @@ def main():
     parser.add_argument("-i", "--implementation",
                         dest="implementation", default=["cython", "opencl"], type=str, nargs="+",
                         help="Benchmark using specific algorithm implementations: python, cython, opencl, all")
-
     parser.add_argument("-f", "--function",
-                        dest="function", default="all", type=str,
+                        dest="function", default="ng", type=str,
                         help="Benchmark legacy (legacy), engine function (ng), or both (all)")
-
+    parser.add_argument("-o", "--devices",
+                        dest="devices", default=None, type=str,
+                        help="Comma separated list of paires of OpenCL platform:device ids like `0:1,1:0` to benchmark")
     parser.add_argument("--all",
                         action="store_true", dest="all", default=False,
                         help="Benchmark using all available methods and devices")
 
-    options = parser.parse_args()
+    options = parser.parse_args(args)
     if options.debug:
-        pyFAI.logger.setLevel(logging.DEBUG)
+        pyFAI_logger.setLevel(logging.DEBUG)
 
     devices = []
-    if options.opencl_cpu:
-        devices.append("cpu")
-    if options.opencl_gpu:
-        devices.append("gpu")
-    if options.opencl_acc:
-        devices.append("acc")
+    if options.devices:
+        for pair in options.devices.split(","):
+            devices.append(pair.split(":"))
+    else:
+        if options.opencl_cpu:
+            devices.append("cpu")
+        if options.opencl_gpu:
+            devices.append("gpu")
+        if options.opencl_acc:
+            devices.append("acc")
 
-    pyFAI.benchmark.run(number=options.number,
-                        repeat=options.repeat,
-                        memprof=options.memprof,
-                        max_size=options.size,
-                        do_1d=options.onedim,
-                        do_2d=options.twodim,
-                        processor=options.processor,
-                        devices=devices,
-                        split_list=options.pixelsplit,
-                        algo_list=options.algorithm,
-                        impl_list=options.implementation,
-                        function=options.function,
-                        all=options.all,
-                        )
+    benchmark.run(number=options.number,
+                  repeat=options.repeat,
+                  memprof=options.memprof,
+                  max_size=options.size,
+                  do_1d=options.onedim,
+                  do_2d=options.twodim,
+                  processor=options.processor,
+                  devices=devices,
+                  split_list=options.pixelsplit,
+                  algo_list=options.algorithm,
+                  impl_list=options.implementation,
+                  function=options.function,
+                  all=options.all)
 
-    if pyFAI.benchmark.pylab is not None:
-        pyFAI.benchmark.pylab.ion()
+    if benchmark.pylab is not None:
+        benchmark.pylab.ion()
     input("Enter to quit")
 
 

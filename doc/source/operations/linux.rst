@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 05/01/2023
+:Date: 28/01/2025
 :Keywords: Installation procedure on Linux
 :Target: System administrators
 
@@ -12,9 +12,9 @@ version is given.
 Installation procedure on Debian/Ubuntu
 ---------------------------------------
 
-PyFAI has been designed and originally developed on Ubuntu 10.04 and debian6.
-Now, the pyFAI library is included into debian7, or newer or any recent Ubuntu and
-Mint distribution.
+PyFAI has been designed and originally developed on Ubuntu and debian-linux.
+Now, the pyFAI library is included into debian, Ubuntu and
+Mint distribution for example.
 To install the package provided by the distribution, use:
 
 .. code-block:: shell

@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2023"
+__date__ = "12/01/2024"
 __status__ = "production"
 
 
@@ -57,9 +57,10 @@ class HexDetector(Detector):
     uniform_pixel = False # ensures we use the array of position !
     IS_CONTIGUOUS = False
     IS_FLAT = True
+    CORNERS = 6
 
-    @staticmethod
-    def build_pixel_coordinates(shape, pitch=1):
+    @classmethod
+    def build_pixel_coordinates(cls, shape, pitch=1):
         """Build the 4D array with pixel coordinates for a detector composed of hexagonal-pixels
 
         :param shape: 2-tuple with size of the detector in number of pixels (y, x)
@@ -67,7 +68,7 @@ class HexDetector(Detector):
         :return: array with pixel coordinates
         """
         assert len(shape) == 2
-        ary = numpy.zeros(shape+(6, 3), dtype=numpy.float32)
+        ary = numpy.zeros(shape + (cls.CORNERS, 3), dtype=numpy.float32)
         sqrt3 = sqrt(3.0)
         h = 0.5*sqrt3
         r = numpy.linspace(0, 2, 7, endpoint=True)[:-1] - 0.5

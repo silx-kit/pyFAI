@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2023"
+__date__ = "29/01/2025"
 __status__ = "production"
 
 import os
@@ -46,18 +46,11 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
-
 import pyFAI.resources
 import pyFAI.calibrant
 import pyFAI.detectors
 import pyFAI.io.image
 from pyFAI.io.ponifile import PoniFile
-
-try:
-    from rfoo.utils import rconsole
-    rconsole.spawn_server()
-except ImportError:
-    logger.debug("No socket opened for debugging. Please install rfoo")
 
 
 def configure_parser_arguments(parser):
@@ -185,9 +178,9 @@ def configure_parser_arguments(parser):
     parser.add_argument("--free-rot2", dest="fix_rot2",
                         help="free the rot2 parameter. Default: Activated", default=None, action="store_false")
     parser.add_argument("--fix-rot3", dest="fix_rot3",
-                        help="fix the rot3 parameter", default=None, action="store_true")
+                        help="fix the rot3 parameter. Default: Activated", default=True, action="store_true")
     parser.add_argument("--free-rot3", dest="fix_rot3",
-                        help="free the rot3 parameter. Default: Activated", default=None, action="store_false")
+                        help="free the rot3 parameter", default=True, action="store_false")
 
     parser.add_argument("--npt", dest="npt_1d",
                         help="Number of point in 1D integrated pattern, Default: 1024", type=int,
@@ -360,7 +353,7 @@ def setup_model(model, options):
         settings.wavelength().setValue(value)
 
     if options.polarization_factor:
-        settings.polarizationFactor(options.polarization_factor)
+        settings.polarizationFactor().setValue(options.polarization_factor)
 
     if options.detector_name:
         try:
@@ -540,9 +533,23 @@ def setup_model(model, options):
     if options.background:
         logger.error("background option not supported")
     if options.dark:
-        logger.error("dark option not supported")
+        try:
+            with settings.dark().lockContext() as image_model:
+                image_model.setFilename(options.dark)
+                data = pyFAI.io.image.read_image_data(options.dark)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
+        except Exception as e:
+            displayExceptionBox("Error while loading the dark current image", e)
     if options.flat:
-        logger.error("flat option not supported")
+        try:
+            with settings.flat().lockContext() as image_model:
+                image_model.setFilename(options.flat)
+                data = pyFAI.io.image.read_image_data(options.flat)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
+        except Exception as e:
+            displayExceptionBox("Error while loading the flat-field image", e)
     if options.filter:
         logger.error("filter option not supported")
 

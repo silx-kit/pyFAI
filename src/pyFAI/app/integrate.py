@@ -5,7 +5,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2013-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,11 +29,11 @@
 
 """GUI tool for configuring azimuthal integration on series of files."""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2023"
+__date__ = "29/01/2025"
 __satus__ = "production"
 
 import sys
@@ -51,34 +51,22 @@ try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
-
 import fabio
-
-import pyFAI.utils
-import pyFAI.worker
-import pyFAI.io
-from pyFAI.io import DefaultAiWriter
-from pyFAI.io import HDF5Writer
-from pyFAI.utils.shell import ProgressBar
-from pyFAI.utils import logging_utils
-from pyFAI.utils import header_utils
-
-try:
-    from rfoo.utils import rconsole
-    rconsole.spawn_server()
-    logger.debug("Socket opened for debugging using rfoo")
-except ImportError:
-    logger.debug("No socket opened for debugging -> please install rfoo")
+from .. import utils, worker, io, version as pyFAI_version, date as pyFAI_date
+from ..io import DefaultAiWriter, HDF5Writer
+from ..utils.shell import ProgressBar
+from ..utils import logging_utils, header_utils
+from ..worker import Worker
 
 
 def integrate_gui(options, args):
     from silx.gui import qt
-    from pyFAI.gui.IntegrationDialog import IntegrationDialog
-    from pyFAI.gui.IntegrationDialog import IntegrationProcess
+    from ..gui.IntegrationDialog import IntegrationDialog
+    from ..gui.IntegrationDialog import IntegrationProcess
 
     app = qt.QApplication([])
 
-    from pyFAI.gui.ApplicationContext import ApplicationContext
+    from ..gui.ApplicationContext import ApplicationContext
     settings = qt.QSettings(qt.QSettings.IniFormat,
                             qt.QSettings.UserScope,
                             "pyfai",
@@ -94,7 +82,7 @@ def integrate_gui(options, args):
 
     def validateConfig():
         config = window.get_config()
-        reason = pyFAI.worker.Worker.validate_config(config, raise_exception=None)
+        reason = Worker.validate_config(config, raise_exception=None)
         if reason is None:
             processData(config)
         else:
@@ -108,7 +96,7 @@ def integrate_gui(options, args):
             dialog = qt.QFileDialog(directory=os.getcwd())
             dialog.setWindowTitle("Select images to integrate")
 
-            from pyFAI.gui.utils import FilterBuilder
+            from ..gui.utils import FilterBuilder
             builder = FilterBuilder.FilterBuilder()
             builder.addImageFormat("EDF image files", "edf")
             builder.addImageFormat("TIFF image files", "tif tiff")
@@ -473,7 +461,7 @@ class DataSource(object):
             next_id += 1
 
 
-class MultiFileWriter(pyFAI.io.Writer):
+class MultiFileWriter(io.Writer):
     """Broadcast writing to differnet files for each frames"""
 
     def __init__(self, output_path, mode=HDF5Writer.MODE_ERROR):
@@ -611,7 +599,7 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
         # Create a null observer to avoid to deal with None
         observer = IntegrationObserver()
 
-    worker = pyFAI.worker.Worker()
+    worker = Worker()
     worker_config = config.copy()
 
     json_monitor_name = worker_config.pop("monitor_name", None)
@@ -772,7 +760,7 @@ def _main(args):
     :rtype: int
     """
     usage = "pyFAI-integrate [options] file1.edf file2.edf ..."
-    version = "pyFAI-integrate version %s from %s" % (pyFAI.version, pyFAI.date)
+    version = f"pyFAI-integrate version {pyFAI_version} from {pyFAI_date}"
     description = """
     PyFAI-integrate is a graphical interface (based on Python/Qt4) to perform azimuthal integration
 on a set of files. It exposes most of the important options available within pyFAI and allows you
@@ -837,7 +825,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     options = parser.parse_args(args)
 
     # Analysis arguments and options
-    args = pyFAI.utils.expand_args(options.args)
+    args = utils.expand_args(options.args)
     args = sorted(args)
 
     if options.verbose:
@@ -863,8 +851,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     return result
 
 
-def main():
-    args = sys.argv[1:]
+def main(args=None):
     result = _main(args)
     sys.exit(result)
 

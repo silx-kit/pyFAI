@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,21 +32,23 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2023"
+__date__ = "07/01/2025"
 
 import unittest
 import logging
 import os.path
 import shutil
-import json
 import numpy
 
 from .. import units
 from .. import worker as worker_mdl
 from ..worker import Worker, PixelwiseWorker
-from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
+from ..io.integration_config import ConfigurationReader, WorkerConfig
+from ..io.ponifile import PoniFile
+from .. import detector_factory
 from . import utilstest
 
 logger = logging.getLogger(__name__)
@@ -311,19 +313,19 @@ class TestWorker(unittest.TestCase):
         self.assertLess(delta_err, precision, "Cython error calculation are OK: %s" % err)
 
     def test_sigma_clip(self):
-        ai = AzimuthalIntegrator.sload({"detector": "Pilatus100k", "wavelength":1e-10})
+        ai = AzimuthalIntegrator.sload({"detector": "Imxpad S10", "wavelength":1e-10})
         worker = Worker(azimuthalIntegrator=ai,
                         extra_options={"thres":2, "error_model":"azimuthal"},
                         integrator_name="sigma_clip_ng",
                         shapeOut=(1, 100))
 
-        self.assertEqual(worker.error_model, "azimuthal", "error model is OK")
+        self.assertEqual(worker.error_model.as_str(), "azimuthal", "error model is OK")
         img = self.rng.random(ai.detector.shape)
         worker(img)
 
     def test_sigma_clip_legacy(self):
         "Non regression test for #1825"
-        ai = AzimuthalIntegrator.sload({"detector": "Pilatus100k", "wavelength":1e-10})
+        ai = AzimuthalIntegrator.sload({"detector": "Imxpad S10", "wavelength":1e-10})
         worker = Worker(azimuthalIntegrator=ai,
                         extra_options={"thres":2},
                         integrator_name="sigma_clip_legacy",
@@ -331,6 +333,13 @@ class TestWorker(unittest.TestCase):
         img = self.rng.random(ai.detector.shape)
         worker(img)
 
+    def test_default_shape(self):
+        "Non regression test for #2084"
+        ai = AzimuthalIntegrator.sload({"detector":"Eiger1M",
+                                        "distance":0.1,
+                                        "wavelength":1e-10})
+        w = Worker(ai)
+        self.assertEqual(w.shape, ai.detector.shape, "detector shape matches")
 
 class TestWorkerConfig(unittest.TestCase):
 
@@ -432,6 +441,142 @@ class TestWorkerConfig(unittest.TestCase):
 
         ai = worker.ai
         self.assertTrue(numpy.allclose(config["shape"], ai.detector.max_shape))
+
+    def test_regression_2227(self):
+        """pixel size got lost with generic detector"""
+        worker_generic = Worker()
+        integration_options_generic = {'poni_version': 2.1,
+                                       'detector': 'Detector',
+                                       'detector_config': {'pixel1': 1e-4,
+                                                           'pixel2': 1e-4,
+                                                           'max_shape': [576, 748],
+                                                           'orientation': 3},
+                                       'dist': 0.16156348926909264,
+                                       'poni1': 1.4999999999999998,
+                                       'poni2': 1.4999999999999998,
+                                       'rot1': 1.0822864853552985,
+                                       'rot2': -0.41026007690779387,
+                                       'rot3': 0.0,
+                                       'wavelength': 1.0332016536100021e-10}
+        worker_generic.set_config(integration_options_generic)
+        self.assertEqual(worker_generic.ai.detector.pixel1, 1e-4, "Pixel1 size matches")
+        self.assertEqual(worker_generic.ai.detector.pixel2, 1e-4, "Pixel2 size matches")
+        self.assertEqual(worker_generic.ai.detector.shape, [576, 748], "Shape matches")
+        self.assertEqual(worker_generic.ai.detector.orientation, 3, "Orientation matches")
+
+    def test_regression_v4(self):
+        """loading poni dictionary as a separate key in configuration"""
+        detector = detector_factory(name='Eiger2_4M', config={"orientation" : 3})
+        ai = AzimuthalIntegrator(dist=0.1,
+                                 poni1=0.1,
+                                 poni2=0.1,
+                                 wavelength=1e-10,
+                                 detector=detector,
+                                 )
+        worker = Worker(azimuthalIntegrator=ai)
+
+        self.assertEqual(ai.dist, worker.ai.dist, "Distance matches")
+        self.assertEqual(ai.poni1, worker.ai.poni1, "PONI1 matches")
+        self.assertEqual(ai.poni2, worker.ai.poni2, "PONI2 matches")
+        self.assertEqual(ai.rot1, worker.ai.rot1, "Rot1 matches")
+        self.assertEqual(ai.rot2, worker.ai.rot2, "Rot2 matches")
+        self.assertEqual(ai.rot3, worker.ai.rot3, "Rot3 matches")
+        self.assertEqual(ai.wavelength, worker.ai.wavelength, "Wavelength matches")
+        self.assertEqual(ai.detector, worker.ai.detector, "Detector matches")
+
+        config = worker.get_config()
+        config_reader = ConfigurationReader(config)
+
+        detector_from_reader = config_reader.pop_detector()
+        self.assertEqual(detector, detector_from_reader, "Detector from reader matches")
+
+        config = worker.get_config()
+        config_reader = ConfigurationReader(config)
+        poni = config_reader.pop_ponifile()
+
+        self.assertEqual(ai.dist, poni.dist, "Distance matches")
+        self.assertEqual(ai.poni1, poni.poni1, "PONI1 matches")
+        self.assertEqual(ai.poni2, poni.poni2, "PONI2 matches")
+        self.assertEqual(ai.rot1, poni.rot1, "Rot1 matches")
+        self.assertEqual(ai.rot2, poni.rot2, "Rot2 matches")
+        self.assertEqual(ai.rot3, poni.rot3, "Rot3 matches")
+        self.assertEqual(ai.wavelength, poni.wavelength, "Wavelength matches")
+        self.assertEqual(ai.detector, poni.detector, "Detector matches")
+
+    def test_v3_equal_to_v4(self):
+        """checking equivalence between v3 and v4"""
+        config_v3 = {
+            "application": "pyfai-integrate",
+            "version": 3,
+            "wavelength": 1e-10,
+            "dist": 0.1,
+            "poni1": 0.1,
+            "poni2": 0.2,
+            "rot1": 1,
+            "rot2": 2,
+            "rot3": 3,
+            "detector": "Eiger2_4M",
+            "detector_config": {
+                "orientation": 3
+            },
+        }
+
+        config_v4 = {
+            "application": "pyfai-integrate",
+            "version": 4,
+            "poni": {
+                "wavelength": 1e-10,
+                "dist": 0.1,
+                "poni1": 0.1,
+                "poni2": 0.2,
+                "rot1": 1,
+                "rot2": 2,
+                "rot3": 3,
+                "detector": "Eiger2_4M",
+                "detector_config": {
+                    "orientation": 3
+                }
+            },
+        }
+
+        worker_v3 = Worker()
+        worker_v3.set_config(config=config_v3)
+        worker_v4 = Worker()
+        worker_v4.set_config(config=config_v4)
+        self.assertEqual(worker_v3.get_config(), worker_v4.get_config(), "Worker configs match")
+
+        ai_config_v3 = worker_v3.ai.get_config()
+        ai_config_v4 = worker_v4.ai.get_config()
+        self.assertEqual(ai_config_v3, ai_config_v4, "AI configs match")
+
+        poni_v3 = PoniFile(data=ai_config_v3)
+        poni_v4 = PoniFile(data=ai_config_v4)
+        self.assertEqual(poni_v3.as_dict(), poni_v4.as_dict(), "PONI dictionaries match")
+
+        poni_v3_from_config = PoniFile(data=config_v3)
+        poni_v4_from_config = PoniFile(data=config_v4)
+        self.assertEqual(poni_v3_from_config.as_dict(), poni_v4_from_config.as_dict(), "PONI dictionaries from config match")
+
+    def test_bug2230(self):
+        integration_options = {'version': 2,
+                               'poni_version': 2,
+                               'detector': 'Maxipix2x2',
+                               'detector_config': {},
+                               'dist': 0.029697341310368504,
+                               'poni1': 0.03075830660872356,
+                               'poni2': 0.008514191495847496,
+                               'rot1': 0.2993182762142924,
+                               'rot2': 0.11405876271088071,
+                               'rot3': -4.950942273187188e-07,
+                               'wavelength': 1.0332016449700598e-10,
+                               'integrator_name' : "sigma_clip",
+                               'extra_options' : {"max_iter": 3, "thres": 0} }
+        worker = Worker()
+        worker.set_config(integration_options)
+        result = worker.get_config()
+        self.assertEqual(result['extra_options'],  integration_options['extra_options'], "'extra_options' matches")
+        self.assertEqual(result['integrator_method'],  integration_options['integrator_name'], "'integrator_name' matches")
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

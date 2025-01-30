@@ -33,7 +33,7 @@ Deprecated ... restore or delete !
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "20/01/2021"
+__date__ = "23/04/2024"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -113,8 +113,8 @@ class OCL_Hist_Pixelsplit(object):
         self.device_type = self.device.type
         self.BLOCK_SIZE = min(self.device.max_work_group_size, block_size)
         self.workgroup_size = self.BLOCK_SIZE,
-        self.wdim_bins = (self.bins * self.BLOCK_SIZE),
-        self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+        self.wdim_bins = int(self.bins * self.BLOCK_SIZE),
+        self.wdim_data = int(self.size + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE,
         try:
             # self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
             self._ctx = pyopencl.create_some_context()
@@ -234,7 +234,7 @@ class OCL_Hist_Pixelsplit(object):
         self._cl_kernel_args["reduce2"] = [self._cl_mem["preresult"], self._cl_mem["minmax"]]
         self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"],
                                                numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"],
-                                               numpy.int32(0), numpy.float32(0), numpy.float32(0)]
+                                               numpy.int32(0), numpy.float32(0), numpy.float32(0), numpy.int8(0)]
         self._cl_kernel_args["integrate1"] = [self._cl_mem["pos"], self._cl_mem["image"], self._cl_mem["minmax"], numpy.int32(0), self.pos0_range[0],
                                               self.pos1_range[0], numpy.int32(0), numpy.float32(0), self._cl_mem["outData"], self._cl_mem["outCount"]]
         self._cl_kernel_args["integrate2"] = [self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
@@ -334,7 +334,7 @@ class OCL_Hist_Pixelsplit(object):
             events.append(("copy D->H outData", ev))
             ev = pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"])
             events.append(("copy D->H outCount", ev))
-            global_size_integrate2 = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+            global_size_integrate2 = int(self.bins + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE,
             integrate2 = self._program.integrate2(self._queue, global_size_integrate2, self.workgroup_size, *self._cl_kernel_args["integrate2"])
             events.append(("integrate2", integrate2))
             ev = pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"])

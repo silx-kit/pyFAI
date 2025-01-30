@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "21/05/2024"
 
 import unittest
 import numpy
@@ -111,7 +111,8 @@ class TestAverage(unittest.TestCase):
         if fabio.hexversion < 262147:
             self.skipTest("The version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now" % fabio.version)
         file_name = average.average_images([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
-        result = fabio.open(file_name).data
+        with fabio.open(file_name) as fimg:
+            result = fimg.data
         expected = numpy.ones_like(self.dark)
         self.assertTrue(abs(expected - result).mean() < 1e-2, "average_images")
 
@@ -170,7 +171,8 @@ class TestAverage(unittest.TestCase):
 
         expected_result = data1 / mon1 + data2 / mon2 + data3 / mon3
         filename = average.average_images([image1, image2, image3, image_ignored], threshold=0, filter_="sum", monitor_key="mon", output=self.tmp_file)
-        result = fabio.open(filename).data
+        with fabio.open(filename) as fimg:
+            result = fimg.data
         numpy.testing.assert_array_almost_equal(result, expected_result, decimal=3)
 
     def test_writed_properties(self):

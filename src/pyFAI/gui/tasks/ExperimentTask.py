@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/12/2023"
+__date__ = "07/06/2024"
 
 import numpy
 import logging
@@ -45,7 +45,7 @@ from ..utils import units
 from ..utils import validators
 from ..utils import FilterBuilder
 from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
-
+from ..model import MarkerModel
 _logger = logging.getLogger(__name__)
 
 
@@ -61,9 +61,13 @@ class ExperimentTask(AbstractCalibrationTask):
         self._detectorLabel.setAcceptDrops(True)
         self._image.setAcceptDrops(True)
         self._mask.setAcceptDrops(True)
+        self._dark.setAcceptDrops(True)
+        self._flat.setAcceptDrops(True)
 
         self._imageLoader.setDialogTitle("Load calibration image")
         self._maskLoader.setDialogTitle("Load mask image")
+        self._darkLoader.setDialogTitle("Load dark-current image")
+        self._flatLoader.setDialogTitle("Load flat-field image")
 
         self._customDetector.clicked.connect(self.__customDetector)
 
@@ -115,7 +119,7 @@ class ExperimentTask(AbstractCalibrationTask):
         plot.addToolBar(toolBar)
         toolBar = tools.ImageToolBar(parent=self, plot=plot)
         colormapDialog = CalibrationContext.instance().getColormapDialog()
-        toolBar.getColormapAction().setColorDialog(colormapDialog)
+        toolBar.getColormapAction().setColormapDialog(colormapDialog)
         plot.addToolBar(toolBar)
 
         toolBar = qt.QToolBar(self)
@@ -154,6 +158,10 @@ class ExperimentTask(AbstractCalibrationTask):
         self._imageLoader.setModel(settings.image())
         self._mask.setModel(settings.mask())
         self._maskLoader.setModel(settings.mask())
+        self._dark.setModel(settings.dark())
+        self._darkLoader.setModel(settings.dark())
+        self._flat.setModel(settings.flat())
+        self._flatLoader.setModel(settings.flat())
 
         self._wavelength.setModelUnit(units.Unit.METER_WL)
         self._wavelength.setDisplayedUnit(units.Unit.ANGSTROM)
@@ -227,6 +235,18 @@ class ExperimentTask(AbstractCalibrationTask):
         if result:
             newDetector = dialog.selectedDetector()
             settings.detectorModel().setDetector(newDetector)
+            # Set also the origin of the detector if appropriate
+            markerModel = self.model().markerModel()
+            markerModel.removeLabel("Detector origin")
+            markerModel.removeLabel("Image origin")
+            markerModel.removeLabel("Origin")
+
+            if newDetector.orientation in (0,3):
+                markerModel.add(MarkerModel.PixelMarker("Origin", 0, 0))
+            else:
+                do = newDetector.origin
+                markerModel.add(MarkerModel.PixelMarker("Image origin", 0, 0))
+                markerModel.add(MarkerModel.PixelMarker("Detector origin", do[-1], do[0]))
 
     def __waveLengthChanged(self):
         settings = self.model().experimentSettingsModel()

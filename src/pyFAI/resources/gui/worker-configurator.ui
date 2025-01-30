@@ -596,6 +596,45 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_40">
+        <property name="text">
+         <string>Integrator:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+        <widget class="QComboBox" name="integrator_name">
+        </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_50">
+        <property name="text">
+         <string>SigmaClip threshold:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="sigmaclip_threshold">
+        <property name="toolTip">
+         <string>SigmaClip threshold</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
+       <widget class="QLabel" name="label_52">
+        <property name="text">
+         <string>SigmaClip Max.Iter:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="3">
+       <widget class="QLineEdit" name="sigmaclip_maxiter">
+        <property name="toolTip">
+         <string>SigmaClip max iter</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

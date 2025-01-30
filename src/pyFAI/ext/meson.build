@@ -1,5 +1,9 @@
-# OpenMP can be used
-omp = dependency('openmp', required : false)
+# OpenMP can be used? several ways to disable it:
+#  -> use -Duse_openmp=disabled
+#  -> or the file PYFAI_WITH_OPENMP should contain False
+#  -> or OpenMP can be unsuported on your achitecture/compiler
+
+omp = dependency('openmp', required: get_option('use_openmp').disable_auto_if(openmp_var=='False'))
 
 py.install_sources(['__init__.py'],
     pure: false,   # Will be installed next to binaries
@@ -79,8 +83,9 @@ py.extension_module('watershed', 'watershed.pyx',
 py.extension_module('_tree', '_tree.pyx',
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
 
-py.extension_module('sparse_utils', 'sparse_utils.pyx', #Deprecated
-        dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
+py.extension_module('sparse_utils', 'sparse_utils.pyx',
+        override_options : ['cython_language=cpp'],
+        dependencies : [py_dep, omp], install: true, subdir: 'pyFAI/ext')
 
 py.extension_module('inpainting', 'inpainting.pyx',
         dependencies : py_dep, install: true, subdir: 'pyFAI/ext')
@@ -100,4 +105,7 @@ py.extension_module('_distortion', '_distortion.pyx',
         dependencies : [py_dep, omp], install: true, subdir: 'pyFAI/ext')
 
 py.extension_module('fastcrc', ['fastcrc.pyx','src/crc32.c'],
+        dependencies : [py_dep], install: true, subdir: 'pyFAI/ext')
+
+py.extension_module('mathutil', ['mathutil.pyx'],
         dependencies : [py_dep], install: true, subdir: 'pyFAI/ext')
