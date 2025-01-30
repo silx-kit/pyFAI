@@ -43,7 +43,7 @@ Change-log of versions
   * Faster calculation with `numexpr` package formulas
 
 - New MultiGeometryFiber in `pyFAI.multi_geometry`
-  
+
   * Analog to MultiGeometry class.
   * Instead of taking a list of AzimuthalIntegrators, it takes a list of FiberIntegrators
   * Access to integrate1d and integrate2d grazing_incidence/fiber methods
