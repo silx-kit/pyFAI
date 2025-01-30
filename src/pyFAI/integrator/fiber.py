@@ -44,35 +44,6 @@ from ..io import save_integrate_result
 from ..units import parse_fiber_unit
 from ..utils.decorators import deprecated_warning
 
-docs_params_integrate2d = """\
-        :param ndarray data: 2D array from the Detector/CCD camera
-        :param int npt_ip: number of points to be used along the in-plane axis
-        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
-        :param list ip_range: The lower and upper range of the in-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_oop: number of points to be used along the out-of-plane axis
-        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param incident_angle: tilting of the sample towards the beam (analog to rot2): in radians
-        :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
-        :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def sample_orientation)
-        :param str filename: output filename in 2/3 column ascii format
-        :param bool correctSolidAngle: correct for solid angle of each pixel if True
-        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
-        :param float dummy: value for dead/masked pixels
-        :param float delta_dummy: precision for dummy value
-        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
-                * 0 for circular polarization or random,
-                * None for no correction,
-                * True for using the former correction
-        :param ndarray dark: dark noise image
-        :param ndarray flat: flat field image
-        :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
-        :param float normalization_factor: Value of a normalization monitor
-        :return: regrouped intensity and unit arrays
-        :rtype: Integrate2dResult
-"""
-
-
 def get_deprecated_params_1d(**kwargs) -> dict:
     deprecated = {}
     if "npt_output" in kwargs:
@@ -407,16 +378,16 @@ class FiberIntegrator(AzimuthalIntegrator):
     integrate2d_grazing_incidence = integrate2d_fiber
 
     def integrate2d_polar(self, polar_degrees=True, radial_unit="nm^-1", rotate=False, **kwargs):
-        f"""Reshapes the data pattern as a function of polar angle=arctan(qOOP / qIP) versus q modulus
+        """Reshapes the data pattern as a function of polar angle=arctan(qOOP / qIP) versus q modulus.
 
         :param polar_degrees bool: if True, polar angle in degrees, else in radians
         :param radial_unit str: unit of q modulus:  nm^-1 or A^-1
         :param rotate bool: if False, polar_angle vs q, if True q vs polar_angle
 
-        {docs_params_integrate2d}
+        Calls method integrate2d_fiber ->
         """
-        unit_ip = "chigi_deg" if polar_degrees else "chigi_rad"
-        unit_oop = "qtot_A^-1" if radial_unit == "A^-1" else "qtot_nm^-1"
+        unit_oop = "chigi_deg" if polar_degrees else "chigi_rad"
+        unit_ip = "qtot_A^-1" if radial_unit == "A^-1" else "qtot_nm^-1"
 
         if rotate:
             kwargs["unit_ip"] = unit_oop
@@ -424,13 +395,16 @@ class FiberIntegrator(AzimuthalIntegrator):
         else:
             kwargs["unit_ip"] = unit_ip
             kwargs["unit_oop"] = unit_oop
-        return self.integrate2d_grazing_incidence(**kwargs)
+        return self.integrate2d_fiber(**kwargs)
+    
+    integrate2d_polar.__doc__ += "\n" + integrate2d_fiber.__doc__
 
     def integrate2d_exitangles(self, angle_degrees=True, **kwargs):
-        f"""Reshapes the data pattern as a function of exit angles with the origin at the sample horizon
+        """Reshapes the data pattern as a function of exit angles with the origin at the sample horizon
 
         :param angle_degrees bool: if True, exit angles in degrees, else in radians
-        {docs_params_integrate2d}
+
+        Calls method integrate2d_fiber ->
         """
         if angle_degrees:
             unit_ip = "exit_angle_horz_rad"
@@ -441,4 +415,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         kwargs["unit_ip"] = unit_ip
         kwargs["unit_oop"] = unit_oop
-        return self.integrate2d_grazing_incidence(**kwargs)
+        return self.integrate2d_fiber(**kwargs)
+    
+    integrate2d_exitangles.__doc__ += "\n" + integrate2d_fiber.__doc__
+    
