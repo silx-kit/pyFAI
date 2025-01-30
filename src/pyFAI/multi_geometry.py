@@ -504,8 +504,8 @@ class MultiGeometryFiber(object):
         def _integrate(args):
             fi, data, monitor, var, mask, flat = args
             return fi.integrate_fiber(data=data,
-                                      npt_oop=npt_oop, unit_oop=self.oop_unit, oop_range=self.ip_range,
-                                      npt_ip=npt_ip, unit_ip=self.ip_unit, ip_range=self.oop_range,
+                                      npt_oop=npt_oop, unit_oop=self.oop_unit, oop_range=self.oop_range,
+                                      npt_ip=npt_ip, unit_ip=self.ip_unit, ip_range=self.ip_range,
                                       vertical_integration=vertical_integration,
                                       correctSolidAngle=correctSolidAngle,
                                       mask=mask, dummy=dummy, delta_dummy=delta_dummy,
@@ -536,7 +536,6 @@ class MultiGeometryFiber(object):
         invalid = count <= 0.0
         I = signal / norm
         I[invalid] = self.empty
-
         if variance is not None:
             sigma = numpy.sqrt(variance) / norm
             sigma[invalid] = self.empty
@@ -544,7 +543,13 @@ class MultiGeometryFiber(object):
         else:
             result = Integrate1dResult(res.radial, I)
         result._set_compute_engine(res.compute_engine)
-        result._set_unit(self.ip_unit)
+
+        if vertical_integration:
+            output_unit = self.oop_unit
+        else:
+            output_unit = self.ip_unit
+
+        result._set_unit(output_unit)
         result._set_sum_signal(signal)
         result._set_sum_normalization(normalization)
         result._set_sum_variance(variance)
