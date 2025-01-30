@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2024"
+__date__ = "19/12/2024"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -48,11 +48,10 @@ import fabio
 import json
 import __main__ as main
 from .opencl import ocl
-from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
+from . import version as PyFAI_VERSION, date as PyFAI_DATE
 from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
 from .io import Nexus, get_isotime, h5py
-from .worker import Worker, _reduce_images
-from .method_registry import Method, IntegrationMethod
+from .worker import Worker
 from .utils.decorators import deprecated, deprecated_warning
 
 DIGITS = [str(i) for i in range(10)]
@@ -267,14 +266,14 @@ If the number of files is too large, use double quotes like "*.edf" """
         if ocl and options.gpu:
             ai["opencl_device"] = ocl.select_device(type="gpu")
             ndim = ai.get("do_2D", 1)
-            if ndim==2:
+            if ndim == 2:
                 default = PREFERED_METHODS_2D[0].method[1:-1]
             else:
                 default = PREFERED_METHODS_1D[0].method[1:-1]
             method = list(ai.get("method", default))
-            if len(method) ==  3:  # (split, algo, impl)
+            if len(method) == 3:  # (split, algo, impl)
                 method[2] = "opencl"
-            elif len(method) ==  5:  # (dim, split, algo, impl, target)
+            elif len(method) == 5:  # (dim, split, algo, impl, target)
                 method[3] = "opencl"
             else:
                 logger.warning(f"Unexpected method found in configuration file: {method}")
@@ -292,18 +291,27 @@ If the number of files is too large, use double quotes like "*.edf" """
         config["input_data"] = [(i, None) for i in self.inputfiles]
 
         if options.mask:
-            mask = urlparse(options.mask).path
+            urlmask = urlparse(options.mask)
+        elif ai.get("do_mask", False) or ai.get("mask_file", None):
+            urlmask = urlparse(ai.get("mask_file", None))
         elif config.get("do_mask", False) or config.get("mask_file", None):
-            mask = urlparse(config.get("mask_file", None)).path
+            # compatibility with elder config files...
+            deprecated_warning("Config of mask no more top-level, but in ai config group", "mask_file", deprecated_since="2024.12.0")
+            urlmask = urlparse(config.get("mask_file", None))
         else:
-            mask = ""
-        if os.path.isfile(mask):
-            logger.info("Reading Mask file from: %s", mask)
-            self.mask = os.path.abspath(mask)
+            urlmask = urlparse("")
+        if "::" in  urlmask.path:
+            mask_filename, idx = urlmask.path.split("::", 1)
+            mask_filename = os.path.abspath(mask_filename)
+            urlmask = urlparse(f"fabio://{mask_filename}?slice={idx}")
+
+        if os.path.isfile(urlmask.path):
+            logger.info("Reading Mask file from: %s", urlmask.path)
+            self.mask = urlmask.geturl()
             ai["mask_file"] = self.mask
             ai["do_mask"] = True
         else:
-            logger.warning("No such mask file %s", mask)
+            logger.warning("No such mask file %s", urlmask.path)
         if options.poni:
             if os.path.isfile(options.poni):
                 logger.info("Reading PONI file from: %s", options.poni)
@@ -313,8 +321,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                 logger.warning("No such poni file %s", options.poni)
 
         deprecated_keys = {
-            "fast_motor_points" : "nbpt_fast",
-            "slow_motor_points" : "nbpt_slow",
+            "fast_motor_points": "nbpt_fast",
+            "slow_motor_points": "nbpt_slow",
             }
         for key in deprecated_keys:
             if key in config.keys():
@@ -352,7 +360,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.fast_motor_name = config.get("fast_motor_name", self.fast_motor_name)
         self.slow_motor_range = config.get("slow_motor_range")
         self.fast_motor_range = config.get("fast_motor_range")
-
 
         self.stats = options.stats
 
@@ -394,9 +401,9 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         # create motor range if not yet existing ...
         if self.fast_motor_range is None:
-            self.fast_motor_range=(0, self.nbpt_fast-1)
+            self.fast_motor_range=(0, self.nbpt_fast - 1)
         if self.slow_motor_range is None:
-            self.slow_motor_range=(0, self.nbpt_slow-1)
+            self.slow_motor_range=(0, self.nbpt_slow - 1)
 
         nxs = Nexus(self.hdf5, mode="w", creator="pyFAI")
         self.entry_grp = entry_grp = nxs.new_entry(entry="entry",
@@ -449,13 +456,13 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_azim, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "image"
-            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, "azimuthal", str(self.unit).split("_")[0]]
+            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, "azimuthal", self.unit.space]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_azim, self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
             for i in range(self.nbpt_slow):
                 for j in range(self.nbpt_fast):
-                    layout[:,:, i, j] = source[i, j]
+                    layout[:, :, i, j] = source[i, j]
             self.nxdata_grp.create_virtual_dataset('map', layout, fillvalue=numpy.nan).attrs["interpretation"] = "image"
 
         else:
@@ -468,7 +475,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                             maxshape=(None, None, self.nbpt_rad),
                             fillvalue=numpy.nan)
             self.dataset.attrs["interpretation"] = "spectrum"
-            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, str(self.unit).split("_")[0]]
+            self.nxdata_grp.attrs["axes"] = [self.slow_motor_name, self.fast_motor_name, self.unit.space]
             # Build a transposed view to display the mapping experiment
             layout = h5py.VirtualLayout(shape=(self.nbpt_rad, self.nbpt_slow, self.nbpt_fast), dtype=self.dataset.dtype)
             source = h5py.VirtualSource(self.dataset)
@@ -524,7 +531,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                                                                 chunks=(1,) + self.dataset.shape[1:],
                                                                 maxshape=(None,) + self.dataset.shape[1:])
             self.dataset_error.attrs["interpretation"] = "image" if self.dataset.ndim == 4 else "spectrum"
-        space, unit = str(self.unit).split("_")
+        space = self.unit.space
+        unit = str(self.unit)[len(space)+1:]
         if space not in self.nxdata_grp:
             self.nxdata_grp[space] = tth
             self.nxdata_grp[space].attrs["axes"] = 3
@@ -581,7 +589,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         :return: None
         """
         if self.ai is None:
-            self.setup_ai()
+            self.configure_worker(self.poni)
         if self.dataset is None:
             self.makeHDF5()
 

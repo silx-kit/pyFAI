@@ -1,6 +1,6 @@
 
 /*
- * Cumsum all elements in a shared memory
+ * Cumsum all elements in a shared memory along dim 0
  *
  * Nota: the first wg-size elements, are used.
  * The shared buffer needs to be twice this size of the workgroup

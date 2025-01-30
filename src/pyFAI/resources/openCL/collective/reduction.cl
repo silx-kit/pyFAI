@@ -17,7 +17,9 @@ int inline sum_int_reduction(local int* shared)
             shared[tid] += shared[tid+stride];
     }
     barrier(CLK_LOCAL_MEM_FENCE);
-    return shared[0];
+    int res = shared[0];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    return res;
 }
 
 /* sum all elements in a shared memory, same size as the workgroup size 0
@@ -35,7 +37,9 @@ int inline sum_int_atomic(local int* shared)
     if (tid)
         atomic_add(shared, value);
     barrier(CLK_LOCAL_MEM_FENCE);
-    return shared[0];
+    int res = shared[0];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    return res;
 }
 
 /*
