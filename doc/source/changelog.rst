@@ -28,6 +28,27 @@ Change-log of versions
   * available in Python, Cython & OpenCL
   * `Performances charts for sigma-clip & median filter <https://github.com/silx-kit/pyFAI/blob/main/doc/source/usage/tutorial/AzimuthalFilter.ipynb>`_.
 
+- New FiberIntegrator class for grazing-incidence/fiber scattering data (former fiber/gi methods in a new API)
+
+  * FiberIntegrator located in ``pyFAI.integrator.fiber``
+  * Usage tutorial in `doc/source/usage/tutorial/FiberGrazingIncidence.ipynb` or https://www.silx.org/doc/pyFAI/dev/usage/tutorial/FiberGrazingIncidence.html
+  * `integrate2d_grazing_incidence` method to display qIP - qOOP patterns. New API with minimum inputs
+  * `integrate1d_grazing_incidence` method to perform qIP or qOOP slices. New API with minimum inputs
+  * Corrected equations to handle `incident_angle` and `tilt_angle` parameters
+  * 8 possible `sample_orientation` (1-8), to rotate and flip the qIP-qOOP maps (or other units)
+  * `integrate2d_polar` to represent the polar angle (arctan(qOOP/qIP)) versus the q modulus
+  * `integrate1d_polar` to integrate the polar angle map (vertical or horizontal)
+  * `integrate2d_exitangles` to reshape the diffraction pattern into horizontal and vertical exit angles, with the origin in the sample horizon
+  * `integrate1d_exitangles` to perform an integration across one of the exit angles
+  * Faster calculation with `numexpr` package formulas
+
+- New MultiGeometryFiber in `pyFAI.multi_geometry`
+  
+  * Analog to MultiGeometry class.
+  * Instead of taking a list of AzimuthalIntegrators, it takes a list of FiberIntegrators
+  * Access to integrate1d and integrate2d grazing_incidence/fiber methods
+  * New tutorial of usage in doc/source/usage/tutorial/MultiGeometry/MultiGeometryFiber.ipynb`
+
 - Tool to rebin 2d-result into 1d-result (`pyFAI.containers.rebin1d`)
 - Several bug-fixes & better code coverage
 - Supports python 3.8 .. 3.13. The GIL-free version on python 3.13 is untested
