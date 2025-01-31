@@ -99,7 +99,7 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 3.8, ... 3.12 are well tested and officially supported.
+Python 3.9, ... 3.13 are well tested and officially supported.
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
@@ -189,6 +189,7 @@ Contributors
 * Aurore Deschildre (Formerly ESRF)
 * Giannis Ashiotis (Formerly ESRF)
 * Zubair Nawaz (Formerly Sesame)
+* Loïc Huder (ESRF)
 * Jon Wright (ESRF)
 * Amund Hov (Formerly ESRF)
 * Dodogerstlin @github
