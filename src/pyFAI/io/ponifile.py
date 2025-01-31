@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2024"
+__date__ = "31/01/2025"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -106,9 +106,11 @@ class PoniFile(object):
 
         .. note:: The dictionary is versionned.
         Version:
-        * 1: Historical version (i.e. unversioned)
-        * 2: store detector and detector_config instead of pixelsize1, pixelsize2 and splinefile
-        * 2.1: manage orientation of detector in detector_config
+
+            * 1: Historical version (i.e. unversioned)
+            * 2: store detector and detector_config instead of pixelsize1, pixelsize2 and splinefile
+            * 2.1: manage orientation of detector in detector_config
+
         """
         # Patch for worker version 4
         if "poni" in config and config.get("version", 0) > 3:

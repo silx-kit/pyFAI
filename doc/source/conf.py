@@ -13,6 +13,7 @@
 
 import sys
 import os
+import pydata_sphinx_theme
 
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -70,6 +71,7 @@ extensions = [
     'sphinxcontrib.programoutput',
     'sphinx.ext.mathjax',
     'nbsphinx',
+    'pydata_sphinx_theme',
 ]
 
 if sphinx.__version__ < "1.4":
@@ -167,7 +169,7 @@ html_theme_options = {
     "footer_center": ["sphinx-version"],
 }
 # Add any paths that contain custom themes here, relative to this directory.
-# html_theme_path = []
+#html_theme_path = [pydata_sphinx_theme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -188,7 +190,7 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["img"]
+html_static_path = ["img", '_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

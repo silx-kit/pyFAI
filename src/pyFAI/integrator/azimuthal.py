@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2025"
+__date__ = "31/01/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2069,7 +2069,6 @@ class AzimuthalIntegrator(Integrator):
 
         :param data: input image as numpy array
         :param npt: number of radial points
-        # :param npt_azim: number of azimuthal points
         :param unit: unit to be used for integration
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param polarization_factor: Value of the polarization factor (from -1 to +1), None to disable correction.
@@ -2079,7 +2078,7 @@ class AzimuthalIntegrator(Integrator):
         :return: SeparateResult which the bragg & amorphous signal
 
         Note: the filtered 1D spectrum can be retrieved from
-        SeparateResult.radial and SeparateResult.intensity
+        `SeparateResult.radial` and `SeparateResult.intensity` attributes
         """
 
         filter_result = self.medfilt1d_ng(data, npt=npt,

@@ -91,8 +91,9 @@ Change-log of versions
 
 2024.05 21/05/2024
 ------------------
-- Implemented unweighted average for 2D integration
- + Integration engines now handle the boolean 'weighted_average' to switch to unweighted mean, similar to legacy methods
+- Implemented unweighted average for 2D integration:
+  + Integration engines now handle the boolean 'weighted_average' to switch to unweighted mean, similar to legacy methods
+
 - Implementation of pilx (pyFAI-diffmap-view command): interactive viewer for pyFAI-diffmap files (thanks Loic Huder)
 - Creation of a RingExtraction class based on multi-threading (thanks Emily Massahud)
 - Flat-field and dark current corrections for pyFAI-calib2
@@ -218,18 +219,18 @@ Change-log of versions
 - Facts and figures:
     + 400+ commits, 100 PR
     +with the contribution of:
-        Clemens Prescher,
-        Elena Pascal,
-        Jérôme Kieffer,
-        Malte Storm,
-        Marco Cammarata,
-        Michael Hudson-Doyle,
-        Picca Frédéric-Emmanuel,
-        Rodrigo Telles,
-        Thomas A Caswell,
-        Tommaso Vinci,
-        Valentin Valls,
-        Wout de Nolf.
+        - Clemens Prescher,
+        - Elena Pascal,
+        - Jérôme Kieffer,
+        - Malte Storm,
+        - Marco Cammarata,
+        - Michael Hudson-Doyle,
+        - Picca Frédéric-Emmanuel,
+        - Rodrigo Telles,
+        - Thomas A Caswell,
+        - Tommaso Vinci,
+        - Valentin Valls,
+        - Wout de Nolf.
 
 0.21.3 24/03/2022
 -----------------

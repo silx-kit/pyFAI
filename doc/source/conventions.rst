@@ -36,7 +36,6 @@ Detector orientation
 
 Since 2023.12, it is possible to take into account the detector orientation in pyFAI.
 There is a norme in photography for storing this kind of information in an EXIF tag as an integer with a value from 1 to 8::
-
     1        2       3       4         5            6           7          8
  o              o                 o                                              o
   888888  888888      88   88      8888888888  88                  88  8888888888
@@ -45,6 +44,7 @@ There is a norme in photography for storing this kind of information in an EXIF 
   88          88      88   88                 o                      o
   88          88  888888   888888
                         o o
+
 In photography the observer is behind the camera, thus the image's first pixel of the image (origin, noted (o)) is by default on the top-left.
 This differes in two point with pyFAI's definition:
 

@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2025"
+__date__ = "31/01/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -112,7 +112,7 @@ class Geometry(object):
 
     Demonstration of the equation done using Mathematica:
 
-    .. literalinclude:: ../../mathematica/geometry.txt
+    .. literalinclude:: ../../../mathematica/geometry.txt
         :language: mathematica
     """
     _LAST_POLARIZATION = "last_polarization"
