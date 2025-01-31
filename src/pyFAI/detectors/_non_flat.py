@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,11 +32,11 @@ Description of detectors which are not flat.
 Mainly cylindrical curved imaging-plates for now.
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2023"
+__date__ = "31/01/2025"
 __status__ = "production"
 
 
@@ -117,10 +117,10 @@ class CylindricalDetector(Detector):
         :param correct_binning: If True, check that the produced array have the right shape regarding binning
         :param use_cython: set to False for testing
         :return:  4D array containing:
-                  pixel index (slow dimension)
-                  pixel index (fast dimension)
-                  corner index (A, B, C or D), triangles or hexagons can be handled the same way
-                  vertex position (z,y,x)
+                  * pixel index (slow dimension)
+                  * pixel index (fast dimension)
+                  * corner index (A, B, C or D), triangles or hexagons can be handled the same way
+                  * vertex position (z,y,x)
         """
         if self._pixel_corners is None:
             with self._sem:

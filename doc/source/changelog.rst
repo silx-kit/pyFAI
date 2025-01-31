@@ -50,9 +50,12 @@ Change-log of versions
   * New tutorial of usage in doc/source/usage/tutorial/MultiGeometry/MultiGeometryFiber.ipynb`
 
 - Tool to rebin 2d-result into 1d-result (`pyFAI.containers.rebin1d`)
+- `pyFAI-diffmap-view` now displays the motor position in the the map.
+- Change documentation template to `pydata`
 - Several bug-fixes & better code coverage
-- Supports python 3.9 .. 3.13. The GIL-free version on python 3.13 is untested
+- Supports python 3.9 to 3.13. The GIL-free version on python 3.13 is untested.
 - Tested by the developers on Windows (amd64), linux (amd64, arm64 and ppc64le) and MacOS (amd64 and arm64). Thanks to Debian for extending this matrix.
+- More than 500 commits, by Thomas Vincent, Loic Huder,  Edgar Gutierrez Fernandez and Jérôme Kieffer
 
 2024.09 12/09/2024
 ------------------
@@ -90,8 +93,9 @@ Change-log of versions
 
 2024.05 21/05/2024
 ------------------
-- Implemented unweighted average for 2D integration
- + Integration engines now handle the boolean 'weighted_average' to switch to unweighted mean, similar to legacy methods
+- Implemented unweighted average for 2D integration:
+  + Integration engines now handle the boolean 'weighted_average' to switch to unweighted mean, similar to legacy methods
+
 - Implementation of pilx (pyFAI-diffmap-view command): interactive viewer for pyFAI-diffmap files (thanks Loic Huder)
 - Creation of a RingExtraction class based on multi-threading (thanks Emily Massahud)
 - Flat-field and dark current corrections for pyFAI-calib2
@@ -217,18 +221,18 @@ Change-log of versions
 - Facts and figures:
     + 400+ commits, 100 PR
     +with the contribution of:
-        Clemens Prescher,
-        Elena Pascal,
-        Jérôme Kieffer,
-        Malte Storm,
-        Marco Cammarata,
-        Michael Hudson-Doyle,
-        Picca Frédéric-Emmanuel,
-        Rodrigo Telles,
-        Thomas A Caswell,
-        Tommaso Vinci,
-        Valentin Valls,
-        Wout de Nolf.
+        - Clemens Prescher,
+        - Elena Pascal,
+        - Jérôme Kieffer,
+        - Malte Storm,
+        - Marco Cammarata,
+        - Michael Hudson-Doyle,
+        - Picca Frédéric-Emmanuel,
+        - Rodrigo Telles,
+        - Thomas A Caswell,
+        - Tommaso Vinci,
+        - Valentin Valls,
+        - Wout de Nolf.
 
 0.21.3 24/03/2022
 -----------------

@@ -2,7 +2,7 @@ pyFAI.resources package
 =======================
 
 pyFAI.resources.__init__ module
-----------------------------
+-------------------------------
 
 .. automodule:: pyFAI.resources.__init__
     :members:

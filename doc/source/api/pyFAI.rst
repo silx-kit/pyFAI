@@ -10,7 +10,7 @@ pyFAI package
     :show-inheritance:
 
 :mod:`integrator.azimuthal` Module
----------------------------------
+----------------------------------
 
 .. automodule:: pyFAI.integrator.azimuthal
     :members:
@@ -18,18 +18,9 @@ pyFAI package
     :show-inheritance:
 
 :mod:`integrator.fiber` Module
----------------------------------
+------------------------------
 
 .. automodule:: pyFAI.integrator.fiber
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-:mod:`azimuthalIntegrator` Module
----------------------------------
-
-.. automodule:: pyFAI.azimuthalIntegrator
     :members:
     :undoc-members:
     :show-inheritance:

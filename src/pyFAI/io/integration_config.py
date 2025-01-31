@@ -29,28 +29,29 @@
 The WorkerConfig dataclass manages all options for the pyFAI.worker.
 
 List of attributes as function of the version:
-0: dist poni1 poni2 rot1 rot3 rot2 pixel1 pixel2 splineFile wavelength
+
+0. dist poni1 poni2 rot1 rot3 rot2 pixel1 pixel2 splineFile wavelength
    poni (path of the file) chi_discontinuity_at_0 do_mask do_dark
    do_azimuthal_range do_flat do_2D azimuth_range_min azimuth_range_max
    polarization_factor nbpt_rad do_solid_angle do_radial_range error_model
    delta_dummy nbpt_azim flat_field radial_range_min dark_current do_polarization
    mask_file detector unit radial_range_max val_dummy do_dummy method do_OpenCL
 
-1: dark_current, flat_field can now be lists of files, used to be coma-separated strings
+1. dark_current, flat_field can now be lists of files, used to be coma-separated strings
 
-2: detector/detector_config are now defined
+2. detector/detector_config are now defined
    As a consequence, all those keys are now invalid: pixel1 pixel2 splineFile
    and are integrated into those keys: detector detector_config
 
-3: method becomes a 3-tuple like ("full", "csr", "cython")
+3. method becomes a 3-tuple like ("full", "csr", "cython")
    opencl_device contains the device id as 2-tuple of integer
 
-4: poni is now a serialization of the poni, no more the path to the poni-file.
-The detector is integrated into it
+4. `poni` is now a serialization of the poni, no more the path to the poni-file.
+   The detector is integrated into it
    As a consequence, all those keys are now invalid:
    dist poni1 poni2 rot1 rot3 rot2 pixel1 pixel2 splineFile wavelength detector detector_config
 
-5: Migrate to dataclass
+5. Migrate to dataclass
    Support for `extra_options`
    rename some attributes
    * `integrator_name` -> `integrator_method`
@@ -65,7 +66,7 @@ All those data-classes are serializable to JSON.
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2025"
+__date__ = "31/01/2025"
 __docformat__ = 'restructuredtext'
 
 import sys
