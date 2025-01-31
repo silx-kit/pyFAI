@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2025"
+__date__ = "31/01/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -380,10 +380,13 @@ If the number of files is too large, use double quotes like "*.edf" """
     def configure_worker(self, dico=None):
         """Configure the worker from the dictionary
 
-        :param dico: dictionary with the configuration
+        :param dico: dictionary/WorkerConfig with the configuration
         :return: worker
         """
+        print("configure_worker", dico)
         self.worker.set_config(dico or self.poni)
+        if dico and "shape" in dico:
+            self.worker.reconfig(dico["shape"], sync=True)
 
     def makeHDF5(self, rewrite=False):
         """
@@ -672,10 +675,9 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.makeHDF5()
         self.init_ai()
         t0 = -time.perf_counter()
-        print(self.inputfiles)
         for f in self.inputfiles:
             self.process_one_file(f)
-        t0 -= time.perf_counter()
+        t0 += time.perf_counter()
         cnt = max(self._idx, 0) + 1
         print(f"Execution time for {cnt} frames: {t0:.3f} s; "
               f"Average execution time: {1000. * t0 / cnt:.1f} ms/img")

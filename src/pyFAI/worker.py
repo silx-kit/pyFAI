@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2025"
+__date__ = "31/01/2025"
 __status__ = "development"
 
 import threading
@@ -65,6 +65,7 @@ from . import units
 from .io import integration_config, ponifile, image as io_image
 from .engines.preproc import preproc as preproc_numpy
 from .utils.decorators import deprecated_warning
+from .utils import binning as rebin
 try:
     import numexpr
 except ImportError as err:
@@ -281,9 +282,19 @@ class Worker(object):
         :param shape: shape of the input image
         :param sync: return only when synchronized
         """
+        print(f"reconfig called with {shape} and detector {self.ai.detector.shape}")
         if shape is not None:
             self._shape = shape
-            if not self.ai.detector.force_pixel:
+            if self.ai.detector.force_pixel:
+                mask = self.ai.detector
+                res = self.ai.detector.guess_binning(shape)
+                if res and mask is not None:
+                    new_shape = numpy.array(self.ai.detector.shape)
+                    print(f"mask was  {mask.shape}")
+                    if numpy.all(new_shape<numpy.array(mask.shape)):
+                        self.detector.mask = rebin(mask, self.ai.detector.binning)
+                        print(f"mask now is  {self.detector.mask.shape}")
+            else:
                 self.ai.detector.shape = shape
         self.ai.reset()
         self.warmup(sync)
