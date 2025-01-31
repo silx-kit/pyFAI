@@ -182,7 +182,7 @@ class MainWindow(qt.QMainWindow):
                     for key in image_grp:
                         try:
                             ds = image_grp[key]
-                        except:
+                        except KeyError:
                             self.warning(f"Cannot access diffraction images at {path}/{key}: not a valid dataset.")
                         else:
                             if key.startswith(base) and isinstance(ds, h5py.Dataset):
@@ -250,13 +250,13 @@ class MainWindow(qt.QMainWindow):
             nxprocess = h5file[self._nxprocess_path]
             map_shape = get_dataset(nxprocess, "result/intensity").shape
             image_index = row * map_shape[1] + col + self._offset
-            image_dset = None
-            for dataset_path, size in self._dataset_paths.items():
-                if image_index < size:
-                    break
-                else:
-                    image_index -= size
-            if image_dset is None:
+            if self._dataset_paths:
+                for dataset_path, size in self._dataset_paths.items():
+                    if image_index < size:
+                        break
+                    else:
+                        image_index -= size
+            else:
                 self.warning(f"No diffraction data images found in {self._file_name}")
                 return
             try:
