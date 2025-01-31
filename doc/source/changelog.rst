@@ -50,10 +50,12 @@ Change-log of versions
   * New tutorial of usage in doc/source/usage/tutorial/MultiGeometry/MultiGeometryFiber.ipynb`
 
 - Tool to rebin 2d-result into 1d-result (`pyFAI.containers.rebin1d`)
+- `pyFAI-diffmap-view` now displays the motor position in the the map.
 - Change documentation template to `pydata`
 - Several bug-fixes & better code coverage
-- Supports python 3.9 .. 3.13. The GIL-free version on python 3.13 is untested
+- Supports python 3.9 to 3.13. The GIL-free version on python 3.13 is untested.
 - Tested by the developers on Windows (amd64), linux (amd64, arm64 and ppc64le) and MacOS (amd64 and arm64). Thanks to Debian for extending this matrix.
+- More than 500 commits, by Thomas Vincent, Loic Huder,  Edgar Gutierrez Fernandez and Jérôme Kieffer
 
 2024.09 12/09/2024
 ------------------

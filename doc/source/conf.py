@@ -145,29 +145,29 @@ html_theme = "pydata_sphinx_theme"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-# html_theme_options = {}
-html_theme_options = {
-    "icon_links": [
-        {
-            "name": "GitHub",
-            "url": "https://github.com/silx-kit/pyFAI",
-            "icon": "fa-brands fa-github",
-        },
-        {
-            "name": "PyPI",
-            "url": "https://pypi.org/project/pyFAI",
-            "icon": "img/pypi.svg",
-            "type": "local",
-        },
-    ],
-    "show_toc_level": 1,
-    "navbar_align": "left",
-    "show_version_warning_banner": True,
-    "navbar_start": ["navbar-logo", "version"],
-    "navbar_center": ["navbar-nav"],
-    "footer_start": ["copyright"],
-    "footer_center": ["sphinx-version"],
-}
+html_theme_options = {}
+# html_theme_options = {
+#     "icon_links": [
+#         {
+#             "name": "GitHub",
+#             "url": "https://github.com/silx-kit/pyFAI",
+#             "icon": "fa-brands fa-github",
+#         },
+#         {
+#             "name": "PyPI",
+#             "url": "https://pypi.org/project/pyFAI",
+#             "icon": "img/pypi.svg",
+#             "type": "local",
+#         },
+#     ],
+#     "show_toc_level": 1,
+#     "navbar_align": "left",
+#     "show_version_warning_banner": True,
+#     "navbar_start": ["navbar-logo", "version"],
+#     "navbar_center": ["navbar-nav"],
+#     "footer_start": ["copyright"],
+#     "footer_center": ["sphinx-version"],
+# }
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = [pydata_sphinx_theme.get_html_theme_path()]
 
@@ -190,7 +190,7 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["img", '_static']
+html_static_path = ["img"]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
