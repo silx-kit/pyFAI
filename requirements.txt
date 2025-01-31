@@ -15,3 +15,4 @@ hdf5plugin
 nbsphinx
 pydata-sphinx-theme
 importlib_resources; python_version < '3.9'
+sphinxcontrib.programoutput
