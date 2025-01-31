@@ -33,7 +33,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2025"
+__date__ = "31/01/2025"
 __status__ = "development"
 
 from typing import Tuple
@@ -181,20 +181,30 @@ class MainWindow(qt.QMainWindow):
                 if status_bar:
                     status_bar.showMessage(error_msg)
             else:
-                if not isinstance(image_grp, h5py.Group):
+                if isinstance(image_grp, h5py.Group):
+                    lst = []
+                    for key in image_grp:
+                        try:
+                            ds = image_grp[key]
+                        except:
+                            error_msg = f"Cannot access diffraction images at {path}/{key}: not a valid dataset."
+                            logging.warning(error_msg)
+                            status_bar = self.statusBar()
+                            if status_bar:
+                                status_bar.showMessage(error_msg)
+                        else:
+                            if key.startswith(base) and isinstance(ds, h5py.Dataset):
+                                lst.append(key)
+
+                    lst.sort()
+                    for key in lst:
+                        self._dataset_paths[posixpath.join(path, key)] = len(image_grp[key])
+                else:
                     error_msg = f"Cannot access diffraction images at {path}: not a group."
                     logging.warning(error_msg)
                     status_bar = self.statusBar()
                     if status_bar:
                         status_bar.showMessage(error_msg)
-                else:
-                    lst = []
-                    for key in image_grp:
-                        if key.startswith(base) and isinstance(image_grp[key], h5py.Dataset):
-                            lst.append(key)
-                    lst.sort()
-                    for key in lst:
-                        self._dataset_paths[posixpath.join(path, key)] = len(image_grp[key])
 
         self._radial_matrix = compute_radial_values(self.worker_config)
         self._delta_radial_over_2 = delta_radial / 2
