@@ -286,14 +286,15 @@ class Worker(object):
         if shape is not None:
             self._shape = shape
             if self.ai.detector.force_pixel:
-                mask = self.ai.detector
+                mask = self.ai.detector.mask
+                print(f"before rebin, mask has {(mask!=0).sum()} pixels")
                 res = self.ai.detector.guess_binning(shape)
                 if res and mask is not None:
                     new_shape = numpy.array(self.ai.detector.shape)
                     # print(f"mask was  {mask.shape}")
                     if numpy.all(new_shape<numpy.array(mask.shape)):
-                        self.detector.mask = rebin(mask, self.ai.detector.binning)
-                        logger.info(f"reconfig: mask has been rebinned from {mask.shape} to {self.detector.mask.shape}.")
+                        self.ai.detector.mask = (rebin(mask, self.ai.detector.binning)!=0)
+                        logger.info(f"reconfig: mask has been rebinned from {mask.shape} to {self.ai.detector.mask.shape}. Masking {self.ai.detector.mask.sum()} pixels")
             else:
                 self.ai.detector.shape = shape
         self.ai.reset()
@@ -528,7 +529,7 @@ class Worker(object):
     def _warmup(self):
         backup = self.output
         self.output = "raw"
-        logger.info(f"warm-up with shape {self.shape}")
+        logger.info(f"warm-up with shape {self.shape}, detector shape {self.ai.detector.shape} mask {self.ai.detector.mask.shape} mask sum {self.ai.detector.mask.sum()}\n{self.ai}")
         integrated_result = self.process(numpy.zeros(self.shape, dtype=numpy.float32))
         if self.do_2D():
             self.radial = integrated_result.radial
