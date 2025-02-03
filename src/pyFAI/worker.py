@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2025"
+__date__ = "03/02/2025"
 __status__ = "development"
 
 import threading
@@ -211,6 +211,7 @@ class Worker(object):
         self._shape = shapeIn
         self.radial = None
         self.azimuthal = None
+        self.propagate_uncertainties = None
         self.safe = True
         self.extra_options = {} if extra_options is None else extra_options.copy()
         self.radial_range = self.extra_options.pop("radial_range", None)
@@ -282,7 +283,6 @@ class Worker(object):
         :param shape: shape of the input image
         :param sync: return only when synchronized
         """
-        print(f"reconfig called with {shape} and detector {self.ai.detector.shape}")
         if shape is not None:
             self._shape = shape
             if self.ai.detector.force_pixel:
@@ -290,10 +290,10 @@ class Worker(object):
                 res = self.ai.detector.guess_binning(shape)
                 if res and mask is not None:
                     new_shape = numpy.array(self.ai.detector.shape)
-                    print(f"mask was  {mask.shape}")
+                    # print(f"mask was  {mask.shape}")
                     if numpy.all(new_shape<numpy.array(mask.shape)):
                         self.detector.mask = rebin(mask, self.ai.detector.binning)
-                        print(f"mask now is  {self.detector.mask.shape}")
+                        logger.info(f"reconfig: mask has been rebinned from {mask.shape} to {self.detector.mask.shape}.")
             else:
                 self.ai.detector.shape = shape
         self.ai.reset()
@@ -346,22 +346,10 @@ class Worker(object):
         if self.azimuth_range is not None:
             kwarg["azimuth_range"] = self.azimuth_range
 
-        error = None
         try:
             integrated_result = self._processor(**kwarg)
-            if self.do_2D():
-                self.radial = integrated_result.radial
-                self.azimuthal = integrated_result.azimuthal
-                result = integrated_result.intensity
-                if integrated_result.sigma is not None:
-                    error = integrated_result.sigma
-            else:
-                self.radial = integrated_result.radial
-                self.azimuthal = None
-                result = numpy.vstack(integrated_result).T
-
         except Exception as err:
-            logger.debug("Backtrace", exc_info=True)
+            logger.info("Backtrace", exc_info=True)
             err2 = [f"error in integration do_2d: {self.do_2D()}",
                     str(err.__class__.__name__),
                     str(err),
@@ -374,17 +362,17 @@ class Worker(object):
                     ]
             logger.error("\n".join(err2))
             raise err
-
-        if writer is not None:
-            writer.write(integrated_result)
-
         if self.output == "raw":
             return integrated_result
+        elif writer is not None:
+            writer.write(integrated_result)
         elif self.output == "numpy":
-            if (variance is not None) and (error is not None):
-                return result, error
+            if (integrated_result.sigma is not None):
+                return integrated_result.intensity, integrated_result.sigma
             else:
-                return result
+                return integrated_result.intensity
+        else:
+            return integrated_result
 
     def setSubdir(self, path):
         """
@@ -533,6 +521,24 @@ class Worker(object):
         """Save the configuration as a JSON file"""
         self.get_worker_config().save(filename or self.config_file)
 
+    def sync_init(self):
+
+        self.dummy_output = self.process(numpy.zeros(self.shape, dtype=numpy.float32))
+
+    def _warmup(self):
+        backup = self.output
+        self.output = "raw"
+        logger.info(f"warm-up with shape {self.shape}")
+        integrated_result = self.process(numpy.zeros(self.shape, dtype=numpy.float32))
+        if self.do_2D():
+            self.radial = integrated_result.radial
+            self.azimuthal = integrated_result.azimuthal
+        else:
+            self.radial = integrated_result.radial
+            self.azimuthal = None
+        self.propagate_uncertainties =  (integrated_result.sigma is not None)
+        self.output = backup
+
     def warmup(self, sync=False):
         """
         Process a dummy image to ensure everything is initialized
@@ -540,9 +546,7 @@ class Worker(object):
         :param sync: wait for processing to be finished
 
         """
-        t = threading.Thread(target=self.process,
-                             name="init2d",
-                             args=(numpy.zeros(self.shape, dtype=numpy.float32),))
+        t = threading.Thread(target=self._warmup, name="_warmup")
         t.start()
         if sync:
             t.join()
