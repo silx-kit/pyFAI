@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2025"
+__date__ = "03/02/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -529,7 +529,7 @@ class DiffMapWidget(qt.QWidget):
             config_ai = self.integration_config
             diffmap_kwargs = {}
 
-            diffmap_kwargs["nbpt_rad"] = config_ai.get("nbpt_rad")
+            diffmap_kwargs["nbpt_rad"] = config_ai.nbpt_rad
             for key in ["nbpt_fast", "nbpt_slow"]:
                 if key in config:
                     diffmap_kwargs[key] = config[key]
