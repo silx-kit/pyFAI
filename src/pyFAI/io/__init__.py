@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2024"
+__date__ = "03/02/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -320,7 +320,7 @@ class HDF5Writer(Writer):
             self.radial_ds.attrs["name"] = rad_name
             self.radial_ds.attrs["long_name"] = "Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
 
-            self.do2D = self.fai_cfg.get("do_2D", self.fai_cfg.get("nbpt_azim", 0) > 0)
+            self.do2D = self.fai_cfg.get("do_2D", (self.fai_cfg.get("nbpt_azim", 0) or 0) > 0)
 
             if self.do2D:
                 self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg["nbpt_azim"],), numpy.float32)
@@ -373,7 +373,7 @@ class HDF5Writer(Writer):
             self.shape = tuple(shape)
             self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
             name = "Mapping " if self.fast_scan_width else "Scanning "
-            name += "2D" if self.fai_cfg.get("nbpt_azim", 0) > 1 else "1D"
+            name += "2D" if self.do2D else "1D"
             name += " experiment"
             self.entry_grp["title"] = name
 
