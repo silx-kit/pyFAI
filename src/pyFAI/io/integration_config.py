@@ -66,7 +66,7 @@ All those data-classes are serializable to JSON.
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2025"
+__date__ = "06/02/2025"
 __docformat__ = 'restructuredtext'
 
 import sys
@@ -77,7 +77,7 @@ import copy
 from dataclasses import dataclass, fields, asdict
 from typing import ClassVar, Union
 import numpy
-from . import ponifile
+from .ponifile import PoniFile
 from ..containers import PolarizationDescription, ErrorModel
 from .. import detectors
 from .. import method_registry
@@ -140,7 +140,7 @@ def _patch_v1_to_v2(config):
     if value:
         # Use the poni file while it is not overwritten by a key of the config
         # dictionary
-        poni = ponifile.PoniFile(value)
+        poni = PoniFile(value)
         if "wavelength" not in config:
             config["wavelength"] = poni.wavelength
         if "dist" not in config:
@@ -371,7 +371,7 @@ class ConfigurationReader(object):
     def pop_ponifile(self):
         """Returns the geometry subpart of the configuration"""
         if isinstance(self._config.get("poni", None), dict):
-            return ponifile.PoniFile(self._config["poni"])
+            return PoniFile(self._config["poni"])
 
         dico = {"poni_version":2}
         mapping = { i:i for i in ('wavelength', 'poni1', 'poni2',
@@ -382,7 +382,7 @@ class ConfigurationReader(object):
                 value = self._config.pop(key1)
                 if value is not None:
                     dico[key2] = value
-        return ponifile.PoniFile(dico)
+        return PoniFile(dico)
 
     def pop_detector(self):
         """
@@ -445,7 +445,7 @@ class WorkerConfig:
     """Class with the configuration from the worker."""
     application: str="worker"
     version: int = CURRENT_VERSION
-    poni: object = None
+    poni: PoniFile = None
     nbpt_rad: int = None
     nbpt_azim: int = None
     unit: object = None
@@ -474,10 +474,21 @@ class WorkerConfig:
                                 "integrator_name", "do_poisson"]
     GUESSED:  ClassVar[list] = ["do_2D", "do_mask", "do_dark", "do_flat", 'do_polarization',
                                 'do_dummy', "do_radial_range", 'do_azimuthal_range']
+    SPECIAL: ClassVar[list] = {"polarization_description": PolarizationDescription,
+                               "poni": PoniFile}
     def as_dict(self):
-        "Like asdict, but with possibly some more features ... "
-        dico = asdict(self)
-        #fiddle with the object ?
+        """Like asdict, but with some more features:
+        * Handle ponifile
+        * Handle namedtuple
+        """
+        dico = {}
+        for key, value in asdict(self).items():
+            if "as_dict" in dir(value): #ponifile
+                dico[key] = value.as_dict()
+            elif "_asdict" in dir(value): #namedtuple
+                dico[key] = tuple(value)
+            else:
+                dico[key] = value
         return dico
 
     @classmethod
@@ -493,10 +504,22 @@ class WorkerConfig:
         if not inplace:
             dico = copy.copy(dico)
         normalize(dico, inplace=True)
-        to_init = {field.name:dico.pop(field.name)
-                   for field in fields(cls)
-                   if field.name in dico}
+
+        to_init = {}
+        for key, klass in cls.SPECIAL.items():
+            if key in dico:
+                value = dico.pop(key)
+                if isinstance(value, klass):
+                    to_init[key] = value
+                elif isinstance(value, dict):
+                    to_init[key] = klass(**value)
+                elif isinstance(value, (list, tuple)):
+                    to_init[key] = klass(*value)
+        for field in fields(cls):
+            if field.name in dico:
+                to_init[field.name] = dico.pop(field.name)
         self = cls(**to_init)
+
         for key in cls.GUESSED:
             if key in dico:
                 dico.pop(key)
@@ -504,6 +527,7 @@ class WorkerConfig:
             if key in dico:
                 value = dico.pop(key)
                 self.__setattr__(key, value)
+
         if len(dico):
             _logger.warning("Those are the parameters which have not been converted !"+ "\n".join(f"{key}: {val}" for key,val in dico.items()))
         return self
