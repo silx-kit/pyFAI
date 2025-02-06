@@ -904,8 +904,7 @@ class Detector(metaclass=DetectorMeta):
             return True
 
         if not self.force_pixel:
-            if (shape[0] == self.max_shape[0]) \
-            and (shape[1] == self.max_shape[1]):
+            if shape == self.max_shape:
                 self._binning = 1, 1
                 return True
             else:
