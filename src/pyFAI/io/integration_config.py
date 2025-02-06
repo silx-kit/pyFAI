@@ -476,6 +476,9 @@ class WorkerConfig:
                                 'do_dummy', "do_radial_range", 'do_azimuthal_range']
     SPECIAL: ClassVar[list] = {"polarization_description": PolarizationDescription,
                                "poni": PoniFile}
+    def __repr__(self):
+        return json.dumps(self.as_dict(), indent=4)
+
     def as_dict(self):
         """Like asdict, but with some more features:
         * Handle ponifile

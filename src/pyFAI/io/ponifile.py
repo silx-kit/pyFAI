@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2025"
+__date__ = "06/02/2025"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -42,6 +42,8 @@ import logging
 _logger = logging.getLogger(__name__)
 import numpy
 from .. import detectors
+from ..utils import decorators
+
 try:
     from ..gui.model.GeometryModel import GeometryModel
 except ImportError:
@@ -51,7 +53,7 @@ except ImportError:
 class PoniFile(object):
     API_VERSION = 2.1 # valid version are 1, 2, 2.1
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, **kwargs):
         self._detector = None
         self._dist = None
         self._poni1 = None
@@ -61,8 +63,11 @@ class PoniFile(object):
         self._rot3 = None
         self._wavelength = None
         if data is None:
-            pass
-        elif isinstance(data, dict):
+            if kwargs:
+                data = kwargs
+            else:
+                return
+        if isinstance(data, dict):
             self.read_from_dict(data)
         elif isinstance(data, (str, pathlib.Path)):
             self.read_from_file(data)
@@ -163,21 +168,21 @@ class PoniFile(object):
             raise RuntimeError("PONI file verison %s too recent. Upgrade pyFAI.", version)
 
         if "distance" in config:
-            self._dist = float(config["distance"])
+            self._dist = float(config["distance"]) if config["distance"] is not None else None
         elif "dist" in config:
-            self._dist = float(config["dist"])
+            self._dist = float(config["dist"]) if config["dist"] is not None else None
         if "poni1" in config:
-            self._poni1 = float(config["poni1"])
+            self._poni1 = float(config["poni1"]) if config["poni1"] is not None else None
         if "poni2" in config:
-            self._poni2 = float(config["poni2"])
+            self._poni2 = float(config["poni2"]) if config["poni2"] is not None else None
         if "rot1" in config:
-            self._rot1 = float(config["rot1"])
+            self._rot1 = float(config["rot1"]) if config["rot1"] is not None else None
         if "rot2" in config:
-            self._rot2 = float(config["rot2"])
+            self._rot2 = float(config["rot2"]) if config["rot2"] is not None else None
         if "rot3" in config:
-            self._rot3 = float(config["rot3"])
+            self._rot3 = float(config["rot3"]) if config["rot3"] is not None else None
         if "wavelength" in config:
-            self._wavelength = float(config["wavelength"])
+            self._wavelength = float(config["wavelength"]) if config["wavelength"] is not None else None
 
     def read_from_duck(self, duck):
         """Initialize the object using an object providing the same API.
@@ -258,15 +263,15 @@ class PoniFile(object):
         fd.write("\n".join(txt))
 
     def as_dict(self):
-        config = collections.OrderedDict([("poni_version", self.API_VERSION)])
-        config["detector"] = self.detector.__class__.__name__
-        config["detector_config"] = self.detector.get_config()
-        config["dist"] = self._dist
-        config["poni1"] = self._poni1
-        config["poni2"] = self._poni2
-        config["rot1"] = self._rot1
-        config["rot2"] = self._rot2
-        config["rot3"] = self._rot3
+        config={"poni_version": self.API_VERSION,
+                "detector": self.detector.__class__.__name__,
+                "detector_config": self.detector.get_config(),
+                "dist": self._dist,
+                "poni1": self._poni1,
+                "poni2": self._poni2,
+                "rot1": self._rot1,
+                "rot2": self._rot2,
+                "rot3": self._rot3}
         if self._wavelength:
             config["wavelength"] = self._wavelength
         return config
@@ -274,7 +279,7 @@ class PoniFile(object):
     def as_integration_config(self):
         from .integration_config import WorkerConfig
         wc = WorkerConfig(application="poni",
-                          poni=dict(self.as_dict()),
+                          poni=self,
                           nbpt_rad=500,
                           nbpt_azim=360,
                           unit="q_nm^-1",
@@ -321,3 +326,17 @@ class PoniFile(object):
     def wavelength(self):
         """:rtype: Union[None,float]"""
         return self._wavelength
+
+    # Dict-like API, for (partial) compatibility
+    @decorators.deprecated(reason="Ponifile should not be used as a dict", replacement=None, since_version="2025.02")
+    def __setitem__(self, key, value):
+        self.__setattr__(key, value)
+    @decorators.deprecated(reason="Ponifile should not be used as a dict", replacement=None, since_version="2025.02")
+    def __getitem__(self, key):
+        return self.__getattribute__(key)
+    @decorators.deprecated(reason="Ponifile should not be used as a dict", replacement=None, since_version="2025.02")
+    def get(self, key, default=None):
+        try:
+            return self.__getattribute__(key)
+        except:
+            return default

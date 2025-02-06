@@ -32,13 +32,14 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2024"
+__date__ = "06/02/2025"
 
 import os
 import json
 import unittest
 import logging
-from ..io import integration_config
+from ..io import integration_config, ponifile
+
 from . import utilstest
 
 logger = logging.getLogger(__name__)
@@ -155,9 +156,11 @@ class TestRegression(unittest.TestCase):
         test_files = "0.14_verson0.json  id11_v0.json  id13_v0.json  id15_1_v0.json  id15_v0.json  id16_v3.json  id21_v0.json  version0.json    version3.json  version4.json"
         for fn in test_files.split():
             js = utilstest.UtilsTest.getimage(fn)
+            print(fn)
             with utilstest.TestLogging(logger='pyFAI.io.integrarion_config', warning=0):
                 wc = integration_config.WorkerConfig.from_file(js)
-            self.assertEqual(wc, integration_config.WorkerConfig.from_dict(wc.as_dict()), f"Idempotent {fn}")
+            wc.poni.API_VERSION = ponifile.PoniFile.API_VERSION
+            self.assertEqual(str(wc), str(integration_config.WorkerConfig.from_dict(wc.as_dict())), f"Idempotent {fn}")
 
 
 def suite():
