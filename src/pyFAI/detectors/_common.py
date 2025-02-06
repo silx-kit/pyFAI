@@ -222,8 +222,8 @@ class Detector(metaclass=DetectorMeta):
             self._pixel1 = float(pixel1)
         if pixel2:
             self._pixel2 = float(pixel2)
-        if (max_shape is None) and ("MAX_SHAPE" in dir(self.__class__)):
-            self.max_shape = tuple(self.MAX_SHAPE)
+        if max_shape is None:
+            self.max_shape = tuple(self.MAX_SHAPE) if "MAX_SHAPE" in dir(self.__class__) else None
         else:
             self.max_shape = tuple(max_shape)
         self.shape = self.max_shape
