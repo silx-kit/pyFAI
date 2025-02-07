@@ -1189,7 +1189,7 @@ class IntegrationTask(AbstractCalibrationTask):
         workerConfig.flat_field = model.experimentSettingsModel().flat().filename()
         workerConfig.dark_current = model.experimentSettingsModel().dark().filename()
         image = model.experimentSettingsModel().image().value()
-        if image is not None:            
+        if image is not None:
             workerConfig.shape = numpy.array(image).shape
         try:
             workerConfig.save(filename)
