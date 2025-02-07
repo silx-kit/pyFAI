@@ -145,7 +145,7 @@ class Unit(object):
     @staticmethod
     def parse(obj, type_=None):
         """Factory for a Unit object
-    
+
         :param obj: can be a unit or a string like "2th_deg"
         :param type_: family of units like AZIMUTHAL_UNITS or RADIAL_UNITS
         :return: Unit instance
