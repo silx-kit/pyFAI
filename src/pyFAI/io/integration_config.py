@@ -454,7 +454,6 @@ class WorkerConfig:
     nbpt_azim: int = None
     unit: Unit = None
     chi_discontinuity_at_0: bool = False
-    do_solid_angle: bool = True
     polarization_description: PolarizationDescription = None
     normalization_factor: float = 1.0
     val_dummy: float = None
@@ -477,7 +476,7 @@ class WorkerConfig:
                                 "azimuth_range_min", "azimuth_range_max",
                                 "integrator_name", "do_poisson"]
     GUESSED: ClassVar[list] = ["do_2D", "do_mask", "do_dark", "do_flat", 'do_polarization',
-                                'do_dummy', "do_radial_range", 'do_azimuthal_range']
+                                'do_dummy', "do_radial_range", 'do_azimuthal_range', 'do_solid_angle']
     ENFORCED: ClassVar[list] = ["polarization_description", "poni", "error_model", "unit"]
 
     def __repr__(self):
@@ -742,6 +741,14 @@ class WorkerConfig:
     def flat_field_image(self, value):
         self.flat_field = None if not value else value
 
+    @property
+    def do_solid_angle(self):
+        return self.correct_solid_angle
+
+    @do_solid_angle.setter
+    def do_solid_angle(self, value):
+        self.correct_solid_angle = None if not value is None else bool(value)
+
     # Dict-like API, for (partial) compatibility
     @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
     def __setitem__(self, key, value):
@@ -759,7 +766,7 @@ class WorkerConfig:
             return False
 
     @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
-    def get(self, key, default):
+    def get(self, key, default=None):
         try:
             return self.__getattribute__(key)
         except AttributeError:
