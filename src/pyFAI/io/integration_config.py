@@ -83,6 +83,7 @@ from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
 from ..utils import decorators
+from ..units import Unit, to_unit
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
@@ -451,7 +452,7 @@ class WorkerConfig:
     poni: PoniFile = None
     nbpt_rad: int = None
     nbpt_azim: int = None
-    unit: object = None
+    unit: Unit = None
     chi_discontinuity_at_0: bool = False
     do_solid_angle: bool = True
     polarization_description: PolarizationDescription = None
@@ -462,7 +463,7 @@ class WorkerConfig:
     dark_current: Union[str, list] = None
     flat_field: Union[str, list] = None
     mask_file: str = None
-    error_model: ErrorModel = None
+    error_model: ErrorModel = ErrorModel.NO
     method: object = None
     opencl_device: list = None
     azimuth_range: list = None
@@ -477,7 +478,7 @@ class WorkerConfig:
                                 "integrator_name", "do_poisson"]
     GUESSED: ClassVar[list] = ["do_2D", "do_mask", "do_dark", "do_flat", 'do_polarization',
                                 'do_dummy', "do_radial_range", 'do_azimuthal_range']
-    ENFORCED: ClassVar[list] = ["polarization_description", "poni"]
+    ENFORCED: ClassVar[list] = ["polarization_description", "poni", "error_model", "unit"]
 
     def __repr__(self):
         return json.dumps(self.as_dict(), indent=4)
@@ -489,10 +490,15 @@ class WorkerConfig:
         """
         dico = {}
         for key, value in asdict(self).items():
-            if "as_dict" in dir(value):  # ponifile
-                dico[key] = value.as_dict()
-            elif "_asdict" in dir(value):  # namedtuple
-                dico[key] = tuple(value)
+            if key in self.ENFORCED:
+                if "as_dict" in dir(value):  # ponifile
+                    dico[key] = value.as_dict()
+                elif "as_str" in dir(value):
+                    dico[key] = value.as_str()
+                elif "_asdict" in dir(value):  # namedtuple
+                    dico[key] = tuple(value)
+                else:
+                    dico[key] = value
             else:
                 dico[key] = value
         return dico
@@ -519,14 +525,16 @@ class WorkerConfig:
                 if key in cls.ENFORCED:
                     "Enforce a specific class type"
                     klass = field.type
-                    if isinstance(value, klass):
+                    if value is None:
+                        to_init[key] = value
+                    elif isinstance(value, klass):
                         to_init[key] = value
                     elif isinstance(value, dict):
                         to_init[key] = klass(**value)
                     elif isinstance(value, (list, tuple)):
                         to_init[key] = klass(*value)
-                    elif value is None:
-                        to_init[key] = value
+                    elif isinstance(value, str) and ("parse" in klass.__dict__):  #  There is an issue with Enum!
+                        to_init[key] = klass.parse(value)
                     else:
                         _logger.warning(f"Unable to construct class {klass} with input {value} for key {key} in WorkerConfig.from_dict()")
                         to_init[key] = value

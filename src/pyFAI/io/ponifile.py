@@ -270,7 +270,7 @@ class PoniFile(object):
                 "rot1": self._rot1,
                 "rot2": self._rot2,
                 "rot3": self._rot3,
-                "detector": self._detector.__class__.__name__
+                "detector": self._detector.__class__.__name__ if self._detector is not None else None
                 }
         if self._detector is not None:
             config["detector_config"] = self._detector.get_config()
