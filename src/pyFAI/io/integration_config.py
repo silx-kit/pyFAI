@@ -485,8 +485,9 @@ class WorkerConfig:
 
     def as_dict(self):
         """Like asdict, but with some more features:
-        * Handle ponifile
-        * Handle namedtuple
+        * Handle ponifile & Unit dedicated classes
+        * Handle namedtuple like Polarization
+        * Handle Enums like ErrorModel
         """
         dico = {}
         for key, value in asdict(self).items():
