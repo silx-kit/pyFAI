@@ -66,7 +66,7 @@ All those data-classes are serializable to JSON.
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/02/2025"
+__date__ = "07/02/2025"
 __docformat__ = 'restructuredtext'
 
 import sys
@@ -86,7 +86,7 @@ from ..utils import decorators
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
-if sys.version_info>=(3,10):
+if sys.version_info >= (3, 10):
     mydataclass = dataclass(slots=True)
 else:
     mydataclass = dataclass
@@ -130,8 +130,8 @@ def _patch_v1_to_v2(config):
     if value is None and "poni_version" in config:
         # Anachronistic configuration, bug found in #2227
         value = config.copy()
-        #warn user about unexpected keys that's gonna be destroyed:
-        valid = ('wavelength', 'dist', 'poni1', 'poni2', 'rot1' ,'rot2' ,'rot3', 'detector', "shape", "pixel1", "pixel2", "splineFile")
+        # warn user about unexpected keys that's gonna be destroyed:
+        valid = ('wavelength', 'dist', 'poni1', 'poni2', 'rot1' , 'rot2' , 'rot3', 'detector', "shape", "pixel1", "pixel2", "splineFile")
         delta = set(config.keys()).difference(valid)
         if delta:
             _logger.warning("Integration_config v1 contains unexpected keys which will be discared: %s%s", os.linesep,
@@ -224,10 +224,10 @@ def _patch_v2_to_v3(config):
     """
     old_method = config.pop("method", "")
     if isinstance(old_method, (list, tuple)):
-        if len(old_method)==5:
+        if len(old_method) == 5:
             method = method_registry.Method(*old_method)
         else:
-            if config.get("do_2D") and config.get("nbpt_azim", 0)>1:
+            if config.get("do_2D") and config.get("nbpt_azim", 0) > 1:
                 ndim = 2
                 default = load_integrators.PREFERED_METHODS_2D[0]
             else:
@@ -242,6 +242,7 @@ def _patch_v2_to_v3(config):
     config["method"] = method.split, method.algo, method.impl
     config["opencl_device"] = method.target
     config["version"] = 3
+
 
 def _patch_v3_to_v4(config):
     """Rework the config dictionary from version 3 to version 4
@@ -272,6 +273,7 @@ def _patch_v3_to_v4(config):
     config["poni"] = poni_dict
     config["version"] = 4
 
+
 def _patch_v4_to_v5(config):
     """Support for integrator_name/integrator_method and extra_options.
 
@@ -285,7 +287,7 @@ def _patch_v4_to_v5(config):
     if "polarization_factor" in config:
         pf = config.pop("polarization_factor")
         if "polarization_offset" in config:
-            config["Polarization_description"]= PolarizationDescription(pf, config.pop("polarization_offset"))
+            config["Polarization_description"] = PolarizationDescription(pf, config.pop("polarization_offset"))
         elif "__len__" in dir(pf):
             config["polarization_description"] = PolarizationDescription(*pf)
         elif pf is None:
@@ -362,6 +364,7 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
 
 class ConfigurationReader(object):
     "This class should be deprecated now ..."
+
     def __init__(self, config):
         ":param config: dictionary"
         decorators.deprecated_warning("Class", "ConfigurationReader", reason=None, replacement=None,
@@ -422,7 +425,7 @@ class ConfigurationReader(object):
             target = tuple(target)
 
         if method is None:
-            lngm = load_integrators.PREFERED_METHODS_2D[0] if dim==2 else load_integrators.PREFERED_METHODS_1D[0]
+            lngm = load_integrators.PREFERED_METHODS_2D[0] if dim == 2 else load_integrators.PREFERED_METHODS_1D[0]
             method = lngm.method
         elif isinstance(method, (str,)):
             method = method_registry.Method.parsed(method)
@@ -443,16 +446,16 @@ class ConfigurationReader(object):
 @mydataclass
 class WorkerConfig:
     """Class with the configuration from the worker."""
-    application: str="worker"
+    application: str = "worker"
     version: int = CURRENT_VERSION
     poni: PoniFile = None
     nbpt_rad: int = None
     nbpt_azim: int = None
     unit: object = None
-    chi_discontinuity_at_0: bool=False
-    do_solid_angle: bool=True
+    chi_discontinuity_at_0: bool = False
+    do_solid_angle: bool = True
     polarization_description: PolarizationDescription = None
-    normalization_factor: float=1.0
+    normalization_factor: float = 1.0
     val_dummy: float = None
     delta_dummy: float = None
     correct_solid_angle: bool = True
@@ -472,10 +475,10 @@ class WorkerConfig:
     OPTIONAL: ClassVar[list] = ["radial_range_min", "radial_range_max",
                                 "azimuth_range_min", "azimuth_range_max",
                                 "integrator_name", "do_poisson"]
-    GUESSED:  ClassVar[list] = ["do_2D", "do_mask", "do_dark", "do_flat", 'do_polarization',
+    GUESSED: ClassVar[list] = ["do_2D", "do_mask", "do_dark", "do_flat", 'do_polarization',
                                 'do_dummy', "do_radial_range", 'do_azimuthal_range']
-    SPECIAL: ClassVar[list] = {"polarization_description": PolarizationDescription,
-                               "poni": PoniFile}
+    ENFORCED: ClassVar[list] = ["polarization_description", "poni"]
+
     def __repr__(self):
         return json.dumps(self.as_dict(), indent=4)
 
@@ -486,9 +489,9 @@ class WorkerConfig:
         """
         dico = {}
         for key, value in asdict(self).items():
-            if "as_dict" in dir(value): #ponifile
+            if "as_dict" in dir(value):  # ponifile
                 dico[key] = value.as_dict()
-            elif "_asdict" in dir(value): #namedtuple
+            elif "_asdict" in dir(value):  # namedtuple
                 dico[key] = tuple(value)
             else:
                 dico[key] = value
@@ -509,18 +512,26 @@ class WorkerConfig:
         normalize(dico, inplace=True)
 
         to_init = {}
-        for key, klass in cls.SPECIAL.items():
+        for field in fields(cls):
+            key = field.name
             if key in dico:
                 value = dico.pop(key)
-                if isinstance(value, klass):
+                if key in cls.ENFORCED:
+                    "Enforce a specific class type"
+                    klass = field.type
+                    if isinstance(value, klass):
+                        to_init[key] = value
+                    elif isinstance(value, dict):
+                        to_init[key] = klass(**value)
+                    elif isinstance(value, (list, tuple)):
+                        to_init[key] = klass(*value)
+                    elif value is None:
+                        to_init[key] = value
+                    else:
+                        _logger.warning(f"Unable to construct class {klass} with input {value} for key {key} in WorkerConfig.from_dict()")
+                        to_init[key] = value
+                else:
                     to_init[key] = value
-                elif isinstance(value, dict):
-                    to_init[key] = klass(**value)
-                elif isinstance(value, (list, tuple)):
-                    to_init[key] = klass(*value)
-        for field in fields(cls):
-            if field.name in dico:
-                to_init[field.name] = dico.pop(field.name)
         self = cls(**to_init)
 
         for key in cls.GUESSED:
@@ -532,9 +543,8 @@ class WorkerConfig:
                 self.__setattr__(key, value)
 
         if len(dico):
-            _logger.warning("Those are the parameters which have not been converted !"+ "\n".join(f"{key}: {val}" for key,val in dico.items()))
+            _logger.warning("Those are the parameters which have not been converted !" + "\n".join(f"{key}: {val}" for key, val in dico.items()))
         return self
-
 
     def save(self, filename):
         """Dump the content of the dataclass as JSON file"""
@@ -558,23 +568,27 @@ class WorkerConfig:
             return bool(numpy.isfinite(self.azimuth_range[0]) and numpy.isfinite(self.azimuth_range[1]))
         else:
             return False
+
     @property
     def azimuth_range_min(self):
         if self.azimuth_range:
             return self.azimuth_range[0]
         else:
             return -numpy.inf
+
     @azimuth_range_min.setter
     def azimuth_range_min(self, value):
         if not self.azimuth_range:
             self.azimuth_range = [-numpy.inf, numpy.inf]
         self.azimuth_range[0] = value
+
     @property
     def azimuth_range_max(self):
         if self.azimuth_range:
             return self.azimuth_range[1]
         else:
             return numpy.inf
+
     @azimuth_range_max.setter
     def azimuth_range_max(self, value):
         if not self.azimuth_range:
@@ -587,31 +601,37 @@ class WorkerConfig:
             return bool(numpy.isfinite(self.radial_range[0]) and numpy.isfinite(self.radial_range[1]))
         else:
             return False
+
     @property
     def radial_range_min(self):
         if self.radial_range:
             return self.radial_range[0]
         else:
             return -numpy.inf
+
     @radial_range_min.setter
     def radial_range_min(self, value):
         if not self.radial_range:
             self.radial_range = [-numpy.inf, numpy.inf]
         self.radial_range[0] = -numpy.inf if value is None else value
+
     @property
     def radial_range_max(self):
         if self.radial_range:
             return self.radial_range[1]
         else:
             return numpy.inf
+
     @radial_range_max.setter
     def radial_range_max(self, value):
         if not self.radial_range:
             self.radial_range = [-numpy.inf, numpy.inf]
         self.radial_range[1] = numpy.inf if value is None else value
+
     @property
     def integrator_name(self):
         return self.integrator_method
+
     @integrator_name.setter
     def integrator_name(self, value):
         self.integrator_method = value
@@ -619,35 +639,45 @@ class WorkerConfig:
     @property
     def do_mask(self):
         return self.mask_file is not None
+
     @property
     def do_poisson(self):
         return int(self.error_model) == int(ErrorModel.POISSON)
+
     @do_poisson.setter
     def do_poisson(self, value):
         if value:
             self.error_model = ErrorModel.POISSON
+
     @property
     def dummy(self):
         return self.val_dummy
+
     @dummy.setter
     def dummy(self, value):
         if value:
             self.val_dummy = float(value) if value is not None else value
+
     @property
     def do_dummy(self):
         return self.val_dummy is not None
+
     @property
     def mask_image(self):
         return self.mask_file
+
     @mask_image.setter
     def mask_image(self, value):
         self.mask_file = None if not value else value
+
     @property
     def do_dark(self):
         return bool(self.dark_current)
+
     @property
     def do_flat(self):
         return bool(self.flat_field)
+
     @property
     def do_polarization(self):
         if self.polarization_description is None:
@@ -658,39 +688,47 @@ class WorkerConfig:
             return bool(self.polarization_factor)
         else:
             return True
+
     @property
     def polarization_factor(self):
         if self.polarization_description is None:
             return None
         else:
             return self.polarization_description[0]
+
     @polarization_factor.setter
     def polarization_factor(self, value):
         if self.polarization_description is None:
             self.polarization_description = PolarizationDescription(value, 0)
         else:
             self.polarization_description = PolarizationDescription(value, self.polarization_description[1])
+
     @property
     def polarization_offset(self):
         if self.polarization_description is None:
             return None
         else:
             return self.polarization_description[1]
+
     @polarization_offset.setter
     def polarization_offset(self, value):
         if self.polarization_description is None:
             self.polarization_description = PolarizationDescription(0, value)
         else:
             self.polarization_description = PolarizationDescription(self.polarization_description[0], value)
+
     @property
     def dark_current_image(self):
         return self.dark_current
+
     @dark_current_image.setter
     def dark_current_image(self, value):
         self.dark_current = None if not value else value
+
     @property
     def flat_field_image(self):
         return self.flat_field
+
     @flat_field_image.setter
     def flat_field_image(self, value):
         self.flat_field = None if not value else value
@@ -699,9 +737,24 @@ class WorkerConfig:
     @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
     def __setitem__(self, key, value):
         self.__setattr__(key, value)
+
     @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
     def __getitem__(self, key):
         return self.__getattribute__(key)
+
+    @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
+    def __contains__(self, key):
+        try:
+            return self.__getattribute__(key) is not None
+        except AttributeError:
+            return False
+
+    @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
+    def get(self, key, default):
+        try:
+            return self.__getattribute__(key)
+        except AttributeError:
+            return default
 
 # @dataclass(slots=True)
 # class PixelwiseWorkerConfig:
