@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2025"
+__date__ = "06/02/2025"
 
 import unittest
 import logging
@@ -461,7 +461,9 @@ class TestWorkerConfig(unittest.TestCase):
         worker_generic.set_config(integration_options_generic)
         self.assertEqual(worker_generic.ai.detector.pixel1, 1e-4, "Pixel1 size matches")
         self.assertEqual(worker_generic.ai.detector.pixel2, 1e-4, "Pixel2 size matches")
-        self.assertEqual(worker_generic.ai.detector.shape, [576, 748], "Shape matches")
+        self.assertTrue(numpy.allclose(worker_generic.ai.detector.shape,
+                                       integration_options_generic["detector_config"]["max_shape"]),
+                        "Shape matches")
         self.assertEqual(worker_generic.ai.detector.orientation, 3, "Orientation matches")
 
     def test_regression_v4(self):

@@ -747,7 +747,7 @@ class WorkerConfig:
 
     @do_solid_angle.setter
     def do_solid_angle(self, value):
-        self.correct_solid_angle = None if not value is None else bool(value)
+        self.correct_solid_angle = None if value is None else bool(value)
 
     # Dict-like API, for (partial) compatibility
     @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")

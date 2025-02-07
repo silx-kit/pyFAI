@@ -120,7 +120,9 @@ def integrate_gui(options, args):
         window.deleteLater()
 
         if config is None:
-            config = window.get_config()
+            config = window.get_worker_config()
+        elif isinstance(config, dict):
+            config = WorkerConfig.from_dict(config)
 
         dialog = IntegrationProcess(None)
         dialog.adjustSize()

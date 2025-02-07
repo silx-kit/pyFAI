@@ -381,7 +381,7 @@ class HDF5Writer(Writer):
             self.shape = tuple(shape)
             self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
             name = "Mapping " if self.fast_scan_width else "Scanning "
-            name += "2D" if self.fai_cfg.get("nbpt_azim", 0) > 1 else "1D"
+            name += "2D" if self.fai_cfg.do_2D else "1D"
             name += " experiment"
             self.entry_grp["title"] = name
 

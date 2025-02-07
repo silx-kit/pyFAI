@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2025"
+__date__ = "07/02/2025"
 __status__ = "development"
 
 import threading
@@ -215,7 +215,6 @@ class Worker(object):
         self.radial_range = self.extra_options.pop("radial_range", None)
         self.azimuth_range = self.extra_options.pop("azimuth_range", None)
         self.error_model = ErrorModel.parse(self.extra_options.pop("error_model", None))
-
 
     def __repr__(self):
         """
@@ -410,7 +409,7 @@ class Worker(object):
 
     def set_config(self, config, consume_keys=False):
         """
-        Configure the working from the dictionary.
+        Configure the working from the dictionary|WorkerConfig.
 
         :param dict config: Key-value configuration or integration_config.WorkerConfig dataclass instance
         :param bool consume_keys: If true the keys from the dictionary will be
@@ -450,14 +449,14 @@ class Worker(object):
             self.flat_field_image = filenames
 
         self._nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
-        self.method = config.method # expand to Method ?
+        self.method = config.method  # expand to Method ?
         self.nbpt_rad = config.nbpt_rad
         self.unit = units.to_unit(config.unit or "2th_deg")
         self.error_model = ErrorModel.parse(config.error_model)
         self.polarization_factor = config.polarization_factor
         self.azimuth_range = config.azimuth_range
         self.radial_range = config.radial_range
-        self.correct_solid_angle = True if config.do_solid_angle is None else bool(config.do_solid_angle)
+        self.correct_solid_angle = True if config.correct_solid_angle is None else bool(config.correct_solid_angle)
         self.dummy = config.val_dummy
         self.delta_dummy = config.delta_dummy
         self._normalization_factor = config.normalization_factor
@@ -484,8 +483,8 @@ class Worker(object):
         :return: WorkerConfig dataclass instance
         """
         config = integration_config.WorkerConfig(application="worker",
-                                                 poni = dict(self.ai.get_config()),
-                                                 unit = str(self._unit))
+                                                 poni=dict(self.ai.get_config()),
+                                                 unit=str(self._unit))
         for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "delta_dummy", "extra_options",
                     "correct_solid_angle", "error_model", "method", "azimuth_range", "radial_range",
                     "dummy", "normalization_factor", "dark_current_image", "flat_field_image",
@@ -501,7 +500,6 @@ class Worker(object):
         :return: JSON-serializable dictionary
         """
         return self.get_worker_config().as_dict()
-
 
     def get_json_config(self):
         """return configuration as a JSON string"""
