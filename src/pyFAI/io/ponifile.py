@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/02/2025"
+__date__ = "07/02/2025"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -51,7 +51,7 @@ except ImportError:
 
 
 class PoniFile(object):
-    API_VERSION = 2.1 # valid version are 1, 2, 2.1
+    API_VERSION = 2.1  # valid version are 1, 2, 2.1
 
     def __init__(self, data=None, **kwargs):
         self._detector = None
@@ -81,11 +81,11 @@ class PoniFile(object):
 
     def make_headers(self, type_="list"):
         "Generate a header for files, as list or dict or str"
-        if type_=="dict":
+        if type_ == "dict":
             return self.as_dict()
-        elif type_=="str":
+        elif type_ == "str":
             return str(self)
-        elif type_=="list":
+        elif type_ == "list":
             return str(self).split("\n")
         else:
             _logger.error(f"Don't know how to handle type {type_} !")
@@ -257,13 +257,13 @@ class PoniFile(object):
                 txt.append(f"# {comments}")
             elif isinstance(comments, bytes):
                 txt.append(f"# {comments.decode()}")
-            else: # assume it is a list/tuple/set:
+            else:  # assume it is a list/tuple/set:
                 txt += [f"# {comment}" for comment in comments]
         txt.append("")
         fd.write("\n".join(txt))
 
     def as_dict(self):
-        config={"poni_version": self.API_VERSION,
+        config = {"poni_version": self.API_VERSION,
                 "detector": self.detector.__class__.__name__,
                 "detector_config": self.detector.get_config(),
                 "dist": self._dist,
@@ -331,9 +331,18 @@ class PoniFile(object):
     @decorators.deprecated(reason="Ponifile should not be used as a dict", replacement=None, since_version="2025.02")
     def __setitem__(self, key, value):
         self.__setattr__(key, value)
+
     @decorators.deprecated(reason="Ponifile should not be used as a dict", replacement=None, since_version="2025.02")
     def __getitem__(self, key):
         return self.__getattribute__(key)
+
+    @decorators.deprecated(reason="Ponifile should not be used as a dict", replacement=None, since_version="2025.02")
+    def __contains__(self, key):
+        try:
+            return self.__getattribute__(key) is not None
+        except AttributeError:
+            return None
+
     @decorators.deprecated(reason="Ponifile should not be used as a dict", replacement=None, since_version="2025.02")
     def get(self, key, default=None):
         try:
