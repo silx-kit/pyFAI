@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/02/2025"
+__date__ = "07/02/2025"
 
 import os
 import json
@@ -126,7 +126,9 @@ class TestIntegrationConfigV2(unittest.TestCase):
         self.assertEqual(config["method"], ('*', 'lut', 'opencl'))
         self.assertEqual(config["opencl_device"], "cpu")
 
+
 class TestRegression(unittest.TestCase):
+
     def test_2132(self):
         """issue #2132:
         when parsing a config json file in diffmap + enforce the usage of the GPU, the splitting gets changed
@@ -141,13 +143,13 @@ class TestRegression(unittest.TestCase):
         with open(config_file, "w") as fp:
             json.dump(config, fp)
 
-        #without GPU option -g
-        dm = DiffMap(1,1)
+        # without GPU option -g
+        dm = DiffMap(1, 1)
         _, parsed_config = dm.parse(sysargv=["--config", config_file], with_config=True)
         self.assertEqual(parsed_config["ai"]["method"], expected_without_gpu, "method matches without -g option")
 
-        #with GPU option -g
-        dm = DiffMap(1,1)
+        # with GPU option -g
+        dm = DiffMap(1, 1)
         _, parsed_config = dm.parse(sysargv=["-g", "--config", config_file], with_config=True)
         expected = expected_with_gpu if ocl else expected_without_gpu
         self.assertEqual(parsed_config["ai"]["method"], expected, "method match with -g option")
@@ -161,6 +163,53 @@ class TestRegression(unittest.TestCase):
                 wc = integration_config.WorkerConfig.from_file(js)
             wc.poni.API_VERSION = ponifile.PoniFile.API_VERSION
             self.assertEqual(str(wc), str(integration_config.WorkerConfig.from_dict(wc.as_dict())), f"Idempotent {fn}")
+
+    def test_nested_dataclasses(self):
+        from ..containers import PolarizationDescription, ErrorModel
+        from ..units import to_unit, Unit
+        # Polarization
+        w = integration_config.WorkerConfig.from_dict({})
+        w.polarization_factor = 1
+        w.polarization_offset = 0.5
+        self.assertEqual(w.polarization_description, (1, 0.5), "Polarization description")
+        self.assertTrue(isinstance(w.polarization_description, PolarizationDescription))
+
+        w = integration_config.WorkerConfig.from_dict({"polarization_description":(-1, -0.5)})
+        self.assertEqual(w.polarization_factor, -1, "polarization factor")
+        self.assertEqual(w.polarization_offset, -0.5, "polarization offset")
+        self.assertTrue(isinstance(w.polarization_description, PolarizationDescription))
+
+        # units:
+        w = integration_config.WorkerConfig.from_dict({})
+        w.unit = to_unit("2th_deg")
+        self.assertEqual(str(w.unit), "2th_deg", "units")
+        self.assertTrue(isinstance(w.unit, Unit))
+        self.assertEqual(w.as_dict()["unit"], "2th_deg", "units")
+
+        w = integration_config.WorkerConfig.from_dict({"unit":"q_A^-1"})
+        self.assertTrue(isinstance(w.unit, Unit))
+        self.assertEqual(str(w.unit), "q_A^-1", "units")
+        self.assertEqual(w.as_dict()["unit"], "q_A^-1", "units")
+
+        # Error Model
+        w = integration_config.WorkerConfig.from_dict({})
+        w.error_model = ErrorModel(3)
+        self.assertEqual(w.error_model.as_str(), "azimuthal", "Error Model")
+        self.assertEqual(w.as_dict()["error_model"], "azimuthal", "Error Model")
+        w = integration_config.WorkerConfig.from_dict({"error_model": "poisson"})
+        self.assertTrue(isinstance(w.error_model, ErrorModel))
+        self.assertEqual(w.error_model.as_str(), "poisson", "Error Model")
+        self.assertEqual(w.as_dict()["error_model"], "poisson", "Error Model")
+
+        # PoniFile
+        w = integration_config.WorkerConfig.from_dict({})
+        w.poni = ponifile.PoniFile({"detector": "Titan"})
+        self.assertEqual(w.poni.as_dict()["detector"], "Titan", "PoniFile")
+        self.assertEqual(w.as_dict()["poni"]["detector"], "Titan", "PoniFile")
+        w = integration_config.WorkerConfig.from_dict({"poni": {"detector": "Frelon"}})
+        self.assertTrue(isinstance(w.poni, ponifile.PoniFile))
+        self.assertEqual(w.poni.as_dict()["detector"], "FReLoN", "PoniFile")
+        self.assertEqual(w.as_dict()["poni"]["detector"], "FReLoN", "PoniFile")
 
 
 def suite():

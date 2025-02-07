@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/12/2024"
+__date__ = "07/02/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -136,9 +136,37 @@ class Unit(object):
     def __repr__(self):
         return self.name
 
+    as_str = __repr__
+
     # ensures hashability
     def __hash__(self):
         return self.name.__hash__()
+
+    @staticmethod
+    def parse(obj, type_=None):
+        """Factory for a Unit object
+    
+        :param obj: can be a unit or a string like "2th_deg"
+        :param type_: family of units like AZIMUTHAL_UNITS or RADIAL_UNITS
+        :return: Unit instance
+        """
+        rad_unit = None
+        if type_ is None:
+            type_ = ANY_UNITS
+        if isinstance(obj, (str,)):
+            rad_unit = type_.get(obj)
+        elif isinstance(obj, (Unit, UnitFiber)):
+            rad_unit = obj
+        # elif isinstance(obj, (list, tuple)) and len(obj) == 2:
+        #     rad_unit = tuple(to_unit(i) for i in obj)
+        if rad_unit is None:
+            logger.error("Unable to recognize this type unit '%s' of type %s. "
+                         "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_])))
+        return rad_unit
+
+
+to_unit = Unit.parse
+
 
 class UnitFiber(Unit):
     """Represents a unit + two rotation axis. To be used in a Grazing-Incidence or Fiber Diffraction/Scattering experiment.
@@ -150,6 +178,7 @@ class UnitFiber(Unit):
 
     It has at least a name and a scale (in SI-unit)
     """
+
     def __init__(self, name, scale=1, label=None, equation=None, formula=None,
                  incident_angle=0.0, tilt_angle=0.0, sample_orientation=1,
                  center=None, corner=None, delta=None, short_name=None, unit_symbol=None,
@@ -276,12 +305,14 @@ RADIAL_UNITS = {}
 AZIMUTHAL_UNITS = {}
 ANY_UNITS = {}
 
+
 def register_radial_unit(name, scale=1, label=None, equation=None, formula=None,
                          center=None, corner=None, delta=None, short_name=None,
                          unit_symbol=None, positive=True, period=None):
     RADIAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
                               corner, delta, short_name, unit_symbol, positive, period)
     ANY_UNITS.update(RADIAL_UNITS)
+
 
 def register_radial_fiber_unit(name, scale=1, label=None, equation=None, formula=None,
                                incident_angle=0.0, tilt_angle=0.0, sample_orientation=1,
@@ -305,12 +336,14 @@ def register_radial_fiber_unit(name, scale=1, label=None, equation=None, formula
     )
     ANY_UNITS.update(RADIAL_UNITS)
 
+
 def register_azimuthal_unit(name, scale=1, label=None, equation=None, formula=None,
                          center=None, corner=None, delta=None, short_name=None,
                          unit_symbol=None, positive=False, period=None):
     AZIMUTHAL_UNITS[name] = Unit(name, scale, label, equation, formula, center,
                                  corner, delta, short_name, unit_symbol, positive, period)
     ANY_UNITS.update(AZIMUTHAL_UNITS)
+
 
 def register_azimuthal_fiber_unit(name, scale=1, label=None, equation=None, formula=None,
                                   incident_angle=0.0, tilt_angle=0.0, sample_orientation=1,
@@ -324,6 +357,7 @@ def register_azimuthal_fiber_unit(name, scale=1, label=None, equation=None, form
                                       positive=positive, period=period,
     )
     ANY_UNITS.update(AZIMUTHAL_UNITS)
+
 
 def eq_r(x, y, z=None, wavelength=None):
     """Calculates the radius in meter
@@ -396,15 +430,15 @@ def eq_exit_angle_vert(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=
     :param wavelength: in meter
     :return: vertical exit angle in radians
     """
-    rot_incident_angle = numpy.array([[1,0,0],
-                                      [0,numpy.cos(incident_angle), numpy.sin(-incident_angle)],
+    rot_incident_angle = numpy.array([[1, 0, 0],
+                                      [0, numpy.cos(incident_angle), numpy.sin(-incident_angle)],
                                       [0, numpy.sin(incident_angle), numpy.cos(incident_angle)]],
     )
     rot_tilt_angle = numpy.array([[numpy.cos(tilt_angle), numpy.sin(-tilt_angle), 0],
                                   [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
                                   [0, 0, 1]],
     )
-    rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x,y,z)), axes=1)
+    rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x, y, z)), axes=1)
     xp, yp, zp = numpy.tensordot(rot_tilt_angle, rotated_xyz, axes=1)
     return numpy.arctan2(yp, numpy.sqrt(zp ** 2 + xp ** 2))
 
@@ -420,15 +454,15 @@ def eq_exit_angle_horz(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=
     :param wavelength: in meter
     :return: horizontal exit angle in radians
     """
-    rot_incident_angle = numpy.array([[1,0,0],
-                              [0,numpy.cos(incident_angle), numpy.sin(-incident_angle)],
+    rot_incident_angle = numpy.array([[1, 0, 0],
+                              [0, numpy.cos(incident_angle), numpy.sin(-incident_angle)],
                               [0, numpy.sin(incident_angle), numpy.cos(incident_angle)]],
     )
     rot_tilt_angle = numpy.array([[numpy.cos(tilt_angle), numpy.sin(-tilt_angle), 0],
                               [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
                               [0, 0, 1]],
     )
-    rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x,y,z)), axes=1)
+    rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x, y, z)), axes=1)
     xp, yp, zp = numpy.tensordot(rot_tilt_angle, rotated_xyz, axes=1)
     return numpy.arctan2(xp, zp)
 
@@ -498,7 +532,7 @@ def rotation_tilt_angle(tilt_angle=0.0):
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :return: 3x3 rotation matrix along the beam axis
     """
-    return numpy.array([[1 ,0 ,0],
+    return numpy.array([[1 , 0 , 0],
                         [0, numpy.cos(tilt_angle), numpy.sin(tilt_angle)],
                         [0, numpy.sin((-1) * tilt_angle), numpy.cos(tilt_angle)],
                         ])
@@ -533,7 +567,7 @@ def eq_qbeam(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
                                      rotation_incident_angle(incident_angle=incident_angle),
                                      )[0,:],
                            q_lab(x=hpos, y=vpos, z=z, wavelength=wavelength),
-                           axes=(0,0),
+                           axes=(0, 0),
     )
 
 
@@ -554,7 +588,7 @@ def eq_qhorz(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
                                      rotation_incident_angle(incident_angle=incident_angle),
                                      )[1,:],
                            q_lab(x=hpos, y=vpos, z=z, wavelength=wavelength),
-                           axes=(0,0),
+                           axes=(0, 0),
     )
 
 
@@ -575,7 +609,7 @@ def eq_qvert(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
                                      rotation_incident_angle(incident_angle=incident_angle),
                                      )[2,:],
                            q_lab(x=hpos, y=vpos, z=z, wavelength=wavelength),
-                           axes=(0,0),
+                           axes=(0, 0),
     )
 
 
@@ -594,7 +628,7 @@ def q_sample(hpos, vpos, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0,
                                      rotation_incident_angle(incident_angle=incident_angle),
                                      ),
                            q_lab(x=hpos, y=vpos, z=z, wavelength=wavelength),
-                           axes=(1,0),
+                           axes=(1, 0),
     )
 
 
@@ -725,6 +759,7 @@ def eq_qoop(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orie
     """
     return eq_qvert_gi(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
 
+
 def eq_q_total(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the total component of the scattering vector joining qip and qoop (for GI/Fiber diffraction)
         First, rotates the lab sample reference around the beam axis a tilt_angle value in radians,
@@ -742,6 +777,7 @@ def eq_q_total(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_o
     hpos, vpos = rotate_sample_orientation(x=x, y=y, sample_orientation=sample_orientation)
     return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(hpos, vpos, z) / 2.0) / wavelength
 
+
 def eq_chi_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the polar angle from the vertical axis (fiber or thin-film main axis)
 
@@ -757,6 +793,7 @@ def eq_chi_gi(x, y, z, wavelength, incident_angle=0.0, tilt_angle=0.0, sample_or
     qoop = eq_qoop(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
     qip = eq_qip(x=x, y=y, z=z, wavelength=wavelength, incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation)
     return numpy.arctan2(qip, qoop)
+
 
 formula_r = "sqrt(x * x + y * y)"
 formula_2th = f"arctan2({formula_r}, z)"
@@ -1171,28 +1208,6 @@ AZIMUTHAL_UNITS["qoop_nm^-1"] = RADIAL_UNITS["qoop_nm^-1"]
 AZIMUTHAL_UNITS["qip_A^-1"] = RADIAL_UNITS["qip_A^-1"]
 AZIMUTHAL_UNITS["qoop_A^-1"] = RADIAL_UNITS["qoop_A^-1"]
 
-def to_unit(obj, type_=None):
-    """Convert to Unit object
-
-    :param obj: can be a unit or a string like "2th_deg"
-    :param type_: family of units like AZIMUTHAL_UNITS or RADIAL_UNITS
-    :return: Unit instance
-    """
-    rad_unit = None
-    if type_ is None:
-        type_ = ANY_UNITS
-    if isinstance(obj, (str,)):
-        rad_unit = type_.get(obj)
-    elif isinstance(obj, (Unit, UnitFiber)):
-        rad_unit = obj
-    # elif isinstance(obj, (list, tuple)) and len(obj) == 2:
-    #     rad_unit = tuple(to_unit(i) for i in obj)
-    if rad_unit is None:
-        logger.error("Unable to recognize this type unit '%s' of type %s. "
-                     "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_])))
-    return rad_unit
-
-
 # To ensure the compatibility with former code:
 Q = Q_NM = RADIAL_UNITS["q_nm^-1"]
 Q_A = RADIAL_UNITS["q_A^-1"]
@@ -1215,7 +1230,8 @@ Q_IP_A = RADIAL_UNITS["qip_A^-1"]
 Q_OOP_A = RADIAL_UNITS["qoop_A^-1"]
 Q_TOT = RADIAL_UNITS["qtot_nm^-1"]
 
-def get_unit_fiber(name, incident_angle:float =0.0, tilt_angle:float =0.0, sample_orientation=1):
+
+def get_unit_fiber(name, incident_angle:float=0.0, tilt_angle:float=0.0, sample_orientation=1):
     """Retrieves a unit instance for Grazing-Incidence/Fiber Scattering with updated incident and tilt angles
     The unit angles are in radians
 
@@ -1235,6 +1251,7 @@ def get_unit_fiber(name, incident_angle:float =0.0, tilt_angle:float =0.0, sampl
         unit.set_tilt_angle(tilt_angle)
         unit.set_sample_orientation(sample_orientation)
     return unit
+
 
 def parse_fiber_unit(unit, incident_angle=None, tilt_angle=None, sample_orientation=None):
     if isinstance(unit, str):

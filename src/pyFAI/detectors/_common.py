@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/08/2024"
+__date__ = "07/02/2025"
 __status__ = "stable"
 
 import logging
@@ -142,6 +142,8 @@ class Detector(metaclass=DetectorMeta):
         if isinstance(name, Detector):
             # It's already a detector
             return name
+        elif name == None:
+            return
 
         if os.path.isfile(name):
             # It's a filename
@@ -1213,14 +1215,15 @@ class Detector(metaclass=DetectorMeta):
     @property
     def origin(self):
         "What are the coordinnates of the detector's origin ?"
-        if self.orientation == 1 :
+        if self.orientation == 1:
             return self.shape
-        elif self.orientation == 2 :
-            return (self.shape[0],0)
-        elif self.orientation == 4 :
+        elif self.orientation == 2:
+            return (self.shape[0], 0)
+        elif self.orientation == 4:
             return (0, self.shape[1])
         # else self.orientation in (0,3):
-        return (0,0)
+        return (0, 0)
+
 
 class NexusDetector(Detector):
     """
