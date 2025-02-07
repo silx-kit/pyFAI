@@ -327,7 +327,7 @@ class PoniFile(object):
         """:rtype: Union[None,float]"""
         return self._wavelength
 
-    # Dict-like API, for (partial) compatibility
+    # Dict-like API, for (partial) compatibility. Avoid using it !
     @decorators.deprecated(reason="Ponifile should not be used as a dict", replacement=None, since_version="2025.02")
     def __setitem__(self, key, value):
         self.__setattr__(key, value)
@@ -341,7 +341,7 @@ class PoniFile(object):
         try:
             return self.__getattribute__(key) is not None
         except AttributeError:
-            return None
+            return False
 
     @decorators.deprecated(reason="Ponifile should not be used as a dict", replacement=None, since_version="2025.02")
     def get(self, key, default=None):
