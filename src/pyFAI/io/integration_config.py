@@ -66,7 +66,7 @@ All those data-classes are serializable to JSON.
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2025"
+__date__ = "03/02/2025"
 __docformat__ = 'restructuredtext'
 
 import sys
@@ -675,6 +675,12 @@ class WorkerConfig:
     @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
     def __getitem__(self, key):
         return self.__getattribute__(key)
+    @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
+    def get(self, key, default=None):
+        try:
+            return self.__getattribute__(key)
+        except:
+            return default
 
 # @dataclass(slots=True)
 # class PixelwiseWorkerConfig:

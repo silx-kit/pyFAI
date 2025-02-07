@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2025"
+__date__ = "03/02/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -155,7 +155,7 @@ class DiffMapWidget(qt.QWidget):
     def __init__(self):
         qt.QWidget.__init__(self)
 
-        self.integration_config = {}
+        self.integration_config = None
         self.list_dataset = ListDataSet()  # Contains all datasets to be treated.
 
         try:
@@ -526,16 +526,15 @@ class DiffMapWidget(qt.QWidget):
         last_processed_file = None
         with self.processing_sem:
             config = self.dump()
-            config_ai = config.get("ai", {})
-            config_ai = config_ai.copy()
+            config_ai = self.integration_config
             diffmap_kwargs = {}
 
-            diffmap_kwargs["nbpt_rad"] = config_ai.get("nbpt_rad")
+            diffmap_kwargs["nbpt_rad"] = config_ai.nbpt_rad
             for key in ["nbpt_fast", "nbpt_slow"]:
                 if key in config:
                     diffmap_kwargs[key] = config[key]
-            if config_ai.get("do_2D"):
-                diffmap_kwargs["nbpt_azim"] = config_ai.get("nbpt_azim", 1)
+            if config_ai.do_2D:
+                diffmap_kwargs["nbpt_azim"] = config_ai.nbpt_azim
 
             diffmap = DiffMap(**diffmap_kwargs)
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape

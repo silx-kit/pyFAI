@@ -1891,6 +1891,9 @@ class Geometry(object):
         if isinstance(factor, PolarizationDescription):
             desc = factor
             factor, axis_offset = desc
+        elif isinstance(factor, list) and len(factor)==2:
+            desc = PolarizationDescription(*factor)
+            factor, axis_offset = desc
         else:
             factor = float(factor)
             axis_offset = float(axis_offset)

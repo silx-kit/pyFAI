@@ -33,7 +33,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2025"
+__date__ = "31/01/2025"
 __status__ = "development"
 
 from typing import Tuple
@@ -62,7 +62,7 @@ from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
 from .widgets.TitleWidget import TitleWidget
 from ...io.integration_config import WorkerConfig
-
+logger = logging.getLogger(__name__)
 
 class MainWindow(qt.QMainWindow):
     sigFileChanged = qt.Signal(str)
@@ -175,26 +175,24 @@ class MainWindow(qt.QMainWindow):
             try:
                 image_grp = h5file[path]
             except KeyError:
-                error_msg = f"Cannot access diffraction images at {path}: no such path."
-                logging.warning(error_msg)
-                status_bar = self.statusBar()
-                if status_bar:
-                    status_bar.showMessage(error_msg)
+                self.warning(f"Cannot access diffraction images at {path}: no such path.")
             else:
-                if not isinstance(image_grp, h5py.Group):
-                    error_msg = f"Cannot access diffraction images at {path}: not a group."
-                    logging.warning(error_msg)
-                    status_bar = self.statusBar()
-                    if status_bar:
-                        status_bar.showMessage(error_msg)
-                else:
+                if isinstance(image_grp, h5py.Group):
                     lst = []
                     for key in image_grp:
-                        if key.startswith(base) and isinstance(image_grp[key], h5py.Dataset):
-                            lst.append(key)
+                        try:
+                            ds = image_grp[key]
+                        except KeyError:
+                            self.warning(f"Cannot access diffraction images at {path}/{key}: not a valid dataset.")
+                        else:
+                            if key.startswith(base) and isinstance(ds, h5py.Dataset):
+                                lst.append(key)
+
                     lst.sort()
                     for key in lst:
                         self._dataset_paths[posixpath.join(path, key)] = len(image_grp[key])
+                else:
+                    self.warning(f"Cannot access diffraction images at {path}: not a group.")
 
         self._radial_matrix = compute_radial_values(self.worker_config)
         self._delta_radial_over_2 = delta_radial / 2
@@ -252,20 +250,20 @@ class MainWindow(qt.QMainWindow):
             nxprocess = h5file[self._nxprocess_path]
             map_shape = get_dataset(nxprocess, "result/intensity").shape
             image_index = row * map_shape[1] + col + self._offset
-            for dataset_path, size in self._dataset_paths.items():
-                if image_index < size:
-                    break
-                else:
-                    image_index -= size
+            if self._dataset_paths:
+                for dataset_path, size in self._dataset_paths.items():
+                    if image_index < size:
+                        break
+                    else:
+                        image_index -= size
+            else:
+                self.warning(f"No diffraction data images found in {self._file_name}")
+                return
             try:
                 image_dset = get_dataset(h5file, dataset_path)
             except KeyError:
                 image_link = h5file.get(dataset_path, getlink=True)
-                error_msg = f"Cannot access diffraction images at {image_link}"
-                logging.warning(error_msg)
-                status_bar = self.statusBar()
-                if status_bar:
-                    status_bar.showMessage(error_msg)
+                self.warning(f"Cannot access diffraction images at {image_link}")
                 return
 
             if image_index >= len(image_dset):
@@ -464,3 +462,13 @@ class MainWindow(qt.QMainWindow):
     def clearPoints(self):
         for indices in self._fixed_indices.copy():
             self.removeMapPoint(indices=indices)
+
+    def warning(self, error_msg):
+        """Log a warning both in the terminal and in the status bar if possible
+
+        :param error_msg: string with the message
+        """
+        logger.warning(error_msg)
+        status_bar = self.statusBar()
+        if status_bar:
+            status_bar.showMessage(error_msg)
