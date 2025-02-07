@@ -57,7 +57,7 @@ from ...utils import stringutil
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
-from pyFAI.io import ponifile
+from pyFAI.io import ponifile, integration_config
 from pyFAI.worker import Worker
 import pyFAI.geometry
 import json
@@ -1116,20 +1116,21 @@ class IntegrationTask(AbstractCalibrationTask):
         geometry = self._geometryTabs.geometryModel()
         experimentSettingsModel = model.experimentSettingsModel()
         detector = experimentSettingsModel.detector()
-        pyfaiGeometry = pyFAI.geometry.Geometry(
-            dist=geometry.distance().value(),
-            poni1=geometry.poni1().value(),
-            poni2=geometry.poni2().value(),
-            rot1=geometry.rotation1().value(),
-            rot2=geometry.rotation2().value(),
-            rot3=geometry.rotation3().value(),
-            wavelength=geometry.wavelength().value(),
-            detector=detector
-            )
+
+        writer = ponifile.PoniFile({
+            "dist": geometry.distance().value(),
+            "poni1": geometry.poni1().value(),
+            "poni2":geometry.poni2().value(),
+            "rot1": geometry.rotation1().value(),
+            "rot2": geometry.rotation2().value(),
+            "rot3": geometry.rotation3().value(),
+            "wavelength": geometry.wavelength().value(),
+            "detector":detector.__class__.__name__,
+            "detector_config":detector.get_config(),
+            })
         comments = [f"Calibrant: {experimentSettingsModel.calibrantModel().calibrant().name}",
                     f"Image: {experimentSettingsModel.image().filename()}"]
         try:
-            writer = ponifile.PoniFile(pyfaiGeometry)
             with open(filename, "wt") as fd:
                 writer.write(fd, comments=comments)
             with poniFile.lockContext():
@@ -1163,57 +1164,35 @@ class IntegrationTask(AbstractCalibrationTask):
         experimentSettingsModel = model.experimentSettingsModel()
         detector = experimentSettingsModel.detector()
 
-        ai = AzimuthalIntegrator(
-            dist=geometry.distance().value(),
-            poni1=geometry.poni1().value(),
-            poni2=geometry.poni2().value(),
-            rot1=geometry.rotation1().value(),
-            rot2=geometry.rotation2().value(),
-            rot3=geometry.rotation3().value(),
-            detector=detector,
-            wavelength=geometry.wavelength().value(),
-        )
-
-        nbpt_rad = self.model().integrationSettingsModel().nPointsRadial().value()
-        nbpt_azim = self.model().integrationSettingsModel().nPointsAzimuthal().value()
-        unit = self.model().integrationSettingsModel().radialUnit().value()
-        method = method_registry.Method(0, self.__method.split, self.__method.algo, self.__method.impl, None)
-        if nbpt_azim == 1:
-            method = method.fixed(dim=1)
+        poni = ponifile.PoniFile({
+            "dist": geometry.distance().value(),
+            "poni1": geometry.poni1().value(),
+            "poni2":geometry.poni2().value(),
+            "rot1": geometry.rotation1().value(),
+            "rot2": geometry.rotation2().value(),
+            "rot3": geometry.rotation3().value(),
+            "wavelength": geometry.wavelength().value(),
+            "detector":detector.__class__.__name__,
+            "detector_config":detector.get_config(),
+            })
+        workerConfig = integration_config.WorkerConfig(poni=poni)
+        workerConfig.nbpt_rad = self.model().integrationSettingsModel().nPointsRadial().value()
+        workerConfig.nbpt_azim = self.model().integrationSettingsModel().nPointsAzimuthal().value()
+        workerConfig.unit = core_units.to_unit(self.model().integrationSettingsModel().radialUnit().value())
+        workerConfig.method = (self.__method.split, self.__method.algo, self.__method.impl)
+        workerConfig.application = "pyFAI-calib2"
+        if self.__polarizationModel.isEnabled():
+            workerConfig.polarization_factor = self.__polarizationModel.value()
         else:
-            method = method.fixed(dim=2)
-        worker = Worker(azimuthalIntegrator=ai,
-                        shapeOut=(nbpt_azim, nbpt_rad),
-                        unit=unit,
-                        method=method,
-                        )
-        config_dictionary = worker.get_config()
-        config_dictionary["application"] = "pyFAI-calib2"
-        config_dictionary["do_polarization"] = True
-        config_dictionary["polarization_factor"] = self.model().experimentSettingsModel().polarizationFactor().value()
-        mask_filename = model.experimentSettingsModel().mask().filename()
-        flat_filename = model.experimentSettingsModel().flat().filename()
-        dark_filename = model.experimentSettingsModel().dark().filename()
-        if mask_filename:
-            config_dictionary["do_mask"] = True
-            config_dictionary["mask_file"] = mask_filename
-        else:
-            config_dictionary["do_mask"] = False
-        if flat_filename:
-            config_dictionary["do_flat"] = True
-            config_dictionary["flat_field"] = flat_filename
-        else:
-            config_dictionary["do_flat"] = False
-        if dark_filename:
-            config_dictionary["do_dark"] = True
-            config_dictionary["dark_current"] = dark_filename
-        else:
-            config_dictionary["do_dark"] = False
-
+            workerConfig.polarization_description = None
+        workerConfig.mask_file = model.experimentSettingsModel().mask().filename()
+        workerConfig.flat_field = model.experimentSettingsModel().flat().filename()
+        workerConfig.dark_current = model.experimentSettingsModel().dark().filename()
+        image = model.experimentSettingsModel().image().value()
+        if image is not None:            
+            workerConfig.shape = numpy.array(image).shape
         try:
-            with open(filename, "wt") as fd:
-                fd.write(json.dumps(config_dictionary, indent=2))
-
+            workerConfig.save(filename)
             with jsonFile.lockContext():
                 jsonFile.setValue(filename)
                 jsonFile.setSynchronized(True)
