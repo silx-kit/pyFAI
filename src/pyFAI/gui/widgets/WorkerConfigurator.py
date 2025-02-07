@@ -59,7 +59,7 @@ from ..utils import validators
 from ...io.ponifile import PoniFile
 from ...io import integration_config
 from ... import method_registry
-from ...containers import PolarizationDescription
+from ...containers import PolarizationDescription, ErrorModel
 from ... import detector_factory
 from ...integrator import load_engines
 
@@ -143,11 +143,8 @@ class WorkerConfigurator(qt.QWidget):
         self.normalization_factor.setValidator(doubleOrEmptyValidator)
         self.normalization_factor.setText("1.0")
 
-        for value in [None, "poisson", "azimuthal"]:
-            if value:
-                text = value.capitalize()
-            else:
-                text = ""
+        for value in range(1 + max(ErrorModel)):
+            text = ErrorModel(value).as_str().capitalize()
             self.error_model.addItem(text, value)
         self.error_model.setCurrentIndex(0)
 
@@ -287,7 +284,7 @@ class WorkerConfigurator(qt.QWidget):
         # processing-config
         wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
         wc.correct_solid_angle = bool(self.do_solid_angle.isChecked())
-        wc.error_model = self.error_model.currentData()
+        wc.error_model = ErrorModel(self.error_model.currentIndex())
 
         method = self.__method
         if method is not None:
@@ -414,12 +411,9 @@ class WorkerConfigurator(qt.QWidget):
 
         value = wc.unit
         if value is not None:
-            unit = to_unit(value)
-            self.radial_unit.model().setValue(unit)
-
-        value = wc.error_model
-        index = self.error_model.findData(value)
-        self.error_model.setCurrentIndex(index)
+            self.radial_unit.model().setValue(value)
+        if wc.error_model is not None:
+            self.error_model.setCurrentIndex(int(wc.error_model))
 
         dim = 2 if wc.do_2D else 1
         method = wc.method
