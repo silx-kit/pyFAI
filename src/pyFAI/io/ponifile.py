@@ -230,14 +230,14 @@ class PoniFile(object):
         txt = ["# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis",
               f"# Calibration done on {time.ctime()}",
               f"poni_version: {self.API_VERSION}",
-              f"Detector: {detector.__class__.__name__}"]
+              f"Detector: {detector.__class__.__name__ if detector else None}"]
         if self.API_VERSION == 1:
             if not detector.force_pixel:
                 txt += [f"pixelsize1: {detector.pixel1}",
                         f"pixelsize2: {detector.pixel2}"]
             if detector.splineFile:
                 txt.append(f"splinefile: {detector.splineFile}")
-        elif self.API_VERSION >= 2:
+        elif self.API_VERSION >= 2 and detector is not None:
             detector_config = detector.get_config()
             if self.API_VERSION == 2:
                 detector_config.pop("orientation")
@@ -264,14 +264,16 @@ class PoniFile(object):
 
     def as_dict(self):
         config = {"poni_version": self.API_VERSION,
-                "detector": self.detector.__class__.__name__,
-                "detector_config": self.detector.get_config(),
                 "dist": self._dist,
                 "poni1": self._poni1,
                 "poni2": self._poni2,
                 "rot1": self._rot1,
                 "rot2": self._rot2,
-                "rot3": self._rot3}
+                "rot3": self._rot3,
+                "detector": self._detector.__class__.__name__
+                }
+        if self._detector is not None:
+            config["detector_config"] = self._detector.get_config()
         if self._wavelength:
             config["wavelength"] = self._wavelength
         return config
