@@ -142,8 +142,8 @@ class Detector(metaclass=DetectorMeta):
         if isinstance(name, Detector):
             # It's already a detector
             return name
-        elif name == None:
-            return
+        elif name is None:
+            return None
 
         if os.path.isfile(name):
             # It's a filename
