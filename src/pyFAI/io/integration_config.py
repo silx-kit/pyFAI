@@ -757,6 +757,12 @@ class WorkerConfig:
     @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
     def __getitem__(self, key):
         return self.__getattribute__(key)
+    @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
+    def get(self, key, default=None):
+        try:
+            return self.__getattribute__(key)
+        except:
+            return default
 
     @decorators.deprecated(reason="WorkerConfig now dataclass, no more a dict", replacement=None, since_version="2025.01")
     def __contains__(self, key):
