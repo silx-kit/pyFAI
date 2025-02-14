@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -39,12 +39,13 @@ Aims at being integrated into a plugin like LImA or as model for the GUI
 The configuration of this class is mainly done via a WorkerConfig object serialized as a JSON string.
 For the valid keys, please refer to the doc of the dataclass `pyFAI.io.integration_config.WorkerConfig`
 """
+from __future__ import annotations
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "14/02/2025"
 __status__ = "development"
 
 import threading
@@ -407,7 +408,7 @@ class Worker(object):
 
     setMaskFile = set_mask_file
 
-    def set_config(self, config, consume_keys=False):
+    def set_config(self, config:dict|WorkerConfig, consume_keys:bool=False):
         """
         Configure the working from the dictionary|WorkerConfig.
 
