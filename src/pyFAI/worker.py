@@ -67,6 +67,7 @@ from .io import ponifile, image as io_image
 from .io.integration_config import WorkerConfig
 from .engines.preproc import preproc as preproc_numpy
 from .utils.decorators import deprecated_warning
+from .utils import binning as rebin
 try:
     import numexpr
 except ImportError as err:
@@ -284,7 +285,16 @@ class Worker(object):
         """
         if shape is not None:
             self._shape = shape
-            if not self.ai.detector.force_pixel:
+            if self.ai.detector.force_pixel:
+                mask = self.ai.detector.mask
+                logger.info(f"Before rebin, mask has {(mask!=0).sum()} pixels")
+                res = self.ai.detector.guess_binning(shape)
+                if res and mask is not None:
+                    new_shape = numpy.array(self.ai.detector.shape)
+                    if numpy.all(new_shape < numpy.array(mask.shape)):
+                        self.ai.detector.mask = (rebin(mask, self.ai.detector.binning) != 0)
+                        logger.info(f"reconfig: mask has been rebinned from {mask.shape} to {self.ai.detector.mask.shape}. Masking {self.ai.detector.mask.sum()} pixels")
+            else:
                 self.ai.detector.shape = shape
         self.ai.reset()
         self.warmup(sync)
