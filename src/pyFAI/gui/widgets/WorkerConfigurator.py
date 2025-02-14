@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,17 +33,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/01/2025"
+__date__ = "07/02/2025"
 __status__ = "development"
 
 import logging
-import json
 import os.path
 import numpy
 logger = logging.getLogger(__name__)
 
 from silx.gui import qt
-
+from ..dialog.MessageBox import exception
 from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
 from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
@@ -60,7 +59,7 @@ from ..utils import validators
 from ...io.ponifile import PoniFile
 from ...io import integration_config
 from ... import method_registry
-from ...containers import PolarizationDescription
+from ...containers import PolarizationDescription, ErrorModel
 from ... import detector_factory
 from ...integrator import load_engines
 
@@ -144,11 +143,8 @@ class WorkerConfigurator(qt.QWidget):
         self.normalization_factor.setValidator(doubleOrEmptyValidator)
         self.normalization_factor.setText("1.0")
 
-        for value in [None, "poisson", "azimuthal"]:
-            if value:
-                text = value.capitalize()
-            else:
-                text = ""
+        for value in range(1 + max(ErrorModel)):
+            text = ErrorModel(value).as_str().capitalize()
             self.error_model.addItem(text, value)
         self.error_model.setCurrentIndex(0)
 
@@ -223,19 +219,23 @@ class WorkerConfigurator(qt.QWidget):
             return None
         return int(value)
 
-    def getPoniDict(self):
-        poni = {}
-        poni["wavelength"] = self.__geometryModel.wavelength().value()
-        poni["dist"] = self.__geometryModel.distance().value()
-        poni["poni1"] = self.__geometryModel.poni1().value()
-        poni["poni2"] = self.__geometryModel.poni2().value()
-        poni["rot1"] = self.__geometryModel.rotation1().value()
-        poni["rot2"] = self.__geometryModel.rotation2().value()
-        poni["rot3"] = self.__geometryModel.rotation3().value()
+    def getPoni(self):
+        poni = {"wavelength": self.__geometryModel.wavelength().value(),
+                "dist": self.__geometryModel.distance().value(),
+                "poni1": self.__geometryModel.poni1().value(),
+                "poni2": self.__geometryModel.poni2().value(),
+                "rot1": self.__geometryModel.rotation1().value(),
+                "rot2": self.__geometryModel.rotation2().value(),
+                "rot3": self.__geometryModel.rotation3().value()}
         if self.__detector is not None:
             poni["detector"] = self.__detector.__class__.__name__
             poni["detector_config"] = self.__detector.get_config()
-        return poni
+
+        ponifile = PoniFile(poni)
+        return ponifile
+
+    def getPoniDict(self):
+        return self.getPoni().as_dict()
 
     def getWorkerConfig(self):
         """Read the configuration of the plugin and returns it as a WorkerConfig instance
@@ -264,7 +264,7 @@ class WorkerConfigurator(qt.QWidget):
         if self.do_flat.isChecked():
             wc.flat_field_image = splitFiles(self.flat_field.text())
         if self.do_polarization.isChecked():
-            wc.polarization_factor = PolarizationDescription(float_(self.polarization_factor.value()), 0.0)
+            wc.polarization_description = PolarizationDescription(float_(self.polarization_factor.value()), 0.0)
         if self.do_dummy.isChecked():
             wc.val_dummy = self._float("val_dummy", None)
             wc.delta_dummy = self._float("delta_dummy", None)
@@ -283,8 +283,8 @@ class WorkerConfigurator(qt.QWidget):
 
         # processing-config
         wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
-        wc.do_solid_angle = bool(self.do_solid_angle.isChecked())
-        wc.error_model = self.error_model.currentData()
+        wc.correct_solid_angle = bool(self.do_solid_angle.isChecked())
+        wc.error_model = ErrorModel(self.error_model.currentIndex())
 
         method = self.__method
         if method is not None:
@@ -325,10 +325,9 @@ class WorkerConfigurator(qt.QWidget):
     def setConfig(self, dico):
         """Setup the widget from its description
 
-        :param dico: dictionary with description of the widget
+        :param dico: dictionary|WorkerConfig with description of the widget
         :type dico: dict
         """
-
         self.setWorkerConfig(integration_config.WorkerConfig.from_dict(dico, inplace=False))
 
     def setWorkerConfig(self, wc):
@@ -361,29 +360,28 @@ class WorkerConfigurator(qt.QWidget):
         self.__geometryModel.rotation2().setValue(None)
         self.__geometryModel.rotation3().setValue(None)
 
-        poni_dict = wc.poni
-        if isinstance(poni_dict, dict):
-            if "wavelength" in poni_dict:
-                self.__geometryModel.wavelength().setValue(poni_dict["wavelength"])
-            if "dist" in poni_dict:
-                self.__geometryModel.distance().setValue(poni_dict["dist"])
-            if "poni1" in poni_dict:
-                self.__geometryModel.poni1().setValue(poni_dict["poni1"])
-            if "poni2" in poni_dict:
-                self.__geometryModel.poni2().setValue(poni_dict["poni2"])
-            if "rot1" in poni_dict:
-                self.__geometryModel.rotation1().setValue(poni_dict["rot1"])
-            if "rot2" in poni_dict:
-                self.__geometryModel.rotation2().setValue(poni_dict["rot2"])
-            if "rot3" in poni_dict:
-                self.__geometryModel.rotation3().setValue(poni_dict["rot3"])
+        poni = wc.poni
+        if isinstance(poni, PoniFile):
+            if poni.wavelength:
+                self.__geometryModel.wavelength().setValue(poni.wavelength)
+            if poni.dist:
+                self.__geometryModel.distance().setValue(poni.dist)
+            if poni.poni1 is not None:
+                self.__geometryModel.poni1().setValue(poni.poni1)
+            if poni.poni2 is not None:
+                self.__geometryModel.poni2().setValue(poni.poni2)
+            if poni.rot1 is not None:
+                self.__geometryModel.rotation1().setValue(poni.rot1)
+            if poni.rot2 is not None:
+                self.__geometryModel.rotation2().setValue(poni.rot2)
+            if poni.rot3 is not None:
+                self.__geometryModel.rotation3().setValue(poni.rot3)
 
         # reader = integration_config.ConfigurationReader(dico)
 
         # detector
-        if "detector" in poni_dict:
-            detector = detector_factory(poni_dict["detector"], poni_dict.get("detector_config"))
-            self.setDetector(detector)
+        if poni.detector is not None:
+            self.setDetector(poni.detector)
 
         self.val_dummy.setText(str_(wc.val_dummy))
         self.delta_dummy.setText(str_(wc.delta_dummy))
@@ -401,7 +399,7 @@ class WorkerConfigurator(qt.QWidget):
         self.radial_range_max.setText(str_(wc.radial_range_max))
         self.azimuth_range_min.setText(str_(wc.azimuth_range_min))
         self.azimuth_range_max.setText(str_(wc.azimuth_range_max))
-        self.do_solid_angle.setChecked(wc.do_solid_angle)
+        self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
         self.do_dummy.setChecked(wc.do_dummy)
         self.do_dark.setChecked(wc.do_dark)
         self.do_flat.setChecked(wc.do_flat)
@@ -413,12 +411,9 @@ class WorkerConfigurator(qt.QWidget):
 
         value = wc.unit
         if value is not None:
-            unit = to_unit(value)
-            self.radial_unit.model().setValue(unit)
-
-        value = wc.error_model
-        index = self.error_model.findData(value)
-        self.error_model.setCurrentIndex(index)
+            self.radial_unit.model().setValue(value)
+        if wc.error_model is not None:
+            self.error_model.setCurrentIndex(int(wc.error_model))
 
         dim = 2 if wc.do_2D else 1
         method = wc.method
@@ -606,16 +601,14 @@ class WorkerConfigurator(qt.QWidget):
         if not os.path.isfile(filename):
             logger.error("No such file: %s", filename)
             return
-        with open(filename) as f:
-            config = json.load(f)
-        self.setConfig(config)
+        worker_config = integration_config.WorkerConfig.from_file(filename)
+        self.setWorkerConfig(worker_config)
 
     def loadFromPoniFile(self, ponifile):
         try:
             poni = PoniFile(ponifile)
         except Exception as error:
-            # FIXME: An error has to be displayed in the GUI
-            logger.error("file %s does not look like a poni-file, error %s", ponifile, error)
+            exception(self, f"File {ponifile} does not look like a poni-file", error, logger=logger)
             return
 
         model = self.__geometryModel
