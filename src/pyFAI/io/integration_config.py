@@ -288,7 +288,7 @@ def _patch_v4_to_v5(config):
     if "polarization_factor" in config:
         pf = config.pop("polarization_factor")
         if "polarization_offset" in config:
-            config["Polarization_description"] = PolarizationDescription(pf, config.pop("polarization_offset"))
+            config["polarization_description"] = PolarizationDescription(pf, config.pop("polarization_offset"))
         elif "__len__" in dir(pf):
             config["polarization_description"] = PolarizationDescription(*pf)
         elif pf is None:
