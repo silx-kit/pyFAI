@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/08/2024"
+__date__ = "07/02/2025"
 __status__ = "stable"
 
 import logging
@@ -142,6 +142,8 @@ class Detector(metaclass=DetectorMeta):
         if isinstance(name, Detector):
             # It's already a detector
             return name
+        elif name is None:
+            return None
 
         if os.path.isfile(name):
             # It's a filename
@@ -222,10 +224,10 @@ class Detector(metaclass=DetectorMeta):
             self._pixel1 = float(pixel1)
         if pixel2:
             self._pixel2 = float(pixel2)
-        if (max_shape is None) and ("MAX_SHAPE" in dir(self.__class__)):
-            self.max_shape = tuple(self.MAX_SHAPE)
+        if max_shape is None:
+            self.max_shape = tuple(self.MAX_SHAPE) if "MAX_SHAPE" in dir(self.__class__) else None
         else:
-            self.max_shape = max_shape
+            self.max_shape = tuple(max_shape)
         self.shape = self.max_shape
         self._binning = (1, 1)
         self._mask = False
@@ -904,12 +906,13 @@ class Detector(metaclass=DetectorMeta):
             return True
 
         if not self.force_pixel:
-            if shape != self.max_shape:
+            if shape == self.max_shape:
+                self._binning = 1, 1
+                return True
+            else:
                 logger.warning("guess_binning is not implemented for %s detectors!\
                  and image size %s is wrong, expected %s!" % (self.name, shape, self.shape))
                 return False
-            self._binning = 1, 1
-            return True
         elif self.max_shape:
             bin1 = self.max_shape[0] // shape[0]
             bin2 = self.max_shape[1] // shape[1]
@@ -1213,14 +1216,15 @@ class Detector(metaclass=DetectorMeta):
     @property
     def origin(self):
         "What are the coordinnates of the detector's origin ?"
-        if self.orientation == 1 :
+        if self.orientation == 1:
             return self.shape
-        elif self.orientation == 2 :
-            return (self.shape[0],0)
-        elif self.orientation == 4 :
+        elif self.orientation == 2:
+            return (self.shape[0], 0)
+        elif self.orientation == 4:
             return (0, self.shape[1])
         # else self.orientation in (0,3):
-        return (0,0)
+        return (0, 0)
+
 
 class NexusDetector(Detector):
     """

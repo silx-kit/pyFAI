@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2025"
+__date__ = "07/02/2025"
 __satus__ = "production"
 
 import sys
@@ -52,8 +52,9 @@ try:
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 import fabio
-from .. import utils, worker, io, version as pyFAI_version, date as pyFAI_date
+from .. import utils, io, version as pyFAI_version, date as pyFAI_date
 from ..io import DefaultAiWriter, HDF5Writer
+from ..io.integration_config import WorkerConfig
 from ..utils.shell import ProgressBar
 from ..utils import logging_utils, header_utils
 from ..worker import Worker
@@ -119,7 +120,9 @@ def integrate_gui(options, args):
         window.deleteLater()
 
         if config is None:
-            config = window.get_config()
+            config = window.get_worker_config()
+        elif isinstance(config, dict):
+            config = WorkerConfig.from_dict(config)
 
         dialog = IntegrationProcess(None)
         dialog.adjustSize()
@@ -129,7 +132,8 @@ def integrate_gui(options, args):
 
             def run(self):
                 observer = dialog.createObserver(qtSafe=True)
-                process(input_data, window.output_path, config, options.monitor_key, observer, options.write_mode, format_=options.format.lower())
+                config.monitor_name = options.monitor_key
+                process(input_data, window.output_path, config, observer, options.write_mode, format_=options.format.lower())
 
         qtProcess = QtProcess()
         qtProcess.start()
@@ -581,13 +585,13 @@ class Statistics(object):
         return self._execution
 
 
-def process(input_data, output, config, monitor_name, observer, write_mode=HDF5Writer.MODE_ERROR, format_=None):
+def process(input_data, output, config, observer, write_mode=HDF5Writer.MODE_ERROR, format_=None):
     """
     Integrate a set of data.
 
     :param List[str] input_data: List of input filenames
     :param str output: Filename of directory output
-    :param dict config: Dictionary to configure `pyFAI.worker.Worker`
+    :param dict|WorkerConfig config: Dictionary|WorkerConfig to configure `pyFAI.worker.Worker`
     :param IntegrationObserver observer: Observer of the processing
     :param str write_mode: Specify options to deal with IO errors
     :param format_: output format
@@ -600,23 +604,14 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
         observer = IntegrationObserver()
 
     worker = Worker()
-    worker_config = config.copy()
+    if isinstance(config, WorkerConfig):
+        worker_config = config
+    else:
+        worker_config = WorkerConfig.from_dict(config)
 
-    json_monitor_name = worker_config.pop("monitor_name", None)
-    if monitor_name is None:
-        monitor_name = json_monitor_name
-    elif json_monitor_name is not None:
-        logger.warning("Monitor name from command line argument override the one from the configuration file.")
-    worker.set_config(worker_config, consume_keys=True)
+    monitor_name = worker_config.monitor_name
+    worker.set_config(worker_config)
     worker.output = "raw"
-
-    # Check unused keys
-    for key in worker_config.keys():
-        # FIXME this should be read also
-        if key in ["application", "version"]:
-            continue
-        logger.warning("Configuration key '%s' from json is unused", key)
-
     worker.safe = False  # all processing are expected to be the same.
 
     observer.worker_initialized(worker)
@@ -736,19 +731,16 @@ def process(input_data, output, config, monitor_name, observer, write_mode=HDF5W
 
 
 def integrate_shell(options, args):
-    import json
-    with open(options.json) as f:
-        config = json.load(f)
-
+    wc = WorkerConfig.from_file(options.json)
     observer = ShellIntegrationObserver()
     default_logger = logging.getLogger()
     with logging_utils.prepost_emit_callback(default_logger,
                                              observer.hide_info,
                                              observer.show_info):
-        monitor_name = options.monitor_key
+        wc.monitor_name = options.monitor_key
         filenames = args
         output = options.output
-        result = process(filenames, output, config, monitor_name, observer, options.write_mode)
+        result = process(filenames, output, wc, observer, options.write_mode)
 
     return result
 

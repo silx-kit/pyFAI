@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/09/2024"
+__date__ = "07/02/2025"
 __status__ = "development"
 
 import logging
@@ -293,12 +293,20 @@ class IntegrationDialog(qt.QWidget):
         url = projecturl.get_documentation_url("man/pyFAI-integrate.html")
         qt.QDesktopServices.openUrl(qt.QUrl(url))
 
+    def get_worker_config(self):
+        """Read the configuration of the plugin and returns it as a WorkerConfig dataclass
+
+        :return: WorkerConfig dataclass instance
+        """
+        wc = self.__workerConfigurator.getWorkerConfig()
+        return wc
+
     def get_config(self):
         """Read the configuration of the plugin and returns it as a dictionary
 
         :return: dict with all informations
         """
-        config = self.__workerConfigurator.getConfig()
+        config = self.get_worker_config().as_dict()
         return config
 
     def dump(self, filename=None):
@@ -309,19 +317,18 @@ class IntegrationDialog(qt.QWidget):
         :type filename: string
         :return: dict with configuration
         """
-        to_save = self.get_config()
+        to_save = self.get_worker_config()
         if filename is None:
             filename = self.json_file
         if filename is not None:
             logger.info("Dump to %s", filename)
             try:
-                with open(filename, "w") as myfile:
-                    json.dump(to_save, myfile, indent=4)
+                to_save.save(filename)
             except IOError as error:
                 logger.error("Error while saving config: %s", error)
             else:
                 logger.debug("Saved")
-        return to_save
+        return to_save.as_dict()
 
     def restore(self, filename=".azimint.json"):
         """Restore from JSON file the status of the current widget
