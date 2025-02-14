@@ -67,7 +67,7 @@ class PoniFile(object):
                 data = kwargs
             else:
                 return
-        else:
+        elif kwargs:
             raise ValueError("Passing both data and keyword arguments is not supported")
         if isinstance(data, dict):
             self.read_from_dict(data)
