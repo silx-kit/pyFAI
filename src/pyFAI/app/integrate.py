@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "14/02/2025"
 __satus__ = "production"
 
 import sys
@@ -313,6 +313,7 @@ class DataSource(object):
         self._items = []
         self._statistics = statistics
         self._frames_per_items = []
+        self._shape = None
 
     def append(self, item):
         self._items.append(item)
@@ -463,6 +464,26 @@ class DataSource(object):
             if data_info.frame_id is not None:
                 next_id += data_info.frame_id
             next_id += 1
+
+    @property
+    def shape(self):
+        if self._shape is None and self._items:
+            item = self._items[0]
+            fabio_image = None
+            if isinstance(item, (str,)):
+                with self._statistics.time_reading():
+                    fabio_image = fabio.open(item)
+                was_openned = True
+            elif isinstance(item, fabio.fabioimage.FabioImage):
+                fabio_image = item
+                was_openned = False
+            if fabio_image is None:
+                self._shape = item.shape[-2:]
+            else:
+                self._shape = fabio_image.shape
+                if was_openned:
+                    fabio_image.close()
+        return self._shape
 
 
 class MultiFileWriter(io.Writer):
@@ -640,7 +661,9 @@ def process(input_data, output, config, observer, write_mode=HDF5Writer.MODE_ERR
             source.append(item)
         else:
             logger.warning("Type %s unsopported. Data ignored.", item)
-
+    print(f"Initialize worker wih shape {source.shape}")
+    worker.reconfig(source.shape, sync=True)
+    print(worker.ai)
     observer.processing_started(source.approximate_count())
 
     writer = None
