@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2024"
+__date__ = "07/02/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -56,6 +56,7 @@ import threading
 import time
 from collections import OrderedDict
 import __main__ as main
+from .integration_config import WorkerConfig
 from ._json import UnitEncoder
 from ..utils import StringTypes, fully_qualified_name
 from .. import units
@@ -281,17 +282,20 @@ class HDF5Writer(Writer):
     def init(self, fai_cfg=None, lima_cfg=None):
         """
         Initializes the HDF5 file for writing
-        :param fai_cfg: the configuration of the worker as a dictionary
+        :param fai_cfg: the configuration of the worker as a dictionary|WorkerConfig
+        :param lima_cfg: the configuration of the acquisition made by LIMA as a dictionary
         """
         logger.debug("Init")
+        if not isinstance(fai_cfg, WorkerConfig):
+            fai_cfg = WorkerConfig.from_dict(fai_cfg)
         Writer.init(self, fai_cfg, lima_cfg)
-
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
-                open("fai_cfg.debug.json", "w").write(json.dumps(self.fai_cfg, indent=4, cls=UnitEncoder))
-                open("lima_cfg.debug.json", "w").write(json.dumps(self.lima_cfg, indent=4, cls=UnitEncoder))
+                fai_cfg.save("fai_cfg.debug.json")
+                with open("lima_cfg.debug.json", "w") as w:
+                    w.write(json.dumps(self.lima_cfg, indent=4, cls=UnitEncoder))
 
-            self.fai_cfg["nbpt_rad"] = self.fai_cfg.get("nbpt_rad", 1000)
+            self.fai_cfg.nbpt_rad = 1000 if self.fai_cfg.nbpt_rad is None else self.fai_cfg.nbpt_rad
 
             self.entry_grp = self._require_main_entry(self._mode)
 
@@ -310,20 +314,24 @@ class HDF5Writer(Writer):
             self.config_grp = self.nxs.new_class(self.process_grp, self.CONFIG, "NXnote")
             self.config_grp.attrs["desc"] = "PyFAI worker configuration"
             self.config_grp["type"] = "text/json"
-            self.config_grp["data"] = json.dumps(self.fai_cfg, indent=2, separators=(",\r\n", ": "), cls=UnitEncoder)
+            self.config_grp["data"] = json.dumps(self.fai_cfg.as_dict(), indent=2, separators=(",\r\n", ": "))
 
-            rad_name, rad_unit = str(self.fai_cfg.get("unit", "2th_deg")).split("_", 1)
+            unit = self.fai_cfg.unit
+            if unit is None:
+                unit = self.fai_cfg.unit = units.TTH_DEG
+            rad_name = unit.space
+            rad_unit = unit.unit_symbol
 
-            self.radial_ds = self.nxdata_grp.require_dataset("radial", (self.fai_cfg["nbpt_rad"],), numpy.float32)
+            self.radial_ds = self.nxdata_grp.require_dataset("radial", (self.fai_cfg.nbpt_rad,), numpy.float32)
             self.radial_ds.attrs["unit"] = rad_unit
             self.radial_ds.attrs["interpretation"] = "scalar"
             self.radial_ds.attrs["name"] = rad_name
             self.radial_ds.attrs["long_name"] = "Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
 
-            self.do2D = self.fai_cfg.get("do_2D", self.fai_cfg.get("nbpt_azim", 0) > 0)
+            self.do2D = self.fai_cfg.do_2D
 
             if self.do2D:
-                self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg["nbpt_azim"],), numpy.float32)
+                self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg.nbpt_azim,), numpy.float32)
                 self.azimuthal_ds.attrs["unit"] = "deg"
                 self.azimuthal_ds.attrs["interpretation"] = "scalar"
                 self.azimuthal_ds.attrs["long_name"] = "Azimuthal angle χ (degree)"
@@ -336,21 +344,21 @@ class HDF5Writer(Writer):
                 self.fast_motor.attrs["long_name"] = "Fast motor position"
                 self.fast_motor.attrs["interpretation"] = "scalar"
                 if self.do2D:
-                    chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
+                    chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_azim, self.fai_cfg.nbpt_rad
                     self.ndim = 4
                     axis_definition = [".", "fast", "chi", "radial"]
                 else:
-                    chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_rad"]
+                    chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_rad
                     self.ndim = 3
                     axis_definition = [".", "fast", "radial"]
             else:
                 if self.do2D:
                     axis_definition = [".", "chi", "radial"]
-                    chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
+                    chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg.nbpt_rad
                     self.ndim = 3
                 else:
                     axis_definition = [".", "radial"]
-                    chunk = 1, self.fai_cfg["nbpt_rad"]
+                    chunk = 1, self.fai_cfg.nbpt_rad
                     self.ndim = 2
 
             utf8vlen_dtype = h5py.special_dtype(vlen=str)
@@ -364,7 +372,7 @@ class HDF5Writer(Writer):
                     shape[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
                 else:
                     shape[0] = self.lima_cfg["number_of_frames"]
-            dtype = self.lima_cfg.get("dtype") or self.fai_cfg.get("dtype")
+            dtype = self.lima_cfg.get("dtype")
             if dtype is None:
                 dtype = numpy.float32
             else:
@@ -373,7 +381,7 @@ class HDF5Writer(Writer):
             self.shape = tuple(shape)
             self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
             name = "Mapping " if self.fast_scan_width else "Scanning "
-            name += "2D" if self.fai_cfg.get("nbpt_azim", 0) > 1 else "1D"
+            name += "2D" if self.fai_cfg.do_2D else "1D"
             name += " experiment"
             self.entry_grp["title"] = name
 
@@ -681,7 +689,7 @@ class DefaultAiWriter(Writer):
         if fabio is None:
             raise RuntimeError("FabIO module is needed to save images")
         if dim2_unit == "chi_deg" and isinstance(dim1_unit, (tuple, list)) and len(dim1_unit) == 2:
-            dim1_unit,dim2_unit = (units.to_unit(i) for i in dim1_unit)
+            dim1_unit, dim2_unit = (units.to_unit(i) for i in dim1_unit)
         else:
             dim1_unit = units.to_unit(dim1_unit)
             dim2_unit = units.to_unit(dim2_unit)
