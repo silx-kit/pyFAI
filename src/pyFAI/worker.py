@@ -63,7 +63,8 @@ from .containers import ErrorModel
 from .method_registry import IntegrationMethod
 from .distortion import Distortion
 from . import units
-from .io import integration_config, ponifile, image as io_image
+from .io import ponifile, image as io_image
+from .io.integration_config import WorkerConfig
 from .engines.preproc import preproc as preproc_numpy
 from .utils.decorators import deprecated_warning
 try:
@@ -92,8 +93,8 @@ def make_ai(config, consume_keys=False):
         consumed when used.
     :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
-    if not isinstance(config, integration_config.WorkerConfig):
-        config = integration_config.WorkerConfig.from_dict(config, inplace=consume_keys)
+    if not isinstance(config, WorkerConfig):
+        config = WorkerConfig.from_dict(config, inplace=consume_keys)
     ai = AzimuthalIntegrator()
     _init_ai(ai, config)
     return ai
@@ -103,7 +104,7 @@ def _init_ai(ai, config, read_maps=True):
     """Initialize an :class:`AzimuthalIntegrator` from a configuration.
 
     :param AzimuthalIntegrator ai: An :class:`AzimuthalIntegrator`.
-    :param config: integration_config.WorkerConfig dataclass instance
+    :param config: WorkerConfig dataclass instance
     :param bool read_maps: If true mask, flat, dark will be read.
     :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
@@ -408,16 +409,16 @@ class Worker(object):
 
     setMaskFile = set_mask_file
 
-    def set_config(self, config:dict|WorkerConfig, consume_keys:bool=False):
+    def set_config(self, config:dict | WorkerConfig, consume_keys:bool=False):
         """
         Configure the working from the dictionary|WorkerConfig.
 
-        :param dict config: Key-value configuration or integration_config.WorkerConfig dataclass instance
+        :param dict config: Key-value configuration or WorkerConfig dataclass instance
         :param bool consume_keys: If true the keys from the dictionary will be
             consumed when used.
         """
-        if not isinstance(config, integration_config.WorkerConfig):
-            config = integration_config.WorkerConfig.from_dict(config, inplace=consume_keys)
+        if not isinstance(config, WorkerConfig):
+            config = WorkerConfig.from_dict(config, inplace=consume_keys)
         _init_ai(self.ai, config, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
@@ -483,9 +484,9 @@ class Worker(object):
 
         :return: WorkerConfig dataclass instance
         """
-        config = integration_config.WorkerConfig(application="worker",
-                                                 poni=dict(self.ai.get_config()),
-                                                 unit=str(self._unit))
+        config = WorkerConfig(application="worker",
+                              poni=dict(self.ai.get_config()),
+                              unit=str(self._unit))
         for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "delta_dummy", "extra_options",
                     "correct_solid_angle", "error_model", "method", "azimuth_range", "radial_range",
                     "dummy", "normalization_factor", "dark_current_image", "flat_field_image",
