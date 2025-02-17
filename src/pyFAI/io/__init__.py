@@ -108,7 +108,7 @@ class Writer(object):
         self.lima_cfg = {}
 
     def __repr__(self):
-        return "Generic writer on file %s" % (self.filename)
+        return f"Generic writer on file {self.filename}"
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
@@ -217,7 +217,7 @@ class HDF5Writer(Writer):
         self._mode = mode
 
     def __repr__(self):
-        return "HDF5 writer on file {self.filename}:{self.hpath} {'' if self._initialized else 'un'}initialized {}"
+        return f"HDF5 writer on file {self.filename}:{self.hpath} {'' if self.intensity_ds else 'un'}initialized"
 
     def _require_main_entry(self, mode):
         """
