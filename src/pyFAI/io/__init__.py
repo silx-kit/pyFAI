@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "17/02/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -341,7 +341,7 @@ class HDF5Writer(Writer):
                 self.fast_motor = self.entry_grp.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
                 self.fast_motor.attrs["long_name"] = "Fast motor position"
                 self.fast_motor.attrs["interpretation"] = "scalar"
-                if self.fai_cfg.do2D:
+                if self.fai_cfg.do_2D:
                     chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_azim, self.fai_cfg.nbpt_rad
                     self.ndim = 4
                     axis_definition = [".", "fast", "chi", "radial"]
@@ -350,7 +350,7 @@ class HDF5Writer(Writer):
                     self.ndim = 3
                     axis_definition = [".", "fast", "radial"]
             else:
-                if self.fai_cfg.do2D:
+                if self.fai_cfg.do_2D:
                     axis_definition = [".", "chi", "radial"]
                     chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg.nbpt_rad
                     self.ndim = 3
