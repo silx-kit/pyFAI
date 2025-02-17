@@ -700,8 +700,12 @@ class Calibrant(object):
         fwhm2 = U * tanth ** 2 + V * tanth + W
         sigma2 = fwhm2 / (8.0 * numpy.log(2.0))
         signal = numpy.zeros_like(sigma2)
+        sigma_min = (sigma2.min())**0.5
+        sigma_max = (sigma2.max())**0.5
         for t in self.get_2th():
-            if t >= tth_max:
+            if t < (tth_min - 3 * sigma_min):
+                continue
+            elif t > (tth_max + 3 * sigma_max):
                 break
             else:
                 signal += Imax * numpy.exp(-(tth_1d - t) ** 2 / (2.0 * sigma2))
