@@ -45,7 +45,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/02/2025"
+__date__ = "17/02/2025"
 __status__ = "development"
 
 import threading
@@ -257,6 +257,8 @@ class Worker(object):
         self._processor = self.ai.__getattribute__(integrator_name)
         self._method = IntegrationMethod.select_one_available(self.method, dim=dim)
         self.integrator_name = self._processor.__name__
+        self.radial = None
+        self.azimuthal = None
 
     @property
     def nbpt_azim(self):
@@ -363,6 +365,11 @@ class Worker(object):
                     ]
             logger.error("\n".join(err2))
             raise err
+        else:
+            if self.radial is None:
+                self.radial = integrated_result.radial
+                if self.do_2D():
+                    self.azimuthal = integrated_result.azimuthal
         if self.output == "raw":
             return integrated_result
         elif writer is not None:
@@ -530,11 +537,10 @@ class Worker(object):
         self.output = "raw"
         logger.info(f"warm-up with shape {self.shape}, detector shape {self.ai.detector.shape} mask {self.ai.detector.mask.shape} mask sum {self.ai.detector.mask.sum()}\n{self.ai}")
         integrated_result = self.process(numpy.zeros(self.shape, dtype=numpy.float32))
+        self.radial = integrated_result.radial
         if self.do_2D():
-            self.radial = integrated_result.radial
             self.azimuthal = integrated_result.azimuthal
         else:
-            self.radial = integrated_result.radial
             self.azimuthal = None
         self.propagate_uncertainties =  (integrated_result.sigma is not None)
         self.output = backup
