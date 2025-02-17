@@ -702,7 +702,7 @@ class Calibrant(object):
         signal = numpy.zeros_like(sigma2)
         for t in self.get_2th():
             # Soft condition
-            if t >= tth_max * 1.05:
+            if 0.95 * t >= tth_max:
                 break
             else:
                 signal += Imax * numpy.exp(-(tth_1d - t) ** 2 / (2.0 * sigma2))
