@@ -39,12 +39,13 @@ Aims at being integrated into a plugin like LImA or as model for the GUI
 The configuration of this class is mainly done via a WorkerConfig object serialized as a JSON string.
 For the valid keys, please refer to the doc of the dataclass `pyFAI.io.integration_config.WorkerConfig`
 """
+from __future__ import annotations
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/02/2025"
+__date__ = "14/02/2025"
 __status__ = "development"
 
 import threading
@@ -62,7 +63,8 @@ from .containers import ErrorModel
 from .method_registry import IntegrationMethod
 from .distortion import Distortion
 from . import units
-from .io import integration_config, ponifile, image as io_image
+from .io import ponifile, image as io_image
+from .io.integration_config import WorkerConfig
 from .engines.preproc import preproc as preproc_numpy
 from .utils.decorators import deprecated_warning
 from .utils import binning as rebin
@@ -92,8 +94,8 @@ def make_ai(config, consume_keys=False):
         consumed when used.
     :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
-    if not isinstance(config, integration_config.WorkerConfig):
-        config = integration_config.WorkerConfig.from_dict(config, inplace=consume_keys)
+    if not isinstance(config, WorkerConfig):
+        config = WorkerConfig.from_dict(config, inplace=consume_keys)
     ai = AzimuthalIntegrator()
     _init_ai(ai, config)
     return ai
@@ -103,7 +105,7 @@ def _init_ai(ai, config, read_maps=True):
     """Initialize an :class:`AzimuthalIntegrator` from a configuration.
 
     :param AzimuthalIntegrator ai: An :class:`AzimuthalIntegrator`.
-    :param config: integration_config.WorkerConfig dataclass instance
+    :param config: WorkerConfig dataclass instance
     :param bool read_maps: If true mask, flat, dark will be read.
     :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
     """
@@ -218,7 +220,6 @@ class Worker(object):
         self.azimuth_range = self.extra_options.pop("azimuth_range", None)
         self.error_model = ErrorModel.parse(self.extra_options.pop("error_model", None))
 
-
     def __repr__(self):
         """
         pretty print of myself
@@ -287,13 +288,12 @@ class Worker(object):
             self._shape = shape
             if self.ai.detector.force_pixel:
                 mask = self.ai.detector.mask
-                print(f"before rebin, mask has {(mask!=0).sum()} pixels")
+                logger.info(f"Before rebin, mask has {(mask!=0).sum()} pixels")
                 res = self.ai.detector.guess_binning(shape)
                 if res and mask is not None:
                     new_shape = numpy.array(self.ai.detector.shape)
-                    # print(f"mask was  {mask.shape}")
-                    if numpy.all(new_shape<numpy.array(mask.shape)):
-                        self.ai.detector.mask = (rebin(mask, self.ai.detector.binning)!=0)
+                    if numpy.all(new_shape < numpy.array(mask.shape)):
+                        self.ai.detector.mask = (rebin(mask, self.ai.detector.binning) != 0)
                         logger.info(f"reconfig: mask has been rebinned from {mask.shape} to {self.ai.detector.mask.shape}. Masking {self.ai.detector.mask.sum()} pixels")
             else:
                 self.ai.detector.shape = shape
@@ -408,16 +408,16 @@ class Worker(object):
 
     setMaskFile = set_mask_file
 
-    def set_config(self, config, consume_keys=False):
+    def set_config(self, config:dict | WorkerConfig, consume_keys:bool=False):
         """
-        Configure the working from the dictionary.
+        Configure the working from the dictionary|WorkerConfig.
 
-        :param dict config: Key-value configuration or integration_config.WorkerConfig dataclass instance
+        :param dict config: Key-value configuration or WorkerConfig dataclass instance
         :param bool consume_keys: If true the keys from the dictionary will be
             consumed when used.
         """
-        if not isinstance(config, integration_config.WorkerConfig):
-            config = integration_config.WorkerConfig.from_dict(config, inplace=consume_keys)
+        if not isinstance(config, WorkerConfig):
+            config = WorkerConfig.from_dict(config, inplace=consume_keys)
         _init_ai(self.ai, config, read_maps=False)
 
         # Do it here before reading the AI to be able to catch the io
@@ -450,14 +450,14 @@ class Worker(object):
             self.flat_field_image = filenames
 
         self._nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
-        self.method = config.method # expand to Method ?
+        self.method = config.method  # expand to Method ?
         self.nbpt_rad = config.nbpt_rad
         self.unit = units.to_unit(config.unit or "2th_deg")
         self.error_model = ErrorModel.parse(config.error_model)
         self.polarization_factor = config.polarization_factor
         self.azimuth_range = config.azimuth_range
         self.radial_range = config.radial_range
-        self.correct_solid_angle = True if config.do_solid_angle is None else bool(config.do_solid_angle)
+        self.correct_solid_angle = True if config.correct_solid_angle is None else bool(config.correct_solid_angle)
         self.dummy = config.val_dummy
         self.delta_dummy = config.delta_dummy
         self._normalization_factor = config.normalization_factor
@@ -483,9 +483,9 @@ class Worker(object):
 
         :return: WorkerConfig dataclass instance
         """
-        config = integration_config.WorkerConfig(application="worker",
-                                                 poni = dict(self.ai.get_config()),
-                                                 unit = str(self._unit))
+        config = WorkerConfig(application="worker",
+                              poni=dict(self.ai.get_config()),
+                              unit=str(self._unit))
         for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "delta_dummy", "extra_options",
                     "correct_solid_angle", "error_model", "method", "azimuth_range", "radial_range",
                     "dummy", "normalization_factor", "dark_current_image", "flat_field_image",
@@ -501,7 +501,6 @@ class Worker(object):
         :return: JSON-serializable dictionary
         """
         return self.get_worker_config().as_dict()
-
 
     def get_json_config(self):
         """return configuration as a JSON string"""

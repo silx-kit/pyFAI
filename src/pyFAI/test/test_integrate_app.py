@@ -362,7 +362,7 @@ class TestProcess(unittest.TestCase):
         config = {"nbpt_rad": 2}
         config.update(self.base_config)
         observer = _ResultObserver()
-        pyFAI.app.integrate.process([], self.tempDir, config, monitor_name=None, observer=observer)
+        pyFAI.app.integrate.process([], self.tempDir, config, observer=observer)
         self.assertEqual(len(observer.result), 0)
 
     def test_process_numpy_1d(self):
@@ -375,7 +375,7 @@ class TestProcess(unittest.TestCase):
         config = self.base_config.copy()
         config.update(params)
         observer = _ResultObserver()
-        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        pyFAI.app.integrate.process([data], self.tempDir, config, observer=observer)
         self.assertEqual(len(observer.result), 1)
         result = observer.result[0]
         numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
@@ -393,7 +393,7 @@ class TestProcess(unittest.TestCase):
         config = self.base_config.copy()
         config.update(params)
         observer = _ResultObserver()
-        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        pyFAI.app.integrate.process([data], self.tempDir, config, observer=observer)
         self.assertEqual(len(observer.result), 1)
         result = observer.result[0]
         numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
@@ -412,7 +412,7 @@ class TestProcess(unittest.TestCase):
         config = self.base_config.copy()
         config.update(params)
         observer = _ResultObserver()
-        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        pyFAI.app.integrate.process([data], self.tempDir, config, observer=observer)
         self.assertEqual(len(observer.result), 2)
         result = observer.result[0]
         numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
@@ -430,7 +430,7 @@ class TestProcess(unittest.TestCase):
         config = self.base_config.copy()
         config.update(params)
         observer = _ResultObserver()
-        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        pyFAI.app.integrate.process([data], self.tempDir, config, observer=observer)
         self.assertEqual(len(observer.result), 1)
         result = observer.result[0]
         numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
@@ -452,7 +452,7 @@ class TestProcess(unittest.TestCase):
         config = self.base_config.copy()
         config.update(params)
         observer = _ResultObserver()
-        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        pyFAI.app.integrate.process([data], self.tempDir, config, observer=observer)
         self.assertEqual(len(observer.result), 2)
         result = observer.result[0]
         numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
@@ -467,7 +467,7 @@ class TestProcess(unittest.TestCase):
         config = self.base_config.copy()
         config.update(params)
         observer = _ResultObserver()
-        pyFAI.app.integrate.process(["##unexisting_file##.edf", 10], self.tempDir, config, monitor_name=None, observer=observer)
+        pyFAI.app.integrate.process(["##unexisting_file##.edf", 10], self.tempDir, config, observer=observer)
         self.assertEqual(len(observer.result), 0)
 
     def test_normalization_monitor_name(self):
@@ -483,7 +483,7 @@ class TestProcess(unittest.TestCase):
         config = self.base_config.copy()
         config.update(params)
         observer = _ResultObserver()
-        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        pyFAI.app.integrate.process([data], self.tempDir, config, observer=observer)
         self.assertEqual(len(observer.result), 1)
         result = observer.result[0]
         numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
@@ -503,7 +503,7 @@ class TestProcess(unittest.TestCase):
         config = self.base_config.copy()
         config.update(params)
         observer = _ResultObserver()
-        pyFAI.app.integrate.process([data], self.tempDir, config, monitor_name=None, observer=observer)
+        pyFAI.app.integrate.process([data], self.tempDir, config, observer=observer)
         self.assertEqual(len(observer.result), 1)
         result = observer.result[0]
         numpy.testing.assert_array_almost_equal(result.intensity, expected_result, decimal=1)
