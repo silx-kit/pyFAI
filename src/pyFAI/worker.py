@@ -370,17 +370,18 @@ class Worker(object):
                 self.radial = integrated_result.radial
                 if self.do_2D():
                     self.azimuthal = integrated_result.azimuthal
+        if writer is not None:
+            writer.write(integrated_result)
         if self.output == "raw":
             return integrated_result
-        elif writer is not None:
-            writer.write(integrated_result)
         elif self.output == "numpy":
-            if (integrated_result.sigma is not None):
-                return integrated_result.intensity, integrated_result.sigma
+            if self.do_2D():
+                if integrated_result.sigma is None:
+                    return integrated_result.intensity
+                else:
+                    return integrated_result.intensity, integrated_result.sigma
             else:
-                return integrated_result.intensity
-        else:
-            return integrated_result
+                return numpy.vstack(integrated_result).T
 
     def setSubdir(self, path):
         """
@@ -535,7 +536,8 @@ class Worker(object):
     def _warmup(self):
         backup = self.output
         self.output = "raw"
-        logger.info(f"warm-up with shape {self.shape}, detector shape {self.ai.detector.shape} mask {self.ai.detector.mask.shape} mask sum {self.ai.detector.mask.sum()}\n{self.ai}")
+        msk = "" if self.ai.detector.mask is None else f"mask {self.ai.detector.mask.shape} mask sum {self.ai.detector.mask.sum()}\n"
+        logger.info(f"warm-up with shape {self.shape}, detector shape {self.ai.detector.shape}\n{msk}{self.ai}")
         integrated_result = self.process(numpy.zeros(self.shape, dtype=numpy.float32))
         self.radial = integrated_result.radial
         if self.do_2D():
