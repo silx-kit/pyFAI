@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2025"
+__date__ = "18/02/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -128,7 +128,7 @@ class AzimuthalIntegrator(Integrator):
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
         assert method.dimension == 1
         unit = units.to_unit(unit)
-        empty = dummy if dummy is not None else self._empty
+        empty = numpy.float32(dummy) if dummy is not None else self._empty
         shape = data.shape
         pos0_scale = unit.scale
 
@@ -211,7 +211,7 @@ class AzimuthalIntegrator(Integrator):
                     if cython_integr.size != data.size:
                         cython_reset = "input image size changed"
                     if cython_integr.empty != empty:
-                        cython_reset = "empty value changed"
+                        cython_reset = f"empty value changed {cython_integr.empty}!={empty}"
                     if (mask is not None) and (not cython_integr.check_mask):
                         cython_reset = f"mask but {method.algo_lower.upper()} was without mask"
                     elif (mask is None) and (cython_integr.cmask is not None):
@@ -605,7 +605,7 @@ class AzimuthalIntegrator(Integrator):
         sum_normalization = res._sum_normalization.sum(axis=-1)
 
         mask = numpy.where(count == 0)
-        empty = dummy if dummy is not None else self._empty
+        empty = numpy.float32(dummy) if dummy is not None else self._empty
         intensity = sum_signal / sum_normalization
         intensity[mask] = empty
 
@@ -703,7 +703,7 @@ class AzimuthalIntegrator(Integrator):
         space = (radial_unit.space, azimuth_unit.space)
         pos0_scale = radial_unit.scale
         pos1_scale = azimuth_unit.scale
-        empty = dummy if dummy is not None else self._empty
+        empty = numpy.float32(dummy) if dummy is not None else self._empty
         if mask is None:
             has_mask = "from detector"
             mask = self.mask
