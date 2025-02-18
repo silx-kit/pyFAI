@@ -1715,8 +1715,8 @@ class Integrator(Geometry):
                 if engine.engine is not None:
                     try:
                         engine.engine.empty = self._empty
-                    except Exception as exeption:
-                        logger.error(f"{type(exception)}: {exeption}")
+                    except Exception as exception:
+                        logger.error(f"{type(exception)}: {exception}")
 
     empty = property(get_empty, set_empty)
 
