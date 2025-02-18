@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "18/02/2025"
 __status__ = "development"
 
 import logging
@@ -255,7 +255,7 @@ class WorkerConfigurator(qt.QWidget):
             return [name.strip() for name in filenames.split("|")]
 
         wc = integration_config.WorkerConfig(application="pyfai-integrate",
-                                             poni=self.getPoniDict())
+                                             poni=self.getPoni())
         # pre-processing
         if self.do_mask.isChecked():
             wc.mask_image = str_(self.mask_file.text()).strip()
