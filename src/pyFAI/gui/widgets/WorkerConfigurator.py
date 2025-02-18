@@ -273,7 +273,7 @@ class WorkerConfigurator(qt.QWidget):
         if self.do_2D.isChecked():
             wc.nbpt_azim = self.__getAzimuthalNbpt()
         wc.nbpt_rad = self.__getRadialNbpt()
-        wc.unit = str(self.radial_unit.model().value())
+        wc.unit = to_unit(str(self.radial_unit.model().value()))
         if self.do_radial_range.isChecked():
             wc.radial_range = [self._float("radial_range_min", -numpy.inf),
                                self._float("radial_range_max", numpy.inf)]
@@ -361,23 +361,23 @@ class WorkerConfigurator(qt.QWidget):
         self.__geometryModel.rotation3().setValue(None)
 
         poni = wc.poni
-        if isinstance(poni, PoniFile):
-            if poni.wavelength:
-                self.__geometryModel.wavelength().setValue(poni.wavelength)
-            if poni.dist:
-                self.__geometryModel.distance().setValue(poni.dist)
-            if poni.poni1 is not None:
-                self.__geometryModel.poni1().setValue(poni.poni1)
-            if poni.poni2 is not None:
-                self.__geometryModel.poni2().setValue(poni.poni2)
-            if poni.rot1 is not None:
-                self.__geometryModel.rotation1().setValue(poni.rot1)
-            if poni.rot2 is not None:
-                self.__geometryModel.rotation2().setValue(poni.rot2)
-            if poni.rot3 is not None:
-                self.__geometryModel.rotation3().setValue(poni.rot3)
+        if not isinstance(poni, PoniFile):
+            poni = PoniFile(poni)
 
-        # reader = integration_config.ConfigurationReader(dico)
+        if poni.wavelength:
+            self.__geometryModel.wavelength().setValue(poni.wavelength)
+        if poni.dist:
+            self.__geometryModel.distance().setValue(poni.dist)
+        if poni.poni1 is not None:
+            self.__geometryModel.poni1().setValue(poni.poni1)
+        if poni.poni2 is not None:
+            self.__geometryModel.poni2().setValue(poni.poni2)
+        if poni.rot1 is not None:
+            self.__geometryModel.rotation1().setValue(poni.rot1)
+        if poni.rot2 is not None:
+            self.__geometryModel.rotation2().setValue(poni.rot2)
+        if poni.rot3 is not None:
+            self.__geometryModel.rotation3().setValue(poni.rot3)
 
         # detector
         if poni.detector is not None:
