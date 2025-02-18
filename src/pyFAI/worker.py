@@ -45,7 +45,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2025"
+__date__ = "18/02/2025"
 __status__ = "development"
 
 import threading
@@ -299,6 +299,7 @@ class Worker(object):
                         logger.info(f"reconfig: mask has been rebinned from {mask.shape} to {self.ai.detector.mask.shape}. Masking {self.ai.detector.mask.sum()} pixels")
             else:
                 self.ai.detector.shape = shape
+        self.ai.empty = self.dummy
         self.ai.reset()
         self.warmup(sync)
 
