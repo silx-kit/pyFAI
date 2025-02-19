@@ -48,7 +48,6 @@ from ...io.integration_config import WorkerConfig
 
 
 def compute_radial_values(worker_config: WorkerConfig) -> numpy.ndarray:
-    print(worker_config)
     ai = AzimuthalIntegrator.sload(worker_config.poni)
     if worker_config.shape is not None:
         ai.detector.guess_binning(worker_config.shape)
