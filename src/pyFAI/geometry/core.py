@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2025"
+__date__ = "19/02/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1357,24 +1357,28 @@ class Geometry(object):
         """
         Load the refined parameters from a file.
 
-        :param filename: name of the file to load. Can also be a JSON string with a dict or dict
-        :type filename: string
+        :param filename: name of the file to load. Can also be a JSON string with a dict or dict or geometry
+        :type filename: string with filename or JSON-serialized dict (i.e. string) or a dictionary or Geometry instance.
         :return: itself with updated parameters
         """
-        try:
-            if os.path.exists(filename):
-                with open(filename) as f:
-                    dico = json.load(f)
-            else:
-                dico = json.loads(filename)
-        except Exception:
-            logger.info("Unable to parse %s as JSON file, defaulting to PoniParser", filename)
+        poni = None
+        if isinstance(filename, (dict, Geometry)):
             poni = ponifile.PoniFile(data=filename)
-        else:
-            config = integration_config.ConfigurationReader(dico)
-            poni = config.pop_ponifile()
-        self._init_from_poni(poni)
-
+        elif isinstance(filename, str):
+            try:
+                if os.path.exists(filename):
+                    with open(filename) as f:
+                        dico = json.load(f)
+                else:
+                    dico = json.loads(filename)
+            except Exception:
+                logger.info("Unable to parse %s as JSON file, defaulting to PoniParser", filename)
+                poni = ponifile.PoniFile(data=filename)
+            else:
+                config = integration_config.ConfigurationReader(dico)
+                poni = config.pop_ponifile()
+        if poni:
+            self._init_from_poni(poni)
         return self
 
     read = load
