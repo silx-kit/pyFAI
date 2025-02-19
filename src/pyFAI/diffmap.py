@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/02/2025"
+__date__ = "19/02/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -387,7 +387,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         if isinstance(dico, dict):
             dico = WorkerConfig.from_dict(dico)
         self.worker.set_config(dico or self.poni)
-        # print(dico)
         self.init_shape(dico.shape)
 
     def makeHDF5(self, rewrite=False):
@@ -444,7 +443,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         process_grp["offset"] = self.offset
         config = nxs.new_class(process_grp, "configuration", "NXnote")
         config["type"] = "text/json"
-        # self.init_shape()
         worker_config = self.worker.get_config()
         config["data"] = json.dumps(worker_config, indent=2, separators=(",\r\n", ": "))
 
@@ -520,6 +518,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         print(f"reconfigure worker with shape {shape}")
         self.worker.reconfig(shape, sync=True)
         self.worker.output = "raw" #after reconfig !
+        self.worker.safe = False
         return shape
 
     def init_ai(self):
@@ -535,8 +534,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         # enforce initialization of azimuthal integrator
         logger.info(f"Detector shape: {self.ai.detector.shape} mask shape {self.ai.detector.mask.shape}")
         tth = self.worker.radial
-        if self.dataset is None:
-            self.makeHDF5()
 
         if self.worker.propagate_uncertainties:
             self.dataset_error = self.nxdata_grp.create_dataset("errors",
