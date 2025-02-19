@@ -260,15 +260,26 @@ class Worker(object):
             elif "1d" in integrator_name and dim == 2:
                 integrator_name = integrator_name.replace("1d", "2d")
         self._processor = self.ai.__getattribute__(integrator_name)
-        #self._method = IntegrationMethod.select_one_available(self.method, dim=dim)
-        methods = IntegrationMethod.select_method(dim=dim, split=self.method[0], algo=self.method[1], impl=self.method[2],
-                                                  target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None,
-                                                  target_type=self.opencl_device if isinstance(self.opencl_device, str) else None,
-                                                  degradable=True)
-        if methods:
-            self._method =  methods[0]
+
+        if isinstance(self.method, (list, tuple)):
+            if isinstance(self.method, Method):
+                methods = IntegrationMethod.select_method(dim=dim, split=self.method[1], algo=self.method[2], impl=self.method[3],
+                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else self.method[4],
+                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else self.method[4],
+                                      degradable=True)
+            else:
+                methods = IntegrationMethod.select_method(dim=dim, split=self.method[0], algo=self.method[1], impl=self.method[2],
+                                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None,
+                                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else None,
+                                                      degradable=True)
+            self._method = methods[0]
+        elif isinstance(self.method, str) or self.method is None:
+            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
+        elif isinstance(self.method, IntegrationMethod):
+            self._method = self.method
         else:
             logger.error(f"No method available for {dim}D integration on {self.method} with target {self.opencl_device}")
+            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
         self.integrator_name = self._processor.__name__
         self.radial = None
         self.azimuthal = None
