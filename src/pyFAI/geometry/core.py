@@ -1362,7 +1362,9 @@ class Geometry(object):
         :return: itself with updated parameters
         """
         poni = None
-        if isinstance(filename, (dict, Geometry)):
+        if isinstance(filename, ponifile.PoniFile):
+            poni = filename
+        elif isinstance(filename, (dict, Geometry)):
             poni = ponifile.PoniFile(data=filename)
         elif isinstance(filename, str):
             try:
@@ -1377,6 +1379,8 @@ class Geometry(object):
             else:
                 config = integration_config.ConfigurationReader(dico)
                 poni = config.pop_ponifile()
+        else:
+            logger.error("Unable to initialize geometry from %s", filename)
         if poni:
             self._init_from_poni(poni)
         return self
