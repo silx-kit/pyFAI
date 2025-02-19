@@ -45,7 +45,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/02/2025"
+__date__ = "19/02/2025"
 __status__ = "development"
 
 import threading
@@ -60,7 +60,7 @@ from . import average
 from . import method_registry
 from .integrator.azimuthal import AzimuthalIntegrator
 from .containers import ErrorModel
-from .method_registry import IntegrationMethod
+from .method_registry import IntegrationMethod, Method
 from .distortion import Distortion
 from . import units
 from .io import ponifile, image as io_image
@@ -195,7 +195,12 @@ class Worker(object):
         self.integrator_name = integrator_name
         self._processor = None
         self._nbpt_azim = None
-        self.method = method
+        if isinstance(method, (str, list, tuple, Method)):
+            method = IntegrationMethod.parse(method)
+        else:
+            logger.error(f"Unable to parse method {method}")
+        self.method = (method.split, method.algorithm, method.implementation)
+        self.opencl_device = method.target
         self._method = None
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
@@ -255,7 +260,15 @@ class Worker(object):
             elif "1d" in integrator_name and dim == 2:
                 integrator_name = integrator_name.replace("1d", "2d")
         self._processor = self.ai.__getattribute__(integrator_name)
-        self._method = IntegrationMethod.select_one_available(self.method, dim=dim)
+        #self._method = IntegrationMethod.select_one_available(self.method, dim=dim)
+        methods = IntegrationMethod.select_method(dim=dim, split=self.method[0], algo=self.method[1], impl=self.method[2],
+                                                  target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None,
+                                                  target_type=self.opencl_device if isinstance(self.opencl_device, str) else None,
+                                                  degradable=True)
+        if methods:
+            self._method =  methods[0]
+        else:
+            logger.error(f"No method available for {dim}D integration on {self.method} with target {self.opencl_device}")
         self.integrator_name = self._processor.__name__
         self.radial = None
         self.azimuthal = None
@@ -460,6 +473,7 @@ class Worker(object):
 
         self._nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
         self.method = config.method  # expand to Method ?
+        self.opencl_device = config.opencl_device
         self.nbpt_rad = config.nbpt_rad
         self.unit = units.to_unit(config.unit or "2th_deg")
         self.error_model = ErrorModel.parse(config.error_model)
@@ -495,10 +509,12 @@ class Worker(object):
         config = WorkerConfig(application="worker",
                               poni=dict(self.ai.get_config()),
                               unit=str(self._unit))
-        for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "delta_dummy", "extra_options",
-                    "correct_solid_angle", "error_model", "method", "azimuth_range", "radial_range",
-                    "dummy", "normalization_factor", "dark_current_image", "flat_field_image",
-                    "mask_image", "integrator_name"]:
+        for key in ["nbpt_azim", "nbpt_rad", "polarization_factor",  "extra_options",
+                    "correct_solid_angle", "error_model", "method", "opencl_device",
+                    "azimuth_range", "radial_range",
+                    "dummy", "delta_dummy", "normalization_factor",
+                    "dark_current_image", "flat_field_image",
+                    "mask_image", "integrator_name", "shape"]:
             try:
                 config.__setattr__(key, self.__getattribute__(key))
             except Exception as err:
