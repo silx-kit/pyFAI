@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2025"
+__date__ = "19/02/2025"
 __status__ = "production"
 
 import logging
@@ -1015,3 +1015,10 @@ def quality_of_fit(img, ai, calibrant,
                                 idx_fwhm[idx, ring] = width
                                 idx_maxi[idx, ring] = idx_max
     return numpy.nanmean((2.355*(idx_maxi-idx_theo)/idx_fwhm)**2)
+
+
+def nan_equal(a, b):
+    """return True if a==b, also if a and b are both NaNs"""
+    if a==b:
+        return True
+    return numpy.isnan(a) and numpy.isnan(b)
