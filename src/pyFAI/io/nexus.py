@@ -167,9 +167,15 @@ class Nexus(object):
             self.h5.attrs["creator"] = creator or self.__class__.__name__
 
     def __del__(self):
+        self.close()
+
+    def close(self, end_time=None):
+        """
+        Close the file and update all entries.
+        """
         try:
             if self.mode != "r":
-                end_time = get_isotime()
+                end_time = get_isotime(end_time)
                 for entry in self.to_close:
                     entry["end_time"] = end_time
                 self.h5.attrs["file_update_time"] = get_isotime()
@@ -177,24 +183,12 @@ class Nexus(object):
             sys.stderr.write(f"{type(error)}: {error},\nwhile finalizing Nexus file\n")
 
         try:
-            self.h5.close()
+            if self.h5:
+                self.h5.close()
             if self.file_handle:
                 self.file_handle.close()
-        except:
-            pass
-
-    def close(self, end_time=None):
-        """
-        close the filename and update all entries
-        """
-        if self.mode != "r":
-            end_time = get_isotime(end_time)
-            for entry in self.to_close:
-                entry["end_time"] = end_time
-            self.h5.attrs["file_update_time"] = get_isotime()
-        self.h5.close()
-        if self.file_handle:
-            self.file_handle.close()
+        except Exception as error:
+            sys.stderr.write(f"Error closing file: {error}\n")
 
     # Context manager for "with" statement compatibility
     def __enter__(self, *arg, **kwarg):
