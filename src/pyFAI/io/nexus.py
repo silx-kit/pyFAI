@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2024"
+__date__ = "20/02/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -41,6 +41,7 @@ import time
 import logging
 import json
 import posixpath
+import atexit
 from ..utils.decorators import deprecated
 from ..containers import Integrate1dResult, ErrorModel
 from .. import version
@@ -157,7 +158,7 @@ class Nexus(object):
             self.file_handle = None
             self.h5 = h5py.File(self.filename, mode=self.mode)
         self.to_close = []
-
+        atexit.register(self.close)
         if not pre_existing or "w" in mode:
             self.h5.attrs["NX_class"] = "NXroot"
             self.h5.attrs["file_time"] = get_isotime(start_time)
