@@ -32,7 +32,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/01/2025"
+__date__ = "19/02/2025"
 __status__ = "development"
 
 from typing import Iterable, Optional
@@ -49,6 +49,8 @@ from ...io.integration_config import WorkerConfig
 
 def compute_radial_values(worker_config: WorkerConfig) -> numpy.ndarray:
     ai = AzimuthalIntegrator.sload(worker_config.poni)
+    if worker_config.shape is not None:
+        ai.detector.guess_binning(worker_config.shape)
     scaled_values = ai.center_array(worker_config.shape, worker_config.unit)
     return scaled_values
 

@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "17/02/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -108,7 +108,7 @@ class Writer(object):
         self.lima_cfg = {}
 
     def __repr__(self):
-        return "Generic writer on file %s" % (self.filename)
+        return f"Generic writer on file {self.filename}"
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
@@ -217,7 +217,7 @@ class HDF5Writer(Writer):
         self._mode = mode
 
     def __repr__(self):
-        return "HDF5 writer on file {self.filename}:{self.hpath} {'' if self._initialized else 'un'}initialized {}"
+        return f"HDF5 writer on file {self.filename}:{self.hpath} {'' if self.intensity_ds else 'un'}initialized"
 
     def _require_main_entry(self, mode):
         """
@@ -328,9 +328,7 @@ class HDF5Writer(Writer):
             self.radial_ds.attrs["name"] = rad_name
             self.radial_ds.attrs["long_name"] = "Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
 
-            self.do2D = self.fai_cfg.do_2D
-
-            if self.do2D:
+            if self.fai_cfg.do_2D:
                 self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg.nbpt_azim,), numpy.float32)
                 self.azimuthal_ds.attrs["unit"] = "deg"
                 self.azimuthal_ds.attrs["interpretation"] = "scalar"
@@ -343,7 +341,7 @@ class HDF5Writer(Writer):
                 self.fast_motor = self.entry_grp.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
                 self.fast_motor.attrs["long_name"] = "Fast motor position"
                 self.fast_motor.attrs["interpretation"] = "scalar"
-                if self.do2D:
+                if self.fai_cfg.do_2D:
                     chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_azim, self.fai_cfg.nbpt_rad
                     self.ndim = 4
                     axis_definition = [".", "fast", "chi", "radial"]
@@ -352,7 +350,7 @@ class HDF5Writer(Writer):
                     self.ndim = 3
                     axis_definition = [".", "fast", "radial"]
             else:
-                if self.do2D:
+                if self.fai_cfg.do_2D:
                     axis_definition = [".", "chi", "radial"]
                     chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg.nbpt_rad
                     self.ndim = 3

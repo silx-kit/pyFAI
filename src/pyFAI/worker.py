@@ -45,7 +45,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/02/2025"
+__date__ = "19/02/2025"
 __status__ = "development"
 
 import threading
@@ -60,7 +60,7 @@ from . import average
 from . import method_registry
 from .integrator.azimuthal import AzimuthalIntegrator
 from .containers import ErrorModel
-from .method_registry import IntegrationMethod
+from .method_registry import IntegrationMethod, Method
 from .distortion import Distortion
 from . import units
 from .io import ponifile, image as io_image
@@ -195,7 +195,12 @@ class Worker(object):
         self.integrator_name = integrator_name
         self._processor = None
         self._nbpt_azim = None
-        self.method = method
+        if isinstance(method, (str, list, tuple, Method)):
+            method = IntegrationMethod.parse(method)
+        else:
+            logger.error(f"Unable to parse method {method}")
+        self.method = (method.split, method.algorithm, method.implementation)
+        self.opencl_device = method.target
         self._method = None
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
@@ -213,6 +218,7 @@ class Worker(object):
         self._shape = shapeIn
         self.radial = None
         self.azimuthal = None
+        self.propagate_uncertainties = None
         self.safe = True
         self.extra_options = {} if extra_options is None else extra_options.copy()
         self.radial_range = self.extra_options.pop("radial_range", None)
@@ -254,8 +260,29 @@ class Worker(object):
             elif "1d" in integrator_name and dim == 2:
                 integrator_name = integrator_name.replace("1d", "2d")
         self._processor = self.ai.__getattribute__(integrator_name)
-        self._method = IntegrationMethod.select_one_available(self.method, dim=dim)
+
+        if isinstance(self.method, (list, tuple)):
+            if isinstance(self.method, Method):
+                methods = IntegrationMethod.select_method(dim=dim, split=self.method[1], algo=self.method[2], impl=self.method[3],
+                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else self.method[4],
+                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else self.method[4],
+                                      degradable=True)
+            else:
+                methods = IntegrationMethod.select_method(dim=dim, split=self.method[0], algo=self.method[1], impl=self.method[2],
+                                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None,
+                                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else None,
+                                                      degradable=True)
+            self._method = methods[0]
+        elif isinstance(self.method, str) or self.method is None:
+            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
+        elif isinstance(self.method, IntegrationMethod):
+            self._method = self.method
+        else:
+            logger.error(f"No method available for {dim}D integration on {self.method} with target {self.opencl_device}")
+            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
         self.integrator_name = self._processor.__name__
+        self.radial = None
+        self.azimuthal = None
 
     @property
     def nbpt_azim(self):
@@ -296,6 +323,7 @@ class Worker(object):
                         logger.info(f"reconfig: mask has been rebinned from {mask.shape} to {self.ai.detector.mask.shape}. Masking {self.ai.detector.mask.sum()} pixels")
             else:
                 self.ai.detector.shape = shape
+        self.ai.empty = self.dummy
         self.ai.reset()
         self.warmup(sync)
 
@@ -346,22 +374,10 @@ class Worker(object):
         if self.azimuth_range is not None:
             kwarg["azimuth_range"] = self.azimuth_range
 
-        error = None
         try:
             integrated_result = self._processor(**kwarg)
-            if self.do_2D():
-                self.radial = integrated_result.radial
-                self.azimuthal = integrated_result.azimuthal
-                result = integrated_result.intensity
-                if integrated_result.sigma is not None:
-                    error = integrated_result.sigma
-            else:
-                self.radial = integrated_result.radial
-                self.azimuthal = None
-                result = numpy.vstack(integrated_result).T
-
         except Exception as err:
-            logger.debug("Backtrace", exc_info=True)
+            logger.info("Backtrace", exc_info=True)
             err2 = [f"error in integration do_2d: {self.do_2D()}",
                     str(err.__class__.__name__),
                     str(err),
@@ -374,17 +390,23 @@ class Worker(object):
                     ]
             logger.error("\n".join(err2))
             raise err
-
+        else:
+            if self.radial is None:
+                self.radial = integrated_result.radial
+                if self.do_2D():
+                    self.azimuthal = integrated_result.azimuthal
         if writer is not None:
             writer.write(integrated_result)
-
         if self.output == "raw":
             return integrated_result
         elif self.output == "numpy":
-            if (variance is not None) and (error is not None):
-                return result, error
+            if self.do_2D():
+                if integrated_result.sigma is None:
+                    return integrated_result.intensity
+                else:
+                    return integrated_result.intensity, integrated_result.sigma
             else:
-                return result
+                return numpy.vstack(integrated_result).T
 
     def setSubdir(self, path):
         """
@@ -462,6 +484,7 @@ class Worker(object):
 
         self._nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
         self.method = config.method  # expand to Method ?
+        self.opencl_device = config.opencl_device
         self.nbpt_rad = config.nbpt_rad
         self.unit = units.to_unit(config.unit or "2th_deg")
         self.error_model = ErrorModel.parse(config.error_model)
@@ -497,10 +520,12 @@ class Worker(object):
         config = WorkerConfig(application="worker",
                               poni=dict(self.ai.get_config()),
                               unit=str(self._unit))
-        for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "delta_dummy", "extra_options",
-                    "correct_solid_angle", "error_model", "method", "azimuth_range", "radial_range",
-                    "dummy", "normalization_factor", "dark_current_image", "flat_field_image",
-                    "mask_image", "integrator_name"]:
+        for key in ["nbpt_azim", "nbpt_rad", "polarization_factor",  "extra_options",
+                    "correct_solid_angle", "error_model", "method", "opencl_device",
+                    "azimuth_range", "radial_range",
+                    "dummy", "delta_dummy", "normalization_factor",
+                    "dark_current_image", "flat_field_image",
+                    "mask_image", "integrator_name", "shape"]:
             try:
                 config.__setattr__(key, self.__getattribute__(key))
             except Exception as err:
@@ -532,6 +557,24 @@ class Worker(object):
         """Save the configuration as a JSON file"""
         self.get_worker_config().save(filename or self.config_file)
 
+    def sync_init(self):
+
+        self.dummy_output = self.process(numpy.zeros(self.shape, dtype=numpy.float32))
+
+    def _warmup(self):
+        backup = self.output
+        self.output = "raw"
+        msk = "" if self.ai.detector.mask is None else f"mask {self.ai.detector.mask.shape} mask sum {self.ai.detector.mask.sum()}\n"
+        logger.info(f"warm-up with shape {self.shape}, detector shape {self.ai.detector.shape}\n{msk}{self.ai}")
+        integrated_result = self.process(numpy.zeros(self.shape, dtype=numpy.float32))
+        self.radial = integrated_result.radial
+        if self.do_2D():
+            self.azimuthal = integrated_result.azimuthal
+        else:
+            self.azimuthal = None
+        self.propagate_uncertainties =  (integrated_result.sigma is not None)
+        self.output = backup
+
     def warmup(self, sync=False):
         """
         Process a dummy image to ensure everything is initialized
@@ -539,9 +582,7 @@ class Worker(object):
         :param sync: wait for processing to be finished
 
         """
-        t = threading.Thread(target=self.process,
-                             name="init2d",
-                             args=(numpy.zeros(self.shape, dtype=numpy.float32),))
+        t = threading.Thread(target=self._warmup, name="_warmup")
         t.start()
         if sync:
             t.join()

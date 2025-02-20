@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/01/2025"
+__date__ = "19/02/2025"
 
 import unittest
 import numpy
@@ -171,6 +171,15 @@ class TestMathUtil(utilstest.ParametricTestCase):
         cal.wavelength = ai.wavelength
         res = mathutil.quality_of_fit(img, ai, cal, rings=[0,1], npt_azim=36, npt_rad=100)
         self.assertLess(res, 0.3, "Fit of good quality")
+
+    def test_nan_equal(self):
+        nan_equal = mathutil.nan_equal
+        self.assertTrue(nan_equal(5, 5.0), "Expected")
+        self.assertFalse(nan_equal(5, 0), "Nop")
+        self.assertFalse(nan_equal(5, numpy.nan), "Nop")
+        self.assertFalse(nan_equal(numpy.nan,5), "Nop")
+        self.assertTrue(nan_equal(numpy.nan, numpy.nan), "Expected")
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
