@@ -33,7 +33,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2025"
+__date__ = "20/02/2025"
 __status__ = "development"
 
 from typing import Tuple
@@ -42,6 +42,7 @@ import h5py
 import logging
 import os.path
 import posixpath
+import numpy
 from silx.gui import qt
 from silx.gui.colors import Colormap
 from silx.image.marchingsquares import find_contours
@@ -62,7 +63,8 @@ from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
 from .widgets.TitleWidget import TitleWidget
 from ...io.integration_config import WorkerConfig
-
+from ...utils.mathutil import binning as rebin_fct
+from ...detectors import Detector
 
 class MainWindow(qt.QMainWindow):
     sigFileChanged = qt.Signal(str)
@@ -278,13 +280,30 @@ class MainWindow(qt.QMainWindow):
             else:
                 maskfile = None
 
+
         if maskfile:
             mask_image = get_data(url=DataUrl(maskfile))
             if mask_image.shape != image.shape:
-                mask_image = None
+                binning = [m//i for i, m in zip(image.shape, mask_image.shape)]
+                if min(binning)<1:
+                    mask_image = None
+                else:
+                    mask_image = rebin_fct(mask_image, binning)
         else:
             mask_image = None
-
+        detector = self.worker_config.poni.detector
+        print(detector)
+        if detector:
+            detector_mask = detector.mask
+            if detector.shape != image.shape:
+                detector.guess_binning(image)
+                detector_mask = rebin_fct(detector_mask, detector.binning)
+            if mask_image is None:
+                mask_image = detector_mask
+            else:
+                numpy.logical_or(mask_image, detector_mask, out=mask_image)
+            detector.mask = mask_image
+            mask_image = detector.dynamic_mask(image)
         image_base = ImageBase(data=image, mask=mask_image)
         self._image_plot_widget.setImageData(image_base.getValueData())
         self._image_plot_widget.setGraphTitle(f"{posixpath.basename(dataset_path)} #{image_index}")
