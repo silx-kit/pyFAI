@@ -1370,24 +1370,32 @@ class Geometry(object):
         """
         Load the refined parameters from a file.
 
-        :param filename: name of the file to load. Can also be a JSON string with a dict or dict
-        :type filename: string
+        :param filename: name of the file to load. Can also be a JSON string with a dict or dict or geometry
+        :type filename: string with filename or JSON-serialized dict (i.e. string) or a dictionary or Geometry instance.
         :return: itself with updated parameters
         """
-        try:
-            if os.path.exists(filename):
-                with open(filename) as f:
-                    dico = json.load(f)
-            else:
-                dico = json.loads(filename)
-        except Exception:
-            logger.info("Unable to parse %s as JSON file, defaulting to PoniParser", filename)
+        poni = None
+        if isinstance(filename, ponifile.PoniFile):
+            poni = filename
+        elif isinstance(filename, (dict, Geometry)):
             poni = ponifile.PoniFile(data=filename)
+        elif isinstance(filename, str):
+            try:
+                if os.path.exists(filename):
+                    with open(filename) as f:
+                        dico = json.load(f)
+                else:
+                    dico = json.loads(filename)
+            except Exception:
+                logger.info("Unable to parse %s as JSON file, defaulting to PoniParser", filename)
+                poni = ponifile.PoniFile(data=filename)
+            else:
+                config = integration_config.ConfigurationReader(dico)
+                poni = config.pop_ponifile()
         else:
-            config = integration_config.ConfigurationReader(dico)
-            poni = config.pop_ponifile()
-        self._init_from_poni(poni)
-
+            logger.error("Unable to initialize geometry from %s", filename)
+        if poni:
+            self._init_from_poni(poni)
         return self
 
     read = load
@@ -1903,6 +1911,9 @@ class Geometry(object):
             return pol if with_checksum else pol.array
         if isinstance(factor, PolarizationDescription):
             desc = factor
+            factor, axis_offset = desc
+        elif isinstance(factor, list) and len(factor)==2:
+            desc = PolarizationDescription(*factor)
             factor, axis_offset = desc
         else:
             factor = float(factor)

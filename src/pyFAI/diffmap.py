@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2025"
+__date__ = "19/02/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -53,6 +53,7 @@ from .opencl import ocl
 from . import version as PyFAI_VERSION, date as PyFAI_DATE
 from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
 from .io import Nexus, get_isotime, h5py
+from .io.integration_config import WorkerConfig
 from .worker import Worker
 from .utils.decorators import deprecated, deprecated_warning
 
@@ -380,10 +381,13 @@ If the number of files is too large, use double quotes like "*.edf" """
     def configure_worker(self, dico=None):
         """Configure the worker from the dictionary
 
-        :param dico: dictionary with the configuration
+        :param dico: dictionary/WorkerConfig with the configuration
         :return: worker
         """
+        if isinstance(dico, dict):
+            dico = WorkerConfig.from_dict(dico)
         self.worker.set_config(dico or self.poni)
+        self.init_shape(dico.shape)
 
     def makeHDF5(self, rewrite=False):
         """
@@ -439,7 +443,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         process_grp["offset"] = self.offset
         config = nxs.new_class(process_grp, "configuration", "NXnote")
         config["type"] = "text/json"
-        self.init_shape()
         worker_config = self.worker.get_config()
         config["data"] = json.dumps(worker_config, indent=2, separators=(",\r\n", ": "))
 
@@ -497,20 +500,25 @@ If the number of files is too large, use double quotes like "*.edf" """
         self.dataset.attrs["title"] = self.nxdata_grp["map"].attrs["title"] = str(self)
         self.nxs = nxs
 
-    def init_shape(self):
+    def init_shape(self, shape=None):
         """Initialize the worker with the proper input shape
 
+        :param shape: enforce the shape to initialize to
         :return: shape of the individual frames
         """
-        # if shape of detector undefined: reading the first image to guess it
-        if self.ai.detector.shape:
-            shape = self.ai.detector.shape
-        else:
+        former_shape = self.worker.ai.detector.shape
+        try:
             with fabio.open(self.inputfiles[0]) as fimg:
-                shape = fimg.data.shape
-            self.worker.ai.shape = shape
-            self.worker._shape = shape
-        self.worker.output = "raw"
+                new_shape = fimg.data.shape
+        except:
+            new_shape = None
+        shape = new_shape or shape or former_shape
+        self.worker.ai.shape = shape
+        self.worker._shape = shape
+        print(f"reconfigure worker with shape {shape}")
+        self.worker.reconfig(shape, sync=True)
+        self.worker.output = "raw" #after reconfig !
+        self.worker.safe = False
         return shape
 
     def init_ai(self):
@@ -522,17 +530,12 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.configure_worker(self.poni)
         if not self.nxdata_grp:
             self.makeHDF5(rewrite=False)
-        shape = self.init_shape()
-        data = numpy.empty(shape, dtype=numpy.float32)
         logger.info(f"Initialization of the Azimuthal Integrator using method {self.method}")
         # enforce initialization of azimuthal integrator
-        print(self.ai)
-        res = self.worker.process(data)
-        tth = res.radial
-        if self.dataset is None:
-            self.makeHDF5()
+        logger.info(f"Detector shape: {self.ai.detector.shape} mask shape {self.ai.detector.mask.shape}")
+        tth = self.worker.radial
 
-        if res.sigma is not None:
+        if self.worker.propagate_uncertainties:
             self.dataset_error = self.nxdata_grp.create_dataset("errors",
                                                                 shape=self.dataset.shape,
                                                                 dtype="float32",
@@ -542,16 +545,16 @@ If the number of files is too large, use double quotes like "*.edf" """
         space = self.unit.space
         unit = str(self.unit)[len(space) + 1:]
         if space not in self.nxdata_grp:
-            self.nxdata_grp[space] = tth
-            self.nxdata_grp[space].attrs["unit"] = unit
-            self.nxdata_grp[space].attrs["long_name"] = self.unit.label
-            self.nxdata_grp[space].attrs["interpretation"] = "scalar"
+            tthds = self.nxdata_grp.create_dataset(space, data=tth)
+            tthds.attrs["unit"] = unit
+            tthds.attrs["long_name"] = self.unit.label
+            tthds.attrs["interpretation"] = "scalar"
         if self.worker.do_2D():
-            self.nxdata_grp["azimuthal"] = res.azimuthal
-            self.nxdata_grp["azimuthal"].attrs["unit"] = "deg"
-            self.nxdata_grp["azimuthal"].attrs["interpretation"] = "scalar"
-            self.nxdata_grp["azimuthal"].attrs["axes"] = 1
-            azim = res.azimuthal
+            azimds = self.nxdata_grp.create_dataset("azimuthal", data=self.worker.azimuthal)
+            azimds.attrs["unit"] = "deg"
+            azimds.attrs["interpretation"] = "scalar"
+            azimds.attrs["axes"] = 1
+            azim = self.worker.azimuthal
             self.nxdata_grp[space].attrs["axes"] = 2
         else:
             self.nxdata_grp[space].attrs["axes"] = 1
@@ -672,10 +675,9 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.makeHDF5()
         self.init_ai()
         t0 = -time.perf_counter()
-        print(self.inputfiles)
         for f in self.inputfiles:
             self.process_one_file(f)
-        t0 -= time.perf_counter()
+        t0 += time.perf_counter()
         cnt = max(self._idx, 0) + 1
         print(f"Execution time for {cnt} frames: {t0:.3f} s; "
               f"Average execution time: {1000. * t0 / cnt:.1f} ms/img")

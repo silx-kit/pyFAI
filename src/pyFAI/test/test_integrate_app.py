@@ -90,7 +90,7 @@ class TestIntegrateApp(unittest.TestCase):
             ponipath = UtilsTest.getimage("dummy.poni")
         data = {"poni": ponipath}
         integration_config.normalize(data, inplace=True)
-        data["wavelength"] = 1
+        # data["wavelength"] = 1
         data["nbpt_rad"] = 3
         data["nbpt_azim"] = nbpt_azim
         data["do_2D"] = nbpt_azim > 1

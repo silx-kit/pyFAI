@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2025"
+__date__ = "19/02/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -43,7 +43,7 @@ from .common import Integrator
 # from ..geometry import Geometry
 from .. import units
 from ..utils import EPS32, deg2rad, crc32, rad2rad
-# from ..utils.decorators import deprecated, deprecated_warning
+from ..utils.mathutil import nan_equal
 from ..containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
 from ..io import DefaultAiWriter, save_integrate_result
 from ..io.ponifile import PoniFile
@@ -128,7 +128,7 @@ class AzimuthalIntegrator(Integrator):
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
         assert method.dimension == 1
         unit = units.to_unit(unit)
-        empty = dummy if dummy is not None else self._empty
+        empty = numpy.float32(dummy) if dummy is not None else self._empty
         shape = data.shape
         pos0_scale = unit.scale
 
@@ -206,23 +206,23 @@ class AzimuthalIntegrator(Integrator):
                 if (not cython_reset) and safe:
                     if cython_integr.unit != unit:
                         cython_reset = "unit was changed"
-                    if cython_integr.bins != npt:
+                    elif cython_integr.bins != npt:
                         cython_reset = "number of points changed"
-                    if cython_integr.size != data.size:
+                    elif cython_integr.size != data.size:
                         cython_reset = "input image size changed"
-                    if cython_integr.empty != empty:
-                        cython_reset = "empty value changed"
-                    if (mask is not None) and (not cython_integr.check_mask):
+                    elif not nan_equal(cython_integr.empty, empty):
+                        cython_reset = f"empty value changed {cython_integr.empty}!={empty}"
+                    elif (mask is not None) and (not cython_integr.check_mask):
                         cython_reset = f"mask but {method.algo_lower.upper()} was without mask"
                     elif (mask is None) and (cython_integr.cmask is not None):
                         cython_reset = f"no mask but { method.algo_lower.upper()} has mask"
                     elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
                         cython_reset = "mask changed"
-                    if (radial_range is None) and (cython_integr.pos0_range is not None):
+                    elif (radial_range is None) and (cython_integr.pos0_range is not None):
                         cython_reset = f"radial_range was defined in { method.algo_lower.upper()}"
                     elif (radial_range is not None) and (cython_integr.pos0_range != radial_range):
                         cython_reset = f"radial_range is defined but differs in %s" % method.algo_lower.upper()
-                    if (azimuth_range is None) and (cython_integr.pos1_range is not None):
+                    elif (azimuth_range is None) and (cython_integr.pos1_range is not None):
                         cython_reset = f"azimuth_range not defined and {method.algo_lower.upper()} had azimuth_range defined"
                     elif (azimuth_range is not None) and (cython_integr.pos1_range != azimuth_range):
                         cython_reset = f"azimuth_range requested and {method.algo_lower.upper()}'s azimuth_range don't match"
@@ -275,23 +275,23 @@ class AzimuthalIntegrator(Integrator):
                     if (not reset) and safe:
                         if integr.unit != unit:
                             reset = "unit was changed"
-                        if integr.bins != npt:
+                        elif integr.bins != npt:
                             reset = "number of points changed"
-                        if integr.size != data.size:
+                        elif integr.size != data.size:
                             reset = "input image size changed"
-                        if integr.empty != empty:
-                            reset = "empty value changed"
-                        if (mask is not None) and (not integr.check_mask):
+                        elif not nan_equal(integr.empty, empty):
+                            reset = f"empty value changed {integr.empty}!={empty}"
+                        elif (mask is not None) and (not integr.check_mask):
                             reset = f"mask but {method.algo_lower.upper()} was without mask"
                         elif (mask is None) and (integr.check_mask):
                             reset = f"no mask but {method.algo_lower.upper()} has mask"
                         elif (mask is not None) and (integr.mask_checksum != mask_crc):
                             reset = "mask changed"
-                        if (radial_range is None) and (integr.pos0_range is not None):
+                        elif (radial_range is None) and (integr.pos0_range is not None):
                             reset = f"radial_range was defined in {method.algo_lower.upper()}"
                         elif (radial_range is not None) and (integr.pos0_range != radial_range):
                             reset = f"radial_range is defined but differs in {method.algo_lower.upper()}"
-                        if (azimuth_range is None) and (integr.pos1_range is not None):
+                        elif (azimuth_range is None) and (integr.pos1_range is not None):
                             reset = f"azimuth_range not defined and {method.algo_lower.upper()} had azimuth_range defined"
                         elif (azimuth_range is not None) and (integr.pos1_range != azimuth_range):
                             reset = f"azimuth_range requested and {method.algo_lower.upper()}'s azimuth_range don't match"
@@ -423,12 +423,12 @@ class AzimuthalIntegrator(Integrator):
                 if (not reset) and safe:
                     if integr.unit != unit:
                         reset = "unit was changed"
-                    if integr.bins != npt:
+                    elif integr.bins != npt:
                         reset = "number of points changed"
-                    if integr.size != data.size:
+                    elif integr.size != data.size:
                         reset = "input image size changed"
-                    if integr.empty != empty:
-                        reset = "empty value changed"
+                    elif not nan_equal(integr.empty, empty):
+                        reset = f"empty value changed {integr.empty}!={empty}"
                 if reset:
                     logger.info("ai.integrate1d: Resetting integrator because %s", reset)
                     pos0 = self.array_from_unit(shape, "center", unit, scale=False)
@@ -605,7 +605,7 @@ class AzimuthalIntegrator(Integrator):
         sum_normalization = res._sum_normalization.sum(axis=-1)
 
         mask = numpy.where(count == 0)
-        empty = dummy if dummy is not None else self._empty
+        empty = numpy.float32(dummy) if dummy is not None else self._empty
         intensity = sum_signal / sum_normalization
         intensity[mask] = empty
 
@@ -703,7 +703,7 @@ class AzimuthalIntegrator(Integrator):
         space = (radial_unit.space, azimuth_unit.space)
         pos0_scale = radial_unit.scale
         pos1_scale = azimuth_unit.scale
-        empty = dummy if dummy is not None else self._empty
+        empty = numpy.float32(dummy) if dummy is not None else self._empty
         if mask is None:
             has_mask = "from detector"
             mask = self.mask
@@ -799,8 +799,8 @@ class AzimuthalIntegrator(Integrator):
                         cython_reset = f"number of points {cython_integr.bins} incompatible with requested {npt}"
                     if cython_integr.size != data.size:
                         cython_reset = f"input image size {cython_integr.size} incompatible with requested {data.size}"
-                    if cython_integr.empty != empty:
-                        cython_reset = f"empty value {cython_integr.empty} incompatible with requested {empty}"
+                    if not nan_equal(cython_integr.empty, empty):
+                        cython_reset = f"empty value changed {cython_integr.empty}!={empty}"
                     if (mask is not None) and (not cython_integr.check_mask):
                         cython_reset = f"mask but {method.algo_lower.upper()} was without mask"
                     elif (mask is None) and (cython_integr.cmask is not None):
@@ -1450,23 +1450,23 @@ class AzimuthalIntegrator(Integrator):
                 if (not cython_reset) and safe:
                     if cython_integr.unit != unit:
                         cython_reset = "unit was changed"
-                    if cython_integr.bins != npt:
+                    elif cython_integr.bins != npt:
                         cython_reset = "number of points changed"
-                    if cython_integr.size != data.size:
+                    elif cython_integr.size != data.size:
                         cython_reset = "input image size changed"
-                    if cython_integr.empty != self._empty:
-                        cython_reset = "empty value changed "
-                    if (mask is not None) and (not cython_integr.check_mask):
+                    elif not nan_equal(cython_integr.empty, self._empty):
+                        cython_reset = f"empty value changed {cython_integr.empty}!={self._empty}"
+                    elif (mask is not None) and (not cython_integr.check_mask):
                         cython_reset = "mask but CSR was without mask"
                     elif (mask is None) and (cython_integr.check_mask):
                         cython_reset = "no mask but CSR has mask"
                     elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
                         cython_reset = "mask changed"
-                    if (radial_range is None) and (cython_integr.pos0_range is not None):
+                    elif (radial_range is None) and (cython_integr.pos0_range is not None):
                         cython_reset = "radial_range was defined in CSR"
                     elif (radial_range is not None) and cython_integr.pos0_range != (min(radial_range), max(radial_range)):
                         cython_reset = "radial_range is defined but not the same as in CSR"
-                    if (azimuth_range is None) and (cython_integr.pos1_range is not None):
+                    elif (azimuth_range is None) and (cython_integr.pos1_range is not None):
                         cython_reset = "azimuth_range not defined and CSR had azimuth_range defined"
                     elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
@@ -1507,24 +1507,23 @@ class AzimuthalIntegrator(Integrator):
                 if (not reset) and safe:
                     if integr.unit != unit:
                         reset = "unit was changed"
-                    if integr.bins != npt:
+                    elif integr.bins != npt:
                         reset = "number of points changed"
-                    if integr.size != data.size:
+                    elif integr.size != data.size:
                         reset = "input image size changed"
-                    if integr.empty != self._empty:
-                        reset = "empty value changed "
-                    if (mask is not None) and (not integr.check_mask):
+                    elif not nan_equal(integr.empty, self._empty):
+                        reset = f"empty value changed {integr.empty}!={self._empty}"
+                    elif (mask is not None) and (not integr.check_mask):
                         reset = "mask but CSR was without mask"
                     elif (mask is None) and (integr.check_mask):
                         reset = "no mask but CSR has mask"
                     elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    # TODO
-                    if (radial_range is None) and (integr.pos0_range is not None):
+                    elif (radial_range is None) and (integr.pos0_range is not None):
                         reset = "radial_range was defined in CSR"
                     elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
                         reset = "radial_range is defined but not the same as in CSR"
-                    if (azimuth_range is None) and (integr.pos1_range is not None):
+                    elif (azimuth_range is None) and (integr.pos1_range is not None):
                         reset = "azimuth_range not defined and CSR had azimuth_range defined"
                     elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"
@@ -1910,23 +1909,23 @@ class AzimuthalIntegrator(Integrator):
                 if (not cython_reset) and safe:
                     if cython_integr.unit != unit:
                         cython_reset = "unit was changed"
-                    if cython_integr.bins != npt:
+                    elif cython_integr.bins != npt:
                         cython_reset = "number of points changed"
-                    if cython_integr.size != data.size:
+                    elif cython_integr.size != data.size:
                         cython_reset = "input image size changed"
-                    if cython_integr.empty != self._empty:
-                        cython_reset = "empty value changed "
-                    if (mask is not None) and (not cython_integr.check_mask):
+                    elif not nan_equal(cython_integr.empty, self._empty):
+                        cython_reset = f"empty value changed {cython_integr.empty}!={self._empty}"
+                    elif (mask is not None) and (not cython_integr.check_mask):
                         cython_reset = "mask but CSR was without mask"
                     elif (mask is None) and (cython_integr.check_mask):
                         cython_reset = "no mask but CSR has mask"
                     elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
                         cython_reset = "mask changed"
-                    if (radial_range is None) and (cython_integr.pos0_range is not None):
+                    elif (radial_range is None) and (cython_integr.pos0_range is not None):
                         cython_reset = "radial_range was defined in CSR"
                     elif (radial_range is not None) and cython_integr.pos0_range != (min(radial_range), max(radial_range)):
                         cython_reset = "radial_range is defined but not the same as in CSR"
-                    if (azimuth_range is None) and (cython_integr.pos1_range is not None):
+                    elif (azimuth_range is None) and (cython_integr.pos1_range is not None):
                         cython_reset = "azimuth_range not defined and CSR had azimuth_range defined"
                     elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
@@ -1967,24 +1966,23 @@ class AzimuthalIntegrator(Integrator):
                 if (not reset) and safe:
                     if integr.unit != unit:
                         reset = "unit was changed"
-                    if integr.bins != npt:
+                    elif integr.bins != npt:
                         reset = "number of points changed"
-                    if integr.size != data.size:
+                    elif integr.size != data.size:
                         reset = "input image size changed"
-                    if integr.empty != self._empty:
-                        reset = "empty value changed "
-                    if (mask is not None) and (not integr.check_mask):
+                    elif not nan_equal(integr.empty, self._empty):
+                        reset = f"empty value changed {integr.empty}!={self._empty}"
+                    elif (mask is not None) and (not integr.check_mask):
                         reset = "mask but CSR was without mask"
                     elif (mask is None) and (integr.check_mask):
                         reset = "no mask but CSR has mask"
                     elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    # TODO
-                    if (radial_range is None) and (integr.pos0_range is not None):
+                    elif (radial_range is None) and (integr.pos0_range is not None):
                         reset = "radial_range was defined in CSR"
                     elif (radial_range is not None) and integr.pos0_range != (min(radial_range), max(radial_range)):
                         reset = "radial_range is defined but not the same as in CSR"
-                    if (azimuth_range is None) and (integr.pos1_range is not None):
+                    elif (azimuth_range is None) and (integr.pos1_range is not None):
                         reset = "azimuth_range not defined and CSR had azimuth_range defined"
                     elif (azimuth_range is not None) and integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"

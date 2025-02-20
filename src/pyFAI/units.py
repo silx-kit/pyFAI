@@ -275,6 +275,8 @@ Incident_angle={self.incident_angle}\u00b0
 Tilt_angle={self.tilt_angle}\u00b0
 Sample orientation={self.sample_orientation}
 """
+    def __str__(self):
+        return self.name
 
     @property
     def incident_angle(self):

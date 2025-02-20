@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "17/02/2025"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -173,18 +173,13 @@ class PoniFile(object):
             self._dist = float(config["distance"]) if config["distance"] is not None else None
         elif "dist" in config:
             self._dist = float(config["dist"]) if config["dist"] is not None else None
-        if "poni1" in config:
-            self._poni1 = float(config["poni1"]) if config["poni1"] is not None else None
-        if "poni2" in config:
-            self._poni2 = float(config["poni2"]) if config["poni2"] is not None else None
-        if "rot1" in config:
-            self._rot1 = float(config["rot1"]) if config["rot1"] is not None else None
-        if "rot2" in config:
-            self._rot2 = float(config["rot2"]) if config["rot2"] is not None else None
-        if "rot3" in config:
-            self._rot3 = float(config["rot3"]) if config["rot3"] is not None else None
-        if "wavelength" in config:
-            self._wavelength = float(config["wavelength"]) if config["wavelength"] is not None else None
+
+        self._poni1 = float(config["poni1"]) if config.get("poni1") is not None else None
+        self._poni2 = float(config["poni2"]) if config.get("poni2") is not None else None
+        self._rot1 = float(config["rot1"]) if config.get("rot1") is not None else None
+        self._rot2 = float(config["rot2"]) if config.get("rot2") is not None else None
+        self._rot3 = float(config["rot3"]) if config.get("rot3") is not None else None
+        self._wavelength = float(config["wavelength"]) if config.get("wavelength") is not None else None
 
     def read_from_duck(self, duck):
         """Initialize the object using an object providing the same API.

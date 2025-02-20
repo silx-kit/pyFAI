@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2024"
+__date__ = "18/02/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -138,7 +138,7 @@ class Integrator(Geometry):
         self._lock = threading.Semaphore()
         self.engines = {}  # key: name of the engine,
 
-        self._empty = 0.0
+        self._empty = numpy.float32(0.0)
 
     def reset(self, collect_garbage=True):
         """Reset azimuthal integrator in addition to other arrays.
@@ -1707,15 +1707,16 @@ class Integrator(Geometry):
         return self._empty
 
     def set_empty(self, value):
-        self._empty = float(value)
+        value = value or 0.0
+        self._empty = numpy.float32(value)
         # propagate empty values to integrators
         for engine in self.engines.values():
             with engine.lock:
                 if engine.engine is not None:
                     try:
                         engine.engine.empty = self._empty
-                    except Exception as exeption:
-                        logger.error(exeption)
+                    except Exception as exception:
+                        logger.error(f"{type(exception)}: {exception}")
 
     empty = property(get_empty, set_empty)
 
