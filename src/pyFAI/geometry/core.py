@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2025"
+__date__ = "20/02/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -260,8 +260,21 @@ class Geometry(object):
         :param azimuth_range: 2-tuple of float in degrees
         :return: 2-tuple of float in radians in a range such to avoid the discontinuity
         """
+        unkn = 0
         if azimuth_range is None:
+            unkn = 2
+        else:
+            if azimuth_range[0] is None:
+                unkn += 1
+            if azimuth_range[-1] is None:
+                unkn += 1
+        if unkn == 2:
             return
+        elif unkn == 1:
+            max_range = (-180, 180) if self.chiDiscAtPi else (0,360)
+            azimuth_range = (max_range[0] if azimuth_range[0] is None else azimuth_range[0],
+                             max_range[-1] if azimuth_range[-1] is None else azimuth_range[-1])
+
         azimuth_range = tuple(deg2rad(azimuth_range[i], self.chiDiscAtPi) for i in (0, -1))
         if azimuth_range[1] <= azimuth_range[0]:
             azimuth_range = (azimuth_range[0], azimuth_range[1] + TWO_PI)

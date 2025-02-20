@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2024"
+__date__ = "20/02/2025"
 
 import unittest
 import random
@@ -46,6 +46,7 @@ logger = logging.getLogger(__name__)
 import os.path
 import json
 import fabio
+from math import pi
 from . import utilstest
 from ..io.ponifile import PoniFile
 from .. import geometry
@@ -185,14 +186,14 @@ class TestSolidAngle(unittest.TestCase):
             self.assertGreater(one.min() - 1.0, -1e-10, f"path: {path} cos2+sin2>0.99")
 
 
-class TestBug88SolidAngle(unittest.TestCase):
-    """
-    Test case for solid angle where data got modified inplace.
+class TestRegression(unittest.TestCase):
 
-    https://github.com/silx-kit/pyFAI/issues/88
-    """
+    def testBug88SolidAngle(self):
+        """
+        Test case for solid angle where data got modified inplace.
 
-    def testSolidAngle(self):
+        https://github.com/silx-kit/pyFAI/issues/88
+        """
         method = ("no", "histogram", "python")
         ai = AzimuthalIntegrator(dist=0.001, detector="Imxpad S10", wavelength=1e-10)
         img = numpy.ones(ai.detector.shape, dtype=numpy.float32)
@@ -202,6 +203,24 @@ class TestBug88SolidAngle(unittest.TestCase):
         f = r1[1].max()
         self.assertAlmostEqual(f, 1, 5, "uncorrected flat data are unchanged")
         self.assertNotAlmostEqual(f, t, 1, "corrected and uncorrected flat data are different")
+
+    def testBug2449NormalizeAzimuthRange(self):
+
+        ai0 = AzimuthalIntegrator(dist=0.001, detector="Imxpad S10", wavelength=1e-10)
+        ai0.setChiDiscAtZero()
+        self.assertEqual(ai0.normalize_azimuth_range((90, -90)), (pi/2, 3*pi/2))
+        self.assertEqual(ai0.normalize_azimuth_range(None), None)
+        self.assertEqual(ai0.normalize_azimuth_range([None, None]), None)
+        self.assertEqual(ai0.normalize_azimuth_range([None, 180]), (0, pi))
+        self.assertEqual(ai0.normalize_azimuth_range([180, None]), (pi, 2*pi))
+
+        ai1 = AzimuthalIntegrator(dist=0.001, detector="Imxpad S10", wavelength=1e-10)
+        ai1.setChiDiscAtPi()
+        self.assertEqual(ai1.normalize_azimuth_range((-90, 90)), (-pi/2, pi/2))
+        self.assertEqual(ai1.normalize_azimuth_range(None), None)
+        self.assertEqual(ai1.normalize_azimuth_range([None, None]), None)
+        self.assertEqual(ai1.normalize_azimuth_range([None, 0]), (-pi, 0))
+        self.assertEqual(ai1.normalize_azimuth_range([0, None]), (0, pi))
 
 
 class TestRecprocalSpacingSquarred(unittest.TestCase):
@@ -1181,7 +1200,7 @@ def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestBugRegression))
     testsuite.addTest(loader(TestSolidAngle))
-    testsuite.addTest(loader(TestBug88SolidAngle))
+    testsuite.addTest(loader(TestRegression))
     testsuite.addTest(loader(TestRecprocalSpacingSquarred))
     testsuite.addTest(loader(TestCalcFrom))
     testsuite.addTest(loader(TestGeometry))
