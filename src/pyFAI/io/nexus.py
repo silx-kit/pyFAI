@@ -175,10 +175,11 @@ class Nexus(object):
         """
         try:
             if self.mode != "r":
-                end_time = get_isotime(end_time)
-                for entry in self.to_close:
-                    entry["end_time"] = end_time
-                self.h5.attrs["file_update_time"] = get_isotime()
+                if self.h5:
+                    end_time = get_isotime(end_time)
+                    for entry in self.to_close:
+                        entry["end_time"] = end_time
+                    self.h5.attrs["file_update_time"] = get_isotime()
         except Exception as error:
             sys.stderr.write(f"{type(error)}: {error},\nwhile finalizing Nexus file\n")
 
