@@ -290,7 +290,6 @@ class MainWindow(qt.QMainWindow):
         else:
             mask_image = None
         detector = self.worker_config.poni.detector
-        print(detector)
         if detector:
             detector_mask = detector.mask
             if detector.shape != image.shape:
