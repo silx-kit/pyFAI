@@ -166,6 +166,23 @@ class Nexus(object):
             self.h5.attrs["HDF5_Version"] = h5py.version.hdf5_version
             self.h5.attrs["creator"] = creator or self.__class__.__name__
 
+    def __del__(self):
+        try:
+            if self.mode != "r":
+                end_time = get_isotime()
+                for entry in self.to_close:
+                    entry["end_time"] = end_time
+                self.h5.attrs["file_update_time"] = get_isotime()
+        except Exception as error:
+            sys.stderr.write(f"{type(error)}: {error},\nwhile finalizing Nexus file\n")
+
+        try:
+            self.h5.close()
+            if self.file_handle:
+                self.file_handle.close()
+        except:
+            pass
+
     def close(self, end_time=None):
         """
         close the filename and update all entries
