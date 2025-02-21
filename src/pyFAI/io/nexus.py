@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2025"
+__date__ = "21/02/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -41,7 +41,6 @@ import time
 import logging
 import json
 import posixpath
-import atexit
 from ..utils.decorators import deprecated
 from ..containers import Integrate1dResult, ErrorModel
 from .. import version
@@ -158,7 +157,7 @@ class Nexus(object):
             self.file_handle = None
             self.h5 = h5py.File(self.filename, mode=self.mode)
         self.to_close = []
-        atexit.register(self.close)
+
         if not pre_existing or "w" in mode:
             self.h5.attrs["NX_class"] = "NXroot"
             self.h5.attrs["file_time"] = get_isotime(start_time)
@@ -177,7 +176,8 @@ class Nexus(object):
             if self.mode != "r":
                 if self.h5:
                     end_time = get_isotime(end_time)
-                    for entry in self.to_close:
+                    while self.to_close:
+                        entry = self.to_close.pop()
                         entry["end_time"] = end_time
                     self.h5.attrs["file_update_time"] = get_isotime()
         except Exception as error:
