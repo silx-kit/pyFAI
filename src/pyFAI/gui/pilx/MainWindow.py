@@ -46,8 +46,6 @@ import numpy
 from silx.gui import qt
 from silx.gui.colors import Colormap
 from silx.image.marchingsquares import find_contours
-from silx.io.url import DataUrl
-from silx.io import get_data
 from silx.gui.plot.items.image import ImageBase
 
 from .models import ImageIndices
@@ -56,6 +54,7 @@ from .utils import (
     compute_radial_values,
     get_dataset,
     get_indices_from_values,
+    get_mask_image,
     get_radial_dataset,
 )
 from .widgets.DiffractionImagePlotWidget import DiffractionImagePlotWidget
@@ -63,9 +62,10 @@ from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
 from .widgets.TitleWidget import TitleWidget
 from ...io.integration_config import WorkerConfig
-from ...utils.mathutil import binning as rebin_fct
-from ...detectors import Detector
+from ...utils.mathutil import binning
+
 logger = logging.getLogger(__name__)
+
 
 class MainWindow(qt.QMainWindow):
     sigFileChanged = qt.Signal(str)
@@ -253,28 +253,25 @@ class MainWindow(qt.QMainWindow):
         :return: 2D array
         """
         if maskfile:
-            mask_image = get_data(url=DataUrl(maskfile))
-            if mask_image.shape != image.shape:
-                binning = [m//i for i, m in zip(image.shape, mask_image.shape)]
-                if min(binning)<1:
-                    mask_image = None
-                else:
-                    mask_image = rebin_fct(mask_image, binning)
+            mask_image = get_mask_image(maskfile, image.shape)
         else:
             mask_image = None
+
         detector = self.worker_config.poni.detector
-        if detector:
-            detector_mask = detector.mask
-            if detector.shape != image.shape:
-                detector.guess_binning(image)
-                detector_mask = rebin_fct(detector_mask, detector.binning)
-            if mask_image is None:
-                mask_image = detector_mask
-            else:
-                numpy.logical_or(mask_image, detector_mask, out=mask_image)
-            detector.mask = mask_image
-            mask_image = detector.dynamic_mask(image)
-        return mask_image
+        if not detector:
+            return mask_image
+
+        detector_mask = detector.mask
+        if detector.shape != image.shape:
+            detector.guess_binning(image)
+            detector_mask = binning(detector_mask, detector.binning)
+
+        if mask_image is None:
+            detector.mask = detector_mask
+        else:
+            detector.mask = numpy.logical_or(mask_image, detector_mask)
+
+        return detector.dynamic_mask(image)
 
     def displayImageAtIndices(self, indices: ImageIndices):
         if self._file_name is None:
