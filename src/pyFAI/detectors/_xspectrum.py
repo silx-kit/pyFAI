@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2022-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2022-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2024"
+__date__ = "20/02/2025"
 __status__ = "production"
 
 import numpy
@@ -51,6 +51,7 @@ class _Lambda(Detector):
     # This detector does not exist but those are place-holder
     MODULE_SIZE = (256, 256)
     MODULE_GAP = (4, 4)
+    DUMMY = 0
     force_pixel = True
 
     def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0):
@@ -128,3 +129,21 @@ class Lambda10M(_Lambda):
     """
     MAX_SHAPE = (2596, 4676)
     aliases = ["Lambda 10M"]
+
+class Lambda9M(_Lambda):
+    """
+    LAMBDA 9M detector
+    """
+    MAX_SHAPE = (3868, 3227)
+    aliases = ["Lambda 9M"]
+
+    def calc_mask(self):
+        """
+        Returns a generic mask for module based detectors...
+        """
+        if self.max_shape is None:
+            raise NotImplementedError("Generic Lambda detector does not know"
+                                      "its max size ...")
+        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+        logger.warning("Lambda9M mask is detector specific, no pixel are actually masked")
+        return mask
