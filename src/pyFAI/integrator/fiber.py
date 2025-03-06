@@ -207,10 +207,10 @@ class FiberIntegrator(AzimuthalIntegrator):
         oop_range = deprecated_params.get('oop_range', None) or oop_range
         ip_range = deprecated_params.get('ip_range', None) or ip_range
         vertical_integration = deprecated_params.get('vertical_integration', None) or vertical_integration
-        
+
         invalid_keys = [k for k in kwargs if any(ss in k for ss in ["oop", "ip", "unit", "range"])]
         if invalid_keys:
-            logger.warning(f"""Key parameters {invalid_keys} are wrong or deprecated. 
+            logger.warning(f"""Key parameters {invalid_keys} are wrong or deprecated.
                             Valid parameters: npt_ip, unit_ip, ip_range, npt_oop, unit_oop, oop_range""")
 
         unit_ip = unit_ip or 'qip_nm^-1'
@@ -352,7 +352,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         invalid_keys = [k for k in kwargs if any(ss in k for ss in ["oop", "ip", "unit", "range"])]
         if invalid_keys:
-            logger.warning(f"""Key parameters {invalid_keys} are wrong or deprecated. 
+            logger.warning(f"""Key parameters {invalid_keys} are wrong or deprecated.
                             Valid parameters: npt_ip, unit_ip, ip_range, npt_oop, unit_oop, oop_range""")
 
         unit_ip = unit_ip or 'qip_nm^-1'
