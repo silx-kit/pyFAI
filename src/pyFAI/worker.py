@@ -246,6 +246,8 @@ class Worker(object):
         return os.linesep.join(lstout)
 
     def do_2D(self):
+        if self.nbpt_azim is None:
+            return False
         return self.nbpt_azim > 1
 
     def update_processor(self, integrator_name=None):
