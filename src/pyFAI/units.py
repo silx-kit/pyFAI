@@ -306,7 +306,7 @@ Sample orientation={self.sample_orientation}
 RADIAL_UNITS = {}
 AZIMUTHAL_UNITS = {}
 ANY_UNITS = {}
-
+ANY_FIBER_UNITS = {}
 
 def register_radial_unit(name, scale=1, label=None, equation=None, formula=None,
                          center=None, corner=None, delta=None, short_name=None,
@@ -320,23 +320,25 @@ def register_radial_fiber_unit(name, scale=1, label=None, equation=None, formula
                                incident_angle=0.0, tilt_angle=0.0, sample_orientation=1,
                                center=None, corner=None, delta=None, short_name=None,
                                unit_symbol=None, positive=True, period=None):
-    RADIAL_UNITS[name] = UnitFiber(name=name,
-                                   scale=scale,
-                                   label=label,
-                                   equation=equation,
-                                   formula=formula,
-                                   incident_angle=incident_angle,
-                                   tilt_angle=tilt_angle,
-                                   sample_orientation=sample_orientation,
-                                   center=center,
-                                   corner=corner,
-                                   delta=delta,
-                                   short_name=short_name,
-                                   unit_symbol=unit_symbol,
-                                   positive=positive,
-                                   period=period,
+    unitfiber = UnitFiber(name=name,
+                          scale=scale,
+                          label=label,
+                          equation=equation,
+                          formula=formula,
+                          incident_angle=incident_angle,
+                          tilt_angle=tilt_angle,
+                          sample_orientation=sample_orientation,
+                          center=center,
+                          corner=corner,
+                          delta=delta,
+                          short_name=short_name,
+                          unit_symbol=unit_symbol,
+                          positive=positive,
+                          period=period,
     )
+    RADIAL_UNITS[name] = unitfiber
     ANY_UNITS.update(RADIAL_UNITS)
+    ANY_FIBER_UNITS[name] = unitfiber
 
 
 def register_azimuthal_unit(name, scale=1, label=None, equation=None, formula=None,
@@ -351,15 +353,16 @@ def register_azimuthal_fiber_unit(name, scale=1, label=None, equation=None, form
                                   incident_angle=0.0, tilt_angle=0.0, sample_orientation=1,
                                   center=None, corner=None, delta=None, short_name=None,
                                   unit_symbol=None, positive=False, period=None):
-    AZIMUTHAL_UNITS[name] = UnitFiber(name=name, scale=scale, label=label,
-                                      equation=equation, formula=formula,
-                                      incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation,
-                                      center=center, corner=corner, delta=delta,
-                                      short_name=short_name, unit_symbol=unit_symbol,
-                                      positive=positive, period=period,
+    unitfiber = UnitFiber(name=name, scale=scale, label=label,
+                          equation=equation, formula=formula,
+                          incident_angle=incident_angle, tilt_angle=tilt_angle, sample_orientation=sample_orientation,
+                          center=center, corner=corner, delta=delta,
+                          short_name=short_name, unit_symbol=unit_symbol,
+                          positive=positive, period=period,
     )
+    AZIMUTHAL_UNITS[name] = unitfiber
     ANY_UNITS.update(AZIMUTHAL_UNITS)
-
+    ANY_FIBER_UNITS[name] = unitfiber
 
 def eq_r(x, y, z=None, wavelength=None):
     """Calculates the radius in meter
@@ -1246,7 +1249,8 @@ def get_unit_fiber(name, incident_angle:float=0.0, tilt_angle:float=0.0, sample_
     elif name in AZIMUTHAL_UNITS:
         unit = copy.deepcopy(AZIMUTHAL_UNITS.get(name, None))
     else:
-        unit = None
+        logger.warning(f"Unit: {name} is not a valid FiberUnit. These are the valid FiberUnits: {ANY_FIBER_UNITS.keys()}")
+        return
 
     if isinstance(unit, UnitFiber):
         unit.set_incident_angle(incident_angle)
