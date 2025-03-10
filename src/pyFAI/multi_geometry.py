@@ -111,12 +111,12 @@ class MultiGeometry(object):
 
     def _guess_radial_range(self):
         logger.info(f"Calculating the radial range of MultiGeometry...")
-        radial = numpy.array([ai.array_from_unit(unit=self.radial_unit) for ai in self.ais])
+        radial = numpy.concatenate([ai.array_from_unit(unit=self.radial_unit).reshape(-1) for ai in self.ais])
         return (radial.min(), radial.max())
 
     def _guess_azimuth_range(self):
         logger.info(f"Calculating the azimuthal range of MultiGeometry...")
-        azimuthal = numpy.array([ai.array_from_unit(unit=self.azimuth_unit) for ai in self.ais])
+        azimuthal = numpy.concatenate([ai.array_from_unit(unit=self.azimuth_unit).reshape(-1) for ai in self.ais])
         return (azimuthal.min(), azimuthal.max())
 
     def integrate1d(self, lst_data, npt=1800,
