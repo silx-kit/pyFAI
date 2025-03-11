@@ -256,7 +256,7 @@ class Bench(object):
         self.unit = unit
         self.out_2d = (500, 360)
         self.max_size = max_size or sys.maxunicode
-        self.plot_y_range = [0.5, 150]
+        self.plot_y_range = [0.5, 1500]
 
     def get_cpu(self):
         if self._cpu is None:
