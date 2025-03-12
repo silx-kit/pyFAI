@@ -400,8 +400,8 @@ class TestFlatimage(unittest.TestCase):
         ai1 = AzimuthalIntegrator.sload(config)
         img1 = det.mask.astype("uint16")*(65535-1)+1
         img1[300:400, 300:400] = 65535
-        result = ai1.integrate1d(img1, 100, unit="r_mm", 
-                                 method=("no", "histogram", "cython"), 
+        result = ai1.integrate1d(img1, 100, unit="r_mm",
+                                 method=("no", "histogram", "cython"),
                                  correctSolidAngle=False)
         self.assertTrue(numpy.allclose(result.intensity, numpy.ones_like(result.radial)))
 
