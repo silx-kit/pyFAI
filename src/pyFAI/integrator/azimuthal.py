@@ -130,7 +130,7 @@ class AzimuthalIntegrator(Integrator):
         unit = units.to_unit(unit)
         if dummy is None:
             dummy, delta_dummy = self.detector.get_dummies(data)
-            empty = self._empty if dummy is None else dummy     
+            empty = self._empty if dummy is None else dummy
         else:
             dummy = empty = numpy.float32(dummy)
             delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
@@ -612,7 +612,7 @@ class AzimuthalIntegrator(Integrator):
         mask = numpy.where(count == 0)
         if dummy is None:
             dummy, delta_dummy = self.detector.get_dummies(data)
-            empty = self._empty if dummy is None else dummy     
+            empty = self._empty if dummy is None else dummy
         else:
             dummy = empty = numpy.float32(dummy)
             delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
@@ -715,11 +715,11 @@ class AzimuthalIntegrator(Integrator):
         pos1_scale = azimuth_unit.scale
         if dummy is None:
             dummy, delta_dummy = self.detector.get_dummies(data)
-            empty = self._empty if dummy is None else dummy     
+            empty = self._empty if dummy is None else dummy
         else:
             dummy = empty = numpy.float32(dummy)
             delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
-        
+
         if mask is None:
             has_mask = "from detector"
             mask = self.mask
