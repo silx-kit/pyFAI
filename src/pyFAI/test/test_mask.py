@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "12/03/2024"
 
 import unittest
 import numpy
@@ -48,21 +48,25 @@ from ..integrator.azimuthal import AzimuthalIntegrator
 
 
 class TestMask(unittest.TestCase):
-    dataFile = "testMask.edf"
-    poniFile = "Pilatus1M.poni"
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Download files"""
-        self.dataFile = UtilsTest.getimage(self.__class__.dataFile)
-        self.poniFile = UtilsTest.getimage(self.__class__.poniFile)
-        self.ai = load(self.poniFile)
-        with fabio.open(self.dataFile) as fimg:
-            self.data = fimg.data
-        self.mask = self.data < 0
+        cls.dataFile = UtilsTest.getimage("testMask.edf")
+        cls.poniFile = UtilsTest.getimage("Pilatus1M.poni")
+        cls.ai = load(cls.poniFile)
+        # hack to prevent dynamic masking: this is a Pilatus without dummy values
+        class MyPilatus(cls.ai.detector.__class__):
+            DUMMY=None
+            DELTA_DUMMY=None
+        cls.ai.detector = MyPilatus()
+        with fabio.open(cls.dataFile) as fimg:
+            cls.data = fimg.data
+        cls.mask = cls.data < 0
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.dataFile = self.data = self.ai = self.mask = self.poniFile = None
+    @classmethod
+    def tearDownClass(cls):
+        cls.dataFile = cls.data = cls.ai = cls.mask = cls.poniFile = None
 
     def test_mask_hist(self):
         """
