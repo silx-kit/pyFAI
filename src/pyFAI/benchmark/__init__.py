@@ -256,7 +256,7 @@ class Bench(object):
         self.unit = unit
         self.out_2d = (500, 360)
         self.max_size = max_size or sys.maxunicode
-        self.plot_y_range = [0.5, 1500]
+        self.plot_y_range = [0.5, 1000]
 
     def get_cpu(self):
         if self._cpu is None:
@@ -644,7 +644,7 @@ class Bench(object):
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
             self.ax.set_xlim(0.0, 20)
-            self.ax.set_ylim(*self.plot_y_range)
+            self.ax.set_ylim(self.plot_y_range[0], 1.5*self.plot_y_range[1])
             self.ax.set_title(f'CPU: {self.get_cpu()}\nGPU: {self.get_gpu()}')
 
             # Display detector markers (vertical lines)
