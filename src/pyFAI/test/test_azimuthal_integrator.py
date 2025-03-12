@@ -389,6 +389,22 @@ class TestFlatimage(unittest.TestCase):
         ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Eiger4M.poni"))
         self.assertLess(abs(ai.guess_polarization(img) - 0.5), 0.1)
 
+    def test_detector_dynamic_mask(self):
+        """Check if the dummy value from detector is actually used #2466"""
+        det = detector_factory("Pilatus CdTe 300k")
+        corners = det.get_pixel_corners()
+        config = {"detector": det.name,
+          "dist": 1,
+          "poni1": corners[...,1].max()/4,
+          "poni2": corners[...,2].max()/4}
+        ai1 = AzimuthalIntegrator.sload(config)
+        img1 = det.mask.astype("uint16")*(65535-1)+1
+        img1[300:400, 300:400] = 65535
+        result = ai1.integrate1d(img1, 100, unit="r_mm", 
+                                 method=("no", "histogram", "cython"), 
+                                 correctSolidAngle=False)
+        self.assertTrue(numpy.allclose(result.intensity, numpy.ones_like(result.radial)))
+
 
 class TestSaxs(unittest.TestCase):
     saxsPilatus = "bsa_013_01.edf"
