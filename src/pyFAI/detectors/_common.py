@@ -949,6 +949,25 @@ class Detector(metaclass=DetectorMeta):
 #        logger.debug("Detector.calc_mask is not implemented for generic detectors")
         return None
 
+    def get_dummies(self, img):
+        """Calculate the actual dummy value from dtype of the img
+
+        :param img: numpy array (or actually its dtype)
+        :return: actual (dummy, delta_dummy) values as data_d (i.e. float32)
+        """
+        if self.dummy is None:
+            return None, None
+        if isinstance(img, numpy.ndarray):
+            dtype = numpy.dtype(img.dtype)
+        else:
+            dtype = numpy.dtype(img)
+        actual_dummy = numpy.float32(numpy.dtype(img.dtype).type(numpy.int64(self.dummy)))
+        if self.delta_dummy is None:
+            actual_delta_dummy = numpy.finfo("float32").eps
+        else:
+            actual_delta_dummy = numpy.float32(self.delta_dummy)
+        return actual_dummy, actual_delta_dummy
+
     def dynamic_mask(self, img):
         """Calculate the dynamic mask for the given image.
 
