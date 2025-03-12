@@ -562,7 +562,7 @@ class TestCalcFrom(unittest.TestCase):
         img0 = UtilsTest.get_rng().random(det.shape)
         prof_1d = ai.integrate1d_ng(img0, 200, unit="2th_deg")
         sig = 1e6*numpy.sinc(prof_1d.radial / 10) ** 2
-        img1 = ai.calcfrom1d(prof_1d.radial, sig, dim1_unit="2th_deg", 
+        img1 = ai.calcfrom1d(prof_1d.radial, sig, dim1_unit="2th_deg",
                             mask=det.mask, dummy=-1)
         new_prof_1d = ai.integrate1d_ng(img1, 200, unit="2th_deg")
         delta = abs((new_prof_1d.intensity - sig)).max()

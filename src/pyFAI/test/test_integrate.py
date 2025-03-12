@@ -76,7 +76,7 @@ class TestIntegrate1D(unittest.TestCase):
         self.npt = 1000
         self.img = UtilsTest.getimage("Pilatus1M.edf")
         with fabio.open(self.img) as fimg:
-            self.data = fimg.data        
+            self.data = fimg.data
         self.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
         self.ai.wavelength = 1e-10
         self.Rmax = 3
@@ -194,7 +194,7 @@ class TestIntegrate2D(unittest.TestCase):
             DUMMY = None
             DELTA_DUMMY = None
 
-        cls.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, 
+        cls.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0,
                                      detector=DummyLessPilatus())
         cls.ai.wavelength = 1e-10
         cls.Rmax = 30
