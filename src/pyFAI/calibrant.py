@@ -667,7 +667,7 @@ class Calibrant(object):
 
         return values * scale
 
-    def fake_calibration_image(self, ai, shape=None, Imax=1.0,
+    def fake_calibration_image(self, ai, shape=None, Imax=1.0, background_factor=0.0,
                                U=0, V=0, W=0.0001) -> numpy.ndarray:
         """
         Generates a fake calibration image from an azimuthal integrator.
@@ -711,6 +711,13 @@ class Calibrant(object):
                 signal += Imax * numpy.exp(-(tth_1d - t) ** 2 / (2.0 * sigma2))
         res = ai.calcfrom1d(tth_1d, signal, shape=shape, mask=ai.mask,
                             dim1_unit='2th_rad', correctSolidAngle=True)
+        
+        if background_factor != 0.0:
+            res += ai.calcfrom1d(tth=tth_1d, 
+                                 I=numpy.ones_like(signal) * signal.max() * background_factor, 
+                                 shape=shape, mask=ai.mask,
+                                 dim1_unit='2th_rad', correctSolidAngle=True)
+
         return res
 
     def __getnewargs_ex__(self):
