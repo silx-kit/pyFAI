@@ -8,7 +8,7 @@ Change-log of versions
 2025.03 14/03/2025
 ------------------
 
-* Bug fix version
+* Bug fix version (Thanks to Fred Picca/Debian for testing on many architectures)
 * Use automatically dynamic mask for Dectris detector data
 
   - Automatically recognizes and masks out bad pixel 
@@ -22,8 +22,8 @@ Change-log of versions
 * `Pilx` uses now the dynamic mask to hide hot/defective pixels
 * Improvement of the `fake_calibration_image` to provide both `Imin` and `Imax`
 * New Lambda 9M detector
-- Supports python 3.9 to 3.13. The GIL-free version on python 3.13 is untested. 
-- Tested by the developers on Windows (amd64), linux (amd64, arm64 and ppc64le) and MacOS (amd64 and arm64). Thanks to Debian for extending this matrix.
+- Supports python 3.9 to 3.13. The GIL-free version on python 3.13 is untested.
+- Tested by the developers on Windows (amd64), linux (amd64, arm64 and ppc64le) and MacOS (amd64 and arm64).
 - A dozen of Pull-requests by Thomas Kluyver, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
 
 2025.01 31/01/2025
