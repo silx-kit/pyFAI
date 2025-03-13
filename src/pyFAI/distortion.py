@@ -132,7 +132,7 @@ class Distortion(object):
         self.delta1 = self.delta2 = None  # max size of an pixel on a regular grid ...
         self.offset1 = self.offset2 = 0  # position of the first bin
         self.integrator = None
-        self.empty = empty  # "dummy" value for empty bins
+        self.empty = empty
         self.device = device
         if workgroup is not None:
             logger.warning("The workgroup keyword is deprecated since pyFAI 0.20 and may be removed with 0.22")
@@ -265,12 +265,14 @@ class Distortion(object):
                 if self.method == "lut":
                     self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut,
                                                                       self._shape_out[0] * self._shape_out[1],
-                                                                      devicetype=self.device)
+                                                                      devicetype=self.device,
+                                                                      empty = self.empty)
                 else:
                     self.integrator = ocl_azim_csr.OCL_CSR_Integrator(self.lut,
                                                                       self._shape_out[0] * self._shape_out[1],
                                                                       devicetype=self.device,
-                                                                      block_size=self.workgroup)
+                                                                      block_size=self.workgroup,
+                                                                      empty = self.empty)
                     # Enforce the serial execution for the intergration as it is much faster
                     self.integrator.workgroup_size["csr_integrate4"] = 1, 1
             else:
@@ -278,12 +280,14 @@ class Distortion(object):
                     self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut,
                                                                       self._shape_out[0] * self._shape_out[1],
                                                                       platformid=self.device[0],
-                                                                      deviceid=self.device[1])
+                                                                      deviceid=self.device[1],
+                                                                      empty = self.empty)
                 else:
                     self.integrator = ocl_azim_csr.OCL_CSR_Integrator(self.lut,
                                                                       self._shape_out[0] * self._shape_out[1],
                                                                       platformid=self.device[0], deviceid=self.device[1],
-                                                                      block_size=self.workgroup)
+                                                                      block_size=self.workgroup,
+                                                                      empty = self.empty)
                     # Enforce the serial execution for the intergration as it is much faster
                     self.integrator.workgroup_size["csr_integrate4"] = 1, 1
 
@@ -422,7 +426,7 @@ class Distortion(object):
                 self.calc_LUT()
             if _distortion is not None:
                 out = _distortion.correct(image, self.shape_in, self._shape_out, self.lut,
-                                          dummy=dummy or self.empty, delta_dummy=delta_dummy)
+                                          dummy=self.empty, delta_dummy=delta_dummy)
             else:
                 if self.method == "lut":
                     big = image.ravel().take(self.lut.idx) * self.lut.coef

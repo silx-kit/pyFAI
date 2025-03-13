@@ -130,7 +130,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             raise RuntimeError("data.shape[0] != indices.shape[0]")
         self.data_size = self._data.shape[0]
         self.size = image_size
-        self.empty = empty or 0
+        self.empty = numpy.float32(empty or 0.0)
         self.unit = unit
         self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = bin_centers
@@ -830,7 +830,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             ev = corrections4(self.queue, wdim_data, (wg,), *list(kw_corr.values()))
             events.append(EventDescription(kernel_correction_name, ev))
 
-            kw_int["empty"] = dummy
+            kw_int["empty"] = self.empty
             wg_min, wg_max = (workgroup_size, workgroup_size) if workgroup_size else self.workgroup_size["csr_integrate4"]
             if  wg_max == 1:
                 wg = workgroup_size if workgroup_size else max(self.workgroup_size["csr_integrate4_single"])

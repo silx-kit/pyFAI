@@ -113,7 +113,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.nbytes = lut.nbytes
         self.bins, self.lut_size = lut.shape
         self.size = image_size
-        self.empty = empty or 0  # numpy.nan
+        self.empty = numpy.float32(empty or 0.0)
         self.unit = unit
         self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = bin_centers
@@ -612,7 +612,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
             ev = corrections4(self.queue, self.wdim_data, self.workgroup_size, *list(kw_corr.values()))
             events.append(EventDescription(kernel_correction_name, ev))
 
-            kw_int["empty"] = dummy
+            kw_int["empty"] = self.empty
             integrate = self.kernels.lut_integrate4(self.queue, wdim_bins, self.workgroup_size, *kw_int.values())
             events.append(EventDescription("integrate4", integrate))
 

@@ -144,7 +144,7 @@ cdef class CscIntegrator(object):
         cdef:
             index_t idx, start, stop, j, bin_idx
             acc_t coef, w
-            data_t empty, cdummy, cddummy
+            data_t empty=self.empty, cdummy, cddummy
             data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
             acc_t[::1] sum_sig = numpy.zeros(self.output_size, dtype=acc_d)
             acc_t[::1] sum_var = numpy.zeros(self.output_size, dtype=acc_d)
@@ -162,8 +162,6 @@ cdef class CscIntegrator(object):
             acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B, omega_AB
 
         assert weights.size == self.input_size, "weights size"
-        empty = dummy if dummy is not None else self.empty
-
 
         if (dummy is not None) and (delta_dummy is not None):
             check_dummy = True

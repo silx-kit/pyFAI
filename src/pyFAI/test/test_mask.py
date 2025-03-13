@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "13/03/2024"
 
 import unittest
 import numpy
@@ -76,7 +76,14 @@ class TestMask(unittest.TestCase):
         meth = ("no", "histogram", "cython")
         x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+
+        # hack too fix the test, since empty != dummy
+        empty = self.ai.empty
+        self.ai.empty = -20
         x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        self.ai.empty = empty
+        # end of hack
+
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -101,7 +108,12 @@ class TestMask(unittest.TestCase):
         meth = ("bbox", "histogram", "cython")
         x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        # hack too fix the test, since empty != dummy
+        empty = self.ai.empty
+        self.ai.empty = -20
         x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        self.ai.empty = empty
+        # end of hack
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -124,20 +136,28 @@ class TestMask(unittest.TestCase):
         without mask the pixels should be at -10 ; with mask they are at 0
         """
         meth = ("full", "histogram", "cython")
+
         x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+
+        # hack too fix the test, since empty != dummy
+        empty = self.ai.empty
+        self.ai.empty = -20
         x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        self.ai.empty = empty
+        # end of hack
+
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
-        if logger.getEffectiveLevel() == logging.DEBUG:
-            pylab.plot(*x1, label="no mask")
-            pylab.plot(*x2, label="with mask")
-            pylab.plot(*x3, label="with dummy")
-            pylab.title("test_mask_splitBBox")
-            pylab.legend()
-            pylab.show()
-            input()
+        # if logger.getEffectiveLevel() == logging.DEBUG:
+        #     pylab.plot(*x1, label="no mask")
+        #     pylab.plot(*x2, label="with mask")
+        #     pylab.plot(*x3, label="with dummy")
+        #     pylab.title("test_mask_splitBBox")
+        #     pylab.legend()
+        #     pylab.show()
+        #     input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
@@ -151,17 +171,24 @@ class TestMask(unittest.TestCase):
         meth = ("bbox", "lut", "cython")
         x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        
+        # hack too fix the test, since empty != dummy
+        empty = self.ai.empty
+        self.ai.empty = -20
         x3 = self.ai.integrate1d_ng(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        self.ai.empty = empty
+        # end of hack
+        
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
-        if logger.getEffectiveLevel() == logging.DEBUG:
-            pylab.plot(*x1, label="nomask")
-            pylab.plot(*x2, label="mask")
-            pylab.plot(*x3, label="dummy")
-            pylab.legend()
-            pylab.show()
-            input()
+        # if logger.getEffectiveLevel() == logging.DEBUG:
+        #     pylab.plot(*x1, label="nomask")
+        #     pylab.plot(*x2, label="mask")
+        #     pylab.plot(*x3, label="dummy")
+        #     pylab.legend()
+        #     pylab.show()
+        #     input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
@@ -175,17 +202,22 @@ class TestMask(unittest.TestCase):
         meth = meth = ("bbox", "csr", "cython")
         x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-        x3 = self.ai.integrate1d_ng(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        # hack too fix the test, since empty != dummy
+        empty = self.ai.empty
+        self.ai.empty = -20
+        x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        self.ai.empty = empty
+        # end of hack
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
-        if logger.getEffectiveLevel() == logging.DEBUG:
-            pylab.plot(*x1, label="nomask")
-            pylab.plot(*x2, label="mask")
-            pylab.plot(*x3, label="dummy")
-            pylab.legend()
-            pylab.show()
-            input()
+        # if logger.getEffectiveLevel() == logging.DEBUG:
+        #     pylab.plot(*x1, label="nomask")
+        #     pylab.plot(*x2, label="mask")
+        #     pylab.plot(*x3, label="dummy")
+        #     pylab.legend()
+        #     pylab.show()
+        #     input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
@@ -200,17 +232,23 @@ class TestMask(unittest.TestCase):
         meth = ("bbox", "lut", "opencl")
         x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        # hack too fix the test, since empty != dummy
+        empty = self.ai.empty
+        self.ai.empty = -20
         x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        self.ai.empty = empty
+        # end of hack
+
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
-        if logger.getEffectiveLevel() == logging.DEBUG:
-            pylab.plot(*x1, label="nomask")
-            pylab.plot(*x2, label="mask")
-            pylab.plot(*x3, label="dummy")
-            pylab.legend()
-            pylab.show()
-            input()
+        # if logger.getEffectiveLevel() == logging.DEBUG:
+        #     pylab.plot(*x1, label="nomask")
+        #     pylab.plot(*x2, label="mask")
+        #     pylab.plot(*x3, label="dummy")
+        #     pylab.legend()
+        #     pylab.show()
+        #     input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
@@ -225,17 +263,24 @@ class TestMask(unittest.TestCase):
         meth = ("bbox", "csr", "opencl")
         x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+
+        # hack too fix the test, since empty != dummy
+        empty = self.ai.empty
+        self.ai.empty = -20
         x3 = self.ai.integrate1d_ng(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        self.ai.empty = empty
+        # end of hack
+
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
-        if logger.getEffectiveLevel() == logging.DEBUG:
-            pylab.plot(*x1, label="nomask")
-            pylab.plot(*x2, label="mask")
-            pylab.plot(*x3, label="dummy")
-            pylab.legend()
-            pylab.show()
-            input()
+        # if logger.getEffectiveLevel() == logging.DEBUG:
+        #     pylab.plot(*x1, label="nomask")
+        #     pylab.plot(*x2, label="mask")
+        #     pylab.plot(*x3, label="dummy")
+        #     pylab.legend()
+        #     pylab.show()
+        #     input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)

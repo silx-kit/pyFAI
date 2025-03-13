@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "13/03/2025"
 
 import unittest
 import numpy
@@ -337,6 +337,10 @@ class TestOther(unittest.TestCase):
             w = numpy.where(dc.lut[2][1:] == dc.lut[2][:-1])
             self.assertEqual(len(w[0]), d.mask.sum(), "masked pixels are all missing, opencl")
             b = dc.correct_ng(a)
+            print(dc)
+            print(dc.empty)
+            print(dc.integrator)
+            print(dc.integrator.empty)
             self.assertGreater(a.min(), 0)  # 1 is the lowset
             self.assertLess(b.min(), 0)  # -1 have appeared
             self.assertLess(b.mean(), a.mean())
