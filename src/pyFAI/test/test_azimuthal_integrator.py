@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/03/2025"
+__date__ = "13/03/2025"
 
 import unittest
 import os
@@ -328,6 +328,12 @@ class TestAzimHalfFrelon(unittest.TestCase):
         self.assertGreater(res[0].max(), 179, "chi max at +180")
         self.assertGreater(res[1].min(), 120, "intensity min in ok")
         self.assertLess(res[1].max(), 10000, "intensity max in ok")
+
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
+    def test_separate(self):
+        "Non regression for #2473"
+        res = self.ai.separate(self.data)
+        
 
 
 class TestFlatimage(unittest.TestCase):
