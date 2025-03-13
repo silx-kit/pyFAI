@@ -1590,7 +1590,7 @@ class AzimuthalIntegrator(Integrator):
 
                 intpl = integr.medfilt(data, **kwargs)
         else:
-            raise RuntimeError("Not yet implemented. Sorry")
+            raise RuntimeError(f"Method {method} is not yet implemented. Please report an issue on https://github.com/silx-kit/pyFAI/issues/new")
         result = Integrate1dResult(intpl.position * unit.scale, intpl.intensity, intpl.sem)
         result._set_method_called("sigma_clip_ng")
         result._set_method(method)

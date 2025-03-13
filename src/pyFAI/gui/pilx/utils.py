@@ -28,6 +28,7 @@
 
 """Tool to visualize diffraction maps."""
 from __future__ import annotations
+
 __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
@@ -35,16 +36,20 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "19/02/2025"
 __status__ = "development"
 
-from typing import Iterable, Optional
 import logging
+from typing import Iterable, Optional, Tuple
+
 logger = logging.getLogger(__name__)
-import json
+import os.path
+
 import h5py
 import numpy
-import os.path
+from silx.io import get_data
+from silx.io.url import DataUrl
+
 from ...integrator.azimuthal import AzimuthalIntegrator
-from ...detectors import Detector
 from ...io.integration_config import WorkerConfig
+from ...utils.mathutil import binning
 
 
 def compute_radial_values(worker_config: WorkerConfig) -> numpy.ndarray:
@@ -115,3 +120,18 @@ def guess_axis_path(existing_axis_path: str, parent: h5py.Group) -> str | None:
             return guessed_axis_path
 
     return None
+
+
+def get_mask_image(maskfile: str, image_shape: Tuple[int, int]) -> numpy.ndarray | None:
+    """Retrieves mask image from the URL. Rebin to match"""
+    mask_image = get_data(url=DataUrl(maskfile))
+    assert isinstance(mask_image, numpy.ndarray)
+    if mask_image.shape == image_shape:
+        return mask_image
+
+    # If mismatched shapes, try to rebin
+    bin_size = [m // i for i, m in zip(image_shape, mask_image.shape)]
+    if bin_size[0] == 0 or bin_size[1] == 0:
+        return None
+
+    return binning(mask_image, bin_size)

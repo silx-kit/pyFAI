@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2025"
+__date__ = "11/03/2025"
 
 import unittest
 import os
@@ -304,6 +304,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             self.assertLess(rwp, 0.1, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp_ocl)
         ref = ocl = pyt = rwp = rwp_ocl = rwp_pyt = None
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_radial(self):
         "Non regression for #1602"
         res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
