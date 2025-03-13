@@ -37,6 +37,13 @@ __docformat__ = 'restructuredtext'
 import logging
 logger = logging.getLogger(__name__)
 import numpy
+try:
+    import numexpr
+except ImportError as err:
+    logger.warning("Unable to import numexpr: %s", err)
+    USE_NUMEXPR = False
+else:
+    USE_NUMEXPR = True
 from .azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..method_registry import IntegrationMethod
@@ -271,12 +278,18 @@ class FiberIntegrator(AzimuthalIntegrator):
         sum_normalization = res._sum_normalization.sum(axis=-1)
         mask_ = numpy.where(count == 0)
         empty = dummy if dummy is not None else self._empty
-        intensity = sum_signal / sum_normalization
+        if USE_NUMEXPR:
+            intensity = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)")
+        else:
+            intensity = numpy.where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)
         intensity[mask_] = empty
 
         if res.sigma is not None:
             sum_variance = res.sum_variance.sum(axis=-1)
-            sigma = numpy.sqrt(sum_variance) / sum_normalization
+            if USE_NUMEXPR:
+                sigma = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sqrt(sum_variance) / sum_normalization)")
+            else:
+                sigma = numpy.where(sum_normalization <= 0, 0.0, numpy.sqrt(sum_variance) / sum_normalization)
             sigma[mask_] = empty
         else:
             sum_variance = None

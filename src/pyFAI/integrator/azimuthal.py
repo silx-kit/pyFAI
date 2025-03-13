@@ -715,7 +715,7 @@ class AzimuthalIntegrator(Integrator):
             dummy = numpy.float32(dummy)
             delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
         empty = self._empty
-        
+
         if mask is None:
             has_mask = "from detector"
             mask = self.mask
