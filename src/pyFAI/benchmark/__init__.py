@@ -256,7 +256,7 @@ class Bench(object):
         self.unit = unit
         self.out_2d = (500, 360)
         self.max_size = max_size or sys.maxunicode
-        self.plot_y_range = [0.5, 1000]
+        self.plot_y_range = [1, 1000]
 
     def get_cpu(self):
         if self._cpu is None:
@@ -640,11 +640,12 @@ class Bench(object):
                 self.ax.set_yscale("log", base=2)
             except Exception:
                 self.ax.set_yscale("log", basey=2)
-            t = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000]
+            t = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
             self.ax.set_xlim(0.0, 20)
-            self.ax.set_ylim(self.plot_y_range[0], 1.5*self.plot_y_range[1])
+            self.ax.set_ylim(0.75 * self.plot_y_range[0], 
+                             1.5 * self.plot_y_range[1])
             self.ax.set_title(f'CPU: {self.get_cpu()}\nGPU: {self.get_gpu()}')
 
             # Display detector markers (vertical lines)
@@ -657,7 +658,7 @@ class Bench(object):
                 colors='black',
             )
             for size, detector_label in zip(data_sizes, detector_names):
-                self.ax.text(x=size, y=0.6, s=detector_label, rotation=270, fontsize=7)
+                self.ax.text(x=size, y=0.8, s=detector_label, rotation=270, fontsize=7)
 
             update_fig(self.fig)
 
@@ -678,7 +679,8 @@ class Bench(object):
         self.plot_y_range = [min(min(self.plot_y_range), min(self.plot_y)),
                              max(max(self.plot_y_range), max(self.plot_y))]
         self.plot = self.ax.plot(self.plot_x, self.plot_y, marker + style, label=label)[0]
-        self.ax.set_ylim(*self.plot_y_range)
+        self.ax.set_ylim(0.75 * self.plot_y_range[0], 
+                         1.5 * self.plot_y_range[1])
 
         handles, labels = self.ax.get_legend_handles_labels()
         self.ax.legend(
@@ -707,7 +709,8 @@ class Bench(object):
         self.plot.set_data(self.plot_x, self.plot_y)
         self.plot_y_range = [min(self.plot_y_range[0], y_value),
                              max(self.plot_y_range[1], y_value)]
-        self.ax.set_ylim(*self.plot_y_range)
+        self.ax.set_ylim(0.75 * self.plot_y_range[0], 
+                         1.5 * self.plot_y_range[1])
         update_fig(self.fig)
 
     def display_all(self):
