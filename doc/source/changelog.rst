@@ -11,7 +11,7 @@ Change-log of versions
 * Bug fix version (Thanks to Fred Picca/Debian for testing on many architectures)
 * Use automatically dynamic mask for Dectris detector data
 
-  - Automatically recognizes and masks out bad pixel 
+  - Automatically recognizes and masks out bad pixel
   - `dummy` and `delta_dummy` values are already known from the manufacturer
   - empty bins are no more marked with the `dummy` value (which can be very large for Eiger) but with the `empty` value which is fully under control of the user, 0.0 by default.
 

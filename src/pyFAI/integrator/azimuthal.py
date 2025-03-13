@@ -134,7 +134,7 @@ class AzimuthalIntegrator(Integrator):
             dummy = numpy.float32(dummy)
             delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
         empty = self._empty
-            
+
         shape = data.shape
         pos0_scale = unit.scale
 

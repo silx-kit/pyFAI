@@ -333,7 +333,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
     def test_separate(self):
         "Non regression for #2473"
         res = self.ai.separate(self.data)
-        
+
 
 
 class TestFlatimage(unittest.TestCase):

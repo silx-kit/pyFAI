@@ -171,14 +171,14 @@ class TestMask(unittest.TestCase):
         meth = ("bbox", "lut", "cython")
         x1 = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-        
+
         # hack too fix the test, since empty != dummy
         empty = self.ai.empty
         self.ai.empty = -20
         x3 = self.ai.integrate1d_ng(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
         self.ai.empty = empty
         # end of hack
-        
+
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
