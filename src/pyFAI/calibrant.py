@@ -711,7 +711,7 @@ class Calibrant(object):
             else:
                 signal += Imax * numpy.exp(-(tth_1d - t) ** 2 / (2.0 * sigma2))
         signal = (Imax - Imin) * signal + Imin
-            
+
         res = ai.calcfrom1d(tth_1d, signal, shape=shape, mask=ai.mask,
                             dim1_unit='2th_rad', correctSolidAngle=True)
 
