@@ -171,13 +171,12 @@ Getting help
 A mailing-list, pyfai@esrf.fr, is available to get help on the program and how to use it.
 One needs to subscribe by sending an email to sympa@esrf.fr with a subject "subscribe pyfai".
 
-
 Maintainers
 -----------
 
 * Jérôme Kieffer (ESRF)
 * Edgar Gutierrez Fernandez (ESRF)
-* Maciej Jankowski (ESRF)
+* Loïc Huder (ESRF)
 
 Contributors
 ------------
@@ -189,12 +188,12 @@ Contributors
 * Aurore Deschildre (Formerly ESRF)
 * Giannis Ashiotis (Formerly ESRF)
 * Zubair Nawaz (Formerly Sesame)
-* Loïc Huder (ESRF)
 * Jon Wright (ESRF)
 * Amund Hov (Formerly ESRF)
 * Dodogerstlin @github
 * Gunthard Benecke (Desy)
 * Gero Flucke (Desy)
+* Maciej Jankowski (ESRF)
 
 Indirect contributors (ideas...)
 --------------------------------
