@@ -281,7 +281,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         if USE_NUMEXPR:
             intensity = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)")
         else:
-            intensity = sum_signal / sum_normalization
+            intensity = numpy.where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)
         intensity[mask_] = empty
 
         if res.sigma is not None:
@@ -289,7 +289,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             if USE_NUMEXPR:
                 sigma = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sqrt(sum_variance) / sum_normalization)")
             else:
-                sigma = numpy.sqrt(sum_variance) / sum_normalization
+                sigma = numpy.where(sum_normalization <= 0, 0.0, numpy.sqrt(sum_variance) / sum_normalization)
             sigma[mask_] = empty
         else:
             sum_variance = None
