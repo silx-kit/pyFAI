@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2025"
+__date__ = "13/03/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2102,7 +2102,9 @@ class AzimuthalIntegrator(Integrator):
                                     dim1_unit=unit,
                                     correctSolidAngle=True, polarization_factor=polarization_factor)
         bragg = data - amorphous
-        if restore_mask:
+        if mask is None:
+            mask = self.detector.mask
+        if restore_mask and mask is not None:
             wmask = numpy.where(mask)
             maskdata = data[wmask]
             bragg[wmask] = maskdata
