@@ -644,7 +644,7 @@ class Bench(object):
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
             self.ax.set_xlim(0.0, 20)
-            self.ax.set_ylim(0.75 * self.plot_y_range[0], 
+            self.ax.set_ylim(0.75 * self.plot_y_range[0],
                              1.5 * self.plot_y_range[1])
             self.ax.set_title(f'CPU: {self.get_cpu()}\nGPU: {self.get_gpu()}')
 
@@ -679,7 +679,7 @@ class Bench(object):
         self.plot_y_range = [min(min(self.plot_y_range), min(self.plot_y)),
                              max(max(self.plot_y_range), max(self.plot_y))]
         self.plot = self.ax.plot(self.plot_x, self.plot_y, marker + style, label=label)[0]
-        self.ax.set_ylim(0.75 * self.plot_y_range[0], 
+        self.ax.set_ylim(0.75 * self.plot_y_range[0],
                          1.5 * self.plot_y_range[1])
 
         handles, labels = self.ax.get_legend_handles_labels()
@@ -709,7 +709,7 @@ class Bench(object):
         self.plot.set_data(self.plot_x, self.plot_y)
         self.plot_y_range = [min(self.plot_y_range[0], y_value),
                              max(self.plot_y_range[1], y_value)]
-        self.ax.set_ylim(0.75 * self.plot_y_range[0], 
+        self.ax.set_ylim(0.75 * self.plot_y_range[0],
                          1.5 * self.plot_y_range[1])
         update_fig(self.fig)
 
