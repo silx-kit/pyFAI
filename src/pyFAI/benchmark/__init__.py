@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "21/05/2024"
+__date__ = "11/03/2025"
 __license__ = "MIT"
 __copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -256,6 +256,7 @@ class Bench(object):
         self.unit = unit
         self.out_2d = (500, 360)
         self.max_size = max_size or sys.maxunicode
+        self.plot_y_range = [1, 1000]
 
     def get_cpu(self):
         if self._cpu is None:
@@ -363,7 +364,7 @@ class Bench(object):
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             # label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method.method[1:4]], platform, device)).replace(" ", "_")
-            label = f'{devicetype}:{platform}:{device} / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
+            label = f'{devicetype}:{platform}:{device} / {function}: ({method.split_lower},{method.algo_lower},{method.impl_lower})'
             method = IntegrationMethod.select_method(dim=1, split=method.split_lower,
                                                       algo=method.algo_lower, impl=method.impl_lower,
                                                       target=(opencl["platformid"], opencl["deviceid"]))[0]
@@ -639,24 +640,25 @@ class Bench(object):
                 self.ax.set_yscale("log", base=2)
             except Exception:
                 self.ax.set_yscale("log", basey=2)
-            t = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]
+            t = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
             self.ax.set_xlim(0.0, 20)
-            self.ax.set_ylim(0.5, 1500)
+            self.ax.set_ylim(0.75 * self.plot_y_range[0],
+                             1.5 * self.plot_y_range[1])
             self.ax.set_title(f'CPU: {self.get_cpu()}\nGPU: {self.get_gpu()}')
 
             # Display detector markers (vertical lines)
             self.ax.vlines(
                 x=data_sizes,
-                ymin=self.ax.get_ylim()[0],
-                ymax=self.ax.get_ylim()[1],
+                ymin=0,
+                ymax=100*self.plot_y_range[1],
                 linestyles='dashed',
                 alpha=0.4,
                 colors='black',
             )
             for size, detector_label in zip(data_sizes, detector_names):
-                self.ax.text(x=size, y=0.6, s=detector_label, rotation=270, fontsize=7)
+                self.ax.text(x=size, y=0.8, s=detector_label, rotation=270, fontsize=7)
 
             update_fig(self.fig)
 
@@ -674,7 +676,11 @@ class Bench(object):
         self.plot_x = list(results.keys())
         self.plot_x.sort()
         self.plot_y = [1000.0 / results[i] for i in self.plot_x]
+        self.plot_y_range = [min(min(self.plot_y_range), min(self.plot_y)),
+                             max(max(self.plot_y_range), max(self.plot_y))]
         self.plot = self.ax.plot(self.plot_x, self.plot_y, marker + style, label=label)[0]
+        self.ax.set_ylim(0.75 * self.plot_y_range[0],
+                         1.5 * self.plot_y_range[1])
 
         handles, labels = self.ax.get_legend_handles_labels()
         self.ax.legend(
@@ -697,9 +703,14 @@ class Bench(object):
         if not self.plot:
             return
 
+        y_value = 1000.0 / exec_time
         self.plot_x.append(size)
-        self.plot_y.append(1000.0 / exec_time)
+        self.plot_y.append(y_value)
         self.plot.set_data(self.plot_x, self.plot_y)
+        self.plot_y_range = [min(self.plot_y_range[0], y_value),
+                             max(self.plot_y_range[1], y_value)]
+        self.ax.set_ylim(0.75 * self.plot_y_range[0],
+                         1.5 * self.plot_y_range[1])
         update_fig(self.fig)
 
     def display_all(self):
