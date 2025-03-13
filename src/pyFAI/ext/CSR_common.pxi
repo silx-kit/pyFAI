@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "05/12/2024"
+__date__ = "12/03/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -347,7 +347,7 @@ cdef class CsrIntegrator(object):
             bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
             bint do_variance = error_model is not ErrorModel.NO
         assert weights.size == self.input_size, "weights size"
-        empty = dummy if dummy is not None else self.empty
+        empty = self.empty if dummy is None else dummy
         #Call the preprocessor ...
         preproc4 = preproc(weights.ravel(),
                            dark=dark,

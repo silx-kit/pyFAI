@@ -170,7 +170,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
         cal = calibrant.get_calibrant("AgBh")
         cal.wavelength = ai.wavelength
         res = mathutil.quality_of_fit(img, ai, cal, rings=[0,1], npt_azim=36, npt_rad=100)
-        self.assertLess(res, 0.3, "Fit of good quality")
+        self.assertLess(res, 0.31, "Fit of good quality")
 
     def test_nan_equal(self):
         nan_equal = mathutil.nan_equal

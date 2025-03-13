@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "12/03/2025"
 
 import contextlib
 import os
@@ -190,7 +190,12 @@ class TestIntegrate2D(unittest.TestCase):
         cls.img = UtilsTest.getimage("Pilatus1M.edf")
         with fabio.open(cls.img) as fimg:
             cls.data = fimg.data
-        cls.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
+        class DummyLessPilatus(Pilatus1M):
+            DUMMY = None
+            DELTA_DUMMY = None
+
+        cls.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0,
+                                     detector=DummyLessPilatus())
         cls.ai.wavelength = 1e-10
         cls.Rmax = 30
         cls.delta_pos_azim_max = 0.28

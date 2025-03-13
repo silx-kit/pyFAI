@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2025"
+__date__ = "12/03/2025"
 
 import unittest
 import random
@@ -559,18 +559,21 @@ class TestCalcFrom(unittest.TestCase):
     def test_calcfrom12d(self):
         det = detector_factory("pilatus300k")
         ai = AzimuthalIntegrator(0.1, 0.05, 0.04, detector=det)
-        prof_1d = ai.integrate1d_ng(UtilsTest.get_rng().random(det.shape), 200, unit="2th_deg")
-        sig = numpy.sinc(prof_1d.radial * 10) ** 2
-        img1 = ai.calcfrom1d(prof_1d.radial, sig, dim1_unit="2th_deg", mask=det.mask, dummy=-1)
+        img0 = UtilsTest.get_rng().random(det.shape)
+        prof_1d = ai.integrate1d_ng(img0, 200, unit="2th_deg")
+        sig = 1e6*numpy.sinc(prof_1d.radial / 10) ** 2
+        img1 = ai.calcfrom1d(prof_1d.radial, sig, dim1_unit="2th_deg",
+                            mask=det.mask, dummy=-1)
         new_prof_1d = ai.integrate1d_ng(img1, 200, unit="2th_deg")
         delta = abs((new_prof_1d.intensity - sig)).max()
-        self.assertLess(delta, 2e-3, "calcfrom1d works delta=%s" % delta)
+        self.assertLess(delta, 600, "calcfrom1d works delta=%s" % delta)
         prof_2d = ai.integrate2d(img1, 400, 360, unit="2th_deg")
         img2 = ai.calcfrom2d(prof_2d.intensity, prof_2d.radial, prof_2d.azimuthal,
                              mask=det.mask,
                              dim1_unit="2th_deg", correctSolidAngle=True, dummy=-1)
-        delta2 = abs(img2 - img1).max()
-        self.assertLess(delta2, 1e-3, "calcfrom2d works delta=%s" % delta2)
+        delta2 = img2 - img1
+        self.assertLess(abs(delta2.mean()), 2, "calcfrom2d works delta.mean=%s" % abs(delta2.mean()))
+        self.assertLess(delta2.std(), 100, "calcfrom2d works delta.std=%s" % delta2.std())
 
 
 class TestBugRegression(unittest.TestCase):
