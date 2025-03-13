@@ -667,16 +667,15 @@ class Calibrant(object):
 
         return values * scale
 
-    def fake_calibration_image(self, ai, shape=None, Imax=1.0,
+    def fake_calibration_image(self, ai, shape=None, Imax=1.0, Imin=0.0,
                                U=0, V=0, W=0.0001,
-                               background_factor=0.0,
                                ) -> numpy.ndarray:
         """
         Generates a fake calibration image from an azimuthal integrator.
         :param ai: azimuthal integrator
         :param Imax: maximum intensity of rings
+        :param Imin: minimum intensity of the signal (background)
         :param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W)
-        :param background_factor: relation between maximum signal intensity and background intensity
         """
         if shape is None:
             if ai.detector.shape:
@@ -711,9 +710,7 @@ class Calibrant(object):
                 break
             else:
                 signal += Imax * numpy.exp(-(tth_1d - t) ** 2 / (2.0 * sigma2))
-                
-        if background_factor > 0.0:
-            signal += signal.max() * background_factor
+        signal = (Imax - Imin) * signal + Imin
             
         res = ai.calcfrom1d(tth_1d, signal, shape=shape, mask=ai.mask,
                             dim1_unit='2th_rad', correctSolidAngle=True)
