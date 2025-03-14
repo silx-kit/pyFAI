@@ -35,6 +35,8 @@ override_dh_auto_test:
 #	dh_installman -p pyfai build/man/*.1
 
 override_dh_installdocs:
-	python3 build-doc.py
-	dh_installdocs "build/sphinx" -p pyfai-doc
+	#python3 build-doc.py
+	#mkdir -p build/sphinx
+	#touch build/sphinx/index.html
+	#dh_installdocs "build/sphinx" -p pyfai-doc
 	dh_installdocs

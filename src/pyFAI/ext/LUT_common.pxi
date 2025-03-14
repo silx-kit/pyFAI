@@ -79,7 +79,7 @@ cdef class LutIntegrator(object):
     def __dealloc__(self):
         self._lut = None
         self.preprocessed = None
-        self.empty = 0
+        self.empty = 0.0
         self.input_size = 0
         self.output_size = 0
         self.nnz = 0
@@ -294,7 +294,7 @@ cdef class LutIntegrator(object):
             index_t lut_size = self.lut_size
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
             acc_t delta1, delta2, b, omega_A, omega_B, omega3, omega2_A, omega2_B, w, norm, sig, var, count
-            data_t empty
+            data_t empty=self.empty
             acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_norm = numpy.empty(self.output_size, dtype=acc_d)
@@ -307,7 +307,6 @@ cdef class LutIntegrator(object):
             bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
             bint do_variance = error_model is not ErrorModel.NO
         assert weights.size == self.input_size, "weights size"
-        empty = dummy if dummy is not None else self.empty
         #Call the preprocessor ...
         preproc4 = preproc(weights.ravel(),
                            dark=dark,

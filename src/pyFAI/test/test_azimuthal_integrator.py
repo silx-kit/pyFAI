@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/03/2025"
+__date__ = "13/03/2025"
 
 import unittest
 import os
@@ -329,6 +329,12 @@ class TestAzimHalfFrelon(unittest.TestCase):
         self.assertGreater(res[1].min(), 120, "intensity min in ok")
         self.assertLess(res[1].max(), 10000, "intensity max in ok")
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
+    def test_separate(self):
+        "Non regression for #2473"
+        res = self.ai.separate(self.data)
+
+
 
 class TestFlatimage(unittest.TestCase):
     """test the caking of a flat image"""
@@ -340,6 +346,7 @@ class TestFlatimage(unittest.TestCase):
         cls.data = numpy.ones(cls.shape, dtype="float64")
         det = Detector(1e-4, 1e-4, max_shape=cls.shape)
         cls.ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
+        cls.ai.empty = -1
 
     @classmethod
     def tearDownClass(cls):
@@ -349,31 +356,31 @@ class TestFlatimage(unittest.TestCase):
         res = self.ai.integrate2d(self.data, 256, 256, correctSolidAngle=False, dummy=-1.0,
                            method='splitpixel', unit='2th_deg')
         I = res[0]
-        if logger.getEffectiveLevel() == logging.DEBUG:
-            logging.info("Plotting results")
-            fig, ax = pylab.subplots()
-            fig.suptitle('cacking of a flat image: SplitPixel')
-            ax.imshow(I, interpolation="nearest")
-            fig.show()
-            input("Press enter to quit")
+        # if logger.getEffectiveLevel() == logging.DEBUG:
+        #     logging.info("Plotting results")
+        #     fig, ax = pylab.subplots()
+        #     fig.suptitle('cacking of a flat image: SplitPixel')
+        #     ax.imshow(I, interpolation="nearest")
+        #     fig.show()
+        #     input("Press enter to quit")
         I[I == -1.0] = 1.0
-        assert abs(I.min() - 1.0) < self.epsilon
-        assert abs(I.max() - 1.0) < self.epsilon
+        self.assertLess(abs(I.min() - 1.0), self.epsilon)
+        self.assertLess( abs(I.max() - 1.0), self.epsilon)
 
     def test_splitBBox(self):
         I = self.ai.integrate2d(self.data, 256, 256, correctSolidAngle=False, dummy=-1.0,
                            unit="2th_deg", method='splitbbox')[0]
 
-        if logger.getEffectiveLevel() == logging.DEBUG:
-            logging.info("Plotting results")
-            fig, ax = pylab.subplots()
-            fig.suptitle('caking of a flat image: SplitBBox')
-            ax.imshow(I, interpolation="nearest")
-            fig.show()
-            input("Press enter to quit")
+        # if logger.getEffectiveLevel() == logging.DEBUG:
+        #     logging.info("Plotting results")
+        #     fig, ax = pylab.subplots()
+        #     fig.suptitle('caking of a flat image: SplitBBox')
+        #     ax.imshow(I, interpolation="nearest")
+        #     fig.show()
+        #     input("Press enter to quit")
         I[I == -1.0] = 1.0
-        assert abs(I.min() - 1.0) < self.epsilon
-        assert abs(I.max() - 1.0) < self.epsilon
+        self.assertLess(abs(I.min() - 1.0), self.epsilon)
+        self.assertLess( abs(I.max() - 1.0), self.epsilon)
 
     def test_guess_bins(self):
         "This test can be rather noisy on 32bits platforms !!!"
@@ -395,9 +402,9 @@ class TestFlatimage(unittest.TestCase):
         det = detector_factory("Pilatus CdTe 300k")
         corners = det.get_pixel_corners()
         config = {"detector": det.name,
-          "dist": 1,
-          "poni1": corners[...,1].max()/4,
-          "poni2": corners[...,2].max()/4}
+                  "dist": 1,
+                  "poni1": corners[...,1].max()/4,
+                   "poni2": corners[...,2].max()/4}
         ai1 = AzimuthalIntegrator.sload(config)
         img1 = det.mask.astype("uint16")*(65535-1)+1
         img1[300:400, 300:400] = 65535

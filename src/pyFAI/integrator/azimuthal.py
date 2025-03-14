@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2025"
+__date__ = "13/03/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -130,10 +130,11 @@ class AzimuthalIntegrator(Integrator):
         unit = units.to_unit(unit)
         if dummy is None:
             dummy, delta_dummy = self.detector.get_dummies(data)
-            empty = self._empty if dummy is None else dummy
         else:
-            dummy = empty = numpy.float32(dummy)
+            dummy = numpy.float32(dummy)
             delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
+        empty = self._empty
+
         shape = data.shape
         pos0_scale = unit.scale
 
@@ -610,19 +611,14 @@ class AzimuthalIntegrator(Integrator):
         sum_normalization = res._sum_normalization.sum(axis=-1)
 
         mask = numpy.where(count == 0)
-        if dummy is None:
-            dummy, delta_dummy = self.detector.get_dummies(data)
-            empty = self._empty if dummy is None else dummy
-        else:
-            dummy = empty = numpy.float32(dummy)
-            delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
+
         intensity = sum_signal / sum_normalization
-        intensity[mask] = empty
+        intensity[mask] = self._empty
 
         if res.sigma is not None:
             sum_variance = res.sum_variance.sum(axis=-1)
             sigma = numpy.sqrt(sum_variance) / sum_normalization
-            sigma[mask] = empty
+            sigma[mask] = self._empty
         else:
             sum_variance = None
             sigma = None
@@ -715,10 +711,10 @@ class AzimuthalIntegrator(Integrator):
         pos1_scale = azimuth_unit.scale
         if dummy is None:
             dummy, delta_dummy = self.detector.get_dummies(data)
-            empty = self._empty if dummy is None else dummy
         else:
-            dummy = empty = numpy.float32(dummy)
+            dummy = numpy.float32(dummy)
             delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
+        empty = self._empty
 
         if mask is None:
             has_mask = "from detector"
@@ -2106,7 +2102,9 @@ class AzimuthalIntegrator(Integrator):
                                     dim1_unit=unit,
                                     correctSolidAngle=True, polarization_factor=polarization_factor)
         bragg = data - amorphous
-        if restore_mask:
+        if mask is None:
+            mask = self.detector.mask
+        if restore_mask and mask is not None:
             wmask = numpy.where(mask)
             maskdata = data[wmask]
             bragg[wmask] = maskdata

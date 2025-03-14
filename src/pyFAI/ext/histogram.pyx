@@ -530,8 +530,6 @@ def histogram1d_engine(radial, int npt,
     intensity = numpy.empty(npt, dtype=data_d)
     std = numpy.empty(npt, dtype=data_d)
     sem = numpy.empty(npt, dtype=data_d)
-    if dummy is not None:
-        empty = dummy
     with nogil:
         for i in range(npt):
             sig = histo_signal[i] = res[i, 0]

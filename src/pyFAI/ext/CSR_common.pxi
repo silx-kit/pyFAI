@@ -334,7 +334,7 @@ cdef class CsrIntegrator(object):
             index_t i, j, idx = 0
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
             acc_t delta1, delta2, b, omega_A, omega_B, omega2_A, omega2_B, w, norm, sig, var, count
-            data_t empty
+            data_t empty = self.empty
             acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_norm = numpy.empty(self.output_size, dtype=acc_d)
@@ -347,7 +347,6 @@ cdef class CsrIntegrator(object):
             bint do_azimuthal_variance = error_model is ErrorModel.AZIMUTHAL
             bint do_variance = error_model is not ErrorModel.NO
         assert weights.size == self.input_size, "weights size"
-        empty = self.empty if dummy is None else dummy
         #Call the preprocessor ...
         preproc4 = preproc(weights.ravel(),
                            dark=dark,
@@ -359,7 +358,7 @@ cdef class CsrIntegrator(object):
                            dummy=dummy,
                            delta_dummy=delta_dummy,
                            normalization_factor=normalization_factor,
-                           empty=self.empty,
+                           empty=empty,
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
@@ -524,7 +523,7 @@ cdef class CsrIntegrator(object):
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0, coef = 0.0, acc_norm_sq=0.0
             acc_t sig, norm, count, var
             acc_t delta1, delta2, b, x, omega_A, omega_B, aver, std, chauvenet_cutoff, omega2_A, omega2_B, w
-            data_t empty
+            data_t empty = self.empty
             acc_t[::1] sum_sig = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_var = numpy.empty(self.output_size, dtype=acc_d)
             acc_t[::1] sum_norm = numpy.empty(self.output_size, dtype=acc_d)
@@ -537,7 +536,7 @@ cdef class CsrIntegrator(object):
             bint do_azimuthal_variance = error_model == ErrorModel.AZIMUTHAL
             bint do_hybrid_variance = error_model == ErrorModel.HYBRID
         assert weights.size == self.input_size, "weights size"
-        empty = dummy if dummy is not None else self.empty
+
         #Call the preprocessor ...
         preproc4 = preproc(weights.ravel(),
                            dark=dark,
@@ -549,7 +548,7 @@ cdef class CsrIntegrator(object):
                            dummy=dummy,
                            delta_dummy=delta_dummy,
                            normalization_factor=normalization_factor,
-                           empty=self.empty,
+                           empty=empty,
                            split_result=4,
                            variance=variance,
                            dtype=data_d,
@@ -791,7 +790,7 @@ cdef class CsrIntegrator(object):
             acc_t acc_sig = 0.0, acc_var = 0.0, acc_norm = 0.0, acc_count = 0.0,  coef = 0.0, acc_norm_sq=0.0
             acc_t cumsum = 0.0
             data_t qmin, qmax
-            data_t empty, sig, var, nrm, weight, nrm2
+            data_t empty=self.empty, sig, var, nrm, weight, nrm2
             acc_t[::1] sum_sig = numpy.zeros(self.output_size, dtype=acc_d)
             acc_t[::1] sum_var = numpy.zeros(self.output_size, dtype=acc_d)
             acc_t[::1] sum_norm = numpy.zeros(self.output_size, dtype=acc_d)
@@ -807,7 +806,6 @@ cdef class CsrIntegrator(object):
             float4_t[::1] work = numpy.zeros(npix, dtype=float4_d)
 
         assert weights.size == self.input_size, "weights size"
-        empty = dummy if dummy is not None else self.empty
         #Call the preprocessor ...
         preproc4 = preproc(weights.ravel(),
                            dark=dark,
