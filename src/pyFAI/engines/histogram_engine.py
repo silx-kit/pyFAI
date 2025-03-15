@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2024"
+__date__ = "15/03/2025"
 __status__ = "development"
 
 import logging
@@ -56,7 +56,7 @@ def histogram1d_engine(radial, npt,
                        dummy=None,
                        delta_dummy=None,
                        normalization_factor=1.0,
-                       empty=None,
+                       empty=0.0,
                        split_result=False,
                        variance=None,
                        dark_variance=None,
@@ -85,8 +85,6 @@ def histogram1d_engine(radial, npt,
     :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average
 
     NaN are always considered as invalid values
-
-    if neither empty nor dummy is provided, empty pixels are left at 0.
 
     Nota: "azimuthal_range" has to be integrated into the
            mask prior to the call of this function
@@ -134,8 +132,6 @@ def histogram1d_engine(radial, npt,
     positions = (position[1:] + position[:-1]) / 2.0
 
     mask_empty = histo_count < 1e-6
-    if dummy is not None:
-        empty = dummy
     with numpy.errstate(divide='ignore', invalid='ignore'):
         intensity = histo_signal / histo_normalization
         intensity[mask_empty] = empty
@@ -169,7 +165,7 @@ def histogram2d_engine(radial, azimuthal, bins,
                        dummy=None,
                        delta_dummy=None,
                        normalization_factor=1.0,
-                       empty=None,
+                       empty=0.0,
                        variance=None,
                        dark_variance=None,
                        error_model=ErrorModel.NO,
@@ -209,8 +205,6 @@ def histogram2d_engine(radial, azimuthal, bins,
 
 
     NaN are always considered as invalid values
-
-    if neither empty nor dummy is provided, empty pixels are left at 0.
 
     Nota: "azimuthal_range" has to be integrated into the
            mask prior to the call of this function
@@ -275,8 +269,6 @@ def histogram2d_engine(radial, azimuthal, bins,
     bins_rad = 0.5 * (position_rad[1:] + position_rad[:-1])
 
     mask_empty = (histo_count == 0)
-    if dummy is not None:
-        empty = dummy
     with numpy.errstate(divide='ignore', invalid='ignore'):
         intensity = histo_signal / histo_normalization
         intensity[mask_empty] = empty
