@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2025"
+__date__ = "15/03/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -396,7 +396,8 @@ class AzimuthalIntegrator(Integrator):
                            weighted_average=method.weighted_average,
                            mask=mask,
                            radial_range=radial_range,
-                           error_model=error_model)
+                           error_model=error_model,
+                           empty=empty)
 
             if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
