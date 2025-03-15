@@ -396,8 +396,7 @@ class AzimuthalIntegrator(Integrator):
                            weighted_average=method.weighted_average,
                            mask=mask,
                            radial_range=radial_range,
-                           error_model=error_model,
-                           empty=empty)
+                           error_model=error_model)
 
             if error_model.do_variance:
                 result = Integrate1dResult(intpl.position * unit.scale,
