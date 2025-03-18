@@ -195,7 +195,7 @@ class Worker(object):
         self.integrator_name = integrator_name
         self._processor = None
         self._nbpt_azim = None
-        if isinstance(method, (str, list, tuple, Method)):
+        if isinstance(method, (str, list, tuple, Method, IntegrationMethod)):
             method = IntegrationMethod.parse(method)
         else:
             logger.error(f"Unable to parse method {method}")
