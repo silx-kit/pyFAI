@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            D. Karkoulis (dimitris.karkoulis@gmail.com)
@@ -32,7 +32,7 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "19/11/2024"
+__date__ = "18/03/2025"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -92,7 +92,7 @@ class OCL_Histogram1d(OpenclProcessing):
                numpy.intc: "s32_to_float"
                }
 
-    def __init__(self, radial, bins, radial_checksum=None, empty=None, unit=None,
+    def __init__(self, radial, bins, radial_checksum=None, empty=0.0, unit=None,
                  azimuthal=None, azimuthal_checksum=None,
                  mask=None, mask_checksum=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
@@ -127,7 +127,7 @@ class OCL_Histogram1d(OpenclProcessing):
         self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bins = numpy.uint32(bins)
         self.size = numpy.uint32(radial.size)
-        self.empty = numpy.float32(empty) if empty is not None else numpy.float32(0.0)
+        self.empty = numpy.float32(empty)
         self.radial_mini = numpy.float32(numpy.min(radial))
         self.radial_maxi = numpy.float32(numpy.max(radial) * (1.0 + numpy.finfo(numpy.float32).eps))
         self.degraded = False
@@ -461,7 +461,7 @@ class OCL_Histogram1d(OpenclProcessing):
                     delta_dummy = numpy.float32(abs(delta_dummy))
             else:
                 do_dummy = numpy.int8(0)
-                dummy = numpy.float32(self.empty)
+                dummy =self.empty
                 delta_dummy = numpy.float32(0.0)
 
             kw_correction["do_dummy"] = do_dummy
@@ -665,7 +665,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
     def __init__(self, radial, azimuthal,
                  bins_radial, bins_azimuthal,
                  radial_checksum=None, azimuthal_checksum=None,
-                 empty=None, unit=None, mask=None, mask_checksum=None,
+                 empty=0.0, unit=None, mask=None, mask_checksum=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
         """
@@ -841,7 +841,7 @@ class OCL_Histogram2d(OCL_Histogram1d):
                     delta_dummy = numpy.float32(abs(delta_dummy))
             else:
                 do_dummy = numpy.int8(0)
-                dummy = numpy.float32(self.empty)
+                dummy = self.empty
                 delta_dummy = numpy.float32(0.0)
 
             kw_correction["do_dummy"] = do_dummy

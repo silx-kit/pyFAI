@@ -34,7 +34,7 @@ __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2023"
+__date__ = "18/03/2025"
 
 import logging
 import numpy
@@ -124,7 +124,7 @@ class TestOclHistogram(unittest.TestCase):
         # histogram of signal
         ref = numpy.histogram(tth, npt, weights=data)[0]
         sig = res.signal.sum(axis=-1, dtype="float64")
-        print(abs((sig - ref).sum()), abs(gaussian_filter1d(sig / ref - 1, 9)).max())
+        # print(abs((sig - ref).sum()), abs(gaussian_filter1d(sig / ref - 1, 9)).max())
         self.assertLess(abs((sig - ref).sum()), 9e-5, "signal content is the same")
         self.assertLess(abs(gaussian_filter1d(sig / ref - 1, 9)).max(), 2e-5, "signal, after smoothing is flat")
 
@@ -158,8 +158,8 @@ class TestOclHistogram(unittest.TestCase):
                                  mask=None,
                                  dummy=dummy,
                                  delta_dummy=None,
+                                 empty=dummy,
                                  normalization_factor=1.0,
-                                 empty=None,
                                  variance=None,
                                  dark_variance=None,
                                  error_model=ErrorModel.NO,
