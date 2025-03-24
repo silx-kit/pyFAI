@@ -637,7 +637,7 @@ class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
         editor.setFocusPolicy(qt.Qt.StrongFocus)
         editor.setValue(index.data())
         editor.installEventFilter(self)
-        editor.setBackgroundRole(qt.QPalette.Background)
+        editor.setBackgroundRole(qt.QPalette.Window)
         editor.setAutoFillBackground(True)
         editor.valueChanged.connect(lambda x: self.commitData.emit(editor))
         return editor

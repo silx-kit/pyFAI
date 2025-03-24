@@ -50,7 +50,7 @@ class ColoredCheckBox(qt.QCheckBox):
         palette = qt.QPalette(self.palette())
         option = qt.QStyleOptionButton()
         if self.__color is not None:
-            palette.setBrush(qt.QPalette.Normal, qt.QPalette.Base, self.__color)
+            palette.setBrush(qt.QPalette.Active, qt.QPalette.Base, self.__color)
             palette.setBrush(qt.QPalette.Disabled, qt.QPalette.Base, self.__color)
             palette.setBrush(qt.QPalette.Inactive, qt.QPalette.Base, self.__color)
         self.initStyleOption(option)
