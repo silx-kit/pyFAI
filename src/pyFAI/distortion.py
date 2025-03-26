@@ -399,7 +399,8 @@ class Distortion(object):
             if _distortion:
                 image = _distortion.resize_image_3D(image, self.shape_in)
             else:
-                assert image.ndim == 3, "image is 3D"
+                if image.ndim != 3:
+                    raise RuntimeError("image is not 3D")
                 shape_in0, shape_in1 = self.shape_in
                 shape_img0, shape_img1, nchan = image.shape
                 if not ((shape_img0 == shape_in0) and (shape_img1 == shape_in1)):
@@ -479,9 +480,11 @@ class Distortion(object):
         :param normalization_factor: multiply all normalization with this value
         :return: corrected 2D image
         """
-        assert image.ndim == 2
+        if image.ndim != 2:
+            raise RuntimeError("image should be 2D")
         if variance is not None:
-            assert variance.shape == image.shape
+            if variance.shape != image.shape:
+                raise RuntimeError("variance and image shape do not match")
 
         if image.shape != self.shape_in:
             logger.warning("The image shape %s is not the same as the detector %s", image.shape, self.shape_in)
@@ -557,7 +560,8 @@ class Distortion(object):
 
         >>> msk =  dis.uncorrect(numpy.ones(dis._shape_out)) <= 0
         """
-        assert image.shape == self._shape_out
+        if image.shape != self._shape_out:
+            raise RuntimeError("image and output shape do not match")
         if self.lut is None:
             self.calc_LUT()
         if (linalg is not None) and (use_cython is False):

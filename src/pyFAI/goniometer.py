@@ -154,8 +154,8 @@ class GeometryTransformation(object):
                         in the future to dispatch to multiple derivative classes)
         """
         if content is not None:
-            # Ensures we use the constructor of the right class
-            assert content in (self.__class__.__name__, "GeometryTransformation")
+            if content not in (self.__class__.__name__, "GeometryTransformation"):
+                raise RuntimeError("Ensures we use the constructor of the right class")
         if numexpr is None:
             raise RuntimeError("Geometry translation requires the *numexpr* package")
         self.expressions = OrderedDict()
@@ -297,8 +297,8 @@ class ExtendedTransformation(object):
             in the future to dispatch to multiple derivative classes)
         """
         if content is not None:
-            # Ensures we use the constructor of the right class
-            assert content in (self.__class__.__name__, "ExtendedTransformation")
+            if content not in (self.__class__.__name__, "ExtendedTransformation"):
+                raise RuntimeError("Ensures we use the constructor of the right class")
         if numexpr is None:
             raise RuntimeError("This Transformation requires the *numexpr* package")
         self.expressions = OrderedDict()
@@ -557,9 +557,11 @@ class Goniometer(object):
 
         with open(filename) as f:
             dico = json.load(f)
-        assert "trans_function" in dico, "No translation function defined in JSON file"
+        if "trans_function" not in dico:
+            raise RuntimeError("No translation function defined in JSON file")
         file_version = dico["content"]
-        assert file_version in [cls.file_version, cls._file_version_1_1], "JSON file contains a goniometer calibration"
+        if file_version not in [cls.file_version, cls._file_version_1_1]:
+            raise RuntimeError("JSON file contains a goniometer calibration")
         detector = cls._get_detector_from_dict(dico)
         tansfun = dico.get("trans_function", {})
         if "content" in tansfun:
@@ -733,7 +735,8 @@ class SingleGeometry(object):
         return ai
 
     def get_wavelength(self):
-        assert self.calibrant.wavelength == self.geometry_refinement.wavelength
+        if self.calibrant.wavelength != self.geometry_refinement.wavelength:
+            raise RuntimeError("Wavelength unconsistency beetween calibrant and geometry_refinement")
         return self.geometry_refinement.wavelength
 
     def set_wavelength(self, value):
@@ -1013,8 +1016,10 @@ class GoniometerRefinement(Goniometer):
         """
         with open(filename) as f:
             dico = json.load(f)
-        assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
-        assert "trans_function" in dico, "No translation function defined in JSON file"
+        if dico["content"] != cls.file_version:
+            raise RuntimeError("JSON file contains a goniometer calibration")
+        if "trans_function" not in dico:
+            raise RuntimeError("No translation function defined in JSON file")
         detector = cls._get_detector_from_dict(dico)
         tansfun = dico.get("trans_function", {})
         if "content" in tansfun:
