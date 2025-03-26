@@ -48,7 +48,8 @@ class ChangeEvent(object):
         """
         self.index = index
         self.item = item
-        assert(updated + removed + added == 1)
+        if (updated + removed + added != 1):
+            raise RuntimeError("updated + removed + added should sum up to 1")
         self.added = added
         self.removed = removed
         self.updated = updated
@@ -195,7 +196,8 @@ class ListModel(AbstractModel):
 
     def append(self, item):
         """Add a new item to the end of the list."""
-        assert(isinstance(item, AbstractModel))
+        if not isinstance(item, AbstractModel):
+            raise RuntimeError("item is expected to be an AbstractModel instance")
         index = len(self.__items)
         callback = functools.partial(self.__contentWasChanged, item)
         item.changed.connect(callback)
@@ -205,7 +207,8 @@ class ListModel(AbstractModel):
 
     def remove(self, item):
         """Remove an item."""
-        assert(isinstance(item, AbstractModel))
+        if not isinstance(item, AbstractModel):
+            raise RuntimeError("item is expected to be an AbstractModel instance")
         index = self.index(item)
         callback = self.__items[index][1]
         del self.__items[index]

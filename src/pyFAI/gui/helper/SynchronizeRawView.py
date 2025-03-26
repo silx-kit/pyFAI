@@ -46,7 +46,8 @@ class SynchronizeRawView(object):
         self.__model = None
 
     def registerModel(self, model):
-        assert(self.__model is None)
+        if self.__model is not None:
+            raise RuntimeError("A model is already registed, cannot overwrite")
         self.__model = model
         self.__model.changed.connect(self.__rawPlotViewChanged)
 
@@ -62,7 +63,8 @@ class SynchronizeRawView(object):
             qt.QTimer.singleShot(1, self.__synchronizePlotView)
 
     def registerPlot(self, plot):
-        assert(self.__plot is None)
+        if self.__plot is not None:
+            raise RuntimeError("A plot is already registed, cannot overwrite")
         self.__plot = weakref.ref(plot)
         self.__synchronizePlot = False
         if hasattr(plot, "sigVisibilityChanged"):

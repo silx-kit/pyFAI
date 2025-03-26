@@ -574,9 +574,12 @@ class AbstractCalibration(object):
         """
 
         logger.info("in extract_cpt with method %s", method)
-        assert self.ai
-        assert self.calibrant
-        assert self.peakPicker
+        if self.ai is None:
+            raise RuntimeError("AzimuthalIntegrator is not defined (None)")
+        if self.calibrant is None:
+            raise RuntimeError("Calibrant is not defined (None)")
+        if self.peakPicker is None:
+            raise RuntimeError("PeakPicker is not defined (None)")
         self.peakPicker.reset()
         self.peakPicker.init(method, False)
         if self.geoRef:
@@ -2477,9 +2480,12 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     :param interactive: set to False for testing
     :return: AzimuthalIntegrator instance
     """
-    assert isinstance(detector, Detector)
-    assert isinstance(calibrant, Calibrant)
-    assert calibrant.wavelength
+    if not isinstance(detector, Detector):
+        raise RuntimeError("detector is not a Detector class instance")
+    if not isinstance(calibrant, Calibrant):
+        raise RuntimeError("calibrant is not a Calibrant class instance")
+    if calibrant.wavelength is None:
+        raise RuntimeError("calibrant's wavelength is undefined")
 
     if logging.root.level > logging.INFO:
         logging.warning("Lowering the log-level to INFO")

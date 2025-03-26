@@ -123,7 +123,8 @@ def preproc(raw,
     if (mask is None) or (mask is False):
         mask = numpy.zeros(size, dtype=bool)
     else:
-        assert mask.size == size, "Mask array size is correct"
+        if mask.size != size:
+            raise RuntimeError("Mask array size is correct")
         mask = numpy.ascontiguousarray(mask.ravel(), dtype=bool)
 
     if (dummy is not None) and (delta_dummy is not None):
@@ -158,7 +159,8 @@ def preproc(raw,
                 mask |= (abs(signal - cdummy) <= ddummy)
 
         if dark is not None:
-            assert dark.size == size, "Dark array size is correct"
+            if (dark.size != size):
+                raise RuntimeError("Dark array size is correct")
             dark = numpy.ascontiguousarray(dark.ravel(), dtype=dtype)
             if check_dummy:
                 # runtime warning here
@@ -173,7 +175,8 @@ def preproc(raw,
                 variance += dark_variance
 
         if flat is not None:
-            assert flat.size == size, "Flat array size is correct"
+            if (flat.size != size):
+                raise RuntimeError("Flat array size is correct")
             flat = numpy.ascontiguousarray(flat.ravel(), dtype=dtype)
             if check_dummy:
                 # runtime warning here
@@ -184,15 +187,18 @@ def preproc(raw,
             normalization *= flat
 
         if polarization is not None:
-            assert polarization.size == size, "Polarization array size is correct"
+            if polarization.size != size:
+                raise RuntimeError("Polarization array size is correct")
             normalization *= numpy.ascontiguousarray(polarization.ravel(), dtype=dtype)
 
         if solidangle is not None:
-            assert solidangle.size == size, "Solid angle array size is correct"
+            if solidangle.size != size:
+                raise RuntimeError("Solid angle array size is correct")
             normalization *= numpy.ascontiguousarray(solidangle.ravel(), dtype=dtype)
 
         if absorption is not None:
-            assert absorption.size == size, "Absorption array size is correct"
+            if absorption.size != size:
+                raise RuntimeError("Absorption array size is correct")
             normalization *= numpy.ascontiguousarray(absorption.ravel(), dtype=dtype)
 
         mask |= numpy.logical_not(numpy.isfinite(signal))
@@ -204,8 +210,10 @@ def preproc(raw,
         if out is None:
             result = numpy.zeros(out_shape, dtype=dtype)
         else:
-            assert out.dtype == dtype
-            assert out.shape == out_shape
+            if out.dtype != dtype:
+                raise RuntimeError("dtype matches")
+            if out.shape != out_shape:
+                raise RuntimeError("output size matches")
             result = out
 
         if split_result:

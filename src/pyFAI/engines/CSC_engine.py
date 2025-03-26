@@ -73,7 +73,8 @@ class CSCIntegrator(object):
         self.indices = None
         self.indptr = None
         if lut is not None:
-            assert len(lut) == 3
+            if len(lut) != 3:
+                raise RuntimeError("LUT is expected to be a 3-tuple of arrays")
             self.set_matrix(*lut)
 
     def set_matrix(self, data, indices, indptr):
@@ -93,7 +94,8 @@ class CSCIntegrator(object):
             indptr = new_indptr
         nbins = numpy.prod(self.bins)
         if len(indices):
-            assert max(indices) <= nbins
+            if max(indices) > nbins:
+                raise RuntimeError("indices cannot be larger than the number of bins")
         self._csc = csc_matrix((data, indices, indptr), shape=(nbins, self.size))
         self._csc2 = csc_matrix((data * data, indices, indptr), shape=(nbins, self.size))  # contains the coef squared, used for variance propagation
 
@@ -205,7 +207,8 @@ class CscIntegrator1d(CSCIntegrator):
         :param indptr: the index of the start of line"""
 
         CSCIntegrator.set_matrix(self, data, indices, indptr)
-        assert len(self.bin_centers) == self.bins
+        if len(self.bin_centers) != self.bins:
+            raise RuntimeError("size of bin_center and number of bins matches")
 
     def integrate(self,
                   signal,
@@ -451,7 +454,8 @@ class CscIntegrator2d(CSCIntegrator):
 
         CSCIntegrator.set_matrix(self, data, indices, indptr)
 
-        assert self.size == len(indptr) - 1
+        if self.size != len(indptr) - 1:
+            raise RuntimeError("Sparse matrix size and indptr matches")
 
     def integrate(self,
                   signal,
