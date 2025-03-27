@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2025"
+__date__ = "27/03/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -188,7 +188,7 @@ class AzimuthalIntegrator(Integrator):
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
             if variance.size != data.size:
-                raise RuntimeError("Variance array shape matches data shape")
+                raise RuntimeError("Variance array shape does not match data shape")
             error_model = ErrorModel.VARIANCE
         if error_model.poissonian and not method.manage_variance:
             error_model = ErrorModel.VARIANCE
@@ -736,7 +736,7 @@ class AzimuthalIntegrator(Integrator):
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
             if variance.size != data.size:
-                raise RuntimeError("Variance array shape matches data shape")
+                raise RuntimeError("Variance array shape does not match data shape")
             error_model = ErrorModel.VARIANCE
         if error_model.poissonian and not method.manage_variance:
             error_model = ErrorModel.VARIANCE
@@ -1393,7 +1393,7 @@ class AzimuthalIntegrator(Integrator):
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
             if variance.size != data.size:
-                raise RuntimeError("variance array shape matches data")
+                raise RuntimeError("variance array shape does not match data")
             error_model = ErrorModel.VARIANCE
 
         unit = units.to_unit(unit)
@@ -1854,7 +1854,7 @@ class AzimuthalIntegrator(Integrator):
 
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
-            if variance.size != data.size: raise RuntimeError("variance array shape matches data shape")
+            if variance.size != data.size: raise RuntimeError("variance array shape does not match data shape")
             error_model = ErrorModel.VARIANCE
 
         unit = units.to_unit(unit)
@@ -2164,7 +2164,7 @@ class AzimuthalIntegrator(Integrator):
         method = IntegrationMethod.select_one_available(method, dim=2,
                                                         default=self.DEFAULT_METHOD_2D)
         if mask.shape != self.detector.shape:
-            raise RuntimeError("Mask shape matches detector size")
+            raise RuntimeError("Mask shape does not match detector size")
         mask = numpy.ascontiguousarray(mask, numpy.int8)
         blank_data = numpy.zeros(mask.shape, dtype=numpy.float32)
         ones_data = numpy.ones(mask.shape, dtype=numpy.float32)
