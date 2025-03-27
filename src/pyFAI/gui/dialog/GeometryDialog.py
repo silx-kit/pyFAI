@@ -115,7 +115,7 @@ class GeometryDialog(qt.QDialog):
         :param ~pyFAI.gui.model.GeometryModel geometryModel: A geometry.
         """
         if  not isinstance(geometryModel, GeometryModel):
-            raise RuntimeError("Excpected geometryModel to be instance from class GeometryModel")
+            raise RuntimeError("Expected geometryModel to be instance from class GeometryModel")
         if self._geometryTabs._geometry is geometryModel:
             return
         self._geometryTabs._geometry.changed.disconnect(self.__updateButtons)
