@@ -324,7 +324,8 @@ def diff_img(ref, obt, comment=""):
     """
     Highlight the difference in images
     """
-    assert ref.shape == obt.shape
+    if ref.shape != obt.shape:
+        raise RuntimeError("ref and obt shape do not match")
     delta = abs(obt - ref)
     if delta.max() > 0:
         from ..gui.matplotlib import pyplot
@@ -353,7 +354,8 @@ def diff_crv(ref, obt, comment=""):
     """
     Highlight the difference in vectors
     """
-    assert ref.shape == obt.shape
+    if ref.shape != obt.shape:
+        raise RuntimeError("ref and obt shape do not match")
     delta = abs(obt - ref)
     if delta.max() > 0:
         from ..gui.matplotlib import pyplot

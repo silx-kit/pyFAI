@@ -331,7 +331,7 @@ class RingExtractorThread(qt.QThread):
             self.__calibrant.setWavelength_change2th(wavelength)
             geoRef = self.__createGeoRefFromGeometry(geometryModel)
         else:
-            raise RuntimeError("_extract expects either peaks or geometryModel")
+            raise RuntimeError("_extract expects either peaks xor geometryModel")
 
         self.__geoRef = geoRef
 

@@ -155,7 +155,7 @@ class MethodLabel(qt.QLabel):
                             toolTip = ("<html>The generic selection %s will use the following method in this computer:"
                                        "%s</html>" % (original, toolTip))
                         else:
-                            assert(False)
+                            raise RuntimeError()
 
         self.setText(label)
         self.setToolTip(toolTip)

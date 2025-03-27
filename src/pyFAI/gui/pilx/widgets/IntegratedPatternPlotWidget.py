@@ -125,7 +125,8 @@ class IntegratedPatternPlotWidget(PlotWidget):
         if not curves:
             return
         curve_item = curves[0]
-        assert isinstance(curve_item, Curve)
+        if not isinstance(curve_item, Curve):
+            raise RuntimeError("`curve` is not a `silx.gui.plot.items.curve.Curve` instance")
         tmp = self.dataToPixel(x_data, y_data)
         if tmp:
             pixel_x, pixel_y = tmp

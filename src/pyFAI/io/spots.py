@@ -83,7 +83,8 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
     :param powder: unused
     :return: None
     """
-    assert len(spots)
+    if len(spots) == 0:
+        raise RuntimeError("No spot provided to save")
     spots_per_frame = numpy.array([len(s) for s in spots], dtype=numpy.int32)
     with Nexus(filename, mode="w", creator="pyFAI_%s" % version) as nexus:
 
@@ -171,7 +172,8 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
     :param powder: provide the position in radial range to activate the calculation/saving of the pseudo-powder pattern
     :return: None
     """
-    assert len(spots)
+    if len(spots) == 0:
+        raise RuntimeError("No spots provided to save")
     spots_per_frame = numpy.array([len(s) for s in spots], dtype=numpy.int32)
     nframes = len(spots)
     max_spots = spots_per_frame.max()

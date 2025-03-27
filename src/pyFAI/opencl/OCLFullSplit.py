@@ -72,14 +72,9 @@ class OCLFullSplit1d(object):
         self.bins = bins
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
-
-        if len(pos.shape) == 3:
-            assert pos.shape[1] == 4
-            assert pos.shape[2] == 2
-        elif len(pos.shape) == 4:
-            assert pos.shape[2] == 4
-            assert pos.shape[3] == 2
-        else:
+        if not (pos.ndim in [3,4] and
+                pos.shape[-2] == 4 and
+                pos.shape[-1] == 2):
             raise ValueError("Pos array dimentions are wrong")
         self.pos_size = pos.size
         self.size = self.pos_size / 8
@@ -110,7 +105,8 @@ class OCLFullSplit1d(object):
             self.pos1_range[1] = 0.0
 
         if mask is not None:
-            assert mask.size == self.size
+            if mask.size != self.size:
+                raise RuntimeError("Mask shape does not matche size")
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
             if mask_checksum:

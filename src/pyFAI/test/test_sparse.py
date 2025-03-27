@@ -210,7 +210,7 @@ class TestSparseUtils(unittest.TestCase):
 
         idptr = numpy.zeros(shape[0] + 1, int)
         idptr[1:] = nnzpr.cumsum()
-        assert nnz == idptr[-1]
+        self.assertEqual(nnz, idptr[-1])
         # self.assertEqual(nnz, idptr[-1], "number of data is consitent")
         csr_ref = (dense[loc], idx, idptr)
 

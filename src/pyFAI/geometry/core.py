@@ -2538,9 +2538,8 @@ class Geometry(object):
 
     def set_parallax(self, value):
         from ..parallax import Parallax
-        if value is not None:
-            if not isinstance(value, Parallax):
-                raise RuntimeError("set_parallax requires a Parallax instance")
+        if value is not None and not isinstance(value, Parallax):
+            raise RuntimeError("set_parallax requires a Parallax instance")
         self._parallax = value
         self.reset()
 

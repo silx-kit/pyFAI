@@ -78,8 +78,8 @@ def set_prepost_emit_callback(logger, pre_callback, post_callback):
 
     :return: The new handler
     """
-    # assume there is a logger
-    assert(len(logger.handlers) == 1)
+    if len(logger.handlers) != 1:
+        raise RuntimeError("assume there is exactly one logger")
     previous_handler = logger.handlers[0]
     logger.removeHandler(previous_handler)
     # use our custom handler

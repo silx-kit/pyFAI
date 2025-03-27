@@ -97,7 +97,8 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
         """
-        assert image_size == radius.size
+        if image_size != radius.size:
+            raise RuntimeError("Image size mismatch")
         nbin = lut[2].size - 1
         extra_buffers = [
                          BufferDescription("radius1d", nbin, numpy.float32, mf.READ_ONLY),
@@ -828,12 +829,14 @@ class OCL_SimplePeakFinder(OpenclProcessing):
 
         if mask is not None:
             if  image_shape:
-                assert mask.shape == image_shape
+                if mask.shape != image_shape:
+                    raise RuntimeError("Mask size mismatch")
             else:
                 image_shape = mask.shape
             self.do_mask = True
         else:
-            assert len(image_shape) == 2, "expect a 2-tuple with the size of the image"
+            if len(image_shape) != 2:
+                raise RuntimeError("expect a 2-tuple with the size of the image")
             mask = numpy.zeros(image_shape, dtype=numpy.int8)
             self.do_mask = False
         self.shape = image_shape
@@ -1050,7 +1053,8 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         :param noise: minimum signal for peak to discard noisy region.
         :return: number of peak found in image
         """
-        assert image.shape == self.shape
+        if image.shape != self.shape:
+            raise RuntimeError("image shape does not match")
         with self.sem:
             return self._count(image, window, cutoff, radius, noise)
 
@@ -1071,7 +1075,8 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         :param noise: minimum signal for peak to discard noisy region.
         :return: SparseFrame object, see `intensity`, `x` and `y` properties
         """
-        assert image.shape == self.shape
+        if image.shape != self.shape:
+            raise RuntimeError("image shape does not match")
         with self.sem:
             count = self._count(image, window, cutoff, radius, noise)
             kw = self.cl_kernel_args["copy_intense"]
@@ -1111,7 +1116,8 @@ def densify(sparse):
     :param sparse: SparseFrame object
     :return: dense image as numpy array
     """
-    assert isinstance(sparse, SparseFrame)
+    if not isinstance(sparse, SparseFrame):
+        raise RuntimeError("Expected sparseFrame as input")
     background = numpy.array(sparse.background_avg, dtype=numpy.float64)  # explicitly make a copy
     if background is None:
         dense = numpy.zeros(sparse.shape)

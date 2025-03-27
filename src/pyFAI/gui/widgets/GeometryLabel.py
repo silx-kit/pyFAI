@@ -87,7 +87,8 @@ class GeometryLabel(ElidedLabel):
 
         :param ~pyFAI.gui.model.GeometryModel geometryModel: A geometry.
         """
-        assert(isinstance(geometryModel, GeometryModel))
+        if not isinstance(geometryModel, GeometryModel):
+            raise RuntimeError("geometryModel is not a GeometryModel")
         if self.__geometry is geometryModel:
             return
         if self.__geometry is not None:

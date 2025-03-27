@@ -126,7 +126,8 @@ class AzimuthalIntegrator(Integrator):
         :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
         """
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
-        assert method.dimension == 1
+        if method.dimension != 1:
+            raise RuntimeError("integration method is not 1D")
         unit = units.to_unit(unit)
         if dummy is None:
             dummy, delta_dummy = self.detector.get_dummies(data)
@@ -186,7 +187,8 @@ class AzimuthalIntegrator(Integrator):
 
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
-            assert variance.size == data.size
+            if variance.size != data.size:
+                raise RuntimeError("Variance array shape matches data shape")
             error_model = ErrorModel.VARIANCE
         if error_model.poissonian and not method.manage_variance:
             error_model = ErrorModel.VARIANCE
@@ -696,7 +698,8 @@ class AzimuthalIntegrator(Integrator):
         :rtype: Integrate2dResult, dict
         """
         method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
-        assert method.dimension == 2
+        if  method.dimension != 2:
+            raise RuntimeError("Integration method is not 2D")
         npt = (npt_rad, npt_azim)
         if isinstance(unit, (tuple, list)) and len(unit) == 2:
             radial_unit, azimuth_unit = unit
@@ -732,7 +735,8 @@ class AzimuthalIntegrator(Integrator):
 
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
-            assert variance.size == data.size
+            if variance.size != data.size:
+                raise RuntimeError("Variance array shape matches data shape")
             error_model = ErrorModel.VARIANCE
         if error_model.poissonian and not method.manage_variance:
             error_model = ErrorModel.VARIANCE
@@ -1279,8 +1283,8 @@ class AzimuthalIntegrator(Integrator):
                 lower = dummies + (numpy.floor(min(percentile) * (npt_azim - dummies) / 100.)).astype(int)
                 upper = dummies + (numpy.ceil(max(percentile) * (npt_azim - dummies) / 100.)).astype(int)
                 bounds = numpy.zeros(sorted_.shape, dtype=int)
-                assert (lower >= 0).all()
-                assert (upper <= npt_azim).all()
+                if not ((lower >= 0).all() and (upper <= npt_azim).all()):
+                    raise RuntimeError("Empty ensemble!")
 
                 rng = numpy.arange(npt_rad)
                 bounds[lower, rng] = 1
@@ -1293,8 +1297,8 @@ class AzimuthalIntegrator(Integrator):
                 # read only the valid value
                 dummies = (integ2d == dummy).sum(axis=0)
                 pos = dummies + (numpy.round(percentile * (npt_azim - dummies) / 100.)).astype(int)
-                assert (pos >= 0).all()
-                assert (pos <= npt_azim).all()
+                if not ((pos >= 0).all() and (pos <= npt_azim).all()):
+                    raise RuntimeError("Empty ensemble!")
                 spectrum = sorted_[(pos, numpy.arange(npt_rad))]
 
         result = Integrate1dResult(res2d.radial, spectrum)
@@ -1388,7 +1392,8 @@ class AzimuthalIntegrator(Integrator):
 
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
-            assert variance.size == data.size
+            if variance.size != data.size:
+                raise RuntimeError("variance array shape matches data")
             error_model = ErrorModel.VARIANCE
 
         unit = units.to_unit(unit)
@@ -1849,7 +1854,7 @@ class AzimuthalIntegrator(Integrator):
 
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
-            assert variance.size == data.size
+            if variance.size != data.size: raise RuntimeError("variance array shape matches data shape")
             error_model = ErrorModel.VARIANCE
 
         unit = units.to_unit(unit)
@@ -2158,8 +2163,8 @@ class AzimuthalIntegrator(Integrator):
         delta_dummy = 0.9
         method = IntegrationMethod.select_one_available(method, dim=2,
                                                         default=self.DEFAULT_METHOD_2D)
-
-        assert mask.shape == self.detector.shape
+        if mask.shape != self.detector.shape:
+            raise RuntimeError("Mask shape matches detector size")
         mask = numpy.ascontiguousarray(mask, numpy.int8)
         blank_data = numpy.zeros(mask.shape, dtype=numpy.float32)
         ones_data = numpy.ones(mask.shape, dtype=numpy.float32)

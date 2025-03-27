@@ -361,11 +361,13 @@ def binning(input_img, binsize, norm=True):
     """
     inputSize = input_img.shape
     outputSize = []
-    assert(len(inputSize) == 2)
+    if len(inputSize) != 2:
+        raise RuntimeError("input image is not 2D")
     if isinstance(binsize, int):
         binsize = (binsize, binsize)
     for i, j in zip(inputSize, binsize):
-        assert(i % j == 0)
+        if i % j:
+            raise RuntimeError("input_img shape should be a multiple of the binning size")
         outputSize.append(i // j)
 
     if numpy.array(binsize).prod() < 50:
@@ -478,7 +480,8 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     ################################################################################
     shape = img1.shape
     logs = []
-    assert img2.shape == shape
+    if img2.shape != shape:
+        raise RuntimeError("images shape matches")
     t0 = time.perf_counter()
     i1f = numpy.fft.fft2(img1)
     i2f = numpy.fft.fft2(img2)

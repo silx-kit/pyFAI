@@ -231,8 +231,9 @@ class Integrator(Geometry):
                 logical_or(mask, abs(data - dummy) <= delta_dummy, out=mask)
 
         if radial_range is not None:
-            assert unit, "unit is needed when building a mask based on radial_range"
-            if isinstance(unit, (tuple, list)) and len(unit) == 2:
+            if unit is None:
+                raise RuntimeError("unit is needed when building a mask based on radial_range")
+            elif isinstance(unit, (tuple, list)) and len(unit) == 2:
                 radial_unit = units.to_unit(unit[0])
             else:
                 radial_unit = units.to_unit(unit)
@@ -242,6 +243,9 @@ class Integrator(Geometry):
         if azimuth_range is not None:
             if isinstance(unit, (tuple, list)) and len(unit) == 2:
                 azimuth_unit = units.to_unit(unit[1])
+            else:
+                logger.info("no azimuthal unit provided in `create_mask`, defaulting to `chi_rad`")
+                azimuth_unit = units.CHI_RAD
             chi = self.array_from_unit(shape, "center", azimuth_unit, scale=False)
             logical_or(mask, chi < azimuth_range[0], out=mask)
             logical_or(mask, chi > azimuth_range[1], out=mask)
@@ -392,7 +396,8 @@ class Integrator(Geometry):
         if mask is None:
             mask_checksum = None
         else:
-            assert mask.shape == shape
+            if mask.shape != shape:
+                raise RuntimeError("Mask shape matches")
         algo = algo.upper()
         if algo == "LUT":
             if split == "full":
@@ -626,7 +631,8 @@ class Integrator(Geometry):
         :rtype: Integrate1dResult, dict
         """
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
-        assert method.dimension == 1
+        if method.dimension != 1:
+            raise RuntimeError("method is not 1D")
         unit = units.to_unit(unit)
 
         if mask is None:
@@ -650,7 +656,7 @@ class Integrator(Geometry):
             azimuth_range = self.normalize_azimuth_range(azimuth_range)
 
         if variance is not None:
-            assert variance.size == data.size
+            if variance.size != data.size: raise RuntimeError("variance array shape matches data shape")
         elif error_model:
             error_model = error_model.lower()
             if error_model == "poisson":
@@ -1143,7 +1149,8 @@ class Integrator(Geometry):
         :rtype: Integrate2dResult, dict
         """
         method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
-        assert method.dimension == 2
+        if method.dimension != 2:
+            raise RuntimeError("method is not 2D")
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
         pos0_scale = unit.scale
@@ -1165,7 +1172,7 @@ class Integrator(Geometry):
             radial_range = tuple([i / pos0_scale for i in radial_range])
 
         if variance is not None:
-            assert variance.size == data.size
+            if variance.size != data.size: raise RuntimeError("variance array shape matches data shape")
         elif error_model:
             error_model = error_model.lower()
             if error_model == "poisson":
