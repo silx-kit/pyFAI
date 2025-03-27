@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2025"
+__date__ = "27/03/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -397,7 +397,7 @@ class Geometry(object):
             else:
                 p3 = (L + p3).ravel()
                 if size != p3.size:
-                    raise RuntimeError("p3 array size does not match size")
+                    raise RuntimeError("p3 array size does not  size")
             coord_det = numpy.vstack((p1, p2, p3))
             coord_sample = numpy.dot(self.rotation_matrix(param), coord_det)
             t1, t2, t3 = coord_sample
@@ -2043,15 +2043,15 @@ class Geometry(object):
                                            with_checksum=False)
         if flat is not None:
             if flat.shape != tuple(shape):
-                raise RuntimeError("flat shape matches")
+                raise RuntimeError("flat shape does not match")
             calcimage *= flat
         if dark is not None:
             if dark.shape != tuple(shape):
-                raise RuntimeError("dark shape matches")
+                raise RuntimeError("dark shape does not match")
             calcimage += dark
         if mask is not None:
             if mask.shape != tuple(shape):
-                raise RuntimeError("mask shape matches")
+                raise RuntimeError("mask shape does not match")
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
@@ -2111,15 +2111,15 @@ class Geometry(object):
                                            with_checksum=False)
         if flat is not None:
             if flat.shape != tuple(shape):
-                raise RuntimeError("flat shape matches")
+                raise RuntimeError("flat shape does not match")
             calcimage *= flat
         if dark is not None:
             if dark.shape != tuple(shape):
-                raise RuntimeError("dark shape matches")
+                raise RuntimeError("dark shape does not match")
             calcimage += dark
         if mask is not None:
             if mask.shape != tuple(shape):
-                raise RuntimeError("mask shape matches")
+                raise RuntimeError("mask shape does not match")
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
