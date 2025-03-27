@@ -144,7 +144,10 @@ class CalibrationContext(ApplicationContext):
         self.__restoreUnit(self.__scatteringVectorUnit, settings, "scattering-vector-unit", units.Unit.INV_ANGSTROM)
         settings.endGroup()
 
-        recentCalibrants = settings.value("recent-calibrations", [], type=list)
+        try:
+            recentCalibrants = settings.value("recent-calibrations", [], type=list)
+        except TypeError:
+            recentCalibrants = []
         self.__recentCalibrants.setValue(recentCalibrants)
 
     def saveSettings(self):
