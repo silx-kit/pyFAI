@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2024"
+__date__ = "27/03/2025"
 __status__ = "development"
 
 import warnings
@@ -124,7 +124,7 @@ def preproc(raw,
         mask = numpy.zeros(size, dtype=bool)
     else:
         if mask.size != size:
-            raise RuntimeError("Mask array size is correct")
+            raise RuntimeError("Mask array size is incorrect")
         mask = numpy.ascontiguousarray(mask.ravel(), dtype=bool)
 
     if (dummy is not None) and (delta_dummy is not None):
@@ -160,7 +160,7 @@ def preproc(raw,
 
         if dark is not None:
             if (dark.size != size):
-                raise RuntimeError("Dark array size is correct")
+                raise RuntimeError("Dark array size is incorrect")
             dark = numpy.ascontiguousarray(dark.ravel(), dtype=dtype)
             if check_dummy:
                 # runtime warning here
@@ -176,7 +176,7 @@ def preproc(raw,
 
         if flat is not None:
             if (flat.size != size):
-                raise RuntimeError("Flat array size is correct")
+                raise RuntimeError("Flat array size is incorrect")
             flat = numpy.ascontiguousarray(flat.ravel(), dtype=dtype)
             if check_dummy:
                 # runtime warning here
@@ -188,17 +188,17 @@ def preproc(raw,
 
         if polarization is not None:
             if polarization.size != size:
-                raise RuntimeError("Polarization array size is correct")
+                raise RuntimeError("Polarization array size is incorrect")
             normalization *= numpy.ascontiguousarray(polarization.ravel(), dtype=dtype)
 
         if solidangle is not None:
             if solidangle.size != size:
-                raise RuntimeError("Solid angle array size is correct")
+                raise RuntimeError("Solid angle array size is incorrect")
             normalization *= numpy.ascontiguousarray(solidangle.ravel(), dtype=dtype)
 
         if absorption is not None:
             if absorption.size != size:
-                raise RuntimeError("Absorption array size is correct")
+                raise RuntimeError("Absorption array size is incorrect")
             normalization *= numpy.ascontiguousarray(absorption.ravel(), dtype=dtype)
 
         mask |= numpy.logical_not(numpy.isfinite(signal))
@@ -211,9 +211,9 @@ def preproc(raw,
             result = numpy.zeros(out_shape, dtype=dtype)
         else:
             if out.dtype != dtype:
-                raise RuntimeError("dtype matches")
+                raise RuntimeError("dtype does not match")
             if out.shape != out_shape:
-                raise RuntimeError("output size matches")
+                raise RuntimeError("output size does not match")
             result = out
 
         if split_result:
