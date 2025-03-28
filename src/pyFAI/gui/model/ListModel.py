@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "24/03/2025"
 
 import functools
 
@@ -143,7 +143,7 @@ class ListModel(AbstractModel):
     if qt.BINDING in ["PyQt5", "PySide2"]:
         changed = qt.Signal([], [ChangeListEvent])
     else:
-        changed = qt.Signal(((),), (ChangeListEvent,))
+        changed = qt.Signal(tuple(), (ChangeListEvent,))
     """Emitted at the end of a structural change."""
 
     structureChanged = qt.Signal()
