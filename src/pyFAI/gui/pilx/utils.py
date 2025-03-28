@@ -72,7 +72,8 @@ def get_indices_from_values(vmin: float,
 
 def get_dataset(parent: h5py.Group | h5py.File, path: str) -> h5py.Dataset:
     dset = parent[path]
-    assert isinstance(dset, h5py.Dataset)
+    if not isinstance(dset, h5py.Dataset):
+        raise RuntimeError("dataset is not a `h5py.Dataset` instance")
     return dset
 
 
@@ -80,8 +81,10 @@ def get_radial_dataset(parent: h5py.Group,
                        nxdata_path: str,
                        size: Optional[int]=None) -> h5py.Dataset:
     nxdata = parent[nxdata_path]
-    assert isinstance(nxdata, h5py.Group)
-    assert nxdata.attrs["NX_class"] == "NXdata"
+    if not  isinstance(nxdata, h5py.Group):
+        raise RuntimeError("NXdata group is not a `h5py.Group` instance")
+    if nxdata.attrs.get("NX_class") != "NXdata":
+        raise RuntimeError("NXdata group has improper NX_class attribute")
     if size is None:
         if "intensity" in nxdata:
             size = nxdata["intensity"].shape[-1]
@@ -125,7 +128,8 @@ def guess_axis_path(existing_axis_path: str, parent: h5py.Group) -> str | None:
 def get_mask_image(maskfile: str, image_shape: Tuple[int, int]) -> numpy.ndarray | None:
     """Retrieves mask image from the URL. Rebin to match"""
     mask_image = get_data(url=DataUrl(maskfile))
-    assert isinstance(mask_image, numpy.ndarray)
+    if not isinstance(mask_image, numpy.ndarray):
+        raise RuntimeError("Mask is expected to be a numpy array")
     if mask_image.shape == image_shape:
         return mask_image
 

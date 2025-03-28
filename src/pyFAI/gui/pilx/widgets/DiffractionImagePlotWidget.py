@@ -51,7 +51,8 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
     def __init__(self, parent=None, backend=None):
         super().__init__(parent, backend)
         image_item = self.addImage([[]], legend=_LEGEND, colormap=DEFAULT_COLORMAP)
-        assert isinstance(image_item, ImageData)
+        if not isinstance(image_item, ImageData):
+            raise RuntimeError("addImage should return a ImageData instance")
         self._image_item = image_item
         self._first_plot = True
 

@@ -176,9 +176,9 @@ class TestTranslation(unittest.TestCase):
         with open(fname, "w") as of:
             of.write(jsons)
         gonio = Goniometer.sload(fname)
-        assert isinstance(gonio.trans_function, ExtendedTransformation)
+        self.assertTrue(isinstance(gonio.trans_function, ExtendedTransformation))
         gonio = GoniometerRefinement.sload(fname)
-        assert isinstance(gonio.trans_function, ExtendedTransformation)
+        self.assertTrue(isinstance(gonio.trans_function, ExtendedTransformation))
         if os.path.exists(fname):
             os.unlink(fname)
 

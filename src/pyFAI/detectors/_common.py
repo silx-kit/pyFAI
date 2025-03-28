@@ -757,7 +757,8 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-                    assert self.CORNERS == 4, "overwrite this method when hexagonal !"
+                    if self.CORNERS != 4:
+                        raise RuntimeError("overwrite this method with triangular/hexagonal pixels !")
                     # r1, r2 = self._calc_pixel_index_from_orientation(False)
                     # like numpy.ogrid
                     # d1 = expand2d(r1, self.shape[1] + 1, False)
@@ -792,7 +793,8 @@ class Detector(metaclass=DetectorMeta):
             r1 = self._pixel_corners.shape[1] // self.shape[1]
             if r0 == 0 or r1 == 0:
                 raise RuntimeError("Cannot unbin an image ")
-            assert self.CORNERS == 4, "Only valid with quadrilateral pixels"
+            if self.CORNERS != 4:
+                raise RuntimeError("_rebin_pixel_corners is only valid with quadrilateral pixels")
             pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
             pixel_corners[:,:, 0,:] = self._pixel_corners[::r0,::r1, 0,:]
             pixel_corners[:,:, 1,:] = self._pixel_corners[r0 - 1::r0,::r1, 1,:]
@@ -816,9 +818,12 @@ class Detector(metaclass=DetectorMeta):
         else:
             ary = numpy.ascontiguousarray(ary, dtype=numpy.float32)
             # Validation for the array
-            assert ary.ndim == 4
-            assert ary.shape[3] == 3  # 3 coordinates in Z Y X
-            assert ary.shape[2] == self.CORNERS  # at least 3 corners per pixel
+            if ary.ndim != 4:
+                raise RuntimeError("Method is only valid with quadrilateral pixels")
+            if ary.shape[3] != 3:
+                raise RuntimeError("3 coordinates in Z Y X are expected")
+            if ary.shape[2] != self.CORNERS:
+                raise RuntimeError("Number of corners in array does not match class definition")
 
             z = ary[..., 0]
             is_flat = (z.max() == z.min() == 0.0)

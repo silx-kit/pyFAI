@@ -170,7 +170,8 @@ class PeakPicker(object):
         """
         Unified initializer
         """
-        assert method in self.VALID_METHODS
+        if method not in self.VALID_METHODS:
+            raise RuntimeError("method not valid")
         if method != self.method:
             self.__getattribute__("_init_" + method)(sync)
             self.method = method
@@ -271,7 +272,8 @@ class PeakPicker(object):
 
         if self.widget is None:
             if widget_klass:
-                assert issubclass(widget_klass, MplCalibWidget)
+                if not issubclass(widget_klass, MplCalibWidget):
+                    raise RuntimeError("widget_klass does not derive from MplCalibWidget")
             self.widget = widget_klass(new_grp_cb=self.onclick_new_grp,
                                        append_single_cb=self.onclick_append_1_point,
                                        single_point_cb=self.onclick_single_point,

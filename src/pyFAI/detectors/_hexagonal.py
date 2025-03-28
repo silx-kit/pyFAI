@@ -67,7 +67,8 @@ class HexDetector(Detector):
         :param pitch: the distance between two pixels
         :return: array with pixel coordinates
         """
-        assert len(shape) == 2
+        if len(shape) != 2:
+            raise RecursionError("detector shape is expected to be a 2-tuple")
         ary = numpy.zeros(shape + (cls.CORNERS, 3), dtype=numpy.float32)
         sqrt3 = sqrt(3.0)
         h = 0.5*sqrt3

@@ -105,9 +105,10 @@ class PeakModel(AbstractModel):
             index of the coord; the second dimension contains y as first index,
             and x as second index).
         """
-        assert(isinstance(coords, numpy.ndarray))
-        assert(len(coords.shape) == 2)
-        assert(coords.shape[1] == 2)
+        if not (isinstance(coords, numpy.ndarray) and
+                len(coords.shape) == 2 and
+                coords.shape[1] == 2):
+            raise RuntimeError("coords is expected to be a numpy array of shape [n, 2] in y,x order")
         coords = numpy.ascontiguousarray(coords)
         coords.flags['WRITEABLE'] = False
         self.__coords = coords
@@ -123,9 +124,11 @@ class PeakModel(AbstractModel):
         """
         if isinstance(coords, PeakModel):
             coords = coords.coords()
-        assert(isinstance(coords, numpy.ndarray))
-        assert(len(coords.shape) == 2)
-        assert(coords.shape[1] == 2)
+        if not (isinstance(coords, numpy.ndarray) and
+                len(coords.shape) == 2 and
+                coords.shape[1] == 2):
+            raise RuntimeError("coords is expected to be a numpy array of shape [n, 2] in y,x order")
+
 
         # Shortcuts
         if len(coords) == 0:
@@ -152,7 +155,8 @@ class PeakModel(AbstractModel):
         return self.__ringNumber
 
     def setRingNumber(self, ringNumber):
-        assert(ringNumber >= 1)
+        if ringNumber < 1:
+            raise RuntimeError("Ring number is invalid")
         self.__ringNumber = ringNumber
         self.wasChanged()
 

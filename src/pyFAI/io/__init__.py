@@ -274,7 +274,7 @@ class HDF5Writer(Writer):
                 entry = self.nxs.new_entry(entry=entry_name, force_name=True,
                                            program_name="pyFAI", title=None)
             else:
-                assert(False)
+                raise RuntimeError()
         entry["program_name"].attrs["version"] = version
         self.hpath = entry.name
         return entry

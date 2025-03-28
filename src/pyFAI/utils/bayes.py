@@ -232,7 +232,8 @@ class BayesianBackground(object):
     def background_image(self, img, sigma=None, mask=None, npt=10, k=3):
         shape = img.shape
         if sigma is not None:
-            assert sigma.shape == shape
+            if sigma.shape != shape:
+                raise RuntimeError("sigma array shape does not match image")
         else:
             sigma = numpy.sqrt(img)
 
@@ -240,7 +241,8 @@ class BayesianBackground(object):
 
         mask_nan = numpy.isnan(w)
         if mask is not None:
-            assert mask.shape == shape
+            if mask.shape != shape:
+                raise RuntimeError("Mask shape matches")
             mask = numpy.logical_or(mask_nan, mask)
         else:
             mask = mask_nan

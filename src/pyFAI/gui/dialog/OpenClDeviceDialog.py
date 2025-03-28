@@ -185,5 +185,4 @@ class OpenClDeviceDialog(qt.QDialog):
             raise ValueError("No device selected")
         if self._customButton.isChecked():
             return self._platformId.value(), self._deviceId.value()
-
-        assert(False)
+        raise RuntimeError("No OpenCL device/devie-type selected")

@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2025"
+__date__ = "27/03/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -383,7 +383,8 @@ class Geometry(object):
             p1 = (p1 - poni1).ravel()
             p2 = (p2 - poni2).ravel()
             # we did make copies with the subtraction
-            assert size == p2.size
+            if size != p2.size:
+                raise RuntimeError("p2 array size does not match size")
             if do_parallax and self._parallax is not None:
                 self._correct_parallax(d1, d2, p1, p2)
 
@@ -395,7 +396,8 @@ class Geometry(object):
                 p3 = numpy.zeros(size) + L
             else:
                 p3 = (L + p3).ravel()
-                assert size == p3.size
+                if size != p3.size:
+                    raise RuntimeError("p3 array size does not  size")
             coord_det = numpy.vstack((p1, p2, p3))
             coord_sample = numpy.dot(self.rotation_matrix(param), coord_det)
             t1, t2, t3 = coord_sample
@@ -2040,13 +2042,16 @@ class Geometry(object):
                                            axis_offset=polarization_axis_offset,
                                            with_checksum=False)
         if flat is not None:
-            assert flat.shape == tuple(shape)
+            if flat.shape != tuple(shape):
+                raise RuntimeError("flat shape does not match")
             calcimage *= flat
         if dark is not None:
-            assert dark.shape == tuple(shape)
+            if dark.shape != tuple(shape):
+                raise RuntimeError("dark shape does not match")
             calcimage += dark
         if mask is not None:
-            assert mask.shape == tuple(shape)
+            if mask.shape != tuple(shape):
+                raise RuntimeError("mask shape does not match")
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
@@ -2105,13 +2110,16 @@ class Geometry(object):
                                            axis_offset=polarization_axis_offset,
                                            with_checksum=False)
         if flat is not None:
-            assert flat.shape == tuple(shape)
+            if flat.shape != tuple(shape):
+                raise RuntimeError("flat shape does not match")
             calcimage *= flat
         if dark is not None:
-            assert dark.shape == tuple(shape)
+            if dark.shape != tuple(shape):
+                raise RuntimeError("dark shape does not match")
             calcimage += dark
         if mask is not None:
-            assert mask.shape == tuple(shape)
+            if mask.shape != tuple(shape):
+                raise RuntimeError("mask shape does not match")
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
@@ -2255,7 +2263,8 @@ class Geometry(object):
 
         It is a good guess of the number of bins to be used without oversampling too much the data for azimuthal integration
         """
-        assert self.detector.shape
+        if self.detector.shape is None:
+            raise RuntimeError("Detector does not define its shape")
         with self._sem:
             f2d = convert_to_Fit2d(self)
         x = numpy.atleast_2d([0, self.detector.shape[-1]]) - f2d.centerX
@@ -2529,8 +2538,8 @@ class Geometry(object):
 
     def set_parallax(self, value):
         from ..parallax import Parallax
-        if value is not None:
-            assert isinstance(value, Parallax)
+        if value is not None and not isinstance(value, Parallax):
+            raise RuntimeError("set_parallax requires a Parallax instance")
         self._parallax = value
         self.reset()
 

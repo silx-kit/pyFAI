@@ -454,9 +454,12 @@ class IntegrationMethod:
 
     def _register(self):
         """basic checks before registering the method"""
-        assert self.split_lower in self.AVAILABLE_SPLITS
-        assert self.algo_lower in self.AVAILABLE_ALGOS
-        assert self.impl_lower in self.AVAILABLE_IMPLS
+        if self.split_lower not in self.AVAILABLE_SPLITS:
+            raise RuntimeError("Unknown splitting scheme")
+        if self.algo_lower not in self.AVAILABLE_ALGOS:
+            raise RuntimeError("Unknown algorithm")
+        if self.impl_lower not in self.AVAILABLE_IMPLS:
+            raise RuntimeError("Unknown implementation")
         self.__class__._registry[self.method] = self
 
     @property

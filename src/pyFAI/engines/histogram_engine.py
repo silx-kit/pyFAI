@@ -114,7 +114,8 @@ def histogram1d_engine(radial, npt,
                    )
     radial = radial.ravel()
     prep.shape = -1, 4
-    assert prep.shape[0] == radial.size
+    if prep.shape[0] != radial.size:
+        raise RuntimeError("preprocessed array size not consistent with radial array size")
     if radial_range is None:
         radial_range = (radial.min(), radial.max() * EPS32)
 
@@ -235,8 +236,8 @@ def histogram2d_engine(radial, azimuthal, bins,
     radial = radial.ravel()
     azimuthal = azimuthal.ravel()
     prep.shape = -1, 4
-    assert prep.shape[0] == radial.size
-    assert prep.shape[0] == azimuthal.size
+    if prep.shape[0] != radial.size or prep.shape[0] != azimuthal.size:
+        raise RuntimeError("Preprocessed array size is unconsistent with radial or azimuthal array size")
     npt = tuple(max(1, i) for i in bins)
     if radial_range is None:
         if allow_radial_neg:

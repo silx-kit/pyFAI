@@ -79,7 +79,7 @@ class MenuItem(qt.QListWidgetItem):
             width = self.listWidget().iconSize().width() + 7
             superSelf.setSizeHint(qt.QSize(width, 60))
         else:
-            assert(False)
+            raise RuntimeError("Mode is neither Text nor Icon")
 
         if self.__warnings is None:
             superSelf.setIcon(self.__icon)

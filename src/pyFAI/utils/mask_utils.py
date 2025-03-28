@@ -68,7 +68,8 @@ def search_gaps(mask):
     """Provide a list of gaps in vertical (dim1) and horizontal (dim2) directions.
     :param mask: 2D array with the mask
     """
-    assert mask.ndim == 2
+    if mask.ndim != 2:
+        raise RuntimeError("Expected 2D array as mask")
     mask = numpy.asarray(mask, dtype="bool")
     return _search_gap(mask, 1), _search_gap(mask, 0)
 
@@ -104,7 +105,8 @@ def crystfel_mask(mask):
     """
     Generate a text with the mask description in CrystFEL format
     """
-    assert mask.ndim == 2
+    if mask.ndim != 2:
+        raise RuntimeError("Expected 2D array as mask")
     shape = mask.shape
     res = ["; Define a mask with the gaps of the detector"]
     g1, g2 = search_gaps(mask)

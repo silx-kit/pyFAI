@@ -229,7 +229,8 @@ class RingCalibration(object):
             **defaultParams)
         self.__geoRef = geoRef
         if constraintsModel is not None:
-            assert(constraintsModel.isValid())
+            if not constraintsModel.isValid():
+                raise RuntimeError("Constrain model is invalid")
             self.fromGeometryConstraintsModel(constraintsModel)
         score = geoRef.refine(1000000)
         scores.append((score, geoRef, "without-guess"))
@@ -244,7 +245,8 @@ class RingCalibration(object):
             **defaultParams)
         self.__geoRef = geoRef
         if constraintsModel is not None:
-            assert(constraintsModel.isValid())
+            if not constraintsModel.isValid():
+                raise RuntimeError("Constrain model is invalid")
             self.fromGeometryConstraintsModel(constraintsModel)
         geoRef.guess_poni()
         score = geoRef.refine(1000000)
@@ -481,7 +483,8 @@ class RingCalibration(object):
 
         Not the one used, but the one initially set to the refinement engine.
         """
-        assert(self.__defaultConstraints is not None)
+        if self.__defaultConstraints is None:
+            raise RuntimeError("No default geometry constrains model")
         return self.__defaultConstraints
 
     def fromGeometryConstraintsModel(self, constraintsModel):

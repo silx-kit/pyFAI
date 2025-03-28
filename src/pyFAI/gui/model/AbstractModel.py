@@ -79,7 +79,9 @@ class AbstractModel(qt.QObject):
 
         :returns: False if the model is still locked, else True
         """
-        assert self.__isLocked > 0
+        if self.__isLocked <= 0:
+            raise RuntimeError("AbstractModel's signal were not locked, cannot unlock")
+
         self.__isLocked = self.__isLocked - 1
         if self.__isLocked == 0 and self.__wasChanged:
             self.__wasChanged = False
