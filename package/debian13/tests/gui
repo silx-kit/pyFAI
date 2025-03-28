@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# silent matplotlib
+export MPLCONFIGDIR=${AUTOPKGTEST_TMP}
+
+# silent qt
+mkdir -p ${AUTOPKGTEST_TMP}/run
+chmod 700 ${AUTOPKGTEST_TMP}/run
+export XDG_RUNTIME_DIR=${AUTOPKGTEST_TMP}/run
+
+# export a writable home for pymca fit directory
+export HOME=${AUTOPKGTEST_TMP}
+
+# silent numexpr from pyfai
+export NUMEXPR_MAX_THREADS=8
+
+glxinfo
+
+allpkg=$(dh_listpackages)
+
+abort=0
+
+for p in $allpkg; do
+    echo -n "Package $p: "
+    allbinaries=$(dpkg -L "$p"| grep "/usr/bin/")
+    if [ -z "$allbinaries" ]; then
+	echo "nothing to do"
+	continue
+    fi
+    echo ''
+    for f in $allbinaries; do
+	timeout --preserve-status 5s "$f"
+	ec=$?
+	echo -n "  -testing $f: exit($ec) "
+	if [ $ec -eq 0 ]; then
+	    echo "ok"
+	elif [ $ec -eq 2 ]; then
+	    echo "trapped (wrong args) This is not an error"
+	elif [ $ec -eq 143 ]; then
+	    echo "trapped (SIGTERM) This is not an error"
+	else
+            abort=1
+	    echo "FAILED !!!"
+	fi
+    done
+done
+
+
+if [ $abort -eq 1 ]; then
+    exit 1
+else
+    exit 0
+fi

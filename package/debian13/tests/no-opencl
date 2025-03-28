@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+export PYFAI_OPENCL=False
+
+cp bootstrap.py run_tests.py pyproject.toml version.py README.rst "$AUTOPKGTEST_TMP"
+
+# skip these test
+# TestAzimHalfFrelon.test_medfilt1d
+
+for py in $(py3versions -s 2>/dev/null)
+do cd "$AUTOPKGTEST_TMP"
+   echo "Testing with $py:"
+   xvfb-run -a --server-args="-screen 0 1024x768x24" $py run_tests.py -v -m --low-mem --installed
+done
