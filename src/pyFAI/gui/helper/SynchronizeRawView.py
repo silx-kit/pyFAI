@@ -84,9 +84,11 @@ class SynchronizeRawView(object):
             model.setFromPlot(plot)
 
     def __plotVisibilityChanged(self, isVisible):
+        model = self.__model
+        if model is None:
+            return
         if not isVisible:
             # Save the state when it is hidden
-            model = self.__model
             plot = self.__plot()
             model.setFromPlot(plot)
 
