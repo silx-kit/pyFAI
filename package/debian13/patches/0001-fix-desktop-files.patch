@@ -1,0 +1,43 @@
+From: =?utf-8?q?Picca_Fr=C3=A9d=C3=A9ric-Emmanuel?= <picca@debian.org>
+Date: Mon, 11 Sep 2023 14:56:42 +0200
+Subject: fix desktop files
+
+---
+ applications/diff_map.desktop        | 2 +-
+ applications/pyFAI-calib2.desktop    | 2 +-
+ applications/pyFAI-integrate.desktop | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/applications/diff_map.desktop b/applications/diff_map.desktop
+index ed99e8f..8eb02f5 100644
+--- a/applications/diff_map.desktop
++++ b/applications/diff_map.desktop
+@@ -3,5 +3,5 @@ Version=1.0
+ Exec=diff_map %u
+ Name=diff_map
+ Type=Application
+-Icon=doc/source/img/pyFAI-diffmap.png
++Icon=pyFAI-diffmap.png
+ MimeType=application/x-hdf5
+diff --git a/applications/pyFAI-calib2.desktop b/applications/pyFAI-calib2.desktop
+index 7a5cc28..9deb65d 100644
+--- a/applications/pyFAI-calib2.desktop
++++ b/applications/pyFAI-calib2.desktop
+@@ -3,5 +3,5 @@ Version=1.0
+ Exec=pyFAI-calib2 %u
+ Name=pyFAI-calib2
+ Type=Application
+-Icon=doc/source/img/pyFAI-calibrate.png
++Icon=pyFAI-calibrate.png
+ MimeType=application/x-hdf5
+diff --git a/applications/pyFAI-integrate.desktop b/applications/pyFAI-integrate.desktop
+index 15b9639..534b64a 100644
+--- a/applications/pyFAI-integrate.desktop
++++ b/applications/pyFAI-integrate.desktop
+@@ -3,5 +3,5 @@ Version=1.0
+ Exec=pyFAI-integrate %u
+ Name=pyFAI-integrate
+ Type=Application
+-Icon=doc/source/img/pyFAI-integrate.png
++Icon=pyFAI-integrate.png
+ MimeType=application/x-hdf5

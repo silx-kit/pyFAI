@@ -1,0 +1,19 @@
+#!/bin/sh -e
+
+# Check that OpenCL isn't totally broken (note that it isn't totally working either)
+# Uses device 0 platform 0, i.e. to use a real GPU manually install its opencl-icd before running this
+# Mark the test has flaky, the important part is the CPU computation.
+
+export PYFAI_OPENCL=True
+export PYOPENCL_COMPILER_OUTPUT=1
+
+# skip test
+# TestAzimHalfFrelon.test_medfilt1d
+
+cp bootstrap.py run_tests.py pyproject.toml version.py README.rst "$AUTOPKGTEST_TMP"
+
+for py in $(py3versions -s 2>/dev/null)
+do cd "$AUTOPKGTEST_TMP"
+   echo "Testing with $py:"
+   xvfb-run -a --server-args="-screen 0 1024x768x24" $py run_tests.py -v -m --low-mem --installed
+done

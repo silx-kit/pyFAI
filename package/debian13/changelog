@@ -1,0 +1,638 @@
+pyfai (2025.03-1) unstable; urgency=medium
+
+  * New upstream version 2025.03
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 14 Mar 2025 09:48:01 +0100
+
+pyfai (2025.01-3) unstable; urgency=medium
+
+  * d/t/control: mark all OpenCL test as flaky for now
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Tue, 04 Mar 2025 10:04:39 +0100
+
+pyfai (2025.01-2) unstable; urgency=medium
+
+  * d/p/0003-skip-a-test-which-hang.patch: skip a test
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Mon, 03 Mar 2025 14:15:34 +0100
+
+pyfai (2025.01-1) unstable; urgency=medium
+
+  * New upstream version 2025.01
+  * refresh patch series
+  * Bug fix: "uninstallable with the current version of python3-numpy",
+    thanks to Giacomo Mulas (Closes: #1095217).
+  * Bug fix: "Debci errors with latest pocl", thanks to Andreas Tille
+    (Closes: #1090744).
+  * Bug fix: "FTBFS:
+    src/pyFAI/ext/sparse_utils.cpython-312-x86_64-linux-gnu.so.p/src/pyFAI/ext/sparse_utils.pyx.c:45695:17:
+    error: assignment to ‘struct
+    __pyx_obj_5pyFAI_3ext_12sparse_utils_Vector *’ from incompatible
+    pointer type ‘PyObject *’ {aka ‘struct _object *’}
+    [-Wincompatible-pointer-types]", thanks to Lucas Nussbaum (Closes:
+    #1077400).
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sat, 01 Mar 2025 14:25:12 +0100
+
+pyfai (2024.09-1) experimental; urgency=medium
+
+  * Team upload.
+  * New upstream version
+  * Standards-Version: 4.7.0 (routine-update)
+  * Drop patch that was applied upstream
+  * Fix Python3.12 string syntax
+    Closes: #1085805
+
+ -- Andreas Tille <tille@debian.org>  Wed, 18 Dec 2024 09:48:35 +0100
+
+pyfai (2024.05-3) unstable; urgency=medium
+
+  * d/rules: fix FTBFS with gcc-14 incompatible cython3 generated code.
+    This is workround, look at here
+    https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1077205
+  * d/t/gui: reworked
+  * refresh the patch series
+  * d/rules: install the Appstream meta infos
+  * d/copyright: updated thanks to lrc
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Mon, 05 Aug 2024 18:32:50 +0200
+
+pyfai (2024.05-2) unstable; urgency=medium
+
+  [ RAHLI Oussama ]
+  * d/t/gui: Added to test all /usr/bin/ scripts
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 02 Aug 2024 10:50:53 +0200
+
+pyfai (2024.05-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Bug fix: "Segfault when closing a dialg", thanks to Picca
+    Frédéric-Emmanuel (Closes: #1061938).
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Tue, 28 May 2024 18:59:43 +0200
+
+pyfai (2024.02-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream version
+    Closes: #1056438
+  * Fix watch file
+  * cme fix dpkg-control
+  * Import /usr/share/dpkg/pkg-info.mk to set SOURCE_DATE_EPOCH
+  * Do not parse d/changelog (routine-update)
+  * Set upstream metadata fields: Repository.
+
+ -- Andreas Tille <tille@debian.org>  Sun, 18 Feb 2024 09:56:52 +0100
+
+pyfai (2023.9.0-1) unstable; urgency=medium
+
+  * New upstream version 2023.9.0
+  * d/p/*: Removed previous patches series.
+  * d/p/: Added a fix for the desktop files.
+  * d/rules: Install the desktop and icons files
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Mon, 11 Sep 2023 15:47:51 +0200
+
+pyfai (2023.8.0-1) unstable; urgency=medium
+
+  * New upstream version 2023.8.0
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Thu, 31 Aug 2023 13:28:48 +0200
+
+pyfai (2023.5.0+dfsg1-9) unstable; urgency=medium
+
+  * d/t/control: Make the OpenCL test verbose
+  * d/rules: no more test during the build. Rely on autopkgtest to identify
+    problematic architectures and on user bug report for all architectures.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 28 Jul 2023 15:13:34 +0200
+
+pyfai (2023.5.0+dfsg1-8) unstable; urgency=medium
+
+  * d/t/control: mark test as flaky for i386 and armel
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Thu, 27 Jul 2023 14:39:10 +0200
+
+pyfai (2023.5.0+dfsg1-7) unstable; urgency=medium
+
+  * d/t/control: set --low-mem to avoid problem on small architectures.
+  * d/t/control: do not mark the OpenCL test as flaky now that
+    it is restrain to 3 architectures.
+  * Remove constraints unnecessary since bullseye (oldstable):
+    + Build-Depends: Drop versioned constraint on python3-silx (>= 0.10.1).
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Tue, 25 Jul 2023 10:50:52 +0200
+
+pyfai (2023.5.0+dfsg1-6) unstable; urgency=medium
+
+  * Set upstream metadata fields: Security-Contact.
+  * d/control: remove the OpenCL test for i386
+  * d/t/control: created a dedicated flaky test for OpenCL test.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Mon, 24 Jul 2023 12:57:33 +0200
+
+pyfai (2023.5.0+dfsg1-5) unstable; urgency=medium
+
+  * explicitely list the arch where OpenCL test are executed.
+  * Bug fix: "pyfai_2023.5.0+dfsg1-3_all-buildd.changes REJECTED", thanks
+    to Aurelien Jarno (Closes: #1041443).
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Thu, 20 Jul 2023 17:21:08 +0200
+
+pyfai (2023.5.0+dfsg1-4) unstable; urgency=medium
+
+  * d/watch: no need to repack for next upstream version
+  * d/control: B-D removed pocl-opencl-icd for armel.
+  * d/t/control: removed pocl-opencl-icd [armel]
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Wed, 19 Jul 2023 12:44:26 +0200
+
+pyfai (2023.5.0+dfsg1-3) unstable; urgency=medium
+
+  * d/control: use profile <!nodoc> for all B-D-I.
+  * d/control: B-D added pocl-opencl-icd (for OpenCL tests)
+  * d/rules: restore override_dh_auto_build-indep.
+  * d/rules: Added verbosity to meson build.
+  * d/rules: Activated the pyopencl compile output during tests.
+  * d/rules: Reactivated the opencl test during the build.
+  * d/t/control: Installed bitshuffle hdf5 filter for tests.
+  * d/t/control: Added pocl-opencl-icd also for autopkgtest.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Tue, 18 Jul 2023 12:05:22 +0200
+
+pyfai (2023.5.0+dfsg1-2) unstable; urgency=medium
+
+  * d/rules: Fix installation of the scripts
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sun, 16 Jul 2023 16:03:22 +0200
+
+pyfai (2023.5.0+dfsg1-1) unstable; urgency=medium
+
+  * New upstream version 2023.5.0+dfsg1
+  * d/control: B-D Added pybuild-plugin-pyproject and python3-mesonpy
+  * d/control: B-D added python-dev-is-python3
+  * d/control: B-D Added python3-hdf5plugin
+  * d/control: B-D Added bitshuffle in order to pass tests
+  * d/p/0004-embeded-transformation.py.patch: updated to embed also meson.build
+  * d/rules: install scripts without setup.py
+  * d/rules: removed execute_after_dh_install
+  * d/rules: Do not build the manpage
+  * d/rules: added execute_before_dh_install to install the scripts.
+  * d/t/control: pyproject.toml is also expected to run the tests
+  * d/watch: use the pypi redirector.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sun, 16 Jul 2023 14:09:18 +0200
+
+pyfai (0.21.3+dfsg1-4) unstable; urgency=medium
+
+  * Team upload.
+  * Fix test skipping to fix build on mips64el.
+
+ -- Roland Mas <lolando@debian.org>  Wed, 22 Feb 2023 13:27:09 +0100
+
+pyfai (0.21.3+dfsg1-3) unstable; urgency=medium
+
+  [ Andreas Tille ]
+  * Team upload.
+  * Fix watch file
+  * Fetch upstream patch to skip tests that are unreliable on 32-bit platforms
+    by default
+    Closes: #1018811
+  * Standards-Version: 4.6.2 (routine-update)
+  * Rules-Requires-Root: no (routine-update)
+
+  [ Roland Mas ]
+  * Team upload.
+
+ -- Roland Mas <lolando@debian.org>  Sun, 19 Feb 2023 15:28:05 +0100
+
+pyfai (0.21.3+dfsg1-2) unstable; urgency=medium
+
+  * migrate to setuptools > 60 (Closes: #1020073)
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Wed, 02 Nov 2022 11:21:44 +0100
+
+pyfai (0.21.3+dfsg1-1) unstable; urgency=medium
+
+  * New upstream version 0.21.3+dfsg1
+  * Bug fix: "autopkgtest regression on armhf: images have different
+    dimensions", thanks to Paul Gevers (Closes: #1004509).
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Thu, 24 Mar 2022 20:11:09 +0100
+
+pyfai (0.21.2+dfsg1-1) unstable; urgency=medium
+
+  * New upstream version 0.21.2+dfsg1
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Wed, 23 Mar 2022 11:19:53 +0100
+
+pyfai (0.21.1+dfsg1-1) unstable; urgency=medium
+
+  * New upstream version 0.21.1+dfsg1
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Wed, 02 Feb 2022 13:51:42 +0100
+
+pyfai (0.21.0+dfsg1-1) unstable; urgency=medium
+
+  [ Neil Williams ]
+  * Update control to add Debian PaN maintainers
+
+  [ Picca Frédéric-Emmanuel ]
+  * New upstream version 0.21.0+dfsg1
+  * Bug fix: "Uses old name of sip module", thanks to Dmitry Shachnev
+    (Closes: #966040).
+  * Trim trailing whitespace.
+  * Add missing build dependency on dh addon.
+  * Bump debhelper from old 12 to 13.
+  * Set upstream metadata fields: Bug-Database, Bug-Submit.
+  * Update standards version to 4.6.0, no changes needed.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Thu, 20 Jan 2022 12:34:03 +0100
+
+pyfai (0.20.0+dfsg1-4.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Patch: Python 3.10 support, thanks Lukas Märdian. (Closes: #1000204)
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 22 Nov 2021 22:01:51 -0400
+
+pyfai (0.20.0+dfsg1-4) unstable; urgency=medium
+
+  * Bug fix: "Removal of the python3-*-dbg packages in sid/bookworm",
+    thanks to Matthias Klose (Closes: #994327).
+  * use dh-sequence-[numpy3,python3,sphinxdoc]
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sun, 19 Sep 2021 13:57:57 +0200
+
+pyfai (0.20.0+dfsg1-3) unstable; urgency=medium
+
+  * Added upstream patch to fix i386 FTBFS
+  * Bug fix: "FTBFS on 32 bit archs: OverflowError: Python int too large
+    to convert to C ssize_t", thanks to Sebastian Ramacher (Closes:
+    #981494).
+  * Bug fix: "pyfai fails tests with Python 3.8", thanks to Matthias Klose
+    (Closes: #945411).
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Tue, 02 Feb 2021 10:27:14 +0100
+
+pyfai (0.20.0+dfsg1-2) unstable; urgency=medium
+
+  * d/p/0005-upstream-fix-for-32bits-patforms.patch
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Mon, 01 Feb 2021 14:27:26 +0100
+
+pyfai (0.20.0+dfsg1-1) unstable; urgency=medium
+
+  * fixed build option name nodocs -> nodoc
+  * New upstream version 0.20.0+dfsg1
+  * d/control: Added Build-Depends-Indep python3-sphinx-rtd-theme
+  * d/t/control: Marked all tests skip-not-installable since pyopencl is
+    not available on all architectures.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 29 Jan 2021 14:42:23 +0100
+
+pyfai (0.19.0+dfsg1-3) unstable; urgency=medium
+
+  * d/t/control: less verbosity for now
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sat, 29 Feb 2020 12:08:19 +0100
+
+pyfai (0.19.0+dfsg1-2) unstable; urgency=medium
+
+  * d/t/control: Added the missing python3-tk and python3-tk-dbg.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Wed, 26 Feb 2020 14:55:28 +0100
+
+pyfai (0.19.0+dfsg1-1) unstable; urgency=medium
+
+  [ Steffen Möller ]
+  * Add new file with ref to conda
+
+  [ Picca Frédéric-Emmanuel ]
+  * New upstream version 0.19.0+dfsg1
+  * d/control: Used dh-sequence-python3.
+  * d/patches: Refreshed
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sat, 01 Feb 2020 15:35:39 +0100
+
+pyfai (0.18.0+dfsg1-3) unstable; urgency=medium
+
+  * Team upload.
+  * keep python3-sphinx in general Build-Depends.
+    Required to define dh sphinxdoc addon.
+
+ -- Drew Parsons <dparsons@debian.org>  Sun, 22 Sep 2019 10:03:42 +0800
+
+pyfai (0.18.0+dfsg1-2) unstable; urgency=medium
+
+  * Team upload.
+  * only build docs for arch-indep builds
+  * mark python-pyfai-doc as Multi-Arch: foreign
+
+ -- Drew Parsons <dparsons@debian.org>  Sun, 22 Sep 2019 02:57:00 +0800
+
+pyfai (0.18.0+dfsg1-1) unstable; urgency=medium
+
+  * Team upload.
+
+  [ Picca Frédéric-Emmanuel ]
+  * Use debhelper-compat instead of debian/compat.
+
+  [ Sandro Tosi ]
+  * Drop python 2 support; Closes: #937436
+  * debian/control
+    - bump Standards-Version to 4.4.0 (no changes needed)
+  * debian/rules
+    - add debug symbols to the -dbg package
+
+  [ Drew Parsons ]
+  * add debian patch test_split_bbox_2d-fix_zero_test.patch to test
+    zero within machine precision in test_split_bbox_2d
+    (cf. upstream issue #1111)
+  * debhelper compatibility level 12
+
+ -- Drew Parsons <dparsons@debian.org>  Sat, 21 Sep 2019 17:48:55 +0800
+
+pyfai (0.18.0+dfsg1-1~exp1) experimental; urgency=medium
+
+  * New upstream version 0.18.0+dfsg1
+  * d/control
+    - Build-Depends on python[3]-silx[-dbg] >= 0.10.1
+    - Bumped Standards-Version 4.3.0 (nothing to do)
+    - Switched to compat level 11
+  * d/patches
+    - Refreshed
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Tue, 28 May 2019 11:26:33 +0200
+
+pyfai (0.17.0+dfsg1-3) unstable; urgency=medium
+
+  [ Alexandre Marie ]
+  * d/t/control Changed the command line that run the tests.
+
+ -- Alexandre Marie <alexandre.marie@synchrotron-soleil.fr>  Thu, 10 Jan 2019 10:35:17 +0100
+
+pyfai (0.17.0+dfsg1-2) unstable; urgency=medium
+
+  * d/p/0004-Skipped-unittests-for-i386-arch.patch (Closes: #916292).
+  * d/rules: Build doc only with python3.
+  * d/p/0005-Hid-fvisibility-and-D.patch: Fixed FTBFS on unstable.
+
+ -- Alexandre Marie <alexandre.marie@synchrotron-soleil.fr>  Mon, 07 Jan 2019 16:25:17 +0100
+
+pyfai (0.17.0+dfsg1-1) unstable; urgency=medium
+
+  [ Picca Frédéric-Emmanuel ]
+  * d/t/control.dep8 -> d/t/control pyfai export the pyFAI module and not
+    pyfai as expected by autodep8.
+  * Switched pyfai scripts to python3
+  * d/control: Removed useless pymca5 dependencies.
+  * d/rules: do not run QT tests
+
+  [ Alexandre Marie ]
+  * New upstream version 0.17.0+dfsg1
+
+ -- Alexandre Marie <alexandre.marie@synchrotron-soleil.fr>  Thu, 20 Dec 2018 12:06:10 +0100
+
+pyfai (0.16.0+dfsg1-2) unstable; urgency=medium
+
+  * Exported XDG_CACHE_DIR to store openCL kernels and
+    fixed the FTBFS.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sun, 28 Oct 2018 22:07:52 +0100
+
+pyfai (0.16.0+dfsg1-1) unstable; urgency=medium
+
+  [ Picca Frédéric-Emmanuel ]
+  * New upstream version 0.16.0+dfsg1
+  * d/control
+    - Removed useless XS-Python[3]
+    - Removed useless Testsuite
+    - Fixed URL for salsa
+    - Bump Standrad-Version 4.2.1 (nothing to do)
+    - Build-Depends
+      + Added python[3]-silx[-dbg] (>= 0.8.0)
+  * d/test
+    - Moves all tests into control.autodep8
+
+  [ Salsa Pipeline Bot ]
+  * Add pipeline template
+  * Initial pipeline
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sun, 28 Oct 2018 13:58:42 +0100
+
+pyfai (0.15.0+dfsg1-1) unstable; urgency=medium
+
+  * New upstream version 0.15.0+dfsg1
+  * Repacked to deal the new third_party layout (Closes: #889183)
+  * d/control
+    - Build-Depends:
+      - Added pandoc
+      - Added python[3]-nbsphinx
+  * d/patches
+    + 0005-unactive-script-test.patch (Added)
+  * d/rules
+    - Do not build the documentation with python2-dbg
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sat, 03 Feb 2018 09:08:32 +0100
+
+pyfai (0.15.0+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 0.15.0+dfsg
+  * d/control
+    - Bump Standrad-Version 4.1.3 (nothing)
+  * debian/patches
+    - refreshed
+  * d/watch
+    - _src is optional
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 02 Feb 2018 22:05:05 +0100
+
+pyfai (0.14.2+dfsg-6) unstable; urgency=medium
+
+  * fix for real the ftbfs
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 01 Dec 2017 18:17:32 +0100
+
+pyfai (0.14.2+dfsg-5) unstable; urgency=medium
+
+  * d/rules
+    - Fixed the FTBFS by providing the POCL cache dir (Closes: #876739)
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 01 Dec 2017 17:08:59 +0100
+
+pyfai (0.14.2+dfsg-4) unstable; urgency=medium
+
+  * d/patches
+    - 0004-instrument-setup-code-to-deal-with-the-buildd-FTBFS.patch (Updated)
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 01 Dec 2017 14:58:36 +0100
+
+pyfai (0.14.2+dfsg-3) unstable; urgency=medium
+
+  * d/patches
+    - 0004-instrument-setup-code-to-deal-with-the-buildd-FTBFS.patch (Added)
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 01 Dec 2017 13:37:21 +0100
+
+pyfai (0.14.2+dfsg-2) unstable; urgency=medium
+
+  * d/control
+    - Bump Standrad-Version 4.1.1 (nothing)
+    - Fixed broken dependency python3-pymca-dbg -> python3-pymca5-dbg
+    - Added python-numpy-dbg, python3-numpy-dbg
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Mon, 16 Oct 2017 14:37:48 +0200
+
+pyfai (0.14.2+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 0.14.0+dfsg
+  * debian/watch
+    - Check the pgp signature via uscan
+  * debian/upstream
+    - add the upstream keyring
+  * debian/control
+    - Bump Standrad-Version 4.0.1 (extra -> optional)
+    - Build-Depends
+      + Fixed with cme
+      + Removed python[3]-pil[-dbg]
+      + Removed python[3]-lxml[-dbg]
+      + Added python[3]-numexpr[-dbg]
+      + Added python[3]-pymca5[-dbg]
+      + Added python[3]-pyopencl[-dbg]
+      + Added help2man in order to generate the manpages.
+      + Added xauth, xvfb
+  * debian/patches
+    - 0003-remove-a-wrong-PYTHONPATH-modification.patch  (Added)
+    - 0003-use-the-system-mathjax.patch (Added)
+    - 0005-fix-the-setup-dependencies.patch (Added)
+  * Debian/rules
+    - Run tests with xvfb
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Mon, 31 Jul 2017 13:40:50 +0200
+
+pyfai (0.13.0+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 0.13.0+dfsg
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sat, 03 Dec 2016 10:00:18 +0100
+
+pyfai (0.12.0+dfsg-5) unstable; urgency=medium
+
+  * Remove python-fftw dependency
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sat, 27 Aug 2016 16:59:18 +0200
+
+pyfai (0.12.0+dfsg-4) unstable; urgency=medium
+
+  * debian/tests/control
+    - * Add python-tk-dbg and python3-tk-dbg Depends
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Thu, 18 Aug 2016 20:57:26 +0200
+
+pyfai (0.12.0+dfsg-3) unstable; urgency=medium
+
+  * debian/tests/control
+    - Add pyfai dependency for all tests
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Thu, 18 Aug 2016 09:19:00 +0200
+
+pyfai (0.12.0+dfsg-2) unstable; urgency=medium
+
+  * New Homepage https://github.com/silx-kit/pyFAI
+  * debian/control
+    - Build-Depends on python3-fabio-x (>= 0.4.0+dfsg-2~)
+    - Updated Vcs-x in order to use https
+  * debian/patchs
+    - 0004-do-not-use-deprecated-sphinx-pngmath-extension.patch (new)
+      In order to fix an FTBFS (closes: #831242)
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Wed, 17 Aug 2016 13:03:44 +0200
+
+pyfai (0.12.0+dfsg-1) unstable; urgency=medium
+
+  * Imported Upstream version 0.12.0+dfsg
+  * Updated Files-Excluded to remove the pre-generated documentation.
+  * debian/patchs
+    - 0001-fix-pyFAI-when-third_party-is-missing.patch (upstreamed)
+    - 0002-fix-from-upstream-python3-installation.patch (upstreamed)
+    - 0003-fix-from-upstream-for-fabio-3.x.patch (upstreamed)
+    + 0001-remove-useless-logic-in-conf.py.patch (new)
+    + 0002-skip-test-if-no-network.patch (new)
+    + 0003-use-the-system-mathjax.patch (new)
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Tue, 07 Jun 2016 14:50:00 +0200
+
+pyfai (0.11.0+dfsg-5) unstable; urgency=medium
+
+  * debian/patch
+    + 0003-fix-from-upstream-for-fabio-3.x.patch (updated)
+      previous patch was wrong.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sun, 27 Mar 2016 15:51:21 +0200
+
+pyfai (0.11.0+dfsg-4) unstable; urgency=medium
+
+  * debian/control
+    - Added Build-Depends fabio (>= 0.3.0+dfsg-1~)
+  * debian/patch
+    + 0003-fix-from-upstream-for-fabio-3.x.patch
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Sat, 26 Mar 2016 15:25:53 +0100
+
+pyfai (0.11.0+dfsg-3) unstable; urgency=medium
+
+  * debian/path
+    + 0002-fix-from-upstream-python3-installation.patch (Closes: #794221)
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 11 Sep 2015 14:25:10 +0200
+
+pyfai (0.11.0+dfsg-2) unstable; urgency=medium
+
+  * Split pyfai package to follow the Debian modules name policy.
+  * Added python-pyfai, python-pyfai-dbg, python3-pyfai,
+    python3-pyfai-dbg, python-pyfai-doc
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Mon, 27 Jul 2015 16:18:27 +0200
+
+pyfai (0.11.0+dfsg-1) unstable; urgency=medium
+
+  * Imported Upstream version 0.11.0+dfsg
+  * debian/control
+    - Added Build-Depends fabio (>= 0.2.2+dfsg~)
+  * debian/watch
+    - use the pypi redirector
+  * debian/copyright
+    - use Files-Exclude to repack sources
+  * debian/patches
+    + 0001-fix-pyFAI-when-third_party-is-missing.patch
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 24 Jul 2015 10:57:04 +0200
+
+pyfai (0.10.2-2~exp1) experimental; urgency=medium
+
+  * switch to dh-python
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 02 Jan 2015 15:13:07 +0100
+
+pyfai (0.10.2-1) unstable; urgency=medium
+
+  * Import new upstream version (0.10.2)
+  * debian/control
+    - Bump Standrad-Version 3.9.6 (nothing to do)
+    - fix Build-Depends/Depends with cme
+    - prepare for Debian-Science team maintenance.
+  * debian/copyright
+    - use copyright-format/1.0
+  * debian/rules
+    - cythonize files during the build
+    - use dh_numpy for better binary dependency.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 24 Oct 2014 09:01:53 +0100
+
+pyfai (0.3.5-1) unstable; urgency=low
+
+  * Initial release (Closes: #656633)
+
+ -- Jerome Kieffer <jerome.kieffer@esrf.fr>  Fri, 20 Jan 2012 22:00:20 +0100

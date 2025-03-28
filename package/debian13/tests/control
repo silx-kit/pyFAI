@@ -1,0 +1,33 @@
+# tests that must pass
+
+Tests: no-opencl
+Architecture: !amd64 !arm64 !armel !armhf !i386
+Depends:
+ bitshuffle,
+ python3-all,
+ python3-pyfai,
+ python3-tk,
+ xauth,
+ xvfb,
+Restrictions: allow-stderr, skip-not-installable
+
+Tests: opencl
+Architecture: amd64 arm64 armel armhf i386
+Depends:
+ bitshuffle,
+ pocl-opencl-icd,
+ python3-all,
+ python3-pyfai,
+ python3-tk,
+ xauth,
+ xvfb,
+Restrictions: allow-stderr, skip-not-installable, flaky
+
+Test-Command: xvfb-run -s "-screen 0 1024x768x24 -ac +extension GLX +render -noreset" sh debian/tests/gui
+Depends:
+ debhelper,
+ mesa-utils,
+ @,
+ xauth,
+ xvfb,
+Restrictions: allow-stderr
