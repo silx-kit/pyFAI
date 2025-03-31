@@ -108,7 +108,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(to_scientific_unicode(numpy.inf), 'inf', "infinite values are properly represented")
 
     def test_multiprocessing(self):
-        assert cpu_count()
+        self.assertGreater(cpu_count(), 0)
 
     def test_mask(self):
         mask = detector_factory("Pilatus 1M").mask

@@ -104,9 +104,12 @@ class GeometryRefinement(AzimuthalIntegrator):
             self.data = None
         else:
             self.data = numpy.array(data, dtype=numpy.float64)
-            assert self.data.ndim == 2
-            assert self.data.shape[1] in [3, 4]  # 3 for non weighted, 4 for weighted refinement
-            assert self.data.shape[0] > 0
+            if self.data.ndim != 2:
+                raise RuntimeError("data is expected to be of shape (nb control-points, [3|4])")
+            if self.data.shape[1] not in (3, 4):
+                raise RuntimeError("data shape's last dim should be 3 for non weighted or 4 for weighted refinement")
+            if self.data.shape[0] == 0:
+                raise RuntimeError("expected at least one control point !")
 
         if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
             raise RuntimeError("Setting up the geometry refinement without knowing the detector makes little sense")

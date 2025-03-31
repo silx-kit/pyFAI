@@ -58,7 +58,8 @@ class Kabsch:
         "Static implementation of the algorithm"
         R = numpy.ascontiguousarray(reference, dtype=numpy.float64)
         P = numpy.ascontiguousarray(points, dtype=numpy.float64)
-        assert R.shape == P.shape
+        if R.shape != P.shape:
+            raise RuntimeError("reference and points size do not match")
         size, ndim = R.shape
         centroid_P = P.mean(axis=0)
         centroid_R = R.mean(axis=0)
@@ -96,7 +97,8 @@ class Kabsch:
         """
         R = numpy.ascontiguousarray(reference, dtype=numpy.float64)
         P = numpy.ascontiguousarray(points, dtype=numpy.float64)
-        assert R.ndim == 2
+        if R.ndim != 2:
+            raise RuntimeError("reference array should be 2D")
         self.ndim = R.shape[1]
 
         k = self.kabsch(R, P)
@@ -117,15 +119,19 @@ class Kabsch:
     def correct(self, points):
         "Rotate the set of points to be aligned with the reference"
         P = numpy.ascontiguousarray(points, dtype=numpy.float64)
-        assert P.ndim == 2
-        assert P.shape[1] == self.ndim
+        if P.ndim != 2:
+            raise RuntimeError("reference array should be 2D")
+        if P.shape[1] != self.ndim:
+            raise RuntimeError("Points array has wrong number of components")
         return P.dot(self.rotation) + self.translation
 
     def uncorrect(self, points):
         "Rotate the reference points to the other set"
         P = numpy.ascontiguousarray(points, dtype=numpy.float64)
-        assert P.ndim == 2
-        assert P.shape[1] == self.ndim
+        if P.ndim != 2:
+            raise RuntimeError("reference array should be 2D")
+        if P.shape[1] != self.ndim:
+            raise RuntimeError("Points array has wrong number of components")
         return (P - self.translation).dot(self.rotation.T)
 
     @classmethod

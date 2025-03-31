@@ -68,7 +68,7 @@ def convertArrayToQImage(image):
             image.strides[0],  # bytesPerLine
             qt.QImage.Format_RGBA8888)
     else:
-        assert(False)
+        raise RuntimeError()
 
     return qimage.copy()  # Making a copy of the image and its data
 

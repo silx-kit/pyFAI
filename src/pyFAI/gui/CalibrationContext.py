@@ -62,12 +62,14 @@ class CalibrationContext(ApplicationContext):
         """
         :rtype: CalibrationContext
         """
-        assert(CalibrationContext.__instance is not None)
+        if (CalibrationContext.__instance is None):
+            raise RuntimeError("CalibrationContext instance is undefined")
         return CalibrationContext.__instance
 
     def __init__(self, settings=None):
         super(CalibrationContext, self).__init__(settings=settings)
-        assert(CalibrationContext.__instance is None)
+        if (CalibrationContext.__instance is not None):
+            raise RuntimeError("CalibrationContext instance was already defined")
         self.__defaultColormapDialog = None
         CalibrationContext.__instance = self
         self.__calibrationModel = None

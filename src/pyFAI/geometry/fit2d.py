@@ -182,7 +182,8 @@ def convert_from_Fit2d(f2d):
     if cos_tpr * sin_tilt > 0:
         rot1 = -rot1
     res._rot1 = rot1
-    assert abs(cos_tilt - cos(rot1) * cos(rot2)) < 1e-6
+    if abs(cos_tilt - cos(rot1) * cos(rot2)) >= 1e-6:
+        raise RuntimeError("Unconsistency in geometry conversion")
     if f2d.tilt == 0.0:
         rot3 = 0
     else:

@@ -193,7 +193,7 @@ class FileEdit(qt.QLineEdit):
         elif isinstance(model, DataModel):
             return self.__model.value()
         else:
-            assert(False)
+            raise RuntimeError()
 
     def __applyFilename(self, filename):
         model = self.__model
@@ -235,7 +235,7 @@ class FileEdit(qt.QLineEdit):
                     message = "Filename '%s' not supported.<br />%s" % (filename, str(e))
                     qt.QMessageBox.critical(self, "Unsupported filename", message)
             else:
-                assert(False)
+                raise RuntimeError()
         finally:
             model.changed.connect(self.__modelChanged)
             self.editingFinished.connect(self.__editingFinished)

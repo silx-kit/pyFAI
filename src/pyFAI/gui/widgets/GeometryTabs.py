@@ -297,7 +297,8 @@ class GeometryTabs(qt.QWidget):
 
         :param ~pyFAI.gui.model.GeometryModel geometryModel: A geometry.
         """
-        assert(isinstance(geometryModel, GeometryModel))
+        if not isinstance(geometryModel, GeometryModel):
+            raise RuntimeError("geometryModel is not a pyFAI.gui.model.GeometryModel")
         if self._geometry is geometryModel:
             return
         # first setting

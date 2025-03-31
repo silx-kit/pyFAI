@@ -294,7 +294,8 @@ class RingExtractorThread(qt.QThread):
             ringNumber = int(ringNumber) + 1
             newPeaks[ringNumber] = coords
             countPeaks += len(coords)
-        assert(countPeaks == len(raw))
+        if (countPeaks != len(raw)):
+            raise RuntimeError("countPeaks unconsistent with size of peak array")
         return newPeaks
 
     def _updateProcessingLocation(self, mask):
@@ -309,7 +310,6 @@ class RingExtractorThread(qt.QThread):
             rings number contained in this list (the number 0 identify the first
             ring)
         """
-        assert(numpy.logical_xor(peaks is not None, geometryModel is not None))
         method = "massif"
         maxRings = self.__maxRings
         ringNumbers = self.__ringNumbers
@@ -325,10 +325,13 @@ class RingExtractorThread(qt.QThread):
             geoRef = self.__createGeoRefFromPeaks(peaks)
         elif geometryModel is not None:
             # Fitted energy
-            assert(geometryModel.isValid())
+            if not geometryModel.isValid():
+                raise RuntimeError("geometryModel is invalid")
             wavelength = geometryModel.wavelength().value()
             self.__calibrant.setWavelength_change2th(wavelength)
             geoRef = self.__createGeoRefFromGeometry(geometryModel)
+        else:
+            raise RuntimeError("_extract expects either peaks xor geometryModel")
 
         self.__geoRef = geoRef
 

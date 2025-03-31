@@ -133,42 +133,48 @@ class OCL_Preproc(OpenclProcessing):
             # self.send_buffer(image, "image")
             self.on_device["image"] = numpy.empty_like(image)
         if dark is not None:
-            assert dark.size == self.size
+            if dark.size != self.size:
+                raise RuntimeError("dark array size matches size")
             self.send_buffer(dark, "dark")
             do_dark = numpy.int8(1)
         else:
             do_dark = numpy.int8(0)
 
         if flat is not None:
-            assert flat.size == self.size
+            if flat.size != self.size:
+                raise RuntimeError("flat array size does not match")
             self.send_buffer(flat, "flat")
             do_flat = numpy.int8(1)
         else:
             do_flat = numpy.int8(0)
 
         if solidangle is not None:
-            assert solidangle.size == self.size
+            if solidangle.size != self.size:
+                raise RuntimeError("solidangle array size does not match")
             self.send_buffer(solidangle, "solidangle")
             do_solidangle = numpy.int8(1)
         else:
             do_solidangle = numpy.int8(0)
 
         if polarization is not None:
-            assert polarization.size == self.size
+            if polarization.size != self.size:
+                raise RuntimeError("polarization array size does not match")
             self.send_buffer(polarization, "polarization")
             do_polarization = numpy.int8(1)
         else:
             do_polarization = numpy.int8(0)
 
         if absorption is not None:
-            assert absorption.size == self.size
+            if absorption.size != self.size:
+                raise RuntimeError("absorption array size does not match")
             self.send_buffer(absorption, "absorption")
             do_absorption = numpy.int8(1)
         else:
             do_absorption = numpy.int8(0)
 
         if mask is not None:
-            assert mask.size == self.size
+            if mask.size != self.size:
+                raise RuntimeError("mask array size does not match")
             self.send_buffer(mask, "mask")
             do_mask = numpy.int8(1)
         else:
@@ -447,8 +453,8 @@ class OCL_Preproc(OpenclProcessing):
                 dest = numpy.empty(dshape, dtype=numpy.float32)
             else:
                 dest = out
-                assert dest.dtype == numpy.float32
-                assert dest.shape == dshape
+                if dest.dtype != numpy.float32 or dest.shape != dshape:
+                    raise RuntimeError("Destination array dtype or shape wrong")
 
             kwargs["do_dark"] = do_dark
             kwargs["normalization_factor"] = numpy.float32(normalization_factor)

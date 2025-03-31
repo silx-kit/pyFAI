@@ -221,7 +221,8 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
     ColumnControl = 4
 
     def __init__(self, parent, peakSelectionModel):
-        assert isinstance(parent, PeakPickingTask)
+        if not isinstance(parent, PeakPickingTask):
+            raise RuntimeError(f"Parent widget is not `pyFAI.gui.tasks.PeakPickingTask.PeakPickingTask` instance, got {type(parent)}")
         super(_PeakSelectionTableModel, self).__init__(parent=parent)
         self.__peakSelectionModel = peakSelectionModel
         peakSelectionModel.structureChanged.connect(self.__invalidateModel)
@@ -402,7 +403,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             color = "black"
             super(_PeakPickingPlot, self).setInteractiveMode('draw', shape='rectangle', source=self, color=color)
         else:
-            assert(False)
+            raise RuntimeError(f"Wrong mode, got {mode} not recognized")
 
     def setSelectedPeak(self, name):
         if self.__selectedPeak == name:
@@ -482,9 +483,9 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
                 elif self.__mode == self.BRUSH_MODE:
                     self.sigShapeBrushed.emit(shape)
                 else:
-                    assert(False)
+                    raise RuntimeError(f"Wrong mode, got {self.__mode}, not recognized")
         else:
-            assert(False)
+            raise RuntimeError(f"Wrong mode, got {self.__mode}, not recognized")
 
     def __plotClicked(self, x, y):
         self.sigPeakPicked.emit(x, y)
@@ -508,7 +509,8 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         menu.exec_(handle.mapToGlobal(pos))
 
     def setModel(self, peakSelectionModel):
-        assert self.__peakSelectionModel is None
+        if self.__peakSelectionModel is not None:
+            raise RuntimeError("`peakSelectionModel` already defined")
         self.__peakSelectionModel = peakSelectionModel
         self.__peakSelectionModel.changed.connect(self.__invalidateModel)
         self.__invalidateModel()
@@ -889,7 +891,8 @@ class _RingSelectionBehaviour(qt.QObject):
                 lastRingNumber = max(ringNumbers)
             ringNumber = lastRingNumber + 1
         else:
-            assert(len(indexes))
+            if len(indexes)<1:
+                raise RuntimeError("There is already a ring defined")
             index = indexes[0]
             model = self.__ringSelectionModel.model()
             index = model.index(index.row(), 0)
@@ -1318,7 +1321,7 @@ class PeakPickingTask(AbstractCalibrationTask):
               action is self.__peakSelectionMode):
             self.__plot.setPeakInteractiveMode(_PeakPickingPlot.PEAK_SELECTION_MODE)
         else:
-            assert(False)
+            raise RuntimeError(f"action ({action}) is not recognized")
 
     def __createPlotToolBar(self, plot):
         from silx.gui.plot import tools
@@ -1377,7 +1380,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             self.__massif.log_info = False
             return self.__massif
         else:
-            assert(False)
+            raise RuntimeError("No selection mode defined")
 
     def __findPeaks(self, x, y):
         """
@@ -1493,7 +1496,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             self.__undoStack.push(command)
             command.setRedoInhibited(False)
         else:
-            assert(False)
+            raise RuntimeError()
 
     def __onShapeErased(self, shape):
         """
@@ -1526,7 +1529,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             self.__undoStack.push(command)
             command.setRedoInhibited(False)
         else:
-            assert(False)
+            raise RuntimeError()
 
     def __removePeak(self, peakModel):
         oldState = self.__copyPeaks(self.__undoStack)
@@ -1627,7 +1630,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             geometryModel = self.model().fittedGeometry()
             extractor.setGeometryModel(geometryModel)
         else:
-            assert(False)
+            raise RuntimeError()
 
         return extractor
 
@@ -1771,7 +1774,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             coords = newPeaks.get(ringObject.ringNumber(), empty)
             ringObject.setCoords(coords)
         else:
-            assert(False)
+            raise RuntimeError()
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
         text = thread.userData("TEXT")

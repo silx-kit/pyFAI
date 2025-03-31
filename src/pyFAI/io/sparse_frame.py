@@ -93,7 +93,8 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
     :param start_time: float with the time of start of the processing
     :return: None
     """
-    assert len(frames)
+    if len(frames) == 0:
+        raise RuntimeError("No frame provided to save")
     with Nexus(filename, mode="w", creator="pyFAI_%s" % version, start_time=start_time) as nexus:
         instrument = nexus.new_instrument(instrument_name=beamline)
         entry = instrument.parent

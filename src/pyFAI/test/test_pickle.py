@@ -93,8 +93,8 @@ class TestPickle(unittest.TestCase):
     def test_Calibrant(self):
         from pyFAI import calibrant
         calibrant = calibrant.CalibrantFactory()('AgBh')
-        assert dumps(calibrant)
-        assert loads(dumps(calibrant))
+        self.assertTrue(dumps(calibrant))
+        self.assertTrue(loads(dumps(calibrant)))
 
 
 def suite():

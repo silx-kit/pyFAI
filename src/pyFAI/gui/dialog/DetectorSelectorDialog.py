@@ -366,7 +366,7 @@ class DetectorSelectorDrop(qt.QWidget):
                 detector.set_splineFile(splineFile)
             return detector
         else:
-            assert(False)
+            raise RuntimeError("field should be FILE, MANUAL or eventually None")
 
     def __createManufacturerModel(self):
         manufacturers = set([])
@@ -522,7 +522,7 @@ class DetectorSelectorDrop(qt.QWidget):
                 fieldIndex = index
                 break
         if fieldIndex is None:
-            assert(False)
+            raise RuntimeError("fieldIndex is not defined in any row of the list")
 
         selection = self._customList.selectionModel()
         selection.select(fieldIndex, qt.QItemSelectionModel.ClearAndSelect)
@@ -585,7 +585,7 @@ class DetectorSelectorDrop(qt.QWidget):
         elif field == "MANUAL":
             self._stacked.setCurrentWidget(self._manualPanel)
         else:
-            assert(False)
+            raise RuntimeError("Field is neither FILE nor MANUAL nor None")
 
 
 class DetectorSelectorDialog(qt.QDialog):

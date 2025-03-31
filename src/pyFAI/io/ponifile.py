@@ -187,19 +187,21 @@ class PoniFile(object):
         The duck object must provide dist, poni1, poni2, rot1, rot2, rot3,
         wavelength, and detector.
         """
-        assert numpy.isreal(duck.dist)
+        if not (numpy.isreal(duck.dist) and \
+                numpy.isreal(duck.poni1) and \
+                numpy.isreal(duck.poni2) and \
+                numpy.isreal(duck.rot1) and \
+                numpy.isreal(duck.rot2) and \
+                numpy.isreal(duck.rot3) and \
+                numpy.isreal(duck.wavelength)):
+            raise RuntimeError(f"Expected dist ({type(duck.dist)}), poni1 ({type(duck.poni1)}), poni2 ({type(duck.poni2)}), "
+                               f"rot1 ({type(duck.rot1)}), rot2 ({type(duck.rot2)}), rot3 ({type(duck.rot3)}), wavelength ({type(duck.wavelength)})")
         self._dist = duck.dist
-        assert numpy.isreal(duck.poni1)
         self._poni1 = duck.poni1
-        assert numpy.isreal(duck.poni2)
         self._poni2 = duck.poni2
-        assert numpy.isreal(duck.rot1)
         self._rot1 = duck.rot1
-        assert numpy.isreal(duck.rot2)
         self._rot2 = duck.rot2
-        assert numpy.isreal(duck.rot3)
         self._rot3 = duck.rot3
-        assert numpy.isreal(duck.wavelength)
         self._wavelength = duck.wavelength
         self._detector = duck.detector
 

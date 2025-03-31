@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2024"
+__date__ = "28/03/2025"
 __status__ = "development"
 
 import inspect
@@ -384,7 +384,7 @@ class IntegrationMethod:
                  target=None, target_name=None, target_type=None,
                  class_funct_legacy=None, class_funct_ng=None,
                  old_method=None, extra=None):
-        """Constructor of the class, registering the methods.
+        r"""Constructor of the class, registering the methods.
 
         ⚠ DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI ⚠
 
@@ -454,9 +454,12 @@ class IntegrationMethod:
 
     def _register(self):
         """basic checks before registering the method"""
-        assert self.split_lower in self.AVAILABLE_SPLITS
-        assert self.algo_lower in self.AVAILABLE_ALGOS
-        assert self.impl_lower in self.AVAILABLE_IMPLS
+        if self.split_lower not in self.AVAILABLE_SPLITS:
+            raise RuntimeError("Unknown splitting scheme")
+        if self.algo_lower not in self.AVAILABLE_ALGOS:
+            raise RuntimeError("Unknown algorithm")
+        if self.impl_lower not in self.AVAILABLE_IMPLS:
+            raise RuntimeError("Unknown implementation")
         self.__class__._registry[self.method] = self
 
     @property

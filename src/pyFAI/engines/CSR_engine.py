@@ -73,7 +73,8 @@ class CSRIntegrator(object):
         self.indices = None
         self.indptr = None
         if lut is not None:
-            assert len(lut) == 3
+            if len(lut) != 3:
+                raise RecursionError("LUT is expected to be a 3-tuple of 1D arrays")
             self.set_matrix(*lut)
 
     def set_matrix(self, data, indices, indptr):
@@ -198,7 +199,8 @@ class CsrIntegrator1d(CSRIntegrator):
         :param indptr: the index of the start of line"""
 
         CSRIntegrator.set_matrix(self, data, indices, indptr)
-        assert len(self.bin_centers) == self.bins
+        if len(self.bin_centers) != self.bins:
+            raise RuntimeError("bin center size and bins value is not consistent")
 
     def integrate(self,
                   signal,
@@ -550,7 +552,8 @@ class CsrIntegrator2d(CSRIntegrator):
         :param indptr: the index of the start of line"""
 
         CSRIntegrator.set_matrix(self, data, indices, indptr)
-        assert len(self.bin_centers0) * len(self.bin_centers1) == len(indptr) - 1
+        if len(self.bin_centers0) * len(self.bin_centers1) != len(indptr) - 1:
+            raise RuntimeError("bin center sizes are not consistent with size of indptr")
         self.bins = (len(self.bin_centers0), len(self.bin_centers1))
 
     def integrate(self,

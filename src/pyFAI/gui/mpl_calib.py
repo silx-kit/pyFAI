@@ -225,7 +225,8 @@ class MplCalibWidget:
         shape = self.shape + (4,)
 
         if mask is not None:
-            assert mask.shape == self.shape
+            if mask.shape != self.shape:
+                raise RuntimeError("mask's shape does not match")
             mask4 = numpy.outer(numpy.logical_not(mask), 100 * numpy.ones(4)).astype(numpy.uint8).reshape(shape)
         else:
             mask4 = numpy.zeros(shape, dtype=numpy.uint8)

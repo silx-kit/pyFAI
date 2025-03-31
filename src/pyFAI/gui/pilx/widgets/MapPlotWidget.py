@@ -72,7 +72,8 @@ class MapPlotWidget(ImagePlotWidget):
 
         self.addScatter([], [], [], legend=_LEGEND)
         scatter_item = self.getScatter(_LEGEND)
-        assert isinstance(scatter_item, Scatter)
+        if not isinstance(scatter_item, Scatter):
+            raise RuntimeError(f"`scatter_item` is {type(scatter_item)}, not a `silx.gui.plot.items.scatter.Scatter` instance")
         self._scatter_item = scatter_item
         self._scatter_item.setVisualization(scatter_item.Visualization.REGULAR_GRID)
         self._first_plot = True
@@ -128,7 +129,8 @@ class MapPlotWidget(ImagePlotWidget):
         z = self._scatter_item.getValueData(copy=False)
         Xvalues = numpy.atleast_1d(Xvalues)
         Yvalues = numpy.atleast_1d(Yvalues)
-        assert z.size == Xvalues.size * Yvalues.size
+        if  z.size != Xvalues.size * Yvalues.size:
+            raise RuntimeError("size of the Xvalues*Yvalues does not match scatter_item size ")
         x = numpy.outer(numpy.ones(Yvalues.size), Xvalues).ravel()
         y = numpy.outer(Yvalues, numpy.ones(Xvalues.size)).ravel()
         self._scatter_item.setData(x, y, z)
@@ -173,8 +175,10 @@ class MapPlotWidget(ImagePlotWidget):
         z = image.flatten()
         rows, cols = image.shape[:2]
         if (x is not None)  and (y is not None):
-            assert x.size == cols
-            assert y.size == rows
+            if x.size != cols:
+                raise RuntimeError(f"size of x({x.size}) does not march the number of colunms of the image ({cols})")
+            if y.size != rows:
+                raise RuntimeError(f"size of x({y.size}) does not march the number of colunms of the image ({rows})")
 
         if self._first_plot:
             if (x is None) or (y is None):

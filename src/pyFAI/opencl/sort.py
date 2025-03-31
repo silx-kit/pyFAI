@@ -220,8 +220,8 @@ class Separator(OpenclProcessing):
         :return: pyopencl array
         """
         events = []
-        assert data.shape[1] == self.npt_width
-        assert data.shape[0] <= self.npt_height
+        if data.shape[1] != self.npt_width or data.shape[0] > self.npt_height:
+            raise RuntimeError("data shape is wrong ...")
         if self.npt_height & (self.npt_height - 1):  # not a power of 2
             raise RuntimeError("Bitonic sort works only for power of two, requested sort on %s element" % self.npt_height)
         if dummy is None:
@@ -272,8 +272,8 @@ class Separator(OpenclProcessing):
         :return: pyopencl array
         """
         events = []
-        assert data.shape[1] == self.npt_width
-        assert data.shape[0] == self.npt_height
+        if data.shape != (self.npt_height, self.npt_width):
+            raise RuntimeError("data shape does not match")
         if self.npt_width & (self.npt_width - 1):  # not a power of 2
             raise RuntimeError("Bitonic sort works only for power of two, requested sort on %s element" % self.npt_width)
         if dummy is None:
@@ -415,8 +415,8 @@ class Separator(OpenclProcessing):
             dummy = self.DUMMY
         else:
             dummy = numpy.float32(dummy)
-        assert data.shape[0] == self.npt_height
-        assert data.shape[1] == self.npt_width
+        if data.shape != (self.npt_height, self.npt_width):
+            raise RuntimeError("data shape does not match")
         wg = self.npt_height // 8
         ws = (wg, self.npt_width)
         with self.sem:
@@ -442,8 +442,8 @@ class Separator(OpenclProcessing):
             dummy = self.DUMMY
         else:
             dummy = numpy.float32(dummy)
-        assert data.shape[0] == self.npt_height
-        assert data.shape[1] == self.npt_width
+        if data.shape != (self.npt_height, self.npt_width):
+            raise RuntimeError("data shape does not match")
         wg = self.npt_width // 8
         ws = (self.npt_height, wg)
         with self.sem:
@@ -472,8 +472,8 @@ class Separator(OpenclProcessing):
             dummy = numpy.float32(dummy)
         if sigma_hi is None:
             sigma_hi = sigma_lo
-        assert data.shape[0] == self.npt_height
-        assert data.shape[1] == self.npt_width
+        if data.shape != (self.npt_height, self.npt_width):
+            raise RuntimeError("data shape does not match")
         wg = self.npt_height // 8
         ws = (wg, self.npt_width)
         with self.sem:
@@ -503,8 +503,8 @@ class Separator(OpenclProcessing):
             dummy = self.DUMMY
         else:
             dummy = numpy.float32(dummy)
-        assert data.shape[0] == self.npt_height
-        assert data.shape[1] == self.npt_width
+        if data.shape != (self.npt_height, self.npt_width):
+            raise RuntimeError("data shape does not match")
         wg = self.npt_width // 8
         ws = (self.npt_height, wg)
         with self.sem:

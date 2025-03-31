@@ -53,11 +53,13 @@ class ApplicationContext(object):
         """
         :rtype: CalibrationContext
         """
-        assert(ApplicationContext.__instance is not None)
+        if (ApplicationContext.__instance is None):
+            raise RuntimeError("ApplicationContext instance is None")
         return ApplicationContext.__instance
 
     def __init__(self, settings=None):
-        assert(ApplicationContext.__instance is None)
+        if (ApplicationContext.__instance is not None):
+            raise RuntimeError("ApplicationContext instance was already defined !")
         self.__parent = None
         self.__dialogStates = {}
         self.__dialogGeometry = {}
