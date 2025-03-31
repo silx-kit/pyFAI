@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "31/03/2025"
 
 import sys
 import os
@@ -40,6 +40,7 @@ import unittest
 import logging
 
 from silx.gui import qt
+from silx.gui.utils import testutils
 from pyFAI.test.utilstest import UtilsTest
 from ..dialog.DetectorSelectorDialog import DetectorSelectorDrop
 from pyFAI import detectors
@@ -47,17 +48,7 @@ from pyFAI import detectors
 logger = logging.getLogger(__name__)
 
 
-class TestDetectorDialog(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.app = None
-        if sys.platform.startswith('linux') and not os.environ.get('DISPLAY', ''):
-            # On linux and no DISPLAY available (e.g., ssh without -X)
-            logger.warning('pyFAI.integrate_widget tests disabled (DISPLAY env. variable not set)')
-            cls.app = None
-        elif qt is not None:
-            cls.app = qt.QApplication([])
+class TestDetectorDialog(testutils.TestCaseQt):
 
     def test_detector(self):
         detector = detectors.Detector()
