@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/02/2025"
+__date__ = "03/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -450,7 +450,8 @@ class DiffMapWidget(qt.QWidget):
                       "nbpt_fast": lambda a: self.fastMotorPts.setText(str_(a)),
                       "nbpt_slow": lambda a: self.slowMotorPts.setText(str_(a)),
                       "offset": lambda a: self.offset.setText(str_(a)),
-                      "output_file": self.outputFile.setText
+                      "output_file": self.outputFile.setText,
+                    #   "zigzag_scan": lambda a: None,
                       }
 
         deprecated_keys = {
