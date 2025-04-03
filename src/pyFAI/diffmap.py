@@ -590,7 +590,6 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         :param filename: name of current frame
         :param idx: index of current frame
-        :param zigzag: perform the scan in zip-zag, i.e. for odd lines, invert the row order.
         :return: namedtuple: index, rot, trans
         """
         if idx is None:
