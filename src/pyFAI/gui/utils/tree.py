@@ -41,4 +41,3 @@ from ...io.diffmap_config import DataSet, DataSetNT, ListDataSet
 from ...io.tree import TreeItem
 
 logger = logging.getLogger(__name__)
-
