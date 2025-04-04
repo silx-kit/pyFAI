@@ -42,6 +42,7 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 from collections import namedtuple
+from .tree import TreeItem
 from .integration_config import dataclass, ClassVar, WorkerConfig, fields, asdict
 from .nexus import is_hdf5
 
