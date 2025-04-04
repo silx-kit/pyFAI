@@ -350,7 +350,7 @@
          <item row="1" column="1">
           <widget class="UnitSelector" name="radial_unit">
            <property name="sizeAdjustPolicy">
-            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+            <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
            </property>
           </widget>
          </item>
