@@ -151,7 +151,7 @@ test_data = """
 """ # data obtained with pyFAI 2025.
 
 class TestDiffmapConfig(unittest.TestCase):
-    """Test diffmap config 
+    """Test diffmap config
     """
     @classmethod
     def setUpClass(cls):
@@ -191,4 +191,3 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
-

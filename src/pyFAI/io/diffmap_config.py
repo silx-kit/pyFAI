@@ -52,9 +52,9 @@ CURRENT_VERSION = 1  # former version were unassigned
 
 @dataclass
 class MotorRange:
-    """ This object represents a motor range 
+    """ This object represents a motor range
 
-    :param start: Begining of the movement 
+    :param start: Begining of the movement
     :param stop: End of the movement, included
     :param step: Number of points (i.e. numberof steps + 1)
     :param name: Name of the motor
@@ -85,7 +85,7 @@ class MotorRange:
     @property
     def step_size(self):
         if self.points < 1:
-            return  
+            return
         return (self.stop-self.start)/self.points
 
 
@@ -160,7 +160,7 @@ class ListDataSet(list):
         for i in self:
             res.append(i.as_tuple())
         return res #[i.as_tuple() for i in self]
-    
+
     @classmethod
     def from_serialized(cls, lst):
         "Alternative constructor with deserialization"
@@ -203,7 +203,7 @@ class DiffmapConfig:
         "npt_rad": "ai.nbpt_rad",
         "npt_azim": "ai.nbpt_rad",
         }
-    
+
     def __repr__(self):
         return json.dumps(self.as_dict(), indent=4)
 
