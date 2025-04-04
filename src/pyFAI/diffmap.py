@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/04/2025"
+__date__ = "04/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -357,7 +357,10 @@ If the number of files is too large, use double quotes like "*.edf" """
         else:
             self.offset = config.get("offset", 0)
         self.offset = 0 if self.offset is None else self.offset
-        config["zigzag_scan"] = self.zigzag_scan = options.zigzag
+        if options.zigzag:
+            config["zigzag_scan"] = self.zigzag_scan = True
+        else:
+            self.zigzag_scan = config.get("zigzag_scan", False)
 
         self.experiment_title = config.get("experiment_title", self.experiment_title)
         self.slow_motor_name = config.get("slow_motor_name", self.slow_motor_name)
