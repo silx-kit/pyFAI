@@ -31,17 +31,15 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "04/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
-from ...io import is_hdf5
+from ...io.diffmap_config import DataSet, DataSetNT, ListDataSet
 logger = logging.getLogger(__name__)
 
-from collections import namedtuple
-DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes"))
 
 try:
     from ...ext._tree import TreeItem
@@ -142,61 +140,3 @@ except ImportError:
                 return sum([child.size for child in self.children])
             else:
                 return 1
-
-
-class DataSet(object):
-
-    def __init__(self, path, h5=None, nframes=None, shape=None):
-        self.path = path
-        self.h5 = h5
-        self.nframes = nframes
-        self.shape = shape
-
-    def as_tuple(self):
-        return DataSetNT(self.path, self.h5, self.nframes)
-
-    def is_hdf5(self):
-        """Return True if the object is hdf5"""
-        if self.h5 is None:
-            self.h5 = is_hdf5(self.path)
-        return bool(self.h5)
-
-    def __len__(self):
-        return self.nframes or 1
-
-
-class ListDataSet(list):
-
-    def commonroot(self):
-        """
-        :return: common directory
-        """
-        ll = [j.path.split(os.sep) for j in self]
-        common = os.path.commonprefix(ll)
-        if common:
-            return os.sep.join(common + [""])
-
-    def as_tree(self, sep=os.path.sep):
-        """Convert the list into a tree
-
-        :param sep: separator in the filenames
-        :return: Root of the tree
-        """
-        prefix = self.commonroot()
-        root = TreeItem()
-        common = TreeItem(prefix, root)
-        lprefix = len(prefix) if prefix else 0
-        for dataset in self:
-            base = dataset.path[lprefix:]
-            elts = base.split(sep)
-            element = common
-            for item in elts:
-                child = element.get(item)
-                if not child:
-                    child = TreeItem(item, element)
-                element = child
-        return root
-
-    def empty(self):
-        while self:
-            self.pop()

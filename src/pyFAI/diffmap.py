@@ -80,7 +80,7 @@ class DiffMap(object):
         self.nbpt_azim = nbpt_azim
 
         # handle deprecated attributes
-        deprecated_args = {"npt_fast", "npt_dlow", "npt_rad", "npt_azim"}
+        deprecated_args = {"npt_fast", "npt_slow", "npt_rad", "npt_azim"}
         for key in deprecated_args:
             if (key in kwargs):
                 valid = key.replace("npt_", "nbpt_")
