@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2025"
+__date__ = "04/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -47,8 +47,6 @@ import numpy
 import fabio
 import json
 import __main__ as main
-from queue import Queue
-import threading
 from .opencl import ocl
 from . import version as PyFAI_VERSION, date as PyFAI_DATE
 from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
@@ -116,6 +114,7 @@ class DiffMap(object):
         self.experiment_title = "Diffraction Mapping"
         self.slow_motor_range = None
         self.fast_motor_range = None
+        self.zigzag_scan = False  # set to true when performing backnforth scan.
 
     def __repr__(self):
         return f"{self.experiment_title} experiment with nbpt_slow: {self.nbpt_slow} nbpt_fast: {self.nbpt_fast}, nbpt_diff: {self.nbpt_rad}"
@@ -190,6 +189,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                             help="number of points for the fast motion. Mandatory without GUI", default=None)
         parser.add_argument("-r", "--slow", dest="slow",
                             help="number of points for slow motion. Mandatory without GUI", default=None)
+        parser.add_argument("--zigzag", dest="zigzag", default=False, action="store_true",
+                            help="Perform the scan back&forth, i.e. revert all odd lines (disabled by default)")
         parser.add_argument("-c", "--npt", dest="npt_rad",
                             help="number of points in diffraction powder pattern. Mandatory without GUI",
                             default=None)
@@ -356,12 +357,17 @@ If the number of files is too large, use double quotes like "*.edf" """
         else:
             self.offset = config.get("offset", 0)
         self.offset = 0 if self.offset is None else self.offset
+        if options.zigzag:
+            config["zigzag_scan"] = self.zigzag_scan = True
+        else:
+            self.zigzag_scan = config.get("zigzag_scan", False)
 
         self.experiment_title = config.get("experiment_title", self.experiment_title)
         self.slow_motor_name = config.get("slow_motor_name", self.slow_motor_name)
         self.fast_motor_name = config.get("fast_motor_name", self.fast_motor_name)
         self.slow_motor_range = config.get("slow_motor_range")
         self.fast_motor_range = config.get("fast_motor_range")
+
 
         self.stats = options.stats
 
@@ -510,7 +516,8 @@ If the number of files is too large, use double quotes like "*.edf" """
         try:
             with fabio.open(self.inputfiles[0]) as fimg:
                 new_shape = fimg.data.shape
-        except:
+        except Exception:
+            logger.error("Unable to open input file %s with FabIO", self.inputfiles[0])
             new_shape = None
         shape = new_shape or shape or former_shape
         self.worker.ai.shape = shape
@@ -592,7 +599,12 @@ If the number of files is too large, use double quotes like "*.edf" """
             n = self.inputfiles.index(filename) - self.offset
         else:
             n = idx - self.offset
-        return Position(n, n // self.nbpt_fast, n % self.nbpt_fast)
+        line = n // self.nbpt_fast
+        if self.zigzag_scan and line % 2 == 1:
+            row = self.nbpt_fast - 1 - (n % self.nbpt_fast)
+        else:
+            row = n % self.nbpt_fast
+        return Position(n, line, row)
 
     def process_one_file(self, filename, callback=None):
         """

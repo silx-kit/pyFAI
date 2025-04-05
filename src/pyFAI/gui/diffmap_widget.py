@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/02/2025"
+__date__ = "04/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -183,7 +183,6 @@ class DiffMapWidget(qt.QWidget):
 
         # disable some widgets:
         # self.multiframe.setVisible(False)
-        self.zigzagBox.setVisible(False)
         # self.label_10.setVisible(False)
         # self.frameShape.setVisible(False)
         self.frameShape.setText("Click `Scan`")
@@ -425,6 +424,7 @@ class DiffMapWidget(qt.QWidget):
                "nbpt_fast": int_(self.fastMotorPts.text()),
                "nbpt_slow": int_(self.slowMotorPts.text()),
                "offset": int_(self.offset.text()),
+               "zigzag_scan": self.zigzagBox.isChecked(),
                "output_file": str_(self.outputFile.text()).strip(),
                "input_data": [i.as_tuple() for i in self.list_dataset]
                }
@@ -450,7 +450,8 @@ class DiffMapWidget(qt.QWidget):
                       "nbpt_fast": lambda a: self.fastMotorPts.setText(str_(a)),
                       "nbpt_slow": lambda a: self.slowMotorPts.setText(str_(a)),
                       "offset": lambda a: self.offset.setText(str_(a)),
-                      "output_file": self.outputFile.setText
+                      "output_file": self.outputFile.setText,
+                      "zigzag_scan": lambda a: self.zigzagBox.setChecked(bool(a)),
                       }
 
         deprecated_keys = {
@@ -543,6 +544,7 @@ class DiffMapWidget(qt.QWidget):
             diffmap.fast_motor_name = config.get("fast_motor_name", "fast")
             diffmap.slow_motor_range = config.get("slow_motor_range")
             diffmap.fast_motor_range = config.get("fast_motor_range")
+            diffmap.zigzag_scan = config.get("zigzag_scan")
 
             diffmap.configure_worker(config_ai)
             diffmap.hdf5 = config.get("output_file", "unamed.h5")

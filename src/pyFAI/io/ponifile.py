@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2025"
+__date__ = "04/04/2025"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -164,7 +164,7 @@ class PoniFile(object):
 
         elif version in (2, 2.1):
                 detector_name = config["detector"]
-                detector_config = config["detector_config"]
+                detector_config = config.get("detector_config")
                 self._detector = detectors.detector_factory(detector_name, detector_config)
         else:
             raise RuntimeError("PONI file verison %s too recent. Upgrade pyFAI.", version)
