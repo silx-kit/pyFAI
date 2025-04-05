@@ -28,6 +28,7 @@ py.install_sources(
     'test_invert_geometry.py',
     'test_io.py',
     'test_io_image.py',
+    'test_io_diffmap_config.py',
     'test_mask.py',
     'test_massif.py',
     'test_method_registry.py',

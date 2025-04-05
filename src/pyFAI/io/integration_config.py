@@ -74,11 +74,10 @@ import os
 import json
 import logging
 import copy
-from dataclasses import dataclass, fields, asdict
 from typing import ClassVar, Union
 import numpy
 from .ponifile import PoniFile
-from ..containers import PolarizationDescription, ErrorModel
+from ..containers import PolarizationDescription, ErrorModel, dataclass, fields, asdict
 from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
@@ -87,10 +86,6 @@ from ..units import Unit, to_unit
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
-if sys.version_info >= (3, 10):
-    mydataclass = dataclass(slots=True)
-else:
-    mydataclass = dataclass
 
 
 def _normalize_v1_darkflat_files(config, key):
@@ -444,7 +439,7 @@ class ConfigurationReader(object):
         return method
 
 
-@mydataclass
+@dataclass
 class WorkerConfig:
     """Class with the configuration from the worker."""
     application: str = "worker"
