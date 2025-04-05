@@ -164,7 +164,7 @@ class TestDiffmapConfig(unittest.TestCase):
     def test_parse(self):
         parsed = DiffmapConfig.from_dict(self.inp)
         for field in fields(DiffmapConfig):
-            self.assertTrue(field.type, parsed.__getattribute__(field.name))
+            self.assertTrue(isinstance(parsed.__getattribute__(field.name), field.type))
         #just a few test to validate the parsing...
         self.assertEqual(parsed.output_file, self.inp["output_file"])
         self.assertEqual(parsed.diffmap_config_version, CURRENT_VERSION)

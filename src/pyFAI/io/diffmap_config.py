@@ -80,8 +80,7 @@ class MotorRange:
         return dict(asdict(self))
 
     def __repr__(self):
-        return f"{self.name}: MotorRange({self.start:.3f}, {self.start:.3f}, {self.points})"
-
+        return f"{self.name}: MotorRange({self.start:.3f}, {self.stop:.3f}, {self.points})"
     @property
     def step_size(self):
         if self.points < 1:
