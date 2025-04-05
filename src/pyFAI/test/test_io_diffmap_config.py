@@ -182,7 +182,7 @@ class TestDiffmapConfig(unittest.TestCase):
         obt = DiffmapConfig.from_dict(ref.as_dict())
         for field in fields(DiffmapConfig):
             # logger.info("%s: %s %s", field.name, ref.__getattribute__(field.name), obt.__getattribute__(field.name))
-            self.assertEqual(ref.__getattribute__(field.name), obt.__getattribute__(field.name), 
+            self.assertEqual(ref.__getattribute__(field.name), obt.__getattribute__(field.name),
                     f"{field.name}: {ref.__getattribute__(field.name)} ≠ {obt.__getattribute__(field.name)}")
 
 def suite():
