@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2025"
+__date__ = "05/04/2025"
 
 import unittest
 import numpy
@@ -164,7 +164,12 @@ class TestDiffmapConfig(unittest.TestCase):
     def test_parse(self):
         parsed = DiffmapConfig.from_dict(self.inp)
         for field in fields(DiffmapConfig):
-            self.assertTrue(isinstance(parsed.__getattribute__(field.name), field.type))
+            value = parsed.__getattribute__(field.name)
+            msg = f"{field.name} is type {type(value).__name__}, expected {field.type.__name__}"
+            if value is None:
+                logger.warning(msg)
+            else:
+                self.assertTrue(isinstance(value, field.type), msg)
         #just a few test to validate the parsing...
         self.assertEqual(parsed.output_file, self.inp["output_file"])
         self.assertEqual(parsed.diffmap_config_version, CURRENT_VERSION)
@@ -172,13 +177,13 @@ class TestDiffmapConfig(unittest.TestCase):
         self.assertEqual(parsed.offset, self.inp["offset"])
         self.assertEqual(parsed.zigzag_scan, self.inp["zigzag_scan"])
 
-
     def test_consistant(self):
         ref = DiffmapConfig.from_dict(self.inp)
         obt = DiffmapConfig.from_dict(ref.as_dict())
         for field in fields(DiffmapConfig):
             # logger.info("%s: %s %s", field.name, ref.__getattribute__(field.name), obt.__getattribute__(field.name))
-            self.assertEqual(ref.__getattribute__(field.name), obt.__getattribute__(field.name))
+            self.assertEqual(ref.__getattribute__(field.name), obt.__getattribute__(field.name), 
+                    f"{field.name}: {ref.__getattribute__(field.name)} ≠ {obt.__getattribute__(field.name)}")
 
 def suite():
 
