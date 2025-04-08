@@ -176,7 +176,7 @@ class TestDiffmapConfig(unittest.TestCase):
         self.assertEqual(parsed.offset, self.inp["offset"])
         self.assertEqual(parsed.zigzag_scan, self.inp["zigzag_scan"])
 
-    def test_consistant(self):
+    def test_consistency(self):
         ref = DiffmapConfig.from_dict(self.inp)
         obt = DiffmapConfig.from_dict(ref.as_dict())
         for field in fields(DiffmapConfig):
