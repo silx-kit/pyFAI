@@ -201,7 +201,7 @@ class DiffmapConfig:
         "fast_motor_range": "fast_motor.start|stop",
         "slow_motor_range": "slow_motor.start|stop",
         "npt_rad": "ai.nbpt_rad",
-        "npt_azim": "ai.nbpt_rad",
+        "npt_azim": "ai.nbpt_azim",
         }
 
     def __repr__(self):
