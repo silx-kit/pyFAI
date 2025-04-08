@@ -157,7 +157,6 @@ class TestDiffmapConfig(unittest.TestCase):
     def setUpClass(cls):
         cls.inp = json.loads(test_data)
     @classmethod
-
     def tearDownClass(cls):
         cls.inp = None
 
