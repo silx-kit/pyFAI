@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2025"
+__date__ = "08/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -123,10 +123,11 @@ class ListDataSet(list):
         """
         :return: common directory
         """
-        ll = [j.path.split(os.sep) for j in self]
-        common = os.path.commonprefix(ll)
+        common = os.path.commonpath(self)
         if common:
-            return os.sep.join(common + [""])
+            if not common.endswith(os.sep):
+                common += os.sep
+            return common
 
     def as_tree(self, sep=os.path.sep):
         """Convert the list into a tree
