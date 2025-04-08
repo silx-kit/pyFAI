@@ -88,7 +88,7 @@ class MotorRange:
         return (self.stop-self.start)/self.points
 
 
-DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes", "shape"), defaults=[None])
+DataSetNamedTuple = namedtuple("DataSet", ("path", "h5", "nframes", "shape"), defaults=[None])
 
 @dataclass
 class DataSet:
