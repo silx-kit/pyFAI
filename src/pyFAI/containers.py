@@ -30,21 +30,30 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2025"
+__date__ = "04/04/2025"
 __status__ = "development"
 
+import sys
+from dataclasses import fields, asdict, dataclass as _dataclass
 from collections import namedtuple
 from enum import IntEnum
 from .utils.decorators import deprecated_warning
 import numpy
 
+# Few named tuples
 PolarizationArray = namedtuple("PolarizationArray",
                                ["array", "checksum"])
 PolarizationDescription = namedtuple("PolarizationDescription",
                                      ["polarization_factor", "axis_offset"])
-
 Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
 Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
+
+# User defined dataclasses
+if sys.version_info >= (3, 10):
+    dataclass = _dataclass(slots=True)
+else:
+    dataclass = _dataclass
+
 
 
 class ErrorModel(IntEnum):
