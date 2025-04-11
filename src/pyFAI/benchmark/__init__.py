@@ -271,7 +271,7 @@ class Bench(object):
                 else:
                     self._cpu = cpuinfo[0].strip()
             elif os.path.exists("/usr/sbin/sysctl"):
-                proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
+                proc = subprocess.Popen(["/usr/sbin/sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
                 self._cpu = proc.stdout.read().strip().decode("ASCII")
             old = self._cpu
