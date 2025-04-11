@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2025"
+__date__ = "10/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -506,7 +506,7 @@ class DiffMapWidget(qt.QWidget):
         self.set_config(dico)
 
     def save_config(self):
-        logger.debug("save_config")
+        logger.info("DiffmapWidget.save_config()")
         json_file = qt.QFileDialog.getSaveFileName(caption="Save configuration as json",
                                                    directory=self.json_file,
                                                    filter="Config (*.json)")
@@ -521,7 +521,7 @@ class DiffMapWidget(qt.QWidget):
         """
         Called in a separate thread
         """
-        logger.info("process")
+        logger.info("DiffmapWidget.process() thread starting")
         t0 = time.perf_counter()
         self.next_update = t0 + self.update_period
         last_processed_file = None
@@ -565,12 +565,15 @@ class DiffMapWidget(qt.QWidget):
             logger.warning("Processing finished in %.3fs", time.perf_counter() - t0)
             self.progressbarChanged.emit(len(self.list_dataset), diffmap._idx)
             self.finish_processing(last_processed_file)
+        logger.info("DiffmapWidget.process thread ending")
+
 
     def display_processing(self, config):
         """Setup the display for visualizing the processing
 
         :param config: configuration of the processing ongoing
         """
+        logger.debug("DiffmapWidget.display_processing")
         self.fig = pyplot.figure(figsize=(12, 5))
         self.aximg = self.fig.add_subplot(1, 2, 1,
                                           xlabel=config.get("fast_motor_name", "Fast motor"),
@@ -665,6 +668,7 @@ class DiffMapWidget(qt.QWidget):
 
         :param start_pilx: (str) open the pilx visualization tool with the given file
         """
+        logger.debug("DiffmapWidget.finish_processing")
         with self.update_sem:
             if self.fig:
                 pyplot.close(self.fig)
@@ -682,6 +686,7 @@ class DiffMapWidget(qt.QWidget):
 
         :param filename: name of the HDF5 file to open
         """
+        logger.debug("DiffmapWidget.start_visu")
         if self.pilx_widget is not None:
             self.pilx_widget.close()
         if filename is not None:

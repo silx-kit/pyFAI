@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2025"
+__date__ = "10/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -240,7 +240,11 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.hdf5 = config["output_file"]
 
         if options.verbose:
-            logger.setLevel(logging.DEBUG)
+            loggers = [logging.getLogger(name)
+                        for name in logging.root.manager.loggerDict
+                        if name.startswith("pyFAI")]
+            for logger in loggers:
+                logger.setLevel(logging.DEBUG)
         if options.outfile:
             self.hdf5 = options.outfile
             config["output_file"] = self.hdf5

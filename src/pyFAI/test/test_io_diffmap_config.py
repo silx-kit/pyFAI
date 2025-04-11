@@ -196,14 +196,13 @@ class TestListDataSet(unittest.TestCase):
 
     def test_single(self):
 
-        single = ListDataSet([DataSet(self.cross_platform("/a/b/c"))])
+        single = ListDataSet([DataSet("/a/b/c")])
         self.assertEqual(single.commonroot(), os.path.normpath("/a/b/c"))
 
     def test_multiple(self):
         multi = ListDataSet.from_serialized([(os.path.normpath("/a/b/c"),None,None, (10,11)),
                                              (os.path.normpath("/a/b/d"), None, 2)])
-        # print(multi[0])
-        self.assertEqual(multi.commonroot(), os.path.normpath("/a/b/"))
+        self.assertEqual(multi.commonroot(), os.path.normpath("/a/b")+os.sep)
         self.assertEqual(multi.nframes, 3)
         self.assertEqual(multi.shape, (10,11))
 
