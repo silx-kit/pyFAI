@@ -169,8 +169,7 @@ class Detector(metaclass=DetectorMeta):
                     break
 
         if detectorClass is None:
-            msg = ("Detector %s is unknown !, "
-                   "please check if the filename exists or select one from %s" % (name, cls.registry.keys()))
+            msg = f"Detector {name} is unknown ! please check if the filename exists or select one from predefined:{os.linesep}{cls.registry.keys()}"
             logger.error(msg)
             raise RuntimeError(msg)
 
