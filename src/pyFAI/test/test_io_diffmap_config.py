@@ -32,11 +32,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2025"
+__date__ = "11/04/2025"
 
 import unittest
 import numpy
 import json
+import os
 from dataclasses import fields
 import logging
 logger = logging.getLogger(__name__)
@@ -187,19 +188,22 @@ class TestDiffmapConfig(unittest.TestCase):
 class TestListDataSet(unittest.TestCase):
     """Test ListDataSet serialization
     """
+
     def test_empty(self):
         empty = ListDataSet.from_serialized([])
         self.assertEqual(empty.commonroot(), "")
 
+
     def test_single(self):
-        single = ListDataSet([DataSet("/a/b/c")])
-        self.assertEqual(single.commonroot(), "/a/b/c")
+
+        single = ListDataSet([DataSet(self.cross_platform("/a/b/c"))])
+        self.assertEqual(single.commonroot(), os.path.normpath("/a/b/c"))
 
     def test_multiple(self):
-        multi = ListDataSet.from_serialized([("/a/b/c",None,None, (10,11)),
-                                             ("/a/b/d", None, 2)])
-        print(multi[0])
-        self.assertEqual(multi.commonroot(), "/a/b/")
+        multi = ListDataSet.from_serialized([(os.path.normpath("/a/b/c"),None,None, (10,11)),
+                                             (os.path.normpath("/a/b/d"), None, 2)])
+        # print(multi[0])
+        self.assertEqual(multi.commonroot(), os.path.normpath("/a/b/"))
         self.assertEqual(multi.nframes, 3)
         self.assertEqual(multi.shape, (10,11))
 

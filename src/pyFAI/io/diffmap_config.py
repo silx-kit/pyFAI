@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2025"
+__date__ = "11/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -127,7 +127,7 @@ class ListDataSet(list):
         if l==0:
             return ""
         elif l==1:
-            return self[0].path
+            return os.path.normpath(self[0].path)
         else:
             common = os.path.commonpath([i.path for i in self])
             return common + os.sep
