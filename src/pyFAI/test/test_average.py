@@ -38,6 +38,7 @@ __date__ = "21/05/2024"
 import unittest
 import numpy
 import os
+import ast
 import logging
 import fabio
 from .utilstest import UtilsTest
@@ -188,8 +189,8 @@ class TestAverage(unittest.TestCase):
 
         fabio_image = writer.get_fabio_image(algorithm)
         header = fabio_image.header
-        self.assertEqual(eval(header["cutoff"]), None)
-        self.assertEqual(eval(header["quantiles"]), (0.2, 0.8))
+        self.assertEqual(ast.literal_eval(header["cutoff"]), None)
+        self.assertEqual(ast.literal_eval(header["quantiles"]), (0.2, 0.8))
 
 
 class TestAverageAlgorithmFactory(unittest.TestCase):
