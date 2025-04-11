@@ -32,11 +32,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/04/2025"
+__date__ = "11/04/2025"
 
 import unittest
 import numpy
 import json
+import os
 from dataclasses import fields
 import logging
 logger = logging.getLogger(__name__)
@@ -184,11 +185,34 @@ class TestDiffmapConfig(unittest.TestCase):
             self.assertEqual(ref.__getattribute__(field.name), obt.__getattribute__(field.name),
                     f"{field.name}: {ref.__getattribute__(field.name)} ≠ {obt.__getattribute__(field.name)}")
 
+class TestListDataSet(unittest.TestCase):
+    """Test ListDataSet serialization
+    """
+
+    def test_empty(self):
+        empty = ListDataSet.from_serialized([])
+        self.assertEqual(empty.commonroot(), "")
+
+
+    def test_single(self):
+
+        single = ListDataSet([DataSet("/a/b/c")])
+        self.assertEqual(single.commonroot(), os.path.normpath("/a/b/c"))
+
+    def test_multiple(self):
+        multi = ListDataSet.from_serialized([(os.path.normpath("/a/b/c"),None,None, (10,11)),
+                                             (os.path.normpath("/a/b/d"), None, 2)])
+        self.assertEqual(multi.commonroot(), os.path.normpath("/a/b")+os.sep)
+        self.assertEqual(multi.nframes, 3)
+        self.assertEqual(multi.shape, (10,11))
+
+
 def suite():
 
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestDiffmapConfig))
+    testsuite.addTest(loader(TestListDataSet))
     return testsuite
 
 
