@@ -240,11 +240,9 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.hdf5 = config["output_file"]
 
         if options.verbose:
-            loggers = [logging.getLogger(name)
-                        for name in logging.root.manager.loggerDict
-                        if name.startswith("pyFAI")]
-            for logger in loggers:
-                logger.setLevel(logging.DEBUG)
+            for name in logging.root.manager.loggerDict:
+                if name.startswith("pyFAI"):
+                    logging.getLogger(name).setLevel(logging.DEBUG)
         if options.outfile:
             self.hdf5 = options.outfile
             config["output_file"] = self.hdf5
