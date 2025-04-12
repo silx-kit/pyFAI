@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/04/2025"
+__date__ = "11/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -88,7 +88,7 @@ class MotorRange:
         return (self.stop-self.start)/self.points
 
 
-DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes", "shape"), defaults=[None])
+DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes", "shape"), defaults=[None, None, None])
 
 @dataclass
 class DataSet:
@@ -121,13 +121,16 @@ class ListDataSet(list):
 
     def commonroot(self):
         """
-        :return: common directory
+        :return: common directory structure
         """
-        common = os.path.commonpath(self)
-        if common:
-            if not common.endswith(os.sep):
-                common += os.sep
-            return common
+        l = len(self)
+        if l==0:
+            return ""
+        elif l==1:
+            return os.path.normpath(self[0].path)
+        else:
+            common = os.path.commonpath([i.path for i in self])
+            return common + os.sep
 
     def as_tree(self, sep=os.path.sep):
         """Convert the list into a tree
@@ -171,6 +174,23 @@ class ListDataSet(list):
             else:
                 self.append(DataSet.from_tuple(ds))
         return self
+
+    @property
+    def nframes(self):
+        return sum(len(i) for i in self)
+
+    @property
+    def shape(self):
+        "Common shape. Emits a warning is unconsistant or None when empty"
+        if len(self) == 0:
+            return
+        shape = self[0].shape  # could be None
+        for j in self:
+            if j.shape != shape:
+                logger.warning(f"Shape of images in file {j.path} is {j.shape}, differs from first which is {shape}")
+
+        return shape
+
 
 @dataclass
 class DiffmapConfig:
