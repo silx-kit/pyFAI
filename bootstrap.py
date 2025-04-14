@@ -192,7 +192,7 @@ def find_executable(target):
     for script, entry_point in scripts.items():
         if script == target:
             #print(script, entry_point)
-            return ("entry_point", target,  entry_point)
+            return ("entry_point", target, entry_point)
     return None, None
 
 
@@ -236,7 +236,7 @@ def main(argv):
         argv = options.script[1:]
         res = find_executable(script)
         kind = res[0]
-        print(res)
+        # print(res)
         if kind == "path":
             run_file(res[1], argv)
         elif kind == "entry_point":
