@@ -10,10 +10,11 @@ example: ./bootstrap.py ipython
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "03/03/2023"
+__date__ = "14/04/2025"
 
 import sys
 import os
+import argparse
 import subprocess
 import logging
 if sys.version_info[:2] < (3, 11):
@@ -175,7 +176,7 @@ def find_executable(target):
     - Then search the script from the PATH environment variable.
 
     :param str target: Name of the script
-    :returns: Returns a tuple: kind, name.
+    :returns: Returns a tuple: (kind, name) or (kind, name, entry_point).
     """
     if os.path.isfile(target):
         return ("path", os.path.abspath(target))
@@ -190,49 +191,96 @@ def find_executable(target):
 
     for script, entry_point in scripts.items():
         if script == target:
-            print(script, entry_point)
+            #print(script, entry_point)
             return ("entry_point", target, entry_point)
     return None, None
+
+
+def main(argv):
+    parser = argparse.ArgumentParser(
+        prog="bootstrap", usage="./bootstrap.py <script>", description=__doc__
+    )
+    parser.add_argument("script", nargs=argparse.REMAINDER)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "-m",
+        nargs=argparse.REMAINDER,
+        dest="module",
+        help="run library module as a script (terminates option list)",
+    )
+    # group.add_argument(
+    #     "-j",
+    #     "--jupyter",
+    #     action="store_true",
+    #     help="Start jupyter notebook rather than IPython console",
+    # )
+    options = parser.parse_args()
+
+    # if options.jupyter:
+    #     if options.script:
+    #         logger.error("-j, --jupyter is mutually exclusive with other options")
+    #         parser.print_help()
+    #         return
+
+    #     logger.info("Start Jupyter notebook")
+    #     from notebook.notebookapp import main as notebook_main
+
+    #     os.environ["PYTHONPATH"] = (
+    #         LIBPATH + os.pathsep + os.environ.get("PYTHONPATH", "")
+    #     )
+    #     notebook_main(argv=[])
+
+    if options.script:
+        logger.info("Executing %s from source checkout", options.script)
+        script = options.script[0]
+        argv = options.script[1:]
+        res = find_executable(script)
+        kind = res[0]
+        # print(res)
+        if kind == "path":
+            run_file(res[1], argv)
+        elif kind == "entry_point":
+            run_entry_point(res[1], res[2], argv)
+        else:
+            logger.error("Script %s not found", options.script)
+
+    elif options.module:
+        logging.info("Running module %s", options.module)
+        import runpy
+
+        module = options.module[0]
+        try:
+            old = sys.argv
+            sys.argv = [None] + options.module[1:]
+            runpy.run_module(module, run_name="__main__", alter_sys=True)
+        finally:
+            sys.argv = old
+
+    else:
+        logging.info("Running IPython by default")
+        try:
+            from IPython import start_ipython
+        except Exception as err:
+            logger.error("Unable to execute iPython, using normal Python")
+            logger.error(err)
+            import code
+
+            code.interact()
+        else:
+            start_ipython(argv=[])
 
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_NAME = get_project_name(PROJECT_DIR)
 logger.info("Project name: %s", PROJECT_NAME)
 
-if __name__ == "__main__":
-    LIBPATH = build_project(PROJECT_NAME, PROJECT_DIR)
-    if len(sys.argv) < 2:
-        logger.warning("usage: ./bootstrap.py <script>\n")
-        script = None
-    else:
-        script = sys.argv[1]
 
-    if script:
-        logger.info("Executing %s from source checkout", script)
-    else:
-        logging.info("Running iPython by default")
+if __name__ == "__main__":
+    home = os.path.dirname(os.path.abspath(__file__))
+    LIBPATH = build_project(PROJECT_NAME, PROJECT_DIR)
+
+
     sys.path.insert(0, LIBPATH)
     logger.info("Patched sys.path with %s", LIBPATH)
 
-    if script:
-        argv = sys.argv[2:]
-        res = find_executable(script)
-        if res[0] == "path":
-            run_file(res[1], argv)
-        elif res[0] == "entry_point":
-            run_entry_point(res[1], res[2], argv)
-        else:
-            logger.error("Script %s not found", script)
-    else:
-        logging.info("Running IPython by default")
-        logger.info("Patch the sys.argv: %s", sys.argv)
-        sys.path.insert(2, "")
-        try:
-            from IPython import embed
-        except Exception as err:
-            logger.error("Unable to execute iPython, using normal Python")
-            logger.error(err)
-            import code
-            code.interact()
-        else:
-            embed()
+    main(sys.argv)
