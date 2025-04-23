@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2025"
+__date__ = "23/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -52,6 +52,7 @@ from . import version as PyFAI_VERSION, date as PyFAI_DATE
 from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
 from .io import Nexus, get_isotime, h5py
 from .io.integration_config import WorkerConfig
+from .io.diffmap_config import DiffmapConfig
 from .worker import Worker
 from .utils.decorators import deprecated, deprecated_warning
 
@@ -222,38 +223,43 @@ If the number of files is too large, use double quotes like "*.edf" """
                             help="provide a JSON configuration file")
         options = parser.parse_args(args=sysargv)
         args = options.args
-        if (options.config is not None) and os.path.exists(options.config):
-            with open(options.config, "r") as fd:
-                config = json.loads(fd.read())
-        else:
-            config = {}
-        self.inputfiles = [i[0] for i in config.get("input_data", [])]
-        if "ai" in config:
-            ai = config["ai"]
-        elif config.get("application", None) in ("pyfai-integrate", "worker"):
-            ai = config.copy()
-        else:
-            ai = {}
-
-        self.poni = config["ai"] = ai
-        if "output_file" in config:
-            self.hdf5 = config["output_file"]
 
         if options.verbose:
+            #switch to debug all logger from pyFAI.
             for name in logging.root.manager.loggerDict:
                 if name.startswith("pyFAI"):
                     logging.getLogger(name).setLevel(logging.DEBUG)
+
+        if (options.config is not None) and os.path.exists(options.config):
+            config = DiffmapConfig.from_file(options.config)
+        else:
+            config = DiffmapConfig()
+
+        if config.input_data:
+            self.inputfiles = [i.path for i in config.input_data]
+        else:
+            self.inputfiles = []
+
+        if config.ai:
+            ai = config.ai
+        else:
+            ai = WorkerConfig()
+        self.poni = config.ai = ai
+
+        if config.output_file:
+            self.hdf5 = config.output_file
         if options.outfile:
             self.hdf5 = options.outfile
-            config["output_file"] = self.hdf5
+            config.output_file = self.hdf5
+
+        #dark & flat are managed in the WorkerConfig
         if options.dark:
             dark_files = [os.path.abspath(urlparse(f).path)
                           for f in options.dark.split(",")
                           if os.path.isfile(urlparse(f).path)]
             if dark_files:
                 self.dark = dark_files
-                ai["dark_current"] = ",".join(dark_files)
-                ai["do_dark"] = True
+                ai.dark_current_image = dark_files
             else:
                 raise RuntimeError("No such dark files")
 
@@ -263,26 +269,26 @@ If the number of files is too large, use double quotes like "*.edf" """
                           if os.path.isfile(urlparse(f).path)]
             if flat_files:
                 self.flat = flat_files
-                ai["flat_field"] = ",".join(flat_files)
-                ai["do_flat"] = True
+                ai.flat_field_image = flat_files
             else:
                 raise RuntimeError("No such flat files")
 
         if ocl and options.gpu:
-            ai["opencl_device"] = ocl.select_device(type="gpu")
+            ai.opencl_device = ocl.select_device(type="gpu")
             ndim = ai.get("do_2D", 1)
-            if ndim == 2:
-                default = PREFERED_METHODS_2D[0].method[1:-1]
+            if ai.method:
+                method = ai.method
             else:
-                default = PREFERED_METHODS_1D[0].method[1:-1]
-            method = list(ai.get("method", default))
+                method = PREFERED_METHODS_2D[0].method[1:-1] if ndim == 2\
+                   else  PREFERED_METHODS_1D[0].method[1:-1]
+            method = list(method)
             if len(method) == 3:  # (split, algo, impl)
                 method[2] = "opencl"
             elif len(method) == 5:  # (dim, split, algo, impl, target)
                 method[3] = "opencl"
             else:
                 logger.warning(f"Unexpected method found in configuration file: {method}")
-            ai["method"] = method
+            ai.method = method
 
         for fn in args:
             f = urlparse(fn).path
@@ -293,16 +299,16 @@ If the number of files is too large, use double quotes like "*.edf" """
             else:
                 self.inputfiles += [os.path.abspath(f) for f in glob.glob(f)]
         self.inputfiles.sort(key=self.to_tuple)
-        config["input_data"] = [(i, None) for i in self.inputfiles]
+        config.input_data = ListDataset.from_serialized((i, None) for i in self.inputfiles)
 
         if options.mask:
             urlmask = urlparse(options.mask)
-        elif ai.get("do_mask", False) or ai.get("mask_file", None):
-            urlmask = urlparse(ai.get("mask_file", None))
-        elif config.get("do_mask", False) or config.get("mask_file", None):
-            # compatibility with elder config files...
-            deprecated_warning("Config of mask no more top-level, but in ai config group", "mask_file", deprecated_since="2024.12.0")
-            urlmask = urlparse(config.get("mask_file", None))
+        elif ai.mask_file:
+            urlmask = urlparse(ai.mask_file)
+        # elif config.get("do_mask", False) or config.get("mask_file", None):
+        #     # compatibility with elder config files...
+        #     deprecated_warning("Config of mask no more top-level, but in ai config group", "mask_file", deprecated_since="2024.12.0")
+        #     urlmask = urlparse(config.get("mask_file", None))
         else:
             urlmask = urlparse("")
         if "::" in  urlmask.path:
@@ -311,80 +317,91 @@ If the number of files is too large, use double quotes like "*.edf" """
             urlmask = urlparse(f"fabio://{mask_filename}?slice={idx}")
 
         if os.path.isfile(urlmask.path):
-            logger.info("Reading Mask file from: %s", urlmask.path)
+            logger.info(f"Reading Mask file from: {urlmask.path}")
             self.mask = urlmask.geturl()
-            ai["mask_file"] = self.mask
-            ai["do_mask"] = True
+            ai.mask_file = self.mask
         else:
-            logger.warning("No such mask file %s", urlmask.path)
+            logger.warning(f"No such mask file {urlmask.path}")
         if options.poni:
             if os.path.isfile(options.poni):
-                logger.info("Reading PONI file from: %s", options.poni)
+                logger.info(f"Reading PONI file from: {options.poni}")
                 self.poni = options.poni
-                ai["poni"] = self.poni
+                ai.poni = PoniFile(self.poni)
             else:
-                logger.warning("No such poni file %s", options.poni)
+                logger.warning("No such poni file: {options.poni}")
 
         deprecated_keys = {
             "fast_motor_points": "nbpt_fast",
             "slow_motor_points": "nbpt_slow",
             }
-        for key in deprecated_keys:
-            if key in config.keys():
-                deprecated_warning("Argument", key, deprecated_since="2024.3.0")
-                config[deprecated_keys[key]] = config.pop(key)
+        # for key in deprecated_keys:
+        #     if key in config.keys():
+        #         deprecated_warning("Argument", key, deprecated_since="2024.3.0")
+        #         config[deprecated_keys[key]] = config.pop(key)
 
         if options.fast is None:
-            self.nbpt_fast = config.get("nbpt_fast", self.nbpt_fast)
+            self.nbpt_fast = config.nbpt_fast or self.nbpt_fast
         else:
             self.nbpt_fast = int(options.fast)
-            config["nbpt_fast"] = self.nbpt_fast
+        config.nbpt_fast = self.nbpt_fast
         if options.slow is None:
-            self.nbpt_slow = config.get("nbpt_slow", self.nbpt_slow)
+            self.nbpt_slow = config.nbpt_slow or self.nbpt_slow
         else:
             self.nbpt_slow = int(options.slow)
-            config["nbpt_slow"] = self.nbpt_slow
+        config.nbpt_slow = self.nbpt_slow
         if options.npt_rad is not None:
-            ai["nbpt_rad"] = self.nbpt_rad = int(options.npt_rad)
-        elif "nbpt_rad" in ai:
-            self.nbpt_rad = ai["nbpt_rad"]
+            ai.nbpt_rad = self.nbpt_rad = int(options.npt_rad)
+        elif ai.nbpt_rad:
+            self.nbpt_rad = ai.nbpt_rad
         if options.npt_azim is not None:
-            ai["nbpt_azim"] = self.nbpt_azim = int(options.npt_azim)
-        elif "nbpt_azim" in ai:
-            self.nbpt_azim = ai["nbpt_azim"]
+            ai.nbpt_azim = self.nbpt_azim = int(options.npt_azim)
+        elif ai.nbpt_azim:
+            self.nbpt_azim = ai.nbpt_azim
 
         if options.offset is not None:
             self.offset = int(options.offset)
-            config["offset"] = self.offset
+            config.offset = self.offset
         else:
-            self.offset = config.get("offset", 0)
-        self.offset = 0 if self.offset is None else self.offset
+            self.offset = config.offset
+        self.offset = self.offset or 0
         if options.zigzag:
-            config["zigzag_scan"] = self.zigzag_scan = True
+            config.zigzag_scan = self.zigzag_scan = True
         else:
-            self.zigzag_scan = config.get("zigzag_scan", False)
+            self.zigzag_scan = config.zigzag_scan or False
 
-        self.experiment_title = config.get("experiment_title", self.experiment_title)
-        self.slow_motor_name = config.get("slow_motor_name", self.slow_motor_name)
-        self.fast_motor_name = config.get("fast_motor_name", self.fast_motor_name)
-        self.slow_motor_range = config.get("slow_motor_range")
-        self.fast_motor_range = config.get("fast_motor_range")
-
-
+        self.experiment_title = config.experiment_title or self.experiment_title
+        self.slow_motor_name = config.slow_motor_name or self.slow_motor_name
+        self.fast_motor_name = config.fast_motor_name or self.fast_motor_name
+        self.slow_motor_range = config.slow_motor_range
+        self.fast_motor_range = config.fast_motor_range
         self.stats = options.stats
 
         if with_config:
-            if "do_2D" not in ai:
-                ai["do_2D"] = False
-            if "do_solid_angle" not in ai:
-                ai["do_solid_angle"] = True
-            if "unit" not in ai:
-                ai["unit"] = "2th_deg"
-            config["experiment_title"] = self.experiment_title
-            config["fast_motor_name"] = self.fast_motor_name
-            config["slow_motor_name"] = self.slow_motor_name
+            if ai.do_solid_angle is None:
+                ai.do_solid_angle = True
+            if ai.unit is None:
+                ai.unit = "2th_deg"
+            config.experiment_title = self.experiment_title
+            config.fast_motor_name = self.fast_motor_name
+            config.slow_motor_name = self.slow_motor_name
             return options, config
         return options
+
+    def get_config(self):
+        """Retrieve the configuration of the DiffMap object
+
+        :return: DiffMapConfig dataclass instance
+        """
+        # TODO
+        pass
+
+    def get_config_dict(self):
+        return self.get_config().as_dict()
+
+    def set_config(self, cfg):
+        if isinstance(cfg, dict):
+            cfg = DiffmapConfig.from_dict(cfg)
+        # TODO
 
     def configure_worker(self, dico=None):
         """Configure the worker from the dictionary
