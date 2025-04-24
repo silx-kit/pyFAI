@@ -53,6 +53,7 @@ from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
 from .io import Nexus, get_isotime, h5py
 from .io.integration_config import WorkerConfig
 from .io.diffmap_config import DiffmapConfig, ListDataSet
+from .io.ponifile import PoniFile
 from .worker import Worker
 from .utils.decorators import deprecated, deprecated_warning
 
