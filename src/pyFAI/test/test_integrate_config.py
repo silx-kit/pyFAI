@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "24/04/2025"
 
 import os
 import json
@@ -145,12 +145,12 @@ class TestRegression(unittest.TestCase):
 
         # without GPU option -g
         dm = DiffMap(1, 1)
-        _, parsed_config = dm.parse(sysargv=["--config", config_file], with_config=True)
+        _, parsed_config = dm.parse(sysargv=["--config", config_file], with_config=dict)
         self.assertEqual(parsed_config["ai"]["method"], expected_without_gpu, "method matches without -g option")
 
         # with GPU option -g
         dm = DiffMap(1, 1)
-        _, parsed_config = dm.parse(sysargv=["-g", "--config", config_file], with_config=True)
+        _, parsed_config = dm.parse(sysargv=["-g", "--config", config_file], with_config=dict)
         expected = expected_with_gpu if ocl else expected_without_gpu
         self.assertEqual(parsed_config["ai"]["method"], expected, "method match with -g option")
 

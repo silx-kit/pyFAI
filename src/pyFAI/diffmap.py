@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/04/2025"
+__date__ = "24/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -52,7 +52,7 @@ from . import version as PyFAI_VERSION, date as PyFAI_DATE
 from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
 from .io import Nexus, get_isotime, h5py
 from .io.integration_config import WorkerConfig
-from .io.diffmap_config import DiffmapConfig
+from .io.diffmap_config import DiffmapConfig, ListDataSet
 from .worker import Worker
 from .utils.decorators import deprecated, deprecated_warning
 
@@ -146,7 +146,7 @@ class DiffMap(object):
         Does not configure the worker, please use
 
         :param sysargv: list of arguments passed on the command line (mostly for debug/test), first element removed
-        :param with_config: parse also the config (as another dict) and return (options, config)
+        :param with_config: parse also the config (as another dict) and return (options, config), set to dict to get a dict unless get a DiffMapConfig object
         :return: options, a dictionary able to setup a DiffMapWidget
         """
         description = """Azimuthal integration for diffraction imaging.
@@ -295,11 +295,13 @@ If the number of files is too large, use double quotes like "*.edf" """
             if os.path.isfile(f) and f.endswith(options.extension):
                 self.inputfiles.append(os.path.abspath(f))
             elif os.path.isdir(f):
-                self.inputfiles += [os.path.abspath(os.path.join(f, g)) for g in os.listdir(f) if g.endswith(options.extension) and g.startswith(options.prefix)]
+                self.inputfiles += [os.path.abspath(os.path.join(f, g))
+                        for g in os.listdir(f)
+                        if g.endswith(options.extension) and g.startswith(options.prefix)]
             else:
                 self.inputfiles += [os.path.abspath(f) for f in glob.glob(f)]
         self.inputfiles.sort(key=self.to_tuple)
-        config.input_data = ListDataset.from_serialized((i, None) for i in self.inputfiles)
+        config.input_data = ListDataSet.from_serialized((i, None) for i in self.inputfiles)
 
         if options.mask:
             urlmask = urlparse(options.mask)
@@ -330,10 +332,10 @@ If the number of files is too large, use double quotes like "*.edf" """
             else:
                 logger.warning("No such poni file: {options.poni}")
 
-        deprecated_keys = {
-            "fast_motor_points": "nbpt_fast",
-            "slow_motor_points": "nbpt_slow",
-            }
+        # deprecated_keys = {
+        #     "fast_motor_points": "nbpt_fast",
+        #     "slow_motor_points": "nbpt_slow",
+        #     }
         # for key in deprecated_keys:
         #     if key in config.keys():
         #         deprecated_warning("Argument", key, deprecated_since="2024.3.0")
@@ -384,7 +386,10 @@ If the number of files is too large, use double quotes like "*.edf" """
             config.experiment_title = self.experiment_title
             config.fast_motor_name = self.fast_motor_name
             config.slow_motor_name = self.slow_motor_name
-            return options, config
+            if with_config == dict:
+                return options, config.as_dict()
+            else:
+                return options, config
         return options
 
     def get_config(self):
@@ -392,16 +397,64 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         :return: DiffMapConfig dataclass instance
         """
-        # TODO
-        pass
+        config = DiffmapConfig()
+        config.ai = ai = self.worker.get_config()
+        config.output_file = self.hdf5
+        config.input_data = ListDataset.from_serialized((i, None) for i in self.inputfiles)
+
+        config.nbpt_fast = self.nbpt_fast
+        config.nbpt_slow = self.nbpt_slow
+        config.offset = self.offset or 0
+        config.zigzag_scan = self.zigzag_scan
+        config.experiment_title = self.experiment_title
+        config.fast_motor_name = self.fast_motor_name
+        config.slow_motor_name = self.slow_motor_name
+        config.slow_motor_range = self.slow_motor_range
+        config.fast_motor_range = self.fast_motor_range
+
+        #dark & flat are managed in the WorkerConfig
+        ai.dark_current_image = self.dark
+        ai.flat_field_image = self.flat
+        ai.mask_file = self.mask
+        ai.nbpt_rad = self.nbpt_rad
+        ai.nbpt_azim = self.nbpt_azim
+        if ai.do_solid_angle is None:
+            ai.do_solid_angle = True
+        if ai.unit is None:
+            ai.unit = "2th_deg"
+        return config
 
     def get_config_dict(self):
         return self.get_config().as_dict()
 
-    def set_config(self, cfg):
-        if isinstance(cfg, dict):
-            cfg = DiffmapConfig.from_dict(cfg)
-        # TODO
+    def set_config(self, config):
+        if isinstance(config, dict):
+            config = DiffmapConfig.from_dict(config)
+        if config.input_data:
+            self.inputfiles = [i.path for i in config.input_data]
+        else:
+            self.inputfiles = []
+        self.hdf5 = config.output_file
+        if config.ai:
+            ai = config.ai
+            self.mask = ai.mask_file
+            self.flat = ai.flat_field
+            self.dark = ai.dark_current
+            self.poni = PoniFile(ai.poni)
+
+        self.nbpt_fast = config.nbpt_fast or self.nbpt_fast
+        self.nbpt_slow = config.nbpt_slow or self.nbpt_slow
+        self.nbpt_rad = config.ai.nbpt_rad
+        self.nbpt_azim = config.ai.nbpt_azim
+
+        self.offset = config.offset or 0
+        self.zigzag_scan = config.zigzag_scan or False
+        self.experiment_title = config.experiment_title or self.experiment_title
+        self.slow_motor_name = config.slow_motor_name or self.slow_motor_name
+        self.fast_motor_name = config.fast_motor_name or self.fast_motor_name
+        self.slow_motor_range = config.slow_motor_range
+        self.fast_motor_range = config.fast_motor_range
+
 
     def configure_worker(self, dico=None):
         """Configure the worker from the dictionary
