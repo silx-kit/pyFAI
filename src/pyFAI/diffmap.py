@@ -401,7 +401,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         config = DiffmapConfig()
         config.ai = ai = self.worker.get_config()
         config.output_file = self.hdf5
-        config.input_data = ListDataset.from_serialized((i, None) for i in self.inputfiles)
+        config.input_data = ListDataSet.from_serialized((i, None) for i in self.inputfiles)
 
         config.nbpt_fast = self.nbpt_fast
         config.nbpt_slow = self.nbpt_slow
