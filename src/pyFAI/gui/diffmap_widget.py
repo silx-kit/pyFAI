@@ -168,7 +168,7 @@ class DiffMapWidget(qt.QWidget):
         pyfaiIcon = icons.getQIcon("pyfai:gui/images/icon")
         self.setWindowIcon(pyfaiIcon)
 
-        self.aborted = False
+        self.abort = threading.Event()
         self.progressBar.setValue(0)
         self.list_model = TreeModel(self, self.list_dataset.as_tree())
         self.listFiles.setModel(self.list_model)
@@ -257,7 +257,14 @@ class DiffMapWidget(qt.QWidget):
         self.files.setMenu(self.files_menu)
 
     def do_abort(self):
-        self.aborted = True
+        logger.info("DiffMapWidget.do_abort")
+        self.abort.set()
+        button = qt.QMessageBox.warning(self,
+                "Processing aborted !",
+                "User aborted the processing.",
+                buttons=qt.QMessageBox.Ok,
+                )
+
 
     def input_filer(self, *args, **kwargs):
         """
@@ -353,7 +360,7 @@ class DiffMapWidget(qt.QWidget):
 
         config = self.get_config()
         self.progressBar.setRange(0, self.number_of_points)
-        self.aborted = False
+        self.abort.clear()
         self.display_processing(config)
         self.last_idx = -1
         self.processing_thread = threading.Thread(name="process", target=self.process, args=(config,))
@@ -538,9 +545,11 @@ class DiffMapWidget(qt.QWidget):
             self.radial_data, self.azimuthal_data = diffmap.init_ai()
             self.data_h5 = diffmap.dataset
             for i, fn in enumerate(self.list_dataset):
-                diffmap.process_one_file(fn.path, callback=lambda fn, idx:self.progressbarChanged.emit(i, diffmap._idx))
+                diffmap.process_one_file(fn.path,
+                    callback=lambda fn, idx:self.progressbarChanged.emit(i, diffmap._idx),
+                    abort = self.abort)
 
-                if self.aborted:
+                if self.abort.is_set():
                     logger.warning("Aborted by user")
                     self.progressbarChanged.emit(0, 0)
                     self.processingFinished.emit()
@@ -549,7 +558,7 @@ class DiffMapWidget(qt.QWidget):
                 self.data_np = diffmap.dataset[()]
                 last_processed_file = diffmap.nxs.filename
                 diffmap.nxs.close()
-        if not self.aborted:
+        if not self.abort.is_set():
             logger.warning("Processing finished in %.3fs", time.perf_counter() - t0)
             self.progressbarChanged.emit(len(self.list_dataset), diffmap._idx)
             self.finish_processing(last_processed_file)
@@ -659,20 +668,16 @@ class DiffMapWidget(qt.QWidget):
         :param start_pilx: (str) open the pilx visualization tool with the given file
         """
         logger.debug("DiffmapWidget.finish_processing")
-        print("close figures from thread")
         self.processingFinished.emit()
 
-        print("start_pilx",start_pilx)
         if start_pilx and isinstance(start_pilx, str) and os.path.exists(start_pilx):
             self.pilxDisplay.emit(start_pilx)
 
     def close_fig(self):
-        print("close figures from main")
+        logger.info("close figures from main")
         with self.update_sem:
             if self.fig:
-                print("pyplot.close(self.fig)")
                 pyplot.close(self.fig)
-                print("qt.QCoreApplication.processEvents")
                 qt.QCoreApplication.processEvents()
                 self.fig = None
                 self.plot = None
@@ -686,7 +691,7 @@ class DiffMapWidget(qt.QWidget):
 
         :param filename: name of the HDF5 file to open
         """
-        logger.debug("DiffmapWidget.start_visu")
+        logger.info("DiffmapWidget.start_visu")
         if self.pilx_widget is not None:
             self.pilx_widget.close()
             qt.QCoreApplication.processEvents()
@@ -699,6 +704,7 @@ class DiffMapWidget(qt.QWidget):
         """
         Update the slice
         """
+        logger.info("update_slice", args)
         if self.radial_data is None:
             return
         try:

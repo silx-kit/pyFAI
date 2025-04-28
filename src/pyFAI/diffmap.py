@@ -46,6 +46,7 @@ logger = logging.getLogger(__name__)
 import numpy
 import fabio
 import json
+from threading import Event
 import __main__ as main
 from .opencl import ocl
 from . import version as PyFAI_VERSION, date as PyFAI_DATE
@@ -669,13 +670,16 @@ If the number of files is too large, use double quotes like "*.edf" """
             row = n % self.nbpt_fast
         return Position(n, line, row)
 
-    def process_one_file(self, filename, callback=None):
+    def process_one_file(self, filename, callback=None, abort=None):
         """
         :param filename: name of the input filename
         :param callback: function to be called after every frame has been processed.
         :param indices: this is a slice object, frames in this file should have the given indices.
+        :param abort: threading.event which stops the processing if set
         :return: None
         """
+        if abort is None:
+            abort = threading.Event()
         if self.ai is None:
             self.configure_worker(self.poni)
         if self.dataset is None:
@@ -698,6 +702,8 @@ If the number of files is too large, use double quotes like "*.edf" """
                     self.process_one_frame(fimg.data)
                     if callable(callback):
                         callback(filename, i + 1)
+                    if abort.is_set():
+                        return
             t += time.perf_counter()
             print(f"Processing {os.path.basename(filename):30s} took {1000*t:6.1f}ms ({fimg.nframes} frames)")
         self.timing.append(t)
