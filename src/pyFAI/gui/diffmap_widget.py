@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -81,7 +80,7 @@ class IntegrateDialog(qt.QDialog):
 class TreeModel(qt.QAbstractItemModel):
 
     def __init__(self, win, root_item):
-        super(TreeModel, self).__init__(win)
+        super().__init__(win)
         self._root_item = root_item
         self._win = win
         self._current_branch = None
@@ -513,7 +512,7 @@ class DiffMapWidget(qt.QWidget):
         if not os.path.exists(fname):
             logger.warning("No such configuration file: %s", fname)
             return
-        with open(fname, "r") as fd:
+        with open(fname) as fd:
             dico = json.loads(fd.read())
         self.set_config(dico)
 

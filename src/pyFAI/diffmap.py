@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -62,7 +61,7 @@ DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index slow fast')
 
 
-class DiffMap(object):
+class DiffMap:
     """
     Basic class for diffraction mapping experiment using pyFAI
     """
@@ -172,7 +171,7 @@ command line
         """
         usage = """diff_map [options] -p ponifile imagefiles*
 If the number of files is too large, use double quotes like "*.edf" """
-        version = "diff_tomo from pyFAI  version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
+        version = f"diff_tomo from pyFAI  version {PyFAI_VERSION}: {PyFAI_DATE}"
         parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
         parser.add_argument("-V", "--version", action='version', version=version)
         parser.add_argument("args", metavar="FILE", help="List of files to integrate. Mandatory without GUI", nargs='*')
