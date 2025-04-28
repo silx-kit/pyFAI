@@ -57,6 +57,7 @@ from ..io.integration_config import WorkerConfig
 from ..io.diffmap_config import DiffmapConfig, MotorRange
 from .pilx import MainWindow as pilx_main
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.getLogger("pyFAI").level)
 lognorm = colors.LogNorm()
 
 

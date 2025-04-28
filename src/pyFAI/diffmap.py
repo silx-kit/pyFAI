@@ -227,7 +227,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         args = options.args
 
         if options.verbose:
-            #switch to debug all logger from pyFAI.
+            "Switch all logger from pyFAI to debug:"
             for name in logging.root.manager.loggerDict:
                 if name.startswith("pyFAI"):
                     logging.getLogger(name).setLevel(logging.DEBUG)
