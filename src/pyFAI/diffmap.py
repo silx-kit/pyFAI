@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2025"
+__date__ = "28/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -289,7 +289,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                 method[3] = "opencl"
             else:
                 logger.warning(f"Unexpected method found in configuration file: {method}")
-            ai.method = method
+            ai.method = tuple(method)
 
         for fn in args:
             f = urlparse(fn).path
