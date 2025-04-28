@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2025"
+__date__ = "28/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -443,43 +443,28 @@ class DiffMapWidget(qt.QWidget):
         """Set up the widget from dictionary
 
         :param  dico: dictionary or DiffMapConfig instance
-
-        TODO: use features of DiffMapConfig
         """
+
         if isinstance(dico, DiffmapConfig):
-            dico = dico.as_dict()
+            config = dico
+        else:
+            config = DiffmapConfig.from_dict(dico)
 
-        self.integration_config = WorkerConfig.from_dict(dico.get("ai", {}))
-        setup_data = {"experiment_title": self.experimentTitle.setText,
-                      "fast_motor_name": self.fastMotorName.setText,
-                      "slow_motor_name": self.slowMotorName.setText,
-                      "nbpt_fast": lambda a: self.fastMotorPts.setText(str_(a)),
-                      "nbpt_slow": lambda a: self.slowMotorPts.setText(str_(a)),
-                      "offset": lambda a: self.offset.setText(str_(a)),
-                      "output_file": self.outputFile.setText,
-                      "zigzag_scan": lambda a: self.zigzagBox.setChecked(bool(a)),
-                      }
+        self.integration_config = WorkerConfig() if config.ai is None else config.ai
 
-        deprecated_keys = {
-            "fast_motor_points": "nbpt_fast",
-            "slow_motor_points": "nbpt_slow",
-            }
-
-        for key in dico.keys():
-            if key in deprecated_keys.keys():
-                deprecated_warning("Argument", key, deprecated_since="2024.3.0")
-                dico[deprecated_keys[key]] = dico.pop(key)
-
-        for key, value in setup_data.items():
-            if key in dico:
-                value(dico[key])
-        if "fast_motor_range" in dico:
-            self.fastMotorMinimum.setText(str(dico["fast_motor_range"][0]))
-            self.fastMotorMaximum.setText(str(dico["fast_motor_range"][1]))
-        if "slow_motor_range" in dico:
-            self.slowMotorMinimum.setText(str(dico["slow_motor_range"][0]))
-            self.slowMotorMaximum.setText(str(dico["slow_motor_range"][1]))
-        self.list_dataset = ListDataSet(DataSet(*(str_(j) for j in i)) for i in dico.get("input_data", []))
+        self.experimentTitle.setText(config.experiment_title or "")
+        self.fastMotorName.setText(config.fast_motor.name or "")
+        self.slowMotorName.setText(config.slow_motor.name or "")
+        self.fastMotorPts.setText(str_(config.fast_motor.points))
+        self.slowMotorPts.setText(str_(config.slow_motor.points))
+        self.outputFile.setText(config.output_file)
+        self.offset.setText(str_(config.offset))
+        self.zigzagBox.setChecked(bool(config.zigzag_scan))
+        self.fastMotorMinimum.setText(str(config.fast_motor.start))
+        self.fastMotorMaximum.setText(str(config.fast_motor.stop))
+        self.slowMotorMinimum.setText(str(config.slow_motor.start))
+        self.slowMotorMaximum.setText(str(config.slow_motor.stop))
+        self.list_dataset = config.input_data
         self.list_model.update(self.list_dataset.as_tree())
         self.update_number_of_frames()
         self.update_number_of_points()
