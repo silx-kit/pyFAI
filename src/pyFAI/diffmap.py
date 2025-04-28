@@ -679,7 +679,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         :return: None
         """
         if abort is None:
-            abort = threading.Event()
+            abort = Event()
         if self.ai is None:
             self.configure_worker(self.poni)
         if self.dataset is None:

@@ -38,7 +38,7 @@ __docformat__ = 'restructuredtext'
 import os
 import time
 import json
-import threading
+from threading import Event
 import logging
 import numpy
 import fabio
@@ -169,7 +169,7 @@ class DiffMapWidget(qt.QWidget):
         pyfaiIcon = icons.getQIcon("pyfai:gui/images/icon")
         self.setWindowIcon(pyfaiIcon)
 
-        self.abort = threading.Event()
+        self.abort = Event()
         self.progressBar.setValue(0)
         self.list_model = TreeModel(self, self.list_dataset.as_tree())
         self.listFiles.setModel(self.list_model)
