@@ -36,7 +36,6 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import os
-import time
 import copy
 import json
 import logging

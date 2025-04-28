@@ -37,7 +37,7 @@ __docformat__ = 'restructuredtext'
 import os
 import time
 import json
-from threading import Event
+
 import logging
 import numpy
 import fabio
@@ -45,8 +45,8 @@ from silx.gui import qt
 from silx.gui import icons
 
 from .matplotlib import pyplot, colors
+import threading
 from ..utils import int_, str_, float_, get_ui_file
-from ..utils.decorators import deprecated_warning
 from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
@@ -163,12 +163,12 @@ class DiffMapWidget(qt.QWidget):
             qt.loadUi(get_ui_file(self.uif), self)
         except AttributeError as _error:
             logger.error("It looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
+            logger.error(f"{type(_error)}: {_error}")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
 
         pyfaiIcon = icons.getQIcon("pyfai:gui/images/icon")
         self.setWindowIcon(pyfaiIcon)
-
-        self.abort = Event()
+        self.abort = threading.Event()
         self.progressBar.setValue(0)
         self.list_model = TreeModel(self, self.list_dataset.as_tree())
         self.listFiles.setModel(self.list_model)
@@ -259,11 +259,10 @@ class DiffMapWidget(qt.QWidget):
     def do_abort(self):
         logger.info("DiffMapWidget.do_abort")
         self.abort.set()
-        button = qt.QMessageBox.warning(self,
-                "Processing aborted !",
-                "User aborted the processing.",
-                buttons=qt.QMessageBox.Ok,
-                )
+        _button = qt.QMessageBox.warning(self,
+                    "Processing aborted !",
+                    "User aborted the processing.",
+                    buttons=qt.QMessageBox.Ok)
 
 
     def input_filer(self, *args, **kwargs):
