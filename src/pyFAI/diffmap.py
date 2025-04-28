@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2025"
+__date__ = "25/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -308,10 +308,6 @@ If the number of files is too large, use double quotes like "*.edf" """
             urlmask = urlparse(options.mask)
         elif ai.mask_file:
             urlmask = urlparse(ai.mask_file)
-        # elif config.get("do_mask", False) or config.get("mask_file", None):
-        #     # compatibility with elder config files...
-        #     deprecated_warning("Config of mask no more top-level, but in ai config group", "mask_file", deprecated_since="2024.12.0")
-        #     urlmask = urlparse(config.get("mask_file", None))
         else:
             urlmask = urlparse("")
         if "::" in  urlmask.path:
@@ -333,15 +329,6 @@ If the number of files is too large, use double quotes like "*.edf" """
             else:
                 logger.warning("No such poni file: {options.poni}")
 
-        # deprecated_keys = {
-        #     "fast_motor_points": "nbpt_fast",
-        #     "slow_motor_points": "nbpt_slow",
-        #     }
-        # for key in deprecated_keys:
-        #     if key in config.keys():
-        #         deprecated_warning("Argument", key, deprecated_since="2024.3.0")
-        #         config[deprecated_keys[key]] = config.pop(key)
-
         if options.fast is None:
             self.nbpt_fast = config.nbpt_fast or self.nbpt_fast
         else:
@@ -353,6 +340,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.nbpt_slow = int(options.slow)
         config.nbpt_slow = self.nbpt_slow
         if options.npt_rad is not None:
+            print("options.npt_rad", options.npt_rad)
             ai.nbpt_rad = self.nbpt_rad = int(options.npt_rad)
         elif ai.nbpt_rad:
             self.nbpt_rad = ai.nbpt_rad
@@ -393,13 +381,13 @@ If the number of files is too large, use double quotes like "*.edf" """
                 return options, config
         return options
 
-    def get_config(self):
+    def get_diffmap_config(self):
         """Retrieve the configuration of the DiffMap object
 
         :return: DiffMapConfig dataclass instance
         """
         config = DiffmapConfig()
-        config.ai = ai = self.worker.get_config()
+        config.ai = ai = self.worker.get_worker_config()
         config.output_file = self.hdf5
         config.input_data = ListDataSet.from_serialized((i, None) for i in self.inputfiles)
 
@@ -425,8 +413,10 @@ If the number of files is too large, use double quotes like "*.edf" """
             ai.unit = "2th_deg"
         return config
 
-    def get_config_dict(self):
-        return self.get_config().as_dict()
+    def get_dict_config(self):
+        return self.get_diffmap_config().as_dict()
+    
+    get_config = get_diffmap_config
 
     def set_config(self, config):
         if isinstance(config, dict):

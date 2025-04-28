@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2025"
+__date__ = "25/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -54,6 +54,7 @@ from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
 from .dialog import MessageBox
 from ..io.integration_config import WorkerConfig
+from ..io.diffmap_config import DiffmapConfig
 from .pilx import MainWindow as pilx_main
 logger = logging.getLogger(__name__)
 lognorm = colors.LogNorm()
@@ -441,8 +442,13 @@ class DiffMapWidget(qt.QWidget):
     def set_config(self, dico):
         """Set up the widget from dictionary
 
-        :param  dico: dictionary
+        :param  dico: dictionary or DiffMapConfig instance
+
+        TODO: use features of DiffMapConfig
         """
+        if isinstance(dico, DiffmapConfig):
+            dico = dico.as_dict()
+
         self.integration_config = WorkerConfig.from_dict(dico.get("ai", {}))
         setup_data = {"experiment_title": self.experimentTitle.setText,
                       "fast_motor_name": self.fastMotorName.setText,

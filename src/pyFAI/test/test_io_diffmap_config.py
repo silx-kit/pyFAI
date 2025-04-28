@@ -186,6 +186,7 @@ class TestDiffmapConfig(unittest.TestCase):
             # logger.info("%s: %s %s", field.name, ref.__getattribute__(field.name), obt.__getattribute__(field.name))
             self.assertEqual(ref.__getattribute__(field.name), obt.__getattribute__(field.name),
                     f"{field.name}: {ref.__getattribute__(field.name)} ≠ {obt.__getattribute__(field.name)}")
+
     def test_diffmap_parse(self):
         fn = os.path.join(UtilsTest.tempdir, "test_diffmap_parse.json")
         with open(fn, "w") as w:
@@ -207,7 +208,27 @@ class TestDiffmapConfig(unittest.TestCase):
         self.assertEqual(parsed.offset, config.offset)
         self.assertEqual(parsed.zigzag_scan, config.zigzag_scan)
 
-
+    def test_diffmap_consistency(self):
+        fn = os.path.join(UtilsTest.tempdir, "test_diffmap_parse.json")
+        with open(fn, "w") as w:
+            w.write(test_data)
+        dm = DiffMap()
+        dm.set_config(self.inp)
+        config = dm.get_config()
+        parsed = DiffmapConfig.from_dict(self.inp)
+        for field in fields(DiffmapConfig):
+            value = config.__getattribute__(field.name)
+            msg = f"{field.name} is type {type(value).__name__}, expected {field.type.__name__}"
+            if value is None:
+                logger.warning(msg)
+            else:
+                self.assertTrue(isinstance(value, field.type), msg)
+        #just a few test to validate the parsing...
+        self.assertEqual(parsed.output_file, config.output_file)
+        self.assertEqual(parsed.diffmap_config_version, CURRENT_VERSION)
+        self.assertEqual(parsed.experiment_title, config.experiment_title)
+        self.assertEqual(config.offset, 0)  # parsed was None, changed to 0 in the DiffMap instance
+        self.assertEqual(parsed.zigzag_scan, config.zigzag_scan)
 
 
 class TestListDataSet(unittest.TestCase):
