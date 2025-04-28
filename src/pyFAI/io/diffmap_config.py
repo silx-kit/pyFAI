@@ -93,6 +93,10 @@ class MotorRange:
         self = cls()
         if dico.get("nbpt_" + prefix):
             self.points = int(dico["nbpt_" + prefix])
+        elif dico.get("npt_" + prefix):
+            self.points = int(dico["npt_" + prefix])
+        elif dico.get(prefix+"_motor_points"):
+            self.points = int(dico[prefix+"_motor_points"])
         if dico.get(prefix + "_motor_name"):
             self.name = str(dico[prefix + "_motor_name"])
         if dico.get(prefix + "_motor_range"):
@@ -259,6 +263,8 @@ class DiffmapConfig:
                     dico[key] = value.as_str()
                 elif "_asdict" in methods:   # namedtuple
                     dico[key] = tuple(value)
+                elif "serialize" in methods:
+                    dico[key] = value.serialize()
                 else:
                     dico[key] = value
             else:
@@ -280,7 +286,6 @@ class DiffmapConfig:
 
         # Pre-normalize some keys ...
         if "diffmap_config_version" not in dico:
-            print("This is an old config ...")
             old_config = True
             slow = MotorRange._parse_old_config(dico, "slow")
             fast = MotorRange._parse_old_config(dico, "fast")
@@ -298,6 +303,7 @@ class DiffmapConfig:
                     if value is None:
                         to_init[key] = value
                     elif isinstance(value, (list, tuple)):
+                        print(klass, value)
                         if "from_serialized" in dir(klass):
                             to_init[key] = klass.from_serialized(value)
                         else:
