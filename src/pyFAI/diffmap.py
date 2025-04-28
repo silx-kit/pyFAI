@@ -415,7 +415,7 @@ If the number of files is too large, use double quotes like "*.edf" """
 
     def get_dict_config(self):
         return self.get_diffmap_config().as_dict()
-    
+
     get_config = get_diffmap_config
 
     def set_config(self, config):
