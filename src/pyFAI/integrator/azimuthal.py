@@ -1342,9 +1342,9 @@ class AzimuthalIntegrator(Integrator):
         Then a cumulative sum is performed on their weight which allows to determine the different quantiles.
         If percentile (in the range [1:1000]) is a single scalar, the pixel with the nearest value it used.
         If percentile is a 2-tuple, the weighted average is calculated for all pixel between the two extrma.
-        
-        Unlike sigma-clipping, this method is compatible with any kind of pixel splitting but much slower. 
-        
+
+        Unlike sigma-clipping, this method is compatible with any kind of pixel splitting but much slower.
+
         :param data: input image as numpy array
         :param npt_rad: number of radial points
         :param bool correctSolidAngle: correct for solid angle of each pixel if True
