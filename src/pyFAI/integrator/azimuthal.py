@@ -1338,10 +1338,10 @@ class AzimuthalIntegrator(Integrator):
                      safe=True,
                      **kwargs):
         """Performs a median filter in azimuthal space:
-        
+
         All pixels contributing to an azimuthal bin are sorted according to their corrected intensity (i.e. signal/norm).
         Then a cumulative sum is performed on their weight which allows to determine the location of the different quantiles.
-        The percentile parameter (in the range [1:100]) can be: 
+        The percentile parameter (in the range [1:100]) can be:
         - either a single scalar, then the pixel with the nearest value to the quantile is used (i.e. the default value 50 provides the median).
         - either a 2-tuple, then the weighted average is calculated for all pixels between the two quantiles provided.
 
