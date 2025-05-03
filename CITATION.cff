@@ -102,4 +102,3 @@ identifiers:
   value: swh:1:dir:152f2a14f5adb8a55584ab09eaa911aab3bb3714;origin=https://doi.org/10.5281/zenodo.832896;visit=swh:1:snp:d3e7c816f5a8655ea86e2fa3c32138881bcc42cd;anchor=swh:1:rel:811cecda6ccff076118796e57847c5540b9d3407;path=silx-kit-pyFAI-8cfd244
 license:
 - mit
-
