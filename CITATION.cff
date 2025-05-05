@@ -86,13 +86,19 @@ authors:
   - family-names: iltommi
     affiliation: LULI
   - family-names: dodogerstlin
-date-released: '2024-09-13'
-doi: 10.5281/zenodo.13756914
+date-released: '2025-03-14'
+doi: 10.5281/zenodo.15023377
 license: MIT
-repository-code: https://github.com/silx-kit/pyFAI/tree/v2024.09
+repository-code: https://github.com/silx-kit/pyFAI/tree/v2025.03
 type: software
 title: "pyFAI: Fast Azimuthal Integration in Python"
-version: v2024.09
+version: v2025.03
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.1234
+    value: 10.5281/zenodo.15023377
+cff-version: 1.2.0
+identifiers:
+- type: swh
+  value: swh:1:dir:152f2a14f5adb8a55584ab09eaa911aab3bb3714;origin=https://doi.org/10.5281/zenodo.832896;visit=swh:1:snp:d3e7c816f5a8655ea86e2fa3c32138881bcc42cd;anchor=swh:1:rel:811cecda6ccff076118796e57847c5540b9d3407;path=silx-kit-pyFAI-8cfd244
+license:
+- mit
