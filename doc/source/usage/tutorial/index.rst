@@ -30,6 +30,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    AzimuthalFilter
    Variance/uncertainties
    LogScale/Guinier
+   Performances-2D
    multi-geometry
    Goniometer/index
    Inpainting/Inpainting
