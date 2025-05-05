@@ -484,7 +484,9 @@ class WorkerConfig:
         * Handle Enums like ErrorModel
         """
         dico = {}
-        for key, value in asdict(self).items():
+        for field in fields(self):
+            key = field.name
+            value = getattr(self, key)
             if key in self.ENFORCED:
                 if "as_dict" in dir(value):  # ponifile
                     dico[key] = value.as_dict()

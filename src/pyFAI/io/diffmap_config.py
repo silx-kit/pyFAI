@@ -31,12 +31,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2025"
+__date__ = "28/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import os
-import time
 import copy
 import json
 import logging
@@ -59,8 +58,8 @@ class MotorRange:
     :param step: Number of points (i.e. numberof steps + 1)
     :param name: Name of the motor
     """
-    start: float = 0.0
-    stop: float = 1.0
+    start: float = None
+    stop: float = None
     points: int = 0
     name: str = ""
 
@@ -81,12 +80,29 @@ class MotorRange:
 
     def __repr__(self):
         return f"{self.name}: MotorRange({self.start:.3f}, {self.stop:.3f}, {self.points})"
+
     @property
     def step_size(self):
         if self.points < 1:
             return
         return (self.stop-self.start)/self.points
 
+    @classmethod
+    def _parse_old_config(cls, dico, prefix="slow"):
+        self = cls()
+        if dico.get("nbpt_" + prefix):
+            self.points = int(dico["nbpt_" + prefix])
+        elif dico.get("npt_" + prefix):
+            self.points = int(dico["npt_" + prefix])
+        elif dico.get(prefix+"_motor_points"):
+            self.points = int(dico[prefix+"_motor_points"])
+        if dico.get(prefix + "_motor_name"):
+            self.name = str(dico[prefix + "_motor_name"])
+        if dico.get(prefix + "_motor_range"):
+            rng = dico[prefix + "_motor_range"]
+            self.start = float(rng[0])
+            self.stop = float(rng[-1])
+        return self
 
 DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes", "shape"), defaults=[None, None, None])
 
@@ -169,9 +185,12 @@ class ListDataSet(list):
         "Alternative constructor with deserialization"
         self = cls()
         for ds in lst:
-            if isinstance(ds, dict):
+            if isinstance(ds, DataSet):
+                self.append(ds)
+            elif isinstance(ds, dict):
                 self.append(DataSet(**ds))
             else:
+                # list or tuple
                 self.append(DataSet.from_tuple(ds))
         return self
 
@@ -232,7 +251,9 @@ class DiffmapConfig:
         * Handle dedicated nested dataclasses
         """
         dico = {}
-        for key, value in asdict(self).items():
+        for field in fields(self):
+            key = field.name
+            value = getattr(self, key)
             if key in self.ENFORCED:
                 methods = dir(value)
                 if "as_dict" in methods:     # dataclass
@@ -241,6 +262,8 @@ class DiffmapConfig:
                     dico[key] = value.as_str()
                 elif "_asdict" in methods:   # namedtuple
                     dico[key] = tuple(value)
+                elif "serialize" in methods:
+                    dico[key] = value.serialize()
                 else:
                     dico[key] = value
             else:
@@ -260,6 +283,14 @@ class DiffmapConfig:
         if not inplace:
             dico = copy.copy(dico)
 
+        # Pre-normalize some keys ...
+        if "diffmap_config_version" not in dico:
+            old_config = True
+            slow = MotorRange._parse_old_config(dico, "slow")
+            fast = MotorRange._parse_old_config(dico, "fast")
+        else:
+            old_config = False
+
         to_init = {}
         for field in fields(cls):
             key = field.name
@@ -271,6 +302,7 @@ class DiffmapConfig:
                     if value is None:
                         to_init[key] = value
                     elif isinstance(value, (list, tuple)):
+                        print(klass, value)
                         if "from_serialized" in dir(klass):
                             to_init[key] = klass.from_serialized(value)
                         else:
@@ -278,13 +310,21 @@ class DiffmapConfig:
                     elif isinstance(value, klass):
                         to_init[key] = value
                     elif isinstance(value, dict):
-                        to_init[key] = klass(**value)
+                        if "from_dict" in dir(klass):
+                            to_init[key] = klass.from_dict(value)
+                        else:
+                            to_init[key] = klass(**value)
                     else:
                         logger.warning(f"Unable to construct class {klass} with input {value} for key {key} in WorkerConfig.from_dict()")
                         to_init[key] = value
                 else:
                     to_init[key] = value
         self = cls(**to_init)
+        if old_config:
+            self.fast_motor = fast
+            self.fast_motor = slow
+
+        # print(self)
 
         for key in cls.GUESSED:
             if key in dico:
