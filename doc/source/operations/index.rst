@@ -36,7 +36,7 @@ by may impair performances or prevent tools from properly working:
 
 * pyopencl (for GPU computing)
 * fftw (for image analysis)
-* PyQt5, PyQt6, PySide2 or PySide6 (for the graphical user interface)
+* PyQt5, PyQt6 or PySide6 (for the graphical user interface)
 
 Build dependencies:
 -------------------

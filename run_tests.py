@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "26/04/2023"
+__date__ = "13/05/2025"
 __license__ = "MIT"
 
 import sys
@@ -406,7 +406,7 @@ parser.add_argument("-v", "--verbose", default=0,
                          "INFO messages. Use -vv for full verbosity, " +
                          "including debug messages and test help strings.")
 parser.add_argument("--qt-binding", dest="qt_binding", default=None,
-                    help="Force using a Qt binding, from 'PyQt4', 'PyQt5', or 'PySide'")
+                    help="Force using a Qt binding, from 'PyQt5', 'PyQt6'or 'PySide6' (default)")
 
 options = parser.parse_args()
 sys.argv = [sys.argv[0]]
@@ -447,12 +447,18 @@ if options.qt_binding:
     elif binding == "pyqt5":
         logger.info("Force using PyQt5")
         import PyQt5.QtCore  # noqa
+    elif binding == "pyqt6":
+        logger.info("Force using PyQt6")
+        import PyQt6.QtCore  # noqa
     elif binding == "pyside":
         logger.info("Force using PySide")
         import PySide.QtCore  # noqa
     elif binding == "pyside2":
         logger.info("Force using PySide2")
         import PySide2.QtCore  # noqa
+    elif binding == "pyside6":
+        logger.info("Force using PySide6")
+        import PySide6.QtCore  # noqa
     else:
         raise ValueError("Qt binding '%s' is unknown" % options.qt_binding)
 
