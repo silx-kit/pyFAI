@@ -97,7 +97,7 @@ Run dependencies
 * FabIO
 * h5py
 * pyopencl (optional)
-* PyQt5/6 or PySide2/6 (for the graphical user interface)
+* PyQt5/6 or PySide6 (for the graphical user interface)
 * Silx
 
 Build dependencies

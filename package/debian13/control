@@ -24,7 +24,7 @@ Build-Depends: bitshuffle <!nocheck>,
                python3-numpy,
                python3-pip,
                python3-pyopencl,
-               python3-pyqt5,
+               python3-pyside6,
                python3-scipy,
                python3-setuptools,
                python3-silx,
@@ -72,7 +72,7 @@ Description: Fast Azimuthal Integration scripts
 Package: python3-pyfai
 Architecture: any
 Section: python
-Depends: python3-pyqt5,
+Depends: python3-pyside6,
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}
