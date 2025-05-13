@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "11/03/2025"
+__date__ = "13/05/2025"
 __license__ = "MIT"
 __copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -296,8 +296,9 @@ class Bench(object):
         Returns the occupied memory for memory-leak hunting in MByte
         """
         pid = os.getpid()
-        if os.path.exists("/proc/%i/status" % pid):
-            for l in open("/proc/%i/status" % pid):
+        status_file = f"/proc/{pid}/status
+        if os.path.exists(status_file):
+            for l in open(status_file):
                 if l.startswith("VmRSS"):
                     mem = int(l.split(":", 1)[1].split()[0]) / 1024.
         else:

@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "13/05/2025"
 __status__ = "production"
 
 import os
@@ -49,6 +49,7 @@ try:
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 import fabio
+from fabio.fabioutils import exists as fabio_exists
 
 from .. import date as pyFAI_date, version as pyFAI_version, units, utils
 from ..average import average_dark
@@ -153,12 +154,12 @@ def main(args=None):
             integrator.wavelength = options.wavelength * 1e-10
         elif options.energy:
             integrator.wavelength = hc / options.energy * 1e-10
-        if options.mask and os.path.exists(options.mask):  # override with the command line mask
+        if options.mask and fabio_exists(options.mask):  # override with the command line mask
             integrator.maskfile = options.mask
-        if options.dark and os.path.exists(options.dark):  # set dark current
+        if options.dark and fabio_exists(options.dark):  # set dark current
             with fabio.open(options.dark) as fimg:
                 integrator.darkcurrent = fimg.data
-        if options.flat and os.path.exists(options.flat):  # set Flat field
+        if options.flat and fabio_exists(options.flat):  # set Flat field
             with fabio.open(options.flat) as fimg:
                 integrator.flatfield = fimg.data
 
