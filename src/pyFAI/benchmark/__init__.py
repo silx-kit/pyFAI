@@ -296,7 +296,7 @@ class Bench(object):
         Returns the occupied memory for memory-leak hunting in MByte
         """
         pid = os.getpid()
-        status_file = f"/proc/{pid}/status
+        status_file = f"/proc/{pid}/status"
         if os.path.exists(status_file):
             for l in open(status_file):
                 if l.startswith("VmRSS"):
