@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,14 +30,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2025"
+__date__ = "28/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import os
 import time
 import json
-import threading
+
 import logging
 import numpy
 import fabio
@@ -46,16 +45,18 @@ from silx.gui import qt
 from silx.gui import icons
 
 from .matplotlib import pyplot, colors
-from ..utils import int_, str_, get_ui_file
-from ..utils.decorators import deprecated_warning
+import threading
+from ..utils import int_, str_, float_, get_ui_file
 from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
 from .dialog import MessageBox
 from ..io.integration_config import WorkerConfig
+from ..io.diffmap_config import DiffmapConfig, MotorRange
 from .pilx import MainWindow as pilx_main
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.getLogger("pyFAI").level)
 lognorm = colors.LogNorm()
 
 
@@ -79,7 +80,7 @@ class IntegrateDialog(qt.QDialog):
 class TreeModel(qt.QAbstractItemModel):
 
     def __init__(self, win, root_item):
-        super(TreeModel, self).__init__(win)
+        super().__init__(win)
         self._root_item = root_item
         self._win = win
         self._current_branch = None
@@ -147,8 +148,8 @@ class TreeModel(qt.QAbstractItemModel):
 
 class DiffMapWidget(qt.QWidget):
     progressbarChanged = qt.Signal(int, int)
-    processingFinished = qt.Signal(str)
-#     progressbarAborted = Signal()
+    processingFinished = qt.Signal()
+    pilxDisplay = qt.Signal(str)
     uif = "diffmap.ui"
     json_file = ".diffmap.json"
 
@@ -162,12 +163,12 @@ class DiffMapWidget(qt.QWidget):
             qt.loadUi(get_ui_file(self.uif), self)
         except AttributeError as _error:
             logger.error("It looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
+            logger.error(f"{type(_error)}: {_error}")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
 
         pyfaiIcon = icons.getQIcon("pyfai:gui/images/icon")
         self.setWindowIcon(pyfaiIcon)
-
-        self.aborted = False
+        self.abort = threading.Event()
         self.progressBar.setValue(0)
         self.list_model = TreeModel(self, self.list_dataset.as_tree())
         self.listFiles.setModel(self.list_model)
@@ -232,7 +233,8 @@ class DiffMapWidget(qt.QWidget):
         self.progressbarChanged.connect(self.update_processing)
         self.rMin.editingFinished.connect(self.update_slice)
         self.rMax.editingFinished.connect(self.update_slice)
-        self.processingFinished.connect(self.start_visu)
+        self.processingFinished.connect(self.close_fig)
+        self.pilxDisplay.connect(self.start_visu)
         # self.listFiles.expanded.connect(lambda:self.listFiles.resizeColumnToContents(0))
         self.scanButton.clicked.connect(self.scan_input_files)
 
@@ -255,7 +257,13 @@ class DiffMapWidget(qt.QWidget):
         self.files.setMenu(self.files_menu)
 
     def do_abort(self):
-        self.aborted = True
+        logger.info("DiffMapWidget.do_abort")
+        self.abort.set()
+        _button = qt.QMessageBox.warning(self,
+                    "Processing aborted !",
+                    "User aborted the processing.",
+                    buttons=qt.QMessageBox.Ok)
+
 
     def input_filer(self, *args, **kwargs):
         """
@@ -351,7 +359,7 @@ class DiffMapWidget(qt.QWidget):
 
         config = self.get_config()
         self.progressBar.setRange(0, self.number_of_points)
-        self.aborted = False
+        self.abort.clear()
         self.display_processing(config)
         self.last_idx = -1
         self.processing_thread = threading.Thread(name="process", target=self.process, args=(config,))
@@ -414,66 +422,67 @@ class DiffMapWidget(qt.QWidget):
                 self.integration_config.shape = shape
         return total_frames
 
-    def get_config(self):
+    def get_dict_config(self):
         """Return a dict with the plugin configuration which is JSON-serializable
         """
-        res = {"ai": self.integration_config.as_dict(),
-               "experiment_title": str_(self.experimentTitle.text()).strip(),
-               "fast_motor_name": str_(self.fastMotorName.text()).strip(),
-               "slow_motor_name": str_(self.slowMotorName.text()).strip(),
-               "nbpt_fast": int_(self.fastMotorPts.text()),
-               "nbpt_slow": int_(self.slowMotorPts.text()),
-               "offset": int_(self.offset.text()),
-               "zigzag_scan": self.zigzagBox.isChecked(),
-               "output_file": str_(self.outputFile.text()).strip(),
-               "input_data": [i.as_tuple() for i in self.list_dataset]
-               }
-        fast_motor_minimum = str_(self.fastMotorMinimum.text()).strip()
-        fast_motor_maximum = str_(self.fastMotorMaximum.text()).strip()
-        slow_motor_minimum = str_(self.slowMotorMinimum.text()).strip()
-        slow_motor_maximum = str_(self.slowMotorMaximum.text()).strip()
-        if fast_motor_minimum and fast_motor_maximum:
-            res["fast_motor_range"] = (float(fast_motor_minimum), float(fast_motor_maximum))
-        if slow_motor_minimum and slow_motor_maximum:
-            res["slow_motor_range"] = (float(slow_motor_minimum), float(slow_motor_maximum))
-        return res
+        return self.get_diffmap_config().as_dict()
+    get_config = get_dict_config
+
+    def get_diffmap_config(self):
+        """Return a DiffmapConfig instance with all the settings from the widget
+        """
+        config = DiffmapConfig(ai=self.integration_config,
+                               input_data=self.list_dataset)
+        config.experiment_title = str_(self.experimentTitle.text()).strip()
+        config.offset = int_(self.offset.text())
+        config.zigzag_scan = bool(self.zigzagBox.isChecked())
+        config.output_file = str_(self.outputFile.text()).strip()
+
+        if config.fast_motor is None:
+            config.fast_motor = MotorRange()
+        config.fast_motor.start = float_(self.fastMotorMinimum.text())
+        config.fast_motor.stop = float_(self.fastMotorMaximum.text())
+        config.fast_motor.name = str_(self.fastMotorName.text())
+        config.fast_motor.points = int_(self.fastMotorPts.text())
+        if config.slow_motor is None:
+            config.slow_motor = MotorRange()
+        config.slow_motor.start = float_(self.slowMotorMinimum.text())
+        config.slow_motor.stop = float_(self.slowMotorMaximum.text())
+        config.slow_motor.name = str_(self.slowMotorName.text())
+        config.slow_motor.points = int_(self.slowMotorPts.text())
+        return config
 
     def set_config(self, dico):
         """Set up the widget from dictionary
 
-        :param  dico: dictionary
+        :param  dico: dictionary or DiffMapConfig instance
         """
-        self.integration_config = WorkerConfig.from_dict(dico.get("ai", {}))
-        setup_data = {"experiment_title": self.experimentTitle.setText,
-                      "fast_motor_name": self.fastMotorName.setText,
-                      "slow_motor_name": self.slowMotorName.setText,
-                      "nbpt_fast": lambda a: self.fastMotorPts.setText(str_(a)),
-                      "nbpt_slow": lambda a: self.slowMotorPts.setText(str_(a)),
-                      "offset": lambda a: self.offset.setText(str_(a)),
-                      "output_file": self.outputFile.setText,
-                      "zigzag_scan": lambda a: self.zigzagBox.setChecked(bool(a)),
-                      }
 
-        deprecated_keys = {
-            "fast_motor_points": "nbpt_fast",
-            "slow_motor_points": "nbpt_slow",
-            }
+        if isinstance(dico, DiffmapConfig):
+            config = dico
+        else:
+            config = DiffmapConfig.from_dict(dico)
 
-        for key in dico.keys():
-            if key in deprecated_keys.keys():
-                deprecated_warning("Argument", key, deprecated_since="2024.3.0")
-                dico[deprecated_keys[key]] = dico.pop(key)
+        self.integration_config = WorkerConfig() if config.ai is None else config.ai
+        self.experimentTitle.setText(config.experiment_title or "")
 
-        for key, value in setup_data.items():
-            if key in dico:
-                value(dico[key])
-        if "fast_motor_range" in dico:
-            self.fastMotorMinimum.setText(str(dico["fast_motor_range"][0]))
-            self.fastMotorMaximum.setText(str(dico["fast_motor_range"][1]))
-        if "slow_motor_range" in dico:
-            self.slowMotorMinimum.setText(str(dico["slow_motor_range"][0]))
-            self.slowMotorMaximum.setText(str(dico["slow_motor_range"][1]))
-        self.list_dataset = ListDataSet(DataSet(*(str_(j) for j in i)) for i in dico.get("input_data", []))
+        if config.fast_motor is not None:
+            self.fastMotorName.setText(config.fast_motor.name or "")
+            self.fastMotorPts.setText(str_(config.fast_motor.points))
+            self.fastMotorMinimum.setText(str(config.fast_motor.start))
+            self.fastMotorMaximum.setText(str(config.fast_motor.stop))
+
+        if config.slow_motor is not None:
+            self.slowMotorPts.setText(str_(config.slow_motor.points))
+            self.slowMotorMinimum.setText(str(config.slow_motor.start))
+            self.slowMotorMaximum.setText(str(config.slow_motor.stop))
+            self.slowMotorName.setText(config.slow_motor.name or "")
+
+        self.outputFile.setText(config.output_file)
+        self.offset.setText(str_(config.offset))
+        self.zigzagBox.setChecked(bool(config.zigzag_scan))
+
+        self.list_dataset = config.input_data
         self.list_model.update(self.list_dataset.as_tree())
         self.update_number_of_frames()
         self.update_number_of_points()
@@ -483,12 +492,13 @@ class DiffMapWidget(qt.QWidget):
         """Save the configuration in a JSON file
 
         :param fname: file where the config is saved as JSON
+        :return: configuration as DiffmapConfig dataclass
         """
         if fname is None:
             fname = self.json_file
-        config = self.get_config()
+        config = self.get_diffmap_config()
         with open(fname, "w") as fd:
-            fd.write(json.dumps(config, indent=2))
+            fd.write(json.dumps(config.as_dict(), indent=2))
         return config
 
     def restore(self, fname=None):
@@ -501,7 +511,7 @@ class DiffMapWidget(qt.QWidget):
         if not os.path.exists(fname):
             logger.warning("No such configuration file: %s", fname)
             return
-        with open(fname, "r") as fd:
+        with open(fname) as fd:
             dico = json.loads(fd.read())
         self.set_config(dico)
 
@@ -528,40 +538,26 @@ class DiffMapWidget(qt.QWidget):
         with self.processing_sem:
             config = self.dump()
             config_ai = self.integration_config
-            diffmap_kwargs = {}
-
-            diffmap_kwargs["nbpt_rad"] = config_ai.nbpt_rad
-            for key in ["nbpt_fast", "nbpt_slow"]:
-                if key in config:
-                    diffmap_kwargs[key] = config[key]
-            if config_ai.do_2D:
-                diffmap_kwargs["nbpt_azim"] = config_ai.nbpt_azim
-
-            diffmap = DiffMap(**diffmap_kwargs)
-            diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
-            diffmap.experiment_title = config.get("experiment_title", "--")
-            diffmap.slow_motor_name = config.get("slow_motor_name", "slow")
-            diffmap.fast_motor_name = config.get("fast_motor_name", "fast")
-            diffmap.slow_motor_range = config.get("slow_motor_range")
-            diffmap.fast_motor_range = config.get("fast_motor_range")
-            diffmap.zigzag_scan = config.get("zigzag_scan")
-
+            diffmap = DiffMap()
+            diffmap.set_config(config)
             diffmap.configure_worker(config_ai)
-            diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data, self.azimuthal_data = diffmap.init_ai()
             self.data_h5 = diffmap.dataset
             for i, fn in enumerate(self.list_dataset):
-                diffmap.process_one_file(fn.path, callback=lambda fn, idx:self.progressbarChanged.emit(i, diffmap._idx))
+                diffmap.process_one_file(fn.path,
+                    callback=lambda fn, idx:self.progressbarChanged.emit(i, diffmap._idx),
+                    abort = self.abort)
 
-                if self.aborted:
+                if self.abort.is_set():
                     logger.warning("Aborted by user")
                     self.progressbarChanged.emit(0, 0)
+                    self.processingFinished.emit()
                     break
             if diffmap.nxs:
                 self.data_np = diffmap.dataset[()]
                 last_processed_file = diffmap.nxs.filename
                 diffmap.nxs.close()
-        if not self.aborted:
+        if not self.abort.is_set():
             logger.warning("Processing finished in %.3fs", time.perf_counter() - t0)
             self.progressbarChanged.emit(len(self.list_dataset), diffmap._idx)
             self.finish_processing(last_processed_file)
@@ -574,16 +570,18 @@ class DiffMapWidget(qt.QWidget):
         :param config: configuration of the processing ongoing
         """
         logger.debug("DiffmapWidget.display_processing")
+        if isinstance(config, dict):
+            config = DiffmapConfig.from_dict(config)
+
         self.fig = pyplot.figure(figsize=(12, 5))
         self.aximg = self.fig.add_subplot(1, 2, 1,
-                                          xlabel=config.get("fast_motor_name", "Fast motor"),
-                                          ylabel=config.get("slow_motor_name", "Slow motor"),
-                                          xlim=(-0.5, (config.get("nbpt_fast", 1) or 1) - 0.5),
-                                          ylim=(-0.5, (config.get("nbpt_slow", 1) or 1) - 0.5))
-        self.aximg.set_title(config.get("experiment_title", "Diffraction imaging"))
-        # print(config)
+                                          xlabel="Fast motor" if config.fast_motor is None else config.fast_motor.name,
+                                          ylabel="Slow motor" if config.slow_motor is None else config.slow_motor.name,
+                                          xlim=(-0.5, (config.fast_motor.points or 1) - 0.5),
+                                          ylim=(-0.5, (config.slow_motor.points or 1) - 0.5))
+        self.aximg.set_title(config.experiment_title or "Diffraction imaging")
         self.axplt = self.fig.add_subplot(1, 2, 2,
-                                          xlabel=to_unit(config.get("ai").get("unit")).label,
+                                          xlabel=to_unit(config.ai.unit).label,
                                           # ylabel="Scattered intensity"
                                           )
         self.axplt.set_title("Average diffraction pattern")
@@ -669,26 +667,33 @@ class DiffMapWidget(qt.QWidget):
         :param start_pilx: (str) open the pilx visualization tool with the given file
         """
         logger.debug("DiffmapWidget.finish_processing")
+        self.processingFinished.emit()
+
+        if start_pilx and isinstance(start_pilx, str) and os.path.exists(start_pilx):
+            self.pilxDisplay.emit(start_pilx)
+
+    def close_fig(self):
+        logger.info("close figures from main")
         with self.update_sem:
             if self.fig:
                 pyplot.close(self.fig)
+                qt.QCoreApplication.processEvents()
                 self.fig = None
                 self.plot = None
                 self.img = None
                 self.axplt = None
                 self.aximg = None
 
-        if start_pilx and isinstance(start_pilx, str) and os.path.exists(start_pilx):
-            self.processingFinished.emit(start_pilx)
 
     def start_visu(self, filename):
         """Open a pilx window
 
         :param filename: name of the HDF5 file to open
         """
-        logger.debug("DiffmapWidget.start_visu")
+        logger.info("DiffmapWidget.start_visu")
         if self.pilx_widget is not None:
             self.pilx_widget.close()
+            qt.QCoreApplication.processEvents()
         if filename is not None:
             self.pilx_widget = pilx_main.MainWindow()
             self.pilx_widget.initData(filename)
@@ -698,6 +703,7 @@ class DiffMapWidget(qt.QWidget):
         """
         Update the slice
         """
+        logger.info("update_slice", args)
         if self.radial_data is None:
             return
         try:
