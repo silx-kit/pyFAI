@@ -135,7 +135,7 @@ The extra Ubuntu packages needed are:
 * ``python3-dev``
 * ``python3-fabio``
 * ``python3-pyopencl``
-* ``python3-pyqt5``
+* ``python3-qtpy``
 * ``python3-silx``
 * ``python3-numexpr``
 

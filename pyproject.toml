@@ -64,9 +64,9 @@ requires = [
 ]
 
 [project.optional-dependencies]
-gui = [ "PyQt5" ]
+gui = [ "PySide6" ]
 opencl = [ "pyopencl" ]
-all = ["PyQt5", "pyopencl", "hdf5plugin"]
+all = ["PySide6", "pyopencl", "hdf5plugin"]
 
 [project.urls]
 homepage = 'http://www.silx.org'

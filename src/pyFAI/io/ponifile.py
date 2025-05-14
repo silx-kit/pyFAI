@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2025"
+__date__ = "28/04/2025"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -350,3 +350,18 @@ class PoniFile(object):
             return self.__getattribute__(key)
         except:
             return default
+
+    def __eq__(self, other):
+        """Checks the equality of two ponifile instances"""
+        if not isinstance(other, self.__class__):
+            return False
+        if ((self._detector != other._detector) or
+            (self._dist != other._dist) or
+            (self._poni1 != other._poni1) or
+            (self._poni2 != other._poni2) or
+            (self._rot1 != other._rot1) or
+            (self._rot2 != other._rot2) or
+            (self._rot3 != other._rot3) or
+            (self._wavelength != other._wavelength)):
+            return False
+        return True
