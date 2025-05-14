@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/04/2025"
+__date__ = "13/05/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -41,6 +41,7 @@ import json
 import logging
 import numpy
 import fabio
+from fabio.fabioutils import exists as fabio_exists
 from silx.gui import qt
 from silx.gui import icons
 
@@ -401,7 +402,7 @@ class DiffMapWidget(qt.QWidget):
         shape = None
         for i in self.list_dataset:
             fn = i.path
-            if os.path.exists(fn):
+            if fabio_exists(fn):
                 try:
                     with fabio.open(fn) as fimg:
                         new_shape = fimg.shape

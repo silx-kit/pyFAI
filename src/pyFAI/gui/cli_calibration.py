@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "13/05/2025"
 __status__ = "production"
 
 import os
@@ -51,6 +51,7 @@ import numpy
 from silx.image import marchingsquares
 from scipy.stats import linregress
 import fabio
+from fabio.fabioutils import exists as fabio_exists
 
 from argparse import ArgumentParser
 from urllib.parse import urlparse
@@ -106,7 +107,7 @@ def get_detector(detector, datafiles=None):
         res = detector
     else:
         res = Detector()
-    if datafiles and os.path.exists(datafiles[0]):
+    if datafiles and fabio_exists(datafiles[0]):
         with fabio.open(datafiles[0]) as fimg:
             shape = fimg.shape
         res.guess_binning(shape)
@@ -2363,10 +2364,10 @@ refinement process.
             for f in args[1:]:
                 with fabio.open(f) as fimg:
                     self.img += fimg.data
-        if options.dark and os.path.exists(options.dark):
+        if options.dark and fabio_exists(options.dark):
             with fabio.open(options.dark) as fimg:
                 self.img -= fimg.data
-        if options.flat and os.path.exists(options.flat):
+        if options.flat and fabio_exists(options.flat):
             with fabio.open(options.flat) as fimg:
                 self.img /= fimg.data
         if options.poni:
