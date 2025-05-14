@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/04/2025"
+__date__ = "14/05/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -83,9 +83,9 @@ class MotorRange:
 
     @property
     def step_size(self):
-        if self.points < 1:
+        if self.points < 2:
             return
-        return (self.stop-self.start)/self.points
+        return (self.stop-self.start)/(self.points-1)
 
     @classmethod
     def _parse_old_config(cls, dico, prefix="slow"):
