@@ -33,7 +33,7 @@ to the used backend.
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "17/09/2024"
+__date__ = "13/05/2025"
 
 import sys
 import logging
@@ -61,17 +61,17 @@ def _configure(backend, backend_qt4=None, check=False):
         matplotlib.rcParams['backend.qt4'] = backend_qt4
 
 
-if qt.BINDING == 'PySide':
-    _configure('Qt4Agg', 'PySide', check=_check_matplotlib)
+if qt.BINDING in ('PySide', 'PyQt4'):
+    _configure('Qt4Agg', qt.BINDING, check=_check_matplotlib)
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # noqa
 
-elif qt.BINDING == 'PyQt4':
-    _configure('Qt4Agg', check=_check_matplotlib)
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # noqa
-
-elif qt.BINDING == 'PyQt5':
+elif qt.BINDING in ('PyQt5', 'PySide2'):
     _configure('Qt5Agg', check=_check_matplotlib)
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg  # noqa
+
+elif qt.BINDING in ('PyQt6', 'PySide6'):
+    _configure('QtAgg', check=_check_matplotlib)
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg  # noqa
 
 from matplotlib import pyplot  # noqa
 from matplotlib import pylab  # noqa

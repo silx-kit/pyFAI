@@ -103,12 +103,12 @@ Python 3.9, ... 3.13 are well tested and officially supported.
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
-* ``scipy`` 	 - http://www.scipy.org
+* ``scipy`` 	  - http://www.scipy.org
 * ``matplotlib`` - http://matplotlib.sourceforge.net/
-* ``fabio`` 	 - http://sourceforge.net/projects/fable/files/fabio/
+* ``fabio`` 	  - http://sourceforge.net/projects/fable/files/fabio/
 * ``h5py``	     - http://www.h5py.org/
-* ``pyopencl``	 - http://mathema.tician.de/software/pyopencl/
-* ``pyqt5``	     - http://www.riverbankcomputing.co.uk/software/pyqt/intro
+* ``pyopencl``	  - http://mathema.tician.de/software/pyopencl/
+* ``pyside6``	  - https://wiki.qt.io/Qt_for_Python
 * ``silx``       - http://www.silx.org
 * ``numexpr``    - https://github.com/pydata/numexpr
 
@@ -135,7 +135,7 @@ The extra Ubuntu packages needed are:
 * ``python3-dev``
 * ``python3-fabio``
 * ``python3-pyopencl``
-* ``python3-pyqt5``
+* ``python3-qtpy``
 * ``python3-silx``
 * ``python3-numexpr``
 
