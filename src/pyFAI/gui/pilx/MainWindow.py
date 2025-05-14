@@ -33,10 +33,11 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2025"
+__date__ = "14/05/2025"
 __status__ = "development"
 
 from typing import Tuple
+from string import digits
 import json
 import h5py
 import logging
@@ -117,6 +118,9 @@ class MainWindow(qt.QMainWindow):
         self._background_point = None
         self.worker_config = None
 
+        # declaration of instance variables
+        self._map_ptr = None # This is the map of the indices of input frame
+
     def initData(self,
                  file_name: str,
                  dataset_path: str="/entry_0000/measurement/images_0001",
@@ -132,6 +136,10 @@ class MainWindow(qt.QMainWindow):
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
             map_data = get_dataset(nxprocess, "result/intensity")[()].sum(axis=-1)
+            try:
+                self._map_ptr = get_dataset(nxprocess, "result/map_ptr")[()]
+            except Exception:
+                self._map_ptr = numpy.arange()
             try:
                 slow = get_dataset(nxprocess, "result/slow")
             except Exception:
@@ -164,15 +172,15 @@ class MainWindow(qt.QMainWindow):
             else:
                 self._offset = 0
 
-            # Find source dataset paths
-            cnt = 0
-            for char in dataset_path[-1::-1]:
-                if char.isdigit():
-                    cnt += 1
-                else:
-                    break
+            try:
+                self._map_ptr = get_dataset(nxprocess, "result/map_ptr")[()]
+            except Exception:
+                self._map_ptr = numpy.arange(fast.size*slow.size)
+                self._map_ptr += self._offset
+                self._map_ptr.shape = (slow.size, fast.size)
 
-            _dataset_path = dataset_path[:-cnt]
+
+            _dataset_path = rstrip(digits)
             path, base = posixpath.split(_dataset_path)
 
             try:
@@ -282,7 +290,10 @@ class MainWindow(qt.QMainWindow):
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
             map_shape = get_dataset(nxprocess, "result/intensity").shape
-            image_index = row * map_shape[1] + col + self._offset
+            if self._map_ptr is not None:
+                image_index = self.map[row, col]
+            else:
+                image_index = row * map_shape[1] + col + self._offset
             if self._dataset_paths:
                 for dataset_path, size in self._dataset_paths.items():
                     if image_index < size:
