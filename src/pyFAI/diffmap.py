@@ -724,17 +724,25 @@ If the number of files is too large, use double quotes like "*.edf" """
             return
         else:
             self.stored_input.add(id_)
-        # Process 0: measurement group
+        # Process 0: measurement group & source group
         if "measurement" in self.entry_grp:
             measurement_grp = self.entry_grp["measurement"]
         else:
             measurement_grp = self.nxs.new_class(self.entry_grp, "measurement", "NXdata")
+
+        if "source" in self.nxdata_grp.parent:
+            source_grp = self.nxdata_grp.parent["source"]
+        else:
+            source_grp = self.nxs.new_class(self.nxdata_grp.parent, "source", "NXcollection")
+
         here = os.path.dirname(os.path.abspath(self.nxs.filename))
         there = os.path.abspath(dataset.file.filename)
         name = f"images_{len(self.stored_input):04d}"
-        measurement_grp[name] = h5py.ExternalLink(os.path.relpath(there, here), dataset.name)
+        source_grp[name] = measurement_grp[name] = h5py.ExternalLink(os.path.relpath(there, here), dataset.name)
+
         if "signal" not in measurement_grp.attrs:
             measurement_grp.attrs["signal"] = name
+
 
     def process_one_frame(self, frame):
         """
