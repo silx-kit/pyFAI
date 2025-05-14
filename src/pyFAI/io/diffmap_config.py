@@ -377,7 +377,6 @@ class DiffmapConfig:
                     if value is None:
                         to_init[key] = value
                     elif isinstance(value, (list, tuple)):
-                        print(klass, value)
                         if "from_serialized" in dir(klass):
                             to_init[key] = klass.from_serialized(value)
                         else:
@@ -398,8 +397,6 @@ class DiffmapConfig:
         if old_config:
             self.fast_motor = fast
             self.fast_motor = slow
-
-        # print(self)
 
         for key in cls.GUESSED:
             if key in dico:

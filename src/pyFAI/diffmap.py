@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/04/2025"
+__date__ = "14/05/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -56,8 +56,7 @@ from .io.diffmap_config import DiffmapConfig, ListDataSet
 from .io.ponifile import PoniFile
 from .worker import Worker
 from .utils.decorators import deprecated, deprecated_warning
-
-DIGITS = [str(i) for i in range(10)]
+from string import digits as DIGITS
 Position = collections.namedtuple('Position', 'index slow fast')
 
 
@@ -105,6 +104,7 @@ class DiffMap:
         self.nxdata_grp = None
         self.dataset = None
         self.dataset_error = None
+        self.map_ptr = None
         self.inputfiles = []
         self.timing = []
         self.stats = False
@@ -524,6 +524,11 @@ If the number of files is too large, use double quotes like "*.edf" """
         fast_motor_ds.attrs["interpretation"] = "scalar"
         fast_motor_ds.attrs["long_name"] = self.fast_motor_name
 
+        self.map_ptr = self.nxdata_grp.create_dataset("map_ptr", shape=(self.nbpt_slow,self.nbpt_fast), dtype=numpy.int32)
+        self.map_ptr.attrs["interpretation"] = "image"
+        self.map_ptr.attrs["long_name"] = "Frame index for given map position"
+
+
         if self.worker.do_2D():
             self.dataset = self.nxdata_grp.create_dataset(
                             name="intensity",
@@ -737,6 +742,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         """
         self._idx += 1
         pos = self.get_pos(None, self._idx)
+        self.map_ptr[pos.slow, pos.fast] = self._idx
         shape = self.dataset.shape
         if pos.slow + 1 > shape[0]:
             self.dataset.resize((pos.slow + 1,) + shape[1:])

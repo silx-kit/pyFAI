@@ -180,7 +180,7 @@ class MainWindow(qt.QMainWindow):
                 self._map_ptr.shape = (slow.size, fast.size)
 
 
-            _dataset_path = rstrip(digits)
+            _dataset_path = dataset_path.rstrip(digits)
             path, base = posixpath.split(_dataset_path)
 
             try:
@@ -291,7 +291,7 @@ class MainWindow(qt.QMainWindow):
             nxprocess = h5file[self._nxprocess_path]
             map_shape = get_dataset(nxprocess, "result/intensity").shape
             if self._map_ptr is not None:
-                image_index = self.map[row, col]
+                image_index = self._map_ptr[row, col]
             else:
                 image_index = row * map_shape[1] + col + self._offset
             if self._dataset_paths:
