@@ -30,10 +30,11 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2025"
+__date__ = "15/05/2025"
 __status__ = "development"
 
 import sys
+import copy
 from dataclasses import fields, asdict, dataclass as _dataclass
 from collections import namedtuple
 from enum import IntEnum
@@ -95,6 +96,12 @@ class IntegrateResult(tuple):
     """
     Class defining shared information between Integrate1dResult and Integrate2dResult.
     """
+    COPYABLE_ATTR = {"_sum_signal", "_sum_variance", "_sum_normalization", "_sum_normalization2",
+                     "_count", "_unit", "_has_mask_applied", "_has_dark_correction",
+                     "_has_flat_correction", "_has_solidangle_correction", "_normalization_factor",
+                     "_polarization_factor", "_metadata", "_npt_azim", "_percentile", "_method",
+                     "_method_called", "_compute_engine", "_error_model", "_std", "_sem",
+                     "_poni", "_weighted_average"}
 
     def __init__(self):
         self._sum_signal = None  # sum of signal
@@ -120,6 +127,30 @@ class IntegrateResult(tuple):
         self._sem = None  # standard error of the mean (error for the mean)
         self._poni = None  # Contains the geometry which was used for the integration
         self._weighted_average = None  # Should be True for weighted average and False for unweighted (legacy)
+
+    def __copy__(self):
+        "Helper function for copy.copy()"
+        other = self.__class__(*self)
+        for attr in self.COPYABLE_ATTR:
+            setattr(other, attr, getattr(self, attr))
+        return other
+
+    def __deepcopy__(self, memo=None):
+        "Helper function for copy.deepcopy()"
+        if memo is None:
+            memo = {}
+        args = []
+        for i in self:
+            cpy = copy.deepcopy(i)
+            memo[id(i)] = cpy
+            args.append(cpy)
+        other = self.__class__(*args)
+        for attr in self.COPYABLE_ATTR:
+            org = getattr(self, attr)
+            cpy = copy.deepcopy(org)
+            memo[id(org)] = cpy
+            setattr(other, attr, cpy)
+        return other
 
     @property
     def method(self):
