@@ -635,6 +635,20 @@ class TestBugRegression(unittest.TestCase):
         self.assertTrue(numpy.allclose(res2d.sum_signal, res2d_dp.sum_signal))
         self.assertTrue(numpy.allclose(res2d.sum_normalization, res2d_dp.sum_normalization))
 
+        ressp = ai.separate(img, 10, unit="r_mm")
+        ressp_cp = copy.copy(ressp)
+        self.assertTrue(numpy.allclose(ressp.bragg, ressp_cp.bragg))
+        self.assertTrue(numpy.allclose(ressp.amorphous, ressp_cp.amorphous))
+        self.assertTrue(numpy.allclose(ressp.sum_signal, ressp_cp.sum_signal))
+        self.assertTrue(numpy.allclose(ressp.sum_normalization, ressp_cp.sum_normalization))
+
+        ressp_dp = copy.deepcopy(ressp)
+        self.assertTrue(numpy.allclose(ressp.bragg, ressp_dp.bragg))
+        self.assertTrue(numpy.allclose(ressp.amorphous, ressp_dp.amorphous))
+        self.assertTrue(numpy.allclose(ressp.sum_signal, ressp_dp.sum_signal))
+        self.assertTrue(numpy.allclose(ressp.sum_normalization, ressp_dp.sum_normalization))
+
+
 
 class TestBug1703(unittest.TestCase):
     """
