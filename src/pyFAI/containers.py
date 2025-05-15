@@ -141,13 +141,13 @@ class IntegrateResult(tuple):
             memo = {}
         args = []
         for i in self:
-            cpy = copy.deepcopy(i)
+            cpy = copy.deepcopy(i, memo)
             memo[id(i)] = cpy
             args.append(cpy)
         other = self.__class__(*args)
         for attr in self.COPYABLE_ATTR:
             org = getattr(self, attr)
-            cpy = copy.deepcopy(org)
+            cpy = copy.deepcopy(org, memo)
             memo[id(org)] = cpy
             setattr(other, attr, cpy)
         return other
