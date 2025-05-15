@@ -633,6 +633,12 @@ class SeparateResult(tuple):
     * Bragg peaks (signal > amorphous)
     * Shadow areas (signal < amorphous)
     """
+    COPYABLE_ATTR = {'_radial', '_intensity', '_sigma',
+                    '_sum_signal', '_sum_variance', '_sum_normalization',
+                    '_count', '_unit', '_has_mask_applied', '_has_dark_correction',
+                    '_has_flat_correction', '_normalization_factor', '_polarization_factor',
+                    '_metadata', '_npt_rad', '_npt_azim', '_percentile', '_method',
+                    '_method_called', '_compute_engine', '_shadow'}
 
     def __new__(self, bragg, amorphous):
         return tuple.__new__(SeparateResult, (bragg, amorphous))
@@ -660,6 +666,30 @@ class SeparateResult(tuple):
         self._method_called = None
         self._compute_engine = None
         self._shadow = None
+
+    def __copy__(self):
+        "Helper function for copy.copy()"
+        other = self.__class__(*self)
+        for attr in self.COPYABLE_ATTR:
+            setattr(other, attr, getattr(self, attr))
+        return other
+
+    def __deepcopy__(self, memo=None):
+        "Helper function for copy.deepcopy()"
+        if memo is None:
+            memo = {}
+        args = []
+        for i in self:
+            cpy = copy.deepcopy(i, memo)
+            memo[id(i)] = cpy
+            args.append(cpy)
+        other = self.__class__(*args)
+        for attr in self.COPYABLE_ATTR:
+            org = getattr(self, attr)
+            cpy = copy.deepcopy(org, memo)
+            memo[id(org)] = cpy
+            setattr(other, attr, cpy)
+        return other
 
     @property
     def bragg(self):
