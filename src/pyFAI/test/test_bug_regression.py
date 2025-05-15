@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "15/05/2025"
 
 import sys
 import os
@@ -602,6 +602,39 @@ class TestBugRegression(unittest.TestCase):
         img=numpy.ones(ai.detector.shape);
         ai.integrate2d(img, 10, method=("full","csc","python"), unit="r_mm")
         #used to raise AssertionError assert self.size == len(indptr) - 1
+
+    def test_bug_2525(self):
+        """
+        res1d_cp = copy.copy(res1d)
+        used to raise TypeError: missing required positional argument
+        """
+        ai = load({"detector": "imxpad_s10"})
+        img=numpy.ones(ai.detector.shape)
+        res1d = ai.integrate1d(img, 10, unit="r_mm")
+
+        res1d_cp = copy.copy(res1d)
+        self.assertTrue(numpy.allclose(res1d.radial, res1d_cp.radial))
+        self.assertTrue(numpy.allclose(res1d.intensity, res1d_cp.intensity))
+        self.assertTrue(numpy.allclose(res1d.sum_intensity, res1d_cp.sum_intensity))
+        self.assertTrue(numpy.allclose(res1d.sum_normalization, res1d_cp.sum_normalization))
+        res1d_dp = copy.deepcopy(res1d)
+        self.assertTrue(numpy.allclose(res1d.radial, res1d_dp.radial))
+        self.assertTrue(numpy.allclose(res1d.intensity, res1d_dp.intensity))
+        self.assertTrue(numpy.allclose(res1d.sum_intensity, res1d_dp.sum_intensity))
+        self.assertTrue(numpy.allclose(res1d.sum_normalization, res1d_dp.sum_normalization))
+
+        res2d = ai.integrate2d(img, 10, unit="r_mm")
+        res2d_cp = copy.copy(res2d)
+        self.assertTrue(numpy.allclose(res2d.radial, res2d_cp.radial))
+        self.assertTrue(numpy.allclose(res2d.intensity, res2d_cp.intensity))
+        self.assertTrue(numpy.allclose(res2d.sum_intensity, res2d_cp.sum_intensity))
+        self.assertTrue(numpy.allclose(res2d.sum_normalization, res2d_cp.sum_normalization))
+        res2d_dp = copy.deepcopy(res2d)
+        self.assertTrue(numpy.allclose(res2d.radial, res2d_dp.radial))
+        self.assertTrue(numpy.allclose(res2d.intensity, res2d_dp.intensity))
+        self.assertTrue(numpy.allclose(res2d.sum_intensity, res2d_dp.sum_intensity))
+        self.assertTrue(numpy.allclose(res2d.sum_normalization, res2d_dp.sum_normalization))
+
 
 class TestBug1703(unittest.TestCase):
     """
