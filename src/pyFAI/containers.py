@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2025"
+__date__ = "16/05/2025"
 __status__ = "development"
 
 import sys
@@ -92,7 +92,36 @@ class ErrorModel(IntEnum):
         return self.name.lower()
 
 
-class IntegrateResult(tuple):
+class _CopyableTuple(tuple):
+    "Abstract class that can be copied using the copy module"
+    COPYABLE_ATTR = tuple()  # list of copyable attributes
+
+    def __copy__(self):
+        "Helper function for copy.copy()"
+        other = self.__class__(*self)
+        for attr in self.COPYABLE_ATTR:
+            setattr(other, attr, getattr(self, attr))
+        return other
+
+    def __deepcopy__(self, memo=None):
+        "Helper function for copy.deepcopy()"
+        if memo is None:
+            memo = {}
+        args = []
+        for i in self:
+            cpy = copy.deepcopy(i, memo)
+            memo[id(i)] = cpy
+            args.append(cpy)
+        other = self.__class__(*args)
+        for attr in self.COPYABLE_ATTR:
+            org = getattr(self, attr)
+            cpy = copy.deepcopy(org, memo)
+            memo[id(org)] = cpy
+            setattr(other, attr, cpy)
+        return other
+
+
+class IntegrateResult(_CopyableTuple):
     """
     Class defining shared information between Integrate1dResult and Integrate2dResult.
     """
@@ -127,30 +156,6 @@ class IntegrateResult(tuple):
         self._sem = None  # standard error of the mean (error for the mean)
         self._poni = None  # Contains the geometry which was used for the integration
         self._weighted_average = None  # Should be True for weighted average and False for unweighted (legacy)
-
-    def __copy__(self):
-        "Helper function for copy.copy()"
-        other = self.__class__(*self)
-        for attr in self.COPYABLE_ATTR:
-            setattr(other, attr, getattr(self, attr))
-        return other
-
-    def __deepcopy__(self, memo=None):
-        "Helper function for copy.deepcopy()"
-        if memo is None:
-            memo = {}
-        args = []
-        for i in self:
-            cpy = copy.deepcopy(i, memo)
-            memo[id(i)] = cpy
-            args.append(cpy)
-        other = self.__class__(*args)
-        for attr in self.COPYABLE_ATTR:
-            org = getattr(self, attr)
-            cpy = copy.deepcopy(org, memo)
-            memo[id(org)] = cpy
-            setattr(other, attr, cpy)
-        return other
 
     @property
     def method(self):
@@ -625,7 +630,7 @@ class Integrate2dResult(IntegrateResult):
         self._azimuthal_unit = unit
 
 
-class SeparateResult(tuple):
+class SeparateResult(_CopyableTuple):
     """
     Class containing the result of AzimuthalIntegrator.separte which separates the
 
@@ -666,30 +671,6 @@ class SeparateResult(tuple):
         self._method_called = None
         self._compute_engine = None
         self._shadow = None
-
-    def __copy__(self):
-        "Helper function for copy.copy()"
-        other = self.__class__(*self)
-        for attr in self.COPYABLE_ATTR:
-            setattr(other, attr, getattr(self, attr))
-        return other
-
-    def __deepcopy__(self, memo=None):
-        "Helper function for copy.deepcopy()"
-        if memo is None:
-            memo = {}
-        args = []
-        for i in self:
-            cpy = copy.deepcopy(i, memo)
-            memo[id(i)] = cpy
-            args.append(cpy)
-        other = self.__class__(*args)
-        for attr in self.COPYABLE_ATTR:
-            org = getattr(self, attr)
-            cpy = copy.deepcopy(org, memo)
-            memo[id(org)] = cpy
-            setattr(other, attr, cpy)
-        return other
 
     @property
     def bragg(self):
@@ -968,8 +949,17 @@ class SeparateResult(tuple):
         self._npt_azim = value
 
 
-class SparseFrame(tuple):
+class SparseFrame(_CopyableTuple):
     """Result of the sparsification of a diffraction frame"""
+    COPYABLE_ATTR = {'_shape', '_dtype', '_mask',
+                    '_radius', '_dummy', '_background_avg',
+                    '_background_std', '_unit', '_has_dark_correction',
+                    '_has_flat_correction', '_normalization_factor', '_polarization_factor',
+                    '_metadata', '_percentile', '_method',
+                    '_method_called', '_compute_engine',
+                    '_cutoff_clip', '_cutoff_pick', '_cutoff_peak',
+                    '_background_cycle', '_noise', '_radial_range', '_error_model',
+                    '_peaks', '_peak_patch_size', '_peak_connected'}
 
     def __new__(self, index, intensity):
         return tuple.__new__(SparseFrame, (index, intensity))

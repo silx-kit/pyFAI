@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2025"
+__date__ = "16/05/2025"
 
 import sys
 import os
@@ -647,6 +647,21 @@ class TestBugRegression(unittest.TestCase):
         self.assertTrue(numpy.allclose(ressp.amorphous, ressp_dp.amorphous))
         self.assertTrue(numpy.allclose(ressp.sum_signal, ressp_dp.sum_signal))
         self.assertTrue(numpy.allclose(ressp.sum_normalization, ressp_dp.sum_normalization))
+
+        from pyFAI.containers import SparseFrame
+        sp = SparseFrame(numpy.arange(1,5),numpy.arange(4,9))
+        sp._shape = (23,45)
+        sp_cp = copy.copy(sp)
+        self.assertTrue(numpy.allclose(sp.index, sp_cp.index))
+        self.assertTrue(numpy.allclose(sp.intensity, sp_cp.intensity))
+        self.assertEqual(sp.shape, sp_cp.shape)
+
+        sp_dp = copy.deepcopy(sp)
+        self.assertTrue(numpy.allclose(sp.index, sp_dp.index))
+        self.assertTrue(numpy.allclose(sp.intensity, sp_dp.intensity))
+        self.assertEqual(sp.shape, sp_dp.shape)
+
+
 
 
 
