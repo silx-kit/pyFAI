@@ -56,7 +56,6 @@ else:
     dataclass = _dataclass
 
 
-
 class ErrorModel(IntEnum):
     NO = 0
     VARIANCE = 1
@@ -432,8 +431,7 @@ class IntegrateResult(_CopyableTuple):
 
     @property
     def poni(self):
-        """content of the PONI-file
-        """
+        "content of the PONI-file"
         return self._poni
 
     def _set_poni(self, value):
@@ -1096,6 +1094,7 @@ class SparseFrame(_CopyableTuple):
     def unit(self):
         return self._unit
 
+
 def rebin1d(res2d):
     """Function that rebins an Integrate2dResult into a Integrate1dResult
 
@@ -1103,16 +1102,16 @@ def rebin1d(res2d):
     :return: Integrate1dResult
     """
     bins_rad = res2d.radial
-    sum_signal =  res2d.sum_signal.sum(axis=0)
-    sum_normalization =  res2d.sum_normalization.sum(axis=0)
+    sum_signal = res2d.sum_signal.sum(axis=0)
+    sum_normalization = res2d.sum_normalization.sum(axis=0)
     I = sum_signal / sum_normalization
     if res2d.sum_variance is not None:
-        sum_variance =  res2d.sum_variance.sum(axis=0)
+        sum_variance = res2d.sum_variance.sum(axis=0)
         sem = numpy.sqrt(sum_variance) / sum_normalization
         result = Integrate1dResult(bins_rad, I, sem)
         result._set_sum_normalization2(res2d.sum_normalization2.sum(axis=0))
         result._set_sum_variance(sum_variance)
-        result._set_std(numpy.sqrt(sum_variance) / sum_normalization  )
+        result._set_std(numpy.sqrt(sum_variance) / sum_normalization)
         result._set_std(sem)
     else:
         result = Integrate1dResult(bins_rad, I)
