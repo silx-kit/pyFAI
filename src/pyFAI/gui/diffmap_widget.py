@@ -41,6 +41,7 @@ import json
 import logging
 import numpy
 import fabio
+from fabio.fabioutils import exists as fabio_exists
 from silx.gui import qt
 from silx.gui import icons
 
@@ -401,7 +402,7 @@ class DiffMapWidget(qt.QWidget):
         shape = None
         for i in self.list_dataset:
             fn = i.path
-            if os.path.exists(fn):
+            if fabio_exists(fn):
                 try:
                     with fabio.open(fn) as fimg:
                         new_shape = fimg.shape

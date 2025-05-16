@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/09/2024"
+__date__ = "13/05/2025"
 
 import logging
 import numpy
@@ -273,7 +273,7 @@ class CalibrationContext(ApplicationContext):
     def _getStyle(self, name):
         style = self.__cacheStyles.get(name, None)
         if style is None:
-            resource = "pyfai:/gui/styles/%s.json" % name
+            resource = f"pyfai:/gui/styles/{name}.json"
             path = silx.resources.resource_filename(resource)
             if os.path.exists(path):
                 try:
