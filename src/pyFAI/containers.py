@@ -30,10 +30,11 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2025"
+__date__ = "16/05/2025"
 __status__ = "development"
 
 import sys
+import copy
 from dataclasses import fields, asdict, dataclass as _dataclass
 from collections import namedtuple
 from enum import IntEnum
@@ -53,7 +54,6 @@ if sys.version_info >= (3, 10):
     dataclass = _dataclass(slots=True)
 else:
     dataclass = _dataclass
-
 
 
 class ErrorModel(IntEnum):
@@ -91,10 +91,45 @@ class ErrorModel(IntEnum):
         return self.name.lower()
 
 
-class IntegrateResult(tuple):
+class _CopyableTuple(tuple):
+    "Abstract class that can be copied using the copy module"
+    COPYABLE_ATTR = tuple()  # list of copyable attributes
+
+    def __copy__(self):
+        "Helper function for copy.copy()"
+        other = self.__class__(*self)
+        for attr in self.COPYABLE_ATTR:
+            setattr(other, attr, getattr(self, attr))
+        return other
+
+    def __deepcopy__(self, memo=None):
+        "Helper function for copy.deepcopy()"
+        if memo is None:
+            memo = {}
+        args = []
+        for i in self:
+            cpy = copy.deepcopy(i, memo)
+            memo[id(i)] = cpy
+            args.append(cpy)
+        other = self.__class__(*args)
+        for attr in self.COPYABLE_ATTR:
+            org = getattr(self, attr)
+            cpy = copy.deepcopy(org, memo)
+            memo[id(org)] = cpy
+            setattr(other, attr, cpy)
+        return other
+
+
+class IntegrateResult(_CopyableTuple):
     """
     Class defining shared information between Integrate1dResult and Integrate2dResult.
     """
+    COPYABLE_ATTR = {"_sum_signal", "_sum_variance", "_sum_normalization", "_sum_normalization2",
+                     "_count", "_unit", "_has_mask_applied", "_has_dark_correction",
+                     "_has_flat_correction", "_has_solidangle_correction", "_normalization_factor",
+                     "_polarization_factor", "_metadata", "_npt_azim", "_percentile", "_method",
+                     "_method_called", "_compute_engine", "_error_model", "_std", "_sem",
+                     "_poni", "_weighted_average"}
 
     def __init__(self):
         self._sum_signal = None  # sum of signal
@@ -396,8 +431,7 @@ class IntegrateResult(tuple):
 
     @property
     def poni(self):
-        """content of the PONI-file
-        """
+        "content of the PONI-file"
         return self._poni
 
     def _set_poni(self, value):
@@ -594,7 +628,7 @@ class Integrate2dResult(IntegrateResult):
         self._azimuthal_unit = unit
 
 
-class SeparateResult(tuple):
+class SeparateResult(_CopyableTuple):
     """
     Class containing the result of AzimuthalIntegrator.separte which separates the
 
@@ -602,6 +636,12 @@ class SeparateResult(tuple):
     * Bragg peaks (signal > amorphous)
     * Shadow areas (signal < amorphous)
     """
+    COPYABLE_ATTR = {'_radial', '_intensity', '_sigma',
+                    '_sum_signal', '_sum_variance', '_sum_normalization',
+                    '_count', '_unit', '_has_mask_applied', '_has_dark_correction',
+                    '_has_flat_correction', '_normalization_factor', '_polarization_factor',
+                    '_metadata', '_npt_rad', '_npt_azim', '_percentile', '_method',
+                    '_method_called', '_compute_engine', '_shadow'}
 
     def __new__(self, bragg, amorphous):
         return tuple.__new__(SeparateResult, (bragg, amorphous))
@@ -907,8 +947,17 @@ class SeparateResult(tuple):
         self._npt_azim = value
 
 
-class SparseFrame(tuple):
+class SparseFrame(_CopyableTuple):
     """Result of the sparsification of a diffraction frame"""
+    COPYABLE_ATTR = {'_shape', '_dtype', '_mask',
+                    '_radius', '_dummy', '_background_avg',
+                    '_background_std', '_unit', '_has_dark_correction',
+                    '_has_flat_correction', '_normalization_factor', '_polarization_factor',
+                    '_metadata', '_percentile', '_method',
+                    '_method_called', '_compute_engine',
+                    '_cutoff_clip', '_cutoff_pick', '_cutoff_peak',
+                    '_background_cycle', '_noise', '_radial_range', '_error_model',
+                    '_peaks', '_peak_patch_size', '_peak_connected'}
 
     def __new__(self, index, intensity):
         return tuple.__new__(SparseFrame, (index, intensity))
@@ -1045,6 +1094,7 @@ class SparseFrame(tuple):
     def unit(self):
         return self._unit
 
+
 def rebin1d(res2d):
     """Function that rebins an Integrate2dResult into a Integrate1dResult
 
@@ -1052,16 +1102,16 @@ def rebin1d(res2d):
     :return: Integrate1dResult
     """
     bins_rad = res2d.radial
-    sum_signal =  res2d.sum_signal.sum(axis=0)
-    sum_normalization =  res2d.sum_normalization.sum(axis=0)
+    sum_signal = res2d.sum_signal.sum(axis=0)
+    sum_normalization = res2d.sum_normalization.sum(axis=0)
     I = sum_signal / sum_normalization
     if res2d.sum_variance is not None:
-        sum_variance =  res2d.sum_variance.sum(axis=0)
+        sum_variance = res2d.sum_variance.sum(axis=0)
         sem = numpy.sqrt(sum_variance) / sum_normalization
         result = Integrate1dResult(bins_rad, I, sem)
         result._set_sum_normalization2(res2d.sum_normalization2.sum(axis=0))
         result._set_sum_variance(sum_variance)
-        result._set_std(numpy.sqrt(sum_variance) / sum_normalization  )
+        result._set_std(numpy.sqrt(sum_variance) / sum_normalization)
         result._set_std(sem)
     else:
         result = Integrate1dResult(bins_rad, I)
