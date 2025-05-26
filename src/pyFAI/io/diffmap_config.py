@@ -31,16 +31,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/04/2025"
+__date__ = "26/05/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import os
+import posixpath
 import copy
 import json
 import logging
 logger = logging.getLogger(__name__)
 from collections import namedtuple
+import numpy
+import h5py
 from .tree import TreeItem
 from .integration_config import dataclass, ClassVar, WorkerConfig, fields, asdict
 from .nexus import is_hdf5
@@ -55,7 +58,7 @@ class MotorRange:
 
     :param start: Begining of the movement
     :param stop: End of the movement, included
-    :param step: Number of points (i.e. numberof steps + 1)
+    :param points: Number of points (i.e. numberof steps + 1)
     :param name: Name of the motor
     """
     start: float = None
@@ -83,9 +86,13 @@ class MotorRange:
 
     @property
     def step_size(self):
-        if self.points < 1:
+        if self.points < 2:
             return
-        return (self.stop-self.start)/self.points
+        return (self.stop-self.start)/self.steps
+
+    @property
+    def steps(self):
+        return self.points-1
 
     @classmethod
     def _parse_old_config(cls, dico, prefix="slow"):
@@ -103,6 +110,74 @@ class MotorRange:
             self.start = float(rng[0])
             self.stop = float(rng[-1])
         return self
+
+
+def parse_bliss(filename, motors, transpose=False):
+    """Parse a bliss master file (HDF5) for 2 motors which were scanned
+    and calculate the frame index of each pixel, returned as a map.
+
+    :param filename: name of the Bliss master file
+    :param motors: 2-tuple of 1d-datasets names in the masterfile. Both have the same shape.
+    :param transpose: set to True to have the fast dimention along y instead of x.
+    :return: map_ptr, [MotorRange_y, MotorRange_x]
+    """
+    def build_dict(posi):
+        "histogram like procedure with dict"
+        dico = {}
+        for i in posi:
+            if i in dico:
+                dico[i]+=1
+            else:
+                dico[i]=0
+        return dico
+
+    if len(motors) != 2:
+        raise RuntimeError("Expected a list of 2 path pointing to 1d datasets, got {motors}!")
+
+    #read all motor position datasets
+    motor_raw = {}
+    with h5py.File(filename) as h:
+        for name in motors:
+            motor_raw[name] = h[name][()]
+
+    if (motor_raw[motors[0]].shape != motor_raw[motors[1]].shape):
+        raise RuntimeError("Expected a list of 2 1d datasets, with the same shape!")
+
+    ranges = {}
+    for name in motor_raw:
+        dico = build_dict(motor_raw[name])
+        mr = MotorRange(name=posixpath.basename(name))
+        mr.start = min(dico.keys())
+        mr.stop = max(dico.keys())
+        mr.points = len(dico.keys())
+        ranges[name] = mr
+
+    # The slow motor is often still, so its speed is null, much more often than the fast motor.
+    ordered_names = []
+    dm1 = numpy.diff(motor_raw[motors[0]])
+    dm2 = numpy.diff(motor_raw[motors[1]])
+    if (dm1==0).sum()>(dm2==0).sum():
+        ordered_names = motors
+    else:
+        ordered_names = motors[-1::-1]
+    ordered_ranges = [ranges[i] for i in ordered_names]
+
+    slow = ordered_ranges[0]
+    fast = ordered_ranges[1]
+    slow_pos = motor_raw[ordered_names[0]]
+    fast_pos = motor_raw[ordered_names[1]]
+
+    #Build the map
+    map_ptr = numpy.zeros((slow.points, fast.points), dtype=numpy.int32)
+    slow_idx = numpy.round((slow_pos - slow.start) / slow.step_size).astype(int)
+    fast_idx = numpy.round((fast_pos - fast.start) / fast.step_size).astype(int)
+    map_ptr[slow_idx, fast_idx] = numpy.arange(slow.points*fast.points, dtype=int)
+
+    if transpose:
+        return map_ptr.T, ordered_ranges[-1::-1]
+    else:
+        return map_ptr, ordered_ranges
+
 
 DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes", "shape"), defaults=[None, None, None])
 
@@ -302,7 +377,6 @@ class DiffmapConfig:
                     if value is None:
                         to_init[key] = value
                     elif isinstance(value, (list, tuple)):
-                        print(klass, value)
                         if "from_serialized" in dir(klass):
                             to_init[key] = klass.from_serialized(value)
                         else:
@@ -323,8 +397,6 @@ class DiffmapConfig:
         if old_config:
             self.fast_motor = fast
             self.fast_motor = slow
-
-        # print(self)
 
         for key in cls.GUESSED:
             if key in dico:
@@ -406,3 +478,21 @@ class DiffmapConfig:
         if self.slow_motor is None:
             self.slow_motor = MotorRange()
         self.slow_motor.start, self.slow_motor.stop = value
+
+    @property
+    def slow_motor_points(self):
+        return None if self.slow_motor is None else self.slow_motor.points
+    @slow_motor_points.setter
+    def slow_motor_points(self, value):
+        if self.slow_motor is None:
+            self.slow_motor = MotorRange()
+        self.slow_motor.points = value
+
+    @property
+    def fast_motor_points(self):
+        return None if self.fast_motor is None else self.fast_motor.points
+    @fast_motor_points.setter
+    def fast_motor_points(self, value):
+        if self.fast_motor is None:
+            self.fast_motor = MotorRange()
+        self.fast_motor.points = value
