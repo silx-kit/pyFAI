@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2025"
+__date__ = "26/05/2025"
 
 import sys
 import os
@@ -660,9 +660,6 @@ class TestBugRegression(unittest.TestCase):
         self.assertTrue(numpy.allclose(sp.index, sp_dp.index))
         self.assertTrue(numpy.allclose(sp.intensity, sp_dp.intensity))
         self.assertEqual(sp.shape, sp_dp.shape)
-
-
-
 
 
 class TestBug1703(unittest.TestCase):
