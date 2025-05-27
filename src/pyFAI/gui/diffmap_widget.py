@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2025"
+__date__ = "14/05/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -704,7 +704,7 @@ class DiffMapWidget(qt.QWidget):
         """
         Update the slice
         """
-        logger.info("update_slice", args)
+        logger.info("DiffMapWidget.update_slice %s", args)
         if self.radial_data is None:
             return
         try:
