@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/05/2025"
+__date__ = "26/05/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -478,3 +478,21 @@ class DiffmapConfig:
         if self.slow_motor is None:
             self.slow_motor = MotorRange()
         self.slow_motor.start, self.slow_motor.stop = value
+
+    @property
+    def slow_motor_points(self):
+        return None if self.slow_motor is None else self.slow_motor.points
+    @slow_motor_points.setter
+    def slow_motor_points(self, value):
+        if self.slow_motor is None:
+            self.slow_motor = MotorRange()
+        self.slow_motor.points = value
+
+    @property
+    def fast_motor_points(self):
+        return None if self.fast_motor is None else self.fast_motor.points
+    @fast_motor_points.setter
+    def fast_motor_points(self, value):
+        if self.fast_motor is None:
+            self.fast_motor = MotorRange()
+        self.fast_motor.points = value

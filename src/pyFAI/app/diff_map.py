@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "26/05/2025"
 __satus__ = "Production"
 
 import sys
@@ -72,7 +72,7 @@ def main(args=None):
         window.show()
         sys.exit(app.exec_())
     else:
-        dt.configure_worker(config["ai"])
+        dt.configure_worker(config.ai)
         dt.makeHDF5()
         dt.process()
         dt.show_stats()
