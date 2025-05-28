@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2025"
+__date__ = "28/05/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -38,6 +38,7 @@ import os
 import time
 import collections
 import glob
+import posixpath
 from argparse import ArgumentParser
 from urllib.parse import urlparse
 import logging
