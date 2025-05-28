@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,13 +31,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2025"
+__date__ = "28/05/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 import sys
 import json
+import posixpath
 from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
