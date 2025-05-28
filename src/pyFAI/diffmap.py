@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/04/2025"
+__date__ = "27/05/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -516,7 +516,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         config["data"] = json.dumps(worker_config, indent=2, separators=(",\r\n", ": "))
 
         self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
-        entry_grp.attrs["default"] = self.nxdata_grp.name.split("/", 2)[2]
+        entry_grp.attrs["default"] = posixpath.relpath(self.nxdata_grp.name, entry_grp.name)
         slow_motor_ds = self.nxdata_grp.create_dataset("slow", data=numpy.linspace(*self.slow_motor_range, self.nbpt_slow))
         slow_motor_ds.attrs["interpretation"] = "scalar"
         slow_motor_ds.attrs["long_name"] = self.slow_motor_name
