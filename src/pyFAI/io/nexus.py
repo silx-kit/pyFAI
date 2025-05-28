@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/02/2025"
+__date__ = "27/05/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -266,7 +266,7 @@ class Nexus(object):
         for i in entry.split("/"):
             if i:
                 entry_grp = entry_grp.require_group(i)
-        self.h5.attrs["default"] = entry
+        self.h5.attrs["default"] = entry_grp.name.strip("/")
         entry_grp.attrs["NX_class"] = "NXentry"
         if title is not None:
             entry_grp["title"] = str(title)
@@ -630,7 +630,7 @@ def save_NXmonpd(filename, result,
         integration_data.attrs["axes"] = ["polar_angle"]
         integration_data.attrs["polar_angle_indices"] = 0
         integration_data["title"] = f"Powder diffraction pattern of {sample}"
-        entry_grp.attrs["default"] = integration_data.name
+        entry_grp.attrs["default"] = posixpath.relpath(integration_data.name, entry_grp.name)
 
         if extra:
             extra_grp = nxs.new_class(entry_grp, "extra", "NXnote")
@@ -723,7 +723,7 @@ def save_NXcansas(filename, result,
         integration_data.attrs["axes"] = ["Q"]
         integration_data.attrs["I_axes"] = "Q"
         integration_data.attrs["timestamp"] = get_isotime()
-        entry_grp.attrs["default"] = integration_data.name
+        entry_grp.attrs["default"] = posixpath.relpath(integration_data.name, entry_grp.name)
 
         q_ds = integration_data.create_dataset("Q", data=result.radial)
         q_ds.attrs["axis"] = "1"

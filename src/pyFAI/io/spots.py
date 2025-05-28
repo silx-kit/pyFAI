@@ -31,13 +31,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "27/05/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import sys
 import os
 import json
+import posixpath
 from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
@@ -91,7 +92,7 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
         instrument = nexus.new_instrument(instrument_name=beamline)
         entry = instrument.parent
         peaks_grp = nexus.new_class(entry, "peaks", class_type="NXdata")
-        entry.attrs["default"] = peaks_grp.name
+        entry.attrs["default"] = posixpath.relpath(peaks_grp.name, entry.name)
         if grid and grid[0] and len(grid[0]) > 1:
             img = spots_per_frame.reshape(grid[0])
             if grid[1]:
@@ -184,7 +185,7 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
 
         entry = h5.create_group("entry_1")
         entry.attrs["NX_class"] = "NXentry"
-        h5.attrs["default"] = entry.name
+        h5.attrs["default"] = entry.name.strip("/")
         result = entry.create_group("result_1")
         result.attrs["NX_class"] = "NXdata"
         result.attrs["signal"] = "nPeaks"
@@ -202,7 +203,7 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
         xpos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
         ypos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
         snr = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
-        entry.attrs["default"] = result.name
+        entry.attrs["default"] = posixpath.relpath(result.name, entry.name)
 
         for i, s in enumerate(spots):
             l = len(s)
