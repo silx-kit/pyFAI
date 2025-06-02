@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2019 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2025"
+__date__ = "28/05/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -299,17 +299,19 @@ class HDF5Writer(Writer):
 
             self.entry_grp = self._require_main_entry(self._mode)
 
-            self.nxs.h5.attrs["default"] = self.hpath
-            self.entry_grp.attrs["default"] = "integrate/results"
+            self.nxs.h5.attrs["default"] = self.entry_grp.name.strip("/")
+
             self.process_grp = self.nxs.new_class(self.entry_grp, "integrate", class_type="NXprocess")
             self.process_grp["program"] = getattr(main, '__file__', u'pyFAI')
             self.process_grp["version"] = version
             self.process_grp["date"] = get_isotime()
             self.process_grp["sequence_index"] = 1
-            self.process_grp.attrs["default"] = "results"
+
 
             self.nxdata_grp = self.nxs.new_class(self.process_grp, "results", "NXdata")
             self.nxdata_grp.attrs["signal"] = self.DATASET_NAME
+            self.process_grp.attrs["default"] = posixpath.relpath(self.nxdata_grp.name, self.process_grp.name)
+            self.entry_grp.attrs["default"] = posixpath.relpath(self.nxdata_grp.name, self.entry_grp.name)
 
             self.config_grp = self.nxs.new_class(self.process_grp, self.CONFIG, "NXnote")
             self.config_grp.attrs["desc"] = "PyFAI worker configuration"
