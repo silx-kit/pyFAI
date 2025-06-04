@@ -24,12 +24,10 @@ Build-Depends: bitshuffle <!nocheck>,
                python3-numpy,
                python3-pip,
                python3-pyopencl,
-               python3-pyside6,
+               python3-pyside6|python3-pyqt6|python3-pyqt5,
                python3-scipy,
-               python3-setuptools,
                python3-silx,
                python3-sphinx,
-               python3-tk,
                xauth,
                xvfb,
 Build-Depends-Indep: dh-sequence-sphinxdoc <!nodoc>,
@@ -72,7 +70,7 @@ Description: Fast Azimuthal Integration scripts
 Package: python3-pyfai
 Architecture: any
 Section: python
-Depends: python3-pyside6,
+Depends: python3-pyside6|python3-pyqt6|python3-pyqt5,
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}
