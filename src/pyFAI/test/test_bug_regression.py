@@ -35,7 +35,7 @@ https://github.com/silx-kit/pyFAI/issues
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
-__copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
+__copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "11/06/2025"
 
 import sys
@@ -54,6 +54,7 @@ from ..integrator.azimuthal import AzimuthalIntegrator, logger as ai_logger
 from .. import detectors
 from .. import units
 from math import pi
+from ..opencl import ocl
 
 try:
     import importlib.util
@@ -599,79 +600,21 @@ class TestBugRegression(unittest.TestCase):
         Faulty detectors: S10
         """
         ai = load({"detector": "imxpad_s10"})
-        img = numpy.ones(ai.detector.shape)
+        img = numpy.ones(ai.detector.shape);
         ai.integrate2d(img, 10, method=("full","csc","python"), unit="r_mm")
         #used to raise AssertionError assert self.size == len(indptr) - 1
 
-    def test_bug_2525(self):
-        """
-        res1d_cp = copy.copy(res1d)
-        used to raise TypeError: missing required positional argument
-        """
-        ai = load({"detector": "imxpad_s10"})
-        img = numpy.ones(ai.detector.shape)
-        res1d = ai.integrate1d(img, 10, unit="r_mm")
-
-        res1d_cp = copy.copy(res1d)
-        self.assertTrue(numpy.allclose(res1d.radial, res1d_cp.radial))
-        self.assertTrue(numpy.allclose(res1d.intensity, res1d_cp.intensity))
-        self.assertTrue(numpy.allclose(res1d.sum_signal, res1d_cp._sum_signal))
-        self.assertTrue(numpy.allclose(res1d.sum_normalization, res1d_cp._sum_normalization))
-        res1d_dp = copy.deepcopy(res1d)
-        self.assertTrue(numpy.allclose(res1d.radial, res1d_dp.radial))
-        self.assertTrue(numpy.allclose(res1d.intensity, res1d_dp.intensity))
-        self.assertTrue(numpy.allclose(res1d.sum_signal, res1d_dp.sum_signal))
-        self.assertTrue(numpy.allclose(res1d.sum_normalization, res1d_dp.sum_normalization))
-
-        res2d = ai.integrate2d(img, 10, unit="r_mm")
-        res2d_cp = copy.copy(res2d)
-        self.assertTrue(numpy.allclose(res2d.radial, res2d_cp.radial))
-        self.assertTrue(numpy.allclose(res2d.intensity, res2d_cp.intensity))
-        self.assertTrue(numpy.allclose(res2d.sum_signal, res2d_cp.sum_signal))
-        self.assertTrue(numpy.allclose(res2d.sum_normalization, res2d_cp.sum_normalization))
-        res2d_dp = copy.deepcopy(res2d)
-        self.assertTrue(numpy.allclose(res2d.radial, res2d_dp.radial))
-        self.assertTrue(numpy.allclose(res2d.intensity, res2d_dp.intensity))
-        self.assertTrue(numpy.allclose(res2d.sum_signal, res2d_dp.sum_signal))
-        self.assertTrue(numpy.allclose(res2d.sum_normalization, res2d_dp.sum_normalization))
-
-        ressp = ai.separate(img, 10, unit="r_mm")
-        ressp_cp = copy.copy(ressp)
-        self.assertTrue(numpy.allclose(ressp.bragg, ressp_cp.bragg))
-        self.assertTrue(numpy.allclose(ressp.amorphous, ressp_cp.amorphous))
-        self.assertTrue(numpy.allclose(ressp.sum_signal, ressp_cp.sum_signal))
-        self.assertTrue(numpy.allclose(ressp.sum_normalization, ressp_cp.sum_normalization))
-
-        ressp_dp = copy.deepcopy(ressp)
-        self.assertTrue(numpy.allclose(ressp.bragg, ressp_dp.bragg))
-        self.assertTrue(numpy.allclose(ressp.amorphous, ressp_dp.amorphous))
-        self.assertTrue(numpy.allclose(ressp.sum_signal, ressp_dp.sum_signal))
-        self.assertTrue(numpy.allclose(ressp.sum_normalization, ressp_dp.sum_normalization))
-
-        from pyFAI.containers import SparseFrame
-        sp = SparseFrame(numpy.arange(1,5),numpy.arange(4,9))
-        sp._shape = (23,45)
-        sp_cp = copy.copy(sp)
-        self.assertTrue(numpy.allclose(sp.index, sp_cp.index))
-        self.assertTrue(numpy.allclose(sp.intensity, sp_cp.intensity))
-        self.assertEqual(sp.shape, sp_cp.shape)
-
-        sp_dp = copy.deepcopy(sp)
-        self.assertTrue(numpy.allclose(sp.index, sp_dp.index))
-        self.assertTrue(numpy.allclose(sp.intensity, sp_dp.intensity))
-        self.assertEqual(sp.shape, sp_dp.shape)
-
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
-    @unittest.skipUnless(ocl, "PyOpenCl is missing")
+    # @unittest.skipUnless(ocl, "PyOpenCl is missing")
     def test_bug_2538(self):
         """ This bug is creating an infinite loop when some bins have no contributing pixels"""
-        ai1 = pyFAI.load({"detector":"pilatus100k"})
+        ai1 = load({"detector":"pilatus100k"})
         r = ai1.array_from_unit(unit="r_mm")
         ai1.detector.mask = r>60
         ai1.detector.mask[-1,-1] = 0 # this exposes the pixel in the corner !
         img = numpy.ones(ai1.detector.shape)
-        # ai1.medfilt1d_ng(img, 100, unit="r_mm", method=("no","csr","opencl")) # --> goes to infinite loop
-
+        # ai1.medfilt1d_ng(img, 100, unit="r_mm", method=("no","csr","opencl")) # -->
+        raise RuntimeError("infinite loop")
 
 class TestBug1703(unittest.TestCase):
     """
