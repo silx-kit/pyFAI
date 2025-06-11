@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/04/2025"
+__date__ = "14/05/2025"
 
 import unittest
 import numpy
@@ -41,7 +41,7 @@ import os
 from dataclasses import fields
 import logging
 logger = logging.getLogger(__name__)
-from ..io.diffmap_config import DiffmapConfig, MotorRange, WorkerConfig, ListDataSet, DataSet, CURRENT_VERSION
+from ..io.diffmap_config import DiffmapConfig, MotorRange, WorkerConfig, ListDataSet, DataSet, CURRENT_VERSION, parse_bliss
 from ..diffmap import DiffMap
 from .utilstest import UtilsTest
 
@@ -252,6 +252,22 @@ class TestListDataSet(unittest.TestCase):
         self.assertEqual(multi.nframes, 3)
         self.assertEqual(multi.shape, (10,11))
 
+class TestParseBliss(unittest.TestCase):
+    """Test the parsing of a Mesh scan in Bliss file (BM29)
+    """
+    def test_bliss(self):
+        bliss = UtilsTest.getimage("chi_chan_seu_channel_chip_mesh_scan_channel_chip.h5")
+        map1, range1 = parse_bliss(bliss, ("/1.1/measurement/chipy","/1.1/measurement/chipz"))
+        self.assertEqual(map1.shape, (8,4))
+        self.assertEqual(range1[0].name, "chipy")
+        self.assertEqual(range1[1].name, "chipz")
+
+        map1, range1 = parse_bliss(bliss, ("/1.1/measurement/chipy","/1.1/measurement/chipz"),
+                                    transpose=True)
+        self.assertEqual(map1.shape, (4,8))
+        self.assertEqual(range1[0].name, "chipz")
+        self.assertEqual(range1[1].name, "chipy")
+
 
 def suite():
 
@@ -259,6 +275,7 @@ def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestDiffmapConfig))
     testsuite.addTest(loader(TestListDataSet))
+    testsuite.addTest(loader(TestParseBliss))
     return testsuite
 
 

@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,13 +31,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2022"
+__date__ = "28/05/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 import sys
 import json
+import posixpath
 from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
@@ -99,7 +100,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
         instrument = nexus.new_instrument(instrument_name=beamline)
         entry = instrument.parent
         sparse_grp = nexus.new_class(entry, "sparse_frames", class_type="NXdata")
-        entry.attrs["default"] = sparse_grp.name
+        entry.attrs["default"] = posixpath.relpath(sparse_grp.name, entry.name)
         entry.attrs["pyFAI_sparse_frames"] = sparse_grp.name
         sparse_grp["frame_ptr"] = numpy.concatenate(([0], numpy.cumsum([i.intensity.size for i in frames]))).astype(dtype=numpy.uint32)
         index = numpy.concatenate([i.index for i in frames]).astype(numpy.uint32)
@@ -157,7 +158,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             xpos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
             ypos = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
             snr = numpy.zeros((nframes, max_spots), dtype=numpy.float32)
-            #entry.attrs["default"] = peak_grp.name # prevents the densify from working
+            #entry.attrs["default"] = posixpath.relpath(peak_grp.name, entry.name)  # prevents the densify from working
 
             for i, s in enumerate(peaks):
                 l = len(s)

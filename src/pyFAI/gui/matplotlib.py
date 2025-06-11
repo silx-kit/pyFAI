@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ to the used backend.
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "13/05/2025"
+__date__ = "16/05/2025"
 
 import sys
 import logging
@@ -54,22 +54,18 @@ def _configure(backend, backend_qt4=None, check=False):
             valid = valid and matplotlib.rcParams['backend.qt4'] == backend_qt4
 
         if not valid:
-            _logger.warning('matplotlib already loaded, setting its backend may not work')
+            msg = f'Matplotlib already loaded with backend `{matplotlib.rcParams["backend"]}`, setting its backend to `{backend}` may not work!'
+            _logger.warning(msg)
         return
     matplotlib.rcParams['backend'] = backend
     if backend_qt4 is not None:
         matplotlib.rcParams['backend.qt4'] = backend_qt4
 
-
 if qt.BINDING in ('PySide', 'PyQt4'):
     _configure('Qt4Agg', qt.BINDING, check=_check_matplotlib)
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # noqa
 
-elif qt.BINDING in ('PyQt5', 'PySide2'):
-    _configure('Qt5Agg', check=_check_matplotlib)
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg  # noqa
-
-elif qt.BINDING in ('PyQt6', 'PySide6'):
+elif qt.BINDING in ('PyQt6', 'PySide6', 'PyQt5', 'PySide2'):
     _configure('QtAgg', check=_check_matplotlib)
     from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg  # noqa
 
