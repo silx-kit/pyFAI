@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "11/06/2025"
 
 import sys
 import os
@@ -602,6 +602,17 @@ class TestBugRegression(unittest.TestCase):
         img=numpy.ones(ai.detector.shape);
         ai.integrate2d(img, 10, method=("full","csc","python"), unit="r_mm")
         #used to raise AssertionError assert self.size == len(indptr) - 1
+
+    @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
+    @unittest.skipUnless(ocl, "PyOpenCl is missing")
+    def test_bug_2538(self):
+        """ This bug is creating an infinite loop when some bins have no contributing pixels"""
+        ai1 = pyFAI.load({"detector":"pilatus100k"})
+        r = ai1.array_from_unit(unit="r_mm")
+        ai1.detector.mask = r>60
+        ai1.detector.mask[-1,-1] = 0 # this exposes the pixel in the corner !
+        img = numpy.ones(ai1.detector.shape)
+        # ai1.medfilt1d_ng(img, 100, unit="r_mm", method=("no","csr","opencl")) # --> goes to infinite loop
 
 class TestBug1703(unittest.TestCase):
     """
