@@ -306,7 +306,13 @@ def main(args=None):
         process.set_writer(writer)
         process.process()
     else:
-        logger.warning("No input file specified.")
+        if options.args:
+            logger.warning(
+                "No valid input files found matching the specified pattern(s): %s",
+                ", ".join(options.args)
+            )
+        else:
+            logger.warning("No input files were specified. Please provide at least one file.")
 
 
 if __name__ == "__main__":
