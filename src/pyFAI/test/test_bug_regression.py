@@ -663,7 +663,7 @@ class TestBugRegression(unittest.TestCase):
         self.assertEqual(sp.shape, sp_dp.shape)
 
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
-    # @unittest.skipUnless(ocl, "PyOpenCl is missing")
+    @unittest.skipUnless(ocl, "PyOpenCl is missing")
     def test_bug_2538(self):
         """ This bug is creating an infinite loop when some bins have no contributing pixels"""
         ai1 = load({"detector":"pilatus100k"})
@@ -671,8 +671,11 @@ class TestBugRegression(unittest.TestCase):
         ai1.detector.mask = r>60
         ai1.detector.mask[-1,-1] = 0 # this exposes the pixel in the corner !
         img = numpy.ones(ai1.detector.shape)
-        # ai1.medfilt1d_ng(img, 100, unit="r_mm", method=("no","csr","opencl")) # -->
-        raise RuntimeError("infinite loop")
+        ref = ai1.medfilt1d_ng(img, 100, unit="r_mm", method=("no","csr","cython"))
+        res = ai1.medfilt1d_ng(img, 100, unit="r_mm", method=("no","csr","opencl"))
+        # raise RuntimeError("infinite loop")
+        self.assertTrue(numpy.allclose(ref[0], res[0]))
+        self.assertTrue(numpy.allclose(ref[1], res[1]))
 
 class TestBug1703(unittest.TestCase):
     """

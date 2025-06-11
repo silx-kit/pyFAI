@@ -135,122 +135,130 @@ csr_medfilt    (  const   global  float4  *data4,
     if (quant_max == 1.0f)
         quant_max = 1.000001f;
 
-    // first populate the work4 array from data4
-    for (int i=start+tid; i<stop; i+=wg)
-    {
-        float4 r4, w4;
-        int idx = indices[i];
-        float coef = (coefs == ZERO)?1.0f:coefs[i];
-        r4 = data4[idx];
+    if (size>0){
+        // first populate the work4 array from data4
+        for (int i=start+tid; i<stop; i+=wg)
+        {
+            float4 r4, w4;
+            int idx = indices[i];
+            float coef = (coefs == ZERO)?1.0f:coefs[i];
+            r4 = data4[idx];
 
-        w4.s0 = r4.s0 / r4.s2;
-        w4.s1 = r4.s0 * coef;
-        w4.s2 = r4.s1 * coef * coef;
-        w4.s3 = r4.s2 * coef;
+            w4.s0 = r4.s0 / r4.s2;
+            w4.s1 = r4.s0 * coef;
+            w4.s2 = r4.s1 * coef * coef;
+            w4.s3 = r4.s2 * coef;
 
-        work4[i] = w4;
-    }
+            work4[i] = w4;
+        }
 
-    barrier(CLK_GLOBAL_MEM_FENCE);
+        barrier(CLK_GLOBAL_MEM_FENCE);
 
-    // then perform the sort in the work space along the s0 component
+        // then perform the sort in the work space along the s0 component
 
-    step = first_step(step, size, ratio);
+        step = first_step(step, size, ratio);
 
-    for (step=step; step>0; step=previous_step(step, ratio))
-        cnt = passe_float4(&work4[start], size, step, shared_int);
+        for (step=step; step>0; step=previous_step(step, ratio))
+            cnt = passe_float4(&work4[start], size, step, shared_int);
 
-    while (cnt)
-        cnt = passe_float4(&work4[start], size, 1, shared_int);
+        while (cnt)
+            cnt = passe_float4(&work4[start], size, 1, shared_int);
 
-    // Then perform the cumsort of the weights to s0
-    // In blelloch scan, one workgroup can process 2wg in size.
+        // Then perform the cumsort of the weights to s0
+        // In blelloch scan, one workgroup can process 2wg in size.
 
-    barrier(CLK_GLOBAL_MEM_FENCE);
+        barrier(CLK_GLOBAL_MEM_FENCE);
 
-    sum = 0.0f;
-    for (int i=0; i<(size + 2*wg-1)/(2*wg); i++)
-    {
-        idx = start + tid + 2*wg*i;
+        sum = 0.0f;
+        for (int i=0; i<(size + 2*wg-1)/(2*wg); i++)
+        {
+            idx = start + tid + 2*wg*i;
 
-        shared_float[tid] = (idx<stop)?work4[idx].s3:0.0f;
-        shared_float[tid+wg] = ((idx+wg)<stop)?work4[idx+wg].s3:0.0f;
+            shared_float[tid] = (idx<stop)?work4[idx].s3:0.0f;
+            shared_float[tid+wg] = ((idx+wg)<stop)?work4[idx+wg].s3:0.0f;
 
-        blelloch_scan_float(shared_float);
+            blelloch_scan_float(shared_float);
 
-        if (idx<stop)
-            work4[idx].s0 = sum + shared_float[tid];
-        if ((idx+wg)<stop)
-            work4[idx+wg].s0 = sum + shared_float[tid+wg];
-        sum += shared_float[2*wg-1];
-		barrier(CLK_LOCAL_MEM_FENCE);
-    }
+            if (idx<stop)
+                work4[idx].s0 = sum + shared_float[tid];
+            if ((idx+wg)<stop)
+                work4[idx+wg].s0 = sum + shared_float[tid+wg];
+            sum += shared_float[2*wg-1];
+            barrier(CLK_LOCAL_MEM_FENCE);
+        }
 
-    barrier(CLK_GLOBAL_MEM_FENCE);
+        barrier(CLK_GLOBAL_MEM_FENCE);
 
-    // Perform the sum for accumulator of signal, variance, normalization and count
+        // Perform the sum for accumulator of signal, variance, normalization and count
 
-    cnt = 0;
-    acc_sig = (float2)(0.0f, 0.0f);
-    acc_var = (float2)(0.0f, 0.0f);
-    acc_nrm = (float2)(0.0f, 0.0f);
-    acc_nrm2 = (float2)(0.0f, 0.0f);
+        cnt = 0;
+        acc_sig = (float2)(0.0f, 0.0f);
+        acc_var = (float2)(0.0f, 0.0f);
+        acc_nrm = (float2)(0.0f, 0.0f);
+        acc_nrm2 = (float2)(0.0f, 0.0f);
 
-    float qmin = quant_min * sum;
-    float qmax = quant_max * sum;
+        float qmin = quant_min * sum;
+        float qmax = quant_max * sum;
 
-    for (int i=start+tid; i<stop; i+=wg)
-    {
-        float q_last = (i>start)?work4[i-1].s0:0.0f;
-        float4 w = work4[i];
-        if((((q_last>=qmin) && (w.s0<=qmax))  // case several contribution
-         || ((q_last<=qmin) && (w.s0>=qmax))) // case unique contribution qmin==qmax
-         && (w.s3)) {                         // non empty
-            cnt ++;
-            acc_sig = dw_plus_fp(acc_sig, w.s1);
-            acc_var = dw_plus_fp(acc_var, w.s2);
-            acc_nrm = dw_plus_fp(acc_nrm, w.s3);
-            acc_nrm2 = dw_plus_dw(acc_nrm2, fp_times_fp(w.s3, w.s3));
+        for (int i=start+tid; i<stop; i+=wg)
+        {
+            float q_last = (i>start)?work4[i-1].s0:0.0f;
+            float4 w = work4[i];
+            if((((q_last>=qmin) && (w.s0<=qmax))  // case several contribution
+            || ((q_last<=qmin) && (w.s0>=qmax))) // case unique contribution qmin==qmax
+            && (w.s3)) {                         // non empty
+                cnt ++;
+                acc_sig = dw_plus_fp(acc_sig, w.s1);
+                acc_var = dw_plus_fp(acc_var, w.s2);
+                acc_nrm = dw_plus_fp(acc_nrm, w.s3);
+                acc_nrm2 = dw_plus_dw(acc_nrm2, fp_times_fp(w.s3, w.s3));
 
+            }
+        }
+    //  Now parallel reductions, one after the other :-/
+        shared_int[tid] = cnt;
+        cnt = sum_int_reduction(shared_int);
+
+        shared_float[2*tid] = acc_sig.s0;
+        shared_float[2*tid+1] = acc_sig.s1;
+        acc_sig = sum_float2_reduction(shared_float);
+
+        shared_float[2*tid] = acc_var.s0;
+        shared_float[2*tid+1] = acc_var.s1;
+        acc_var = sum_float2_reduction(shared_float);
+
+        shared_float[2*tid] = acc_nrm.s0;
+        shared_float[2*tid+1] = acc_nrm.s1;
+        acc_nrm = sum_float2_reduction(shared_float);
+
+        shared_float[2*tid] = acc_nrm2.s0;
+        shared_float[2*tid+1] = acc_nrm2.s1;
+        acc_nrm2 = sum_float2_reduction(shared_float);
+
+
+        // Finally store the accumulated value
+
+        if (tid == 0) {
+            summed[bin_num] = (float8)(acc_sig.s0, acc_sig.s1,
+                                    acc_var.s0, acc_var.s1,
+                                    acc_nrm.s0, acc_nrm.s1,
+                                    (float)cnt, acc_nrm2.s0);
+            if (acc_nrm2.s0 > 0.0f) {
+                averint[bin_num] = acc_sig.s0/acc_nrm.s0 ;
+                stdevpix[bin_num] = sqrt(acc_var.s0/acc_nrm2.s0) ;
+                stderrmean[bin_num] = sqrt(acc_var.s0) / acc_nrm.s0;
+            }
+            else {
+                averint[bin_num] = empty;
+                stderrmean[bin_num] = empty;
+                stdevpix[bin_num] = empty;
+            }
         }
     }
-//  Now parallel reductions, one after the other :-/
-    shared_int[tid] = cnt;
-    cnt = sum_int_reduction(shared_int);
-
-    shared_float[2*tid] = acc_sig.s0;
-    shared_float[2*tid+1] = acc_sig.s1;
-    acc_sig = sum_float2_reduction(shared_float);
-
-    shared_float[2*tid] = acc_var.s0;
-    shared_float[2*tid+1] = acc_var.s1;
-    acc_var = sum_float2_reduction(shared_float);
-
-    shared_float[2*tid] = acc_nrm.s0;
-    shared_float[2*tid+1] = acc_nrm.s1;
-    acc_nrm = sum_float2_reduction(shared_float);
-
-    shared_float[2*tid] = acc_nrm2.s0;
-    shared_float[2*tid+1] = acc_nrm2.s1;
-    acc_nrm2 = sum_float2_reduction(shared_float);
-
-
-    // Finally store the accumulated value
-
-    if (tid == 0) {
-        summed[bin_num] = (float8)(acc_sig.s0, acc_sig.s1,
-                                   acc_var.s0, acc_var.s1,
-                                   acc_nrm.s0, acc_nrm.s1,
-                                   (float)cnt, acc_nrm2.s0);
-        if (acc_nrm2.s0 > 0.0f) {
-            averint[bin_num] = acc_sig.s0/acc_nrm.s0 ;
-            stdevpix[bin_num] = sqrt(acc_var.s0/acc_nrm2.s0) ;
-            stderrmean[bin_num] = sqrt(acc_var.s0) / acc_nrm.s0;
-        }
-        else {
-            averint[bin_num] = empty;
-            stderrmean[bin_num] = empty;
-            stdevpix[bin_num] = empty;
-        }
+    else {
+        averint[bin_num] = empty;
+        stderrmean[bin_num] = empty;
+        stdevpix[bin_num] = empty;
     }
+
 } //end csr_medfilt kernel
