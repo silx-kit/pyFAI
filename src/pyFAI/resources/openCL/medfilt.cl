@@ -90,6 +90,7 @@ float2 inline sum_float2_reduction(local float* shared)
  * @param quant_min    start percentile/100 to use. Use 0.5 for the median
  * @param quant_max    stop percentile/100 to use. Use 0.5 for the median
  * @param error_model  0:disable, 1:variance, 2:poisson, 3:azimuthal, 4:hybrid
+ * @param empty        Value for empty bins, i.e. those without pixels (can be NaN)
  * @param summed       contains all the data
  * @param averint      Average signal
  * @param stdevpix     Float pointer to the output 1D array with the propagated error (std)
