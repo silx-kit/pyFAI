@@ -600,7 +600,7 @@ class TestBugRegression(unittest.TestCase):
         Faulty detectors: S10
         """
         ai = load({"detector": "imxpad_s10"})
-        img = numpy.ones(ai.detector.shape);
+        img = numpy.ones(ai.detector.shape)
         ai.integrate2d(img, 10, method=("full","csc","python"), unit="r_mm")
         #used to raise AssertionError assert self.size == len(indptr) - 1
 
