@@ -1149,12 +1149,12 @@ class Integrate2dFiberResult(Integrate2dResult):
         else:
             t = intensity, inplane, outofplane, sigma
         return IntegrateResult.__new__(Integrate2dFiberResult, t)
-    
+
     def __init__(self, intensity, outofplane, inplane, sigma=None):
         super(Integrate2dResult, self).__init__()
         self._oop_unit = None
         self._ip_unit = None
-    
+
     @property
     def inplane(self):
         """
@@ -1163,7 +1163,7 @@ class Integrate2dFiberResult(Integrate2dResult):
         :rtype: numpy.ndarray
         """
         return self[1]
-    
+
     @property
     def outofplane(self):
         """
@@ -1182,7 +1182,7 @@ class Integrate2dFiberResult(Integrate2dResult):
     def azimuthal(self):
         logger.warning("Azimuthal does not apply to a fiber/grazing-incidence result, use outofplane instead")
         return self.outofplane
-    
+
     @property
     def ip_unit(self):
         """In-plane scattering unit
@@ -1190,7 +1190,7 @@ class Integrate2dFiberResult(Integrate2dResult):
         :rtype: string
         """
         return self._ip_unit
-    
+
     def _set_ip_unit(self, unit):
         """Define the in-plane scattering unit
 
@@ -1201,7 +1201,7 @@ class Integrate2dFiberResult(Integrate2dResult):
     def _set_radial_unit(self, unit):
         logger.warning("Radial units does not apply to a fiber/grazing-incidence result, use ip_unit instead")
         self._set_ip_unit(unit)
-        
+
     @property
     def oop_unit(self):
         """Out-of-plane scattering unit
@@ -1209,7 +1209,7 @@ class Integrate2dFiberResult(Integrate2dResult):
         :rtype: string
         """
         return self._oop_unit
-    
+
     def _set_oop_unit(self, unit):
         """Define the out-of-plane scattering unit
 
