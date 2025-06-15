@@ -209,7 +209,7 @@ class AbstractCalibration(object):
         self.gaussianWidth = None
         self.pointfile = None
         self.saturation = 0
-        self.fixed = ["wavelength", "rot3"]  # parameter fixed during optimization
+        self.fixed = FixedParameters(["wavelength", "rot3"])  # parameter fixed during optimization
         self.max_rings = None
         self.max_iter = 1000
         self.gui = True
@@ -1395,7 +1395,6 @@ class AbstractCalibration(object):
 
 
 class CliCalibration(AbstractCalibration):
-
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
         """Constructor of CliCalibration
@@ -1428,7 +1427,7 @@ class CliCalibration(AbstractCalibration):
         self.cutBackground = None
         self.outfile = "merged.edf"
         self.saturation = 0
-        self.fixed = ["wavelength", "rot3"]  # parameter fixed during optimization
+        self.fixed = FixedParameters(["wavelength", "rot3"])  # parameter fixed during optimization
         self.max_rings = None
         self.max_iter = 1000
         self.gui = True
@@ -1998,17 +1997,17 @@ class MultiCalib(object):
         parser.add_argument("--fix-rot2", dest="fix_rot2",
                             help="fix the rot2 parameter", default=None, action="store_true")
         parser.add_argument("--free-rot2", dest="fix_rot2",
-                            help="free the rot2 parameter", default=None, action="store_false")
+                            help="free the rot2 parameter. Default: Activated", default=None, action="store_false")
 
         parser.add_argument("--fix-rot3", dest="fix_rot3",
                             help="fix the rot3 parameter", default=None, action="store_true")
         parser.add_argument("--free-rot3", dest="fix_rot3",
-                            help="free the rot3 parameter", default=None, action="store_false")
+                            help="free the rot3 parameter. Default: Activated", default=None, action="store_false")
 
         parser.add_argument("--fix-wavelength", dest="fix_wavelength",
-                            help="fix the wavelength parameter", default=True, action="store_true")
+                            help="fix the wavelength parameter. Default: Activated", default=True, action="store_true")
         parser.add_argument("--free-wavelength", dest="fix_wavelength",
-                            help="free the wavelength parameter", default=True, action="store_false")
+                            help="free the wavelength parameter. Default: Deactivated ", default=True, action="store_false")
 
         parser.add_argument("--no-gui", dest="gui",
                             help="force the program to run without a Graphical interface",
@@ -2136,29 +2135,8 @@ class MultiCalib(object):
                 self.get_pixelSize(ans)
 
     def read_dSpacingFile(self):
-        """Read the name of the calibrant or the file with d-spacing"""
-        if self.calibrant in CALIBRANT_FACTORY:
-            self.calibrant = get_calibrant(self.calibrant)
-        elif os.path.isfile(self.calibrant):
-            self.calibrant = Calibrant(filename=self.calibrant)
-        else:
-            comments = ["MX-calibrate has changed !!!",
-                        "Instead of entering the 2theta value, which was tedious,"
-                        "the program takes a calibrant as in input "
-                        "(either a reference one like Ceo2, either a "
-                        "d-spacing file with inter planar distance in Angstrom)",
-                        "and an associated wavelength", ""
-                        "You will be asked to enter the ring number, "
-                        "which is usually a simpler than the 2theta value."]
-            print(os.linesep.join(comments))
-            ans = ""
-            while not self.calibrant:
-                ans = input("Please enter the name of the calibrant"
-                            " or the file containing the d-spacing:\t").strip()
-                if ans in CALIBRANT_FACTORY:
-                    self.calibrant = get_calibrant(ans)
-                elif os.path.isfile(ans):
-                    self.calibrant = Calibrant(filename=ans)
+        """Read the name of the file with d-spacing"""
+        CliCalibration.read_dSpacingFile(self, verbose=False)
 
     def read_wavelength(self):
         """Read the wavelength"""
@@ -2464,55 +2442,3 @@ refinement process.
         ax4.set_xlabel(r"2$\theta$ ($^o$)")
         ax4.set_ylabel("Intensity")
         update_fig(self.fig)
-
-
-# Procedural version of calibration
-def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, dist=0.1, gaussian=None, interactive=True):
-    """
-    Procedural interfact for calibration
-
-    :param img: 2d array representing the calibration image
-    :param calibrant: Instance of Calibrant, set-up with wavelength
-    :param detector: Detector instance containing the mask
-    :param basename: output file base
-    :param recontruct: perform image reconstruction of masked pixel ?
-    :param dist: initial distance
-    :param gaussian: width of the gaussian used for difference of gaussian in the "massif" peak-picking algorithm
-    :param interactive: set to False for testing
-    :return: AzimuthalIntegrator instance
-    """
-    if not isinstance(detector, Detector):
-        raise RuntimeError("detector is not a Detector class instance")
-    if not isinstance(calibrant, Calibrant):
-        raise RuntimeError("calibrant is not a Calibrant class instance")
-    if calibrant.wavelength is None:
-        raise RuntimeError("calibrant's wavelength is undefined")
-
-    if logging.root.level > logging.INFO:
-        logging.warning("Lowering the log-level to INFO")
-        logging.root.setLevel(logging.INFO)
-    c = Calibration(wavelength=calibrant.wavelength,
-                    detector=detector,
-                    calibrant=calibrant,
-                    gaussianWidth=gaussian)
-    c.gui = interactive
-    c.basename = basename
-    c.pointfile = basename + ".npt"
-    c.ai = AzimuthalIntegrator(dist=dist, detector=detector, wavelength=calibrant.wavelength)
-    c.peakPicker = PeakPicker(img, reconst=reconstruct, mask=detector.mask,
-                              pointfile=c.pointfile, calibrant=calibrant,
-                              wavelength=calibrant.wavelength)
-    if gaussian is not None:
-        c.peakPicker.massif.setValleySize(gaussian)
-    else:
-        c.peakPicker.massif.initValleySize()
-
-    if interactive:
-        c.peakPicker.gui(log=True, maximize=True, pick=True,
-                         widget_klass=QtMplCalibWidget)
-        update_fig(c.peakPicker.fig)
-    c.gui_peakPicker()
-    c.ai.setPyFAI(**c.geoRef.getPyFAI())
-    c.ai.wavelength = c.geoRef.wavelength
-
-    return c.ai
