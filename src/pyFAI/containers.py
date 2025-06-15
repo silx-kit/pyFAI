@@ -35,6 +35,7 @@ __status__ = "development"
 
 import sys
 import copy
+import logging
 from dataclasses import fields, asdict, dataclass as _dataclass
 from collections import namedtuple
 from enum import IntEnum
@@ -55,6 +56,7 @@ if sys.version_info >= (3, 10):
 else:
     dataclass = _dataclass
 
+logger = logging.getLogger(__name__)
 
 class ErrorModel(IntEnum):
     NO = 0
@@ -1133,3 +1135,88 @@ def rebin1d(res2d):
     result._set_normalization_factor(res2d.normalization_factor)
     result._set_metadata(res2d.metadata)
     return result
+
+class Integrate2dFiberResult(Integrate2dResult):
+    """
+    Result of an 2D integration for fiber/grazing-incidence scattering.
+    Provide a tuple access as a simple way to reach main attributes.
+    Default result, extra results, and some integration parameters are available from attributes.
+    Analog to azimuthal integrate containers but: Radial -> in-plane, Azimuthal -> out-of-plane
+    """
+    def __new__(self, intensity, inplane, outofplane, sigma=None):
+        if sigma is None:
+            t = intensity, inplane, outofplane
+        else:
+            t = intensity, inplane, outofplane, sigma
+        return IntegrateResult.__new__(Integrate2dFiberResult, t)
+    
+    def __init__(self, intensity, outofplane, inplane, sigma=None):
+        super(Integrate2dResult, self).__init__()
+        self._oop_unit = None
+        self._ip_unit = None
+    
+    @property
+    def inplane(self):
+        """
+        In-plane positions (q/2theta/r)
+
+        :rtype: numpy.ndarray
+        """
+        return self[1]
+    
+    @property
+    def outofplane(self):
+        """
+        Out-of-plane positions (q/2theta/r)
+
+        :rtype: numpy.ndarray
+        """
+        return self[2]
+
+    @property
+    def radial(self):
+        logger.warning("Radial does not apply to a fiber/grazing-incidence result, use inplane instead")
+        return self.inplane
+
+    @property
+    def azimuthal(self):
+        logger.warning("Azimuthal does not apply to a fiber/grazing-incidence result, use outofplane instead")
+        return self.outofplane
+    
+    @property
+    def ip_unit(self):
+        """In-plane scattering unit
+
+        :rtype: string
+        """
+        return self._ip_unit
+    
+    def _set_ip_unit(self, unit):
+        """Define the in-plane scattering unit
+
+        :type unit: str
+        """
+        self._ip_unit = unit
+
+    def _set_radial_unit(self, unit):
+        logger.warning("Radial units does not apply to a fiber/grazing-incidence result, use ip_unit instead")
+        self._set_ip_unit(unit)
+        
+    @property
+    def oop_unit(self):
+        """Out-of-plane scattering unit
+
+        :rtype: string
+        """
+        return self._oop_unit
+    
+    def _set_oop_unit(self, unit):
+        """Define the out-of-plane scattering unit
+
+        :type unit: str
+        """
+        self._oop_unit = unit
+
+    def _set_azimuthal_unit(self, unit):
+        logger.warning("Azimuthal units does not apply to a fiber/grazing-incidence result, use oop_unit instead")
+        self._set_oop_unit(unit)
