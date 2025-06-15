@@ -90,6 +90,7 @@ float2 inline sum_float2_reduction(local float* shared)
  * @param quant_min    start percentile/100 to use. Use 0.5 for the median
  * @param quant_max    stop percentile/100 to use. Use 0.5 for the median
  * @param error_model  0:disable, 1:variance, 2:poisson, 3:azimuthal, 4:hybrid
+ * @param empty        Value for empty bins, i.e. those without pixels (can be NaN)
  * @param summed       contains all the data
  * @param averint      Average signal
  * @param stdevpix     Float pointer to the output 1D array with the propagated error (std)
@@ -135,6 +136,17 @@ csr_medfilt    (  const   global  float4  *data4,
     if (quant_max == 1.0f)
         quant_max = 1.000001f;
 
+    if (size==0)
+    { // Nothing to do since no pixel contribute to bin.
+        if (tid == 0)
+        {
+            averint[bin_num] = empty;
+            stderrmean[bin_num] = empty;
+            stdevpix[bin_num] = empty;
+        }
+        return;
+    } // Early exit
+
     // first populate the work4 array from data4
     for (int i=start+tid; i<stop; i+=wg)
     {
@@ -162,7 +174,6 @@ csr_medfilt    (  const   global  float4  *data4,
 
     while (cnt)
         cnt = passe_float4(&work4[start], size, 1, shared_int);
-
     // Then perform the cumsort of the weights to s0
     // In blelloch scan, one workgroup can process 2wg in size.
 
@@ -183,9 +194,8 @@ csr_medfilt    (  const   global  float4  *data4,
         if ((idx+wg)<stop)
             work4[idx+wg].s0 = sum + shared_float[tid+wg];
         sum += shared_float[2*wg-1];
-		barrier(CLK_LOCAL_MEM_FENCE);
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
-
     barrier(CLK_GLOBAL_MEM_FENCE);
 
     // Perform the sum for accumulator of signal, variance, normalization and count
@@ -204,8 +214,8 @@ csr_medfilt    (  const   global  float4  *data4,
         float q_last = (i>start)?work4[i-1].s0:0.0f;
         float4 w = work4[i];
         if((((q_last>=qmin) && (w.s0<=qmax))  // case several contribution
-         || ((q_last<=qmin) && (w.s0>=qmax))) // case unique contribution qmin==qmax
-         && (w.s3)) {                         // non empty
+        || ((q_last<=qmin) && (w.s0>=qmax))) // case unique contribution qmin==qmax
+        && (w.s3)) {                         // non empty
             cnt ++;
             acc_sig = dw_plus_fp(acc_sig, w.s1);
             acc_var = dw_plus_fp(acc_var, w.s2);
@@ -214,7 +224,9 @@ csr_medfilt    (  const   global  float4  *data4,
 
         }
     }
-//  Now parallel reductions, one after the other :-/
+
+    //  Now parallel reductions, one after the other :-/
+
     shared_int[tid] = cnt;
     cnt = sum_int_reduction(shared_int);
 
@@ -234,15 +246,16 @@ csr_medfilt    (  const   global  float4  *data4,
     shared_float[2*tid+1] = acc_nrm2.s1;
     acc_nrm2 = sum_float2_reduction(shared_float);
 
-
     // Finally store the accumulated value
 
-    if (tid == 0) {
+    if (tid == 0)
+    {
         summed[bin_num] = (float8)(acc_sig.s0, acc_sig.s1,
-                                   acc_var.s0, acc_var.s1,
-                                   acc_nrm.s0, acc_nrm.s1,
-                                   (float)cnt, acc_nrm2.s0);
-        if (acc_nrm2.s0 > 0.0f) {
+                                acc_var.s0, acc_var.s1,
+                                acc_nrm.s0, acc_nrm.s1,
+                                (float)cnt, acc_nrm2.s0);
+        if (acc_nrm2.s0 > 0.0f)
+        {
             averint[bin_num] = acc_sig.s0/acc_nrm.s0 ;
             stdevpix[bin_num] = sqrt(acc_var.s0/acc_nrm2.s0) ;
             stderrmean[bin_num] = sqrt(acc_var.s0) / acc_nrm.s0;
