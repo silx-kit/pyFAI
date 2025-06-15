@@ -1148,10 +1148,10 @@ class Integrate2dFiberResult(Integrate2dResult):
             t = intensity, inplane, outofplane
         else:
             t = intensity, inplane, outofplane, sigma
-        return IntegrateResult.__new__(Integrate2dFiberResult, t)
+        return Integrate2dResult.__new__(Integrate2dFiberResult, t)
 
-    def __init__(self, intensity, outofplane, inplane, sigma=None):
-        super(Integrate2dResult, self).__init__()
+    def __init__(self, intensity, inplane, outofplane, sigma=None):
+        super(Integrate2dFiberResult, self).__init__()
         self._oop_unit = None
         self._ip_unit = None
 
