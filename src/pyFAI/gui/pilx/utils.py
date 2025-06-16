@@ -33,7 +33,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2025"
+__date__ = "16/06/2025"
 __status__ = "development"
 
 import logging
@@ -72,6 +72,22 @@ def get_indices_from_values(vmin: float,
 
 def get_dataset(parent: h5py.Group | h5py.File, path: str) -> h5py.Dataset:
     dset = parent[path]
+    if not isinstance(dset, h5py.Dataset):
+        raise RuntimeError("dataset is not a `h5py.Dataset` instance")
+    return dset
+
+
+def get_signal_dataset(parent: h5py.Group | h5py.File,
+                       path: str,
+                       default: str="intensity") -> h5py.Dataset:
+    "Read the `signal` dataset associated to a NXdata, if no signal is provided, use the default one"
+    nxdata = parent[path]
+    if not isinstance(dset, h5py.Group):
+        raise RuntimeError("NXdata is not a `h5py.Group` instance")
+    attrs = nxdata.attrs
+    if attrs.get("NX_class") != "NXdata":
+        logger.warning(f"Expected a NXdata class for {nxdata.name}")
+    dset = nxdata[attrs.get("signal",default)]
     if not isinstance(dset, h5py.Dataset):
         raise RuntimeError("dataset is not a `h5py.Dataset` instance")
     return dset

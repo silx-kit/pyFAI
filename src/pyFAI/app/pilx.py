@@ -32,7 +32,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/01/2025"
+__date__ = "16/06/2025"
 __status__ = "development"
 
 from silx.gui import qt
@@ -51,16 +51,24 @@ def main(args=None):
     parser.add_argument("-p", "--nxprocess", dest="nxprocess_path",
                         help="inner path to the Nexus process with the integrated Data",
                         default="/entry_0000/pyFAI",)
+    parser.add_argument("--bm29", help="set data='...' and nxprocess='/entry_0000/1_mesh' to match mesh-files produced by BM29",
+                        default=False, action="store_true")
     version = f"pyFAI-diffmap-view version {pyFAI_version}: {pyFAI_date}"
     parser.add_argument("-V", "--version", action='version', version=version)
 
     options = parser.parse_args(args)
+    if options.bm29:
+        data_path = "/entry_0000/1_mesh/sources/images_0000"
+        nxprocess_path = "/entry_0000/1_mesh"
+    else:
+        nxprocess_path = options.nxprocess_path
+        data_path = options.data_path
 
     app = qt.QApplication([])
     window = MainWindow()
     window.initData(file_name=options.filename,
-                    dataset_path=options.data_path,
-                    nxprocess_path=options.nxprocess_path,
+                    dataset_path=data_path,
+                    nxprocess_path=nxprocess_path,
                     )
     window.show()
     return app.exec()

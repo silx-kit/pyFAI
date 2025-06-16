@@ -33,7 +33,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2025"
+__date__ = "16/06/2025"
 __status__ = "development"
 
 from typing import Tuple
@@ -135,16 +135,16 @@ class MainWindow(qt.QMainWindow):
 
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
-            map_data = get_dataset(nxprocess, "result/intensity")[()].sum(axis=-1)
+            map_data = get_signal_dataset(nxprocess, "result", default="intensity")[()].sum(axis=-1)
             try:
-                slow = get_dataset(nxprocess, "result/slow")
+                slow = get_axes_dataset(nxprocess, "result", dim=0, default="slow")
             except (KeyError, RuntimeError):
                 slow_label = slow_values = None
             else:
                 slow_label = slow.attrs.get("long_name", "Y")
                 slow_values = slow[()]
             try:
-                fast = get_dataset(nxprocess, "result/fast")
+                fast = get_axes_dataset(nxprocess, "result", dim=1, default="fast")
             except (KeyError, RuntimeError):
                 fast_values = fast_label = None
             else:
