@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2023"
+__date__ = "16/06/2025"
 __status__ = "production"
 
 import logging
@@ -286,6 +286,13 @@ class FixedParameters(set):
             self.add(key)
         else:
             self.discard(key)
+    def __repr__():
+        return f"Fixed parameters: {', '.join(self)}."
+
+    def __add__(self, other):
+        """enables the addition of a list"""
+        for i in other:
+            self.add(other)
 
 
 def fully_qualified_name(obj):
