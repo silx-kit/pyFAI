@@ -291,8 +291,10 @@ class FixedParameters(set):
 
     def __add__(self, other):
         """enables the addition of a list"""
+        new = self.copy()
         for i in other:
-            self.add(other)
+            new.add(i)
+        return new
 
 
 def fully_qualified_name(obj):
