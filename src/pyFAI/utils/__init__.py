@@ -286,14 +286,18 @@ class FixedParameters(set):
             self.add(key)
         else:
             self.discard(key)
-    def __repr__():
+    def __repr__(self):
         return f"Fixed parameters: {', '.join(self)}."
+
+    def __iadd__(self, other):
+        for i in other:
+            self.add(i)
+        return self
 
     def __add__(self, other):
         """enables the addition of a list"""
-        new = self.copy()
-        for i in other:
-            new.add(i)
+        new = self.__class__(self)
+        new.__iadd__(other)
         return new
 
 

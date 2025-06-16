@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/05/2025"
+__date__ = "16/06/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1588,7 +1588,13 @@ class AzimuthalIntegrator(Integrator):
                 intpl = integr.medfilt(data, **kwargs)
         else:
             raise RuntimeError(f"Method {method} is not yet implemented. Please report an issue on https://github.com/silx-kit/pyFAI/issues/new")
-        result = Integrate1dResult(intpl.position * unit.scale, intpl.intensity, intpl.sem)
+        if intpl.variance is not None:
+            if numpy.all(intpl.variance == numpy.zeros_like(intpl.variance)):
+                result = Integrate1dResult(intpl.position * unit.scale, intpl.intensity)
+            else:
+                result = Integrate1dResult(intpl.position * unit.scale, intpl.intensity, intpl.sem)
+        else:
+                result = Integrate1dResult(intpl.position * unit.scale, intpl.intensity)
         result._set_method_called("sigma_clip_ng")
         result._set_method(method)
         result._set_compute_engine(str(method))
