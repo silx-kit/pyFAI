@@ -43,7 +43,7 @@ from ..gui.pilx.MainWindow import MainWindow
 from .. import version as pyFAI_version, date as pyFAI_date
 from ..io.nexus import Nexus
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 def guess_file_type(filename, default="diffmap"):
