@@ -33,7 +33,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/06/2025"
+__date__ = "18/06/2025"
 __status__ = "development"
 
 from typing import Tuple
@@ -57,12 +57,15 @@ from .utils import (
     get_indices_from_values,
     get_mask_image,
     get_radial_dataset,
+    get_axes_dataset,
+    get_signal_dataset
 )
 from .widgets.DiffractionImagePlotWidget import DiffractionImagePlotWidget
 from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
 from .widgets.TitleWidget import TitleWidget
 from ...io.integration_config import WorkerConfig
+from ...io.diffmap_config import DiffmapConfig
 from ...utils.mathutil import binning
 
 logger = logging.getLogger(__name__)
@@ -153,9 +156,13 @@ class MainWindow(qt.QMainWindow):
 
             pyFAI_config_as_str = get_dataset(
                 parent=nxprocess,
-                path=f"configuration/data"
-            )[()]
-            self.worker_config = WorkerConfig.from_dict(json.loads(pyFAI_config_as_str), inplace=True)
+                path="configuration/data")[()]
+            pyFAI_config_as_dict = json.loads(pyFAI_config_as_str)
+            if "diffmap_config_version" in pyFAI_config_as_dict:
+                diffmap_config = DiffmapConfig.from_dict(pyFAI_config_as_dict, inplace=True)
+                self.worker_config = diffmap_config.ai
+            else:
+                self.worker_config = WorkerConfig.from_dict(pyFAI_config_as_dict, inplace=True)
 
             radial_dset = get_radial_dataset(
                 h5file, nxdata_path=f"{self._nxprocess_path}/result",
@@ -284,7 +291,7 @@ class MainWindow(qt.QMainWindow):
 
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
-            map_shape = get_dataset(nxprocess, "result/intensity").shape
+            map_shape = get_signal_dataset(nxprocess, "result", default="intensity").shape
             if self._map_ptr is None:
                 logger.warning("No `map_ptr` defined: guessing the frame indices !")
                 image_index = row * map_shape[1] + col + self._offset

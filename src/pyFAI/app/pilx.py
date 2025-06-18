@@ -32,7 +32,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/06/2025"
+__date__ = "17/06/2025"
 __status__ = "development"
 
 from silx.gui import qt
@@ -51,6 +51,7 @@ def main(args=None):
     parser.add_argument("-p", "--nxprocess", dest="nxprocess_path",
                         help="inner path to the Nexus process with the integrated Data",
                         default="/entry_0000/pyFAI",)
+    # TODO: define several file-reader which provide compatibility with  BM29... auto being the default one.
     parser.add_argument("--bm29", help="set data='...' and nxprocess='/entry_0000/1_mesh' to match mesh-files produced by BM29",
                         default=False, action="store_true")
     version = f"pyFAI-diffmap-view version {pyFAI_version}: {pyFAI_date}"
