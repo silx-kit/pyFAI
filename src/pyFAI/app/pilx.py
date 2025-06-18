@@ -79,8 +79,8 @@ def guess_file_type(filename, default="diffmap"):
 def main(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
-    parser.add_argument("-d", "--data", dest="data_path, by default '/entry_0000/measurement/images_0001'",
-                        help="inner path to the dataset with the Raw Data",
+    parser.add_argument("-d", "--data", dest="data_path",
+                        help="inner path to the dataset with the Raw Data, by default '/entry_0000/measurement/images_0001'",
                         default=None, type=str)
     parser.add_argument("-p", "--nxprocess", dest="nxprocess_path",
                         help="inner path to the Nexus process with the integrated data, by default '/entry_0000/pyFAI'",
