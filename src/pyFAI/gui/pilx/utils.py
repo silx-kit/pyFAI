@@ -103,7 +103,7 @@ def get_NXdata(parent: h5py.Group | h5py.File,
     return nxdata
 
 def get_signal_dataset(parent: h5py.Group | h5py.File,
-                       path: str=None,
+                       path: str | None = None,
                        default: str="intensity") -> h5py.Dataset:
     "Read the `signal` dataset associated to a NXdata, if no signal is provided, use the default one"
     nxdata = get_NXdata(parent, path)
@@ -114,8 +114,8 @@ def get_signal_dataset(parent: h5py.Group | h5py.File,
     return dset
 
 def get_axes_dataset(parent: h5py.Group | h5py.File,
-                     path: str=None,
-                     dim: int=0,
+                     path: str | None = None,
+                     dim: int = 0,
                      default: str="x") -> h5py.Dataset:
     "Read the `axes` dataset associated to a NXdata, if nothing along that axes, use the default one"
     nxdata = get_NXdata(parent, path)
@@ -139,7 +139,7 @@ def get_axes_dataset(parent: h5py.Group | h5py.File,
 
 
 def get_radial_dataset(parent: h5py.Group,
-                       nxdata_path: str=None,
+                       nxdata_path: str | None = None,
                        size: Optional[int]=None) -> h5py.Dataset:
     nxdata = get_NXdata(parent, nxdata_path)
     if size is None:
