@@ -93,11 +93,11 @@ def main(args=None):
                         action='count', default=0)
     options = parser.parse_args(args)
     if options.verbose == 0:
-        logging.basicConfig(level=loging.WARNING)
+        logging.basicConfig(level=logging.WARNING)
     elif options.verbose == 1:
-        logging.basicConfig(level=loging.INFO)
+        logging.basicConfig(level=logging.INFO)
     elif options.verbose >= 2:
-        logging.basicConfig(level=loging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG)
 
     reader = options.reader.lower()
     if reader == "auto":
