@@ -40,7 +40,7 @@ import sys
 import argparse
 import logging
 from ..gui.pilx.MainWindow import MainWindow
-from .. import version as pyFAI_version, __date__ as pyFAI_date
+from .. import version as pyFAI_version, date as pyFAI_date
 from ..io.nexus import Nexus
 
 logger = logging.getLogger(__file__)
