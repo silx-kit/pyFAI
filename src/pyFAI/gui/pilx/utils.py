@@ -86,17 +86,17 @@ def get_indices_from_values(vmin: float,
 def get_dataset(parent: h5py.Group | h5py.File, path: str) -> h5py.Dataset:
     dset = parent[path]
     if not isinstance(dset, h5py.Dataset):
-        raise RuntimeError("dataset is not a `h5py.Dataset` instance")
+        raise TypeError("dataset is not a `h5py.Dataset` instance")
     return dset
 
 
 def get_NXdata(parent: h5py.Group | h5py.File,
-               path: str = None):
+               path: str | None = None):
     "Return a NXdata group with minimum checks"
     nxdata = parent[path] if path else parent
 
     if not isinstance(nxdata, h5py.Group):
-        raise RuntimeError("NXdata is not a `h5py.Group` instance")
+        raise TypeError("NXdata is not a `h5py.Group` instance")
     attrs = nxdata.attrs
     if attrs.get("NX_class") != "NXdata":
         logger.warning(f"Expected a NXdata class for {nxdata.name}")
@@ -110,13 +110,13 @@ def get_signal_dataset(parent: h5py.Group | h5py.File,
     attrs = nxdata.attrs
     dset = nxdata[attrs.get("signal",default)]
     if not isinstance(dset, h5py.Dataset):
-        raise RuntimeError("dataset is not a `h5py.Dataset` instance")
+        raise TypeError(f"dataset '{dset}' is not a `h5py.Dataset` instance")
     return dset
 
 def get_axes_dataset(parent: h5py.Group | h5py.File,
                      path: str=None,
                      dim: int=0,
-                     default: str="intensity") -> h5py.Dataset:
+                     default: str="x") -> h5py.Dataset:
     "Read the `axes` dataset associated to a NXdata, if nothing along that axes, use the default one"
     nxdata = get_NXdata(parent, path)
     attrs = nxdata.attrs
@@ -131,7 +131,7 @@ def get_axes_dataset(parent: h5py.Group | h5py.File,
         else:
             dset_name = axes[dim]
     if dset_name not in nxdata:
-        raise RuntimeError("dataset `{dset_name}` does not exist in NXdata `{nxdata.name}`.")
+        raise RuntimeError(f"dataset `{dset_name}` does not exist in NXdata `{nxdata.name}`.")
     dset = nxdata[dset_name]
     if not isinstance(dset, h5py.Dataset):
         raise RuntimeError("dataset is not a `h5py.Dataset` instance")
