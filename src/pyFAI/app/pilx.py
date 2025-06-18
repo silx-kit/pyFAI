@@ -45,8 +45,9 @@ from ..io.nexus import Nexus
 
 logger = logging.getLogger(__file__)
 
+
 def guess_file_type(filename, default="diffmap"):
-    """return the type of file to set the proper reader"""
+    """return the type of HDF5-file to set the proper reader"""
 
     def read_str(entry, key):
         try:
@@ -74,35 +75,42 @@ def guess_file_type(filename, default="diffmap"):
     logger.info(f"detected file type: {filetype}")
     return filetype or default
 
+
 def main(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
-    parser.add_argument("-d", "--data", dest="data_path",
+    parser.add_argument("-d", "--data", dest="data_path, by default '/entry_0000/measurement/images_0001'",
                         help="inner path to the dataset with the Raw Data",
-                        default="/entry_0000/measurement/images_0001",)
+                        default=None, type=str)
     parser.add_argument("-p", "--nxprocess", dest="nxprocess_path",
-                        help="inner path to the Nexus process with the integrated Data",
-                        default="/entry_0000/pyFAI",)
-
-    parser.add_argument("--reader", help="selecte the default reader among `diffmap` and `bm29`",
+                        help="inner path to the Nexus process with the integrated data, by default '/entry_0000/pyFAI'",
+                        default=None,type=str)
+    parser.add_argument("--reader", help="select the default reader among `diffmap` and `bm29`",
                         default="auto", type=str)
     version = f"pyFAI-diffmap-view version {pyFAI_version}: {pyFAI_date}"
     parser.add_argument("-V", "--version", action='version', version=version)
-
+    parser.add_argument("-v", "--verbose", help="increase verbosity",
+                        action='count', default=0)
     options = parser.parse_args(args)
+    if options.verbose == 0:
+        logging.basicConfig(level=loging.WARNING)
+    elif options.verbose == 1:
+        logging.basicConfig(level=loging.INFO)
+    elif options.verbose >= 2:
+        logging.basicConfig(level=loging.DEBUG)
+
     reader = options.reader.lower()
     if reader == "auto":
         reader = guess_file_type(options.filename)
-
     if reader == "bm29":
         data_path = "/entry_0000/1_mesh/sources/images_0000"
         nxprocess_path = "/entry_0000/1_mesh"
     elif reader == "diffmap":
         data_path = "/entry_0000/measurement/images_0001"
         nxprocess_path = "/entry_0000/pyFAI"
-    else:
-        nxprocess_path = options.nxprocess_path
-        data_path = options.data_path
+
+    nxprocess_path = options.nxprocess_path if options.nxprocess_path is not None else nxprocess_path
+    data_path = options.data_path if options.data_path is not None else data_path
 
     app = qt.QApplication([])
     window = MainWindow()
