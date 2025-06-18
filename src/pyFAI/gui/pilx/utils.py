@@ -144,14 +144,18 @@ def get_radial_dataset(parent: h5py.Group,
     nxdata = get_NXdata(parent, nxdata_path)
     if size is None:
         if "intensity" in nxdata:
-            size = nxdata["intensity"].shape[-1]
+            dset = nxdata["intensity"]
         else:
-            size = nxdata[nxdata.attrs["signal"]].shape[0]
+            dset = nxdata[nxdata.attrs.get("signal")]
+        axes_index = get_axes_index(dset)
+        size = dset.shape[axes_index.radial]
+    else:
+        axes_index = AxisIndex(1,2,0)
     axes = nxdata.attrs["axes"]
     if isinstance(axes, Iterable):
-        radial_path = axes[0]
+        radial_path = axes[axes_index.radial]
         if size is not None:
-            for idx in [0, -1, 1, -2]:
+            for idx in [axes_index.radial, 0, -1, 1, -2]:
                 radial_path = axes[idx]
                 if radial_path in nxdata and isinstance(nxdata[radial_path], h5py.Dataset):
                     ds = get_dataset(nxdata, radial_path)
