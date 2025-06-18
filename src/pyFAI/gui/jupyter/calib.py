@@ -5,7 +5,7 @@ from ..mpl_calib import MplCalibWidget
 from matplotlib import pyplot
 from matplotlib.colors import LogNorm
 # from ...geometryRefinement import GeometryRefinement
-from ..cli_calibration import AbstractCalibration
+from ..cli_calibration import AbstractCalibration, FixedParameters
 from ..peak_picker import PeakPicker
 try:
     from IPython.core.display import display
@@ -89,7 +89,7 @@ class JupyCalibration(AbstractCalibration):
         self.preprocess()
         self.interactive = False
         self.max_iter = 10 # 10 outer loop iteration
-        self.fixed = ["wavelength", "rot3"]
+        self.fixed = FixedParameters(["wavelength", "rot3"])
         self.peakPicker.cb_refine = self.set_data
 
     def preprocess(self):
