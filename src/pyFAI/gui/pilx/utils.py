@@ -36,11 +36,12 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "18/06/2025"
 __status__ = "development"
 
+from collections import namedtuple
 import logging
 from typing import Iterable, Optional, Tuple
-
-logger = logging.getLogger(__name__)
 import os.path
+logger = logging.getLogger(__name__)
+
 
 import h5py
 import numpy
@@ -51,6 +52,18 @@ from ...integrator.azimuthal import AzimuthalIntegrator
 from ...io.integration_config import WorkerConfig
 from ...utils.mathutil import binning
 
+AxisIndex = namedtuple("AxisIndex", "slow fast radial")
+
+def get_axes_index(dataset):
+    """Calculate the indices of the axis according to the interpretation of the dataset"""
+    if dataset.attrs["interpretation"] == "image":
+        res = AxisIndex(1, 2, 0)
+    elif dataset.attrs["interpretation"] == "spectrum":
+        res = AxisIndex(0, 1, 2)
+    else:
+        logger.warning(f"No interpretation for NXdata '{dataset.name}', guessing !")
+        res = AxisIndex(0, 1, 2)
+    return res
 
 def compute_radial_values(worker_config: WorkerConfig) -> numpy.ndarray:
     ai = AzimuthalIntegrator.sload(worker_config.poni)
@@ -126,13 +139,9 @@ def get_axes_dataset(parent: h5py.Group | h5py.File,
 
 
 def get_radial_dataset(parent: h5py.Group,
-                       nxdata_path: str,
+                       nxdata_path: str=None,
                        size: Optional[int]=None) -> h5py.Dataset:
-    nxdata = parent[nxdata_path]
-    if not  isinstance(nxdata, h5py.Group):
-        raise RuntimeError("NXdata group is not a `h5py.Group` instance")
-    if nxdata.attrs.get("NX_class") != "NXdata":
-        raise RuntimeError("NXdata group has improper NX_class attribute")
+    nxdata = get_NXdata(parent, nxdata_path)
     if size is None:
         if "intensity" in nxdata:
             size = nxdata["intensity"].shape[-1]
