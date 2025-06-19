@@ -1136,7 +1136,61 @@ def rebin1d(res2d):
     result._set_metadata(res2d.metadata)
     return result
 
-class Integrate2dFiberResult(Integrate2dResult):
+class Integrate1dFiberResult(IntegrateResult):
+    def __new__(self, integrated, intensity, sigma=None):
+        if sigma is None:
+            t = integrated, intensity
+        else:
+            t = integrated, intensity, sigma
+        return IntegrateResult.__new__(Integrate1dFiberResult, t)
+
+    def __init__(self, integrated, intensity, sigma=None):
+        super(Integrate1dFiberResult, self).__init__()
+
+    @property
+    def integrated(self):
+        """
+        Integrated positions (q/2theta/r)
+
+        :rtype: numpy.ndarray
+        """
+        return self[0]
+
+    @property
+    def radial(self):
+        logger.warning("radial does not apply to a fiber/grazing-incidence result, use integrated instead")
+        return self[0]
+
+    @property
+    def intensity(self):
+        """
+        Regrouped intensity
+
+        :rtype: numpy.ndarray
+        """
+        return self[1]
+
+    @property
+    def sigma(self):
+        """
+        Error array if it was requested
+
+        :rtype: numpy.ndarray, None
+        """
+        if len(self) == 2:
+            return None
+        return self[2]
+
+
+
+
+
+
+
+
+
+
+class Integrate2dFiberResult(IntegrateResult):
     """
     Result of an 2D integration for fiber/grazing-incidence scattering.
     Provide a tuple access as a simple way to reach main attributes.
@@ -1148,7 +1202,7 @@ class Integrate2dFiberResult(Integrate2dResult):
             t = intensity, inplane, outofplane
         else:
             t = intensity, inplane, outofplane, sigma
-        return Integrate2dResult.__new__(Integrate2dFiberResult, t)
+        return IntegrateResult.__new__(Integrate2dFiberResult, t)
 
     def __init__(self, intensity, inplane, outofplane, sigma=None):
         super(Integrate2dFiberResult, self).__init__()
