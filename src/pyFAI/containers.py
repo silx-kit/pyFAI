@@ -1239,6 +1239,13 @@ class Integrate2dFiberResult(IntegrateResult):
         return self[3]
 
     @property
+    def unit(self):
+        """
+        :rtype: 2-tuple of Unit
+        """
+        return self._ip_unit, self._oop_unit
+        
+    @property
     def radial(self):
         logger.warning("Radial does not apply to a fiber/grazing-incidence result, use inplane instead")
         return self.inplane
@@ -1247,8 +1254,6 @@ class Integrate2dFiberResult(IntegrateResult):
     def azimuthal(self):
         logger.warning("Azimuthal does not apply to a fiber/grazing-incidence result, use outofplane instead")
         return self.outofplane
-
-
 
     @property
     def ip_unit(self):
