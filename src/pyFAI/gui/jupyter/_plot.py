@@ -41,6 +41,7 @@ import numpy
 from pylab import subplots
 from matplotlib import lines
 from matplotlib.colors import SymLogNorm
+from pyFAI.containers import Integrate2dFiberResult
 
 
 def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
@@ -142,8 +143,12 @@ def plot2d(result, calibrant=None, label=None, ax=None):
     :return: Matplotlib subplot
     """
     img = result.intensity
-    pos_rad = result.radial
-    pos_azim = result.azimuthal
+    if isinstance(result, Integrate2dFiberResult):
+        pos_rad = result.inplane
+        pos_azim = result.outofplane
+    else:
+        pos_rad = result.radial
+        pos_azim = result.azimuthal
     if ax is None:
         _fig, ax = subplots()
     colornorm = SymLogNorm(1, base=10,
