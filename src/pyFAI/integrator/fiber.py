@@ -45,7 +45,7 @@ except ImportError as err:
 else:
     USE_NUMEXPR = True
 from .azimuthal import AzimuthalIntegrator
-from ..containers import Integrate1dResult
+from ..containers import Integrate1dFiberResult, Integrate2dFiberResult
 from ..method_registry import IntegrationMethod
 from ..io import save_integrate_result
 from ..units import parse_fiber_unit
@@ -294,7 +294,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         else:
             sum_variance = None
             sigma = None
-        result = Integrate1dResult(res.azimuthal, intensity, sigma)
+        result = Integrate1dFiberResult(res.azimuthal, intensity, sigma)
         result._set_method_called("integrate_radial")
         result._set_unit(output_unit)
         result._set_sum_normalization(sum_normalization)
@@ -387,7 +387,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
-        return self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
+        res2d = self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                   polarization_factor=polarization_factor,
@@ -396,7 +396,38 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   radial_range=ip_range,
                                   azimuth_range=oop_range,
                                   unit=(unit_ip, unit_oop),
-                                  filename=filename)
+                                  filename=None)
+        
+        result2d_fiber = Integrate2dFiberResult(
+            res2d.intensity,
+            res2d.radial,
+            res2d.azimuthal,
+            res2d.sem,
+        )
+        result2d_fiber._set_method_called("integrate2d")
+        result2d_fiber._set_compute_engine(str(res2d.method))
+        result2d_fiber._set_method(res2d.method)
+        result2d_fiber._set_ip_unit(res2d.radial_unit)
+        result2d_fiber._set_oop_unit(res2d.azimuth_unit)
+        result2d_fiber._set_count(res2d.count)
+        result2d_fiber._set_has_dark_correction(res2d.has_dark_correction)
+        result2d_fiber._set_has_flat_correction(res2d.has_flat_correction)
+        result2d_fiber._set_has_mask_applied(res2d.has_mask_applied)
+        result2d_fiber._set_polarization_factor(res2d.polarization_factor)
+        result2d_fiber._set_normalization_factor(res2d.normalization_factor)
+        result2d_fiber._set_metadata(res2d.metadata)
+        result2d_fiber._set_sum_signal(res2d.sum_signal)
+        result2d_fiber._set_sum_normalization(res2d.sum_normalization)
+        if res2d.sum_normalization2 is not None:
+            result2d_fiber._set_sum_normalization2(res2d.sum_normalization2)
+            result2d_fiber._set_sum_variance(res2d.sum_variance)
+            result2d_fiber._set_std(res2d.std)
+            result2d_fiber._set_sem(res2d.sem)
+
+        if filename is not None:
+            save_integrate_result(filename, result2d_fiber)
+        
+        return result2d_fiber
 
     integrate2d_grazing_incidence = integrate2d_fiber
 
