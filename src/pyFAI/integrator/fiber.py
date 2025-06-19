@@ -397,12 +397,34 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   azimuth_range=oop_range,
                                   unit=(unit_ip, unit_oop),
                                   filename=None)
+        
+        intensity = res2d.intensity
+        sum_signal = res2d.sum_signal
+        count = res2d.count
+        sum_normalization = res2d.sum_normalization
+        sum_normalization2 = res2d.sum_normalization2
+        sum_variance = res2d.sum_variance
+        std = res2d.std
+        sem = res2d.sem
+
+        if kwargs.get("mask_missing_wedge", False):
+            logger.warning("Pixel splitting + missing wedge masking is experimental and may not work as expected. Use with caution.")
+            missing_wedge_mask = get_missing_wedge_mask(res2d, threshold_bins=kwargs.get("missing_wedge_threshold_bins", None))
+            intensity[missing_wedge_mask] = dummy
+            sum_signal[missing_wedge_mask] = dummy
+            count[missing_wedge_mask] = 0
+            sum_normalization[missing_wedge_mask] = dummy
+            if sum_normalization2 is not None:
+                sum_normalization2[missing_wedge_mask] = dummy
+                sum_variance[missing_wedge_mask] = dummy
+                std[missing_wedge_mask] = dummy
+                sem[missing_wedge_mask] = dummy
 
         result2d_fiber = Integrate2dFiberResult(
-            res2d.intensity,
+            intensity,
             res2d.radial,
             res2d.azimuthal,
-            res2d.sem,
+            sem,
         )
         result2d_fiber._set_method_called("integrate2d")
         result2d_fiber._set_compute_engine(str(res2d.method))
@@ -416,13 +438,12 @@ class FiberIntegrator(AzimuthalIntegrator):
         result2d_fiber._set_polarization_factor(res2d.polarization_factor)
         result2d_fiber._set_normalization_factor(res2d.normalization_factor)
         result2d_fiber._set_metadata(res2d.metadata)
-        result2d_fiber._set_sum_signal(res2d.sum_signal)
-        result2d_fiber._set_sum_normalization(res2d.sum_normalization)
-        if res2d.sum_normalization2 is not None:
-            result2d_fiber._set_sum_normalization2(res2d.sum_normalization2)
-            result2d_fiber._set_sum_variance(res2d.sum_variance)
-            result2d_fiber._set_std(res2d.std)
-            result2d_fiber._set_sem(res2d.sem)
+        result2d_fiber._set_sum_signal(sum_signal)
+        result2d_fiber._set_sum_normalization(sum_normalization)
+        result2d_fiber._set_sum_normalization2(sum_normalization2)
+        result2d_fiber._set_sum_variance(sum_variance)
+        result2d_fiber._set_std(std)
+        result2d_fiber._set_sem(sem)
 
         if filename is not None:
             save_integrate_result(filename, result2d_fiber)
@@ -515,3 +536,11 @@ class FiberIntegrator(AzimuthalIntegrator):
         return self.integrate_fiber(**kwargs)
 
     integrate1d_exitangles.__doc__ += "\n" + integrate_fiber.__doc__
+
+def get_missing_wedge_mask(result: Integrate2dFiberResult, threshold_bins=None) -> numpy.ndarray:
+    return result.sum_normalization < get_missing_wedge_threshold(intensity=result.sum_normalization, threshold_bins=threshold_bins)
+
+def get_missing_wedge_threshold(intensity:numpy.ndarray, threshold_bins=None) -> float:
+    threshold_bins = threshold_bins or max(intensity.shape)
+    counts, bin = numpy.histogram(intensity.ravel(), bins=threshold_bins)
+    return bin[counts.argmax()] / 2
