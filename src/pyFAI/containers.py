@@ -1201,6 +1201,15 @@ class Integrate2dFiberResult(IntegrateResult):
         self._ip_unit = None
 
     @property
+    def intensity(self):
+        """
+        Regrouped intensity
+
+        :rtype: numpy.ndarray
+        """
+        return self[0]
+
+    @property
     def inplane(self):
         """
         In-plane positions (q/2theta/r)
@@ -1219,6 +1228,17 @@ class Integrate2dFiberResult(IntegrateResult):
         return self[2]
 
     @property
+    def sigma(self):
+        """
+        Error array if it was requested
+
+        :rtype: numpy.ndarray, None
+        """
+        if len(self) == 3:
+            return None
+        return self[3]
+
+    @property
     def radial(self):
         logger.warning("Radial does not apply to a fiber/grazing-incidence result, use inplane instead")
         return self.inplane
@@ -1228,25 +1248,7 @@ class Integrate2dFiberResult(IntegrateResult):
         logger.warning("Azimuthal does not apply to a fiber/grazing-incidence result, use outofplane instead")
         return self.outofplane
 
-    @property
-    def intensity(self):
-        """
-        Regrouped intensity
 
-        :rtype: numpy.ndarray
-        """
-        return self[1]
-
-    @property
-    def sigma(self):
-        """
-        Error array if it was requested
-
-        :rtype: numpy.ndarray, None
-        """
-        if len(self) == 2:
-            return None
-        return self[2]
 
     @property
     def ip_unit(self):
