@@ -1181,15 +1181,6 @@ class Integrate1dFiberResult(IntegrateResult):
             return None
         return self[2]
 
-
-
-
-
-
-
-
-
-
 class Integrate2dFiberResult(IntegrateResult):
     """
     Result of an 2D integration for fiber/grazing-incidence scattering.
