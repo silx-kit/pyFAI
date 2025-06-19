@@ -280,7 +280,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         #                           radial_range=integrated_unit_range,
         #                           azimuth_range=output_unit_range,
         #                           unit=(integrated_unit, output_unit))
-        
+
         # use_pixel_split = (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no")
         # use_missing_wedge = kwargs.get("mask_missing_wedge", False)
         # if use_pixel_split and not use_missing_wedge:
