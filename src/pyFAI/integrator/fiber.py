@@ -324,8 +324,12 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         if vertical_integration:
             output_unit = unit_oop
+            integration_axis = -1
+            integrated_vector = res2d_fiber.outofplane
         else:
             output_unit = unit_ip
+            integration_axis = -2
+            integrated_vector = res2d_fiber.inplane
         # unit_scale = output_unit.scale
         integration_axis = -1 if vertical_integration else -2
         sum_signal = res2d_fiber.sum_signal.sum(axis=integration_axis)
@@ -350,7 +354,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             sum_variance = None
             sigma = None
 
-        result = Integrate1dFiberResult(res2d_fiber.outofplane, intensity, sigma)
+        result = Integrate1dFiberResult(integrated_vector, intensity, sigma)
         result._set_method_called("integrate_radial")
         result._set_unit(output_unit)
         result._set_sum_normalization(sum_normalization)
