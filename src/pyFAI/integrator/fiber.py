@@ -289,17 +289,18 @@ class FiberIntegrator(AzimuthalIntegrator):
         #                    Either set use_missing_wedge=True or do not use pixel-splitting.\n\
         #                     """)
         # elif use_pixel_split and use_missing_wedge:
-        #     logger.warning("Pixel splitting + missing wedge masking is experimental and may not work as expected. Use with caution.")
-        # elif not use_pixel_split and use_missing_wedge:
-        #     logger.warning("Missing wedge masking should not be used if pixel splitting is disable. The results may be incorrect.")
+        #     logger.warning("Pixel splitting + missing wedge maski
+        #     logger.warning("Missing wedge masking should not be usng is experimental and may not work as expected. Use with caution.")
+        # elif not use_pixel_split and use_missing_wedge:ed if pixel splitting is disable. The results may be incorrect.")
 
         # sum_signal_2d = res.sum_signal
         # sum_normalization_2d = res.sum_normalization
 
         unit_scale = output_unit.scale
-        sum_signal = res2d_fiber.sum_signal.sum(axis=-1)
-        count = res2d_fiber.count.sum(axis=-1)
-        sum_normalization = res2d_fiber._sum_normalization.sum(axis=-1)
+        integration_axis = -1 if vertical_integration else -2
+        sum_signal = res2d_fiber.sum_signal.sum(axis=integration_axis)
+        count = res2d_fiber.count.sum(axis=integration_axis)
+        sum_normalization = res2d_fiber._sum_normalization.sum(axis=integration_axis)
         mask_ = numpy.where(count == 0)
         empty = dummy if dummy is not None else self._empty
         if USE_NUMEXPR:
@@ -309,7 +310,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         intensity[mask_] = empty
 
         if res2d_fiber.sigma is not None:
-            sum_variance = res2d_fiber.sum_variance.sum(axis=-1)
+            sum_variance = res2d_fiber.sum_variance.sum(axis=integration_axis)
             if USE_NUMEXPR:
                 sigma = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sqrt(sum_variance) / sum_normalization)")
             else:
