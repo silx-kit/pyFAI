@@ -217,7 +217,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   dark=dark, flat=flat, method=method,
                                   normalization_factor=normalization_factor,
                                   **kwargs)
-        
+
         if vertical_integration:
             output_unit = unit_oop
             integration_axis = -1
