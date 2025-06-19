@@ -397,7 +397,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   azimuth_range=oop_range,
                                   unit=(unit_ip, unit_oop),
                                   filename=None)
-        
+
         result2d_fiber = Integrate2dFiberResult(
             res2d.intensity,
             res2d.radial,
@@ -426,7 +426,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         if filename is not None:
             save_integrate_result(filename, result2d_fiber)
-        
+
         return result2d_fiber
 
     integrate2d_grazing_incidence = integrate2d_fiber
