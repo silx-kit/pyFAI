@@ -384,9 +384,6 @@ class FiberIntegrator(AzimuthalIntegrator):
                               tilt_angle=unit_ip.tilt_angle,
                               sample_orientation=unit_ip.sample_orientation)
 
-        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
-            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
-
         res2d = self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
@@ -406,6 +403,18 @@ class FiberIntegrator(AzimuthalIntegrator):
         sum_variance = res2d.sum_variance
         std = res2d.std
         sem = res2d.sem
+
+        use_pixel_split = (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no")
+        use_missing_wedge = kwargs.get("use_missing_wedge", False)
+        if use_pixel_split and not use_missing_wedge:
+            logger.warning(f"""
+                           Method {method} is using a pixel-splitting scheme without the missing wedge mask.\n\
+                           Either set use_missing_wedge=True or do not use pixel-splitting.\n\
+                            """)
+        elif use_pixel_split and use_missing_wedge:
+            logger.warning("Pixel splitting + missing wedge masking is experimental and may not work as expected. Use with caution.")
+        elif not use_pixel_split and use_missing_wedge:
+            logger.warning("Missing wedge masking should not be used if pixel splitting is disable. The results may be incorrect.")
 
         if kwargs.get("mask_missing_wedge", False):
             logger.warning("Pixel splitting + missing wedge masking is experimental and may not work as expected. Use with caution.")
