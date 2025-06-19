@@ -32,7 +32,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "18/06/2025"
 __status__ = "development"
 
 from silx.gui.plot.items.roi import HorizontalRangeROI as SilxHorizontalRangeROI
@@ -42,13 +42,10 @@ from silx.gui import qt
 class HorizontalRangeROI(SilxHorizontalRangeROI):
     """A HorizontalRangeROI that calls a custom signal each time the range changes"""
 
-    # https://gitlab.esrf.fr/silx/pilx/-/merge_requests/19#note_290530
-    sigRangeChanged = qt.Signal()
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.sigEditingFinished.connect(self.sigRangeChanged)
+        self.sigEditingFinished.connect(self.sigRegionChanged)
 
     def setRange(self, vmin: float, vmax: float):
         super().setRange(vmin, vmax)
-        self.sigRangeChanged.emit()
+        self.sigRegionChanged.emit()
