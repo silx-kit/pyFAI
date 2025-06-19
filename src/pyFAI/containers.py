@@ -1244,7 +1244,7 @@ class Integrate2dFiberResult(IntegrateResult):
         :rtype: 2-tuple of Unit
         """
         return self._ip_unit, self._oop_unit
-        
+
     @property
     def radial(self):
         logger.warning("Radial does not apply to a fiber/grazing-incidence result, use inplane instead")
