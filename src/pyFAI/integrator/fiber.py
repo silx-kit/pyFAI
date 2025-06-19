@@ -166,8 +166,8 @@ class FiberIntegrator(AzimuthalIntegrator):
 
 
     def integrate_fiber(self, data,
-                        npt_oop=None, unit_oop=None, oop_range=None,
                         npt_ip=None, unit_ip=None, ip_range=None,
+                        npt_oop=None, unit_oop=None, oop_range=None,
                         vertical_integration = True,
                         sample_orientation=None,
                         filename=None,
@@ -176,7 +176,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                         polarization_factor=None, dark=None, flat=None,
                         method=("no", "histogram", "cython"),
                         normalization_factor=1.0,
-                        **kwargs):
+                        **kwargs) -> Integrate1dFiberResult:
         """Calculate the integrated profile curve along a specific FiberUnit, additional input for sample_orientation
 
         :param ndarray data: 2D array from the Detector/CCD camera
@@ -235,10 +235,6 @@ class FiberIntegrator(AzimuthalIntegrator):
                               tilt_angle=unit_ip.tilt_angle,
                               sample_orientation=unit_ip.sample_orientation)
 
-        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
-            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
-
-
         if vertical_integration and npt_oop is None:
             raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
         elif not vertical_integration and npt_ip is None:
@@ -262,20 +258,48 @@ class FiberIntegrator(AzimuthalIntegrator):
             output_unit_range = ip_range
             output_unit = unit_ip
 
-        res = self.integrate2d_ng(data, npt_rad=npt_integrated, npt_azim=npt_output,
+        res2d_fiber = self.integrate2d_fiber(data,
+                                  npt_ip=npt_integrated, unit_ip=integrated_unit,
+                                  ip_range=integrated_unit_range,
+                                  npt_oop=npt_output, unit_oop=output_unit,
+                                  oop_range=output_unit_range,
+                                  sample_orientation=sample_orientation,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                   polarization_factor=polarization_factor,
                                   dark=dark, flat=flat, method=method,
                                   normalization_factor=normalization_factor,
-                                  radial_range=integrated_unit_range,
-                                  azimuth_range=output_unit_range,
-                                  unit=(integrated_unit, output_unit))
+                                  **kwargs)
+
+        # res = self.integrate2d_ng(data, npt_rad=npt_integrated, npt_azim=npt_output,
+        #                           correctSolidAngle=correctSolidAngle,
+        #                           mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+        #                           polarization_factor=polarization_factor,
+        #                           dark=dark, flat=flat, method=method,
+        #                           normalization_factor=normalization_factor,
+        #                           radial_range=integrated_unit_range,
+        #                           azimuth_range=output_unit_range,
+        #                           unit=(integrated_unit, output_unit))
+        
+        # use_pixel_split = (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no")
+        # use_missing_wedge = kwargs.get("mask_missing_wedge", False)
+        # if use_pixel_split and not use_missing_wedge:
+        #     logger.warning(f"""
+        #                    Method {method} is using a pixel-splitting scheme without the missing wedge mask.\n\
+        #                    Either set use_missing_wedge=True or do not use pixel-splitting.\n\
+        #                     """)
+        # elif use_pixel_split and use_missing_wedge:
+        #     logger.warning("Pixel splitting + missing wedge masking is experimental and may not work as expected. Use with caution.")
+        # elif not use_pixel_split and use_missing_wedge:
+        #     logger.warning("Missing wedge masking should not be used if pixel splitting is disable. The results may be incorrect.")
+
+        # sum_signal_2d = res.sum_signal
+        # sum_normalization_2d = res.sum_normalization
 
         unit_scale = output_unit.scale
-        sum_signal = res.sum_signal.sum(axis=-1)
-        count = res.count.sum(axis=-1)
-        sum_normalization = res._sum_normalization.sum(axis=-1)
+        sum_signal = res2d_fiber.sum_signal.sum(axis=-1)
+        count = res2d_fiber.count.sum(axis=-1)
+        sum_normalization = res2d_fiber._sum_normalization.sum(axis=-1)
         mask_ = numpy.where(count == 0)
         empty = dummy if dummy is not None else self._empty
         if USE_NUMEXPR:
@@ -284,8 +308,8 @@ class FiberIntegrator(AzimuthalIntegrator):
             intensity = numpy.where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)
         intensity[mask_] = empty
 
-        if res.sigma is not None:
-            sum_variance = res.sum_variance.sum(axis=-1)
+        if res2d_fiber.sigma is not None:
+            sum_variance = res2d_fiber.sum_variance.sum(axis=-1)
             if USE_NUMEXPR:
                 sigma = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sqrt(sum_variance) / sum_normalization)")
             else:
@@ -294,7 +318,8 @@ class FiberIntegrator(AzimuthalIntegrator):
         else:
             sum_variance = None
             sigma = None
-        result = Integrate1dFiberResult(res.azimuthal, intensity, sigma)
+
+        result = Integrate1dFiberResult(res2d_fiber.outofplane, intensity, sigma)
         result._set_method_called("integrate_radial")
         result._set_unit(output_unit)
         result._set_sum_normalization(sum_normalization)
@@ -305,8 +330,8 @@ class FiberIntegrator(AzimuthalIntegrator):
         result._set_has_flat_correction(flat is not None)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
-        result._set_method = res.method
-        result._set_compute_engine = res.compute_engine
+        result._set_method = res2d_fiber.method
+        result._set_compute_engine = res2d_fiber.compute_engine
 
         if filename is not None:
             save_integrate_result(filename, result)
@@ -326,7 +351,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                           mask=None, dummy=None, delta_dummy=None,
                           polarization_factor=None, dark=None, flat=None,
                           method=("no", "histogram", "cython"),
-                          normalization_factor=1.0, **kwargs):
+                          normalization_factor=1.0, **kwargs) -> Integrate2dFiberResult:
         """Reshapes the data pattern as a function of two FiberUnits, additional inputs for sample_orientation
 
         :param ndarray data: 2D array from the Detector/CCD camera
