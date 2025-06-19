@@ -1285,4 +1285,3 @@ class Integrate2dFiberResult(IntegrateResult):
     def _set_azimuthal_unit(self, unit):
         logger.warning("Azimuthal units does not apply to a fiber/grazing-incidence result, use oop_unit instead")
         self._set_oop_unit(unit)
-
