@@ -417,7 +417,6 @@ class FiberIntegrator(AzimuthalIntegrator):
             logger.warning("Missing wedge masking should not be used if pixel splitting is disable. The results may be incorrect.")
 
         if use_missing_wedge:
-            logger.warning("Pixel splitting + missing wedge masking is experimental and may not work as expected. Use with caution.")
             missing_wedge_mask = get_missing_wedge_mask(res2d, threshold_bins=kwargs.get("missing_wedge_threshold_bins", None))
             intensity[missing_wedge_mask] = dummy
             sum_signal[missing_wedge_mask] = dummy
