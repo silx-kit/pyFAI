@@ -397,7 +397,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   azimuth_range=oop_range,
                                   unit=(unit_ip, unit_oop),
                                   filename=None)
-        
+
         intensity = res2d.intensity
         sum_signal = res2d.sum_signal
         count = res2d.count
