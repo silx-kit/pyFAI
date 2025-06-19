@@ -430,7 +430,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         result2d_fiber._set_compute_engine(str(res2d.method))
         result2d_fiber._set_method(res2d.method)
         result2d_fiber._set_ip_unit(res2d.radial_unit)
-        result2d_fiber._set_oop_unit(res2d.azimuth_unit)
+        result2d_fiber._set_oop_unit(res2d.azimuthal_unit)
         result2d_fiber._set_count(res2d.count)
         result2d_fiber._set_has_dark_correction(res2d.has_dark_correction)
         result2d_fiber._set_has_flat_correction(res2d.has_flat_correction)
