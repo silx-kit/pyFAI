@@ -206,70 +206,96 @@ class FiberIntegrator(AzimuthalIntegrator):
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
-        deprecated_params = get_deprecated_params_1d(**kwargs)
-        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
-        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
-        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
-        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
-        oop_range = deprecated_params.get('oop_range', None) or oop_range
-        ip_range = deprecated_params.get('ip_range', None) or ip_range
-        vertical_integration = deprecated_params.get('vertical_integration', None) or vertical_integration
-
-        invalid_keys = [k for k in kwargs if any(ss in k for ss in ["oop", "ip", "unit", "range"])]
-        if invalid_keys:
-            logger.warning(f"""Key parameters {invalid_keys} are wrong or deprecated.
-                            Valid parameters: npt_ip, unit_ip, ip_range, npt_oop, unit_oop, oop_range""")
-
-        unit_ip = unit_ip or 'qip_nm^-1'
-        unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip,
-                                   incident_angle=kwargs.get('incident_angle', None),
-                                   tilt_angle=kwargs.get('tilt_angle', None),
-                                   sample_orientation=sample_orientation)
-        unit_oop = parse_fiber_unit(unit=unit_oop,
-                                    incident_angle=unit_ip.incident_angle,
-                                    tilt_angle=unit_ip.tilt_angle,
-                                    sample_orientation=unit_ip.sample_orientation)
-
-        self.reset_integrator(incident_angle=unit_ip.incident_angle,
-                              tilt_angle=unit_ip.tilt_angle,
-                              sample_orientation=unit_ip.sample_orientation)
-
-        if vertical_integration and npt_oop is None:
-            raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
-        elif not vertical_integration and npt_ip is None:
-            raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
-
-        npt_oop = npt_oop or 500
-        npt_ip = npt_ip or 500
-
-        if vertical_integration:
-            npt_integrated = npt_ip
-            integrated_unit_range = ip_range
-            integrated_unit = unit_ip
-            npt_output = npt_oop
-            output_unit_range = oop_range
-            output_unit = unit_oop
-        else:
-            npt_integrated = npt_oop
-            integrated_unit_range = oop_range
-            integrated_unit = unit_oop
-            npt_output = npt_ip
-            output_unit_range = ip_range
-            output_unit = unit_ip
-
         res2d_fiber = self.integrate2d_fiber(data,
-                                  npt_ip=npt_integrated, unit_ip=integrated_unit,
-                                  ip_range=integrated_unit_range,
-                                  npt_oop=npt_output, unit_oop=output_unit,
-                                  oop_range=output_unit_range,
+                                  npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
+                                  npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
                                   sample_orientation=sample_orientation,
+                                  filename=None,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                   polarization_factor=polarization_factor,
                                   dark=dark, flat=flat, method=method,
                                   normalization_factor=normalization_factor,
                                   **kwargs)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # deprecated_params = get_deprecated_params_1d(**kwargs)
+        # npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
+        # npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
+        # unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
+        # unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
+        # oop_range = deprecated_params.get('oop_range', None) or oop_range
+        # ip_range = deprecated_params.get('ip_range', None) or ip_range
+        # vertical_integration = deprecated_params.get('vertical_integration', None) or vertical_integration
+
+        # invalid_keys = [k for k in kwargs if any(ss in k for ss in ["oop", "ip", "unit", "range"])]
+        # if invalid_keys:
+        #     logger.warning(f"""Key parameters {invalid_keys} are wrong or deprecated.
+        #                     Valid parameters: npt_ip, unit_ip, ip_range, npt_oop, unit_oop, oop_range""")
+
+        # unit_ip = unit_ip or 'qip_nm^-1'
+        # unit_oop = unit_oop or 'qoop_nm^-1'
+        # unit_ip = parse_fiber_unit(unit=unit_ip,
+        #                            incident_angle=kwargs.get('incident_angle', None),
+        #                            tilt_angle=kwargs.get('tilt_angle', None),
+        #                            sample_orientation=sample_orientation)
+        # unit_oop = parse_fiber_unit(unit=unit_oop,
+        #                             incident_angle=unit_ip.incident_angle,
+        #                             tilt_angle=unit_ip.tilt_angle,
+        #                             sample_orientation=unit_ip.sample_orientation)
+
+        # self.reset_integrator(incident_angle=unit_ip.incident_angle,
+        #                       tilt_angle=unit_ip.tilt_angle,
+        #                       sample_orientation=unit_ip.sample_orientation)
+
+        # if vertical_integration and npt_oop is None:
+        #     raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
+        # elif not vertical_integration and npt_ip is None:
+        #     raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
+
+        # npt_oop = npt_oop or 500
+        # npt_ip = npt_ip or 500
+
+        # if vertical_integration:
+        #     npt_integrated = npt_ip
+        #     integrated_unit_range = ip_range
+        #     integrated_unit = unit_ip
+        #     npt_output = npt_oop
+        #     output_unit_range = oop_range
+        #     output_unit = unit_oop
+        # else:
+        #     npt_integrated = npt_oop
+        #     integrated_unit_range = oop_range
+        #     integrated_unit = unit_oop
+        #     npt_output = npt_ip
+        #     output_unit_range = ip_range
+        #     output_unit = unit_ip
+
+        # res2d_fiber = self.integrate2d_fiber(data,
+        #                           npt_ip=npt_integrated, unit_ip=integrated_unit,
+        #                           ip_range=integrated_unit_range,
+        #                           npt_oop=npt_output, unit_oop=output_unit,
+        #                           oop_range=output_unit_range,
+        #                           sample_orientation=sample_orientation,
+        #                           correctSolidAngle=correctSolidAngle,
+        #                           mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+        #                           polarization_factor=polarization_factor,
+        #                           dark=dark, flat=flat, method=method,
+        #                           normalization_factor=normalization_factor,
+        #                           **kwargs)
 
         # res = self.integrate2d_ng(data, npt_rad=npt_integrated, npt_azim=npt_output,
         #                           correctSolidAngle=correctSolidAngle,
@@ -296,7 +322,11 @@ class FiberIntegrator(AzimuthalIntegrator):
         # sum_signal_2d = res.sum_signal
         # sum_normalization_2d = res.sum_normalization
 
-        unit_scale = output_unit.scale
+        if vertical_integration:
+            output_unit = unit_oop
+        else:
+            output_unit = unit_ip
+        # unit_scale = output_unit.scale
         integration_axis = -1 if vertical_integration else -2
         sum_signal = res2d_fiber.sum_signal.sum(axis=integration_axis)
         count = res2d_fiber.count.sum(axis=integration_axis)
