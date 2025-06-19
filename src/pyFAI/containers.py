@@ -1229,6 +1229,26 @@ class Integrate2dFiberResult(IntegrateResult):
         return self.outofplane
 
     @property
+    def intensity(self):
+        """
+        Regrouped intensity
+
+        :rtype: numpy.ndarray
+        """
+        return self[1]
+
+    @property
+    def sigma(self):
+        """
+        Error array if it was requested
+
+        :rtype: numpy.ndarray, None
+        """
+        if len(self) == 2:
+            return None
+        return self[2]
+
+    @property
     def ip_unit(self):
         """In-plane scattering unit
 
@@ -1265,3 +1285,4 @@ class Integrate2dFiberResult(IntegrateResult):
     def _set_azimuthal_unit(self, unit):
         logger.warning("Azimuthal units does not apply to a fiber/grazing-incidence result, use oop_unit instead")
         self._set_oop_unit(unit)
+
