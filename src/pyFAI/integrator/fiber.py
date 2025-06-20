@@ -206,8 +206,46 @@ class FiberIntegrator(AzimuthalIntegrator):
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
+        deprecated_params = get_deprecated_params_1d(**kwargs)
+        npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
+        npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
+        unit_oop = deprecated_params.get('unit_oop', None) or unit_oop
+        unit_ip = deprecated_params.get('unit_ip', None) or unit_ip
+        oop_range = deprecated_params.get('oop_range', None) or oop_range
+        ip_range = deprecated_params.get('ip_range', None) or ip_range
+        vertical_integration = deprecated_params.get('vertical_integration', None) or vertical_integration
+
+        invalid_keys = [k for k in kwargs if any(ss in k for ss in ["oop", "ip", "unit", "range"])]
+        if invalid_keys:
+            logger.warning(f"""Key parameters {invalid_keys} are wrong or deprecated.
+                            Valid parameters: npt_ip, unit_ip, ip_range, npt_oop, unit_oop, oop_range""")
+
+        unit_ip = unit_ip or 'qip_nm^-1'
+        unit_oop = unit_oop or 'qoop_nm^-1'
+        unit_ip = parse_fiber_unit(unit=unit_ip,
+                                   incident_angle=kwargs.get('incident_angle', None),
+                                   tilt_angle=kwargs.get('tilt_angle', None),
+                                   sample_orientation=sample_orientation)
+        unit_oop = parse_fiber_unit(unit=unit_oop,
+                                    incident_angle=unit_ip.incident_angle,
+                                    tilt_angle=unit_ip.tilt_angle,
+                                    sample_orientation=unit_ip.sample_orientation)
+
+        self.reset_integrator(incident_angle=unit_ip.incident_angle,
+                              tilt_angle=unit_ip.tilt_angle,
+                              sample_orientation=unit_ip.sample_orientation)
+
+        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
+            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
+
+        if vertical_integration and npt_oop is None:
+            raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
+        elif not vertical_integration and npt_ip is None:
+            raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
+        
         npt_ip = npt_ip or 1000
         npt_oop = npt_oop or 1000
+        
         res2d_fiber = self.integrate2d_fiber(data,
                                   npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
                                   npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
