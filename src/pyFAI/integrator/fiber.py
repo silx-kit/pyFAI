@@ -242,10 +242,10 @@ class FiberIntegrator(AzimuthalIntegrator):
             raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
         elif not vertical_integration and npt_ip is None:
             raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
-        
+
         npt_ip = npt_ip or 1000
         npt_oop = npt_oop or 1000
-        
+
         res2d_fiber = self.integrate2d_fiber(data,
                                   npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
                                   npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
@@ -543,7 +543,7 @@ class FiberIntegrator(AzimuthalIntegrator):
 
 def get_missing_wedge_mask(result: Integrate2dFiberResult, threshold_bins=None) -> numpy.ndarray:
     """Calculate a mask for the missing wedge after calculating a count threshold.
-    
+
     :param result: Integrate2dFiberResult
     :param threshold_bins: number of bins to histogram the normalization values
     """
@@ -561,4 +561,3 @@ def get_missing_wedge_threshold(intensity:numpy.ndarray, threshold_bins=None) ->
     threshold_bins = threshold_bins or max(intensity.shape)
     counts, bin = numpy.histogram(intensity.ravel(), bins=threshold_bins)
     return bin[counts.argmax()] / 2
-

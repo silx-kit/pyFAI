@@ -311,7 +311,7 @@ class TestFiberIntegrator(unittest.TestCase):
         res1d_vertical = self.fi.integrate1d_grazing_incidence(data=self.data,
                                                                npt_oop=100, npt_ip=500,
                                                                vertical_integration=True)
-        
+
         numpy.allclose(res1d_vertical_ref.radial, res1d_vertical.radial)
         numpy.allclose(res1d_vertical_ref.intensity, res1d_vertical.intensity)
 
@@ -319,7 +319,7 @@ class TestFiberIntegrator(unittest.TestCase):
         res1d_horizontal = self.fi.integrate1d_grazing_incidence(data=self.data,
                                                                npt_oop=500, npt_ip=100,
                                                                vertical_integration=False)
-        
+
         numpy.allclose(res1d_horizontal_ref.radial, res1d_horizontal.radial)
         numpy.allclose(res1d_horizontal_ref.intensity, res1d_horizontal.intensity)
 
