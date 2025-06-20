@@ -248,7 +248,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         else:
             sum_variance = None
             sigma = None
-            
+
         result = Integrate1dFiberResult(integrated_vector, intensity, sigma)
         result._set_method_called("integrate_radial")
         result._set_unit(output_unit)
