@@ -502,9 +502,23 @@ class FiberIntegrator(AzimuthalIntegrator):
     integrate1d_exitangles.__doc__ += "\n" + integrate_fiber.__doc__
 
 def get_missing_wedge_mask(result: Integrate2dFiberResult, threshold_bins=None) -> numpy.ndarray:
+    """Calculate a mask for the missing wedge after calculating a count threshold.
+    
+    :param result: Integrate2dFiberResult
+    :param threshold_bins: number of bins to histogram the normalization values
+    """
     return result.sum_normalization < get_missing_wedge_threshold(intensity=result.sum_normalization, threshold_bins=threshold_bins)
 
 def get_missing_wedge_threshold(intensity:numpy.ndarray, threshold_bins=None) -> float:
+    """Calculate the count threshold to mask the missing wedge.
+
+    :param intensity numpy.ndarray: 2d array with the bin-wise normalization values
+    :param threshold_bins: number of bins to histogram the normalization values, defaults to max(intensity.shape)
+
+    Returns:
+        float: The count threshold to mask the missing wedge
+    """
     threshold_bins = threshold_bins or max(intensity.shape)
     counts, bin = numpy.histogram(intensity.ravel(), bins=threshold_bins)
     return bin[counts.argmax()] / 2
+
