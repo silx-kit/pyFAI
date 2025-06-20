@@ -45,7 +45,7 @@ except ImportError as err:
 else:
     USE_NUMEXPR = True
 from .azimuthal import AzimuthalIntegrator
-from ..containers import Integrate1dResult
+from ..containers import Integrate1dFiberResult, Integrate2dFiberResult
 from ..method_registry import IntegrationMethod
 from ..io import save_integrate_result
 from ..units import parse_fiber_unit
@@ -166,8 +166,8 @@ class FiberIntegrator(AzimuthalIntegrator):
 
 
     def integrate_fiber(self, data,
-                        npt_oop=None, unit_oop=None, oop_range=None,
                         npt_ip=None, unit_ip=None, ip_range=None,
+                        npt_oop=None, unit_oop=None, oop_range=None,
                         vertical_integration = True,
                         sample_orientation=None,
                         filename=None,
@@ -176,7 +176,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                         polarization_factor=None, dark=None, flat=None,
                         method=("no", "histogram", "cython"),
                         normalization_factor=1.0,
-                        **kwargs):
+                        **kwargs) -> Integrate1dFiberResult:
         """Calculate the integrated profile curve along a specific FiberUnit, additional input for sample_orientation
 
         :param ndarray data: 2D array from the Detector/CCD camera
@@ -238,44 +238,38 @@ class FiberIntegrator(AzimuthalIntegrator):
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
-
         if vertical_integration and npt_oop is None:
             raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
         elif not vertical_integration and npt_ip is None:
             raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
 
-        npt_oop = npt_oop or 500
-        npt_ip = npt_ip or 500
+        npt_ip = npt_ip or 1000
+        npt_oop = npt_oop or 1000
 
-        if vertical_integration:
-            npt_integrated = npt_ip
-            integrated_unit_range = ip_range
-            integrated_unit = unit_ip
-            npt_output = npt_oop
-            output_unit_range = oop_range
-            output_unit = unit_oop
-        else:
-            npt_integrated = npt_oop
-            integrated_unit_range = oop_range
-            integrated_unit = unit_oop
-            npt_output = npt_ip
-            output_unit_range = ip_range
-            output_unit = unit_ip
-
-        res = self.integrate2d_ng(data, npt_rad=npt_integrated, npt_azim=npt_output,
+        res2d_fiber = self.integrate2d_fiber(data,
+                                  npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
+                                  npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
+                                  sample_orientation=sample_orientation,
+                                  filename=None,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                   polarization_factor=polarization_factor,
                                   dark=dark, flat=flat, method=method,
                                   normalization_factor=normalization_factor,
-                                  radial_range=integrated_unit_range,
-                                  azimuth_range=output_unit_range,
-                                  unit=(integrated_unit, output_unit))
+                                  **kwargs)
 
-        unit_scale = output_unit.scale
-        sum_signal = res.sum_signal.sum(axis=-1)
-        count = res.count.sum(axis=-1)
-        sum_normalization = res._sum_normalization.sum(axis=-1)
+        if vertical_integration:
+            output_unit = res2d_fiber.oop_unit
+            integration_axis = -1
+            integrated_vector = res2d_fiber.outofplane
+        else:
+            output_unit = res2d_fiber.ip_unit
+            integration_axis = -2
+            integrated_vector = res2d_fiber.inplane
+
+        sum_signal = res2d_fiber.sum_signal.sum(axis=integration_axis)
+        count = res2d_fiber.count.sum(axis=integration_axis)
+        sum_normalization = res2d_fiber._sum_normalization.sum(axis=integration_axis)
         mask_ = numpy.where(count == 0)
         empty = dummy if dummy is not None else self._empty
         if USE_NUMEXPR:
@@ -284,8 +278,8 @@ class FiberIntegrator(AzimuthalIntegrator):
             intensity = numpy.where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)
         intensity[mask_] = empty
 
-        if res.sigma is not None:
-            sum_variance = res.sum_variance.sum(axis=-1)
+        if res2d_fiber.sigma is not None:
+            sum_variance = res2d_fiber.sum_variance.sum(axis=integration_axis)
             if USE_NUMEXPR:
                 sigma = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sqrt(sum_variance) / sum_normalization)")
             else:
@@ -294,7 +288,8 @@ class FiberIntegrator(AzimuthalIntegrator):
         else:
             sum_variance = None
             sigma = None
-        result = Integrate1dResult(res.azimuthal, intensity, sigma)
+
+        result = Integrate1dFiberResult(integrated_vector, intensity, sigma)
         result._set_method_called("integrate_radial")
         result._set_unit(output_unit)
         result._set_sum_normalization(sum_normalization)
@@ -305,8 +300,8 @@ class FiberIntegrator(AzimuthalIntegrator):
         result._set_has_flat_correction(flat is not None)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
-        result._set_method = res.method
-        result._set_compute_engine = res.compute_engine
+        result._set_method = res2d_fiber.method
+        result._set_compute_engine = res2d_fiber.compute_engine
 
         if filename is not None:
             save_integrate_result(filename, result)
@@ -326,7 +321,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                           mask=None, dummy=None, delta_dummy=None,
                           polarization_factor=None, dark=None, flat=None,
                           method=("no", "histogram", "cython"),
-                          normalization_factor=1.0, **kwargs):
+                          normalization_factor=1.0, **kwargs) -> Integrate2dFiberResult:
         """Reshapes the data pattern as a function of two FiberUnits, additional inputs for sample_orientation
 
         :param ndarray data: 2D array from the Detector/CCD camera
@@ -384,10 +379,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                               tilt_angle=unit_ip.tilt_angle,
                               sample_orientation=unit_ip.sample_orientation)
 
-        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
-            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
-
-        return self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
+        res2d = self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                   polarization_factor=polarization_factor,
@@ -396,7 +388,71 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   radial_range=ip_range,
                                   azimuth_range=oop_range,
                                   unit=(unit_ip, unit_oop),
-                                  filename=filename)
+                                  filename=None)
+
+        intensity = res2d.intensity
+        sum_signal = res2d.sum_signal
+        count = res2d.count
+        sum_normalization = res2d.sum_normalization
+        sum_normalization2 = res2d.sum_normalization2
+        sum_variance = res2d.sum_variance
+        std = res2d.std
+        sem = res2d.sem
+
+        use_pixel_split = (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no")
+        use_missing_wedge = kwargs.get("mask_missing_wedge", False)
+        if use_pixel_split and not use_missing_wedge:
+            logger.warning(f"""
+                           Method {method} is using a pixel-splitting scheme without the missing wedge mask.\n\
+                           Either set use_missing_wedge=True or do not use pixel-splitting.\n\
+                            """)
+        elif use_pixel_split and use_missing_wedge:
+            logger.warning("Pixel splitting + missing wedge masking is experimental and may not work as expected. Use with caution.")
+        elif not use_pixel_split and use_missing_wedge:
+            logger.warning("Missing wedge masking should not be used if pixel splitting is disable. The results may be incorrect.")
+
+        empty = self._empty
+        if use_missing_wedge:
+            missing_wedge_mask = get_missing_wedge_mask(res2d, threshold_bins=kwargs.get("missing_wedge_threshold_bins", None))
+            intensity[missing_wedge_mask] = empty
+            sum_signal[missing_wedge_mask] = empty
+            count[missing_wedge_mask] = 0
+            sum_normalization[missing_wedge_mask] = empty
+            if sum_normalization2 is not None:
+                sum_normalization2[missing_wedge_mask] = empty
+                sum_variance[missing_wedge_mask] = empty
+                std[missing_wedge_mask] = empty
+                sem[missing_wedge_mask] = empty
+
+        result2d_fiber = Integrate2dFiberResult(
+            intensity,
+            res2d.radial,
+            res2d.azimuthal,
+            sem,
+        )
+        result2d_fiber._set_method_called("integrate2d")
+        result2d_fiber._set_compute_engine(str(res2d.method))
+        result2d_fiber._set_method(res2d.method)
+        result2d_fiber._set_ip_unit(res2d.radial_unit)
+        result2d_fiber._set_oop_unit(res2d.azimuthal_unit)
+        result2d_fiber._set_count(res2d.count)
+        result2d_fiber._set_has_dark_correction(res2d.has_dark_correction)
+        result2d_fiber._set_has_flat_correction(res2d.has_flat_correction)
+        result2d_fiber._set_has_mask_applied(res2d.has_mask_applied)
+        result2d_fiber._set_polarization_factor(res2d.polarization_factor)
+        result2d_fiber._set_normalization_factor(res2d.normalization_factor)
+        result2d_fiber._set_metadata(res2d.metadata)
+        result2d_fiber._set_sum_signal(sum_signal)
+        result2d_fiber._set_sum_normalization(sum_normalization)
+        result2d_fiber._set_sum_normalization2(sum_normalization2)
+        result2d_fiber._set_sum_variance(sum_variance)
+        result2d_fiber._set_std(std)
+        result2d_fiber._set_sem(sem)
+
+        if filename is not None:
+            save_integrate_result(filename, result2d_fiber)
+
+        return result2d_fiber
 
     integrate2d_grazing_incidence = integrate2d_fiber
 
@@ -484,3 +540,24 @@ class FiberIntegrator(AzimuthalIntegrator):
         return self.integrate_fiber(**kwargs)
 
     integrate1d_exitangles.__doc__ += "\n" + integrate_fiber.__doc__
+
+def get_missing_wedge_mask(result: Integrate2dFiberResult, threshold_bins=None) -> numpy.ndarray:
+    """Calculate a mask for the missing wedge after calculating a count threshold.
+
+    :param result: Integrate2dFiberResult
+    :param threshold_bins: number of bins to histogram the normalization values
+    """
+    return result.sum_normalization < get_missing_wedge_threshold(intensity=result.sum_normalization, threshold_bins=threshold_bins)
+
+def get_missing_wedge_threshold(intensity:numpy.ndarray, threshold_bins=None) -> float:
+    """Calculate the count threshold to mask the missing wedge.
+
+    :param intensity numpy.ndarray: 2d array with the bin-wise normalization values
+    :param threshold_bins: number of bins to histogram the normalization values, defaults to max(intensity.shape)
+
+    Returns:
+        float: The count threshold to mask the missing wedge
+    """
+    threshold_bins = threshold_bins or max(intensity.shape)
+    counts, bin = numpy.histogram(intensity.ravel(), bins=threshold_bins)
+    return bin[counts.argmax()] / 2
