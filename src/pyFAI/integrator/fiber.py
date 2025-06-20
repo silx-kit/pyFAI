@@ -219,11 +219,11 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   **kwargs)
 
         if vertical_integration:
-            output_unit = unit_oop
+            output_unit = res2d_fiber.oop_unit
             integration_axis = -1
             integrated_vector = res2d_fiber.outofplane
         else:
-            output_unit = unit_ip
+            output_unit = res2d_fiber.ip_unit
             integration_axis = -2
             integrated_vector = res2d_fiber.inplane
 
@@ -248,7 +248,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         else:
             sum_variance = None
             sigma = None
-
+            
         result = Integrate1dFiberResult(integrated_vector, intensity, sigma)
         result._set_method_called("integrate_radial")
         result._set_unit(output_unit)
