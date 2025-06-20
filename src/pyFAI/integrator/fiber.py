@@ -206,6 +206,8 @@ class FiberIntegrator(AzimuthalIntegrator):
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
+        npt_ip = npt_ip or 1000
+        npt_oop = npt_oop or 1000
         res2d_fiber = self.integrate2d_fiber(data,
                                   npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
                                   npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
