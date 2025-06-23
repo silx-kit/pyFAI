@@ -122,7 +122,7 @@ def fully_qualified_name(o):
     return module + '.' + klass.__qualname__
 
 
-class Nexus(object):
+class Nexus:
     """
     Writer class to handle Nexus/HDF5 data
 
@@ -213,6 +213,7 @@ class Nexus(object):
         self.close()
 
     def flush(self):
+        "write to disk"
         if self.h5:
             self.h5.flush()
 
@@ -286,10 +287,10 @@ class Nexus(object):
         if title is not None:
             entry_grp["title"] = str(title)
         entry_grp["program_name"] = str(program_name)
-        if force_time:
-            entry_grp["start_time"] = str(force_time)
+        if isinstance(force_time, str):
+            entry_grp["start_time"] = force_time
         else:
-            entry_grp["start_time"] = get_isotime()
+            entry_grp["start_time"] = get_isotime(force_time)
         self.to_close.append(entry_grp)
         return entry_grp
 
@@ -303,9 +304,11 @@ class Nexus(object):
 #        howto external link
         # myfile['ext link'] = h5py.ExternalLink("otherfile.hdf5", "/path/to/resource")
 
-    def new_class(self, grp, name, class_type="NXcollection"):
+    @staticmethod
+    def new_class(grp, name, class_type="NXcollection"):
         """
         create a new sub-group with  type class_type
+
         :param grp: parent group
         :param name: name of the sub-group
         :param class_type: NeXus class name
@@ -323,6 +326,7 @@ class Nexus(object):
         :param entry: name of the entry
         :param subentry: all pyFAI description of detectors should be in a pyFAI sub-entry
         """
+        from .. import version
         entry_grp = self.new_entry(entry)
         pyFAI_grp = self.new_class(entry_grp, subentry, "NXsubentry")
         pyFAI_grp["definition_local"] = str("pyFAI")
@@ -403,7 +407,7 @@ class Nexus(object):
             if name not in toplevel:
                 grp = toplevel.require_group(name)
                 for k, v in obj.attrs.items():
-                        grp.attrs[k] = v
+                    grp.attrs[k] = v
         elif isinstance(obj, h5py.Dataset):
             if name in toplevel:
                 if overwrite:
