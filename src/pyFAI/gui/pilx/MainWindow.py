@@ -33,7 +33,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2025"
+__date__ = "18/06/2025"
 __status__ = "development"
 
 from typing import Tuple
@@ -57,12 +57,16 @@ from .utils import (
     get_indices_from_values,
     get_mask_image,
     get_radial_dataset,
+    get_axes_dataset,
+    get_signal_dataset,
+    get_axes_index
 )
 from .widgets.DiffractionImagePlotWidget import DiffractionImagePlotWidget
 from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
 from .widgets.TitleWidget import TitleWidget
 from ...io.integration_config import WorkerConfig
+from ...io.diffmap_config import DiffmapConfig
 from ...utils.mathutil import binning
 
 logger = logging.getLogger(__name__)
@@ -97,9 +101,7 @@ class MainWindow(qt.QMainWindow):
 
         self._integrated_plot_widget = IntegratedPatternPlotWidget(self)
         self._integrated_plot_widget.roi.sigRegionChanged.connect(self.onRoiEdition)
-        self._integrated_plot_widget.roi.sigRangeChanged.connect(
-            self.drawContoursOnImage
-        )
+        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.drawContoursOnImage)
 
         self._title_widget = TitleWidget(self)
 
@@ -135,16 +137,19 @@ class MainWindow(qt.QMainWindow):
 
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
-            map_data = get_dataset(nxprocess, "result/intensity")[()].sum(axis=-1)
+            nxdata = nxprocess["result"]
+            map_dataset = get_signal_dataset(nxdata, default="intensity")
+            axes_index = get_axes_index(map_dataset)
+            map_data  = map_dataset[()].sum(axis=axes_index.radial)
             try:
-                slow = get_dataset(nxprocess, "result/slow")
+                slow = get_axes_dataset(nxdata, dim=axes_index.slow, default="slow")
             except (KeyError, RuntimeError):
                 slow_label = slow_values = None
             else:
                 slow_label = slow.attrs.get("long_name", "Y")
                 slow_values = slow[()]
             try:
-                fast = get_dataset(nxprocess, "result/fast")
+                fast = get_axes_dataset(nxdata, dim=axes_index.fast, default="fast")
             except (KeyError, RuntimeError):
                 fast_values = fast_label = None
             else:
@@ -153,23 +158,24 @@ class MainWindow(qt.QMainWindow):
 
             pyFAI_config_as_str = get_dataset(
                 parent=nxprocess,
-                path=f"configuration/data"
-            )[()]
-            self.worker_config = WorkerConfig.from_dict(json.loads(pyFAI_config_as_str), inplace=True)
+                path="configuration/data")[()]
+            pyFAI_config_as_dict = json.loads(pyFAI_config_as_str)
+            if "diffmap_config_version" in pyFAI_config_as_dict:
+                diffmap_config = DiffmapConfig.from_dict(pyFAI_config_as_dict, inplace=True)
+                self.worker_config = diffmap_config.ai
+            else:
+                self.worker_config = WorkerConfig.from_dict(pyFAI_config_as_dict, inplace=True)
 
-            radial_dset = get_radial_dataset(
-                h5file, nxdata_path=f"{self._nxprocess_path}/result",
-                size=self.worker_config.nbpt_rad
-            )
+            radial_dset = get_radial_dataset(nxdata, size=self.worker_config.nbpt_rad)
             delta_radial = (radial_dset[-1] - radial_dset[0]) / len(radial_dset)
 
-            if "offset" in h5file[self._nxprocess_path]:
-                self._offset = h5file[f"{self._nxprocess_path}/offset"][()]
+            if "offset" in nxprocess:
+                self._offset = nxprocess["offset"][()]
             else:
                 self._offset = 0
 
             try:
-                self._map_ptr = get_dataset(nxprocess, "result/map_ptr")[()]
+                self._map_ptr = get_dataset(nxdata, "map_ptr")[()]
             except (KeyError, RuntimeError):
                 logger.warning("No `map_ptr` dataset in NXdata: guessing the frame indices !")
                 self._map_ptr = numpy.arange(self._offset, self._offset + map_data.size)
@@ -284,10 +290,12 @@ class MainWindow(qt.QMainWindow):
 
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file[self._nxprocess_path]
-            map_shape = get_dataset(nxprocess, "result/intensity").shape
+            map_dataset = get_signal_dataset(nxprocess, "result", default="intensity")
+            axes_index = get_axes_index(map_dataset)
+            map_shape = map_dataset.shape
             if self._map_ptr is None:
                 logger.warning("No `map_ptr` defined: guessing the frame indices !")
-                image_index = row * map_shape[1] + col + self._offset
+                image_index = row * map_shape[axes_index.fast] + col + self._offset
             else:
                 image_index = self._map_ptr[row, col]
 
@@ -422,14 +430,18 @@ class MainWindow(qt.QMainWindow):
             return
 
         with h5py.File(self._file_name, "r") as h5file:
-            radial = get_radial_dataset(h5file, nxdata_path=f"{self._nxprocess_path}/result")[
-                ()
-            ]
+            nxprocess = h5file.get(self._nxprocess_path)
+            nxdata = nxprocess["result"]
+            radial = get_radial_dataset(nxdata, size=self.worker_config.nbpt_rad)[()]
             i_min, i_max = get_indices_from_values(v_min, v_max, radial)
-            map_data = get_dataset(h5file, f"{self._nxprocess_path}/result/intensity")[:,:, i_min:i_max
-            ].mean(axis=2)
-            fast = get_dataset(h5file, f"{self._nxprocess_path}/result/fast")
-            slow = get_dataset(h5file, f"{self._nxprocess_path}/result/slow")
+            full_map = get_signal_dataset(nxdata, default="intensity")
+            axes_index = get_axes_index(full_map)
+            if axes_index.radial == 2:
+                map_data = full_map[:,:, i_min:i_max].mean(axis=2)
+            else:
+                map_data = full_map[i_min:i_max, :, : ].mean(axis=0)
+            fast = get_axes_dataset(nxdata, dim=axes_index.fast, default="fast")
+            slow = get_axes_dataset(nxdata, dim=axes_index.slow, default="slow")
             fast_name = fast.attrs.get("long_name", "X")
             fast_values = fast[()]
             slow_name = slow.attrs.get("long_name", "Y")
