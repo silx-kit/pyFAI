@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2025"
+__date__ = "23/06/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -113,6 +113,15 @@ def is_hdf5(filename):
     return sig == signature
 
 
+def fully_qualified_name(o):
+    """Return the fully qualified name of the class"""
+    klass = o.__class__
+    module = klass.__module__
+    if module == 'builtins':
+        return klass.__qualname__ # avoid outputs like 'builtins.str'
+    return module + '.' + klass.__qualname__
+
+
 class Nexus(object):
     """
     Writer class to handle Nexus/HDF5 data
@@ -128,7 +137,7 @@ class Nexus(object):
     TODO: make it thread-safe !!!
     """
 
-    def __init__(self, filename, mode=None, creator=None, start_time=None):
+    def __init__(self, filename, mode=None, creator=None, start_time=None, pure=False):
         """
         Constructor
 
@@ -136,6 +145,8 @@ class Nexus(object):
         :param mode: can be 'r', 'a', 'w', '+' ....
         :param creator: set as attr of the NXroot
         :param start_time: set as attr of the NXroot
+        :param pure: use pure h5py mode. Unless, try to be clever when
+                     accessing write-opened files (can breaks external links)
         """
         self.filename = os.path.abspath(filename)
         self.mode = mode
@@ -150,7 +161,7 @@ class Nexus(object):
             else:
                 self.mode = "a"
 
-        if self.mode == "r" and h5py.version.version_tuple >= (2, 9):
+        if not pure and self.mode == "r" and h5py.version.version_tuple >= (2, 9):
             self.file_handle = open(self.filename, mode=self.mode + "b")
             self.h5 = h5py.File(self.file_handle, mode=self.mode)
         else:
@@ -158,12 +169,15 @@ class Nexus(object):
             self.h5 = h5py.File(self.filename, mode=self.mode)
         self.to_close = []
 
-        if not pre_existing or "w" in mode:
+        if not pre_existing or "w" in self.mode:
             self.h5.attrs["NX_class"] = "NXroot"
             self.h5.attrs["file_time"] = get_isotime(start_time)
             self.h5.attrs["file_name"] = self.filename
             self.h5.attrs["HDF5_Version"] = h5py.version.hdf5_version
             self.h5.attrs["creator"] = creator or self.__class__.__name__
+
+    def __repr__(self):
+        return f"<{fully_qualified_name(self)} file on {self.h5}>"
 
     def __del__(self):
         self.close()
@@ -223,13 +237,14 @@ class Nexus(object):
 
         :return: list of HDF5 groups
         """
-        entries = [(grp, from_isotime(self.h5[grp + "/start_time"][()]))
-                   for grp in self.h5
-                   if isinstance(self.h5[grp], h5py.Group) and
-                   ("start_time" in self.h5[grp]) and
-                   self.get_attr(self.h5[grp], "NX_class") == "NXentry"]
-        entries.sort(key=lambda a: a[1], reverse=True)  # sort entries in decreasing time
-        return [self.h5[i[0]] for i in entries]
+        entries = [(name, grp, from_isotime(self.h5[name + "/start_time"][()]))
+                   for name, grp in self.h5.items()
+                   if isinstance(grp, h5py.Group) and
+                   ("start_time" in grp) and
+                   self.get_attr(grp, "NX_class") == "NXentry"]
+        # print(entries)
+        entries.sort(key=lambda a: a[-1], reverse=True)  # sort entries in decreasing time
+        return [i[1] for i in entries]
 
     def find_detector(self, all=False):
         """
