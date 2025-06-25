@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2025"
+__date__ = "25/06/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -98,24 +98,25 @@ def from_isotime(text, use_tz=False):
     return time.mktime(time.strptime(base, "%Y-%m-%dT%H:%M:%S")) + tz
 
 
-def is_hdf5(filename):
+def is_hdf5(filename: str) -> bool:
     """
     Check if a file is actually a HDF5 file
 
     :param filename: this file has better to exist
+    :return: True if the file looks like a HDF5 file
     """
     signature = [137, 72, 68, 70, 13, 10, 26, 10]
     if not os.path.exists(filename):
         raise IOError("No such file %s" % (filename))
     with open(filename, "rb") as f:
         raw = f.read(8)
-    sig = [ord(i) for i in raw] if sys.version_info[0] < 3 else [int(i) for i in raw]
+    sig = [int(i) for i in raw]
     return sig == signature
 
 
-def fully_qualified_name(o):
+def fully_qualified_name(obj: object) -> str:
     """Return the fully qualified name of the class"""
-    klass = o.__class__
+    klass = obj.__class__
     module = klass.__module__
     if module == 'builtins':
         return klass.__qualname__ # avoid outputs like 'builtins.str'
@@ -137,7 +138,13 @@ class Nexus:
     TODO: make it thread-safe !!!
     """
 
-    def __init__(self, filename, mode=None, creator=None, start_time=None, pure=False):
+    def __init__(
+        self,
+        filename: str,
+        mode: str = None,
+        creator: str = None,
+        start_time: str = None,
+        pure: bool = False) -> None:
         """
         Constructor
 
@@ -176,13 +183,13 @@ class Nexus:
             self.h5.attrs["HDF5_Version"] = h5py.version.hdf5_version
             self.h5.attrs["creator"] = creator or self.__class__.__name__
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{fully_qualified_name(self)} file on {self.h5}>"
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close()
 
-    def close(self, end_time=None):
+    def close(self, end_time=None) -> None:
         """
         Close the file and update all entries.
         """
@@ -434,7 +441,7 @@ class Nexus:
         dec = default
         if name in dset.attrs:
             raw = dset.attrs[name]
-            if (sys.version_info[0] > 2) and ("decode" in dir(raw)):
+            if "decode" in dir(raw):
                 dec = raw.decode()
             else:
                 dec = raw
