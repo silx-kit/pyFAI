@@ -410,7 +410,7 @@ class Calibrant(object):
         calibrant.intensities = self.intensities
         calibrant.hkls = self.hkls
         calibrant.multiplicities = self.multiplicities
-        return calibrant 
+        return calibrant
 
     def __repr__(self) -> str:
         if self._filename:
@@ -534,7 +534,7 @@ class Calibrant(object):
             logger.warning(f"Unable to load `{filename}`->{path}, got {type(err)}: {err}. Fall back on numpy reader")
             self._dSpacing = numpy.unique(numpy.loadtxt(path))
             self._dSpacing = list(self._dSpacing[-1::-1])  # reverse order
-        
+
         if self._wavelength:
             self._calc_2th()
 

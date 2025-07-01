@@ -174,7 +174,7 @@ class TestCalibrant(unittest.TestCase):
         self.assertTrue(c2 in store)
         self.assertTrue(c3 not in store)
         self.assertTrue(c4 not in store)
-    
+
     def test_all_calibrants(self):
         for c in CALIBRANT_FACTORY.all:
             print(c, end=": ")
