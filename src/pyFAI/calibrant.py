@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/06/2024"
+__date__ = "01/07/2025"
 __status__ = "production"
 
 import os
@@ -48,7 +48,7 @@ import logging
 import numpy
 import itertools
 from typing import Optional, List
-from math import sin, asin, cos, sqrt, pi, ceil
+from math import sin, asin, cos, sqrt, pi, ceil, tan
 import threading
 from .utils import get_calibration_dir
 from .utils.decorators import deprecated
@@ -339,6 +339,11 @@ class Calibrant(object):
         object.__init__(self)
         self._filename = filename
         self._wavelength = wavelength
+        self.intensities = tuple()  # list of peak intensities, same length as dSpacing
+        self.multiplicities = tuple()  # list of multiplicities, same length as dSpacing
+        self.hkls = tuple()  # list of miller indices for each reflection, same length as dSpacing
+        self.metadata = tuple()  # list of metadata found in the header of the file
+
         self._sem = threading.Semaphore()
         self._2th = []
         if filename is not None:
@@ -398,9 +403,14 @@ class Calibrant(object):
         Copy a calibrant.
         """
         self._initialize()
-        return Calibrant(filename=self._filename,
-                         dSpacing=self._dSpacing + self._out_dSpacing,
-                         wavelength=self._wavelength)
+        calibrant = Calibrant(filename=self._filename,
+                              dSpacing=self._dSpacing + self._out_dSpacing,
+                              wavelength=self._wavelength)
+        calibrant.metadata = self.metadata
+        calibrant.intensities = self.intensities
+        calibrant.hkls = self.hkls
+        calibrant.multiplicities = self.multiplicities
+        return calibrant 
 
     def __repr__(self) -> str:
         if self._filename:
@@ -453,6 +463,63 @@ class Calibrant(object):
             return os.path.join(basedir, f"{name}.D")
         return os.path.abspath(filename)
 
+    def _load_pyFAI_v1_file(self, path: Optional[str]=None):
+        """Loader for pyFAI historical files"""
+        intensities = []  # list of peak intensities, same length as dSpacing
+        multiplicities = []  # list of multiplicities, same length as dSpacing
+        hkls = []  # list of miller indices for each reflection, same length as dSpacing
+        metadata = []  # headers
+        self._dSpacing = []
+        header = True
+        generic = False
+        with open(path) as f:
+            for line in f:
+                stripped = line.strip()
+                if header and stripped.startswith("#"):
+                    metadata.append(stripped.strip("# \t"))
+                    continue
+                header = False
+                words = stripped.split()
+                if generic:
+                    self._dSpacing += [float(i) for i in words]
+                    continue
+                try:
+                    hash_pos = words.index("#")
+                except ValueError:
+                    self._dSpacing += [float(i) for i in words]
+                    generic = True
+                    continue
+
+                if hash_pos == 1 and generic is False:
+                    if words[0].startswith("#"):
+                        continue
+                    ds = float(words[0])
+                    self._dSpacing.append(ds)
+                    start_miller = end_miller = None
+                    for i, j in enumerate(words[2:], start=2):
+                        if j.startswith("("):
+                            start_miller = i
+                            continue
+                        if j.endswith(")"):
+                            end_miller = i
+                            break
+                    if start_miller and end_miller:
+                        hkls.append(" ".join(words[start_miller:end_miller+1]))
+                        if len(words)>end_miller:
+                            multiplicities.append(int(words[end_miller+1]))
+        self.multiplicities = tuple(multiplicities)
+        self.hkls = tuple(hkls)
+        self.metadata = tuple(metadata)
+        # self.intensities = tuple(intensities)
+        print(self.metadata)
+
+    def _load_AMCSD_file(self, path: Optional[str]=None):
+        """Loader for American Mineralogist powder diffraction files
+        https://rruff.geo.arizona.edu/AMS/amcsd.php
+        """
+        raise NotImplementedError
+
+
     def _load_file(self, filename: Optional[str]=None):
         if filename:
             self._filename = filename
@@ -461,9 +528,13 @@ class Calibrant(object):
         if not os.path.isfile(path):
             logger.error("No such calibrant file: %s", path)
             return
-        self._dSpacing = numpy.unique(numpy.loadtxt(path))
-        self._dSpacing = list(self._dSpacing[-1::-1])  # reverse order
-        # self._dSpacing.sort(reverse=True)
+        try:
+            self._load_pyFAI_v1_file(path)
+        except Exception as err:
+            logger.warning(f"Unable to load `{filename}`->{path}, got {type(err)}: {err}. Fall back on numpy reader")
+            self._dSpacing = numpy.unique(numpy.loadtxt(path))
+            self._dSpacing = list(self._dSpacing[-1::-1])  # reverse order
+        
         if self._wavelength:
             self._calc_2th()
 
@@ -672,10 +743,11 @@ class Calibrant(object):
                                ) -> numpy.ndarray:
         """
         Generates a fake calibration image from an azimuthal integrator.
+
         :param ai: azimuthal integrator
         :param Imax: maximum intensity of rings
         :param Imin: minimum intensity of the signal (background)
-        :param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W)
+        :param U, V, W: width of the peak from Caglioti's law (FWHM² = U*tan²(θ) + V*tan(θ) + W)
         """
         if shape is None:
             if ai.detector.shape:
@@ -697,20 +769,30 @@ class Calibrant(object):
         tth_max = tth.max()
         dim = int(numpy.sqrt(shape[0] * shape[0] + shape[1] * shape[1]))
         tth_1d = numpy.linspace(tth_min, tth_max, dim)
-        tanth = numpy.tan(tth_1d / 2.0)
-        fwhm2 = U * tanth ** 2 + V * tanth + W
-        sigma2 = fwhm2 / (8.0 * numpy.log(2.0))
-        signal = numpy.zeros_like(sigma2)
-        sigma_min = (sigma2.min())**0.5
-        sigma_max = (sigma2.max())**0.5
-        for t in self.get_2th():
-            if t < (tth_min - 3 * sigma_min):
+        # tanth = numpy.tan(tth_1d / 2.0)
+        # fwhm2 = U * tanth ** 2 + V * tanth + W
+        # sigma2 = fwhm2 / (8.0 * numpy.log(2.0))
+        signal = numpy.zeros_like(tth_1d)
+        # sigma_min = (sigma2.min())**0.5
+        # sigma_max = (sigma2.max())**0.5
+        for i, t in enumerate(self.get_2th()):
+            if self.intensities is not None:
+                intensity = self.intensities[i]
+            else:
+                intensity = 1.0
+
+            tanth = tan(t / 2.0)
+            fwhm2 = U * tanth ** 2 + V * tanth + W
+            sigma2 = fwhm2 / (8.0 * numpy.log(2.0))
+            sigma = sqrt(sigma2)
+
+            if t < (tth_min - 3 * sigma):
                 continue
-            elif t > (tth_max + 3 * sigma_max):
+            elif t > (tth_max + 3 * sigma):
                 break
             else:
-                signal += Imax * numpy.exp(-(tth_1d - t) ** 2 / (2.0 * sigma2))
-        signal = (Imax - Imin) * signal + Imin
+                signal += intensity / (sigma * sqrt(2.0 * pi)) * numpy.exp(-(tth_1d - t) ** 2 / (2.0 * sigma2))
+        signal =  (Imax - Imin) * signal + Imin
 
         res = ai.calcfrom1d(tth_1d, signal, shape=shape, mask=ai.mask,
                             dim1_unit='2th_rad', correctSolidAngle=True)

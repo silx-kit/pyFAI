@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "01/07/2025"
 
 import unittest
 import logging
@@ -174,6 +174,13 @@ class TestCalibrant(unittest.TestCase):
         self.assertTrue(c2 in store)
         self.assertTrue(c3 not in store)
         self.assertTrue(c4 not in store)
+    
+    def test_all_calibrants(self):
+        for c in CALIBRANT_FACTORY.all:
+            print(c, end=": ")
+            cal = CALIBRANT_FACTORY(c)
+            print(cal, cal.metadata)
+        raise RuntimeError()
 
 
 class TestCell(unittest.TestCase):
