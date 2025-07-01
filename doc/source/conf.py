@@ -13,6 +13,7 @@
 
 import sys
 import os
+from pathlib import Path
 import pydata_sphinx_theme
 
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
@@ -20,23 +21,25 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
+project = 'pyFAI'
 try:
     import pyFAI
 
-    project_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
-    build_dir = os.path.abspath(pyFAI.__file__)
+    project_dir = (Path(__file__)/".."/".."/"..").resolve()
+    build_dir = Path(pyFAI.__file__).resolve()
     if on_rtd:
         print("On Read The Docs")
-        print("build_dir", build_dir)
-        print("project_dir", project_dir)
-    elif not build_dir.startswith(project_dir):
+        print(f"build_dir: {build_dir}")
+        print(f"project_dir: {project_dir}")
+    elif not str(build_dir).startswith(str(project_dir)):
+        print(f"build_dir: {build_dir}")
+        print(f"project_dir: {project_dir}")
         raise RuntimeError(
-            "%s looks to come from the system. Fix your PYTHONPATH and restart sphinx."
-            % project
+            f"{project} looks to come from the system. Fix your PYTHONPATH and restart sphinx."
         )
 except ImportError:
     raise RuntimeError(
-        "%s is not on the path. Fix your PYTHONPATH and restart sphinx." % project
+        f"{project} is not on the path. Fix your PYTHONPATH and restart sphinx."
     )
 
 # -- General configuration -----------------------------------------------------
@@ -44,7 +47,6 @@ except ImportError:
 from pyFAI import strictversion, date as pyfai_date
 
 year = pyfai_date.split("/")[-1]
-project = 'pyFAI'
 
 # If your documentation needs a minimal Sphinx version, state it here.
 # needs_sphinx = '1.0'
