@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@
 A module containing classical calibrant and also tools to generate d-spacing.
 
 Interesting formula:
-http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
+https://geoweb.princeton.edu/archival/duffy/xtalgeometry.pdf
 """
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 epsilon = 1.0e-6  # for floating point comparison
 
 
-class Cell(object):
+class Cell:
     """
     This is a cell object, able to calculate the volume and d-spacing according to formula from:
 
@@ -871,7 +871,7 @@ class Calibrant:
         self._sem = threading.Semaphore()
 
 
-class CalibrantFactory(object):
+class CalibrantFactory:
     """Behaves like a dict but is actually a factory:
 
     Each time one retrieves an object it is a new geniune new calibrant (unmodified)
