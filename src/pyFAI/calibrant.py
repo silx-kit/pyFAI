@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/06/2024"
+__date__ = "01/07/2025"
 __status__ = "production"
 
 import os
@@ -313,8 +313,21 @@ class Cell(object):
                 strk = "%.8e" % k
                 f.write("%.8f # %s %s%s" % (k, d[strk][-1], len(d[strk]) - 1, os.linesep))
 
+    def to_calibrant(self, dmin=1.0):
+        """Convert a Cell object to a Calibrant object
 
-class Calibrant(object):
+        :param dmin: minimum d-spacing to include in calibrant (in Angstrom)
+        :return: Calibrant object
+        """
+        d = self.d_spacing(dmin)
+        ds = [i[0] for i in d.values()]
+        ds.sort(reverse=True)
+        calibrant = Calibrant(dSpacing=ds)
+        return calibrant
+
+
+
+class Calibrant:
     """
     A calibrant is a named reference compound where the d-spacing are known.
 
@@ -336,7 +349,6 @@ class Calibrant(object):
     """
 
     def __init__(self, filename: Optional[str]=None, dSpacing: Optional[List[float]]=None, wavelength: Optional[float]=None):
-        object.__init__(self)
         self._filename = filename
         self._wavelength = wavelength
         self._sem = threading.Semaphore()
@@ -350,6 +362,15 @@ class Calibrant(object):
         self._out_dSpacing = []
         if self._dSpacing and self._wavelength:
             self._calc_2th()
+
+    @classmethod
+    def from_cell(cls, cell):
+        """Alternative constructor from a cell-object
+
+        :param cell: Instance of Cell
+        :return: Calibrant instance
+        """
+        return cell.to_calibrant()
 
     def __eq__(self, other: object) -> bool:
         """
