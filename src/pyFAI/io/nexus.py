@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2025"
+__date__ = "25/06/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -98,22 +98,32 @@ def from_isotime(text, use_tz=False):
     return time.mktime(time.strptime(base, "%Y-%m-%dT%H:%M:%S")) + tz
 
 
-def is_hdf5(filename):
+def is_hdf5(filename: str) -> bool:
     """
     Check if a file is actually a HDF5 file
 
     :param filename: this file has better to exist
+    :return: True if the file looks like a HDF5 file
     """
     signature = [137, 72, 68, 70, 13, 10, 26, 10]
     if not os.path.exists(filename):
         raise IOError("No such file %s" % (filename))
     with open(filename, "rb") as f:
         raw = f.read(8)
-    sig = [ord(i) for i in raw] if sys.version_info[0] < 3 else [int(i) for i in raw]
+    sig = [int(i) for i in raw]
     return sig == signature
 
 
-class Nexus(object):
+def fully_qualified_name(obj: object) -> str:
+    """Return the fully qualified name of the class"""
+    klass = obj.__class__
+    module = klass.__module__
+    if module == 'builtins':
+        return klass.__qualname__ # avoid outputs like 'builtins.str'
+    return module + '.' + klass.__qualname__
+
+
+class Nexus:
     """
     Writer class to handle Nexus/HDF5 data
 
@@ -128,7 +138,13 @@ class Nexus(object):
     TODO: make it thread-safe !!!
     """
 
-    def __init__(self, filename, mode=None, creator=None, start_time=None):
+    def __init__(
+        self,
+        filename: str,
+        mode: str = None,
+        creator: str = None,
+        start_time: str = None,
+        pure: bool = False) -> None:
         """
         Constructor
 
@@ -136,6 +152,8 @@ class Nexus(object):
         :param mode: can be 'r', 'a', 'w', '+' ....
         :param creator: set as attr of the NXroot
         :param start_time: set as attr of the NXroot
+        :param pure: use pure h5py mode. Unless, try to be clever when
+                     accessing write-opened files (can breaks external links)
         """
         self.filename = os.path.abspath(filename)
         self.mode = mode
@@ -150,7 +168,7 @@ class Nexus(object):
             else:
                 self.mode = "a"
 
-        if self.mode == "r" and h5py.version.version_tuple >= (2, 9):
+        if not pure and self.mode == "r" and h5py.version.version_tuple >= (2, 9):
             self.file_handle = open(self.filename, mode=self.mode + "b")
             self.h5 = h5py.File(self.file_handle, mode=self.mode)
         else:
@@ -158,17 +176,20 @@ class Nexus(object):
             self.h5 = h5py.File(self.filename, mode=self.mode)
         self.to_close = []
 
-        if not pre_existing or "w" in mode:
+        if not pre_existing or "w" in self.mode:
             self.h5.attrs["NX_class"] = "NXroot"
             self.h5.attrs["file_time"] = get_isotime(start_time)
             self.h5.attrs["file_name"] = self.filename
             self.h5.attrs["HDF5_Version"] = h5py.version.hdf5_version
             self.h5.attrs["creator"] = creator or self.__class__.__name__
 
-    def __del__(self):
+    def __repr__(self) -> str:
+        return f"<{fully_qualified_name(self)} file on {self.h5}>"
+
+    def __del__(self) -> None:
         self.close()
 
-    def close(self, end_time=None):
+    def close(self, end_time=None) -> None:
         """
         Close the file and update all entries.
         """
@@ -199,6 +220,7 @@ class Nexus(object):
         self.close()
 
     def flush(self):
+        "write to disk"
         if self.h5:
             self.h5.flush()
 
@@ -223,13 +245,14 @@ class Nexus(object):
 
         :return: list of HDF5 groups
         """
-        entries = [(grp, from_isotime(self.h5[grp + "/start_time"][()]))
-                   for grp in self.h5
-                   if isinstance(self.h5[grp], h5py.Group) and
-                   ("start_time" in self.h5[grp]) and
-                   self.get_attr(self.h5[grp], "NX_class") == "NXentry"]
-        entries.sort(key=lambda a: a[1], reverse=True)  # sort entries in decreasing time
-        return [self.h5[i[0]] for i in entries]
+        entries = [(name, grp, from_isotime(self.h5[name + "/start_time"][()]))
+                   for name, grp in self.h5.items()
+                   if isinstance(grp, h5py.Group) and
+                   ("start_time" in grp) and
+                   self.get_attr(grp, "NX_class") == "NXentry"]
+        # print(entries)
+        entries.sort(key=lambda a: a[-1], reverse=True)  # sort entries in decreasing time
+        return [i[1] for i in entries]
 
     def find_detector(self, all=False):
         """
@@ -271,10 +294,10 @@ class Nexus(object):
         if title is not None:
             entry_grp["title"] = str(title)
         entry_grp["program_name"] = str(program_name)
-        if force_time:
-            entry_grp["start_time"] = str(force_time)
+        if isinstance(force_time, str):
+            entry_grp["start_time"] = force_time
         else:
-            entry_grp["start_time"] = get_isotime()
+            entry_grp["start_time"] = get_isotime(force_time)
         self.to_close.append(entry_grp)
         return entry_grp
 
@@ -288,9 +311,11 @@ class Nexus(object):
 #        howto external link
         # myfile['ext link'] = h5py.ExternalLink("otherfile.hdf5", "/path/to/resource")
 
-    def new_class(self, grp, name, class_type="NXcollection"):
+    @staticmethod
+    def new_class(grp, name, class_type="NXcollection"):
         """
         create a new sub-group with  type class_type
+
         :param grp: parent group
         :param name: name of the sub-group
         :param class_type: NeXus class name
@@ -308,6 +333,7 @@ class Nexus(object):
         :param entry: name of the entry
         :param subentry: all pyFAI description of detectors should be in a pyFAI sub-entry
         """
+        from .. import version
         entry_grp = self.new_entry(entry)
         pyFAI_grp = self.new_class(entry_grp, subentry, "NXsubentry")
         pyFAI_grp["definition_local"] = str("pyFAI")
@@ -388,7 +414,7 @@ class Nexus(object):
             if name not in toplevel:
                 grp = toplevel.require_group(name)
                 for k, v in obj.attrs.items():
-                        grp.attrs[k] = v
+                    grp.attrs[k] = v
         elif isinstance(obj, h5py.Dataset):
             if name in toplevel:
                 if overwrite:
@@ -415,7 +441,7 @@ class Nexus(object):
         dec = default
         if name in dset.attrs:
             raw = dset.attrs[name]
-            if (sys.version_info[0] > 2) and ("decode" in dir(raw)):
+            if "decode" in dir(raw):
                 dec = raw.decode()
             else:
                 dec = raw
