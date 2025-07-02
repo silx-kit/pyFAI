@@ -33,23 +33,24 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "02/07/2025"
 __status__ = "development"
-__docformat__ = 'restructuredtext'
+__docformat__ = "restructuredtext"
 
 
 import os
 from ..containers import dataclass
 
 
-@dataclass(slots=True)
+@dataclass
 class Reflection:
     "Represent a familly of Miller plans"
-    d_spacing:float|None = None
-    intensity:float|None = None
-    hkl:tuple=tuple()
-    multiplicity:int|None=None
+
+    d_spacing: float | None = None
+    intensity: float | None = None
+    hkl: tuple = tuple()
+    multiplicity: int | None = None
 
 
-def read_dif(filename:str):
+def read_dif(filename: str):
     """Read a dif-file as provided by the American Mineralogist database
 
         https://rruff.geo.arizona.edu/AMS/amcsd.php
@@ -69,13 +70,17 @@ def read_dif(filename:str):
             started = True
             continue
         if started:
-            if line.startswith("="*10):
+            if line.startswith("=" * 10):
                 break
             words = line.split()
-            if len(words)>=7:
-                reflections.append(Reflection(float(words[2]),
-                                            float(words[1]),
-                                            (int(words[3]),int(words[4]),int(words[5])),
-                                            int(words[6])))
-    reflections.sort(key=lambda r:r.d_spacing, reverse=True)
+            if len(words) >= 7:
+                reflections.append(
+                    Reflection(
+                        float(words[2]),
+                        float(words[1]),
+                        (int(words[3]), int(words[4]), int(words[5])),
+                        int(words[6]),
+                    )
+                )
+    reflections.sort(key=lambda r: r.d_spacing, reverse=True)
     return reflections
