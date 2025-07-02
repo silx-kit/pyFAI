@@ -29,11 +29,7 @@
 """Space groups: There are 230 space groups as defined in the internationnal
 tables of crystallography (vol.A)
 
-
-A module containing classical calibrant and also tools to generate d-spacing.
-
-Interesting formula:
-https://geoweb.princeton.edu/archival/duffy/xtalgeometry.pdf
+The ReflectionCondition contains selection rules for all of them but not all are correct (yet)
 """
 
 from __future__ import annotations
@@ -52,10 +48,10 @@ class ReflectionCondition:
     All methods are static and take a triplet hkl as input representing a familly of Miller plans.
     They return True if the reflection is allowed by symmetry, False otherwise.
 
-    Most of those methods are AI-generated (Co-Pilot) and about 80% of them are WRONG unless tagged
+    Most of those methods are AI-generated (Co-Pilot) and about 80% of them are still WRONG unless tagged
     "validated" in the docstring.
 
-    Help is welcome to polish this class
+    Help is welcome to polish this class and fix the non-validated ones.
     """
 
     @staticmethod

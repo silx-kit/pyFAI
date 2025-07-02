@@ -41,8 +41,10 @@ __date__ = "02/07/2025"
 __status__ = "production"
 
 import os
+import logging
 from ..utils import get_calibration_dir
 from .calibrant import Calibrant
+logger = logging.getLogger(__name__)
 
 
 class CalibrantFactory:
