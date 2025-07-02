@@ -1,6 +1,7 @@
 py.install_sources(
    ['__init__.py',
     '_json.py',
+    'calibrant.py',
     'diffmap_config.py',
     'image.py',
     'integration_config.py',
