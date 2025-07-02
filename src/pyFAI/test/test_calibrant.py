@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "01/07/2025"
 
 import unittest
 import logging
@@ -219,6 +219,9 @@ class TestCell(unittest.TestCase):
         he = Cell.cubic(a)
         self.assertTrue(len(he.d_spacing(1)) == 15, msg="got 15 lines for He")
         he.save("He", "Helium", href, 1.0, UtilsTest.tempdir)
+        calibrant = he.to_calibrant(dmin=1.0)
+        self.assertTrue(isinstance(calibrant, Calibrant))
+        self.assertEqual(len(calibrant.dSpacing), 15)
 
     def test_hydrogen(self):
         # self.skipTest("Not working")
@@ -227,6 +230,8 @@ class TestCell(unittest.TestCase):
         self.assertAlmostEqual(h.volume, 26.537, places=3, msg="Volume for H cell is correct")
         self.assertTrue(len(h.d_spacing(1)) == 14, msg="got 14 lines for H")
         h.save("H", "Hydrogen", href, 1.0, UtilsTest.tempdir)
+        calibrant = Calibrant.from_cell(h)
+        self.assertEqual(len(calibrant.dSpacing), 14)
 
 
 def suite():
