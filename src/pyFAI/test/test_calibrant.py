@@ -35,15 +35,18 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "02/07/2025"
 
 import unittest
+import itertools
 import logging
 import sys
 import copy
 import numpy
+import h5py
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..calibrant import Calibrant, get_calibrant, Cell, CALIBRANT_FACTORY
 from ..detectors import ALL_DETECTORS
 from ..integrator.azimuthal import AzimuthalIntegrator
+from ..crystallography.space_groups import ReflectionCondition
 
 
 class TestCalibrant(unittest.TestCase):
@@ -220,7 +223,6 @@ class TestCell(unittest.TestCase):
         self.assertTrue(len(he.d_spacing(1)) == 15, msg="got 15 lines for He")
         he.save("He", "Helium", href, 1.0, UtilsTest.tempdir)
         calibrant = he.to_calibrant(dmin=1.0)
-        print(calibrant, Calibrant, isinstance(calibrant, Calibrant))
         self.assertTrue(isinstance(calibrant, Calibrant))
         self.assertEqual(len(calibrant.dSpacing), 15)
 
@@ -234,12 +236,105 @@ class TestCell(unittest.TestCase):
         calibrant = Calibrant.from_cell(h)
         self.assertEqual(len(calibrant.dSpacing), 14)
 
+class TestReflection(unittest.TestCase):
+    """
+    Test space group reflection allowance against xrayutilities obtained against:
+
+    import xrayutilities.materials.spacegrouplattice
+    import h5py
+    hdf5 = h5py.File("reflection.h5")
+    for sgn in range (1,3):  # Triclinic
+         sg=xrayutilities.materials.spacegrouplattice.SGLattice(sgn, 1.1,1.2,1.3,95,96,97)
+         table=numpy.zeros((size, size,size),dtype=bool)
+         for i in itertools.product(range(size),range(size), range(size)): table[i]=sg.hkl_allowed(i)
+         hdf5[sg.space_group] = table
+
+
+    for sgn in range (3,16):  # Monoclinic
+         sg=xrayutilities.materials.spacegrouplattice.SGLattice(sgn, 1.1,1.2,1.3,95)
+         table=numpy.zeros((size, size,size),dtype=bool)
+         for i in itertools.product(range(size),range(size), range(size)): table[i]=sg.hkl_allowed(i)
+         hdf5[sg.space_group] = table
+
+
+    for sgn in range (16,75):  # orthorhombic
+         sg=xrayutilities.materials.spacegrouplattice.SGLattice(sgn, 1.1,1.2,1.3)
+         table=numpy.zeros((size, size,size),dtype=bool)
+         for i in itertools.product(range(size),range(size), range(size)): table[i]=sg.hkl_allowed(i)
+         hdf5[sg.space_group] = table
+
+
+    for sgn in range (75,143):  # Tetragonal
+         sg=xrayutilities.materials.spacegrouplattice.SGLattice(sgn, 1.1,1.2)
+         table=numpy.zeros((size, size,size),dtype=bool)
+         for i in itertools.product(range(size),range(size), range(size)): table[i]=sg.hkl_allowed(i)
+         hdf5[sg.space_group] = table
+
+
+    for sgn in range (143,168):  # Trigonal
+         sg=xrayutilities.materials.spacegrouplattice.SGLattice(sgn, 1.1,1.2)
+         table=numpy.zeros((size, size,size),dtype=bool)
+         for i in itertools.product(range(size),range(size), range(size)): table[i]=sg.hkl_allowed(i)
+         hdf5[sg.space_group] = table
+
+
+    for sgn in range (168,195):  # Hexagonal
+         sg=xrayutilities.materials.spacegrouplattice.SGLattice(sgn, 1.1,1.2)
+         table=numpy.zeros((size, size,size),dtype=bool)
+         for i in itertools.product(range(size),range(size), range(size)): table[i]=sg.hkl_allowed(i)
+         hdf5[sg.space_group] = table
+
+
+    for sgn in range (195,231):  # Cubic
+         sg=xrayutilities.materials.spacegrouplattice.SGLattice(sgn, 1.1)
+         table=numpy.zeros((size, size,size),dtype=bool)
+         for i in itertools.product(range(size),range(size), range(size)): table[i]=sg.hkl_allowed(i)
+         hdf5[sg.space_group] = table
+
+
+    """
+    @classmethod
+    def setUpClass(cls):
+        cls.reflection_file = UtilsTest.getimage("reflection.h5")
+
+    @staticmethod
+    def build_table( funct, size=10):
+        """build a 10x10x10 map with True for allowed reflection"""
+        table = numpy.zeros((size, size, size), dtype=bool)
+        for i in itertools.product(range(size),range(size), range(size)): table[i]=funct(*i)
+        return table
+
+    def test_code(self):
+        "Checks the has no issue"
+        bad =0
+        with h5py.File(self.reflection_file) as reflections:
+            groups = []
+            for name in dir(ReflectionCondition):
+                if name.startswith("group"):
+                    groups.append(name)
+            groups.sort(key=lambda i:int(i[5:].split("_",1)[0]))
+            for name in groups:
+                method = getattr(ReflectionCondition, name)
+                table = self.build_table(method)
+                nr = name[5:].split("_",1)[0]
+                # print(name, nr, end=" ")
+                if nr in reflections:
+                    ref = reflections[nr][()]
+                else:
+                    good = [i for i in reflections.keys() if i.startswith(nr+":")]
+                    if good:
+                        ref = reflections[good[0]][()]
+                if "validated" in method.__doc__.lower():
+                    if not numpy.all(ref==table):
+                        print(name, "differ at hkl=", [(int(h),int(k), int(l)) for h,k,l in zip(*numpy.where(ref!=table))])
+                        raise AssertionError(f"Space group {name} did not validate against xrayutilities")
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestCalibrant))
     testsuite.addTest(loader(TestCell))
+    testsuite.addTest(loader(TestReflection))
     return testsuite
 
 
