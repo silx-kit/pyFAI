@@ -44,10 +44,10 @@ from ..containers import dataclass
 class Reflection:
     "Represent a familly of Miller plans"
 
-    d_spacing: float | None = None
-    intensity: float | None = None
+    d_spacing: float = None
+    intensity: float = None
     hkl: tuple = tuple()
-    multiplicity: int | None = None
+    multiplicity: int = None
 
 
 def read_dif(filename: str):
