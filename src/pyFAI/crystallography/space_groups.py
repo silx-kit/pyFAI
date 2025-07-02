@@ -107,18 +107,16 @@ class ReflectionCondition:
 
     @staticmethod
     def group9_cc_b(h, k, l):
-        """Space group 9: Cc (unique axis b). C-centering: (h + k) even. (h 0 l): h even only."""
+        """Space group 9: Cc (unique axis b). C-centering: (h + k) even. (h 0 l): h even only. validated"""
         if k == 0:
             return h % 2 == 0 and l%2 == 0
         else:
-            (h + k) % 2 == 0
+            return (h + k) % 2 == 0
         return True
 
     @staticmethod
     def group10_p2m_b(h, k, l):
-        """Space group 10: P2/m (unique axis b). (0 k 0): k even only."""
-        if h == 0 and l == 0:
-            return k % 2 == 0
+        """Space group 10: P2/m (unique axis b). No systematic absences.validated"""
         return True
 
     @staticmethod
@@ -130,7 +128,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group12_c2m_b(h, k, l):
-        """Space group 12: C2/m (unique axis b). C-centering: (h + k) even. (0 k 0): k even only.validated"""
+        """Space group 12: C2/m (unique axis b). C-centering: (h + k) even. (0 k 0): k even only. validated"""
         if (h + k) % 2 != 0:
             return False
         if h == 0 and l == 0:
@@ -138,53 +136,43 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group13_p2c_b(h, k, l):
-        """Space group 13: P2/c (unique axis b). (0 k 0): k even only. (h 0 l): h + l even only."""
-        if h == 0 and l == 0:
-            return k % 2 == 0
+    def group13_P2c_b(h, k, l):
+        """Space group 13: P 1 2/c 1 (unique axis b). (h 0 l): l even. validated"""
         if k == 0:
-            return (h + l) % 2 == 0
+            return l % 2 == 0
         return True
 
     @staticmethod
-    def group14_p21c_b(h, k, l):
-        """Space group 14: P21/c (unique axis b). (0 k 0): k even only. (h 0 l): h + l even only."""
+    def group14_P21c_b(h, k, l):
+        """Space group 14: P 1 21/c 1 (unique axis b). h0l: l even, 0k0: k even. validated"""
         if h == 0 and l == 0:
             return k % 2 == 0
         if k == 0:
-            return (h + l) % 2 == 0
+            return l % 2 == 0
         return True
 
     @staticmethod
     def group15_c2c_b(h, k, l):
-        """Space group 15: C2/c (unique axis b). C-centering: (h + k) even. (0 k 0): k even only."""
-        if (h + k) % 2 != 0:
-            return False
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
+        """Space group 15: C 1 2/c 1(unique axis b). C-centering: (h + k) even. (0 k 0): k even only. validated"""
+        if k==0:
+            return h%2==0 and l%2==0
+        return (h + k) % 2 == 0
 
     @staticmethod
-    def group16_p222(h, k, l):
+    def group16_P222(h, k, l):
         """Space group 16: P222. No systematic absences.validated"""
         return True
 
     @staticmethod
-    def group17_p2221(h, k, l):
-        """Space group 17: P2221. (0 0 l): l even only. (0 k 0): k even only. (h 0 0): h even only."""
+    def group17_P2221(h, k, l):
+        """Space group 17: P 2 2 21. (0 0 l): l even only. validated"""
         if h == 0 and k == 0:
             return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
         return True
 
     @staticmethod
-    def group18_p21212(h, k, l):
-        """Space group 18: P21212. (0 0 l): l even only. (0 k 0): k even only. (h 0 0): h even only."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group18_P21212(h, k, l):
+        """Space group 18: P 21 21 2. (0 0 l): l even only. (0 k 0): k even only. (h 0 0): h even only. validated"""
         if h == 0 and l == 0:
             return k % 2 == 0
         if k == 0 and l == 0:
@@ -221,17 +209,17 @@ class ReflectionCondition:
 
     @staticmethod
     def group22_f222(h, k, l):
-        """Space group 22: F222. F-centering: h, k, l all even or all odd.validated"""
+        """Space group 22: F222. F-centering: h, k, l all even or all odd. validated"""
         return h % 2 == k % 2 == l % 2
 
     @staticmethod
     def group23_i222(h, k, l):
-        """Space group 23: I222. I-centering: (h + k + l) even.validated"""
+        """Space group 23: I222. I-centering: (h + k + l) even. validated"""
         return (h + k + l) % 2 == 0
 
     @staticmethod
     def group24_i212121(h, k, l):
-        """Space group 24: I212121. I-centering: (h + k + l) even. (h 0 0): h even; (0 k 0): k even; (0 0 l): l even.validated"""
+        """Space group 24: I212121. I-centering: (h + k + l) even. (h 0 0): h even; (0 k 0): k even; (0 0 l): l even. validated"""
         if (h + k + l) % 2 != 0:
             return False
         if k == 0 and l == 0:
