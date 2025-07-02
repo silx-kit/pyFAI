@@ -1733,7 +1733,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group167(h, k, l):
-        """Grou[ 167 R -3 c used for Corrundum
+        """Group 167 R -3 c used for Corrundum
         from http://img.chem.ucl.ac.uk/sgp/large/167bz2.htm"""
         if h == 0 and k == 0:
             # 00l: 6n
