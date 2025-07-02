@@ -79,14 +79,14 @@ class Cell:
 
     def __init__(
         self,
-        a:float=1.,
-        b:float=1.,
-        c:float=1.,
-        alpha:float=90.,
-        beta:float=90.,
-        gamma:float=90.,
-        lattice:str="triclinic",
-        lattice_type:str="P",
+        a: float = 1.0,
+        b: float = 1.0,
+        c: float = 1.0,
+        alpha: float = 90.0,
+        beta: float = 90.0,
+        gamma: float = 90.0,
+        lattice: str = "triclinic",
+        lattice_type: str = "P",
     ):
         """Constructor of the Cell class:
 
@@ -376,6 +376,7 @@ class Cell:
         :return: Calibrant object
         """
         from .calibrant import Calibrant  # lazy loading to prevent cyclic imports
+
         d = self.d_spacing(dmin)
         ds = [i[0] for i in d.values()]
         ds.sort(reverse=True)

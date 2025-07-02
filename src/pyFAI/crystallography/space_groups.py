@@ -57,6 +57,7 @@ class ReflectionCondition:
 
     Help is welcome to polish this class
     """
+
     @staticmethod
     def group1_p1(h, k, l):
         """Space group 1: P1. No systematic absences. validated"""
@@ -109,7 +110,7 @@ class ReflectionCondition:
     def group9_cc_b(h, k, l):
         """Space group 9: Cc (unique axis b). C-centering: (h + k) even. (h 0 l): h even only. validated"""
         if k == 0:
-            return h % 2 == 0 and l%2 == 0
+            return h % 2 == 0 and l % 2 == 0
         else:
             return (h + k) % 2 == 0
         return True
@@ -154,8 +155,8 @@ class ReflectionCondition:
     @staticmethod
     def group15_c2c_b(h, k, l):
         """Space group 15: C 1 2/c 1(unique axis b). C-centering: (h + k) even. (0 k 0): k even only. validated"""
-        if k==0:
-            return h%2==0 and l%2==0
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0
         return (h + k) % 2 == 0
 
     @staticmethod
@@ -202,6 +203,7 @@ class ReflectionCondition:
         if k == 0 and l == 0:
             return h % 2 == 0
         return True
+
     @staticmethod
     def group21_c222(h, k, l):
         """Space group 21: C222. C-centering: (h + k) even, (k + l) even, (h + l) even."""
@@ -846,7 +848,6 @@ class ReflectionCondition:
         #         return (2 * k + l) % 4 == 0
         return False
 
-
     @staticmethod
     def group97_i4_2_2(h, k, l):
         """Space group 97: I422. I-centering: (h + k + l) even.validated"""
@@ -868,13 +869,13 @@ class ReflectionCondition:
 
     @staticmethod
     def group100_P4bm(h, k, l):
-        """Space group 100: P4bm. """
-        #0kl: k=2n
-        if h==0:
-            return k%2==0
-        if k==l==0:
-            return h%2==0
-        return (h+k)%2==0
+        """Space group 100: P4bm."""
+        # 0kl: k=2n
+        if h == 0:
+            return k % 2 == 0
+        if k == l == 0:
+            return h % 2 == 0
+        return (h + k) % 2 == 0
         # return True
 
     @staticmethod
@@ -1202,6 +1203,7 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 2 == 0
         return True
+
     @staticmethod
     def group151_p312(h, k, l):
         """Space group 151: P312. No systematic absences."""
@@ -1287,10 +1289,10 @@ class ReflectionCondition:
     @staticmethod
     def group165_P_3c1(h, k, l):
         """Space group 165: P-3c1."""
-        if h==0 and k==0:
-            return l%2 == 0
-        if k==0:
-            return l%2 == 0
+        if h == 0 and k == 0:
+            return l % 2 == 0
+        if k == 0:
+            return l % 2 == 0
         return True
 
     @staticmethod
@@ -1323,19 +1325,17 @@ class ReflectionCondition:
             # -h + k + l = 3n
             return (-h + k + l) % 3 == 0
 
-
     @staticmethod
     def group167_R_3c(h, k, l):
         """Space group 167: R-3c."""
         if h == k == 0:
-            return l%6 == 0
+            return l % 6 == 0
         elif k == l == 0:
-            return h%3 == 0
+            return h % 3 == 0
         elif k == 0:
-            return (h+l)%3==0 and l%2==0
+            return (h + l) % 3 == 0 and l % 2 == 0
         else:
-            return (-h + k + l)%3 == 0
-
+            return (-h + k + l) % 3 == 0
 
     @staticmethod
     def group167(h, k, l):
@@ -1366,7 +1366,6 @@ class ReflectionCondition:
             # -h + k + l = 3n
             return (-h + k + l) % 3 == 0
 
-
     @staticmethod
     def group168_P6(h, k, l):
         """Space group 168: P6. No selection. validated"""
@@ -1381,7 +1380,7 @@ class ReflectionCondition:
     def group169_P61(h, k, l):
         """Space group 169: P61. Validated"""
         if h == k == 0:
-            return l%6 == 0
+            return l % 6 == 0
         return True
 
     @staticmethod
