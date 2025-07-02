@@ -35,8 +35,10 @@ __date__ = "02/07/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
+
 import os
-from dataclasses import dataclass
+from ..containers import dataclass
+
 
 @dataclass(slots=True)
 class Reflection:
