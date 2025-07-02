@@ -5,5 +5,5 @@ py.install_sources(
     'cell.py',
     'space_groups.py'],
   pure: false,    # Will be installed next to binaries
-  subdir: 'pyFAI.crystallography'  # Folder relative to site-packages to install to
+  subdir: 'pyFAI/crystallography'  # Folder relative to site-packages to install to
 )
