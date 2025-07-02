@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/07/2025"
+__date__ = "02/07/2025"
 
 import unittest
 import logging
@@ -220,6 +220,7 @@ class TestCell(unittest.TestCase):
         self.assertTrue(len(he.d_spacing(1)) == 15, msg="got 15 lines for He")
         he.save("He", "Helium", href, 1.0, UtilsTest.tempdir)
         calibrant = he.to_calibrant(dmin=1.0)
+        print(calibrant, Calibrant, isinstance(calibrant, Calibrant))
         self.assertTrue(isinstance(calibrant, Calibrant))
         self.assertEqual(len(calibrant.dSpacing), 15)
 

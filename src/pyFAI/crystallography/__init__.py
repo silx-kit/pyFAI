@@ -35,8 +35,6 @@ Interesting formula:
 https://geoweb.princeton.edu/archival/duffy/xtalgeometry.pdf
 """
 
-from __future__ import annotations
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
@@ -47,3 +45,7 @@ __status__ = "production"
 import os
 import logging
 import numpy
+from .calibrant import Calibrant
+from .calibrant_factory import CALIBRANT_FACTORY
+from .cell import Cell
+from .space_groups import ReflectionCondition

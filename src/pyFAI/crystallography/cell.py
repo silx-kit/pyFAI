@@ -49,13 +49,8 @@ import numpy
 import itertools
 from typing import Optional, List
 from math import sin, asin, cos, sqrt, pi, ceil
-import threading
-from .utils import get_calibration_dir
-from .utils.decorators import deprecated
-from .. import units
 
 logger = logging.getLogger(__name__)
-epsilon = 1.0e-6  # for floating point comparison
 
 
 class Cell:
@@ -84,14 +79,14 @@ class Cell:
 
     def __init__(
         self,
-        a=1,
-        b=1,
-        c=1,
-        alpha=90,
-        beta=90,
-        gamma=90,
-        lattice="triclinic",
-        lattice_type="P",
+        a:float=1.,
+        b:float=1.,
+        c:float=1.,
+        alpha:float=90.,
+        beta:float=90.,
+        gamma:float=90.,
+        lattice:str="triclinic",
+        lattice_type:str="P",
     ):
         """Constructor of the Cell class:
 
@@ -102,12 +97,12 @@ class Cell:
         :param lattice: "cubic", "tetragonal", "hexagonal", "rhombohedral", "orthorhombic", "monoclinic", "triclinic"
         :param lattice_type: P, I, F, C or R
         """
-        self.a = a
-        self.b = b
-        self.c = c
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
+        self.a = float(a)
+        self.b = float(b)
+        self.c = float(c)
+        self.alpha = float(alpha)
+        self.beta = float(beta)
+        self.gamma = float(gamma)
         self.lattice = lattice if lattice in self.lattices else "triclinic"
 
         self._volume = None
@@ -122,16 +117,7 @@ class Cell:
         self.set_type(lattice_type)
 
     def __repr__(self, *args, **kwargs):
-        return "%s %s cell a=%.4f b=%.4f c=%.4f alpha=%.3f beta=%.3f gamma=%.3f" % (
-            self.types[self.type],
-            self.lattice,
-            self.a,
-            self.b,
-            self.c,
-            self.alpha,
-            self.beta,
-            self.gamma,
-        )
+        return f"{self.types[self.type]} {self.lattice} cell a={self.a:.4f} b={self.b:.4f} c={self.c:.4f} 𝛼={self.alpha:.3f} β={self.beta:.3f} ɣ={self.gamma:.3f}"
 
     @classmethod
     def cubic(cls, a, lattice_type="P"):
@@ -287,17 +273,18 @@ class Cell:
         :return: the inter-planar distance
         """
         h, k, l = hkl
+        deg2rad = pi / 180.0
         if self.lattice in ["cubic", "tetragonal", "orthorhombic"]:
             invd2 = (h / self.a) ** 2 + (k / self.b) ** 2 + (l / self.c) ** 2
         else:
             if self.S11 is None:
-                alpha = self.alpha * pi / 180.0
+                alpha = self.alpha * deg2rad
                 cosa = cos(alpha)
                 sina = sin(alpha)
-                beta = self.beta * pi / 180.0
+                beta = self.beta * deg2rad
                 cosb = cos(beta)
                 sinb = sin(beta)
-                gamma = self.gamma * pi / 180.0
+                gamma = self.gamma * deg2rad
                 cosg = cos(gamma)
                 sing = sin(gamma)
 
@@ -388,7 +375,7 @@ class Cell:
         :param dmin: minimum d-spacing to include in calibrant (in Angstrom)
         :return: Calibrant object
         """
-        from . import calibrant
+        from .calibrant import Calibrant  # lazy loading to prevent cyclic imports
         d = self.d_spacing(dmin)
         ds = [i[0] for i in d.values()]
         ds.sort(reverse=True)
