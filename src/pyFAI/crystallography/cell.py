@@ -117,7 +117,10 @@ class Cell:
         self.set_type(lattice_type)
 
     def __repr__(self, *args, **kwargs):
-        return f"{self.types[self.type]} {self.lattice} cell a={self.a:.4f} b={self.b:.4f} c={self.c:.4f} 𝛼={self.alpha:.3f} β={self.beta:.3f} ɣ={self.gamma:.3f}"
+        return (
+            f"{self.types[self.type]} {self.lattice} cell a={self.a:.4f} b={self.b:.4f} c={self.c:.4f}\N{ANGSTROM SIGN} "
+            f"\N{GREEK SMALL LETTER ALPHA}={self.alpha:.3f} \N{GREEK SMALL LETTER BETA}={self.beta:.3f} \N{GREEK SMALL LETTER GAMMA}={self.gamma:.3f}\N{DEGREE SIGN}"
+        )
 
     @classmethod
     def cubic(cls, a, lattice_type="P"):
@@ -352,22 +355,20 @@ class Cell:
         fname = name + ".D"
         if dest_dir:
             fname = os.path.join(dest_dir, fname)
-        with open(fname, "w") as f:
+        with open(fname, "w", encoding="utf-8") as f:
             if long_name:
-                f.write("# Calibrant: %s (%s)%s" % (long_name, name, os.linesep))
+                f.write(f"# Calibrant: {long_name} ({name}){os.linesep}")
             else:
-                f.write("# Calibrant: %s%s" % (name, os.linesep))
-            f.write("# %s%s" % (self, os.linesep))
+                f.write(f"# Calibrant: {name}{os.linesep}")
+            f.write(f"# {self}{os.linesep}")
             if doi:
-                f.write("# Ref: %s%s" % (doi, os.linesep))
+                f.write(f"# Ref: {doi}{os.linesep}")
             d = self.d_spacing(dmin)
             ds = [i[0] for i in d.values()]
             ds.sort(reverse=True)
             for k in ds:
-                strk = "%.8e" % k
-                f.write(
-                    "%.8f # %s %s%s" % (k, d[strk][-1], len(d[strk]) - 1, os.linesep)
-                )
+                strk = f"{k:.8e}"
+                f.write(f"{k:.8f} # {d[strk][-1]} {len(d[strk]) - 1}{os.linesep}")
 
     def to_calibrant(self, dmin=1.0):
         """Convert a Cell object to a Calibrant object
