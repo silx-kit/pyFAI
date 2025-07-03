@@ -305,7 +305,7 @@ class TestReflection(unittest.TestCase):
         return table
 
     def test_code(self):
-        "Checks the has no issue"
+        "Checks the class has no issue and that validated methods are actually correct !"
         bad =0
         with h5py.File(self.reflection_file) as reflections:
             groups = []
@@ -317,7 +317,6 @@ class TestReflection(unittest.TestCase):
                 method = getattr(ReflectionCondition, name)
                 table = self.build_table(method)
                 nr = name[5:].split("_",1)[0]
-                # print(name, nr, end=" ")
                 if nr in reflections:
                     ref = reflections[nr][()]
                 else:

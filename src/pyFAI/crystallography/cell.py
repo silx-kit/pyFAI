@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/07/2025"
+__date__ = "03/07/2025"
 __status__ = "production"
 
 import os
@@ -207,7 +207,7 @@ class Cell:
         :param alpha: unit cell angle
         """
         a = float(a)
-        alpha = float(a)
+        alpha = float(alpha)
         self = cls(
             a,
             a,

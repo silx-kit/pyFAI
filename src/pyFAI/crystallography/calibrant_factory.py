@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/07/2025"
+__date__ = "03/07/2025"
 __status__ = "production"
 
 import os
@@ -45,6 +45,10 @@ import logging
 from ..utils import get_calibration_dir
 from .calibrant import Calibrant
 logger = logging.getLogger(__name__)
+
+
+class BadCalibrantName(KeyError):
+    pass
 
 
 class CalibrantFactory:
@@ -85,9 +89,15 @@ class CalibrantFactory:
                     ]
                 )
 
-    def __call__(self, calibrant_name):
-        """Returns a new instance of a calibrant by it's name."""
-        return Calibrant(self.all[calibrant_name])
+    def __call__(self, calibrant_name:str) -> Calibrant:
+        """Returns a new instance of a calibrant by it's name.
+
+        :param calibrant_name: name of of the calibrant or filename
+        :return: Freshly initialized calibrant (new instance each time)
+        """
+        if calibrant_name in self.all:
+            return Calibrant(self.all[calibrant_name])
+        raise BadCalibrantName(f"Calibrant '{calibrant_name}' is not registered !")
 
     def get(self, what: str, notfound=None):
         if what in self.all:
