@@ -1,6 +1,7 @@
 subdir('app')
 subdir('benchmark')
 subdir('detectors')
+subdir('crystallography')
 subdir('engines')
 subdir('ext')
 subdir('geometry')

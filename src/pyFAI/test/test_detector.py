@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/06/2024"
+__date__ = "02/07/2025"
 
 import os
 import shutil
@@ -43,7 +43,9 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 from .. import detectors
-from ..detectors import detector_factory, ALL_DETECTORS
+from ..detectors import detector_factory, ALL_DETECTORS, Detector
+from ..calibrant import CALIBRANT_FACTORY as calibrant_factory
+from ..geometryRefinement import GeometryRefinement
 from .. import io
 from .. import utils
 from .utilstest import UtilsTest
@@ -299,10 +301,6 @@ class TestDetector(unittest.TestCase):
         numpy.testing.assert_array_almost_equal(detector.get_pixel_corners(), cloned.get_pixel_corners())
 
     def test_bug_1378(self):
-        from ..detectors import Detector
-        from ..calibrant import CalibrantFactory
-        from pyFAI.geometryRefinement import GeometryRefinement
-        calibrant_factory = CalibrantFactory()
         ceo2 = calibrant_factory("CeO2")
         img_shape = (280, 290)
         detector = Detector(100e-6, 110e-6)

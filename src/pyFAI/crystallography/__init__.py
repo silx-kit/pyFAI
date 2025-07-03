@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2025-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,15 +26,14 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""Calibrant
+"""Crystallography
 
-A module containing classical calibrant and also tools to generate d-spacing.
+A module containing helper classes and function related to crystal structures,
+used mostly to define calibrant from cells and generate d-spacing.
 
 Interesting formula:
 https://geoweb.princeton.edu/archival/duffy/xtalgeometry.pdf
 """
-
-from __future__ import annotations
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -46,34 +45,7 @@ __status__ = "production"
 import os
 import logging
 import numpy
-import itertools
-from typing import Optional, List
-from math import sin, asin, cos, sqrt, pi, ceil
-import threading
-from .utils import get_calibration_dir
-from .utils.decorators import deprecated
-from . import units
-from .crystallography.cell import Cell
-from .crystallography.space_groups import ReflectionCondition as Reflection_condition
-from .crystallography.calibrant import Calibrant
-from .crystallography.calibrant_factory import CALIBRANT_FACTORY
-
-
-ALL_CALIBRANTS = CALIBRANT_FACTORY
-
-
-def get_calibrant(calibrant_name: str, wavelength: float = None) -> Calibrant:
-    """Returns a new instance of the calibrant by it's name.
-
-    :param calibrant_name: Name of the calibrant
-    :param wavelength: initialize the calibrant with the given wavelength (in m)
-    """
-    cal = CALIBRANT_FACTORY(calibrant_name)
-    if wavelength:
-        cal.set_wavelength(wavelength)
-    return cal
-
-
-def names() -> List[str]:
-    """Returns the list of registred calibrant names."""
-    return CALIBRANT_FACTORY.keys()
+from .calibrant import Calibrant
+from .calibrant_factory import CALIBRANT_FACTORY
+from .cell import Cell
+from .space_groups import ReflectionCondition
