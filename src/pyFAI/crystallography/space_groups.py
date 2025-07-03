@@ -188,17 +188,33 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group20_c2221(h, k, l):
-        """Space group 20: C2221. C-centering: h + k even, k + l even, h + l even. (0 0 l): l even only. (0 k 0): k even only. (h 0 0): h even only."""
-        if (h + k) % 2 != 0 or (k + l) % 2 != 0 or (h + l) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
+    def group20_C2221(h, k, l):
+        """
+        Space group 20: C 2 2 21.
+        Valid reflections must satisfy:
+        - General: h + k even
+        - 0kl:     k even
+        - h0l:     h even
+        - hk0:     h + k even
+        - h00:     h even
+        - 0k0:     k even
+        - 00l:     l even
+        .validated
+        """
+        if h == 0 and k!=0 and l!=0:
             return k % 2 == 0
+        if h !=0 and k == 0 and l!=0:
+            return h % 2 == 0
+        if h !=0 and k !=0 and l==0:
+            return (h+k) % 2 == 0
         if k == 0 and l == 0:
             return h % 2 == 0
-        return True
+        if h == 0 and l == 0:
+            return k % 2 == 0
+        if h == 0 and k == 0:
+            return l % 2 == 0
+      
+        return (h + k) % 2 == 0
 
     @staticmethod
     def group21_c222(h, k, l):
@@ -1760,7 +1776,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group230_ia3d(h, k, l):
-        """Space group 230: Ia-3d. I-centering: (h + k + l) even; (0, 0, l): l divisible by 4."""
+        """Space group 230: Ia-3d. I-centering: (h + k + l) even; (0, 0, l): l divisible by 4. """
         if (h + k + l) % 2 != 0:
             return False
         if h == 0 and k == 0:
