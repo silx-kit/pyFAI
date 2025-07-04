@@ -201,20 +201,19 @@ class ReflectionCondition:
         - 00l:     l even
         .validated
         """
-        if h == 0 and k!=0 and l!=0:
-            return k % 2 == 0
-        if h !=0 and k == 0 and l!=0:
-            return h % 2 == 0
-        if h !=0 and k !=0 and l==0:
-            return (h+k) % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
         if h == 0 and k == 0:
-            return l % 2 == 0
-      
-        return (h + k) % 2 == 0
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return (h + k) % 2 == 0  # general
 
     @staticmethod
     def group21_c222(h, k, l):
