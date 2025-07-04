@@ -124,7 +124,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group12_c2m_b(h, k, l):
+    def group12_C2m_b(h, k, l):
         """Space group 12: C2/m (unique axis b). C-centering: (h + k) even. (0 k 0): k even only. validated"""
         if (h + k) % 2 != 0:
             return False
