@@ -372,15 +372,20 @@ class ReflectionCondition:
         return True 
 
     @staticmethod
-    def group32_ccc2(h, k, l):
-        #TODO:  End point Friday 4.7
-        """Space group 32: Ccc2. C-centering: (h + k) even, (k + l) even, (h + l) even. (h 0 l): h even; (0 k 0): k even. validated"""
-        if (h + k) % 2 != 0 or (k + l) % 2 != 0 or (h + l) % 2 != 0:
-            return False
+    def group32_pba2(h, k, l):
+        """"
+        Space group 32: Pba2.
+        Valid reflections must satisfy:
+        - 0kl (h=0):      k even
+        - h0l (k=0):      h even
+        - h00 (k=0, l=0): h even
+        - 0k0 (h=0, l=0): k even
+        No other systematic absences.
+        validated"""
+        if h == 0:
+            return k % 2 == 0  # Covers 0kl and 0k0
         if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
+            return h % 2 == 0  # Covers h0l and h00
         return True
 
     @staticmethod
