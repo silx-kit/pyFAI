@@ -183,7 +183,7 @@ class TestCalibrant(unittest.TestCase):
         for c in CALIBRANT_FACTORY.all:
             print(c, end=": ")
             cal = CALIBRANT_FACTORY(c)
-            print(cal, cal.metadata)
+            print(cal)
         # raise RuntimeError("plop")
 
 class TestCell(unittest.TestCase):
