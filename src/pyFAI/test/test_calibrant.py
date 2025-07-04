@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/07/2025"
+__date__ = "04/07/2025"
 
 import unittest
 import itertools
@@ -178,6 +178,13 @@ class TestCalibrant(unittest.TestCase):
         self.assertTrue(c3 not in store)
         self.assertTrue(c4 not in store)
 
+    def test_all_calibrants(self):
+        """Check that all calibrant from the factory can be instanciated"""
+        for c in CALIBRANT_FACTORY.all:
+            print(c, end=": ")
+            cal = CALIBRANT_FACTORY(c)
+            print(cal, cal.metadata)
+        # raise RuntimeError("plop")
 
 class TestCell(unittest.TestCase):
     """
