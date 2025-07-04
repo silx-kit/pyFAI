@@ -216,7 +216,7 @@ class ReflectionCondition:
         return (h + k) % 2 == 0  # general
 
     @staticmethod
-    def group21_c222(h, k, l):
+    def group21_C222(h, k, l):
         """
         Space group 21: C 2 2 2
         Valid reflections must satisfy:
