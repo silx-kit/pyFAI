@@ -217,17 +217,30 @@ class ReflectionCondition:
 
     @staticmethod
     def group21_c222(h, k, l):
-        """Space group 21: C222. C-centering: (h + k) even, (k + l) even, (h + l) even. validated"""
-        if h == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return (h+k) % 2 == 0
+        """
+        Space group 21: C 2 2 2
+        Valid reflections must satisfy:
+        - General (hkl):       h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
 
+        Note: Unlike space group 20 (C 2 2 21), there is **no rule for 00l** in this group.
+        """
+   
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return (h + k) % 2 == 0  # general
 
 
     @staticmethod
