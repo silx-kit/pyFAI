@@ -217,8 +217,18 @@ class ReflectionCondition:
 
     @staticmethod
     def group21_c222(h, k, l):
-        """Space group 21: C222. C-centering: (h + k) even, (k + l) even, (h + l) even."""
-        return (h + k) % 2 == 0 and (k + l) % 2 == 0 and (h + l) % 2 == 0
+        """Space group 21: C222. C-centering: (h + k) even, (k + l) even, (h + l) even. validated"""
+        if h == 0:
+            return k % 2 == 0
+        if k == 0 and l == 0:
+            return h % 2 == 0
+        if k == 0:
+            return h % 2 == 0
+        if h == 0 and l == 0:
+            return k % 2 == 0
+        return (h+k) % 2 == 0
+
+
 
     @staticmethod
     def group22_f222(h, k, l):
