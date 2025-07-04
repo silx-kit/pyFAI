@@ -389,13 +389,23 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group33_ama2(h, k, l):
-        """Space group 33: Ama2. (0 k 0): k even; (h 0 l): h even."""
-        if h == 0 and l == 0:
-            return k % 2 == 0
+    def group33_Pna21(h, k, l):
+        """Space group 33: Pna21. 
+        Valid reflections must satisfy:
+        - 0kl (h=0):        k + l even
+        - h0l (k=0):        h even
+        - h00 (k=0, l=0):   h even
+        - 0k0 (h=0, l=0):   k even
+        - 00l (h=0, k=0):   l even
+        validated"""
+        if h == 0:
+            if k == 0: return l % 2 == 0   # 00l
+            if l == 0: return k % 2 == 0   # 0k0
+            return (k + l) % 2 == 0        # 0kl
         if k == 0:
-            return h % 2 == 0
+            return h % 2 == 0              # h0l/h00
         return True
+     
 
     @staticmethod
     def group34_aba2(h, k, l):
