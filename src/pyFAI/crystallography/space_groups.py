@@ -177,7 +177,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group19_p212121(h, k, l):
+    def group19_P212121(h, k, l):
         """Space group 19: P212121. (0 0 l): l even only. (0 k 0): k even only. (h 0 0): h even only.validated"""
         if h == 0 and k == 0:
             return l % 2 == 0
