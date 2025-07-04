@@ -333,10 +333,9 @@ class ReflectionCondition:
             return True
 
     @staticmethod
-    def group30_cmm2(h, k, l):
+    def group30_pnc2(h, k, l):
         """ 
-        #TODO: current work in progress
-        Space group 30: Cmm2. #or Pnc2. ???
+        Space group 30: Pnc2
         Valid reflections must satisfy:
         - 0kl (h=0):        k + l even
         - h0l (k=0):        l even
@@ -344,12 +343,14 @@ class ReflectionCondition:
         - 00l (h=0, k=0):   l even
         validated 
         """
-        if h==0 and (k + l) % 2 != 0:
-            return False
-        if k == 0:
-            return l % 2 == 0
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
         if h == 0 and l == 0:
-            return k % 2 == 0
+            return k % 2 == 0  # 0k0
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return l % 2 == 0  # h0l
         return True
 
     @staticmethod
