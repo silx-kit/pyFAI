@@ -277,7 +277,8 @@ class ReflectionCondition:
         Valid reflections must satisfy:
         - h0l: l = 2n
         - 00l: l = 2n
-        validated"""
+        validated
+        """
         if k == 0:  # Covers both h0l and 00l cases
             return l % 2 == 0
         return True 
@@ -291,7 +292,7 @@ class ReflectionCondition:
         - h0l (k=0):           l even
         - 00l (h=0, k=0):      l even
         No other systematic absences.
-        .validated
+        validated
         """
         if h == 0 or k == 0:  # Covers 0kl, h0l, and 00l
             return l % 2 == 0
@@ -299,7 +300,16 @@ class ReflectionCondition:
 
     @staticmethod
     def group28_pma2(h, k, l):
-        """Space group 28: Pma2. No systematic absences. validated"""
+        """
+        Space group 28: Pma2
+        Valid reflections must satisfy:
+        - h0l (k=0):      h even
+        - h00 (k=0, l=0): h even
+        No other systematic absences.
+        validated
+        """
+        if k == 0:
+            return h % 2 == 0
         return True
 
     @staticmethod
