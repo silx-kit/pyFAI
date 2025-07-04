@@ -273,12 +273,14 @@ class ReflectionCondition:
 
     @staticmethod
     def group26_pmc21(h, k, l):
-        """Space group 26: Pmc21. (h 0 l): h even; (0 k 0): k even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
+        """Space group 26: Pmc21. 
+        Valid reflections must satisfy:
+        - h0l: l = 2n
+        - 00l: l = 2n
+        validated"""
+        if k == 0:  # Covers both h0l and 00l cases
+            return l % 2 == 0
+        return True 
 
     @staticmethod
     def group27_pcc2(h, k, l):
