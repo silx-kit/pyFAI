@@ -354,15 +354,22 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group31_cmc21(h, k, l):
-        """Space group 31: Cmc21. C-centering: (h + k) even. (h 0 l): h even; (0 k 0): k even."""
-        if (h + k) % 2 != 0:
-            return False
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
+    def group31_pmn21(h, k, l):
+        """
+        Space group 31: Pmn2₁
+        Valid reflections must satisfy:
+        - h0l (k=0):      h + l even
+        - h00 (k=0, l=0): h even
+        - 00l (h=0, k=0): l even
+        validated
+        """
+        if h == 0 and k == 0:  # 00l 
+                return l % 2 == 0
+        if k == 0:  # Covers both h0l and h00
+            if l == 0:  # h00
+                return h % 2 == 0
+            return (h + l) % 2 == 0  # h0l
+        return True 
 
     @staticmethod
     def group32_ccc2(h, k, l):
