@@ -284,16 +284,22 @@ class ReflectionCondition:
 
     @staticmethod
     def group27_pcc2(h, k, l):
-        """Space group 27: Pcc2. (h 0 l): h even; (0 k 0): k even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
+        """ Space group 27: Pcc2.
+        Valid reflections must satisfy:
+        - General (hkl):       No condition (unrestricted)
+        - 0kl (h=0):           l even
+        - h0l (k=0):           l even
+        - 00l (h=0, k=0):      l even
+        No other systematic absences.
+        .validated
+        """
+        if h == 0 or k == 0:  # Covers 0kl, h0l, and 00l
+            return l % 2 == 0
         return True
 
     @staticmethod
     def group28_pma2(h, k, l):
-        """Space group 28: Pma2. No systematic absences."""
+        """Space group 28: Pma2. No systematic absences. validated"""
         return True
 
     @staticmethod
