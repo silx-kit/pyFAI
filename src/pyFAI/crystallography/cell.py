@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2025"
+__date__ = "04/07/2025"
 __status__ = "production"
 
 import os
@@ -360,7 +360,7 @@ class Cell:
                 f.write(f"# Calibrant: {long_name} ({name}){os.linesep}")
             else:
                 f.write(f"# Calibrant: {name}{os.linesep}")
-            f.write(f"# {self}{os.linesep}")
+            f.write(f"# Cell: {self}{os.linesep}")
             if doi:
                 f.write(f"# Ref: {doi}{os.linesep}")
             d = self.d_spacing(dmin)
