@@ -249,7 +249,7 @@ class ReflectionCondition:
         return h % 2 == k % 2 == l % 2
 
     @staticmethod
-    def group23_i222(h, k, l):
+    def group23_I222(h, k, l):
         """Space group 23: I222. I-centering: (h + k + l) even. validated"""
         return (h + k + l) % 2 == 0
 
