@@ -313,7 +313,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group29_pla2(h, k, l):
+    def group29_pca21(h, k, l):
             """
             Space group 29: Pca2₁
             Valid reflections must satisfy:
