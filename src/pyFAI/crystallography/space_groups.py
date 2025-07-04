@@ -334,11 +334,20 @@ class ReflectionCondition:
 
     @staticmethod
     def group30_cmm2(h, k, l):
-        """Space group 30: Cmm2. C-centering: (h + k) even. (h 0 l): h even; (0 k 0): k even."""
-        if (h + k) % 2 != 0:
+        """ 
+        #TODO: current work in progress
+        Space group 30: Cmm2. #or Pnc2. ???
+        Valid reflections must satisfy:
+        - 0kl (h=0):        k + l even
+        - h0l (k=0):        l even
+        - 0k0 (h=0, l=0):   k even
+        - 00l (h=0, k=0):   l even
+        validated 
+        """
+        if h==0 and (k + l) % 2 != 0:
             return False
         if k == 0:
-            return h % 2 == 0
+            return l % 2 == 0
         if h == 0 and l == 0:
             return k % 2 == 0
         return True
