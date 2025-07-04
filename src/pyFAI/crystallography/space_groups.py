@@ -314,12 +314,23 @@ class ReflectionCondition:
 
     @staticmethod
     def group29_pla2(h, k, l):
-        """Space group 29: Pla2. (0 k 0): k even; (h 0 l): h even."""
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0:
-            return h % 2 == 0
-        return True
+            """
+            Space group 29: Pca2₁
+            Valid reflections must satisfy:
+            - 0kl (h=0):      l even
+            - h0l (k=0):      h even
+            - h00 (k=0, l=0): h even
+            - 00l (h=0, k=0): l even
+            No other systematic absences.
+            validated
+            """
+            if h == 0 and k == 0:  # 00l case
+                return l % 2 == 0
+            if h == 0:  # 0kl case
+                return l % 2 == 0
+            if k == 0:  # h0l case (includes h00)
+                return h % 2 == 0
+            return True
 
     @staticmethod
     def group30_cmm2(h, k, l):
