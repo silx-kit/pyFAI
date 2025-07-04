@@ -117,7 +117,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group11_p21m_b(h, k, l):
+    def group11_P21m_b(h, k, l):
         """Space group 11: P21/m (unique axis b). (0 k 0): k even only.validated"""
         if h == 0 and l == 0:
             return k % 2 == 0
