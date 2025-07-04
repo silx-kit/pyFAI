@@ -244,7 +244,7 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group22_f222(h, k, l):
+    def group22_F222(h, k, l):
         """Space group 22: F222. F-centering: h, k, l all even or all odd. validated"""
         return h % 2 == k % 2 == l % 2
 
