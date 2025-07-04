@@ -44,20 +44,28 @@ from typing import Optional
 @dataclass
 class CalibrantConfig:
     name: str = ""
+    description: str = ""
     filename: str = ""
     cell: str = ""
     space_group: str = ""
     reference: str = ""
     reflections: list = field(default_factory=list)
 
-    def __repr__(self):
-        out = [f"# Calibrant: {self.name}",
-               f"# Cell: {self.cell} ({self.space_group})",
+    def __str__(self):
+        out = [f"# Calibrant: {self.description} ({self.name})",
+               f"# Cell: {self.cell}"+(f" ({self.space_group})" if self.space_group else ""),
                f"# Ref: {self.reference}",
                "",
-               "# d_spacing  # (h k l) mult intensity"]
+               "# d_spacing  # (h k l)  mult intensity"]
         for ref in self.reflections:
-            out.append(f"{ref.d_spacing:12.8f} # {ref.hkl} {ref.multiplicity:2d} {ref.intensity}")
+            if ref.intensity:
+                out.append(f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d} {ref.intensity}")
+            elif ref.multiplicity:
+                out.append(f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d}")
+            elif ref.hkl:
+                out.append(f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s}")
+            else:
+                out.append(f"{ref.d_spacing:12.8f}")
         return os.linesep.join(out)
 
     @classmethod
@@ -112,52 +120,115 @@ class CalibrantConfig:
         raise ValueError(f"Unable to parse `{filename}` as DIF-file.")
 
     @classmethod
-    def from_dspacing(self, filename: str):
+    def from_dspacing(cls, filename: str):
         """Alternative constructor from d-spacing file, pyFAI historical calibrant files
 
         :param filename: name of the D-file
         :return CalibrationConfig instance
         """
-        intensities = []  # list of peak intensities, same length as dSpacing
-        multiplicities = []  # list of multiplicities, same length as dSpacing
-        hkls = []  # list of miller indices for each reflection, same length as dSpacing
-        metadata = []  # headers
-        self._dSpacing = []
-        header = True
         generic = False
+        begining = True
+        self = cls(filename=filename)
+        raw = []
         with open(filename) as f:
             for line in f:
-                stripped = line.strip()
-                if header and stripped.startswith("#"):
-                    metadata.append(stripped.strip("# \t"))
+                raw.append(line.strip())
+        for line in raw:
+            if begining and line.startswith("#"):
+                line = line.strip("# \t")
+                if "Calibrant:" in line:
+                    name = line.split(":",1)[1].strip()
+                    if "(" in name:
+                        idx = name.index("(")
+                        self.description = name[:idx].strip()
+                        self.name = name[idx+1: name.index(")")].strip()
+                    else:
+                        self.name = name.strip()
                     continue
-                header = False
-                words = stripped.split()
-                if generic:
-                    self._dSpacing += [float(i) for i in words]
+                elif "Ref:" in line:
+                    self.reference = line.split(":",1)[1].strip()
                     continue
-                try:
-                    hash_pos = words.index("#")
-                except ValueError:
-                    self._dSpacing += [float(i) for i in words]
-                    generic = True
+                elif "Cell:" in line:
+                    cell = line.split(":")[1].strip()
+                    if "(" in cell and ")" in cell:
+                        idx = cell.index("(")
+                        self.space_group = cell[idx+1:cell.index(")")].strip()
+                        self.cell = cell[idx]
+                    else:
+                        self.cell = cell
                     continue
+                else:
+                    if not self.cell:
+                        self.cell = line
+                continue
+            begining = False
+            words = line.split()
+            if generic:
+                for word in words:
+                    if word.startswith("#"):
+                        break
+                    try:
+                        value = float(word)
+                    except ValueError:
+                        break
+                    else:
+                        self.reflections.append(Reflection(d_spacing=value))
+                continue
+            try:
+                hash_pos = words.index("#")
+            except ValueError:
+                self.reflections += [Reflection(d_spacing=float(i)) for i in words]
+                generic = True
+                continue
 
-                if hash_pos == 1 and generic is False:
-                    if words[0].startswith("#"):
-                        continue
-                    ds = float(words[0])
-                    self._dSpacing.append(ds)
-                    start_miller = end_miller = None
-                    for i, j in enumerate(words[2:], start=2):
-                        if j.startswith("("):
-                            start_miller = i
-                            continue
+            if hash_pos == 1 and generic is False:
+                if words[0].startswith("#"):
+                    continue
+                reflection = Reflection(d_spacing=float(words[0]))
+                self.reflections.append(reflection)
+                start_miller = end_miller = None
+                for i, j in enumerate(words[2:], start=2):
+                    if j.startswith("("):
+                        start_miller = i
                         if j.endswith(")"):
                             end_miller = i
                             break
-                    if start_miller and end_miller:
-                        hkls.append(" ".join(words[start_miller:end_miller+1]))
-                        if len(words)>end_miller:
-                            multiplicities.append(int(words[end_miller+1]))
-        print(self.metadata)
+                        continue
+                    if j.endswith(")"):
+                        end_miller = i
+                        break
+                # print(" ".join(words[start_miller:end_miller+1]))
+                if start_miller and end_miller:
+                    reflection.hkl = Miller.parse(" ".join(words[start_miller:end_miller+1]))
+                    if len(words)>end_miller+1:
+                        mult = words[end_miller+1]
+                        if mult.startswith("#"):
+                            continue
+                        elif mult.isdecimal():
+                            reflection.multiplicity = int(mult)
+                    if len(words)>end_miller+2:
+                        intensity = words[end_miller+2]
+                        if intensity.startswith("#"):
+                            continue
+                        try:
+                            value = float(intensity)
+                        except ValueError:
+                            continue
+                        else:
+                            reflection.intensity = value
+        return self
+
+    def save(self, filename:str =None):
+        """Save the calibrant structure into a D-spaacing file
+
+        :param filename: name of the output file. If not provided, can re-use the previous one.
+        """
+        if filename is None:
+            filename = self.filename
+
+        self.filename = filename
+
+        if not filename.lower().endswith(".d"):
+            filename += ".D"
+        with open(filename, "w", encoding="utf-8") as fd:
+            fd.write(str(self))

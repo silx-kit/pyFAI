@@ -1335,7 +1335,34 @@ class Miller(NamedTuple):
     l: int
 
     def __repr__(self):
+        return f"Miller({self.h}, {self.k}, {self.l})"
+
+    def __str__(self):
         return f"({self.h} {self.k} {self.l})"
+
+    @classmethod
+    def parse(cls, text:str):
+        words = text.split(" ")
+        newlst = []
+        for word in words:
+            newlst.extend(word.split(","))
+        words = newlst
+        newlst = []
+        for word in words:
+            newlst.extend(word.split(";"))
+        words = newlst
+        ints = []
+        for word in words:
+            stripped = word.strip(" ()")
+            if not stripped:
+                continue
+            try:
+                value = int(stripped)
+            except ValueError:
+                logger.warning(f"Unable to parse int in {stripped}")
+            else:
+                ints.append(value)
+        return cls(*ints)
 
 
 @dataclass
