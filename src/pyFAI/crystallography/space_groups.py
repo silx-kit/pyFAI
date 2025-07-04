@@ -272,7 +272,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group26_pmc21(h, k, l):
+    def group26_Pmc21(h, k, l):
         """Space group 26: Pmc21. 
         Valid reflections must satisfy:
         - h0l: l = 2n
