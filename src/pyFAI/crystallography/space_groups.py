@@ -267,7 +267,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group25_pmm2(h, k, l):
+    def group25_Pmm2(h, k, l):
         """Space group 25: Pmm2. No systematic absences.validated"""
         return True
 
