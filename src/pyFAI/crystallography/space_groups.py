@@ -373,7 +373,8 @@ class ReflectionCondition:
 
     @staticmethod
     def group32_ccc2(h, k, l):
-        """Space group 32: Ccc2. C-centering: (h + k) even, (k + l) even, (h + l) even. (h 0 l): h even; (0 k 0): k even."""
+        #TODO:  End point Friday 4.7
+        """Space group 32: Ccc2. C-centering: (h + k) even, (k + l) even, (h + l) even. (h 0 l): h even; (0 k 0): k even. validated"""
         if (h + k) % 2 != 0 or (k + l) % 2 != 0 or (h + l) % 2 != 0:
             return False
         if k == 0:
