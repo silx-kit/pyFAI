@@ -254,7 +254,7 @@ class ReflectionCondition:
         return (h + k + l) % 2 == 0
 
     @staticmethod
-    def group24_i212121(h, k, l):
+    def group24_I212121(h, k, l):
         """Space group 24: I212121. I-centering: (h + k + l) even. (h 0 0): h even; (0 k 0): k even; (0 0 l): l even. validated"""
         if (h + k + l) % 2 != 0:
             return False
