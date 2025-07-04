@@ -45,4 +45,4 @@ use `./run_tests.py -h` to visualize them all.
 
 This describes how to contribute to the project.
 If you enncounter any issue at this level, please contact the upstream authors for guidance.
-The the code of conduct of the project is described in the `CODE_OF_CONDUCT.md` file.
+The code of conduct of the project is described in the `CODE_OF_CONDUCT.md` file.
