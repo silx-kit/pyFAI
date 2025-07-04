@@ -284,7 +284,7 @@ class ReflectionCondition:
         return True 
 
     @staticmethod
-    def group27_pcc2(h, k, l):
+    def group27_Pcc2(h, k, l):
         """ Space group 27: Pcc2.
         Valid reflections must satisfy:
         - General (hkl):       No condition (unrestricted)
