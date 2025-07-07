@@ -494,9 +494,30 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group39_pmmm(h, k, l):
-        """Space group 39: Pmmm. No systematic absences."""
-        return True
+    def group39_Aem2(h, k, l):
+        """
+        Space group 39: Aem2 (A-centering).
+        Valid reflections must satisfy:
+        - General (hkl):       k + l even
+        - 0kl (h=0):           k and l even
+        - h0l (k=0):           l even
+        - hk0 (l=0):           k even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0         # 00l
+            if l == 0:
+                return k % 2 == 0         # 0k0
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0:
+            return l % 2 == 0             # h0l
+        if l == 0:
+            return k % 2 == 0             # hk0
+        return (k + l) % 2 == 0           # general
+
 
     @staticmethod
     def group40_pnnm(h, k, l):
