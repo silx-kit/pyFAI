@@ -1380,4 +1380,4 @@ class Reflection:
     def is_weak(self):
         """Return True if the intensity is weak"""
         if self.intensity is not None:
-            return intensity == 0.0
+            return self.intensity == 0.0
