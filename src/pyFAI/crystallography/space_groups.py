@@ -530,18 +530,12 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            if k == 0:
-                return l % 2 == 0             # 00l
-            if l == 0:
-                return k % 2 == 0             # 0k0
-            return (k + l) % 2 == 0           # 0kl
+            if k == 0: return l % 2 == 0
+            if l == 0: return k % 2 == 0
+            return (k + l) % 2 == 0
         if k == 0:
-            if l == 0:
-                return h % 2 == 0             # h00
-            return h % 2 == 0 and l % 2 == 0  # h0l
-        if l == 0:
-            return k % 2 == 0                 # hk0
-        return (k + l) % 2 == 0               # general
+            return h % 2 == 0 and (l == 0 or l % 2 == 0)
+        return k % 2 == 0 if l == 0 else (k + l) % 2 == 0
 
 
     @staticmethod
