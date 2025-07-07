@@ -229,7 +229,7 @@ class ReflectionCondition:
 
         Note: Unlike space group 20 (C 2 2 21), there is **no rule for 00l** in this group.
         """
-   
+
         if h == 0 and l == 0:
             return k % 2 == 0  # 0k0
         if k == 0 and l == 0:
@@ -273,7 +273,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group26_Pmc21(h, k, l):
-        """Space group 26: Pmc21. 
+        """Space group 26: Pmc21.
         Valid reflections must satisfy:
         - h0l: l = 2n
         - 00l: l = 2n
@@ -281,7 +281,7 @@ class ReflectionCondition:
         """
         if k == 0:  # Covers both h0l and 00l cases
             return l % 2 == 0
-        return True 
+        return True
 
     @staticmethod
     def group27_Pcc2(h, k, l):
@@ -334,14 +334,14 @@ class ReflectionCondition:
 
     @staticmethod
     def group30_pnc2(h, k, l):
-        """ 
+        """
         Space group 30: Pnc2
         Valid reflections must satisfy:
         - 0kl (h=0):        k + l even
         - h0l (k=0):        l even
         - 0k0 (h=0, l=0):   k even
         - 00l (h=0, k=0):   l even
-        validated 
+        validated
         """
         if h == 0 and k == 0:
             return l % 2 == 0  # 00l
@@ -363,13 +363,13 @@ class ReflectionCondition:
         - 00l (h=0, k=0): l even
         validated
         """
-        if h == 0 and k == 0:  # 00l 
+        if h == 0 and k == 0:  # 00l
                 return l % 2 == 0
         if k == 0:  # Covers both h0l and h00
             if l == 0:  # h00
                 return h % 2 == 0
             return (h + l) % 2 == 0  # h0l
-        return True 
+        return True
 
     @staticmethod
     def group32_pba2(h, k, l):
@@ -390,7 +390,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group33_Pna21(h, k, l):
-        """Space group 33: Pna21. 
+        """Space group 33: Pna21.
         Valid reflections must satisfy:
         - 0kl (h=0):        k + l even
         - h0l (k=0):        h even
@@ -403,7 +403,7 @@ class ReflectionCondition:
         if k == 0:
             return h % 2 == 0              # h0l/h00
         return True
-     
+
 
     @staticmethod
     def group34_Pnn2(h, k, l):
