@@ -1377,7 +1377,7 @@ class Reflection:
     multiplicity: int = None
 
     @property
-    def weak(self):
+    def is_weak(self):
         """Return True if the intensity is weak"""
-        if intensity is not None:
+        if self.intensity is not None:
             return intensity == 0.0
