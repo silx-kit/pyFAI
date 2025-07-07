@@ -409,7 +409,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group34_Pnn2(h, k, l):
-        """Space group 34: Pnn2. 
+        """Space group 34: Pnn2. P-centering.
         Valid reflections must satisfy:
         - 0kl (h=0):        k + l even
         - h0l (k=0):        h + l even
@@ -417,13 +417,8 @@ class ReflectionCondition:
         - 0k0 (h=0, l=0):   k even
         - 00l (h=0, k=0):   l even
         validated"""
-        if h == 0:
-            if k == 0: return l % 2 == 0   # 00l
-            if l == 0: return k % 2 == 0   # 0k0
-            return (k + l) % 2 == 0        # 0kl
-        if k == 0:
-            if l == 0: return h % 2 == 0   # h00
-            return (h + l) % 2 == 0        # h0l
+        if h == 0 or k == 0:
+            return (h + k + l) % 2 == 0
         return True
 
     @staticmethod
