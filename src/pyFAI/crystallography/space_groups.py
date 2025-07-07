@@ -427,15 +427,28 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group35_fmm2(h, k, l):
-        """Space group 35: Fmm2. F-centering: h, k, l all even or all odd. (h 0 l): h even; (0 k 0): k even."""
-        if not (h % 2 == k % 2 == l % 2):
-            return False
+    def group35_Cmm2(h, k, l):
+        """Space group 35: Cmm2. C-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        validated"""
+        if h == 0:
+            if l == 0:
+                return k % 2 == 0    # 0k0
+            return k % 2 == 0        # 0kl
         if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
+            if l == 0:
+                return h % 2 == 0    # h00
+            return h % 2 == 0        # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return (h + k) % 2 == 0      # general
+
 
     @staticmethod
     def group36_i_b_m_2(h, k, l):
