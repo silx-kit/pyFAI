@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2025"
+__date__ = "07/07/2025"
 __status__ = "development"
 
 import sys
@@ -38,17 +38,11 @@ import copy
 import logging
 from dataclasses import fields, asdict, dataclass as _dataclass
 from collections import namedtuple
+from typing import NamedTuple
 from enum import IntEnum
 from .utils.decorators import deprecated_warning
 import numpy
-
-# Few named tuples
-PolarizationArray = namedtuple("PolarizationArray",
-                               ["array", "checksum"])
-PolarizationDescription = namedtuple("PolarizationDescription",
-                                     ["polarization_factor", "axis_offset"])
-Integrate1dtpl = namedtuple("Integrate1dtpl", "position intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
-Integrate2dtpl = namedtuple("Integrate2dtpl", "radial azimuthal intensity sigma signal variance normalization count std sem norm_sq", defaults=(None,) * 3)
+from numpy.typing import ArrayLike
 
 # User defined dataclasses
 if sys.version_info >= (3, 10):
@@ -57,6 +51,46 @@ else:
     dataclass = _dataclass
 
 logger = logging.getLogger(__name__)
+
+
+# Few named tuples
+class PolarizationArray(NamedTuple):
+    array: ArrayLike
+    checksum: int
+
+class PolarizationDescription(NamedTuple):
+    polarization_factor:float
+    axis_offset:float = 0.0
+
+
+class Integrate1dtpl(NamedTuple):
+    """Result of any engines after 1d integration"""
+    position: ArrayLike
+    intensity: ArrayLike
+    sigma: ArrayLike
+    signal: ArrayLike
+    variance: ArrayLike
+    normalization: ArrayLike
+    count: ArrayLike
+    std:ArrayLike  = None
+    sem:ArrayLike  = None
+    norm_sq:ArrayLike = None
+
+
+class Integrate2dtpl(NamedTuple):
+    """Result of any engines after 2d integration"""
+    radial: ArrayLike
+    azimuthal: ArrayLike
+    intensity: ArrayLike
+    sigma: ArrayLike
+    signal: ArrayLike
+    variance: ArrayLike
+    normalization: ArrayLike
+    count: ArrayLike
+    std: ArrayLike=None
+    sem: ArrayLike=None
+    norm_sq:ArrayLike=None
+
 
 class ErrorModel(IntEnum):
     NO = 0
@@ -1292,3 +1326,52 @@ class Integrate2dFiberResult(IntegrateResult):
     def _set_azimuthal_unit(self, unit):
         logger.warning("Azimuthal units does not apply to a fiber/grazing-incidence result, use oop_unit instead")
         self._set_oop_unit(unit)
+
+
+class Miller(NamedTuple):
+    """This represents the Miller index of a family of latice plans"""
+    h: int
+    k: int
+    l: int
+
+    def __repr__(self):
+        return f"Miller({self.h}, {self.k}, {self.l})"
+
+    def __str__(self):
+        return f"({self.h} {self.k} {self.l})"
+
+    @classmethod
+    def parse(cls, text:str):
+        words = text.split(" ")
+        newlst = []
+        for word in words:
+            newlst.extend(word.split(","))
+        words = newlst
+        newlst = []
+        for word in words:
+            newlst.extend(word.split(";"))
+        words = newlst
+        ints = []
+        for word in words:
+            stripped = word.strip(" ()")
+            if not stripped:
+                continue
+            try:
+                value = int(stripped)
+            except ValueError:
+                logger.warning(f"Unable to parse int in {stripped}")
+            else:
+                ints.append(value)
+        if len(ints) != 3:
+            raise RuntimeError(f"Miller indices expects exactly 3 integers to define a family of plans, got `{text}`.")
+        return cls(*ints)
+
+
+@dataclass
+class Reflection:
+    "Represent a family of Miller plans"
+
+    d_spacing: float = None
+    intensity: float = None
+    hkl: tuple = tuple()  # or better Miller namedtuple
+    multiplicity: int = None
