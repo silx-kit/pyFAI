@@ -399,9 +399,7 @@ class ReflectionCondition:
         - 00l (h=0, k=0):   l even
         validated"""
         if h == 0:
-            if k == 0: return l % 2 == 0   # 00l
-            if l == 0: return k % 2 == 0   # 0k0
-            return (k + l) % 2 == 0        # 0kl
+            return (k + l) % 2 == 0  # Covers 0kl, 0k0, 00l
         if k == 0:
             return h % 2 == 0              # h0l/h00
         return True
