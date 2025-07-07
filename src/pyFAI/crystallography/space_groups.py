@@ -436,15 +436,31 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group36_i_b_m_2(h, k, l):
-        """Space group 36: I b m 2. I-centering: (h + k + l) even. (h 0 l): h even; (0 k 0): k even."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if k == 0:
-            return h % 2 == 0
+    def group36_Cmc21(h, k, l):
+        """Space group 36: Cmc2₁. C-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0       # 00l
         if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
+            return k % 2 == 0       # 0k0
+        if h == 0:
+            return k % 2 == 0       # 0kl
+        if k == 0 and l == 0:
+            return h % 2 == 0       # h00
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return (h + k) % 2 == 0      # general   
 
     @staticmethod
     def group37_i_b_c_2(h, k, l):
