@@ -448,19 +448,11 @@ class ReflectionCondition:
         - 00l (h=0, k=0):      l even
         validated
         """
-        if h == 0 and k == 0:
-            return l % 2 == 0       # 00l
-        if h == 0 and l == 0:
-            return k % 2 == 0       # 0k0
         if h == 0:
-            return k % 2 == 0       # 0kl
-        if k == 0 and l == 0:
-            return h % 2 == 0       # h00
+            return (k % 2 == 0) if k != 0 else (l % 2 == 0)  # covers 0kl, 0k0, 00l
         if k == 0:
-            return h % 2 == 0 and l % 2 == 0  # h0l
-        if l == 0:
-            return (h + k) % 2 == 0  # hk0
-        return (h + k) % 2 == 0      # general   
+            return (h % 2 == 0) and (l == 0 or l % 2 == 0)  # covers h0l, h00
+        return (h + k) % 2 == 0  # covers hk0 and general case
 
     @staticmethod
     def group37_i_b_c_2(h, k, l):
