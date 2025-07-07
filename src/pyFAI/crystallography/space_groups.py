@@ -473,15 +473,25 @@ class ReflectionCondition:
         return (h + k) % 2 == 0
 
     @staticmethod
-    def group38_i_b_a_2(h, k, l):
-        """Space group 38: I b a 2. I-centering: (h + k + l) even. (h 0 l): h even; (0 k 0): k even."""
-        if (h + k + l) % 2 != 0:
-            return False
+    def group38_Amm2(h, k, l):
+        """
+        Space group 38: Amm2. A-centering.
+        Valid reflections satisfy:
+        - General (hkl):       k + l even
+        - 0kl (h=0):           k + l even
+        - h0l (k=0):           l even
+        - hk0 (l=0):           k even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
         if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
+            return l % 2 == 0  # h0l (includes h00 when l=0)
+        if l == 0:
+            return k % 2 == 0  # hk0 (includes 0k0 when h=0)
+        return (k + l) % 2 == 0  # general and 0kl
+
 
     @staticmethod
     def group39_pmmm(h, k, l):
