@@ -566,15 +566,28 @@ class ReflectionCondition:
         return (k + l) % 2 == 0  # general hkl
 
     @staticmethod
-    def group42_pban(h, k, l):
-        """Space group 42: Pban. (h 0 l): h even; (0 k 0): k even; (h 0 0): h even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
+    def group42_Fmm2(h, k, l):
+        """
+        #TODO check here xrayuilities
+        Space group 42: Fmm2. F-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k, h + l, and k + l even
+        - 0kl (h=0):           k and l even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h and k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == k == 0: return l % 2 == 0  # 00l
+        if h == l == 0: return k % 2 == 0  # 0k0
+        if k == l == 0: return h % 2 == 0  # h00
+        if h == 0: return not (k % 2 or l % 2)  # 0kl
+        if k == 0: return not (h % 2 or l % 2)  # h0l
+        if l == 0: return not (h % 2 or k % 2)  # hk0
+        return not any((h + k) % 2, (h + l) % 2, (k + l) % 2)  # general hkl
+
 
     @staticmethod
     def group43_pmma(h, k, l):
