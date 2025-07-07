@@ -30,8 +30,9 @@
 
 A module containing classical calibrant and also tools to generate d-spacing.
 
-Interesting formula:
-https://geoweb.princeton.edu/archival/duffy/xtalgeometry.pdf
+This class is mostly empty and is left for compatibility purposes.
+It should be DEPRECATED once modification related to crystallography are done
+and tutorial updated.
 """
 
 from __future__ import annotations
@@ -40,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/07/2025"
+__date__ = "07/07/2025"
 __status__ = "production"
 
 import os

@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/07/2025"
+__date__ = "07/07/2025"
 __status__ = "development"
 
 import sys
@@ -1362,12 +1362,14 @@ class Miller(NamedTuple):
                 logger.warning(f"Unable to parse int in {stripped}")
             else:
                 ints.append(value)
+        if len(ints) != 3:
+            raise RuntimeError(f"Miller indices expects exactly 3 integers to define a family of plans, got `{text}`.")
         return cls(*ints)
 
 
 @dataclass
 class Reflection:
-    "Represent a familly of Miller plans"
+    "Represent a family of Miller plans"
 
     d_spacing: float = None
     intensity: float = None
