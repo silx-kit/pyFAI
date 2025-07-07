@@ -551,11 +551,11 @@ class ReflectionCondition:
         - 0k0 (h=0, l=0):      k even
         - 00l (h=0, k=0):      l even
         validated"""
-        if h == 0 and k == 0:  # 00l
+        if h == k == 0:  # 00l
             return l % 2 == 0
-        if h == 0 and l == 0:  # 0k0
+        if h == l == 0:  # 0k0
             return k % 2 == 0
-        if k == 0 and l == 0:  # h00
+        if k == l == 0:  # h00
             return h % 2 == 0
         if h == 0:  # 0kl
             return k % 2 == 0 and l % 2 == 0
@@ -563,7 +563,7 @@ class ReflectionCondition:
             return h % 2 == 0 and l % 2 == 0
         if l == 0:  # hk0
             return k % 2 == 0
-        return (k + l) % 2 == 0  # General case
+        return (k + l) % 2 == 0  # general hkl
 
     @staticmethod
     def group42_pban(h, k, l):
