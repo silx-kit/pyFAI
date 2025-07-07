@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/07/2025"
+__date__ = "07/07/2025"
 __status__ = "development"
 __docformat__ = "restructuredtext"
 
@@ -133,6 +133,9 @@ class CalibrantConfig:
         with open(filename) as f:
             for line in f:
                 raw.append(line.strip())
+
+        has_weak_reflection = "weak" in " ".join(raw).lower()
+
         for line in raw:
             if begining and line.startswith("#"):
                 line = line.strip("# \t")
@@ -141,7 +144,18 @@ class CalibrantConfig:
                     if "(" in name:
                         idx = name.index("(")
                         self.description = name[:idx].strip()
-                        self.name = name[idx+1: name.index(")")].strip()
+                        # There could be several (): `Vanadinite (Pb5(BO4)3Cl)`
+                        cnt = 0
+                        lname = []
+                        for c in name[idx:]:
+                            lname.append(c)
+                            if c == "(":
+                                cnt+=1
+                            elif c == ")":
+                                cnt-=1
+                            if cnt == 0:
+                                break
+                        self.name = "".join(lname[1:-1]).strip()
                     else:
                         self.name = name.strip()
                     continue
@@ -185,6 +199,8 @@ class CalibrantConfig:
                 if words[0].startswith("#"):
                     continue
                 reflection = Reflection(d_spacing=float(words[0]))
+                if has_weak_reflection:
+                    reflection.intensity = 1.0
                 self.reflections.append(reflection)
                 start_miller = end_miller = None
                 for i, j in enumerate(words[2:], start=2):
@@ -213,7 +229,8 @@ class CalibrantConfig:
                         try:
                             value = float(intensity)
                         except ValueError:
-                            continue
+                            if "weak" in intensity.lower():
+                                reflection.intensity = 0.0
                         else:
                             reflection.intensity = value
         return self

@@ -1375,3 +1375,9 @@ class Reflection:
     intensity: float = None
     hkl: tuple = tuple()  # or better Miller namedtuple
     multiplicity: int = None
+
+    @property
+    def weak(self):
+        """Return True if the intensity is weak"""
+        if intensity is not None:
+            return intensity == 0.0
