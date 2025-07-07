@@ -43,4 +43,13 @@ takes care of re-building what is needed.
 This helper script has many options about coverage, selecting tests, debugging mode ...
 use `./run_tests.py -h` to visualize them all.
 
-Please note we have not yet decided for a code of conduct.
+# Few common rules to make common development simpler:
+* Code formatting is generally PEP8, except for the GUI section where the CamelCase is used (due to inheritance of Qt classes).
+* Doc-strings are mandatory. They should contain the purpose of the function and the description of its signature, both input and output, for human beings. Discussion about the implementation are best done in comments.
+* Typing is accepted but not enforced. Typing is NOT an excuse for the absence of documentation. It should neither reduce readability nor break tests on any platform/version of python.
+* Minimal code formatters are in place as part of the CI procedure using `pre-commit`. More aggressive formatters (`black`, `blue`, `pyink`, `ruff` to cite a few) are only allowed when used by the main author of a file or as part of a refactoring duly accepted. In this case, `ruff` is the preferred tool. This means a pull request with just running `black` on the entire repository will be rejected.
+
+If you encounter any issue at this level, please contact the upstream authors for guidance.
+The code of conduct of the project is described in the CODE_OF_CONDUCT.md file.
+
+Above all, the primary goal of this project is to ensure numerically correct data reduction. We are committed to upholding the highest standards of scientific and technical accuracy in our codebase. At the same time, we recognize the importance of fostering a collaborative environment where junior developers are encouraged and supported to grow their skills. We actively invest in mentoring and training, enabling contributors at all levels to reach the expertise required to maintain and advance the quality of our software.
