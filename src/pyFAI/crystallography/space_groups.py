@@ -496,7 +496,7 @@ class ReflectionCondition:
     @staticmethod
     def group39_Aem2(h, k, l):
         """
-        Space group 39: Aem2 (A-centering).
+        Space group 39: Aem2. A-centering.
         Valid reflections must satisfy:
         - General (hkl):       k + l even
         - 0kl (h=0):           k and l even
@@ -507,16 +507,12 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            if k == 0:
-                return l % 2 == 0         # 00l
-            if l == 0:
-                return k % 2 == 0         # 0k0
-            return k % 2 == 0 and l % 2 == 0  # 0kl
+            return (k == 0 or k % 2 == 0) and (l == 0 or l % 2 == 0)  # covers 00l, 0k0, 0kl
         if k == 0:
-            return l % 2 == 0             # h0l
+            return l % 2 == 0  # covers h0l (including h00 when l=0)
         if l == 0:
-            return k % 2 == 0             # hk0
-        return (k + l) % 2 == 0           # general
+            return k % 2 == 0  # covers hk0 (including 0k0 when h=0)
+        return (k + l) % 2 == 0  # general case
 
 
     @staticmethod
