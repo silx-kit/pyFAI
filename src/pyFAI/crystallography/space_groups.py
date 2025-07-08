@@ -722,24 +722,33 @@ class ReflectionCondition:
         - 0kl (h=0):           l even
         - h0l (k=0):           l even
         - 00l (h=0, k=0):      l even
-        No other conditions.
+        No general condition on hkl.
         validated
         """
         if h == 0 or k == 0:
             return l % 2 == 0
         return True
 
-
     @staticmethod
-    def group50_pnma(h, k, l):
-        """Space group 50: Pnma. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
+    def group50_Pban(h, k, l):
+        """
+        Space group 50: Pban. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        No general condition on hkl.
+        validated
+        """
+        if h == 0 and l != 0: return k % 2 == 0        # 0kl
+        if k == 0 and l != 0: return h % 2 == 0        # h0l
+        if l == 0:           return (h + k) % 2 == 0   # hk0
+        if k == l == 0:      return h % 2 == 0         # h00
+        if h == l == 0:      return k % 2 == 0         # 0k0
         return True
+
 
     @staticmethod
     def group51_pbam(h, k, l):
