@@ -634,15 +634,27 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group45_pcca(h, k, l):
-        """Space group 45: Pcca. (h 0 l): h even; (0 k 0): k even; (h 0 0): h even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
+    def group45_Iba2(h, k, l):
+        """
+        Space group 45: Iba2. I-centering. 
+        Valid reflections must satisfy:
+        - General (hkl):       h + k + l even
+        - 0kl (h=0):           k and l even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == k == 0: return l % 2 == 0  # 00l
+        if h == l == 0: return k % 2 == 0  # 0k0
+        if k == l == 0: return h % 2 == 0  # h00
+        if h == 0: return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0: return h % 2 == 0 and l % 2 == 0  # h0l
+        if l == 0: return (h + k) % 2 == 0           # hk0
+        return (h + k + l) % 2 == 0
+
 
     @staticmethod
     def group46_pbam(h, k, l):
