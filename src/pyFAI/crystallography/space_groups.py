@@ -568,7 +568,6 @@ class ReflectionCondition:
     @staticmethod
     def group42_Fmm2(h, k, l):
         """
-        #TODO check here xrayuilities
         Space group 42: Fmm2. F-centering.
         Valid reflections must satisfy:
         - General (hkl):       h + k, h + l, and k + l even
