@@ -52,7 +52,7 @@ class CalibrantConfig:
     reflections: list = field(default_factory=list)
 
     def __str__(self):
-        out = [f"# Calibrant: {self.description} ({self.name})",
+        out = [f"# Calibrant: {self.description or self.name}"+(f" ({self.name})" if self.description else ""),
                f"# Cell: {self.cell}"+(f" ({self.space_group})" if self.space_group else ""),
                f"# Ref: {self.reference}",
                "",
@@ -111,6 +111,7 @@ class CalibrantConfig:
                     cell = line.split(":")[1].strip()
                 if line.startswith("SPACE GROUP:"):
                     space_group = line.split(":")[1].strip()
+
             return  cls(name=name,
                         filename=filename,
                         cell=cell,

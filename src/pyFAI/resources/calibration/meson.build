@@ -30,7 +30,10 @@ py.install_sources(
     'mock.D',
     'vanadinite.D',
     'lysozyme.D',
-    'quartz.D'],
+    'quartz.D',
+    'diamond.D',
+    'graphite.D',
+    'C60.D'],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/resources/calibration'  # Folder relative to site-packages to install to
 )
