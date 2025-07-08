@@ -578,15 +578,14 @@ class ReflectionCondition:
         - h00 (k=0, l=0):      h even
         - 0k0 (h=0, l=0):      k even
         - 00l (h=0, k=0):      l even
-        validated
-        """
+        validated"""
         if h == k == 0: return l % 2 == 0  # 00l
         if h == l == 0: return k % 2 == 0  # 0k0
         if k == l == 0: return h % 2 == 0  # h00
         if h == 0: return not (k % 2 or l % 2)  # 0kl
         if k == 0: return not (h % 2 or l % 2)  # h0l
         if l == 0: return not (h % 2 or k % 2)  # hk0
-        return not any((h + k) % 2, (h + l) % 2, (k + l) % 2)  # general hkl
+        return (h + k) % 2 == 0 and (h + l) % 2 == 0 and (k + l) % 2 == 0
 
 
     @staticmethod
