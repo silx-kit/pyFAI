@@ -310,7 +310,7 @@ class TestReflection(unittest.TestCase):
          table=numpy.zeros((size, size,size),dtype=bool)
          for i in itertools.product(range(size),range(size), range(size)): table[i]=sg.hkl_allowed(i)
          hdf5[sg.space_group] = table
-    """ 
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -323,7 +323,7 @@ class TestReflection(unittest.TestCase):
         table = numpy.zeros((size, size, size), dtype=bool)
         for i in itertools.product(range(size),range(size), range(size)): table[i]=funct(*i)
         return table
-    
+
 
 
     def test_code(self):
