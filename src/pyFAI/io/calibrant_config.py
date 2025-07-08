@@ -111,12 +111,12 @@ class CalibrantConfig:
                     cell = line.split(":")[1].strip()
                 if line.startswith("SPACE GROUP:"):
                     space_group = line.split(":")[1].strip()
-            return  cls(name,
-                        filename,
-                        cell,
-                        space_group,
-                        reference,
-                        reflections)
+            return  cls(name=name,
+                        filename=filename,
+                        cell=cell,
+                        space_group=space_group,
+                        reference=reference,
+                        reflections=reflections)
         raise ValueError(f"Unable to parse `{filename}` as DIF-file.")
 
     @classmethod
