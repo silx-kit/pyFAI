@@ -682,15 +682,14 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group47_pccn(h, k, l):
-        """Space group 47: Pccn. (h 0 l): h even; (0 k 0): k even; (h 0 0): h even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
+    def group47_Pmmm(h, k, l):
+        """
+        Space group 47: Pmmm. Primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        validated
+        """
         return True
+
 
     @staticmethod
     def group48_pbcn(h, k, l):
