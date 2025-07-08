@@ -742,12 +742,10 @@ class ReflectionCondition:
         No general condition on hkl.
         validated
         """
-        if h == 0 and l != 0: return k % 2 == 0        # 0kl
-        if k == 0 and l != 0: return h % 2 == 0        # h0l
-        if l == 0:           return (h + k) % 2 == 0   # hk0
-        if k == l == 0:      return h % 2 == 0         # h00
-        if h == l == 0:      return k % 2 == 0         # 0k0
-        return True
+        if l == 0: return (h + k) % 2 == 0  # hk0 (includes h00 & 0k0 when l=0)
+        if h == 0: return k % 2 == 0        # 0kl
+        if k == 0: return h % 2 == 0        # h0l
+        return True                         # general case
 
 
     @staticmethod
