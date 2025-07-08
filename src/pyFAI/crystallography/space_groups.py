@@ -636,7 +636,7 @@ class ReflectionCondition:
     @staticmethod
     def group45_Iba2(h, k, l):
         """
-        Space group 45: Iba2. I-centering. 
+        Space group 45: Iba2. I-centering.
         Valid reflections must satisfy:
         - General (hkl):       h + k + l even
         - 0kl (h=0):           k and l even
