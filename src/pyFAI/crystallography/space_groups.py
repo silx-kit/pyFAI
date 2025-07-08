@@ -588,13 +588,27 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group43_pmma(h, k, l):
-        """Space group 43: Pmma. (0 0 l): l even; (0 k 0): k even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
+    def group43_Fdd2(h, k, l):
+        """
+        Space group 43: Fdd2. F-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k, h + l, and k + l even
+        - 0kl (h=0):           k and l even, k + l = 4n
+        - h0l (k=0):           h and l even, h + l = 4n
+        - hk0 (l=0):           h and k even
+        - h00 (k=0, l=0):      h % 4 == 0
+        - 0k0 (h=0, l=0):      k % 4 == 0
+        - 00l (h=0, k=0):      l % 4 == 0
+        validated
+        """
+        if h == k == 0: return l % 4 == 0  # 00l
+        if h == l == 0: return k % 4 == 0  # 0k0
+        if k == l == 0: return h % 4 == 0  # h00
+        if h == 0: return k % 2 == 0 and l % 2 == 0 and (k + l) % 4 == 0  # 0kl
+        if k == 0: return h % 2 == 0 and l % 2 == 0 and (h + l) % 4 == 0  # h0l
+        if l == 0: return h % 2 == 0 and k % 2 == 0  # hk0
+        return (h + k) % 2 == 0 and (h + l) % 2 == 0 and (k + l) % 2 == 0
+
 
     @staticmethod
     def group44_pmna(h, k, l):
