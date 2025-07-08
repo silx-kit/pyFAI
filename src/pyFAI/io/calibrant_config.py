@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/07/2025"
+__date__ = "08/07/2025"
 __status__ = "development"
 __docformat__ = "restructuredtext"
 
@@ -58,7 +58,7 @@ class CalibrantConfig:
                "",
                "# d_spacing  # (h k l)  mult intensity"]
         for ref in self.reflections:
-            if ref.intensity:
+            if ref.intensity is not None:
                 out.append(f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d} {ref.intensity}")
             elif ref.multiplicity:
                 out.append(f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d}")
@@ -140,7 +140,7 @@ class CalibrantConfig:
             if begining and line.startswith("#"):
                 line = line.strip("# \t")
                 if "Calibrant:" in line:
-                    name = line.split(":",1)[1].strip()
+                    name = line.split(":", 1)[1].strip()
                     if "(" in name:
                         idx = name.index("(")
                         self.description = name[:idx].strip()
@@ -150,9 +150,9 @@ class CalibrantConfig:
                         for c in name[idx:]:
                             lname.append(c)
                             if c == "(":
-                                cnt+=1
+                                cnt += 1
                             elif c == ")":
-                                cnt-=1
+                                cnt -= 1
                             if cnt == 0:
                                 break
                         self.name = "".join(lname[1:-1]).strip()
@@ -163,11 +163,11 @@ class CalibrantConfig:
                     self.reference = line.split(":",1)[1].strip()
                     continue
                 elif "Cell:" in line:
-                    cell = line.split(":")[1].strip()
-                    if "(" in cell and ")" in cell:
+                    cell = line.split(":", 1)[1].strip()
+                    if ("(" in cell) and (")" in cell):
                         idx = cell.index("(")
                         self.space_group = cell[idx+1:cell.index(")")].strip()
-                        self.cell = cell[idx]
+                        self.cell = cell[:idx]
                     else:
                         self.cell = cell
                     continue
@@ -177,6 +177,8 @@ class CalibrantConfig:
                 continue
             begining = False
             words = line.split()
+            if not words:
+                continue
             if generic:
                 for word in words:
                     if word.startswith("#"):
@@ -194,7 +196,6 @@ class CalibrantConfig:
                 self.reflections += [Reflection(d_spacing=float(i)) for i in words]
                 generic = True
                 continue
-
             if hash_pos == 1 and generic is False:
                 if words[0].startswith("#"):
                     continue
@@ -213,7 +214,6 @@ class CalibrantConfig:
                     if j.endswith(")"):
                         end_miller = i
                         break
-                # print(" ".join(words[start_miller:end_miller+1]))
                 if start_miller and end_miller:
                     reflection.hkl = Miller.parse(" ".join(words[start_miller:end_miller+1]))
                     if len(words)>end_miller+1:
