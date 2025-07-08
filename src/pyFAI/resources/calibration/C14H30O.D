@@ -1,4 +1,4 @@
-# Calibrant: Tetradecan-1-ol
+# Calibrant: Tetradecan-1-ol (C14H30O)
 # Pseudocrystal a=inf b=inf c=39.681
 # Ref: Brindley, Clays and Clay Minerals, Vol. 29, No. 1, pp. 67-68, 1981.
 39.68100000 # (0,0,1)
