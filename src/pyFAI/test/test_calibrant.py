@@ -310,12 +310,12 @@ class TestReflection(unittest.TestCase):
          table=numpy.zeros((size, size,size),dtype=bool)
          for i in itertools.product(range(size),range(size), range(size)): table[i]=sg.hkl_allowed(i)
          hdf5[sg.space_group] = table
+    """ 
 
-
-    """
     @classmethod
     def setUpClass(cls):
         cls.reflection_file = UtilsTest.getimage("reflection.h5")
+        #print(f"reflection_file: {cls.reflection_file!r}")
 
     @staticmethod
     def build_table( funct, size=10):
@@ -323,6 +323,8 @@ class TestReflection(unittest.TestCase):
         table = numpy.zeros((size, size, size), dtype=bool)
         for i in itertools.product(range(size),range(size), range(size)): table[i]=funct(*i)
         return table
+    
+
 
     def test_code(self):
         "Checks the class has no issue and that validated methods are actually correct !"
