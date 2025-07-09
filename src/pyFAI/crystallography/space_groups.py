@@ -1532,9 +1532,16 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group84_i_42_m(h, k, l):
-        """Space group 84: I-42m. I-centering: (h + k + l) even."""
-        return (h + k + l) % 2 == 0
+    def group84_P42m(h, k, l):
+        """
+        Space group 84: P42/m. Tetragonal.
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0):         l even 
+        validated
+        """
+        if h == 0 and k == 0: return l % 2 == 0
+        return True
+
 
     @staticmethod
     def group85_i_42_d(h, k, l):
