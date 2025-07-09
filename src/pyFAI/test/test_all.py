@@ -165,7 +165,7 @@ def suite():
     testsuite.addTest(test_medfilt_engine.suite())
     testsuite.addTest(test_containers.suite())
     testsuite.addTest(test_io_diffmap_config.suite())
-    testsuite.addTest(test_crystallography())
+    testsuite.addTest(test_crystallography.suite())
     return testsuite
 
 

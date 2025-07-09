@@ -53,14 +53,18 @@ class TestCrystallography(unittest.TestCase):
        0.4939733 , 0.52638373, 0.56874106, 0.62457202, 0.69959768,
        0.80363747]
         c = resolution.Caglioti(1,1e-1,1e-2)
+        str(c)
         self.assertTrue(numpy.allclose(c.sigma(numpy.linspace(0,1,11)), ref))
+        c.fwhm(1)
 
     def test_chernyshov(self):
         ref = [0.44740802, 0.4452937 , 0.43897227, 0.4285082 , 0.41400832,
        0.39562113, 0.37353566, 0.34798047, 0.31922269, 0.28756785,
        0.25336168]
         c = resolution.Chernyshov(1,1e-1,1e-2)
+        str(c)
         self.assertTrue(numpy.allclose(c.sigma(numpy.linspace(0,1,11)), ref))
+        c.fwhm(1)
 
 
 
