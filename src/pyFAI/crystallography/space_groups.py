@@ -921,9 +921,28 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group60_ccca(h, k, l):
-        """Space group 60: Ccca. C-centering: (h + k) even, (k + l) even, (h + l) even."""
-        return (h + k) % 2 == 0 and (k + l) % 2 == 0 and (h + l) % 2 == 0
+    def group60_Pbcn(h, k, l):
+        """
+        Space group 60: Pbcn. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k even
+        - h0l (k=0):           l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on full hkl.
+        validated
+        """
+        if h == 0 and k == 0: return l % 2 == 0         # 00l
+        if h == 0 and l == 0: return k % 2 == 0         # 0k0
+        if k == 0 and l == 0: return h % 2 == 0         # h00
+        if l == 0: return (h + k) % 2 == 0              # hk0
+        if h == 0: return k % 2 == 0                    # 0kl
+        if k == 0: return l % 2 == 0                    # h0l
+        return True
+
+
 
     @staticmethod
     def group61_fmmm(h, k, l):
