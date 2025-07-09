@@ -1622,10 +1622,12 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group89_p4_3_2(h, k, l):
-        """Space group 89: P4_3_2. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
+    def group89_P422(h, k, l):
+        """
+        Space group 89: P422. Tetragonal.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
