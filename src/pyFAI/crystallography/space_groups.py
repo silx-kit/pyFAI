@@ -1448,14 +1448,11 @@ class ReflectionCondition:
         validated
         """
         if (h + k + l) % 2 != 0: return False
-    
         if h == 0:
             return (k + l) % 2 == 0 if k else l % 2 == 0
-        
         if k == 0 and l == 0: return h % 2 == 0
         if l == 0: return (h + k) % 2 == 0
         if h == k: return l % 2 == 0
-        
         return True
 
     @staticmethod
