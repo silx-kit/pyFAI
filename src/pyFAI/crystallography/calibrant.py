@@ -576,3 +576,5 @@ class Calibrant:
     @deprecated(reason="PEP8", replacement="dspacing", since_version="2025.07")
     def dSpacing(self, value):
         self.dspacing.fset(value)
+
+    get_dSpacing = deprecated(dspacing.fget, reason="property", replacement="dspacing", since_version="2025.07")
