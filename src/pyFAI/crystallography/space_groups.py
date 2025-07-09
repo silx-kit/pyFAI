@@ -1597,11 +1597,29 @@ class ReflectionCondition:
         return l % 2 == 0 if h == k else True  # hhl or general
 
     @staticmethod
-    def group88_p4_32_2(h, k, l):
-        """Space group 88: P4_32_2. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
+    def group88_I41a(h, k, l):
+        """
+        Space group 88: I41/a. Body-centered tetragonal (I-centering).
+        Valid reflections must satisfy:
+        - hkl:              h + k + l even
+        - hk0  (l=0):       h, k even
+        - 0kl  (h=0):       k + l even
+        - hhl:              l even
+        - 00l  (h=0, k=0):  l = 4n
+        - h00  (k=0, l=0):  h even
+        - hh0  (k=h, l=0):  h even
+        validated
+        """
+        if (h + k + l) % 2 != 0: return False
+        
+        if h == 0 and k == 0: return l % 4 == 0
+        if h == 0: return (k + l) % 2 == 0
+        if l == 0 and k == 0: return h % 2 == 0
+        if l == 0 and h == k: return h % 2 == 0
+        if l == 0: return h % 2 == 0 and k % 2 == 0
+        if h == k: return l % 2 == 0
         return True
+
 
     @staticmethod
     def group89_p4_3_2(h, k, l):
