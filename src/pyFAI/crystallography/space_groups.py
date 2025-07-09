@@ -1413,7 +1413,7 @@ class ReflectionCondition:
         """
         Space group 77: P42. Primitive tetragonal.
         Valid reflections must satisfy:
-        - 00l:         l = 2n
+        - 00l (h=0, k=0):        l = 2n
         validated
         """
         if h == k == 0:
