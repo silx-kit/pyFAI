@@ -1011,12 +1011,15 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            if k == 0: return l % 2 == 0  # 00l
-            return k % 2 == 0             # 0k0 and 0kl
+            if k == 0:
+                return l % 2 == 0  # 00l
+            return k % 2 == 0  # 0k0 and 0kl
         if k == 0:
-            if l == 0: return h % 2 == 0  # h00
-            return l % 2 == 0             # h0l
-        if l == 0: return h % 2 == 0      # hk0
+            if l == 0:
+                return h % 2 == 0  # h00
+            return l % 2 == 0  # h0l
+        if l == 0:
+            return h % 2 == 0  # hk0
         return True
 
     @staticmethod
@@ -1033,13 +1036,16 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            if k == 0: return l % 2 == 0          # 00l
-            if l == 0: return k % 2 == 0          # 0k0
-            return (k + l) % 2 == 0               # 0kl
-        if k == 0 and l == 0: return h % 2 == 0   # h00
-        if l == 0: return h % 2 == 0              # hk0
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if l == 0:
+            return h % 2 == 0  # hk0
         return True
-
 
     @staticmethod
     def group63_Cmcm(h, k, l):
@@ -1057,16 +1063,17 @@ class ReflectionCondition:
         """
         if (h + k) % 2 != 0:
             return False
-        
+
         if h == 0:
-            if k == 0: return l % 2 == 0  # 00l
-            return k % 2 == 0             # 0k0 and 0kl
-            
+            if k == 0:
+                return l % 2 == 0  # 00l
+            return k % 2 == 0  # 0k0 and 0kl
+
         if k == 0:
-            if l == 0: return h % 2 == 0  # h00
+            if l == 0:
+                return h % 2 == 0  # h00
             return h % 2 == 0 and l % 2 == 0  # h0l
         return True
-
 
     @staticmethod
     def group64_Cmce(h, k, l):
@@ -1086,20 +1093,21 @@ class ReflectionCondition:
             return False  # General condition for all reflections
 
         if h == 0:
-            if k == 0: return l % 2 == 0         # 00l
-            if l == 0: return k % 2 == 0         # 0k0
-            return k % 2 == 0                    # 0kl
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0  # 0kl
 
         if k == 0:
-            if l == 0: return h % 2 == 0         # h00
-            return h % 2 == 0 and l % 2 == 0     # h0l
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
 
         if l == 0:
-            return h % 2 == 0 and k % 2 == 0     # hk0
+            return h % 2 == 0 and k % 2 == 0  # hk0
 
         return True
-
-
 
     @staticmethod
     def group65_Cmmm(h, k, l):
@@ -1115,7 +1123,7 @@ class ReflectionCondition:
         validated
         """
         if (h + k) % 2 != 0:
-            return False  #general
+            return False  # general
         if h == 0:
             return k % 2 == 0  #  0kl, 0k0
         if k == 0:
@@ -1137,14 +1145,12 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            return k % 2 == 0 and l % 2 == 0       # 0kl, 0k0, 00l
+            return k % 2 == 0 and l % 2 == 0  # 0kl, 0k0, 00l
         if k == 0:
-            return h % 2 == 0 and l % 2 == 0       # h0l, h00
+            return h % 2 == 0 and l % 2 == 0  # h0l, h00
         if l == 0:
-            return (h + k) % 2 == 0                # hk0
-        return (h + k) % 2 == 0                    # general hkl
-
-
+            return (h + k) % 2 == 0  # hk0
+        return (h + k) % 2 == 0  # general hkl
 
     @staticmethod
     def group67_Cmme(h, k, l):
@@ -1158,13 +1164,12 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            return k % 2 == 0                      # 0kl, 0k0
+            return k % 2 == 0  # 0kl, 0k0
         if k == 0:
-            return h % 2 == 0                      # h0l, h00
+            return h % 2 == 0  # h0l, h00
         if l == 0:
-            return h % 2 == 0 and k % 2 == 0       # hk0
-        return (h + k) % 2 == 0                    # general hkl
-
+            return h % 2 == 0 and k % 2 == 0  # hk0
+        return (h + k) % 2 == 0  # general hkl
 
     @staticmethod
     def group68_Ccce(h, k, l):
@@ -1181,16 +1186,18 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            if k == 0: return l % 2 == 0           # 00l
-            if l == 0: return k % 2 == 0           # 0k0
-            return k % 2 == 0 and l % 2 == 0       # 0kl
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0 and l % 2 == 0  # 0kl
         if k == 0:
-            if l == 0: return h % 2 == 0           # h00
-            return h % 2 == 0 and l % 2 == 0       # h0l
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
         if l == 0:
-            return h % 2 == 0 and k % 2 == 0       # hk0
-        return (h + k) % 2 == 0                    # general hkl
-
+            return h % 2 == 0 and k % 2 == 0  # hk0
+        return (h + k) % 2 == 0  # general hkl
 
     @staticmethod
     def group69_Fmmm(h, k, l):
@@ -1210,11 +1217,14 @@ class ReflectionCondition:
         if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
             return False
         if h == 0:
-            if k == 0: return l % 2 == 0  # 00l
-            if l == 0: return k % 2 == 0  # 0k0
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
             return k % 2 == 0 and l % 2 == 0  # 0kl
         if k == 0:
-            if l == 0: return h % 2 == 0  # h00
+            if l == 0:
+                return h % 2 == 0  # h00
             return h % 2 == 0 and l % 2 == 0  # h0l
         if l == 0:
             return h % 2 == 0 and k % 2 == 0  # hk0
@@ -1239,19 +1249,21 @@ class ReflectionCondition:
             return False
 
         if h == 0:
-            if k == 0: return l % 4 == 0           # 00l
-            if l == 0: return k % 4 == 0           # 0k0
+            if k == 0:
+                return l % 4 == 0  # 00l
+            if l == 0:
+                return k % 4 == 0  # 0k0
             return (k + l) % 4 == 0 and k % 2 == 0 and l % 2 == 0  # 0kl
 
         if k == 0:
-            if l == 0: return h % 4 == 0           # h00
+            if l == 0:
+                return h % 4 == 0  # h00
             return (h + l) % 4 == 0 and h % 2 == 0 and l % 2 == 0  # h0l
 
         if l == 0:
             return (h + k) % 4 == 0 and h % 2 == 0 and k % 2 == 0  # hk0
 
-        return True 
-
+        return True
 
     @staticmethod
     def group71_i4(h, k, l):
