@@ -1323,9 +1323,36 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group73_p_4(h, k, l):
-        """Space group 73: P-4. No systematic absences."""
+    def group73_Ibca(h, k, l):
+        """
+        Space group 73: Ibca. Body-centered lattice (I-centering).
+        Valid reflections must satisfy:
+        - hkl:         h + k + l even
+        - 0kl:         k, l even
+        - h0l:         h, l even
+        - hk0:         h, k even
+        - h00:         h even
+        - 0k0:         k even
+        - 00l:         l even
+        validated
+        """
+        if (h + k + l) % 2 != 0:
+            return False  # general
+
+        if h == 0:
+            if k == 0: return l % 2 == 0           # 00l
+            if l == 0: return k % 2 == 0           # 0k0
+            return k % 2 == 0 and l % 2 == 0       # 0kl
+
+        if k == 0:
+            if l == 0: return h % 2 == 0           # h00
+            return h % 2 == 0 and l % 2 == 0       # h0l
+
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0       # hk0
+
         return True
+
 
     @staticmethod
     def group74_i_4(h, k, l):
