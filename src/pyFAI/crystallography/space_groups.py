@@ -1544,12 +1544,18 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group85_i_42_d(h, k, l):
-        """Space group 85: I-42d. I-centering: (h + k + l) even; (0, 0, l): l = 4n."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 4 == 0
+    def group85_P4n(h, k, l):
+        """
+        Space group 85: P4/n. Tetragonal.
+        Valid reflections must satisfy:
+        - hk0 (l=0):         h + k even
+        - h00 (k=0, l=0):     h even 
+        validated
+        """
+        if l == 0:
+            if k == 0:
+                return h % 2 == 0  # h00
+            return (h + k) % 2 == 0  # hk0
         return True
 
     @staticmethod
