@@ -1306,7 +1306,7 @@ class ReflectionCondition:
         validated
         """
         if (h + k + l) % 2 != 0:
-            return False  # body centering condition
+            return False  # general
 
         if h == 0:
             if k == 0: return l % 2 == 0           # 00l
