@@ -1042,9 +1042,33 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group63_immm(h, k, l):
-        """Space group 63: Immm. I-centering: (h + k + l) even."""
-        return (h + k + l) % 2 == 0
+    def group63_Cmcm(h, k, l):
+        """
+        Space group 63: Cmcm. C-centering.
+        Valid reflections must satisfy:
+        - general hkl:         h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if (h + k) % 2 != 0:
+            return False  # Applies to general hkl and hk0
+
+        if h == 0:
+            if k == 0: return l % 2 == 0         # 00l
+            if l == 0: return k % 2 == 0         # 0k0
+            return k % 2 == 0                    # 0kl
+
+        if k == 0:
+            if l == 0: return h % 2 == 0         # h00
+            return h % 2 == 0 and l % 2 == 0     # h0l
+
+        return True
+
 
     @staticmethod
     def group64_ibam(h, k, l):
