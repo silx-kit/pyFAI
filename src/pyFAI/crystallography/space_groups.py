@@ -1409,9 +1409,17 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group77_p4_n(h, k, l):
-        """Space group 77: P4/n. (h + k) even."""
-        return (h + k) % 2 == 0
+    def group77_P42(h, k, l):
+        """
+        Space group 77: P42. Primitive tetragonal.
+        Valid reflections must satisfy:
+        - 00l:         l = 2n
+        validated
+        """
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        return True
+
 
     @staticmethod
     def group78_p42_n(h, k, l):
