@@ -1220,13 +1220,38 @@ class ReflectionCondition:
             return h % 2 == 0 and k % 2 == 0  # hk0
         return True
 
-
     @staticmethod
-    def group70_p43(h, k, l):
-        """Space group 70: P43. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
-        return True
+    def group70_Fddd(h, k, l):
+        """
+        Space group 70: Fddd. F-centering.
+        Valid reflections must satisfy:
+        - hkl:     h + k, h + l, k + l even
+        - 0kl:     k + l = 4n, k, l even
+        - h0l:     h + l = 4n, h, l even
+        - hk0:     h + k = 4n, h, k even
+        - h00:     h = 4n
+        - 0k0:     k = 4n
+        - 00l:     l = 4n
+        validated
+        """
+        # general
+        if (h + k) % 2 or (h + l) % 2 or (k + l) % 2:
+            return False
+
+        if h == 0:
+            if k == 0: return l % 4 == 0           # 00l
+            if l == 0: return k % 4 == 0           # 0k0
+            return (k + l) % 4 == 0 and k % 2 == 0 and l % 2 == 0  # 0kl
+
+        if k == 0:
+            if l == 0: return h % 4 == 0           # h00
+            return (h + l) % 4 == 0 and h % 2 == 0 and l % 2 == 0  # h0l
+
+        if l == 0:
+            return (h + k) % 4 == 0 and h % 2 == 0 and k % 2 == 0  # hk0
+
+        return True 
+
 
     @staticmethod
     def group71_i4(h, k, l):
