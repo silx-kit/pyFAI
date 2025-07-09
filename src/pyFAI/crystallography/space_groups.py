@@ -1384,8 +1384,7 @@ class ReflectionCondition:
             return h % 2 == 0 and k % 2 == 0       # hk0
 
         return True
-
-
+    
     @staticmethod
     def group75_P4(h, k, l):
         """
@@ -1395,12 +1394,19 @@ class ReflectionCondition:
         """
         return True
 
+
     @staticmethod
-    def group76_p42_m(h, k, l):
-        """Space group 76: P42/m. (0, 0, l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group76_P41(h, k, l):
+        """
+        Space group 76: P41. Primitive tetragonal.
+        Valid reflections must satisfy:
+        - 00l:         l = 4n
+        validated
+        """
+        if h == k == 0:
+            return l % 4 == 0  # 00l
         return True
+
 
     @staticmethod
     def group77_p4_n(h, k, l):
