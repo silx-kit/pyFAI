@@ -1296,13 +1296,13 @@ class ReflectionCondition:
         """
         Space group 72: Ibam. Body-centered lattice (I-centering).
         Valid reflections must satisfy:
-        - hkl:         h + k + l = 2n
-        - 0kl:         k, l even
-        - h0l:         h, l even
-        - hk0:         h + k even
-        - h00:         h even
-        - 0k0:         k even
-        - 00l:         l even
+        - general hkl:         h + k + l even
+        - 0kl (h=0):           k, l even
+        - h0l (k=0):           h, l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
         validated
         """
         if (h + k + l) % 2 != 0:
