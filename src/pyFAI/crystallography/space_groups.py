@@ -1435,9 +1435,28 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group79_i4_m(h, k, l):
-        """Space group 79: I4/m. I-centering: (h + k + l) even.validated"""
-        return (h + k + l) % 2 == 0
+    def group79_I4(h, k, l):
+        """
+        Space group 79: I4. Body-centered tetragonal (I-centering).
+        Valid reflections must satisfy:
+        - hkl:         h + k + l = 2n
+        - hk0:         h + k = 2n
+        - 0kl:         k + l = 2n
+        - hhl:         l even
+        - 00l:         l even
+        - h00:         h even
+        validated
+        """
+        if (h + k + l) % 2 != 0: return False
+    
+        if h == 0:
+            return (k + l) % 2 == 0 if k else l % 2 == 0
+        
+        if k == 0 and l == 0: return h % 2 == 0
+        if l == 0: return (h + k) % 2 == 0
+        if h == k: return l % 2 == 0
+        
+        return True
 
     @staticmethod
     def group80_i41_a(h, k, l):
