@@ -1493,7 +1493,7 @@ class ReflectionCondition:
     @staticmethod
     def group81_P_4(h, k, l):
         """
-        Space group 81: P4̅ (P four bar). 
+        Space group 81: P4̅ (P four bar).
         No systematic absences.
         validated
         """
@@ -1512,14 +1512,15 @@ class ReflectionCondition:
         - h00 (k=0, l=0): h even
         validated
         """
-        if (h + k + l) % 2: return False
-        
+        if (h + k + l) % 2:
+            return False
+
         if h == 0:
             return (k + l) % 2 == 0 if k else l % 2 == 0  # 0kl or 00l
-        
+
         if l == 0:
             return (h + k) % 2 == 0 if k else h % 2 == 0  # hk0 or h00
-        
+
         return l % 2 == 0 if h == k else True  # hhl or general
 
     @staticmethod
@@ -1536,12 +1537,12 @@ class ReflectionCondition:
         """
         Space group 84: P42/m. Tetragonal.
         Valid reflections must satisfy:
-        - 00l (h=0, k=0):         l even 
+        - 00l (h=0, k=0):         l even
         validated
         """
-        if h == 0 and k == 0: return l % 2 == 0
+        if h == 0 and k == 0:
+            return l % 2 == 0
         return True
-
 
     @staticmethod
     def group85_P4n(h, k, l):
@@ -1549,7 +1550,7 @@ class ReflectionCondition:
         Space group 85: P4/n. Tetragonal.
         Valid reflections must satisfy:
         - hk0 (l=0):         h + k even
-        - h00 (k=0, l=0):    h even 
+        - h00 (k=0, l=0):    h even
         validated
         """
         if l == 0:
@@ -1571,9 +1572,9 @@ class ReflectionCondition:
         if l == 0:
             return (h + k) % 2 == 0  # hk0
         if h == 0 and k == 0:
-            return l % 2 == 0        # 00l
+            return l % 2 == 0  # 00l
         if k == 0 and l == 0:
-            return h % 2 == 0        # h00
+            return h % 2 == 0  # h00
         return True
 
     @staticmethod
@@ -1589,11 +1590,14 @@ class ReflectionCondition:
         - h00  (k=0, l=0):  h even
         validated
         """
-        if (h + k + l) % 2: return False
+        if (h + k + l) % 2:
+            return False
         if h == 0:
             return (k + l) % 2 == 0 if k else l % 2 == 0  # 0kl or 00l
-        if k == 0 and l == 0: return h % 2 == 0  # h00
-        if l == 0: return (h + k) % 2 == 0  # hk0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
         return l % 2 == 0 if h == k else True  # hhl or general
 
     @staticmethod
@@ -1610,16 +1614,22 @@ class ReflectionCondition:
         - hh0  (k=h, l=0):  h even
         validated
         """
-        if (h + k + l) % 2 != 0: return False
-        
-        if h == 0 and k == 0: return l % 4 == 0
-        if h == 0: return (k + l) % 2 == 0
-        if l == 0 and k == 0: return h % 2 == 0
-        if l == 0 and h == k: return h % 2 == 0
-        if l == 0: return h % 2 == 0 and k % 2 == 0
-        if h == k: return l % 2 == 0
-        return True
+        if (h + k + l) % 2 != 0:
+            return False
 
+        if h == 0 and k == 0:
+            return l % 4 == 0
+        if h == 0:
+            return (k + l) % 2 == 0
+        if l == 0 and k == 0:
+            return h % 2 == 0
+        if l == 0 and h == k:
+            return h % 2 == 0
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0
+        if h == k:
+            return l % 2 == 0
+        return True
 
     @staticmethod
     def group89_P422(h, k, l):
@@ -1633,7 +1643,7 @@ class ReflectionCondition:
     @staticmethod
     def group90_P4212(h, k, l):
         """
-        #TODO: Why does this fail? 
+        #TODO: Why does this fail?
         Space group 90: P4212. Tetragonal.
         Valid reflections must satisfy:
         - h00  (k=0, l=0):  h even
@@ -1642,7 +1652,6 @@ class ReflectionCondition:
         if k == 0 and l == 0:  # h00
             return h % 2 == 0
         return True
-        
 
     @staticmethod
     def group91_p4_12_2(h, k, l):
