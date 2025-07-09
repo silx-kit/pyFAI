@@ -1336,8 +1336,8 @@ class ReflectionCondition:
         - 00l:         l even
         validated
         """
-        if (h + k + l) % 2 != 0:
-            return False  # general
+        if (h + k + l) % 2 != 0:  # general
+            return False  
 
         if h == 0:
             if k == 0: return l % 2 == 0           # 00l
@@ -1368,8 +1368,8 @@ class ReflectionCondition:
         - 00l:         l even
         validated
         """
-        if (h + k + l) % 2 != 0:
-            return False  # I-centering
+        if (h + k + l) % 2 != 0: # general
+            return False  
 
         if h == 0:
             if k == 0: return l % 2 == 0           # 00l
