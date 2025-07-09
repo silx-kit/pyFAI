@@ -1270,13 +1270,13 @@ class ReflectionCondition:
         """
         Space group 71: Immm. Body-centered lattice (I-centering).
         Valid reflections must satisfy:
-        - hkl:     h + k, h + l, k + l even
-        - 0kl:     k + l = 4n, k, l even
-        - h0l:     h + l = 4n, h, l even
-        - hk0:     h + k = 4n, h, k even
-        - h00:     h = 4n
-        - 0k0:     k = 4n
-        - 00l:     l = 4n
+        - general hkl:         h + k, h + l, k + l even
+        - 0kl (h=0):           k + l = 4n, k, l even
+        - h0l (k=0):           h + l = 4n, h, l even
+        - hk0 (l=0):           h + k = 4n, h, k even
+        - h00 (k=0, l=0):      h = 4n
+        - 0k0 (h=0, l=0):      k = 4n
+        - 00l (h=0, k=0):      l = 4n
         validated
         """
         if h == 0:
