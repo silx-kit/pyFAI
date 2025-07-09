@@ -1523,9 +1523,13 @@ class ReflectionCondition:
         return l % 2 == 0 if h == k else True  # hhl or general
 
     @staticmethod
-    def group83_p_42_n(h, k, l):
-        """Space group 83: P-42n. (h + k) even."""
-        return (h + k) % 2 == 0
+    def group83_P4m(h, k, l):
+        """
+        Space group 83: P4/m. Tetragonal.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
+        return True
 
     @staticmethod
     def group84_i_42_m(h, k, l):
