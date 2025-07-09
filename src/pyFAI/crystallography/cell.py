@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/07/2025"
+__date__ = "09/07/2025"
 __status__ = "production"
 
 import os
@@ -309,10 +309,10 @@ class Cell:
             invd2 /= (self.volume) ** 2
         return sqrt(1 / invd2)
 
-    def d_spacing(self, dmin=1.0):
+    def calculate_dspacing(self, dmin=1.0):
         """Calculate all d-spacing down to dmin
 
-        applies selection rules
+        Applies registered selection rules
 
         :param dmin: minimum value of spacing requested
         :return: dict d-spacing as string, list of tuple with Miller indices
@@ -363,7 +363,7 @@ class Cell:
             f.write(f"# Cell: {self}{os.linesep}")
             if doi:
                 f.write(f"# Ref: {doi}{os.linesep}")
-            d = self.d_spacing(dmin)
+            d = self.calculate_dspacing(dmin)
             ds = [i[0] for i in d.values()]
             ds.sort(reverse=True)
             for k in ds:
@@ -378,7 +378,7 @@ class Cell:
         """
         from .calibrant import Calibrant  # lazy loading to prevent cyclic imports
 
-        d = self.d_spacing(dmin)
+        d = self.calculate_dspacing(dmin)
         ds = [i[0] for i in d.values()]
         ds.sort(reverse=True)
         calibrant = Calibrant(dSpacing=ds)

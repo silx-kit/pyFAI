@@ -133,7 +133,6 @@ class TestCalibrant(unittest.TestCase):
         c1 = get_calibrant("LaB6")
         c2 = get_calibrant("LaB6")
         self.assertIsNot(c1, c2)
-        self.assertEqual(c1, c2)
 
     def test_same(self):
         c1 = get_calibrant("LaB6")
@@ -143,8 +142,8 @@ class TestCalibrant(unittest.TestCase):
     def test_same2(self):
         c1 = get_calibrant("LaB6")
         c2 = get_calibrant("LaB6")
-        c1.set_wavelength(1e-10)
-        c2.set_wavelength(1e-10)
+        c1.set_wavelength(1e-10)  # -> deprecation
+        c2.wavelength = 1e-10
         self.assertEqual(c1, c2)
 
     def test_not_same_dspace(self):
@@ -223,12 +222,12 @@ class TestCell(unittest.TestCase):
 
     def test_dspacing(self):
         c = Cell.cubic(1)
-        cd = c.d_spacing(0.1)
+        cd = c.calculate_dspacing(0.1)
         cds = list(cd.keys())
         cds.sort()
 
         t = Cell()
-        td = t.d_spacing(0.1)
+        td = t.calculate_dspacing(0.1)
         tds = list(td.keys())
         tds.sort()
 
@@ -241,18 +240,18 @@ class TestCell(unittest.TestCase):
         a = 4.242
         href = "A.F. Schuch and R.L. Mills, Phys. Rev. Lett., 1961, 6, 596."
         he = Cell.cubic(a)
-        self.assertTrue(len(he.d_spacing(1)) == 15, msg="got 15 lines for He")
+        self.assertTrue(len(he.calculate_dspacing(1)) == 15, msg="got 15 lines for He")
         he.save("He", "Helium", href, 1.0, UtilsTest.tempdir)
         calibrant = he.to_calibrant(dmin=1.0)
         self.assertTrue(isinstance(calibrant, Calibrant))
-        self.assertEqual(len(calibrant.dSpacing), 15)
+        self.assertEqual(len(calibrant.dspacing), 15)
 
     def test_hydrogen(self):
         # self.skipTest("Not working")
         href = "DOI: 10.1126/science.239.4844.1131"
         h = Cell.hexagonal(2.6590, 4.3340)
         self.assertAlmostEqual(h.volume, 26.537, places=3, msg="Volume for H cell is correct")
-        self.assertTrue(len(h.d_spacing(1)) == 14, msg="got 14 lines for H")
+        self.assertTrue(len(h.calculate_dspacing(1)) == 14, msg="got 14 lines for H")
         h.save("H", "Hydrogen", href, 1.0, UtilsTest.tempdir)
         calibrant = Calibrant.from_cell(h)
         self.assertEqual(len(calibrant.dSpacing), 14)
