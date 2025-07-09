@@ -1056,17 +1056,15 @@ class ReflectionCondition:
         validated
         """
         if (h + k) % 2 != 0:
-            return False  # Applies to general hkl and hk0
-
+            return False
+        
         if h == 0:
-            if k == 0: return l % 2 == 0         # 00l
-            if l == 0: return k % 2 == 0         # 0k0
-            return k % 2 == 0                    # 0kl
-
+            if k == 0: return l % 2 == 0  # 00l
+            return k % 2 == 0             # 0k0 and 0kl
+            
         if k == 0:
-            if l == 0: return h % 2 == 0         # h00
-            return h % 2 == 0 and l % 2 == 0     # h0l
-
+            if l == 0: return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
         return True
 
 
