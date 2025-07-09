@@ -55,7 +55,7 @@ class ReflectionCondition:
     """
 
     @staticmethod
-    def group1_p1(h, k, l):
+    def group1_P1(h, k, l):
         """Space group 1: P1. No systematic absences. validated"""
         return True
 
