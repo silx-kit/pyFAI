@@ -1147,9 +1147,24 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group67_p4(h, k, l):
-        """Space group 67: P4. No systematic absences."""
-        return True
+    def group67_Cmme(h, k, l):
+        """
+        Space group 67: Cmme. C-centered lattice.
+        Valid reflections must satisfy:
+        - general hkl:         h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - hk0 (l=0):           h, k even
+        validated
+        """
+        if h == 0:
+            return k % 2 == 0                      # 0kl, 0k0
+        if k == 0:
+            return h % 2 == 0                      # h0l, h00
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0       # hk0
+        return (h + k) % 2 == 0                    # general hkl
+
 
     @staticmethod
     def group68_p41(h, k, l):
