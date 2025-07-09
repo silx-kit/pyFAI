@@ -10,6 +10,7 @@ py.install_sources(
     'test_bug_regression.py',
     'test_calibrant.py',
     'test_convolution.py',
+    'test_crystallography.py',
     'test_csr.py',
     'test_detector.py',
     'test_distortion.py',
