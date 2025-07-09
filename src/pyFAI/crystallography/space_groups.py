@@ -997,9 +997,27 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group61_fmmm(h, k, l):
-        """Space group 61: Fmmm. F-centering: h, k, l all even or all odd."""
-        return h % 2 == k % 2 == l % 2
+    def group61_Pbca(h, k, l):
+        """
+        Space group 61: Pbca. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k even
+        - h0l (k=0):           l even
+        - hk0 (l=0):           h even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if h == 0:
+            if k == 0: return l % 2 == 0  # 00l
+            return k % 2 == 0             # 0k0 and 0kl
+        if k == 0:
+            if l == 0: return h % 2 == 0  # h00
+            return l % 2 == 0             # h0l
+        if l == 0: return h % 2 == 0      # hk0
+        return True
 
     @staticmethod
     def group62_fddd(h, k, l):
