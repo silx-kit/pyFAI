@@ -864,9 +864,24 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group57_pmmm(h, k, l):
-        """Space group 57: Pmmm. No systematic absences."""
+    def group57_Pbcm(h, k, l):
+        """
+        Space group 57: Pbcm. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k even
+        - h0l (k=0):           l even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if h == 0:
+            if k == 0: return l % 2 == 0               # 00l
+            if l == 0: return k % 2 == 0               # 0k0
+            return k % 2 == 0                          # 0kl
+        if k == 0: return l % 2 == 0                   # h0l
         return True
+
 
     @staticmethod
     def group58_pnnn(h, k, l):
