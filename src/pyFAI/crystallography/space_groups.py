@@ -1387,8 +1387,12 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group75_p4_m(h, k, l):
-        """Space group 75: P4/m. No systematic absences.validated"""
+    def group75_P4(h, k, l):
+        """
+        Space group 75: P4. Primitive tetragonal.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
