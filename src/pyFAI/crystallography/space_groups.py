@@ -1102,16 +1102,27 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group65_ibca(h, k, l):
-        """Space group 65: Ibca. I-centering: (h + k + l) even; (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
+    def group65_Cmmm(h, k, l):
+        """
+        Space group 65: Cmmm. C-centering.
+        Valid reflections must satisfy:
+        - general hkl:         h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        validated
+        """
+        if (h + k) % 2 != 0:
+            return False  #general
+
+        if h == 0:
+            return k % 2 == 0  #  0kl, 0k0
+
+        if k == 0:
+            return h % 2 == 0  #  h0l, h00
+
         return True
 
     @staticmethod
