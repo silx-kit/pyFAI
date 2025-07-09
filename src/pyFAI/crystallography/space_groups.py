@@ -1020,17 +1020,26 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group62_fddd(h, k, l):
-        """Space group 62: Fddd. F-centering: h, k, l all even or all odd; (h, k, 0): h, k even; (0, k, l): k, l even; (h, 0, l): h, l even."""
-        if not (h % 2 == k % 2 == l % 2):
-            return False
-        if l == 0 and h % 2 != 0:
-            return False
-        if h == 0 and k % 2 != 0:
-            return False
-        if k == 0 and l % 2 != 0:
-            return False
+    def group62_Pnma(h, k, l):
+        """
+        Space group 62: Pnma. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k + l even
+        - hk0 (l=0):           h even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on general hkl.
+        validated
+        """
+        if h == 0:
+            if k == 0: return l % 2 == 0          # 00l
+            if l == 0: return k % 2 == 0          # 0k0
+            return (k + l) % 2 == 0               # 0kl
+        if k == 0 and l == 0: return h % 2 == 0   # h00
+        if l == 0: return h % 2 == 0              # hk0
         return True
+
 
     @staticmethod
     def group63_immm(h, k, l):
