@@ -1,5 +1,5 @@
 # Calibrant: Aluminium (Al)
-# Cell: Cubic cell a=4.0495 b=4.0495 c=4.0495 alpha=90.000 beta=90.000 gamma=90.000  (Fm3m)
+# Cell: Cubic cell a=4.0495 b=4.0495 c=4.0495 alpha=90.000 beta=90.000 gamma=90.000 (Fm3m)
 # Ref: W. Witt, Z. Naturforsch. A, 1967, 22A, 92.
 
 # d_spacing  # (h k l)  mult intensity

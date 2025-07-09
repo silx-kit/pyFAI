@@ -2,7 +2,7 @@
 # Cell: Primitive cubic cell a=4.1568 b=4.1568 c=4.1568 alpha=90.000 beta=90.000 gamma=90.000 (Pm3m)
 # Ref: NIST standard reference material 660c
 
-# d_spacing  # (h k l) mult intensity
+# d_spacing  # (h k l)  mult intensity
   4.15682600 # (1 0 0)     6 64.27
   2.93931985 # (1 1 0)    12 100.0
   2.39994461 # (1 1 1)     8 41.54

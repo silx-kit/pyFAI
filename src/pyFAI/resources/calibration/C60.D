@@ -1,4 +1,4 @@
-# Calibrant:  Buckminsterfullerene (C60)
+# Calibrant: Buckminsterfullerene (C60)
 # Cell: 14.2600  14.2600  14.2600   90.000   90.000   90.000 (Fm3)
 # Ref: Acta Crystallographica A50 (1994) 344-351
 

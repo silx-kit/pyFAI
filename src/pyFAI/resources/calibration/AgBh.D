@@ -2,7 +2,7 @@
 # Cell: Pseudocrystal a=inf b=inf c=58.380
 # Ref: doi:10.1107/S0021889899012388
 
-# d_spacing  # (h k l) mult intensity
+# d_spacing  # (h k l)  mult intensity
  58.38000000 # (0 0 1)
  29.19000000 # (0 0 2)
  19.46000000 # (0 0 3)

@@ -2,7 +2,7 @@
 # Cell: Monoclinic cell a=29.59 b=6.15 c=3.98 beta=95.5 (P21/a)
 # Ref: K.Ohkura, S.Kashino, M.Haisa; Bull.Chem.Soc.Jpn. (1972), 45, 2651
 
-# d_spacing  # (h k l) mult intensity
+# d_spacing  # (h k l)  mult intensity
  14.72690000 # (2 0 0)     2 2551.99
   5.21190000 # (3 1 0)     4 3035.68
   4.72021000 # (4 1 0)     4 15550.7

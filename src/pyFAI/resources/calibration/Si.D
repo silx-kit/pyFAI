@@ -2,8 +2,8 @@
 # Cell: Face centered cubic cell a=5.4312 b=5.4312 c=5.4312 alpha=90.000 beta=90.000 gamma=90.000 (Fd3m)
 # Ref: NIST standard reference material 640c
 
-# d_spacing  # (h k l) mult intensity
-  3.13570166 # (1 1 1)     8 100
+# d_spacing  # (h k l)  mult intensity
+  3.13570166 # (1 1 1)     8 100.0
   1.92021727 # (2 2 0)    12 64.31
   1.63756679 # (3 1 1)    24 37.32
   1.35779865 # (4 0 0)     6 9.58

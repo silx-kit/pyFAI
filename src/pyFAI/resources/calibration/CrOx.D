@@ -1,4 +1,4 @@
-# Calibrant:  Undefined Chromium oxide (CrOx)
+# Calibrant: Undefined Chromium oxide (CrOx)
 # Cell: Undefined Chromium oxide crystals used as calibrant on some MX beamlines at ESRF.
 # Ref: Personal communication from scientist, do not use.
 

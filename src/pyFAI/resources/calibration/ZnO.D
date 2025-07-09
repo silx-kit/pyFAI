@@ -2,7 +2,7 @@
 # Cell: Primitive hexagonal cell a=3.2499 b=3.2499 c=5.2065 alpha=90.000 beta=90.000 gamma=120.000 (P6_3mc)
 # Ref: NIST reference compound SRM 674b
 
-# d_spacing  # (h k l) mult intensity
+# d_spacing  # (h k l)  mult intensity
   2.81449336 # (1 0 0)     6 52.55
   2.60326500 # (0 0 2)     2 39.77
   2.47589774 # (1 0 1)    12 100.0

@@ -2,7 +2,7 @@
 # Cell: Primitive tetragonal cell a=4.5939 b=4.5939 c=2.9589 alpha=90.000 beta=90.000 gamma=90.000 (P4_2/mnm)
 # Ref: NIST reference compound SRM 674b
 
-# d_spacing  # (h k l) mult intensity
+# d_spacing  # (h k l)  mult intensity
   3.24839693 # (1 1 0)     4 100.0
   2.48755278 # (1 0 1)     8 44.82
   2.29696350 # (2 0 0)     4 6.49

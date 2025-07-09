@@ -1,8 +1,8 @@
-# Calibrant:  Fake calibrant (mock)
+# Calibrant: Fake calibrant (mock)
 # Cell: Fake calibrant used
 # Ref: with mock.tif image for tests
 
-# d_spacing  # (h k l) mult intensity
+# d_spacing  # (h k l)  mult intensity
  14.32685417
  11.46279281
   9.55366130

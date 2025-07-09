@@ -1,4 +1,4 @@
-# Calibrant:  Graphite (C)
+# Calibrant: Graphite (C)
 # Cell: 2.4560   2.4560   6.6960   90.000   90.000  120.000 (P6_3mc)
 # Ref: Crystal Structures 1 (1963) 7-83
 

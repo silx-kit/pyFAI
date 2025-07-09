@@ -1,4 +1,4 @@
-# Calibrant:  Diamond (C)
+# Calibrant: Diamond (C)
 # Cell: 3.5668   3.5668   3.5668   90.000   90.000   90.000 (Fd3m)
 # Ref: Crystal Structures 1 (1963) 7-83
 
