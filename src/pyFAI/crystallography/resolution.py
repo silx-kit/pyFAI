@@ -30,6 +30,7 @@
 
 This module contains two classes to calculate the peak width as function of the scattering angle:
 * Caglioti
+* Langford
 * Chernyshov
 
 """
@@ -86,8 +87,30 @@ class Caglioti(_ResolutionFunction):
         :param tth: 2theta value or array in radians
         :return: array of the same shape as tth
         """
-        ttth = numpy.tan(tth)
-        return self.U * ttth**2 + self.V * ttth + self.U
+        t_th = numpy.tan(0.5 * tth)
+        return self.U * t_th**2 + self.V * t_th + self.W
+
+
+
+@dataclass
+class Langford(_ResolutionFunction):
+    """https://doi.org/10.1016/0146-3535(87)90018-9"""
+    A:float
+    B:float
+    C:float
+    D:float
+
+    def __repr__(self):
+        return f"Langford({self.A}, {self.B}, {self.C}, {self.D})"
+
+    def fwhm2(self, tth):
+        """Calculate the full-with at half maximum of the peak(s) squared
+        :param tth: 2theta value or array in radians
+        :return: array of the same shape as tth
+        """
+        stth = numpy.sin(tth)
+        t_th2 = numpy.tan(0.5*tth)**2
+        return self.A + self.B * stth * stth + self.C*t_th2 + self.D/t_th2
 
 
 @dataclass
