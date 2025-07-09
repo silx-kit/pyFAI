@@ -242,7 +242,6 @@ class ReflectionCondition:
             return (h + k) % 2 == 0  # hk0
         return (h + k) % 2 == 0  # general
 
-
     @staticmethod
     def group22_F222(h, k, l):
         """Space group 22: F222. F-centering: h, k, l all even or all odd. validated"""
@@ -285,7 +284,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group27_Pcc2(h, k, l):
-        """ Space group 27: Pcc2.
+        """Space group 27: Pcc2.
         Valid reflections must satisfy:
         - General (hkl):       No condition (unrestricted)
         - 0kl (h=0):           l even
@@ -364,7 +363,7 @@ class ReflectionCondition:
         validated
         """
         if h == 0 and k == 0:  # 00l
-                return l % 2 == 0
+            return l % 2 == 0
         if k == 0:  # Covers both h0l and h00
             if l == 0:  # h00
                 return h % 2 == 0
@@ -373,7 +372,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group32_pba2(h, k, l):
-        """"
+        """ "
         Space group 32: Pba2.
         Valid reflections must satisfy:
         - 0kl (h=0):      k even
@@ -401,9 +400,8 @@ class ReflectionCondition:
         if h == 0:
             return (k + l) % 2 == 0  # Covers 0kl, 0k0, 00l
         if k == 0:
-            return h % 2 == 0              # h0l/h00
+            return h % 2 == 0  # h0l/h00
         return True
-
 
     @staticmethod
     def group34_Pnn2(h, k, l):
@@ -433,7 +431,6 @@ class ReflectionCondition:
         if h == 0 or k == 0:
             return (h + k) % 2 == 0
         return (h + k) % 2 == 0
-
 
     @staticmethod
     def group36_Cmc21(h, k, l):
@@ -492,7 +489,6 @@ class ReflectionCondition:
             return k % 2 == 0  # hk0 (includes 0k0 when h=0)
         return (k + l) % 2 == 0  # general and 0kl
 
-
     @staticmethod
     def group39_Aem2(h, k, l):
         """
@@ -507,13 +503,14 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            return (k == 0 or k % 2 == 0) and (l == 0 or l % 2 == 0)  # covers 00l, 0k0, 0kl
+            return (k == 0 or k % 2 == 0) and (
+                l == 0 or l % 2 == 0
+            )  # covers 00l, 0k0, 0kl
         if k == 0:
             return l % 2 == 0  # covers h0l (including h00 when l=0)
         if l == 0:
             return k % 2 == 0  # covers hk0 (including 0k0 when h=0)
         return (k + l) % 2 == 0  # general case
-
 
     @staticmethod
     def group40_Ama2(h, k, l):
@@ -530,13 +527,14 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            if k == 0: return l % 2 == 0
-            if l == 0: return k % 2 == 0
+            if k == 0:
+                return l % 2 == 0
+            if l == 0:
+                return k % 2 == 0
             return (k + l) % 2 == 0
         if k == 0:
             return h % 2 == 0 and (l == 0 or l % 2 == 0)
         return k % 2 == 0 if l == 0 else (k + l) % 2 == 0
-
 
     @staticmethod
     def group41_Aea2(h, k, l):
@@ -578,14 +576,19 @@ class ReflectionCondition:
         - 0k0 (h=0, l=0):      k even
         - 00l (h=0, k=0):      l even
         validated"""
-        if h == k == 0: return l % 2 == 0  # 00l
-        if h == l == 0: return k % 2 == 0  # 0k0
-        if k == l == 0: return h % 2 == 0  # h00
-        if h == 0: return not (k % 2 or l % 2)  # 0kl
-        if k == 0: return not (h % 2 or l % 2)  # h0l
-        if l == 0: return not (h % 2 or k % 2)  # hk0
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if h == l == 0:
+            return k % 2 == 0  # 0k0
+        if k == l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return not (k % 2 or l % 2)  # 0kl
+        if k == 0:
+            return not (h % 2 or l % 2)  # h0l
+        if l == 0:
+            return not (h % 2 or k % 2)  # hk0
         return (h + k) % 2 == 0 and (h + l) % 2 == 0 and (k + l) % 2 == 0
-
 
     @staticmethod
     def group43_Fdd2(h, k, l):
@@ -601,14 +604,19 @@ class ReflectionCondition:
         - 00l (h=0, k=0):      l % 4 == 0
         validated
         """
-        if h == k == 0: return l % 4 == 0  # 00l
-        if h == l == 0: return k % 4 == 0  # 0k0
-        if k == l == 0: return h % 4 == 0  # h00
-        if h == 0: return k % 2 == 0 and l % 2 == 0 and (k + l) % 4 == 0  # 0kl
-        if k == 0: return h % 2 == 0 and l % 2 == 0 and (h + l) % 4 == 0  # h0l
-        if l == 0: return h % 2 == 0 and k % 2 == 0  # hk0
+        if h == k == 0:
+            return l % 4 == 0  # 00l
+        if h == l == 0:
+            return k % 4 == 0  # 0k0
+        if k == l == 0:
+            return h % 4 == 0  # h00
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0 and (k + l) % 4 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0 and (h + l) % 4 == 0  # h0l
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0  # hk0
         return (h + k) % 2 == 0 and (h + l) % 2 == 0 and (k + l) % 2 == 0
-
 
     @staticmethod
     def group44_Imm2(h, k, l):
@@ -624,14 +632,19 @@ class ReflectionCondition:
         - 00l (h=0, k=0):      l even
         validated
         """
-        if h == k == 0: return l % 2 == 0  # 00l
-        if h == l == 0: return k % 2 == 0  # 0k0
-        if k == l == 0: return h % 2 == 0  # h00
-        if h == 0: return (k + l) % 2 == 0  # 0kl
-        if k == 0: return (h + l) % 2 == 0  # h0l
-        if l == 0: return (h + k) % 2 == 0  # hk0
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if h == l == 0:
+            return k % 2 == 0  # 0k0
+        if k == l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
         return (h + k + l) % 2 == 0  # general hkl
-
 
     @staticmethod
     def group45_Iba2(h, k, l):
@@ -647,14 +660,19 @@ class ReflectionCondition:
         - 00l (h=0, k=0):      l even
         validated
         """
-        if h == k == 0: return l % 2 == 0  # 00l
-        if h == l == 0: return k % 2 == 0  # 0k0
-        if k == l == 0: return h % 2 == 0  # h00
-        if h == 0: return k % 2 == 0 and l % 2 == 0  # 0kl
-        if k == 0: return h % 2 == 0 and l % 2 == 0  # h0l
-        if l == 0: return (h + k) % 2 == 0           # hk0
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if h == l == 0:
+            return k % 2 == 0  # 0k0
+        if k == l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
         return (h + k + l) % 2 == 0
-
 
     @staticmethod
     def group46_Ima2(h, k, l):
@@ -670,16 +688,21 @@ class ReflectionCondition:
         - 00l (h=0, k=0):      l even
         validated
         """
-        if h == k == 0: return l % 2 == 0  # 00l
-        if h == l == 0: return k % 2 == 0  # 0k0
-        if k == l == 0: return h % 2 == 0  # h00
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if h == l == 0:
+            return k % 2 == 0  # 0k0
+        if k == l == 0:
+            return h % 2 == 0  # h00
 
-        if h == 0: return (k + l) % 2 == 0         # 0kl
-        if k == 0: return h % 2 == 0 and l % 2 == 0  # h0l
-        if l == 0: return (h + k) % 2 == 0         # hk0
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
 
         return (h + k + l) % 2 == 0  # General
-
 
     @staticmethod
     def group47_Pmmm(h, k, l):
@@ -689,7 +712,6 @@ class ReflectionCondition:
         validated
         """
         return True
-
 
     @staticmethod
     def group48_Pnnn(h, k, l):
@@ -705,14 +727,19 @@ class ReflectionCondition:
         No general condition on hkl.
         validated
         """
-        if h == k == 0: return l % 2 == 0  # 00l
-        if h == l == 0: return k % 2 == 0  # 0k0
-        if k == l == 0: return h % 2 == 0  # h00
-        if h == 0:      return (k + l) % 2 == 0  # 0kl
-        if k == 0:      return (h + l) % 2 == 0  # h0l
-        if l == 0:      return (h + k) % 2 == 0  # hk0
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if h == l == 0:
+            return k % 2 == 0  # 0k0
+        if k == l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
         return True
-
 
     @staticmethod
     def group49_Pccm(h, k, l):
@@ -742,11 +769,13 @@ class ReflectionCondition:
         No general condition on hkl.
         validated
         """
-        if l == 0: return (h + k) % 2 == 0  # hk0 (includes h00 & 0k0 when l=0)
-        if h == 0: return k % 2 == 0        # 0kl
-        if k == 0: return h % 2 == 0        # h0l
-        return True                         # general case
-
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0 (includes h00 & 0k0 when l=0)
+        if h == 0:
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0  # h0l
+        return True  # general case
 
     @staticmethod
     def group51_Pmma(h, k, l):
@@ -758,9 +787,9 @@ class ReflectionCondition:
         No general condition on hkl.
         validated
         """
-        if l == 0: return h % 2 == 0           # hk0 (includes h00 when k=0)
-        return True                            # general
-
+        if l == 0:
+            return h % 2 == 0  # hk0 (includes h00 when k=0)
+        return True  # general
 
     @staticmethod
     def group52_Pnna(h, k, l):
@@ -776,12 +805,18 @@ class ReflectionCondition:
         No general condition on hkl.
         validated
         """
-        if h == 0 and k == 0: return l % 2 == 0        # 00l
-        if h == 0 and l == 0: return k % 2 == 0        # 0k0
-        if k == 0 and l == 0: return h % 2 == 0        # h00
-        if h == 0: return (k + l) % 2 == 0             # 0kl
-        if k == 0: return (h + l) % 2 == 0             # h0l
-        if l == 0: return h % 2 == 0                   # hk0
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
+        if l == 0:
+            return h % 2 == 0  # hk0
         return True
 
     @staticmethod
@@ -821,7 +856,6 @@ class ReflectionCondition:
             return l % 2 == 0
         return True
 
-
     @staticmethod
     def group55_Pbam(h, k, l):
         """
@@ -840,7 +874,6 @@ class ReflectionCondition:
             return h % 2 == 0  # Covers h00 and h0l
         return True
 
-
     @staticmethod
     def group56_Pccn(h, k, l):
         """
@@ -855,12 +888,18 @@ class ReflectionCondition:
         No general condition on hkl.
         validated
         """
-        if h == 0 and k == 0: return l % 2 == 0        # 00l
-        if h == 0 and l == 0: return k % 2 == 0        # 0k0
-        if k == 0 and l == 0: return h % 2 == 0        # h00
-        if h == 0: return l % 2 == 0                   # 0kl
-        if k == 0: return l % 2 == 0                   # h0l
-        if l == 0: return (h + k) % 2 == 0             # hk0
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return l % 2 == 0  # 0kl
+        if k == 0:
+            return l % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
         return True
 
     @staticmethod
@@ -876,12 +915,14 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            if k == 0: return l % 2 == 0               # 00l
-            if l == 0: return k % 2 == 0               # 0k0
-            return k % 2 == 0                          # 0kl
-        if k == 0: return l % 2 == 0                   # h0l
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return l % 2 == 0  # h0l
         return True
-
 
     @staticmethod
     def group58_Pnnm(h, k, l):
@@ -896,11 +937,16 @@ class ReflectionCondition:
         No general condition on full hkl.
         validated
         """
-        if h == 0 and k == 0: return l % 2 == 0           # 00l
-        if h == 0 and l == 0: return k % 2 == 0           # 0k0
-        if k == 0 and l == 0: return h % 2 == 0           # h00
-        if h == 0: return (k + l) % 2 == 0                # 0kl
-        if k == 0: return (h + l) % 2 == 0                # h0l
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
         return True
 
     @staticmethod
@@ -915,9 +961,11 @@ class ReflectionCondition:
         validated
         """
         if l == 0:
-            if h == 0: return k % 2 == 0  # 0k0
-            if k == 0: return h % 2 == 0  # h00
-            return (h + k) % 2 == 0       # hk0
+            if h == 0:
+                return k % 2 == 0  # 0k0
+            if k == 0:
+                return h % 2 == 0  # h00
+            return (h + k) % 2 == 0  # hk0
         return True
 
     @staticmethod
@@ -934,15 +982,19 @@ class ReflectionCondition:
         No general condition on full hkl.
         validated
         """
-        if h == 0 and k == 0: return l % 2 == 0         # 00l
-        if h == 0 and l == 0: return k % 2 == 0         # 0k0
-        if k == 0 and l == 0: return h % 2 == 0         # h00
-        if l == 0: return (h + k) % 2 == 0              # hk0
-        if h == 0: return k % 2 == 0                    # 0kl
-        if k == 0: return l % 2 == 0                    # h0l
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return l % 2 == 0  # h0l
         return True
-
-
 
     @staticmethod
     def group61_fmmm(h, k, l):
@@ -2130,7 +2182,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group230_ia3d(h, k, l):
-        """Space group 230: Ia-3d. I-centering: (h + k + l) even; (0, 0, l): l divisible by 4. """
+        """Space group 230: Ia-3d. I-centering: (h + k + l) even; (0, 0, l): l divisible by 4."""
         if (h + k + l) % 2 != 0:
             return False
         if h == 0 and k == 0:
