@@ -749,15 +749,18 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group51_pbam(h, k, l):
-        """Space group 51: Pbam. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
+    def group51_Pmma(h, k, l):
+        """
+        Space group 51: Pmma. Primitive lattice.
+        Valid reflections must satisfy:
+        - hk0 (l=0):           h even
+        - h00 (k=0, l=0):      h even
+        No general condition on hkl.
+        validated
+        """
+        if l == 0: return h % 2 == 0           # hk0 (includes h00 when k=0)
+        return True                            # general
+
 
     @staticmethod
     def group52_pccn(h, k, l):
