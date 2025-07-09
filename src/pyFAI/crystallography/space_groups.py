@@ -1149,7 +1149,7 @@ class ReflectionCondition:
     @staticmethod
     def group67_Cmme(h, k, l):
         """
-        Space group 67: Cmme. C-centered lattice.
+        Space group 67: Cmme. C-centering.
         Valid reflections must satisfy:
         - general hkl:         h + k even
         - 0kl (h=0):           k even
@@ -1168,7 +1168,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group68_p41(h, k, l):
-        """Space group 68: P41. (0, 0, l): l = 4n."""
+        """Space group 68: P41. (0, 0, l): l = 4n. validated"""
         if h == 0 and k == 0:
             return l % 4 == 0
         return True
