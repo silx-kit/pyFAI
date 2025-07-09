@@ -763,14 +763,25 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group52_pccn(h, k, l):
-        """Space group 52: Pccn. (h 0 l): h even; (0 k 0): k even; (k 0 0): k even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return k % 2 == 0
+    def group52_Pnna(h, k, l):
+        """
+        Space group 52: Pnna. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k + l even
+        - h0l (k=0):           h + l even
+        - hk0 (l=0):           h even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if h == 0 and k == 0: return l % 2 == 0        # 00l
+        if h == 0 and l == 0: return k % 2 == 0        # 0k0
+        if k == 0 and l == 0: return h % 2 == 0        # h00
+        if h == 0: return (k + l) % 2 == 0             # 0kl
+        if k == 0: return (h + l) % 2 == 0             # h0l
+        if l == 0: return h % 2 == 0                   # hk0
         return True
 
     @staticmethod
