@@ -32,12 +32,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/07/2025"
+__date__ = "09/07/2025"
 
 import unittest
 import itertools
 import logging
 import sys
+import os
 import copy
 import numpy
 import h5py
@@ -47,6 +48,7 @@ from ..calibrant import Calibrant, get_calibrant, Cell, CALIBRANT_FACTORY
 from ..detectors import ALL_DETECTORS
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..crystallography.space_groups import ReflectionCondition
+from ..io.calibrant_config import CalibrantConfig
 
 
 class TestCalibrant(unittest.TestCase):
@@ -178,12 +180,24 @@ class TestCalibrant(unittest.TestCase):
         self.assertTrue(c3 not in store)
         self.assertTrue(c4 not in store)
 
-    def test_all_calibrants(self):
-        """Check that all calibrant from the factory can be instanciated"""
+    def test_all_calibrants_idempotent(self):
+        """Check that all calibrant from the factory can be:
+        * instanciated
+        * parsed without loss of information"""
         for c in CALIBRANT_FACTORY.all:
             print(c, end=": ")
             cal = CALIBRANT_FACTORY(c)
             print(cal)
+            # check for idempotence of the parser ...
+            filename = Calibrant._get_abs_path(CALIBRANT_FACTORY.all[c])
+            with open(filename) as fd:
+                ref = numpy.array([i.strip() for i in fd.readlines()])
+            cal = str(CalibrantConfig.from_dspacing(filename=filename))
+            obt = numpy.array([i.strip() for i in cal.split(os.linesep)])
+            res = ref != obt
+            self.assertFalse(res.any(), f"Non idempotent: `{c}` lines {numpy.where(res)[0]}: {ref[res]} vs {obt[res]}")
+
+
         # raise RuntimeError("plop")
 
 class TestCell(unittest.TestCase):

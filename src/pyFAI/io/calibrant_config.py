@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/07/2025"
+__date__ = "09/07/2025"
 __status__ = "development"
 __docformat__ = "restructuredtext"
 
@@ -40,6 +40,7 @@ import os
 from dataclasses import field
 from ..containers import Reflection, Miller, dataclass
 from typing import Optional
+
 
 @dataclass
 class CalibrantConfig:
@@ -52,16 +53,19 @@ class CalibrantConfig:
     reflections: list = field(default_factory=list)
 
     def __str__(self):
-        out = [f"# Calibrant: {self.description} ({self.name})",
-               f"# Cell: {self.cell}"+(f" ({self.space_group})" if self.space_group else ""),
-               f"# Ref: {self.reference}",
-               "",
-               "# d_spacing  # (h k l)  mult intensity"]
+        out = [
+            f"# Calibrant: {self.description or self.name}" + (f" ({self.name})" if self.description else ""),
+            f"# Cell: {self.cell}" + (f" ({self.space_group})" if self.space_group else ""),
+            f"# Ref: {self.reference}",
+            "",
+            "# d_spacing  # (h k l)  mult intensity"]
         for ref in self.reflections:
-            if ref.intensity:
+            if ref.intensity is not None:
                 out.append(f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d} {ref.intensity}")
             elif ref.multiplicity:
-                out.append(f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d}")
+                out.append(
+                    f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d}"
+                )
             elif ref.hkl:
                 out.append(f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s}")
             else:
@@ -103,7 +107,7 @@ class CalibrantConfig:
                     )
         if reflections:
             reflections.sort(key=lambda r: r.d_spacing, reverse=True)
-            #read the other metadata ...
+            # read the other metadata ...
             name = raw[0]
             reference = raw[2]
             for line in raw:
@@ -111,12 +115,15 @@ class CalibrantConfig:
                     cell = line.split(":")[1].strip()
                 if line.startswith("SPACE GROUP:"):
                     space_group = line.split(":")[1].strip()
-            return  cls(name,
-                        filename,
-                        cell,
-                        space_group,
-                        reference,
-                        reflections)
+
+            return cls(
+                name=name,
+                filename=filename,
+                cell=cell,
+                space_group=space_group,
+                reference=reference,
+                reflections=reflections,
+            )
         raise ValueError(f"Unable to parse `{filename}` as DIF-file.")
 
     @classmethod
@@ -133,27 +140,41 @@ class CalibrantConfig:
         with open(filename) as f:
             for line in f:
                 raw.append(line.strip())
+
+        has_weak_reflection = "weak" in " ".join(raw).lower()
+
         for line in raw:
             if begining and line.startswith("#"):
                 line = line.strip("# \t")
                 if "Calibrant:" in line:
-                    name = line.split(":",1)[1].strip()
+                    name = line.split(":", 1)[1].strip()
                     if "(" in name:
                         idx = name.index("(")
                         self.description = name[:idx].strip()
-                        self.name = name[idx+1: name.index(")")].strip()
+                        # There could be several (): `Vanadinite (Pb5(BO4)3Cl)`
+                        cnt = 0
+                        lname = []
+                        for c in name[idx:]:
+                            lname.append(c)
+                            if c == "(":
+                                cnt += 1
+                            elif c == ")":
+                                cnt -= 1
+                            if cnt == 0:
+                                break
+                        self.name = "".join(lname[1:-1]).strip()
                     else:
                         self.name = name.strip()
                     continue
                 elif "Ref:" in line:
-                    self.reference = line.split(":",1)[1].strip()
+                    self.reference = line.split(":", 1)[1].strip()
                     continue
                 elif "Cell:" in line:
-                    cell = line.split(":")[1].strip()
-                    if "(" in cell and ")" in cell:
+                    cell = line.split(":", 1)[1].strip()
+                    if ("(" in cell) and (")" in cell):
                         idx = cell.index("(")
-                        self.space_group = cell[idx+1:cell.index(")")].strip()
-                        self.cell = cell[idx]
+                        self.space_group = cell[idx + 1 : cell.index(")")].strip()
+                        self.cell = cell[:idx].strip()
                     else:
                         self.cell = cell
                     continue
@@ -163,6 +184,8 @@ class CalibrantConfig:
                 continue
             begining = False
             words = line.split()
+            if not words:
+                continue
             if generic:
                 for word in words:
                     if word.startswith("#"):
@@ -180,11 +203,12 @@ class CalibrantConfig:
                 self.reflections += [Reflection(d_spacing=float(i)) for i in words]
                 generic = True
                 continue
-
             if hash_pos == 1 and generic is False:
                 if words[0].startswith("#"):
                     continue
                 reflection = Reflection(d_spacing=float(words[0]))
+                if has_weak_reflection:
+                    reflection.intensity = 1.0
                 self.reflections.append(reflection)
                 start_miller = end_miller = None
                 for i, j in enumerate(words[2:], start=2):
@@ -197,28 +221,28 @@ class CalibrantConfig:
                     if j.endswith(")"):
                         end_miller = i
                         break
-                # print(" ".join(words[start_miller:end_miller+1]))
                 if start_miller and end_miller:
-                    reflection.hkl = Miller.parse(" ".join(words[start_miller:end_miller+1]))
-                    if len(words)>end_miller+1:
-                        mult = words[end_miller+1]
+                    reflection.hkl = Miller.parse(" ".join(words[start_miller : end_miller + 1]))
+                    if len(words) > end_miller + 1:
+                        mult = words[end_miller + 1]
                         if mult.startswith("#"):
                             continue
                         elif mult.isdecimal():
                             reflection.multiplicity = int(mult)
-                    if len(words)>end_miller+2:
-                        intensity = words[end_miller+2]
+                    if len(words) > end_miller + 2:
+                        intensity = words[end_miller + 2]
                         if intensity.startswith("#"):
                             continue
                         try:
                             value = float(intensity)
                         except ValueError:
-                            continue
+                            if "weak" in intensity.lower():
+                                reflection.intensity = 0.0
                         else:
                             reflection.intensity = value
         return self
 
-    def save(self, filename:str =None):
+    def save(self, filename: str = None):
         """Save the calibrant structure into a D-spaacing file
 
         :param filename: name of the output file. If not provided, can re-use the previous one.

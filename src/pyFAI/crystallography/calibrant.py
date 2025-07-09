@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/07/2025"
+__date__ = "09/07/2025"
 __status__ = "production"
 
 import os
@@ -202,7 +202,8 @@ class Calibrant:
         with self._sem:
             self._load_file(filename)
 
-    def _get_abs_path(self, filename: str) -> str:
+    @staticmethod
+    def _get_abs_path(filename: str) -> str:
         """Returns the absolute location of the calibrant."""
         if filename is None:
             return None

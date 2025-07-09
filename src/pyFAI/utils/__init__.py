@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/06/2025"
+__date__ = "09/07/2025"
 __status__ = "production"
 
 import logging
@@ -143,9 +143,7 @@ def expand_args(args):
 
 
 def _get_data_path(filename):
-    """
-    :param filename: the name of the requested data file.
-    :type filename: str
+    """Finds the path for a resource/data file
 
     Can search root of data directory in:
     - Environment variable PYFAI_DATA
@@ -158,12 +156,17 @@ def _get_data_path(filename):
     the system locations
 
     For now, just perform a recursive search
+
+    :param filename: the name of the requested data file.
+    :type filename: str
+    :return: full path of the file
     """
     resources = [
         os.environ.get("PYFAI_DATA"),
         data_dir,
-        os.path.join(os.path.dirname(__file__), ".."),
-        os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))]
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..")),
+        os.path.join(os.path.dirname(__file__), "..")
+        ]
     try:
         import xdg.BaseDirectory
         resources += xdg.BaseDirectory.load_data_paths("pyFAI")
