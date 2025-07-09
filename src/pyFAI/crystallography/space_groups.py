@@ -1400,7 +1400,7 @@ class ReflectionCondition:
         """
         Space group 76: P41. Primitive tetragonal.
         Valid reflections must satisfy:
-        - 00l:         l = 4n
+        - 00l (h=0, k=0):       l = 4n
         validated
         """
         if h == k == 0:
