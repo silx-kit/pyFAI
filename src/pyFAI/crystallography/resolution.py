@@ -42,6 +42,8 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "09/07/2025"
 __status__ = "production"
 
+
+from collections.abc import Iterable
 from ..containers import dataclass
 import numpy
 
@@ -70,6 +72,25 @@ class _ResolutionFunction:
         "Assumes a normal distribution"
         return numpy.sqrt(self.sigma2(tth))
 
+
+@dataclass
+class Constant(_ResolutionFunction):
+    """Dummy constant resolution function (in degree)"""
+    C:float
+
+    def __repr__(self):
+        return f"Constant({self.C})"
+
+    def fwhm2(self, tth):
+        """Calculate the full-with at half maximum of the peak(s) squared
+        :param tth: 2theta value or array in radians
+        :return: array of the same shape as tth
+        """
+        c = numpy.deg2rad(self.C)**2
+        if isinstance(tth, Iterable):
+            return numpy.zeros_like(tth) + c
+        else:
+            return c
 
 
 @dataclass
