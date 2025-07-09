@@ -1116,13 +1116,10 @@ class ReflectionCondition:
         """
         if (h + k) % 2 != 0:
             return False  #general
-
         if h == 0:
             return k % 2 == 0  #  0kl, 0k0
-
         if k == 0:
             return h % 2 == 0  #  h0l, h00
-
         return True
 
     @staticmethod
