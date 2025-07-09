@@ -75,28 +75,31 @@ class Calibrant:
     :param filename: A filename containing the description (usually with .D extension).
                      The access to the file description is delayed until the information
                      is needed.
-    :param dSpacing: A list of d spacing in Angstrom.
+    :param dspacing: A list of d spacing in Angstrom.
     :param wavelength: A wavelength in meter
     """
 
     def __init__(
         self,
         filename: Optional[str] = None,
-        dSpacing: Optional[List[float]] = None,
+        dspacing: Optional[List[float]] = None,
         wavelength: Optional[float] = None,
-    ):
+        **kwargs):
+        if "dSpacing" in kwargs:
+            dspacing = kwargs["dSpacing"]
+            logger.warning("Usage of `dSpacing` keyword argument in `Calibrant` constructor is deprecated and has been replaced with `dspacing` (PEP8) since 2025.07")
         self._filename = filename
         self._wavelength = wavelength
         self._sem = threading.Semaphore()
         self._2th = []
         if filename is not None:
-            self._dSpacing = None
-        elif dSpacing is None:
-            self._dSpacing = []
+            self._dspacing = None
+        elif dspacing is None:
+            self._dspacing = []
         else:
-            self._dSpacing = list(dSpacing)
-        self._out_dSpacing = []
-        if self._dSpacing and self._wavelength:
+            self._dspacing = list(dspacing)
+        self._out_dspacing = []
+        if self._dspacing and self._wavelength:
             self._calc_2th()
 
     @classmethod
@@ -112,10 +115,10 @@ class Calibrant:
         """
         Test the equality with another object
 
-        It only takes into account the wavelength and dSpacing, not the
-        filename.
+        It only takes into account the wavelength and dspacing, not the
+        filename. dspacing are lazy-loaded when needed.
 
-        :param other: Another object
+        :param other: Another calibrant
         """
         if other is None:
             return False
@@ -123,7 +126,7 @@ class Calibrant:
             return False
         if self._wavelength != other._wavelength:
             return False
-        if self.dSpacing != other.dSpacing:
+        if self.dspacing != other.dspacing:  # enforce lazy-loading
             return False
         return True
 
@@ -131,7 +134,7 @@ class Calibrant:
         """
         Test the non-equality with another object
 
-        It only takes into account the wavelength and dSpacing, not the
+        It only takes into account the wavelength and dspacing, not the
         filename.
 
         :param other: Another object
@@ -142,11 +145,11 @@ class Calibrant:
         """
         Returns the hash of the object.
 
-        It only takes into account the wavelength and dSpacing, not the
+        It only takes into account the wavelength and dspacing, not the
         filename.
         """
         h = hash(self._wavelength)
-        for d in self.dSpacing:
+        for d in self.dspacing:
             h = h ^ hash(d)
         return h
 
@@ -157,7 +160,7 @@ class Calibrant:
         self._initialize()
         return Calibrant(
             filename=self._filename,
-            dSpacing=self._dSpacing + self._out_dSpacing,
+            dspacing=self._dspacing + self._out_dspacing,
             wavelength=self._wavelength,
         )
 
@@ -169,8 +172,8 @@ class Calibrant:
         else:
             name = "undefined"
         name += " Calibrant "
-        if len(self.dSpacing):
-            name += "with %i reflections " % len(self._dSpacing)
+        if len(self.dspacing):
+            name += "with %i reflections " % len(self._dspacing)
         if self._wavelength:
             name += "at wavelength %s" % self._wavelength
         return name
@@ -221,28 +224,36 @@ class Calibrant:
         if not os.path.isfile(path):
             logger.error("No such calibrant file: %s", path)
             return
-        self._dSpacing = numpy.unique(numpy.loadtxt(path))
-        self._dSpacing = list(self._dSpacing[-1::-1])  # reverse order
-        # self._dSpacing.sort(reverse=True)
+        self._dspacing = numpy.unique(numpy.loadtxt(path))
+        self._dspacing = list(self._dspacing[-1::-1])  # reverse order
+        # self._dspacing.sort(reverse=True)
         if self._wavelength:
             self._calc_2th()
 
     def _initialize(self):
         """Initialize the object if expected."""
-        if self._dSpacing is None:
+        if self._dspacing is None:
             if self._filename:
                 self._load_file()
             else:
-                self._dSpacing = []
+                self._dspacing = []
 
-    def count_registered_dSpacing(self) -> int:
-        """Count of registered dSpacing positions."""
+    def count_registered_dspacing(self) -> int:
+        """Count of registered dspacing positions."""
         self._initialize()
-        return len(self._dSpacing) + len(self._out_dSpacing)
+        return len(self._dspacing) + len(self._out_dspacing)
 
-    def save_dSpacing(self, filename: Optional[str] = None):
+    count_registered_dSpacing = deprecated(count_registered_dspacing,
+                                           reason="PEP8",
+                                           replacement="count_registered_dspacing",
+                                           since_version="2025.07")
+
+    def save_dspacing(self, filename: Optional[str] = None):
         """
-        Save the d-spacing to a file.
+        Save the d-spacing into a file.
+
+        :param filename: name of the file
+        :return: None
         """
         self._initialize()
         if (filename is None) and (self._filename is not None):
@@ -258,28 +269,37 @@ class Calibrant:
             for i in self.dSpacing:
                 f.write("%s\n" % i)
 
-    def get_dSpacing(self) -> List[float]:
-        self._initialize()
-        return self._dSpacing
+    save_dSpacing = deprecated(save_dspacing,
+                            reason="PEP8",
+                            replacement="save_dspacing",
+                            since_version="2025.07")  # PEP8
 
-    def set_dSpacing(self, lst: List[float]):
-        self._dSpacing = list(lst)
-        self._out_dSpacing = []
+    @property
+    def dspacing(self) -> List[float]:
+        self._initialize()
+        return self._dspacing
+
+    @dspacing.setter
+    def dspacing(self, lst: List[float]):
+        self._dspacing = list(lst)
+        self._out_dspacing = []
         self._filename = "Modified"
         if self._wavelength:
             self._calc_2th()
 
-    dSpacing = property(get_dSpacing, set_dSpacing)
-
-    def append_dSpacing(self, value: float):
-        """Insert a d position at the right position of the dSpacing list"""
+    def append_dspacing(self, value: float):
+        """Insert a d position at the right position of the dspacing list"""
         self._initialize()
         with self._sem:
-            delta = [abs(value - v) / v for v in self._dSpacing if v is not None]
+            delta = [abs(value - v) / v for v in self._dspacing if v is not None]
             if not delta or min(delta) > epsilon:
-                self._dSpacing.append(value)
-                self._dSpacing.sort(reverse=True)
+                self._dspacing.append(value)
+                self._dspacing.sort(reverse=True)
                 self._calc_2th()
+    append_dSpacing = deprecated(append_dspacing,
+                                reason="PEP8",
+                                replacement="append_dspacing",
+                                since_version="2025.07")  # PEP8
 
     def append_2th(self, value: float):
         """Insert a 2th position at the right position of the dSpacing list"""
@@ -320,7 +340,15 @@ class Calibrant:
                     )
                 self._calc_dSpacing()
 
-    def set_wavelength(self, value: Optional[float] = None):
+    @property
+    def wavelength(self) -> Optional[float]:
+        """
+        Returns the used wavelength.
+        """
+        return self._wavelength
+
+    @wavelength.setter
+    def wavelength(self, value: Optional[float] = None):
         """
         Set a new wavelength .
         """
@@ -348,13 +376,9 @@ class Calibrant:
         if updated:
             self._calc_2th()
 
-    def get_wavelength(self) -> Optional[float]:
-        """
-        Returns the used wavelength.
-        """
-        return self._wavelength
-
-    wavelength = property(get_wavelength, set_wavelength)
+    set_wavelength = deprecated(wavelength.fset,
+                                reason="use property",
+                                since_version="2025.07")
 
     def _calc_2th(self):
         """Calculate the 2theta positions for all peaks"""
@@ -363,34 +387,38 @@ class Calibrant:
             logger.error("Cannot calculate 2theta angle without knowing wavelength")
             return
         tths = []
-        dSpacing = self._dSpacing[:] + self._out_dSpacing  # explicit copy
+        dSpacing = self._dspacing[:] + self._out_dspacing  # explicit copy
         try:
             for ds in dSpacing:
                 tth = 2.0 * asin(5.0e9 * self._wavelength / ds)
                 tths.append(tth)
         except ValueError:
             size = len(tths)
-            # remove dSpacing outside of 0..180
-            self._dSpacing = dSpacing[:size]
-            self._out_dSpacing = dSpacing[size:]
+            # remove dspacing outside of 0..180
+            self._dspacing = dSpacing[:size]
+            self._out_dspacing = dSpacing[size:]
         else:
-            self._dSpacing = dSpacing
-            self._out_dSpacing = []
+            self._dspacing = dSpacing
+            self._out_dspacing = []
         self._2th = tths
 
-    def _calc_dSpacing(self):
+    def _calc_dspacing(self):
+        """Replace the dspacing values by those calculated from the 2theta array"""
         if self._wavelength is None:
             logger.error("Cannot calculate 2theta angle without knowing wavelength")
             return
-        self._dSpacing = [
+        self._dspacing = [
             5.0e9 * self._wavelength / sin(tth / 2.0) for tth in self._2th
         ]
+    _calc_dSpacing = deprecated(_calc_dspacing,
+                                reason="PEP8",
+                                since_version="2025.07")
 
     def get_2th(self) -> List[float]:
         """Returns the 2theta positions for all peaks (cached)"""
         if not self._2th:
             self._initialize()
-            if not self._dSpacing:
+            if not self._dspacing:
                 logger.error("Not d-spacing for calibrant: %s", self)
             with self._sem:
                 if not self._2th:
@@ -422,14 +450,14 @@ class Calibrant:
         :param index: Ring number, otherwise assumes all rings are visible
         :return: the maximum visible wavelength
         """
-        dSpacing = self._dSpacing[:] + self._out_dSpacing  # get all rings
+        dspacing = self._dspacing[:] + self._out_dspacing  # get all rings
         if index is None:
-            index = len(dSpacing) - 1
-        if index >= len(dSpacing):
+            index = len(dspacing) - 1
+        if index >= len(dspacing):
             raise IndexError(
                 "There are not than many (%s) rings indices in this calibrant" % (index)
             )
-        return dSpacing[index] * 2e-10
+        return dspacing[index] * 2e-10
 
     def get_peaks(self, unit: str = "2th_deg"):
         """Calculate the peak position as this unit.
@@ -443,11 +471,16 @@ class Calibrant:
         if name.startswith("2th"):
             values = numpy.array(self.get_2th())
         elif name.startswith("q"):
-            values = 20.0 * pi / numpy.array(self.get_dSpacing()[:size])
+            values = 20.0 * pi / numpy.array(self.dspacing[:size])
         else:
-            raise ValueError("Only 2\theta and *q* units are supported for now")
+            raise ValueError("Only *2theta* and *q* units are supported for now")
 
         return values * scale
+
+    # def fake_xrpdp(self,
+    #                nbpt: int=1000,
+    #                ):
+
 
     def fake_calibration_image(
         self,
@@ -519,7 +552,7 @@ class Calibrant:
         return res
 
     def __getnewargs_ex__(self):
-        return (self._filename, self._dSpacing, self._wavelength), {}
+        return (self._filename, self._dspacing, self._wavelength), {}
 
     def __getstate__(self):
         state_blacklist = ("_sem",)
@@ -533,3 +566,15 @@ class Calibrant:
         for statekey, statevalue in state.items():
             setattr(self, statekey, statevalue)
         self._sem = threading.Semaphore()
+
+    @property
+    @deprecated(reason="PEP8", replacement="dspacing", since_version="2025.07")
+    def dSpacing(self):
+        return self.dspacing
+
+    @dSpacing.setter
+    @deprecated(reason="PEP8", replacement="dspacing", since_version="2025.07")
+    def dSpacing(self, value):
+        self.dspacing.fset(value)
+
+    get_dSpacing = deprecated(dspacing.fget, reason="property", replacement="dspacing", since_version="2025.07")
