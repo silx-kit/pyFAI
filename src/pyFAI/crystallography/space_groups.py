@@ -1193,11 +1193,36 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group69_p42(h, k, l):
-        """Space group 69: P42. (0, 0, l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group69_Fmmm(h, k, l):
+        """
+        Space group 69: Fmmm. F-centering.
+        Valid reflections must satisfy:
+        - general hkl: h + k, h + l, k + l even
+        - 0kl (h=0):   k, l even
+        - h0l (k=0):   h, l even
+        - hk0 (l=0):   h, k even
+        - h00 (k=0,l=0): h even
+        - 0k0 (h=0,l=0): k even
+        - 00l (h=0,k=0): l even
+        validated
+        """
+        # general
+        if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
+            return False
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0        # 00l
+            if l == 0:
+                return k % 2 == 0        # 0k0
+            return (k % 2 == 0 and l % 2 == 0)  # 0kl
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0        # h00
+            return (h % 2 == 0 and l % 2 == 0)  # h0l
+        if l == 0:
+            return (h % 2 == 0 and k % 2 == 0)    # hk0
         return True
+
 
     @staticmethod
     def group70_p43(h, k, l):
