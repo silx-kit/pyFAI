@@ -1491,8 +1491,13 @@ class ReflectionCondition:
         return l % 2 == 0 if h == k else True  # hhl or general case
 
     @staticmethod
-    def group81_p_42_m(h, k, l):
-        """Space group 81: P-42m. No systematic absences.validated"""
+    def group81_P4bar(h, k, l):
+        """
+        #TODO: Find out the convention for P4̅
+        Space group 81: P4̅ (P four bar). 
+        No systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
