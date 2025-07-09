@@ -1549,7 +1549,7 @@ class ReflectionCondition:
         Space group 85: P4/n. Tetragonal.
         Valid reflections must satisfy:
         - hk0 (l=0):         h + k even
-        - h00 (k=0, l=0):     h even 
+        - h00 (k=0, l=0):    h even 
         validated
         """
         if l == 0:
@@ -1559,8 +1559,21 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group86_p4_2_2(h, k, l):
-        """Space group 86: P422. No systematic absences."""
+    def group86_P42n(h, k, l):
+        """
+        Space group 86: P42/n. Tetragonal.
+        Valid reflections must satisfy:
+        - hk0  (l=0):         h + k even
+        - 00l  (h=0, k=0):    l even
+        - h00  (k=0, l=0):    h even
+        validated
+        """
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0 and k == 0:
+            return l % 2 == 0        # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0        # h00
         return True
 
     @staticmethod
