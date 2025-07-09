@@ -1280,16 +1280,18 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            if k == 0: return l % 2 == 0       # 00l
-            if l == 0: return k % 2 == 0       # 0k0
-            return (k + l) % 2 == 0            # 0kl
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return (k + l) % 2 == 0  # 0kl
         if k == 0:
-            if l == 0: return h % 2 == 0       # h00
-            return (h + l) % 2 == 0            # h0l
+            if l == 0:
+                return h % 2 == 0  # h00
+            return (h + l) % 2 == 0  # h0l
         if l == 0:
-            return (h + k) % 2 == 0            # hk0
-        return (h + k + l) % 2 == 0            # general
-            
+            return (h + k) % 2 == 0  # hk0
+        return (h + k + l) % 2 == 0  # general
 
     @staticmethod
     def group72_Ibam(h, k, l):
@@ -1309,16 +1311,19 @@ class ReflectionCondition:
             return False  # general
 
         if h == 0:
-            if k == 0: return l % 2 == 0           # 00l
-            if l == 0: return k % 2 == 0           # 0k0
-            return k % 2 == 0 and l % 2 == 0       # 0kl
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0 and l % 2 == 0  # 0kl
 
         if k == 0:
-            if l == 0: return h % 2 == 0           # h00
-            return h % 2 == 0 and l % 2 == 0       # h0l
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
 
         if l == 0:
-            return (h + k) % 2 == 0                # hk0
+            return (h + k) % 2 == 0  # hk0
 
         return True
 
@@ -1337,26 +1342,28 @@ class ReflectionCondition:
         validated
         """
         if (h + k + l) % 2 != 0:  # general
-            return False  
+            return False
 
         if h == 0:
-            if k == 0: return l % 2 == 0           # 00l
-            if l == 0: return k % 2 == 0           # 0k0
-            return k % 2 == 0 and l % 2 == 0       # 0kl
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0 and l % 2 == 0  # 0kl
 
         if k == 0:
-            if l == 0: return h % 2 == 0           # h00
-            return h % 2 == 0 and l % 2 == 0       # h0l
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
 
         if l == 0:
-            return h % 2 == 0 and k % 2 == 0       # hk0
+            return h % 2 == 0 and k % 2 == 0  # hk0
 
         return True
 
-
     @staticmethod
     def group74_Imma(h, k, l):
-       """
+        """
         Space group 74: Imma. Body-centered lattice (I-centering).
         Valid reflections must satisfy:
         - general hkl:         h + k + l even
@@ -1368,23 +1375,27 @@ class ReflectionCondition:
         - 00l (h=0, k=0):      l even
         validated
         """
-        if (h + k + l) % 2 != 0: # general
-            return False  
+        # general
+        if (h + k + l) % 2 != 0:
+            return False
 
         if h == 0:
-            if k == 0: return l % 2 == 0           # 00l
-            if l == 0: return k % 2 == 0           # 0k0
-            return (k + l) % 2 == 0                # 0kl
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return (k + l) % 2 == 0  # 0kl
 
         if k == 0:
-            if l == 0: return h % 2 == 0           # h00
-            return (h + l) % 2 == 0                # h0l
+            if l == 0:
+                return h % 2 == 0  # h00
+            return (h + l) % 2 == 0  # h0l
 
         if l == 0:
-            return h % 2 == 0 and k % 2 == 0       # hk0
+            return h % 2 == 0 and k % 2 == 0  # hk0
 
         return True
-    
+
     @staticmethod
     def group75_P4(h, k, l):
         """
@@ -1393,7 +1404,6 @@ class ReflectionCondition:
         validated
         """
         return True
-
 
     @staticmethod
     def group76_P41(h, k, l):
@@ -1407,7 +1417,6 @@ class ReflectionCondition:
             return l % 4 == 0  # 00l
         return True
 
-
     @staticmethod
     def group77_P42(h, k, l):
         """
@@ -1420,7 +1429,6 @@ class ReflectionCondition:
             return l % 2 == 0  # 00l
         return True
 
-
     @staticmethod
     def group78_P43(h, k, l):
         """
@@ -1432,7 +1440,6 @@ class ReflectionCondition:
         if h == k == 0:
             return l % 4 == 0  # 00l
         return True
-
 
     @staticmethod
     def group79_I4(h, k, l):
@@ -1447,12 +1454,16 @@ class ReflectionCondition:
         - h00 (k=0, l=0):      h even
         validated
         """
-        if (h + k + l) % 2 != 0: return False
+        if (h + k + l) % 2 != 0:
+            return False
         if h == 0:
             return (k + l) % 2 == 0 if k else l % 2 == 0
-        if k == 0 and l == 0: return h % 2 == 0
-        if l == 0: return (h + k) % 2 == 0
-        if h == k: return l % 2 == 0
+        if k == 0 and l == 0:
+            return h % 2 == 0
+        if l == 0:
+            return (h + k) % 2 == 0
+        if h == k:
+            return l % 2 == 0
         return True
 
     @staticmethod
@@ -1468,17 +1479,16 @@ class ReflectionCondition:
         - h00 (k=0, l=0):      h even
         validated
         """
-        if (h + k + l) % 2: return False  # General condition
-        
+        if (h + k + l) % 2:
+            return False  # General condition
+
         if h == 0:
             return l % 4 == 0 if k == 0 else (k + l) % 2 == 0  # 00l or 0kl
-        
+
         if l == 0:
             return (h + k) % 2 == 0 if k else h % 2 == 0  # hk0 or h00
-        
+
         return l % 2 == 0 if h == k else True  # hhl or general case
-
-
 
     @staticmethod
     def group81_p_42_m(h, k, l):
