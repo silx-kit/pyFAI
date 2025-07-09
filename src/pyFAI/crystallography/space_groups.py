@@ -1437,14 +1437,14 @@ class ReflectionCondition:
     @staticmethod
     def group79_I4(h, k, l):
         """
-        Space group 79: I4. Body-centered tetragonal (I-centering).
+        Space group 79: I4. Body-centered lattice (I-centering).
         Valid reflections must satisfy:
-        - hkl:         h + k + l = 2n
-        - hk0:         h + k = 2n
-        - 0kl:         k + l = 2n
-        - hhl:         l even
-        - 00l:         l even
-        - h00:         h even
+        - general hkl:         h + k + l even
+        - hk0 (l=0):           h + k even
+        - 0kl (h=0):           k + l even
+        - hhl (h=k):           l even
+        - 00l (h=0, k=0):      l even
+        - h00 (k=0, l=0):      h even
         validated
         """
         if (h + k + l) % 2 != 0: return False
