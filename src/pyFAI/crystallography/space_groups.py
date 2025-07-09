@@ -1631,11 +1631,18 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group90_p4_1_2(h, k, l):
-        """Space group 90: P4_1_2. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
+    def group90_P4212(h, k, l):
+        """
+        #TODO: Why does this fail? 
+        Space group 90: P4212. Tetragonal.
+        Valid reflections must satisfy:
+        - h00  (k=0, l=0):  h even
+        validated
+        """
+        if k == 0 and l == 0:  # h00
+            return h % 2 == 0
         return True
+        
 
     @staticmethod
     def group91_p4_12_2(h, k, l):
