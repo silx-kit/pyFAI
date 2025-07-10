@@ -39,14 +39,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2025"
+__date__ = "10/07/2025"
 __status__ = "production"
 
 
 from collections.abc import Iterable
 from ..containers import dataclass
+from ..units import Unit, to_unit, TTH_DEG
 import numpy
-
 
 
 LN2 = numpy.log(2.0)
@@ -57,7 +57,7 @@ class _ResolutionFunction:
     def fwhm2(self, tth):
         """
         :param tth: 2theta value or array
-        :return: array of the same shape containing the full-with at half maximum of the peak(s)
+        :return: array of the same shape containing the full-with at half maximum of the peak(s) in radians
         """
         raise NotImplementedError("`_ResolutionFunction`is an abstract class !")
 
@@ -66,31 +66,33 @@ class _ResolutionFunction:
         return self.fwhm2(tth)/(8.0*LN2)
 
     def fwhm(self, tth):
+        "Full Width at Half Maximum in radians"
         return numpy.sqrt(self.fwhm2(tth))
 
     def sigma(self, tth):
-        "Assumes a normal distribution"
+        "Assumes a normal distribution, standard deviation in radians"
         return numpy.sqrt(self.sigma2(tth))
 
 
 @dataclass
 class Constant(_ResolutionFunction):
-    """Dummy constant resolution function (in degree)"""
+    """Dummy constant resolution function (with units)"""
     C:float
+    unit: Unit = TTH_DEG
 
     def __repr__(self):
-        return f"Constant({self.C})"
+        return f"Constant({self.C}, {self.unit})"
 
     def fwhm2(self, tth):
         """Calculate the full-with at half maximum of the peak(s) squared
         :param tth: 2theta value or array in radians
         :return: array of the same shape as tth
         """
-        c = numpy.deg2rad(self.C)**2
+        C2 = (self.C/to_unit(self.unit).scale)**2
         if isinstance(tth, Iterable):
-            return numpy.zeros_like(tth) + c
+            return numpy.zeros_like(tth) + C2
         else:
-            return c
+            return C2
 
 
 @dataclass
@@ -110,7 +112,6 @@ class Caglioti(_ResolutionFunction):
         """
         t_th = numpy.tan(0.5 * tth)
         return self.U * t_th**2 + self.V * t_th + self.W
-
 
 
 @dataclass

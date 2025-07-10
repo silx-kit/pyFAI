@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2025"
+__date__ = "10/07/2025"
 __status__ = "production"
 
 import os
@@ -47,7 +47,7 @@ import numpy
 import itertools
 from typing import Optional, List
 from collections.abc import Iterable
-from math import sin, asin, cos, sqrt, pi, ceil, log
+from math import sin, asin, cos, sqrt, pi, ceil, log, isfinite
 import threading
 from ..utils import get_calibration_dir
 from ..utils.decorators import deprecated
@@ -462,7 +462,7 @@ class Calibrant:
             )
         return dspacing[index] * 2e-10
 
-    def get_peaks(self, unit: str = "2th_deg"):
+    def get_peaks(self, unit: units.Units|str = units.TTH_DEG):
         """Calculate the peak position as this unit.
 
         :return: numpy array (unlike other methods which return lists)
@@ -485,21 +485,27 @@ class Calibrant:
                    tth_range: tuple = (0,120),
                    background: float = 0.0,
                    Imax: float=1.0,
-                   resolution: float = 0.1
+                   resolution: float = 0.1,
+                   unit: units.Unit|str = units.TTH_DEG,
                     ):
         """Generate a fake powder diffraction pattern from this calibrant
 
         :param nbpt: number of point in the powder pattern
-        :param tth_range: diffraction angle 2theta in degrees as 2-tuple
+        :param tth_range: diffraction angle 2theta, unit as specified in unit parameter, deg by default.
         :param background: value or array (gonna be interpolated)
         :param Imax: intensity of the scattering signal
         :param resolution: pic width δ(°) or resolution function
+        :param unit: can be a string or an instance
         :return: Integrate1dResult with unit in 2th_deg
         """
+        unit = units.to_unit(unit)
+        if unit.space != "2th":
+            raise RuntimeError("XRPD have to be generated in `2theta` space")
+
         tth_range_min = min(tth_range)
         tth_range_max = max(tth_range)
-        tth_deg = numpy.linspace(tth_range_min, tth_range_max, nbpt)
-        tth_rad = numpy.deg2rad(tth_deg)
+        tth_user = numpy.linspace(tth_range_min, tth_range_max, nbpt)
+        tth_rad = tth_user / unit.scale
 
         # background can be an array
         if isinstance(background, Iterable):
@@ -507,44 +513,48 @@ class Calibrant:
                 numpy.linspace(tth_range_min, tth_range_max, len(background)),
                 background)
         else:  # or a constant
-            background = numpy.zeros_like(tth_deg) + background
-
+            background = numpy.zeros_like(tth_user) + background
 
         tth_peak = numpy.array(self.get_2th())
         if not isinstance(resolution, _ResolutionFunction):
-            resolution = Constant(resolution)
+            resolution = Constant(resolution, unit=unit)
         dtth2_peaks = resolution.sigma2(tth_peak)
 
-        tth_min = numpy.deg2rad(tth_range_min)
-        tth_max = numpy.deg2rad(tth_range_max)
+        tth_min = tth_range_min / unit.scale
+        tth_max = tth_range_max / unit.scale
 
-        # TODO: deal with peak intensities ...
+        # TODO: deal with peak intensities ... after #2562 is addressed
         intensities = numpy.ones_like(tth_peak)
 
-        signal = numpy.zeros_like(tth_deg)
-        print(len(tth_peak), len(dtth2_peaks), len(intensities))
+        # Normalization of peak intensities
+        intensities /= numpy.nanmax(intensities)
+
+        signal = numpy.zeros_like(tth_rad)
         for peak, sigma2, intensity in zip(tth_peak, dtth2_peaks, intensities):
+            if not isfinite(intensity):
+                continue
             sigma = sqrt(sigma2)
             if peak < (tth_min - 3 * sigma):
                 continue
             elif peak > (tth_max + 3 * sigma):
                 break
+
             # Gaussian profile
-            signal += intensity / (sigma * sqrt(2.0 * pi)) * numpy.exp(-(tth_rad - peak) ** 2 / (2.0 * sigma2))
+            signal += intensity * numpy.exp(-(tth_rad - peak) ** 2 / (2.0 * sigma2))
 
         signal *= Imax
         signal += background
-        result = Integrate1dResult(tth_deg, signal)
-        result._set_unit(units.to_unit("2th_deg"))
+        result = Integrate1dResult(tth_user, signal)
+        result._set_unit(unit)
         return result
 
     def fake_calibration_image(
         self,
         ai,
-        shape=None,
-        Imax=1.0,
-        Imin=0.0,
-        resolution=0.1,
+        shape: tuple|None = None,
+        Imax: float =1.0,
+        Imin : float|numpy.ndarray=0.0,
+        resolution: _ResolutionFunction|float =0.1,
         **kwargs) -> numpy.ndarray:
         """
         Generates a fake calibration image from an azimuthal integrator.
@@ -553,6 +563,7 @@ class Calibrant:
         :param Imax: maximum intensity of rings
         :param Imin: minimum intensity of the signal (background)
         :param resolution: either the FWHM (static, in degree) or a `pyFAI.crystallography.resolution._ResolutionFunction` class instance
+        Deprecated options:
         :param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W) --> deprecated
         :return: an image
         """
@@ -583,11 +594,15 @@ class Calibrant:
                 self.wavelength,
                 ai.wavelength,
             )
-        tth = ai.array_from_unit(shape=shape, typ="center", unit="2th_deg", scale=True)
+        tth = ai.array_from_unit(shape=shape, typ="center", unit=units.TTH_DEG, scale=True)
         tth_min = tth.min()
         tth_max = tth.max()
         dim = int(numpy.sqrt(shape[0] * shape[0] + shape[1] * shape[1]))
-        integrated = self.fake_xrpdp(dim, (tth_min, tth_max), background=Imin, Imax=Imax, resolution=resolution)
+        integrated = self.fake_xrpdp(dim, (tth_min, tth_max),
+                                    background=Imin,
+                                    Imax=Imax,
+                                    resolution=resolution,
+                                    unit=units.TTH_DEG)
 
         res = ai.calcfrom1d(
             integrated.radial,
@@ -595,8 +610,7 @@ class Calibrant:
             shape=shape,
             mask=ai.mask,
             dim1_unit=integrated.unit,
-            correctSolidAngle=True,
-        )
+            correctSolidAngle=True)
         return res
 
     def __getnewargs_ex__(self):
