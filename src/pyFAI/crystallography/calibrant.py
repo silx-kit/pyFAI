@@ -509,7 +509,7 @@ class Calibrant:
 
         # background can be an array
         if isinstance(background, Iterable):
-            background = numpy.interp(tth_deg,
+            background = numpy.interp(tth_user,
                 numpy.linspace(tth_range_min, tth_range_max, len(background)),
                 background)
         else:  # or a constant
