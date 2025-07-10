@@ -1658,7 +1658,7 @@ class ReflectionCondition:
     @staticmethod
     def group91_P4122(h, k, l):
         """
-        Space group 91: P 41 2 2. Tetragonal 
+        Space group 91: P 41 2 2. Tetragonal
         - 00l: l = 4n
         validated"""
         if h == 0 and k == 0:
