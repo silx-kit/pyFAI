@@ -1634,7 +1634,7 @@ class ReflectionCondition:
     @staticmethod
     def group89_P422(h, k, l):
         """
-        Space group 89: P422. Tetragonal.
+        Space group 89: P 4 2 2. Tetragonal.
         All reflections are allowed; no systematic absences.
         validated
         """
@@ -1643,26 +1643,40 @@ class ReflectionCondition:
     @staticmethod
     def group90_P4212(h, k, l):
         """
-        #TODO: Why does this fail?
-        Space group 90: P4212. Tetragonal.
+        Space group 90: P 4 21 2. Tetragonal.
         Valid reflections must satisfy:
         - h00  (k=0, l=0):  h even
+        - 0k0  (h=0, l=0):  k even (a & b are permutable in tetragonal)
         validated
         """
         if k == 0 and l == 0:  # h00
             return h % 2 == 0
+        if h == 0 and l == 0:  # 0k0
+            return k % 2 == 0
         return True
 
     @staticmethod
-    def group91_p4_12_2(h, k, l):
-        """Space group 91: P4_12_2. (0, 0, l): l = 4n.validated"""
+    def group91_P4122(h, k, l):
+        """
+        Space group 91: P 41 2 2. Tetragonal 
+        - 00l: l = 4n
+        validated"""
         if h == 0 and k == 0:
             return l % 4 == 0
         return True
 
     @staticmethod
-    def group92_p4_32_2(h, k, l):
-        """Space group 92: P4_32_2. (0, 0, l): l = 4n."""
+    def group92_P41_21_2(h, k, l):
+        """
+        Space group 92: P41 21 2. Tetragonal
+        - h00: h = 2n
+        - 0k0: k = 2n
+        - 00l: l = 4n
+        validated"""
+        if k == 0 and l == 0:
+            return h % 2 == 0
+        if h == 0 and l == 0:
+            return k % 2 == 0
         if h == 0 and k == 0:
             return l % 4 == 0
         return True
