@@ -114,9 +114,9 @@ class Cell:
         self.S22 = None
         self.S23 = None
         self.selection_rules = []
-        "contains a list of functions returning True(allowed)/False(forbiden)/None(unknown)"
-        self._type = "P"
-        self.set_type(lattice_type)
+        "contains a list of functions returning True(allowed)/False(forbiden)/None(unknown), see space_groups.py"
+        self._type = None
+        self.type = lattice_type
 
     def __repr__(self, *args, **kwargs):
         return (
@@ -342,7 +342,7 @@ class Cell:
             if d < dmin:
                 continue
 
-            # Trucate precision at 8 digits for numerical noise
+            # Trucate precision at 8 digits to mitigate numerical noise. At most, 8 digits are used for saving.
             d = numpy.round(d, 8)
 
             if d in res:
