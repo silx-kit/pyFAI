@@ -25,6 +25,7 @@ Change-log of versions
     + Chernyshov model (3-parameter)
   * Added `fake_xrpdp` method to generate 1D powder patterns with configurable resolution
   * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp`
+  * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
 - [Doc] Improve the notebook about "flatfield" calculation.
 - Supports python 3.10-3.14
 - List of contributors for this release: Gudrun Lotze, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
