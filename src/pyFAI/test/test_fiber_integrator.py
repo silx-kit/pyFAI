@@ -66,13 +66,13 @@ class TestFiberIntegrator(unittest.TestCase):
                                  wavelength=wavelength,
                                  detector=detector,
                              )
-        cls.data = cls.calibrant.fake_calibration_image(ai=cls.fi)
+        cls.data = cls.calibrant.fake_calibration_image(ai=cls.fi, W=1e-4)
         cls.poni_p1m = UtilsTest.getimage("Pilatus1M.poni")
 
     def test_instantiation(self):
         p1m = detector_factory("Pilatus1M")
         _ai = AzimuthalIntegrator(detector=p1m)
-        p1m_data = self.calibrant.fake_calibration_image(ai=_ai)
+        p1m_data = self.calibrant.fake_calibration_image(ai=_ai, W=1e-4)
 
         fi_load = load(filename=self.poni_p1m, type_="pyFAI.integrator.fiber.FiberIntegrator")
         res2d_load = fi_load.integrate2d_fiber(data=p1m_data)
