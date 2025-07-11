@@ -58,14 +58,13 @@ from .space_groups import ReflectionCondition
 from .resolution import _ResolutionFunction, Caglioti, Constant
 from ..containers import Integrate1dResult, Reflection
 from ..io.calibrant_config import CalibrantConfig
-
+logger = logging.getLogger(__name__)
 try:
     import numexpr
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     numexpr = None
 
-logger = logging.getLogger(__name__)
 epsilon = 1.0e-6  # for floating point comparison
 
 
@@ -566,12 +565,12 @@ class Calibrant:
         dtth2_peaks = numpy.atleast_2d(dtth2_peaks[msk]).T
         tth_rad = numpy.atleast_2d(tth_rad)
 
-        t0 = time.perf_counter()
+        # t0 = time.perf_counter()
         if numexpr:
             signals = numexpr.evaluate("intensities * exp(- (tth_rad-tth_peak)**2/(2*dtth2_peaks)) / sqrt( 2 * pi * dtth2_peaks)")
         else:
             signals = intensities * numpy.exp(- (tth_rad - tth_peak) ** 2 / (2.0 * dtth2_peaks)) / (numpy.sqrt(2 * pi * dtth2_peaks))
-        print(f"dt={time.perf_counter()-t0}s")
+        # print(f"dt={time.perf_counter()-t0}s")
         signals /= signals.max()  # Normalization for most intense peak at 1.0
         signal = Imax * signals.sum(axis=0)
         signal += background
