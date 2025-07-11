@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2025"
+__date__ = "11/07/2025"
 __status__ = "production"
 
 import os
@@ -49,7 +49,7 @@ import numpy
 import itertools
 from typing import Optional, List
 from math import sin, asin, cos, sqrt, pi, ceil
-from .io.calibrant_confif import CalibrantConfig, Miller, Reflection
+from ..io.calibrant_config import CalibrantConfig, Miller, Reflection
 from ..utils import deprecated
 
 logger = logging.getLogger(__name__)
@@ -271,7 +271,7 @@ class Cell:
     get_type = deprecated(type.fset, reason="property", replacement="type", since_version="2025.07")
     set_type = deprecated(type.fset, reason="property", replacement="type", since_version="2025.07")
 
-    def d(self, hkl:tuple|Miller)-> float:
+    def d(self, hkl:tuple|Miller) -> float:
         """
         Calculate the actual d-spacing for a 3-tuple of integer representing a
         family of Miller plans
@@ -342,13 +342,14 @@ class Cell:
             if d < dmin:
                 continue
 
-            # strd = f"{d:.8e}"
+            # Trucate precision at 8 digits for numerical noise
+            d = numpy.round(d, 8)
 
             if d in res:
                 res[d].append(Miller(*hkl))
             else:
                 res[d] = [Miller(*hkl)]
-        for lst in res.values:
+        for lst in res.values():
             "sort each group of equivalent reflection in a systematic order"
             lst.sort(key=lambda x:x[-1::-1])
         return res
@@ -356,9 +357,12 @@ class Cell:
     def build_calibrant_config(self, dmin=1.0):
         """Build a CalibrantConfig from the cell"""
         config = CalibrantConfig(cell=str(self), space_group=self.type)
-        # WIP
-        # for d, reflections in calculate_dspacing(dmin).items():
-        #     config.refections.append(Reflection(d, multiplcity))
+        reflections = self.calculate_dspacing(dmin)
+        dspacing = list(reflections.keys())
+        dspacing.sort(reverse=True)
+        for d in dspacing:
+            reflection = reflections[d]
+            config.reflections.append(Reflection(d, hkl=reflection[-1], multiplicity=len(reflection)))
         return config
 
 
@@ -373,20 +377,13 @@ class Cell:
         fname = name + ".D"
         if dest_dir:
             fname = os.path.join(dest_dir, fname)
-        with open(fname, "w", encoding="utf-8") as f:
-            if long_name:
-                f.write(f"# Calibrant: {long_name} ({name}){os.linesep}")
-            else:
-                f.write(f"# Calibrant: {name}{os.linesep}")
-            f.write(f"# Cell: {self}{os.linesep}")
-            if doi:
-                f.write(f"# Ref: {doi}{os.linesep}")
-            d = self.calculate_dspacing(dmin)
-            ds = [i[0] for i in d.values()]
-            ds.sort(reverse=True)
-            for k in ds:
-                strk = f"{k:.8e}"
-                f.write(f"{k:.8f} # {d[strk][-1]} {len(d[strk]) - 1}{os.linesep}")
+        config = self.build_calibrant_config(dmin)
+        if doi:
+            config.reference = doi
+        config.name = name
+        config.description = long_name
+        config.filename=fname
+        config.save(fname)
 
     def to_calibrant(self, dmin=1.0):
         """Convert a Cell object to a Calibrant object
@@ -395,10 +392,5 @@ class Cell:
         :return: Calibrant object
         """
         from .calibrant import Calibrant  # lazy loading to prevent cyclic imports
-        from ..io.calibrant_confif import CalibrantConfig, Reflection, Miller
-
-        d = self.calculate_dspacing(dmin)
-        ds = [i[0] for i in d.values()]
-        ds.sort(reverse=True)
-        calibrant = Calibrant(dSpacing=ds)
-        return calibrant
+        config = self.build_calibrant_config(dmin)
+        return  Calibrant(config=config)
