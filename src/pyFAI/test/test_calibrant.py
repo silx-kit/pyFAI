@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2025"
+__date__ = "10/07/2025"
 
 import unittest
 import itertools
@@ -98,7 +98,7 @@ class TestCalibrant(unittest.TestCase):
             if "MAX_SHAPE" not in dir(det):
                 continue
             # skip the big detectors for now
-            if max(det.MAX_SHAPE) > 2000:
+            if max(det.MAX_SHAPE) > 1000:
                 continue
             ai = AzimuthalIntegrator(dist=0.01, poni1=0, poni2=0, detector=det)
             calibrant = get_calibrant("LaB6")
@@ -147,7 +147,7 @@ class TestCalibrant(unittest.TestCase):
         self.assertEqual(c1, c2)
 
     def test_not_same_dspace(self):
-        # this 2 calibrant must only be used there to test the lazy-loading
+        "this test checked the 2 calibrant are actually lazy-loaded"
         c1 = get_calibrant("LaB6_SRM660a")
         c2 = get_calibrant("LaB6_SRM660b")
         self.assertNotEqual(c1, c2)

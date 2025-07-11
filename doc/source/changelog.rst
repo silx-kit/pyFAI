@@ -1,19 +1,34 @@
 :Author: Jérôme Kieffer
-:Date: 19/06/2025
+:Date: 10/07/2025
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2025.XX YY/XX/2025
-------------------
+2025.10? YY/10/2025 --> 3.14 comes out in October
+-------------------
 - [GUI] Like `silx`, `pyFAI` moves from pyQt5 to pySide6 (or pyQt6). Several bugs were found
   and addressed to increase compatibility with Qt6. PyQt5 is no more a priority.
 - [Pilx] now compatible with files produced by mesh-scan on BM29 in addition to diffmap.
-- [medfilt] fix an infinite in the OpenCL code
+- [medfilt] fix an infinite loop in the OpenCL code
+- [Crystallography] improvements
+  * Move most of the `calibrant` file into several other in the crystallography module
+  * Calibrant have seen the IO part devoted to a dataclass called CalibrantConfig:
+    + import/export of D-file, including now the relative intensity
+    + import from diff-files available from the american mineralogist database
+  * `space_groups` contain an extensive list of 2320 space-groups with their extinctions for use in the `Cell` class
+  * The `Cell` class can now be directly exported as calibrant
+  * Added new resolution functions for powder diffraction peak shapes with:
+    + Constant resolution
+    + Caglioti model (U,V,W parametrization)
+    + Langford model (4-parameter)
+    + Chernyshov model (3-parameter)
+  * Added `fake_xrpdp` method to generate 1D powder patterns with configurable resolution
+  * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp`
+  * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
 - [Doc] Improve the notebook about "flatfield" calculation.
-- Supports python 3.1-3.13/4?
-- List of contributors for this release: Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
+- Supports python 3.10-3.14
+- List of contributors for this release: Gudrun Lotze, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
 
 2025.03 14/03/2025
 ------------------
