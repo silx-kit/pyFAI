@@ -36,7 +36,7 @@ https://geoweb.princeton.edu/archival/duffy/xtalgeometry.pdf
 
 from __future__ import annotations
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
@@ -244,11 +244,12 @@ class Cell:
         if self._volume is None:
             self._volume = self.a * self.b * self.c
             if self.lattice not in ["cubic", "tetragonal", "orthorhombic"]:
-                cosa = cos(self.alpha * pi / 180.0)
-                cosb = cos(self.beta * pi / 180.0)
-                cosg = cos(self.gamma * pi / 180.0)
+                deg2rad = pi / 180.0
+                cosa = cos(self.alpha * deg2rad)
+                cosb = cos(self.beta * deg2rad)
+                cosg = cos(self.gamma * deg2rad)
                 self._volume *= sqrt(
-                    1 - cosa**2 - cosb**2 - cosg**2 + 2 * cosa * cosb * cosg
+                    1.0 - cosa*cosa - cosb*cosb - cosg*cosg + 2 * cosa * cosb * cosg
                 )
         return self._volume
 
