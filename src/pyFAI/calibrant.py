@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/07/2025"
+__date__ = "15/07/2025"
 __status__ = "production"
 
 import os
@@ -71,7 +71,7 @@ def get_calibrant(calibrant_name: str, wavelength: float = None) -> Calibrant:
     """
     cal = CALIBRANT_FACTORY(calibrant_name)
     if wavelength:
-        cal.set_wavelength(wavelength)
+        cal.wavelength = wavelength
     return cal
 
 
