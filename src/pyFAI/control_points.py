@@ -404,7 +404,7 @@ class ControlPoints(object):
                     self.calibrant = Calibrant()
                 self.calibrant.setWavelength_changeDs(value)
 
-    @wavelength
+    @property
     def wavelength(self):
         return self.calibrant._wavelength
 
