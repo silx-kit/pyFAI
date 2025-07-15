@@ -254,7 +254,7 @@ class ControlPoints(object):
                             calibrant = get_calibrant(words[0])
                         try:
                             wavelength = float(words[-1])
-                            calibrant.set_wavelength(wavelength)
+                            calibrant.wavelength = wavelength
                         except Exception as error:
                             logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
                     elif key == "wavelength":
@@ -409,10 +409,10 @@ class ControlPoints(object):
         return self.calibrant._wavelength
 
     @wavelength.setter
-    def set_wavelength(self, value=None):
+    def wavelength(self, value=None):
         with self._sem:
             if value:
-                self.calibrant.set_wavelength(value)
+                self.calibrant.wavelength = value
 
     get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.07")
     set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.07")
