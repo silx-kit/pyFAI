@@ -1774,12 +1774,30 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group98_i4_12_2(h, k, l):
-        """Space group 98: I4_12_2. I-centering: (h + k + l) even; (0, 0, l): l = 4n.validated"""
+    def group98_I4122(h, k, l):
+        """
+        Space group 98: I4122. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:             h + k + l even 
+        - hk0 (l=0):       h + k even
+        - 0kl (h=0):       k + l even
+        - hhl (h=k):       l even
+        - 00l (h=0, k=0):  l = 4n
+        - h00 (k=0, l=0):  h even
+        validated
+        """
         if (h + k + l) % 2 != 0:
-            return False
+            return False  # I-centering
         if h == 0 and k == 0:
-            return l % 4 == 0
+            return l % 4 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if h == k:
+            return l % 2 == 0  # hhl
         return True
 
     @staticmethod
