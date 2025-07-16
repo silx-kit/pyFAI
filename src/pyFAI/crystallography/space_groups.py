@@ -1847,8 +1847,18 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group101_p4cc(h, k, l):
-        """Space group 101: P4cc. WRONG."""
+    def group101_P42cm(h, k, l):
+        """
+        Space group 101: P42cm. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):       l even
+        - 00l (h=0, k=0):  l even
+        validated
+        """
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            return l % 2 == 0      # 0kl
         return True
 
     @staticmethod
