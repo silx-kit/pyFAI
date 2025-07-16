@@ -2071,39 +2071,25 @@ class ReflectionCondition:
         Source for rules: Combination of ITC and http://img.chem.ucl.ac.uk/sgp/large/110az2.htm
         validated
         """
-        # General condition (I-centering)
-        if (h + k + l) % 2 != 0:
+        if (h + k + l) % 2:  # I-centering
             return False
+        
+        if h == 0 and k == 0: return l % 4 == 0  # 00l
 
-        # Special cases ordered from most to least specific
-        if h == 0 and k == 0:  # 00l
-            return l % 4 == 0
+        if l == 0:
+            if h == k: return h % 2 == 0  # hh0
+            if k == -h: return h % 2 == 0  # hh̅0
+            if k == 0: return h % 2 == 0  # h00
+            if h == 0: return k % 2 == 0  # 0k0
+            return (h + k) % 2 == 0  # hk0
 
-        if h == k and l == 0:  # hh0
-            return h % 2 == 0
+        if h == 0: return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0: return h % 2 == 0 and l % 2 == 0  # h0l
+        if h == k: return (2*h + l) % 4 == 0  # hhl
+        
+        return True
 
-        if k == -h and l == 0:  # hh̅0
-            return h % 2 == 0
 
-        if k == 0 and l == 0:  # h00
-            return h % 2 == 0
-
-        if h == 0 and l == 0:  # 0k0
-            return k % 2 == 0
-
-        if l == 0:  # hk0 (remaining l=0 cases)
-            return (h + k) % 2 == 0
-
-        if h == 0:  # 0kl
-            return k % 2 == 0 and l % 2 == 0
-
-        if k == 0:  # h0l
-            return h % 2 == 0 and l % 2 == 0
-
-        if h == k:  # hhl
-            return (2 * h + l) % 4 == 0
-
-        return True  # General case
 
     @staticmethod
     def group111_p42mbc(h, k, l):
