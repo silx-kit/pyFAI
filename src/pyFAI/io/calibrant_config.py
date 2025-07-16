@@ -61,15 +61,15 @@ class CalibrantConfig:
             "# d_spacing  # (h k l)  mult intensity"]
         for ref in self.reflections:
             if ref.intensity is not None:
-                out.append(f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d} {ref.intensity}")
+                out.append(f"{ref.dspacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d} {ref.intensity}")
             elif ref.multiplicity:
                 out.append(
-                    f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d}"
+                    f"{ref.dspacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d}"
                 )
             elif ref.hkl:
-                out.append(f"{ref.d_spacing:12.8f} # {str(ref.hkl):10s}")
+                out.append(f"{ref.dspacing:12.8f} # {str(ref.hkl):10s}")
             else:
-                out.append(f"{ref.d_spacing:12.8f}")
+                out.append(f"{ref.dspacing:12.8f}")
         return os.linesep.join(out)
 
     @classmethod
@@ -106,7 +106,7 @@ class CalibrantConfig:
                         )
                     )
         if reflections:
-            reflections.sort(key=lambda r: r.d_spacing, reverse=True)
+            reflections.sort(key=lambda r: r.dspacing, reverse=True)
             # read the other metadata ...
             name = raw[0]
             reference = raw[2]
@@ -195,18 +195,18 @@ class CalibrantConfig:
                     except ValueError:
                         break
                     else:
-                        self.reflections.append(Reflection(d_spacing=value))
+                        self.reflections.append(Reflection(dspacing=value))
                 continue
             try:
                 hash_pos = words.index("#")
             except ValueError:
-                self.reflections += [Reflection(d_spacing=float(i)) for i in words]
+                self.reflections += [Reflection(dspacing=float(i)) for i in words]
                 generic = True
                 continue
             if hash_pos == 1 and generic is False:
                 if words[0].startswith("#"):
                     continue
-                reflection = Reflection(d_spacing=float(words[0]))
+                reflection = Reflection(dspacing=float(words[0]))
                 if has_weak_reflection:
                     reflection.intensity = 1.0
                 self.reflections.append(reflection)

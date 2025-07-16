@@ -36,11 +36,11 @@ https://geoweb.princeton.edu/archival/duffy/xtalgeometry.pdf
 
 from __future__ import annotations
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2025"
+__date__ = "11/07/2025"
 __status__ = "production"
 
 import os
@@ -49,6 +49,8 @@ import numpy
 import itertools
 from typing import Optional, List
 from math import sin, asin, cos, sqrt, pi, ceil
+from ..io.calibrant_config import CalibrantConfig, Miller, Reflection
+from ..utils import deprecated
 
 logger = logging.getLogger(__name__)
 
@@ -112,13 +114,13 @@ class Cell:
         self.S22 = None
         self.S23 = None
         self.selection_rules = []
-        "contains a list of functions returning True(allowed)/False(forbiden)/None(unknown)"
-        self._type = "P"
-        self.set_type(lattice_type)
+        "contains a list of functions returning True(allowed)/False(forbiden)/None(unknown), see space_groups.py"
+        self._type = None
+        self.type = lattice_type
 
     def __repr__(self, *args, **kwargs):
         return (
-            f"{self.types[self.type]} {self.lattice} cell a={self.a:.4f} b={self.b:.4f} c={self.c:.4f}\N{ANGSTROM SIGN} "
+            f"{self.types[self.type]} {self.lattice} cell a={self.a:.4f} b={self.b:.4f} c={self.c:.4f}\N{Latin Capital Letter a with Ring Above} "
             f"\N{GREEK SMALL LETTER ALPHA}={self.alpha:.3f} \N{GREEK SMALL LETTER BETA}={self.beta:.3f} \N{GREEK SMALL LETTER GAMMA}={self.gamma:.3f}\N{DEGREE SIGN}"
         )
 
@@ -242,18 +244,20 @@ class Cell:
         if self._volume is None:
             self._volume = self.a * self.b * self.c
             if self.lattice not in ["cubic", "tetragonal", "orthorhombic"]:
-                cosa = cos(self.alpha * pi / 180.0)
-                cosb = cos(self.beta * pi / 180.0)
-                cosg = cos(self.gamma * pi / 180.0)
+                deg2rad = pi / 180.0
+                cosa = cos(self.alpha * deg2rad)
+                cosb = cos(self.beta * deg2rad)
+                cosg = cos(self.gamma * deg2rad)
                 self._volume *= sqrt(
-                    1 - cosa**2 - cosb**2 - cosg**2 + 2 * cosa * cosb * cosg
+                    1.0 - cosa*cosa - cosb*cosb - cosg*cosg + 2 * cosa * cosb * cosg
                 )
         return self._volume
 
-    def get_type(self):
+    @property
+    def type(self):
         return self._type
-
-    def set_type(self, lattice_type):
+    @type.setter
+    def type(self, lattice_type):
         self._type = lattice_type if lattice_type in self.types else "P"
         self.selection_rules = [lambda h, k, l: not (h == 0 and k == 0 and l == 0)]
         if self._type == "I":
@@ -265,15 +269,16 @@ class Cell:
         if self._type == "R":
             self.selection_rules.append(lambda h, k, l: ((h - k + l) % 3 == 0))
 
-    type = property(get_type, set_type)
+    get_type = deprecated(type.fset, reason="property", replacement="type", since_version="2025.07")
+    set_type = deprecated(type.fset, reason="property", replacement="type", since_version="2025.07")
 
-    def d(self, hkl):
+    def d(self, hkl:tuple|Miller) -> float:
         """
         Calculate the actual d-spacing for a 3-tuple of integer representing a
         family of Miller plans
 
         :param hkl: 3-tuple of integers
-        :return: the inter-planar distance
+        :return: the inter-planar distance in Angstrom
         """
         h, k, l = hkl
         deg2rad = pi / 180.0
@@ -335,14 +340,32 @@ class Cell:
                 continue
 
             d = self.d(hkl)
-            strd = "%.8e" % d
             if d < dmin:
                 continue
-            if strd in res:
-                res[strd].append(hkl)
+
+            # Trucate precision at 8 digits to mitigate numerical noise. At most, 8 digits are used for saving.
+            d = numpy.round(d, 8)
+
+            if d in res:
+                res[d].append(Miller(*hkl))
             else:
-                res[strd] = [d, hkl]
+                res[d] = [Miller(*hkl)]
+        for lst in res.values():
+            "sort each group of equivalent reflection in a systematic order"
+            lst.sort(key=lambda x:x[-1::-1])
         return res
+
+    def build_calibrant_config(self, dmin=1.0):
+        """Build a CalibrantConfig from the cell"""
+        config = CalibrantConfig(cell=str(self), space_group=self.type)
+        reflections = self.calculate_dspacing(dmin)
+        dspacing = list(reflections.keys())
+        dspacing.sort(reverse=True)
+        for d in dspacing:
+            reflection = reflections[d]
+            config.reflections.append(Reflection(d, hkl=reflection[-1], multiplicity=len(reflection)))
+        return config
+
 
     def save(self, name, long_name=None, doi=None, dmin=1.0, dest_dir=None):
         """Save informations about the cell in a d-spacing file, usable as Calibrant
@@ -355,20 +378,13 @@ class Cell:
         fname = name + ".D"
         if dest_dir:
             fname = os.path.join(dest_dir, fname)
-        with open(fname, "w", encoding="utf-8") as f:
-            if long_name:
-                f.write(f"# Calibrant: {long_name} ({name}){os.linesep}")
-            else:
-                f.write(f"# Calibrant: {name}{os.linesep}")
-            f.write(f"# Cell: {self}{os.linesep}")
-            if doi:
-                f.write(f"# Ref: {doi}{os.linesep}")
-            d = self.calculate_dspacing(dmin)
-            ds = [i[0] for i in d.values()]
-            ds.sort(reverse=True)
-            for k in ds:
-                strk = f"{k:.8e}"
-                f.write(f"{k:.8f} # {d[strk][-1]} {len(d[strk]) - 1}{os.linesep}")
+        config = self.build_calibrant_config(dmin)
+        if doi:
+            config.reference = doi
+        config.name = name
+        config.description = long_name
+        config.filename=fname
+        config.save(fname)
 
     def to_calibrant(self, dmin=1.0):
         """Convert a Cell object to a Calibrant object
@@ -377,9 +393,5 @@ class Cell:
         :return: Calibrant object
         """
         from .calibrant import Calibrant  # lazy loading to prevent cyclic imports
-
-        d = self.calculate_dspacing(dmin)
-        ds = [i[0] for i in d.values()]
-        ds.sort(reverse=True)
-        calibrant = Calibrant(dSpacing=ds)
-        return calibrant
+        config = self.build_calibrant_config(dmin)
+        return  Calibrant(config=config)

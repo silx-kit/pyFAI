@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/07/2025"
+__date__ = "09/07/2025"
 __status__ = "development"
 
 import sys
@@ -1371,7 +1371,7 @@ class Miller(NamedTuple):
 class Reflection:
     "Represent a family of Miller plans"
 
-    d_spacing: float = None
+    dspacing: float = None
     intensity: float = None
     hkl: tuple = tuple()  # or better Miller namedtuple
     multiplicity: int = None

@@ -34,27 +34,37 @@ A module containing classical calibrant class
 
 from __future__ import annotations
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2025"
+__date__ = "11/07/2025"
 __status__ = "production"
 
 import os
 import logging
 import numpy
+import time
 import itertools
 from typing import Optional, List
-from math import sin, asin, cos, sqrt, pi, ceil
+from collections.abc import Iterable
+from math import sin, asin, cos, sqrt, pi, ceil, log, isfinite
 import threading
 from ..utils import get_calibration_dir
 from ..utils.decorators import deprecated
 from .. import units
 from .cell import Cell
 from .space_groups import ReflectionCondition
-
+from .resolution import _ResolutionFunction, Caglioti, Constant
+from ..containers import Integrate1dResult, Reflection
+from ..io.calibrant_config import CalibrantConfig
 logger = logging.getLogger(__name__)
+try:
+    import numexpr
+except ImportError:
+    logger.debug("Backtrace", exc_info=True)
+    numexpr = None
+
 epsilon = 1.0e-6  # for floating point comparison
 
 
@@ -77,6 +87,7 @@ class Calibrant:
                      is needed.
     :param dspacing: A list of d spacing in Angstrom.
     :param wavelength: A wavelength in meter
+    :param config: instance of pyFAI.io.calibrant_config.CalibrantConfig dataclass
     """
 
     def __init__(
@@ -84,7 +95,9 @@ class Calibrant:
         filename: Optional[str] = None,
         dspacing: Optional[List[float]] = None,
         wavelength: Optional[float] = None,
+        config: CalibrantConfig|None = None,
         **kwargs):
+
         if "dSpacing" in kwargs:
             dspacing = kwargs["dSpacing"]
             logger.warning("Usage of `dSpacing` keyword argument in `Calibrant` constructor is deprecated and has been replaced with `dspacing` (PEP8) since 2025.07")
@@ -92,8 +105,12 @@ class Calibrant:
         self._wavelength = wavelength
         self._sem = threading.Semaphore()
         self._2th = []
+        self.config = None
         if filename is not None:
             self._dspacing = None
+        elif config is not None:
+            self.config = config
+            self._dspacing = [ref.dspacing for ref in config.reflections]
         elif dspacing is None:
             self._dspacing = []
         else:
@@ -191,10 +208,11 @@ class Calibrant:
             return f[6:]
         return os.path.splitext(os.path.basename(f))[0]
 
-    def get_filename(self) -> str:
+    @property
+    def filename(self) -> str:
         return self._filename
 
-    filename = property(get_filename)
+    get_filename = deprecated(filename.fget, reason="property", replacement="filename", since_version="2025.07")
 
     def load_file(self, filename: str):
         """
@@ -224,9 +242,8 @@ class Calibrant:
         if not os.path.isfile(path):
             logger.error("No such calibrant file: %s", path)
             return
-        self._dspacing = numpy.unique(numpy.loadtxt(path))
-        self._dspacing = list(self._dspacing[-1::-1])  # reverse order
-        # self._dspacing.sort(reverse=True)
+        config = self.config = CalibrantConfig.from_dspacing(path)
+        self._dspacing = [ref.dspacing for ref in config.reflections]
         if self._wavelength:
             self._calc_2th()
 
@@ -262,12 +279,14 @@ class Calibrant:
                     "A calibrant resource from pyFAI can't be overwritten)"
                 )
             filename = self._filename
-        else:
-            return
-        with open(filename) as f:
-            f.write("# %s Calibrant" % filename)
-            for i in self.dSpacing:
-                f.write("%s\n" % i)
+            config = CalibrantConfig() if self.config is None else self.config
+            if not config.name:
+                config.name = os.path.splitext(os.path.basename(filename))[0]
+            if not config.refections:
+                for i in self._dspacing + self._out_dspacing:
+                    config.refections.append(Reflection(i))
+            config.save(filename)
+            self.config = config
 
     save_dSpacing = deprecated(save_dspacing,
                             reason="PEP8",
@@ -283,7 +302,10 @@ class Calibrant:
     def dspacing(self, lst: List[float]):
         self._dspacing = list(lst)
         self._out_dspacing = []
-        self._filename = "Modified"
+        if self._filename is None:
+            self._filename = "Modified.D"
+        else:
+            self._filename += "*"
         if self._wavelength:
             self._calc_2th()
 
@@ -459,7 +481,7 @@ class Calibrant:
             )
         return dspacing[index] * 2e-10
 
-    def get_peaks(self, unit: str = "2th_deg"):
+    def get_peaks(self, unit: units.Units|str = units.TTH_DEG):
         """Calculate the peak position as this unit.
 
         :return: numpy array (unlike other methods which return lists)
@@ -477,28 +499,112 @@ class Calibrant:
 
         return values * scale
 
-    # def fake_xrpdp(self,
-    #                nbpt: int=1000,
-    #                ):
+    def fake_xrpdp(self,
+                   nbpt: int=1000,
+                   tth_range: tuple = (0,120),
+                   background: float = 0.0,
+                   Imax: float=1.0,
+                   resolution: float = 0.1,
+                   unit: units.Unit|str = units.TTH_DEG,
+                    ):
+        """Generate a fake powder diffraction pattern from this calibrant
 
+        :param nbpt: number of point in the powder pattern
+        :param tth_range: diffraction angle 2theta, unit as specified in unit parameter, deg by default.
+        :param background: value or array (gonna be interpolated)
+        :param Imax: intensity of the scattering signal
+        :param resolution: pic width δ(°) or resolution function
+        :param unit: can be a string or an instance
+        :return: Integrate1dResult with unit in 2th_deg
+        """
+        unit = units.to_unit(unit)
+        if unit.space != "2th":
+            raise RuntimeError("XRPD have to be generated in `2theta` space")
+
+        tth_range_min = min(tth_range)
+        tth_range_max = max(tth_range)
+        tth_user = numpy.linspace(tth_range_min, tth_range_max, nbpt)
+        tth_rad = tth_user / unit.scale
+
+        # background can be an array
+        if isinstance(background, Iterable):
+            background = numpy.interp(tth_user,
+                numpy.linspace(tth_range_min, tth_range_max, len(background)),
+                background)
+        else:  # or a constant
+            background = numpy.zeros_like(tth_user) + background
+
+        tth_peak = numpy.array(self.get_2th())
+        if not isinstance(resolution, _ResolutionFunction):
+            resolution = Constant(resolution, unit=unit)
+        dtth2_peaks = resolution.sigma2(tth_peak)
+
+        tth_min = tth_range_min / unit.scale
+        tth_max = tth_range_max / unit.scale
+
+        intensities = numpy.ones_like(tth_peak)
+        if self.config and self.config.reflections:
+            for i, ref  in enumerate(self.config.reflections):
+                if i>=len(self._dspacing):
+                    break
+                d_expected = self._dspacing[i]
+                if abs(ref.dspacing-d_expected)>epsilon:
+                    logger.error("dspacing from calibrant does not match config, discarding intensity")
+                    continue
+                intensities[i] = 1.0 if ref.intensity is None else ref.intensity
+
+        # Keep peaks with signal and positive FWHM.
+        msk = numpy.logical_and(intensities>0, dtth2_peaks>0)
+        sigma = numpy.sqrt(dtth2_peaks)
+        numpy.logical_and(msk, tth_peak >= tth_min - 4 * sigma, out=msk)
+        numpy.logical_and(msk, tth_peak <= tth_max + 4 * sigma, out=msk)
+
+        # calculate the masked data in 2D
+        tth_peak = numpy.atleast_2d(tth_peak[msk]).T
+        intensities = numpy.atleast_2d(intensities[msk]).T
+        dtth2_peaks = numpy.atleast_2d(dtth2_peaks[msk]).T
+        tth_rad = numpy.atleast_2d(tth_rad)
+
+        # t0 = time.perf_counter()
+        if numexpr:
+            signals = numexpr.evaluate("intensities * exp(- (tth_rad-tth_peak)**2/(2*dtth2_peaks)) / sqrt( 2 * pi * dtth2_peaks)")
+        else:
+            signals = intensities * numpy.exp(- (tth_rad - tth_peak) ** 2 / (2.0 * dtth2_peaks)) / (numpy.sqrt(2 * pi * dtth2_peaks))
+        # print(f"dt={time.perf_counter()-t0}s")
+        signals /= signals.max()  # Normalization for most intense peak at 1.0
+        signal = Imax * signals.sum(axis=0)
+        signal += background
+        result = Integrate1dResult(tth_user, signal)
+        result._set_unit(unit)
+        return result
 
     def fake_calibration_image(
         self,
         ai,
-        shape=None,
-        Imax=1.0,
-        Imin=0.0,
-        U=0,
-        V=0,
-        W=0.0001,
-    ) -> numpy.ndarray:
+        shape: tuple|None = None,
+        Imax: float =1.0,
+        Imin : float|numpy.ndarray=0.0,
+        resolution: _ResolutionFunction|float =0.1,
+        **kwargs) -> numpy.ndarray:
         """
         Generates a fake calibration image from an azimuthal integrator.
+
         :param ai: azimuthal integrator
         :param Imax: maximum intensity of rings
         :param Imin: minimum intensity of the signal (background)
-        :param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W)
+        :param resolution: either the FWHM (static, in degree) or a `pyFAI.crystallography.resolution._ResolutionFunction` class instance
+        Deprecated options:
+        :param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W) --> deprecated
+        :return: an image
         """
+        # Handle deprecated attributes ...
+        if "U" in kwargs or "V" in kwargs or "W" in kwargs:
+            logger.warning("The usage of (U,V,W) as parameters of `fake_calibration_image` is deprecated since 2025.07. Please use `resolution.Caglioti` instead")
+            resolution = Caglioti(kwargs.get("U", 0), kwargs.get("V", 0), kwargs.get("W", 0))
+
+        if not isinstance(resolution, _ResolutionFunction):
+            resolution = Constant(resolution)
+
         if shape is None:
             if ai.detector.shape:
                 shape = ai.detector.shape
@@ -510,45 +616,31 @@ class Calibrant:
             self.wavelength = ai.wavelength
         elif (self.wavelength is None) and (ai._wavelength is None):
             raise RuntimeError("Wavelength needed to calculate 2theta position")
-        elif (
-            (self.wavelength is not None)
-            and (ai._wavelength is not None)
-            and abs(self.wavelength - ai.wavelength) > 1e-15
-        ):
+        elif ((self.wavelength is not None)
+                and (ai._wavelength is not None)
+                and abs(self.wavelength - ai.wavelength) > 1e-15):
             logger.warning(
                 "Mismatch between wavelength for calibrant (%s) and azimutal integrator (%s)",
                 self.wavelength,
                 ai.wavelength,
             )
-        tth = ai.twoThetaArray(shape)
+        tth = ai.array_from_unit(shape=shape, typ="center", unit=units.TTH_DEG, scale=True)
         tth_min = tth.min()
         tth_max = tth.max()
         dim = int(numpy.sqrt(shape[0] * shape[0] + shape[1] * shape[1]))
-        tth_1d = numpy.linspace(tth_min, tth_max, dim)
-        tanth = numpy.tan(tth_1d / 2.0)
-        fwhm2 = U * tanth**2 + V * tanth + W
-        sigma2 = fwhm2 / (8.0 * numpy.log(2.0))
-        signal = numpy.zeros_like(sigma2)
-        sigma_min = (sigma2.min()) ** 0.5
-        sigma_max = (sigma2.max()) ** 0.5
-        for t in self.get_2th():
-            if t < (tth_min - 3 * sigma_min):
-                continue
-            elif t > (tth_max + 3 * sigma_max):
-                break
-            else:
-                signal += Imax * numpy.exp(-((tth_1d - t) ** 2) / (2.0 * sigma2))
-        signal = (Imax - Imin) * signal + Imin
+        integrated = self.fake_xrpdp(dim, (tth_min, tth_max),
+                                    background=Imin,
+                                    Imax=Imax,
+                                    resolution=resolution,
+                                    unit=units.TTH_DEG)
 
         res = ai.calcfrom1d(
-            tth_1d,
-            signal,
+            integrated.radial,
+            integrated.intensity,
             shape=shape,
             mask=ai.mask,
-            dim1_unit="2th_rad",
-            correctSolidAngle=True,
-        )
-
+            dim1_unit=integrated.unit,
+            correctSolidAngle=True)
         return res
 
     def __getnewargs_ex__(self):
