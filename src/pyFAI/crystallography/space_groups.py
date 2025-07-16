@@ -1813,14 +1813,20 @@ class ReflectionCondition:
 
     @staticmethod
     def group100_P4bm(h, k, l):
-        """Space group 100: P4bm."""
-        # 0kl: k=2n
+        """
+        Space group 100: P4bm. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):       k even
+        - h00 (k=0, l=0):  h even
+        validated
+        """
         if h == 0:
-            return k % 2 == 0
-        if k == l == 0:
-            return h % 2 == 0
-        return (h + k) % 2 == 0
-        # return True
+            return k % 2 == 0  # 0kl
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        return True
+
+
 
     @staticmethod
     def group101_p4cc(h, k, l):
