@@ -2062,35 +2062,42 @@ class ReflectionCondition:
         """
         Space group 110: I4₁cd. Tetragonal. I-centering.
         Valid reflections must satisfy:
-        - hkl:            h + k + l even (I-centering)
-        - hk0 (l=0):      h + k even
-        - 0kl (h=0):      k, l even
-        - hhl (h=k):      2h + l= 4n
-        - 00l (h=0,k=0):  l= 4n
-        - h00 (k=0,l=0):  h even
-        - hh̅0 (h, k=-h, l=0): h even 
+        - hkl:            h + k + l = 2n
+        - hk0:            h + k = 2n
+        - 0kl:            k, l = 2n
+        - hhl:            2h + l = 4n
+        - 00l:            l = 4n
+        - h00:            h = 2n
+        - hh̅0:            h = 2n
+        - h0l:            h, l = 2n
+        - 0k0:            k = 2n
+        - hh0:            h = 2n
+        Source for rules: Combination of ITC and http://img.chem.ucl.ac.uk/sgp/large/110az2.htm
         validated
         """
-        if (h + k + l) % 2 != 0:  # I-centering (hkl)
+        if (h + k + l) % 2 != 0:  # hkl (I-centering)
             return False
-        
         if h == 0 and k == 0:  # 00l
             return l % 4 == 0
-        
-        if l == 0:  # l=0 cases
-            if k == -h:  # hh̅0 (h, k=-h, l=0)
+        if l == 0:
+            if h == k:  # hh0
                 return h % 2 == 0
-            if k == 0:   # h00
+            if k == -h:  # hh̅0
                 return h % 2 == 0
+            if k == 0:  # h00
+                return h % 2 == 0
+            if h == 0:  # 0k0
+                return k % 2 == 0
             return (h + k) % 2 == 0  # hk0
-        
-        if h == 0:  # 0kl
-            return k % 2 == 0 and l % 2 == 0
-        
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0:
+            if h % 2 != 0 or l % 2 != 0:  # h0l
+                return False
         if h == k:  # hhl
             return (2 * h + l) % 4 == 0
-        
         return True  
+
 
     @staticmethod
     def group111_p42mbc(h, k, l):
