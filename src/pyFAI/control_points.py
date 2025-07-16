@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/01/2023"
+__date__ = "15/07/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -48,7 +48,7 @@ import logging
 import copy
 import numpy
 import array
-
+from .utils.decorators import deprecated
 from .calibrant import Calibrant, get_calibrant, names as calibrant_names
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class ControlPoints(object):
         if filename is not None:
             self.load(filename)
         have_spacing = False
-        for i in self.dSpacing:
+        for i in self.dspacing:
             have_spacing = have_spacing or i
         if (not have_spacing) and (calibrant is not None):
             if isinstance(calibrant, Calibrant):
@@ -79,8 +79,8 @@ class ControlPoints(object):
                     self.calibrant = Calibrant(calibrant)
                 else:
                     logger.error("Unable to handle such calibrant: %s", calibrant)
-            elif isinstance(self.dSpacing, (numpy.ndarray, list, tuple, array)):
-                self.calibrant = Calibrant(dSpacing=list(calibrant))
+            elif isinstance(self.dspacing, (numpy.ndarray, list, tuple, array)):
+                self.calibrant = Calibrant(dspacing=list(calibrant))
             else:
                 logger.error("Unable to handle such calibrant: %s", calibrant)
         if not self.calibrant.wavelength:
@@ -210,7 +210,7 @@ class ControlPoints(object):
                 lstout.append("calibrant: %s" % self.calibrant)
             if self.calibrant.wavelength is not None:
                 lstout.append("wavelength: %s" % self.calibrant.wavelength)
-            lstout.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
+            lstout.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dspacing]))
             lst = self.get_labels()
             tth = self.calibrant.get_2th()
             for idx, lbl in enumerate(lst):
@@ -254,7 +254,7 @@ class ControlPoints(object):
                             calibrant = get_calibrant(words[0])
                         try:
                             wavelength = float(words[-1])
-                            calibrant.set_wavelength(wavelength)
+                            calibrant.wavelength = wavelength
                         except Exception as error:
                             logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
                     elif key == "wavelength":
@@ -311,7 +311,7 @@ class ControlPoints(object):
         # Update calibrant if needed.
         if not calibrant and dspacing:
             calibrant = Calibrant()
-            calibrant.dSpacing = dspacing
+            calibrant.dspacing = dspacing
         if calibrant and calibrant.wavelength is None and wavelength:
             calibrant.wavelength = wavelength
         if calibrant:
@@ -380,13 +380,13 @@ class ControlPoints(object):
                 except (ValueError, TypeError):
                     logging.error("I did not understand the ring number you entered")
                 else:
-                    if input_ring >= 0 and input_ring < len(self.calibrant.dSpacing):
+                    if input_ring >= 0 and input_ring < len(self.calibrant.dspacing):
                         last_ring = ring
                         gpt.ring = input_ring
                         is_ok = True
                     else:
                         logging.error("Invalid ring number %i (range 0 -> %2i)",
-                                      input_ring, len(self.calibrant.dSpacing) - 1)
+                                      input_ring, len(self.calibrant.dspacing) - 1)
 
     def setWavelength_change2th(self, value=None):
         with self._sem:
@@ -404,28 +404,36 @@ class ControlPoints(object):
                     self.calibrant = Calibrant()
                 self.calibrant.setWavelength_changeDs(value)
 
-    def set_wavelength(self, value=None):
-        with self._sem:
-            if value:
-                self.calibrant.set_wavelength(value)
-
-    def get_wavelength(self):
+    @property
+    def wavelength(self):
         return self.calibrant._wavelength
 
-    wavelength = property(get_wavelength, set_wavelength)
+    @wavelength.setter
+    def wavelength(self, value=None):
+        with self._sem:
+            if value:
+                self.calibrant.wavelength = value
 
-    def get_dSpacing(self):
+    get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.07")
+    set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.07")
+
+
+    @property
+    def dspacing(self):
         if self.calibrant:
-            return self.calibrant.dSpacing
+            return self.calibrant.dspacing
         else:
             return []
 
-    def set_dSpacing(self, lst):
+    @dspacing.setter
+    def dspacing(self, lst):
         if not self.calibrant:
             self.calibrant = Calibrant()
-        self.calibrant.dSpacing = lst
+        self.calibrant.dspacing = lst
 
-    dSpacing = property(get_dSpacing, set_dSpacing)
+    get_dSpacing = deprecated(dspacing.fget, reason="use property", since_version="2025.07")
+    set_dSpacing = deprecated(dspacing.fset, reason="use property", since_version="2025.07")
+
 
     def get_labels(self):
         """Retieve the list of labels
