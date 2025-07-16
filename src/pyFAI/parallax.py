@@ -214,7 +214,6 @@ class ThinSensor(BaseSensor):
         :param mu: linear absorption coefficient (1/m), can replace efficiency
         """
         self.thickness = None
-        self.efficiency = None
         if thickness is not None:
             self.thickness = float(thickness)
         if efficiency is not None:
@@ -376,6 +375,12 @@ class ThinSensor(BaseSensor):
         :param angle: incidence angle in radians
         :return: displacement in meters
         """
+        angle = abs(angle)
+        if angle >= pi / 2.0:
+            return 1.0 / self.mu
+        mu_prime = self.mu/cos(angle)
+        e_mu_prime = self.thickness*mu_prime
+        return (sin(angle)/self.mu)*(1-(e_mu_prime+1)*numpy.exp(-e_mu_prime))/(1-numpy.exp(-e_mu_prime))
 
 
     def measure_displacement_convolve(self, angle, beam, over=None):
@@ -418,7 +423,7 @@ class Parallax:
     due to parallax effect from the sine of the incidence angle
 
     """
-    SIZE = 1024  # <8k  best fits into L1 cache
+    SIZE = 256  # <8k  best fits into L1 cache
 
     def __init__(self, sensor=None, beam=None):
         """Constructor for the Parallax class
@@ -451,7 +456,7 @@ class Parallax:
         self.displacement = numpy.array(displacement)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.sensor:r}, beam={self.beam:r})"
+        return f"{self.__class__.__name__}({self.sensor!r}, beam={self.beam!r})"
 
     def __str__(self):
         return f"Parallax correction: beam `{self.beam}`, sensor `{self.sensor}`"
