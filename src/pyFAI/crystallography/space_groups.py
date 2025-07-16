@@ -1875,13 +1875,15 @@ class ReflectionCondition:
         Space group 103: P4cc. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
         - 0kl (h=0):        l even
+        - h0l (k=0):        l even
         - hhl (h=k):        l even
         - 00l (h=0, k=0):   l even
+        Source for rules: http://img.chem.ucl.ac.uk/sgp/large/103az2.htm
         validated
         """
-        if h == 0 and k == 0:
-            return l % 2 == 0  # 00l
-        if h == 0 
+        if k == 0:
+            return l % 2 == 0  # h0l, 00l
+        if h == 0: 
             return l % 2 == 0  # 0kl
         if h == k:
             return l % 2 == 0  # hhl
