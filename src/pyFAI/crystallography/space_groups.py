@@ -1809,7 +1809,6 @@ class ReflectionCondition:
         """
         return True
 
-
     @staticmethod
     def group100_P4bm(h, k, l):
         """
@@ -1824,12 +1823,10 @@ class ReflectionCondition:
         validated
         """
         if h == 0:
-            return k % 2 == 0  #0kl , 0k0
+            return k % 2 == 0  # 0kl , 0k0
         if k == 0:
-            return h % 2 == 0  #h0l, h00
+            return h % 2 == 0  # h0l, h00
         return True
-
-
 
     @staticmethod
     def group101_P42cm(h, k, l):
