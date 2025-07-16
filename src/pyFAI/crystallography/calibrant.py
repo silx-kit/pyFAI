@@ -55,7 +55,8 @@ from .. import units
 from .cell import Cell
 from .space_groups import ReflectionCondition
 from .resolution import _ResolutionFunction, Caglioti, Constant
-from ..containers import Integrate1dResult
+from ..containers import Integrate1dResult, Reflection
+from ..io.calibrant_config import CalibrantConfig
 
 logger = logging.getLogger(__name__)
 epsilon = 1.0e-6  # for floating point comparison
@@ -80,6 +81,7 @@ class Calibrant:
                      is needed.
     :param dspacing: A list of d spacing in Angstrom.
     :param wavelength: A wavelength in meter
+    :param config: instance of pyFAI.io.calibrant_config.CalibrantConfig dataclass
     """
 
     def __init__(
@@ -87,7 +89,9 @@ class Calibrant:
         filename: Optional[str] = None,
         dspacing: Optional[List[float]] = None,
         wavelength: Optional[float] = None,
+        config: CalibrantConfig|None = None,
         **kwargs):
+
         if "dSpacing" in kwargs:
             dspacing = kwargs["dSpacing"]
             logger.warning("Usage of `dSpacing` keyword argument in `Calibrant` constructor is deprecated and has been replaced with `dspacing` (PEP8) since 2025.07")
@@ -95,8 +99,12 @@ class Calibrant:
         self._wavelength = wavelength
         self._sem = threading.Semaphore()
         self._2th = []
+        self.config = None
         if filename is not None:
             self._dspacing = None
+        elif config is not None:
+            self.config = config
+            self._dspacing = [ref.dspacing for ref in config.reflections]
         elif dspacing is None:
             self._dspacing = []
         else:
@@ -194,10 +202,11 @@ class Calibrant:
             return f[6:]
         return os.path.splitext(os.path.basename(f))[0]
 
-    def get_filename(self) -> str:
+    @property
+    def filename(self) -> str:
         return self._filename
 
-    filename = property(get_filename)
+    get_filename = deprecated(filename.fget, reason="property", replacement="filename", since_version="2025.07")
 
     def load_file(self, filename: str):
         """
@@ -227,9 +236,8 @@ class Calibrant:
         if not os.path.isfile(path):
             logger.error("No such calibrant file: %s", path)
             return
-        self._dspacing = numpy.unique(numpy.loadtxt(path))
-        self._dspacing = list(self._dspacing[-1::-1])  # reverse order
-        # self._dspacing.sort(reverse=True)
+        config = self.config = CalibrantConfig.from_dspacing(path)
+        self._dspacing = [ref.dspacing for ref in config.reflections]
         if self._wavelength:
             self._calc_2th()
 
@@ -265,12 +273,14 @@ class Calibrant:
                     "A calibrant resource from pyFAI can't be overwritten)"
                 )
             filename = self._filename
-        else:
-            return
-        with open(filename) as f:
-            f.write("# %s Calibrant" % filename)
-            for i in self.dSpacing:
-                f.write("%s\n" % i)
+            config = CalibrantConfig() if self.config is None else self.config
+            if not config.name:
+                config.name = os.path.splitext(os.path.basename(filename))[0]
+            if not config.refections:
+                for i in self._dspacing + self._out_dspacing:
+                    config.refections.append(Reflection(i))
+            config.save(filename)
+            self.config = config
 
     save_dSpacing = deprecated(save_dspacing,
                             reason="PEP8",
@@ -286,7 +296,10 @@ class Calibrant:
     def dspacing(self, lst: List[float]):
         self._dspacing = list(lst)
         self._out_dspacing = []
-        self._filename = "Modified"
+        if self._filename is None:
+            self._filename = "Modified.D"
+        else:
+            self._filename += "*"
         if self._wavelength:
             self._calc_2th()
 

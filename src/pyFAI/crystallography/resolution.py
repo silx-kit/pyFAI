@@ -85,7 +85,8 @@ class Constant(_ResolutionFunction):
 
     def fwhm2(self, tth):
         """Calculate the full-with at half maximum of the peak(s) squared
-        :param tth: 2theta value or array in radians
+
+        :param tth: 2theta value or array of them, in radians
         :return: array of the same shape as tth
         """
         C2 = (self.C/to_unit(self.unit).scale)**2
