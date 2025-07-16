@@ -1659,7 +1659,8 @@ class ReflectionCondition:
     def group91_P4122(h, k, l):
         """
         Space group 91: P 41 2 2. Tetragonal
-        - 00l: l = 4n
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0): l = 4n
         validated"""
         if h == 0 and k == 0:
             return l % 4 == 0
