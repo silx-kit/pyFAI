@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/03/2025"
+__date__ = "15/07/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -304,8 +304,8 @@ class Geometry(object):
                 delta1, delta2 = displacement * r0
                 delta1.shape = p1.shape
                 delta2.shape = p2.shape
-                p1 -= delta1
-                p2 -= delta2
+                p1 += delta1
+                p2 += delta2
         return delta1, delta2
 
     def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None, do_parallax=False):
