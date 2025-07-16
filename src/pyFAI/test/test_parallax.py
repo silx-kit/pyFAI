@@ -32,13 +32,25 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2021"
+__date__ = "16/07/2025"
 
 import unittest
 import numpy
 import logging
 logger = logging.getLogger(__name__)
 from ..parallax import Beam, ThinSensor, BaseSensor, Parallax
+from ..detectors.sensors import Si_MATERIAL, CdTe_MATERIAL
+
+class TestSensorMaterial(unittest.TestCase):
+    """test pyFAI.detectors.sensors"""
+    def test_Si(self):
+        self.assertTrue(numpy.allclose(Si_MATERIAL.mu(20), 10.396656))
+        self.assertTrue(numpy.allclose(Si_MATERIAL.mu_en(20), 9.493004))
+
+    def test_CdTe(self):
+        self.assertTrue(numpy.allclose(CdTe_MATERIAL.mu(40), 112.905))
+        self.assertTrue(numpy.allclose(CdTe_MATERIAL.mu_en(40), 56.36475))
+
 
 
 class TestParallax(unittest.TestCase):
@@ -52,8 +64,6 @@ class TestParallax(unittest.TestCase):
             x,y = beam()
             self.assertGreaterEqual(x[-1]-x[0], width, "{profile} profile is large enough")
             self.assertTrue(numpy.isclose(y.sum(), 1.0), "intensity are normalized")
-
-
 
     def test_decay(self):
         t = ThinSensor(450e-6, 0.3)
@@ -79,6 +89,7 @@ def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestParallax))
+    testsuite.addTest(loader(TestSensorMaterial))
     return testsuite
 
 

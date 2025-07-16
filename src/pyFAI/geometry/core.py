@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/07/2025"
+__date__ = "16/07/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -386,6 +386,7 @@ class Geometry(object):
             if size != p2.size:
                 raise RuntimeError("p2 array size does not match size")
             if do_parallax and self._parallax is not None:
+                print(d1.shape, d2.shape, p1.shape, p2.shape)
                 self._correct_parallax(d1, d2, p1, p2)
 
             # note the change of sign in the third dimension:
@@ -695,7 +696,7 @@ class Geometry(object):
                     self._cached_array["chi_center"] = chia
         return self._cached_array["chi_center"]
 
-    def position_array(self, shape=None, corners=False, dtype=numpy.float64, use_cython=True, do_parallax=False):
+    def position_array(self, shape=None, corners=False, dtype=numpy.float64, use_cython=True, do_parallax=True):
         """Generate an array for the pixel position given the shape of the detector.
 
         if corners is False, the coordinates of the center of the pixel
@@ -801,14 +802,20 @@ class Geometry(object):
                             p2 = det_corners[..., 2]
                             p3 = det_corners[..., 0]
                         try:
+                            if self._parallax is not None:
+                                raise KeyError("Parallax not implemented in fast_path")
+
                             res = _geometry.calc_rad_azim(self.dist, self.poni1, self.poni2,
                                                           self.rot1, self.rot2, self.rot3,
                                                           p1, p2, p3,
                                                           space, self._wavelength,
                                                           orientation=self.detector.orientation,
                                                           chi_discontinuity_at_pi=self.chiDiscAtPi)
-                        except KeyError:
-                            logger.warning("No fast path for space: %s", space)
+                        except KeyError as err:
+                            if "Parallax" in str(err):
+                                logger.warning(err)
+                            else:
+                                logger.warning("No fast path for space: %s", space)
                         except AttributeError as err:
                             logger.warning("AttributeError: The binary extension _geomety may be missing: %s", err)
                         else:
@@ -829,7 +836,7 @@ class Geometry(object):
                                 corners = res
                     if corners is None:
                         # In case the fast-path is not implemented
-                        pos = self.position_array(shape, corners=True)
+                        pos = self.position_array(shape, corners=True, do_parallax=True)
                         x = pos[..., 2]
                         y = pos[..., 1]
                         z = pos[..., 0]
@@ -1140,7 +1147,7 @@ class Geometry(object):
         """
 
         if self.detector.IS_FLAT:
-            p1, p2, _ = self._calc_cartesian_positions(d1, d2)
+            p1, p2, _ = self._calc_cartesian_positions(d1, d2, do_parallax=False)
             if (_geometry is not None) and (path == "cython"):
                 sina = _geometry.calc_sina(self._dist, p1, p2)
             elif (numexpr is not None) and (path != "numpy"):
@@ -1169,7 +1176,7 @@ class Geometry(object):
         :param path: can be "cython", "numexpr" or "numpy" (fallback).
         :return: cosine of the incidence angle
         """
-        p1, p2, p3 = self._calc_cartesian_positions(d1, d2)
+        p1, p2, p3 = self._calc_cartesian_positions(d1, d2, do_parallax=False)
         if p3 is not None:
             # case for non-planar detector ...
 
