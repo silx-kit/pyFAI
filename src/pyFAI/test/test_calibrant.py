@@ -312,7 +312,7 @@ class TestReflection(unittest.TestCase):
          hdf5[sg.space_group] = table
     """
 
-    
+
     #print(utilstest.UtilsTest.resources.data_home)
 
     @classmethod
