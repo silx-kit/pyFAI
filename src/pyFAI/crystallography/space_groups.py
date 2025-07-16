@@ -1685,12 +1685,12 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group93_P4222(h, k, l):
+    def group93_P42_2_2(h, k, l):
         """
-        Space group 93: P4222. Tetragonal.
+        Space group 93: P42 2 2. Tetragonal.
         Valid reflections must satisfy:
         - 00l (h=0, k=0):    l even
-        validated
+        validat
         """
         if h == 0 and k == 0:
             return l % 2 == 0  # 00l
