@@ -1852,14 +1852,15 @@ class ReflectionCondition:
         Space group 101: P42cm. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
         - 0kl (h=0):       l even
+        - h0l (k=0):       l even
         - 00l (h=0, k=0):  l even
+        Source for rules: http://img.chem.ucl.ac.uk/sgp/large/101az2.htm
         validated
         """
-        if h == 0:
-            if k == 0:
-                return l % 2 == 0  # 00l
-            return l % 2 == 0      # 0kl
+        if h == 0 or k == 0:
+            return l % 2 == 0
         return True
+
 
     @staticmethod
     def group102_p4nc(h, k, l):
