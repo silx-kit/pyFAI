@@ -2059,7 +2059,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group110_p42ncm(h, k, l):
-        """Space group 110: P42ncm. (h+k) even; (0,0,l): l even."""
+        """Space group 110: P42ncm. (h+k) even; (0,0,l): l even. validated"""
         if (h + k) % 2 != 0:
             return False
         if h == 0 and k == 0:
