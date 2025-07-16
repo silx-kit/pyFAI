@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2025"
+__date__ = "16/07/2025"
 __status__ = "production"
 
 import logging
@@ -984,14 +984,14 @@ def quality_of_fit(img, ai, calibrant,
         rings = list(range(len(calibrant.get_2th())))
     q_theo = q_theo[rings]
     idx_theo = abs(numpy.add.outer(res.radial,-q_theo)).argmin(axis=0)
-    idx_maxi = numpy.empty((res.azimuthal.size, q_theo.size))+numpy.nan
-    idx_fwhm = numpy.empty((res.azimuthal.size, q_theo.size))+numpy.nan
+    idx_maxi = numpy.empty((res.azimuthal.size, len(rings))) + numpy.nan
+    idx_fwhm = numpy.empty((res.azimuthal.size, len(rings))) + numpy.nan
     signal = res.intensity
     gradient = numpy.gradient(signal, axis=-1)
     minima = numpy.where(numpy.logical_and(gradient[:,:-1]<0, gradient[:,1:]>=0))
     maxima = numpy.where(numpy.logical_and(gradient[:,:-1]>0, gradient[:,1:]<0))
     for idx in range(res.azimuthal.size):
-        for ring in rings:
+        for ring in range(len(rings)):
             q_th = q_theo[ring]
             idx_th = idx_theo[ring]
             if (q_th<=res.radial[0]) or (q_th>=res.radial[-1]):
@@ -1011,9 +1011,9 @@ def quality_of_fit(img, ai, calibrant,
                         if numpy.isfinite(com):
                             width = peak_widths(sub, [numpy.argmax(sub)])[0][0]
                             if width==0:
-                                print(f" #{idx},{ring}: {idx_inf} < th:{idx_th} max:{idx_max} com:{com:.3f} < {idx_sup}; fwhm={width}")
+                                print(f" #{idx}, {ring}: {idx_inf} < th:{idx_th} max:{idx_max} com:{com:.3f} < {idx_sup}; fwhm={width}")
                                 print(signal[idx, idx_inf:idx_sup+1])
-                                print(sub)
+                                # print(sub)
                             else:
                                 idx_fwhm[idx, ring] = width
                                 idx_maxi[idx, ring] = idx_max

@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/07/2025"
+__date__ = "16/07/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -412,7 +412,7 @@ class ControlPoints(object):
     def wavelength(self, value=None):
         with self._sem:
             if value:
-                self.calibrant.wavelength = value
+                self.calibrant._wavelength = value
 
     get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.07")
     set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.07")
