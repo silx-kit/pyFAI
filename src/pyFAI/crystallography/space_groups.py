@@ -1862,7 +1862,6 @@ class ReflectionCondition:
             return l % 2 == 0
         return True
 
-
     @staticmethod
     def group102_p4nc(h, k, l):
         """Space group 102: P4nc. WRONG."""
