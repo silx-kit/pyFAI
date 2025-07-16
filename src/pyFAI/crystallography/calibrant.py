@@ -34,16 +34,17 @@ A module containing classical calibrant class
 
 from __future__ import annotations
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2025"
+__date__ = "11/07/2025"
 __status__ = "production"
 
 import os
 import logging
 import numpy
+import time
 import itertools
 from typing import Optional, List
 from collections.abc import Iterable
@@ -57,8 +58,13 @@ from .space_groups import ReflectionCondition
 from .resolution import _ResolutionFunction, Caglioti, Constant
 from ..containers import Integrate1dResult, Reflection
 from ..io.calibrant_config import CalibrantConfig
-
 logger = logging.getLogger(__name__)
+try:
+    import numexpr
+except ImportError:
+    logger.debug("Backtrace", exc_info=True)
+    numexpr = None
+
 epsilon = 1.0e-6  # for floating point comparison
 
 
@@ -536,26 +542,37 @@ class Calibrant:
         tth_min = tth_range_min / unit.scale
         tth_max = tth_range_max / unit.scale
 
-        # TODO: deal with peak intensities ... after #2562 is addressed
         intensities = numpy.ones_like(tth_peak)
+        if self.config and self.config.reflections:
+            for i, ref  in enumerate(self.config.reflections):
+                if i>=len(self._dspacing):
+                    break
+                d_expected = self._dspacing[i]
+                if abs(ref.dspacing-d_expected)>epsilon:
+                    logger.error("dspacing from calibrant does not match config, discarding intensity")
+                    continue
+                intensities[i] = 1.0 if ref.intensity is None else ref.intensity
 
-        # Normalization of peak intensities
-        intensities /= numpy.nanmax(intensities)
+        # Keep peaks with signal and positive FWHM.
+        msk = numpy.logical_and(intensities>0, dtth2_peaks>0)
+        sigma = numpy.sqrt(dtth2_peaks)
+        numpy.logical_and(msk, tth_peak >= tth_min - 4 * sigma, out=msk)
+        numpy.logical_and(msk, tth_peak <= tth_max + 4 * sigma, out=msk)
 
-        signal = numpy.zeros_like(tth_rad)
-        for peak, sigma2, intensity in zip(tth_peak, dtth2_peaks, intensities):
-            if not isfinite(intensity):
-                continue
-            sigma = sqrt(sigma2)
-            if peak < (tth_min - 3 * sigma):
-                continue
-            elif peak > (tth_max + 3 * sigma):
-                break
+        # calculate the masked data in 2D
+        tth_peak = numpy.atleast_2d(tth_peak[msk]).T
+        intensities = numpy.atleast_2d(intensities[msk]).T
+        dtth2_peaks = numpy.atleast_2d(dtth2_peaks[msk]).T
+        tth_rad = numpy.atleast_2d(tth_rad)
 
-            # Gaussian profile
-            signal += intensity * numpy.exp(-(tth_rad - peak) ** 2 / (2.0 * sigma2))
-
-        signal *= Imax
+        # t0 = time.perf_counter()
+        if numexpr:
+            signals = numexpr.evaluate("intensities * exp(- (tth_rad-tth_peak)**2/(2*dtth2_peaks)) / sqrt( 2 * pi * dtth2_peaks)")
+        else:
+            signals = intensities * numpy.exp(- (tth_rad - tth_peak) ** 2 / (2.0 * dtth2_peaks)) / (numpy.sqrt(2 * pi * dtth2_peaks))
+        # print(f"dt={time.perf_counter()-t0}s")
+        signals /= signals.max()  # Normalization for most intense peak at 1.0
+        signal = Imax * signals.sum(axis=0)
         signal += background
         result = Integrate1dResult(tth_user, signal)
         result._set_unit(unit)
