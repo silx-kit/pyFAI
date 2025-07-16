@@ -1844,8 +1844,21 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group102_p4nc(h, k, l):
-        """Space group 102: P4nc. WRONG."""
+    def group102_P42nm(h, k, l):
+        """
+        Space group 102: P42nm. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):       k + l even
+        - 00l (h=0, k=0):  l even
+        - h00 (k=0, l=0):  h even
+        validated
+        """
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
         return True
 
     @staticmethod
