@@ -1834,6 +1834,7 @@ class ReflectionCondition:
         - h00 (k=0, l=0):  h even
         - 0k0 (h=0, l=0):  k even      [implied by symmetry]
         See ITC Vol. A, Section 2.1.3.13 (v) on reflection conditions for full compliance.
+        See also http://img.chem.ucl.ac.uk/sgp/large/100az2.htm
         validated
         """
         if h == 0 and l != 0:
