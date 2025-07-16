@@ -1697,10 +1697,21 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group94_p4_2_2(h, k, l):
-        """Space group 94: P4_2_2. (0, 0, l): l even."""
+    def group94_P42_21_2(h, k, l):
+        """
+        Space group 94: P42 21 2. Tetragonal.
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0):     l even
+        - h00 (k=0, l=0):     h even
+        - 0k0  (h=0, l=0):  k even (a & b are permutable in tetragonal)
+        validated
+        """
         if h == 0 and k == 0:
-            return l % 2 == 0
+            return l % 2 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
         return True
 
     @staticmethod
