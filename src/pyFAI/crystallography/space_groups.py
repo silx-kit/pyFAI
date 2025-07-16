@@ -1673,7 +1673,7 @@ class ReflectionCondition:
         Valid reflections must satisfy:
         - h00 (k=0, l=0):     h even
         - 0k0 (h=0, l=0):     k even
-        - 00l (h=0, k=0):     l multiple of 4
+        - 00l (h=0, k=0):     l = 4n
         validated
         """
         if k == 0 and l == 0:
