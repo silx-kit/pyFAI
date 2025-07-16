@@ -1811,20 +1811,44 @@ class ReflectionCondition:
         """
         return True
 
+    # @staticmethod
+    # def group100_P4bm(h, k, l):
+    #     """
+    #     Space group 100: P4bm. Tetragonal. Primitive lattice.
+    #     Valid reflections must satisfy:
+    #     - 0kl (h=0):       k even
+    #     - h00 (k=0, l=0):  h even
+    #     validated
+    #     """
+    #     if h == 0:
+    #         return k % 2 == 0  # 0kl
+    #     if k == 0 and l == 0:
+    #         return h % 2 == 0  # h00
+    #     return True
+
+
     @staticmethod
     def group100_P4bm(h, k, l):
         """
         Space group 100: P4bm. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
         - 0kl (h=0):       k even
+        - h0l (k=0):       h even      [implied by symmetry]
         - h00 (k=0, l=0):  h even
+        - 0k0 (h=0, l=0):  k even      [implied by symmetry]
+        See ITC Vol. A, Section 2.1.3.13 (v) on reflection conditions for full compliance.
         validated
         """
-        if h == 0:
+        if h == 0 and l != 0:
             return k % 2 == 0  # 0kl
+        if k == 0 and l != 0:
+            return h % 2 == 0  # h0l
         if k == 0 and l == 0:
             return h % 2 == 0  # h00
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
         return True
+
 
 
 
