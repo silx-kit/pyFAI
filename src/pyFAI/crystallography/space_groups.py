@@ -1725,7 +1725,7 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 4 == 0  # 00l
         return True
-    
+
     @staticmethod
     def group96_P_43_21_2(h, k, l):
         """
@@ -1750,7 +1750,7 @@ class ReflectionCondition:
         """
         Space group 97: I422. Tetragonal. I-centering.
         Valid reflections must satisfy:
-        - hkl:             h + k + l even 
+        - hkl:             h + k + l even
         - hk0 (l=0):       h + k even
         - 0kl (h=0):       k + l even
         - hhl (h=k):       l even
@@ -1772,13 +1772,12 @@ class ReflectionCondition:
             return h % 2 == 0  # h00
         return True
 
-
     @staticmethod
     def group98_I4122(h, k, l):
         """
         Space group 98: I4122. Tetragonal. I-centering.
         Valid reflections must satisfy:
-        - hkl:             h + k + l even 
+        - hkl:             h + k + l even
         - hk0 (l=0):       h + k even
         - 0kl (h=0):       k + l even
         - hhl (h=k):       l even
@@ -1799,7 +1798,6 @@ class ReflectionCondition:
         if h == k:
             return l % 2 == 0  # hhl
         return True
-
 
     @staticmethod
     def group99_P4mm(h, k, l):
@@ -1826,7 +1824,6 @@ class ReflectionCondition:
     #         return h % 2 == 0  # h00
     #     return True
 
-
     @staticmethod
     def group100_P4bm(h, k, l):
         """
@@ -1848,9 +1845,6 @@ class ReflectionCondition:
         if h == 0 and l == 0:
             return k % 2 == 0  # 0k0
         return True
-
-
-
 
     @staticmethod
     def group101_p4cc(h, k, l):
