@@ -1870,10 +1870,21 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group103_p42mc(h, k, l):
-        """Space group 103: P42mc. (0,0,l): l even."""
+    def group103_P4cc(h, k, l):
+        """
+        Space group 103: P4cc. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):        l even
+        - hhl (h=k):        l even
+        - 00l (h=0, k=0):   l even
+        validated
+        """
         if h == 0 and k == 0:
-            return l % 2 == 0
+            return l % 2 == 0  # 00l
+        if h == 0 
+            return l % 2 == 0  # 0kl
+        if h == k:
+            return l % 2 == 0  # hhl
         return True
 
     @staticmethod
