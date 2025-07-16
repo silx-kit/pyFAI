@@ -1701,8 +1701,8 @@ class ReflectionCondition:
         """
         Space group 94: P42 21 2. Tetragonal.
         Valid reflections must satisfy:
-        - 00l (h=0, k=0):     l even
-        - h00 (k=0, l=0):     h even
+        - 00l (h=0, k=0):   l even
+        - h00 (k=0, l=0):   h even
         - 0k0  (h=0, l=0):  k even (a & b are permutable in tetragonal)
         validated
         """
