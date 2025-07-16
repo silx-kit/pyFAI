@@ -1668,17 +1668,19 @@ class ReflectionCondition:
     @staticmethod
     def group92_P41_21_2(h, k, l):
         """
-        Space group 92: P41 21 2. Tetragonal
-        - h00: h = 2n
-        - 0k0: k = 2n
-        - 00l: l = 4n
-        validated"""
+        Space group 92: P41 21 2. Tetragonal.
+        Valid reflections must satisfy:
+        - h00 (k=0, l=0):     h even
+        - 0k0 (h=0, l=0):     k even
+        - 00l (h=0, k=0):     l multiple of 4
+        validated
+        """
         if k == 0 and l == 0:
-            return h % 2 == 0
+            return h % 2 == 0  # h00
         if h == 0 and l == 0:
-            return k % 2 == 0
+            return k % 2 == 0  # 0k0
         if h == 0 and k == 0:
-            return l % 4 == 0
+            return l % 4 == 0  # 00l
         return True
 
     @staticmethod
