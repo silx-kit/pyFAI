@@ -1760,16 +1760,16 @@ class ReflectionCondition:
         """
         if (h + k + l) % 2 != 0:
             return False  # I-centering
-        if l == 0 and (h + k) % 2 != 0:
-            return False  # hk0
-        if h == 0 and (k + l) % 2 != 0:
-            return False  # 0kl
-        if h == k and l % 2 != 0:
-            return False  # hhl
-        if h == 0 and k == 0 and l % 2 != 0:
-            return False  # 00l
-        if k == 0 and l == 0 and h % 2 != 0:
-            return False  # h00
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if h == k:
+            return l % 2 == 0  # hhl
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
         return True
 
 
