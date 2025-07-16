@@ -1725,25 +1725,6 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 4 == 0  # 00l
         return True
-
-    # @staticmethod
-    # def group96_P_43_21_2(h, k, l):
-    #     """Group 96 P 43 21 2, used in lysozyme. validated"""
-    #     if h == 0 and k == 0:
-    #         # 00l: l=4n
-    #         return l % 4 == 0
-    #     elif k == 0 and l == 0:
-    #         # h00: h=2n
-    #         return h % 2 == 0
-    #     # elif h == 0:
-    #     #     # 0kl:
-    #     #     if l % 2 == 1:
-    #     #         # l=2n+1
-    #     #         return True
-    #     #     else:
-    #     #         # 2k+l=4n
-    #     #         return (2 * k + l) % 4 == 0
-    #     return False
     
     @staticmethod
     def group96_P_43_21_2(h, k, l):
