@@ -1,6 +1,8 @@
 subdir('calibration')
+subdir('elements')
 subdir('gui')
 subdir('openCL')
+subdir('sensors')
 
 py.install_sources(
    [
