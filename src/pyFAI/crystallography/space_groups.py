@@ -2058,13 +2058,39 @@ class ReflectionCondition:
     
 
     @staticmethod
-    def group110_p42ncm(h, k, l):
-        """Space group 110: P42ncm. (h+k) even; (0,0,l): l even. validated"""
-        if (h + k) % 2 != 0:
+    def group110_I41cd(h, k, l):
+        """
+        Space group 110: I4₁cd. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:            h + k + l even (I-centering)
+        - hk0 (l=0):      h + k even
+        - 0kl (h=0):      k, l even
+        - hhl (h=k):      2h + l= 4n
+        - 00l (h=0,k=0):  l= 4n
+        - h00 (k=0,l=0):  h even
+        - hh̅0 (h, k=-h, l=0): h even 
+        validated
+        """
+        if (h + k + l) % 2 != 0:  # I-centering (hkl)
             return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
+        
+        if h == 0 and k == 0:  # 00l
+            return l % 4 == 0
+        
+        if l == 0:  # l=0 cases
+            if k == -h:  # hh̅0 (h, k=-h, l=0)
+                return h % 2 == 0
+            if k == 0:   # h00
+                return h % 2 == 0
+            return (h + k) % 2 == 0  # hk0
+        
+        if h == 0:  # 0kl
+            return k % 2 == 0 and l % 2 == 0
+        
+        if h == k:  # hhl
+            return (2 * h + l) % 4 == 0
+        
+        return True  
 
     @staticmethod
     def group111_p42mbc(h, k, l):
