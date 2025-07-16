@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 class SensorMaterial:
     """This class represents a sensor material and
-    is able to produce the lineic absorption coefficient for it as function
+    is able to produce the linear absorption coefficient for it as function
     of the considered energy.
     """
     SCALES = {"cm":1,

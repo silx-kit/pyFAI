@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/01/2022"
+__date__ = "16/07/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 import numpy
 import numexpr
 import scipy.integrate, scipy.signal
-from math import sin, cos, pi, log, sqrt
+from math import sin, cos, pi, log, sqrt, exp
 from .utils.decorators import timeit
 EPS = numpy.finfo("float64").eps
 OVERSAMPLING = 1024  # Default oversampling value
@@ -203,28 +203,35 @@ class ThinSensor(BaseSensor):
     exect composition of the sensor or the absortion coefficient.
 
     Nota: the absortion coefficient depends on the wavelength, but the effect is expected to
-    be negligeable when refining the wagelength in a calibration experiment.
+    be negligeable when refining the wavelength in a calibration experiment.
     """
 
-    def __init__(self, thickness=None, efficiency=None):
+    def __init__(self, thickness:float=None, efficiency:float=None, mu:float=None):
         """Class to simulate the decay of the parallax effect
 
         :param thickness: thickness of the sensible layer, in meter
         :param efficiency: efficiency for the sensor material between 0 and 1
+        :param mu: linear absorption coefficient (1/m), can replace efficiency
         """
         self.thickness = None
         self.efficiency = None
         if thickness is not None:
             self.thickness = float(thickness)
         if efficiency is not None:
-            self.efficiency = float(efficiency)
-        if self.thickness and self.efficiency:
-            BaseSensor.__init__(self, -log(1.0 - self.efficiency) / self.thickness)
+            BaseSensor.__init__(self, -log(1.0 - efficiency) / self.thickness)
         else:
-            BaseSensor.__init__(self, None)
+            BaseSensor.__init__(self, mu)
         self.formula = numexpr.NumExpr("where(x<0, 0.0, mu*exp(-mu*x))")
 
+    @property
+    def efficiency(self):
+        """Normal efficiency !"""
+        return 1.0 - exp(-self.mu*self.thickness)
+
     def __repr__(self):
+        return f"{self.__class__.__name__}({self.thickness}, efficiency={self.efficiency}, mu={self.mu})"
+
+    def __str__(self):
         return f"Thin sensor with µ={self.mu} 1/m, thickness={self.thickness}m and efficiency={self.efficiency}"
 
     def get_config(self):
@@ -241,7 +248,7 @@ class ThinSensor(BaseSensor):
                 raise RuntimeError("class does not match name")
         self.mu = cfg.get("mu")
         self.thickness = float(cfg.get("thickness"))
-        self.efficiency = float(cfg.get("efficiency"))
+        # self.efficiency = float(cfg.get("efficiency"))
         return self
 
     def __call__(self, x):
@@ -341,11 +348,42 @@ class ThinSensor(BaseSensor):
         ax.legend()
         return ax
 
-    def measure_displacement(self, angle, beam, over=None):
+    def measure_displacement(self, angle, beam=None, over=None):
         """Measures the displacement of the peak due to parallax effect
         :param angle: incidence angle in radians
         :param beam: Instance of Beam
         :param over: oversampling factor
+        """
+        if beam is None:
+            return self.measure_displacement_integrate(angle)
+        else:
+            return self.measure_displacement_convolve(angle, beam, over)
+
+    def measure_displacement_integrate(self, angle):
+        """Measures the displacement of the peak due to parallax effect
+           No consideration for the beam shape, thus no convolution
+
+        µ' = µ/cos(𝛼)
+
+        tan(𝛼) = x/z
+
+        <x> = integr(0,thick, x*p(z) dz)
+
+        p(z) = µ' exp(-µ'z) / (1-exp(-µ'*thick))
+
+        <x> = sin(𝛼)/µ * (1-exp(-µ'thick)*(1+µ'thick))/(1-exp(-µ'thick))
+
+        :param angle: incidence angle in radians
+        :return: displacement in meters
+        """
+
+
+    def measure_displacement_convolve(self, angle, beam, over=None):
+        """Measures the displacement of the peak due to parallax effect
+        :param angle: incidence angle in radians
+        :param beam: Instance of Beam
+        :param over: oversampling factor
+        :return: displacement in meters
         """
         over = over or OVERSAMPLING
         angle = abs(angle)
@@ -380,13 +418,13 @@ class Parallax:
     due to parallax effect from the sine of the incidence angle
 
     """
-    SIZE = 64  # <8k  best fits into L1 cache
+    SIZE = 1024  # <8k  best fits into L1 cache
 
     def __init__(self, sensor=None, beam=None):
         """Constructor for the Parallax class
 
         :param sensor: instance of the BaseSensor
-        :param beam: instance of Beam
+        :param beam: instance of Beam, can be None
         """
         if sensor:
             if not isinstance(sensor, BaseSensor):
@@ -401,7 +439,6 @@ class Parallax:
         if self.sensor:
             self.init()
 
-    @timeit
     def init(self, over=None):
         """Initialize actually the class...
 
@@ -414,7 +451,10 @@ class Parallax:
         self.displacement = numpy.array(displacement)
 
     def __repr__(self):
-        return f"Parallax correction for {self.beam} and {self.sensor}"
+        return f"{self.__class__.__name__}({self.sensor:r}, beam={self.beam:r})"
+
+    def __str__(self):
+        return f"Parallax correction: beam `{self.beam}`, sensor `{self.sensor}`"
 
     def __call__(self, sin_incidence):
         """Calculate the displacement from the sine of the incidence angle"""
