@@ -1990,12 +1990,32 @@ class ReflectionCondition:
         return True 
 
     @staticmethod
-    def group108_p42mcm(h, k, l):
-        """Space group 108: P42mcm. (0,0,l): l even."""
+    def group108_I4cm(h, k, l):
+        """
+        Space group 108: I4cm. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - General hkl:    h + k + l = 2n (I-centering)
+        - hk0 (l=0):      h + k = 2n
+        - 0kl (h=0):      k = 2n and l = 2n
+        - hhl (h=k):      l = 2n
+        - 00l (h=0,k=0):  l = 2n
+        - h00 (k=0,l=0):  h = 2n
+        validated
+        """
+        if (h + k + l) % 2 != 0: # I-centering condition
+            return False  
+        if l == 0 and h != 0 and k != 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0 and l != 0:
+            return k % 2 == 0 and l % 2 == 0  # 0kl (both k AND l must be even)
+        if h == k:
+            return l % 2 == 0  # hhl
         if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
-
+            return l % 2 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        
+        return True 
     @staticmethod
     def group109_p42ccm(h, k, l):
         """Space group 109: P42ccm. (0,0,l): l even."""
