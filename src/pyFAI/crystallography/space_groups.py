@@ -1800,9 +1800,15 @@ class ReflectionCondition:
             return l % 2 == 0  # hhl
         return True
 
+
     @staticmethod
-    def group99_p4mm(h, k, l):
-        """Space group 99: P4mm. No systematic absences.validated"""
+    def group99_P4mm(h, k, l):
+        """
+        Space group 99: P4mm. Tetragonal. Primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
