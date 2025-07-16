@@ -2000,21 +2000,28 @@ class ReflectionCondition:
         - hhl (h=k):      l even
         - 00l (h=0,k=0):  l even
         - h00 (k=0,l=0):  h even
+        - h0l (k=0):      h, l even
+        - 0k0 (h=0,l=0):  k even
+        Source for rules: http://img.chem.ucl.ac.uk/sgp/large/108az2.htm
         validated
         """
         if (h + k + l) % 2 != 0:
             return False  # I-centering
         
-        if h == 0 and k == 0:
-            return l % 2 == 0  # 00l
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+        
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
         
         if l == 0:
-            if k == 0:
-                return h % 2 == 0  # h00
             return (h + k) % 2 == 0  # hk0
-        
-        if h == 0:
-            return k % 2 == 0 and l % 2 == 0  # 0kl
         
         if h == k:
             return l % 2 == 0  # hhl
