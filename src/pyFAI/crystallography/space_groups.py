@@ -2243,29 +2243,27 @@ class ReflectionCondition:
         Source: ITC
         validated
         """
+   
         if (h + k + l) % 2 != 0:  # I-centering 
             return False
-        
-        if h == 0 and k == 0:  # 00l
+
+        if h == k == 0:  # 00l
             return l % 2 == 0
-        
+
         if l == 0:
-            if h == k:  # hhl with l=0 would be hh0, but per rules falls under hk0
-                return (h + k) % 2 == 0  # hk0 covers this case
             if k == 0:  # h00
                 return h % 2 == 0
             return (h + k) % 2 == 0  # hk0
-        
+
         if h == 0:  # 0kl
             return (k + l) % 2 == 0
-        
+
         if h == k:  # hhl
             return l % 2 == 0
-        
-        if k == 0 and l == 0:  # h00 (redundant with l==0 case, kept for clarity)
-            return h % 2 == 0
-        
-        return True  
+
+        return True
+
+
 
     @staticmethod
     def group120_p4ncc(h, k, l):
