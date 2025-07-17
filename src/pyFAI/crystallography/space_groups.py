@@ -2362,10 +2362,13 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group123_p42cm(h, k, l):
-        """Space group 123: P42cm. (0,0,l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group123_P4mmm(h, k, l):
+        """
+        Space group 123: P4/mmm. Tetragonal.
+        Valid reflections must satisfy: — all (h, k, l) allowed
+        No systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
