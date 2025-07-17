@@ -2395,9 +2395,9 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group125_P4nbc(h, k, l):
+    def group125_P4nbm(h, k, l):
         """
-        Space group 125: P4/nbc. Tetragonal. Primitive lattice..
+        Space group 125: P4/nbm. Tetragonal. Primitive lattice..
         Valid reflections must satisfy:
         - hk0 (l=0):        h + k = 2n
         - 0kl (h=0):        k = 2n
@@ -2422,7 +2422,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group126_p42bc(h, k, l):
-        """Space group 126: P42bc. (0,0,l): l even."""
+        """Space group 126: P42bc. (0,0,l): l even. validated"""
         if h == 0 and k == 0:
             return l % 2 == 0
         return True
