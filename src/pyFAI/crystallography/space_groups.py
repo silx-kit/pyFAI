@@ -2202,11 +2202,32 @@ class ReflectionCondition:
             return h % 2 == 0
         return True
 
-
     @staticmethod
-    def group118_p4mnc(h, k, l):
-        """Space group 118: P4/mnc. (h+k) even."""
-        return (h + k) % 2 == 0
+    def group118_P4bar2(h, k, l):
+        """
+        Space group 118: P4̅n2. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+       
+        - 0kl (h = 0):        k + l even
+        - h0l (k = 0):        h + l even
+        - h00 (k = 0, l = 0): h even
+        - 0k0 (h = 0, l = 0): k even
+        - 00l (h = 0, k = 0): l even
+    
+        Source: http://img.chem.ucl.ac.uk/sgp/large/118az2.htm
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
+        return True
+
 
     @staticmethod
     def group119_p4nmm(h, k, l):
