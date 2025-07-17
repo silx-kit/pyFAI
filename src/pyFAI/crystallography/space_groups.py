@@ -2264,13 +2264,14 @@ class ReflectionCondition:
         """
         Space group 120: I4̅c2. Tetragonal. I-centering.
         Valid reflections must satisfy:
-        - hkl:    h + k + l even       (I-centering)
-        - hk0:    h + k even
-        - 0kl:    k even and l even
-        - hhl:    l even
-        - 00l:    l even
-        - h00:    h even
+        - hkl:              h + k + l even
+        - hk0 (l=0):        h + k even
+        - 0kl (h=0):        k even and l even
+        - hhl (h=k):        l even
+        - 00l (h=k=0):      l even
+        - h00 (k=l=0):      h even
         Source: ITC
+        validated
         """
         if (h + k + l) % 2 != 0:
             return False  # I-centering condition
@@ -2291,12 +2292,12 @@ class ReflectionCondition:
         """
         Space group 121: I4̅2m. Tetragonal. I-centering.
         Valid reflections must satisfy:
-        - hkl:    h + k + l even
-        - hk0:    h + k even
-        - 0kl:    k + l even
-        - hhl:    l even
-        - 00l:    l even
-        - h00:    h even
+        - hkl:              h + k + l even
+        - hk0 (l=0):        h + k even
+        - 0kl (h=0):        k + l even
+        - hhl (h=k):        l even
+        - 00l (h=k=0):      l even
+        - h00 (k=l=0):      h even
         validated
         """
         if (h + k + l) % 2 != 0:
