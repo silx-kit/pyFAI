@@ -2144,17 +2144,15 @@ class ReflectionCondition:
         Source for rules: ITC and http://img.chem.ucl.ac.uk/sgp/large/114az2.htm
         validated
         """
-        if h == 0 and k == 0:
-            return l % 2 == 0  # 00l
-        if h == k:
-            return l % 2 == 0  # hhl
-        if k == 0 and l == 0:
-            return h % 2 == 0  # h00
-        if h == 0 and l == 0:
-            return k % 2 == 0  # 0k0
+        if (h, k) == (0, 0) or h == k:  # 00l or hhl
+            return l % 2 == 0
+        if l == 0:
+            if k == 0:  # h00
+                return h % 2 == 0
+            if h == 0:  # 0k0
+                return k % 2 == 0
         return True
-
-        
+            
 
 
 
