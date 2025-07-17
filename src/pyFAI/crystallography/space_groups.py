@@ -2189,15 +2189,16 @@ class ReflectionCondition:
         """
         Space group 117: P4̅b2. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
-        - 0kl (h = 0):    k even
-        - h00 (k = 0, l = 0): h even
+        - 0kl (h=0):        k even
+        - h00 (k=0, l=0):   h even
+        - h0l (k=0):        h even
+        - 0k0 (h=0, l=0):   k even
+        Source for rules: ITC and http://img.chem.ucl.ac.uk/sgp/large/117az2.htm
         validated
         """
         if h == 0:
-            # 0kl, k must be even
             return k % 2 == 0
-        if k == 0 and l == 0:
-            # h00, h must be even
+        if k == 0:
             return h % 2 == 0
         return True
 
