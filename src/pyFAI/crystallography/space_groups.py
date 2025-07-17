@@ -2364,7 +2364,7 @@ class ReflectionCondition:
     @staticmethod
     def group123_P4mmm(h, k, l):
         """
-        Space group 123: P4/mmm. Tetragonal.
+        Space group 123: P4/mmm. Tetragonal. Primitive lattice.
         Valid reflections must satisfy: — all (h, k, l) allowed
         No systematic absences.
         validated
@@ -2372,11 +2372,27 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group124_p42nm(h, k, l):
-        """Space group 124: P42nm. (0,0,l): l even."""
-        if h == 0 and k == 0:
+    def group124_P4mcc(h, k, l):
+        """
+        Space group 124: P4/mcc. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):        l = 2n
+        - hhl (h=k):        l = 2n
+        - 00l (h=k=0):      l = 2n
+        - h0l (k=0):        l = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/124az2.htm
+        validated
+        """
+        if h == 0:                # 0kl
+            return l % 2 == 0
+        if h == k:                # hhl
+            return l % 2 == 0
+        if h == k == 0:           # 00l
+            return l % 2 == 0
+        if k == 0:                # h0l
             return l % 2 == 0
         return True
+
 
     @staticmethod
     def group125_p42mc(h, k, l):
