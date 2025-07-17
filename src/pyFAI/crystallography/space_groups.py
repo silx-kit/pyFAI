@@ -2270,22 +2270,30 @@ class ReflectionCondition:
         - hhl (h=k):        l even
         - 00l (h=k=0):      l even
         - h00 (k=l=0):      h even
-        Source: ITC
+        - h0l (k=0):        h + l even
+        - 0k0 (h=l=0):      k even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/120az2.htm
         validated
         """
-        if (h + k + l) % 2 != 0:
-            return False  # I-centering condition
-        if h == k == 0:
-            return l % 2 == 0  # 00l
-        if k == 0 and l == 0:
-            return h % 2 == 0  # h00
-        if l == 0:
-            return (h + k) % 2 == 0  # hk0
-        if h == 0:
-            return (k % 2 == 0) and (l % 2 == 0)  # 0kl
-        if h == k:
-            return l % 2 == 0  # hhl
-        return True
+        if (h + k + l) % 2 != 0:                    # I-centering 
+            return False
+        if h == k == 0:                             # 00l
+            return l % 2 == 0
+        if k == 0 and l == 0:                       # h00
+            return h % 2 == 0
+        if h == 0 and l == 0:                       # 0k0
+            return k % 2 == 0
+        if l == 0:                                  # hk0 
+            return (h + k) % 2 == 0
+        if h == 0:                                  # 0kl 
+            return (k % 2 == 0) and (l % 2 == 0)
+        if k == 0:                                  # h0l
+            return (h % 2 == 0) and (l % 2 == 0)
+        if h == k:                                   # hhl
+            return l % 2 == 0
+        return True                  
+
+
 
     @staticmethod
     def group121_I4bar2m(h, k, l):
