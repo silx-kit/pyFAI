@@ -2186,7 +2186,7 @@ class ReflectionCondition:
 
     @staticmethod
     def group117_p4mbm(h, k, l):
-        """Space group 117: P4/mbm. (h+k) even."""
+        """Space group 117: P4/mbm. (h+k) even. validated"""
         return (h + k) % 2 == 0
 
     @staticmethod
