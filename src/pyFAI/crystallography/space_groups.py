@@ -2172,12 +2172,15 @@ class ReflectionCondition:
         Valid reflections must satisfy:
         - 0kl (h = 0):        l even
         - 00l (h = 0, k = 0): l even
+        - h0l (k = 0):        l even
+        Source for rules: ITC and http://img.chem.ucl.ac.uk/sgp/large/116az2.htm
         validated
         """
-        if (h, k) == (0, 0) or h == 0:
-            return l % 2 == 0  # 00l and 0kl
+        if h == 0:  # 0kl, 00l
+            return l % 2 == 0
+        if k == 0:  # h0l
+            return l % 2 == 0
         return True
-    
 
 
 
