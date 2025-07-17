@@ -2235,12 +2235,12 @@ class ReflectionCondition:
         """
         Space group 119: I4̅m2. Tetragonal. I-centering.
         Valid reflections must satisfy:
-        - hkl:            h + k + l = 2n
-        - hk0:            h + k even
-        - 0kl:            k + l even
-        - hhl:            l even
-        - 00l:            l even
-        - h00:            h even
+        - hkl:          h + k + l = 2n
+        - hk0 (l=0):    h + k even
+        - 0kl (h=0):    k + l even
+        - hhl (h=k):    l even
+        - 00l (h=k=0):  l even
+        - h00 (k=l=0):  h even
         Source: ITC
         validated
         """
