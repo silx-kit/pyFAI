@@ -2266,13 +2266,38 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group120_p4ncc(h, k, l):
-        """Space group 120: P4/ncc. (h+k) even; (0,0,l): l even."""
-        if (h + k) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group120_I4barc2(h, k, l):
+        """
+        Space group 120: I4̅c2. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:    h + k + l even       (I-centering)
+        - hk0:    h + k even
+        - 0kl:    k even and l even
+        - hhl:    l even
+        - 00l:    l even
+        - h00:    h even
+        Source: ITC 
+        """
+        if (h + k + l) % 2 != 0:
+            return False  # I-centering condition
+
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+
+        if h == 0:
+            return (k % 2 == 0) and (l % 2 == 0)  # 0kl
+
+        if h == k:
+            return l % 2 == 0  # hhl
+
         return True
+
 
     @staticmethod
     def group121_p4mm(h, k, l):
