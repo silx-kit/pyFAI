@@ -2133,13 +2133,26 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group114_p4mcc(h, k, l):
-        """Space group 114: P4/mcc. (0,0,l): l even; (h+k) even."""
+    def group114_P4bar21c(h, k, l):
+        """
+        Space group 114: P4̅2₁c. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - hhl (h = k):          l even
+        - 00l (h = 0, k = 0):   l even
+        - h00 (k = 0, l = 0):   h even
+        validated
+        """
         if h == 0 and k == 0:
-            return l % 2 == 0
-        if (h + k) % 2 != 0:
-            return False
+            return l % 2 == 0  # 00l
+        if h == k:
+            return l % 2 == 0  # hhl
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
         return True
+
+        
+
+
 
     @staticmethod
     def group115_p4nbm(h, k, l):
