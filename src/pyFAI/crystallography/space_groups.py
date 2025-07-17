@@ -2315,9 +2315,43 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group122_p4bm(h, k, l):
-        """Space group 122: P4bm. No systematic absences."""
+    def group122_I4bar2d(h, k, l):
+        """
+        Space group 122: I4̅2d. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:              h + k + l even
+        - hk0 (l=0):        h + k even
+        - 0kl (h=0):        k + l even
+        - hhl (h=k):        2h + l = 4n
+        - 00l (h=k=0):      l = 4n
+        - h00 (k=l=0):      h even
+        - hh0 (h=k, l=0):   h even
+        - h0l (k=0):        h + l even
+        - 0k0 (h=0, l=0):   k even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/122az2.htm
+        validated
+        """
+        if (h + k + l) % 2 != 0:
+            return False                    # I-centering
+        if h == k == 0:                     # 00l
+            return l % 4 == 0
+        if l == 0:
+            if h == k:                      # hh0
+                return h % 2 == 0
+            if k == 0:                      # h00
+                return h % 2 == 0
+            return (h + k) % 2 == 0         # hk0
+        if h == 0 and l == 0:               # 0k0
+            return k % 2 == 0
+        if k == 0:                          # h0l
+            return (h + l) % 2 == 0
+        if h == 0:                          # 0kl
+            return (k + l) % 2 == 0
+        if h == k:                          # hhl
+            return (2 * h + l) % 4 == 0
         return True
+
+
 
     @staticmethod
     def group123_p42cm(h, k, l):
