@@ -2121,11 +2121,16 @@ class ReflectionCondition:
         Space group 113: P4̅2₁m. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
         - h00 (k = 0, l = 0): h even
+        - 0k0 (h = 0, l = 0): k even
+        Source for rules: ITC and http://img.chem.ucl.ac.uk/sgp/large/113az2.htm
         validated
         """
         if k == 0 and l == 0:
             return h % 2 == 0  # h00
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
         return True
+
 
     @staticmethod
     def group114_p4mcc(h, k, l):
