@@ -2058,16 +2058,16 @@ class ReflectionCondition:
         """
         Space group 110: I4₁cd. Tetragonal. I-centering.
         Valid reflections must satisfy:
-        - hkl:            h + k + l = 2n
-        - hk0:            h + k = 2n
-        - 0kl:            k, l = 2n
-        - hhl:            2h + l = 4n
-        - 00l:            l = 4n
-        - h00:            h = 2n
-        - hh̅0:            h = 2n
-        - h0l:            h, l = 2n
-        - 0k0:            k = 2n
-        - hh0:            h = 2n
+        - hkl:              h + k + l = 2n
+        - hk0 (l=0):        h + k even
+        - 0kl (h=0):        k, l even
+        - hhl (h=k):        2h + l = 4n
+        - 00l (h=k=0):      l = 4n
+        - h00 (k=l=0):      h even
+        - hh̅0 (k=-h, l=0):  h even
+        - h0l (k=0):        h, l even
+        - 0k0 (h=0, l=0):   k even
+        - hh0 (h=k, l=0):   h even
         Source for rules: Combination of ITC and http://img.chem.ucl.ac.uk/sgp/large/110az2.htm
         validated
         """
@@ -2244,7 +2244,6 @@ class ReflectionCondition:
         Source: ITC
         validated
         """
-
         if (h + k + l) % 2 != 0:  # I-centering
             return False
         if h == k == 0:  # 00l
