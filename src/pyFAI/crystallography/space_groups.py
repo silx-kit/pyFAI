@@ -2476,9 +2476,33 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group128_p4nc(h, k, l):
-        """Space group 128: P4nc. No systematic absences."""
+    def group128_P4mnc(h, k, l):
+        """
+        Space group 128: P4/mnc. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - 0kl (h=0):        k + l = 2n
+        - hhl (h=k):        l = 2n
+        - 00l (h=k=0):      l = 2n
+        - h00 (k=l=0):      h = 2n
+        - h0l (k=0):        h + l = 2n
+        - 0k0 (h=l=0):      k = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/128az2.htm
+        validated
+        """
+        if h == 0:                # 0kl
+            return (k + l) % 2 == 0
+        if h == k:                # hhl
+            return l % 2 == 0
+        if h == k == 0:           # 00l
+            return l % 2 == 0
+        if k == 0 and l == 0:     # h00
+            return h % 2 == 0
+        if k == 0:                # h0l
+            return (h + l) % 2 == 0
+        if h == 0 and l == 0:     # 0k0
+            return k % 2 == 0
         return True
+
 
     @staticmethod
     def group129_p4mmc(h, k, l):
