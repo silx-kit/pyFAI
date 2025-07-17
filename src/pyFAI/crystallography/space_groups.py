@@ -2073,22 +2073,29 @@ class ReflectionCondition:
         """
         if (h + k + l) % 2:  # I-centering
             return False
-        
-        if h == 0 and k == 0: return l % 4 == 0  # 00l
+
+        if h == 0 and k == 0:
+            return l % 4 == 0  # 00l
 
         if l == 0:
-            if h == k: return h % 2 == 0  # hh0
-            if k == -h: return h % 2 == 0  # hh̅0
-            if k == 0: return h % 2 == 0  # h00
-            if h == 0: return k % 2 == 0  # 0k0
+            if h == k:
+                return h % 2 == 0  # hh0
+            if k == -h:
+                return h % 2 == 0  # hh̅0
+            if k == 0:
+                return h % 2 == 0  # h00
+            if h == 0:
+                return k % 2 == 0  # 0k0
             return (h + k) % 2 == 0  # hk0
 
-        if h == 0: return k % 2 == 0 and l % 2 == 0  # 0kl
-        if k == 0: return h % 2 == 0 and l % 2 == 0  # h0l
-        if h == k: return (2*h + l) % 4 == 0  # hhl
-        
-        return True
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if h == k:
+            return (2 * h + l) % 4 == 0  # hhl
 
+        return True
 
     @staticmethod
     def group111_P4bar2m(h, k, l):
@@ -2099,7 +2106,7 @@ class ReflectionCondition:
         validated
         """
         return True
-    
+
     @staticmethod
     def group112_P4bar2c(h, k, l):
         """
@@ -2131,7 +2138,6 @@ class ReflectionCondition:
             return k % 2 == 0  # 0k0
         return True
 
-
     @staticmethod
     def group114_P4bar21c(h, k, l):
         """
@@ -2152,7 +2158,6 @@ class ReflectionCondition:
             if h == 0:  # 0k0
                 return k % 2 == 0
         return True
-            
 
     @staticmethod
     def group115_P4barm2(h, k, l):
@@ -2163,7 +2168,6 @@ class ReflectionCondition:
         validated
         """
         return True
-
 
     @staticmethod
     def group116_P4barc2(h, k, l):
@@ -2181,8 +2185,6 @@ class ReflectionCondition:
         if k == 0:  # h0l
             return l % 2 == 0
         return True
-
-
 
     @staticmethod
     def group117_P4barb2(h, k, l):
@@ -2207,13 +2209,13 @@ class ReflectionCondition:
         """
         Space group 118: P4̅n2. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
-       
+
         - 0kl (h = 0):        k + l even
         - h0l (k = 0):        h + l even
         - h00 (k = 0, l = 0): h even
         - 0k0 (h = 0, l = 0): k even
         - 00l (h = 0, k = 0): l even
-    
+
         Source: http://img.chem.ucl.ac.uk/sgp/large/118az2.htm
         """
         if h == 0 and k == 0:
@@ -2228,13 +2230,12 @@ class ReflectionCondition:
             return (h + l) % 2 == 0  # h0l
         return True
 
-
     @staticmethod
     def group119_I4bar2(h, k, l):
         """
         Space group 119: I4̅m2. Tetragonal. I-centering.
         Valid reflections must satisfy:
-        - hkl:            h + k + l = 2n 
+        - hkl:            h + k + l = 2n
         - hk0:            h + k even
         - 0kl:            k + l even
         - hhl:            l even
@@ -2243,27 +2244,20 @@ class ReflectionCondition:
         Source: ITC
         validated
         """
-   
-        if (h + k + l) % 2 != 0:  # I-centering 
-            return False
 
+        if (h + k + l) % 2 != 0:  # I-centering
+            return False
         if h == k == 0:  # 00l
             return l % 2 == 0
-
         if l == 0:
             if k == 0:  # h00
                 return h % 2 == 0
             return (h + k) % 2 == 0  # hk0
-
         if h == 0:  # 0kl
             return (k + l) % 2 == 0
-
         if h == k:  # hhl
             return l % 2 == 0
-
         return True
-
-
 
     @staticmethod
     def group120_I4barc2(h, k, l):
@@ -2276,28 +2270,21 @@ class ReflectionCondition:
         - hhl:    l even
         - 00l:    l even
         - h00:    h even
-        Source: ITC 
+        Source: ITC
         """
         if (h + k + l) % 2 != 0:
             return False  # I-centering condition
-
         if h == k == 0:
             return l % 2 == 0  # 00l
-
         if k == 0 and l == 0:
             return h % 2 == 0  # h00
-
         if l == 0:
             return (h + k) % 2 == 0  # hk0
-
         if h == 0:
             return (k % 2 == 0) and (l % 2 == 0)  # 0kl
-
         if h == k:
             return l % 2 == 0  # hhl
-
         return True
-
 
     @staticmethod
     def group121_p4mm(h, k, l):
