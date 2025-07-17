@@ -2421,11 +2421,36 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group126_p42bc(h, k, l):
-        """Space group 126: P42bc. (0,0,l): l even. validated"""
-        if h == 0 and k == 0:
+    def group126_P4nnc(h, k, l):
+        """
+        Space group 126: P4/nnc. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - hk0 (l=0):        h + k = 2n
+        - 0kl (h=0):        k + l = 2n
+        - hhl (h=k):        l = 2n
+        - 00l (h=k=0):      l = 2n
+        - h00 (k=l=0):      h = 2n
+        - h0l (k=0):        h + l = 2n
+        - 0k0 (h=l=0):      k = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/126az2.htm
+        validated
+        """
+        if l == 0:                # hk0
+            return (h + k) % 2 == 0
+        if h == 0:                # 0kl
+            return (k + l) % 2 == 0
+        if h == k:                # hhl
             return l % 2 == 0
+        if h == k == 0:           # 00l
+            return l % 2 == 0
+        if k == 0 and l == 0:     # h00
+            return h % 2 == 0
+        if k == 0:                # h0l
+            return (h + l) % 2 == 0
+        if h == 0 and l == 0:     # 0k0
+            return k % 2 == 0
         return True
+
 
     @staticmethod
     def group127_p4cc(h, k, l):
