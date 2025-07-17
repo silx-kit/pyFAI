@@ -2116,8 +2116,15 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group113_p4mmm(h, k, l):
-        """Space group 113: P4/mmm. No systematic absences."""
+    def group113_P4bar21m(h, k, l):
+        """
+        Space group 113: P4̅2₁m. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - h00 (k = 0, l = 0): h even
+        validated
+        """
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
         return True
 
     @staticmethod
