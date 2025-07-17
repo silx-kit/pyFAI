@@ -2287,9 +2287,32 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group121_p4mm(h, k, l):
-        """Space group 121: P4mm. No systematic absences."""
+    def group121_I4bar2m(h, k, l):
+        """
+        Space group 121: I4̅2m. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:    h + k + l even
+        - hk0:    h + k even
+        - 0kl:    k + l even
+        - hhl:    l even
+        - 00l:    l even
+        - h00:    h even
+        validated
+        """
+        if (h + k + l) % 2 != 0:
+            return False
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if h == k:
+            return l % 2 == 0  # hhl
         return True
+
 
     @staticmethod
     def group122_p4bm(h, k, l):
