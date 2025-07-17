@@ -2505,11 +2505,21 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group129_p4mmc(h, k, l):
-        """Space group 129: P4mmc. (0,0,l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group129_P4nmm(h, k, l):
+        """
+        Space group 129: P4/nmm. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - hk0 (l=0):        h + k = 2n
+        - h00 (k=l=0):      h = 2n
+        - 0k0 (h=l=0):      k = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/129az2.htm
+        validated
+        """
+        if k == 0 and l == 0: return h % 2 == 0         # h00
+        if h == 0 and l == 0: return k % 2 == 0         # 0k0
+        if l == 0:            return (h + k) % 2 == 0   # hk0
         return True
+
 
     @staticmethod
     def group130_p4mcm(h, k, l):
