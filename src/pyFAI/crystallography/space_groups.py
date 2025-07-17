@@ -2099,14 +2099,20 @@ class ReflectionCondition:
         validated
         """
         return True
-
+    
     @staticmethod
-    def group112_p42cbm(h, k, l):
-        """Space group 112: P42cbm. (h+k) even; (0,0,l): l even."""
-        if (h + k) % 2 != 0:
-            return False
+    def group112_P4bar2c(h, k, l):
+        """
+        Space group 112: P4̅2c. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - hhl (h = k):       l even
+        - 00l (h = 0, k = 0): l even
+        validated
+        """
         if h == 0 and k == 0:
-            return l % 2 == 0
+            return l % 2 == 0  # 00l
+        if h == k:
+            return l % 2 == 0  # hhl
         return True
 
     @staticmethod
