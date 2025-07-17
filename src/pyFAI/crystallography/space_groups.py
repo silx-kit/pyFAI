@@ -55,12 +55,12 @@ class ReflectionCondition:
     """
 
     @staticmethod
-    def group1_p1(h, k, l):
+    def group1_P1(h, k, l):
         """Space group 1: P1. No systematic absences. validated"""
         return True
 
     @staticmethod
-    def group2_p_1(h, k, l):
+    def group2_P_1(h, k, l):
         """Space group 2: P-1. No systematic absences. validated"""
         return True
 
@@ -112,19 +112,19 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group10_p2m_b(h, k, l):
+    def group10_P2m_b(h, k, l):
         """Space group 10: P2/m (unique axis b). No systematic absences.validated"""
         return True
 
     @staticmethod
-    def group11_p21m_b(h, k, l):
+    def group11_P21m_b(h, k, l):
         """Space group 11: P21/m (unique axis b). (0 k 0): k even only.validated"""
         if h == 0 and l == 0:
             return k % 2 == 0
         return True
 
     @staticmethod
-    def group12_c2m_b(h, k, l):
+    def group12_C2m_b(h, k, l):
         """Space group 12: C2/m (unique axis b). C-centering: (h + k) even. (0 k 0): k even only. validated"""
         if (h + k) % 2 != 0:
             return False
@@ -177,7 +177,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group19_p212121(h, k, l):
+    def group19_P212121(h, k, l):
         """Space group 19: P212121. (0 0 l): l even only. (0 k 0): k even only. (h 0 0): h even only.validated"""
         if h == 0 and k == 0:
             return l % 2 == 0
@@ -188,35 +188,72 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group20_c2221(h, k, l):
-        """Space group 20: C2221. C-centering: h + k even, k + l even, h + l even. (0 0 l): l even only. (0 k 0): k even only. (h 0 0): h even only."""
-        if (h + k) % 2 != 0 or (k + l) % 2 != 0 or (h + l) % 2 != 0:
-            return False
+    def group20_C2221(h, k, l):
+        """
+        Space group 20: C 2 2 21.
+        Valid reflections must satisfy:
+        - General: h + k even
+        - 0kl:     k even
+        - h0l:     h even
+        - hk0:     h + k even
+        - h00:     h even
+        - 0k0:     k even
+        - 00l:     l even
+        .validated
+        """
         if h == 0 and k == 0:
-            return l % 2 == 0
+            return l % 2 == 0  # 00l
         if h == 0 and l == 0:
-            return k % 2 == 0
+            return k % 2 == 0  # 0k0
         if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
+            return h % 2 == 0  # h00
+        if h == 0:
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return (h + k) % 2 == 0  # general
 
     @staticmethod
-    def group21_c222(h, k, l):
-        """Space group 21: C222. C-centering: (h + k) even, (k + l) even, (h + l) even."""
-        return (h + k) % 2 == 0 and (k + l) % 2 == 0 and (h + l) % 2 == 0
+    def group21_C222(h, k, l):
+        """
+        Space group 21: C 2 2 2
+        Valid reflections must satisfy:
+        - General (hkl):       h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+
+        Note: Unlike space group 20 (C 2 2 21), there is **no rule for 00l** in this group.
+        """
+
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return (h + k) % 2 == 0  # general
 
     @staticmethod
-    def group22_f222(h, k, l):
+    def group22_F222(h, k, l):
         """Space group 22: F222. F-centering: h, k, l all even or all odd. validated"""
         return h % 2 == k % 2 == l % 2
 
     @staticmethod
-    def group23_i222(h, k, l):
+    def group23_I222(h, k, l):
         """Space group 23: I222. I-centering: (h + k + l) even. validated"""
         return (h + k + l) % 2 == 0
 
     @staticmethod
-    def group24_i212121(h, k, l):
+    def group24_I212121(h, k, l):
         """Space group 24: I212121. I-centering: (h + k + l) even. (h 0 0): h even; (0 k 0): k even; (0 0 l): l even. validated"""
         if (h + k + l) % 2 != 0:
             return False
@@ -229,845 +266,2282 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group25_pmm2(h, k, l):
+    def group25_Pmm2(h, k, l):
         """Space group 25: Pmm2. No systematic absences.validated"""
         return True
 
     @staticmethod
-    def group26_pmc21(h, k, l):
-        """Space group 26: Pmc21. (h 0 l): h even; (0 k 0): k even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
+    def group26_Pmc21(h, k, l):
+        """Space group 26: Pmc21.
+        Valid reflections must satisfy:
+        - h0l: l = 2n
+        - 00l: l = 2n
+        validated
+        """
+        if k == 0:  # Covers both h0l and 00l cases
+            return l % 2 == 0
         return True
 
     @staticmethod
-    def group27_pcc2(h, k, l):
-        """Space group 27: Pcc2. (h 0 l): h even; (0 k 0): k even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
+    def group27_Pcc2(h, k, l):
+        """Space group 27: Pcc2.
+        Valid reflections must satisfy:
+        - General (hkl):       No condition (unrestricted)
+        - 0kl (h=0):           l even
+        - h0l (k=0):           l even
+        - 00l (h=0, k=0):      l even
+        No other systematic absences.
+        validated
+        """
+        if h == 0 or k == 0:  # Covers 0kl, h0l, and 00l
+            return l % 2 == 0
         return True
 
     @staticmethod
     def group28_pma2(h, k, l):
-        """Space group 28: Pma2. No systematic absences."""
-        return True
-
-    @staticmethod
-    def group29_pla2(h, k, l):
-        """Space group 29: Pla2. (0 k 0): k even; (h 0 l): h even."""
-        if h == 0 and l == 0:
-            return k % 2 == 0
+        """
+        Space group 28: Pma2
+        Valid reflections must satisfy:
+        - h0l (k=0):      h even
+        - h00 (k=0, l=0): h even
+        No other systematic absences.
+        validated
+        """
         if k == 0:
             return h % 2 == 0
         return True
 
     @staticmethod
-    def group30_cmm2(h, k, l):
-        """Space group 30: Cmm2. C-centering: (h + k) even. (h 0 l): h even; (0 k 0): k even."""
-        if (h + k) % 2 != 0:
-            return False
+    def group29_Pca21(h, k, l):
+        """
+        Space group 29: Pca2₁
+        Valid reflections must satisfy:
+        - 0kl (h=0):      l even
+        - h0l (k=0):      h even
+        - h00 (k=0, l=0): h even
+        - 00l (h=0, k=0): l even
+        No other systematic absences.
+        validated
+        """
+        if h == 0 and k == 0:  # 00l case
+            return l % 2 == 0
+        if h == 0:  # 0kl case
+            return l % 2 == 0
+        if k == 0:  # h0l case (includes h00)
+            return h % 2 == 0
+        return True
+
+    @staticmethod
+    def group30_pnc2(h, k, l):
+        """
+        Space group 30: Pnc2
+        Valid reflections must satisfy:
+        - 0kl (h=0):        k + l even
+        - h0l (k=0):        l even
+        - 0k0 (h=0, l=0):   k even
+        - 00l (h=0, k=0):   l even
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
         if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
+            return l % 2 == 0  # h0l
         return True
 
     @staticmethod
-    def group31_cmc21(h, k, l):
-        """Space group 31: Cmc21. C-centering: (h + k) even. (h 0 l): h even; (0 k 0): k even."""
-        if (h + k) % 2 != 0:
-            return False
+    def group31_pmn21(h, k, l):
+        """
+        Space group 31: Pmn2₁
+        Valid reflections must satisfy:
+        - h0l (k=0):      h + l even
+        - h00 (k=0, l=0): h even
+        - 00l (h=0, k=0): l even
+        validated
+        """
+        if h == 0 and k == 0:  # 00l
+            return l % 2 == 0
+        if k == 0:  # Covers both h0l and h00
+            if l == 0:  # h00
+                return h % 2 == 0
+            return (h + l) % 2 == 0  # h0l
+        return True
+
+    @staticmethod
+    def group32_pba2(h, k, l):
+        """ "
+        Space group 32: Pba2.
+        Valid reflections must satisfy:
+        - 0kl (h=0):      k even
+        - h0l (k=0):      h even
+        - h00 (k=0, l=0): h even
+        - 0k0 (h=0, l=0): k even
+        No other systematic absences.
+        validated"""
+        if h == 0:
+            return k % 2 == 0  # Covers 0kl and 0k0
         if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
+            return h % 2 == 0  # Covers h0l and h00
         return True
 
     @staticmethod
-    def group32_ccc2(h, k, l):
-        """Space group 32: Ccc2. C-centering: (h + k) even, (k + l) even, (h + l) even. (h 0 l): h even; (0 k 0): k even."""
-        if (h + k) % 2 != 0 or (k + l) % 2 != 0 or (h + l) % 2 != 0:
-            return False
+    def group33_Pna21(h, k, l):
+        """Space group 33: Pna21.
+        Valid reflections must satisfy:
+        - 0kl (h=0):        k + l even
+        - h0l (k=0):        h even
+        - h00 (k=0, l=0):   h even
+        - 0k0 (h=0, l=0):   k even
+        - 00l (h=0, k=0):   l even
+        validated"""
+        if h == 0:
+            return (k + l) % 2 == 0  # Covers 0kl, 0k0, 00l
         if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
+            return h % 2 == 0  # h0l/h00
         return True
 
     @staticmethod
-    def group33_ama2(h, k, l):
-        """Space group 33: Ama2. (0 k 0): k even; (h 0 l): h even."""
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0:
-            return h % 2 == 0
+    def group34_Pnn2(h, k, l):
+        """Space group 34: Pnn2. P-centering.
+        Valid reflections must satisfy:
+        - 0kl (h=0):        k + l even
+        - h0l (k=0):        h + l even
+        - h00 (k=0, l=0):   h even
+        - 0k0 (h=0, l=0):   k even
+        - 00l (h=0, k=0):   l even
+        validated"""
+        if h == 0 or k == 0:
+            return (h + k + l) % 2 == 0
         return True
 
     @staticmethod
-    def group34_aba2(h, k, l):
-        """Space group 34: Aba2. (0 k 0): k even; (h 0 l): h even."""
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group35_fmm2(h, k, l):
-        """Space group 35: Fmm2. F-centering: h, k, l all even or all odd. (h 0 l): h even; (0 k 0): k even."""
-        if not (h % 2 == k % 2 == l % 2):
-            return False
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
-
-    @staticmethod
-    def group36_i_b_m_2(h, k, l):
-        """Space group 36: I b m 2. I-centering: (h + k + l) even. (h 0 l): h even; (0 k 0): k even."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
-
-    @staticmethod
-    def group37_i_b_c_2(h, k, l):
-        """Space group 37: I b c 2. I-centering: (h + k + l) even. (h 0 l): h even; (0 k 0): k even."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
-
-    @staticmethod
-    def group38_i_b_a_2(h, k, l):
-        """Space group 38: I b a 2. I-centering: (h + k + l) even. (h 0 l): h even; (0 k 0): k even."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
-
-    @staticmethod
-    def group39_pmmm(h, k, l):
-        """Space group 39: Pmmm. No systematic absences."""
-        return True
-
-    @staticmethod
-    def group40_pnnm(h, k, l):
-        """Space group 40: Pnnm. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group41_pccm(h, k, l):
-        """Space group 41: Pccm. (h 0 l): h even; (0 k 0): k even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
-
-    @staticmethod
-    def group42_pban(h, k, l):
-        """Space group 42: Pban. (h 0 l): h even; (0 k 0): k even; (h 0 0): h even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group43_pmma(h, k, l):
-        """Space group 43: Pmma. (0 0 l): l even; (0 k 0): k even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
-
-    @staticmethod
-    def group44_pmna(h, k, l):
-        """Space group 44: Pmna. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group45_pcca(h, k, l):
-        """Space group 45: Pcca. (h 0 l): h even; (0 k 0): k even; (h 0 0): h even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group46_pbam(h, k, l):
-        """Space group 46: Pbam. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group47_pccn(h, k, l):
-        """Space group 47: Pccn. (h 0 l): h even; (0 k 0): k even; (h 0 0): h even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group48_pbcn(h, k, l):
-        """Space group 48: Pbcn. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group49_pbca(h, k, l):
-        """Space group 49: Pbca. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group50_pnma(h, k, l):
-        """Space group 50: Pnma. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group51_pbam(h, k, l):
-        """Space group 51: Pbam. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group52_pccn(h, k, l):
-        """Space group 52: Pccn. (h 0 l): h even; (0 k 0): k even; (k 0 0): k even."""
-        if k == 0:
-            return h % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return k % 2 == 0
-        return True
-
-    @staticmethod
-    def group53_pbcn(h, k, l):
-        """Space group 53: Pbcn. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group54_pbca(h, k, l):
-        """Space group 54: Pbca. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group55_pnma(h, k, l):
-        """Space group 55: Pnma. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group56_pmmn(h, k, l):
-        """Space group 56: Pmmn. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group57_pmmm(h, k, l):
-        """Space group 57: Pmmm. No systematic absences."""
-        return True
-
-    @staticmethod
-    def group58_pnnn(h, k, l):
-        """Space group 58: Pnnn. (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group59_cccm(h, k, l):
-        """Space group 59: Cccm. C-centering: (h + k) even, (k + l) even, (h + l) even."""
-        return (h + k) % 2 == 0 and (k + l) % 2 == 0 and (h + l) % 2 == 0
-
-    @staticmethod
-    def group60_ccca(h, k, l):
-        """Space group 60: Ccca. C-centering: (h + k) even, (k + l) even, (h + l) even."""
-        return (h + k) % 2 == 0 and (k + l) % 2 == 0 and (h + l) % 2 == 0
-
-    @staticmethod
-    def group61_fmmm(h, k, l):
-        """Space group 61: Fmmm. F-centering: h, k, l all even or all odd."""
-        return h % 2 == k % 2 == l % 2
-
-    @staticmethod
-    def group62_fddd(h, k, l):
-        """Space group 62: Fddd. F-centering: h, k, l all even or all odd; (h, k, 0): h, k even; (0, k, l): k, l even; (h, 0, l): h, l even."""
-        if not (h % 2 == k % 2 == l % 2):
-            return False
-        if l == 0 and h % 2 != 0:
-            return False
-        if h == 0 and k % 2 != 0:
-            return False
-        if k == 0 and l % 2 != 0:
-            return False
-        return True
-
-    @staticmethod
-    def group63_immm(h, k, l):
-        """Space group 63: Immm. I-centering: (h + k + l) even."""
-        return (h + k + l) % 2 == 0
-
-    @staticmethod
-    def group64_ibam(h, k, l):
-        """Space group 64: Ibam. I-centering: (h + k + l) even; (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group65_ibca(h, k, l):
-        """Space group 65: Ibca. I-centering: (h + k + l) even; (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group66_ibcm(h, k, l):
-        """Space group 66: Ibcm. I-centering: (h + k + l) even; (0 0 l): l even; (0 k 0): k even; (h 0 0): h even."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        if h == 0 and l == 0:
-            return k % 2 == 0
-        if k == 0 and l == 0:
-            return h % 2 == 0
-        return True
-
-    @staticmethod
-    def group67_p4(h, k, l):
-        """Space group 67: P4. No systematic absences."""
-        return True
-
-    @staticmethod
-    def group68_p41(h, k, l):
-        """Space group 68: P41. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
-        return True
-
-    @staticmethod
-    def group69_p42(h, k, l):
-        """Space group 69: P42. (0, 0, l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group70_p43(h, k, l):
-        """Space group 70: P43. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
-        return True
-
-    @staticmethod
-    def group71_i4(h, k, l):
-        """Space group 71: I4. I-centering: (h + k + l) even.validated"""
-        return (h + k + l) % 2 == 0
-
-    @staticmethod
-    def group72_i41(h, k, l):
-        """Space group 72: I41. I-centering: (h + k + l) even; (0, 0, l): l = 4n."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 4 == 0
-        return True
-
-    @staticmethod
-    def group73_p_4(h, k, l):
-        """Space group 73: P-4. No systematic absences."""
-        return True
-
-    @staticmethod
-    def group74_i_4(h, k, l):
-        """Space group 74: I-4. I-centering: (h + k + l) even."""
-        return (h + k + l) % 2 == 0
-
-    @staticmethod
-    def group75_p4_m(h, k, l):
-        """Space group 75: P4/m. No systematic absences.validated"""
-        return True
-
-    @staticmethod
-    def group76_p42_m(h, k, l):
-        """Space group 76: P42/m. (0, 0, l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group77_p4_n(h, k, l):
-        """Space group 77: P4/n. (h + k) even."""
+    def group35_Cmm2(h, k, l):
+        """Space group 35: Cmm2. C-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        validated"""
+        if h == 0 or k == 0:
+            return (h + k) % 2 == 0
         return (h + k) % 2 == 0
 
     @staticmethod
-    def group78_p42_n(h, k, l):
-        """Space group 78: P42/n. (h + k) even; (0, 0, l): l even."""
-        if (h + k) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
+    def group36_Cmc21(h, k, l):
+        """Space group 36: Cmc2₁. C-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == 0:
+            return (k % 2 == 0) if k != 0 else (l % 2 == 0)  # covers 0kl, 0k0, 00l
+        if k == 0:
+            return (h % 2 == 0) and (l == 0 or l % 2 == 0)  # covers h0l, h00
+        return (h + k) % 2 == 0  # covers hk0 and general case
 
     @staticmethod
-    def group79_i4_m(h, k, l):
-        """Space group 79: I4/m. I-centering: (h + k + l) even.validated"""
-        return (h + k + l) % 2 == 0
-
-    @staticmethod
-    def group80_i41_a(h, k, l):
-        """Space group 80: I41/a. I-centering: (h + k + l) even; (0, 0, l): l = 4n.validated"""
-        if (h + k + l) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 4 == 0
-        return True
-
-    @staticmethod
-    def group81_p_42_m(h, k, l):
-        """Space group 81: P-42m. No systematic absences.validated"""
-        return True
-
-    @staticmethod
-    def group82_p_42_c(h, k, l):
-        """Space group 82: P-42c. (0, 0, l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group83_p_42_n(h, k, l):
-        """Space group 83: P-42n. (h + k) even."""
+    def group37_Cmm2(h, k, l):
+        """Space group 37: Cmm2. C-centering.
+        Valid reflections satisfy:
+        - General (hkl):       h + k even
+        - 0kl (h=0):           k and l even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated"""
+        if h == 0:
+            return (k == 0 or k % 2 == 0) and (l == 0 or l % 2 == 0)
+        if k == 0:
+            return h % 2 == 0 and (l == 0 or l % 2 == 0)
         return (h + k) % 2 == 0
 
     @staticmethod
-    def group84_i_42_m(h, k, l):
-        """Space group 84: I-42m. I-centering: (h + k + l) even."""
+    def group38_Amm2(h, k, l):
+        """
+        Space group 38: Amm2. A-centering.
+        Valid reflections satisfy:
+        - General (hkl):       k + l even
+        - 0kl (h=0):           k + l even
+        - h0l (k=0):           l even
+        - hk0 (l=0):           k even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if k == 0:
+            return l % 2 == 0  # h0l (includes h00 when l=0)
+        if l == 0:
+            return k % 2 == 0  # hk0 (includes 0k0 when h=0)
+        return (k + l) % 2 == 0  # general and 0kl
+
+    @staticmethod
+    def group39_Aem2(h, k, l):
+        """
+        Space group 39: Aem2. A-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       k + l even
+        - 0kl (h=0):           k and l even
+        - h0l (k=0):           l even
+        - hk0 (l=0):           k even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == 0:
+            return (k == 0 or k % 2 == 0) and (
+                l == 0 or l % 2 == 0
+            )  # covers 00l, 0k0, 0kl
+        if k == 0:
+            return l % 2 == 0  # covers h0l (including h00 when l=0)
+        if l == 0:
+            return k % 2 == 0  # covers hk0 (including 0k0 when h=0)
+        return (k + l) % 2 == 0  # general case
+
+    @staticmethod
+    def group40_Ama2(h, k, l):
+        """
+        Space group 40: Ama2. A-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       k + l even
+        - 0kl (h=0):           k + l even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0
+            if l == 0:
+                return k % 2 == 0
+            return (k + l) % 2 == 0
+        if k == 0:
+            return h % 2 == 0 and (l == 0 or l % 2 == 0)
+        return k % 2 == 0 if l == 0 else (k + l) % 2 == 0
+
+    @staticmethod
+    def group41_Aea2(h, k, l):
+        """
+        Space group 41: Aea2. A-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       k + l even
+        - 0kl (h=0):           k and l even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated"""
+        if h == k == 0:  # 00l
+            return l % 2 == 0
+        if h == l == 0:  # 0k0
+            return k % 2 == 0
+        if k == l == 0:  # h00
+            return h % 2 == 0
+        if h == 0:  # 0kl
+            return k % 2 == 0 and l % 2 == 0
+        if k == 0:  # h0l
+            return h % 2 == 0 and l % 2 == 0
+        if l == 0:  # hk0
+            return k % 2 == 0
+        return (k + l) % 2 == 0  # general hkl
+
+    @staticmethod
+    def group42_Fmm2(h, k, l):
+        """
+        Space group 42: Fmm2. F-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k, h + l, and k + l even
+        - 0kl (h=0):           k and l even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h and k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated"""
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if h == l == 0:
+            return k % 2 == 0  # 0k0
+        if k == l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return not (k % 2 or l % 2)  # 0kl
+        if k == 0:
+            return not (h % 2 or l % 2)  # h0l
+        if l == 0:
+            return not (h % 2 or k % 2)  # hk0
+        return (h + k) % 2 == 0 and (h + l) % 2 == 0 and (k + l) % 2 == 0
+
+    @staticmethod
+    def group43_Fdd2(h, k, l):
+        """
+        Space group 43: Fdd2. F-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k, h + l, and k + l even
+        - 0kl (h=0):           k and l even, k + l = 4n
+        - h0l (k=0):           h and l even, h + l = 4n
+        - hk0 (l=0):           h and k even
+        - h00 (k=0, l=0):      h % 4 == 0
+        - 0k0 (h=0, l=0):      k % 4 == 0
+        - 00l (h=0, k=0):      l % 4 == 0
+        validated
+        """
+        if h == k == 0:
+            return l % 4 == 0  # 00l
+        if h == l == 0:
+            return k % 4 == 0  # 0k0
+        if k == l == 0:
+            return h % 4 == 0  # h00
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0 and (k + l) % 4 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0 and (h + l) % 4 == 0  # h0l
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0  # hk0
+        return (h + k) % 2 == 0 and (h + l) % 2 == 0 and (k + l) % 2 == 0
+
+    @staticmethod
+    def group44_Imm2(h, k, l):
+        """
+        Space group 44: Imm2. I-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k + l even
+        - 0kl (h=0):           k + l even
+        - h0l (k=0):           h + l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if h == l == 0:
+            return k % 2 == 0  # 0k0
+        if k == l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return (h + k + l) % 2 == 0  # general hkl
+
+    @staticmethod
+    def group45_Iba2(h, k, l):
+        """
+        Space group 45: Iba2. I-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k + l even
+        - 0kl (h=0):           k and l even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if h == l == 0:
+            return k % 2 == 0  # 0k0
+        if k == l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
         return (h + k + l) % 2 == 0
 
     @staticmethod
-    def group85_i_42_d(h, k, l):
-        """Space group 85: I-42d. I-centering: (h + k + l) even; (0, 0, l): l = 4n."""
+    def group46_Ima2(h, k, l):
+        """
+        Space group 46: Ima2. I-centering.
+        Valid reflections must satisfy:
+        - General (hkl):       h + k + l even
+        - 0kl (h=0):           k + l even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if h == l == 0:
+            return k % 2 == 0  # 0k0
+        if k == l == 0:
+            return h % 2 == 0  # h00
+
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+
+        return (h + k + l) % 2 == 0  # General
+
+    @staticmethod
+    def group47_Pmmm(h, k, l):
+        """
+        Space group 47: Pmmm. Primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        validated
+        """
+        return True
+
+    @staticmethod
+    def group48_Pnnn(h, k, l):
+        """
+        Space group 48: Pnnn. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k + l even
+        - h0l (k=0):           h + l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if h == l == 0:
+            return k % 2 == 0  # 0k0
+        if k == l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return True
+
+    @staticmethod
+    def group49_Pccm(h, k, l):
+        """
+        Space group 49: Pccm. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           l even
+        - h0l (k=0):           l even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if h == 0 or k == 0:
+            return l % 2 == 0
+        return True
+
+    @staticmethod
+    def group50_Pban(h, k, l):
+        """
+        Space group 50: Pban. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        No general condition on hkl.
+        validated
+        """
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0 (includes h00 & 0k0 when l=0)
+        if h == 0:
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0  # h0l
+        return True  # general case
+
+    @staticmethod
+    def group51_Pmma(h, k, l):
+        """
+        Space group 51: Pmma. Primitive lattice.
+        Valid reflections must satisfy:
+        - hk0 (l=0):           h even
+        - h00 (k=0, l=0):      h even
+        No general condition on hkl.
+        validated
+        """
+        if l == 0:
+            return h % 2 == 0  # hk0 (includes h00 when k=0)
+        return True  # general
+
+    @staticmethod
+    def group52_Pnna(h, k, l):
+        """
+        Space group 52: Pnna. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k + l even
+        - h0l (k=0):           h + l even
+        - hk0 (l=0):           h even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
+        if l == 0:
+            return h % 2 == 0  # hk0
+        return True
+
+    @staticmethod
+    def group53_Pmna(h, k, l):
+        """
+        Space group 53: Pmna. Primitive lattice.
+        Valid reflections must satisfy:
+        - h0l (k=0):           h + l even
+        - hk0 (l=0):           h even
+        - h00 (k=0, l=0):      h even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if k == 0:
+            return (h + l) % 2 == 0 if l != 0 else h % 2 == 0
+        if l == 0:
+            return h % 2 == 0
+        return True
+
+    @staticmethod
+    def group54_Pcca(h, k, l):
+        """
+        Space group 54: Pcca. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           l even
+        - h0l (k=0):           l even
+        - hk0 (l=0):           h even
+        - h00 (k=0, l=0):      h even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if l == 0:
+            return h % 2 == 0
+        if h == 0 or k == 0:
+            return l % 2 == 0
+        return True
+
+    @staticmethod
+    def group55_Pbam(h, k, l):
+        """
+        Space group 55: Pbam. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        No general condition on hkl.
+        validated
+        """
+        if h == 0:
+            return k % 2 == 0  # Covers 0k0 and 0kl
+        if k == 0:
+            return h % 2 == 0  # Covers h00 and h0l
+        return True
+
+    @staticmethod
+    def group56_Pccn(h, k, l):
+        """
+        Space group 56: Pccn. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           l even
+        - h0l (k=0):           l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return l % 2 == 0  # 0kl
+        if k == 0:
+            return l % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return True
+
+    @staticmethod
+    def group57_Pbcm(h, k, l):
+        """
+        Space group 57: Pbcm. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k even
+        - h0l (k=0):           l even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return l % 2 == 0  # h0l
+        return True
+
+    @staticmethod
+    def group58_Pnnm(h, k, l):
+        """
+        Space group 58: Pnnm. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k + l even
+        - h0l (k=0):           h + l even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on full hkl.
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
+        return True
+
+    @staticmethod
+    def group59_Pmmn(h, k, l):
+        """
+        Space group 59: Pmmn. Primitive lattice.
+        Valid reflections must satisfy:
+        - hk0 (l=0):       h + k even
+        - h00 (k=0, l=0):  h even
+        - 0k0 (h=0, l=0):  k even
+        No general condition on other hkl.
+        validated
+        """
+        if l == 0:
+            if h == 0:
+                return k % 2 == 0  # 0k0
+            if k == 0:
+                return h % 2 == 0  # h00
+            return (h + k) % 2 == 0  # hk0
+        return True
+
+    @staticmethod
+    def group60_Pbcn(h, k, l):
+        """
+        Space group 60: Pbcn. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k even
+        - h0l (k=0):           l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on full hkl.
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return l % 2 == 0  # h0l
+        return True
+
+    @staticmethod
+    def group61_Pbca(h, k, l):
+        """
+        Space group 61: Pbca. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k even
+        - h0l (k=0):           l even
+        - hk0 (l=0):           h even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on hkl.
+        validated
+        """
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            return k % 2 == 0  # 0k0 and 0kl
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return l % 2 == 0  # h0l
+        if l == 0:
+            return h % 2 == 0  # hk0
+        return True
+
+    @staticmethod
+    def group62_Pnma(h, k, l):
+        """
+        Space group 62: Pnma. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):           k + l even
+        - hk0 (l=0):           h even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        No general condition on general hkl.
+        validated
+        """
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if l == 0:
+            return h % 2 == 0  # hk0
+        return True
+
+    @staticmethod
+    def group63_Cmcm(h, k, l):
+        """
+        Space group 63: Cmcm. C-centering.
+        Valid reflections must satisfy:
+        - general hkl:         h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if (h + k) % 2 != 0:
+            return False
+
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            return k % 2 == 0  # 0k0 and 0kl
+
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        return True
+
+    @staticmethod
+    def group64_Cmce(h, k, l):
+        """
+        Space group 64: Cmce. C-centering.
+        Valid reflections must satisfy:
+        - general hkl:         h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h and l even
+        - hk0 (l=0):           h and k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if (h + k) % 2 != 0:
+            return False  # General condition for all reflections
+
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0  # 0kl
+
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
+
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0  # hk0
+
+        return True
+
+    @staticmethod
+    def group65_Cmmm(h, k, l):
+        """
+        Space group 65: Cmmm. C-centering.
+        Valid reflections must satisfy:
+        - general hkl:         h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        validated
+        """
+        if (h + k) % 2 != 0:
+            return False  # general
+        if h == 0:
+            return k % 2 == 0  #  0kl, 0k0
+        if k == 0:
+            return h % 2 == 0  #  h0l, h00
+        return True
+
+    @staticmethod
+    def group66_Cccm(h, k, l):
+        """
+        Space group 66: Cccm. C-centering.
+        Valid reflections must satisfy:
+        - general hkl:         h + k even
+        - 0kl (h=0):           k, l even
+        - h0l (k=0):           h, l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0  # 0kl, 0k0, 00l
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0  # h0l, h00
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return (h + k) % 2 == 0  # general hkl
+
+    @staticmethod
+    def group67_Cmme(h, k, l):
+        """
+        Space group 67: Cmme. C-centering.
+        Valid reflections must satisfy:
+        - general hkl:         h + k even
+        - 0kl (h=0):           k even
+        - h0l (k=0):           h even
+        - hk0 (l=0):           h, k even
+        validated
+        """
+        if h == 0:
+            return k % 2 == 0  # 0kl, 0k0
+        if k == 0:
+            return h % 2 == 0  # h0l, h00
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0  # hk0
+        return (h + k) % 2 == 0  # general hkl
+
+    @staticmethod
+    def group68_Ccce(h, k, l):
+        """
+        Space group 68: Ccce. C-centering.
+        Valid reflections must satisfy:
+        - general hkl:         h + k even
+        - 0kl (h=0):           k, l even
+        - h0l (k=0):           h, l even
+        - hk0 (l=0):           h, k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0  # hk0
+        return (h + k) % 2 == 0  # general hkl
+
+    @staticmethod
+    def group69_Fmmm(h, k, l):
+        """
+        Space group 69: Fmmm. F-centering.
+        Valid reflections must satisfy:
+        - general hkl: h + k, h + l, k + l even
+        - 0kl (h=0):   k, l even
+        - h0l (k=0):   h, l even
+        - hk0 (l=0):   h, k even
+        - h00 (k=0,l=0): h even
+        - 0k0 (h=0,l=0): k even
+        - 00l (h=0,k=0): l even
+        validated
+        """
+        # general
+        if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
+            return False
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0  # hk0
+        return True
+
+    @staticmethod
+    def group70_Fddd(h, k, l):
+        """
+        Space group 70: Fddd. F-centering.
+        Valid reflections must satisfy:
+        - general hkl:         h + k, h + l, k + l even
+        - 0kl (h=0):           k + l = 4n, k, l even
+        - h0l (k=0):           h + l = 4n, h, l even
+        - hk0 (l=0):           h + k = 4n, h, k even
+        - h00 (k=0, l=0):      h = 4n
+        - 0k0 (h=0, l=0):      k = 4n
+        - 00l (h=0, k=0):      l = 4n
+        validated
+        """
+        # general
+        if (h + k) % 2 or (h + l) % 2 or (k + l) % 2:
+            return False
+
+        if h == 0:
+            if k == 0:
+                return l % 4 == 0  # 00l
+            if l == 0:
+                return k % 4 == 0  # 0k0
+            return (k + l) % 4 == 0 and k % 2 == 0 and l % 2 == 0  # 0kl
+
+        if k == 0:
+            if l == 0:
+                return h % 4 == 0  # h00
+            return (h + l) % 4 == 0 and h % 2 == 0 and l % 2 == 0  # h0l
+
+        if l == 0:
+            return (h + k) % 4 == 0 and h % 2 == 0 and k % 2 == 0  # hk0
+
+        return True
+
+    @staticmethod
+    def group71_Immm(h, k, l):
+        """
+        Space group 71: Immm. Body-centered lattice (I-centering).
+        Valid reflections must satisfy:
+        - general hkl:         h + k, h + l, k + l even
+        - 0kl (h=0):           k + l = 4n, k, l even
+        - h0l (k=0):           h + l = 4n, h, l even
+        - hk0 (l=0):           h + k = 4n, h, k even
+        - h00 (k=0, l=0):      h = 4n
+        - 0k0 (h=0, l=0):      k = 4n
+        - 00l (h=0, k=0):      l = 4n
+        validated
+        """
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return (h + l) % 2 == 0  # h0l
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return (h + k + l) % 2 == 0  # general
+
+    @staticmethod
+    def group72_Ibam(h, k, l):
+        """
+        Space group 72: Ibam. Body-centered lattice (I-centering).
+        Valid reflections must satisfy:
+        - general hkl:         h + k + l even
+        - 0kl (h=0):           k, l even
+        - h0l (k=0):           h, l even
+        - hk0 (l=0):           h + k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if (h + k + l) % 2 != 0:
+            return False  # general
+
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
+
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+
+        return True
+
+    @staticmethod
+    def group73_Ibca(h, k, l):
+        """
+        Space group 73: Ibca. Body-centered lattice (I-centering).
+        Valid reflections must satisfy:
+        - general hkl:         h + k + l even
+        - 0kl (h=0):           k, l even
+        - h0l (k=0):           h, l even
+        - hk0 (l=0):           h, k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        if (h + k + l) % 2 != 0:  # general
+            return False
+
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
+
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0  # hk0
+
+        return True
+
+    @staticmethod
+    def group74_Imma(h, k, l):
+        """
+        Space group 74: Imma. Body-centered lattice (I-centering).
+        Valid reflections must satisfy:
+        - general hkl:         h + k + l even
+        - 0kl (h=0):           k + l even
+        - h0l (k=0):           h + l even
+        - hk0 (l=0):           h, k even
+        - h00 (k=0, l=0):      h even
+        - 0k0 (h=0, l=0):      k even
+        - 00l (h=0, k=0):      l even
+        validated
+        """
+        # general
         if (h + k + l) % 2 != 0:
             return False
-        if h == 0 and k == 0:
-            return l % 4 == 0
+
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return (k + l) % 2 == 0  # 0kl
+
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return (h + l) % 2 == 0  # h0l
+
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0  # hk0
+
         return True
 
     @staticmethod
-    def group86_p4_2_2(h, k, l):
-        """Space group 86: P422. No systematic absences."""
+    def group75_P4(h, k, l):
+        """
+        Space group 75: P4. Primitive tetragonal.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
-    def group87_p4_21_2(h, k, l):
-        """Space group 87: P4_21_2. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
+    def group76_P41(h, k, l):
+        """
+        Space group 76: P41. Primitive tetragonal.
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0):       l = 4n
+        validated
+        """
+        if h == k == 0:
+            return l % 4 == 0  # 00l
         return True
 
     @staticmethod
-    def group88_p4_32_2(h, k, l):
-        """Space group 88: P4_32_2. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
+    def group77_P42(h, k, l):
+        """
+        Space group 77: P42. Primitive tetragonal.
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0):        l = 2n
+        validated
+        """
+        if h == k == 0:
+            return l % 2 == 0  # 00l
         return True
 
     @staticmethod
-    def group89_p4_3_2(h, k, l):
-        """Space group 89: P4_3_2. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
+    def group78_P43(h, k, l):
+        """
+        Space group 78: P43. Primitive tetragonal.
+        Valid reflections must satisfy:
+        - 00l:         l = 4n
+        validated
+        """
+        if h == k == 0:
+            return l % 4 == 0  # 00l
         return True
 
     @staticmethod
-    def group90_p4_1_2(h, k, l):
-        """Space group 90: P4_1_2. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
+    def group79_I4(h, k, l):
+        """
+        Space group 79: I4. Body-centered lattice (I-centering).
+        Valid reflections must satisfy:
+        - general hkl:         h + k + l even
+        - hk0 (l=0):           h + k even
+        - 0kl (h=0):           k + l even
+        - hhl (h=k):           l even
+        - 00l (h=0, k=0):      l even
+        - h00 (k=0, l=0):      h even
+        validated
+        """
+        if (h + k + l) % 2 != 0:
+            return False
+        if h == 0:
+            return (k + l) % 2 == 0 if k else l % 2 == 0
+        if k == 0 and l == 0:
+            return h % 2 == 0
+        if l == 0:
+            return (h + k) % 2 == 0
+        if h == k:
+            return l % 2 == 0
         return True
 
     @staticmethod
-    def group91_p4_12_2(h, k, l):
-        """Space group 91: P4_12_2. (0, 0, l): l = 4n.validated"""
-        if h == 0 and k == 0:
-            return l % 4 == 0
+    def group80_I41(h, k, l):
+        """
+        Space group 80: I41. Body-centered tetragonal (I-centering).
+        Valid reflections must satisfy:
+        - general hkl:         h + k + l even
+        - hk0 (l=0):           h + k even
+        - 0kl (h=0):           k + l even
+        - hhl (h=k):           l even
+        - 00l (h=0, k=0):      l = 4n
+        - h00 (k=0, l=0):      h even
+        validated
+        """
+        if (h + k + l) % 2:
+            return False  # General condition
+
+        if h == 0:
+            return l % 4 == 0 if k == 0 else (k + l) % 2 == 0  # 00l or 0kl
+
+        if l == 0:
+            return (h + k) % 2 == 0 if k else h % 2 == 0  # hk0 or h00
+
+        return l % 2 == 0 if h == k else True  # hhl or general case
+
+    @staticmethod
+    def group81_P_4(h, k, l):
+        """
+        Space group 81: P4̅ (P four bar).
+        No systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
-    def group92_p4_32_2(h, k, l):
-        """Space group 92: P4_32_2. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
+    def group82_I_4(h, k, l):
+        """
+        Space group 82: I4̅. Body-centered tetragonal (I-centering).
+        Valid reflections must satisfy:
+        - hkl:           h + k + l even
+        - hk0:           h + k even
+        - 0kl:           k + l even
+        - hhl:           l even
+        - 00l (h=0, k=0): l even
+        - h00 (k=0, l=0): h even
+        validated
+        """
+        if (h + k + l) % 2:
+            return False
+
+        if h == 0:
+            return (k + l) % 2 == 0 if k else l % 2 == 0  # 0kl or 00l
+
+        if l == 0:
+            return (h + k) % 2 == 0 if k else h % 2 == 0  # hk0 or h00
+
+        return l % 2 == 0 if h == k else True  # hhl or general
+
+    @staticmethod
+    def group83_P4m(h, k, l):
+        """
+        Space group 83: P4/m. Tetragonal.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
-    def group93_p4_3_2(h, k, l):
-        """Space group 93: P4_3_2. (0, 0, l): l = 4n."""
-        if h == 0 and k == 0:
-            return l % 4 == 0
-        return True
-
-    @staticmethod
-    def group94_p4_2_2(h, k, l):
-        """Space group 94: P4_2_2. (0, 0, l): l even."""
+    def group84_P42m(h, k, l):
+        """
+        Space group 84: P42/m. Tetragonal.
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0):         l even
+        validated
+        """
         if h == 0 and k == 0:
             return l % 2 == 0
         return True
 
     @staticmethod
-    def group95_p4_21_2(h, k, l):
-        """Space group 95: P4_21_2. (0, 0, l): l = 4n.validated"""
+    def group85_P4n(h, k, l):
+        """
+        Space group 85: P4/n. Tetragonal.
+        Valid reflections must satisfy:
+        - hk0 (l=0):         h + k even
+        - h00 (k=0, l=0):    h even
+        validated
+        """
+        if l == 0:
+            if k == 0:
+                return h % 2 == 0  # h00
+            return (h + k) % 2 == 0  # hk0
+        return True
+
+    @staticmethod
+    def group86_P42n(h, k, l):
+        """
+        Space group 86: P42/n. Tetragonal.
+        Valid reflections must satisfy:
+        - hk0  (l=0):         h + k even
+        - 00l  (h=0, k=0):    l even
+        - h00  (k=0, l=0):    h even
+        validated
+        """
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        return True
+
+    @staticmethod
+    def group87_I4m(h, k, l):
+        """
+        Space group 87: I4/m. Body-centered tetragonal (I-centering).
+        Valid reflections must satisfy:
+        - hkl:              h + k + l even
+        - hk0  (l=0):       h + k even
+        - 0kl  (h=0):       k + l even
+        - hhl:              l even
+        - 00l  (h=0, k=0):  l even
+        - h00  (k=0, l=0):  h even
+        validated
+        """
+        if (h + k + l) % 2:
+            return False
+        if h == 0:
+            return (k + l) % 2 == 0 if k else l % 2 == 0  # 0kl or 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return l % 2 == 0 if h == k else True  # hhl or general
+
+    @staticmethod
+    def group88_I41a(h, k, l):
+        """
+        Space group 88: I41/a. Body-centered tetragonal (I-centering).
+        Valid reflections must satisfy:
+        - hkl:              h + k + l even
+        - hk0  (l=0):       h, k even
+        - 0kl  (h=0):       k + l even
+        - hhl:              l even
+        - 00l  (h=0, k=0):  l = 4n
+        - h00  (k=0, l=0):  h even
+        - hh0  (k=h, l=0):  h even
+        validated
+        """
+        if (h + k + l) % 2 != 0:
+            return False
+
         if h == 0 and k == 0:
             return l % 4 == 0
+        if h == 0:
+            return (k + l) % 2 == 0
+        if l == 0 and k == 0:
+            return h % 2 == 0
+        if l == 0 and h == k:
+            return h % 2 == 0
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0
+        if h == k:
+            return l % 2 == 0
+        return True
+
+    @staticmethod
+    def group89_P422(h, k, l):
+        """
+        Space group 89: P 4 2 2. Tetragonal.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
+        return True
+
+    @staticmethod
+    def group90_P4212(h, k, l):
+        """
+        Space group 90: P 4 21 2. Tetragonal.
+        Valid reflections must satisfy:
+        - h00  (k=0, l=0):  h even
+        - 0k0  (h=0, l=0):  k even (a & b are permutable in tetragonal)
+        validated
+        """
+        if k == 0 and l == 0:  # h00
+            return h % 2 == 0
+        if h == 0 and l == 0:  # 0k0
+            return k % 2 == 0
+        return True
+
+    @staticmethod
+    def group91_P4122(h, k, l):
+        """
+        Space group 91: P 41 2 2. Tetragonal
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0): l = 4n
+        validated"""
+        if h == 0 and k == 0:
+            return l % 4 == 0
+        return True
+
+    @staticmethod
+    def group92_P41_21_2(h, k, l):
+        """
+        Space group 92: P41 21 2. Tetragonal.
+        Valid reflections must satisfy:
+        - h00 (k=0, l=0):     h even
+        - 0k0 (h=0, l=0):     k even
+        - 00l (h=0, k=0):     l = 4n
+        validated
+        """
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if h == 0 and k == 0:
+            return l % 4 == 0  # 00l
+        return True
+
+    @staticmethod
+    def group93_P42_2_2(h, k, l):
+        """
+        Space group 93: P42 2 2. Tetragonal.
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0):    l even
+        validat
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        return True
+
+    @staticmethod
+    def group94_P42_21_2(h, k, l):
+        """
+        Space group 94: P42 21 2. Tetragonal.
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0):   l even
+        - h00 (k=0, l=0):   h even
+        - 0k0  (h=0, l=0):  k even (a & b are permutable in tetragonal)
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        return True
+
+    @staticmethod
+    def group95_P43_2_2(h, k, l):
+        """
+        Space group 95: P43 2 2. Tetragonal.
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0):    l = 4n
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 4 == 0  # 00l
         return True
 
     @staticmethod
     def group96_P_43_21_2(h, k, l):
-        """Group 96 P 43 21 2, used in lysozyme."""
+        """
+        Space group 96: P 43 21 2. Tetragonal.
+        Valid reflections must satisfy:
+        - 00l (h=0, k=0):    l = 4n
+        - h00 (k=0, l=0):    h even
+        - 0k0 (h=0, l=0):    k even (a & b are permutable in tetragonal)
+        Used in lysozyme.
+        validated
+        """
         if h == 0 and k == 0:
-            # 00l: l=4n
-            return l % 4 == 0
-        elif k == 0 and l == 0:
-            # h00: h=2n
-            return h % 2 == 0
-        # elif h == 0:
-        #     # 0kl:
-        #     if l % 2 == 1:
-        #         # l=2n+1
-        #         return True
-        #     else:
-        #         # 2k+l=4n
-        #         return (2 * k + l) % 4 == 0
-        return False
-
-    @staticmethod
-    def group97_i4_2_2(h, k, l):
-        """Space group 97: I422. I-centering: (h + k + l) even.validated"""
-        return (h + k + l) % 2 == 0
-
-    @staticmethod
-    def group98_i4_12_2(h, k, l):
-        """Space group 98: I4_12_2. I-centering: (h + k + l) even; (0, 0, l): l = 4n.validated"""
-        if (h + k + l) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 4 == 0
+            return l % 4 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
         return True
 
     @staticmethod
-    def group99_p4mm(h, k, l):
-        """Space group 99: P4mm. No systematic absences.validated"""
+    def group97_I422(h, k, l):
+        """
+        Space group 97: I422. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:             h + k + l even
+        - hk0 (l=0):       h + k even
+        - 0kl (h=0):       k + l even
+        - hhl (h=k):       l even
+        - 00l (h=0, k=0):  l even
+        - h00 (k=0, l=0):  h even
+        validated
+        """
+        if (h + k + l) % 2 != 0:
+            return False  # I-centering
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if h == k:
+            return l % 2 == 0  # hhl
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        return True
+
+    @staticmethod
+    def group98_I4122(h, k, l):
+        """
+        Space group 98: I4122. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:             h + k + l even
+        - hk0 (l=0):       h + k even
+        - 0kl (h=0):       k + l even
+        - hhl (h=k):       l even
+        - 00l (h=0, k=0):  l = 4n
+        - h00 (k=0, l=0):  h even
+        validated
+        """
+        if (h + k + l) % 2 != 0:
+            return False  # I-centering
+        if h == 0 and k == 0:
+            return l % 4 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if h == k:
+            return l % 2 == 0  # hhl
+        return True
+
+    @staticmethod
+    def group99_P4mm(h, k, l):
+        """
+        Space group 99: P4mm. Tetragonal. Primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
     def group100_P4bm(h, k, l):
-        """Space group 100: P4bm."""
-        # 0kl: k=2n
+        """
+        Space group 100: P4bm. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):       k even
+        - h0l (k=0):       h even      [implied by symmetry]
+        - h00 (k=0, l=0):  h even
+        - 0k0 (h=0, l=0):  k even      [implied by symmetry]
+        See ITC Vol. A, Section 2.1.3.13 (v) on reflection conditions for full compliance.
+        See also http://img.chem.ucl.ac.uk/sgp/large/100az2.htm
+        validated
+        """
+        if h == 0:
+            return k % 2 == 0  # 0kl , 0k0
+        if k == 0:
+            return h % 2 == 0  # h0l, h00
+        return True
+
+    @staticmethod
+    def group101_P42cm(h, k, l):
+        """
+        Space group 101: P42cm. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):       l even
+        - h0l (k=0):       l even
+        - 00l (h=0, k=0):  l even
+        Source for rules: http://img.chem.ucl.ac.uk/sgp/large/101az2.htm
+        validated
+        """
+        if h == 0 or k == 0:
+            return l % 2 == 0
+        return True
+
+    @staticmethod
+    def group102_P42nm(h, k, l):
+        """
+        Space group 102: P42nm. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):        k + l even
+        - h0l (k=0):        h + l even
+        - h00 (k=0, l=0):   h even
+        - 0k0 (h=0, l=0):   k even
+        - 00l (h=0, k=0):   l even
+        Source for rules: http://img.chem.ucl.ac.uk/sgp/large/102az2.htm
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
+        return True
+
+    @staticmethod
+    def group103_P4cc(h, k, l):
+        """
+        Space group 103: P4cc. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):        l even
+        - h0l (k=0):        l even
+        - hhl (h=k):        l even
+        - 00l (h=0, k=0):   l even
+        Source for rules: http://img.chem.ucl.ac.uk/sgp/large/103az2.htm
+        validated
+        """
+        if k == 0:
+            return l % 2 == 0  # h0l, 00l
+        if h == 0:
+            return l % 2 == 0  # 0kl
+        if h == k:
+            return l % 2 == 0  # hhl
+        return True
+
+    @staticmethod
+    def group104_P4nc(h, k, l):
+        """
+        Space group 104: P4nc. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):         k + l = 2n
+        - h0l (k=0):         h + l = 2n
+        - hhl (h=k):         l even
+        - h00 (k=0, l=0):    h even
+        - 0k0 (h=0, l=0):    k even
+        - 00l (h=0, k=0):    l even
+        Source for rules: http://img.chem.ucl.ac.uk/sgp/large/104az2.htm
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
+        if h == k:
+            return l % 2 == 0  # hhl
+        return True
+
+    @staticmethod
+    def group105_P42mc(h, k, l):
+        """
+        Space group 105: P4₂mc. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - hhl (h = k):       l even
+        - 00l (h = 0, k = 0): l even
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == k:
+            return l % 2 == 0  # hhl
+        return True
+
+    @staticmethod
+    def group106_P42bc(h, k, l):
+        """
+        Space group 106: P4₂bc. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):       k even
+        - h0l (k=0):       h even
+        - hhl (h=k):       l even
+        - 00l (h=0, k=0):  l even
+        - h00 (h≠0, k=0, l=0): h even
+        - 0k0 (h=0, k≠0, l=0): k even
+        Source for rules: http://img.chem.ucl.ac.uk/sgp/large/106az2.htm
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return k % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0  # h0l
+        if h == k:
+            return l % 2 == 0  # hhl
+        return True
+
+    @staticmethod
+    def group107_I4mm(h, k, l):
+        """
+        Space group 107: I4mm. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - General kl:     h + k + l = 2n
+        - hk0 (l=0):      h + k even
+        - 0kl (h=0):      k + l even
+        - hhl (h=k):      l even
+        - 00l (h=0,k=0):  l even
+        - h00 (k=0,l=0):  h even
+        validated
+        """
+        if (h + k + l) % 2 != 0:  # I-centering
+            return False
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if h == k:
+            return l % 2 == 0  # hhl
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        return True
+
+    @staticmethod
+    def group108_I4cm(h, k, l):
+        """
+        Space group 108: I4cm. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - General hkl:    h + k + l even (I-centering)
+        - hk0 (l=0):      h + k even
+        - 0kl (h=0):      k, l even
+        - hhl (h=k):      l even
+        - 00l (h=0,k=0):  l even
+        - h00 (k=0,l=0):  h even
+        - h0l (k=0):      h, l even
+        - 0k0 (h=0,l=0):  k even
+        Source for rules: http://img.chem.ucl.ac.uk/sgp/large/108az2.htm
+        validated
+        """
+        if (h + k + l) % 2 != 0:
+            return False  # I-centering
+
+        if h == 0:
+            if k == 0:
+                return l % 2 == 0  # 00l
+            if l == 0:
+                return k % 2 == 0  # 0k0
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+
+        if k == 0:
+            if l == 0:
+                return h % 2 == 0  # h00
+            return h % 2 == 0 and l % 2 == 0  # h0l
+
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+
+        if h == k:
+            return l % 2 == 0  # hhl
+
+        return True
+
+    @staticmethod
+    def group109_I41md(h, k, l):
+        """
+        Space group 109: I4₁md. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:            h + k + l even (I-centering)
+        - hk0 (l=0):      h + k even
+        - 0kl (h=0):      k + l even
+        - hhl (h=k):      2h + l= 4n
+        - 00l (h=0,k=0):  l= 4n
+        - h00 (k=0,l=0):  h even
+        - hh0 (h=k,l=0):  h even
+        validated
+        """
+        if (h + k + l) % 2 != 0:  # I-centering (hkl)
+            return False
+        if h == 0 and k == 0:  # 00l
+            return l % 4 == 0
+        if l == 0:  # l=0 cases
+            if h == k:  # hh0
+                return h % 2 == 0
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:  # 0kl
+            return (k + l) % 2 == 0
+        if h == k:  # hhl
+            return (2 * h + l) % 4 == 0
+        return True
+
+    @staticmethod
+    def group110_I41cd(h, k, l):
+        """
+        Space group 110: I4₁cd. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:              h + k + l = 2n
+        - hk0 (l=0):        h + k even
+        - 0kl (h=0):        k, l even
+        - hhl (h=k):        2h + l = 4n
+        - 00l (h=k=0):      l = 4n
+        - h00 (k=l=0):      h even
+        - hh̅0 (k=-h, l=0):  h even
+        - h0l (k=0):        h, l even
+        - 0k0 (h=0, l=0):   k even
+        - hh0 (h=k, l=0):   h even
+        Source for rules: Combination of ITC and http://img.chem.ucl.ac.uk/sgp/large/110az2.htm
+        validated
+        """
+        if (h + k + l) % 2:  # I-centering
+            return False
+
+        if h == 0 and k == 0:
+            return l % 4 == 0  # 00l
+
+        if l == 0:
+            if h == k:
+                return h % 2 == 0  # hh0
+            if k == -h:
+                return h % 2 == 0  # hh̅0
+            if k == 0:
+                return h % 2 == 0  # h00
+            if h == 0:
+                return k % 2 == 0  # 0k0
+            return (h + k) % 2 == 0  # hk0
+
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if h == k:
+            return (2 * h + l) % 4 == 0  # hhl
+
+        return True
+
+    @staticmethod
+    def group111_P4bar2m(h, k, l):
+        """
+        Space group 111: P4̅2m. Tetragonal. Primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences
+        validated
+        """
+        return True
+
+    @staticmethod
+    def group112_P4bar2c(h, k, l):
+        """
+        Space group 112: P4̅2c. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - hhl (h = k):       l even
+        - 00l (h = 0, k = 0): l even
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == k:
+            return l % 2 == 0  # hhl
+        return True
+
+    @staticmethod
+    def group113_P4bar21m(h, k, l):
+        """
+        Space group 113: P4̅2₁m. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - h00 (k = 0, l = 0): h even
+        - 0k0 (h = 0, l = 0): k even
+        Source for rules: ITC and http://img.chem.ucl.ac.uk/sgp/large/113az2.htm
+        validated
+        """
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        return True
+
+    @staticmethod
+    def group114_P4bar21c(h, k, l):
+        """
+        Space group 114: P4̅2₁c. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - hhl (h = k):          l even
+        - 00l (h = 0, k = 0):   l even
+        - h00 (k = 0, l = 0):   h even
+        - 0k0 (h = 0, l = 0):    k even
+        Source for rules: ITC and http://img.chem.ucl.ac.uk/sgp/large/114az2.htm
+        validated
+        """
+        if (h, k) == (0, 0) or h == k:  # 00l or hhl
+            return l % 2 == 0
+        if l == 0:
+            if k == 0:  # h00
+                return h % 2 == 0
+            if h == 0:  # 0k0
+                return k % 2 == 0
+        return True
+
+    @staticmethod
+    def group115_P4barm2(h, k, l):
+        """
+        Space group 115: P4̅m2. Tetragonal. Primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        validated
+        """
+        return True
+
+    @staticmethod
+    def group116_P4barc2(h, k, l):
+        """
+        Space group 116: P4̅c2. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h = 0):        l even
+        - 00l (h = 0, k = 0): l even
+        - h0l (k = 0):        l even
+        Source for rules: ITC and http://img.chem.ucl.ac.uk/sgp/large/116az2.htm
+        validated
+        """
+        if h == 0:  # 0kl, 00l
+            return l % 2 == 0
+        if k == 0:  # h0l
+            return l % 2 == 0
+        return True
+
+    @staticmethod
+    def group117_P4barb2(h, k, l):
+        """
+        Space group 117: P4̅b2. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):        k even
+        - h00 (k=0, l=0):   h even
+        - h0l (k=0):        h even
+        - 0k0 (h=0, l=0):   k even
+        Source for rules: ITC and http://img.chem.ucl.ac.uk/sgp/large/117az2.htm
+        validated
+        """
         if h == 0:
             return k % 2 == 0
-        if k == l == 0:
+        if k == 0:
             return h % 2 == 0
-        return (h + k) % 2 == 0
-        # return True
-
-    @staticmethod
-    def group101_p4cc(h, k, l):
-        """Space group 101: P4cc. WRONG."""
         return True
 
     @staticmethod
-    def group102_p4nc(h, k, l):
-        """Space group 102: P4nc. WRONG."""
-        return True
+    def group118_P4bar2(h, k, l):
+        """
+        Space group 118: P4̅n2. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
 
-    @staticmethod
-    def group103_p42mc(h, k, l):
-        """Space group 103: P42mc. (0,0,l): l even."""
+        - 0kl (h = 0):        k + l even
+        - h0l (k = 0):        h + l even
+        - h00 (k = 0, l = 0): h even
+        - 0k0 (h = 0, l = 0): k even
+        - 00l (h = 0, k = 0): l even
+
+        Source: http://img.chem.ucl.ac.uk/sgp/large/118az2.htm
+        """
         if h == 0 and k == 0:
-            return l % 2 == 0
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if k == 0:
+            return (h + l) % 2 == 0  # h0l
         return True
 
     @staticmethod
-    def group104_p42cm(h, k, l):
-        """Space group 104: P42cm. (0,0,l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group105_p42cc(h, k, l):
-        """Space group 105: P42cc. (0,0,l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group106_p42nc(h, k, l):
-        """Space group 106: P42nc. (0,0,l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group107_p42mmc(h, k, l):
-        """Space group 107: P42mmc. (0,0,l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group108_p42mcm(h, k, l):
-        """Space group 108: P42mcm. (0,0,l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group109_p42ccm(h, k, l):
-        """Space group 109: P42ccm. (0,0,l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group110_p42ncm(h, k, l):
-        """Space group 110: P42ncm. (h+k) even; (0,0,l): l even."""
-        if (h + k) % 2 != 0:
+    def group119_I4bar2(h, k, l):
+        """
+        Space group 119: I4̅m2. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:          h + k + l = 2n
+        - hk0 (l=0):    h + k even
+        - 0kl (h=0):    k + l even
+        - hhl (h=k):    l even
+        - 00l (h=k=0):  l even
+        - h00 (k=l=0):  h even
+        Source: ITC
+        validated
+        """
+        if (h + k + l) % 2 != 0:  # I-centering
             return False
-        if h == 0 and k == 0:
+        if h == k == 0:  # 00l
+            return l % 2 == 0
+        if l == 0:
+            if k == 0:  # h00
+                return h % 2 == 0
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:  # 0kl
+            return (k + l) % 2 == 0
+        if h == k:  # hhl
             return l % 2 == 0
         return True
 
     @staticmethod
-    def group111_p42mbc(h, k, l):
-        """Space group 111: P42mbc. (h+k) even; (0,0,l): l even."""
-        if (h + k) % 2 != 0:
+    def group120_I4barc2(h, k, l):
+        """
+        Space group 120: I4̅c2. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:              h + k + l even
+        - hk0 (l=0):        h + k even
+        - 0kl (h=0):        k even and l even
+        - hhl (h=k):        l even
+        - 00l (h=k=0):      l even
+        - h00 (k=l=0):      h even
+        - h0l (k=0):        h + l even
+        - 0k0 (h=l=0):      k even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/120az2.htm
+        validated
+        """
+        if (h + k + l) % 2 != 0:  # I-centering
             return False
-        if h == 0 and k == 0:
+        if h == k == 0:  # 00l
+            return l % 2 == 0
+        if k == 0 and l == 0:  # h00
+            return h % 2 == 0
+        if h == 0 and l == 0:  # 0k0
+            return k % 2 == 0
+        if l == 0:  # hk0
+            return (h + k) % 2 == 0
+        if h == 0:  # 0kl
+            return (k % 2 == 0) and (l % 2 == 0)
+        if k == 0:  # h0l
+            return (h % 2 == 0) and (l % 2 == 0)
+        if h == k:  # hhl
             return l % 2 == 0
         return True
 
     @staticmethod
-    def group112_p42cbm(h, k, l):
-        """Space group 112: P42cbm. (h+k) even; (0,0,l): l even."""
-        if (h + k) % 2 != 0:
+    def group121_I4bar2m(h, k, l):
+        """
+        Space group 121: I4̅2m. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:              h + k + l even
+        - hk0 (l=0):        h + k even
+        - 0kl (h=0):        k + l even
+        - hhl (h=k):        l even
+        - 00l (h=k=0):      l even
+        - h00 (k=l=0):      h even
+        validated
+        """
+        if (h + k + l) % 2 != 0:
             return False
-        if h == 0 and k == 0:
+        if h == k == 0:
+            return l % 2 == 0  # 00l
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        if h == 0:
+            return (k + l) % 2 == 0  # 0kl
+        if h == k:
+            return l % 2 == 0  # hhl
+        return True
+
+    @staticmethod
+    def group122_I4bar2d(h, k, l):
+        """
+        Space group 122: I4̅2d. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:              h + k + l even
+        - hk0 (l=0):        h + k even
+        - 0kl (h=0):        k + l even
+        - hhl (h=k):        2h + l = 4n
+        - 00l (h=k=0):      l = 4n
+        - h00 (k=l=0):      h even
+        - hh0 (h=k, l=0):   h even
+        - h0l (k=0):        h + l even
+        - 0k0 (h=0, l=0):   k even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/122az2.htm
+        validated
+        """
+        if (h + k + l) % 2 != 0:
+            return False  # I-centering
+        if h == k == 0:  # 00l
+            return l % 4 == 0
+        if l == 0:
+            if h == k:  # hh0
+                return h % 2 == 0
+            if k == 0:  # h00
+                return h % 2 == 0
+            return (h + k) % 2 == 0  # hk0
+        if h == 0 and l == 0:  # 0k0
+            return k % 2 == 0
+        if k == 0:  # h0l
+            return (h + l) % 2 == 0
+        if h == 0:  # 0kl
+            return (k + l) % 2 == 0
+        if h == k:  # hhl
+            return (2 * h + l) % 4 == 0
+        return True
+
+    @staticmethod
+    def group123_P4mmm(h, k, l):
+        """
+        Space group 123: P4/mmm. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy: — all (h, k, l) allowed
+        No systematic absences.
+        validated
+        """
+        return True
+
+    @staticmethod
+    def group124_P4mcc(h, k, l):
+        """
+        Space group 124: P4/mcc. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h=0):        l = 2n
+        - hhl (h=k):        l = 2n
+        - 00l (h=k=0):      l = 2n
+        - h0l (k=0):        l = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/124az2.htm
+        validated
+        """
+        if h == 0:  # 0kl
+            return l % 2 == 0
+        if h == k:  # hhl
+            return l % 2 == 0
+        if h == k == 0:  # 00l
+            return l % 2 == 0
+        if k == 0:  # h0l
             return l % 2 == 0
         return True
 
     @staticmethod
-    def group113_p4mmm(h, k, l):
-        """Space group 113: P4/mmm. No systematic absences."""
+    def group125_P4nbm(h, k, l):
+        """
+        Space group 125: P4/nbm. Tetragonal. Primitive lattice..
+        Valid reflections must satisfy:
+        - hk0 (l=0):        h + k = 2n
+        - 0kl (h=0):        k = 2n
+        - h00 (k=l=0):      h = 2n
+        - h0l (k=0):        h = 2n
+        - 0k0 (h=l=0):      k = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/125az2.htm
+        validated
+        """
+        if l == 0:  # hk0
+            return (h + k) % 2 == 0
+        if h == 0:  # 0kl
+            return k % 2 == 0
+        if k == 0 and l == 0:  # h00
+            return h % 2 == 0
+        if k == 0:  # h0l
+            return h % 2 == 0
+        if h == 0 and l == 0:  # 0k0
+            return k % 2 == 0
         return True
 
     @staticmethod
-    def group114_p4mcc(h, k, l):
-        """Space group 114: P4/mcc. (0,0,l): l even; (h+k) even."""
-        if h == 0 and k == 0:
+    def group126_P4nnc(h, k, l):
+        """
+        Space group 126: P4/nnc. Tetragonal. Primitive lattice.
+        Valid reflections must satisfy:
+        - hk0 (l=0):        h + k = 2n
+        - 0kl (h=0):        k + l = 2n
+        - hhl (h=k):        l = 2n
+        - 00l (h=k=0):      l = 2n
+        - h00 (k=l=0):      h = 2n
+        - h0l (k=0):        h + l = 2n
+        - 0k0 (h=l=0):      k = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/126az2.htm
+        validated
+        """
+        if l == 0:  # hk0
+            return (h + k) % 2 == 0
+        if h == 0:  # 0kl
+            return (k + l) % 2 == 0
+        if h == k:  # hhl
             return l % 2 == 0
-        if (h + k) % 2 != 0:
-            return False
-        return True
-
-    @staticmethod
-    def group115_p4nbm(h, k, l):
-        """Space group 115: P4/nbm. (h+k) even."""
-        return (h + k) % 2 == 0
-
-    @staticmethod
-    def group116_p4nnc(h, k, l):
-        """Space group 116: P4/nnc. (h+k) even."""
-        return (h + k) % 2 == 0
-
-    @staticmethod
-    def group117_p4mbm(h, k, l):
-        """Space group 117: P4/mbm. (h+k) even."""
-        return (h + k) % 2 == 0
-
-    @staticmethod
-    def group118_p4mnc(h, k, l):
-        """Space group 118: P4/mnc. (h+k) even."""
-        return (h + k) % 2 == 0
-
-    @staticmethod
-    def group119_p4nmm(h, k, l):
-        """Space group 119: P4/nmm. (h+k) even."""
-        return (h + k) % 2 == 0
-
-    @staticmethod
-    def group120_p4ncc(h, k, l):
-        """Space group 120: P4/ncc. (h+k) even; (0,0,l): l even."""
-        if (h + k) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
+        if h == k == 0:  # 00l
             return l % 2 == 0
+        if k == 0 and l == 0:  # h00
+            return h % 2 == 0
+        if k == 0:  # h0l
+            return (h + l) % 2 == 0
+        if h == 0 and l == 0:  # 0k0
+            return k % 2 == 0
         return True
 
     @staticmethod
-    def group121_p4mm(h, k, l):
-        """Space group 121: P4mm. No systematic absences."""
+    def group127_P4mbm(h, k, l):
+        """
+        Space group 127: P4/mbm. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - 0kl (h=0):        k = 2n
+        - h00 (k=l=0):      h = 2n
+        - h0l (k=0):        h = 2n
+        - 0k0 (h=l=0):      k = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/127az2.htm
+        validated
+        """
+        if h == 0:  # 0kl
+            return k % 2 == 0
+        if k == 0 and l == 0:  # h00
+            return h % 2 == 0
+        if k == 0:  # h0l
+            return h % 2 == 0
+        if h == 0 and l == 0:  # 0k0
+            return k % 2 == 0
         return True
 
     @staticmethod
-    def group122_p4bm(h, k, l):
-        """Space group 122: P4bm. No systematic absences."""
-        return True
-
-    @staticmethod
-    def group123_p42cm(h, k, l):
-        """Space group 123: P42cm. (0,0,l): l even."""
-        if h == 0 and k == 0:
+    def group128_P4mnc(h, k, l):
+        """
+        Space group 128: P4/mnc. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - 0kl (h=0):        k + l = 2n
+        - hhl (h=k):        l = 2n
+        - 00l (h=k=0):      l = 2n
+        - h00 (k=l=0):      h = 2n
+        - h0l (k=0):        h + l = 2n
+        - 0k0 (h=l=0):      k = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/128az2.htm
+        validated
+        """
+        if h == 0:  # 0kl
+            return (k + l) % 2 == 0
+        if h == k:  # hhl
             return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group124_p42nm(h, k, l):
-        """Space group 124: P42nm. (0,0,l): l even."""
-        if h == 0 and k == 0:
+        if h == k == 0:  # 00l
             return l % 2 == 0
+        if k == 0 and l == 0:  # h00
+            return h % 2 == 0
+        if k == 0:  # h0l
+            return (h + l) % 2 == 0
+        if h == 0 and l == 0:  # 0k0
+            return k % 2 == 0
         return True
 
     @staticmethod
-    def group125_p42mc(h, k, l):
-        """Space group 125: P42mc. (0,0,l): l even."""
-        if h == 0 and k == 0:
+    def group129_P4nmm(h, k, l):
+        """
+        Space group 129: P4/nmm. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - hk0 (l=0):        h + k = 2n
+        - h00 (k=l=0):      h = 2n
+        - 0k0 (h=l=0):      k = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/129az2.htm
+        validated
+        """
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+        return True
+
+    @staticmethod
+    def group130_P4ncc(h, k, l):
+        """
+        Space group 130: P4/ncc. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - hk0 (l=0):        h + k = 2n
+        - 0kl (h=0):        l = 2n
+        - hhl (h=k):        l = 2n
+        - 00l (h=k=0):      l = 2n
+        - h00 (k=l=0):      h = 2n
+        - h0l (k=0):        l = 2n
+        - 0k0 (h=l=0):      k = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/130az2.htm
+        validated
+        """
+        if l == 0:  # hk0
+            return (h + k) % 2 == 0
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group126_p42bc(h, k, l):
-        """Space group 126: P42bc. (0,0,l): l even."""
-        if h == 0 and k == 0:
+        if k == 0:  # h0l
             return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group127_p4cc(h, k, l):
-        """Space group 127: P4cc. No systematic absences."""
-        return True
-
-    @staticmethod
-    def group128_p4nc(h, k, l):
-        """Space group 128: P4nc. No systematic absences."""
-        return True
-
-    @staticmethod
-    def group129_p4mmc(h, k, l):
-        """Space group 129: P4mmc. (0,0,l): l even."""
-        if h == 0 and k == 0:
+        if h == k:  # hhl
             return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group130_p4mcm(h, k, l):
-        """Space group 130: P4mcm. (0,0,l): l even."""
-        if h == 0 and k == 0:
+        if h == 0:  # 0kl
             return l % 2 == 0
+        if k == 0 and l == 0:  # h00
+            return h % 2 == 0
+        if h == 0 and l == 0:  # 0k0
+            return k % 2 == 0
         return True
 
     @staticmethod
