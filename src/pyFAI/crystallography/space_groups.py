@@ -2090,14 +2090,14 @@ class ReflectionCondition:
         return True
 
 
-
     @staticmethod
-    def group111_p42mbc(h, k, l):
-        """Space group 111: P42mbc. (h+k) even; (0,0,l): l even."""
-        if (h + k) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group111_P4bar2m(h, k, l):
+        """
+        Space group 111: P4̅2m. Tetragonal. Primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences
+        validated
+        """
         return True
 
     @staticmethod
