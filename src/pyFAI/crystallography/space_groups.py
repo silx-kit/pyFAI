@@ -2910,7 +2910,7 @@ class ReflectionCondition:
     def group144_P31(h, k, l):
         """
         Space group 144: P31. Trigonal.
-        Reflection conditions:
+        Valid reflections must satisfy:
         - 00l (h = k = 0): l = 3n
         Source: http://img.chem.ucl.ac.uk/sgp/large/144az2.htm
         validated
@@ -2924,7 +2924,7 @@ class ReflectionCondition:
     def group145_P32(h, k, l):
         """
         Space group 145: P32. Trigonal.
-        Reflection conditions:
+        Valid reflections must satisfy:
         - 00l (h = k = 0): l = 3n
         Source: http://img.chem.ucl.ac.uk/sgp/large/145az2.htm
         validated
@@ -2938,8 +2938,7 @@ class ReflectionCondition:
     def group146_R3(h, k, l):
         """
         Space group 146: R3. Trigonal, Rhombohedral (R).
-        Reflection conditions from ITC (given in hkil), adapted to (h, k, l) 
-        using the relation i = –(h + k):
+        Valid reflections must satisfy:
 
         - hkil (general):        -h + k + l = 3n
         - hki0 (l = 0):          -h + k     = 3n
@@ -2948,7 +2947,8 @@ class ReflectionCondition:
         - 000l (h = k = i = 0):  l          = 3n
         - h(-h)00 (i = l = 0):   k = -h, 
                                 l = 0     ⇒ h = 3n
-        Source: ITC
+        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l) 
+        using the relation i = –(h + k).
         validated.
         """
         # General condition
