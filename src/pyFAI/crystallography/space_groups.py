@@ -3190,9 +3190,32 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group160_p3c1(h, k, l):
-        """Space group 160: P3c1. No systematic absences."""
+    def group160_R3m(h, k, l):
+        """
+        Space group 160: R3m. Trigonal (Rhombohedral setting, hexagonal axes).
+        Valid reflections must satisfy:
+        - hkil:                -h + k + l = 3n
+        - hki0 (l = 0):                  -h + k = 3n
+        - hh(-2h)l:                      l = 3n
+        - h(-h)0l (k = -h, l ≠ 0):       h + l = 3n
+        - 000l (h = k = 0):              l = 3n
+        - h(-h)00 (k = -h, l = 0):       h = 3n
+        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
+                using the relation i = -(h + k)
+        validated
+        """
+        if (-h + k + l) % 3 != 0:
+            return False  
+        if l == 0:
+            return (-h + k) % 3 == 0  # hki0
+        if h == k and k == -2 * h:
+            return l % 3 == 0  # hh(–2h)l
+        if k == -h:
+            return (h + l) % 3 == 0  # h(–h)0l and h(–h)00
+        if h == 0 and k == 0:
+            return l % 3 == 0  # 000l
         return True
+
 
     @staticmethod
     def group161_p31c(h, k, l):
