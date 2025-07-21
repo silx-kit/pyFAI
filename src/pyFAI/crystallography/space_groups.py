@@ -2907,9 +2907,18 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group144_p31(h, k, l):
-        """Space group 144: P31. No systematic absences."""
+    def group144_P31(h, k, l):
+        """
+        Space group 144: P31. Trigonal.
+        Reflection conditions:
+        - 00l (h = k = 0): l = 3n
+        Source: http://img.chem.ucl.ac.uk/sgp/large/144az2.htm
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 3 == 0
         return True
+
 
     @staticmethod
     def group145_p32(h, k, l):
