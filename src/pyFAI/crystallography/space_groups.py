@@ -2985,10 +2985,33 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group148_p3_2_1(h, k, l):
-        """Space group 148: P3_2 1. (0,0,l): l = 3n."""
-        if h == 0 and k == 0:
-            return l % 3 == 0
+    def group148_R3bar(h, k, l):
+        """
+        Space group 148: R-3 (R3̅). Trigonal, Rhombohedral (R).
+        Valid reflections must satisfy:
+        - hkil (general):         -h + k + l = 3n
+        - hki0 (l = 0):           -h + k = 3n
+        - hh(-2h)l:               l = 3n
+        - h(-h)0l (i = 0):        h + l = 3n
+        - 000l (h = k = i = 0):   l = 3n
+        - h(-h)00 (i = l = 0):    h = 3n
+
+        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
+            using the relation i = –(h + k).
+        validated.
+        """
+        if (-h + k + l) % 3 != 0:           # hkil general
+            return False
+        if l == 0 and (-h + k) % 3 != 0:    # hki0
+            return False
+        if h == k and l % 3 != 0:           # hh(-2h)l
+            return False
+        if k == -h and l != 0 and (h + l) % 3 != 0:  # h(-h)0l
+            return False
+        if h == 0 and k == 0 and l % 3 != 0:  # 000l
+            return False
+        if k == -h and l == 0 and h % 3 != 0:  # h(-h)00
+            return False
         return True
 
     @staticmethod
