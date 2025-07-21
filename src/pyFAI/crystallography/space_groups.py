@@ -2544,12 +2544,23 @@ class ReflectionCondition:
             return k % 2 == 0
         return True
 
+
     @staticmethod
-    def group131_p4ccm(h, k, l):
-        """Space group 131: P4ccm. (0,0,l): l even."""
-        if h == 0 and k == 0:
+    def group131_P42mmc(h, k, l):
+        """
+        Space group 131: P42/mmc. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - hhl (h=k):        l even
+        - 00l (h=k=0):      l even
+        validated
+        """
+        if h == k:              # hhl
+            return l % 2 == 0
+        if h == 0 and k == 0:   # 00l
             return l % 2 == 0
         return True
+
+
 
     @staticmethod
     def group132_p4ncm(h, k, l):
