@@ -3025,13 +3025,14 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group150_r3c(h, k, l):
-        """Space group 150: R3c (hexagonal axes). (h - k + l) divisible by 3; (0,0,l): l even."""
-        if (h - k + l) % 3 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group150_P321(h, k, l):
+        """
+        Space group 150: P3₂1. Trigonal.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        """
         return True
+
 
     @staticmethod
     def group151_p312(h, k, l):
