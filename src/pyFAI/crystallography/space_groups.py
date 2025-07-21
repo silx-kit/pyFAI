@@ -3129,10 +3129,13 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group156_p3221(h, k, l):
-        """Space group 156: P3221. (0,0,l): l = 3n."""
-        if h == 0 and k == 0:
-            return l % 3 == 0
+    def group156_P3m1(h, k, l):
+        """
+        Space group 156: P3m1. Trigonal.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
