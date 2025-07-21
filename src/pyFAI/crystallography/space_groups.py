@@ -2945,7 +2945,7 @@ class ReflectionCondition:
         - h(-h)00 (i = l = 0):   k = -h,
                                 l = 0     ⇒ h = 3n
         Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
-        using the relation i = –(h + k).
+        using the relation i = -(h + k).
         validated.
         """
         # General condition
@@ -2997,7 +2997,7 @@ class ReflectionCondition:
         - h(-h)00 (i = l = 0):    h = 3n
 
         Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
-            using the relation i = –(h + k).
+            using the relation i = -(h + k).
         validated.
         """
         if (-h + k + l) % 3 != 0:           # hkil general
