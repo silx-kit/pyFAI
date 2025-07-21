@@ -3015,9 +3015,14 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group149_r3m(h, k, l):
-        """Space group 149: R3m (hexagonal axes). (h - k + l) divisible by 3."""
-        return (h - k + l) % 3 == 0
+    def group149_P312(h, k, l):
+        """
+        Space group 149: P3₁2. Trigonal.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        validated.
+        """
+        return True
 
     @staticmethod
     def group150_r3c(h, k, l):
