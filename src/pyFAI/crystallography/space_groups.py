@@ -3150,9 +3150,28 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group158_p3m1(h, k, l):
-        """Space group 158: P3m1. No systematic absences."""
+    def group158_P3c1(h, k, l):
+        """
+        Space group 158: P3c1. Trigonal.
+        Valid reflections must satisfy:
+        - 0kl (h = 0):        l = 2n
+        - h0l (k = 0):        l = 2n 
+        - h(-h)0l (h = -k):   l = 2n
+        - 00l (h = k = 0):    l = 2n
+
+        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
+            using the relation i = -(h + k), and 
+            http://img.chem.ucl.ac.uk/sgp/large/158az2.htm
+        validated
+        """
+        if h == 0 and k == 0:    # 00l
+            return l % 2 == 0
+        if h == -k:              # h(-h)0l
+            return l % 2 == 0
+        if h == 0 or k == 0:     # 0kl or h0l
+            return l % 2 == 0
         return True
+
 
     @staticmethod
     def group159_p31m(h, k, l):
