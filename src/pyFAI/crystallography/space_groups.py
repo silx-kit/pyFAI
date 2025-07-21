@@ -3051,8 +3051,18 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group152_p321(h, k, l):
-        """Space group 152: P321. No systematic absences."""
+    def group152_P3121(h, k, l):
+        """
+        Space group 152: P3₁21. Trigonal.
+        Valid reflections must satisfy:
+        - 000l (h = k = 0):        l = 3n
+
+        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
+            using the relation i = –(h + k).
+        validated.
+        """
+        if h == 0 and k == 0:
+            return l % 3 == 0
         return True
 
     @staticmethod
