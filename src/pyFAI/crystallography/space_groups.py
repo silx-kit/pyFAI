@@ -2723,9 +2723,33 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group138_p4nnc(h, k, l):
-        """Space group 138: P4/nnc. (h+k) even."""
-        return (h + k) % 2 == 0
+    def group138_P42ncm(h, k, l):
+        """
+        Space group 138: P42/ncm. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - hk0 (l=0):         h + k even
+        - 0kl (h=0):         l even
+        - 00l (h=k=0):       l even
+        - h00 (k=l=0):       h even
+        - 0k0 (h=l=0):       k even
+        - h0l (k=0):         l even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/138az2.htm
+        validated
+        """
+        if l == 0:                   # hk0
+            return (h + k) % 2 == 0
+        if h == 0 and k != 0:        # 0kl (h=0)
+            return l % 2 == 0
+        if h == 0 and k == 0:        # 00l
+            return l % 2 == 0
+        if k == 0 and l == 0:        # h00
+            return h % 2 == 0
+        if h == 0 and l == 0:        # 0k0
+            return k % 2 == 0
+        if k == 0:                   # h0l
+            return l % 2 == 0
+        return True
+
 
     @staticmethod
     def group139_p4mbm(h, k, l):
