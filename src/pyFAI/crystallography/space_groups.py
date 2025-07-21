@@ -2788,9 +2788,40 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group140_p4mnc(h, k, l):
-        """Space group 140: P4/mnc. (h+k) even."""
-        return (h + k) % 2 == 0
+    def group140_I4mcm(h, k, l):
+        """
+        Space group 140: I4/mcm. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:            h + k + l even
+        - hk0 (l=0):      h + k even
+        - 0kl (h=0):      k and l even
+        - hhl (h=k):      l even
+        - 00l (h=k=0):    l even
+        - h00 (k=l=0):    h even
+        - h0l (k=0):      h and l even
+        - 0k0 (h=l=0):    k even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/140az2.htm
+        validated
+        """
+        # General condition: h + k + l even
+        if (h + k + l) % 2 != 0:
+            return False
+        if l == 0:                    # hk0
+            return (h + k) % 2 == 0
+        if h == 0:                   # 0kl
+            return k % 2 == 0 and l % 2 == 0
+        if h == k and h != 0:        # hhl
+            return l % 2 == 0
+        if h == 0 and k == 0:        # 00l
+            return l % 2 == 0
+        if k == 0 and l == 0:        # h00
+            return h % 2 == 0
+        if k == 0:                   # h0l
+            return h % 2 == 0 and l % 2 == 0
+        if h == 0 and l == 0:        # 0k0
+            return k % 2 == 0
+        return True
+
 
     @staticmethod
     def group141_p4nmm(h, k, l):
