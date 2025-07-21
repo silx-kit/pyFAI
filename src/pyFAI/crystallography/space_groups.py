@@ -2974,10 +2974,14 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group147_p3_1_2(h, k, l):
-        """Space group 147: P3_1 2. (0,0,l): l = 3n."""
-        if h == 0 and k == 0:
-            return l % 3 == 0
+    def group147_P3bar(h, k, l):
+        """
+        Space group 147: P-3 (P3̅). Trigonal system.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        Source: ITC
+        validated
+        """
         return True
 
     @staticmethod
