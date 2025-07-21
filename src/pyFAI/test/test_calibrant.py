@@ -293,7 +293,7 @@ class TestReflection(unittest.TestCase):
     """
 
 
-    #print(utilstest.UtilsTest.resources.data_home)
+    #print(UtilsTest.resources.data_home)
 
     @classmethod
     def setUpClass(cls):
