@@ -2896,9 +2896,15 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group143_p3(h, k, l):
-        """Space group 143: P3. No systematic absences. Validated"""
+    def group143_P3(h, k, l):
+        """
+        Space group 143: P3. Trigonal.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        validated 
+        """
         return True
+
 
     @staticmethod
     def group144_p31(h, k, l):
