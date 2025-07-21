@@ -3098,11 +3098,35 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group155_p3212(h, k, l):
-        """Space group 155: P3212. (0,0,l): l = 3n."""
+    def group155_R32(h, k, l):
+        """
+        Space group 155: R32. Trigonal, Rhombohedral (R).
+        Valid reflections must satisfy:
+        - hkil (general):        -h + k + l = 3n
+        - hki0 (l = 0):          -h + k = 3n
+        - hh(-2h)l:              l = 3n
+        - h(-h)0l (i = 0):       k = -h ⇒ h + l = 3n
+        - 000l (h = k = i = 0):  l = 3n
+        - h(-h)00 (i = l = 0):   k = -h ⇒ h = 3n
+
+        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
+            using the relation i = -(h + k).
+        validated 
+        """
+        if (-h + k + l) % 3 != 0:
+            return False
+        if l == 0:
+            return (-h + k) % 3 == 0
+        if h == k:
+            return l % 3 == 0  # hh(–2h)l
+        if k == -h and l != 0:
+            return (h + l) % 3 == 0  # h(–h)0l
         if h == 0 and k == 0:
-            return l % 3 == 0
+            return l % 3 == 0  # 000l
+        if k == -h and l == 0:
+            return h % 3 == 0  # h(–h)00
         return True
+
 
     @staticmethod
     def group156_p3221(h, k, l):
