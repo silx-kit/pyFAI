@@ -2752,9 +2752,40 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group139_p4mbm(h, k, l):
-        """Space group 139: P4/mbm. (h+k) even."""
-        return (h + k) % 2 == 0
+    def group139_I4mmm(h, k, l):
+        """
+        Space group 139: I4/mmm. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl:            h + k + l even
+        - hk0 (l=0):      h + k even
+        - 0kl (h=0):      k + l even
+        - hhl (h=k):      l even
+        - 00l (h=k=0):    l even
+        - h00 (k=l=0):    h even
+        - h0l (k=0):      h + l even
+        - 0k0 (h=l=0):    k even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/139az2.htm
+        validated
+        """
+        # General reflection condition: h + k + l even
+        if (h + k + l) % 2 != 0:
+            return False
+        if l == 0:                   # hk0
+            return (h + k) % 2 == 0
+        if h == 0 and k != 0:        # 0kl (h=0)
+            return (k + l) % 2 == 0
+        if h == k and h != 0:        # hhl
+            return l % 2 == 0
+        if h == 0 and k == 0:        # 00l
+            return l % 2 == 0
+        if k == 0 and l == 0:        # h00
+            return h % 2 == 0
+        if k == 0:                   # h0l
+            return (h + l) % 2 == 0
+        if h == 0 and l == 0:        # 0k0
+            return k % 2 == 0
+        return True
+
 
     @staticmethod
     def group140_p4mnc(h, k, l):
