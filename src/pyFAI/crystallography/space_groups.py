@@ -2901,10 +2901,9 @@ class ReflectionCondition:
         Space group 143: P3. Trigonal.
         No reflection conditions — all (h, k, l) are allowed.
         No systematic absences.
-        validated 
+        validated
         """
         return True
-
 
     @staticmethod
     def group144_P31(h, k, l):
@@ -2919,7 +2918,6 @@ class ReflectionCondition:
             return l % 3 == 0
         return True
 
-
     @staticmethod
     def group145_P32(h, k, l):
         """
@@ -2933,7 +2931,6 @@ class ReflectionCondition:
             return l % 3 == 0
         return True
 
-
     @staticmethod
     def group146_R3(h, k, l):
         """
@@ -2945,9 +2942,9 @@ class ReflectionCondition:
         - hh(-2h)l:              l          = 3n
         - h(-h)0l (i = 0):       k = -h     ⇒ h + l = 3n
         - 000l (h = k = i = 0):  l          = 3n
-        - h(-h)00 (i = l = 0):   k = -h, 
+        - h(-h)00 (i = l = 0):   k = -h,
                                 l = 0     ⇒ h = 3n
-        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l) 
+        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
         using the relation i = –(h + k).
         validated.
         """
@@ -2975,8 +2972,6 @@ class ReflectionCondition:
                 return False
 
         return True
-
-
 
     @staticmethod
     def group147_p3_1_2(h, k, l):
