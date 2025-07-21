@@ -2560,16 +2560,25 @@ class ReflectionCondition:
             return l % 2 == 0
         return True
 
-
-
     @staticmethod
-    def group132_p4ncm(h, k, l):
-        """Space group 132: P4ncm. (h+k) even; (0,0,l): l even."""
-        if (h + k) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
+    def group132_P42mcm(h, k, l):
+        """
+        Space group 132: P42/mcm. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - 0kl (h=0):         l = 2n
+        - 00l (h=k=0):       l = 2n
+        - h0l (k=0):         l = 2n
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/132az2.htm
+        validated
+        """
+        if h == 0:             # 0kl
+            return l % 2 == 0
+        if h == 0 and k == 0:  # 00l
+            return l % 2 == 0
+        if k == 0:             # h0l
             return l % 2 == 0
         return True
+
 
     @staticmethod
     def group133_p4mbc(h, k, l):
