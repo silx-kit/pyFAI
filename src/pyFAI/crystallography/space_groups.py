@@ -2824,9 +2824,50 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group141_p4nmm(h, k, l):
-        """Space group 141: P4/nmm. (h+k) even."""
-        return (h + k) % 2 == 0
+    def group141_I41amd(h, k, l):
+        """
+        Space group 141: I41/amd. Tetragonal. I-centering.
+        Valid reflections must satisfy:
+        - hkl (general):        h + k + l even
+        - hk0 (l=0):            h and k even
+        - 0kl (h=0):            k + l even
+        - hhl (h=k):            2h + l = 4n
+        - 00l (h=k=0):          l = 4n
+        - h00 (k=l=0):          h even
+        - hh0 (h=k, l=0):       h even
+        - 0k0 (h=l=0):          k even
+        - h0l (k=0):            h + l even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/141az2.htm
+        validated
+        """
+        if (h + k + l) % 2 != 0:           # hkl general condition
+            return False
+        if l == 0:                         # hk0
+            if h % 2 != 0 or k % 2 != 0:
+                return False
+        if h == 0:                        # 0kl
+            if (k + l) % 2 != 0:
+                return False
+        if h == k:                       # hhl
+            if (2 * h + l) % 4 != 0:
+                return False
+        if h == 0 and k == 0:            # 00l
+            if l % 4 != 0:
+                return False
+        if k == 0 and l == 0:            # h00
+            if h % 2 != 0:
+                return False
+        if h == k and l == 0:            # hh0
+            if h % 2 != 0:
+                return False
+        if h == 0 and l == 0:            # 0k0
+            if k % 2 != 0:
+                return False
+        if k == 0:                      # h0l
+            if (h + l) % 2 != 0:
+                return False
+        return True
+
 
     @staticmethod
     def group142_p4ncc(h, k, l):
