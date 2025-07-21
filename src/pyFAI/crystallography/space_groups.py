@@ -2671,13 +2671,30 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group136_p4mcc(h, k, l):
-        """Space group 136: P4/mcc. (0,0,l): l even; (h+k) even."""
-        if h == 0 and k == 0:
+    def group136_P42mnm(h, k, l):
+        """
+        Space group 136: P42/mnm. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - 0kl (h=0):         k + l even
+        - 00l (h=k=0):       l even
+        - h00 (k=l=0):       h even
+        - h0l (k=0):         h + l even
+        - 0k0 (h=l=0):       k even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/136az2.htm
+        validated
+        """
+        if h == 0 and k == 0:        # 00l
             return l % 2 == 0
-        if (h + k) % 2 != 0:
-            return False
+        if h == 0:                   # 0kl
+            return (k + l) % 2 == 0
+        if k == 0 and l == 0:        # h00
+            return h % 2 == 0
+        if k == 0:                   # h0l
+            return (h + l) % 2 == 0
+        if h == 0 and l == 0:        # 0k0
+            return k % 2 == 0
         return True
+
 
     @staticmethod
     def group137_p4nbm(h, k, l):
