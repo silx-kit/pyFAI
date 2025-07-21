@@ -3174,8 +3174,19 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group159_p31m(h, k, l):
-        """Space group 159: P31m. No systematic absences."""
+    def group159_P31c(h, k, l):
+        """
+        Space group 159: P31c. Trigonal.
+        Valid reflections must satisfy:
+        - hh(-2h)l:               l = 2n
+        - 000l (h = k = 0):       l = 2n
+
+        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
+                using the relation i = -(h + k)
+        validated
+        """
+        if h == k or (h == 0 and k == 0):  # hh(-2h)l and 000l
+            return l % 2 == 0
         return True
 
     @staticmethod
