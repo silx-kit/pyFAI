@@ -3082,11 +3082,20 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group154_p3121(h, k, l):
-        """Space group 154: P3121. (0,0,l): l = 3n.validated"""
+    def group154_P3221(h, k, l):
+        """
+        Space group 154: P3₂21. Trigonal.
+        Valid reflections must satisfy:
+        - 000l (h = k = 0):        l = 3n
+
+        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
+            using the relation i = -(h + k).
+        validated.
+        """
         if h == 0 and k == 0:
             return l % 3 == 0
         return True
+
 
     @staticmethod
     def group155_p3212(h, k, l):
