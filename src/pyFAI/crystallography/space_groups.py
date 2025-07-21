@@ -2935,9 +2935,48 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group146_r3(h, k, l):
-        """Space group 146: R3 (hexagonal axes). (h - k + l) divisible by 3."""
-        return (h - k + l) % 3 == 0
+    def group146_R3(h, k, l):
+        """
+        Space group 146: R3. Trigonal, Rhombohedral (R).
+        Reflection conditions from ITC (given in hkil), adapted to (h, k, l) 
+        using the relation i = –(h + k):
+
+        - hkil (general):        -h + k + l = 3n
+        - hki0 (l = 0):          -h + k     = 3n
+        - hh(-2h)l:              l          = 3n
+        - h(-h)0l (i = 0):       k = -h     ⇒ h + l = 3n
+        - 000l (h = k = i = 0):  l          = 3n
+        - h(-h)00 (i = l = 0):   k = -h, 
+                                l = 0     ⇒ h = 3n
+        Source: ITC
+        validated.
+        """
+        # General condition
+        if (-h + k + l) % 3 != 0:
+            return False
+
+        # hki0: l = 0 → -h + k = 3n
+        if l == 0:
+            if (-h + k) % 3 != 0:
+                return False
+
+        # 000l: h = k = 0 → l = 3n
+        if h == 0 and k == 0:
+            if l % 3 != 0:
+                return False
+
+        # h-h0l: k = -h → h + l = 3n
+        if k == -h:
+            if (h + l) % 3 != 0:
+                return False
+
+            # h-h00: k = -h, l = 0 → h = 3n
+            if l == 0 and h % 3 != 0:
+                return False
+
+        return True
+
+
 
     @staticmethod
     def group147_p3_1_2(h, k, l):
