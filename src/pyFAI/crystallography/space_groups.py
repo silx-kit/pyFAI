@@ -3000,11 +3000,11 @@ class ReflectionCondition:
             using the relation i = -(h + k).
         validated.
         """
-        if (-h + k + l) % 3 != 0:           # hkil general
+        if (-h + k + l) % 3 != 0:  # hkil general
             return False
-        if l == 0 and (-h + k) % 3 != 0:    # hki0
+        if l == 0 and (-h + k) % 3 != 0:  # hki0
             return False
-        if h == k and l % 3 != 0:           # hh(-2h)l
+        if h == k and l % 3 != 0:  # hh(-2h)l
             return False
         if k == -h and l != 0 and (h + l) % 3 != 0:  # h(-h)0l
             return False
@@ -3033,7 +3033,6 @@ class ReflectionCondition:
         """
         return True
 
-
     @staticmethod
     def group151_P3112(h, k, l):
         """
@@ -3048,7 +3047,6 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 3 == 0
         return True
-
 
     @staticmethod
     def group152_P3121(h, k, l):
@@ -3080,7 +3078,6 @@ class ReflectionCondition:
             return l % 3 == 0
         return True
 
-
     @staticmethod
     def group154_P3221(h, k, l):
         """
@@ -3096,7 +3093,6 @@ class ReflectionCondition:
             return l % 3 == 0
         return True
 
-
     @staticmethod
     def group155_R32(h, k, l):
         """
@@ -3111,7 +3107,7 @@ class ReflectionCondition:
 
         Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
             using the relation i = -(h + k).
-        validated 
+        validated
         """
         if (-h + k + l) % 3 != 0:
             return False
@@ -3126,7 +3122,6 @@ class ReflectionCondition:
         if k == -h and l == 0:
             return h % 3 == 0  # h(–h)00
         return True
-
 
     @staticmethod
     def group156_P3m1(h, k, l):
@@ -3148,30 +3143,28 @@ class ReflectionCondition:
         """
         return True
 
-
     @staticmethod
     def group158_P3c1(h, k, l):
         """
         Space group 158: P3c1. Trigonal.
         Valid reflections must satisfy:
         - 0kl (h = 0):        l = 2n
-        - h0l (k = 0):        l = 2n 
+        - h0l (k = 0):        l = 2n
         - h(-h)0l (h = -k):   l = 2n
         - 00l (h = k = 0):    l = 2n
 
         Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
-            using the relation i = -(h + k), and 
+            using the relation i = -(h + k), and
             http://img.chem.ucl.ac.uk/sgp/large/158az2.htm
         validated
         """
-        if h == 0 and k == 0:    # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        if h == -k:              # h(-h)0l
+        if h == -k:  # h(-h)0l
             return l % 2 == 0
-        if h == 0 or k == 0:     # 0kl or h0l
+        if h == 0 or k == 0:  # 0kl or h0l
             return l % 2 == 0
         return True
-
 
     @staticmethod
     def group159_P31c(h, k, l):
@@ -3205,7 +3198,7 @@ class ReflectionCondition:
         validated
         """
         if (-h + k + l) % 3 != 0:
-            return False  
+            return False
         if l == 0:
             return (-h + k) % 3 == 0  # hki0
         if h == k and k == -2 * h:
@@ -3215,7 +3208,6 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 3 == 0  # 000l
         return True
-
 
     @staticmethod
     def group161_p31c(h, k, l):
