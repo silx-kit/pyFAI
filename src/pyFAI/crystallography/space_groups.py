@@ -2611,16 +2611,34 @@ class ReflectionCondition:
             return k % 2 == 0
         return True
 
-
-
     @staticmethod
-    def group134_p4cbm(h, k, l):
-        """Space group 134: P4cbm. (h+k) even; (0,0,l): l even."""
-        if (h + k) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
+    def group134_P42nnm(h, k, l):
+        """
+        Space group 134: P42/nnm. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - hk0 (l=0):         h + k even
+        - 0kl (h=0):         k + l even
+        - 00l (h=k=0):       l even
+        - h00 (k=l=0):       h even
+        - h0l (k=0):         h + l even
+        - 0k0 (h=l=0):       k even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/134az2.htm
+        validated
+        """
+        if l == 0:                   # hk0
+            return (h + k) % 2 == 0
+        if h == 0:                   # 0kl
+            return (k + l) % 2 == 0
+        if h == 0 and k == 0:        # 00l
             return l % 2 == 0
+        if k == 0 and l == 0:        # h00
+            return h % 2 == 0
+        if k == 0:                   # h0l
+            return (h + l) % 2 == 0
+        if h == 0 and l == 0:        # 0k0
+            return k % 2 == 0
         return True
+
 
     @staticmethod
     def group135_p4mmm(h, k, l):
