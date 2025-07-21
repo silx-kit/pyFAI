@@ -2544,7 +2544,6 @@ class ReflectionCondition:
             return k % 2 == 0
         return True
 
-
     @staticmethod
     def group131_P42mmc(h, k, l):
         """
@@ -2554,9 +2553,9 @@ class ReflectionCondition:
         - 00l (h=k=0):      l even
         validated
         """
-        if h == k:              # hhl
+        if h == k:  # hhl
             return l % 2 == 0
-        if h == 0 and k == 0:   # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
         return True
 
@@ -2571,14 +2570,13 @@ class ReflectionCondition:
         Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/132az2.htm
         validated
         """
-        if h == 0:             # 0kl
+        if h == 0:  # 0kl
             return l % 2 == 0
         if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        if k == 0:             # h0l
+        if k == 0:  # h0l
             return l % 2 == 0
         return True
-
 
     @staticmethod
     def group133_P42nbc(h, k, l):
@@ -2595,19 +2593,19 @@ class ReflectionCondition:
         Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/133az2.htm
         validated
         """
-        if h == 0 and k == 0:        # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        if l == 0:                   # hk0
+        if l == 0:  # hk0
             return (h + k) % 2 == 0
-        if h == k:                   # hhl
+        if h == k:  # hhl
             return l % 2 == 0
-        if k == 0 and l == 0:        # h00
+        if k == 0 and l == 0:  # h00
             return h % 2 == 0
-        if h == 0 and l == 0:        # 0k0
+        if h == 0 and l == 0:  # 0k0
             return k % 2 == 0
-        if k == 0:                   # h0l
+        if k == 0:  # h0l
             return h % 2 == 0
-        if h == 0:                   # 0kl
+        if h == 0:  # 0kl
             return k % 2 == 0
         return True
 
@@ -2625,20 +2623,19 @@ class ReflectionCondition:
         Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/134az2.htm
         validated
         """
-        if l == 0:                   # hk0
+        if l == 0:  # hk0
             return (h + k) % 2 == 0
-        if h == 0:                   # 0kl
+        if h == 0:  # 0kl
             return (k + l) % 2 == 0
-        if h == 0 and k == 0:        # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        if k == 0 and l == 0:        # h00
+        if k == 0 and l == 0:  # h00
             return h % 2 == 0
-        if k == 0:                   # h0l
+        if k == 0:  # h0l
             return (h + l) % 2 == 0
-        if h == 0 and l == 0:        # 0k0
+        if h == 0 and l == 0:  # 0k0
             return k % 2 == 0
         return True
-
 
     @staticmethod
     def group135_P42mbc(h, k, l):
@@ -2654,21 +2651,19 @@ class ReflectionCondition:
         Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/135az2.htm
         validated
         """
-        if h == 0 and k == 0:        # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        if h == k:                   # hhl
+        if h == k:  # hhl
             return l % 2 == 0
-        if h == 0:                   # 0kl
+        if h == 0:  # 0kl
             return k % 2 == 0
-        if k == 0 and l == 0:        # h00
+        if k == 0 and l == 0:  # h00
             return h % 2 == 0
-        if h == 0 and l == 0:        # 0k0
+        if h == 0 and l == 0:  # 0k0
             return k % 2 == 0
-        if k == 0:                   # h0l
+        if k == 0:  # h0l
             return h % 2 == 0
         return True
-
-
 
     @staticmethod
     def group136_P42mnm(h, k, l):
@@ -2683,18 +2678,17 @@ class ReflectionCondition:
         Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/136az2.htm
         validated
         """
-        if h == 0 and k == 0:        # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        if h == 0:                   # 0kl
+        if h == 0:  # 0kl
             return (k + l) % 2 == 0
-        if k == 0 and l == 0:        # h00
+        if k == 0 and l == 0:  # h00
             return h % 2 == 0
-        if k == 0:                   # h0l
+        if k == 0:  # h0l
             return (h + l) % 2 == 0
-        if h == 0 and l == 0:        # 0k0
+        if h == 0 and l == 0:  # 0k0
             return k % 2 == 0
         return True
-
 
     @staticmethod
     def group137_P42nmc(h, k, l):
@@ -2709,18 +2703,17 @@ class ReflectionCondition:
         Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/137az2.htm
         validated
         """
-        if l == 0:                   # hk0
+        if l == 0:  # hk0
             return (h + k) % 2 == 0
-        if h == k:                   # hhl
+        if h == k:  # hhl
             return l % 2 == 0
-        if h == 0 and k == 0:        # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        if k == 0 and l == 0:        # h00
+        if k == 0 and l == 0:  # h00
             return h % 2 == 0
-        if h == 0 and l == 0:        # 0k0
+        if h == 0 and l == 0:  # 0k0
             return k % 2 == 0
         return True
-
 
     @staticmethod
     def group138_P42ncm(h, k, l):
@@ -2736,20 +2729,19 @@ class ReflectionCondition:
         Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/138az2.htm
         validated
         """
-        if l == 0:                   # hk0
+        if l == 0:  # hk0
             return (h + k) % 2 == 0
-        if h == 0 and k != 0:        # 0kl (h=0)
+        if h == 0 and k != 0:  # 0kl (h=0)
             return l % 2 == 0
-        if h == 0 and k == 0:        # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        if k == 0 and l == 0:        # h00
+        if k == 0 and l == 0:  # h00
             return h % 2 == 0
-        if h == 0 and l == 0:        # 0k0
+        if h == 0 and l == 0:  # 0k0
             return k % 2 == 0
-        if k == 0:                   # h0l
+        if k == 0:  # h0l
             return l % 2 == 0
         return True
-
 
     @staticmethod
     def group139_I4mmm(h, k, l):
@@ -2770,22 +2762,21 @@ class ReflectionCondition:
         # General reflection condition: h + k + l even
         if (h + k + l) % 2 != 0:
             return False
-        if l == 0:                   # hk0
+        if l == 0:  # hk0
             return (h + k) % 2 == 0
-        if h == 0 and k != 0:        # 0kl (h=0)
+        if h == 0 and k != 0:  # 0kl (h=0)
             return (k + l) % 2 == 0
-        if h == k and h != 0:        # hhl
+        if h == k and h != 0:  # hhl
             return l % 2 == 0
-        if h == 0 and k == 0:        # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        if k == 0 and l == 0:        # h00
+        if k == 0 and l == 0:  # h00
             return h % 2 == 0
-        if k == 0:                   # h0l
+        if k == 0:  # h0l
             return (h + l) % 2 == 0
-        if h == 0 and l == 0:        # 0k0
+        if h == 0 and l == 0:  # 0k0
             return k % 2 == 0
         return True
-
 
     @staticmethod
     def group140_I4mcm(h, k, l):
@@ -2806,22 +2797,21 @@ class ReflectionCondition:
         # General condition: h + k + l even
         if (h + k + l) % 2 != 0:
             return False
-        if l == 0:                    # hk0
+        if l == 0:  # hk0
             return (h + k) % 2 == 0
-        if h == 0:                   # 0kl
+        if h == 0:  # 0kl
             return k % 2 == 0 and l % 2 == 0
-        if h == k and h != 0:        # hhl
+        if h == k and h != 0:  # hhl
             return l % 2 == 0
-        if h == 0 and k == 0:        # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-        if k == 0 and l == 0:        # h00
+        if k == 0 and l == 0:  # h00
             return h % 2 == 0
-        if k == 0:                   # h0l
+        if k == 0:  # h0l
             return h % 2 == 0 and l % 2 == 0
-        if h == 0 and l == 0:        # 0k0
+        if h == 0 and l == 0:  # 0k0
             return k % 2 == 0
         return True
-
 
     @staticmethod
     def group141_I41amd(h, k, l):
@@ -2840,30 +2830,30 @@ class ReflectionCondition:
         Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/141az2.htm
         validated
         """
-        if (h + k + l) % 2 != 0:           # hkl general condition
+        if (h + k + l) % 2 != 0:  # hkl general condition
             return False
-        if l == 0:                         # hk0
+        if l == 0:  # hk0
             if h % 2 != 0 or k % 2 != 0:
                 return False
-        if h == 0:                        # 0kl
+        if h == 0:  # 0kl
             if (k + l) % 2 != 0:
                 return False
-        if h == k:                       # hhl
+        if h == k:  # hhl
             if (2 * h + l) % 4 != 0:
                 return False
-        if h == 0 and k == 0:            # 00l
+        if h == 0 and k == 0:  # 00l
             if l % 4 != 0:
                 return False
-        if k == 0 and l == 0:            # h00
+        if k == 0 and l == 0:  # h00
             if h % 2 != 0:
                 return False
-        if h == k and l == 0:            # hh0
+        if h == k and l == 0:  # hh0
             if h % 2 != 0:
                 return False
-        if h == 0 and l == 0:            # 0k0
+        if h == 0 and l == 0:  # 0k0
             if k % 2 != 0:
                 return False
-        if k == 0:                      # h0l
+        if k == 0:  # h0l
             if (h + l) % 2 != 0:
                 return False
         return True
@@ -2888,24 +2878,22 @@ class ReflectionCondition:
         if (h + k + l) % 2 != 0:
             return False
         if h == 0 and k == 0:
-            return (l % 4 == 0)                  # 00l
+            return l % 4 == 0  # 00l
         if k == 0 and l == 0:
-            return (h % 2 == 0)                  # h00
+            return h % 2 == 0  # h00
         if h == k and l == 0:
-            return (h % 2 == 0)                  # hh0
+            return h % 2 == 0  # hh0
         if h == 0 and l == 0:
-            return (k % 2 == 0)                  # 0k0
+            return k % 2 == 0  # 0k0
         if h == k:
-            return ((2 * h + l) % 4 == 0)        # hhl
+            return (2 * h + l) % 4 == 0  # hhl
         if l == 0:
-            return (h % 2 == 0) and (k % 2 == 0) # hk0
+            return (h % 2 == 0) and (k % 2 == 0)  # hk0
         if h == 0:
-            return (k % 2 == 0) and (l % 2 == 0) # 0kl
+            return (k % 2 == 0) and (l % 2 == 0)  # 0kl
         if k == 0:
-            return (h % 2 == 0) and (l % 2 == 0) # h0l
+            return (h % 2 == 0) and (l % 2 == 0)  # h0l
         return True
-
-
 
     @staticmethod
     def group143_p3(h, k, l):
