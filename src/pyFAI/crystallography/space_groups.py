@@ -2641,9 +2641,34 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group135_p4mmm(h, k, l):
-        """Space group 135: P4/mmm. No systematic absences."""
+    def group135_P42mbc(h, k, l):
+        """
+        Space group 135: P42/mbc. Tetragonal. Primitive lattice (P-centering).
+        Valid reflections must satisfy:
+        - 0kl (h=0):         k even
+        - hhl (h=k):         l even
+        - 00l (h=k=0):       l even
+        - h00 (k=l=0):       h even
+        - 0k0 (h=l=0):       k even
+        - h0l (k=0):         h even
+        Source: ITC and http://img.chem.ucl.ac.uk/sgp/large/135az2.htm
+        validated
+        """
+        if h == 0 and k == 0:        # 00l
+            return l % 2 == 0
+        if h == k:                   # hhl
+            return l % 2 == 0
+        if h == 0:                   # 0kl
+            return k % 2 == 0
+        if k == 0 and l == 0:        # h00
+            return h % 2 == 0
+        if h == 0 and l == 0:        # 0k0
+            return k % 2 == 0
+        if k == 0:                   # h0l
+            return h % 2 == 0
         return True
+
+
 
     @staticmethod
     def group136_p4mcc(h, k, l):
