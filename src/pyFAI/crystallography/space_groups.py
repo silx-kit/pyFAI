@@ -3218,14 +3218,13 @@ class ReflectionCondition:
         - General hkil:               -h + k + l = 3n
         - hki0 (l = 0):               -h + k = 3n
         - hh(-2h)l:                   l = 3n
-        - h(-h)0l (k = -h ):    h + l = 3n and l = 2n
+        - h(-h)0l (k = -h ):           h + l = 3n and l = 2n
         - 000l (h = k = 0):           l = 6n
         - h(-h)00 (k = -h, l = 0):    h = 3n
 
         Source:
             Reflection conditions from ITC (in hkil notation), adapted to (h, k, l)
             using the relation i = -(h + k).
-        validated.
         """
         if (-h + k + l) % 3 != 0:
             return False
