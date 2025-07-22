@@ -3210,8 +3210,40 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group161_p31c(h, k, l):
-        """Space group 161: P31c. No systematic absences."""
+    def group161_R3c(h, k, l):
+        # TODO: Needs investigation
+        """
+        Space group 161: R3c. Trigonal (Rhombohedral setting, hexagonal axes).
+        Valid reflections must satisfy:
+        - General hkil:               -h + k + l = 3n
+        - hki0 (l = 0):               -h + k = 3n
+        - hh(-2h)l:                   l = 3n
+        - h(-h)0l (k = -h ):    h + l = 3n and l = 2n
+        - 000l (h = k = 0):           l = 6n
+        - h(-h)00 (k = -h, l = 0):    h = 3n
+
+        Source:
+            Reflection conditions from ITC (in hkil notation), adapted to (h, k, l)
+            using the relation i = -(h + k).
+        validated.
+        """
+        if (-h + k + l) % 3 != 0:
+            return False
+        if h == 0 and k == 0:
+            return l % 6 == 0  # 000l
+        if k == -h and l == 0:
+            return h % 3 == 0  # h(-h)00
+        if l == 0:
+            return (-h + k) % 3 == 0  # hki0
+        if h == k and k == -2 * h:
+            return l % 3 == 0  # hh(-2h)l
+        if k == -h:
+            return (h + l) % 3 == 0 and l % 2 == 0  # h(-h)0l
+
+        ## Additional conditions to match xrayutilities. Hidden symmetry?
+        # if h == 0 or k == 0:
+        #    return l % 2 == 0  # 0kl or h0l
+
         return True
 
     @staticmethod
