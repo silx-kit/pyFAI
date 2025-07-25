@@ -3275,8 +3275,13 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group164_p_31m(h, k, l):
-        """Space group 164: P-31m. No systematic absences. validated"""
+    def group164_P3barm1(h, k, l):
+        """
+        Space group 164: P3̅m1. Primitive lattice. Trigonal (hexagonal axes).
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
