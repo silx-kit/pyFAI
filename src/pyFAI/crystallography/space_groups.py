@@ -3246,9 +3246,14 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group162_r3m(h, k, l):
-        """Space group 162: R3m (hexagonal axes). (h - k + l) divisible by 3."""
-        return (h - k + l) % 3 == 0
+    def group162_P3barm(h, k, l):
+        """
+        Space group 162: P3̅1m. Primitive lattice. Trigonal (hexagonal axes).
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        validated
+        """
+        return True
 
     @staticmethod
     def group163_r3c(h, k, l):
