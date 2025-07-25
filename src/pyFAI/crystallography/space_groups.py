@@ -3285,12 +3285,27 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group165_P_3c1(h, k, l):
-        """Space group 165: P-3c1."""
+    def group165_P3c1(h, k, l):
+        """
+        Space group 165: P3c1. Trigonal (hexagonal axes), primitive lattice.
+        Valid reflections must satisfy:
+        - h(-h)0l (k = -h):             l = 2n
+        - 000l (h = k = 0):             l = 2n
+        - 0kl (h = 0):                  l = 2n
+        - h0l (k = 0):                  l = 2n
+
+        Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
+            using the relation i = -(h + k), and http://img.chem.ucl.ac.uk/sgp/large/165az2.htm
+        validated
+        """
         if h == 0 and k == 0:
-            return l % 2 == 0
+            return l % 2 == 0  # 000l
+        if k == -h:
+            return l % 2 == 0  # h(-h)0l
+        if h == 0:
+            return l % 2 == 0  # 0kl
         if k == 0:
-            return l % 2 == 0
+            return l % 2 == 0  # h0l
         return True
 
     @staticmethod
