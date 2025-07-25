@@ -3309,34 +3309,35 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group166_R_3m(h, k, l):
+    def group166_R3bar_m(h, k, l):
         """
-        Group 166: R -3 m used in hydrocerusite. Validated
-        from http://img.chem.ucl.ac.uk/sgp/large/166bz2.htm"""
+        Space group 166: R3̅m. Trigonal (hexagonal axes), rhombohedral lattice.
+        Valid reflections must satisfy:
+        - hkil:                          (-h) + k + l = 3n
+        - hki0 (l = 0):                  (-h) + k = 3n
+        - hh(-2h)l:                      l = 3n
+        - h(-h)0l (i = 0, k = -h):               h + l = 3n
+        - 000l (h = k = 0):              l = 3n
+        - h(-h)00 (l = 0, k = -h):       h = 3n
+
+        Source:
+            Reflection conditions from ITC (in hkil), adapted to (h, k, l)
+            using the relation i = -(h + k).
+        validated
+        """
+        if (-h + k + l) % 3 != 0:
+            return False  # hkil
+        if l == 0:
+            return (-h + k) % 3 == 0  # hki0
+        if h == k:
+            return l % 3 == 0  # hh(-2h)l
+        if k == -h:
+            return (h + l) % 3 == 0  # h(-h)0l (i = 0)
         if h == 0 and k == 0:
-            # 00l: 3n
-            return l % 3 == 0
-        elif h == 0 and l == 0:
-            # 0k0: k=3n
-            return k % 3 == 0
-        elif k == 0 and l == 0:
-            # h00: h=3n
-            return h % 3 == 0
-        elif h == k:
-            # hhl: l=3n
-            return l % 3 == 0
-        elif l == 0:
-            # hk0: h-k = 3n
-            return (h - k) % 3 == 0
-        elif k == 0:
-            # h0l: h-l = 3n
-            return (h - l) % 3 == 0
-        elif h == 0:
-            # 0kl: h+l = 3n
-            return (k + l) % 3 == 0
-        else:
-            # -h + k + l = 3n
-            return (-h + k + l) % 3 == 0
+            return l % 3 == 0  # 000l
+        if k == -h and l == 0:
+            return h % 3 == 0  # h(-h)00
+        return True
 
     @staticmethod
     def group167_R_3c(h, k, l):
