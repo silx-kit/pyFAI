@@ -3256,12 +3256,22 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group163_r3c(h, k, l):
-        """Space group 163: R3c (hexagonal axes). (h - k + l) divisible by 3; (0,0,l): l even."""
-        if (h - k + l) % 3 != 0:
-            return False
+    def group163_P3bar1c(h, k, l):
+        """
+        Space group 163: P3̅1c. Trigonal (hexagonal axes), primitive lattice.
+        Valid reflections must satisfy:
+        - hh(-2h)l:                      l = 2n
+        - 000l (h = k = 0):              l = 2n
+
+        Source:
+            Reflection conditions from ITC (in hkil notation), adapted to (h, k, l)
+            using the relation i = -(h + k).
+        validated
+        """
         if h == 0 and k == 0:
-            return l % 2 == 0
+            return l % 2 == 0  # 000l
+        if h == k:
+            return l % 2 == 0  # hh(-2h)l
         return True
 
     @staticmethod
