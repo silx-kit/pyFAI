@@ -3349,7 +3349,7 @@ class ReflectionCondition:
     def group167_R3bar_c(h, k, l):
         """
         Space group 167: R3̅c. Trigonal (hexagonal axes), rhombohedral lattice.
-        Used for Corundum. 
+        Used for Corundum.
         Valid reflections must satisfy:
         - hkil:                          -h + k + l = 3n
         - hki0 (l = 0):                  -h + k = 3n
@@ -3474,7 +3474,6 @@ class ReflectionCondition:
             return (l % 6) == 0
 
         return True
-
 
     @staticmethod
     def group168_P6(h, k, l):
