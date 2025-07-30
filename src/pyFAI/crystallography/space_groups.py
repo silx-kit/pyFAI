@@ -3475,47 +3475,6 @@ class ReflectionCondition:
 
         return True
 
-    # @staticmethod
-    # def group167_R_3c(h, k, l):
-    #     """Space group 167: R-3c."""
-    #     if h == k == 0:
-    #         return l % 6 == 0
-    #     elif k == l == 0:
-    #         return h % 3 == 0
-    #     elif k == 0:
-    #         return (h + l) % 3 == 0 and l % 2 == 0
-    #     else:
-    #         return (-h + k + l) % 3 == 0
-
-    # @staticmethod
-    # def group167(h, k, l):
-    #     """Group 167 R -3 c used for Corrundum
-    #     from http://img.chem.ucl.ac.uk/sgp/large/167bz2.htm
-    #     """
-    #     if h == 0 and k == 0:
-    #         # 00l: 6n
-    #         return l % 6 == 0
-    #     elif h == 0 and l == 0:
-    #         # 0k0: k=3n
-    #         return k % 3 == 0
-    #     elif k == 0 and l == 0:
-    #         # h00: h=3n
-    #         return h % 3 == 0
-    #     elif h == k:
-    #         # hhl: l=3n
-    #         return l % 3 == 0
-    #     elif l == 0:
-    #         # hk0: h-k = 3n
-    #         return (h - 3) % 3 == 0
-    #     elif k == 0:
-    #         # h0l: l=2n h-l = 3n
-    #         return (l % 2 == 0) and ((h - l) % 3 == 0)
-    #     elif h == 0:
-    #         # 0kl: l=2n h+l = 3n
-    #         return (l % 2 == 0) and ((k + l) % 3 == 0)
-    #     else:
-    #         # -h + k + l = 3n
-    #         return (-h + k + l) % 3 == 0
 
     @staticmethod
     def group168_P6(h, k, l):
