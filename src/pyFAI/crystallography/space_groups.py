@@ -3364,7 +3364,6 @@ class ReflectionCondition:
         # (5) Special case: h = k = 0 (ITC: 000l: l = 6n)
         if h == 0 and k == 0: return (l % 6) == 0
 
-
         # (6) Special case: k = -h, l = 0 (ITC: h(-h)00: h = 3n)
         if k == -h and l == 0: return  (h % 3) == 0
 
@@ -3393,7 +3392,7 @@ class ReflectionCondition:
         # This is a special case related to the ITC condition for h(-h)0l reflections (k = -h),
         # adapted for k=0 plane.
         # The c-glide symmetry requires l to be even (l = 2n),
-        # and the centring condition reduces to (h - l) = 3n.
+        # and the rhombohedral centring condition requires (h - l) to be a multiple of 3.
 
         if k == 0:  # h0l plane
             return l % 2 == 0 and (h - l) % 3 == 0
