@@ -3211,7 +3211,6 @@ class ReflectionCondition:
 
     @staticmethod
     def group161_R3c(h, k, l):
-        # TODO: Needs investigation
         """
         Space group 161: R3c. Trigonal (Rhombohedral setting, hexagonal axes).
         Valid reflections must satisfy:
@@ -3225,6 +3224,7 @@ class ReflectionCondition:
         Source:
             Reflection conditions from ITC (in hkil notation), adapted to (h, k, l)
             using the relation i = -(h + k).
+            http://img.chem.ucl.ac.uk/sgp/large/161bz2.htm
         """
         if (-h + k + l) % 3 != 0:
             return False
@@ -3381,7 +3381,8 @@ class ReflectionCondition:
 
         # Derived explicit conditions (JKC-style) 
         # These are *deductions* from ITC above:
-        # Additional explicit forms for 0kl, h0l, and 0k0 follow from the h(-h)0l and h(-h)00 conditions by cyclic permutation of indices in the R3̅c hexagonal setting.
+        # Additional explicit forms for 0kl, h0l, and 0k0 follow from the h(-h)0l and h(-h)00 
+        # conditions by cyclic permutation of indices in the R3̅c hexagonal setting.
    
         # (7) 0kl plane (h = 0)
         # Derived from the general reflection condition for h(−h)0l (ITC rule (4)).
@@ -3411,6 +3412,57 @@ class ReflectionCondition:
         return True
     
 
+    @staticmethod
+    def group167_R3bar_c_v2(h: int, k: int, l: int) -> bool:
+        """
+        Space group 167: R3̅c. Trigonal (hexagonal axes), R-centred lattice.
+        Reflection conditions (JKC form, hexagonal setting):
+        - General (hkl):                  -h + k + l = 3n
+        - 0kl (h = 0):                    l = 2n and k + l = 3n
+        - h0l (k = 0):                    l = 2n and h - l = 3n
+        - hk0 (l = 0):                    h - k = 3n
+        - hhl (h = k):                    l = 3n
+        - h00 (k = 0, l = 0):             h = 3n
+        - 0k0 (h = 0, l = 0):             k = 3n
+        - 00l (h = 0, k = 0):             l = 6n
+            
+        Source: http://img.chem.ucl.ac.uk/sgp/large/167bz2.htm
+        validated 
+        """
+
+        # General reflection condition
+        if (-h + k + l) % 3 != 0:
+            return False
+
+        # 0kl plane
+        if h == 0:
+            return (l % 2 == 0) and ((k + l) % 3 == 0)
+
+        # h0l plane
+        if k == 0:
+            return (l % 2 == 0) and ((h - l) % 3 == 0)
+
+        # hk0 plane
+        if l == 0:
+            return (h - k) % 3 == 0
+
+        # hhl line
+        if h == k:
+            return (l % 3) == 0
+
+        # h00 line
+        if k == 0 and l == 0:
+            return (h % 3) == 0
+
+        # 0k0 line
+        if h == 0 and l == 0:
+            return (k % 3) == 0
+
+        # 00l line
+        if h == 0 and k == 0:
+            return (l % 6) == 0
+
+        return True
 
 
 
