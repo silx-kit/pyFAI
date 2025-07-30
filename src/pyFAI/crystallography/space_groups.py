@@ -3316,7 +3316,7 @@ class ReflectionCondition:
         - hkil:                          (-h) + k + l = 3n
         - hki0 (l = 0):                  (-h) + k = 3n
         - hh(-2h)l:                      l = 3n
-        - h(-h)0l (i = 0, k = -h):               h + l = 3n
+        - h(-h)0l (i = 0, k = -h):       h + l = 3n
         - 000l (h = k = 0):              l = 3n
         - h(-h)00 (l = 0, k = -h):       h = 3n
 
@@ -3406,6 +3406,9 @@ class ReflectionCondition:
             return (k % 3) == 0
                     
         return True
+    
+
+
 
 
     # @staticmethod
