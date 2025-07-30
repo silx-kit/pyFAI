@@ -3210,40 +3210,45 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group161_R3c(h, k, l):
+    def group161_R3c(h: int, k: int, l: int) -> bool:
         """
-        Space group 161: R3c. Trigonal (Rhombohedral setting, hexagonal axes).
+        Space group 161: R3c. Trigonal (Rhombohedral centring, hexagonal axes).
         Valid reflections must satisfy:
-        - General hkil:               -h + k + l = 3n
-        - hki0 (l = 0):               -h + k = 3n
-        - hh(-2h)l:                   l = 3n
-        - h(-h)0l (k = -h ):           h + l = 3n and l = 2n
-        - 000l (h = k = 0):           l = 6n
-        - h(-h)00 (k = -h, l = 0):    h = 3n
+        - General hkl:         -h + k + l = 3n
+        - 0kl (h = 0):         l = 2n and k + l = 3n
+        - h0l (k = 0):         l = 2n and h - l = 3n
+        - hk0 (l = 0):         h - k = 3n
+        - hhl (h = k):         l = 3n
+        - h00 (k = 0, l = 0):  h = 3n
+        - 0k0 (h = 0, l = 0):  k = 3n
+        - 00l (h = 0, k = 0):  l = 6n
 
         Source:
-            Reflection conditions from ITC (in hkil notation), adapted to (h, k, l)
-            using the relation i = -(h + k).
             http://img.chem.ucl.ac.uk/sgp/large/161bz2.htm
+        validated
         """
+        # General condition
         if (-h + k + l) % 3 != 0:
             return False
-        if h == 0 and k == 0:
-            return l % 6 == 0  # 000l
-        if k == -h and l == 0:
-            return h % 3 == 0  # h(-h)00
-        if l == 0:
-            return (-h + k) % 3 == 0  # hki0
-        if h == k and k == -2 * h:
-            return l % 3 == 0  # hh(-2h)l
-        if k == -h:
-            return (h + l) % 3 == 0 and l % 2 == 0  # h(-h)0l
 
-        ## Additional conditions to match xrayutilities. Hidden symmetry?
-        # if h == 0 or k == 0:
-        #    return l % 2 == 0  # 0kl or h0l
+        # Special cases
+        if h == 0 and k == 0:         # 00l
+            return l % 6 == 0
+        if h == 0 and l == 0:         # 0k0
+            return k % 3 == 0
+        if k == 0 and l == 0:         # h00
+            return h % 3 == 0
+        if l == 0:                    # hk0
+            return (h - k) % 3 == 0
+        if h == 0:                    # 0kl
+            return (l % 2 == 0) and ((k + l) % 3 == 0)
+        if k == 0:                    # h0l
+            return (l % 2 == 0) and ((h - l) % 3 == 0)
+        if h == k:                    # hhl
+            return l % 3 == 0
 
         return True
+
 
     @staticmethod
     def group162_P3barm(h, k, l):
