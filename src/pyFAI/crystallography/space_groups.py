@@ -3319,8 +3319,8 @@ class ReflectionCondition:
         """
         Space group 166: R3̅m. Trigonal (hexagonal axes), rhombohedral lattice.
         Valid reflections must satisfy:
-        - hkil:                          (-h) + k + l = 3n
-        - hki0 (l = 0):                  (-h) + k = 3n
+        - hkil:                          -h + k + l = 3n
+        - hki0 (l = 0):                  -h + k = 3n
         - hh(-2h)l:                      l = 3n
         - h(-h)0l (i = 0, k = -h):       h + l = 3n
         - 000l (h = k = 0):              l = 3n
@@ -3329,6 +3329,8 @@ class ReflectionCondition:
         Source:
             Reflection conditions from ITC (in hkil), adapted to (h, k, l)
             using the relation i = -(h + k).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/166bz2.htm
+
         validated
         """
         if (-h + k + l) % 3 != 0:
