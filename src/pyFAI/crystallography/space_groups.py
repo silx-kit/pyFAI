@@ -3381,25 +3381,27 @@ class ReflectionCondition:
 
         # Derived explicit conditions (JKC-style) 
         # These are *deductions* from ITC above:
-        # (7) 0kl plane (h=0):  
-        # This is a special case of the ITC condition for h(-h)0l reflections where k = -h and i=0.
-        # Setting h=0 reduces the condition h + l = 3n to k + l = 3n,
-        # and the c-glide requires l to be even (l = 2n).
+        # (7) 0kl plane (h = 0)
+        # This condition follows from the general R-centring law:  -h + k + l = 3n.
+        # Setting h = 0 gives k + l = 3n.
+        # The requirement l = 2n (even) comes from the c-glide condition for the
+        # symmetry-equivalent h(-h)0l family (related to 0kl by cyclic permutation of indices).
         if h == 0:
             return l % 2 == 0 and (k + l) % 3 == 0
         
-        # (8) h0l plane 
-        # This is a special case related to the ITC condition for h(-h)0l reflections (k = -h),
-        # adapted for k=0 plane.
-        # The c-glide symmetry requires l to be even (l = 2n),
-        # and the rhombohedral centring condition requires (h - l) to be a multiple of 3.
-
+        # (8) h0l plane (k = 0)
+        # From the R-centring law:  -h + k + l = 3n.
+        # Setting k = 0 gives -h + l = 3n  →  h - l = 3n.
+        # The requirement l = 2n (even) comes from the c-glide condition for the
+        # symmetry-equivalent h(-h)0l family (related to h0l by cyclic permutation).
         if k == 0:  # h0l plane
             return l % 2 == 0 and (h - l) % 3 == 0
 
         # (9) 0k0 line (h = 0, l = 0)
-        # This condition follows from the ITC reflection condition for h(-h)00 (k = -h, l=0),
-        # with h = 0, reducing to k = 3n.
+        # From the R-centring law:  -h + k + l = 3n.
+        # Setting h = 0 and l = 0 gives k = 3n.
+        # This corresponds to the 0k0 reflections, which are equivalent to
+        # h(-h)00 by cyclic permutation.
         if h == 0 and l == 0:
             return (k % 3) == 0
                     
