@@ -3356,37 +3356,55 @@ class ReflectionCondition:
             using the relation i = -(h + k).
         validated
         """
-        # General R-centering
+        # (1) General condition (ITC: -h + k + l = 3n)
+        # R-centring condition applies to all reflections.
         if (-h + k + l) % 3 != 0:
             return False
-        
 
-        # 0kl: l must be even
-        if h == 0:
-            return l % 2 == 0
-        # h0l: l must be even
-        if k == 0:
-            return l % 2 == 0
+        # (5) Special case: h = k = 0 (ITC: 000l: l = 6n)
+        if h == 0 and k == 0: return (l % 6) == 0
 
-        # 000l
-        if h == 0 and k == 0:
-            # 00l: 6n
-            return l % 6 == 0
-        
-        # hki0 (i = -(h + k), l = 0)
-        if l == 0:
-            return (-h + k) % 3 == 0
-        
-        # hh(-2h)l
-        if h == k:
-            return l % 3 == 0
-        
-        # h(-h)0l
+
+        # (6) Special case: k = -h, l = 0 (ITC: h(-h)00: h = 3n)
+        if k == -h and l == 0: return  (h % 3) == 0
+
+        # (2) Special case: l = 0 plane (ITC: hki0, l = 0: -h + k = 3n)
+        if l == 0: return (-h + k) % 3 == 0
+ 
+        # (3) Special case: h = k (ITC: hh(-2h)l: l = 3n)
+        # For l-direction with h = k, l must be multiple of 3
+        if h == k : return (l % 3) == 0
+
+        # (4) Special case: k = -h (ITC: h(-h)0l: l = 2n and h + l = 3n)
+        # i = 0 corresponds to hexagonal h,k,l triple
         if k == -h:
-            return (h + l) % 3 == 0 and l % 2 == 0
+            return l % 2 == 0 and (h + l) % 3 == 0
+
+        # Derived explicit conditions (JKC-style) 
+        # These are *deductions* from ITC above:
+        # (7) 0kl plane (h=0):  
+        # This is a special case of the ITC condition for h(-h)0l reflections where k = -h and i=0.
+        # Setting h=0 reduces the condition h + l = 3n to k + l = 3n,
+        # and the c-glide requires l to be even (l = 2n).
+        if h == 0:
+            return l % 2 == 0 and (k + l) % 3 == 0
         
+        # (8) h0l plane 
+        # This is a special case related to the ITC condition for h(-h)0l reflections (k = -h),
+        # adapted for k=0 plane.
+        # The c-glide symmetry requires l to be even (l = 2n),
+        # and the centring condition reduces to (h - l) = 3n.
+
+        if k == 0:  # h0l plane
+            return l % 2 == 0 and (h - l) % 3 == 0
+
+        # (9) 0k0 line (h = 0, l = 0)
+        # This condition follows from the ITC reflection condition for h(-h)00 (k = -h, l=0),
+        # with h = 0, reducing to k = 3n.
+        if h == 0 and l == 0:
+            return (k % 3) == 0
+                    
         return True
-            
 
 
     # @staticmethod
