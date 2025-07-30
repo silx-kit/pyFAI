@@ -3233,23 +3233,22 @@ class ReflectionCondition:
             return False
 
         # Special cases
-        if h == 0 and k == 0:         # 00l
+        if h == 0 and k == 0:  # 00l
             return l % 6 == 0
-        if h == 0 and l == 0:         # 0k0
+        if h == 0 and l == 0:  # 0k0
             return k % 3 == 0
-        if k == 0 and l == 0:         # h00
+        if k == 0 and l == 0:  # h00
             return h % 3 == 0
-        if l == 0:                    # hk0
+        if l == 0:  # hk0
             return (h - k) % 3 == 0
-        if h == 0:                    # 0kl
+        if h == 0:  # 0kl
             return (l % 2 == 0) and ((k + l) % 3 == 0)
-        if k == 0:                    # h0l
+        if k == 0:  # h0l
             return (l % 2 == 0) and ((h - l) % 3 == 0)
-        if h == k:                    # hhl
+        if h == k:  # hhl
             return l % 3 == 0
 
         return True
-
 
     @staticmethod
     def group162_P3barm(h, k, l):
@@ -3330,7 +3329,6 @@ class ReflectionCondition:
             Reflection conditions from ITC (in hkil), adapted to (h, k, l)
             using the relation i = -(h + k).
             JKC: http://img.chem.ucl.ac.uk/sgp/large/166bz2.htm
-
         validated
         """
         if (-h + k + l) % 3 != 0:
@@ -3358,7 +3356,7 @@ class ReflectionCondition:
         - h(-h)0l (i = 0, k = -h):       h + l = 3n and l = 2n
         - 000l (h = k = 0):              l = 6n
         - h(-h)00 (l = 0, k = -h):       h = 3n
-     
+
         Source:
             Reflection conditions from ITC (in hkil), adapted to (h, k, l)
             using the relation i = -(h + k).
@@ -3370,55 +3368,58 @@ class ReflectionCondition:
             return False
 
         # (5) Special case: h = k = 0 (ITC: 000l: l = 6n)
-        if h == 0 and k == 0: return (l % 6) == 0
+        if h == 0 and k == 0:
+            return (l % 6) == 0
 
         # (6) Special case: k = -h, l = 0 (ITC: h(-h)00: h = 3n)
-        if k == -h and l == 0: return  (h % 3) == 0
+        if k == -h and l == 0:
+            return (h % 3) == 0
 
         # (2) Special case: l = 0 plane (ITC: hki0, l = 0: -h + k = 3n)
-        if l == 0: return (-h + k) % 3 == 0
- 
+        if l == 0:
+            return (-h + k) % 3 == 0
+
         # (3) Special case: h = k (ITC: hh(-2h)l: l = 3n)
         # For l-direction with h = k, l must be multiple of 3
-        if h == k : return (l % 3) == 0
+        if h == k:
+            return (l % 3) == 0
 
         # (4) Special case: k = -h (ITC: h(-h)0l: l = 2n and h + l = 3n)
         # i = 0 corresponds to hexagonal h,k,l triple
         if k == -h:
             return l % 2 == 0 and (h + l) % 3 == 0
 
-        # Derived explicit conditions (JKC-style) 
+        # Derived explicit conditions (JKC-style)
         # These are *deductions* from ITC above:
-        # Additional explicit forms for 0kl, h0l, and 0k0 follow from the h(-h)0l and h(-h)00 
+        # Additional explicit forms for 0kl, h0l, and 0k0 follow from the h(-h)0l and h(-h)00
         # conditions by cyclic permutation of indices in the R3̅c hexagonal setting.
-   
+
         # (7) 0kl plane (h = 0)
         # Derived from the general reflection condition for h(−h)0l (ITC rule (4)).
         # In the hexagonal R-lattice, a 120° rotation about the c-axis cycles
-        # the in-plane indices: (h,k,i,l) → (k,i,h,l).  
-        # Applying this to h(−h)0l (i = 0, k = −h) gives 0kl as a symmetry-equivalent set.  
-        # The c-glide still requires l to be even (l = 2n),  
+        # the in-plane indices: (h,k,i,l) → (k,i,h,l).
+        # Applying this to h(−h)0l (i = 0, k = −h) gives 0kl as a symmetry-equivalent set.
+        # The c-glide still requires l to be even (l = 2n),
         # and the centring condition becomes k + l = 3n.
         if h == 0:
             return l % 2 == 0 and (k + l) % 3 == 0
-        
+
         # (8) h0l plane (k = 0)
         # By 120° rotation of indices (h,k,i,l) → (i,h,k,l), the h(−h)0l condition
-        # maps to h0l as a symmetry-equivalent set when k = 0.  
-        # The c-glide condition still enforces l = 2n (l even),  
+        # maps to h0l as a symmetry-equivalent set when k = 0.
+        # The c-glide condition still enforces l = 2n (l even),
         # and the R-centring condition becomes h − l = 3n.
         if k == 0:  # h0l plane
             return l % 2 == 0 and (h - l) % 3 == 0
 
         # (9) 0k0 line (h = 0, l = 0)
         # This follows from h(−h)00 (k = −h, l = 0), which under rotation
-        # yields the 0k0 family when h = 0.  
+        # yields the 0k0 family when h = 0.
         # With l = 0, the only remaining restriction is from R-centring: k = 3n.
         if h == 0 and l == 0:
             return (k % 3) == 0
-                    
+
         return True
-    
 
     @staticmethod
     def group167_R3bar_c_v2(h: int, k: int, l: int) -> bool:
@@ -3433,9 +3434,9 @@ class ReflectionCondition:
         - h00 (k = 0, l = 0):             h = 3n
         - 0k0 (h = 0, l = 0):             k = 3n
         - 00l (h = 0, k = 0):             l = 6n
-            
+
         Source: http://img.chem.ucl.ac.uk/sgp/large/167bz2.htm
-        validated 
+        validated
         """
 
         # General reflection condition
@@ -3471,8 +3472,6 @@ class ReflectionCondition:
             return (l % 6) == 0
 
         return True
-
-
 
     # @staticmethod
     # def group167_R_3c(h, k, l):
