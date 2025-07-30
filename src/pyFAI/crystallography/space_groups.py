@@ -3381,11 +3381,21 @@ class ReflectionCondition:
 
         # Derived explicit conditions (JKC-style) 
         # These are *deductions* from ITC above:
+        # Additional explicit forms for 0kl, h0l, and 0k0 follow from the h(-h)0l and h(-h)00 conditions by cyclic permutation of indices in the R3̅c hexagonal setting.
+        
         # (7) 0kl plane (h = 0)
         # This condition follows from the general R-centring law:  -h + k + l = 3n.
         # Setting h = 0 gives k + l = 3n.
         # The requirement l = 2n (even) comes from the c-glide condition for the
         # symmetry-equivalent h(-h)0l family (related to 0kl by cyclic permutation of indices).
+
+        # (7) 0kl plane (h = 0)
+        # Derived from the general reflection condition for h(−h)0l (ITC rule (4)).
+        # In the hexagonal R-lattice, a 120° rotation about the c-axis cycles
+        # the in-plane indices: (h,k,i,l) → (k,i,h,l).  
+        # Applying this to h(−h)0l (i = 0, k = −h) gives 0kl as a symmetry-equivalent set.  
+        # The c-glide still requires l to be even (l = 2n),  
+        # and the centring condition becomes k + l = 3n.
         if h == 0:
             return l % 2 == 0 and (k + l) % 3 == 0
         
