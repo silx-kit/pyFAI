@@ -3382,13 +3382,7 @@ class ReflectionCondition:
         # Derived explicit conditions (JKC-style) 
         # These are *deductions* from ITC above:
         # Additional explicit forms for 0kl, h0l, and 0k0 follow from the h(-h)0l and h(-h)00 conditions by cyclic permutation of indices in the R3̅c hexagonal setting.
-        
-        # (7) 0kl plane (h = 0)
-        # This condition follows from the general R-centring law:  -h + k + l = 3n.
-        # Setting h = 0 gives k + l = 3n.
-        # The requirement l = 2n (even) comes from the c-glide condition for the
-        # symmetry-equivalent h(-h)0l family (related to 0kl by cyclic permutation of indices).
-
+   
         # (7) 0kl plane (h = 0)
         # Derived from the general reflection condition for h(−h)0l (ITC rule (4)).
         # In the hexagonal R-lattice, a 120° rotation about the c-axis cycles
@@ -3400,18 +3394,17 @@ class ReflectionCondition:
             return l % 2 == 0 and (k + l) % 3 == 0
         
         # (8) h0l plane (k = 0)
-        # From the R-centring law:  -h + k + l = 3n.
-        # Setting k = 0 gives -h + l = 3n  →  h - l = 3n.
-        # The requirement l = 2n (even) comes from the c-glide condition for the
-        # symmetry-equivalent h(-h)0l family (related to h0l by cyclic permutation).
+        # By 120° rotation of indices (h,k,i,l) → (i,h,k,l), the h(−h)0l condition
+        # maps to h0l as a symmetry-equivalent set when k = 0.  
+        # The c-glide condition still enforces l = 2n (l even),  
+        # and the R-centring condition becomes h − l = 3n.
         if k == 0:  # h0l plane
             return l % 2 == 0 and (h - l) % 3 == 0
 
         # (9) 0k0 line (h = 0, l = 0)
-        # From the R-centring law:  -h + k + l = 3n.
-        # Setting h = 0 and l = 0 gives k = 3n.
-        # This corresponds to the 0k0 reflections, which are equivalent to
-        # h(-h)00 by cyclic permutation.
+        # This follows from h(−h)00 (k = −h, l = 0), which under rotation
+        # yields the 0k0 family when h = 0.  
+        # With l = 0, the only remaining restriction is from R-centring: k = 3n.
         if h == 0 and l == 0:
             return (k % 3) == 0
                     
