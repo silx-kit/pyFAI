@@ -3195,6 +3195,7 @@ class ReflectionCondition:
         - h(-h)00 (k = -h, l = 0):       h = 3n
         Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
                 using the relation i = -(h + k)
+                JKC: http://img.chem.ucl.ac.uk/sgp/large/160bz2.htm
         validated
         """
         if (-h + k + l) % 3 != 0:
