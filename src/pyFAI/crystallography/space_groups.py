@@ -3503,10 +3503,19 @@ class ReflectionCondition:
         return True
 
 
-
     @staticmethod
-    def group170_p6(h, k, l):
-        """Space group 170: P6. No systematic absences."""
+    def group170_P65(h: int, k: int, l: int) -> bool:
+        """
+        Space group 170: P6₅. Hexagonal system, primitive lattice.
+        Valid reflections must satisfy:
+        - 000l (h = 0, k = 0):              l = 6n
+
+        Source: ITC
+        validated
+        """
+        # 000l condition
+        if h == 0 and k == 0:
+            return l % 6 == 0
         return True
 
     @staticmethod
