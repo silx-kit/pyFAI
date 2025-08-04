@@ -3564,10 +3564,14 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group174_p64(h, k, l):
-        """Space group 174: P64. (0,0,l): l = 3n."""
-        if h == 0 and k == 0:
-            return l % 3 == 0
+    def group174_P_6(h: int, k: int, l: int) -> bool:
+        """
+        Space group 174: P-6. Hexagonal system, primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        Source: ITC
+        validated
+        """
         return True
 
     @staticmethod
