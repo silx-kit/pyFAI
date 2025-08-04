@@ -3534,10 +3534,18 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group172_p65(h, k, l):
-        """Space group 172: P65. (0,0,l): l = 6n."""
+    def group172_P64(h: int, k: int, l: int) -> bool:
+        """
+        Space group 172: P6₄. Hexagonal system, primitive lattice.
+        Valid reflections must satisfy:
+        - 000l (h = 0, k = 0):              l = 3n
+
+        Source: ITC
+        validated
+        """
+        # 000l condition
         if h == 0 and k == 0:
-            return l % 6 == 0
+            return l % 3 == 0
         return True
 
     @staticmethod
