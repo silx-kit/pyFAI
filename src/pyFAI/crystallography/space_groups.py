@@ -3564,7 +3564,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group174_P_6(h: int, k: int, l: int) -> bool:
+    def group174_P6bar(h: int, k: int, l: int) -> bool:
         """
         Space group 174: P-6. Hexagonal system, primitive lattice.
         No reflection conditions — all (h, k, l) are allowed.
