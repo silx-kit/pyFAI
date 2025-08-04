@@ -3575,10 +3575,14 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group175_p63(h, k, l):
-        """Space group 175: P63. (0,0,l): l = 2n."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group175_P6_m(h: int, k: int, l: int) -> bool:
+        """
+        Space group 175: P6/m. Hexagonal system, primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        Source:ITC
+        validated
+        """
         return True
 
     @staticmethod
