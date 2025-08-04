@@ -3486,15 +3486,19 @@ class ReflectionCondition:
         """
         return True
 
-    @staticmethod
-    def group168_r_3m(h, k, l):
-        """Space group 168: R-3m (hexagonal axes). (h - k + l) divisible by 3."""
-        return (h - k + l) % 3 == 0
 
     @staticmethod
-    def group169_P61(h, k, l):
-        """Space group 169: P61. Validated"""
-        if h == k == 0:
+    def group169_P61(h: int, k: int, l: int) -> bool:
+        """
+        Space group 169: P6₁. Hexagonal system, primitive lattice.
+        Valid reflections must satisfy:
+        - 000l (h = 0, k = 0):      l = 6n
+
+        Source: ITC
+        validated
+        """
+        # 000l condition
+        if h == 0 and k == 0:
             return l % 6 == 0
         return True
 
