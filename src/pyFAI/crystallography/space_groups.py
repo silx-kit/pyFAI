@@ -3476,8 +3476,14 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group168_P6(h, k, l):
-        """Space group 168: P6. No selection. validated"""
+    def group168_P6(h: int, k: int, l: int) -> bool:
+        """
+        Space group 168: P6. Hexagonal system. Primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        Source: ITC
+        validated
+        """
         return True
 
     @staticmethod
