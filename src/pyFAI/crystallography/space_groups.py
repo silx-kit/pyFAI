@@ -3673,15 +3673,18 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group181_p63_c(h, k, l):
-        """Space group 181: P63c. (0,0,l): l even."""
+    def group182_P6322(h: int, k: int, l: int) -> bool:
+        """
+        Space group 182: P6₃22. Hexagonal system, primitive lattice.
+        Valid reflections must satisfy:
+        - 000l (h = 0, k = 0):              l = 2n
+
+        Source: ITC
+        validated
+        """
+        # 000l condition
         if h == 0 and k == 0:
             return l % 2 == 0
-        return True
-
-    @staticmethod
-    def group182_p6_22(h, k, l):
-        """Space group 182: P622. No systematic absences."""
         return True
 
     @staticmethod
