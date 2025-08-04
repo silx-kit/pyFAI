@@ -1493,7 +1493,7 @@ class ReflectionCondition:
     @staticmethod
     def group81_P_4(h, k, l):
         """
-        Space group 81: P4̅ (P four bar).
+        Space group 81: P4̅.
         No systematic absences.
         validated
         """
