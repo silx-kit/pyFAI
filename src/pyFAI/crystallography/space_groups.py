@@ -3547,12 +3547,20 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 3 == 0
         return True
-
+    
     @staticmethod
-    def group173_p62(h, k, l):
-        """Space group 173: P62. (0,0,l): l = 3n."""
+    def group173_P63(h: int, k: int, l: int) -> bool:
+        """
+        Space group 173: P6₃. Hexagonal system, primitive lattice.
+        Valid reflections must satisfy:
+        - 000l (h = 0, k = 0):              l = 2n
+
+        Source: ITC
+        validated
+        """
+        # 000l condition
         if h == 0 and k == 0:
-            return l % 3 == 0
+            return l % 2 == 0
         return True
 
     @staticmethod
