@@ -3852,10 +3852,26 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group190_p63cm(h, k, l):
-        """Space group 190: P63cm. (0,0,l): l even."""
+    def group190_P6bar_2c(h: int, k: int, l: int) -> bool:
+        """
+        Space group 190: P6̅2c. Hexagonal system, primitive lattice.
+        Valid reflections must satisfy:
+        - hh(-2h)l (k = h):                 l = 2n
+        - 000l (h = 0, k = 0):              l = 2n
+
+        Source:
+            Reflection conditions from ITC (in hkil), adapted to (h, k, l)
+            using the relation i = -(h + k).
+        validated
+        """
+        # 000l condition
         if h == 0 and k == 0:
             return l % 2 == 0
+
+        # hh(-2h)l condition
+        if k == h:
+            return l % 2 == 0
+
         return True
 
     @staticmethod
