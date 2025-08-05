@@ -3711,7 +3711,7 @@ class ReflectionCondition:
             Reflection conditions from ITC (in hkil), adapted to (h, k, l)
             using the relation i = -(h + k).
             JKC: http://img.chem.ucl.ac.uk/sgp/large/184az2.htm
-            validated
+        validated
         """
         # 000l condition
         if h == 0 and k == 0:
@@ -3750,7 +3750,7 @@ class ReflectionCondition:
             Reflection conditions from ITC (in hkil), adapted to (h, k, l)
             using the relation i = -(h + k).
             JKC: http://img.chem.ucl.ac.uk/sgp/large/185az2.htm
-            validated
+        validated
         """
         # 000l condition
         if h == 0 and k == 0:
@@ -3782,7 +3782,7 @@ class ReflectionCondition:
         Source:
             Reflection conditions from ITC (in hkil), adapted to (h, k, l)
             using the relation i = -(h + k).
-            validated
+        validated
         """
         # 000l condition
         if h == 0 and k == 0:
@@ -3819,7 +3819,7 @@ class ReflectionCondition:
             Reflection conditions from ITC (in hkil), adapted to (h, k, l)
             using the relation i = -(h + k).
             JKC: http://img.chem.ucl.ac.uk/sgp/large/188bz2.htm
-            validated
+        validated
         """
         # 0kl condition
         if h == 0:
