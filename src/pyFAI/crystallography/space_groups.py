@@ -3806,11 +3806,39 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group188_p6mcc(h, k, l):
-        """Space group 188: P6/mcc. (0,0,l): l even."""
+    def group188_P6c2bar(h: int, k: int, l: int) -> bool:
+        """
+        Space group 188: P6c2 (P6̅c2). Hexagonal system, primitive lattice.
+        Valid reflections must satisfy:
+        - 0kl (h = 0):                    l = 2n
+        - h0l (k = 0):                    l = 2n
+        - h(-h)0l (k = -h):               l = 2n
+        - 000l (h = 0, k = 0):            l = 2n
+
+        Source:
+            Reflection conditions from ITC (in hkil), adapted to (h, k, l)
+            using the relation i = -(h + k).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/188bz2.htm
+            validated
+        """
+        # 0kl condition
+        if h == 0:
+            return l % 2 == 0
+
+        # h0l condition
+        if k == 0:
+            return l % 2 == 0
+
+        # h(-h)0l condition
+        if k == -h:
+            return l % 2 == 0
+
+        # 000l condition
         if h == 0 and k == 0:
             return l % 2 == 0
+
         return True
+
 
     @staticmethod
     def group189_p63mc(h, k, l):
