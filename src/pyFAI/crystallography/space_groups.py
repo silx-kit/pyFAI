@@ -3697,11 +3697,44 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group184_p6_522(h, k, l):
-        """Space group 184: P6_522. (0,0,l): l = 6n."""
+    def group184_P6cc(h: int, k: int, l: int) -> bool:
+        """
+        Space group 184: P6cc. Hexagonal system, primitive lattice.
+        Valid reflections must satisfy:
+        - 000l (h = 0, k = 0):              l = 2n
+        - 0kl (h = 0):                      l = 2n
+        - h0l (k = 0):                      l = 2n
+        - hh(-2h)l (k = h):                 l = 2n
+        - h(-h)0l (k = -h):                 l = 2n
+
+        Source:
+            Reflection conditions from ITC (in hkil), adapted to (h, k, l)
+            using the relation i = -(h + k).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/184az2.htm
+            validated
+        """
+        # 000l condition
         if h == 0 and k == 0:
-            return l % 6 == 0
+            return l % 2 == 0
+
+        # 0kl condition
+        if h == 0:
+            return l % 2 == 0
+
+        # h0l condition
+        if k == 0:
+            return l % 2 == 0
+
+        # hh(-2h)l condition
+        if k == h:
+            return l % 2 == 0
+
+        # h(-h)0l condition
+        if k == -h:
+            return l % 2 == 0
+
         return True
+
 
     @staticmethod
     def group185_p6_2_22(h, k, l):
