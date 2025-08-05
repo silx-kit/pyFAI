@@ -3794,8 +3794,15 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group187_p6mmm(h, k, l):
-        """Space group 187: P6/mmm. No systematic absences.validated"""
+    def group187_P6bar_m2(h: int, k: int, l: int) -> bool:
+        """
+        Space group 187: P6̅m2. Hexagonal system, primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+
+        Source: ITC
+        validated
+        """
         return True
 
     @staticmethod
