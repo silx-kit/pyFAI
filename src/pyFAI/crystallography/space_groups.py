@@ -3735,7 +3735,6 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group185_P63cm(h: int, k: int, l: int) -> bool:
         """
@@ -3769,7 +3768,6 @@ class ReflectionCondition:
             return l % 2 == 0
 
         return True
-
 
     @staticmethod
     def group186_P63mc(h: int, k: int, l: int) -> bool:
@@ -3838,7 +3836,6 @@ class ReflectionCondition:
             return l % 2 == 0
 
         return True
-
 
     @staticmethod
     def group189_P6bar_m2(h: int, k: int, l: int) -> bool:
