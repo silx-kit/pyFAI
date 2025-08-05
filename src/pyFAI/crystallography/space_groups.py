@@ -3486,7 +3486,6 @@ class ReflectionCondition:
         """
         return True
 
-
     @staticmethod
     def group169_P61(h: int, k: int, l: int) -> bool:
         """
@@ -3501,7 +3500,6 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 6 == 0
         return True
-
 
     @staticmethod
     def group170_P65(h: int, k: int, l: int) -> bool:
@@ -3547,7 +3545,7 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 3 == 0
         return True
-    
+
     @staticmethod
     def group173_P63(h: int, k: int, l: int) -> bool:
         """
@@ -3655,7 +3653,7 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 3 == 0
         return True
-    
+
     @staticmethod
     def group181_P6422(h: int, k: int, l: int) -> bool:
         """
@@ -3670,7 +3668,6 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 3 == 0
         return True
-
 
     @staticmethod
     def group182_P6322(h: int, k: int, l: int) -> bool:
