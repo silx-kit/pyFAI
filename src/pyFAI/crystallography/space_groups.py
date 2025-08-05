@@ -3685,10 +3685,15 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group183_p6_21_22(h, k, l):
-        """Space group 183: P6_122. (0,0,l): l = 6n."""
-        if h == 0 and k == 0:
-            return l % 6 == 0
+    def group183_P6mm(h: int, k: int, l: int) -> bool:
+        """
+        Space group 183: P6mm. Hexagonal system, primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+
+        Source: ITC
+        validated
+        """
         return True
 
     @staticmethod
