@@ -3872,10 +3872,14 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group191_p63_mcm(h, k, l):
-        """Space group 191: P63/mcm. (0,0,l): l even."""
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group191_P6_mmm(h: int, k: int, l: int) -> bool:
+        """
+        Space group 191: P6/mmm. Hexagonal system, primitive lattice.
+        No reflection conditions — all (h, k, l) are allowed.
+        No systematic absences.
+        Source: ITC
+            validated
+        """
         return True
 
     @staticmethod
