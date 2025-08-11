@@ -3902,7 +3902,7 @@ class ReflectionCondition:
         # 000l condition
         if h == 0 and k == 0:
             return l % 2 == 0
-        
+
         # hh(-2h)l condition (k = h)
         if k == h:
             return l % 2 == 0
@@ -3920,8 +3920,6 @@ class ReflectionCondition:
             return l % 2 == 0
 
         return True
-
-
 
     @staticmethod
     def group193_p23(h, k, l):
