@@ -3899,16 +3899,16 @@ class ReflectionCondition:
             JKC: http://img.chem.ucl.ac.uk/sgp/large/192az2.htm
             validated
         """
-        # 000l condition
-        if h == 0 and k == 0:
-            return l % 2 == 0
-
-        # hh(-2h)l condition (k = h)
+        # hh(-2h)l condition
         if k == h:
             return l % 2 == 0
 
-        # h(-h)0l condition (k = -h)
+        # h(-h)0l condition
         if k == -h:
+            return l % 2 == 0
+
+        # 000l condition
+        if h == 0 and k == 0:
             return l % 2 == 0
 
         # 0kl condition
