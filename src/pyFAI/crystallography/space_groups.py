@@ -3913,7 +3913,6 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group193_P63_mcm(h: int, k: int, l: int) -> bool:
         """
