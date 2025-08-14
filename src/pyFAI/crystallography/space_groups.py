@@ -3942,16 +3942,8 @@ class ReflectionCondition:
         if k == -h:
             return l % 2 == 0
 
-        # 000l condition
-        if h == 0 and k == 0:
-            return l % 2 == 0
-
-        # 0kl condition
-        if h == 0:
-            return l % 2 == 0
-
-        # h0l condition
-        if k == 0:
+        # 0kl or h0l planes
+        if h == 0 or k == 0:
             return l % 2 == 0
 
         return True
