@@ -3922,8 +3922,38 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group193_p23(h, k, l):
-        """Space group 193: P23. No systematic absences."""
+    def group193_P63_mcm(h: int, k: int, l: int) -> bool:
+        """
+        Space group 193: P63/mcm. Hexagonal system, primitive lattice.
+        Valid reflections must satisfy:
+
+        - h(-h)0l (k = -h):  l = 2n
+        - 000l (h = 0, k = 0): l = 2n
+        - 0kl (h = 0):             l = 2n
+        - h0l (k = 0):             l = 2n
+
+        Source:
+            Reflection conditions from ITC (in hkil), adapted to (h, k, l)
+            using i = -(h + k).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/193az2.htm
+            validated
+        """
+        # h(-h)0l condition
+        if k == -h:
+            return l % 2 == 0
+
+        # 000l condition
+        if h == 0 and k == 0:
+            return l % 2 == 0
+
+        # 0kl condition
+        if h == 0:
+            return l % 2 == 0
+
+        # h0l condition
+        if k == 0:
+            return l % 2 == 0
+
         return True
 
     @staticmethod
