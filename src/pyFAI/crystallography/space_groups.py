@@ -3942,9 +3942,28 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group194_f23(h, k, l):
-        """Space group 194: F23. F-centering: h, k, l all even or all odd."""
-        return h % 2 == k % 2 == l % 2
+    def group194_P63_mmc(h: int, k: int, l: int) -> bool:
+        """
+        Space group 194: P63/mmc. Hexagonal system, primitive lattice.
+        Valid reflections must satisfy:
+
+        - hh(-2h)l (k = h):     l = 2n
+        - 000l (h = 0, k = 0):  l = 2n
+
+        Source:
+            Reflection conditions from ITC (in hkil), adapted to (h, k, l)
+            using the relation i = -(h + k).
+            validated
+        """
+        # hh(-2h)l condition
+        if k == h:
+            return l % 2 == 0
+
+        # 000l condition (h = 0, k = 0)
+        if h == 0 and k == 0:
+            return l % 2 == 0
+
+        return True
 
     @staticmethod
     def group195_i23(h, k, l):
