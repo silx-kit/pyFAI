@@ -3965,9 +3965,13 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group195_i23(h, k, l):
-        """Space group 195: I23. I-centering: (h + k + l) even."""
-        return (h + k + l) % 2 == 0
+    def group195_P23(h: int, k: int, l: int) -> bool:
+        """
+        Space group 195: P23. Primitive cubic.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
+        return True
 
     @staticmethod
     def group196_p213(h, k, l):
