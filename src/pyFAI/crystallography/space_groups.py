@@ -4018,22 +4018,14 @@ class ReflectionCondition:
 
         validated
         """
-        # General condition
-        if (h + k + l) % 2 != 0:
+        if (h + k + l) % 2:  # general condition
             return False
-
-        # 0kl
-        if h == 0:
-            return (k + l) % 2 == 0
-
-        # hhl
-        if h == k:
-            return l % 2 == 0
-
-        # h00
-        if k == 0 and l == 0:
-            return h % 2 == 0
-
+        if h == 0 and (k + l) % 2:  # 0kl
+            return False
+        if h == k and l % 2:  # hhl
+            return False
+        if k == l == 0 and h % 2:  # h00
+            return False
         return True
 
 
