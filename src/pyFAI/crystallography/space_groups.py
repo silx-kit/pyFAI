@@ -3974,9 +3974,36 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group196_p213(h, k, l):
-        """Space group 196: P213. No systematic absences."""
+    def group196_F23(h: int, k: int, l: int) -> bool:
+        """
+        Space group 196: F23. Face-centred cubic.
+        Conditions are cyclically permutable.
+        Valid reflections must satisfy
+        - General hkl:            h + k, h + l, k + l all even
+        - 0kl (h=0):              k, l even
+        - hhl (h=k):              h + l even
+        - h00 (k=0, l=0):         h even
+
+        validated
+        """
+        # General condition
+        if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
+            return False
+
+        # 0kl
+        if h == 0:
+            return (k % 2 == 0) and (l % 2 == 0)
+
+        # hhl
+        if h == k:
+            return (h + l) % 2 == 0
+
+        # h00
+        if k == 0 and l == 0:
+            return h % 2 == 0
+
         return True
+
 
     @staticmethod
     def group197_i213(h, k, l):
