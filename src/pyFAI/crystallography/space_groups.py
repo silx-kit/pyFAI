@@ -4004,7 +4004,6 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group197_I23(h: int, k: int, l: int) -> bool:
         """
@@ -4027,7 +4026,6 @@ class ReflectionCondition:
         if k == l == 0 and h % 2:  # h00
             return False
         return True
-
 
     @staticmethod
     def group198_pm3(h, k, l):
