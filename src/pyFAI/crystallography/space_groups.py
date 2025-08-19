@@ -4073,9 +4073,14 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group200_fn3(h, k, l):
-        """Space group 200: Fm-3. F-centering: h, k, l all even or all odd."""
-        return h % 2 == k % 2 == l % 2
+    def group200_Pm3bar(h: int, k: int, l: int) -> bool:
+        """
+        Space group 200: Pm3̅. Primitive cubic.
+        Conditions are cyclically permutable.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
+        return True
 
     @staticmethod
     def group201_pn3m(h, k, l):
