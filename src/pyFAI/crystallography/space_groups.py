@@ -4028,8 +4028,24 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group198_pm3(h, k, l):
-        """Space group 198: Pm-3. No systematic absences."""
+    def group198_P213(h: int, k: int, l: int) -> bool:
+        """
+        Space group 198: P2₁3. Primitive cubic.
+        Conditions are cyclically permutable.
+        Valid reflections must satisfy
+        - h00 (k=0, l=0):  h = 2n
+        - 0k0 (h=0, l=0):  k = 2n
+        - 00l (h=0, k=0):  l = 2n
+
+        Source: http://img.chem.ucl.ac.uk/sgp/large/198az2.htm
+        validated
+        """
+        if k == l == 0:
+            return h % 2 == 0
+        if h == l == 0:
+            return k % 2 == 0
+        if h == k == 0:
+            return l % 2 == 0
         return True
 
     @staticmethod
