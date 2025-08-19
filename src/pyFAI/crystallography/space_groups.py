@@ -4049,8 +4049,27 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group199_pa3(h, k, l):
-        """Space group 199: Pa-3. No systematic absences."""
+    def group199_I213(h: int, k: int, l: int) -> bool:
+        """
+        Space group 199: I2₁3. Body-centred cubic.
+        Conditions are cyclically permutable.
+
+        Valid reflections must satisfy
+        - General hkl:    h + k + l = 2n
+        - 0kl (h=0):      k + l = 2n
+        - hhl (h=k):      l = 2n
+        - h00 (k=0,l=0):  h = 2n
+
+        validated
+        """
+        if (h + k + l) % 2 != 0:  # general condition
+            return False
+        if h == 0:
+            return (k + l) % 2 == 0
+        if h == k:
+            return l % 2 == 0
+        if k == l == 0:
+            return h % 2 == 0
         return True
 
     @staticmethod
