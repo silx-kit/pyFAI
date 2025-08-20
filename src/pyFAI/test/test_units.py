@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/04/2024"
+__date__ = "20/08/2025"
 
 import unittest
 import numpy
@@ -64,6 +64,9 @@ class TestUnits(unittest.TestCase):
                 ref = u.equation(x,y,z,λ)
                 obt = u._equation(x,y,z,λ)
                 self.assertTrue(numpy.allclose(ref,obt), f"Equation and formula do NOT match for {k}")
+                if not (ref==obt).all():
+                    delta = abs(ref-obt).max()
+                    logger.warning(f"Equation and formula almost match but not perfectly for {k}: Δ_max={delta:.2g}")
 
 
 def suite():

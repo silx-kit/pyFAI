@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "20/08/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -399,6 +399,19 @@ def eq_q(x, y, z, wavelength):
     """
     return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
 
+
+def eq_chi(x, y, z, wavelength):
+    """Calculates the polar angle in transmission mode,
+
+    chi = arctan2(y, x)
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam, unused
+    :param wavelength: in meter, unused
+    :return: polar angle, in rad
+    """
+    return numpy.arctan2(y, x)
 
 def eq_scattering_angle_vertical(x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1):
     """Calculates the vertical scattering angle (relative to direct beam axis), used for GI/Fiber diffraction
@@ -1184,14 +1197,18 @@ register_azimuthal_unit("chi_rad",
                         scale=1.0,
                         label=r"Azimuthal angle $\chi$ ($rad$)",
                         formula=formula_chi,
+                        equation=eq_chi,
                         positive=False,
                         period=2.*pi)
+
 register_azimuthal_unit("chi_deg",
                         scale=180. / pi,
                         label=r"Azimuthal angle $\chi$ ($^{o}$)",
                         formula=formula_chi,
+                        equation=eq_chi,
                         positive=False,
                         period=360)
+
 register_azimuthal_fiber_unit(name="chigi_rad",
                               short_name="chigi",
                               scale=1.0,
@@ -1200,6 +1217,7 @@ register_azimuthal_fiber_unit(name="chigi_rad",
                               equation=eq_chi_gi,
                               positive=False,
                               period=2.*pi)
+
 register_azimuthal_fiber_unit(name="chigi_deg",
                               short_name="chigi",
                               scale=180. / pi,
