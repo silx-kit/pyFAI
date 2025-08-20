@@ -68,12 +68,12 @@ class TestUnits(unittest.TestCase):
             ):
                 ref = u.equation(x, y, z, λ)
                 obt = u._equation(x, y, z, λ)
+                delta = abs(ref - obt).max()
                 self.assertTrue(
                     numpy.allclose(ref, obt),
-                    f"Equation and formula do NOT match for {k}",
+                    f"Equation and formula do NOT match for {k}: Δ_max={delta:.2g}",
                 )
-                if not (ref == obt).all():
-                    delta = abs(ref - obt).max()
+                if delta:
                     logger.warning(
                         f"Equation and formula almost match but not perfectly for {k}: Δ_max={delta:.2g}"
                     )
