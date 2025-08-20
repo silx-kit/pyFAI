@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author: Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
 #
@@ -33,7 +33,7 @@ unique manner. This explains the number of top-level variables on the one
 hand and their CAPITALIZATION on the other.
 """
 
-__authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
+__authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez-Fernandez"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
@@ -45,8 +45,8 @@ import copy
 import logging
 
 logger = logging.getLogger(__name__)
+from math import sin, cos, tan, atan2, pi
 import numpy
-from numpy import pi
 import scipy.constants
 
 try:
@@ -580,18 +580,23 @@ def eq_exit_angle_vert(
     :param wavelength: in meter
     :return: vertical exit angle in radians
     """
+    cos_incident_angle = cos(incident_angle)
+    sin_incident_angle = sin(incident_angle)
+    cos_tilt_angle = cos(tilt_angle)
+    sin_tilt_angle = sin(tilt_angle)
+
     rot_incident_angle = numpy.array(
         [
-            [1, 0, 0],
-            [0, numpy.cos(incident_angle), numpy.sin(-incident_angle)],
-            [0, numpy.sin(incident_angle), numpy.cos(incident_angle)],
+            [1.0, 0.0, 0.0],
+            [0.0, cos_incident_angle, -sin_incident_angle],
+            [0.0, sin_incident_angle, cos_incident_angle],
         ],
     )
     rot_tilt_angle = numpy.array(
         [
-            [numpy.cos(tilt_angle), numpy.sin(-tilt_angle), 0],
-            [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
-            [0, 0, 1],
+            [cos_tilt_angle, -sin_tilt_angle, 0.0],
+            [sin_tilt_angle, cos_tilt_angle, 0.0],
+            [0.0, 0.0, 1.0],
         ],
     )
     rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x, y, z)), axes=1)
@@ -612,18 +617,22 @@ def eq_exit_angle_horz(
     :param wavelength: in meter
     :return: horizontal exit angle in radians
     """
+    cos_incident_angle = cos(incident_angle)
+    sin_incident_angle = sin(incident_angle)
+    cos_tilt_angle = cos(tilt_angle)
+    sin_tilt_angle = sin(tilt_angle)
     rot_incident_angle = numpy.array(
         [
-            [1, 0, 0],
-            [0, numpy.cos(incident_angle), numpy.sin(-incident_angle)],
-            [0, numpy.sin(incident_angle), numpy.cos(incident_angle)],
+            [1.0, 0.0, 0.0],
+            [0.0, cos_incident_angle, -sin_incident_angle],
+            [0.0, sin_incident_angle, cos_incident_angle],
         ],
     )
     rot_tilt_angle = numpy.array(
         [
-            [numpy.cos(tilt_angle), numpy.sin(-tilt_angle), 0],
-            [numpy.sin(tilt_angle), numpy.cos(tilt_angle), 0],
-            [0, 0, 1],
+            [cos_tilt_angle, -sin_tilt_angle, 0.0],
+            [sin_tilt_angle, cos_tilt_angle, 0.0],
+            [0.0, 0.0, 1.0],
         ],
     )
     rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x, y, z)), axes=1)
@@ -728,11 +737,13 @@ def rotation_tilt_angle(tilt_angle=0.0):
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :return: 3x3 rotation matrix along the beam axis
     """
+    cos_tilt_angle = cos(tilt_angle)
+    sin_tilt_angle = sin(tilt_angle)
     return numpy.array(
         [
-            [1, 0, 0],
-            [0, numpy.cos(tilt_angle), numpy.sin(tilt_angle)],
-            [0, numpy.sin((-1) * tilt_angle), numpy.cos(tilt_angle)],
+            [1.0, 0.0, 0.0],
+            [0.0, cos_tilt_angle, sin_tilt_angle],
+            [0.0, -sin_tilt_angle, cos_tilt_angle],
         ]
     )
 
