@@ -3,11 +3,11 @@
  *            Preprocessing program
  *
  *
- *   Copyright (C) 2024-2024 European Synchrotron Radiation Facility
+ *   Copyright (C) 2024-2025 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 06/12/2024
+ *   Last revision: 21/08/2025
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,13 +59,11 @@ float2 inline sum_float2_reduction(local float* shared)
             float2 here, there;
             pos_here = 2*tid;
             pos_there = pos_here + 2*stride;
-            here.s0 = shared[pos_here];
-            here.s1 = shared[pos_here+1];
-            there.s0 = shared[pos_there];
-            there.s1 = shared[pos_there+1];
+            here = (float2)(shared[pos_here], shared[pos_here+1]);
+            there = (float2)(shared[pos_there], shared[pos_there+1]);
             here = dw_plus_dw(here, there);
-            shared[2*tid] = here.s0;
-            shared[2*tid+1] = here.s1;
+            shared[pos_here] = here.s0;
+            shared[pos_here+1] = here.s1;
         }
 
     }
@@ -73,6 +71,30 @@ float2 inline sum_float2_reduction(local float* shared)
     float2 res = (float2)(shared[0], shared[1]);
     barrier(CLK_LOCAL_MEM_FENCE);
     return res;
+}
+
+
+float2 inline sum_float2_sum(local float* shared)
+{
+    int wg = get_local_size(0) * get_local_size(1);
+    int tid = get_local_id(0) + get_local_size(0)*get_local_id(1);
+
+    float2 here, there;
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (tid==0)
+    {
+        here = (float2)(shared[0], shared[1]);
+        for (int pos_there=2; pos_there<wg; pos_there+=2)
+        {
+            there = (float2)(shared[pos_there],shared[pos_there+1]);
+            here = dw_plus_dw(here, there);
+        }
+        shared[0] = here.s0;
+        shared[1] = here.s1;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    here = (float2)(shared[0], shared[1]);
+    return here;
 }
 
 
@@ -144,6 +166,7 @@ csr_medfilt    (  const   global  float4  *data4,
             stderrmean[bin_num] = empty;
             stdevpix[bin_num] = empty;
         }
+        // printf("gid%d tid%d about to early exit\n",bin_num, tid);
         return;
     } // Early exit
 
@@ -162,7 +185,7 @@ csr_medfilt    (  const   global  float4  *data4,
 
         work4[i] = w4;
     }
-
+    // printf("gid%d tid%d first populate the work4 array from data4\n",bin_num, tid);
     barrier(CLK_GLOBAL_MEM_FENCE);
 
     // then perform the sort in the work space along the s0 component
@@ -174,6 +197,9 @@ csr_medfilt    (  const   global  float4  *data4,
 
     while (cnt)
         cnt = passe_float4(&work4[start], size, 1, shared_int);
+
+    // printf("gid%d tid%d perform the sort in the work space along the s0 component\n",bin_num, tid);
+
     // Then perform the cumsort of the weights to s0
     // In blelloch scan, one workgroup can process 2wg in size.
 
@@ -196,6 +222,10 @@ csr_medfilt    (  const   global  float4  *data4,
         sum += shared_float[2*wg-1];
         barrier(CLK_LOCAL_MEM_FENCE);
     }
+
+    // printf("gid%d tid%d perform the cumsort of the weights to s0\n",bin_num, tid);
+    // return;
+
     barrier(CLK_GLOBAL_MEM_FENCE);
 
     // Perform the sum for accumulator of signal, variance, normalization and count
@@ -225,26 +255,42 @@ csr_medfilt    (  const   global  float4  *data4,
         }
     }
 
+    // printf("gid%d tid%d Perform the sum for accumulator of signal, variance, normalization and count\n",bin_num, tid);
+    // return;
+
     //  Now parallel reductions, one after the other :-/
 
     shared_int[tid] = cnt;
     cnt = sum_int_reduction(shared_int);
 
+    // printf("gid%d tid%d Now parallel reductions: sum_int_reduction on counts\n",bin_num, tid);
+    // return;
+
     shared_float[2*tid] = acc_sig.s0;
     shared_float[2*tid+1] = acc_sig.s1;
     acc_sig = sum_float2_reduction(shared_float);
+
+    // printf("gid%d tid%d Now parallel reductions: sum_float2_reduction on signal\n",bin_num, tid);
+    // return;
 
     shared_float[2*tid] = acc_var.s0;
     shared_float[2*tid+1] = acc_var.s1;
     acc_var = sum_float2_reduction(shared_float);
 
+    // printf("gid%d tid%d Now parallel reductions: sum_float2_reduction on variance\n",bin_num, tid);
+    // return;
+
     shared_float[2*tid] = acc_nrm.s0;
     shared_float[2*tid+1] = acc_nrm.s1;
     acc_nrm = sum_float2_reduction(shared_float);
+    // printf("gid%d tid%d Now parallel reductions: sum_float2_reduction on norm\n",bin_num, tid);
+    // return;
 
     shared_float[2*tid] = acc_nrm2.s0;
     shared_float[2*tid+1] = acc_nrm2.s1;
     acc_nrm2 = sum_float2_reduction(shared_float);
+    // printf("gid%d tid%d Now parallel reductions: sum_float2_reduction on norm_sq\n",bin_num, tid);
+    // return;
 
     // Finally store the accumulated value
 
