@@ -27,11 +27,11 @@
 #  THE SOFTWARE.
 
 """Space groups: There are 230 space groups as defined in the Internationnal
-Tables of Crystallography (ITC vol.A), some of them have different origins. 
-For now only the conventionnal origin is implemented, alternative representation will be 
+Tables of Crystallography (ITC vol.A), some of them have different origins.
+For now only the conventionnal origin is implemented, alternative representation will be
 addressed in a second stage.
 
-The ReflectionCondition class contains a function with the selection rules for each 
+The ReflectionCondition class contains a function with the selection rules for each
 of the 230 space group.
 """
 
