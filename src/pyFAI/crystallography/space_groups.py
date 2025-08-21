@@ -26,19 +26,22 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-"""Space groups: There are 230 space groups as defined in the internationnal
-tables of crystallography (vol.A)
+"""Space groups: There are 230 space groups as defined in the Internationnal
+Tables of Crystallography (ITC vol.A), some of them have different origins. 
+For now only the conventionnal origin is implemented, alternative representation will be 
+addressed in a second stage.
 
-The ReflectionCondition contains selection rules for all of them but not all are correct (yet)
+The ReflectionCondition class contains a function with the selection rules for each 
+of the 230 space group.
 """
 
 from __future__ import annotations
 
-__author__ = "Jerome Kieffer"
+__authors__ = ["Jérôme Kieffer", "Gudrun Lotze"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/07/2025"
+__date__ = "28/08/2025"
 __status__ = "production"
 
 
