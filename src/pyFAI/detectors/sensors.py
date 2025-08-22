@@ -137,10 +137,10 @@ class SensorMaterial:
     def absorbance(self, energy:float, length: float, unit:str="m") -> float:
         """calculate the efficiency of a slab of sensor for absorbing the radiation
 
-        :param energy:
+        :param energy: in keV
         :param length: thickness of the sensor
         :param unit: unit for the thickness of the detector
-        :return: efficiency of the sensor between 0 and 1
+        :return: efficiency of the sensor between 0 (no absorbance) and 1 (all photons are absorbed)
         """
         return 1.0-exp(-self.mu(energy, unit)*length)
 
