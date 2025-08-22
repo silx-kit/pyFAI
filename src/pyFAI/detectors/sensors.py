@@ -29,6 +29,7 @@
 
 """Sensors description for detectors:
 
+Defines Si_MATERIAL & CdTe_MATERIAL
 """
 
 
@@ -36,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2025"
+__date__ = "22/08/2025"
 __status__ = "stable"
 
 import os
