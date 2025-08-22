@@ -42,6 +42,7 @@ __status__ = "stable"
 
 import os
 import logging
+from math import exp
 from collections import namedtuple
 import numpy
 from ..resources import resource_filename
@@ -132,6 +133,16 @@ class SensorMaterial:
         """
         data = self._data[self._find_range(energy)]
         return numpy.interp(energy, data[:,0], data[:,2]) * self.rho * self._scale(unit)
+
+    def absorbance(self, energy:float, length: float, unit:str="m") -> float:
+        """calculate the efficiency of a slab of sensor for absorbing the radiation
+
+        :param energy:
+        :param length: thickness of the sensor
+        :param unit: unit for the thickness of the detector
+        :return: efficiency of the sensor between 0 and 1
+        """
+        return 1.0-exp(-self.mu(energy, unit)*length)
 
 
 # For the record: some classical sensors materials
