@@ -4227,9 +4227,39 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group205_pn3n(h, k, l):
-        """Space group 205: Pn-3n. (h + k + l) even."""
-        return (h + k + l) % 2 == 0
+    def group205_Pa3bar(h: int, k: int, l: int) -> bool:
+        """
+        Space group 205: Pa3̅. Cubic system, primitive lattice.
+        Reflection conditions are cyclically permutable.
+
+        Valid reflections must satisfy:
+        - 0kl (h = 0):             k even
+        - h00 (k = 0, l = 0):      h even
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/205az2.htm
+        validated
+        """
+        # h00 cyclic permutations
+        if k == 0 and l == 0:   #h00
+            return h % 2 == 0
+        if h == 0 and l == 0:   #0k0
+            return k % 2 == 0
+        if h == 0 and k == 0:   #00l 
+            return l % 2 == 0
+
+
+        # 0kl cyclic permutations
+        if h == 0:
+            return k % 2 == 0       # 0kl
+        if k == 0:
+            return l % 2 == 0       # h0l
+        if l == 0:
+            return h % 2 == 0       # hk0
+
+        return True
+
 
     @staticmethod
     def group206_fm3m(h, k, l):
