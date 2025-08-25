@@ -4303,14 +4303,14 @@ class ReflectionCondition:
             return l % 2 == 0  # 00l
 
         return True
-
+    
     @staticmethod
-    def group207_fm3c(h, k, l):
-        """Space group 207: Fm-3c. F-centering: h, k, l all even or all odd; (0, 0, l): l even."""
-        if not (h % 2 == k % 2 == l % 2):
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group207_P432(h: int, k: int, l: int) -> bool:
+        """
+        Space group 207: P432. Primitive cubic.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
