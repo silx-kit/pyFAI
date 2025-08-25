@@ -48,7 +48,7 @@ __status__ = "production"
 class ReflectionCondition:
     """This class contains selection rules for most space-groups
 
-    All methods are static and take a triplet hkl as input representing a familly of Miller plans.
+    All methods are static and take a triplet hkl as input representing a family of Miller plans.
     They return True if the reflection is allowed by symmetry, False otherwise.
 
     Most of those methods are AI-generated (Co-Pilot) and about 80% of them are still WRONG unless tagged
