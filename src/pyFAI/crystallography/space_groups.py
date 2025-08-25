@@ -4374,9 +4374,50 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group210_im3m(h, k, l):
-        """Space group 210: Im-3m. I-centering: (h + k + l) even."""
-        return (h + k + l) % 2 == 0
+    def group210_F4132(h: int, k: int, l: int) -> bool:
+        """
+        Space group 210: F4132. Face-centred cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k = 2n and h + l, k + l = 2n
+        - 0kl (h = 0):           k, l even
+        - hhl (h = k):           h + l even
+        - h00 (k = 0, l = 0):    h = 4n
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/210az2.htm
+        validated
+        """
+        # General condition
+        if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
+            return False
+
+        # h00 cyclic permutations
+        if k == 0 and l == 0:
+            return h % 4 == 0
+        if h == 0 and l == 0:
+            return k % 4 == 0
+        if h == 0 and k == 0:
+            return l % 4 == 0
+        
+        # 0kl cyclic permutations
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0
+
+        # hhl
+        if h == k:
+            return (h + l) % 2 == 0
+
+        return True
+
+
+
 
     @staticmethod
     def group211_im3c(h, k, l):
