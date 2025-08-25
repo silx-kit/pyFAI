@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2025"
+__date__ = "25/08/2025"
 __status__ = "development"
 
 import sys
@@ -1131,7 +1131,7 @@ class SparseFrame(_CopyableTuple):
         return self._unit
 
 
-def rebin1d(res2d):
+def rebin1d(res2d:Integrate2dResult) -> Integrate1dResult:
     """Function that rebins an Integrate2dResult into a Integrate1dResult
 
     :param res2d: Integrate2dResult instance obtained from ai.integrate2d
@@ -1147,7 +1147,7 @@ def rebin1d(res2d):
         result = Integrate1dResult(bins_rad, I, sem)
         result._set_sum_normalization2(res2d.sum_normalization2.sum(axis=0))
         result._set_sum_variance(sum_variance)
-        result._set_std(numpy.sqrt(sum_variance) / sum_normalization)
+        result._set_std(numpy.sqrt(sum_variance / result.sum_normalization2))
         result._set_std(sem)
     else:
         result = Integrate1dResult(bins_rad, I)
@@ -1169,6 +1169,61 @@ def rebin1d(res2d):
     result._set_normalization_factor(res2d.normalization_factor)
     result._set_metadata(res2d.metadata)
     return result
+
+
+def symmetrize(res2d:Integrate2dResult) -> Integrate2dResult:
+    """Function that symmetrize an Integrate2dResult, i.e. merge data with those 180° appart in azimuthal space
+
+    :param res2d: Integrate2dResult instance obtained from ai.integrate2d
+    :return: Integrate1dResult
+    """
+    def _symmetrize_single_array(ary):
+        half = ary.shape[0] // 2
+        tmp = numpy.zeros_like(ary)
+        tmp[:half] = ary[half:]
+        tmp[half:] = ary[:half]
+        tmp += ary
+        return tmp
+
+    bins_azim = res2d.azimuthal
+    delta = (bins_azim.max() - bins_azim.min())/res2d.azimuthal_unit.scale
+    if delta < 6.2:
+        logger.error("Expected an azimuthal integration over 2π ! Expect wrong results")
+    if bins_azim.size%2:
+        logger.error("Expected an azimuthal integration an even number of bins azimuthally! Expect wrong results")
+
+    sum_signal = _symmetrize_single_array(res2d.sum_signal)
+    sum_normalization = _symmetrize_single_array(res2d.sum_normalization)
+    I = sum_signal / sum_normalization
+
+    if res2d.sum_variance is not None:
+        sum_variance = _symmetrize_single_array(res2d.sum_variance)
+        sem = numpy.sqrt(sum_variance) / sum_normalization
+        result = Integrate2dResult(I, bins_rad, bins_azim, sem)
+        result._set_sum_normalization2(_symmetrize_single_array(res2d.sum_normalization2))
+        result._set_sum_variance(sum_variance)
+        result._set_std(numpy.sqrt(sum_variance) / sum_normalization)
+        result._set_std(sem)
+    else:
+        result = Integrate2dResult(I, bins_rad, bins_azim)
+
+    result._set_sum_signal(sum_signal)
+    result._set_sum_normalization(sum_normalization)
+    result._set_method_called(f"{res2d.method_called}|symmetrize")
+    result._set_compute_engine(res2d.compute_engine)
+    result._set_method(res2d.method)
+    result._set_unit(res2d.radial_unit)
+    result._set_radial_unit(res2d.radial_unit)
+    result._set_count(_symmetrize_single_array(res2d.count))
+    result._set_azimuthal_unit(res2d.azimuth_unit)
+    result._set_has_dark_correction(res2d.has_dark_correction)
+    result._set_has_flat_correction(res2d.has_flat_correction)
+    result._set_has_mask_applied(res2d.has_mask_applied)
+    result._set_polarization_factor(res2d.polarization_factor)
+    result._set_normalization_factor(res2d.normalization_factor)
+    result._set_metadata(res2d.metadata)
+    return result
+
 
 class Integrate1dFiberResult(IntegrateResult):
     def __new__(self, integrated, intensity, sigma=None):
