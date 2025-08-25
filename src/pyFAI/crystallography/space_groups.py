@@ -4156,9 +4156,42 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group203_pm3m(h, k, l):
-        """Space group 203: Pm-3m. No systematic absences."""
+    def group203_Fd3bar(h: int, k: int, l: int) -> bool:
+        """
+        Space group 203: Fd3̅. Cubic system, face-centred lattice.
+        Reflection conditions are cyclically permutable.
+
+        Valid reflections must satisfy:
+        - General hkl:                   h + k = 2n and h+l, k+l=2n
+        - 0kl (h = 0):                   k + l = 4n and k,l=2n
+        - hhl:                           h + l = 2n
+        - h00 (k = 0, l = 0):            h = 4n
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/203az2.htm
+        validated
+        """
+        # General hkl
+        if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
+            return False
+
+        # 0kl condition, cyclically permutable
+        if h == 0:
+            return (k + l) % 4 == 0 and k % 2 == 0 and l % 2 == 0
+        if k == 0:
+            return (h + l) % 4 == 0 and h % 2 == 0 and l % 2 == 0
+        if l == 0:
+            return (h + k) % 4 == 0 and h % 2 == 0 and k % 2 == 0
+
+        # hhl
+        if h == k: return (h + l) % 2 == 0
+
+        # h00
+        if k == 0 and l == 0: return h % 4 == 0
+    
         return True
+
 
     @staticmethod
     def group204_pm3n(h, k, l):
