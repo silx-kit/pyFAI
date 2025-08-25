@@ -4317,7 +4317,7 @@ class ReflectionCondition:
     def group208_P4232(h: int, k: int, l: int) -> bool:
         """
         Space group 208: P4₂32. Primitive cubic.
-        Reflection conditions are cyclically permutable.
+        Reflection conditions are permutable.
 
         Valid reflections must satisfy:
         - h00 (k = 0, l = 0): h even
