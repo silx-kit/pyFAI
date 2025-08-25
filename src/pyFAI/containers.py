@@ -1185,6 +1185,7 @@ def symmetrize(res2d:Integrate2dResult) -> Integrate2dResult:
         tmp += ary
         return tmp
 
+    bins_rad = res2d.radial
     bins_azim = res2d.azimuthal
     delta = (bins_azim.max() - bins_azim.min())/res2d.azimuthal_unit.scale
     if delta < 6.2:
