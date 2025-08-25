@@ -4313,10 +4313,26 @@ class ReflectionCondition:
         """
         return True
 
-    @staticmethod
-    def group208_fn3m(h, k, l):
-        """Space group 208: Fd-3m. F-centering: h, k, l all even or all odd."""
-        return h % 2 == k % 2 == l % 2
+@staticmethod
+def group208_P4232(h: int, k: int, l: int) -> bool:
+    """
+    Space group 208: P4₂32. Primitive cubic.
+    Reflection conditions are cyclically permutable.
+
+    Valid reflections must satisfy:
+    - h00 (k = 0, l = 0): h even
+
+    validated
+    """
+    # h00 cyclic permutations
+    if k == 0 and l == 0:
+        return h % 2 == 0
+    if h == 0 and l == 0:
+        return k % 2 == 0
+    if h == 0 and k == 0:
+        return l % 2 == 0
+    return True
+
 
     @staticmethod
     def group209_fn3c(h, k, l):
