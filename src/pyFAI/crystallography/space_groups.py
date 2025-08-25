@@ -4338,13 +4338,40 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group209_fn3c(h, k, l):
-        """Space group 209: Fd-3c. F-centering: h, k, l all even or all odd; (0, 0, l): l even.validated"""
-        if not (h % 2 == k % 2 == l % 2):
+    def group209_F432(h: int, k: int, l: int) -> bool:
+        """
+        Space group 209: F432. Face-centred cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k, h + l, k + l all even
+        - 0kl (h = 0):           k, l even
+        - hhl (h = k):           h + l even
+        - h00 (k = 0, l = 0):    h even
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/209az2.htm
+        validated
+        """
+        # General condition
+        if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
             return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
+
+        # 0kl
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0
+
+        # hhl
+        if h == k:
+            return (h + l) % 2 == 0
+
+        # h00
+        if k == 0 and l == 0:
+            return h % 2 == 0
+
         return True
+
 
     @staticmethod
     def group210_im3m(h, k, l):
