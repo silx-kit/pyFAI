@@ -4118,7 +4118,6 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group202_Fm3bar(h: int, k: int, l: int) -> bool:
         """
@@ -4154,7 +4153,6 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group203_Fd3bar(h: int, k: int, l: int) -> bool:
         """
@@ -4185,13 +4183,14 @@ class ReflectionCondition:
             return (h + k) % 4 == 0 and h % 2 == 0 and k % 2 == 0
 
         # hhl
-        if h == k: return (h + l) % 2 == 0
+        if h == k:
+            return (h + l) % 2 == 0
 
         # h00
-        if k == 0 and l == 0: return h % 4 == 0
-    
-        return True
+        if k == 0 and l == 0:
+            return h % 4 == 0
 
+        return True
 
     @staticmethod
     def group204_Im3bar(h: int, k: int, l: int) -> bool:
@@ -4215,16 +4214,18 @@ class ReflectionCondition:
             return False
 
         # 0kl
-        if h == 0: return (k + l) % 2 == 0
+        if h == 0:
+            return (k + l) % 2 == 0
 
         # hhl
-        if h == k: return l % 2 == 0
+        if h == k:
+            return l % 2 == 0
 
         # h00
-        if k == 0 and l == 0: return h % 2 == 0
+        if k == 0 and l == 0:
+            return h % 2 == 0
 
         return True
-
 
     @staticmethod
     def group205_Pa3bar(h: int, k: int, l: int) -> bool:
@@ -4242,24 +4243,22 @@ class ReflectionCondition:
         validated
         """
         # h00 cyclic permutations
-        if k == 0 and l == 0:   #h00
+        if k == 0 and l == 0:  # h00
             return h % 2 == 0
-        if h == 0 and l == 0:   #0k0
+        if h == 0 and l == 0:  # 0k0
             return k % 2 == 0
-        if h == 0 and k == 0:   #00l 
+        if h == 0 and k == 0:  # 00l
             return l % 2 == 0
-
 
         # 0kl cyclic permutations
         if h == 0:
-            return k % 2 == 0       # 0kl
+            return k % 2 == 0  # 0kl
         if k == 0:
-            return l % 2 == 0       # h0l
+            return l % 2 == 0  # h0l
         if l == 0:
-            return h % 2 == 0       # hk0
+            return h % 2 == 0  # hk0
 
         return True
-
 
     @staticmethod
     def group206_Ia3bar(h: int, k: int, l: int) -> bool:
@@ -4303,7 +4302,7 @@ class ReflectionCondition:
             return l % 2 == 0  # 00l
 
         return True
-    
+
     @staticmethod
     def group207_P432(h: int, k: int, l: int) -> bool:
         """
@@ -4335,7 +4334,6 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 2 == 0
         return True
-
 
     @staticmethod
     def group209_F432(h: int, k: int, l: int) -> bool:
@@ -4372,7 +4370,6 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group210_F4132(h: int, k: int, l: int) -> bool:
         """
@@ -4401,7 +4398,7 @@ class ReflectionCondition:
             return k % 4 == 0
         if h == 0 and k == 0:
             return l % 4 == 0
-        
+
         # 0kl cyclic permutations
         if h == 0:
             return k % 2 == 0 and l % 2 == 0
@@ -4415,8 +4412,6 @@ class ReflectionCondition:
             return (h + l) % 2 == 0
 
         return True
-
-
 
     @staticmethod
     def group211_im3c(h, k, l):
