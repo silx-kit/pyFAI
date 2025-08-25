@@ -4262,9 +4262,47 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group206_fm3m(h, k, l):
-        """Space group 206: Fm-3m. F-centering: h, k, l all even or all odd."""
-        return h % 2 == k % 2 == l % 2
+    def group206_Ia3bar(h: int, k: int, l: int) -> bool:
+        """
+        Space group 206: Ia3̅. Cubic system, body-centred lattice.
+        Reflection conditions are cyclically permutable.
+
+        Valid reflections must satisfy:
+        - General hkl:            h + k + l = 2n
+        - 0kl (h = 0):            k, l = 2n
+        - hhl (h = k):            l even
+        - h00 (k = 0, l = 0):     h even
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/206az2.htm
+        validated
+        """
+        # General hkl
+        if (h + k + l) % 2 != 0:
+            return False
+
+        # 0kl cyclic permutations
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0  # 0kl
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0  # hk0
+
+        # hhl
+        if h == k:
+            return l % 2 == 0
+
+        # h00 cyclic permutations
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+
+        return True
 
     @staticmethod
     def group207_fm3c(h, k, l):
