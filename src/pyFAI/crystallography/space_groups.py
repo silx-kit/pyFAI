@@ -4376,7 +4376,7 @@ class ReflectionCondition:
     @staticmethod
     def group210_F4132(h: int, k: int, l: int) -> bool:
         """
-        Space group 210: F4132. Face-centred cubic.
+        Space group 210: F4₁32. Face-centred cubic.
         Reflection conditions are permutable.
 
         Valid reflections must satisfy:
@@ -4415,7 +4415,6 @@ class ReflectionCondition:
             return (h + l) % 2 == 0
 
         return True
-
 
 
 
