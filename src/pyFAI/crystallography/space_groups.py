@@ -4120,9 +4120,40 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group202_pn3n(h, k, l):
-        """Space group 202: Pn-3n. (h + k + l) even."""
-        return (h + k + l) % 2 == 0
+    def group202_Fm3bar(h: int, k: int, l: int) -> bool:
+        """
+        Space group 202: Fm3̅. Cubic system, face-centred lattice.
+        Reflection conditions are cyclically permutable.
+
+        Valid reflections must satisfy:
+        - General hkl:                      h + k, h + l, k + l = 2n
+        - 0kl (h = 0):                      k, l = 2n
+        - hhl (h = k):                      h + l = 2n
+        - h00 (k = 0, l = 0):               h = 2n
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/202az2.htm
+            validated
+        """
+        # General condition
+        if not ((h + k) % 2 == 0 and (h + l) % 2 == 0 and (k + l) % 2 == 0):
+            return False
+
+        # 0kl
+        if h == 0:
+            return (k % 2 == 0) and (l % 2 == 0)
+
+        # hhl
+        if h == k:
+            return (h + l) % 2 == 0
+
+        # h00
+        if k == 0 and l == 0:
+            return h % 2 == 0
+
+        return True
+
 
     @staticmethod
     def group203_pm3m(h, k, l):
