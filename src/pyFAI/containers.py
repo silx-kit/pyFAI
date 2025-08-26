@@ -190,6 +190,7 @@ class IntegrateResult(_CopyableTuple):
         "_sem",
         "_poni",
         "_weighted_average",
+        "_dummy"
     }
 
     def __init__(self):

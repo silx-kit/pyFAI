@@ -2137,7 +2137,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_percentile(percentile)
         result._set_npt_azim(npt)
         result._set_unit(unit)
-        result._set_dummy(self.empty)
+        # result._set_dummy(self.empty)
         result._set_has_mask_applied(filter_result.has_mask_applied)
         result._set_metadata(filter_result.metadata)
         result._set_has_dark_correction(filter_result.has_dark_correction)
