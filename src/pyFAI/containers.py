@@ -59,13 +59,15 @@ class PolarizationArray(NamedTuple):
     array: ArrayLike
     checksum: int
 
+
 class PolarizationDescription(NamedTuple):
-    polarization_factor:float
-    axis_offset:float = 0.0
+    polarization_factor: float
+    axis_offset: float = 0.0
 
 
 class Integrate1dtpl(NamedTuple):
     """Result of any engines after 1d integration"""
+
     position: ArrayLike
     intensity: ArrayLike
     sigma: ArrayLike
@@ -73,13 +75,14 @@ class Integrate1dtpl(NamedTuple):
     variance: ArrayLike
     normalization: ArrayLike
     count: ArrayLike
-    std:ArrayLike  = None
-    sem:ArrayLike  = None
-    norm_sq:ArrayLike = None
+    std: ArrayLike = None
+    sem: ArrayLike = None
+    norm_sq: ArrayLike = None
 
 
 class Integrate2dtpl(NamedTuple):
     """Result of any engines after 2d integration"""
+
     radial: ArrayLike
     azimuthal: ArrayLike
     intensity: ArrayLike
@@ -88,9 +91,9 @@ class Integrate2dtpl(NamedTuple):
     variance: ArrayLike
     normalization: ArrayLike
     count: ArrayLike
-    std: ArrayLike=None
-    sem: ArrayLike=None
-    norm_sq:ArrayLike=None
+    std: ArrayLike = None
+    sem: ArrayLike = None
+    norm_sq: ArrayLike = None
 
 
 class ErrorModel(IntEnum):
@@ -130,6 +133,7 @@ class ErrorModel(IntEnum):
 
 class _CopyableTuple(tuple):
     "Abstract class that can be copied using the copy module"
+
     COPYABLE_ATTR = tuple()  # list of copyable attributes
 
     def __copy__(self):
@@ -161,12 +165,32 @@ class IntegrateResult(_CopyableTuple):
     """
     Class defining shared information between Integrate1dResult and Integrate2dResult.
     """
-    COPYABLE_ATTR = {"_sum_signal", "_sum_variance", "_sum_normalization", "_sum_normalization2",
-                     "_count", "_unit", "_has_mask_applied", "_has_dark_correction",
-                     "_has_flat_correction", "_has_solidangle_correction", "_normalization_factor",
-                     "_polarization_factor", "_metadata", "_npt_azim", "_percentile", "_method",
-                     "_method_called", "_compute_engine", "_error_model", "_std", "_sem",
-                     "_poni", "_weighted_average"}
+
+    COPYABLE_ATTR = {
+        "_sum_signal",
+        "_sum_variance",
+        "_sum_normalization",
+        "_sum_normalization2",
+        "_count",
+        "_unit",
+        "_has_mask_applied",
+        "_has_dark_correction",
+        "_has_flat_correction",
+        "_has_solidangle_correction",
+        "_normalization_factor",
+        "_polarization_factor",
+        "_metadata",
+        "_npt_azim",
+        "_percentile",
+        "_method",
+        "_method_called",
+        "_compute_engine",
+        "_error_model",
+        "_std",
+        "_sem",
+        "_poni",
+        "_weighted_average",
+    }
 
     def __init__(self):
         self._sum_signal = None  # sum of signal
@@ -188,7 +212,7 @@ class IntegrateResult(_CopyableTuple):
         self._method_called = None
         self._compute_engine = None
         self._error_model = None
-        self._dummy = numpy.nan # value assigned to masked or empty pixels
+        self._dummy = numpy.nan  # value assigned to masked or empty pixels
         self._std = None  # standard deviation (error for a pixel)
         self._sem = None  # standard error of the mean (error for the mean)
         self._poni = None  # Contains the geometry which was used for the integration
@@ -637,7 +661,13 @@ class Integrate2dResult(IntegrateResult):
 
         :type unit: str
         """
-        deprecated_warning("Function", "_set_unit", replacement="_set_radial_unit/_set_azimuthal_unit", since_version="2023.09", only_once=True)
+        deprecated_warning(
+            "Function",
+            "_set_unit",
+            replacement="_set_radial_unit/_set_azimuthal_unit",
+            since_version="2023.09",
+            only_once=True,
+        )
         if isinstance(unit, (tuple, list)) and len(unit) == 2:
             self._radial_unit, self._azimuthal_unit = unit
         else:
@@ -682,12 +712,30 @@ class SeparateResult(_CopyableTuple):
     * Bragg peaks (signal > amorphous)
     * Shadow areas (signal < amorphous)
     """
-    COPYABLE_ATTR = {'_radial', '_intensity', '_sigma',
-                    '_sum_signal', '_sum_variance', '_sum_normalization',
-                    '_count', '_unit', '_has_mask_applied', '_has_dark_correction',
-                    '_has_flat_correction', '_normalization_factor', '_polarization_factor',
-                    '_metadata', '_npt_rad', '_npt_azim', '_percentile', '_method',
-                    '_method_called', '_compute_engine', '_shadow'}
+
+    COPYABLE_ATTR = {
+        "_radial",
+        "_intensity",
+        "_sigma",
+        "_sum_signal",
+        "_sum_variance",
+        "_sum_normalization",
+        "_count",
+        "_unit",
+        "_has_mask_applied",
+        "_has_dark_correction",
+        "_has_flat_correction",
+        "_normalization_factor",
+        "_polarization_factor",
+        "_metadata",
+        "_npt_rad",
+        "_npt_azim",
+        "_percentile",
+        "_method",
+        "_method_called",
+        "_compute_engine",
+        "_shadow",
+    }
 
     def __new__(self, bragg, amorphous):
         return tuple.__new__(SeparateResult, (bragg, amorphous))
@@ -995,15 +1043,36 @@ class SeparateResult(_CopyableTuple):
 
 class SparseFrame(_CopyableTuple):
     """Result of the sparsification of a diffraction frame"""
-    COPYABLE_ATTR = {'_shape', '_dtype', '_mask',
-                    '_radius', '_dummy', '_background_avg',
-                    '_background_std', '_unit', '_has_dark_correction',
-                    '_has_flat_correction', '_normalization_factor', '_polarization_factor',
-                    '_metadata', '_percentile', '_method',
-                    '_method_called', '_compute_engine',
-                    '_cutoff_clip', '_cutoff_pick', '_cutoff_peak',
-                    '_background_cycle', '_noise', '_radial_range', '_error_model',
-                    '_peaks', '_peak_patch_size', '_peak_connected'}
+
+    COPYABLE_ATTR = {
+        "_shape",
+        "_dtype",
+        "_mask",
+        "_radius",
+        "_dummy",
+        "_background_avg",
+        "_background_std",
+        "_unit",
+        "_has_dark_correction",
+        "_has_flat_correction",
+        "_normalization_factor",
+        "_polarization_factor",
+        "_metadata",
+        "_percentile",
+        "_method",
+        "_method_called",
+        "_compute_engine",
+        "_cutoff_clip",
+        "_cutoff_pick",
+        "_cutoff_peak",
+        "_background_cycle",
+        "_noise",
+        "_radial_range",
+        "_error_model",
+        "_peaks",
+        "_peak_patch_size",
+        "_peak_connected",
+    }
 
     def __new__(self, index, intensity):
         return tuple.__new__(SparseFrame, (index, intensity))
@@ -1141,7 +1210,7 @@ class SparseFrame(_CopyableTuple):
         return self._unit
 
 
-def rebin1d(res2d:Integrate2dResult) -> Integrate1dResult:
+def rebin1d(res2d: Integrate2dResult) -> Integrate1dResult:
     """Function that rebins an Integrate2dResult into a Integrate1dResult
 
     :param res2d: Integrate2dResult instance obtained from ai.integrate2d
@@ -1181,12 +1250,13 @@ def rebin1d(res2d:Integrate2dResult) -> Integrate1dResult:
     return result
 
 
-def symmetrize(res2d:Integrate2dResult) -> Integrate2dResult:
+def symmetrize(res2d: Integrate2dResult) -> Integrate2dResult:
     """Function that symmetrize an Integrate2dResult, i.e. merge data with those 180° appart in azimuthal space
 
     :param res2d: Integrate2dResult instance obtained from ai.integrate2d
     :return: Integrate1dResult
     """
+
     def _symmetrize_single_array(ary):
         half = ary.shape[0] // 2
         tmp = numpy.zeros_like(ary)
@@ -1197,15 +1267,16 @@ def symmetrize(res2d:Integrate2dResult) -> Integrate2dResult:
 
     bins_rad = res2d.radial
     bins_azim = res2d.azimuthal
-    delta = (bins_azim.max() - bins_azim.min())/res2d.azimuthal_unit.scale
+    delta = (bins_azim.max() - bins_azim.min()) / res2d.azimuthal_unit.scale
     if delta < 6.2:
         logger.error("Expected an azimuthal integration over 2π ! Expect wrong results")
-    if bins_azim.size%2:
-        logger.error("Expected an azimuthal integration an even number of bins azimuthally! Expect wrong results")
+    if bins_azim.size % 2:
+        logger.error(
+            "Expected an azimuthal integration an even number of bins azimuthally! Expect wrong results"
+        )
 
     sum_signal = _symmetrize_single_array(res2d.sum_signal)
     sum_normalization = _symmetrize_single_array(res2d.sum_normalization)
-
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -1213,7 +1284,7 @@ def symmetrize(res2d:Integrate2dResult) -> Integrate2dResult:
 
     if res2d.sum_variance is not None:
         sum_variance = _symmetrize_single_array(res2d.sum_variance)
-        sum_normalization2 =_symmetrize_single_array(res2d.sum_normalization2)
+        sum_normalization2 = _symmetrize_single_array(res2d.sum_normalization2)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             sem = numpy.sqrt(sum_variance) / sum_normalization
@@ -1270,7 +1341,9 @@ class Integrate1dFiberResult(IntegrateResult):
 
     @property
     def radial(self):
-        logger.warning("radial does not apply to a fiber/grazing-incidence result, use integrated instead")
+        logger.warning(
+            "radial does not apply to a fiber/grazing-incidence result, use integrated instead"
+        )
         return self[0]
 
     @property
@@ -1293,6 +1366,7 @@ class Integrate1dFiberResult(IntegrateResult):
             return None
         return self[2]
 
+
 class Integrate2dFiberResult(IntegrateResult):
     """
     Result of an 2D integration for fiber/grazing-incidence scattering.
@@ -1300,6 +1374,7 @@ class Integrate2dFiberResult(IntegrateResult):
     Default result, extra results, and some integration parameters are available from attributes.
     Analog to azimuthal integrate containers but: Radial -> in-plane, Azimuthal -> out-of-plane
     """
+
     def __new__(self, intensity, inplane, outofplane, sigma=None):
         if sigma is None:
             t = intensity, inplane, outofplane
@@ -1359,12 +1434,16 @@ class Integrate2dFiberResult(IntegrateResult):
 
     @property
     def radial(self):
-        logger.warning("Radial does not apply to a fiber/grazing-incidence result, use inplane instead")
+        logger.warning(
+            "Radial does not apply to a fiber/grazing-incidence result, use inplane instead"
+        )
         return self.inplane
 
     @property
     def azimuthal(self):
-        logger.warning("Azimuthal does not apply to a fiber/grazing-incidence result, use outofplane instead")
+        logger.warning(
+            "Azimuthal does not apply to a fiber/grazing-incidence result, use outofplane instead"
+        )
         return self.outofplane
 
     @property
@@ -1383,7 +1462,9 @@ class Integrate2dFiberResult(IntegrateResult):
         self._ip_unit = unit
 
     def _set_radial_unit(self, unit):
-        logger.warning("Radial units does not apply to a fiber/grazing-incidence result, use ip_unit instead")
+        logger.warning(
+            "Radial units does not apply to a fiber/grazing-incidence result, use ip_unit instead"
+        )
         self._set_ip_unit(unit)
 
     @property
@@ -1402,12 +1483,15 @@ class Integrate2dFiberResult(IntegrateResult):
         self._oop_unit = unit
 
     def _set_azimuthal_unit(self, unit):
-        logger.warning("Azimuthal units does not apply to a fiber/grazing-incidence result, use oop_unit instead")
+        logger.warning(
+            "Azimuthal units does not apply to a fiber/grazing-incidence result, use oop_unit instead"
+        )
         self._set_oop_unit(unit)
 
 
 class Miller(NamedTuple):
     """This represents the Miller index of a family of latice plans"""
+
     h: int
     k: int
     l: int
@@ -1419,7 +1503,7 @@ class Miller(NamedTuple):
         return f"({self.h} {self.k} {self.l})"
 
     @classmethod
-    def parse(cls, text:str):
+    def parse(cls, text: str):
         words = text.split(" ")
         newlst = []
         for word in words:
@@ -1441,7 +1525,9 @@ class Miller(NamedTuple):
             else:
                 ints.append(value)
         if len(ints) != 3:
-            raise RuntimeError(f"Miller indices expects exactly 3 integers to define a family of plans, got `{text}`.")
+            raise RuntimeError(
+                f"Miller indices expects exactly 3 integers to define a family of plans, got `{text}`."
+            )
         return cls(*ints)
 
 
