@@ -543,7 +543,6 @@ class AzimuthalIntegrator(Integrator):
         else:
             raise RuntimeError(f"Fallback method ... should no more be used: {method}")
         result._set_method(method)
-        result._set_dummy(self.empty)
         result._set_has_dark_correction(has_dark)
         result._set_has_flat_correction(has_flat)
         result._set_has_mask_applied(has_mask)
@@ -1165,7 +1164,6 @@ class AzimuthalIntegrator(Integrator):
 
         result._set_sum_signal(signal2d)
         result._set_sum_normalization(norm2d)
-        result._set_dummy(self.empty)
         if error_model.do_variance:
             result._set_sum_normalization2(norm2d_sq)
             result._set_sum_variance(var2d)
