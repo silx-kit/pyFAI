@@ -30,12 +30,13 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2025"
+__date__ = "26/08/2025"
 __status__ = "development"
 
 import sys
 import copy
 import logging
+import warnings
 from dataclasses import fields, asdict, dataclass as _dataclass
 from collections import namedtuple
 from typing import NamedTuple
@@ -187,6 +188,7 @@ class IntegrateResult(_CopyableTuple):
         self._method_called = None
         self._compute_engine = None
         self._error_model = None
+        self._dummy = numpy.nan # value assigned to masked or empty pixels
         self._std = None  # standard deviation (error for a pixel)
         self._sem = None  # standard error of the mean (error for the mean)
         self._poni = None  # Contains the geometry which was used for the integration
@@ -487,6 +489,14 @@ class IntegrateResult(_CopyableTuple):
         * if False with the unweighted mean (-legacy)
         """
         self._weighted_average = bool(value)
+
+    @property
+    def dummy(self):
+        return self._dummy
+
+    def _set_dummy(self, value):
+        """Set the value for masked/invalid/empty bins"""
+        self._dummy = value
 
 
 class Integrate1dResult(IntegrateResult):
@@ -1195,34 +1205,46 @@ def symmetrize(res2d:Integrate2dResult) -> Integrate2dResult:
 
     sum_signal = _symmetrize_single_array(res2d.sum_signal)
     sum_normalization = _symmetrize_single_array(res2d.sum_normalization)
-    I = sum_signal / sum_normalization
+
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        I = sum_signal / sum_normalization
 
     if res2d.sum_variance is not None:
         sum_variance = _symmetrize_single_array(res2d.sum_variance)
-        sem = numpy.sqrt(sum_variance) / sum_normalization
+        sum_normalization2 =_symmetrize_single_array(res2d.sum_normalization2)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            sem = numpy.sqrt(sum_variance) / sum_normalization
+            std = numpy.sqrt(sum_variance / sum_normalization2)
+        mask = sum_normalization2 <= 0.0
+        sem[mask] = res2d.dummy
+        std[mask] = res2d.dummy
+
         result = Integrate2dResult(I, bins_rad, bins_azim, sem)
-        result._set_sum_normalization2(_symmetrize_single_array(res2d.sum_normalization2))
+        result._set_sum_normalization2(sum_normalization2)
         result._set_sum_variance(sum_variance)
-        result._set_std(numpy.sqrt(sum_variance) / sum_normalization)
-        result._set_std(sem)
     else:
         result = Integrate2dResult(I, bins_rad, bins_azim)
+        mask = sum_normalization <= 0.0
 
+    I[mask] = res2d.dummy
     result._set_sum_signal(sum_signal)
     result._set_sum_normalization(sum_normalization)
     result._set_method_called(f"{res2d.method_called}|symmetrize")
     result._set_compute_engine(res2d.compute_engine)
     result._set_method(res2d.method)
-    result._set_unit(res2d.radial_unit)
     result._set_radial_unit(res2d.radial_unit)
     result._set_count(_symmetrize_single_array(res2d.count))
-    result._set_azimuthal_unit(res2d.azimuth_unit)
+    result._set_azimuthal_unit(res2d.azimuthal_unit)
     result._set_has_dark_correction(res2d.has_dark_correction)
     result._set_has_flat_correction(res2d.has_flat_correction)
     result._set_has_mask_applied(res2d.has_mask_applied)
     result._set_polarization_factor(res2d.polarization_factor)
     result._set_normalization_factor(res2d.normalization_factor)
     result._set_metadata(res2d.metadata)
+    result._set_dummy(res2d.dummy)
     return result
 
 
