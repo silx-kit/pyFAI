@@ -4414,13 +4414,37 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group211_im3c(h, k, l):
-        """Space group 211: Im-3c. I-centering: (h + k + l) even; (0, 0, l): l even.validated"""
+    def group211_I432(h: int, k: int, l: int) -> bool:
+        """
+        Space group 211: I432. Body-centred cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k + l = 2n
+        - 0kl (h = 0):           k + l even
+        - hhl (h = k):           l even
+        - h00 (k = 0, l = 0):    h even
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/211az2.htm
+        validated
+        """
+        # General condition
         if (h + k + l) % 2 != 0:
             return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
+
+        # 0kl
+        if h == 0: return (k + l) % 2 == 0
+
+        # hhl
+        if h == k: return l % 2 == 0
+
+        # h00
+        if k == 0 and l == 0: return h % 2 == 0
+
         return True
+
 
     @staticmethod
     def group212_pa3(h, k, l):
