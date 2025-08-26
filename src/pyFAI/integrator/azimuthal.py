@@ -1486,7 +1486,7 @@ class AzimuthalIntegrator(Integrator):
                     elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 if cython_reset:
-                    logger.info("AI.sigma_clip_ng: Resetting Cython integrator because %s", cython_reset)
+                    logger.info("ai.medfilt1d_ng: Resetting Cython integrator because %s", cython_reset)
                     split = method.split_lower
                     if split == "pseudo":
                         split = "full"
@@ -1544,7 +1544,7 @@ class AzimuthalIntegrator(Integrator):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"
 
                 if reset:
-                    logger.info("ai.sigma_clip_ng: Resetting ocl_csr integrator because %s", reset)
+                    logger.info("ai.medfilt1d_ng: Resetting ocl_csr integrator because %s", reset)
                     csr_integr = self.engines[cython_method].engine
                     if method.impl_lower == "opencl":
                         try:
@@ -1951,7 +1951,7 @@ class AzimuthalIntegrator(Integrator):
                     elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 if cython_reset:
-                    logger.info("AI.sigma_clip_ng: Resetting Cython integrator because %s", cython_reset)
+                    logger.info("ai.sigma_clip: Resetting Cython integrator because %s", cython_reset)
                     split = method.split_lower
                     if split == "pseudo":
                         split = "full"
