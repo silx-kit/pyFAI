@@ -32,6 +32,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Variance/uncertainties
    LogScale/Guinier
    Performances-2D
+   symmetrize
    multi-geometry
    Goniometer/index
    Inpainting/Inpainting
