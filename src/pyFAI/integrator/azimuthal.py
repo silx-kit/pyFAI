@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/08/2025"
+__date__ = "02/09/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -140,9 +140,17 @@ class AzimuthalIntegrator(Integrator):
         pos0_scale = unit.scale
 
         if radial_range:
-            radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
+            if numpy.isfinite(radial_range).all():
+                radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
+            else:
+                logger.warning(f"Semi-definied ranges are not supported for radial_range={radial_range}")
+                radial_range = None
         if azimuth_range is not None:
-            azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            if numpy.isfinite(azimuth_range).all():
+                azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            else:
+                logger.warning(f"Semi-definied ranges are not supported for azimuth_range={azimuth_range}")
+                azimuth_range = None
 
         if mask is None:
             has_mask = "from detector"
@@ -755,7 +763,11 @@ class AzimuthalIntegrator(Integrator):
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             self.check_chi_disc(azimuth_range)
         elif azimuth_range is not None:
-            azimuth_range = tuple([i / pos1_scale for i in azimuth_range])
+            if numpy.isfinite(azimuth_range).all():
+                azimuth_range = tuple([i / pos1_scale for i in azimuth_range])
+            else:
+                logger.warning(f"Semi-definied ranges are not supported for azimuth_range={azimuth_range}")
+                azimuth_range = None
 
         if radial_range is not None and radial_unit.period:
             if radial_unit.name.split("_")[-1] == "deg":
@@ -766,7 +778,11 @@ class AzimuthalIntegrator(Integrator):
                 radial_range = (radial_range[0], radial_range[1] + 2 * pi)
             self.check_chi_disc(radial_range)
         elif radial_range is not None:
-            radial_range = tuple([i / pos0_scale for i in radial_range])
+            if numpy.isfinite(radial_range).all():
+                radial_range = tuple([i / pos0_scale for i in radial_range])
+            else:
+                logger.warning(f"Semi-definied ranges are not supported for radial_range={radial_range}")
+                radial_range = None
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
@@ -1396,9 +1412,17 @@ class AzimuthalIntegrator(Integrator):
 
         unit = units.to_unit(unit)
         if radial_range:
-            radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
+            if numpy.isfinite(radial_range).all():
+                radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
+            else:
+                logger.warning(f"Semi-definied ranges are not supported for radial_range={radial_range}")
+                radial_range = None
         if azimuth_range is not None:
-            azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            if numpy.isfinite(azimuth_range).all():
+                azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            else:
+                logger.warning(f"Semi-definied ranges are not supported for azimuth_range={azimuth_range}")
+                azimuth_range = None
         try:
             quant_min = min(percentile)/100
             quant_max = max(percentile)/100
@@ -1865,9 +1889,18 @@ class AzimuthalIntegrator(Integrator):
 
         unit = units.to_unit(unit)
         if radial_range:
-            radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
+            if numpy.isfinite(radial_range).all():
+                radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
+            else:
+                logger.warning(f"Semi-definied ranges are not supported for radial_range={radial_range}")
+                radial_range = None
         if azimuth_range is not None:
-            azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            if numpy.isfinite(azimuth_range).all():
+                azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            else:
+                logger.warning(f"Semi-definied ranges are not supported for azimuth_range={azimuth_range}")
+                azimuth_range = None
+
 
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
         if method.split != "no":
