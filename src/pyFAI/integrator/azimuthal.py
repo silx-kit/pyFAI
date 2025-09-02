@@ -1413,7 +1413,7 @@ class AzimuthalIntegrator(Integrator):
         unit = units.to_unit(unit)
         if radial_range:
             if numpy.isfinite(radial_range).all():
-                radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
+                radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
             else:
                 logger.warning(f"Semi-definied ranges are not supported for radial_range={radial_range}")
                 radial_range = None
@@ -1890,7 +1890,7 @@ class AzimuthalIntegrator(Integrator):
         unit = units.to_unit(unit)
         if radial_range:
             if numpy.isfinite(radial_range).all():
-                radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
+                radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
             else:
                 logger.warning(f"Semi-definied ranges are not supported for radial_range={radial_range}")
                 radial_range = None
