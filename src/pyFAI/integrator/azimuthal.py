@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2025"
+__date__ = "26/08/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -367,6 +367,7 @@ class AzimuthalIntegrator(Integrator):
                                            intpl.intensity)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
             result._set_unit(integr.unit)
+            result._set_dummy(self.empty)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
             result._set_sum_normalization2(intpl.norm_sq)
@@ -1161,7 +1162,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         result._set_metadata(metadata)
-
+        result._set_dummy(self.empty)
         result._set_sum_signal(signal2d)
         result._set_sum_normalization(norm2d)
         if error_model.do_variance:
@@ -1306,6 +1307,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_percentile(percentile)
         result._set_npt_azim(npt_azim)
         result._set_unit(unit)
+        result._set_dummy(self.empty)
         result._set_has_mask_applied(res2d.has_mask_applied)
         result._set_metadata(metadata)
         result._set_has_dark_correction(res2d.has_dark_correction)
@@ -1484,7 +1486,7 @@ class AzimuthalIntegrator(Integrator):
                     elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 if cython_reset:
-                    logger.info("ai.medfilt1d_ng: Resetting Cython integrator because %s", cython_reset)
+                    logger.info("AI.sigma_clip_ng: Resetting Cython integrator because %s", cython_reset)
                     split = method.split_lower
                     if split == "pseudo":
                         split = "full"
@@ -1542,7 +1544,7 @@ class AzimuthalIntegrator(Integrator):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"
 
                 if reset:
-                    logger.info("ai.medfilt1d_ng: Resetting ocl_csr integrator because %s", reset)
+                    logger.info("ai.sigma_clip_ng: Resetting ocl_csr integrator because %s", reset)
                     csr_integr = self.engines[cython_method].engine
                     if method.impl_lower == "opencl":
                         try:
@@ -1600,6 +1602,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_compute_engine(str(method))
         result._set_percentile(percentile)
         result._set_unit(unit)
+        result._set_dummy(self.empty)
         result._set_has_mask_applied(has_mask)
         result._set_has_dark_correction(has_dark)
         result._set_has_flat_correction(has_flat)
@@ -1765,6 +1768,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_percentile(thres)
         result._set_npt_azim(npt_azim)
         result._set_unit(unit)
+        result._set_dummy(self.empty)
         result._set_has_mask_applied(res2d.has_mask_applied)
         result._set_metadata(metadata)
         result._set_has_dark_correction(res2d.has_dark_correction)
@@ -1949,7 +1953,7 @@ class AzimuthalIntegrator(Integrator):
                     elif (azimuth_range is not None) and cython_integr.pos1_range != (min(azimuth_range), max(azimuth_range)):
                         cython_reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 if cython_reset:
-                    logger.info("ai.sigma_clip: Resetting Cython integrator because %s", cython_reset)
+                    logger.info("AI.sigma_clip_ng: Resetting Cython integrator because %s", cython_reset)
                     split = method.split_lower
                     if split == "pseudo":
                         split = "full"
@@ -2059,6 +2063,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_compute_engine(str(method))
         result._set_percentile(thres)
         result._set_unit(unit)
+        result._set_dummy(self.empty)
         result._set_has_mask_applied(has_mask)
         result._set_has_dark_correction(has_dark)
         result._set_has_flat_correction(has_flat)
@@ -2132,6 +2137,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_percentile(percentile)
         result._set_npt_azim(npt)
         result._set_unit(unit)
+        # result._set_dummy(self.empty)
         result._set_has_mask_applied(filter_result.has_mask_applied)
         result._set_metadata(filter_result.metadata)
         result._set_has_dark_correction(filter_result.has_dark_correction)

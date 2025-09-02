@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/01/2025"
+__date__ = "26/08/2025"
 
 import unittest
 import numpy
@@ -46,9 +46,10 @@ from .. import containers
 
 class TestContainer(unittest.TestCase):
 
-    def test_rebin1d(self):
-        img = fabio.open(UtilsTest.getimage("moke.tif")).data
-        ai = pyFAI_load({
+    @classmethod
+    def setUpClass(cls):
+        cls.img = fabio.open(UtilsTest.getimage("moke.tif")).data
+        cls.ai = pyFAI_load({
     "poni_version": 2.1,
     "detector": "Detector",
     "detector_config": {
@@ -68,14 +69,25 @@ class TestContainer(unittest.TestCase):
     "rot3": 0.0,
     "wavelength": 1.0178021533473887e-10
   })
+    @classmethod
+
+    def tearDownClass(cls):
+        cls.img = cls.ai = None
+
+    def test_rebin1d(self):
+
         method = ("no", "histogram", "cython")
-        res2d = ai.integrate2d(img, 500, 360, method=method, error_model="poisson")
-        ref1d = ai.integrate1d(img, 500, method=method, error_model="poisson")
+        res2d = self.ai.integrate2d(self.img, 500, 360, method=method, error_model="poisson")
+        ref1d = self.ai.integrate1d(self.img, 500, method=method, error_model="poisson")
         res1d = containers.rebin1d(res2d)
         self.assertTrue(numpy.allclose(res1d[0], ref1d[0]), "radial matches")
         self.assertTrue(numpy.allclose(res1d[1], ref1d[1]), "intensity matches")
         self.assertTrue(numpy.allclose(res1d[2], ref1d[2]), "sem matches")
 
+    def test_symmetrize(self):
+        res2d = self.ai.integrate2d(self.img, 500, 360, error_model="poisson", radial_range=(0,12), unit="2th_deg")
+        sym = containers.symmetrize(res2d)
+        self.assertAlmostEqual(res2d.intensity.mean(), sym.intensity.mean(), places=0)
 
 
 def suite():
