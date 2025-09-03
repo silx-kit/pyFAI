@@ -4625,13 +4625,37 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group218_ia3d(h, k, l):
-        """Space group 218: Ia-3d. I-centering: (h + k + l) even; (0, 0, l): l divisible by 4."""
-        if (h + k + l) % 2 != 0:
-            return False
+    def group218_P4bar3n(h: int, k: int, l: int) -> bool:
+        """
+        Space group 218: P4̅3n. Primitive cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - hhl (h = k):           l even
+        - h00 (k = 0, l = 0):    h even
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+        validated
+        """
+        # hhl and its permutations
+        if h == k:
+            return l % 2 == 0
+        if h == l:
+            return k % 2 == 0
+        if k == l:
+            return h % 2 == 0
+
+        # h00 and its permutations
+        if k == 0 and l == 0:
+            return h % 2 == 0
+        if h == 0 and l == 0:
+            return k % 2 == 0
         if h == 0 and k == 0:
-            return l % 4 == 0
+            return l % 2 == 0
+
         return True
+
 
     @staticmethod
     def group219_pa3(h, k, l):
