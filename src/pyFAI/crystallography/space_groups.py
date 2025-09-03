@@ -4500,9 +4500,48 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group214_fm3m(h, k, l):
-        """Space group 214: Fm-3m. F-centering: h, k, l all even or all odd."""
-        return h % 2 == k % 2 == l % 2
+    def group214_I4_132(h: int, k: int, l: int) -> bool:
+        """
+        Space group 214: I4₁32. Body-centred cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k + l = 2n
+        - 0kl (h = 0):           k + l even
+        - hhl (h = k):           l even
+        - h00 (k = 0, l = 0):    h = 4n
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+            JKC: http://img.chem.ucl.ac.uk/sgp/large/214az2.htm
+        validated
+        """
+        # General condition
+        if (h + k + l) % 2 != 0:
+            return False
+
+        # h00 cyclic permutations
+        if k == 0 and l == 0:
+            return h % 4 == 0
+        if h == 0 and l == 0:
+            return k % 4 == 0
+        if h == 0 and k == 0:
+            return l % 4 == 0
+
+        # hhl
+        if h == k:
+            return l % 2 == 0
+
+        # 0kl axis-zero permutations
+        if h == 0:
+            return (k + l) % 2 == 0
+        if k == 0:
+            return (h + l) % 2 == 0
+        if l == 0:
+            return (h + k) % 2 == 0
+
+        return True
+
 
     @staticmethod
     def group215_fm3c(h, k, l):
