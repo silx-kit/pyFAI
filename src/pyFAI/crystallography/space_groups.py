@@ -4544,7 +4544,7 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group215_P43bar_m(h: int, k: int, l: int) -> bool:
+    def group215_P4bar3m(h: int, k: int, l: int) -> bool:
         """
         Space group 215: P4̅3m. Primitive cubic.
         All reflections are allowed; no systematic absences.
@@ -4554,7 +4554,7 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group216_F4bar_3m(h: int, k: int, l: int) -> bool:
+    def group216_F4bar3m(h: int, k: int, l: int) -> bool:
         """
         Space group 216: F4̅3m. Face-centred cubic.
         Reflection conditions are permutable.
