@@ -4544,13 +4544,14 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group215_fm3c(h, k, l):
-        """Space group 215: Fm-3c. F-centering: h, k, l all even or all odd; (0, 0, l): l even."""
-        if not (h % 2 == k % 2 == l % 2):
-            return False
-        if h == 0 and k == 0:
-            return l % 2 == 0
+    def group215_P43bar_m(h: int, k: int, l: int) -> bool:
+        """
+        Space group 215: P4̅3m. Primitive cubic.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
+
 
     @staticmethod
     def group216_fd3m(h, k, l):
