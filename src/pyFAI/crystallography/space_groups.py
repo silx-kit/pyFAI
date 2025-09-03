@@ -4447,8 +4447,29 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group212_pa3(h, k, l):
-        """Space group 212: Pa-3. No systematic absences."""
+    def group212_P4_332(h: int, k: int, l: int) -> bool:
+        """
+        Space group 212: P4₃32. Primitive cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - h00 (k = 0, l = 0):    h = 4n
+        - 0k0 (h = 0, l = 0):    k = 4n
+        - 00l (h = 0, k = 0):    l = 4n
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+        validated
+        """
+        # h00
+        if k == 0 and l == 0:
+            return h % 4 == 0
+        # 0k0
+        if h == 0 and l == 0:
+            return k % 4 == 0
+        # 00l
+        if h == 0 and k == 0:
+            return l % 4 == 0
         return True
 
     @staticmethod
