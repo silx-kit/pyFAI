@@ -4554,9 +4554,42 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group216_fd3m(h, k, l):
-        """Space group 216: Fd-3m. F-centering: h, k, l all even or all odd.validated"""
-        return h % 2 == k % 2 == l % 2
+    def group216_F4bar_3m(h: int, k: int, l: int) -> bool:
+        """
+        Space group 216: F4̅3m. Face-centred cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k, h + l, k + l even
+        - 0kl (h = 0):           k, l even
+        - hhl (h = k):           h + l even
+        - h00 (k = 0, l = 0):    h even
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+        validated
+        """
+        
+        # General condition
+        if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
+            return False
+
+        # 0kl
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0
+
+        # hhl
+        if h == k:
+            return (h + l) % 2 == 0
+
+        # h00
+        if k == 0 and l == 0:
+            return h % 2 == 0
+
+        return True
+
+
+
 
     @staticmethod
     def group217_fd3c(h, k, l):
