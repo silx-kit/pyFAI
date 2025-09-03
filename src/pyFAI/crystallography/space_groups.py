@@ -4435,16 +4435,18 @@ class ReflectionCondition:
             return False
 
         # 0kl
-        if h == 0: return (k + l) % 2 == 0
+        if h == 0:
+            return (k + l) % 2 == 0
 
         # hhl
-        if h == k: return l % 2 == 0
+        if h == k:
+            return l % 2 == 0
 
         # h00
-        if k == 0 and l == 0: return h % 2 == 0
+        if k == 0 and l == 0:
+            return h % 2 == 0
 
         return True
-
 
     @staticmethod
     def group212_P4_332(h: int, k: int, l: int) -> bool:
@@ -4498,7 +4500,6 @@ class ReflectionCondition:
             return l % 4 == 0
         return True
 
-
     @staticmethod
     def group214_I4_132(h: int, k: int, l: int) -> bool:
         """
@@ -4542,7 +4543,6 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group215_P4bar3m(h: int, k: int, l: int) -> bool:
         """
@@ -4551,7 +4551,6 @@ class ReflectionCondition:
         validated
         """
         return True
-
 
     @staticmethod
     def group216_F4bar3m(h: int, k: int, l: int) -> bool:
@@ -4569,7 +4568,7 @@ class ReflectionCondition:
             Reflection conditions from ITC, adapted to (h, k, l).
         validated
         """
-        
+
         # General condition
         if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
             return False
@@ -4587,7 +4586,6 @@ class ReflectionCondition:
             return h % 2 == 0
 
         return True
-
 
     @staticmethod
     def group217_I4bar3m(h: int, k: int, l: int) -> bool:
@@ -4613,16 +4611,15 @@ class ReflectionCondition:
         if h == 0:
             return (k + l) % 2 == 0
 
-        # hhl 
+        # hhl
         if h == k:
             return l % 2 == 0
 
-        # h00 
+        # h00
         if k == 0 and l == 0:
             return h % 2 == 0
 
         return True
-
 
     @staticmethod
     def group218_P4bar3n(h: int, k: int, l: int) -> bool:
@@ -4656,7 +4653,6 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group219_F4bar3c(h: int, k: int, l: int) -> bool:
         """
@@ -4679,22 +4675,31 @@ class ReflectionCondition:
             return False
 
         # 0kl cyclic permutations
-        if h == 0: return k % 2 == 0 and l % 2 == 0
-        if k == 0: return h % 2 == 0 and l % 2 == 0
-        if l == 0: return h % 2 == 0 and k % 2 == 0
-        
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0
+
         # hhl-like rules
-        if h == k: return h % 2 == 0 and l % 2 == 0
-        if h == l: return h % 2 == 0 and k % 2 == 0
-        if k == l: return h % 2 == 0 and k % 2 == 0
+        if h == k:
+            return h % 2 == 0 and l % 2 == 0
+        if h == l:
+            return h % 2 == 0 and k % 2 == 0
+        if k == l:
+            return h % 2 == 0 and k % 2 == 0
 
         # h00 cyclic permutations
-        if k == 0 and l == 0: return  h % 2 == 0
-        if h == 0 and l == 0: return  k % 2 == 0
-        if h == 0 and k == 0: return  l % 2 == 0
+        if k == 0 and l == 0:
+            return h % 2 == 0
+        if h == 0 and l == 0:
+            return k % 2 == 0
+        if h == 0 and k == 0:
+            return l % 2 == 0
 
         return True
-    
+
     @staticmethod
     def group220_I4bar3d(h: int, k: int, l: int) -> bool:
         """
@@ -4714,7 +4719,7 @@ class ReflectionCondition:
         # General condition
         if (h + k + l) % 2 != 0:
             return False
-    
+
         # h00 cyclic permutations
         if k == 0 and l == 0:
             return h % 4 == 0
@@ -4725,12 +4730,12 @@ class ReflectionCondition:
 
         # hhl-like rules
         if h == k:
-            return (2*h + l) % 4 == 0
+            return (2 * h + l) % 4 == 0
         if h == l:
-            return (2*h + k) % 4 == 0
+            return (2 * h + k) % 4 == 0
         if k == l:
-            return (h + 2*k) % 4 == 0
-        
+            return (h + 2 * k) % 4 == 0
+
         # 0kl axis-zero permutations
         if h == 0:
             return (k + l) % 2 == 0
@@ -4740,9 +4745,6 @@ class ReflectionCondition:
             return (h + k) % 2 == 0
 
         return True
-    
-    
-
 
     @staticmethod
     def group221_pm3m(h, k, l):
