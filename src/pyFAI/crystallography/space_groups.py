@@ -4694,11 +4694,55 @@ class ReflectionCondition:
         if h == 0 and k == 0: return  l % 2 == 0
 
         return True
-
+    
     @staticmethod
-    def group220_ia3(h, k, l):
-        """Space group 220: Ia-3. I-centering: (h + k + l) even."""
-        return (h + k + l) % 2 == 0
+    def group220_I4bar3d(h: int, k: int, l: int) -> bool:
+        """
+        Space group 220: I4̅3d. Body-centred cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k + l = 2n
+        - 0kl (h = 0):           k + l even
+        - hhl (h = k):           2h + l = 4n
+        - h00 (k = 0, l = 0):    h = 4n
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+        validated
+        """
+        # General condition
+        if (h + k + l) % 2 != 0:
+            return False
+    
+        # h00 cyclic permutations
+        if k == 0 and l == 0:
+            return h % 4 == 0
+        if h == 0 and l == 0:
+            return k % 4 == 0
+        if h == 0 and k == 0:
+            return l % 4 == 0
+
+        # hhl-like rules
+        if h == k:
+            return (2*h + l) % 4 == 0
+        if h == l:
+            return (2*h + k) % 4 == 0
+        if k == l:
+            return (h + 2*k) % 4 == 0
+        
+        # 0kl axis-zero permutations
+        if h == 0:
+            return (k + l) % 2 == 0
+        if k == 0:
+            return (h + l) % 2 == 0
+        if l == 0:
+            return (h + k) % 2 == 0
+
+        return True
+    
+    
+
 
     @staticmethod
     def group221_pm3m(h, k, l):
