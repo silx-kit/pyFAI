@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2025"
+__date__ = "03/09/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -143,13 +143,13 @@ class AzimuthalIntegrator(Integrator):
             if numpy.isfinite(radial_range).all():
                 radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
             else:
-                logger.warning(f"Semi-definied ranges are not supported for radial_range={radial_range}")
+                logger.warning(f"Semi-defined ranges are not supported for radial_range={radial_range}")
                 radial_range = None
         if azimuth_range is not None:
             if numpy.isfinite(azimuth_range).all():
                 azimuth_range = self.normalize_azimuth_range(azimuth_range)
             else:
-                logger.warning(f"Semi-definied ranges are not supported for azimuth_range={azimuth_range}")
+                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
                 azimuth_range = None
 
         if mask is None:
@@ -766,7 +766,7 @@ class AzimuthalIntegrator(Integrator):
             if numpy.isfinite(azimuth_range).all():
                 azimuth_range = tuple([i / pos1_scale for i in azimuth_range])
             else:
-                logger.warning(f"Semi-definied ranges are not supported for azimuth_range={azimuth_range}")
+                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
                 azimuth_range = None
 
         if radial_range is not None and radial_unit.period:
@@ -781,7 +781,7 @@ class AzimuthalIntegrator(Integrator):
             if numpy.isfinite(radial_range).all():
                 radial_range = tuple([i / pos0_scale for i in radial_range])
             else:
-                logger.warning(f"Semi-definied ranges are not supported for radial_range={radial_range}")
+                logger.warning(f"Semi-defined ranges are not supported for radial_range={radial_range}")
                 radial_range = None
 
         if correctSolidAngle:
@@ -1415,13 +1415,13 @@ class AzimuthalIntegrator(Integrator):
             if numpy.isfinite(radial_range).all():
                 radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
             else:
-                logger.warning(f"Semi-definied ranges are not supported for radial_range={radial_range}")
+                logger.warning(f"Semi-defined ranges are not supported for radial_range={radial_range}")
                 radial_range = None
         if azimuth_range is not None:
             if numpy.isfinite(azimuth_range).all():
                 azimuth_range = self.normalize_azimuth_range(azimuth_range)
             else:
-                logger.warning(f"Semi-definied ranges are not supported for azimuth_range={azimuth_range}")
+                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
                 azimuth_range = None
         try:
             quant_min = min(percentile)/100
@@ -1892,13 +1892,13 @@ class AzimuthalIntegrator(Integrator):
             if numpy.isfinite(radial_range).all():
                 radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
             else:
-                logger.warning(f"Semi-definied ranges are not supported for radial_range={radial_range}")
+                logger.warning(f"Semi-defined ranges are not supported for radial_range={radial_range}")
                 radial_range = None
         if azimuth_range is not None:
             if numpy.isfinite(azimuth_range).all():
                 azimuth_range = self.normalize_azimuth_range(azimuth_range)
             else:
-                logger.warning(f"Semi-definied ranges are not supported for azimuth_range={azimuth_range}")
+                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
                 azimuth_range = None
 
 
