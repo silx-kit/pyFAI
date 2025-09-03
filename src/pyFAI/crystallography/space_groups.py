@@ -4658,8 +4658,41 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group219_pa3(h, k, l):
-        """Space group 219: Pa-3. No systematic absences."""
+    def group219_F4bar3c(h: int, k: int, l: int) -> bool:
+        """
+        Space group 219: F4̅3c. Face-centred cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k = 2n and h + l, k + l = 2n
+        - 0kl (h = 0):           k, l even
+        - hhl (h = k):           h, l even
+        - h00 (k = 0, l = 0):    h even
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+            JKC:  http://img.chem.ucl.ac.uk/sgp/large/219az2.htm
+        validated
+        """
+        # General condition
+        if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
+            return False
+
+        # 0kl cyclic permutations
+        if h == 0: return k % 2 == 0 and l % 2 == 0
+        if k == 0: return h % 2 == 0 and l % 2 == 0
+        if l == 0: return h % 2 == 0 and k % 2 == 0
+        
+        # hhl-like rules
+        if h == k: return h % 2 == 0 and l % 2 == 0
+        if h == l: return h % 2 == 0 and k % 2 == 0
+        if k == l: return h % 2 == 0 and k % 2 == 0
+
+        # h00 cyclic permutations
+        if k == 0 and l == 0: return  h % 2 == 0
+        if h == 0 and l == 0: return  k % 2 == 0
+        if h == 0 and k == 0: return  l % 2 == 0
+
         return True
 
     @staticmethod
