@@ -962,7 +962,7 @@ class Integrator(Geometry):
         if method.method[1:4] == ("bbox", "histogram", "cython"):
             logger.debug("integrate1d uses BBox implementation")
             if azimuth_range is not None:
-                chi = self.center_array(shape, unit=CHI_RAD)
+                chi = self.center_array(shape, unit=units.CHI_RAD)
                 dchi = self.deltaChi(shape)
             else:
                 chi = None
