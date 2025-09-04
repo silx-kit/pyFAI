@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,11 @@ import logging
 import numpy
 import collections
 
-import pyFAI.utils
+from ... import units
 from ...geometryRefinement import GeometryRefinement
 from ..model.GeometryConstraintsModel import GeometryConstraintsModel
 from ..peak_picker import PeakPicker
-from ..utils import timeutils
+from ..utils import timeutils, FixedParameters
 
 _logger = logging.getLogger(__name__)
 
@@ -52,10 +52,7 @@ class GeometryRefinementContext(object):
     def __init__(self, *args, **kwargs):
         _logger.debug("GeometryRefinementContext.__init__")
         self.__geoRef = GeometryRefinement(*args, **kwargs)
-        fixed = pyFAI.utils.FixedParameters()
-        fixed.add("rot3")
-        fixed.add("wavelength")
-        self.__fixed = fixed
+        self.__fixed = FixedParameters(["rot3", "wavelength"])
 
         self.__bounds = {}
         for name in self.PARAMETERS:
