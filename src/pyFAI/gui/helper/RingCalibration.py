@@ -38,6 +38,7 @@ from ..peak_picker import PeakPicker
 from ..utils import timeutils, FixedParameters
 
 _logger = logging.getLogger(__name__)
+inf = numpy.inf
 
 
 class GeometryRefinementContext(object):
@@ -117,7 +118,7 @@ class GeometryRefinementContext(object):
             if name in self.__bounds:
                 minValue, maxValue = self.__bounds[name]
             else:
-                minValue, maxValue = -float("inf"), float("inf")
+                minValue, maxValue = -inf, inf
             min_setter(minValue)
             max_setter(maxValue)
 
@@ -125,7 +126,7 @@ class GeometryRefinementContext(object):
             deltaS = self.__geoRef.refine3(maxiter, self.__fixed)
         except Exception:
             _logger.error("Error while refining the geometry", exc_info=True)
-            return float("inf")
+            return inf
         else:
             return deltaS
 
@@ -260,7 +261,7 @@ class RingCalibration(object):
                                 detector=self.__detector,
                                 method=method)
 
-        if score == float("inf"):
+        if score == inf:
             self.__isValid = False
         self.__peakPicker = peakPicker
         self.__geoRef = geoRef
@@ -298,7 +299,7 @@ class RingCalibration(object):
             previous_residual = residual
             count += 1
 
-        if residual == float("inf"):
+        if residual == inf:
             self.__isValid = False
 
         print("Final residual: %s (after %s iterations)" % (residual, count))
@@ -316,7 +317,7 @@ class RingCalibration(object):
             chi2 = self.__geoRef.chi2()
         except Exception:
             _logger.debug("Backtrace", exc_info=True)
-            return float("inf")
+            return inf
         return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
 
     def getTwoThetaArray(self):
@@ -494,7 +495,7 @@ class RingCalibration(object):
             ("rot2", constraintsModel.rotation2()),
             ("rot3", constraintsModel.rotation3()),
         ]
-        fixed = pyFAI.utils.FixedParameters()
+        fixed = FixedParameters()
         bounds = {}
         for name, constraint in attrs:
             if constraint.isFixed():
@@ -502,9 +503,9 @@ class RingCalibration(object):
             elif constraint.isRangeConstrained():
                 minValue, maxValue = constraint.range()
                 if minValue is None:
-                    minValue = -float("inf")
+                    minValue = -inf
                 if maxValue is None:
-                    maxValue = +float("inf")
+                    maxValue = +inf
                 bounds[name] = minValue, maxValue
         self.__geoRef.setFixed(fixed)
         self.__geoRef.setBounds(bounds)
