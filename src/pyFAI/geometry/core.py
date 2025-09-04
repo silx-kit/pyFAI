@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/07/2025"
+__date__ = "04/09/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -63,8 +63,8 @@ from ..utils.decorators import deprecated
 from ..utils import crc32, deg2rad
 from .. import utils
 from ..io import ponifile, integration_config
-from ..units import CONST_hc, to_unit, UnitFiber
-TWO_PI = 2 * pi
+from ..units import CONST_hc, to_unit, UnitFiber, CHI_RAD, TTH_RAD
+TWO_PI = 2.0 * pi
 
 logger = logging.getLogger(__name__)
 
@@ -607,6 +607,7 @@ class Geometry(object):
         """
         return self.tth(d1 - 0.5, d2 - 0.5)
 
+    @deprecated(reason="not so precise", replacement="center_array('2th_rad')", since_version="2025.09")
     def twoThetaArray(self, shape=None):
         """Generate an array of two-theta(i,j) in radians for each pixel in detector
 
@@ -670,6 +671,7 @@ class Geometry(object):
         """
         return self.chi(d1 - 0.5, d2 - 0.5)
 
+    @deprecated(reason="not so precise", replacement="center_array('chi_rad')", since_version="2025.09")
     def chiArray(self, shape=None):
         """Generate an array of azimuthal angle chi(i,j) for all elements in the detector.
 
@@ -1027,7 +1029,7 @@ class Geometry(object):
         """
         key = "chi_delta"
         if self._cached_array.get(key) is None:
-            center = self.chiArray(shape)
+            center = self.center_array(shape, unit="chi_rad")
             corner = self.corner_array(shape, None)
             with self._sem:
                 if self._cached_array.get(key) is None:
@@ -1923,8 +1925,8 @@ class Geometry(object):
             desc = PolarizationDescription(factor, axis_offset)
         pol = self._cached_array.get(desc)
         if pol is None or (pol.array.shape != shape):
-            tth = self.twoThetaArray(shape)
-            chi = self.chiArray(shape)
+            tth = self.center_array(shape, unit=TTH_RAD)
+            chi = self.center_array(shape, unit=CHI_RAD)
             with self._sem:
                 if pol is None or (pol.array.shape != shape):
                     if path == "numexpr" and numexpr:
@@ -2090,7 +2092,7 @@ class Geometry(object):
         except Exception:
             raise RuntimeError("in pyFAI.Geometry.calcfrom2d: " +
                                str(dim1_unit) + " not (yet?) Implemented")
-        chia = self.chiArray(shape)
+        chia = self.center_array(shape, unit=CHI_RAD)
 
         built_mask = numpy.ones(shape, dtype=numpy.int8)
         empty_data = numpy.zeros(shape, dtype=numpy.float32)

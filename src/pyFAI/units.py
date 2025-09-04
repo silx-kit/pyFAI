@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/08/2025"
+__date__ = "04/09/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -45,9 +45,11 @@ import copy
 import logging
 
 logger = logging.getLogger(__name__)
-from math import sin, cos, tan, atan2, pi
+from math import sin, cos, tan, atan2, pi as PI
 import numpy
 import scipy.constants
+
+TWO_PI = 2 * PI
 
 try:
     import numexpr
@@ -117,22 +119,22 @@ class Unit(object):
         self.corner = corner
         self.center = center
         self.delta = delta
-        self._equation = equation
+        self._equation_np = equation
         self.formula = formula
         if (numexpr is not None) and isinstance(formula, str):
             signature = [(key, numpy.float64) for key in "xyzλπ" if key in formula]
             ne_formula = numexpr.NumExpr(formula, signature)
 
             def ne_equation(x, y, z=None, wavelength=None, ne_formula=ne_formula):
-                π = numpy.pi
+                π = PI
                 λ = wavelength
                 ldict = locals()
                 args = tuple(ldict[i] for i in ne_formula.input_names)
                 return ne_formula(*args)
-
-            self.equation = ne_equation
+            self.equation = self._equation_ne = ne_equation
         else:
-            self.equation = self._equation
+            self._equation_ne = None
+            self.equation = self._equation_np
         self.short_name = short_name
         self.unit_symbol = unit_symbol
         self.positive = positive
@@ -295,7 +297,7 @@ class UnitFiber(Unit):
                 sample_orientation=self._sample_orientation,
                 ne_formula=ne_formula,
             ):
-                π = numpy.pi
+                π = PI
                 λ = wavelength
                 η = self._incident_angle
                 χ = self._tilt_angle
@@ -522,7 +524,7 @@ def eq_q(x, y, z, wavelength):
     :param wavelength: in meter
     :return: modulus of the scattering vector q in inverse nm
     """
-    return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
+    return 4.0e-9 * PI * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
 
 
 def eq_chi(x, y, z, wavelength):
@@ -660,13 +662,7 @@ def q_lab_horz(
     scattering_angle_horz = eq_scattering_angle_horz(
         x=x, y=y, z=z, wavelength=wavelength
     )
-    return (
-        2.0e-9
-        / wavelength
-        * numpy.pi
-        * numpy.cos(scattering_angle_vertical)
-        * numpy.sin(scattering_angle_horz)
-    )
+    return 2.0e-9 * PI / wavelength * cos(scattering_angle_vertical) * sin(scattering_angle_horz)
 
 
 def q_lab_vert(
@@ -683,7 +679,7 @@ def q_lab_vert(
     scattering_angle_vertical = eq_scattering_angle_vertical(
         x=x, y=y, z=z, wavelength=wavelength
     )
-    return 2.0e-9 / wavelength * numpy.pi * numpy.sin(scattering_angle_vertical)
+    return 2.0e-9 / wavelength * PI * sin(scattering_angle_vertical)
 
 
 def q_lab_beam(
@@ -703,12 +699,8 @@ def q_lab_beam(
     scattering_angle_horz = eq_scattering_angle_horz(
         x=x, y=y, z=z, wavelength=wavelength
     )
-    return (
-        2.0e-9
-        / wavelength
-        * numpy.pi
-        * (numpy.cos(scattering_angle_vertical) * numpy.cos(scattering_angle_horz) - 1)
-    )
+    return 2.0e-9 * PI / wavelength * (cos(scattering_angle_vertical) * cos(scattering_angle_horz) - 1.0)
+
 
 
 def q_lab(
@@ -1094,7 +1086,7 @@ def eq_q_total(
     hpos, vpos = rotate_sample_orientation(
         x=x, y=y, sample_orientation=sample_orientation
     )
-    return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(hpos, vpos, z) / 2.0) / wavelength
+    return 4.0e-9 * PI * numpy.sin(eq_2th(hpos, vpos, z) / 2.0) / wavelength
 
 
 def eq_chi_gi(
@@ -1194,7 +1186,7 @@ register_radial_unit(
 
 register_radial_unit(
     "2th_deg",
-    scale=180.0 / numpy.pi,
+    scale=180.0 / PI,
     center="twoThetaArray",
     delta="delta2Theta",
     label=r"Scattering angle $2\theta$ ($^{o}$)",
@@ -1245,7 +1237,7 @@ register_radial_unit(
     scale=1,
     label=r"d-spacing $d$ ($m$)",
     equation=lambda x, y, z, wavelength: (
-        (2.0 * numpy.pi) / (1e9 * eq_q(x, y, z, wavelength))
+        (TWO_PI) / (1e9 * eq_q(x, y, z, wavelength))
     ),
     formula=formula_d,
     short_name="d",
@@ -1257,7 +1249,7 @@ register_radial_unit(
     scale=1e9,
     label=r"d-spacing $d$ ($nm$)",
     equation=lambda x, y, z, wavelength: (
-        (2.0 * numpy.pi) / (1e9 * eq_q(x, y, z, wavelength))
+        (TWO_PI) / (1e9 * eq_q(x, y, z, wavelength))
     ),
     formula=formula_d,
     short_name="d",
@@ -1269,7 +1261,7 @@ register_radial_unit(
     scale=1e10,
     label=r"d-spacing $d$ ($\AA$)",
     equation=lambda x, y, z, wavelength: (
-        (2.0 * numpy.pi) / (1e9 * eq_q(x, y, z, wavelength))
+        (TWO_PI) / (1e9 * eq_q(x, y, z, wavelength))
     ),
     formula=formula_d,
     short_name="d",
@@ -1282,7 +1274,7 @@ register_radial_unit(
     delta="deltaRd2",
     scale=0.01,
     label=r"Recip. spacing sq. $d^{*2}$ ($\AA^{-2}$)",
-    equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi))
+    equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (TWO_PI))
     ** 2,
     formula=formula_d2,
     short_name="d^{*2}",
@@ -1295,7 +1287,7 @@ register_radial_unit(
     delta="deltaRd2",
     scale=1.0,
     label=r"Recip. spacing sq. $d^{*2}$ ($nm^{-2}$)",
-    equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi))
+    equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (TWO_PI))
     ** 2,
     formula=formula_d2,
     short_name="d^{*2}",
@@ -1434,7 +1426,7 @@ register_radial_fiber_unit(
 
 register_radial_fiber_unit(
     "exit_angle_vert_deg",
-    scale=180.0 / numpy.pi,
+    scale=180.0 / PI,
     label=r"Vertical exit angle (deg)",
     formula=formula_exit_angle_vert,
     equation=eq_exit_angle_vert,
@@ -1445,7 +1437,7 @@ register_radial_fiber_unit(
 
 register_radial_fiber_unit(
     "exit_angle_horz_deg",
-    scale=180.0 / numpy.pi,
+    scale=180.0 / PI,
     label=r"Horizontal exit angle (deg)",
     formula=formula_exit_angle_horz,
     equation=eq_exit_angle_horz,
@@ -1599,7 +1591,7 @@ LENGTH_UNITS["µm"] = LENGTH_UNITS["micron"]
 ANGLE_UNITS = {
     "deg": Unit(
         "deg",
-        scale=180.0 / pi,
+        scale=180.0 / PI,
         label=r"angle $\alpha$ ($^{o}$)",
         positive=False,
         period=360,
@@ -1609,7 +1601,7 @@ ANGLE_UNITS = {
         scale=1.0,
         label=r"angle $\alpha$ ($rad$)",
         positive=False,
-        period=2 * numpy.pi,
+        period=TWO_PI,
     ),
 }
 
@@ -1620,12 +1612,12 @@ register_azimuthal_unit(
     formula=formula_chi,
     equation=eq_chi,
     positive=False,
-    period=2.0 * pi,
+    period=TWO_PI,
 )
 
 register_azimuthal_unit(
     "chi_deg",
-    scale=180.0 / pi,
+    scale=180.0 / PI,
     label=r"Azimuthal angle $\chi$ ($^{o}$)",
     formula=formula_chi,
     equation=eq_chi,
@@ -1641,13 +1633,13 @@ register_azimuthal_fiber_unit(
     formula=formula_chi_gi,
     equation=eq_chi_gi,
     positive=False,
-    period=2.0 * pi,
+    period=TWO_PI,
 )
 
 register_azimuthal_fiber_unit(
     name="chigi_deg",
     short_name="chigi",
-    scale=180.0 / pi,
+    scale=180.0 / PI,
     label=r"Polar angle $\chi$ ($^{o}$)",
     formula=formula_chi_gi,
     equation=eq_chi_gi,

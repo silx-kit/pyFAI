@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2025"
+__date__ = "04/09/2025"
 __status__ = "production"
 
 import os
@@ -68,7 +68,7 @@ from ..utils import measure_offset, expand_args, \
             readFloatFromKeyboard, FixedParameters, round_fft, \
             win32
 from ..integrator.azimuthal import AzimuthalIntegrator
-from ..units import hc
+from ..units import hc, TTH_RAD, CHI_RAD
 from .. import version as PyFAI_VERSION
 from .. import date as PyFAI_DATE
 from ..calibrant import Calibrant, CALIBRANT_FACTORY, get_calibrant
@@ -603,10 +603,10 @@ class AbstractCalibration(object):
             if (ttha is None) or (ttha.shape != self.peakPicker.data.shape):
                 ttha = self.geoRef.twoThetaArray(self.peakPicker.data.shape)
             if (chia is None) or (chia.shape != self.peakPicker.data.shape):
-                chia = self.geoRef.chiArray(self.peakPicker.data.shape)
+                chia = self.geoRef.center_array(self.peakPicker.data.shape, unit=CHI_RAD)
         else:
-            ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
-            chia = self.ai.chiArray(self.peakPicker.data.shape)
+            ttha = self.center_array(self.peakPicker.data.shape, unit=TTH_RAD)
+            chia = self.ai.center_array(self.peakPicker.data.shape, unit=CHI_RAD)
         rings = 0
         self.peakPicker.sync_init()
         if self.max_rings is None:
@@ -1119,7 +1119,7 @@ class AbstractCalibration(object):
         t1 = time.perf_counter()
         _dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
         t2 = time.perf_counter()
-        self.geoRef.chiArray(self.peakPicker.shape)
+        self.geoRef.center_array(shape=self.peakPicker.shape, unit=units.CHI_RAD)
         t2a = time.perf_counter()
         self.geoRef.corner_array(self.peakPicker.shape, units.TTH_DEG,
                                  scale=False)

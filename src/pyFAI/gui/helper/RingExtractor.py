@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/09/2023"
+__date__ = "04/09/2025"
 
 import logging
 import numpy
@@ -360,9 +360,9 @@ class RingExtractorThread(qt.QThread):
         ttha = geoRef.get_ttha()
         chia = geoRef.get_chia()
         if (ttha is None) or (ttha.shape != peakPicker.data.shape):
-            ttha = geoRef.twoThetaArray(peakPicker.data.shape)
+            ttha = geoRef.center_array(shape=peakPicker.data.shape, unit="2th_rad")
         if (chia is None) or (chia.shape != peakPicker.data.shape):
-            chia = geoRef.chiArray(peakPicker.data.shape)
+            chia = geoRef.center_array(shape=peakPicker.data.shape, unit="chi_rad")
 
         rings = 0
         peakPicker.sync_init()

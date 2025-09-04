@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/02/2025"
+__date__ = "04/09/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -962,7 +962,7 @@ class Integrator(Geometry):
         if method.method[1:4] == ("bbox", "histogram", "cython"):
             logger.debug("integrate1d uses BBox implementation")
             if azimuth_range is not None:
-                chi = self.chiArray(shape)
+                chi = self.center_array(shape, unit=CHI_RAD)
                 dchi = self.deltaChi(shape)
             else:
                 chi = None
@@ -1412,9 +1412,9 @@ class Integrator(Geometry):
                                                                          empty=dummy if dummy is not None else self._empty)
         if method.method[1:4] == ("bbox", "histogram", "cython"):
             logger.debug("integrate2d uses BBox implementation")
-            chi = self.chiArray(shape)
+            chi = self.center_array(shape, unit="chi_rad", scale=False)
             dchi = self.deltaChi(shape)
-            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
+            pos0 = self.center_array(shape, unit, scale=False)
             dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
             I, bins_rad, bins_azim, sum_, count = splitBBox.histoBBox2d(weights=data,
                                                                         pos0=pos0,
@@ -1443,8 +1443,8 @@ class Integrator(Geometry):
                                     radial_range=radial_range,
                                     azimuth_range=azimuth_range,
                                     mode="where")
-            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-            pos1 = self.chiArray(shape)
+            pos0 = self.center_array(shape, unit, scale=False)
+            pos1 = self.center_array(shape, unit="chi_rad", scale=False)
 
             if radial_range is None:
                 radial_range = [pos0.min(), pos0.max() * EPS32]
