@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/03/2024"
+__date__ = "04/09/2025"
 
 import logging
 import numpy
@@ -327,7 +327,7 @@ class RingCalibration(object):
         Returns the 2th array corresponding to the calibrated image
         """
         # 2th array is cached insided
-        tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
+        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit="2th_rad", scale=False)
         return tth
 
     def getMask(self):
@@ -343,7 +343,7 @@ class RingCalibration(object):
         :returns: List of ring angles available
         :rtype: List[float]
         """
-        tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
+        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit="2th_rad", scale=False)
 
         result = collections.OrderedDict()
 
@@ -366,7 +366,7 @@ class RingCalibration(object):
         :returns: List of tuples with ring (index, angle)  available
         :rtype: dict[ringId] = angle
         """
-        tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
+        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit="2th_rad", scale=False)
 
         result = collections.OrderedDict()
 
@@ -395,7 +395,7 @@ class RingCalibration(object):
         if tth >= epsilon:
             # Check if this pixel really contains the beam center
             # If the detector contains gap, it is not always the case
-            tth_array = self.__geoRef.twoThetaArray()
+            tth_array = self.__geoRef.center_array(unit="2th_rad", scale=False)
             pos = tth_array.argmin()
             width = self.__geoRef.detector.shape[-1]
             y = pos // width

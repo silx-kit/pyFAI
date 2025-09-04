@@ -449,7 +449,7 @@ class AzimuthalIntegrator(Integrator):
                 if reset:
                     logger.info("ai.integrate1d: Resetting integrator because %s", reset)
                     pos0 = self.center_array(shape, unit=unit, scale=False)
-                    azimuthal = self.center_array(shape, unit=CHI_RAD, scale=False)
+                    azimuthal = self.center_array(shape, unit=units.CHI_RAD, scale=False)
                     try:
                         integr = method.class_funct_ng.klass(pos0,
                                                              npt,
@@ -499,7 +499,7 @@ class AzimuthalIntegrator(Integrator):
                     chi = None
                     delta_chi = None
                 else:
-                    chi = self.center_array(shape, unit=CHI_RAD, scale=False)
+                    chi = self.center_array(shape, unit=units.CHI_RAD, scale=False)
                     delta_chi = self.deltaChi(shape)
                 radial = self.array_from_unit(shape, "center", unit, scale=False)
                 delta_radial = self.array_from_unit(shape, "delta", unit, scale=False)
