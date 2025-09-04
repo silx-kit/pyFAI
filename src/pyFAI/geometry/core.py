@@ -1029,7 +1029,7 @@ class Geometry(object):
         """
         key = "chi_delta"
         if self._cached_array.get(key) is None:
-            center = self.center_array(shape, unit="chi_rad")
+            center = self.center_array(shape, unit=CHI_RAD, scale=False)
             corner = self.corner_array(shape, None)
             with self._sem:
                 if self._cached_array.get(key) is None:
@@ -1925,8 +1925,8 @@ class Geometry(object):
             desc = PolarizationDescription(factor, axis_offset)
         pol = self._cached_array.get(desc)
         if pol is None or (pol.array.shape != shape):
-            tth = self.center_array(shape, unit=TTH_RAD)
-            chi = self.center_array(shape, unit=CHI_RAD)
+            tth = self.center_array(shape, unit=TTH_RAD, scale=False)
+            chi = self.center_array(shape, unit=CHI_RAD, scale=False)
             with self._sem:
                 if pol is None or (pol.array.shape != shape):
                     if path == "numexpr" and numexpr:
@@ -2092,7 +2092,7 @@ class Geometry(object):
         except Exception:
             raise RuntimeError("in pyFAI.Geometry.calcfrom2d: " +
                                str(dim1_unit) + " not (yet?) Implemented")
-        chia = self.center_array(shape, unit=CHI_RAD)
+        chia = self.center_array(shape, unit=CHI_RAD, scale=False)
 
         built_mask = numpy.ones(shape, dtype=numpy.int8)
         empty_data = numpy.zeros(shape, dtype=numpy.float32)

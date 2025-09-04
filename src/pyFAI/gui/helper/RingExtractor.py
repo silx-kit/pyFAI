@@ -34,8 +34,8 @@ from silx.gui import qt
 from silx.image import marchingsquares
 
 import pyFAI.utils
-from pyFAI.geometryRefinement import GeometryRefinement
-from pyFAI.geometry import Geometry
+from ...geometryRefinement import GeometryRefinement
+from ...geometry import Geometry
 from ..peak_picker import PeakPicker
 from . import model_transform
 
@@ -360,9 +360,9 @@ class RingExtractorThread(qt.QThread):
         ttha = geoRef.get_ttha()
         chia = geoRef.get_chia()
         if (ttha is None) or (ttha.shape != peakPicker.data.shape):
-            ttha = geoRef.center_array(shape=peakPicker.data.shape, unit="2th_rad")
+            ttha = geoRef.center_array(shape=peakPicker.data.shape, unit=units.TTH_RAD, scale=False)
         if (chia is None) or (chia.shape != peakPicker.data.shape):
-            chia = geoRef.center_array(shape=peakPicker.data.shape, unit="chi_rad")
+            chia = geoRef.center_array(shape=peakPicker.data.shape, unit=units.CHI_RAD, scale=False)
 
         rings = 0
         peakPicker.sync_init()

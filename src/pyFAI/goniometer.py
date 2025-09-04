@@ -675,8 +675,8 @@ class SingleGeometry(object):
         tth_max += tth
         tth_min += tth
         shape = self.image.shape
-        ttha = self.geometry_refinement.center_array(shape, unit=TTH_RAD)
-        chia = self.geometry_refinement.center_array(shape, unit=CHI_RAD)
+        ttha = self.geometry_refinement.center_array(shape, unit=TTH_RAD, scale=False)
+        chia = self.geometry_refinement.center_array(shape, unit=CHI_RAD, scale=False)
         rings = 0
         cp = ControlPoints(calibrant=self.calibrant)
         if max_rings is None:

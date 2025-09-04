@@ -605,8 +605,8 @@ class AbstractCalibration(object):
             if (chia is None) or (chia.shape != self.peakPicker.data.shape):
                 chia = self.geoRef.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
         else:
-            ttha = self.center_array(self.peakPicker.data.shape, unit=TTH_RAD)
-            chia = self.ai.center_array(self.peakPicker.data.shape, unit=CHI_RAD)
+            ttha = self.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
+            chia = self.ai.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
         rings = 0
         self.peakPicker.sync_init()
         if self.max_rings is None:

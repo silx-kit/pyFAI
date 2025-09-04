@@ -501,7 +501,7 @@ class AzimuthalIntegrator(Integrator):
                 else:
                     chi = self.center_array(shape, unit=units.CHI_RAD, scale=False)
                     delta_chi = self.deltaChi(shape)
-                radial = self.array_from_unit(shape, "center", unit, scale=False)
+                radial = self.center_array(shape, unit, scale=False)
                 delta_radial = self.array_from_unit(shape, "delta", unit, scale=False)
                 intpl = integr(weights=data, variance=variance,
                                pos0=radial, delta_pos0=delta_radial,
@@ -2257,7 +2257,7 @@ class AzimuthalIntegrator(Integrator):
         polar_inpainted = inpainting.polar_inpaint(imgd.intensity,
                                                    to_paint, omask, 0)
         r = self.center_array(unit=unit, scale=True)
-        chi = self.center_array(unit="chi_deg", scale=True)
+        chi = self.center_array(unit=units.CHI_DEG, scale=True)
         cart_inpatined = inpainting.polar_interpolate(data, mask,
                                                       r,
                                                       chi,

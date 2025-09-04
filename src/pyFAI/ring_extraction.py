@@ -52,6 +52,7 @@ from silx.image import marchingsquares
 from .control_points import ControlPoints
 from .goniometer import SingleGeometry
 from .massif import Massif
+from . import units
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ class RingExtraction:
                 mask = None
             self.massif = Massif(self.image, mask)
 
-        self.two_theta_array = self.single_geometry.geometry_refinement.center_array(unit="2th_rad", scale=False)
+        self.two_theta_array = self.single_geometry.geometry_refinement.center_array(unit=units.TTH_RAD, scale=False)
         self.two_theta_values = self._get_unique_two_theta_values_in_image()
 
     def extract_control_points(
@@ -342,7 +343,7 @@ class RingExtraction:
             Number of points to keep as control points
         """
         image_shape = self.image.shape
-        azimuthal_angles_array = self.single_geometry.geometry_refinement.center_array("chi_rad")
+        azimuthal_angles_array = self.single_geometry.geometry_refinement.center_array(units.CHI_RAD, scale=False)
         azimuthal_degrees_array_in_ring = azimuthal_angles_array[
             pixels_at_two_theta_level[:, 0].clip(0, image_shape[0]),
             pixels_at_two_theta_level[:, 1].clip(0, image_shape[1]),
