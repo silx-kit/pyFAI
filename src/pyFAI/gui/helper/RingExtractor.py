@@ -33,11 +33,12 @@ import numpy
 from silx.gui import qt
 from silx.image import marchingsquares
 
-import pyFAI.utils
+from ...utils import FixedParameters
 from ...geometryRefinement import GeometryRefinement
 from ...geometry import Geometry
 from ..peak_picker import PeakPicker
 from . import model_transform
+from ...units import CHI_RAD, TTH_RAD
 
 _logger = logging.getLogger(__name__)
 
@@ -169,8 +170,8 @@ class RingExtractorThread(qt.QThread):
         if self.__detector:
             try:
                 p1, p2, _p3 = self.__detector.calc_cartesian_positions()
-                defaults["poni1"] = p1.max() / 2.
-                defaults["poni2"] = p2.max() / 2.
+                defaults["poni1"] = 0.5 * p1.max()
+                defaults["poni2"] = 0.5 * p2.max()
             except Exception as err:
                 _logger.warning(err)
         # if ai:
@@ -186,9 +187,7 @@ class RingExtractorThread(qt.QThread):
         Sets up the initial guess when starting pyFAI-calib
         """
 
-        fixed = pyFAI.utils.FixedParameters()
-        fixed.add("wavelength")
-
+        fixed = FixedParameters(["wavelength"])
         scores = []
         PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
 
