@@ -38,7 +38,7 @@ from ...geometryRefinement import GeometryRefinement
 from ...geometry import Geometry
 from ..peak_picker import PeakPicker
 from . import model_transform
-from ...units import CHI_RAD, TTH_RAD
+from ... import units
 
 _logger = logging.getLogger(__name__)
 
