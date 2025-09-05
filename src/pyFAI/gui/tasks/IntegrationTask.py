@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "03/06/2024"
+__date__ = "04/09/2025"
 
 import logging
 import numpy
@@ -868,8 +868,8 @@ class IntegrationPlot(qt.QFrame):
         self.__directDist = integrationProcess.directDist()
         self.__geometry = integrationProcess.geometry()
         self.__inverseGeometry = InvertGeometry(
-            self.__geometry.array_from_unit(typ="center", unit=self.__radialUnit, scale=True),
-            numpy.rad2deg(self.__geometry.chiArray()))
+            self.__geometry.center_array(unit=self.__radialUnit, scale=True),
+            self.__geometry.center_array(unit=units.CHI_DEG, scale=True))
 
         self.__markerManager.updateProjection(self.__geometry,
                                               self.__radialUnit,

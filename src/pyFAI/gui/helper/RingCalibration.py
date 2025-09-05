@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,19 +25,21 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/03/2024"
+__date__ = "05/09/2025"
 
 import logging
 import numpy
 import collections
 
-import pyFAI.utils
+from ... import units
 from ...geometryRefinement import GeometryRefinement
 from ..model.GeometryConstraintsModel import GeometryConstraintsModel
 from ..peak_picker import PeakPicker
 from ..utils import timeutils
+from ...containers import FixedParameters
 
 _logger = logging.getLogger(__name__)
+inf = numpy.inf
 
 
 class GeometryRefinementContext(object):
@@ -52,10 +54,7 @@ class GeometryRefinementContext(object):
     def __init__(self, *args, **kwargs):
         _logger.debug("GeometryRefinementContext.__init__")
         self.__geoRef = GeometryRefinement(*args, **kwargs)
-        fixed = pyFAI.utils.FixedParameters()
-        fixed.add("rot3")
-        fixed.add("wavelength")
-        self.__fixed = fixed
+        self.__fixed = FixedParameters(["rot3", "wavelength"])
 
         self.__bounds = {}
         for name in self.PARAMETERS:
@@ -120,7 +119,7 @@ class GeometryRefinementContext(object):
             if name in self.__bounds:
                 minValue, maxValue = self.__bounds[name]
             else:
-                minValue, maxValue = -float("inf"), float("inf")
+                minValue, maxValue = -inf, inf
             min_setter(minValue)
             max_setter(maxValue)
 
@@ -128,7 +127,7 @@ class GeometryRefinementContext(object):
             deltaS = self.__geoRef.refine3(maxiter, self.__fixed)
         except Exception:
             _logger.error("Error while refining the geometry", exc_info=True)
-            return float("inf")
+            return inf
         else:
             return deltaS
 
@@ -263,7 +262,7 @@ class RingCalibration(object):
                                 detector=self.__detector,
                                 method=method)
 
-        if score == float("inf"):
+        if score == inf:
             self.__isValid = False
         self.__peakPicker = peakPicker
         self.__geoRef = geoRef
@@ -301,7 +300,7 @@ class RingCalibration(object):
             previous_residual = residual
             count += 1
 
-        if residual == float("inf"):
+        if residual == inf:
             self.__isValid = False
 
         print("Final residual: %s (after %s iterations)" % (residual, count))
@@ -319,7 +318,7 @@ class RingCalibration(object):
             chi2 = self.__geoRef.chi2()
         except Exception:
             _logger.debug("Backtrace", exc_info=True)
-            return float("inf")
+            return inf
         return numpy.sqrt(chi2 / self.__geoRef.data.shape[0])
 
     def getTwoThetaArray(self):
@@ -327,7 +326,7 @@ class RingCalibration(object):
         Returns the 2th array corresponding to the calibrated image
         """
         # 2th array is cached insided
-        tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
+        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit=units.CHI_RAD, scale=False)
         return tth
 
     def getMask(self):
@@ -343,7 +342,7 @@ class RingCalibration(object):
         :returns: List of ring angles available
         :rtype: List[float]
         """
-        tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
+        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit=units.CHI_RAD, scale=False)
 
         result = collections.OrderedDict()
 
@@ -366,7 +365,7 @@ class RingCalibration(object):
         :returns: List of tuples with ring (index, angle)  available
         :rtype: dict[ringId] = angle
         """
-        tth = self.__geoRef.twoThetaArray(self.__peakPicker.shape)
+        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit=units.CHI_RAD, scale=False)
 
         result = collections.OrderedDict()
 
@@ -395,7 +394,7 @@ class RingCalibration(object):
         if tth >= epsilon:
             # Check if this pixel really contains the beam center
             # If the detector contains gap, it is not always the case
-            tth_array = self.__geoRef.twoThetaArray()
+            tth_array = self.__geoRef.center_array(unit=units.CHI_RAD, scale=False)
             pos = tth_array.argmin()
             width = self.__geoRef.detector.shape[-1]
             y = pos // width
@@ -497,7 +496,7 @@ class RingCalibration(object):
             ("rot2", constraintsModel.rotation2()),
             ("rot3", constraintsModel.rotation3()),
         ]
-        fixed = pyFAI.utils.FixedParameters()
+        fixed = FixedParameters()
         bounds = {}
         for name, constraint in attrs:
             if constraint.isFixed():
@@ -505,9 +504,9 @@ class RingCalibration(object):
             elif constraint.isRangeConstrained():
                 minValue, maxValue = constraint.range()
                 if minValue is None:
-                    minValue = -float("inf")
+                    minValue = -inf
                 if maxValue is None:
-                    maxValue = +float("inf")
+                    maxValue = +inf
                 bounds[name] = minValue, maxValue
         self.__geoRef.setFixed(fixed)
         self.__geoRef.setBounds(bounds)

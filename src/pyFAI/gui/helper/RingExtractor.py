@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/09/2023"
+__date__ = "05/09/2025"
 
 import logging
 import numpy
@@ -33,11 +33,12 @@ import numpy
 from silx.gui import qt
 from silx.image import marchingsquares
 
-import pyFAI.utils
-from pyFAI.geometryRefinement import GeometryRefinement
-from pyFAI.geometry import Geometry
+from ...containers import FixedParameters
+from ...geometryRefinement import GeometryRefinement
+from ...geometry import Geometry
 from ..peak_picker import PeakPicker
 from . import model_transform
+from ... import units
 
 _logger = logging.getLogger(__name__)
 
@@ -169,8 +170,8 @@ class RingExtractorThread(qt.QThread):
         if self.__detector:
             try:
                 p1, p2, _p3 = self.__detector.calc_cartesian_positions()
-                defaults["poni1"] = p1.max() / 2.
-                defaults["poni2"] = p2.max() / 2.
+                defaults["poni1"] = 0.5 * p1.max()
+                defaults["poni2"] = 0.5 * p2.max()
             except Exception as err:
                 _logger.warning(err)
         # if ai:
@@ -186,9 +187,7 @@ class RingExtractorThread(qt.QThread):
         Sets up the initial guess when starting pyFAI-calib
         """
 
-        fixed = pyFAI.utils.FixedParameters()
-        fixed.add("wavelength")
-
+        fixed = FixedParameters(["wavelength"])
         scores = []
         PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
 
@@ -360,9 +359,9 @@ class RingExtractorThread(qt.QThread):
         ttha = geoRef.get_ttha()
         chia = geoRef.get_chia()
         if (ttha is None) or (ttha.shape != peakPicker.data.shape):
-            ttha = geoRef.twoThetaArray(peakPicker.data.shape)
+            ttha = geoRef.center_array(shape=peakPicker.data.shape, unit=units.TTH_RAD, scale=False)
         if (chia is None) or (chia.shape != peakPicker.data.shape):
-            chia = geoRef.chiArray(peakPicker.data.shape)
+            chia = geoRef.center_array(shape=peakPicker.data.shape, unit=units.CHI_RAD, scale=False)
 
         rings = 0
         peakPicker.sync_init()

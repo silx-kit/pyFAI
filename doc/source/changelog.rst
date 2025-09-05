@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 10/07/2025
+:Date: 05/09/2025
 :Keywords: changelog
 
 Change-log of versions
@@ -27,6 +27,8 @@ Change-log of versions
   * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp`
   * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
 - [Doc] Improve the notebook about "flatfield" calculation.
+- Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the Cython path for geometry initialization, less prone to numerical noise.
+  Cython is still prefered for geometry optimization where performance is critical.
 - Supports python 3.10-3.14
 - List of contributors for this release: Gudrun Lotze, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
 

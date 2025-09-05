@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2024"
+__date__ = "04/09/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -53,7 +53,7 @@ from .geometryRefinement import GeometryRefinement
 from .integrator.azimuthal import AzimuthalIntegrator
 from .utils import StringTypes
 from .multi_geometry import MultiGeometry
-from .units import CONST_hc, CONST_q
+from .units import CONST_hc, CONST_q, CHI_RAD, TTH_RAD
 from .ext.mathutil import build_qmask
 logger = logging.getLogger(__name__)
 
@@ -675,8 +675,8 @@ class SingleGeometry(object):
         tth_max += tth
         tth_min += tth
         shape = self.image.shape
-        ttha = self.geometry_refinement.twoThetaArray(shape)
-        chia = self.geometry_refinement.chiArray(shape)
+        ttha = self.geometry_refinement.center_array(shape, unit=TTH_RAD, scale=False)
+        chia = self.geometry_refinement.center_array(shape, unit=CHI_RAD, scale=False)
         rings = 0
         cp = ControlPoints(calibrant=self.calibrant)
         if max_rings is None:

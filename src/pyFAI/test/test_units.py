@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/08/2025"
+__date__ = "04/09/2025"
 
 import unittest
 import numpy
@@ -61,13 +61,10 @@ class TestUnits(unittest.TestCase):
         z = rng.uniform(0.1, 2, shape)
         λ = rng.uniform(1e-11, 1e-9, shape)
         for k, u in units.ANY_UNITS.items():
-            if (
-                callable(u._equation)
-                and callable(u.equation)
-                and (u._equation != u.equation)
-            ):
-                ref = u.equation(x, y, z, λ)
-                obt = u._equation(x, y, z, λ)
+            if (callable(u._equation_np)
+                and callable(u._equation_ne)):
+                ref = u._equation_np(x, y, z, λ)
+                obt = u._equation_ne(x, y, z, λ)
                 delta = abs(ref - obt).max()
                 self.assertTrue(
                     numpy.allclose(ref, obt),

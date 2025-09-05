@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2025"
+__date__ = "05/09/2025"
 __status__ = "production"
 
 import os
@@ -64,11 +64,12 @@ from ..geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
 from .. import units
 from .. import average
+from ..containers import FixedParameters
 from ..utils import measure_offset, expand_args, \
-            readFloatFromKeyboard, FixedParameters, round_fft, \
+            readFloatFromKeyboard, round_fft, \
             win32
 from ..integrator.azimuthal import AzimuthalIntegrator
-from ..units import hc
+from ..units import hc, TTH_RAD, CHI_RAD
 from .. import version as PyFAI_VERSION
 from .. import date as PyFAI_DATE
 from ..calibrant import Calibrant, CALIBRANT_FACTORY, get_calibrant
@@ -601,12 +602,12 @@ class AbstractCalibration(object):
             ttha = self.geoRef.get_ttha()
             chia = self.geoRef.get_chia()
             if (ttha is None) or (ttha.shape != self.peakPicker.data.shape):
-                ttha = self.geoRef.twoThetaArray(self.peakPicker.data.shape)
+                ttha = self.geoRef.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
             if (chia is None) or (chia.shape != self.peakPicker.data.shape):
-                chia = self.geoRef.chiArray(self.peakPicker.data.shape)
+                chia = self.geoRef.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
         else:
-            ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
-            chia = self.ai.chiArray(self.peakPicker.data.shape)
+            ttha = self.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
+            chia = self.ai.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
         rings = 0
         self.peakPicker.sync_init()
         if self.max_rings is None:
@@ -710,7 +711,7 @@ class AbstractCalibration(object):
             self.geoRef.del_ttha()
             self.geoRef.del_dssa()
             self.geoRef.del_chia()
-            tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
+            tth = self.geoRef.center_array(self.peakPicker.shape, unit=TTH_RAD, scale=False)
             dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
             # self.geoRef.chiArray(self.peakPicker.shape)
             # self.geoRef.corner_array(self.peakPicker.shape, unit=units.TTH_RAD, scale=False)
@@ -1041,7 +1042,7 @@ class AbstractCalibration(object):
             return j
 
         sqrt2 = math.sqrt(2.)
-        ttha = self.geoRef.twoThetaArray(self.detector.shape)
+        ttha = self.geoRef.center_array(self.detector.shape, unit=TTH_RAD, scale=False)
         resolution = numpy.rad2deg(max(abs(ttha[1:] - ttha[:-1]).max(),
                                        abs(ttha[:, 1:] - ttha[:,:-1]).max()))
         if self.gui:
@@ -1115,14 +1116,13 @@ class AbstractCalibration(object):
         self.geoRef.del_dssa()
         self.geoRef.del_chia()
         t0 = time.perf_counter()
-        _tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
+        _tth = self.geoRef.center_array(self.peakPicker.shape, unit=TTH_RAD, scale=False)
         t1 = time.perf_counter()
         _dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
         t2 = time.perf_counter()
-        self.geoRef.chiArray(self.peakPicker.shape)
+        self.geoRef.center_array(shape=self.peakPicker.shape, unit=CHI_RAD, scale=False)
         t2a = time.perf_counter()
-        self.geoRef.corner_array(self.peakPicker.shape, units.TTH_DEG,
-                                 scale=False)
+        self.geoRef.corner_array(self.peakPicker.shape, unit=TTH_RAD, scale=False)
         t2b = time.perf_counter()
         if self.gui:
             if self.fig_integrate is None:
