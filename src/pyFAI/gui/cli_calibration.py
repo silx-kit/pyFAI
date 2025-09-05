@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "05/09/2025"
 __status__ = "production"
 
 import os
@@ -64,8 +64,9 @@ from ..geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
 from .. import units
 from .. import average
+from ..containers import FixedParameters
 from ..utils import measure_offset, expand_args, \
-            readFloatFromKeyboard, FixedParameters, round_fft, \
+            readFloatFromKeyboard, round_fft, \
             win32
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..units import hc, TTH_RAD, CHI_RAD

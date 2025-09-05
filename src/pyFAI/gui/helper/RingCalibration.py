@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/09/2025"
+__date__ = "05/09/2025"
 
 import logging
 import numpy
@@ -35,7 +35,8 @@ from ... import units
 from ...geometryRefinement import GeometryRefinement
 from ..model.GeometryConstraintsModel import GeometryConstraintsModel
 from ..peak_picker import PeakPicker
-from ..utils import timeutils, FixedParameters
+from ..utils import timeutils
+from ...containers import FixedParameters
 
 _logger = logging.getLogger(__name__)
 inf = numpy.inf

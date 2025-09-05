@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/08/2025"
+__date__ = "05/09/2025"
 __status__ = "development"
 
 import sys
@@ -1546,3 +1546,37 @@ class Reflection:
         """Return True if the intensity is weak"""
         if self.intensity is not None:
             return self.intensity == 0.0
+
+class FixedParameters(set):
+    """
+    Like a set, made for FixedParameters in geometry refinement
+    """
+
+    def add_or_discard(self, key, value=True):
+        """
+        Add a value to a set if value, else discard it.
+        
+        :param key: element to added or discared from set
+        :type value: boolean. If None do nothing !
+        :return: None
+        """
+        if value is None:
+            return
+        if value:
+            self.add(key)
+        else:
+            self.discard(key)
+
+    def __repr__(self):
+        return f"Fixed parameters: {', '.join(self)}."
+
+    def __iadd__(self, other):
+        for i in other:
+            self.add(i)
+        return self
+
+    def __add__(self, other):
+        """Enables the addition of a list"""
+        new = self.__class__(self)
+        new.__iadd__(other)
+        return new

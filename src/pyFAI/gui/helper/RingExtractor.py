@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/09/2025"
+__date__ = "05/09/2025"
 
 import logging
 import numpy
@@ -33,7 +33,7 @@ import numpy
 from silx.gui import qt
 from silx.image import marchingsquares
 
-from ...utils import FixedParameters
+from ...containers import FixedParameters
 from ...geometryRefinement import GeometryRefinement
 from ...geometry import Geometry
 from ..peak_picker import PeakPicker
