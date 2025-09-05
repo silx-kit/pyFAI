@@ -1555,7 +1555,7 @@ class FixedParameters(set):
     def add_or_discard(self, key, value=True):
         """
         Add a value to a set if value, else discard it.
-        
+
         :param key: element to added or discared from set
         :type value: boolean. If None do nothing !
         :return: None
