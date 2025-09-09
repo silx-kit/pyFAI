@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/09/2025"
+__date__ = "04/09/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -389,7 +389,7 @@ class AzimuthalIntegrator(Integrator):
             integr = method.class_funct_ng.function  # should be histogram[_engine].histogram1d_engine
             if azimuth_range:
                 chi_min, chi_max = azimuth_range
-                chi = self.chiArray(shape)
+                chi = self.center_array(shape, unit=units.CHI_RAD, scale=False)
                 azim_mask = numpy.logical_or(chi > chi_max, chi < chi_min)
                 if mask is None:
                     mask = azim_mask
@@ -448,8 +448,8 @@ class AzimuthalIntegrator(Integrator):
                         reset = f"empty value changed {integr.empty}!={empty}"
                 if reset:
                     logger.info("ai.integrate1d: Resetting integrator because %s", reset)
-                    pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-                    azimuthal = self.chiArray(shape)
+                    pos0 = self.center_array(shape, unit=unit, scale=False)
+                    azimuthal = self.center_array(shape, unit=units.CHI_RAD, scale=False)
                     try:
                         integr = method.class_funct_ng.klass(pos0,
                                                              npt,
@@ -499,9 +499,9 @@ class AzimuthalIntegrator(Integrator):
                     chi = None
                     delta_chi = None
                 else:
-                    chi = self.chiArray(shape)
+                    chi = self.center_array(shape, unit=units.CHI_RAD, scale=False)
                     delta_chi = self.deltaChi(shape)
-                radial = self.array_from_unit(shape, "center", unit, scale=False)
+                radial = self.center_array(shape, unit, scale=False)
                 delta_radial = self.array_from_unit(shape, "delta", unit, scale=False)
                 intpl = integr(weights=data, variance=variance,
                                pos0=radial, delta_pos0=delta_radial,
@@ -2256,8 +2256,8 @@ class AzimuthalIntegrator(Integrator):
 
         polar_inpainted = inpainting.polar_inpaint(imgd.intensity,
                                                    to_paint, omask, 0)
-        r = self.array_from_unit(typ="center", unit=unit, scale=True)
-        chi = numpy.rad2deg(self.chiArray())
+        r = self.center_array(unit=unit, scale=True)
+        chi = self.center_array(unit=units.CHI_DEG, scale=True)
         cart_inpatined = inpainting.polar_interpolate(data, mask,
                                                       r,
                                                       chi,
