@@ -34,7 +34,7 @@ __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/03/2025"
+__date__ = "04/09/2025"
 
 import logging
 import numpy
@@ -137,8 +137,8 @@ class TestOclHistogram(unittest.TestCase):
         from ...engines.histogram_engine import histogram2d_engine
 
         data = numpy.ones(self.ai.detector.shape)
-        tth = self.ai.array_from_unit(unit="2th_deg")
-        chi = numpy.degrees(self.ai.chiArray())
+        tth = self.ai.center_array(unit="2th_deg")
+        chi = self.ai.center_array(unit="chi_deg")
         solidangle = self.ai.solidAngleArray()
         dummy = -42
         mini_rad = numpy.float32(tth.min())

@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/04/2024"
+__date__ = "04/09/2025"
 
 import unittest
 import numpy
@@ -42,15 +42,16 @@ import logging
 from .utilstest import UtilsTest
 from .. import load
 from .. import units
+
 logger = logging.getLogger(__name__)
 
 
 class TestUnits(unittest.TestCase):
     def test_corner(self):
-        ai = load({"detector":"Imxpad S10"})
+        ai = load({"detector": "Imxpad S10"})
         res = ai.array_from_unit(typ="corner", unit=("chi_rad"))
-        #no fast path, just checks numexpr gives correct values.
-        self.assertTrue(numpy.allclose(res[...,0], res[...,1]), "numexpr formula OK")
+        # no fast path, just checks numexpr gives correct values.
+        self.assertTrue(numpy.allclose(res[..., 0], res[..., 1]), "numexpr formula OK")
 
     def test_all(self):
         rng = UtilsTest.get_rng()
@@ -59,11 +60,20 @@ class TestUnits(unittest.TestCase):
         y = rng.uniform(-2, 2, shape)
         z = rng.uniform(0.1, 2, shape)
         λ = rng.uniform(1e-11, 1e-9, shape)
-        for k,u in units.ANY_UNITS.items():
-            if callable(u._equation) and callable(u.equation) and (u._equation!=u.equation):
-                ref = u.equation(x,y,z,λ)
-                obt = u._equation(x,y,z,λ)
-                self.assertTrue(numpy.allclose(ref,obt), f"Equation and formula do NOT match for {k}")
+        for k, u in units.ANY_UNITS.items():
+            if (callable(u._equation_np)
+                and callable(u._equation_ne)):
+                ref = u._equation_np(x, y, z, λ)
+                obt = u._equation_ne(x, y, z, λ)
+                delta = abs(ref - obt).max()
+                self.assertTrue(
+                    numpy.allclose(ref, obt),
+                    f"Equation and formula do NOT match for {k}: Δ_max={delta:.2g}",
+                )
+                if delta:
+                    logger.warning(
+                        f"Equation and formula almost match but not perfectly for {k}: Δ_max={delta:.2g}"
+                    )
 
 
 def suite():
@@ -73,6 +83,6 @@ def suite():
     return testsuite
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     runner.run(suite())

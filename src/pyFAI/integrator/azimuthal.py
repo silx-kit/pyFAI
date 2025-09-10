@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/06/2025"
+__date__ = "04/09/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -140,9 +140,17 @@ class AzimuthalIntegrator(Integrator):
         pos0_scale = unit.scale
 
         if radial_range:
-            radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
+            if numpy.isfinite(radial_range).all():
+                radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
+            else:
+                logger.warning(f"Semi-defined ranges are not supported for radial_range={radial_range}")
+                radial_range = None
         if azimuth_range is not None:
-            azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            if numpy.isfinite(azimuth_range).all():
+                azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            else:
+                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
+                azimuth_range = None
 
         if mask is None:
             has_mask = "from detector"
@@ -367,6 +375,7 @@ class AzimuthalIntegrator(Integrator):
                                            intpl.intensity)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
             result._set_unit(integr.unit)
+            result._set_dummy(self.empty)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
             result._set_sum_normalization2(intpl.norm_sq)
@@ -380,7 +389,7 @@ class AzimuthalIntegrator(Integrator):
             integr = method.class_funct_ng.function  # should be histogram[_engine].histogram1d_engine
             if azimuth_range:
                 chi_min, chi_max = azimuth_range
-                chi = self.chiArray(shape)
+                chi = self.center_array(shape, unit=units.CHI_RAD, scale=False)
                 azim_mask = numpy.logical_or(chi > chi_max, chi < chi_min)
                 if mask is None:
                     mask = azim_mask
@@ -439,8 +448,8 @@ class AzimuthalIntegrator(Integrator):
                         reset = f"empty value changed {integr.empty}!={empty}"
                 if reset:
                     logger.info("ai.integrate1d: Resetting integrator because %s", reset)
-                    pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-                    azimuthal = self.chiArray(shape)
+                    pos0 = self.center_array(shape, unit=unit, scale=False)
+                    azimuthal = self.center_array(shape, unit=units.CHI_RAD, scale=False)
                     try:
                         integr = method.class_funct_ng.klass(pos0,
                                                              npt,
@@ -490,9 +499,9 @@ class AzimuthalIntegrator(Integrator):
                     chi = None
                     delta_chi = None
                 else:
-                    chi = self.chiArray(shape)
+                    chi = self.center_array(shape, unit=units.CHI_RAD, scale=False)
                     delta_chi = self.deltaChi(shape)
-                radial = self.array_from_unit(shape, "center", unit, scale=False)
+                radial = self.center_array(shape, unit, scale=False)
                 delta_radial = self.array_from_unit(shape, "delta", unit, scale=False)
                 intpl = integr(weights=data, variance=variance,
                                pos0=radial, delta_pos0=delta_radial,
@@ -754,7 +763,11 @@ class AzimuthalIntegrator(Integrator):
                 azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             self.check_chi_disc(azimuth_range)
         elif azimuth_range is not None:
-            azimuth_range = tuple([i / pos1_scale for i in azimuth_range])
+            if numpy.isfinite(azimuth_range).all():
+                azimuth_range = tuple([i / pos1_scale for i in azimuth_range])
+            else:
+                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
+                azimuth_range = None
 
         if radial_range is not None and radial_unit.period:
             if radial_unit.name.split("_")[-1] == "deg":
@@ -765,7 +778,11 @@ class AzimuthalIntegrator(Integrator):
                 radial_range = (radial_range[0], radial_range[1] + 2 * pi)
             self.check_chi_disc(radial_range)
         elif radial_range is not None:
-            radial_range = tuple([i / pos0_scale for i in radial_range])
+            if numpy.isfinite(radial_range).all():
+                radial_range = tuple([i / pos0_scale for i in radial_range])
+            else:
+                logger.warning(f"Semi-defined ranges are not supported for radial_range={radial_range}")
+                radial_range = None
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
@@ -1161,7 +1178,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         result._set_metadata(metadata)
-
+        result._set_dummy(self.empty)
         result._set_sum_signal(signal2d)
         result._set_sum_normalization(norm2d)
         if error_model.do_variance:
@@ -1306,6 +1323,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_percentile(percentile)
         result._set_npt_azim(npt_azim)
         result._set_unit(unit)
+        result._set_dummy(self.empty)
         result._set_has_mask_applied(res2d.has_mask_applied)
         result._set_metadata(metadata)
         result._set_has_dark_correction(res2d.has_dark_correction)
@@ -1394,9 +1412,17 @@ class AzimuthalIntegrator(Integrator):
 
         unit = units.to_unit(unit)
         if radial_range:
-            radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
+            if numpy.isfinite(radial_range).all():
+                radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
+            else:
+                logger.warning(f"Semi-defined ranges are not supported for radial_range={radial_range}")
+                radial_range = None
         if azimuth_range is not None:
-            azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            if numpy.isfinite(azimuth_range).all():
+                azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            else:
+                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
+                azimuth_range = None
         try:
             quant_min = min(percentile)/100
             quant_max = max(percentile)/100
@@ -1600,6 +1626,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_compute_engine(str(method))
         result._set_percentile(percentile)
         result._set_unit(unit)
+        result._set_dummy(self.empty)
         result._set_has_mask_applied(has_mask)
         result._set_has_dark_correction(has_dark)
         result._set_has_flat_correction(has_flat)
@@ -1765,6 +1792,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_percentile(thres)
         result._set_npt_azim(npt_azim)
         result._set_unit(unit)
+        result._set_dummy(self.empty)
         result._set_has_mask_applied(res2d.has_mask_applied)
         result._set_metadata(metadata)
         result._set_has_dark_correction(res2d.has_dark_correction)
@@ -1861,9 +1889,18 @@ class AzimuthalIntegrator(Integrator):
 
         unit = units.to_unit(unit)
         if radial_range:
-            radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
+            if numpy.isfinite(radial_range).all():
+                radial_range = tuple(radial_range[i] / unit.scale for i in (0, -1))
+            else:
+                logger.warning(f"Semi-defined ranges are not supported for radial_range={radial_range}")
+                radial_range = None
         if azimuth_range is not None:
-            azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            if numpy.isfinite(azimuth_range).all():
+                azimuth_range = self.normalize_azimuth_range(azimuth_range)
+            else:
+                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
+                azimuth_range = None
+
 
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
         if method.split != "no":
@@ -2059,6 +2096,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_compute_engine(str(method))
         result._set_percentile(thres)
         result._set_unit(unit)
+        result._set_dummy(self.empty)
         result._set_has_mask_applied(has_mask)
         result._set_has_dark_correction(has_dark)
         result._set_has_flat_correction(has_flat)
@@ -2132,6 +2170,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_percentile(percentile)
         result._set_npt_azim(npt)
         result._set_unit(unit)
+        # result._set_dummy(self.empty)
         result._set_has_mask_applied(filter_result.has_mask_applied)
         result._set_metadata(filter_result.metadata)
         result._set_has_dark_correction(filter_result.has_dark_correction)
@@ -2217,8 +2256,8 @@ class AzimuthalIntegrator(Integrator):
 
         polar_inpainted = inpainting.polar_inpaint(imgd.intensity,
                                                    to_paint, omask, 0)
-        r = self.array_from_unit(typ="center", unit=unit, scale=True)
-        chi = numpy.rad2deg(self.chiArray())
+        r = self.center_array(unit=unit, scale=True)
+        chi = self.center_array(unit=units.CHI_DEG, scale=True)
         cart_inpatined = inpainting.polar_interpolate(data, mask,
                                                       r,
                                                       chi,

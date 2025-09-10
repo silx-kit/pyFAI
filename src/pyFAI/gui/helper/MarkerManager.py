@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "04/09/2025"
 
 import logging
 import functools
@@ -67,8 +67,8 @@ class MarkerManager(object):
         self.__geometry = geometry
         self.__radialUnit = radialUnit
         self.__invertGeometry = InvertGeometry(
-            self.__geometry.array_from_unit(typ="center", unit=self.__radialUnit, scale=True),
-            numpy.rad2deg(self.__geometry.chiArray()))
+            self.__geometry.center_array(unit=self.__radialUnit, scale=True),
+            self.__geometry.center_array(unit="chi_deg", scale=True))
         self.__wavelength = wavelength
         self.__directDist = directDist
         if redraw:
@@ -90,8 +90,8 @@ class MarkerManager(object):
 
         if geometry is not None:
             invertGeometry = InvertGeometry(
-                geometry.array_from_unit(typ="center", unit=pyFAI.units.TTH_RAD, scale=False),
-                geometry.chiArray())
+                geometry.center_array(unit=pyFAI.units.TTH_RAD, scale=False),
+                geometry.center_array(unit=pyFAI.units.CHI_RAD, scale=False))
 
         self.__markerModel.lockSignals()
         for marker in self.__markerModel:
