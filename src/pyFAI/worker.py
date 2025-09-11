@@ -45,7 +45,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2025"
+__date__ = "11/09/2025"
 __status__ = "development"
 
 import threading
@@ -59,12 +59,13 @@ logger = logging.getLogger(__name__)
 from . import average
 from . import method_registry
 from .integrator.azimuthal import AzimuthalIntegrator
+from .integrator.fiber import FiberIntegrator
 from .containers import ErrorModel
 from .method_registry import IntegrationMethod, Method
 from .distortion import Distortion
 from . import units
 from .io import ponifile, image as io_image
-from .io.integration_config import WorkerConfig
+from .io.integration_config import WorkerConfig, WorkerFiberConfig
 from .engines.preproc import preproc as preproc_numpy
 from .utils.decorators import deprecated_warning
 from .utils import binning as rebin
@@ -671,6 +672,208 @@ class Worker(object):
             return shape
 
 
+class WorkerFiber(Worker):
+    def __init__(self, fiberIntegrator=None,
+                 shapeIn=None, 
+                 nbpt_oop:int=1000,
+                 nbpt_ip:int=1000,
+                 unit_oop="qoop_nm^-1",
+                 unit_ip="qip_nm^-1",
+                 ip_range:tuple=None,
+                 oop_range:tuple=None,
+                 dummy=None, delta_dummy=None,
+                 method=("bbox", "csr", "cython"),
+                 integrator_name=None, extra_options=None,
+                 ):
+        """
+        :param FiberIntegrator FiberIntegrator: A FiberIntegrator instance
+        :param tuple shapeIn: image size in input ->auto guessed from detector shape now
+        :param tuple shapeOut: Integrated size: can be (1,2000) for 1D integration
+        :param str unit_oop: fiber unit to be used along the out-of-plane direction
+        :param str unit_ip: fiber unit to be used along the in-plane direction
+        :param float dummy: the value making invalid pixels
+        :param float delta_dummy: the precision for dummy values
+        :param method: integration method: str like "csr" or tuple ("bbox", "csr", "cython") or IntegrationMethod instance.
+        :param str integrator_name: Offers an alternative to "integrate1d" like "sigma_clip_ng"
+        """
+        self._sem = threading.Semaphore()
+        if fiberIntegrator is None:
+            self.fi = FiberIntegrator()
+        else:
+            self.fi = fiberIntegrator
+        self._normalization_factor = None  # Value of the monitor: divides the intensity by this value for normalization
+        self.integrator_name = integrator_name
+        self._processor = None
+
+        self.nbpt_oop = nbpt_oop
+        self.nbpt_ip = nbpt_ip
+        self.unit_ip = units.parse_fiber_unit(unit_ip)
+        self.unit_oop = units.parse_fiber_unit(unit_oop)
+        self.ip_range = ip_range
+        self.oop_range = oop_range
+
+        if isinstance(method, (str, list, tuple, Method, IntegrationMethod)):
+            method = IntegrationMethod.parse(method)
+        else:
+            logger.error(f"Unable to parse method {method}")
+        self.method = (method.split, method.algorithm, method.implementation)
+        self.opencl_device = method.target
+        self._method = None
+
+        self.polarization_factor = None
+        self.dummy = dummy
+        self.delta_dummy = delta_dummy
+        self.correct_solid_angle = True
+        self.dark_current_image = None
+        self.flat_field_image = None
+        self.mask_image = None
+        self.subdir = ""
+        self.extension = None
+        self.needs_reset = True
+        self.output = "numpy"  # exports as numpy array by default
+        self._shape = shapeIn
+        self.propagate_uncertainties = None
+        self.safe = True
+        self.extra_options = {} if extra_options is None else extra_options.copy()
+        self.error_model = ErrorModel.parse(self.extra_options.pop("error_model", None))
+
+        self.ai = self.fi
+
+    def __repr__(self):
+        """
+        pretty print of myself
+        """
+        lstout = ["Fiber Integrator:", self.fi.__repr__(),
+                  f"Input image shape: {self._shape}",
+                  f"Number of points in out-of-plane direction: {self._nbpt_oop}",
+                  f"Number of points in in-plane direction: {self._nbpt_ip}",
+                  f"Unit in out-of-plane direction: {self.unit_oop}",
+                  f"Unit in in-plane direction: {self.unit_ip}",
+                  f"Out-of-plane range: {self.oop_range}",
+                  f"In-plane range: {self.ip_range}",
+                  f"Correct for solid angle: {self.correct_solid_angle}",
+                  f"Polarization factor: {self.polarization_factor}",
+                  f"Dark current image: {self.dark_current_image}",
+                  f"Flat field image: {self.flat_field_image}",
+                  f"Mask image: {self.mask_image}",
+                  f"Dummy: {self.dummy},\tDelta_Dummy: {self.delta_dummy}",
+                  f"Directory: {self.subdir}, \tExtension: {self.extension}",
+        ]
+        return os.linesep.join(lstout)
+
+    @property
+    def nbpt_oop(self):
+        return self._nbpt_oop
+
+    @nbpt_oop.setter
+    def nbpt_oop(self, value):
+        self._nbpt_oop = value
+        self.update_processor()
+
+    @property
+    def nbpt_ip(self):
+        return self._nbpt_ip
+
+    @nbpt_ip.setter
+    def nbpt_oop(self, value):
+        self._nbpt_ip = value
+        self.update_processor()
+
+    def set_config(self, config:dict | WorkerFiberConfig, consume_keys:bool=False):
+        """
+        Configure the working from the dictionary|WorkerFiberConfig.
+
+        :param dict config: Key-value configuration or WorkerFiberConfig dataclass instance
+        :param bool consume_keys: If true the keys from the dictionary will be
+            consumed when used.
+        """
+        if not isinstance(config, WorkerFiberConfig):
+            config = WorkerFiberConfig.from_dict(config, inplace=consume_keys)
+        _init_ai(self.ai, config, read_maps=False)
+
+        # Do it here before reading the AI to be able to catch the io
+        filename = config.mask_file
+        if filename:
+            try:
+                data = io_image.read_image_data(filename)
+            except Exception as error:
+                logger.error("Unable to load mask file %s, error %s", filename, error)
+            else:
+                self.ai.detector.mask = data
+                self.mask_image = filename
+
+        # Do it here while we have to store metadata
+        filename = config.dark_current
+        if filename:
+            filenames = _normalize_filenames(filename)
+            method = "mean"
+            data = _reduce_images(filenames, method=method)
+            self.ai.detector.set_darkcurrent(data)
+            self.dark_current_image = filenames
+
+        # Do it here while we have to store metadata
+        filename = config.flat_field
+        if filename:
+            filenames = _normalize_filenames(filename)
+            method = "mean"
+            data = _reduce_images(filenames, method=method)
+            self.ai.detector.set_flatfield(data)
+            self.flat_field_image = filenames
+
+        self.nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
+        self.nbpt_rad = config.nbpt_rad
+        self.unit_ip = config.unit_ip
+        self.unit_oop = config.unit_oop
+        self.oop_range = config.oop_range
+        self.ip_range = config.ip_range
+
+        self.method = config.method  # expand to Method ?
+        self.opencl_device = config.opencl_device
+        self.error_model = ErrorModel.parse(config.error_model)
+        self.polarization_factor = config.polarization_factor
+
+        self.correct_solid_angle = True if config.correct_solid_angle is None else bool(config.correct_solid_angle)
+        self.dummy = config.val_dummy
+        self.delta_dummy = config.delta_dummy
+        self._normalization_factor = config.normalization_factor
+        self.extra_options = config.extra_options or {}
+        self.update_processor(integrator_name=config.integrator_method)
+        if config.monitor_name:
+            logger.warning("Monitor name defined but unsupported by the worker.")
+
+        logger.info(self.ai.__repr__())
+        self.reset()
+
+    def get_worker_config(self):
+        """Returns the configuration as a WorkerFiberConfig dataclass instance.
+
+        :return: WorkerConfig dataclass instance
+        """
+        config = WorkerFiberConfig(application="worker",
+                                   poni=dict(self.fi.get_config()),
+                                   unit_ip=self.unit_ip,
+                                   unit_oop=self.unit_oop,
+        )
+
+        for key in ["nbpt_oop", "nbpt_ip", "polarization_factor",  "extra_options",
+                    "correct_solid_angle", "error_model", "method", "opencl_device",
+                    "ip_range", "oop_range",
+                    "dummy", "delta_dummy", "normalization_factor",
+                    "dark_current_image", "flat_field_image",
+                    "mask_image", "integrator_name", "shape"]:
+            try:
+                config.__setattr__(key, self.__getattribute__(key))
+            except Exception as err:
+                logger.error(f"exception {type(err)} at {key} ({err})")
+
+        # FiberUnit serialization
+        for key in ["unit_ip", "unit_oop"]:
+            try:
+                config.__setattr__(key,  self.__getattribute__(key).get_config())
+            except Exception as err:
+                logger.error(f"exception {type(err)} at {key} ({err})")
+        return config
+    
 class PixelwiseWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
