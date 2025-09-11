@@ -36,8 +36,8 @@ environment:
 #         - PYTHON_DIR: "C:\\Python37-x64"
 #           PYTHON_ARCH: "64"
 
-        # Python 3.9
-        - PYTHON_DIR: "C:\\Python39-x64"
+        # Python 3.10
+        - PYTHON_DIR: "C:\\Python10-x64"
           PYTHON_ARCH: "64"
 
         # Python 3.11
