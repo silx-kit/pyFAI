@@ -674,7 +674,7 @@ class Worker(object):
 
 class WorkerFiber(Worker):
     def __init__(self, fiberIntegrator=None,
-                 shapeIn=None, 
+                 shapeIn=None,
                  npt_oop:int=1000,
                  npt_ip:int=1000,
                  unit_oop="qoop_nm^-1",
@@ -770,7 +770,7 @@ class WorkerFiber(Worker):
                   f"Directory: {self.subdir}, \tExtension: {self.extension}",
         ]
         return os.linesep.join(lstout)
-    
+
     def update_processor(self):
         return super().update_processor(integrator_name=self.integrator_name)
 
@@ -916,7 +916,7 @@ class WorkerFiber(Worker):
                 logger.error(f"exception {type(err)} at {key} ({err})")
         return config
 
-    def process(self, data, 
+    def process(self, data,
                 variance=None,
                 dark=None,
                 flat=None,
@@ -961,7 +961,7 @@ class WorkerFiber(Worker):
                     "use_missing_wedge",
         ):
             kwarg[key] = self.__getattribute__(key)
-        
+
         if incident_angle is not None:
             kwarg["incident_angle"] = incident_angle
         if tilt_angle is not None:
@@ -998,7 +998,7 @@ class WorkerFiber(Worker):
                     return integrated_result.intensity, integrated_result.sigma
             else:
                 return numpy.vstack(integrated_result).T
-            
+
 class PixelwiseWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
