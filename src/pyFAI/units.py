@@ -337,11 +337,11 @@ class UnitFiber(Unit):
         return self.name
 
     @property
-    def incident_angle(self):
+    def incident_angle(self) -> float:
         return self._incident_angle
 
     @incident_angle.setter
-    def incident_angle(self, incident_angle:float):
+    def incident_angle(self, incident_angle:float) -> None:
         incident_angle = float(incident_angle)
         if incident_angle == self._incident_angle:
             return
@@ -349,11 +349,11 @@ class UnitFiber(Unit):
         self._update_ne_equation()
 
     @property
-    def tilt_angle(self):
+    def tilt_angle(self) -> float:
         return self._tilt_angle
 
     @tilt_angle.setter
-    def tilt_angle(self, tilt_angle:float):
+    def tilt_angle(self, tilt_angle:float) -> None:
         tilt_angle = float(tilt_angle)
         if tilt_angle == self._tilt_angle:
             return
@@ -361,28 +361,28 @@ class UnitFiber(Unit):
         self._update_ne_equation()
 
     @property
-    def sample_orientation(self):
+    def sample_orientation(self) -> int:
         return self._sample_orientation
 
     @sample_orientation.setter
-    def sample_orientation(self, sample_orientation:int):
+    def sample_orientation(self, sample_orientation:int) -> None:
         sample_orientation = int(sample_orientation)
         if sample_orientation == self._sample_orientation:
             return
         self._sample_orientation = sample_orientation
         self._update_ne_equation()
 
-    def set_incident_angle(self, value: float):
+    def set_incident_angle(self, value: float) -> None:
         deprecated_warning(type_=type(self.set_incident_angle), name="set_incident_agle",
                            replacement=(f"unit.incident_angle={value}"), since_version="2025.11")
         self.incident_angle = value
 
-    def set_tilt_angle(self, value: float):
+    def set_tilt_angle(self, value: float) -> None:
         deprecated_warning(type_=type(self.set_tilt_angle), name="set_tilt_angle",
                            replacement=(f"unit.tilt_angle={value}"), since_version="2025.11")
         self.tilt_angle = value
 
-    def set_sample_orientation(self, value: int):
+    def set_sample_orientation(self, value: int) -> None:
         deprecated_warning(type_=type(self.set_sample_orientation), name="set_sample_orientation",
                            replacement=(f"unit.sample_orientation={value}"), since_version="2025.11")
         self.sample_orientation = value
