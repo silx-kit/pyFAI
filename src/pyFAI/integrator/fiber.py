@@ -220,24 +220,6 @@ class FiberIntegrator(AzimuthalIntegrator):
             logger.warning(f"""Key parameters {invalid_keys} are wrong or deprecated.
                             Valid parameters: npt_ip, unit_ip, ip_range, npt_oop, unit_oop, oop_range""")
 
-        unit_ip = unit_ip or 'qip_nm^-1'
-        unit_oop = unit_oop or 'qoop_nm^-1'
-        unit_ip = parse_fiber_unit(unit=unit_ip,
-                                   incident_angle=kwargs.get('incident_angle', None),
-                                   tilt_angle=kwargs.get('tilt_angle', None),
-                                   sample_orientation=sample_orientation)
-        unit_oop = parse_fiber_unit(unit=unit_oop,
-                                    incident_angle=unit_ip.incident_angle,
-                                    tilt_angle=unit_ip.tilt_angle,
-                                    sample_orientation=unit_ip.sample_orientation)
-
-        self.reset_integrator(incident_angle=unit_ip.incident_angle,
-                              tilt_angle=unit_ip.tilt_angle,
-                              sample_orientation=unit_ip.sample_orientation)
-
-        if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
-            logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
-
         if vertical_integration and npt_oop is None:
             raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
         elif not vertical_integration and npt_ip is None:
@@ -370,14 +352,10 @@ class FiberIntegrator(AzimuthalIntegrator):
                                    incident_angle=kwargs.get('incident_angle', None),
                                    tilt_angle=kwargs.get('tilt_angle', None),
                                    )
+        config = unit_ip.get_config_shared()
         unit_oop = parse_fiber_unit(unit=unit_oop,
-                                    incident_angle=unit_ip.incident_angle,
-                                    tilt_angle=unit_ip.tilt_angle,
-                                    sample_orientation=unit_ip.sample_orientation)
-
-        self.reset_integrator(incident_angle=unit_ip.incident_angle,
-                              tilt_angle=unit_ip.tilt_angle,
-                              sample_orientation=unit_ip.sample_orientation)
+                                    **config)
+        self.reset_integrator(**config)
 
         res2d = self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
                                   correctSolidAngle=correctSolidAngle,
