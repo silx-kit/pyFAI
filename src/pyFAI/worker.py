@@ -674,7 +674,7 @@ class Worker(object):
 
 class WorkerFiber(Worker):
     def __init__(self, fiberIntegrator=None,
-                 shapeIn=None, 
+                 shapeIn=None,
                  nbpt_oop:int=1000,
                  nbpt_ip:int=1000,
                  unit_oop="qoop_nm^-1",
@@ -873,7 +873,7 @@ class WorkerFiber(Worker):
             except Exception as err:
                 logger.error(f"exception {type(err)} at {key} ({err})")
         return config
-    
+
 class PixelwiseWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
