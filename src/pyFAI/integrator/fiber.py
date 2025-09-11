@@ -428,7 +428,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         sem = res2d.sem
 
         use_pixel_split = (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no")
-        use_missing_wedge = kwargs.get("mask_missing_wedge", False)
+        use_missing_wedge = kwargs.get("use_missing_wedge", False)
         if use_pixel_split and not use_missing_wedge:
             logger.warning(f"""
                            Method {method} is using a pixel-splitting scheme without the missing wedge mask.\n\
