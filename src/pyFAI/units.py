@@ -389,14 +389,6 @@ class UnitFiber(Unit):
 
     def get_config(self) -> dict:
         """Serialize the FiberUnit instance into a dictionary
-
-        :param ndarray data: 2D array from the Detector/CCD camera
-        :param int npt_oop: number of points to be used along the out-of-plane axis
-        :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
-        :param list oop_range: The lower and upper range of the out-of-plane unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
-        :param int npt_ip: number of points to be used along the in-plane axis
-        :param pyFAI.units.UnitFiber/str unit_ip: unit to describe the in-plane axis. If not provided, it takes qip_nm^-1
-
         :return: dictionary with all needed parameters to recreate the FiberUnit instance
         """
         fiberunit_config = FIBERUNIT_CONFIG_TEMPLATE.copy()
@@ -409,6 +401,14 @@ class UnitFiber(Unit):
             }
         )
         return fiberunit_config
+
+    def get_config_shared(self) -> dict:
+        """Get a config without name, whose parameters can be shared between FiberUnits
+        :return: dictionary with fiber parameters
+        """
+        config = self.get_config()
+        config.pop("name")
+        return config
 
     def set_config(self, config:dict=None, **kwargs) -> None:
         """Updates the FiberUnit instance with new parameter values
@@ -1828,14 +1828,10 @@ def parse_fiber_unit(
 
     if not isinstance(unit, UnitFiber):
         raise Exception(f"{unit} cannot be used as a FiberUnit")
-
-    if incident_angle is not None:
-        unit.incident_angle = incident_angle
-
-    if tilt_angle is not None:
-        unit.tilt_angle = tilt_angle
-
-    if sample_orientation is not None:
-        unit.sample_orientation = sample_orientation
-
+    
+    unit.set_config(
+        incident_angle = incident_angle,
+        tilt_angle=tilt_angle,
+        sample_orientation=sample_orientation
+    )
     return unit
