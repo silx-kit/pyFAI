@@ -82,7 +82,7 @@ from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
 from ..utils import decorators
-from ..units import Unit, to_unit
+from ..units import Unit, to_unit, UnitFiber
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
@@ -782,3 +782,91 @@ class WorkerConfig:
 #     delta_dummy: float=None
 #     empty: float=None
 #     dtype: str=None
+
+
+@dataclass
+class WorkerFiberConfig(WorkerConfig):
+    application: str = "worker"
+    version: int = CURRENT_VERSION
+    poni: PoniFile = None
+    nbpt_ip: int = None
+    nbpt_oop: int = None
+    unit_ip: UnitFiber = None
+    unit_oop: UnitFiber = None
+    ip_range: list = None
+    oop_range: list = None
+    vertical_integration: bool = True,
+    incident_angle: float = 0.0,
+    tilt_angle: float = 0.0,
+    sample_orientation: int = 1,
+    integrator_class: str = "FiberIntegrator"
+    OPTIONAL: ClassVar[list] = ["ip_range_min", "ip_range_max",
+                                "oop_range_min", "oop_range_max",
+                                ]
+    GUESSED: ClassVar[list] = ["do_ip_range", "do_oop_range"]
+
+    @property
+    def do_ip_range(self):
+        if self.ip_range:
+            return bool(numpy.isfinite(self.ip_range[0]) and numpy.isfinite(self.ip_range[1]))
+        else:
+            return False
+
+    @property
+    def ip_range_min(self):
+        if self.ip_range:
+            return self.ip_range[0]
+        else:
+            return -numpy.inf
+
+    @ip_range_min.setter
+    def ip_range_min(self, value):
+        if not self.ip_range:
+            self.ip_range = [-numpy.inf, numpy.inf]
+        self.ip_range[0] = value
+
+    @property
+    def ip_range_max(self):
+        if self.ip_range:
+            return self.ip_range[1]
+        else:
+            return numpy.inf
+
+    @ip_range_max.setter
+    def ip_range_max(self, value):
+        if not self.ip_range:
+            self.ip_range = [-numpy.inf, numpy.inf]
+        self.ip_range[1] = value
+
+    @property
+    def do_oop_range(self):
+        if self.oop_range:
+            return bool(numpy.isfinite(self.oop_range[0]) and numpy.isfinite(self.oop_range[1]))
+        else:
+            return False
+
+    @property
+    def oop_range_min(self):
+        if self.oop_range:
+            return self.oop_range[0]
+        else:
+            return -numpy.inf
+
+    @oop_range_min.setter
+    def oop_range_min(self, value):
+        if not self.oop_range:
+            self.oop_range = [-numpy.inf, numpy.inf]
+        self.oop_range[0] = -numpy.inf if value is None else value
+
+    @property
+    def oop_range_max(self):
+        if self.oop_range:
+            return self.oop_range[1]
+        else:
+            return numpy.inf
+
+    @oop_range_max.setter
+    def oop_range_max(self, value):
+        if not self.oop_range:
+            self.oop_range = [-numpy.inf, numpy.inf]
+        self.oop_range[1] = numpy.inf if value is None else value
