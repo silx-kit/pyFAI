@@ -1828,7 +1828,7 @@ def parse_fiber_unit(
 
     if not isinstance(unit, UnitFiber):
         raise Exception(f"{unit} cannot be used as a FiberUnit")
-    
+
     unit.set_config(
         incident_angle = incident_angle,
         tilt_angle=tilt_angle,
