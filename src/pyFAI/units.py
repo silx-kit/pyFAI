@@ -348,7 +348,7 @@ Sample orientation={self.sample_orientation}
     @property
     def sample_orientation(self):
         return self._sample_orientation
-    
+
     @sample_orientation.setter
     def sample_orientation(self, sample_orientation:int):
         sample_orientation = int(sample_orientation)
@@ -356,25 +356,25 @@ Sample orientation={self.sample_orientation}
             return
         self._sample_orientation = sample_orientation
         self._update_ne_equation()
-        
+
     def set_incident_angle(self, value: float):
-        deprecated_warning(type_=type(self.set_incident_angle), name="set_incident_agle", 
+        deprecated_warning(type_=type(self.set_incident_angle), name="set_incident_agle",
                            replacement=(f"unit.incident_angle={value}"), since_version="2025.11")
         self.incident_angle = value
 
     def set_tilt_angle(self, value: float):
-        deprecated_warning(type_=type(self.set_tilt_angle), name="set_tilt_angle", 
+        deprecated_warning(type_=type(self.set_tilt_angle), name="set_tilt_angle",
                            replacement=(f"unit.tilt_angle={value}"), since_version="2025.11")
         self.tilt_angle = value
 
     def set_sample_orientation(self, value: int):
-        deprecated_warning(type_=type(self.set_sample_orientation), name="set_sample_orientation", 
+        deprecated_warning(type_=type(self.set_sample_orientation), name="set_sample_orientation",
                            replacement=(f"unit.sample_orientation={value}"), since_version="2025.11")
         self.sample_orientation = value
 
     def get_config(self) -> dict:
         """Serialize the FiberUnit instance into a dictionary
-          
+
         :param ndarray data: 2D array from the Detector/CCD camera
         :param int npt_oop: number of points to be used along the out-of-plane axis
         :param pyFAI.units.UnitFiber/str unit_oop: unit to describe the out-of-plane axis. If not provided, it takes qoop_nm^-1
@@ -394,10 +394,10 @@ Sample orientation={self.sample_orientation}
             }
         )
         return fiberunit_config
-    
+
     def set_config(self, config:dict=None, **kwargs) -> None:
         """Updates the FiberUnit instance with new parameter values
-          
+
         :param dict config: dictionary with new parameters values
         :param kwargs: single new parameters, out of the dictionary, kwargs have priority over config
         """
@@ -409,7 +409,7 @@ Sample orientation={self.sample_orientation}
         if config.get("name") is not None:
             logger.error("The unit itself cannot be set. Create a new UnitFiber instance.")
             return
-        
+
         update_equation = False
         for config_key, config_value in config.items():
             if config_value is None:
@@ -421,7 +421,7 @@ Sample orientation={self.sample_orientation}
             update_equation = True
         if update_equation:
             self._update_ne_equation()
-        
+
 
 FIBERUNIT_CONFIG_TEMPLATE = {
     "incident_angle" : None,
