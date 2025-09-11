@@ -789,8 +789,8 @@ class WorkerFiberConfig(WorkerConfig):
     application: str = "worker"
     version: int = CURRENT_VERSION
     poni: PoniFile = None
-    nbpt_ip: int = None
-    nbpt_oop: int = None
+    npt_ip: int = None
+    npt_oop: int = None
     unit_ip: UnitFiber = None
     unit_oop: UnitFiber = None
     ip_range: list = None

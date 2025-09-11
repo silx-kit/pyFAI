@@ -674,16 +674,21 @@ class Worker(object):
 
 class WorkerFiber(Worker):
     def __init__(self, fiberIntegrator=None,
-                 shapeIn=None,
-                 nbpt_oop:int=1000,
-                 nbpt_ip:int=1000,
+                 shapeIn=None, 
+                 npt_oop:int=1000,
+                 npt_ip:int=1000,
                  unit_oop="qoop_nm^-1",
                  unit_ip="qip_nm^-1",
                  ip_range:tuple=None,
                  oop_range:tuple=None,
+                 incident_angle:float=0.0,
+                 tilt_angle:float=0.0,
+                 sample_orientation:int=1,
                  dummy=None, delta_dummy=None,
-                 method=("bbox", "csr", "cython"),
-                 integrator_name=None, extra_options=None,
+                 method=("no", "csr", "cython"),
+                 use_missing_wedge:bool=False,
+                 integrator_name="integrate2d_grazing_incidence",
+                 extra_options=None,
                  ):
         """
         :param FiberIntegrator FiberIntegrator: A FiberIntegrator instance
@@ -701,17 +706,11 @@ class WorkerFiber(Worker):
             self.fi = FiberIntegrator()
         else:
             self.fi = fiberIntegrator
+        self.ai = self.fi
         self._normalization_factor = None  # Value of the monitor: divides the intensity by this value for normalization
+
         self.integrator_name = integrator_name
         self._processor = None
-
-        self.nbpt_oop = nbpt_oop
-        self.nbpt_ip = nbpt_ip
-        self.unit_ip = units.parse_fiber_unit(unit_ip)
-        self.unit_oop = units.parse_fiber_unit(unit_oop)
-        self.ip_range = ip_range
-        self.oop_range = oop_range
-
         if isinstance(method, (str, list, tuple, Method, IntegrationMethod)):
             method = IntegrationMethod.parse(method)
         else:
@@ -719,6 +718,19 @@ class WorkerFiber(Worker):
         self.method = (method.split, method.algorithm, method.implementation)
         self.opencl_device = method.target
         self._method = None
+        self.use_missing_wedge = use_missing_wedge
+
+        self.unit_ip = units.parse_fiber_unit(unit_ip)
+        self.unit_oop = units.parse_fiber_unit(unit_oop)
+        self.ip_range = ip_range
+        self.oop_range = oop_range
+        self._npt_oop = npt_oop
+        self._npt_ip = npt_ip
+        self.update_processor()
+
+        self.incident_angle = incident_angle
+        self.tilt_angle = tilt_angle
+        self.sample_orientation = sample_orientation
 
         self.polarization_factor = None
         self.dummy = dummy
@@ -737,16 +749,14 @@ class WorkerFiber(Worker):
         self.extra_options = {} if extra_options is None else extra_options.copy()
         self.error_model = ErrorModel.parse(self.extra_options.pop("error_model", None))
 
-        self.ai = self.fi
-
     def __repr__(self):
         """
         pretty print of myself
         """
         lstout = ["Fiber Integrator:", self.fi.__repr__(),
                   f"Input image shape: {self._shape}",
-                  f"Number of points in out-of-plane direction: {self._nbpt_oop}",
-                  f"Number of points in in-plane direction: {self._nbpt_ip}",
+                  f"Number of points in out-of-plane direction: {self._npt_oop}",
+                  f"Number of points in in-plane direction: {self._npt_ip}",
                   f"Unit in out-of-plane direction: {self.unit_oop}",
                   f"Unit in in-plane direction: {self.unit_ip}",
                   f"Out-of-plane range: {self.oop_range}",
@@ -760,24 +770,56 @@ class WorkerFiber(Worker):
                   f"Directory: {self.subdir}, \tExtension: {self.extension}",
         ]
         return os.linesep.join(lstout)
+    
+    def update_processor(self):
+        return super().update_processor(integrator_name=self.integrator_name)
 
     @property
-    def nbpt_oop(self):
-        return self._nbpt_oop
+    def npt_oop(self):
+        return self._npt_oop
 
-    @nbpt_oop.setter
-    def nbpt_oop(self, value):
-        self._nbpt_oop = value
+    @npt_oop.setter
+    def npt_oop(self, value):
+        self._npt_oop = value
         self.update_processor()
 
     @property
-    def nbpt_ip(self):
-        return self._nbpt_ip
+    def npt_ip(self):
+        return self._npt_ip
 
-    @nbpt_ip.setter
-    def nbpt_oop(self, value):
-        self._nbpt_ip = value
+    @npt_ip.setter
+    def npt_ip(self, value):
+        self._npt_ip = value
         self.update_processor()
+
+    @property
+    def incident_angle(self):
+        return self._incident_angle
+
+    @incident_angle.setter
+    def incident_angle(self, incident_angle):
+        self._incident_angle = incident_angle
+
+    @property
+    def tilt_angle(self):
+        return self._tilt_angle
+
+    @tilt_angle.setter
+    def tilt_angle(self, tilt_angle):
+        self._tilt_angle = tilt_angle
+
+    @property
+    def sample_orientation(self):
+        return self._sample_orientation
+
+    @sample_orientation.setter
+    def sample_orientation(self, sample_orientation):
+        self._sample_orientation = sample_orientation
+
+    def do_2D(self):
+        if self.npt_ip == 1 or self.npt_oop == 1:
+            return False
+        return True
 
     def set_config(self, config:dict | WorkerFiberConfig, consume_keys:bool=False):
         """
@@ -820,8 +862,8 @@ class WorkerFiber(Worker):
             self.ai.detector.set_flatfield(data)
             self.flat_field_image = filenames
 
-        self.nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
-        self.nbpt_rad = config.nbpt_rad
+        self.npt_azim = int(config.npt_azim) if config.npt_azim else 1
+        self.npt_rad = config.npt_rad
         self.unit_ip = config.unit_ip
         self.unit_oop = config.unit_oop
         self.oop_range = config.oop_range
@@ -855,7 +897,7 @@ class WorkerFiber(Worker):
                                    unit_oop=self.unit_oop,
         )
 
-        for key in ["nbpt_oop", "nbpt_ip", "polarization_factor",  "extra_options",
+        for key in ["npt_oop", "npt_ip", "polarization_factor",  "extra_options",
                     "correct_solid_angle", "error_model", "method", "opencl_device",
                     "ip_range", "oop_range",
                     "dummy", "delta_dummy", "normalization_factor",
@@ -874,6 +916,89 @@ class WorkerFiber(Worker):
                 logger.error(f"exception {type(err)} at {key} ({err})")
         return config
 
+    def process(self, data, 
+                variance=None,
+                dark=None,
+                flat=None,
+                normalization_factor=1.0,
+                incident_angle=None,
+                tilt_angle=None,
+                sample_orientation=None,
+                writer=None, metadata=None):
+        """
+        Process one frame
+
+        :param data: numpy array containing the input image
+        :param writer: An open writer in which 'write' will be called with the result of the integration
+        """
+
+        with self._sem:
+            monitor = self._normalization_factor * normalization_factor if self._normalization_factor else normalization_factor
+        kwarg = self.extra_options.copy()
+        kwarg["dummy"] = self.dummy
+        kwarg["delta_dummy"] = self.delta_dummy
+        kwarg["method"] = self._method
+        kwarg["polarization_factor"] = self.polarization_factor
+        kwarg["data"] = data
+        kwarg["correctSolidAngle"] = self.correct_solid_angle
+        kwarg["safe"] = self.safe
+        kwarg["variance"] = variance
+        kwarg["dark"] = dark
+        kwarg["flat"] = flat
+        if self.error_model:
+            kwarg["error_model"] = self.error_model
+
+        if metadata is not None:
+            kwarg["metadata"] = metadata
+
+        if monitor is not None:
+            kwarg["normalization_factor"] = monitor
+
+        for key in ("npt_ip", "npt_oop",
+                    "unit_ip", "unit_oop",
+                    "ip_range", "oop_range",
+                    "incident_angle", "tilt_angle", "sample_orientation",
+                    "use_missing_wedge",
+        ):
+            kwarg[key] = self.__getattribute__(key)
+        
+        if incident_angle is not None:
+            kwarg["incident_angle"] = incident_angle
+        if tilt_angle is not None:
+            kwarg["tilt_angle"] = tilt_angle
+        if sample_orientation is not None:
+            kwarg["sample_orientation"] = sample_orientation
+
+        try:
+            integrated_result = self._processor(**kwarg)
+        except Exception as err:
+            logger.info("Backtrace", exc_info=True)
+            err2 = [f"error in integration do_2d: {self.do_2D()}",
+                    str(err.__class__.__name__),
+                    str(err),
+                    f"data.shape: {data.shape}",
+                    f"data.size: {data.size}",
+                    "ai:",
+                    str(self.ai),
+                    "method:",
+                    str(kwarg.get("method"))
+                    ]
+            logger.error("\n".join(err2))
+            raise err
+
+        if writer is not None:
+            writer.write(integrated_result)
+        if self.output == "raw":
+            return integrated_result
+        elif self.output == "numpy":
+            if self.do_2D():
+                if integrated_result.sigma is None:
+                    return integrated_result.intensity
+                else:
+                    return integrated_result.intensity, integrated_result.sigma
+            else:
+                return numpy.vstack(integrated_result).T
+            
 class PixelwiseWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
