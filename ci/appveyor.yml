@@ -36,12 +36,12 @@ environment:
 #         - PYTHON_DIR: "C:\\Python37-x64"
 #           PYTHON_ARCH: "64"
 
-        # Python 3.10
-        - PYTHON_DIR: "C:\\Python10-x64"
+        # Python 3.11
+        - PYTHON_DIR: "C:\\Python11-x64"
           PYTHON_ARCH: "64"
 
-        # Python 3.11
-        - PYTHON_DIR: "C:\\Python311-x64"
+        # Python 3.12
+        - PYTHON_DIR: "C:\\Python312-x64"
           PYTHON_ARCH: "64"
 
         # Python 3.13
