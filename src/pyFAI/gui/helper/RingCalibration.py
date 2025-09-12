@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/09/2025"
+__date__ = "12/09/2025"
 
 import logging
 import numpy
@@ -132,13 +132,13 @@ class GeometryRefinementContext(object):
             return deltaS
 
 
-class RingCalibration(object):
+class RingCalibration:
 
     def __init__(self, image, mask, calibrant, detector, wavelength, peaks, method):
         self.__image = image
         self.__mask = mask
         self.__calibrant = calibrant
-        self.__calibrant.set_wavelength(wavelength)
+        self.__calibrant.wavelength = wavelength
         self.__detector = detector
         self.__wavelength = wavelength
         self.__defaultConstraints = None
