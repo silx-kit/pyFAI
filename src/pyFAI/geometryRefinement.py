@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2024"
+__date__ = "12/09/2025"
 __status__ = "development"
 
 import os
@@ -221,7 +221,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         if self.data is None or len(self.data) == 0:
             logger.warning("No input data, not guessing the PONI")
             return
-        if len(self.calibrant.dSpacing):
+        if len(self.calibrant.dspacing):
             # logger.warning(self.calibrant.__repr__())s
             tth = self.calc_2th(self.data[:, 2])
         else:  # assume rings are in decreasing dSpacing in the file
