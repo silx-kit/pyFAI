@@ -137,8 +137,8 @@ class RingCalibration:
     def __init__(self, image, mask, calibrant, detector, wavelength, peaks, method):
         self.__image = image
         self.__mask = mask
+        calibrant.wavelength = wavelength
         self.__calibrant = calibrant
-        self.__calibrant.wavelength = wavelength
         self.__detector = detector
         self.__wavelength = wavelength
         self.__defaultConstraints = None
@@ -326,7 +326,7 @@ class RingCalibration:
         Returns the 2th array corresponding to the calibrated image
         """
         # 2th array is cached insided
-        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit=units.CHI_RAD, scale=False)
+        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit=units.TTH_RAD, scale=False)
         return tth
 
     def getMask(self):
@@ -342,7 +342,7 @@ class RingCalibration:
         :returns: List of ring angles available
         :rtype: List[float]
         """
-        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit=units.CHI_RAD, scale=False)
+        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit=units.TTH_RAD, scale=False)
 
         result = collections.OrderedDict()
 
@@ -365,7 +365,7 @@ class RingCalibration:
         :returns: List of tuples with ring (index, angle)  available
         :rtype: dict[ringId] = angle
         """
-        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit=units.CHI_RAD, scale=False)
+        tth = self.__geoRef.center_array(self.__peakPicker.shape, unit=units.TTH_RAD, scale=False)
 
         result = collections.OrderedDict()
 
@@ -394,7 +394,7 @@ class RingCalibration:
         if tth >= epsilon:
             # Check if this pixel really contains the beam center
             # If the detector contains gap, it is not always the case
-            tth_array = self.__geoRef.center_array(unit=units.CHI_RAD, scale=False)
+            tth_array = self.__geoRef.center_array(unit=units.TTH_RAD, scale=False)
             pos = tth_array.argmin()
             width = self.__geoRef.detector.shape[-1]
             y = pos // width
