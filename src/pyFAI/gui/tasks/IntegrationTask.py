@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "04/09/2025"
+__date__ = "12/09/2025"
 
 import logging
 import numpy
@@ -869,7 +869,7 @@ class IntegrationPlot(qt.QFrame):
         self.__geometry = integrationProcess.geometry()
         self.__inverseGeometry = InvertGeometry(
             self.__geometry.center_array(unit=self.__radialUnit, scale=True),
-            self.__geometry.center_array(unit=units.CHI_DEG, scale=True))
+            self.__geometry.center_array(unit=core_units.CHI_DEG, scale=True))
 
         self.__markerManager.updateProjection(self.__geometry,
                                               self.__radialUnit,
