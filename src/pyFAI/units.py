@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "12/09/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -1162,8 +1162,8 @@ formula_chi_gi = f"arctan2(({formula_qip}), ({formula_qoop}))"
 
 register_radial_unit(
     "r_mm",
-    center="rArray",
-    delta="deltaR",
+    # center="rArray",
+    # delta="deltaR",
     scale=1000.0,
     label=r"Radius $r$ ($mm$)",
     equation=eq_r,
@@ -1174,8 +1174,8 @@ register_radial_unit(
 
 register_radial_unit(
     "r_m",
-    center="rArray",
-    delta="deltaR",
+    # center="rArray",
+    # delta="deltaR",
     scale=1.0,
     label=r"Radius $r$ ($m$)",
     equation=eq_r,
@@ -1187,8 +1187,8 @@ register_radial_unit(
 register_radial_unit(
     "2th_deg",
     scale=180.0 / PI,
-    center="twoThetaArray",
-    delta="delta2Theta",
+    # center="twoThetaArray",
+    # delta="delta2Theta",
     label=r"Scattering angle $2\theta$ ($^{o}$)",
     equation=eq_2th,
     formula=formula_2th,
@@ -1198,8 +1198,8 @@ register_radial_unit(
 
 register_radial_unit(
     "2th_rad",
-    center="twoThetaArray",
-    delta="delta2Theta",
+    # center="twoThetaArray",
+    # delta="delta2Theta",
     scale=1.0,
     label=r"Scattering angle $2\theta$ ($rad$)",
     equation=eq_2th,
@@ -1210,8 +1210,8 @@ register_radial_unit(
 
 register_radial_unit(
     "q_nm^-1",
-    center="qArray",
-    delta="deltaQ",
+    # center="qArray",
+    # delta="deltaQ",
     scale=1.0,
     label=r"Scattering vector $q$ ($nm^{-1}$)",
     equation=eq_q,
@@ -1222,8 +1222,8 @@ register_radial_unit(
 
 register_radial_unit(
     "q_A^-1",
-    center="qArray",
-    delta="deltaQ",
+    # center="qArray",
+    # delta="deltaQ",
     scale=0.1,
     label=r"Scattering vector $q$ ($\AA^{-1}$)",
     equation=eq_q,
@@ -1270,8 +1270,8 @@ register_radial_unit(
 
 register_radial_unit(
     "d*2_A^-2",
-    center="rd2Array",
-    delta="deltaRd2",
+    # center="rd2Array",
+    # delta="deltaRd2",
     scale=0.01,
     label=r"Recip. spacing sq. $d^{*2}$ ($\AA^{-2}$)",
     equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (TWO_PI))
@@ -1283,8 +1283,8 @@ register_radial_unit(
 
 register_radial_unit(
     "d*2_nm^-2",
-    center="rd2Array",
-    delta="deltaRd2",
+    # center="rd2Array",
+    # delta="deltaRd2",
     scale=1.0,
     label=r"Recip. spacing sq. $d^{*2}$ ($nm^{-2}$)",
     equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (TWO_PI))

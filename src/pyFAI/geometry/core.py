@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "12/09/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -2030,11 +2030,8 @@ class Geometry(object):
 
         if shape is None:
             shape = self.detector.max_shape
-        try:
-            ttha = self.__getattribute__(dim1_unit.center)(shape)
-        except Exception:
-            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " +
-                               str(dim1_unit) + " not (yet?) Implemented")
+
+        ttha = self.center_array(shape, unit=dim1_unit, scale=False)
         calcimage = numpy.interp(ttha.ravel(), tth, I)
         calcimage.shape = shape
         if correctSolidAngle:
@@ -2087,12 +2084,8 @@ class Geometry(object):
         chi = numpy.ascontiguousarray(chi, numpy.float64) / dim2_unit.scale
         if shape is None:
             shape = self.detector.max_shape
-        try:
-            ttha = self.__getattribute__(dim1_unit.center)(shape)
-        except Exception:
-            raise RuntimeError("in pyFAI.Geometry.calcfrom2d: " +
-                               str(dim1_unit) + " not (yet?) Implemented")
-        chia = self.center_array(shape, unit=CHI_RAD, scale=False)
+        ttha = self.center_array(shape, unit=dim1_unit, scale=False)
+        chia = self.center_array(shape, unit=dim2_unit, scale=False)
 
         built_mask = numpy.ones(shape, dtype=numpy.int8)
         empty_data = numpy.zeros(shape, dtype=numpy.float32)
