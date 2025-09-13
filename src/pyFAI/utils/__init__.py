@@ -51,7 +51,7 @@ if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2
 else:
     from os.path import exists
 
-from .containers import FixedParameters
+from ..containers import FixedParameters
 
 logger = logging.getLogger(__name__)
 from .. import resources
