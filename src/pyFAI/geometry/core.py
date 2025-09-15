@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/09/2025"
+__date__ = "12/09/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -383,7 +383,7 @@ class Geometry(object):
         p1 = p1 - poni1  # Makes a copy
         p2 = p2 - poni2  # Makes a copy
 
-        if do_parallax:
+        if do_parallax and (self._parallax is not None):
             self._correct_parallax(d1, d2, p1, p2)
 
         return p1, p2, p3
@@ -444,7 +444,6 @@ class Geometry(object):
             # the sample detector distance is always positive.
             if p3 is None:
                 p3 = numpy.zeros(size) + L
-                # p3 = numpy.atleast_1d(L)
             else:
                 p3 = (L + p3).ravel()
                 if size != p3.size:
@@ -487,7 +486,7 @@ class Geometry(object):
         :rtype: float or array of floats.
         """
 
-        if (path == "cython") and (_geometry is not None) and not self.parallax:
+        if (path == "cython") and (_geometry is not None) and self._parallax is None:
             if param is None:
                 dist, poni1, poni2 = self._dist, self._poni1, self._poni2
                 rot1, rot2, rot3 = self._rot1, self._rot2, self._rot3
@@ -527,7 +526,7 @@ class Geometry(object):
             raise RuntimeError(("Scattering vector q cannot be calculated"
                                 " without knowing wavelength !!!"))
 
-        if (_geometry is not None) and (path == "cython") and (not self.parallax):
+        if (_geometry is not None) and (path == "cython") and (self._parallax is None):
             if param is None:
                 dist, poni1, poni2 = self._dist, self._poni1, self._poni2
                 rot1, rot2, rot3 = self._rot1, self._rot2, self._rot3
@@ -563,7 +562,7 @@ class Geometry(object):
         :rtype: float or array of floats.
         """
 
-        if (_geometry is not None) and (path == "cython") and (not self.parallax):
+        if (_geometry is not None) and (path == "cython") and (self._parallax is None):
             if param is None:
                 dist, poni1, poni2 = self._dist, self._poni1, self._poni2
                 rot1, rot2, rot3 = self._rot1, self._rot2, self._rot3
@@ -705,7 +704,7 @@ class Geometry(object):
         :param path: can be "tan" (i.e via numpy) or "cython"
         :return: chi, the azimuthal angle in rad
         """
-        if (path == "cython") and (_geometry is not None) and not self.parallax:
+        if (path == "cython") and (_geometry is not None) and (self._parallax is None) :
             p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self._poni2, do_parallax=True)
             chi = _geometry.calc_chi(L=self._dist,
                                      rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
@@ -2094,11 +2093,8 @@ class Geometry(object):
 
         if shape is None:
             shape = self.detector.max_shape
-        try:
-            ttha = self.__getattribute__(dim1_unit.center)(shape)
-        except Exception:
-            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " +
-                               str(dim1_unit) + " not (yet?) Implemented")
+
+        ttha = self.center_array(shape, unit=dim1_unit, scale=False)
         calcimage = numpy.interp(ttha.ravel(), tth, I)
         calcimage.shape = shape
         if correctSolidAngle:
@@ -2151,12 +2147,8 @@ class Geometry(object):
         chi = numpy.ascontiguousarray(chi, numpy.float64) / dim2_unit.scale
         if shape is None:
             shape = self.detector.max_shape
-        try:
-            ttha = self.__getattribute__(dim1_unit.center)(shape)
-        except Exception:
-            raise RuntimeError("in pyFAI.Geometry.calcfrom2d: " +
-                               str(dim1_unit) + " not (yet?) Implemented")
-        chia = self.center_array(shape, unit=CHI_RAD, scale=False)
+        ttha = self.center_array(shape, unit=dim1_unit, scale=False)
+        chia = self.center_array(shape, unit=dim2_unit, scale=False)
 
         built_mask = numpy.ones(shape, dtype=numpy.int8)
         empty_data = numpy.zeros(shape, dtype=numpy.float32)
