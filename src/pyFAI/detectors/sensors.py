@@ -29,6 +29,7 @@
 
 """Sensors description for detectors:
 
+Defines Si_MATERIAL & CdTe_MATERIAL
 """
 
 
@@ -36,11 +37,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2025"
+__date__ = "22/08/2025"
 __status__ = "stable"
 
 import os
 import logging
+from math import exp
 from collections import namedtuple
 import numpy
 from ..resources import resource_filename
@@ -131,6 +133,16 @@ class SensorMaterial:
         """
         data = self._data[self._find_range(energy)]
         return numpy.interp(energy, data[:,0], data[:,2]) * self.rho * self._scale(unit)
+
+    def absorbance(self, energy:float, length: float, unit:str="m") -> float:
+        """calculate the efficiency of a slab of sensor for absorbing the radiation
+
+        :param energy: in keV
+        :param length: thickness of the sensor
+        :param unit: unit for the thickness of the detector
+        :return: efficiency of the sensor between 0 (no absorbance) and 1 (all photons are absorbed)
+        """
+        return 1.0-exp(-self.mu(energy, unit)*length)
 
 
 # For the record: some classical sensors materials

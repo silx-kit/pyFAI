@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "11/09/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -395,7 +395,7 @@ class AzimuthalIntegrator(Integrator):
                     mask = azim_mask
                 else:
                     mask = numpy.logical_or(mask, azim_mask)
-            radial = self.array_from_unit(shape, "center", unit, scale=False)
+            radial = self.center_array(shape, unit=unit, scale=False)
             intpl = integr(radial, npt, data,
                            dark=dark,
                            dummy=dummy, delta_dummy=delta_dummy, empty=empty,
