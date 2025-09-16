@@ -371,7 +371,7 @@ class Geometry(object):
         :param poni1: value in the Y direction of the poni coordinate (meter)
         :param poni2: value in the X direction of the poni coordinate (meter)
         :param do_parallax: set to True to correct for the parallax effect
-        :return: 2-arrays of same shape as d1 & d2 with the position in meters
+        :return: 3-tuple of arrays (y,x,z) of same shape as d1 & d2 with the position in meters 
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
