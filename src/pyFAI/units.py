@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 from math import sin, cos, tan, atan2, pi as PI
 import numpy
 import scipy.constants
+from .utils.decorators import deprecated_warning
 
 TWO_PI = 2 * PI
 
@@ -321,28 +322,113 @@ Sample orientation={self.sample_orientation}
         return self.name
 
     @property
-    def incident_angle(self):
+    def incident_angle(self) -> float:
         return self._incident_angle
 
+    @incident_angle.setter
+    def incident_angle(self, incident_angle:float) -> None:
+        incident_angle = float(incident_angle)
+        if incident_angle == self._incident_angle:
+            return
+        self._incident_angle = incident_angle
+        self._update_ne_equation()
+
     @property
-    def tilt_angle(self):
+    def tilt_angle(self) -> float:
         return self._tilt_angle
 
+    @tilt_angle.setter
+    def tilt_angle(self, tilt_angle:float) -> None:
+        tilt_angle = float(tilt_angle)
+        if tilt_angle == self._tilt_angle:
+            return
+        self._tilt_angle = tilt_angle
+        self._update_ne_equation()
+
     @property
-    def sample_orientation(self):
+    def sample_orientation(self) -> int:
         return self._sample_orientation
 
-    def set_incident_angle(self, value: float):
-        self._incident_angle = value
+    @sample_orientation.setter
+    def sample_orientation(self, sample_orientation:int) -> None:
+        sample_orientation = int(sample_orientation)
+        if sample_orientation == self._sample_orientation:
+            return
+        self._sample_orientation = sample_orientation
         self._update_ne_equation()
 
-    def set_tilt_angle(self, value: float):
-        self._tilt_angle = value
-        self._update_ne_equation()
+    def set_incident_angle(self, value: float) -> None:
+        deprecated_warning(type_=type(self.set_incident_angle), name="set_incident_agle",
+                           replacement=(f"unit.incident_angle={value}"), since_version="2025.11")
+        self.incident_angle = value
 
-    def set_sample_orientation(self, value: int):
-        self._sample_orientation = value
-        self._update_ne_equation()
+    def set_tilt_angle(self, value: float) -> None:
+        deprecated_warning(type_=type(self.set_tilt_angle), name="set_tilt_angle",
+                           replacement=(f"unit.tilt_angle={value}"), since_version="2025.11")
+        self.tilt_angle = value
+
+    def set_sample_orientation(self, value: int) -> None:
+        deprecated_warning(type_=type(self.set_sample_orientation), name="set_sample_orientation",
+                           replacement=(f"unit.sample_orientation={value}"), since_version="2025.11")
+        self.sample_orientation = value
+
+    def get_config(self) -> dict:
+        """Serialize the FiberUnit instance into a dictionary
+        :return: dictionary with all needed parameters to recreate the FiberUnit instance
+        """
+        fiberunit_config = FIBERUNIT_CONFIG_TEMPLATE.copy()
+        fiberunit_config.update(
+            {
+                "incident_angle" : self._incident_angle,
+                "tilt_angle" : self._tilt_angle,
+                "sample_orientation" : self._sample_orientation,
+                "name" : self.name,
+            }
+        )
+        return fiberunit_config
+
+    def get_config_shared(self) -> dict:
+        """Get a config without name, whose parameters can be shared between FiberUnits
+        :return: dictionary with fiber parameters
+        """
+        config = self.get_config()
+        config.pop("name")
+        return config
+
+    def set_config(self, config:dict=None, **kwargs) -> None:
+        """Updates the FiberUnit instance with new parameter values
+
+        :param dict config: dictionary with new parameters values
+        :param kwargs: single new parameters, out of the dictionary, kwargs have priority over config
+        """
+        if config is None:
+            config = FIBERUNIT_CONFIG_TEMPLATE.copy()
+        kwargs = {k:v for k,v in kwargs.items() if k in FIBERUNIT_CONFIG_TEMPLATE}
+        config = {k:v for k,v in config.items() if k in FIBERUNIT_CONFIG_TEMPLATE}
+        config.update(kwargs)
+        if config.get("name") is not None:
+            logger.error("The unit itself cannot be set. Create a new UnitFiber instance.")
+            return
+
+        update_equation = False
+        for config_key, config_value in config.items():
+            if config_value is None:
+                continue
+            if self.__getattribute__(config_key) == config_value:
+                continue
+
+            self.__setattr__(config_key, config_value)
+            update_equation = True
+        if update_equation:
+            self._update_ne_equation()
+
+
+FIBERUNIT_CONFIG_TEMPLATE = {
+    "incident_angle" : None,
+    "tilt_angle" : None,
+    "sample_orientation" : None,
+    "name" : None,
+}
 
 
 RADIAL_UNITS = {}
@@ -1701,9 +1787,9 @@ def get_unit_fiber(
         return
 
     if isinstance(unit, UnitFiber):
-        unit.set_incident_angle(incident_angle)
-        unit.set_tilt_angle(tilt_angle)
-        unit.set_sample_orientation(sample_orientation)
+        unit.incident_angle = incident_angle
+        unit.tilt_angle = tilt_angle
+        unit.sample_orientation = sample_orientation
     return unit
 
 
@@ -1720,13 +1806,9 @@ def parse_fiber_unit(
     if not isinstance(unit, UnitFiber):
         raise Exception(f"{unit} cannot be used as a FiberUnit")
 
-    if incident_angle is not None:
-        unit.set_incident_angle(incident_angle)
-
-    if tilt_angle is not None:
-        unit.set_tilt_angle(tilt_angle)
-
-    if sample_orientation is not None:
-        unit.set_sample_orientation(sample_orientation)
-
+    unit.set_config(
+        incident_angle = incident_angle,
+        tilt_angle=tilt_angle,
+        sample_orientation=sample_orientation
+    )
     return unit
