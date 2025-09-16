@@ -360,7 +360,7 @@ class Geometry(object):
                                   d2:numpy.ndarray,
                                   poni1:float|None=None,
                                   poni2:float|None=None,
-                                  do_parallax:bool=True):
+                                  do_parallax:bool=True) -> tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]:
         """
         Calculate the position in cartesian coordinate (centered on the PONI)
         and in meter of a couple of coordinates.
