@@ -2549,9 +2549,8 @@ class Geometry(object):
 
         Likely to raise ImportError/ValueError
         """
-        GeometryClass = self.__class__.__mro__[
-            -2
-        ]  # actually pyFAI.geometry.core.Geometry
+        GeometryClass = self.__class__.__mro__[-2]
+        # should be pyFAI.geometry.core.Geometry
         if isinstance(type_, str):
             if "." not in type_:
                 if type_ in self.PROMOTION:
