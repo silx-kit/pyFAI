@@ -2622,7 +2622,7 @@ class Geometry(object):
         new._cached_array = cached
         return new
 
-    def rotation_matrix(self, param=None):
+    def rotation_matrix(self, param:list|numpy.ndarray=None):
         """Compute and return the detector tilts as a single rotation matrix
 
         Corresponds to rotations about axes 1 then 2 then 3 (=> 0 later on)
