@@ -875,8 +875,8 @@ class Geometry(object):
                                                           chi_discontinuity_at_pi=self.chiDiscAtPi)
                         except ParallaxNotImplemented as err:
                             logger.warning(err)
-                        except KeyError as err:
-                            logger.warning("No fast path for space: %s", space)
+                        except KeyError:
+                            logger.warning(f"No fast path for space: `{space}`")
                         except AttributeError as err:
                             logger.warning("AttributeError: The binary extension _geomety may be missing: %s", err)
                         else:
@@ -2069,7 +2069,7 @@ class Geometry(object):
         if collect_garbage:
             gc.collect()
 
-    def calcfrom1d(self, tth, I, shape=None, mask=None,
+    def calcfrom1d(self, tth, intensity, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True,
                    dummy=0.0,
                    polarization_factor=None, polarization_axis_offset=0,
@@ -2079,7 +2079,7 @@ class Geometry(object):
         Computes a 2D image from a 1D integrated profile
 
         :param tth: 1D array with radial unit, this array needs to be ordered
-        :param I: scattering intensity, corresponding intensity
+        :param intensity: scattering intensity, corresponding intensity
         :param shape: shape of the image (if not defined by the detector)
         :param dim1_unit: unit for the "tth" array
         :param correctSolidAngle:
@@ -2098,7 +2098,7 @@ class Geometry(object):
             shape = self.detector.max_shape
 
         ttha = self.center_array(shape, unit=dim1_unit, scale=False)
-        calcimage = numpy.interp(ttha.ravel(), tth, I)
+        calcimage = numpy.interp(ttha.ravel(), tth, intensity)
         calcimage.shape = shape
         if correctSolidAngle:
             calcimage *= self.solidAngleArray(shape)
@@ -2120,7 +2120,7 @@ class Geometry(object):
             calcimage[numpy.where(mask)] = dummy
         return calcimage
 
-    def calcfrom2d(self, I, tth, chi, shape=None, mask=None,
+    def calcfrom2d(self, intensity, tth, chi, shape=None, mask=None,
                    dim1_unit=units.TTH, dim2_unit=units.CHI_DEG,
                    correctSolidAngle=True, dummy=0.0,
                    polarization_factor=None, polarization_axis_offset=0,
@@ -2129,7 +2129,7 @@ class Geometry(object):
         """
         Computes a 2D image from a cake / 2D integrated image
 
-        :param I: scattering intensity, as an image n_tth, n_chi
+        :param intensity: scattering intensity, as an image n_tth, n_chi
         :param tth: 1D array with radial unit, this array needs to be ordered
         :param chi: 1D array with azimuthal unit, this array needs to be ordered
         :param shape: shape of the image (if not defined by the detector)
@@ -2161,7 +2161,7 @@ class Geometry(object):
                                       mask=built_mask,
                                       radial=ttha,
                                       azimuthal=chia,
-                                      polar=I,
+                                      polar=intensity,
                                       rad_pos=tth,
                                       azim_pos=chi)
         if correctSolidAngle:
@@ -2208,7 +2208,7 @@ class Geometry(object):
         else:
             raise ValueError("`type_` must be a class (or class name) of a Geometry derived class")
 
-        if kwargs == None:
+        if kwargs is None:
             kwargs = {}
         else:
             kwargs = copy.copy(kwargs)
