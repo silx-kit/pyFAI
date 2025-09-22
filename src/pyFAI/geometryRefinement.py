@@ -222,9 +222,9 @@ class GeometryRefinement(AzimuthalIntegrator):
             logger.warning("No input data, not guessing the PONI")
             return
         if len(self.calibrant.dspacing):
-            # logger.warning(self.calibrant.__repr__())s
+
             tth = self.calc_2th(self.data[:, 2])
-        else:  # assume rings are in decreasing dSpacing in the file
+        else:  # rings are in decreasing dSpacing
             tth = self.data[:, 2]
         asrt = tth.argsort()
         tth = tth[asrt]

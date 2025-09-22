@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2024"
+__date__ = "11/09/2025"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
@@ -87,7 +87,7 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
                 ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
         if ai is not None and cp.calibrant is not None:
             tth = cp.calibrant.get_2th()
-            ttha = ai.twoThetaArray()
+            ttha = ai.center_array(unit="2th_rad", scale=False)
             ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
         ax.legend()
     return ax

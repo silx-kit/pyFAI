@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2025"
+__date__ = "22/09/2025"
 __status__ = "production"
 
 import logging
@@ -276,3 +276,8 @@ def fully_qualified_name(obj):
     "Return the fully qualified name of an object"
     actual_class = obj.__class__.__mro__[0]
     return actual_class.__module__ + "." + actual_class.__name__
+
+
+class ParallaxNotImplemented(Exception):
+    """Raised when parallax calculation is requested but not available in the fast-path."""
+    pass
