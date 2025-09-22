@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/09/2025"
+__date__ = "22/09/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -60,7 +60,7 @@ from .imaged11 import convert_from_ImageD11, convert_to_ImageD11
 from .. import detectors
 from .. import units
 from ..utils.decorators import deprecated
-from ..utils import crc32, deg2rad
+from ..utils import crc32, deg2rad, ParallaxNotImplemented
 from .. import utils
 from ..io import ponifile, integration_config
 from ..units import CONST_hc, to_unit, UnitFiber, CHI_RAD, TTH_RAD
@@ -851,7 +851,7 @@ class Geometry(object):
                     nb_corners = 6 if isinstance(self.detector, detectors.HexDetector) else 4
 
                     corners = None
-                    if (_geometry is not None) and use_cython:
+                    if (_geometry is not None) and use_cython and (self._parallax is None):
                         if self.detector.IS_CONTIGUOUS:
                             d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
                             d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
@@ -865,7 +865,7 @@ class Geometry(object):
                             p3 = det_corners[..., 0]
                         try:
                             if self._parallax is not None:
-                                raise KeyError("Parallax not implemented in fast_path")
+                                raise ParallaxNotImplemented("Parallax not implemented in fast_path")
 
                             res = _geometry.calc_rad_azim(self.dist, self.poni1, self.poni2,
                                                           self.rot1, self.rot2, self.rot3,
@@ -873,11 +873,10 @@ class Geometry(object):
                                                           space, self._wavelength,
                                                           orientation=self.detector.orientation,
                                                           chi_discontinuity_at_pi=self.chiDiscAtPi)
+                        except ParallaxNotImplemented as err:
+                            logger.warning(err)
                         except KeyError as err:
-                            if "Parallax" in str(err):
-                                logger.warning(err)
-                            else:
-                                logger.warning("No fast path for space: %s", space)
+                            logger.warning("No fast path for space: %s", space)
                         except AttributeError as err:
                             logger.warning("AttributeError: The binary extension _geomety may be missing: %s", err)
                         else:
@@ -1172,6 +1171,10 @@ class Geometry(object):
             unit = to_unit(unit)
         meth_name = unit.get(typ)
         if False: #meth_name and meth_name in dir(Geometry):
+            # TODO: clean up this part especially all methods to be called there inside !
+            # Could be integrated with cython path once the parallax calculation is performed.
+            # Right now this is incompatible with parallax correction.
+
             # fast path may be available
             out = Geometry.__dict__[meth_name](self, shape)
             if scale and unit:
