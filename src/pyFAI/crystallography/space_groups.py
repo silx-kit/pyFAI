@@ -182,7 +182,7 @@ class ReflectionCondition:
     @staticmethod
     def group19_P212121(h, k, l):
         """Space group 19: P2₁2₁2₁. Orthorhombic.
-        
+
         Valid reflections must satisfy:
         - h00 (k = 0, l = 0):    h even
         - 0k0 (h = 0, l = 0):    k even
@@ -203,7 +203,7 @@ class ReflectionCondition:
     @staticmethod
     def group20_C2221(h, k, l):
         """
-        Space group 20: C 2 2 21.
+        Space group 20: C 2 2 21. Orthorhombic
 
         Valid reflections must satisfy:
         - General hkl:           h + k even
