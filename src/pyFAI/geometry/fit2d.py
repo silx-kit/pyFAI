@@ -33,19 +33,23 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/02/2023"
+__date__ = "23/09/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
-logger = logging.getLogger(__name__)
 from typing import NamedTuple
 from math import pi, cos, sin, sqrt, acos, asin
-degrees = lambda  x: 180 * x / pi
-radians = lambda  x: x * pi / 180
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
+logger = logging.getLogger(__name__)
+
+def degrees(rad:float) -> float:
+    return 180 * rad / pi
+
+def radians(deg:float) -> float:
+    return deg * pi / 180
 
 
 class Fit2dGeometry(NamedTuple):

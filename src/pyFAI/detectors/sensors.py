@@ -49,6 +49,7 @@ from collections import namedtuple
 from ..containers import dataclass, fields
 import numpy
 from ..resources import resource_filename
+from ..utils.stringutil import to_eng
 
 EnergyRange = namedtuple("EnergyRange", ["min", "max"])
 logger = logging.getLogger(__name__)
@@ -166,6 +167,11 @@ class SensorConfig:
 
     def __repr__(self):
         return json.dumps(self.as_dict(), indent=4)
+
+    def __str__(self):
+        name = self.material.name if isinstance(self.material, SensorMaterial) else self.material
+        thick = to_eng(self.thickness, spacer=" ")+"m" if self.thickness else "\N{INFINITY}"
+        return f"{name}/{thick}"
 
     def as_dict(self):
         """Like asdict, but with some more features:

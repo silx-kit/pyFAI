@@ -93,6 +93,14 @@ class _Dectris(Detector):
             dico["sensor"] = self.sensor.as_dict()
         return dico
 
+    def __repr__(self):
+        txt = f"Detector {self.name}\tPixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
+        if self.orientation:
+            txt += f"\t {self.orientation.name}({self.orientation.value})"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
+        return txt
+
 
 class Eiger(_Dectris):
     """
@@ -119,12 +127,6 @@ class Eiger(_Dectris):
         else:
             self.module_size = module_size
         self.offset1 = self.offset2 = None
-
-    def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-        if self.orientation:
-            txt += f"\t {self.orientation.name} ({self.orientation.value})"
-        return txt
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -473,13 +475,11 @@ class Pilatus(_Dectris):
         self.set_offset_files(x_offset_file, y_offset_file)
 
     def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-        if self.orientation > 0:
-            txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        txt = super().__repr__()
         if self.x_offset_file:
-            txt += f"\t delta_x= {self.x_offset_file}"
+            txt += f"\tdelta_x= {self.x_offset_file}"
         if self.y_offset_file:
-            txt += f"\t delta_y= {self.y_offset_file}"
+            txt += f"\tdelta_y= {self.y_offset_file}"
         return txt
 
     def set_offset_files(self, x_offset_file=None, y_offset_file=None):
@@ -799,13 +799,6 @@ class Pilatus4(_Dectris):
                  sensor:SensorConfig|None=None):
         super(Pilatus4, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         self.module_size = tuple(self.MODULE_SIZE)
-
-    def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-        if self.orientation:
-            txt += f"\t {self.orientation.name} ({self.orientation.value})"
-        return txt
-
 
 class Pilatus4_1M(Pilatus4):
     MAX_SHAPE = 1080, 1033

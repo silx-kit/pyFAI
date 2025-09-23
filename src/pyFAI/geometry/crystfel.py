@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2024"
+__date__ = "23/09/2025"
 __status__ = "production"
 
 import logging
@@ -64,7 +64,7 @@ def parse_crystfel_geom(fname):
                 lhs, rhs = [i.strip() for i in line.split("=", 1)]
                 try:
                     rhs = float(rhs)
-                except:
+                except Exception:
                     pass
                 if "/" in lhs:
                     grp, val = [i.strip() for i in lhs.split("/", 1)]
