@@ -4831,9 +4831,37 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group224_pn3n(h, k, l):
-        """Space group 224: Pn-3n. (h + k + l) even."""
-        return (h + k + l) % 2 == 0
+    def group224_Pn3barn(h: int, k: int, l: int) -> bool:
+        """
+        Space group 224: Pn3̅m. Primitive cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - 0kl (h = 0):           k + l even
+        - h00 (k = 0, l = 0):    h even
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+        validated
+        """
+        # 0kl and its permutations
+        if h == 0:
+            return (k + l) % 2 == 0
+        if k == 0:
+            return (h + l) % 2 == 0
+        if l == 0:
+            return (h + k) % 2 == 0
+
+        # h00 and its permutations
+        if k == 0 and l == 0:
+            return h % 2 == 0
+        if h == 0 and l == 0:
+            return k % 2 == 0
+        if h == 0 and k == 0:
+            return l % 2 == 0
+
+        return True
+
 
     @staticmethod
     def group225_fm3m(h, k, l):
