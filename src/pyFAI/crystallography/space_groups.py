@@ -247,9 +247,52 @@ class ReflectionCondition:
         return (h + k) % 2 == 0  # general
 
     @staticmethod
-    def group22_F222(h, k, l):
-        """Space group 22: F222. F-centering: h, k, l all even or all odd. validated"""
-        return h % 2 == k % 2 == l % 2
+    def group22_F222(h: int, k: int, l: int) -> bool:
+        """
+        Space group 22: F222. Orthorhombic.
+   
+        Valid reflections must satisfy:
+        - General hkl:           h + k, h + l, k + l even
+        - 0kl (h = 0):           k, l even
+        - h0l (k = 0):           h, l even
+        - hk0 (l = 0):           h, k even
+        - h00 (k = 0, l = 0):    h even
+        - 0k0 (h = 0, l = 0):    k even
+        - 00l (h = 0, k = 0):    l even
+
+        Source: ITC
+        validated
+        """
+        # General condition
+        if (h + k) % 2 != 0 or (h + l) % 2 != 0 or (k + l) % 2 != 0:
+            return False
+
+        # 0kl
+        if h == 0:
+            return k % 2 == 0 and l % 2 == 0
+
+        # h0l
+        if k == 0:
+            return h % 2 == 0 and l % 2 == 0
+
+        # hk0
+        if l == 0:
+            return h % 2 == 0 and k % 2 == 0
+
+        # h00
+        if k == 0 and l == 0:
+            return h % 2 == 0
+
+        # 0k0
+        if h == 0 and l == 0:
+            return k % 2 == 0
+
+        # 00l
+        if h == 0 and k == 0:
+            return l % 2 == 0
+
+        return True
+
 
     @staticmethod
     def group23_I222(h: int, k: int, l: int) -> bool:
