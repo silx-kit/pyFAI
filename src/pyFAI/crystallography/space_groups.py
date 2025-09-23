@@ -202,7 +202,7 @@ class ReflectionCondition:
         - h00:     h even
         - 0k0:     k even
         - 00l:     l even
-        .validated
+        validated
         """
         if h == 0 and k == 0:
             return l % 2 == 0  # 00l
