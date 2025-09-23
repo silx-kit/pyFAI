@@ -185,8 +185,8 @@ class ReflectionCondition:
         Space group 18: P2₁2₁2. Orthorhombic.
         
         Valid reflections must satisfy:
-        - h00: h even
-        - 0k0: k even
+        - h00 (k = 0, l = 0) : h even
+        - 0k0 (h = 0, l = 0): k even
         
         Source: ITC
         validated
