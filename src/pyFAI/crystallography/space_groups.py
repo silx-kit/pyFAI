@@ -164,11 +164,20 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group17_P2221(h, k, l):
-        """Space group 17: P 2 2 21. (0 0 l): l even only. validated"""
+    def group17_P2221(h: int, k: int, l: int) -> bool:
+        """
+        Space group 17: P222₁. Orthorhombic.
+
+        Valid reflections must satisfy:
+        - 00l (h = 0, k = 0):   l even
+
+        Source: ITC
+        validated
+        """
         if h == 0 and k == 0:
-            return l % 2 == 0
+            return l % 2 == 0  # 00l
         return True
+
 
     @staticmethod
     def group18_P21212(h: int, k: int, l: int) -> bool:
