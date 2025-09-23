@@ -4864,7 +4864,7 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group225_Fm3bar_n(h: int, k: int, l: int) -> bool:
+    def group225_Fm3bar_m(h: int, k: int, l: int) -> bool:
         """
         Space group 225: Fm3̅m. Face-centred cubic.
         Reflection conditions are permutable.
