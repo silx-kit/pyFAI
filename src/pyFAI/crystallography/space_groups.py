@@ -303,7 +303,6 @@ class ReflectionCondition:
     def group24_I212121(h: int, k: int, l: int) -> bool:
         """
         Space group 24: I2₁2₁2₁. Orthorhombic.
-        Reflection conditions without cyclic permutations.
 
         Valid reflections must satisfy:
         - General hkl:           h + k + l = 2n
