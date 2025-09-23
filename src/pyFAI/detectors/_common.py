@@ -875,7 +875,10 @@ class Detector(metaclass=DetectorMeta):
                 det_grp["dummy"] = self.dummy
             if self.delta_dummy is not None:
                 det_grp["delta_dummy"] = self.delta_dummy
-            det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)
+            det_grp.create_dataset("pixel_size",
+                numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32),
+                ).attrs["unit"]="m"
+
             det_grp["force_pixel"] = self.force_pixel
             det_grp["force_pixel"].attrs["info"] = "The detector class specifies the pixel size"
             if self.max_shape is not None:
