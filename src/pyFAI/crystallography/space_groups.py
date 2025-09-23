@@ -1503,7 +1503,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group82_I_4(h, k, l):
+    def group82_I4bar(h, k, l):
         """
         Space group 82: I4̅. Body-centered tetragonal (I-centering).
         Valid reflections must satisfy:
@@ -2101,7 +2101,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group111_P4bar2m(h, k, l):
+    def group111_P4bar_2m(h, k, l):
         """
         Space group 111: P4̅2m. Tetragonal. Primitive lattice.
         No reflection conditions — all (h, k, l) are allowed.
@@ -2111,7 +2111,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group112_P4bar2c(h, k, l):
+    def group112_P4bar_2c(h, k, l):
         """
         Space group 112: P4̅2c. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2126,7 +2126,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group113_P4bar21m(h, k, l):
+    def group113_P4bar_21m(h, k, l):
         """
         Space group 113: P4̅2₁m. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2142,7 +2142,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group114_P4bar21c(h, k, l):
+    def group114_P4bar_21c(h, k, l):
         """
         Space group 114: P4̅2₁c. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2163,7 +2163,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group115_P4barm2(h, k, l):
+    def group115_P4bar_m2(h, k, l):
         """
         Space group 115: P4̅m2. Tetragonal. Primitive lattice.
         No reflection conditions — all (h, k, l) are allowed.
@@ -2173,7 +2173,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group116_P4barc2(h, k, l):
+    def group116_P4bar_c2(h, k, l):
         """
         Space group 116: P4̅c2. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2190,7 +2190,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group117_P4barb2(h, k, l):
+    def group117_P4bar_b2(h, k, l):
         """
         Space group 117: P4̅b2. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2208,7 +2208,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group118_P4bar2(h, k, l):
+    def group118_P4bar_n2(h, k, l):
         """
         Space group 118: P4̅n2. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2234,7 +2234,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group119_I4bar2(h, k, l):
+    def group119_I4bar_m2(h, k, l):
         """
         Space group 119: I4̅m2. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2262,7 +2262,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group120_I4barc2(h, k, l):
+    def group120_I4bar_c2(h, k, l):
         """
         Space group 120: I4̅c2. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2296,7 +2296,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group121_I4bar2m(h, k, l):
+    def group121_I4bar_2m(h, k, l):
         """
         Space group 121: I4̅2m. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2323,7 +2323,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group122_I4bar2d(h, k, l):
+    def group122_I4bar_2d(h, k, l):
         """
         Space group 122: I4̅2d. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -3254,7 +3254,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group162_P3barm(h, k, l):
+    def group162_P3bar_m(h, k, l):
         """
         Space group 162: P3̅1m. Primitive lattice. Trigonal (hexagonal axes).
         No reflection conditions — all (h, k, l) are allowed.
@@ -3264,7 +3264,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group163_P3bar1c(h, k, l):
+    def group163_P3_1c(h, k, l):
         """
         Space group 163: P3̅1c. Trigonal (hexagonal axes), primitive lattice.
         Valid reflections must satisfy:
@@ -3283,7 +3283,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group164_P3barm1(h, k, l):
+    def group164_P3bar_m1(h, k, l):
         """
         Space group 164: P3̅m1. Primitive lattice. Trigonal (hexagonal axes).
         No reflection conditions — all (h, k, l) are allowed.
@@ -4544,7 +4544,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group215_P4bar3m(h: int, k: int, l: int) -> bool:
+    def group215_P4bar_3m(h: int, k: int, l: int) -> bool:
         """
         Space group 215: P4̅3m. Primitive cubic.
         All reflections are allowed; no systematic absences.
@@ -4553,7 +4553,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group216_F4bar3m(h: int, k: int, l: int) -> bool:
+    def group216_F4bar_3m(h: int, k: int, l: int) -> bool:
         """
         Space group 216: F4̅3m. Face-centred cubic.
         Reflection conditions are permutable.
@@ -4588,7 +4588,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group217_I4bar3m(h: int, k: int, l: int) -> bool:
+    def group217_I4bar_3m(h: int, k: int, l: int) -> bool:
         """
         Space group 217: I4̅3m. Body-centred cubic.
         Reflection conditions are permutable.
@@ -4622,7 +4622,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group218_P4bar3n(h: int, k: int, l: int) -> bool:
+    def group218_P4_3n(h: int, k: int, l: int) -> bool:
         """
         Space group 218: P4̅3n. Primitive cubic.
         Reflection conditions are permutable.
@@ -4654,7 +4654,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group219_F4bar3c(h: int, k: int, l: int) -> bool:
+    def group219_F4bar_3c(h: int, k: int, l: int) -> bool:
         """
         Space group 219: F4̅3c. Face-centred cubic.
         Reflection conditions are permutable.
@@ -4701,7 +4701,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group220_I4bar3d(h: int, k: int, l: int) -> bool:
+    def group220_I4bar_3d(h: int, k: int, l: int) -> bool:
         """
         Space group 220: I4̅3d. Body-centred cubic.
         Reflection conditions are permutable.
@@ -4747,7 +4747,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group221_Pm3barm(h: int, k: int, l: int) -> bool:
+    def group221_Pm3bar_m(h: int, k: int, l: int) -> bool:
         """
         Space group 221: Pm3̅m. Primitive cubic.
         All reflections are allowed; no systematic absences.
@@ -4757,7 +4757,7 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group222_Pn3barn(h: int, k: int, l: int) -> bool:
+    def group222_Pn3bar_n(h: int, k: int, l: int) -> bool:
         """
         Space group 222: Pn3̅n. Primitive cubic.
         Reflection conditions are permutable.
@@ -4799,7 +4799,7 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group223_Pm3barn(h: int, k: int, l: int) -> bool:
+    def group223_Pm3_n(h: int, k: int, l: int) -> bool:
         """
         Space group 223: Pm3̅n. Primitive cubic.
         Reflection conditions are permutable.
@@ -4831,7 +4831,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group224_Pn3barn(h: int, k: int, l: int) -> bool:
+    def group224_Pn3bar_m(h: int, k: int, l: int) -> bool:
         """
         Space group 224: Pn3̅m. Primitive cubic.
         Reflection conditions are permutable.
@@ -4864,7 +4864,7 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group225_Fm3barn(h: int, k: int, l: int) -> bool:
+    def group225_Fm3bar_n(h: int, k: int, l: int) -> bool:
         """
         Space group 225: Fm3̅m. Face-centred cubic.
         Reflection conditions are permutable.
@@ -4899,7 +4899,7 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group226_Fm3c(h: int, k: int, l: int) -> bool:
+    def group226_Fm3bar_c(h: int, k: int, l: int) -> bool:
         """
         Space group 226: Fm3̅c. Face-centred cubic.
         Reflection conditions are permutable.
