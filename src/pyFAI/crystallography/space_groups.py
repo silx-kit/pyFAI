@@ -4533,7 +4533,7 @@ class ReflectionCondition:
         if h == k:
             return l % 2 == 0
 
-        # 0kl axis-zero permutations
+        # 0kl cyclic permutations
         if h == 0:
             return (k + l) % 2 == 0
         if k == 0:
@@ -4635,7 +4635,7 @@ class ReflectionCondition:
             Reflection conditions from ITC, adapted to (h, k, l).
         validated
         """
-        # hhl and its permutations
+        # hhl cyclic permutations
         if h == k:
             return l % 2 == 0
         if h == l:
@@ -4643,7 +4643,7 @@ class ReflectionCondition:
         if k == l:
             return h % 2 == 0
 
-        # h00 and its permutations
+        # h00 cyclic permutations
         if k == 0 and l == 0:
             return h % 2 == 0
         if h == 0 and l == 0:
@@ -4682,7 +4682,7 @@ class ReflectionCondition:
         if l == 0:
             return h % 2 == 0 and k % 2 == 0
 
-        # hhl-like rules
+        # hhl cyclic permutations
         if h == k:
             return h % 2 == 0 and l % 2 == 0
         if h == l:
@@ -4728,7 +4728,7 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 4 == 0
 
-        # hhl-like rules
+        # hhl cyclic permutations
         if h == k:
             return (2 * h + l) % 4 == 0
         if h == l:
@@ -4736,7 +4736,7 @@ class ReflectionCondition:
         if k == l:
             return (h + 2 * k) % 4 == 0
 
-        # 0kl axis-zero permutations
+        # 0kl cyclic permutationss
         if h == 0:
             return (k + l) % 2 == 0
         if k == 0:
@@ -4771,7 +4771,7 @@ class ReflectionCondition:
             Reflection conditions from ITC, adapted to (h, k, l).
         validated
         """
-        # 0kl axis-zero permutations
+        # 0kl cyclic permutations
         if h == 0:
             return (k + l) % 2 == 0
         if k == 0:
@@ -4779,7 +4779,7 @@ class ReflectionCondition:
         if l == 0:
             return (h + k) % 2 == 0
 
-        # hhl-like rules
+        # hhl cyclic permutations
         if h == k:
             return l % 2 == 0
         if h == l:
@@ -4812,7 +4812,7 @@ class ReflectionCondition:
             Reflection conditions from ITC, adapted to (h, k, l).
         validated (without cyclic permutations)
         """
-        # hhl and its permutations
+        # hhl cyclic permutations
         if h == k:
             return l % 2 == 0
         if h == l:
@@ -4820,7 +4820,7 @@ class ReflectionCondition:
         if k == l:
             return h % 2 == 0
 
-        # h00 and its permutations
+        # h00 cyclic permutations
         if k == 0 and l == 0:
             return h % 2 == 0
         if h == 0 and l == 0:
@@ -4844,7 +4844,7 @@ class ReflectionCondition:
             Reflection conditions from ITC, adapted to (h, k, l).
         validated
         """
-        # 0kl and its permutations
+        # 0kl cyclic permutations
         if h == 0:
             return (k + l) % 2 == 0
         if k == 0:
@@ -4852,7 +4852,7 @@ class ReflectionCondition:
         if l == 0:
             return (h + k) % 2 == 0
 
-        # h00 and its permutations
+        # h00 cyclic permutations
         if k == 0 and l == 0:
             return h % 2 == 0
         if h == 0 and l == 0:
@@ -4922,7 +4922,7 @@ class ReflectionCondition:
         if h == 0:
             return k % 2 == 0 and l % 2 == 0
 
-        # hhl-like rules (cyclic permutations)
+        # hhl cyclic permutations
         if h == k:
             return h % 2 == 0 and l % 2 == 0
         if h == l:
@@ -5084,7 +5084,7 @@ class ReflectionCondition:
         if (h + k + l) % 2 != 0:
             return False
 
-        # h00
+        # h00 cyclic permutations
         if k == 0 and l == 0:
             return h % 4 == 0
         if h == 0 and l == 0:
@@ -5092,7 +5092,7 @@ class ReflectionCondition:
         if h == 0 and k == 0:
             return l % 4 == 0
 
-        # hhl
+        # hhl cyclic permutations
         if h == k:
             return (2*h + l) % 4 == 0
         if h == l:
@@ -5100,7 +5100,7 @@ class ReflectionCondition:
         if k == l:
             return (2*k + h) % 4 == 0
 
-        # 0kl
+        # 0kl cyclic permutations
         if h == 0:
             return (k % 2 == 0 and l % 2 == 0)
         if k == 0:
