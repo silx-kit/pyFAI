@@ -256,7 +256,8 @@ class Geometry(object):
             if self._parallax:
                 stng += f"\tParallax: \N{MICRO SIGN}= {self.parallax.sensor.mu * 1e-2:.3f} cm\N{Superscript Minus}\N{Superscript One}"
             else:
-                stng += "\tParallax: off"
+                if self.detector.sensor is not None:
+                    stng += "\tParallax: off"
             lstTxt.append(stng)
         lstTxt.append(
             f"SampleDetDist= {self._dist * dist_unit.scale:.6e} {dist_unit}\t"

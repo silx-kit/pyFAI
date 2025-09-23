@@ -170,8 +170,8 @@ class SensorConfig:
 
     def __str__(self):
         name = self.material.name if isinstance(self.material, SensorMaterial) else self.material
-        thick = to_eng(self.thickness, spacer=" ")+"m" if self.thickness else "\N{INFINITY}"
-        return f"{name}/{thick}"
+        thick = to_eng(self.thickness, space="")+"m" if self.thickness else "\N{INFINITY}"
+        return f"{name},{thick}"
 
     def as_dict(self):
         """Like asdict, but with some more features:
