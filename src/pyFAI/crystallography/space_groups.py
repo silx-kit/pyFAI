@@ -5031,12 +5031,33 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group229_ia3d(h, k, l):
-        """Space group 229: Ia-3d. I-centering: (h + k + l) even; (0, 0, l): l divisible by 4."""
+    def group229_Im3bar_m(h: int, k: int, l: int) -> bool:
+        """
+        Space group 229: Im3̅m. Body-centred cubic.
+        Reflection conditions, without permutations.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k + l = 2n
+        - 0kl (h = 0):           k + l even
+        - hhl (h = k):           l even
+        - h00 (k = 0, l = 0):    h even
+        """
+        # General condition
         if (h + k + l) % 2 != 0:
             return False
-        if h == 0 and k == 0:
-            return l % 4 == 0
+
+        # 0kl
+        if h == 0:
+            return (k + l) % 2 == 0
+
+        # hhl
+        if h == k:
+            return l % 2 == 0
+
+        # h00
+        if k == 0 and l == 0:
+            return h % 2 == 0
+
         return True
 
     @staticmethod
