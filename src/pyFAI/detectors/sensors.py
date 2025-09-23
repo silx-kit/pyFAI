@@ -161,7 +161,7 @@ ALL_MATERIALS = {"Si": Si_MATERIAL,
 @dataclass
 class SensorConfig:
     "class for configuration of a sensor"
-    material: SensorMaterial
+    material: SensorMaterial|str
     thickness: float=None
 
     def __repr__(self):
@@ -174,7 +174,9 @@ class SensorConfig:
         for field in fields(self):
             key = field.name
             value = getattr(self, key)
-            if value:
+            if isinstance(value, SensorMaterial):
+                dico[key] = value.name
+            elif value:
                 dico[key] = value
         return dico
 
@@ -194,5 +196,7 @@ class SensorConfig:
             key = field.name
             if key in dico:
                 value = dico.pop(key)
+                if key=="material" and isinstance(value, str):
+                    value = ALL_MATERIALS.get(value) or value
                 to_init[key] = value
         return cls(**to_init)

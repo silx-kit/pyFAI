@@ -206,14 +206,18 @@ class Detector(metaclass=DetectorMeta):
 
         return detector
 
-    def __init__(self, pixel1=None, pixel2=None, splineFile=None, max_shape=None, orientation=0):
+    def __init__(self,
+                 pixel1:float|None=None,
+                 pixel2:float|None=None,
+                 splineFile:str|None=None,
+                 max_shape:tuple[int,int]|None=None,
+                 orientation:int|Orientation=0,
+                 sensor:SensorConfig|None=None):
         """
+        Constructor of the Detector class, most of the time, not used.
         :param pixel1: size of the pixel in meter along the slow dimension (often Y)
-        :type pixel1: float
         :param pixel2: size of the pixel in meter along the fast dimension (often X)
-        :type pixel2: float
         :param splineFile: path to file containing the geometric correction.
-        :type splineFile: str
         :param max_shape: maximum size of the detector
         :type max_shape: 2-tuple of integrers
         :param orientation: Orientation of the detector
@@ -221,7 +225,7 @@ class Detector(metaclass=DetectorMeta):
         self._pixel1 = None
         self._pixel2 = None
         self._pixel_corners = None
-
+        self.sensor = None
         if pixel1:
             self._pixel1 = float(pixel1)
         if pixel2:
@@ -254,7 +258,11 @@ class Detector(metaclass=DetectorMeta):
         if (orientation < 0) or (orientation > 4):
             raise RuntimeError("Unsupported orientation: " + orientation.__doc__)
         self._orientation = orientation
-        self.sensor = None
+        if sensor:
+            if isinstance(sensor, dict):
+                self.sensor = SensorConfig.from_dict(sensor)
+            else:
+                self.sensor = sensor
 
 
     def __repr__(self):
@@ -372,9 +380,12 @@ class Detector(metaclass=DetectorMeta):
         dico = {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
                 'max_shape': self.max_shape,
-                "orientation": self.orientation or 3}
+                "orientation": self.orientation or 3
+                }
         if self._splineFile:
             dico["splineFile"] = self._splineFile
+        if self.sensor:
+            dico["sensor"] = self.sensor.as_dict()
         return dico
 
     def get_splineFile(self):
@@ -894,6 +905,16 @@ class Detector(metaclass=DetectorMeta):
                 dset = det_grp.create_dataset("pixel_corners", data=self.get_pixel_corners(),
                                               compression="gzip", compression_opts=9, shuffle=True)
                 dset.attrs["interpretation"] = "vertex"
+            if self.sensor:
+                try:
+                    det_grp["sensor_material"] = numpy.bytes_(self.sensor.material.name)
+                except Exception as err:
+                    logger.error(f"{type(err)}: {err}")
+                else:
+                    if self.sensor.thickness:
+                        det_grp.create_dataset("sensor_thickness", data=self.sensor.thickness).attrs["unit"] = "m"
+
+
 
     def guess_binning(self, data):
         """Guess the binning/mode depending on the image shape
@@ -1349,6 +1370,11 @@ class NexusDetector(Detector):
                 self._orientation = Orientation(det_grp["orientation"][()])
             else:  # Initialize with default value
                 self._orientation = Orientation(self.ORIENTATION or 3)
+            if "sensor_material" in det_grp:  # restore sensor information
+                dico = {"material": det_grp["sensor_material"][()].decode()}
+                if "sensor_thickness" in det_grp:
+                    dico["thickness"] = det_grp["sensor_thickness"][()]
+                self.sensor =  SensorConfig.from_dict(dico)
         # Populate shape and max_shape if needed
         if self.max_shape is None:
             if self.shape is None:
