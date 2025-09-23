@@ -41,7 +41,6 @@ import os
 import numpy
 import logging
 import json
-from collections import OrderedDict
 from ._common import Detector, Orientation, to_eng, SensorConfig
 from ..utils import expand2d
 logger = logging.getLogger(__name__)

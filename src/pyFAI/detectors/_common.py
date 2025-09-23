@@ -329,7 +329,6 @@ class Detector(metaclass=DetectorMeta):
         """
         if other is None:
             return False
-        res = True
         for what in ["pixel1", "pixel2", "binning", "shape", "max_shape", "orientation", "sensor"]:
             if getattr(self, what) != getattr(other, what):
                 return False
@@ -996,7 +995,7 @@ class Detector(metaclass=DetectorMeta):
             dtype = numpy.dtype(img.dtype)
         else:
             dtype = numpy.dtype(img)
-        actual_dummy = numpy.float32(numpy.dtype(img.dtype).type(numpy.int64(self.dummy)))
+        actual_dummy = numpy.float32(dtype.type(numpy.int64(self.dummy)))
         if self.delta_dummy is None:
             actual_delta_dummy = numpy.finfo("float32").eps
         else:
