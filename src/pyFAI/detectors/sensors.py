@@ -37,13 +37,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/08/2025"
+__date__ = "23/09/2025"
 __status__ = "stable"
 
 import os
 import logging
 from math import exp
 from collections import namedtuple
+from dataclasses import dataclass
 import numpy
 from ..resources import resource_filename
 
@@ -148,3 +149,15 @@ class SensorMaterial:
 # For the record: some classical sensors materials
 Si_MATERIAL = SensorMaterial("Si", 2.329)
 CdTe_MATERIAL = SensorMaterial("CdTe",  5.85)
+GaAs_MATERIAL = SensorMaterial("GaAs", 5.3176)
+
+ALL_MATERIALS = {"Si": Si_MATERIAL,
+                 "CdTe": CdTe_MATERIAL,
+                 "GaAs": GaAs_MATERIAL}
+
+
+@dataclass
+class SensorConfig:
+    "class for configuration of a sensor"
+    material: SensorMaterial
+    thickness: floart=None
