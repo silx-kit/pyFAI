@@ -29,7 +29,7 @@
 
 """Sensors description for detectors:
 
-Defines Si_MATERIAL & CdTe_MATERIAL
+Defines Si_, CdTe_ & GaAs_MATERIAL
 """
 
 
@@ -42,9 +42,11 @@ __status__ = "stable"
 
 import os
 import logging
+import json
+import copy
 from math import exp
 from collections import namedtuple
-from dataclasses import dataclass
+from ..containers import dataclass, fields
 import numpy
 from ..resources import resource_filename
 
@@ -83,7 +85,7 @@ class SensorMaterial:
         def end_block(block):
             descr = EnergyRange(float(block[0].split()[0]) * 1e3,
                                 float(block[-1].split()[0]) * 1e3)
-            data = numpy.vstack(tuple(numpy.fromstring(l, dtype=float, sep=" ") for l in block))
+            data = numpy.vstack(tuple(numpy.fromstring(line, dtype=float, sep=" ") for line in block))
             data[:,0] *= 1e3 # MeV to keV for the energy
             self._data[descr] = data
 
@@ -160,4 +162,37 @@ ALL_MATERIALS = {"Si": Si_MATERIAL,
 class SensorConfig:
     "class for configuration of a sensor"
     material: SensorMaterial
-    thickness: floart=None
+    thickness: float=None
+
+    def __repr__(self):
+        return json.dumps(self.as_dict(), indent=4)
+
+    def as_dict(self):
+        """Like asdict, but with some more features:
+        """
+        dico = {}
+        for field in fields(self):
+            key = field.name
+            value = getattr(self, key)
+            if value:
+                dico[key] = value
+        return dico
+
+    @classmethod
+    def from_dict(cls, dico:dict, inplace:bool=False):
+        """Alternative constructor
+
+        :param dico: dict with the config
+        :param in-place: modify the dico in place ?
+        :return: instance of the dataclass
+        """
+        if not inplace:
+            dico = copy.copy(dico)
+
+        to_init = {}
+        for field in fields(cls):
+            key = field.name
+            if key in dico:
+                value = dico.pop(key)
+                to_init[key] = value
+        return cls(**to_init)

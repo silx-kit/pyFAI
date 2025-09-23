@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "23/09/2025"
 __status__ = "stable"
 
 import logging
@@ -46,6 +46,7 @@ from typing import Dict, Any, Union
 import inspect
 
 from .orientation import Orientation
+from .sensors import SensorConfig
 from .. import io
 from .. import spline
 from .. import utils
@@ -107,19 +108,21 @@ class Detector(metaclass=DetectorMeta):
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
     IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
-    API_VERSION = "1.1"
+    API_VERSION = "1.2"
     # 1.1: support for CORNER attribute
+    # 1.2: support for sensor_material and sensor_thickness
 
     HAVE_TAPER = False
     """If true a spline file is mandatory to correct the geometry"""
     DUMMY = None
     DELTA_DUMMY = None
     ORIENTATION = 0
+    SENSORS = []
     _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                         '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
                         "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy",
                         "_orientation")
-    _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners")
+    _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners", "sensor")
 
     @classmethod
     def factory(cls, name: str, config: Union[None, str, Dict[str, Any]]=None):
@@ -251,6 +254,8 @@ class Detector(metaclass=DetectorMeta):
         if (orientation < 0) or (orientation > 4):
             raise RuntimeError("Unsupported orientation: " + orientation.__doc__)
         self._orientation = orientation
+        self.sensor = None
+
 
     def __repr__(self):
         """Nice representation of the instance
@@ -317,9 +322,10 @@ class Detector(metaclass=DetectorMeta):
         if other is None:
             return False
         res = True
-        for what in ["pixel1", "pixel2", "binning", "shape", "max_shape", "orientation"]:
-            res &= getattr(self, what) == getattr(other, what)
-        return res
+        for what in ["pixel1", "pixel2", "binning", "shape", "max_shape", "orientation", "sensor"]:
+            if getattr(self, what) != getattr(other, what):
+                return False
+        return True
 
     def set_config(self, config):
         """
@@ -352,6 +358,7 @@ class Detector(metaclass=DetectorMeta):
             if "max_shape" in config:
                 self.max_shape = config.get("max_shape")
         self._orientation = Orientation(config.get("orientation", 0))
+        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
         return self
 
     def get_config(self):
