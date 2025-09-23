@@ -4799,8 +4799,35 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group223_pn3m(h, k, l):
-        """Space group 223: Pn-3m. No systematic absences."""
+    def group223_Pm3barn(h: int, k: int, l: int) -> bool:
+        """
+        Space group 223: Pm3̅n. Primitive cubic.
+        Reflection conditions are permutable.
+
+        Valid reflections must satisfy:
+        - hhl (h = k):           l even
+        - h00 (k = 0, l = 0):    h even
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+        validated (without cyclic permutations)
+        """
+        # hhl and its permutations
+        if h == k:
+            return l % 2 == 0
+        if h == l:
+            return k % 2 == 0
+        if k == l:
+            return h % 2 == 0
+
+        # h00 and its permutations
+        if k == 0 and l == 0:
+            return h % 2 == 0
+        if h == 0 and l == 0:
+            return k % 2 == 0
+        if h == 0 and k == 0:
+            return l % 2 == 0
+
         return True
 
     @staticmethod
