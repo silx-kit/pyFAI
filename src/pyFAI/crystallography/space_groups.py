@@ -181,7 +181,17 @@ class ReflectionCondition:
 
     @staticmethod
     def group19_P212121(h, k, l):
-        """Space group 19: P212121. (0 0 l): l even only. (0 k 0): k even only. (h 0 0): h even only.validated"""
+        """Space group 19: P2₁2₁2₁. Orthorhombic.
+        
+        Valid reflections must satisfy:
+        - h00 (k = 0, l = 0):    h even
+        - 0k0 (h = 0, l = 0):    k even
+        - 00l (h = 0, k = 0):    l even
+
+        Source: ITC
+        validated
+        """
+        
         if h == 0 and k == 0:
             return l % 2 == 0
         if h == 0 and l == 0:
