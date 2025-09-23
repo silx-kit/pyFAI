@@ -4747,9 +4747,14 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group221_pm3m(h, k, l):
-        """Space group 221: Pm-3m. No systematic absences.validated"""
+    def group221_Pm3barm(h: int, k: int, l: int) -> bool:
+        """
+        Space group 221: Pm3̅m. Primitive cubic.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
+
 
     @staticmethod
     def group222_pm3n(h, k, l):
