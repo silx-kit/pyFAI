@@ -234,7 +234,7 @@ class ReflectionCondition:
     @staticmethod
     def group21_C222(h, k, l):
         """
-        Space group 21: C 2 2 2
+        Space group 21: C 2 2 2. Orthorhombic
         Valid reflections must satisfy:
         - General (hkl):       h + k even
         - 0kl (h=0):           k even
