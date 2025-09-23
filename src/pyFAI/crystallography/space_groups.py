@@ -255,8 +255,7 @@ class ReflectionCondition:
     def group23_I222(h: int, k: int, l: int) -> bool:
         """
         Space group 23: I222. Orthorhombic.
-        Reflection conditions without cyclic permutations.
-
+    
         Valid reflections must satisfy:
         - General hkl:           h + k + l = 2n
         - 0kl (h = 0):           k + l even
