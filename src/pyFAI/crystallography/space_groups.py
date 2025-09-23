@@ -5041,6 +5041,10 @@ class ReflectionCondition:
         - 0kl (h = 0):           k + l even
         - hhl (h = k):           l even
         - h00 (k = 0, l = 0):    h even
+
+        Source:
+            Reflection conditions from ITC, adapted to (h, k, l).
+        validated
         """
         # General condition
         if (h + k + l) % 2 != 0:
@@ -5060,11 +5064,36 @@ class ReflectionCondition:
 
         return True
 
-    @staticmethod
-    def group230_ia3d(h, k, l):
-        """Space group 230: Ia-3d. I-centering: (h + k + l) even; (0, 0, l): l divisible by 4."""
-        if (h + k + l) % 2 != 0:
-            return False
-        if h == 0 and k == 0:
-            return l % 4 == 0
-        return True
+@staticmethod
+def group230_Ia3bar_d(h: int, k: int, l: int) -> bool:
+    """
+    Space group 230: Ia3̅d. Body-centred cubic.
+    Reflection conditions, without permutations.
+
+    Valid reflections must satisfy:
+    - General hkl:           h + k + l = 2n
+    - 0kl (h = 0):           k, l even
+    - hhl (h = k):           2h + l = 4n
+    - h00 (k = 0, l = 0):    h = 4n
+
+
+
+    """
+    # General condition
+    if (h + k + l) % 2 != 0:
+        return False
+
+    # 0kl
+    if h == 0:
+        return k % 2 == 0 and l % 2 == 0
+
+    # hhl
+    if h == k:
+        return (2*h + l) % 4 == 0
+
+    # h00
+    if k == 0 and l == 0:
+        return h % 4 == 0
+
+    return True
+
