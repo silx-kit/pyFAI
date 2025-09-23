@@ -160,7 +160,10 @@ class ReflectionCondition:
 
     @staticmethod
     def group16_P222(h, k, l):
-        """Space group 16: P222. No systematic absences.validated"""
+        """Space group 16: P222. Orthorhombic.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
