@@ -194,14 +194,17 @@ class ReflectionCondition:
     def group20_C2221(h, k, l):
         """
         Space group 20: C 2 2 21.
+
         Valid reflections must satisfy:
-        - General: h + k even
-        - 0kl:     k even
-        - h0l:     h even
-        - hk0:     h + k even
-        - h00:     h even
-        - 0k0:     k even
-        - 00l:     l even
+        - General hkl:           h + k even
+        - 0kl (h = 0):           k even
+        - h0l (k = 0):           h even
+        - hk0 (l = 0):           h + k even
+        - h00 (k = 0, l = 0):    h even
+        - 0k0 (h = 0, l = 0):    k even
+        - 00l (h = 0, k = 0):    l even
+
+        Source: https://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-hkl?gnum=20
         validated
         """
         if h == 0 and k == 0:
