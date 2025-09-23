@@ -231,6 +231,7 @@ class ReflectionCondition:
         - 0k0 (h=0, l=0):      k even
 
         Note: Unlike space group 20 (C 2 2 21), there is **no rule for 00l** in this group.
+        validated
         """
 
         if h == 0 and l == 0:
