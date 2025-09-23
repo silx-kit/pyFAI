@@ -301,22 +301,56 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group24_I212121(h, k, l):
-        """Space group 24: I212121. I-centering: (h + k + l) even. (h 0 0): h even; (0 k 0): k even; (0 0 l): l even. validated"""
+    def group24_I212121(h: int, k: int, l: int) -> bool:
+        """
+        Space group 24: I2₁2₁2₁. Orthorhombic.
+        Reflection conditions without cyclic permutations.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k + l = 2n
+        - 0kl (h = 0):           k + l even
+        - h0l (k = 0):           h + l even
+        - hk0 (l = 0):           h + k even
+        - h00 (k = 0, l = 0):    h even
+        - 0k0 (h = 0, l = 0):    k even
+        - 00l (h = 0, k = 0):    l even
+        
+        Source: ITC
+        validated
+        """
+        # General condition
         if (h + k + l) % 2 != 0:
             return False
+        # 0kl
+        if h == 0:
+            return (k + l) % 2 == 0
+        # h0l
+        if k == 0:
+            return (h + l) % 2 == 0
+        # hk0
+        if l == 0:
+            return (h + k) % 2 == 0
+        # h00
         if k == 0 and l == 0:
             return h % 2 == 0
+        # 0k0
         if h == 0 and l == 0:
             return k % 2 == 0
+        # 00l
         if h == 0 and k == 0:
             return l % 2 == 0
         return True
 
+
     @staticmethod
     def group25_Pmm2(h, k, l):
-        """Space group 25: Pmm2. No systematic absences.validated"""
+        """Space group 25: Pmm2. Primitive lattice.
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
+
+    
 
     @staticmethod
     def group26_Pmc21(h, k, l):
