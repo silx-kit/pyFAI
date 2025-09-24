@@ -855,6 +855,7 @@ class ReflectionCondition:
         - hk0 (l=0):           k even
         - 0k0 (h=0, l=0):      k even
         - 00l (h=0, k=0):      l even
+        validated
         """
         if h == 0 and k == 0:
             return l % 2 == 0  # 00l
@@ -2065,7 +2066,7 @@ class ReflectionCondition:
         Space group 93: P42 2 2. Tetragonal.
         Valid reflections must satisfy:
         - 00l (h=0, k=0):    l even
-        validat
+        validated
         """
         if h == 0 and k == 0:
             return l % 2 == 0  # 00l
@@ -3447,7 +3448,7 @@ class ReflectionCondition:
 
         Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
             using the relation i = -(h + k).
-        validated.
+        validated
         """
         if h == 0 and k == 0:
             return l % 3 == 0
@@ -3462,7 +3463,7 @@ class ReflectionCondition:
 
         Source: Reflection conditions from ITC (given in hkil), adapted to (h, k, l)
             using the relation i = -(h + k).
-        validated.
+        validated
         """
         if h == 0 and k == 0:
             return l % 3 == 0
