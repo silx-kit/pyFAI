@@ -89,9 +89,15 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group6_pm_b(h, k, l):
-        """Space group 6: Pm (unique axis b). No systematic absences. validated"""
+    def group6_Pm(h: int, k: int, l: int) -> bool:
+        """
+        Space group 6: Pm. Monoclinic, unique axis b.
+        
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
+
 
     @staticmethod
     def group7_Pc(h: int, k: int, l: int) -> bool:
@@ -111,7 +117,6 @@ class ReflectionCondition:
             return l % 2 == 0  # h0l
 
         return True
-
 
     @staticmethod
     def group8_Cm(h: int, k: int, l: int) -> bool:
