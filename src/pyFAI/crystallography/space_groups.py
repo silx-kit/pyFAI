@@ -115,8 +115,13 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group10_P2m_b(h, k, l):
-        """Space group 10: P2/m (unique axis b). No systematic absences.validated"""
+    def group10_P2m(h: int, k: int, l: int) -> bool:
+        """
+        Space group 10: P2/m. Monoclinic, unique axis b.
+
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
 
     @staticmethod
