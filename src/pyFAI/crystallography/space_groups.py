@@ -101,9 +101,39 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group8_cm_b(h, k, l):
-        """Space group 8: Cm (unique axis b). C-centering: (h + k) even. validated"""
+    def group8_Cm(h: int, k: int, l: int) -> bool:
+        """
+        Space group 8: Cm. Monoclinic, unique axis b.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k = 2n
+        - h0l (k = 0):           h even
+        - 0kl (h = 0):           k even
+        - hk0 (l = 0):           h + k even
+        - 0k0 (h = 0, l = 0):    k even
+        - h00 (k = 0, l = 0):    h even
+
+        Source: ITC
+        """
+        # Most specific conditions first
+        if h == 0 and k == 0:
+            return h % 2 == 0  # h00
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+
+        # Semi-specific conditions
+        if k == 0 and h != 0:
+            return h % 2 == 0  # h0l
+        if h == 0 and k != 0:
+            return k % 2 == 0  # 0kl
+        if l == 0 and h != 0 and k != 0:
+            return (h + k) % 2 == 0  # hk0 
+
+        # General condition
         return (h + k) % 2 == 0
+
 
     @staticmethod
     def group9_Cc(h: int, k: int, l: int) -> bool:
