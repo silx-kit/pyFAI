@@ -106,13 +106,42 @@ class ReflectionCondition:
         return (h + k) % 2 == 0
 
     @staticmethod
-    def group9_cc_b(h, k, l):
-        """Space group 9: Cc (unique axis b). C-centering: (h + k) even. (h 0 l): h even only. validated"""
-        if k == 0:
-            return h % 2 == 0 and l % 2 == 0
-        else:
-            return (h + k) % 2 == 0
-        return True
+    def group9_Cc(h: int, k: int, l: int) -> bool:
+        """
+        Space group 9: Cc. Monoclinic, unique axis b.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k = 2n
+        - h0l (k = 0):           h, l even
+        - 0kl (h = 0):           k even
+        - hk0 (l = 0):           h + k even
+        - 0k0 (h = 0, l = 0):    k even
+        - h00 (k = 0, l = 0):    h even
+        - 00l (h = 0, k = 0):    l even
+
+        Source: ITC
+        validated
+        """
+        # Most specific conditions
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
+        if h == 0 and l == 0:
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+
+        # Semi-specific conditions
+        if k == 0 and h != 0:
+            return h % 2 == 0 and l % 2 == 0  # h0l
+        if h == 0 and k != 0:
+            return k % 2 == 0  # 0kl
+        if l == 0 and h != 0 and k != 0:
+            return (h + k) % 2 == 0  # hk0
+
+        # General condition
+        return (h + k) % 2 == 0
+    
+
 
     @staticmethod
     def group10_P2m(h: int, k: int, l: int) -> bool:
