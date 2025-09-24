@@ -94,11 +94,24 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group7_pc_b(h, k, l):
-        """Space group 7: Pc (unique axis b). (h 0 l): l even only. validated"""
+    def group7_Pc(h: int, k: int, l: int) -> bool:
+        """
+        Space group 7: Pc. Monoclinic, unique axis b.
+
+        Valid reflections:
+        - h0l (k=0): l even
+        - 00l (h=0, k=0): l even
+
+        Source: ITC
+        validated
+        """
+        if h == 0 and k == 0:
+            return l % 2 == 0  # 00l
         if k == 0:
-            return l % 2 == 0
+            return l % 2 == 0  # h0l
+
         return True
+
 
     @staticmethod
     def group8_Cm(h: int, k: int, l: int) -> bool:
