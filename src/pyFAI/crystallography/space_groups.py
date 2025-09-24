@@ -80,19 +80,44 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group5_c2_b(h, k, l):
-        """Space group 5: C2 (unique axis b). C-centering: (h + k) even. (0 k 0): k even only. validated"""
-        if (h + k) % 2 != 0:
-            return False
+    def group5_C2(h: int, k: int, l: int) -> bool:
+        """
+        Space group 5: C2. Monoclinic, unique axis b.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k = 2n
+        - h0l (k = 0):           h even
+        - 0kl (h = 0):           k even
+        - hk0 (l = 0):           h + k even
+        - 0k0 (h = 0, l = 0):    k even
+        - h00 (k = 0, l = 0):    h even
+
+        Source: ITC
+        validated
+        """
+        # Most specific conditions
         if h == 0 and l == 0:
-            return k % 2 == 0
-        return True
+            return k % 2 == 0  # 0k0
+        if k == 0 and l == 0:
+            return h % 2 == 0  # h00
+
+        # Semi-specific conditions
+        if k == 0:
+            return h % 2 == 0  # h0l
+        if h == 0:
+            return k % 2 == 0  # 0kl
+        if l == 0:
+            return (h + k) % 2 == 0  # hk0
+
+        # General condition
+        return (h + k) % 2 == 0
+
 
     @staticmethod
     def group6_Pm(h: int, k: int, l: int) -> bool:
         """
         Space group 6: Pm. Monoclinic, unique axis b.
-        
+
         All reflections are allowed; no systematic absences.
         validated
         """
