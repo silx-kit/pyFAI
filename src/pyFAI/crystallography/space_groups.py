@@ -68,9 +68,15 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group3_p2_b(h, k, l):
-        """Space group 3: P2 (unique axis b). No systematic absences. validated"""
+    def group3_P2(h: int, k: int, l: int) -> bool:
+        """
+        Space group 3: P2. Monoclinic, unique axis b.
+
+        All reflections are allowed; no systematic absences.
+        validated
+        """
         return True
+
 
     @staticmethod
     def group4_P21(h: int, k: int, l: int) -> bool:
