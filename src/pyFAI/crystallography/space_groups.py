@@ -114,8 +114,9 @@ class ReflectionCondition:
         - h00 (k = 0, l = 0):    h even
 
         Source: ITC
+        validated
         """
-        # Most specific conditions first
+        # Most specific conditions
         if h == 0 and k == 0:
             return h % 2 == 0  # h00
         if h == 0 and l == 0:
@@ -129,11 +130,10 @@ class ReflectionCondition:
         if h == 0 and k != 0:
             return k % 2 == 0  # 0kl
         if l == 0 and h != 0 and k != 0:
-            return (h + k) % 2 == 0  # hk0 
+            return (h + k) % 2 == 0  # hk0
 
         # General condition
         return (h + k) % 2 == 0
-
 
     @staticmethod
     def group9_Cc(h: int, k: int, l: int) -> bool:
