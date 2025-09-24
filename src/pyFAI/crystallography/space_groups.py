@@ -3797,58 +3797,6 @@ class ReflectionCondition:
 
         return True
 
-    @staticmethod
-    def group167_R3bar_c_v2(h: int, k: int, l: int) -> bool:
-        """
-        Space group 167: R3̅c. Trigonal (hexagonal axes), R-centred lattice.
-        Used for Corundum.
-        Reflection conditions (JKC form, hexagonal setting):
-        - General (hkl):                  -h + k + l = 3n
-        - 0kl (h = 0):                    l = 2n and k + l = 3n
-        - h0l (k = 0):                    l = 2n and h - l = 3n
-        - hk0 (l = 0):                    h - k = 3n
-        - hhl (h = k):                    l = 3n
-        - h00 (k = 0, l = 0):             h = 3n
-        - 0k0 (h = 0, l = 0):             k = 3n
-        - 00l (h = 0, k = 0):             l = 6n
-
-        Source: http://img.chem.ucl.ac.uk/sgp/large/167bz2.htm
-        validated
-        """
-
-        # General reflection condition
-        if (-h + k + l) % 3 != 0:
-            return False
-
-        # 0kl plane
-        if h == 0:
-            return (l % 2 == 0) and ((k + l) % 3 == 0)
-
-        # h0l plane
-        if k == 0:
-            return (l % 2 == 0) and ((h - l) % 3 == 0)
-
-        # hk0 plane
-        if l == 0:
-            return (h - k) % 3 == 0
-
-        # hhl line
-        if h == k:
-            return (l % 3) == 0
-
-        # h00 line
-        if k == 0 and l == 0:
-            return (h % 3) == 0
-
-        # 0k0 line
-        if h == 0 and l == 0:
-            return (k % 3) == 0
-
-        # 00l line
-        if h == 0 and k == 0:
-            return (l % 6) == 0
-
-        return True
 
     @staticmethod
     def group168_P6(h: int, k: int, l: int) -> bool:
