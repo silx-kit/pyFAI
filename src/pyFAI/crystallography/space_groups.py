@@ -73,11 +73,20 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group4_p21_b(h, k, l):
-        """Space group 4: P21 (unique axis b). (0 k 0): k even only. validated"""
+    def group4_P21(h: int, k: int, l: int) -> bool:
+        """
+        Space group 4: P21. Monoclinic, unique axis b.
+
+        Valid reflections must satisfy:
+        - 0k0 (h = 0, l = 0): k even
+
+        Source: ITC
+        validated
+        """
         if h == 0 and l == 0:
             return k % 2 == 0
         return True
+
 
     @staticmethod
     def group5_C2(h: int, k: int, l: int) -> bool:
