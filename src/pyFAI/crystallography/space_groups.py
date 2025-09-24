@@ -393,7 +393,7 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group16_P222(h, k, l):
+    def group16_P222(h: int, k: int, l: int) -> bool:
         """Space group 16: P222. Orthorhombic.
         All reflections are allowed; no systematic absences.
         validated
@@ -435,7 +435,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group19_P212121(h, k, l):
+    def group19_P212121(h: int, k: int, l: int) -> bool:
         """Space group 19: P2₁2₁2₁. Orthorhombic.
 
         Valid reflections must satisfy:
@@ -456,7 +456,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group20_C2221(h, k, l):
+    def group20_C2221(h: int, k: int, l: int) -> bool:
         """
         Space group 20: C 2 2 21. Orthorhombic
 
@@ -487,7 +487,7 @@ class ReflectionCondition:
         return (h + k) % 2 == 0  # general
 
     @staticmethod
-    def group21_C222(h, k, l):
+    def group21_C222(h: int, k: int, l: int) -> bool:
         """
         Space group 21: C 2 2 2. Orthorhombic
         Valid reflections must satisfy:
@@ -652,7 +652,7 @@ class ReflectionCondition:
 
 
     @staticmethod
-    def group25_Pmm2(h, k, l):
+    def group25_Pmm2(h: int, k: int, l: int) -> bool:
         """Space group 25: Pmm2. Primitive lattice.
         All reflections are allowed; no systematic absences.
         validated
@@ -662,7 +662,7 @@ class ReflectionCondition:
     
 
     @staticmethod
-    def group26_Pmc21(h, k, l):
+    def group26_Pmc21(h: int, k: int, l: int) -> bool:
         """Space group 26: Pmc21.
         Valid reflections must satisfy:
         - h0l: l = 2n
@@ -674,7 +674,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group27_Pcc2(h, k, l):
+    def group27_Pcc2(h: int, k: int, l: int) -> bool:
         """Space group 27: Pcc2.
         Valid reflections must satisfy:
         - General (hkl):       No condition (unrestricted)
@@ -689,7 +689,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group28_pma2(h, k, l):
+    def group28_pma2(h: int, k: int, l: int) -> bool:
         """
         Space group 28: Pma2
         Valid reflections must satisfy:
@@ -703,7 +703,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group29_Pca21(h, k, l):
+    def group29_Pca21(h: int, k: int, l: int) -> bool:
         """
         Space group 29: Pca2₁
         Valid reflections must satisfy:
@@ -723,7 +723,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group30_pnc2(h, k, l):
+    def group30_pnc2(h: int, k: int, l: int) -> bool:
         """
         Space group 30: Pnc2
         Valid reflections must satisfy:
@@ -744,7 +744,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group31_pmn21(h, k, l):
+    def group31_pmn21(h: int, k: int, l: int) -> bool:
         """
         Space group 31: Pmn2₁
         Valid reflections must satisfy:
@@ -762,7 +762,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group32_pba2(h, k, l):
+    def group32_pba2(h: int, k: int, l: int) -> bool:
         """ "
         Space group 32: Pba2.
         Valid reflections must satisfy:
@@ -779,7 +779,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group33_Pna21(h, k, l):
+    def group33_Pna21(h: int, k: int, l: int) -> bool:
         """Space group 33: Pna21.
         Valid reflections must satisfy:
         - 0kl (h=0):        k + l even
@@ -795,7 +795,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group34_Pnn2(h, k, l):
+    def group34_Pnn2(h: int, k: int, l: int) -> bool:
         """Space group 34: Pnn2. P-centering.
         Valid reflections must satisfy:
         - 0kl (h=0):        k + l even
@@ -809,7 +809,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group35_Cmm2(h, k, l):
+    def group35_Cmm2(h: int, k: int, l: int) -> bool:
         """Space group 35: Cmm2. C-centering.
         Valid reflections must satisfy:
         - General (hkl):       h + k even
@@ -824,7 +824,7 @@ class ReflectionCondition:
         return (h + k) % 2 == 0
 
     @staticmethod
-    def group36_Cmc21(h, k, l):
+    def group36_Cmc21(h: int, k: int, l: int) -> bool:
         """Space group 36: Cmc2₁. C-centering.
         Valid reflections must satisfy:
         - General (hkl):       h + k even
@@ -843,7 +843,7 @@ class ReflectionCondition:
         return (h + k) % 2 == 0  # covers hk0 and general case
 
     @staticmethod
-    def group37_Cmm2(h, k, l):
+    def group37_Cmm2(h: int, k: int, l: int) -> bool:
         """Space group 37: Cmm2. C-centering.
         Valid reflections satisfy:
         - General (hkl):       h + k even
@@ -861,7 +861,7 @@ class ReflectionCondition:
         return (h + k) % 2 == 0
 
     @staticmethod
-    def group38_Amm2(h, k, l):
+    def group38_Amm2(h: int, k: int, l: int) -> bool:
         """
         Space group 38: Amm2. A-centering.
         Valid reflections satisfy:
@@ -881,7 +881,7 @@ class ReflectionCondition:
         return (k + l) % 2 == 0  # general and 0kl
 
     @staticmethod
-    def group39_Aem2(h, k, l):
+    def group39_Aem2(h: int, k: int, l: int) -> bool:
         """
         Space group 39: Aem2. A-centering.
         Valid reflections must satisfy:
@@ -904,7 +904,7 @@ class ReflectionCondition:
         return (k + l) % 2 == 0  # general case
 
     @staticmethod
-    def group40_Ama2(h, k, l):
+    def group40_Ama2(h: int, k: int, l: int) -> bool:
         """
         Space group 40: Ama2. A-centering.
         Valid reflections must satisfy:
@@ -928,7 +928,7 @@ class ReflectionCondition:
         return k % 2 == 0 if l == 0 else (k + l) % 2 == 0
 
     @staticmethod
-    def group41_Aea2(h, k, l):
+    def group41_Aea2(h: int, k: int, l: int) -> bool:
         """
         Space group 41: Aea2. A-centering.
         Valid reflections must satisfy:
@@ -955,7 +955,7 @@ class ReflectionCondition:
         return (k + l) % 2 == 0  # general hkl
 
     @staticmethod
-    def group42_Fmm2(h, k, l):
+    def group42_Fmm2(h: int, k: int, l: int) -> bool:
         """
         Space group 42: Fmm2. F-centering.
         Valid reflections must satisfy:
@@ -982,7 +982,7 @@ class ReflectionCondition:
         return (h + k) % 2 == 0 and (h + l) % 2 == 0 and (k + l) % 2 == 0
 
     @staticmethod
-    def group43_Fdd2(h, k, l):
+    def group43_Fdd2(h: int, k: int, l: int) -> bool:
         """
         Space group 43: Fdd2. F-centering.
         Valid reflections must satisfy:
@@ -1010,7 +1010,7 @@ class ReflectionCondition:
         return (h + k) % 2 == 0 and (h + l) % 2 == 0 and (k + l) % 2 == 0
 
     @staticmethod
-    def group44_Imm2(h, k, l):
+    def group44_Imm2(h: int, k: int, l: int) -> bool:
         """
         Space group 44: Imm2. I-centering.
         Valid reflections must satisfy:
@@ -1038,7 +1038,7 @@ class ReflectionCondition:
         return (h + k + l) % 2 == 0  # general hkl
 
     @staticmethod
-    def group45_Iba2(h, k, l):
+    def group45_Iba2(h: int, k: int, l: int) -> bool:
         """
         Space group 45: Iba2. I-centering.
         Valid reflections must satisfy:
@@ -1066,7 +1066,7 @@ class ReflectionCondition:
         return (h + k + l) % 2 == 0
 
     @staticmethod
-    def group46_Ima2(h, k, l):
+    def group46_Ima2(h: int, k: int, l: int) -> bool:
         """
         Space group 46: Ima2. I-centering.
         Valid reflections must satisfy:
@@ -1096,7 +1096,7 @@ class ReflectionCondition:
         return (h + k + l) % 2 == 0  # General
 
     @staticmethod
-    def group47_Pmmm(h, k, l):
+    def group47_Pmmm(h: int, k: int, l: int) -> bool:
         """
         Space group 47: Pmmm. Primitive lattice.
         No reflection conditions — all (h, k, l) are allowed.
@@ -1105,7 +1105,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group48_Pnnn(h, k, l):
+    def group48_Pnnn(h: int, k: int, l: int) -> bool:
         """
         Space group 48: Pnnn. Primitive lattice.
         Valid reflections must satisfy:
@@ -1133,7 +1133,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group49_Pccm(h, k, l):
+    def group49_Pccm(h: int, k: int, l: int) -> bool:
         """
         Space group 49: Pccm. Primitive lattice.
         Valid reflections must satisfy:
@@ -1148,7 +1148,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group50_Pban(h, k, l):
+    def group50_Pban(h: int, k: int, l: int) -> bool:
         """
         Space group 50: Pban. Primitive lattice.
         Valid reflections must satisfy:
@@ -1169,7 +1169,7 @@ class ReflectionCondition:
         return True  # general case
 
     @staticmethod
-    def group51_Pmma(h, k, l):
+    def group51_Pmma(h: int, k: int, l: int) -> bool:
         """
         Space group 51: Pmma. Primitive lattice.
         Valid reflections must satisfy:
@@ -1183,7 +1183,7 @@ class ReflectionCondition:
         return True  # general
 
     @staticmethod
-    def group52_Pnna(h, k, l):
+    def group52_Pnna(h: int, k: int, l: int) -> bool:
         """
         Space group 52: Pnna. Primitive lattice.
         Valid reflections must satisfy:
@@ -1211,7 +1211,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group53_Pmna(h, k, l):
+    def group53_Pmna(h: int, k: int, l: int) -> bool:
         """
         Space group 53: Pmna. Primitive lattice.
         Valid reflections must satisfy:
@@ -1229,7 +1229,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group54_Pcca(h, k, l):
+    def group54_Pcca(h: int, k: int, l: int) -> bool:
         """
         Space group 54: Pcca. Primitive lattice.
         Valid reflections must satisfy:
@@ -1248,7 +1248,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group55_Pbam(h, k, l):
+    def group55_Pbam(h: int, k: int, l: int) -> bool:
         """
         Space group 55: Pbam. Primitive lattice.
         Valid reflections must satisfy:
@@ -1266,7 +1266,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group56_Pccn(h, k, l):
+    def group56_Pccn(h: int, k: int, l: int) -> bool:
         """
         Space group 56: Pccn. Primitive lattice.
         Valid reflections must satisfy:
@@ -1294,7 +1294,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group57_Pbcm(h, k, l):
+    def group57_Pbcm(h: int, k: int, l: int) -> bool:
         """
         Space group 57: Pbcm. Primitive lattice.
         Valid reflections must satisfy:
@@ -1316,7 +1316,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group58_Pnnm(h, k, l):
+    def group58_Pnnm(h: int, k: int, l: int) -> bool:
         """
         Space group 58: Pnnm. Primitive lattice.
         Valid reflections must satisfy:
@@ -1341,7 +1341,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group59_Pmmn(h, k, l):
+    def group59_Pmmn(h: int, k: int, l: int) -> bool:
         """
         Space group 59: Pmmn. Primitive lattice.
         Valid reflections must satisfy:
@@ -1360,7 +1360,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group60_Pbcn(h, k, l):
+    def group60_Pbcn(h: int, k: int, l: int) -> bool:
         """
         Space group 60: Pbcn. Primitive lattice.
         Valid reflections must satisfy:
@@ -1388,7 +1388,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group61_Pbca(h, k, l):
+    def group61_Pbca(h: int, k: int, l: int) -> bool:
         """
         Space group 61: Pbca. Primitive lattice.
         Valid reflections must satisfy:
@@ -1414,7 +1414,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group62_Pnma(h, k, l):
+    def group62_Pnma(h: int, k: int, l: int) -> bool:
         """
         Space group 62: Pnma. Primitive lattice.
         Valid reflections must satisfy:
@@ -1439,7 +1439,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group63_Cmcm(h, k, l):
+    def group63_Cmcm(h: int, k: int, l: int) -> bool:
         """
         Space group 63: Cmcm. C-centering.
         Valid reflections must satisfy:
@@ -1467,7 +1467,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group64_Cmce(h, k, l):
+    def group64_Cmce(h: int, k: int, l: int) -> bool:
         """
         Space group 64: Cmce. C-centering.
         Valid reflections must satisfy:
@@ -1501,7 +1501,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group65_Cmmm(h, k, l):
+    def group65_Cmmm(h: int, k: int, l: int) -> bool:
         """
         Space group 65: Cmmm. C-centering.
         Valid reflections must satisfy:
@@ -1522,7 +1522,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group66_Cccm(h, k, l):
+    def group66_Cccm(h: int, k: int, l: int) -> bool:
         """
         Space group 66: Cccm. C-centering.
         Valid reflections must satisfy:
@@ -1544,7 +1544,7 @@ class ReflectionCondition:
         return (h + k) % 2 == 0  # general hkl
 
     @staticmethod
-    def group67_Cmme(h, k, l):
+    def group67_Cmme(h: int, k: int, l: int) -> bool:
         """
         Space group 67: Cmme. C-centering.
         Valid reflections must satisfy:
@@ -1563,7 +1563,7 @@ class ReflectionCondition:
         return (h + k) % 2 == 0  # general hkl
 
     @staticmethod
-    def group68_Ccce(h, k, l):
+    def group68_Ccce(h: int, k: int, l: int) -> bool:
         """
         Space group 68: Ccce. C-centering.
         Valid reflections must satisfy:
@@ -1591,7 +1591,7 @@ class ReflectionCondition:
         return (h + k) % 2 == 0  # general hkl
 
     @staticmethod
-    def group69_Fmmm(h, k, l):
+    def group69_Fmmm(h: int, k: int, l: int) -> bool:
         """
         Space group 69: Fmmm. F-centering.
         Valid reflections must satisfy:
@@ -1622,7 +1622,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group70_Fddd(h, k, l):
+    def group70_Fddd(h: int, k: int, l: int) -> bool:
         """
         Space group 70: Fddd. F-centering.
         Valid reflections must satisfy:
@@ -1657,7 +1657,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group71_Immm(h, k, l):
+    def group71_Immm(h: int, k: int, l: int) -> bool:
         """
         Space group 71: Immm. Body-centered lattice (I-centering).
         Valid reflections must satisfy:
@@ -1685,7 +1685,7 @@ class ReflectionCondition:
         return (h + k + l) % 2 == 0  # general
 
     @staticmethod
-    def group72_Ibam(h, k, l):
+    def group72_Ibam(h: int, k: int, l: int) -> bool:
         """
         Space group 72: Ibam. Body-centered lattice (I-centering).
         Valid reflections must satisfy:
@@ -1719,7 +1719,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group73_Ibca(h, k, l):
+    def group73_Ibca(h: int, k: int, l: int) -> bool:
         """
         Space group 73: Ibca. Body-centered lattice (I-centering).
         Valid reflections must satisfy:
@@ -1753,7 +1753,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group74_Imma(h, k, l):
+    def group74_Imma(h: int, k: int, l: int) -> bool:
         """
         Space group 74: Imma. Body-centered lattice (I-centering).
         Valid reflections must satisfy:
@@ -1788,7 +1788,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group75_P4(h, k, l):
+    def group75_P4(h: int, k: int, l: int) -> bool:
         """
         Space group 75: P4. Primitive tetragonal.
         All reflections are allowed; no systematic absences.
@@ -1797,7 +1797,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group76_P41(h, k, l):
+    def group76_P41(h: int, k: int, l: int) -> bool:
         """
         Space group 76: P41. Primitive tetragonal.
         Valid reflections must satisfy:
@@ -1809,7 +1809,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group77_P42(h, k, l):
+    def group77_P42(h: int, k: int, l: int) -> bool:
         """
         Space group 77: P42. Primitive tetragonal.
         Valid reflections must satisfy:
@@ -1821,7 +1821,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group78_P43(h, k, l):
+    def group78_P43(h: int, k: int, l: int) -> bool:
         """
         Space group 78: P43. Primitive tetragonal.
         Valid reflections must satisfy:
@@ -1833,7 +1833,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group79_I4(h, k, l):
+    def group79_I4(h: int, k: int, l: int) -> bool:
         """
         Space group 79: I4. Body-centered lattice (I-centering).
         Valid reflections must satisfy:
@@ -1858,7 +1858,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group80_I41(h, k, l):
+    def group80_I41(h: int, k: int, l: int) -> bool:
         """
         Space group 80: I41. Body-centered tetragonal (I-centering).
         Valid reflections must satisfy:
@@ -1882,7 +1882,7 @@ class ReflectionCondition:
         return l % 2 == 0 if h == k else True  # hhl or general case
 
     @staticmethod
-    def group81_P4bar(h, k, l):
+    def group81_P4bar(h: int, k: int, l: int) -> bool:
         """
         Space group 81: P4̅.
         No systematic absences.
@@ -1891,7 +1891,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group82_I4bar(h, k, l):
+    def group82_I4bar(h: int, k: int, l: int) -> bool:
         """
         Space group 82: I4̅. Body-centered tetragonal (I-centering).
         Valid reflections must satisfy:
@@ -1915,7 +1915,7 @@ class ReflectionCondition:
         return l % 2 == 0 if h == k else True  # hhl or general
 
     @staticmethod
-    def group83_P4m(h, k, l):
+    def group83_P4m(h: int, k: int, l: int) -> bool:
         """
         Space group 83: P4/m. Tetragonal.
         All reflections are allowed; no systematic absences.
@@ -1924,7 +1924,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group84_P42m(h, k, l):
+    def group84_P42m(h: int, k: int, l: int) -> bool:
         """
         Space group 84: P42/m. Tetragonal.
         Valid reflections must satisfy:
@@ -1936,7 +1936,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group85_P4n(h, k, l):
+    def group85_P4n(h: int, k: int, l: int) -> bool:
         """
         Space group 85: P4/n. Tetragonal.
         Valid reflections must satisfy:
@@ -1951,7 +1951,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group86_P42n(h, k, l):
+    def group86_P42n(h: int, k: int, l: int) -> bool:
         """
         Space group 86: P42/n. Tetragonal.
         Valid reflections must satisfy:
@@ -1969,7 +1969,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group87_I4m(h, k, l):
+    def group87_I4m(h: int, k: int, l: int) -> bool:
         """
         Space group 87: I4/m. Body-centered tetragonal (I-centering).
         Valid reflections must satisfy:
@@ -1992,7 +1992,7 @@ class ReflectionCondition:
         return l % 2 == 0 if h == k else True  # hhl or general
 
     @staticmethod
-    def group88_I41a(h, k, l):
+    def group88_I41a(h: int, k: int, l: int) -> bool:
         """
         Space group 88: I41/a. Body-centered tetragonal (I-centering).
         Valid reflections must satisfy:
@@ -2023,7 +2023,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group89_P422(h, k, l):
+    def group89_P422(h: int, k: int, l: int) -> bool:
         """
         Space group 89: P 4 2 2. Tetragonal.
         All reflections are allowed; no systematic absences.
@@ -2032,7 +2032,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group90_P4212(h, k, l):
+    def group90_P4212(h: int, k: int, l: int) -> bool:
         """
         Space group 90: P 4 21 2. Tetragonal.
         Valid reflections must satisfy:
@@ -2047,7 +2047,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group91_P4122(h, k, l):
+    def group91_P4122(h: int, k: int, l: int) -> bool:
         """
         Space group 91: P 41 2 2. Tetragonal
         Valid reflections must satisfy:
@@ -2058,7 +2058,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group92_P41_21_2(h, k, l):
+    def group92_P41_21_2(h: int, k: int, l: int) -> bool:
         """
         Space group 92: P41 21 2. Tetragonal.
         Valid reflections must satisfy:
@@ -2076,7 +2076,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group93_P42_2_2(h, k, l):
+    def group93_P42_2_2(h: int, k: int, l: int) -> bool:
         """
         Space group 93: P42 2 2. Tetragonal.
         Valid reflections must satisfy:
@@ -2088,7 +2088,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group94_P42_21_2(h, k, l):
+    def group94_P42_21_2(h: int, k: int, l: int) -> bool:
         """
         Space group 94: P42 21 2. Tetragonal.
         Valid reflections must satisfy:
@@ -2106,7 +2106,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group95_P43_2_2(h, k, l):
+    def group95_P43_2_2(h: int, k: int, l: int) -> bool:
         """
         Space group 95: P43 2 2. Tetragonal.
         Valid reflections must satisfy:
@@ -2118,7 +2118,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group96_P_43_21_2(h, k, l):
+    def group96_P_43_21_2(h: int, k: int, l: int) -> bool:
         """
         Space group 96: P 43 21 2. Tetragonal.
         Valid reflections must satisfy:
@@ -2137,7 +2137,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group97_I422(h, k, l):
+    def group97_I422(h: int, k: int, l: int) -> bool:
         """
         Space group 97: I422. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2164,7 +2164,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group98_I4122(h, k, l):
+    def group98_I4122(h: int, k: int, l: int) -> bool:
         """
         Space group 98: I4122. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2191,7 +2191,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group99_P4mm(h, k, l):
+    def group99_P4mm(h: int, k: int, l: int) -> bool:
         """
         Space group 99: P4mm. Tetragonal. Primitive lattice.
         No reflection conditions — all (h, k, l) are allowed.
@@ -2201,7 +2201,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group100_P4bm(h, k, l):
+    def group100_P4bm(h: int, k: int, l: int) -> bool:
         """
         Space group 100: P4bm. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2220,7 +2220,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group101_P42cm(h, k, l):
+    def group101_P42cm(h: int, k: int, l: int) -> bool:
         """
         Space group 101: P42cm. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2235,7 +2235,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group102_P42nm(h, k, l):
+    def group102_P42nm(h: int, k: int, l: int) -> bool:
         """
         Space group 102: P42nm. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2260,7 +2260,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group103_P4cc(h, k, l):
+    def group103_P4cc(h: int, k: int, l: int) -> bool:
         """
         Space group 103: P4cc. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2280,7 +2280,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group104_P4nc(h, k, l):
+    def group104_P4nc(h: int, k: int, l: int) -> bool:
         """
         Space group 104: P4nc. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2308,7 +2308,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group105_P42mc(h, k, l):
+    def group105_P42mc(h: int, k: int, l: int) -> bool:
         """
         Space group 105: P4₂mc. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2323,7 +2323,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group106_P42bc(h, k, l):
+    def group106_P42bc(h: int, k: int, l: int) -> bool:
         """
         Space group 106: P4₂bc. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2351,7 +2351,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group107_I4mm(h, k, l):
+    def group107_I4mm(h: int, k: int, l: int) -> bool:
         """
         Space group 107: I4mm. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2378,7 +2378,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group108_I4cm(h, k, l):
+    def group108_I4cm(h: int, k: int, l: int) -> bool:
         """
         Space group 108: I4cm. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2417,7 +2417,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group109_I41md(h, k, l):
+    def group109_I41md(h: int, k: int, l: int) -> bool:
         """
         Space group 109: I4₁md. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2445,7 +2445,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group110_I41cd(h, k, l):
+    def group110_I41cd(h: int, k: int, l: int) -> bool:
         """
         Space group 110: I4₁cd. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2489,7 +2489,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group111_P4bar_2m(h, k, l):
+    def group111_P4bar_2m(h: int, k: int, l: int) -> bool:
         """
         Space group 111: P4̅2m. Tetragonal. Primitive lattice.
         No reflection conditions — all (h, k, l) are allowed.
@@ -2499,7 +2499,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group112_P4bar_2c(h, k, l):
+    def group112_P4bar_2c(h: int, k: int, l: int) -> bool:
         """
         Space group 112: P4̅2c. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2514,7 +2514,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group113_P4bar_21m(h, k, l):
+    def group113_P4bar_21m(h: int, k: int, l: int) -> bool:
         """
         Space group 113: P4̅2₁m. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2530,7 +2530,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group114_P4bar_21c(h, k, l):
+    def group114_P4bar_21c(h: int, k: int, l: int) -> bool:
         """
         Space group 114: P4̅2₁c. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2551,7 +2551,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group115_P4bar_m2(h, k, l):
+    def group115_P4bar_m2(h: int, k: int, l: int) -> bool:
         """
         Space group 115: P4̅m2. Tetragonal. Primitive lattice.
         No reflection conditions — all (h, k, l) are allowed.
@@ -2561,7 +2561,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group116_P4bar_c2(h, k, l):
+    def group116_P4bar_c2(h: int, k: int, l: int) -> bool:
         """
         Space group 116: P4̅c2. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2578,7 +2578,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group117_P4bar_b2(h, k, l):
+    def group117_P4bar_b2(h: int, k: int, l: int) -> bool:
         """
         Space group 117: P4̅b2. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2596,7 +2596,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group118_P4bar_n2(h, k, l):
+    def group118_P4bar_n2(h: int, k: int, l: int) -> bool:
         """
         Space group 118: P4̅n2. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2622,7 +2622,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group119_I4bar_m2(h, k, l):
+    def group119_I4bar_m2(h: int, k: int, l: int) -> bool:
         """
         Space group 119: I4̅m2. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2650,7 +2650,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group120_I4bar_c2(h, k, l):
+    def group120_I4bar_c2(h: int, k: int, l: int) -> bool:
         """
         Space group 120: I4̅c2. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2684,7 +2684,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group121_I4bar_2m(h, k, l):
+    def group121_I4bar_2m(h: int, k: int, l: int) -> bool:
         """
         Space group 121: I4̅2m. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2711,7 +2711,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group122_I4bar_2d(h, k, l):
+    def group122_I4bar_2d(h: int, k: int, l: int) -> bool:
         """
         Space group 122: I4̅2d. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -2748,7 +2748,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group123_P4mmm(h, k, l):
+    def group123_P4mmm(h: int, k: int, l: int) -> bool:
         """
         Space group 123: P4/mmm. Tetragonal. Primitive lattice.
         Valid reflections must satisfy: — all (h, k, l) allowed
@@ -2758,7 +2758,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group124_P4mcc(h, k, l):
+    def group124_P4mcc(h: int, k: int, l: int) -> bool:
         """
         Space group 124: P4/mcc. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2780,7 +2780,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group125_P4nbm(h, k, l):
+    def group125_P4nbm(h: int, k: int, l: int) -> bool:
         """
         Space group 125: P4/nbm. Tetragonal. Primitive lattice..
         Valid reflections must satisfy:
@@ -2805,7 +2805,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group126_P4nnc(h, k, l):
+    def group126_P4nnc(h: int, k: int, l: int) -> bool:
         """
         Space group 126: P4/nnc. Tetragonal. Primitive lattice.
         Valid reflections must satisfy:
@@ -2836,7 +2836,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group127_P4mbm(h, k, l):
+    def group127_P4mbm(h: int, k: int, l: int) -> bool:
         """
         Space group 127: P4/mbm. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -2858,7 +2858,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group128_P4mnc(h, k, l):
+    def group128_P4mnc(h: int, k: int, l: int) -> bool:
         """
         Space group 128: P4/mnc. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -2886,7 +2886,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group129_P4nmm(h, k, l):
+    def group129_P4nmm(h: int, k: int, l: int) -> bool:
         """
         Space group 129: P4/nmm. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -2905,7 +2905,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group130_P4ncc(h, k, l):
+    def group130_P4ncc(h: int, k: int, l: int) -> bool:
         """
         Space group 130: P4/ncc. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -2936,7 +2936,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group131_P42mmc(h, k, l):
+    def group131_P42mmc(h: int, k: int, l: int) -> bool:
         """
         Space group 131: P42/mmc. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -2951,7 +2951,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group132_P42mcm(h, k, l):
+    def group132_P42mcm(h: int, k: int, l: int) -> bool:
         """
         Space group 132: P42/mcm. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -2970,7 +2970,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group133_P42nbc(h, k, l):
+    def group133_P42nbc(h: int, k: int, l: int) -> bool:
         """
         Space group 133: P42/nbc. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -3001,7 +3001,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group134_P42nnm(h, k, l):
+    def group134_P42nnm(h: int, k: int, l: int) -> bool:
         """
         Space group 134: P42/nnm. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -3029,7 +3029,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group135_P42mbc(h, k, l):
+    def group135_P42mbc(h: int, k: int, l: int) -> bool:
         """
         Space group 135: P42/mbc. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -3057,7 +3057,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group136_P42mnm(h, k, l):
+    def group136_P42mnm(h: int, k: int, l: int) -> bool:
         """
         Space group 136: P42/mnm. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -3082,7 +3082,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group137_P42nmc(h, k, l):
+    def group137_P42nmc(h: int, k: int, l: int) -> bool:
         """
         Space group 137: P42/nmc. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -3107,7 +3107,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group138_P42ncm(h, k, l):
+    def group138_P42ncm(h: int, k: int, l: int) -> bool:
         """
         Space group 138: P42/ncm. Tetragonal. Primitive lattice (P-centering).
         Valid reflections must satisfy:
@@ -3135,7 +3135,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group139_I4mmm(h, k, l):
+    def group139_I4mmm(h: int, k: int, l: int) -> bool:
         """
         Space group 139: I4/mmm. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -3170,7 +3170,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group140_I4mcm(h, k, l):
+    def group140_I4mcm(h: int, k: int, l: int) -> bool:
         """
         Space group 140: I4/mcm. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -3205,7 +3205,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group141_I41amd(h, k, l):
+    def group141_I41amd(h: int, k: int, l: int) -> bool:
         """
         Space group 141: I41/amd. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -3250,7 +3250,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group142_I41acd(h, k, l):
+    def group142_I41acd(h: int, k: int, l: int) -> bool:
         """
         Space group 142: I41/acd. Tetragonal. I-centering.
         Valid reflections must satisfy:
@@ -3287,7 +3287,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group143_P3(h, k, l):
+    def group143_P3(h: int, k: int, l: int) -> bool:
         """
         Space group 143: P3. Trigonal.
         No reflection conditions — all (h, k, l) are allowed.
@@ -3297,7 +3297,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group144_P31(h, k, l):
+    def group144_P31(h: int, k: int, l: int) -> bool:
         """
         Space group 144: P31. Trigonal.
         Valid reflections must satisfy:
@@ -3310,7 +3310,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group145_P32(h, k, l):
+    def group145_P32(h: int, k: int, l: int) -> bool:
         """
         Space group 145: P32. Trigonal.
         Valid reflections must satisfy:
@@ -3323,7 +3323,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group146_R3(h, k, l):
+    def group146_R3(h: int, k: int, l: int) -> bool:
         """
         Space group 146: R3. Trigonal, Rhombohedral (R).
         Valid reflections must satisfy:
@@ -3365,7 +3365,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group147_P3bar(h, k, l):
+    def group147_P3bar(h: int, k: int, l: int) -> bool:
         """
         Space group 147: P-3 (P3̅). Trigonal system.
         No reflection conditions — all (h, k, l) are allowed.
@@ -3376,7 +3376,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group148_R3bar(h, k, l):
+    def group148_R3bar(h: int, k: int, l: int) -> bool:
         """
         Space group 148: R-3 (R3̅). Trigonal, Rhombohedral (R).
         Valid reflections must satisfy:
@@ -3406,7 +3406,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group149_P312(h, k, l):
+    def group149_P312(h: int, k: int, l: int) -> bool:
         """
         Space group 149: P3₁2. Trigonal.
         No reflection conditions — all (h, k, l) are allowed.
@@ -3416,7 +3416,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group150_P321(h, k, l):
+    def group150_P321(h: int, k: int, l: int) -> bool:
         """
         Space group 150: P3₂1. Trigonal.
         No reflection conditions — all (h, k, l) are allowed.
@@ -3425,7 +3425,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group151_P3112(h, k, l):
+    def group151_P3112(h: int, k: int, l: int) -> bool:
         """
         Space group 151: P3₁12. Trigonal.
         Valid reflections must satisfy:
@@ -3440,7 +3440,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group152_P3121(h, k, l):
+    def group152_P3121(h: int, k: int, l: int) -> bool:
         """
         Space group 152: P3₁21. Trigonal.
         Valid reflections must satisfy:
@@ -3455,7 +3455,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group153_P3212(h, k, l):
+    def group153_P3212(h: int, k: int, l: int) -> bool:
         """
         Space group 153: P3₂12. Trigonal.
         Valid reflections must satisfy:
@@ -3470,7 +3470,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group154_P3221(h, k, l):
+    def group154_P3221(h: int, k: int, l: int) -> bool:
         """
         Space group 154: P3₂21. Trigonal.
         Valid reflections must satisfy:
@@ -3485,7 +3485,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group155_R32(h, k, l):
+    def group155_R32(h: int, k: int, l: int) -> bool:
         """
         Space group 155: R32. Trigonal, Rhombohedral (R).
         Valid reflections must satisfy:
@@ -3515,7 +3515,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group156_P3m1(h, k, l):
+    def group156_P3m1(h: int, k: int, l: int) -> bool:
         """
         Space group 156: P3m1. Trigonal.
         No reflection conditions — all (h, k, l) are allowed.
@@ -3525,7 +3525,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group157_P31m(h, k, l):
+    def group157_P31m(h: int, k: int, l: int) -> bool:
         """
         Space group 157: P31m. Trigonal.
         No reflection conditions — all (h, k, l) are allowed.
@@ -3535,7 +3535,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group158_P3c1(h, k, l):
+    def group158_P3c1(h: int, k: int, l: int) -> bool:
         """
         Space group 158: P3c1. Trigonal.
         Valid reflections must satisfy:
@@ -3558,7 +3558,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group159_P31c(h, k, l):
+    def group159_P31c(h: int, k: int, l: int) -> bool:
         """
         Space group 159: P31c. Trigonal.
         Valid reflections must satisfy:
@@ -3574,7 +3574,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group160_R3m(h, k, l):
+    def group160_R3m(h: int, k: int, l: int) -> bool:
         """
         Space group 160: R3m. Trigonal (Rhombohedral setting, hexagonal axes).
         Valid reflections must satisfy:
@@ -3642,7 +3642,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group162_P3bar_m(h, k, l):
+    def group162_P3bar_m(h: int, k: int, l: int) -> bool:
         """
         Space group 162: P3̅1m. Primitive lattice. Trigonal (hexagonal axes).
         No reflection conditions — all (h, k, l) are allowed.
@@ -3652,7 +3652,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group163_P3_1c(h, k, l):
+    def group163_P3_1c(h: int, k: int, l: int) -> bool:
         """
         Space group 163: P3̅1c. Trigonal (hexagonal axes), primitive lattice.
         Valid reflections must satisfy:
@@ -3671,7 +3671,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group164_P3bar_m1(h, k, l):
+    def group164_P3bar_m1(h: int, k: int, l: int) -> bool:
         """
         Space group 164: P3̅m1. Primitive lattice. Trigonal (hexagonal axes).
         No reflection conditions — all (h, k, l) are allowed.
@@ -3681,7 +3681,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group165_P3c1(h, k, l):
+    def group165_P3c1(h: int, k: int, l: int) -> bool:
         """
         Space group 165: P3c1. Trigonal (hexagonal axes), primitive lattice.
         Valid reflections must satisfy:
@@ -3705,7 +3705,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group166_R3bar_m(h, k, l):
+    def group166_R3bar_m(h: int, k: int, l: int) -> bool:
         """
         Space group 166: R3̅m. Trigonal (hexagonal axes), rhombohedral lattice.
         Valid reflections must satisfy:
@@ -3737,7 +3737,7 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group167_R3bar_c(h, k, l):
+    def group167_R3bar_c(h: int, k: int, l: int) -> bool:
         """
         Space group 167: R3̅c. Trigonal (hexagonal axes), rhombohedral lattice.
         Used for Corundum.
