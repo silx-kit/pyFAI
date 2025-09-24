@@ -152,11 +152,50 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group15_c2c_b(h, k, l):
-        """Space group 15: C 1 2/c 1(unique axis b). C-centering: (h + k) even. (0 k 0): k even only. validated"""
+    def group15_C2c(h: int, k: int, l: int) -> bool:
+        """
+        Space group 15: C 2/c. Monoclinic, unique axis b.
+
+        Valid reflections must satisfy:
+        - General hkl:           h + k even
+        - h0l (k = 0):           h, l even
+        - 0kl (h = 0):           k even
+        - hk0 (l = 0):           h + k even
+        - 0k0 (h = 0, l = 0):    k even
+        - h00 (k = 0, l = 0):    h even
+        - 00l (h = 0, k = 0):    l even
+
+        Source: https://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-hkl?gnum=15
+        This is similar to http://img.chem.ucl.ac.uk/sgp/large/015ay2.htm  and http://img.chem.ucl.ac.uk/sgp/large/015my2.htm
+        Implementation of ITC, p 265 fails the test.
+
+        validated
+        """
+
+        # 00l
+        if h == 0 and k == 0:
+            return l % 2 == 0
+        # 0k0
+        if h == 0 and l == 0:
+            return k % 2 == 0
+        # h00
+        if k == 0 and l == 0:
+            return h % 2 == 0
+        # h0l
         if k == 0:
             return h % 2 == 0 and l % 2 == 0
-        return (h + k) % 2 == 0
+        # 0kl
+        if h == 0:
+            return k % 2 == 0
+        # hk0
+        if l == 0:
+            return (h + k) % 2 == 0
+        # General hkl
+        if (h + k) % 2 != 0:
+            return False
+        return True
+
+
 
     @staticmethod
     def group16_P222(h, k, l):
@@ -5263,3 +5302,4 @@ class ReflectionCondition:
             return (h % 2 == 0 and k % 2 == 0)
 
         return True
+    
