@@ -63,10 +63,15 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group2_P_1(h, k, l):
-        """Space group 2: P-1. No systematic absences. validated"""
-        return True
+    def group2_P1bar(h: int, k: int, l: int) -> bool:
+        """
+        Space group 2: P1̄. Triclinic.
 
+        All reflections are allowed; no systematic absences.
+        validated
+        """
+        return True
+    
     @staticmethod
     def group3_P2(h: int, k: int, l: int) -> bool:
         """
