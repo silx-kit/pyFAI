@@ -166,12 +166,11 @@ class ReflectionCondition:
         - 00l (h = 0, k = 0):    l even
 
         Source: https://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-hkl?gnum=15
-        This is similar to http://img.chem.ucl.ac.uk/sgp/large/015ay2.htm  and http://img.chem.ucl.ac.uk/sgp/large/015my2.htm
-        Implementation of ITC, p 265 fails the test.
-
+        ITC, p 261
+        There are different rules for different cell choices and other unique axis.
+        
         validated
         """
-
         # 00l
         if h == 0 and k == 0:
             return l % 2 == 0
