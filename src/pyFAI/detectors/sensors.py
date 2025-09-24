@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "24/09/2025"
 __status__ = "stable"
 
 import os
@@ -153,10 +153,13 @@ class SensorMaterial:
 Si_MATERIAL = SensorMaterial("Si", 2.329)
 CdTe_MATERIAL = SensorMaterial("CdTe",  5.85)
 GaAs_MATERIAL = SensorMaterial("GaAs", 5.3176)
+Ge_MATERIAL = SensorMaterial("Ge", 5.327)
 
 ALL_MATERIALS = {"Si": Si_MATERIAL,
+                 "Ge": Ge_MATERIAL,
                  "CdTe": CdTe_MATERIAL,
-                 "GaAs": GaAs_MATERIAL}
+                 "GaAs": GaAs_MATERIAL,
+                 }
 
 
 @dataclass
