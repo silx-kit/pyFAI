@@ -76,7 +76,7 @@ class ReflectionCondition:
         validated
         """
         return True
-    
+
     @staticmethod
     def group3_P2(h: int, k: int, l: int) -> bool:
         """
@@ -86,7 +86,6 @@ class ReflectionCondition:
         validated
         """
         return True
-
 
     @staticmethod
     def group4_P21(h: int, k: int, l: int) -> bool:
@@ -102,7 +101,6 @@ class ReflectionCondition:
         if h == 0 and l == 0:
             return k % 2 == 0
         return True
-
 
     @staticmethod
     def group5_C2(h: int, k: int, l: int) -> bool:
@@ -137,7 +135,6 @@ class ReflectionCondition:
         # General condition
         return (h + k) % 2 == 0
 
-
     @staticmethod
     def group6_Pm(h: int, k: int, l: int) -> bool:
         """
@@ -147,7 +144,6 @@ class ReflectionCondition:
         validated
         """
         return True
-
 
     @staticmethod
     def group7_Pc(h: int, k: int, l: int) -> bool:
@@ -237,7 +233,6 @@ class ReflectionCondition:
         # General condition
         return (h + k) % 2 == 0  # hkl
 
-
     @staticmethod
     def group10_P2m(h: int, k: int, l: int) -> bool:
         """
@@ -300,7 +295,6 @@ class ReflectionCondition:
             return False
         return True
 
-
     @staticmethod
     def group13_P2c(h: int, k: int, l: int) -> bool:
         """
@@ -320,7 +314,6 @@ class ReflectionCondition:
         if k == 0:
             return l % 2 == 0
         return True
-
 
     @staticmethod
     def group14_P21c(h: int, k: int, l: int) -> bool:
@@ -346,7 +339,6 @@ class ReflectionCondition:
             return l % 2 == 0
         return True
 
-
     @staticmethod
     def group15_C2c(h: int, k: int, l: int) -> bool:
         """
@@ -364,7 +356,7 @@ class ReflectionCondition:
         Source: https://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-hkl?gnum=15
         ITC, p 261
         There are different rules for different cell choices and other unique axis.
-        
+
         validated
         """
         # 00l
@@ -390,8 +382,6 @@ class ReflectionCondition:
             return False
         return True
 
-
-
     @staticmethod
     def group16_P222(h: int, k: int, l: int) -> bool:
         """Space group 16: P222. Orthorhombic.
@@ -415,16 +405,15 @@ class ReflectionCondition:
             return l % 2 == 0  # 00l
         return True
 
-
     @staticmethod
     def group18_P21212(h: int, k: int, l: int) -> bool:
         """
         Space group 18: P2₁2₁2. Orthorhombic.
-        
+
         Valid reflections must satisfy:
         - h00 (k = 0, l = 0) : h even
         - 0k0 (h = 0, l = 0): k even
-        
+
         Source: ITC
         validated
         """
@@ -446,7 +435,7 @@ class ReflectionCondition:
         Source: ITC
         validated
         """
-        
+
         if h == 0 and k == 0:
             return l % 2 == 0
         if h == 0 and l == 0:
@@ -518,7 +507,7 @@ class ReflectionCondition:
     def group22_F222(h: int, k: int, l: int) -> bool:
         """
         Space group 22: F222. Orthorhombic.
-   
+
         Valid reflections must satisfy:
         - General hkl:           h + k, h + l, k + l even
         - 0kl (h = 0):           k, l even
@@ -561,12 +550,11 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group23_I222(h: int, k: int, l: int) -> bool:
         """
         Space group 23: I222. Orthorhombic.
-    
+
         Valid reflections must satisfy:
         - General hkl:           h + k + l = 2n
         - 0kl (h = 0):           k + l even
@@ -608,7 +596,6 @@ class ReflectionCondition:
             return l % 2 == 0
 
         return True
-
 
     @staticmethod
     def group24_I212121(h: int, k: int, l: int) -> bool:
@@ -623,7 +610,7 @@ class ReflectionCondition:
         - h00 (k = 0, l = 0):    h even
         - 0k0 (h = 0, l = 0):    k even
         - 00l (h = 0, k = 0):    l even
-        
+
         Source: ITC
         validated
         """
@@ -650,7 +637,6 @@ class ReflectionCondition:
             return l % 2 == 0
         return True
 
-
     @staticmethod
     def group25_Pmm2(h: int, k: int, l: int) -> bool:
         """Space group 25: Pmm2. Primitive lattice.
@@ -658,8 +644,6 @@ class ReflectionCondition:
         validated
         """
         return True
-
-    
 
     @staticmethod
     def group26_Pmc21(h: int, k: int, l: int) -> bool:
@@ -5143,7 +5127,6 @@ class ReflectionCondition:
         """
         return True
 
-
     @staticmethod
     def group222_Pn3bar_n(h: int, k: int, l: int) -> bool:
         """
@@ -5184,7 +5167,6 @@ class ReflectionCondition:
             return l % 2 == 0
 
         return True
-
 
     @staticmethod
     def group223_Pm3_n(h: int, k: int, l: int) -> bool:
@@ -5250,7 +5232,6 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group225_Fm3bar_m(h: int, k: int, l: int) -> bool:
         """
@@ -5284,7 +5265,6 @@ class ReflectionCondition:
             return h % 2 == 0
 
         return True
-
 
     @staticmethod
     def group226_Fm3bar_c(h: int, k: int, l: int) -> bool:
@@ -5323,7 +5303,6 @@ class ReflectionCondition:
             return h % 2 == 0
 
         return True
-
 
     @staticmethod
     def group227_Fd3bar_m(h: int, k: int, l: int) -> bool:
@@ -5417,7 +5396,6 @@ class ReflectionCondition:
 
         return True
 
-
     @staticmethod
     def group229_Im3bar_m(h: int, k: int, l: int) -> bool:
         """
@@ -5482,19 +5460,18 @@ class ReflectionCondition:
 
         # hhl cyclic permutations
         if h == k:
-            return (2*h + l) % 4 == 0
+            return (2 * h + l) % 4 == 0
         if h == l:
-            return (2*h + k) % 4 == 0
+            return (2 * h + k) % 4 == 0
         if k == l:
-            return (2*k + h) % 4 == 0
+            return (2 * k + h) % 4 == 0
 
         # 0kl cyclic permutations
         if h == 0:
-            return (k % 2 == 0 and l % 2 == 0)
+            return k % 2 == 0 and l % 2 == 0
         if k == 0:
-            return (h % 2 == 0 and l % 2 == 0)
+            return h % 2 == 0 and l % 2 == 0
         if l == 0:
-            return (h % 2 == 0 and k % 2 == 0)
+            return h % 2 == 0 and k % 2 == 0
 
         return True
-    
