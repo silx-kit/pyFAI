@@ -120,8 +120,17 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group11_P21m_b(h, k, l):
-        """Space group 11: P21/m (unique axis b). (0 k 0): k even only.validated"""
+    def group11_P21m(h: int, k: int, l: int) -> bool:
+        """
+        Space group 11: P2₁/m. Monoclinic, unique axis b.
+
+        Valid reflections must satisfy:
+        - 0k0 (h = 0, l = 0):       k even
+
+        Source: ITC
+        validated
+        """
+        # 0k0
         if h == 0 and l == 0:
             return k % 2 == 0
         return True
