@@ -117,23 +117,21 @@ class ReflectionCondition:
         validated
         """
         # Most specific conditions
-        if h == 0 and k == 0:
+        if k == 0 and l == 0:
             return h % 2 == 0  # h00
         if h == 0 and l == 0:
             return k % 2 == 0  # 0k0
-        if k == 0 and l == 0:
-            return h % 2 == 0  # h00
 
         # Semi-specific conditions
-        if k == 0 and h != 0:
+        if k == 0:
             return h % 2 == 0  # h0l
-        if h == 0 and k != 0:
+        if h == 0:
             return k % 2 == 0  # 0kl
-        if l == 0 and h != 0 and k != 0:
+        if l == 0:
             return (h + k) % 2 == 0  # hk0
 
         # General condition
-        return (h + k) % 2 == 0
+        return (h + k) % 2 == 0  # hkl
 
     @staticmethod
     def group9_Cc(h: int, k: int, l: int) -> bool:
