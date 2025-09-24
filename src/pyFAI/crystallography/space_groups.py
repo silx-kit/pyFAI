@@ -136,11 +136,25 @@ class ReflectionCondition:
         return True
 
     @staticmethod
-    def group13_P2c_b(h, k, l):
-        """Space group 13: P 1 2/c 1 (unique axis b). (h 0 l): l even. validated"""
+    def group13_P2c(h: int, k: int, l: int) -> bool:
+        """
+        Space group 13: P2/c. Monoclinic, unique axis b.
+
+        Valid reflections must satisfy:
+        - h0l (k = 0):              l even
+        - 00l (h = 0, k = 0):       l even
+
+        Source: ITC
+        validated
+        """
+        # 00l
+        if h == 0 and k == 0:
+            return l % 2 == 0
+        # h0l
         if k == 0:
             return l % 2 == 0
         return True
+
 
     @staticmethod
     def group14_P21c(h: int, k: int, l: int) -> bool:
