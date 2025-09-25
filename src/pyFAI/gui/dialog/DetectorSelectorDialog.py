@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "24/09/2025"
+__date__ = "25/09/2025"
 
 import os
 import logging
@@ -53,7 +53,6 @@ class DetectorSelectorDrop(qt.QWidget):
         super(DetectorSelectorDrop, self).__init__(parent)
         qt.loadUi(get_ui_file("detector-selection-drop.ui"), self)
 
-        self.__detector = None
         self.__dialogState = None
         self.__detector = None
         self.__customDetector = None
@@ -157,12 +156,50 @@ class DetectorSelectorDrop(qt.QWidget):
         for key, value in detectors.sensors.ALL_MATERIALS.items():
             self._detectorSensorMaterials.addItem(key, userData=value)
         self._detectorSensorThickness.setValidator(qt.QDoubleValidator(0.0, 1e4, 1))
+        self._detectorSensorThickness.editingFinished.connect(self.__sensorChanged)
+        self._detectorSensorMaterials.currentIndexChanged.connect(self.__sensorChanged)
 
     def __sensorParallax(self):
         if self._detectorSensorParallax.isChecked():
             self._sensorGroup.setEnabled(True)
         else:
             self._sensorGroup.setEnabled(False)
+        self.__sensorChanged()
+
+    def getSensorConfig(self):
+        if self._detectorSensorParallax.isChecked():
+            sensor_material = self._detectorSensorMaterials.currentData()
+            sensor = detectors.sensors.SensorConfig(sensor_material)
+            thickness = self._detectorSensorThickness.text()
+            if thickness.strip():
+                sensor.thickness = 1e-6*float(thickness)
+            else:
+                sensor.thickness = None
+        else:
+            sensor = None
+        return sensor
+
+    def setSensorConfig(self, sensor=None):
+        if sensor:
+            thickness = f"{1e6*sensor.thickness:.1f}" or ""
+            self._detectorSensorThickness.setText(thickness)
+            index = self._detectorSensorMaterials.findData(sensor.material)
+            self._detectorSensorMaterials.setCurrentIndex(index)
+            self._detectorSensorParallax.setChecked(True)
+            self._sensorGroup.setEnabled(True)
+        else:
+            self._detectorSensorParallax.setChecked(False)
+            self._sensorGroup.setEnabled(False)
+
+    def __sensorChanged(self, **kwargs):
+        # Finally set the sensor config of all possible the detectors
+        sensor = self.getSensorConfig()
+        if self.__customDetector:
+            self.__customDetector.sensor = sensor
+        if self.__detectorFromFile:
+            self.__detectorFromFile.sensor = sensor
+        if self.__detector:
+            self.__detector.sensor = sensor
 
     def getOrientation(self, idx=None):
         if idx is None:
@@ -236,7 +273,8 @@ class DetectorSelectorDrop(qt.QWidget):
                         pixel1=pixelWidth * 1e-6,
                         pixel2=pixelHeight * 1e-6,
                         max_shape=maxShape,
-                        orientation=self.getOrientation())
+                        orientation=self.getOrientation(),
+                        sensor=self.getSensorConfig())
         self.__customDetector = detector
         self._customResult.setVisible(True)
         self._customResult.setText("Detector configured")
@@ -289,7 +327,8 @@ class DetectorSelectorDrop(qt.QWidget):
         if filename.endswith(".spline"):
             try:
                 self.__detectorFromFile = detectors.Detector(splineFile=filename,
-                                                            orientation=self.getOrientation())
+                                                             orientation=self.getOrientation(),
+                                                             sensor=self.getSensorConfig())
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("Spline detector loaded")
             except Exception as e:
@@ -304,7 +343,8 @@ class DetectorSelectorDrop(qt.QWidget):
         else:
             try:
                 self.__detectorFromFile = detectors.NexusDetector(filename=filename,
-                                                                orientation=self.getOrientation())
+                                                                  orientation=self.getOrientation(),
+                                                                  sensor=self.getSensorConfig())
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("HDF5 detector loaded")
             except Exception as e:
@@ -347,12 +387,13 @@ class DetectorSelectorDrop(qt.QWidget):
         # set orientation:
         orientation = detector.orientation
         self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(orientation))
+        self.setSensorConfig(detector.sensor)
         if self.__detector is None:
             self.__selectNoDetector()
         elif self.__detector.__class__ is detectors.NexusDetector:
             self.__selectNexusDetector(self.__detector)
         elif self.__detector.__class__ is detectors.Detector:
-            if self.__detector.get_splineFile() is not None:
+            if self.__detector.splineFile is not None:
                 self.__selectSplineDetector(self.__detector)
             else:
                 self.__selectCustomDetector(self.__detector)
@@ -369,14 +410,19 @@ class DetectorSelectorDrop(qt.QWidget):
             classDetector = self.currentDetectorClass()
             if classDetector is None:
                 return None
-            detector = classDetector(orientation=self.getOrientation())
+            try:
+                detector = classDetector(orientation=self.getOrientation(),
+                                         sensor=self.getSensorConfig())
+            except TypeError as err:
+                _logger.error(err)
+                detector = classDetector(orientation=self.getOrientation())
             if detector.HAVE_TAPER:
                 splineFile = self.__splineFile.value()
                 if splineFile is not None:
                     splineFile = splineFile.strip()
                     if splineFile == "":
                         splineFile = None
-                detector.set_splineFile(splineFile)
+                detector.splineFile = splineFile
             return detector
         else:
             raise RuntimeError("field should be FILE, MANUAL or eventually None")
@@ -441,7 +487,7 @@ class DetectorSelectorDrop(qt.QWidget):
     def __selectSplineDetector(self, detector):
         """Select and display the detector using zero copy."""
         self.__descriptionFile.lockSignals()
-        self.__descriptionFile.setValue(detector.get_splineFile())
+        self.__descriptionFile.setValue(detector.splineFile)
         # FIXME: THe unlock send signals, then it's not the way to avoid processing
         self.__descriptionFile.unlockSignals()
         self.__detectorFromFile = detector
@@ -510,7 +556,7 @@ class DetectorSelectorDrop(qt.QWidget):
         selectionModel.select(selection, qt.QItemSelectionModel.ClearAndSelect)
         self._detectorView.scrollTo(indexStart, qt.QAbstractItemView.PositionAtCenter)
 
-        splineFile = detector.get_splineFile()
+        splineFile = detector.splineFile
         if splineFile is not None:
             self.__splineFile.setValue(splineFile)
 

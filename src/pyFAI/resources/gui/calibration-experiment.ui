@@ -301,7 +301,7 @@
            </widget>
           </item>
           <item row="5" column="0">
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="_detectorSensorLabel">
             <property name="toolTip">
              <string>Sensor material</string>
             </property>
@@ -311,7 +311,7 @@
            </widget>
           </item>
           <item row="5" column="1">
-           <widget class="QLabel" name="_detectorSensor">
+           <widget class="QLabel" name="_detectorSensorName">
             <property name="toolTip">
              <string>Sensor material &amp; thickness</string>
             </property>
@@ -577,6 +577,10 @@
   <tabstop>_imageLoader</tabstop>
   <tabstop>_mask</tabstop>
   <tabstop>_maskLoader</tabstop>
+  <tabstop>_dark</tabstop>
+  <tabstop>_darkLoader</tabstop>
+  <tabstop>_flat</tabstop>
+  <tabstop>_flatLoader</tabstop>
   <tabstop>_nextStep</tabstop>
  </tabstops>
  <resources/>
