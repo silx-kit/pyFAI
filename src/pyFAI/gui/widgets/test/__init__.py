@@ -32,10 +32,7 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/10/2020"
 
-import sys
-import os
 import unittest
-import logging
 
 
 def suite():

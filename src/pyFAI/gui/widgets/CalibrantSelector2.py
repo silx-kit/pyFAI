@@ -121,12 +121,12 @@ class _CalibrantItemView(qt.QAbstractItemView):
     def accept(self):
         """Send event to close and accept the popup"""
         event = qt.QKeyEvent(qt.QKeyEvent.KeyPress, qt.Qt.Key_Enter, qt.Qt.NoModifier, "x")
-        qt.QApplication.sendEvent(self, event);
+        qt.QApplication.sendEvent(self, event)
 
     def reject(self):
         """Send event to close and reject the popup"""
         event = qt.QKeyEvent(qt.QKeyEvent.KeyPress, qt.Qt.Key_Escape, qt.Qt.NoModifier, "x")
-        qt.QApplication.sendEvent(self, event);
+        qt.QApplication.sendEvent(self, event)
 
     def __loadFileRequested(self):
         self.sigLoadFileRequested.emit()

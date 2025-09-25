@@ -48,9 +48,7 @@ logger = logging.getLogger(__name__)
 
 from silx.gui import qt
 from silx.gui import icons
-from silx.gui import colors
 
-from .. import worker as worker_mdl
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..io import integration_config
 from .utils import projecturl

@@ -36,9 +36,7 @@ __date__ = "04/11/2023"
 
 import unittest
 import logging
-import numpy
 
-from .. import validators
 from .... import units
 from .. import unitutils
 

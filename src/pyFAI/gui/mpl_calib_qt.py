@@ -50,8 +50,7 @@ except ImportError:
 
 if qt is not None:
     from .utils import update_fig, maximize_fig
-    from .matplotlib import matplotlib, pyplot, colors
-    from . import utils as gui_utils
+    from .matplotlib import pyplot
 
 from .mpl_calib import MplCalibWidget
 

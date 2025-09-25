@@ -420,17 +420,13 @@ class MplCalibWidget:
 
     # Those methods need to be spacialized:
     def init(self, pick=True, update=True):
-        import inspect
         raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
 
     def update(self):
-        import inspect
         raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
 
     def maximize(self, update=True):
-        import inspect
         raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
 
     def get_ring_value(self):
-        import inspect
         raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")

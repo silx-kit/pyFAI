@@ -1,12 +1,9 @@
 # ensure %matplotlib widget
-import time
 import numpy
 from ..mpl_calib import MplCalibWidget
 from matplotlib import pyplot
-from matplotlib.colors import LogNorm
 # from ...geometryRefinement import GeometryRefinement
 from ..cli_calibration import AbstractCalibration, FixedParameters
-from ..peak_picker import PeakPicker
 try:
     from IPython.core.display import display
     import ipywidgets as widgets

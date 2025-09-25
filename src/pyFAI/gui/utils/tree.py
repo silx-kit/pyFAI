@@ -35,9 +35,8 @@ __date__ = "04/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import os
 import logging
-from ...io.diffmap_config import DataSet, DataSetNT, ListDataSet
-from ...io.tree import TreeItem
+from ...io.diffmap_config import DataSet as DataSet, DataSetNT as DataSetNT, ListDataSet as ListDataSet
+from ...io.tree import TreeItem as TreeItem
 
 logger = logging.getLogger(__name__)
