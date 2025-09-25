@@ -37,18 +37,18 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/09/2025"
+__date__ = "23/09/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
 import copy
 import logging
-
-logger = logging.getLogger(__name__)
+from collections.abc import Callable
 from math import sin, cos, tan, atan2, pi as PI
 import numpy
 import scipy.constants
 
+logger = logging.getLogger(__name__)
 TWO_PI = 2 * PI
 
 try:
@@ -81,18 +81,18 @@ class Unit(object):
 
     def __init__(
         self,
-        name,
-        scale=1,
-        label=None,
-        equation=None,
-        formula=None,
-        center=None,
-        corner=None,
-        delta=None,
-        short_name=None,
-        unit_symbol=None,
-        positive=True,
-        period=None,
+        name:str,
+        scale:float=1,
+        label:str|None=None,
+        equation:Callable|None=None,
+        formula:str|None=None,
+        center:Callable|None=None,
+        corner:Callable|None=None,
+        delta:Callable|None=None,
+        short_name:str|None=None,
+        unit_symbol:str|None=None,
+        positive:bool=True,
+        period:float|None=None,
     ):
         """Constructor of a unit.
 
@@ -1584,7 +1584,7 @@ LENGTH_UNITS = {
     "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)", positive=False),
     "micron": Unit("micron", scale=1e6, label=r"length $l$ ($\mu m$)", positive=False),
     "nm": Unit("nm", scale=1e9, label=r"length $l$ ($nm$)", positive=False),
-    "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)", positive=False),
+    "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)", unit_symbol="\N{Angstrom Sign}", positive=False),
 }
 LENGTH_UNITS["µm"] = LENGTH_UNITS["micron"]
 

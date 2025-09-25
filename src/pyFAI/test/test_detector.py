@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/07/2025"
+__date__ = "23/09/2025"
 
 import os
 import shutil
@@ -41,14 +41,15 @@ import unittest
 import numpy
 import time
 import logging
-logger = logging.getLogger(__name__)
 from .. import detectors
-from ..detectors import detector_factory, ALL_DETECTORS, Detector
+from ..detectors import detector_factory, ALL_DETECTORS, Detector, sensors
 from ..calibrant import CALIBRANT_FACTORY as calibrant_factory
 from ..geometryRefinement import GeometryRefinement
 from .. import io
 from .. import utils
 from .utilstest import UtilsTest
+
+logger = logging.getLogger(__name__)
 
 
 class TestDetector(unittest.TestCase):
@@ -316,6 +317,7 @@ class TestDetector(unittest.TestCase):
                                               wavelength=0.3344e-10,
                                               detector=detector,
                                               calibrant=ceo2)
+        self.assertTrue(pattern_geometry is not None)
 
     def test_displacements(self):
         from ..detectors import Detector
@@ -395,6 +397,20 @@ class TestDetector(unittest.TestCase):
         binned = tuple(i//2 for i in d.shape)
         d.guess_binning(binned)
         self.assertEqual(binned, d.mask.shape, "mask has been binned as well ")
+
+    def test_sensor(self):
+        det1 = detector_factory("pilatus1M", {"sensor": {"material":"Si","thickness":450e-6}})
+        det2 = detector_factory("pilatus1M")
+        self.assertNotEqual(det1, det2, "sensor does not match yet")
+        det2.sensor = sensors.SensorConfig(sensors.Si_MATERIAL, 0.00045)
+        self.assertEqual(det1, det2, "sensor does match now")
+        config = det1.get_config()
+        det3 = detector_factory("pilatus1M", config)
+        self.assertEqual(det2, det3, "after serialization to dict")
+        filename = os.path.join(UtilsTest.tempdir, "test_sensor.h5")
+        det1.save(filename)
+        det4 = detector_factory(filename)
+        self.assertEqual(det2, det4, "after serialization to HDF5")
 
 
 class TestOrientation(unittest.TestCase):

@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2025"
+__date__ = "23/09/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -64,6 +64,7 @@ from ..utils import crc32, deg2rad, ParallaxNotImplemented
 from .. import utils
 from ..io import ponifile, integration_config
 from ..units import CONST_hc, to_unit, UnitFiber, CHI_RAD, TTH_RAD
+from ..parallax import Parallax, ThickSensor, ThinSensor
 
 TWO_PI = 2.0 * pi
 
@@ -230,7 +231,7 @@ class Geometry(object):
                 orientation or detector.ORIENTATION
             )
 
-    def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="m"):
+    def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="A"):
         """Nice representation of the class
 
         :param dist_unit: units for distances
@@ -240,7 +241,7 @@ class Geometry(object):
         """
         dist_unit = to_unit(dist_unit, units.LENGTH_UNITS) or units.l_m
         ang_unit = to_unit(ang_unit, units.ANGLE_UNITS) or units.A_rad
-        wl_unit = to_unit(wl_unit, units.LENGTH_UNITS) or units.l_m
+        wl_unit = to_unit(wl_unit, units.LENGTH_UNITS) or units.l_A
         self.param = [
             self._dist,
             self._poni1,
@@ -251,9 +252,13 @@ class Geometry(object):
         ]
         lstTxt = [self.detector.__repr__()]
         if self._wavelength:
-            lstTxt.append(
-                f"Wavelength= {self._wavelength * wl_unit.scale:.6e} {wl_unit}"
-            )
+            stng = f"Wavelength= {self._wavelength * wl_unit.scale:.6f} {wl_unit.unit_symbol or wl_unit}"
+            if self._parallax:
+                stng += f"\tParallax: \N{MICRO SIGN}= {self.parallax.sensor.mu * 1e-2:.3f} cm\N{Superscript Minus}\N{Superscript One}"
+            else:
+                if self.detector.sensor is not None:
+                    stng += "\tParallax: off"
+            lstTxt.append(stng)
         lstTxt.append(
             f"SampleDetDist= {self._dist * dist_unit.scale:.6e} {dist_unit}\t"
             f"PONI= {self._poni1 * dist_unit.scale:.6e}, {self._poni2 * dist_unit.scale:.6e} {dist_unit}\t"
@@ -2622,7 +2627,7 @@ class Geometry(object):
         new._cached_array = cached
         return new
 
-    def rotation_matrix(self, param=None):
+    def rotation_matrix(self, param:list|numpy.ndarray=None):
         """Compute and return the detector tilts as a single rotation matrix
 
         Corresponds to rotations about axes 1 then 2 then 3 (=> 0 later on)
@@ -2687,6 +2692,36 @@ class Geometry(object):
         y = numpy.atleast_2d([0, self.detector.shape[0]]).T - f2d.centerY
         r = ((x**2 + y**2) ** 0.5).max()
         return int(r)
+
+    def enable_parallax(self,
+                        activate:bool=True,
+                        sensor_material:str=None,
+                        sensor_thickness:float|None=None):
+        """Method to activate parallax correction
+
+        :param activate: set to False to disable parralax correction
+        :param sensor_material: provide the name of the sensor material,
+                                by default use the one definined in the detector
+        :param sensor_thickness: provide the name of the sensor thickness,
+                                by default use the one definined in the detector
+        """
+
+        if activate:
+            if sensor_material is None and self.detector.sensor:
+                sensor_config = self.detector.sensor
+            else:
+                from ..detectors.sensors import SensorConfig
+                sensor_config = SensorConfig.from_dict({"material": sensor_material,
+                                                 "thickness":sensor_thickness})
+            mu = sensor_config.material.mu(energy=self.energy, unit="m")
+            if sensor_config.thickness:
+                sensor = ThinSensor(thickness=sensor_config.thickness, mu=mu)
+            else:
+                sensor = ThickSensor(mu=mu)
+            self.parallax = Parallax(sensor)
+        else:
+            self._parallax = None
+            self.reset()
 
     # ############################################
     # Accessors and public properties of the class
@@ -2956,8 +2991,6 @@ class Geometry(object):
 
     @parallax.setter
     def parallax(self, value):
-        from ..parallax import Parallax
-
         if value is not None and not isinstance(value, Parallax):
             raise RuntimeError("set_parallax requires a Parallax instance")
         self._parallax = value

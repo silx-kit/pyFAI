@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "23/09/2025"
 __status__ = "stable"
 
 import logging
@@ -46,6 +46,7 @@ from typing import Dict, Any, Union
 import inspect
 
 from .orientation import Orientation
+from .sensors import SensorConfig
 from .. import io
 from .. import spline
 from .. import utils
@@ -107,19 +108,21 @@ class Detector(metaclass=DetectorMeta):
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
     IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
-    API_VERSION = "1.1"
+    API_VERSION = "1.2"
     # 1.1: support for CORNER attribute
+    # 1.2: support for sensor_material and sensor_thickness
 
     HAVE_TAPER = False
     """If true a spline file is mandatory to correct the geometry"""
     DUMMY = None
     DELTA_DUMMY = None
     ORIENTATION = 0
+    SENSORS = []
     _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                         '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
                         "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy",
                         "_orientation")
-    _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners")
+    _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners", "sensor")
 
     @classmethod
     def factory(cls, name: str, config: Union[None, str, Dict[str, Any]]=None):
@@ -203,14 +206,18 @@ class Detector(metaclass=DetectorMeta):
 
         return detector
 
-    def __init__(self, pixel1=None, pixel2=None, splineFile=None, max_shape=None, orientation=0):
+    def __init__(self,
+                 pixel1:float|None=None,
+                 pixel2:float|None=None,
+                 splineFile:str|None=None,
+                 max_shape:tuple[int,int]|None=None,
+                 orientation:int|Orientation=0,
+                 sensor:SensorConfig|None=None):
         """
+        Constructor of the Detector class, most of the time, not used.
         :param pixel1: size of the pixel in meter along the slow dimension (often Y)
-        :type pixel1: float
         :param pixel2: size of the pixel in meter along the fast dimension (often X)
-        :type pixel2: float
         :param splineFile: path to file containing the geometric correction.
-        :type splineFile: str
         :param max_shape: maximum size of the detector
         :type max_shape: 2-tuple of integrers
         :param orientation: Orientation of the detector
@@ -218,7 +225,7 @@ class Detector(metaclass=DetectorMeta):
         self._pixel1 = None
         self._pixel2 = None
         self._pixel_corners = None
-
+        self.sensor = None
         if pixel1:
             self._pixel1 = float(pixel1)
         if pixel2:
@@ -251,6 +258,12 @@ class Detector(metaclass=DetectorMeta):
         if (orientation < 0) or (orientation > 4):
             raise RuntimeError("Unsupported orientation: " + orientation.__doc__)
         self._orientation = orientation
+        if sensor:
+            if isinstance(sensor, dict):
+                self.sensor = SensorConfig.from_dict(sensor)
+            else:
+                self.sensor = sensor
+
 
     def __repr__(self):
         """Nice representation of the instance
@@ -316,10 +329,10 @@ class Detector(metaclass=DetectorMeta):
         """
         if other is None:
             return False
-        res = True
-        for what in ["pixel1", "pixel2", "binning", "shape", "max_shape", "orientation"]:
-            res &= getattr(self, what) == getattr(other, what)
-        return res
+        for what in ["pixel1", "pixel2", "binning", "shape", "max_shape", "orientation", "sensor"]:
+            if getattr(self, what) != getattr(other, what):
+                return False
+        return True
 
     def set_config(self, config):
         """
@@ -352,6 +365,7 @@ class Detector(metaclass=DetectorMeta):
             if "max_shape" in config:
                 self.max_shape = config.get("max_shape")
         self._orientation = Orientation(config.get("orientation", 0))
+        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
         return self
 
     def get_config(self):
@@ -365,9 +379,12 @@ class Detector(metaclass=DetectorMeta):
         dico = {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
                 'max_shape': self.max_shape,
-                "orientation": self.orientation or 3}
+                "orientation": self.orientation or 3
+                }
         if self._splineFile:
             dico["splineFile"] = self._splineFile
+        if self.sensor:
+            dico["sensor"] = self.sensor.as_dict()
         return dico
 
     def get_splineFile(self):
@@ -857,7 +874,10 @@ class Detector(metaclass=DetectorMeta):
                 det_grp["dummy"] = self.dummy
             if self.delta_dummy is not None:
                 det_grp["delta_dummy"] = self.delta_dummy
-            det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)
+            det_grp.create_dataset("pixel_size",
+                data=numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32),
+                ).attrs["unit"]="m"
+
             det_grp["force_pixel"] = self.force_pixel
             det_grp["force_pixel"].attrs["info"] = "The detector class specifies the pixel size"
             if self.max_shape is not None:
@@ -887,6 +907,16 @@ class Detector(metaclass=DetectorMeta):
                 dset = det_grp.create_dataset("pixel_corners", data=self.get_pixel_corners(),
                                               compression="gzip", compression_opts=9, shuffle=True)
                 dset.attrs["interpretation"] = "vertex"
+            if self.sensor:
+                try:
+                    det_grp["sensor_material"] = numpy.bytes_(self.sensor.material.name)
+                except Exception as err:
+                    logger.error(f"{type(err)}: {err}")
+                else:
+                    if self.sensor.thickness:
+                        det_grp.create_dataset("sensor_thickness", data=self.sensor.thickness).attrs["unit"] = "m"
+
+
 
     def guess_binning(self, data):
         """Guess the binning/mode depending on the image shape
@@ -965,7 +995,7 @@ class Detector(metaclass=DetectorMeta):
             dtype = numpy.dtype(img.dtype)
         else:
             dtype = numpy.dtype(img)
-        actual_dummy = numpy.float32(numpy.dtype(img.dtype).type(numpy.int64(self.dummy)))
+        actual_dummy = numpy.float32(dtype.type(numpy.int64(self.dummy)))
         if self.delta_dummy is None:
             actual_delta_dummy = numpy.finfo("float32").eps
         else:
@@ -1342,6 +1372,11 @@ class NexusDetector(Detector):
                 self._orientation = Orientation(det_grp["orientation"][()])
             else:  # Initialize with default value
                 self._orientation = Orientation(self.ORIENTATION or 3)
+            if "sensor_material" in det_grp:  # restore sensor information
+                dico = {"material": det_grp["sensor_material"][()].decode()}
+                if "sensor_thickness" in det_grp:
+                    dico["thickness"] = det_grp["sensor_thickness"][()]
+                self.sensor =  SensorConfig.from_dict(dico)
         # Populate shape and max_shape if needed
         if self.max_shape is None:
             if self.shape is None:
