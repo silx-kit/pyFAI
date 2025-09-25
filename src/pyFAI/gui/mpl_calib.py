@@ -251,7 +251,7 @@ class MplCalibWidget:
         try:
             while len(self.ax.collections) > 0:
                 self.ax.collections[0].remove()
-        except:  # matplotlib <3.7
+        except Exception:  # matplotlib <3.7
             self.ax.collections.clear()
         if data is not None:
             try:
@@ -259,7 +259,7 @@ class MplCalibWidget:
                 if not isinstance(cmap, colors.Colormap):
                     try:
                         cmap = matplotlib.colormaps[cmap]
-                    except:  # matplotlib<3.9
+                    except Exception:  # matplotlib<3.9
                         cmap = matplotlib.cm.get_cmap(cmap)
 
                 self.ax.contour(data, levels=values, cmap=cmap, linewidths=linewidths, linestyles=linestyles)
@@ -285,7 +285,7 @@ class MplCalibWidget:
                     self.ax.texts[0].remove()
                 while len(self.ax.lines) > 0:
                     self.ax.lines[0].remove()
-            except:  # matplot<3.7
+            except Exception:  # matplot<3.7
                 if len(self.ax.texts) > 0:
                     self.ax.texts.clear()
                 if len(self.ax.lines) > 0:
@@ -329,13 +329,13 @@ class MplCalibWidget:
             if gpt.annotate in self.ax.texts:
                 try:
                     gpt.annotate.remove()
-                except:  # works for matplotlib <3.7
+                except Exception:  # works for matplotlib <3.7
                     self.ax.texts.remove(gpt.annotate)
             for plot in gpt.plot:
                     if plot in self.ax.lines:
                         try:
                             plot.remove()
-                        except:  # works for matplotlib <3.7
+                        except Exception:  # works for matplotlib <3.7
                             self.ax.lines.remove(plot)
             if update:
                 self.update()
@@ -422,13 +422,13 @@ class MplCalibWidget:
 
     # Those methods need to be spacialized:
     def init(self, pick=True, update=True):
-        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+        raise NotImplementedError(f"MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
 
     def update(self):
-        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+        raise NotImplementedError(f"MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
 
     def maximize(self, update=True):
-        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+        raise NotImplementedError(f"MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
 
     def get_ring_value(self):
-        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+        raise NotImplementedError(f"MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
