@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2021-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2021-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -37,19 +37,21 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2024"
+__date__ = "25/09/2025"
 __status__ = "development"
 
 import logging
 import threading
 import contextlib
 import gc
+import inspect
 from collections import namedtuple
-logger = logging.getLogger(__name__)
 import numpy
 import matplotlib
 from matplotlib import pyplot, colors
 from ..utils.callback import dangling_callback
+
+logger = logging.getLogger(__name__)
 GroupOfPoints = namedtuple("GroupOfPoints", "annotate plot")
 
 
