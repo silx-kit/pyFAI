@@ -37,7 +37,6 @@ __date__ = "16/10/2020"
 import unittest
 import logging
 
-from silx.gui import qt
 from silx.gui.utils import testutils
 from ..QuantityEdit import QuantityEdit
 from pyFAI.gui.utils import units

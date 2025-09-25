@@ -39,8 +39,6 @@ __status__ = "development"
 import logging
 import os.path
 import numpy
-logger = logging.getLogger(__name__)
-
 from silx.gui import qt
 from ..dialog.MessageBox import exception
 from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
@@ -60,8 +58,9 @@ from ...io.ponifile import PoniFile
 from ...io import integration_config
 from ... import method_registry
 from ...containers import PolarizationDescription, ErrorModel
-from ... import detector_factory
 from ...integrator import load_engines
+
+logger = logging.getLogger(__name__)
 
 
 class _WorkerModel(object):

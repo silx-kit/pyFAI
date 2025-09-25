@@ -34,7 +34,6 @@ import os.path
 
 from silx.gui import qt
 from silx.gui.dialog.ColormapDialog import ColormapDialog
-from silx.gui.colors import Colormap
 import silx.resources
 
 from .model.CalibrationModel import CalibrationModel

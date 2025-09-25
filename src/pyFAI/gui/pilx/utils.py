@@ -36,23 +36,23 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "18/06/2025"
 __status__ = "development"
 
+
 from collections import namedtuple
 import logging
-from typing import Iterable, Optional, Tuple
+from typing import Iterable
 import os.path
-logger = logging.getLogger(__name__)
-
-
 import h5py
 import numpy
 from silx.io import get_data
 from silx.io.url import DataUrl
-
 from ...integrator.azimuthal import AzimuthalIntegrator
 from ...io.integration_config import WorkerConfig
 from ...utils.mathutil import binning
+logger = logging.getLogger(__name__)
+
 
 AxisIndex = namedtuple("AxisIndex", "slow fast radial")
+
 
 def get_axes_index(dataset):
     """Calculate the indices of the axis according to the interpretation of the dataset"""
@@ -64,6 +64,7 @@ def get_axes_index(dataset):
         logger.warning(f"No interpretation for NXdata '{dataset.name}', guessing !")
         res = AxisIndex(0, 1, 2)
     return res
+
 
 def compute_radial_values(worker_config: WorkerConfig) -> numpy.ndarray:
     ai = AzimuthalIntegrator.sload(worker_config.poni)
@@ -102,6 +103,7 @@ def get_NXdata(parent: h5py.Group | h5py.File,
         logger.warning(f"Expected a NXdata class for {nxdata.name}")
     return nxdata
 
+
 def get_signal_dataset(parent: h5py.Group | h5py.File,
                        path: str | None = None,
                        default: str="intensity") -> h5py.Dataset:
@@ -112,6 +114,7 @@ def get_signal_dataset(parent: h5py.Group | h5py.File,
     if not isinstance(dset, h5py.Dataset):
         raise TypeError(f"dataset '{dset}' is not a `h5py.Dataset` instance")
     return dset
+
 
 def get_axes_dataset(parent: h5py.Group | h5py.File,
                      path: str | None = None,
@@ -140,7 +143,7 @@ def get_axes_dataset(parent: h5py.Group | h5py.File,
 
 def get_radial_dataset(parent: h5py.Group,
                        nxdata_path: str | None = None,
-                       size: Optional[int]=None) -> h5py.Dataset:
+                       size: int|None=None) -> h5py.Dataset:
     nxdata = get_NXdata(parent, nxdata_path)
     if size is None:
         if "intensity" in nxdata:
@@ -186,7 +189,7 @@ def guess_axis_path(existing_axis_path: str, parent: h5py.Group) -> str | None:
     return None
 
 
-def get_mask_image(maskfile: str, image_shape: Tuple[int, int]) -> numpy.ndarray | None:
+def get_mask_image(maskfile: str, image_shape: tuple[int, int]) -> numpy.ndarray | None:
     """Retrieves mask image from the URL. Rebin to match"""
     mask_image = get_data(url=DataUrl(maskfile))
     if not isinstance(mask_image, numpy.ndarray):

@@ -58,9 +58,7 @@ from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
 from pyFAI.io import ponifile, integration_config
-from pyFAI.worker import Worker
 import pyFAI.geometry
-import json
 
 _logger = logging.getLogger(__name__)
 

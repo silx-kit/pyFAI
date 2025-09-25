@@ -28,8 +28,6 @@ __license__ = "MIT"
 __date__ = "25/06/2023"
 
 from silx.gui import qt
-from silx.gui import icons
-import pyFAI.calibrant
 from pyFAI.calibrant import Calibrant
 from .CalibrantItemModel import CalibrantItemModel
 
