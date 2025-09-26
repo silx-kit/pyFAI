@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "26/09/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -50,6 +50,7 @@ from math import pi
 from numpy import arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
+from pathlib import Path
 import threading
 import json
 import gc
@@ -62,7 +63,8 @@ from .. import units
 from ..utils.decorators import deprecated
 from ..utils import crc32, deg2rad, ParallaxNotImplemented
 from .. import utils
-from ..io import ponifile, integration_config
+from ..io import integration_config
+from ..io.ponifile import PoniFile
 from ..units import CONST_hc, to_unit, UnitFiber, CHI_RAD, TTH_RAD
 from ..parallax import Parallax, ThickSensor, ThinSensor
 
@@ -89,7 +91,7 @@ except ImportError:
     bilinear = None
 
 
-class Geometry(object):
+class Geometry:
     """This class is the parent-class of azimuthal integrator.
 
     This class contains a detector (using composition) which provides the
@@ -1595,11 +1597,11 @@ class Geometry(object):
             # TODO: ponifile should not be used here
             #     if it was only used for IO, it would be better to remove
             #     this function
-            poni = ponifile.PoniFile(data=self)
+            poni = PoniFile(data=self)
             return poni.as_dict()
 
-    def _init_from_poni(self, poni):
-        """Init the geometry from a poni object."""
+    def _init_from_poni(self, poni:PoniFile) ->None:
+        """Init the geometry from a PoniFile instance."""
         if poni.detector is not None:
             self.detector = poni.detector
         if poni.dist is not None:
@@ -1616,9 +1618,12 @@ class Geometry(object):
             self._rot3 = poni.rot3
         if poni.wavelength is not None:
             self._wavelength = poni.wavelength
-        self.reset()
+        if poni.parallax:
+            self.enable_parallax()
+        else:
+            self.reset()
 
-    def set_config(self, config):
+    def set_config(self, config:dict):
         """
         Set the config of the geometry and of the underlying detector
 
@@ -1628,41 +1633,40 @@ class Geometry(object):
         # TODO: ponifile should not be used here
         #     if it was only used for IO, it would be better to remove
         #     this function
-        poni = ponifile.PoniFile(config)
+        poni = PoniFile(config)
         self._init_from_poni(poni)
         return self
 
-    def save(self, filename):
+    def save(self, filename:str) -> None:
         """
         Save the geometry parameters.
 
         :param filename: name of the file where to save the parameters
         :type filename: string
         """
+        poni = PoniFile(self)
         try:
             with open(filename, "a") as f:
-                poni = ponifile.PoniFile(self)
                 poni.write(f)
-        except IOError:
-            logger.error("IOError while writing to file %s", filename)
+        except IOError as error:
+            logger.error(f"IOError: while writing to file `{filename}`: {error}")
 
     write = save
 
     @classmethod
-    def sload(cls, filename):
+    def sload(cls, filename:str|Path):  # Type annotation is postponed to python 3.14
         """
         A static method combining the constructor and the loader from
         a file
 
         :param filename: name of the file to load
-        :type filename: string
         :return: instance of Geometry of AzimuthalIntegrator set-up with the parameter from the file.
         """
         inst = cls()
         inst.load(filename)
         return inst
 
-    def load(self, filename):
+    def load(self, filename:str|Path):  # Type annotation is postponed to python 3.14
         """
         Load the refined parameters from a file.
 
@@ -1671,11 +1675,11 @@ class Geometry(object):
         :return: itself with updated parameters
         """
         poni = None
-        if isinstance(filename, ponifile.PoniFile):
+        if isinstance(filename, PoniFile):
             poni = filename
         elif isinstance(filename, (dict, Geometry)):
-            poni = ponifile.PoniFile(data=filename)
-        elif isinstance(filename, str):
+            poni = PoniFile(data=filename)
+        elif isinstance(filename, (str,Path)):
             try:
                 if os.path.exists(filename):
                     with open(filename) as f:
@@ -1683,11 +1687,8 @@ class Geometry(object):
                 else:
                     dico = json.loads(filename)
             except Exception:
-                logger.info(
-                    "Unable to parse %s as JSON file, defaulting to PoniParser",
-                    filename,
-                )
-                poni = ponifile.PoniFile(data=filename)
+                logger.info("Unable to parse `{filename}` as JSON file, defaulting to PoniParser")
+                poni = PoniFile(data=filename)
             else:
                 config = integration_config.ConfigurationReader(dico)
                 poni = config.pop_ponifile()
@@ -2345,7 +2346,7 @@ class Geometry(object):
 
         :param t0: value of the normal transmission (from 0 to 1)
         :param shape: shape of the array
-        :return: actual
+        :return: flatfield to correct for transmission correction.
         """
         shape = self.get_shape(shape)
         if t0 < 0 or t0 > 1:
@@ -2601,7 +2602,8 @@ class Geometry(object):
         return new
 
     def __deepcopy__(self, memo=None):
-        """deep copy
+        """deep copy helper function
+
         :param memo: dict with modified objects
         :return: a deep copy of itself."""
         if memo is None:
@@ -2627,11 +2629,25 @@ class Geometry(object):
         new._cached_array = cached
         return new
 
+    def __eq__(self, other):
+        """Checks two geometries are equivalent.
+
+        Typing will wait python 3.14"""
+        for key in self._UNMUTABLE_ATTRS+("parallax","detector", "orientation"):
+            try:
+                here =  self.__getattribute__(key)
+                there = other.__getattribute__(key)
+            except Exception:
+                return False
+            if here != there:
+                return False
+        return True
+
     def rotation_matrix(self, param:list|numpy.ndarray=None):
         """Compute and return the detector tilts as a single rotation matrix
 
         Corresponds to rotations about axes 1 then 2 then 3 (=> 0 later on)
-        For those using spd (PB = Peter Boesecke), tilts relate to
+        For those using `spd` (PB = Peter Boesecke), tilts relate to
         this system (JK = Jerome Kieffer) as follows:
         JK1 = PB2 (Y)
         JK2 = PB1 (X)
