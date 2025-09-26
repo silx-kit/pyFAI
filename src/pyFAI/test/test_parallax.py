@@ -32,14 +32,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/08/2025"
+__date__ = "26/09/2025"
 
 import unittest
 import numpy
 import logging
 logger = logging.getLogger(__name__)
 from ..parallax import Beam, ThinSensor, BaseSensor, Parallax
-from ..detectors.sensors import Si_MATERIAL, CdTe_MATERIAL
+from ..detectors.sensors import Si_MATERIAL, CdTe_MATERIAL, SensorConfig
+from .. import load
+from ..io.ponifile import PoniFile
 
 class TestSensorMaterial(unittest.TestCase):
     """test pyFAI.detectors.sensors"""
@@ -85,11 +87,26 @@ class TestParallax(unittest.TestCase):
         self.assertEqual(str(p), str(q))
 
 
+class TestActivation(unittest.TestCase):
+    def test(self):
+        a0 = load({"detector":"Pilatus1M", "wavelength":1e-10})
+        self.assertFalse(bool(a0.parallax))
+        p0 = PoniFile(a0)
+        self.assertEqual(p0.as_dict()["poni_version"], 2.1)
+        a0.detector.sensor = SensorConfig(Si_MATERIAL, 320e-6)
+        p1 = PoniFile(a0)
+        self.assertEqual(p1.as_dict()["poni_version"], 2.1)
+        a0.enable_parallax()
+        p2 = PoniFile(a0)
+        self.assertGreaterEqual(p2.as_dict()["poni_version"], 3)
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestParallax))
     testsuite.addTest(loader(TestSensorMaterial))
+    testsuite.addTest(loader(TestActivation))
     return testsuite
 
 
