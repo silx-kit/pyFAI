@@ -50,6 +50,7 @@ from math import pi
 from numpy import arccos, arctan2, sin, cos, sqrt
 import numpy
 import os
+from pathlib import Path
 import threading
 import json
 import gc
@@ -1622,7 +1623,7 @@ class Geometry(object):
         else:
             self.reset()
 
-    def set_config(self, config):
+    def set_config(self, config:dict):
         """
         Set the config of the geometry and of the underlying detector
 
@@ -1636,37 +1637,36 @@ class Geometry(object):
         self._init_from_poni(poni)
         return self
 
-    def save(self, filename):
+    def save(self, filename:str) -> None:
         """
         Save the geometry parameters.
 
         :param filename: name of the file where to save the parameters
         :type filename: string
         """
+        poni = PoniFile(self)
         try:
             with open(filename, "a") as f:
-                poni = PoniFile(self)
                 poni.write(f)
-        except IOError:
-            logger.error("IOError while writing to file %s", filename)
+        except IOError as error:
+            logger.error(f"IOError: while writing to file `{filename}`: {error}")
 
     write = save
 
     @classmethod
-    def sload(cls, filename):
+    def sload(cls, filename:str|Path):  # Type annotation is postponed to python 3.14
         """
         A static method combining the constructor and the loader from
         a file
 
         :param filename: name of the file to load
-        :type filename: string
         :return: instance of Geometry of AzimuthalIntegrator set-up with the parameter from the file.
         """
         inst = cls()
         inst.load(filename)
         return inst
 
-    def load(self, filename):
+    def load(self, filename:str|Path):  # Type annotation is postponed to python 3.14
         """
         Load the refined parameters from a file.
 
@@ -1679,7 +1679,7 @@ class Geometry(object):
             poni = filename
         elif isinstance(filename, (dict, Geometry)):
             poni = PoniFile(data=filename)
-        elif isinstance(filename, str):
+        elif isinstance(filename, (str,Path)):
             try:
                 if os.path.exists(filename):
                     with open(filename) as f:
@@ -1687,10 +1687,7 @@ class Geometry(object):
                 else:
                     dico = json.loads(filename)
             except Exception:
-                logger.info(
-                    "Unable to parse %s as JSON file, defaulting to PoniParser",
-                    filename,
-                )
+                logger.info("Unable to parse `{filename}` as JSON file, defaulting to PoniParser")
                 poni = PoniFile(data=filename)
             else:
                 config = integration_config.ConfigurationReader(dico)
