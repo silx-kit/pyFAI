@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/04/2025"
+__date__ = "26/09/2025"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -39,8 +39,8 @@ import time
 import json
 import pathlib
 import logging
-_logger = logging.getLogger(__name__)
 import numpy
+from typing import TextIO
 from .. import detectors
 from ..utils import decorators
 
@@ -49,11 +49,25 @@ try:
 except ImportError:
     GeometryModel = None
 
+_logger = logging.getLogger(__name__)
+
 
 class PoniFile(object):
-    API_VERSION = 2.1  # valid version are 1, 2, 2.1
+    """File with the information for the geometry of the experimental setup.
 
-    def __init__(self, data=None, **kwargs):
+    There are several version which existed:
+    * 1: Very simple format, one f"{key}: {value}" per line and "#" marks comments.
+         The latest entry is the valid one. There is no version number
+         Valid keys are distance, poni1|2, rot1|2|3, wavelength, pixelsize1, pixelsize2 and splinefile, case insensitive.
+    * 2: Introduction of the "detector_config" which is a JSON-serialized string and the version number.
+         Deprecation of pixelsize1, pixelsize2 and splinefile
+    * 2.1: Introduce the orientation in the detector_config
+    * 3: Introduce a key for activating the parallax correction in the geometry: Parallax: True/False
+         and the sensor entry in the detector_config.
+    """
+    API_VERSION = 3  # valid version are 1, 2, 2.1, 3
+
+    def __init__(self, data=None, **kwargs) -> None:
         self._detector = None
         self._dist = None
         self._poni1 = None
@@ -62,6 +76,7 @@ class PoniFile(object):
         self._rot2 = None
         self._rot3 = None
         self._wavelength = None
+        self._parallax = None
         if data is None:
             if kwargs:
                 data = kwargs
@@ -78,10 +93,26 @@ class PoniFile(object):
         else:
             self.read_from_duck(data)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return json.dumps(self.as_dict(), indent=4)
 
-    def make_headers(self, type_="list"):
+    def __eq__(self, other) -> bool:
+        """Checks the equality of two ponifile instances"""
+        if not isinstance(other, self.__class__):
+            return False
+        if ((self._detector != other._detector) or
+            (self._dist != other._dist) or
+            (self._poni1 != other._poni1) or
+            (self._poni2 != other._poni2) or
+            (self._rot1 != other._rot1) or
+            (self._rot2 != other._rot2) or
+            (self._rot3 != other._rot3) or
+            (self._wavelength != other._wavelength) or
+            (self._parallax != other._parallax)):
+            return False
+        return True
+
+    def make_headers(self, type_:str="list"):
         "Generate a header for files, as list or dict or str"
         if type_ == "dict":
             return self.as_dict()
@@ -92,7 +123,7 @@ class PoniFile(object):
         else:
             _logger.error(f"Don't know how to handle type {type_} !")
 
-    def read_from_file(self, filename):
+    def read_from_file(self, filename:str) -> None:
         data = collections.OrderedDict()
         with open(filename) as opened_file:
             for line in opened_file:
@@ -108,7 +139,7 @@ class PoniFile(object):
                 data[key] = value
         self.read_from_dict(data)
 
-    def read_from_dict(self, config):
+    def read_from_dict(self, config:dict) -> None:
         """Initialize this object using a dictionary.
 
         .. note:: The dictionary is versionned.
@@ -117,6 +148,7 @@ class PoniFile(object):
             * 1: Historical version (i.e. unversioned)
             * 2: store detector and detector_config instead of pixelsize1, pixelsize2 and splinefile
             * 2.1: manage orientation of detector in detector_config
+            * 3: Parallax: True/False
 
         """
         # Patch for worker version 4
@@ -129,11 +161,17 @@ class PoniFile(object):
                 version = max(version, 2.1)
             else:
                 version = max(version, 2)
+        if "parallax" in config:
+            version = max(version, 3)
+
         if version >= 2 and "detector_config" not in config:
             _logger.error("PoniFile claim to be version 2 but contains no `detector_config` !!!")
-
-        if version == 2.1 and "orientation" not in config.get("detector_config", {}):
+        if version >= 2.1 and "orientation" not in config.get("detector_config", {}):
             _logger.error("PoniFile claim to be version 2.1 but contains no detector orientation !!!")
+        if version >= 3 and "parallax" not in config:
+            _logger.error("PoniFile claim to be version 3 but contains no information about parallax correction !!!")
+            print(json.dumps(config, indent=2))
+
         self.API_VERSION = version
 
         if version == 1:
@@ -162,12 +200,24 @@ class PoniFile(object):
                 if config["splinefile"].lower() != "none":
                     self._detector.set_splineFile(config["splinefile"])
 
-        elif version in (2, 2.1):
+        elif version >=2:
                 detector_name = config["detector"]
                 detector_config = config.get("detector_config")
                 self._detector = detectors.detector_factory(detector_name, detector_config)
+        if version >= 3 and "parallax" in config:
+            value = config["parallax"]
+            if isinstance(value, bytes):
+                value = value.decode()
+            if isinstance(value, str):
+                value = value.lower().strip() == "true"
+            else:
+                value = bool(value)
+            self._parallax = value
         else:
-            raise RuntimeError("PONI file verison %s too recent. Upgrade pyFAI.", version)
+            self._parallax = None
+
+        if version > self.__class__.API_VERSION:
+            raise RuntimeError("PONI file verison %s too recent. Please upgrade installation of pyFAI.", version)
 
         if "distance" in config:
             self._dist = float(config["distance"]) if config["distance"] is not None else None
@@ -181,7 +231,7 @@ class PoniFile(object):
         self._rot3 = float(config["rot3"]) if config.get("rot3") is not None else None
         self._wavelength = float(config["wavelength"]) if config.get("wavelength") is not None else None
 
-    def read_from_duck(self, duck):
+    def read_from_duck(self, duck) -> None:
         """Initialize the object using an object providing the same API.
 
         The duck object must provide dist, poni1, poni2, rot1, rot2, rot3,
@@ -204,8 +254,16 @@ class PoniFile(object):
         self._rot3 = duck.rot3
         self._wavelength = duck.wavelength
         self._detector = duck.detector
+        if "parallax" in dir(duck) and bool(duck.parallax):
+            self._parallax = True
+            self.API_VERSION = min(3, self.API_VERSION)
+        else:
+            self._parallax = None
+            self.API_VERSION = 2.1
 
-    def read_from_geometryModel(self, model: GeometryModel, detector=None):
+    def read_from_geometryModel(self,
+                                model: GeometryModel,
+                                detector=None) -> None:
         """Initialize the object from a GeometryModel
 
         pyFAI.gui.model.GeometryModel.GeometryModel"""
@@ -217,8 +275,11 @@ class PoniFile(object):
         self._rot3 = model.rotation3().value()
         self._wavelength = model.wavelength().value()
         self._detector = detector
+        # self._parallax = model.correct_parallax ?
 
-    def write(self, fd, comments=None):
+    def write(self,
+              fd:TextIO,
+              comments:str|bytes|list|tuple|None=None) -> None:
         """Write this object to an open stream.
 
         :param fd: file descriptor (opened file)
@@ -226,6 +287,8 @@ class PoniFile(object):
         :return: None
         """
         detector = self.detector
+        # if self._parallax is None or (self._parallax is False and detector.sensor is None):
+        #    self.API_VERSION = 2.1  # produce PONI-files which are backwards compatible
         txt = ["# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis",
               f"# Calibration done on {time.ctime()}",
               f"poni_version: {self.API_VERSION}",
@@ -251,6 +314,8 @@ class PoniFile(object):
                 ]
         if self._wavelength is not None:
             txt.append(f"Wavelength: {self._wavelength}")
+        if self.API_VERSION >= 3:
+            txt.append(f"Parallax: {bool(self._parallax)!a}")
         if comments:
             if isinstance(comments, str):
                 txt.append(f"# {comments}")
@@ -261,7 +326,7 @@ class PoniFile(object):
         txt.append("")
         fd.write("\n".join(txt))
 
-    def as_dict(self):
+    def as_dict(self) -> dict:
         config = {"poni_version": self.API_VERSION,
                 "dist": self._dist,
                 "poni1": self._poni1,
@@ -288,45 +353,53 @@ class PoniFile(object):
                           normalization_factor=1.0)
         return wc
 
+    # Properties
+
     @property
     def detector(self):
-        """:rtype: Union[None, object]"""
+        """:rtype: Union[None, Detector]"""
         return self._detector
 
     @property
-    def dist(self):
+    def dist(self) -> float:
         """:rtype: Union[None,float]"""
         return self._dist
 
     @property
-    def poni1(self):
+    def poni1(self) -> float:
         """:rtype: Union[None,float]"""
         return self._poni1
 
     @property
-    def poni2(self):
+    def poni2(self) -> float:
         """:rtype: Union[None,float]"""
         return self._poni2
 
     @property
-    def rot1(self):
+    def rot1(self) -> float:
         """:rtype: Union[None,float]"""
         return self._rot1
 
     @property
-    def rot2(self):
+    def rot2(self) -> float:
         """:rtype: Union[None,float]"""
         return self._rot2
 
     @property
-    def rot3(self):
+    def rot3(self) -> float:
         """:rtype: Union[None,float]"""
         return self._rot3
 
     @property
-    def wavelength(self):
+    def wavelength(self) -> float:
         """:rtype: Union[None,float]"""
         return self._wavelength
+
+    @property
+    def parallax(self) -> bool:
+        return self._parallax
+
+    # Deprecated stuff:
 
     # Dict-like API, for (partial) compatibility. Avoid using it !
     @decorators.deprecated(reason="Ponifile should not be used as a dict", replacement=None, since_version="2025.02")
@@ -348,20 +421,5 @@ class PoniFile(object):
     def get(self, key, default=None):
         try:
             return self.__getattribute__(key)
-        except:
+        except Exception:
             return default
-
-    def __eq__(self, other):
-        """Checks the equality of two ponifile instances"""
-        if not isinstance(other, self.__class__):
-            return False
-        if ((self._detector != other._detector) or
-            (self._dist != other._dist) or
-            (self._poni1 != other._poni1) or
-            (self._poni2 != other._poni2) or
-            (self._rot1 != other._rot1) or
-            (self._rot2 != other._rot2) or
-            (self._rot3 != other._rot3) or
-            (self._wavelength != other._wavelength)):
-            return False
-        return True
