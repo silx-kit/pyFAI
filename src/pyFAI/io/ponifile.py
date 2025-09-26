@@ -256,7 +256,7 @@ class PoniFile(object):
         self._detector = duck.detector
         if "parallax" in dir(duck) and bool(duck.parallax):
             self._parallax = True
-            self.API_VERSION = min(3, self.API_VERSION)
+            self.API_VERSION = max(3, self.API_VERSION)
         else:
             self._parallax = None
             self.API_VERSION = 2.1
@@ -334,12 +334,24 @@ class PoniFile(object):
                 "rot1": self._rot1,
                 "rot2": self._rot2,
                 "rot3": self._rot3,
-                "detector": self._detector.__class__.__name__ if self._detector is not None else None
                 }
-        if self._detector is not None:
+        if self._detector is None:
+            config["detector"] = None
+        else:
+            config["detector"] =self._detector.__class__.__name__
             config["detector_config"] = self._detector.get_config()
+            self.API_VERSION = max(2, self.API_VERSION)
+            if "orientation" in config["detector_config"]:
+                self.API_VERSION = max(2.1, self.API_VERSION)
+            config["poni_version"] = self.API_VERSION
+
         if self._wavelength:
             config["wavelength"] = self._wavelength
+
+        if self._parallax:
+            config["parallax"] = True
+            self.API_VERSION = max(3, self.API_VERSION)
+            config["poni_version"] = self.API_VERSION
         return config
 
     def as_integration_config(self):

@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "26/09/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -62,7 +62,8 @@ from .. import units
 from ..utils.decorators import deprecated
 from ..utils import crc32, deg2rad, ParallaxNotImplemented
 from .. import utils
-from ..io import ponifile, integration_config
+from ..io import integration_config
+from ..io.ponifile import PoniFile
 from ..units import CONST_hc, to_unit, UnitFiber, CHI_RAD, TTH_RAD
 from ..parallax import Parallax, ThickSensor, ThinSensor
 
@@ -1595,11 +1596,11 @@ class Geometry(object):
             # TODO: ponifile should not be used here
             #     if it was only used for IO, it would be better to remove
             #     this function
-            poni = ponifile.PoniFile(data=self)
+            poni = PoniFile(data=self)
             return poni.as_dict()
 
-    def _init_from_poni(self, poni):
-        """Init the geometry from a poni object."""
+    def _init_from_poni(self, poni:PoniFile) ->None:
+        """Init the geometry from a PoniFile instance."""
         if poni.detector is not None:
             self.detector = poni.detector
         if poni.dist is not None:
@@ -1616,7 +1617,10 @@ class Geometry(object):
             self._rot3 = poni.rot3
         if poni.wavelength is not None:
             self._wavelength = poni.wavelength
-        self.reset()
+        if poni.parallax:
+            self.enable_parallax()
+        else:
+            self.reset()
 
     def set_config(self, config):
         """
@@ -1628,7 +1632,7 @@ class Geometry(object):
         # TODO: ponifile should not be used here
         #     if it was only used for IO, it would be better to remove
         #     this function
-        poni = ponifile.PoniFile(config)
+        poni = PoniFile(config)
         self._init_from_poni(poni)
         return self
 
@@ -1641,7 +1645,7 @@ class Geometry(object):
         """
         try:
             with open(filename, "a") as f:
-                poni = ponifile.PoniFile(self)
+                poni = PoniFile(self)
                 poni.write(f)
         except IOError:
             logger.error("IOError while writing to file %s", filename)
@@ -1671,10 +1675,10 @@ class Geometry(object):
         :return: itself with updated parameters
         """
         poni = None
-        if isinstance(filename, ponifile.PoniFile):
+        if isinstance(filename, PoniFile):
             poni = filename
         elif isinstance(filename, (dict, Geometry)):
-            poni = ponifile.PoniFile(data=filename)
+            poni = PoniFile(data=filename)
         elif isinstance(filename, str):
             try:
                 if os.path.exists(filename):
@@ -1687,7 +1691,7 @@ class Geometry(object):
                     "Unable to parse %s as JSON file, defaulting to PoniParser",
                     filename,
                 )
-                poni = ponifile.PoniFile(data=filename)
+                poni = PoniFile(data=filename)
             else:
                 config = integration_config.ConfigurationReader(dico)
                 poni = config.pop_ponifile()
