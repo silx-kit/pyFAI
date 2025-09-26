@@ -91,7 +91,7 @@ except ImportError:
     bilinear = None
 
 
-class Geometry(object):
+class Geometry:
     """This class is the parent-class of azimuthal integrator.
 
     This class contains a detector (using composition) which provides the
@@ -2346,7 +2346,7 @@ class Geometry(object):
 
         :param t0: value of the normal transmission (from 0 to 1)
         :param shape: shape of the array
-        :return: actual
+        :return: flatfield to correct for transmission correction.
         """
         shape = self.get_shape(shape)
         if t0 < 0 or t0 > 1:
@@ -2602,7 +2602,8 @@ class Geometry(object):
         return new
 
     def __deepcopy__(self, memo=None):
-        """deep copy
+        """deep copy helper function
+
         :param memo: dict with modified objects
         :return: a deep copy of itself."""
         if memo is None:
@@ -2628,11 +2629,25 @@ class Geometry(object):
         new._cached_array = cached
         return new
 
+    def __eq__(self, other):
+        """Checks two geometries are equivalent.
+
+        Typing will wait python 3.14"""
+        for key in self._UNMUTABLE_ATTRS+("parallax","detector", "orientation"):
+            try:
+                here =  self.__getattribute__(key)
+                there = other.__getattribute__(key)
+            except Exception:
+                return False
+            if here != there:
+                return False
+        return True
+
     def rotation_matrix(self, param:list|numpy.ndarray=None):
         """Compute and return the detector tilts as a single rotation matrix
 
         Corresponds to rotations about axes 1 then 2 then 3 (=> 0 later on)
-        For those using spd (PB = Peter Boesecke), tilts relate to
+        For those using `spd` (PB = Peter Boesecke), tilts relate to
         this system (JK = Jerome Kieffer) as follows:
         JK1 = PB2 (Y)
         JK2 = PB1 (X)

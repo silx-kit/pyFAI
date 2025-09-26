@@ -37,11 +37,13 @@ __date__ = "26/09/2025"
 import unittest
 import numpy
 import logging
-logger = logging.getLogger(__name__)
 from ..parallax import Beam, ThinSensor, BaseSensor, Parallax
 from ..detectors.sensors import Si_MATERIAL, CdTe_MATERIAL, SensorConfig
 from .. import load
 from ..io.ponifile import PoniFile
+from ..test.utilstest import UtilsTest
+
+logger = logging.getLogger(__name__)
 
 class TestSensorMaterial(unittest.TestCase):
     """test pyFAI.detectors.sensors"""
@@ -75,30 +77,40 @@ class TestParallax(unittest.TestCase):
     def test_serialize1(self):
         beam = Beam(1e-3)
         sensor=ThinSensor(1e-3, 0.3)
-        p = Parallax(beam=beam, sensor=sensor); q=Parallax()
+        p = Parallax(beam=beam, sensor=sensor)
+        q=Parallax()
         q.set_config(p.get_config())
         self.assertEqual(str(p), str(q))
 
     def test_serialize2(self):
         beam = Beam(1e-3)
         sensor=BaseSensor(1e-3)
-        p = Parallax(beam=beam, sensor=sensor); q=Parallax()
+        p = Parallax(beam=beam, sensor=sensor)
+        q=Parallax()
         q.set_config(p.get_config())
         self.assertEqual(str(p), str(q))
 
 
 class TestActivation(unittest.TestCase):
-    def test(self):
-        a0 = load({"detector":"Pilatus1M", "wavelength":1e-10})
-        self.assertFalse(bool(a0.parallax))
-        p0 = PoniFile(a0)
+    def test_activation(self):
+        a = load({"detector":"Pilatus1M", "wavelength":1e-10})
+        self.assertFalse(bool(a.parallax))
+        p0 = PoniFile(a)
         self.assertEqual(p0.as_dict()["poni_version"], 2.1)
-        a0.detector.sensor = SensorConfig(Si_MATERIAL, 320e-6)
-        p1 = PoniFile(a0)
+        a.detector.sensor = SensorConfig(Si_MATERIAL, 320e-6)
+        p1 = PoniFile(a)
         self.assertEqual(p1.as_dict()["poni_version"], 2.1)
-        a0.enable_parallax()
-        p2 = PoniFile(a0)
+        a.enable_parallax()
+        p2 = PoniFile(a)
         self.assertGreaterEqual(p2.as_dict()["poni_version"], 3)
+        a.save(UtilsTest.temp_path/"test_activation.poni")
+        b = load(UtilsTest.temp_path/"test_activation.poni")
+        print("a",a)
+        print("b",b)
+        with open(UtilsTest.temp_path/"test_activation.poni") as f:
+            print(f.read())
+        self.assertEqual(PoniFile(a),PoniFile(b), "ponifiles are the same")
+        self.assertEqual(str(a),str(b), "geometries are the same")
 
 
 def suite():
