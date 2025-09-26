@@ -36,7 +36,6 @@ __date__ = "18/06/2025"
 __status__ = "development"
 
 from silx.gui.plot.items.roi import HorizontalRangeROI as SilxHorizontalRangeROI
-from silx.gui import qt
 
 
 class HorizontalRangeROI(SilxHorizontalRangeROI):

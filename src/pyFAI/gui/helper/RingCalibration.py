@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "12/09/2025"
+__date__ = "26/09/2025"
 
 import logging
 import numpy
@@ -62,6 +62,9 @@ class GeometryRefinementContext(object):
             max_getter = getattr(self.__geoRef, "get_%s_max" % name)
             minValue, maxValue = min_getter(), max_getter()
             self.__bounds[name] = minValue, maxValue
+        if self.__geoRef.detector.sensor:
+            print("Enable parallax in GeometryRefinementContext")
+            self.__geoRef.enable_parallax()
 
     def __getattr__(self, name):
         return object.__getattribute__(self.__geoRef, name)

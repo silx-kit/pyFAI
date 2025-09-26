@@ -30,15 +30,13 @@ __date__ = "29/01/2024"
 import fabio
 import os
 import logging
-
-_logger = logging.getLogger(__name__)
-
 from silx.gui import qt
-
 from ..model.ImageModel import ImageFilenameModel
 from ..model.ImageModel import ImageFromFilenameModel
 from ..ApplicationContext import ApplicationContext
 from ..utils.FilterBuilder import FilterBuilder
+
+_logger = logging.getLogger(__name__)
 
 
 class _LoadImageFromFileDialogAction(qt.QAction):

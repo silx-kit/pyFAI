@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/09/2025"
+__date__ = "26/09/2025"
 
 import logging
 import numpy
@@ -199,6 +199,9 @@ class RingExtractorThread(qt.QThread):
             detector=self.__detector,
             calibrant=self.__calibrant,
             **defaults)
+        if self.__detector.sensor:
+            print("Enable parallax in __createGeoRefFromPeaks")
+            geoRef.enable_parallax()
         geoRef.refine2(1000000, fix=fixed)
         score = geoRef.chi2()
         parameters = [getattr(geoRef, p) for p in PARAMETERS]
@@ -212,6 +215,9 @@ class RingExtractorThread(qt.QThread):
             detector=self.__detector,
             calibrant=self.__calibrant,
             **defaults)
+        if self.__detector.sensor:
+            print("Enable parallax in __createGeoRefFromPeaks")
+            geoRef.enable_parallax()
         geoRef.guess_poni()
         geoRef.refine2(1000000, fix=fixed)
         score = geoRef.chi2()
@@ -240,6 +246,9 @@ class RingExtractorThread(qt.QThread):
             rot2=geometryModel.rotation2().value(),
             rot3=geometryModel.rotation3().value(),
             detector=self.__detector)
+        if self.__detector.sensor:
+            print("Enable parallax in __createGeoRefFromGeometry")
+            geoRef.enable_parallax()
         return geoRef
 
     def runProcess(self):

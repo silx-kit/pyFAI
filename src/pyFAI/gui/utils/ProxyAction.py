@@ -27,10 +27,11 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "05/10/2023"
 
+from silx.gui import qt
+
+
 def LooseVersion(version):
     return tuple(int(i) for i in version.split(".") if i.isdecimal())
-
-from silx.gui import qt
 
 
 class ProxyAction(qt.QAction):

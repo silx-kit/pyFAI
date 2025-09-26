@@ -28,7 +28,6 @@ __license__ = "MIT"
 __date__ = "18/12/2023"
 
 from .AbstractModel import AbstractModel
-from silx.gui import qt
 
 
 class DetectorModel(AbstractModel):

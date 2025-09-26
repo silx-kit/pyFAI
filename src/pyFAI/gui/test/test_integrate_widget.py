@@ -37,7 +37,6 @@ __date__ = "20/12/2024"
 import unittest
 import logging
 
-from silx.gui import qt
 from ...gui.widgets.WorkerConfigurator import WorkerConfigurator
 from silx.gui.utils import testutils
 from pyFAI.test.utilstest import UtilsTest

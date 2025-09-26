@@ -43,6 +43,14 @@ import logging
 import operator
 import numpy
 import fabio
+from ..control_points import ControlPoints
+from ..calibrant import CALIBRANT_FACTORY
+from ..blob_detection import BlobDetection
+from ..massif import Massif
+from ..detectors import Detector
+from ..ext.reconstruct import reconstruct
+from ..ext.watershed import InverseWatershed
+from ..utils.callback import dangling_callback
 
 logger = logging.getLogger(__name__)
 
@@ -56,14 +64,6 @@ if qt is not None:
     from .matplotlib import pylab
     from . import utils as gui_utils
 from .mpl_calib import MplCalibWidget
-from ..control_points import ControlPoints
-from ..calibrant import CALIBRANT_FACTORY
-from ..blob_detection import BlobDetection
-from ..massif import Massif
-from ..detectors import Detector
-from ..ext.reconstruct import reconstruct
-from ..ext.watershed import InverseWatershed
-from ..utils.callback import dangling_callback
 
 
 def preprocess_image(data, log=False, clip=0.001):
@@ -125,7 +125,7 @@ class PeakPicker(object):
             mask = mask.astype(bool)
             view = self.data.ravel()
             flat_mask = mask.ravel()
-            min_valid = view[numpy.where(flat_mask == False)].min()
+            min_valid = view[numpy.where(numpy.logical_not(flat_mask))].min()
             view[numpy.where(flat_mask)] = min_valid
 
         self.shape = self.data.shape
@@ -155,7 +155,7 @@ class PeakPicker(object):
 
     def __deepcopy__(self, memo=None):
         """Helper for deep-copy"""
-        if memo == None:
+        if memo is None:
             memo = {}
         data = copy.deepcopy(self.data, memo=memo)
         reconstruct = copy.deepcopy(self.reconstruct, memo=memo)

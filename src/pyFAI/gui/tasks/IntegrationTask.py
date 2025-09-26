@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "12/09/2025"
+__date__ = "26/09/2025"
 
 import logging
 import numpy
@@ -58,9 +58,7 @@ from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
 from ..dialog import MessageBox
 from pyFAI.io import ponifile, integration_config
-from pyFAI.worker import Worker
 import pyFAI.geometry
-import json
 
 _logger = logging.getLogger(__name__)
 
@@ -1091,6 +1089,26 @@ class IntegrationTask(AbstractCalibrationTask):
         # Update displayed data:
         self.__updateDisplayedGeometry()
 
+    def __getPoni(self) -> ponifile.PoniFile:
+        model = self.model()
+        geometry = self._geometryTabs.geometryModel()
+        experimentSettingsModel = model.experimentSettingsModel()
+        detector = experimentSettingsModel.detector()
+        dico = {
+            "dist": geometry.distance().value(),
+            "poni1": geometry.poni1().value(),
+            "poni2":geometry.poni2().value(),
+            "rot1": geometry.rotation1().value(),
+            "rot2": geometry.rotation2().value(),
+            "rot3": geometry.rotation3().value(),
+            "wavelength": geometry.wavelength().value(),
+            "detector":detector.__class__.__name__,
+            "detector_config":detector.get_config(),
+            }
+        if detector.sensor:
+            dico["parallax"] = True
+        return ponifile.PoniFile(dico)
+
     def __saveAsPoni(self):
         # FIXME test the validity of the geometry before opening the dialog
         dialog = createSaveDialog(self, "Save as PONI file", poni=True)
@@ -1113,21 +1131,8 @@ class IntegrationTask(AbstractCalibrationTask):
         with poniFile.lockContext():
             poniFile.setValue(filename)
 
-        geometry = self._geometryTabs.geometryModel()
         experimentSettingsModel = model.experimentSettingsModel()
-        detector = experimentSettingsModel.detector()
-
-        writer = ponifile.PoniFile({
-            "dist": geometry.distance().value(),
-            "poni1": geometry.poni1().value(),
-            "poni2":geometry.poni2().value(),
-            "rot1": geometry.rotation1().value(),
-            "rot2": geometry.rotation2().value(),
-            "rot3": geometry.rotation3().value(),
-            "wavelength": geometry.wavelength().value(),
-            "detector":detector.__class__.__name__,
-            "detector_config":detector.get_config(),
-            })
+        writer = self.__getPoni()
         comments = [f"Calibrant: {experimentSettingsModel.calibrantModel().calibrant().name}",
                     f"Image: {experimentSettingsModel.image().filename()}"]
         try:
@@ -1160,22 +1165,8 @@ class IntegrationTask(AbstractCalibrationTask):
         with jsonFile.lockContext():
             jsonFile.setValue(filename)
 
-        geometry = self._geometryTabs.geometryModel()
         experimentSettingsModel = model.experimentSettingsModel()
-        detector = experimentSettingsModel.detector()
-
-        poni = ponifile.PoniFile({
-            "dist": geometry.distance().value(),
-            "poni1": geometry.poni1().value(),
-            "poni2":geometry.poni2().value(),
-            "rot1": geometry.rotation1().value(),
-            "rot2": geometry.rotation2().value(),
-            "rot3": geometry.rotation3().value(),
-            "wavelength": geometry.wavelength().value(),
-            "detector":detector.__class__.__name__,
-            "detector_config":detector.get_config(),
-            })
-        workerConfig = integration_config.WorkerConfig(poni=poni)
+        workerConfig = integration_config.WorkerConfig(poni=self.__getPoni())
         workerConfig.nbpt_rad = self.model().integrationSettingsModel().nPointsRadial().value()
         workerConfig.nbpt_azim = self.model().integrationSettingsModel().nPointsAzimuthal().value()
         workerConfig.unit = core_units.to_unit(self.model().integrationSettingsModel().radialUnit().value())

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>967</width>
-    <height>705</height>
+    <height>954</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_2">
+  <layout class="QHBoxLayout" name="horizontalLayout_3">
    <item>
     <widget class="QWidget" name="widget" native="true">
      <property name="sizePolicy">
@@ -28,7 +28,7 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_11">
+     <layout class="QVBoxLayout" name="verticalLayout_12">
       <item>
        <widget class="QGroupBox" name="groupBox">
         <property name="title">
@@ -38,10 +38,22 @@
          <item>
           <widget class="QListView" name="_manufacturerList">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+            <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>200</height>
+            </size>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>0</width>
+             <height>200</height>
+            </size>
            </property>
            <property name="styleSheet">
             <string notr="true">QListView {
@@ -71,7 +83,7 @@ background-color: transparent;
          <item>
           <widget class="QListView" name="_customList">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -109,6 +121,12 @@ background-color: transparent;
             </item>
             <item>
              <widget class="QLabel" name="_detectorOrientationLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>TextLabel</string>
               </property>
@@ -123,13 +141,92 @@ background-color: transparent;
         </layout>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="_detectorSensorParallax">
+        <property name="text">
+         <string>Sensor: correct parallax (slower)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="_sensorGroup">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_13">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Material</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="_detectorSensorMaterials"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Thickness</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="_detectorSensorThickness">
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>µm</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
    <item>
     <widget class="QStackedWidget" name="_stacked">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="_modelPanel">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -558,8 +655,17 @@ background-color: transparent;
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>_manufacturerList</tabstop>
+  <tabstop>_customList</tabstop>
+  <tabstop>_detectorOrientation</tabstop>
+  <tabstop>_detectorSensorParallax</tabstop>
+  <tabstop>_detectorSensorMaterials</tabstop>
+  <tabstop>_detectorSensorThickness</tabstop>
+  <tabstop>_detectorView</tabstop>
   <tabstop>_splineFile</tabstop>
   <tabstop>_splineLoader</tabstop>
+  <tabstop>_fileSelection</tabstop>
+  <tabstop>_fileLoader</tabstop>
   <tabstop>_pixelWidth</tabstop>
   <tabstop>_pixelHeight</tabstop>
   <tabstop>_detectorWidth</tabstop>

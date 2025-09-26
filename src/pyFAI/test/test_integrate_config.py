@@ -158,10 +158,13 @@ class TestRegression(unittest.TestCase):
         test_files = "0.14_verson0.json  id11_v0.json  id13_v0.json  id15_1_v0.json  id15_v0.json  id16_v3.json  id21_v0.json  version0.json    version3.json  version4.json"
         for fn in test_files.split():
             js = utilstest.UtilsTest.getimage(fn)
-            print(fn)
+            #print(fn)
             with utilstest.TestLogging(logger='pyFAI.io.integrarion_config', warning=0):
                 wc = integration_config.WorkerConfig.from_file(js)
-            wc.poni.API_VERSION = ponifile.PoniFile.API_VERSION
+            print(wc)
+            if fn in ["id16_v3.json", "version3.json"]:
+                wc.poni.API_VERSION = 2.1
+            #print(str(integration_config.WorkerConfig.from_dict(wc.as_dict())))
             self.assertEqual(str(wc), str(integration_config.WorkerConfig.from_dict(wc.as_dict())), f"Idempotent {fn}")
 
     def test_nested_dataclasses(self):

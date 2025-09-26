@@ -34,7 +34,6 @@ from ..utils import units
 from ..model.DataModel import DataModel
 from ..model.GeometryModel import GeometryModel
 from ..model.Fit2dGeometryModel import Fit2dGeometryModel
-from ...geometry import Geometry
 
 
 class GeometryTabs(qt.QWidget):
