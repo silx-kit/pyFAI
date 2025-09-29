@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,12 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "12/09/2025"
 
 import logging
 import numpy
 import os.path
+from math import pi
 
 from silx.gui import qt
 from silx.gui.colors import Colormap
@@ -99,16 +100,17 @@ class CalibrantPreview(qt.QFrame):
         fileds = []
         if name is not None:
             fileds.append((u"Name", name, None))
-        fileds.append((u"Nb registered rays", calibrant.count_registered_dSpacing(), None))
-        dSpacing = calibrant.get_dSpacing()
+        fileds.append((u"Nb registered rays", calibrant.count_registered_dspacing(), None))
+        dSpacing = calibrant.dspacing
         fileds.append((u"Nb visible rays", len(dSpacing), u"between 0 and 180°"))
         if len(dSpacing) > 0:
-            ray = calibrant.get_dSpacing()[0]
-            angle = calibrant.get_2th()[0]
-            fileds.append((u"First visible ray", u"%f Å (%f°)" % (ray, numpy.rad2deg(angle)), None))
-            ray = calibrant.get_dSpacing()[-1]
-            angle = calibrant.get_2th()[-1]
-            fileds.append((u"Last visible ray", u"%f Å (%f°)" % (ray, numpy.rad2deg(angle)), None))
+            tth = calibrant.get_2th()
+            ray = dSpacing[0]
+            angle = 180*tth[0]/pi
+            fileds.append(("First visible ray", f"{ray:.3f} Å ({angle:.1f}°)", None))
+            ray = dSpacing[-1]
+            angle = 180*tth[-1]/pi
+            fileds.append(("Last visible ray", f"d={ray:.3f} Å ({angle:.1f}°)", None))
 
         toolTip = []
         for f in fileds:

@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2024"
+__date__ = "26/09/2025"
 
 PACKAGE = "pyFAI"
 
@@ -43,6 +43,7 @@ import tempfile
 import getpass
 import functools
 import struct
+from pathlib import Path
 import numpy
 
 from silx.resources import ExternalResources
@@ -269,10 +270,14 @@ class TestOptions(object):
                                                      self.name + "_")
 
     @property
-    def tempdir(self):
+    def tempdir(self) -> str:
         if not self._tempdir:
             self._initialize_tmpdir()
         return self._tempdir
+
+    @property
+    def temp_path(self) -> Path:
+        return Path(self.tempdir)
 
     def tempfile(self, suffix=None, prefix=None, dir=None, text=False):
         """create a temporary file, openend

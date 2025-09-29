@@ -29,6 +29,7 @@
 
 """Sensors description for detectors:
 
+Defines Si_, CdTe_ & GaAs_MATERIAL
 """
 
 
@@ -36,14 +37,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2025"
+__date__ = "23/09/2025"
 __status__ = "stable"
 
 import os
 import logging
+import json
+import copy
+from math import exp
 from collections import namedtuple
+from ..containers import dataclass, fields
 import numpy
 from ..resources import resource_filename
+from ..utils.stringutil import to_eng
 
 EnergyRange = namedtuple("EnergyRange", ["min", "max"])
 logger = logging.getLogger(__name__)
@@ -80,7 +86,7 @@ class SensorMaterial:
         def end_block(block):
             descr = EnergyRange(float(block[0].split()[0]) * 1e3,
                                 float(block[-1].split()[0]) * 1e3)
-            data = numpy.vstack(tuple(numpy.fromstring(l, dtype=float, sep=" ") for l in block))
+            data = numpy.vstack(tuple(numpy.fromstring(line, dtype=float, sep=" ") for line in block))
             data[:,0] *= 1e3 # MeV to keV for the energy
             self._data[descr] = data
 
@@ -132,7 +138,73 @@ class SensorMaterial:
         data = self._data[self._find_range(energy)]
         return numpy.interp(energy, data[:,0], data[:,2]) * self.rho * self._scale(unit)
 
+    def absorbance(self, energy:float, length: float, unit:str="m") -> float:
+        """calculate the efficiency of a slab of sensor for absorbing the radiation
+
+        :param energy: in keV
+        :param length: thickness of the sensor
+        :param unit: unit for the thickness of the detector
+        :return: efficiency of the sensor between 0 (no absorbance) and 1 (all photons are absorbed)
+        """
+        return 1.0-exp(-self.mu(energy, unit)*length)
+
 
 # For the record: some classical sensors materials
-Si_MATERIAL = SensorMaterial("Si", 2.329)
-CdTe_MATERIAL = SensorMaterial("CdTe",  5.85)
+Si_MATERIAL = SensorMaterial("Si", density=2.329)
+CdTe_MATERIAL = SensorMaterial("CdTe", density=5.85)
+GaAs_MATERIAL = SensorMaterial("GaAs", density=5.3176)
+Gd2O2S_MATERIAL = SensorMaterial("Gd2O2S", density=7.32)
+
+ALL_MATERIALS = {"Si": Si_MATERIAL,
+                 "CdTe": CdTe_MATERIAL,
+                 "GaAs": GaAs_MATERIAL,
+                 "Gd2O2S": Gd2O2S_MATERIAL}
+
+
+@dataclass
+class SensorConfig:
+    "class for configuration of a sensor"
+    material: SensorMaterial|str
+    thickness: float=None
+
+    def __repr__(self):
+        return json.dumps(self.as_dict(), indent=4)
+
+    def __str__(self):
+        name = self.material.name if isinstance(self.material, SensorMaterial) else self.material
+        thick = to_eng(self.thickness, space="")+"m" if self.thickness else "\N{INFINITY}"
+        return f"{name},{thick}"
+
+    def as_dict(self):
+        """Like asdict, but with some more features:
+        """
+        dico = {}
+        for field in fields(self):
+            key = field.name
+            value = getattr(self, key)
+            if isinstance(value, SensorMaterial):
+                dico[key] = value.name
+            elif value:
+                dico[key] = value
+        return dico
+
+    @classmethod
+    def from_dict(cls, dico:dict, inplace:bool=False):
+        """Alternative constructor
+
+        :param dico: dict with the config
+        :param in-place: modify the dico in place ?
+        :return: instance of the dataclass
+        """
+        if not inplace:
+            dico = copy.copy(dico)
+
+        to_init = {}
+        for field in fields(cls):
+            key = field.name
+            if key in dico:
+                value = dico.pop(key)
+                if key=="material" and isinstance(value, str):
+                    value = ALL_MATERIALS.get(value) or value
+                to_init[key] = value
+        return cls(**to_init)

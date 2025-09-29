@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2025"
+__date__ = "22/08/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -202,8 +202,9 @@ class ThinSensor(BaseSensor):
     of the material which is usually easier to obtain from the manufacturer than the
     exect composition of the sensor or the absortion coefficient.
 
-    Nota: the absortion coefficient depends on the wavelength, but the effect is expected to
+    Nota: the absortion coefficient µ depends on the wavelength, but the effect is expected to
     be negligeable when refining the wavelength in a calibration experiment.
+    It is expected in 1/m (many text-books work in 1/cm).
     """
 
     def __init__(self, thickness:float=None, efficiency:float=None, mu:float=None):
@@ -228,10 +229,10 @@ class ThinSensor(BaseSensor):
         return 1.0 - exp(-self.mu*self.thickness)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.thickness}, efficiency={self.efficiency}, mu={self.mu})"
+        return f"{self.__class__.__name__}({self.thickness}, efficiency={self.efficiency:.3f}, mu={self.mu:.3f})"
 
     def __str__(self):
-        return f"Thin sensor with µ={self.mu} 1/m, thickness={self.thickness}m and efficiency={self.efficiency}"
+        return f"Thin sensor with µ={self.mu:.3f} 1/m, thickness={self.thickness}m and efficiency={self.efficiency:.3f}"
 
     def get_config(self):
         """Gets the configuration as a dictionnary"""

@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 05/09/2025
+:Date: 26/09/2025
 :Keywords: changelog
 
 Change-log of versions
@@ -7,11 +7,17 @@ Change-log of versions
 
 2025.10? YY/10/2025 --> 3.14 comes out in October
 -------------------
+- [Parallax] This effect shifts the pixel position when the inclinaison of the beam is large (>30°) making calibration challenging
+  * Provide absorption coefficients of most common sensor materials
+  * Update the database of detectors with sensor material and thickness (WIP #2606)
+  * New PONI-file version (backwards compatible when possible)
+  * [Calib2] exposes the feature in detector configuration
+  * Performance regression while calibrating and geometry initialization (should be addressed in the future)
 - [GUI] Like `silx`, `pyFAI` moves from pyQt5 to pySide6 (or pyQt6). Several bugs were found
   and addressed to increase compatibility with Qt6. PyQt5 is no more a priority.
-- [Pilx] now compatible with files produced by mesh-scan on BM29 in addition to diffmap.
-- [medfilt] fix an infinite loop in the OpenCL code
-- [Crystallography] improvements
+- [Pilx] is now compatible with files produced by mesh-scan on BM29 in addition to diffmap.
+- [median filtering] fix an infinite loop in the OpenCL code
+- [Crystallography] improvements:
   * Move most of the `calibrant` file into several other in the crystallography module
   * Calibrant have seen the IO part devoted to a dataclass called CalibrantConfig:
     + import/export of D-file, including now the relative intensity

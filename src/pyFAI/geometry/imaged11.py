@@ -33,18 +33,21 @@ __author__ = "Jérôme Kieffer, Carsten DETLEFS"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2024"
+__date__ = "23/09/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+
 import logging
-logger = logging.getLogger(__name__)
 from math import cos, sin
 from .fit2d import convert_to_Fit2d
 from ..units import to_unit, LENGTH_UNITS
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
 from collections import namedtuple
+logger = logging.getLogger(__name__)
+
+
 
 _ImageD11Geometry = namedtuple("_ImageD11Geometry",
                                "distance o11 o12 o21 o22 tilt_x tilt_y tilt_z wavelength y_center y_size z_center z_size spline shape",

@@ -34,15 +34,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2024"
+__date__ = "23/09/2025"
 __status__ = "production"
 
 import os
 import numpy
 import logging
 import json
-from collections import OrderedDict
-from ._common import Detector, Orientation, to_eng
+from ._common import Detector, Orientation, to_eng, SensorConfig
 from ..utils import expand2d
 logger = logging.getLogger(__name__)
 
@@ -84,6 +83,24 @@ class _Dectris(Detector):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
+    def get_config(self):
+        """Return the configuration with arguments to the constructor
+
+        :return: dict with param for serialization
+        """
+        dico = {"orientation": self.orientation}
+        if self.sensor:
+            dico["sensor"] = self.sensor.as_dict()
+        return dico
+
+    def __repr__(self):
+        txt = f"Detector {self.name}\tPixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
+        if self.orientation:
+            txt += f"\t {self.orientation.name}({self.orientation.value})"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
+        return txt
+
 
 class Eiger(_Dectris):
     """
@@ -97,19 +114,19 @@ class Eiger(_Dectris):
     MODULE_GAP = (37, 10)
     force_pixel = True
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self,
+                 pixel1:float=75e-6,
+                 pixel2:float=75e-6,
+                 max_shape:tuple[int,int]|None=None,
+                 module_size:tuple[int,int]|None=None,
+                 orientation:int|Orientation=0,
+                 sensor:SensorConfig|None=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
             self.module_size = module_size
         self.offset1 = self.offset2 = None
-
-    def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-        if self.orientation:
-            txt += f"\t {self.orientation.name} ({self.orientation.value})"
-        return txt
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -185,7 +202,8 @@ class Eiger(_Dectris):
 
         :return: dict with param for serialization
         """
-        dico = {"orientation": self.orientation}
+        dico = super().get_config()
+
         if ((self.max_shape is not None) and
                 ("MAX_SHAPE" in dir(self.__class__)) and
                 (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
@@ -439,9 +457,17 @@ class Pilatus(_Dectris):
     force_pixel = True
 
 
-    def __init__(self, pixel1=172e-6, pixel2=172e-6, max_shape=None, module_size=None,
-                 x_offset_file=None, y_offset_file=None, orientation=0):
-        super(Pilatus, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self,
+                 pixel1:float=172e-6,
+                 pixel2:float=172e-6,
+                 max_shape:tuple[int,int]|None=None,
+                 module_size:tuple[int,int]|None=None,
+                 x_offset_file:str|None=None,
+                 y_offset_file:str|None=None,
+                 orientation:int|Orientation=0,
+                 sensor:SensorConfig|None=None):
+
+        super(Pilatus, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
@@ -449,13 +475,11 @@ class Pilatus(_Dectris):
         self.set_offset_files(x_offset_file, y_offset_file)
 
     def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-        if self.orientation > 0:
-            txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        txt = super().__repr__()
         if self.x_offset_file:
-            txt += f"\t delta_x= {self.x_offset_file}"
+            txt += f"\tdelta_x= {self.x_offset_file}"
         if self.y_offset_file:
-            txt += f"\t delta_y= {self.y_offset_file}"
+            txt += f"\tdelta_y= {self.y_offset_file}"
         return txt
 
     def set_offset_files(self, x_offset_file=None, y_offset_file=None):
@@ -585,7 +609,8 @@ class Pilatus(_Dectris):
 
         :return: dict with param for serialization
         """
-        dico = {"orientation": self.orientation or 3}
+        dico = super().get_config()
+
         if ((self.max_shape is not None) and
                 ("MAX_SHAPE" in dir(self.__class__)) and
                 (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
@@ -766,16 +791,14 @@ class Pilatus4(_Dectris):
     MODULE_GAP = (20, 7)
     force_pixel = True
 
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
-        super(Pilatus4, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self,
+                 pixel1:float=150e-6,
+                 pixel2:float=150e-6,
+                 max_shape:tuple[int,int]|None=None,
+                 orientation:int|Orientation=0,
+                 sensor:SensorConfig|None=None):
+        super(Pilatus4, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         self.module_size = tuple(self.MODULE_SIZE)
-
-    def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-        if self.orientation:
-            txt += f"\t {self.orientation.name} ({self.orientation.value})"
-        return txt
-
 
 class Pilatus4_1M(Pilatus4):
     MAX_SHAPE = 1080, 1033

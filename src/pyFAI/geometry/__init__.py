@@ -38,12 +38,12 @@ detector and transform it. It is rather a description of the experimental setup.
 
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/09/2022"
+__date__ = "23/09/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-from .core import Geometry, logger
+from .core import Geometry as Geometry, logger as logger

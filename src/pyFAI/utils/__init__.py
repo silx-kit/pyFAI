@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "22/09/2025"
 __status__ = "production"
 
 import logging
@@ -50,6 +50,8 @@ if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2
     from fabio.nexus import exists
 else:
     from os.path import exists
+
+from ..containers import FixedParameters
 
 logger = logging.getLogger(__name__)
 from .. import resources
@@ -270,41 +272,12 @@ def readFloatFromKeyboard(text, dictVar):
         if not found:
             logger.error("You should provide the good number of floats")
 
-
-class FixedParameters(set):
-    """
-    Like a set, made for FixedParameters in geometry refinement
-    """
-
-    def add_or_discard(self, key, value=True):
-        """
-        Add a value to a set if value, else discard it
-        :param key: element to added or discared from set
-        :type value: boolean. If None do nothing !
-        :return: None
-        """
-        if value is None:
-            return
-        if value:
-            self.add(key)
-        else:
-            self.discard(key)
-    def __repr__(self):
-        return f"Fixed parameters: {', '.join(self)}."
-
-    def __iadd__(self, other):
-        for i in other:
-            self.add(i)
-        return self
-
-    def __add__(self, other):
-        """enables the addition of a list"""
-        new = self.__class__(self)
-        new.__iadd__(other)
-        return new
-
-
 def fully_qualified_name(obj):
     "Return the fully qualified name of an object"
     actual_class = obj.__class__.__mro__[0]
     return actual_class.__module__ + "." + actual_class.__name__
+
+
+class ParallaxNotImplemented(Exception):
+    """Raised when parallax calculation is requested but not available in the fast-path."""
+    pass
