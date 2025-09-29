@@ -30,15 +30,14 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2025"
+__date__ = "29/09/2025"
 __status__ = "development"
 
 import sys
 import copy
 import logging
 import warnings
-from dataclasses import fields, asdict, dataclass as _dataclass
-from collections import namedtuple
+from dataclasses import dataclass as _dataclass
 from typing import NamedTuple
 from enum import IntEnum
 from .utils.decorators import deprecated_warning
@@ -218,6 +217,74 @@ class IntegrateResult(_CopyableTuple):
         self._sem = None  # standard error of the mean (error for the mean)
         self._poni = None  # Contains the geometry which was used for the integration
         self._weighted_average = None  # Should be True for weighted average and False for unweighted (legacy)
+
+    def __are_compatible__(self, other):
+        """Ensure two objects are compatible to make some basic maths together"""
+        if not isinstance(other, self.__class__):
+            return False
+        if self._unit != other.unit:
+            return False
+        if not numpy.allclose(self._sum_normalization, other._sum_normalization):
+            return False
+        return True
+
+    def __add__(self, other):
+        """External add, common part"""
+        if not self.__are_compatible(other):
+            raise TypeError("Cannot add `IntegrateResult` of different kind")
+        res = copy.copy(self)
+        res._sum_signal = self._sum_signal + other._sum_signal
+        if self._sum_variance and other.sum_variance:
+            res._sum_variance = self._sum_variance + other._sum_variance
+        else:
+            res._sum_variance = None
+        return res.__recalcuate_means__()
+
+    def __sub__(self, other):
+        """External subtraction, common part"""
+        if not self.__are_compatible(other):
+            raise TypeError("Cannot subtract `IntegrateResult` of different kind")
+        res = copy.copy(self)
+        res._sum_signal = self._sum_signal - other.sum_signal
+        if self._sum_variance and other.sum_variance:
+            res._sum_variance = self._sum_variance + other.sum_variance
+        else:
+            res._sum_variance = None
+        return res.__recalcuate_means__()
+
+    def __iadd__(self, other):
+        """Inplace add, common part"""
+        if not self.__are_compatible(other):
+            raise TypeError("Cannot add `IntegrateResult` of different kind")
+        self._sum_signal += other._sum_signal
+        if self._sum_variance and other.sum_variance:
+            self._sum_variance += other._sum_variance
+        else:
+            self._sum_variance = None
+        return self.__recalcuate_means__()
+
+    def __isub__(self, other):
+        """Inplace subtraction, common part"""
+        if not self.__are_compatible(other):
+            raise TypeError("Cannot subtract `IntegrateResult` of different kind")
+        self._sum_signal -= other.sum_signal
+        if self._sum_variance and other.sum_variance:
+            self._sum_variance += other.sum_variance
+        else:
+            self._sum_variance = None
+        return self.__recalcuate_means__()
+
+    def __recalcuate_means__(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.intensity[:] = self.sum_signal/self.sum_normalization
+            if self.sum_variance is not None:
+                self._sem = numpy.sqrt(self.sum_variance) / self.sum_normalization
+                self._std = numpy.sqrt(self.sum_variance / self.sum_normalization2)
+                mask = self.sum_normalization2 <= 0.0
+                self.sem[mask] = self.dummy
+                self.std[mask] = self.dummy
+        return self
 
     @property
     def method(self):
@@ -579,6 +646,14 @@ class Integrate1dResult(IntegrateResult):
             return None
         return self[2]
 
+    def __are_compatible__(self, other):
+        """Ensure two objects are compatible to make some basic maths together"""
+        if not super().__are_compatible__(other):
+            return False
+        if not numpy.allclose(self.radial, other.radial):
+            return False
+        return True
+
 
 class Integrate2dResult(IntegrateResult):
     """
@@ -703,6 +778,14 @@ class Integrate2dResult(IntegrateResult):
         :type unit: str
         """
         self._azimuthal_unit = unit
+
+    def __are_compatible__(self, other):
+        """Ensure two objects are compatible to make some basic maths together"""
+        if not super().__are_compatible__(other):
+            return False
+        if not numpy.allclose(self.radial, other.radial):
+            return False
+        return True
 
 
 class SeparateResult(_CopyableTuple):
