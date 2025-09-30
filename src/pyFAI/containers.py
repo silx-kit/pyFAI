@@ -30,14 +30,14 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2025"
+__date__ = "30/09/2025"
 __status__ = "development"
 
 import sys
 import copy
 import logging
 import warnings
-from dataclasses import dataclass as _dataclass
+from dataclasses import dataclass as _dataclass, fields as fields, asdict as asdict
 from typing import NamedTuple
 from enum import IntEnum
 from .utils.decorators import deprecated_warning
