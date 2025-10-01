@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/08/2025"
+__date__ = "01/10/2025"
 
 import unittest
 import numpy
@@ -75,7 +75,6 @@ class TestContainer(unittest.TestCase):
         cls.img = cls.ai = None
 
     def test_rebin1d(self):
-
         method = ("no", "histogram", "cython")
         res2d = self.ai.integrate2d(self.img, 500, 360, method=method, error_model="poisson")
         ref1d = self.ai.integrate1d(self.img, 500, method=method, error_model="poisson")
@@ -88,6 +87,36 @@ class TestContainer(unittest.TestCase):
         res2d = self.ai.integrate2d(self.img, 500, 360, error_model="poisson", radial_range=(0,12), unit="2th_deg")
         sym = containers.symmetrize(res2d)
         self.assertAlmostEqual(res2d.intensity.mean(), sym.intensity.mean(), places=0)
+
+    def test_maths(self):
+        method = ("no", "histogram", "cython")
+        a1d = self.ai.integrate1d(self.img, 10, method=method, error_model="poisson")
+        b1d = self.ai.integrate1d(numpy.ones_like(self.img), 10, method=method, error_model="poisson")
+        print("a1d", a1d.intensity)
+        print("b1d", b1d.intensity)
+
+        c1d = a1d + b1d
+        print("c1d", c1d.intensity)
+        print("a1d", a1d.intensity)
+
+        print(type(c1d), type(b1d), type(c1d)==type(b1d), type(c1d)==type(c1d))
+        print(c1d.unit, b1d.unit,c1d.unit== b1d.unit)
+        print(c1d.sum_normalization, b1d.sum_normalization, numpy.allclose(c1d.sum_normalization, b1d.sum_normalization))
+        
+        d1d = c1d - b1d
+        
+        self.assertTrue(numpy.allclose(c1d.sum_signal, a1d.sum_signal+b1d.sum_signal))
+        self.assertTrue(numpy.allclose(c1d.sum_variance, a1d.sum_variance+b1d.sum_variance))
+        self.assertTrue(numpy.allclose(c1d.sum_normalization, b1d.sum_normalization))
+        self.assertTrue(numpy.allclose(c1d.sum_normalization2, b1d.sum_normalization2))
+        self.assertTrue(numpy.allclose(c1d.count, b1d.count))
+        self.assertTrue(numpy.allclose(c1d.radial, b1d.radial))
+        self.assertTrue(numpy.all(c1d.intensity>a1d.intensity))
+        self.assertTrue(numpy.all(c1d.intensity>=b1d.intensity))
+        self.assertTrue(numpy.all(c1d.std>=a1d.std))
+        self.assertTrue(numpy.all(c1d.std>=b1d.std))
+        self.assertTrue(numpy.all(c1d.sem>=a1d.sem))
+        self.assertTrue(numpy.all(c1d.sem>=b1d.sem))
 
 
 def suite():

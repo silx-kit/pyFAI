@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2025"
+__date__ = "01/10/2025"
 __status__ = "development"
 
 import sys
@@ -230,54 +230,57 @@ class IntegrateResult(_CopyableTuple):
 
     def __add__(self, other):
         """External add, common part"""
-        if not self.__are_compatible(other):
+        if not self.__are_compatible__(other):
             raise TypeError("Cannot add `IntegrateResult` of different kind")
-        res = copy.copy(self)
+        res = copy.deepcopy(self)
         res._sum_signal = self._sum_signal + other._sum_signal
-        if self._sum_variance and other.sum_variance:
-            res._sum_variance = self._sum_variance + other._sum_variance
-        else:
+        if self._sum_variance is None or other.sum_variance is None:
             res._sum_variance = None
-        return res.__recalcuate_means__()
+        else:
+            res._sum_variance = self._sum_variance + other._sum_variance
+        return res
 
     def __sub__(self, other):
         """External subtraction, common part"""
-        if not self.__are_compatible(other):
+        if not self.__are_compatible__(other):
             raise TypeError("Cannot subtract `IntegrateResult` of different kind")
-        res = copy.copy(self)
+        res = copy.deepcopy(self)
         res._sum_signal = self._sum_signal - other.sum_signal
-        if self._sum_variance and other.sum_variance:
-            res._sum_variance = self._sum_variance + other.sum_variance
-        else:
+        if self._sum_variance is None or other.sum_variance is None:
             res._sum_variance = None
-        return res.__recalcuate_means__()
+        else:
+            res._sum_variance = self._sum_variance + other.sum_variance            
+        return res
 
     def __iadd__(self, other):
         """Inplace add, common part"""
-        if not self.__are_compatible(other):
+        if not self.__are_compatible__(other):
             raise TypeError("Cannot add `IntegrateResult` of different kind")
         self._sum_signal += other._sum_signal
-        if self._sum_variance and other.sum_variance:
-            self._sum_variance += other._sum_variance
-        else:
+        if self._sum_variance is None or other.sum_variance is None:
             self._sum_variance = None
-        return self.__recalcuate_means__()
+        else:
+            self._sum_variance += other._sum_variance
+        return self
 
     def __isub__(self, other):
         """Inplace subtraction, common part"""
-        if not self.__are_compatible(other):
+        if not self.__are_compatible__(other):
             raise TypeError("Cannot subtract `IntegrateResult` of different kind")
         self._sum_signal -= other.sum_signal
-        if self._sum_variance and other.sum_variance:
-            self._sum_variance += other.sum_variance
-        else:
+        if self._sum_variance is None or other.sum_variance is None:
             self._sum_variance = None
-        return self.__recalcuate_means__()
+        else:
+            self._sum_variance += other.sum_variance
+        return self
 
     def __recalcuate_means__(self):
+        print("in recalcuate_means")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
+            print(id(self.intensity), self.intensity)
             self.intensity[:] = self.sum_signal/self.sum_normalization
+            print(id(self.intensity), self.intensity)
             if self.sum_variance is not None:
                 self._sem = numpy.sqrt(self.sum_variance) / self.sum_normalization
                 self._std = numpy.sqrt(self.sum_variance / self.sum_normalization2)
@@ -654,6 +657,17 @@ class Integrate1dResult(IntegrateResult):
             return False
         return True
 
+    def __add__(self, other):
+        return super().__add__(other).__recalcuate_means__()
+
+    def __sub__(self, other):
+        return super().__sub__(other).__recalcuate_means__()
+
+    def __iadd__(self, other):
+        return super().__iadd__(other).__recalcuate_means__()
+
+    def __isub__(self, other):
+        return super().__isub__(other).__recalcuate_means__()
 
 class Integrate2dResult(IntegrateResult):
     """
