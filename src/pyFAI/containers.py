@@ -281,7 +281,7 @@ class IntegrateResult(_CopyableTuple):
             self._sum_variance += other.sum_variance
         return self
 
-    def __recalcuate_means__(self):
+    def __recalculate_means__(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self.intensity[...] = self.sum_signal / self.sum_normalization
