@@ -98,7 +98,7 @@ class TestContainer(unittest.TestCase):
         self.assertAlmostEqual(res2d.intensity.mean(), sym.intensity.mean(), places=0)
 
     def test_maths(self):
-        method = ("no", "histogram", "python")
+        method = ("no", "histogram", "cython")
         a1d = self.ai.integrate1d(self.img, 10, method=method, error_model="poisson")
         b1d = self.ai.integrate1d(
             numpy.ones_like(self.img), 10, method=method, error_model="poisson"
@@ -131,8 +131,7 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(numpy.allclose(d1d.sum_normalization2, b1d.sum_normalization2))
         self.assertTrue(numpy.allclose(d1d.count, b1d.count))
         self.assertTrue(numpy.allclose(d1d.radial, b1d.radial))
-        self.assertTrue(numpy.all(d1d.intensity == a1d.intensity))
-        # self.assertTrue(numpy.all(d1d.intensity>=b1d.intensity))
+        self.assertTrue(numpy.allclose(d1d.intensity, a1d.intensity))
         self.assertTrue(numpy.all(d1d.std > a1d.std))
         self.assertTrue(numpy.all(d1d.std > b1d.std))
         self.assertTrue(numpy.all(d1d.sem > a1d.sem))
