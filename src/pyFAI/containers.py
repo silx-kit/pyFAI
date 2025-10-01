@@ -189,7 +189,7 @@ class IntegrateResult(_CopyableTuple):
         "_sem",
         "_poni",
         "_weighted_average",
-        "_dummy"
+        "_dummy",
     }
 
     def __init__(self):
@@ -218,7 +218,7 @@ class IntegrateResult(_CopyableTuple):
         self._poni = None  # Contains the geometry which was used for the integration
         self._weighted_average = None  # Should be True for weighted average and False for unweighted (legacy)
 
-    def __are_compatible__(self, other) -> None|str:
+    def __are_compatible__(self, other) -> None | str:
         """Ensure two objects are compatible to make some basic maths together.
         If compable, return None, else return the reason for the incompatibility
 
@@ -233,7 +233,7 @@ class IntegrateResult(_CopyableTuple):
 
     def __add__(self, other):
         """External add, common part"""
-        reason = self.__are_compatible__(other) 
+        reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
         res = copy.deepcopy(self)
@@ -246,7 +246,7 @@ class IntegrateResult(_CopyableTuple):
 
     def __sub__(self, other):
         """External subtraction, common part"""
-        reason =self.__are_compatible__(other) 
+        reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot subtract `IntegrateResult` because of {reason}")
         res = copy.deepcopy(self)
@@ -254,12 +254,12 @@ class IntegrateResult(_CopyableTuple):
         if self._sum_variance is None or other.sum_variance is None:
             res._sum_variance = None
         else:
-            res._sum_variance = self._sum_variance + other.sum_variance            
+            res._sum_variance = self._sum_variance + other.sum_variance
         return res
 
     def __iadd__(self, other):
         """Inplace add, common part"""
-        reason =self.__are_compatible__(other) 
+        reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
         self._sum_signal += other._sum_signal
@@ -271,7 +271,7 @@ class IntegrateResult(_CopyableTuple):
 
     def __isub__(self, other):
         """Inplace subtraction, common part"""
-        reason =self.__are_compatible__(other) 
+        reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot subtract `IntegrateResult` because of {reason}")
         self._sum_signal -= other.sum_signal
@@ -284,7 +284,7 @@ class IntegrateResult(_CopyableTuple):
     def __recalcuate_means__(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            self.intensity[...] = self.sum_signal/self.sum_normalization
+            self.intensity[...] = self.sum_signal / self.sum_normalization
             mask = self.sum_normalization == 0.0
             self.intensity[mask] = self.dummy
             if self.sum_variance is not None:
@@ -615,6 +615,7 @@ class Integrate1dResult(IntegrateResult):
         else:
             radial, I, sigma = result
     """
+
     COPYABLE_ATTR = IntegrateResult.COPYABLE_ATTR.union({"_unit"})
 
     def __new__(self, radial, intensity, sigma=None):
@@ -658,12 +659,11 @@ class Integrate1dResult(IntegrateResult):
 
     def __are_compatible__(self, other):
         """Ensure two objects are compatible to make some basic maths together"""
-        reason = super().__are_compatible__(other) 
+        reason = super().__are_compatible__(other)
         if reason:
             return reason
         if not numpy.allclose(self.radial, other.radial):
             return "radial differs"
-
 
     def __add__(self, other):
         return super().__add__(other).__recalcuate_means__()
@@ -676,6 +676,7 @@ class Integrate1dResult(IntegrateResult):
 
     def __isub__(self, other):
         return super().__isub__(other).__recalcuate_means__()
+
 
 class Integrate2dResult(IntegrateResult):
     """
@@ -692,7 +693,10 @@ class Integrate2dResult(IntegrateResult):
         else:
             I, radial, azimuthal, sigma = result
     """
-    COPYABLE_ATTR = IntegrateResult.COPYABLE_ATTR.union({"_radial_unit", "_azimuthal_unit"})
+
+    COPYABLE_ATTR = IntegrateResult.COPYABLE_ATTR.union(
+        {"_radial_unit", "_azimuthal_unit"}
+    )
 
     def __new__(self, intensity, radial, azimuthal, sigma=None):
         if sigma is None:
@@ -1666,6 +1670,7 @@ class Reflection:
         """Return True if the intensity is weak"""
         if self.intensity is not None:
             return self.intensity == 0.0
+
 
 class FixedParameters(set):
     """
