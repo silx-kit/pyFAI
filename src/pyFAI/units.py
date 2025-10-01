@@ -310,10 +310,12 @@ class UnitFiber(Unit):
             self.equation = self._equation
 
     def __repr__(self):
+        incident_angle_degs = numpy.rad2deg(self.incident_angle)
+        tilt_angle_degs = numpy.rad2deg(self.tilt_angle)
         return f"""
 {self.name}
-Incident_angle={self.incident_angle}\u00b0
-Tilt_angle={self.tilt_angle}\u00b0
+Incident_angle={incident_angle_degs:.2f}\u00b0 ({self.incident_angle:.3f} rads)
+Tilt_angle={tilt_angle_degs:.2f}\u00b0 ({self.tilt_angle:.3f} rads)
 Sample orientation={self.sample_orientation}
 """
 
@@ -1681,7 +1683,7 @@ Q_TOT = RADIAL_UNITS["qtot_nm^-1"]
 
 
 def get_unit_fiber(
-    name, incident_angle: float = 0.0, tilt_angle: float = 0.0, sample_orientation=1
+    name, incident_angle: float = 0.0, tilt_angle: float = 0.0, sample_orientation=1, use_degress:bool = False
 ):
     """Retrieves a unit instance for Grazing-Incidence/Fiber Scattering with updated incident and tilt angles
     The unit angles are in radians
@@ -1689,6 +1691,7 @@ def get_unit_fiber(
     :param float incident_angle: projection angle of the beam in the sample. Its rotation axis is the fiber axis or the normal vector of the thin film
     :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
     :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
+    :param bool use_degrees: if True, it assumes that the incident and tilt angles inputs are in degrees, default is radians
     """
     if name in RADIAL_UNITS:
         unit = copy.deepcopy(RADIAL_UNITS.get(name, None))
@@ -1701,6 +1704,9 @@ def get_unit_fiber(
         return
 
     if isinstance(unit, UnitFiber):
+        if use_degress:
+            incident_angle = numpy.deg2rad(incident_angle)
+            tilt_angle = numpy.deg2rad(tilt_angle)
         unit.set_incident_angle(incident_angle)
         unit.set_tilt_angle(tilt_angle)
         unit.set_sample_orientation(sample_orientation)
