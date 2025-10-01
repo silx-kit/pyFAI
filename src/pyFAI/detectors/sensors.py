@@ -154,9 +154,9 @@ Si_MATERIAL = SensorMaterial("Si", density=2.329)
 CdTe_MATERIAL = SensorMaterial("CdTe",  density=5.85)
 GaAs_MATERIAL = SensorMaterial("GaAs", density=5.3176)
 Ge_MATERIAL = SensorMaterial("Ge", density=5.327)
-Gd2O2S_MATERIAL = SensorMaterial("Gd2O2S", density=4.3)  
-""" Nota, the actual denity is 7.35-7.44 but phosphors are made of compacted GadOx 
-and their density is much lower, usually between  4.1 and 4.5""" 
+Gd2O2S_MATERIAL = SensorMaterial("Gd2O2S", density=4.3)
+""" Nota, the actual denity is 7.35-7.44 but phosphors are made of compacted GadOx
+and their density is much lower, usually between  4.1 and 4.5"""
 
 ALL_MATERIALS = {"Si": Si_MATERIAL,
                  "Ge": Ge_MATERIAL,
