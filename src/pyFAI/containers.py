@@ -133,7 +133,7 @@ class ErrorModel(IntEnum):
 class _CopyableTuple(tuple):
     "Abstract class that can be copied using the copy module"
 
-    COPYABLE_ATTR = tuple()  # list of copyable attributes
+    COPYABLE_ATTR = set()  # list of copyable attributes
 
     def __copy__(self):
         "Helper function for copy.copy()"
@@ -218,20 +218,24 @@ class IntegrateResult(_CopyableTuple):
         self._poni = None  # Contains the geometry which was used for the integration
         self._weighted_average = None  # Should be True for weighted average and False for unweighted (legacy)
 
-    def __are_compatible__(self, other):
-        """Ensure two objects are compatible to make some basic maths together"""
+    def __are_compatible__(self, other) -> None|str:
+        """Ensure two objects are compatible to make some basic maths together.
+        If compable, return None, else return the reason for the incompatibility
+
+        :return None if compatible, else the reason with a string.
+        """
         if not isinstance(other, self.__class__):
-            return False
-        if self._unit != other.unit:
-            return False
-        if not numpy.allclose(self._sum_normalization, other._sum_normalization):
-            return False
-        return True
+            return f"class incompatible: {self.__class__.__name__} != {other.__class__.__name__}"
+        if self.unit != other.unit:
+            return f"unit differs: {self.unit} != {other.unit}"
+        if not numpy.allclose(self._sum_normalization, other.sum_normalization):
+            return "normalization differs"
 
     def __add__(self, other):
         """External add, common part"""
-        if not self.__are_compatible__(other):
-            raise TypeError("Cannot add `IntegrateResult` of different kind")
+        reason = self.__are_compatible__(other) 
+        if reason:
+            raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
         res = copy.deepcopy(self)
         res._sum_signal = self._sum_signal + other._sum_signal
         if self._sum_variance is None or other.sum_variance is None:
@@ -242,8 +246,9 @@ class IntegrateResult(_CopyableTuple):
 
     def __sub__(self, other):
         """External subtraction, common part"""
-        if not self.__are_compatible__(other):
-            raise TypeError("Cannot subtract `IntegrateResult` of different kind")
+        reason =self.__are_compatible__(other) 
+        if reason:
+            raise TypeError(f"Cannot subtract `IntegrateResult` because of {reason}")
         res = copy.deepcopy(self)
         res._sum_signal = self._sum_signal - other.sum_signal
         if self._sum_variance is None or other.sum_variance is None:
@@ -254,8 +259,9 @@ class IntegrateResult(_CopyableTuple):
 
     def __iadd__(self, other):
         """Inplace add, common part"""
-        if not self.__are_compatible__(other):
-            raise TypeError("Cannot add `IntegrateResult` of different kind")
+        reason =self.__are_compatible__(other) 
+        if reason:
+            raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
         self._sum_signal += other._sum_signal
         if self._sum_variance is None or other.sum_variance is None:
             self._sum_variance = None
@@ -265,8 +271,9 @@ class IntegrateResult(_CopyableTuple):
 
     def __isub__(self, other):
         """Inplace subtraction, common part"""
-        if not self.__are_compatible__(other):
-            raise TypeError("Cannot subtract `IntegrateResult` of different kind")
+        reason =self.__are_compatible__(other) 
+        if reason:
+            raise TypeError(f"Cannot subtract `IntegrateResult` because of {reason}")
         self._sum_signal -= other.sum_signal
         if self._sum_variance is None or other.sum_variance is None:
             self._sum_variance = None
@@ -275,18 +282,17 @@ class IntegrateResult(_CopyableTuple):
         return self
 
     def __recalcuate_means__(self):
-        print("in recalcuate_means")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            print(id(self.intensity), self.intensity)
-            self.intensity[:] = self.sum_signal/self.sum_normalization
-            print(id(self.intensity), self.intensity)
+            self.intensity[...] = self.sum_signal/self.sum_normalization
+            mask = self.sum_normalization == 0.0
+            self.intensity[mask] = self.dummy
             if self.sum_variance is not None:
                 self._sem = numpy.sqrt(self.sum_variance) / self.sum_normalization
                 self._std = numpy.sqrt(self.sum_variance / self.sum_normalization2)
-                mask = self.sum_normalization2 <= 0.0
-                self.sem[mask] = self.dummy
-                self.std[mask] = self.dummy
+                self._sem[mask] = self.dummy
+                self._std[mask] = self.dummy
+                self.sigma[...] = self._sem
         return self
 
     @property
@@ -609,6 +615,7 @@ class Integrate1dResult(IntegrateResult):
         else:
             radial, I, sigma = result
     """
+    COPYABLE_ATTR = IntegrateResult.COPYABLE_ATTR.union({"_unit"})
 
     def __new__(self, radial, intensity, sigma=None):
         if sigma is None:
@@ -651,11 +658,12 @@ class Integrate1dResult(IntegrateResult):
 
     def __are_compatible__(self, other):
         """Ensure two objects are compatible to make some basic maths together"""
-        if not super().__are_compatible__(other):
-            return False
+        reason = super().__are_compatible__(other) 
+        if reason:
+            return reason
         if not numpy.allclose(self.radial, other.radial):
-            return False
-        return True
+            return "radial differs"
+
 
     def __add__(self, other):
         return super().__add__(other).__recalcuate_means__()
@@ -684,6 +692,7 @@ class Integrate2dResult(IntegrateResult):
         else:
             I, radial, azimuthal, sigma = result
     """
+    COPYABLE_ATTR = IntegrateResult.COPYABLE_ATTR.union({"_radial_unit", "_azimuthal_unit"})
 
     def __new__(self, intensity, radial, azimuthal, sigma=None):
         if sigma is None:
@@ -696,6 +705,28 @@ class Integrate2dResult(IntegrateResult):
         super(Integrate2dResult, self).__init__()
         self._radial_unit = None
         self._azimuthal_unit = None
+
+    def __are_compatible__(self, other):
+        """Ensure two objects are compatible to make some basic maths together"""
+        reason = super().__are_compatible__(other)
+        if reason:
+            return reason
+        if not numpy.allclose(self.radial, other.radial):
+            return "radial differs"
+        if not numpy.allclose(self.azimuthal, other.azimuthal):
+            return "azimuthal differs"
+
+    def __add__(self, other):
+        return super().__add__(other).__recalcuate_means__()
+
+    def __sub__(self, other):
+        return super().__sub__(other).__recalcuate_means__()
+
+    def __iadd__(self, other):
+        return super().__iadd__(other).__recalcuate_means__()
+
+    def __isub__(self, other):
+        return super().__isub__(other).__recalcuate_means__()
 
     @property
     def intensity(self):
@@ -792,14 +823,6 @@ class Integrate2dResult(IntegrateResult):
         :type unit: str
         """
         self._azimuthal_unit = unit
-
-    def __are_compatible__(self, other):
-        """Ensure two objects are compatible to make some basic maths together"""
-        if not super().__are_compatible__(other):
-            return False
-        if not numpy.allclose(self.radial, other.radial):
-            return False
-        return True
 
 
 class SeparateResult(_CopyableTuple):
@@ -1317,7 +1340,7 @@ def rebin1d(res2d: Integrate2dResult) -> Integrate1dResult:
     bins_rad = res2d.radial
     sum_signal = res2d.sum_signal.sum(axis=0)
     sum_normalization = res2d.sum_normalization.sum(axis=0)
-    I = sum_signal / sum_normalization
+    I = sum_signal / sum_normalization  # noqa: E741
     if res2d.sum_variance is not None:
         sum_variance = res2d.sum_variance.sum(axis=0)
         sem = numpy.sqrt(sum_variance) / sum_normalization
@@ -1378,7 +1401,7 @@ def symmetrize(res2d: Integrate2dResult) -> Integrate2dResult:
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        I = sum_signal / sum_normalization
+        I = sum_signal / sum_normalization  # noqa: E741
 
     if res2d.sum_variance is not None:
         sum_variance = _symmetrize_single_array(res2d.sum_variance)
@@ -1590,9 +1613,9 @@ class Integrate2dFiberResult(IntegrateResult):
 class Miller(NamedTuple):
     """This represents the Miller index of a family of latice plans"""
 
-    h: int
-    k: int
-    l: int
+    h: int  # noqa: E741
+    k: int  # noqa: E741
+    l: int  # noqa: E741
 
     def __repr__(self):
         return f"Miller({self.h}, {self.k}, {self.l})"
