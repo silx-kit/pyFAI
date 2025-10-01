@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "01/10/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -139,6 +139,19 @@ class Unit(object):
         self.unit_symbol = unit_symbol
         self.positive = positive
         self.period = period
+
+    def __eq__(self, other):
+        "Equality checking on everything but methods"
+        if self is other:
+            return True
+        if not isinstance(other, self.__class__):
+            return False
+        for name in dir(self):
+            attr = self.__getattribute__(name)
+            if not callable(attr):
+                if attr!=other.__getattribute__(name):
+                    return False
+        return True
 
     def get(self, key):
         """Mimics the dictionary interface
