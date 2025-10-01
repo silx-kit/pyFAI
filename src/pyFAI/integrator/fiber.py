@@ -225,9 +225,16 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_ip = unit_ip or 'qip_nm^-1'
         unit_oop = unit_oop or 'qoop_nm^-1'
+        incident_angle = kwargs.get('incident_angle', None)
+        tilt_angle = kwargs.get('tilt_angle', None)
+        if kwargs.get("use_degrees", False):
+            incident_angle = numpy.deg2rad(incident_angle)
+            tilt_angle = numpy.deg2rad(tilt_angle)
+            kwargs["use_degrees"] = False
+
         unit_ip = parse_fiber_unit(unit=unit_ip,
-                                   incident_angle=kwargs.get('incident_angle', None),
-                                   tilt_angle=kwargs.get('tilt_angle', None),
+                                   incident_angle=incident_angle,
+                                   tilt_angle=tilt_angle,
                                    sample_orientation=sample_orientation)
         unit_oop = parse_fiber_unit(unit=unit_oop,
                                     incident_angle=unit_ip.incident_angle,
@@ -368,10 +375,16 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_ip = unit_ip or 'qip_nm^-1'
         unit_oop = unit_oop or 'qoop_nm^-1'
+        incident_angle = kwargs.get('incident_angle', None)
+        tilt_angle = kwargs.get('tilt_angle', None)
+        if kwargs.get("use_degrees", False):
+            incident_angle = numpy.deg2rad(incident_angle)
+            tilt_angle = numpy.deg2rad(tilt_angle)
+
         unit_ip = parse_fiber_unit(unit=unit_ip,
                                    sample_orientation=sample_orientation,
-                                   incident_angle=kwargs.get('incident_angle', None),
-                                   tilt_angle=kwargs.get('tilt_angle', None),
+                                   incident_angle=incident_angle,
+                                   tilt_angle=tilt_angle,
                                    )
         unit_oop = parse_fiber_unit(unit=unit_oop,
                                     incident_angle=unit_ip.incident_angle,
