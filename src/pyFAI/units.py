@@ -312,12 +312,12 @@ class UnitFiber(Unit):
     def __repr__(self):
         incident_angle_degs = numpy.rad2deg(self.incident_angle)
         tilt_angle_degs = numpy.rad2deg(self.tilt_angle)
-        return f"""
-{self.name}
-Incident_angle={incident_angle_degs:.2f}\u00b0 ({self.incident_angle:.3f} rads)
-Tilt_angle={tilt_angle_degs:.2f}\u00b0 ({self.tilt_angle:.3f} rads)
-Sample orientation={self.sample_orientation}
-"""
+        return (
+            f"{self.name}\n"
+            f"Incident_angle={incident_angle_degs:.2f}° ({self.incident_angle:.3f} rads)\n"
+            f"Tilt_angle={tilt_angle_degs:.2f}° ({self.tilt_angle:.3f} rads)\n"
+            f"Sample orientation={self.sample_orientation}"
+        )
 
     def __str__(self):
         return self.name

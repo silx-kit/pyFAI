@@ -107,12 +107,16 @@ class FiberIntegrator(AzimuthalIntegrator):
         super().__init__(*args, **kwargs)
         self._cache_parameters = {}
 
-    def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="m"):
-        core_repr = super().__repr__(dist_unit=dist_unit, ang_unit=ang_unit, wl_unit=wl_unit)
+    def __repr__(self):
+        core_repr = super().__repr__()
         incident_angle_degs = numpy.rad2deg(self.incident_angle)
         tilt_angle_degs = numpy.rad2deg(self.tilt_angle)
-        return f"{core_repr}\nIncident angle: {incident_angle_degs:.2f}° ({self.incident_angle:.3f} rads)\nTilt angle {tilt_angle_degs:.2f}° ({self.tilt_angle:.3f} rads)\nSample orientation {self.sample_orientation}"
-
+        return (
+            f"{core_repr}\n"
+            f"Incident angle: {incident_angle_degs:.2f}° ({self.incident_angle:.3f} rads)\n"
+            f"Tilt angle: {tilt_angle_degs:.2f}° ({self.tilt_angle:.3f} rads)\n"
+            f"Sample orientation: {self.sample_orientation}"
+        )
 
     @property
     def incident_angle(self) -> float:
