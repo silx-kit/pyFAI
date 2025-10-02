@@ -1409,7 +1409,7 @@ def symmetrize(res2d: Integrate2dResult) -> Integrate2dResult:
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        intensity = sum_signal / sum_normalization  # noqa: E741
+        intensity = sum_signal / sum_normalization
 
     if res2d.sum_variance is not None:
         sum_variance = _symmetrize_single_array(res2d.sum_variance)
