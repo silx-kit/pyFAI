@@ -30,7 +30,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/10/2025"
+__date__ = "02/10/2025"
 __status__ = "development"
 
 import sys
@@ -238,8 +238,10 @@ class IntegrateResult(_CopyableTuple):
             raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
         res = copy.deepcopy(self)
         res._sum_signal = self._sum_signal + other._sum_signal
-        if self._sum_variance is None or other.sum_variance is None:
-            res._sum_variance = None
+        if self._sum_variance is None:
+            res._sum_variance = other.sum_variance
+        elif other.sum_variance is None:
+            res._sum_variance = self._sum_variance
         else:
             res._sum_variance = self._sum_variance + other._sum_variance
         return res
@@ -251,8 +253,10 @@ class IntegrateResult(_CopyableTuple):
             raise TypeError(f"Cannot subtract `IntegrateResult` because of {reason}")
         res = copy.deepcopy(self)
         res._sum_signal = self._sum_signal - other.sum_signal
-        if self._sum_variance is None or other.sum_variance is None:
-            res._sum_variance = None
+        if self._sum_variance is None:
+            res._sum_variance = other.sum_variance
+        elif other.sum_variance is None:
+            res._sum_variance = self._sum_variance
         else:
             res._sum_variance = self._sum_variance + other.sum_variance
         return res
@@ -263,9 +267,9 @@ class IntegrateResult(_CopyableTuple):
         if reason:
             raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
         self._sum_signal += other._sum_signal
-        if self._sum_variance is None or other.sum_variance is None:
-            self._sum_variance = None
-        else:
+        if self._sum_variance is None:
+            self._sum_variance = other.sum_variance
+        elif other._sum_variance is not None:
             self._sum_variance += other._sum_variance
         return self
 
@@ -275,10 +279,10 @@ class IntegrateResult(_CopyableTuple):
         if reason:
             raise TypeError(f"Cannot subtract `IntegrateResult` because of {reason}")
         self._sum_signal -= other.sum_signal
-        if self._sum_variance is None or other.sum_variance is None:
-            self._sum_variance = None
-        else:
-            self._sum_variance += other.sum_variance
+        if self._sum_variance is None:
+            self._sum_variance = other.sum_variance
+        elif other._sum_variance is not None:
+            self._sum_variance += other._sum_variance
         return self
 
     def __recalculate_means__(self):
@@ -666,16 +670,16 @@ class Integrate1dResult(IntegrateResult):
             return "radial differs"
 
     def __add__(self, other):
-        return super().__add__(other).__recalcuate_means__()
+        return super().__add__(other).__recalculate_means__()
 
     def __sub__(self, other):
-        return super().__sub__(other).__recalcuate_means__()
+        return super().__sub__(other).__recalculate_means__()
 
     def __iadd__(self, other):
-        return super().__iadd__(other).__recalcuate_means__()
+        return super().__iadd__(other).__recalculate_means__()
 
     def __isub__(self, other):
-        return super().__isub__(other).__recalcuate_means__()
+        return super().__isub__(other).__recalculate_means__()
 
 
 class Integrate2dResult(IntegrateResult):
@@ -721,16 +725,16 @@ class Integrate2dResult(IntegrateResult):
             return "azimuthal differs"
 
     def __add__(self, other):
-        return super().__add__(other).__recalcuate_means__()
+        return super().__add__(other).__recalculate_means__()
 
     def __sub__(self, other):
-        return super().__sub__(other).__recalcuate_means__()
+        return super().__sub__(other).__recalculate_means__()
 
     def __iadd__(self, other):
-        return super().__iadd__(other).__recalcuate_means__()
+        return super().__iadd__(other).__recalculate_means__()
 
     def __isub__(self, other):
-        return super().__isub__(other).__recalcuate_means__()
+        return super().__isub__(other).__recalculate_means__()
 
     @property
     def intensity(self):
@@ -1348,13 +1352,13 @@ def rebin1d(res2d: Integrate2dResult) -> Integrate1dResult:
     if res2d.sum_variance is not None:
         sum_variance = res2d.sum_variance.sum(axis=0)
         sem = numpy.sqrt(sum_variance) / sum_normalization
-        result = Integrate1dResult(bins_rad, I, sem)
+        result = Integrate1dResult(bins_rad, intensity, sem)
         result._set_sum_normalization2(res2d.sum_normalization2.sum(axis=0))
         result._set_sum_variance(sum_variance)
         result._set_std(numpy.sqrt(sum_variance / result.sum_normalization2))
         result._set_std(sem)
     else:
-        result = Integrate1dResult(bins_rad, I)
+        result = Integrate1dResult(bins_rad, intensity)
 
     result._set_sum_signal(sum_signal)
     result._set_sum_normalization(sum_normalization)
