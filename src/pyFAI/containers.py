@@ -1344,7 +1344,7 @@ def rebin1d(res2d: Integrate2dResult) -> Integrate1dResult:
     bins_rad = res2d.radial
     sum_signal = res2d.sum_signal.sum(axis=0)
     sum_normalization = res2d.sum_normalization.sum(axis=0)
-    I = sum_signal / sum_normalization  # noqa: E741
+    intensity = sum_signal / sum_normalization
     if res2d.sum_variance is not None:
         sum_variance = res2d.sum_variance.sum(axis=0)
         sem = numpy.sqrt(sum_variance) / sum_normalization
