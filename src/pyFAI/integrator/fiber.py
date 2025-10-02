@@ -183,6 +183,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                         polarization_factor=None, dark=None, flat=None,
                         method=("no", "histogram", "cython"),
                         normalization_factor=1.0,
+                        angle_unit="rad",
                         **kwargs) -> Integrate1dFiberResult:
         """Calculate the integrated profile curve along a specific FiberUnit, additional input for sample_orientation
 
@@ -210,6 +211,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param ndarray flat: flat field image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
+        :param str angle_unit: rad/deg, defines the units if incident and tilt angles
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
@@ -232,7 +234,6 @@ class FiberIntegrator(AzimuthalIntegrator):
         incident_angle = kwargs.get('incident_angle', None)
         tilt_angle = kwargs.get('tilt_angle', None)
 
-        angle_unit = kwargs.get("angle_unit", "rad")
         angle_unit_parsed = ANGLE_UNITS.get(angle_unit)
         if angle_unit is None:
             raise ValueError(f"{angle_unit} is not a valid unit for incident/tilt angles: (rag / deg)")
@@ -341,7 +342,9 @@ class FiberIntegrator(AzimuthalIntegrator):
                           mask=None, dummy=None, delta_dummy=None,
                           polarization_factor=None, dark=None, flat=None,
                           method=("no", "histogram", "cython"),
-                          normalization_factor=1.0, **kwargs) -> Integrate2dFiberResult:
+                          normalization_factor=1.0,
+                          angle_unit="rad",
+                          **kwargs) -> Integrate2dFiberResult:
         """Reshapes the data pattern as a function of two FiberUnits, additional inputs for sample_orientation
 
         :param ndarray data: 2D array from the Detector/CCD camera
@@ -367,6 +370,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param ndarray flat: flat field image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
+        :param str angle_unit: rad/deg, defines the units if incident and tilt angles
         :return: regrouped intensity and unit arrays
         :rtype: Integrate2dResult
         """
@@ -388,7 +392,6 @@ class FiberIntegrator(AzimuthalIntegrator):
         incident_angle = kwargs.get('incident_angle', None)
         tilt_angle = kwargs.get('tilt_angle', None)
 
-        angle_unit = kwargs.get("angle_unit", "rad")
         angle_unit_parsed = ANGLE_UNITS.get(angle_unit)
         if angle_unit is None:
             raise ValueError(f"{angle_unit} is not a valid unit for incident/tilt angles: (rag / deg)")
