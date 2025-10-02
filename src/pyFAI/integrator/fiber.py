@@ -48,7 +48,7 @@ from .azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dFiberResult, Integrate2dFiberResult
 from ..method_registry import IntegrationMethod
 from ..io import save_integrate_result
-from ..units import parse_fiber_unit
+from ..units import parse_fiber_unit, ANGLE_UNITS
 from ..utils.decorators import deprecated_warning
 
 def get_deprecated_params_1d(**kwargs) -> dict:
@@ -231,11 +231,14 @@ class FiberIntegrator(AzimuthalIntegrator):
         unit_oop = unit_oop or 'qoop_nm^-1'
         incident_angle = kwargs.get('incident_angle', None)
         tilt_angle = kwargs.get('tilt_angle', None)
-        if kwargs.get("use_degrees", False):
-            incident_angle = numpy.deg2rad(incident_angle)
-            tilt_angle = numpy.deg2rad(tilt_angle)
-            kwargs["use_degrees"] = False
 
+        angle_unit = kwargs.get("angle_unit", "rad")
+        angle_unit_parsed = ANGLE_UNITS.get(angle_unit)
+        if angle_unit is None:
+            raise ValueError(f"{angle_unit} is not a valid unit for incident/tilt angles: (rag / deg)")
+        incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+        tilt_angle = (tilt_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+        
         unit_ip = parse_fiber_unit(unit=unit_ip,
                                    incident_angle=incident_angle,
                                    tilt_angle=tilt_angle,
@@ -381,10 +384,14 @@ class FiberIntegrator(AzimuthalIntegrator):
         unit_oop = unit_oop or 'qoop_nm^-1'
         incident_angle = kwargs.get('incident_angle', None)
         tilt_angle = kwargs.get('tilt_angle', None)
-        if kwargs.get("use_degrees", False):
-            incident_angle = numpy.deg2rad(incident_angle)
-            tilt_angle = numpy.deg2rad(tilt_angle)
 
+        angle_unit = kwargs.get("angle_unit", "rad")
+        angle_unit_parsed = ANGLE_UNITS.get(angle_unit)
+        if angle_unit is None:
+            raise ValueError(f"{angle_unit} is not a valid unit for incident/tilt angles: (rag / deg)")
+        incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+        tilt_angle = (tilt_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+        
         unit_ip = parse_fiber_unit(unit=unit_ip,
                                    sample_orientation=sample_orientation,
                                    incident_angle=incident_angle,

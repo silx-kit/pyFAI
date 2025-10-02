@@ -1683,7 +1683,7 @@ Q_TOT = RADIAL_UNITS["qtot_nm^-1"]
 
 
 def get_unit_fiber(
-    name, incident_angle: float = 0.0, tilt_angle: float = 0.0, sample_orientation=1, use_degress:bool = False
+    name, incident_angle: float = 0.0, tilt_angle: float = 0.0, sample_orientation: int = 1, angle_unit: str = "rad",
 ):
     """Retrieves a unit instance for Grazing-Incidence/Fiber Scattering with updated incident and tilt angles
     The unit angles are in radians
@@ -1691,7 +1691,7 @@ def get_unit_fiber(
     :param float incident_angle: projection angle of the beam in the sample. Its rotation axis is the fiber axis or the normal vector of the thin film
     :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
     :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
-    :param bool use_degrees: if True, it assumes that the incident and tilt angles inputs are in degrees, default is radians
+    :param str angle_unit: rad/deg, defines the units if incident and tilt angles
     """
     if name in RADIAL_UNITS:
         unit = copy.deepcopy(RADIAL_UNITS.get(name, None))
@@ -1704,9 +1704,13 @@ def get_unit_fiber(
         return
 
     if isinstance(unit, UnitFiber):
-        if use_degress:
-            incident_angle = numpy.deg2rad(incident_angle)
-            tilt_angle = numpy.deg2rad(tilt_angle)
+        angle_unit_parsed = ANGLE_UNITS.get(angle_unit)
+        if angle_unit_parsed is None:
+            raise ValueError(f"{angle_unit} is not valid unit for angles: (rad / deg)")
+
+        incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+        tilt_angle = (tilt_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+        
         unit.set_incident_angle(incident_angle)
         unit.set_tilt_angle(tilt_angle)
         unit.set_sample_orientation(sample_orientation)
