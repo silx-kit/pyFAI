@@ -48,7 +48,7 @@ from .azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dFiberResult, Integrate2dFiberResult
 from ..method_registry import IntegrationMethod
 from ..io import save_integrate_result
-from ..units import parse_fiber_unit, ANGLE_UNITS
+from ..units import parse_fiber_unit, ANGLE_UNITS, to_unit
 from ..utils.decorators import deprecated_warning
 
 def get_deprecated_params_1d(**kwargs) -> dict:
@@ -234,9 +234,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         incident_angle = kwargs.get('incident_angle', None)
         tilt_angle = kwargs.get('tilt_angle', None)
 
-        angle_unit_parsed = ANGLE_UNITS.get(angle_unit)
-        if angle_unit is None:
-            raise ValueError(f"{angle_unit} is not a valid unit for incident/tilt angles: (rag / deg)")
+        angle_unit_parsed = to_unit(angle_unit, ANGLE_UNITS)
 
         if incident_angle is not None:
             incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
@@ -392,9 +390,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         incident_angle = kwargs.get('incident_angle', None)
         tilt_angle = kwargs.get('tilt_angle', None)
 
-        angle_unit_parsed = ANGLE_UNITS.get(angle_unit)
-        if angle_unit is None:
-            raise ValueError(f"{angle_unit} is not a valid unit for incident/tilt angles: (rag / deg)")
+        angle_unit_parsed = to_unit(angle_unit, ANGLE_UNITS)
 
         if incident_angle is not None:
             incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
