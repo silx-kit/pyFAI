@@ -615,9 +615,9 @@ class Integrate1dResult(IntegrateResult):
 
         result = ai.integrate1d(...)
         if result.sigma is None:
-            radial, I = result
+            radial, intensity = result
         else:
-            radial, I, sigma = result
+            radial, intensity, sigma = result
     """
 
     COPYABLE_ATTR = IntegrateResult.COPYABLE_ATTR.union({"_unit"})
@@ -693,9 +693,9 @@ class Integrate2dResult(IntegrateResult):
 
         result = ai.integrate2d(...)
         if result.sigma is None:
-            I, radial, azimuthal = result
+            intensity, radial, azimuthal = result
         else:
-            I, radial, azimuthal, sigma = result
+            intensity, radial, azimuthal, sigma = result
     """
 
     COPYABLE_ATTR = IntegrateResult.COPYABLE_ATTR.union(
@@ -1409,7 +1409,7 @@ def symmetrize(res2d: Integrate2dResult) -> Integrate2dResult:
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        I = sum_signal / sum_normalization  # noqa: E741
+        intensity = sum_signal / sum_normalization  # noqa: E741
 
     if res2d.sum_variance is not None:
         sum_variance = _symmetrize_single_array(res2d.sum_variance)
@@ -1422,14 +1422,14 @@ def symmetrize(res2d: Integrate2dResult) -> Integrate2dResult:
         sem[mask] = res2d.dummy
         std[mask] = res2d.dummy
 
-        result = Integrate2dResult(I, bins_rad, bins_azim, sem)
+        result = Integrate2dResult(intensity, bins_rad, bins_azim, sem)
         result._set_sum_normalization2(sum_normalization2)
         result._set_sum_variance(sum_variance)
     else:
-        result = Integrate2dResult(I, bins_rad, bins_azim)
+        result = Integrate2dResult(intensity, bins_rad, bins_azim)
         mask = sum_normalization <= 0.0
 
-    I[mask] = res2d.dummy
+    intensity[mask] = res2d.dummy
     result._set_sum_signal(sum_signal)
     result._set_sum_normalization(sum_normalization)
     result._set_method_called(f"{res2d.method_called}|symmetrize")
