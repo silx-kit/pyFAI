@@ -238,7 +238,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             raise ValueError(f"{angle_unit} is not a valid unit for incident/tilt angles: (rag / deg)")
         incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
         tilt_angle = (tilt_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
-        
+
         unit_ip = parse_fiber_unit(unit=unit_ip,
                                    incident_angle=incident_angle,
                                    tilt_angle=tilt_angle,
@@ -391,7 +391,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             raise ValueError(f"{angle_unit} is not a valid unit for incident/tilt angles: (rag / deg)")
         incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
         tilt_angle = (tilt_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
-        
+
         unit_ip = parse_fiber_unit(unit=unit_ip,
                                    sample_orientation=sample_orientation,
                                    incident_angle=incident_angle,

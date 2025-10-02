@@ -1710,7 +1710,7 @@ def get_unit_fiber(
 
         incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
         tilt_angle = (tilt_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
-        
+
         unit.set_incident_angle(incident_angle)
         unit.set_tilt_angle(tilt_angle)
         unit.set_sample_orientation(sample_orientation)
