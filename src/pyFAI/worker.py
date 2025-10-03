@@ -886,7 +886,7 @@ class WorkerFiber(Worker):
         logger.info(self.ai.__repr__())
         self.reset()
 
-    def get_worker_config(self):
+    def get_worker_config(self, pop_azimuthal_params:bool = True):
         """Returns the configuration as a WorkerFiberConfig dataclass instance.
 
         :return: WorkerConfig dataclass instance
@@ -913,9 +913,21 @@ class WorkerFiber(Worker):
             try:
                 config.__setattr__(key,  self.__getattribute__(key).get_config())
             except Exception as err:
-                logger.error(f"exception {type(err)} at {key} ({err})")
+                logger.error(f"exception {type(err)} at {key} ({err})")   
         return config
 
+    def save(self, filename, pop_azimuthal_params:bool=True):
+        config = self.as_dict()
+        
+        if pop_azimuthal_params:
+            for key in ["nbpt_rad", "nbpt_azim"]:
+                print(f"pop {key}")
+                config.pop(key)
+                
+        """Dump the content of the dataclass as JSON file"""
+        with open(filename, "w") as w:
+            w.write(json.dumps(config, indent=2))
+            
     def process(self, data,
                 variance=None,
                 dark=None,
