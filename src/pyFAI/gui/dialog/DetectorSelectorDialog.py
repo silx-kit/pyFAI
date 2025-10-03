@@ -160,10 +160,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self._detectorSensorMaterials.currentIndexChanged.connect(self.__sensorChanged)
 
     def __sensorParallax(self):
-        if self._detectorSensorParallax.isChecked():
-            self._sensorGroup.setEnabled(True)
-        else:
-            self._sensorGroup.setEnabled(False)
+        self._sensorGroup.setEnabled(self._detectorSensorParallax.isChecked())
         self.__sensorChanged()
 
     def getSensorConfig(self):
