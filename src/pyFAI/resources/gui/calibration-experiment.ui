@@ -326,7 +326,7 @@
           <item row="5" column="2">
            <widget class="QLabel" name="_detectorParallax">
             <property name="toolTip">
-             <string extracomment="Parallax correction is activated">Is parallax correction enabled ?</string>
+             <string extracomment="Parallax correction is activated">Is parallax correction enabled?</string>
             </property>
             <property name="text">
              <string/>

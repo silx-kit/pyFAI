@@ -25,7 +25,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Module with list <-> tree conversion"""
+"""Module with list <-> tree conversion
+
+Completely empty, the code has been moved in diffmap_config & tree
+"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -36,7 +39,7 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import logging
-from ...io.diffmap_config import DataSet as DataSet, DataSetNT as DataSetNT, ListDataSet as ListDataSet
-from ...io.tree import TreeItem as TreeItem
+from ...io.diffmap_config import DataSet, DataSetNT, ListDataSet  # noqa: F401
+from ...io.tree import TreeItem                                   # noqa: F401
 
 logger = logging.getLogger(__name__)
