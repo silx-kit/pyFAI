@@ -402,14 +402,10 @@ class FiberIntegrator(AzimuthalIntegrator):
                                    incident_angle=incident_angle,
                                    tilt_angle=tilt_angle,
                                    )
+        config = unit_ip.get_config_shared()
         unit_oop = parse_fiber_unit(unit=unit_oop,
-                                    incident_angle=unit_ip.incident_angle,
-                                    tilt_angle=unit_ip.tilt_angle,
-                                    sample_orientation=unit_ip.sample_orientation)
-
-        self.reset_integrator(incident_angle=unit_ip.incident_angle,
-                              tilt_angle=unit_ip.tilt_angle,
-                              sample_orientation=unit_ip.sample_orientation)
+                                    **config)
+        self.reset_integrator(**config)
 
         res2d = self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
                                   correctSolidAngle=correctSolidAngle,
@@ -432,7 +428,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         sem = res2d.sem
 
         use_pixel_split = (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no")
-        use_missing_wedge = kwargs.get("mask_missing_wedge", False)
+        use_missing_wedge = kwargs.get("use_missing_wedge", False)
         if use_pixel_split and not use_missing_wedge:
             logger.warning(f"""
                            Method {method} is using a pixel-splitting scheme without the missing wedge mask.\n\
