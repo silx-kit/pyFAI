@@ -150,17 +150,14 @@ class SensorMaterial:
 
 
 # For the record: some classical sensors materials
-Si_MATERIAL = SensorMaterial("Si", 2.329)
-CdTe_MATERIAL = SensorMaterial("CdTe",  5.85)
-GaAs_MATERIAL = SensorMaterial("GaAs", 5.3176)
-Ge_MATERIAL = SensorMaterial("Ge", 5.327)
-Gd2O2S_MATERIAL = SensorMaterial("Gd2O2S", density=7.32)
+ALL_MATERIALS = {}
 
-ALL_MATERIALS = {"Si": Si_MATERIAL,
-                 "CdTe": CdTe_MATERIAL,
-                 "GaAs": GaAs_MATERIAL,
-                 "Gd2O2S": Gd2O2S_MATERIAL,
-                }
+ALL_MATERIALS["Si"] = Si_MATERIAL = SensorMaterial("Si", density=2.329)
+ALL_MATERIALS["Ge"] = Ge_MATERIAL = SensorMaterial("Ge", 5.327)
+ALL_MATERIALS["CdTe"] = CdTe_MATERIAL = SensorMaterial("CdTe", density=5.85)
+ALL_MATERIALS["GaAs"] = GaAs_MATERIAL = SensorMaterial("GaAs", density=5.3176)
+ALL_MATERIALS["Gd2O2S"] = Gd2O2S_MATERIAL = SensorMaterial("Gd2O2S", density=7.32)
+
 
 
 @dataclass
