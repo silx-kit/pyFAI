@@ -397,7 +397,7 @@ class UnitFiber(Unit):
                 "incident_angle" : self._incident_angle,
                 "tilt_angle" : self._tilt_angle,
                 "sample_orientation" : self._sample_orientation,
-                "name" : self.name,
+                "unit" : self.name,
             }
         )
         return fiberunit_config
@@ -407,7 +407,7 @@ class UnitFiber(Unit):
         :return: dictionary with fiber parameters
         """
         config = self.get_config()
-        config.pop("name")
+        config.pop("unit")
         return config
 
     def set_config(self, config:dict=None, **kwargs) -> None:
@@ -421,7 +421,7 @@ class UnitFiber(Unit):
         kwargs = {k:v for k,v in kwargs.items() if k in FIBERUNIT_CONFIG_TEMPLATE}
         config = {k:v for k,v in config.items() if k in FIBERUNIT_CONFIG_TEMPLATE}
         config.update(kwargs)
-        if config.get("name") is not None:
+        if config.get("unit") is not None:
             logger.error("The unit itself cannot be set. Create a new UnitFiber instance.")
             return
 
@@ -442,7 +442,7 @@ FIBERUNIT_CONFIG_TEMPLATE = {
     "incident_angle" : None,
     "tilt_angle" : None,
     "sample_orientation" : None,
-    "name" : None,
+    "unit" : None,
 }
 
 
@@ -1809,10 +1809,9 @@ def get_unit_fiber(
 
         incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
         tilt_angle = (tilt_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
-
-        unit.set_incident_angle(incident_angle)
-        unit.set_tilt_angle(tilt_angle)
-        unit.set_sample_orientation(sample_orientation)
+        unit.incident_angle = incident_angle
+        unit.tilt_angle = tilt_angle
+        unit.sample_orientation = sample_orientation
     return unit
 
 

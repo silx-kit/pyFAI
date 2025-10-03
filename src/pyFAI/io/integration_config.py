@@ -796,9 +796,6 @@ class WorkerFiberConfig(WorkerConfig):
     ip_range: list = None
     oop_range: list = None
     vertical_integration: bool = True,
-    incident_angle: float = 0.0,
-    tilt_angle: float = 0.0,
-    sample_orientation: int = 1,
     integrator_class: str = "FiberIntegrator"
     OPTIONAL: ClassVar[list] = ["ip_range_min", "ip_range_max",
                                 "oop_range_min", "oop_range_max",
@@ -870,3 +867,19 @@ class WorkerFiberConfig(WorkerConfig):
         if not self.oop_range:
             self.oop_range = [-numpy.inf, numpy.inf]
         self.oop_range[1] = numpy.inf if value is None else value
+
+    def save(self, filename, pop_azimuthal_params:bool=True):
+        """Dump the content of the dataclass as JSON file"""
+        config = self.as_dict()
+        if pop_azimuthal_params:
+            for key in ["nbpt_rad", "nbpt_azim", 
+                        "radial_range", "azimuth_range",
+                        "radial_range_min", "radial_range_max",
+                        "azimuth_range_min", "azimuth_range_max",
+                        "do_radial_range", "do_azimuthal_range",
+            ]:
+                if key in config:
+                    config.pop(key)
+        
+        with open(filename, "w") as w:
+            w.write(json.dumps(config, indent=2))

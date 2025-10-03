@@ -720,17 +720,23 @@ class WorkerFiber(Worker):
         self._method = None
         self.use_missing_wedge = use_missing_wedge
 
-        self.unit_ip = units.parse_fiber_unit(unit_ip)
-        self.unit_oop = units.parse_fiber_unit(unit_oop)
+        self.unit_ip = units.parse_fiber_unit(unit_ip, 
+                                              incident_angle=incident_angle,
+                                              tilt_angle=tilt_angle,
+                                              sample_orientation=sample_orientation,
+                                              )
+        config_unit = self.unit_ip.get_config_shared()
+        self.unit_oop = units.parse_fiber_unit(unit_oop,
+                                               **config_unit,)
         self.ip_range = ip_range
         self.oop_range = oop_range
         self._npt_oop = npt_oop
         self._npt_ip = npt_ip
         self.update_processor()
 
-        self.incident_angle = incident_angle
-        self.tilt_angle = tilt_angle
-        self.sample_orientation = sample_orientation
+        self._incident_angle = config_unit["incident_angle"]
+        self._tilt_angle = config_unit["tilt_angle"]
+        self._sample_orientation = config_unit["sample_orientation"]
 
         self.polarization_factor = None
         self.dummy = dummy
@@ -771,8 +777,9 @@ class WorkerFiber(Worker):
         ]
         return os.linesep.join(lstout)
 
-    def update_processor(self):
-        return super().update_processor(integrator_name=self.integrator_name)
+    def update_processor(self, integrator_name=None):
+        integrator_name = integrator_name or self.integrator_name
+        return super().update_processor(integrator_name=integrator_name)
 
     @property
     def npt_oop(self):
@@ -832,7 +839,7 @@ class WorkerFiber(Worker):
         if not isinstance(config, WorkerFiberConfig):
             config = WorkerFiberConfig.from_dict(config, inplace=consume_keys)
         _init_ai(self.ai, config, read_maps=False)
-
+        
         # Do it here before reading the AI to be able to catch the io
         filename = config.mask_file
         if filename:
@@ -862,10 +869,20 @@ class WorkerFiber(Worker):
             self.ai.detector.set_flatfield(data)
             self.flat_field_image = filenames
 
-        self.npt_azim = int(config.npt_azim) if config.npt_azim else 1
-        self.npt_rad = config.npt_rad
-        self.unit_ip = config.unit_ip
-        self.unit_oop = config.unit_oop
+        self.npt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
+        self.npt_rad = config.nbpt_rad
+        self.unit_ip = units.parse_fiber_unit(**config.unit_ip)
+        self.unit_oop = units.parse_fiber_unit(**config.unit_oop)
+        config_unit = self.unit_ip.get_config_shared()
+        self._incident_angle = config_unit["incident_angle"]
+        self._tilt_angle = config_unit["tilt_angle"]
+        self._sample_orientation = config_unit["sample_orientation"]
+        self.fi.reset_integrator(
+            incident_angle=self._incident_angle,
+            tilt_angle=self._tilt_angle,
+            sample_orientation=self._sample_orientation,
+        )
+        
         self.oop_range = config.oop_range
         self.ip_range = config.ip_range
 
@@ -883,10 +900,9 @@ class WorkerFiber(Worker):
         if config.monitor_name:
             logger.warning("Monitor name defined but unsupported by the worker.")
 
-        logger.info(self.ai.__repr__())
         self.reset()
 
-    def get_worker_config(self, pop_azimuthal_params:bool = True):
+    def get_worker_config(self):
         """Returns the configuration as a WorkerFiberConfig dataclass instance.
 
         :return: WorkerConfig dataclass instance
@@ -915,19 +931,7 @@ class WorkerFiber(Worker):
             except Exception as err:
                 logger.error(f"exception {type(err)} at {key} ({err})")   
         return config
-
-    def save(self, filename, pop_azimuthal_params:bool=True):
-        config = self.as_dict()
-        
-        if pop_azimuthal_params:
-            for key in ["nbpt_rad", "nbpt_azim"]:
-                print(f"pop {key}")
-                config.pop(key)
-                
-        """Dump the content of the dataclass as JSON file"""
-        with open(filename, "w") as w:
-            w.write(json.dumps(config, indent=2))
-            
+           
     def process(self, data,
                 variance=None,
                 dark=None,
