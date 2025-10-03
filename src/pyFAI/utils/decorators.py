@@ -40,7 +40,7 @@ import functools
 import logging
 import traceback
 import inspect
-from typing import Callable, Iterable, Tuple
+from typing import Callable
 from ..version import calc_hexversion,  hexversion as pyFAI_hexversion
 
 
@@ -131,8 +131,6 @@ def deprecated_warning(type_, name, reason=None, replacement=None,
         msg += f" Use '{replacement}' instead."
     msg += "\n%s"
     limit = 2 + skip_backtrace_count
-    # print(limit)
-    # print(traceback.format_stack(limit=limit))
     backtrace = "".join(traceback.format_stack()[:-limit])
     backtrace = backtrace.rstrip()
     if only_once:
@@ -184,11 +182,7 @@ def deprecated_args(mapping: dict,
     Decorator to replace the kwargs name allowed for a function.
     In case of useage in property, place it after `@property.setter`.
 
-    :param dictt mapping: key is the valid kwarg, and value is the deprecated kwarg
-    :param str reason: Reason for deprecating this function
-        (e.g. "feature no longer provided",
-    :param str replacement: Name of replacement function (if the reason for
-        deprecating was to rename the function)
+    :param dict mapping: key is the valid kwarg, and value is the deprecated kwarg
     :param str since_version: First *pyFAI* version for which the function was
         deprecated (e.g. "0.5.0").
     :param bool only_once: If true, the deprecation warning will only be
