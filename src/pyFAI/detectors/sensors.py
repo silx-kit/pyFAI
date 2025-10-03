@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/09/2025"
+__date__ = "03/10/2025"
 __status__ = "stable"
 
 import os
@@ -153,7 +153,7 @@ class SensorMaterial:
 ALL_MATERIALS = {}
 
 ALL_MATERIALS["Si"] = Si_MATERIAL = SensorMaterial("Si", density=2.329)
-ALL_MATERIALS["Ge"] = Ge_MATERIAL = SensorMaterial("Ge", 5.327)
+ALL_MATERIALS["Ge"] = Ge_MATERIAL = SensorMaterial("Ge", density=5.327)
 ALL_MATERIALS["CdTe"] = CdTe_MATERIAL = SensorMaterial("CdTe", density=5.85)
 ALL_MATERIALS["GaAs"] = GaAs_MATERIAL = SensorMaterial("GaAs", density=5.3176)
 ALL_MATERIALS["Gd2O2S"] = Gd2O2S_MATERIAL = SensorMaterial("Gd2O2S", density=7.32)
