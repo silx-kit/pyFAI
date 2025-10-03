@@ -872,7 +872,7 @@ class WorkerFiberConfig(WorkerConfig):
         """Dump the content of the dataclass as JSON file"""
         config = self.as_dict()
         if pop_azimuthal_params:
-            for key in ["nbpt_rad", "nbpt_azim", 
+            for key in ["nbpt_rad", "nbpt_azim",
                         "radial_range", "azimuth_range",
                         "radial_range_min", "radial_range_max",
                         "azimuth_range_min", "azimuth_range_max",
@@ -880,6 +880,6 @@ class WorkerFiberConfig(WorkerConfig):
             ]:
                 if key in config:
                     config.pop(key)
-        
+
         with open(filename, "w") as w:
             w.write(json.dumps(config, indent=2))

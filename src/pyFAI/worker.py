@@ -720,7 +720,7 @@ class WorkerFiber(Worker):
         self._method = None
         self.use_missing_wedge = use_missing_wedge
 
-        self.unit_ip = units.parse_fiber_unit(unit_ip, 
+        self.unit_ip = units.parse_fiber_unit(unit_ip,
                                               incident_angle=incident_angle,
                                               tilt_angle=tilt_angle,
                                               sample_orientation=sample_orientation,
@@ -839,7 +839,7 @@ class WorkerFiber(Worker):
         if not isinstance(config, WorkerFiberConfig):
             config = WorkerFiberConfig.from_dict(config, inplace=consume_keys)
         _init_ai(self.ai, config, read_maps=False)
-        
+
         # Do it here before reading the AI to be able to catch the io
         filename = config.mask_file
         if filename:
@@ -882,7 +882,7 @@ class WorkerFiber(Worker):
             tilt_angle=self._tilt_angle,
             sample_orientation=self._sample_orientation,
         )
-        
+
         self.oop_range = config.oop_range
         self.ip_range = config.ip_range
 
@@ -929,9 +929,9 @@ class WorkerFiber(Worker):
             try:
                 config.__setattr__(key,  self.__getattribute__(key).get_config())
             except Exception as err:
-                logger.error(f"exception {type(err)} at {key} ({err})")   
+                logger.error(f"exception {type(err)} at {key} ({err})")
         return config
-           
+
     def process(self, data,
                 variance=None,
                 dark=None,
