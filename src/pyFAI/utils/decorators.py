@@ -40,7 +40,7 @@ import functools
 import logging
 import traceback
 import inspect
-from typing import Callable, Iterable, Tuple
+from typing import Callable
 from ..version import calc_hexversion,  hexversion as pyFAI_hexversion
 
 
