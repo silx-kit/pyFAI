@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "01/10/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -139,6 +139,19 @@ class Unit(object):
         self.unit_symbol = unit_symbol
         self.positive = positive
         self.period = period
+
+    def __eq__(self, other):
+        "Equality checking on everything but methods"
+        if self is other:
+            return True
+        if not isinstance(other, self.__class__):
+            return False
+        for name in dir(self):
+            attr = self.__getattribute__(name)
+            if not callable(attr):
+                if attr!=other.__getattribute__(name):
+                    return False
+        return True
 
     def get(self, key):
         """Mimics the dictionary interface
@@ -310,12 +323,14 @@ class UnitFiber(Unit):
             self.equation = self._equation
 
     def __repr__(self):
-        return f"""
-{self.name}
-Incident_angle={self.incident_angle}\u00b0
-Tilt_angle={self.tilt_angle}\u00b0
-Sample orientation={self.sample_orientation}
-"""
+        incident_angle_degs = numpy.rad2deg(self.incident_angle)
+        tilt_angle_degs = numpy.rad2deg(self.tilt_angle)
+        return (
+            f"{self.name}\n"
+            f"Incident_angle={incident_angle_degs:.2f}° ({self.incident_angle:.3f} rads)\n"
+            f"Tilt_angle={tilt_angle_degs:.2f}° ({self.tilt_angle:.3f} rads)\n"
+            f"Sample orientation={self.sample_orientation}"
+        )
 
     def __str__(self):
         return self.name
@@ -1681,7 +1696,7 @@ Q_TOT = RADIAL_UNITS["qtot_nm^-1"]
 
 
 def get_unit_fiber(
-    name, incident_angle: float = 0.0, tilt_angle: float = 0.0, sample_orientation=1
+    name, incident_angle: float = 0.0, tilt_angle: float = 0.0, sample_orientation: int = 1, angle_unit: str = "rad",
 ):
     """Retrieves a unit instance for Grazing-Incidence/Fiber Scattering with updated incident and tilt angles
     The unit angles are in radians
@@ -1689,6 +1704,7 @@ def get_unit_fiber(
     :param float incident_angle: projection angle of the beam in the sample. Its rotation axis is the fiber axis or the normal vector of the thin film
     :param float tilt angle: roll angle. Its rotation axis is orthogonal to the beam, the horizontal axis of the lab frame
     :param int sample_orientation: 1-8, orientation of the fiber axis according to EXIF orientation values (see def rotate_sample_orientation)
+    :param str angle_unit: rad/deg, defines the units if incident and tilt angles
     """
     if name in RADIAL_UNITS:
         unit = copy.deepcopy(RADIAL_UNITS.get(name, None))
@@ -1701,6 +1717,13 @@ def get_unit_fiber(
         return
 
     if isinstance(unit, UnitFiber):
+        angle_unit_parsed = ANGLE_UNITS.get(angle_unit)
+        if angle_unit_parsed is None:
+            raise ValueError(f"{angle_unit} is not valid unit for angles: (rad / deg)")
+
+        incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+        tilt_angle = (tilt_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+
         unit.set_incident_angle(incident_angle)
         unit.set_tilt_angle(tilt_angle)
         unit.set_sample_orientation(sample_orientation)

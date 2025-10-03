@@ -33,6 +33,7 @@ Change-log of versions
   * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp`
   * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
 - [Doc] Improve the notebook about "flatfield" calculation.
+- [Integrate1/2dResult] can now be added or subtracted to perform some basic maths, uncertainties are propagated accordingly.
 - [Deprecation] `splineFile` --> `splinefile`
 - Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the Cython path for geometry initialization, less prone to numerical noise.
   Cython is still prefered for geometry optimization where performance is critical.
