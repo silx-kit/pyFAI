@@ -189,7 +189,7 @@ class DetectorSelectorDrop(qt.QWidget):
             self._sensorGroup.setEnabled(False)
 
     def __sensorChanged(self, **kwargs):
-        # Finally set the sensor config of all possible the detectors
+        # Finally set sensor config of all possible the detectors
         sensor = self.getSensorConfig()
         if self.__customDetector:
             self.__customDetector.sensor = sensor
