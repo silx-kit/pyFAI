@@ -493,7 +493,7 @@ class MainWindow(qt.QMainWindow):
             self._background_point = new_background_point
             pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
             self._map_plot_widget.addMarker(
-                *pixel_center_coords, color="black", symbol="x", legend=f"BG_LOCATION"
+                *pixel_center_coords, color="black", symbol="x", legend="BG_LOCATION"
             )
 
         # Refresh displayed curves

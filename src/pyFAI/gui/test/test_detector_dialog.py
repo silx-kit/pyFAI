@@ -34,12 +34,9 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "31/03/2025"
 
-import sys
-import os
 import unittest
 import logging
 
-from silx.gui import qt
 from silx.gui.utils import testutils
 from pyFAI.test.utilstest import UtilsTest
 from ..dialog.DetectorSelectorDialog import DetectorSelectorDrop

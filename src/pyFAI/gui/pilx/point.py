@@ -1,7 +1,6 @@
 import h5py
 from .models import ImageIndices
 from .utils import (
-    get_dataset,
     get_dataset_name,
     get_radial_dataset,
     get_signal_dataset,

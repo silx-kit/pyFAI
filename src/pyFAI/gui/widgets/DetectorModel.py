@@ -27,7 +27,6 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "16/10/2020"
 
-from silx.gui import qt
 from .model.AllDetectorItemModel import AllDetectorItemModel
 from .model.DetectorFilterProxyModel import DetectorFilterProxyModel
 from ...utils.decorators import deprecated

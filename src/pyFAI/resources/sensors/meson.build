@@ -3,6 +3,7 @@ py.install_sources(
      'CdTe.abs',
      'Si.abs',
      'GaAs.abs',
+     'Ge.abs',
      'Gd2O2S.abs',
     ],
   pure: false,   # Will be installed next to binaries
