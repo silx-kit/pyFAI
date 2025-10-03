@@ -36,7 +36,7 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import logging
-from ...io.diffmap_config import DataSet as DataSet, DataSetNT as DataSetNT, ListDataSet as ListDataSet
-from ...io.tree import TreeItem as TreeItem
+from ...io.diffmap_config import DataSet, DataSetNT, ListDataSet
+from ...io.tree import TreeItem
 
 logger = logging.getLogger(__name__)
