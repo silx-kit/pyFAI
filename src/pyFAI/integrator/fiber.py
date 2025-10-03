@@ -48,7 +48,7 @@ from .azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dFiberResult, Integrate2dFiberResult
 from ..method_registry import IntegrationMethod
 from ..io import save_integrate_result
-from ..units import parse_fiber_unit
+from ..units import parse_fiber_unit, ANGLE_UNITS, to_unit
 from ..utils.decorators import deprecated_warning
 
 def get_deprecated_params_1d(**kwargs) -> dict:
@@ -107,9 +107,16 @@ class FiberIntegrator(AzimuthalIntegrator):
         super().__init__(*args, **kwargs)
         self._cache_parameters = {}
 
-    def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="m"):
-        core_repr = super().__repr__(dist_unit=dist_unit, ang_unit=ang_unit, wl_unit=wl_unit)
-        return f"{core_repr}\nIncident angle: {self.incident_angle:.2f}° Tilt angle {self.tilt_angle:.2f}° Sample orientation {self.sample_orientation}"
+    def __repr__(self):
+        core_repr = super().__repr__()
+        incident_angle_degs = numpy.rad2deg(self.incident_angle)
+        tilt_angle_degs = numpy.rad2deg(self.tilt_angle)
+        return (
+            f"{core_repr}\n"
+            f"Incident angle: {incident_angle_degs:.2f}° ({self.incident_angle:.3f} rads)\n"
+            f"Tilt angle: {tilt_angle_degs:.2f}° ({self.tilt_angle:.3f} rads)\n"
+            f"Sample orientation: {self.sample_orientation}"
+        )
 
     @property
     def incident_angle(self) -> float:
@@ -176,6 +183,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                         polarization_factor=None, dark=None, flat=None,
                         method=("no", "histogram", "cython"),
                         normalization_factor=1.0,
+                        angle_unit="rad",
                         **kwargs) -> Integrate1dFiberResult:
         """Calculate the integrated profile curve along a specific FiberUnit, additional input for sample_orientation
 
@@ -203,6 +211,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param ndarray flat: flat field image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
+        :param str angle_unit: rad/deg, defines the units if incident and tilt angles
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
@@ -222,9 +231,19 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_ip = unit_ip or 'qip_nm^-1'
         unit_oop = unit_oop or 'qoop_nm^-1'
+        incident_angle = kwargs.get('incident_angle', None)
+        tilt_angle = kwargs.get('tilt_angle', None)
+
+        angle_unit_parsed = to_unit(angle_unit, ANGLE_UNITS)
+
+        if incident_angle is not None:
+            incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+        if tilt_angle is not None:
+            tilt_angle = (tilt_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+
         unit_ip = parse_fiber_unit(unit=unit_ip,
-                                   incident_angle=kwargs.get('incident_angle', None),
-                                   tilt_angle=kwargs.get('tilt_angle', None),
+                                   incident_angle=incident_angle,
+                                   tilt_angle=tilt_angle,
                                    sample_orientation=sample_orientation)
         unit_oop = parse_fiber_unit(unit=unit_oop,
                                     incident_angle=unit_ip.incident_angle,
@@ -321,7 +340,9 @@ class FiberIntegrator(AzimuthalIntegrator):
                           mask=None, dummy=None, delta_dummy=None,
                           polarization_factor=None, dark=None, flat=None,
                           method=("no", "histogram", "cython"),
-                          normalization_factor=1.0, **kwargs) -> Integrate2dFiberResult:
+                          normalization_factor=1.0,
+                          angle_unit="rad",
+                          **kwargs) -> Integrate2dFiberResult:
         """Reshapes the data pattern as a function of two FiberUnits, additional inputs for sample_orientation
 
         :param ndarray data: 2D array from the Detector/CCD camera
@@ -347,6 +368,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param ndarray flat: flat field image
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
+        :param str angle_unit: rad/deg, defines the units if incident and tilt angles
         :return: regrouped intensity and unit arrays
         :rtype: Integrate2dResult
         """
@@ -365,10 +387,20 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         unit_ip = unit_ip or 'qip_nm^-1'
         unit_oop = unit_oop or 'qoop_nm^-1'
+        incident_angle = kwargs.get('incident_angle', None)
+        tilt_angle = kwargs.get('tilt_angle', None)
+
+        angle_unit_parsed = to_unit(angle_unit, ANGLE_UNITS)
+
+        if incident_angle is not None:
+            incident_angle = (incident_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+        if tilt_angle is not None:
+            tilt_angle = (tilt_angle % angle_unit_parsed.period) / angle_unit_parsed.scale
+
         unit_ip = parse_fiber_unit(unit=unit_ip,
                                    sample_orientation=sample_orientation,
-                                   incident_angle=kwargs.get('incident_angle', None),
-                                   tilt_angle=kwargs.get('tilt_angle', None),
+                                   incident_angle=incident_angle,
+                                   tilt_angle=tilt_angle,
                                    )
         unit_oop = parse_fiber_unit(unit=unit_oop,
                                     incident_angle=unit_ip.incident_angle,

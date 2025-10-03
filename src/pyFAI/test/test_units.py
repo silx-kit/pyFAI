@@ -34,11 +34,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "01/10/2025"
 
 import unittest
-import numpy
+import copy
 import logging
+import numpy
 from .utilstest import UtilsTest
 from .. import load
 from .. import units
@@ -74,6 +75,14 @@ class TestUnits(unittest.TestCase):
                     logger.warning(
                         f"Equation and formula almost match but not perfectly for {k}: Δ_max={delta:.2g}"
                     )
+    def test_regression_2621(self):
+        """units which are copied are not the same as before."""
+        q0 = units.to_unit("q_nm^-1")
+        q1 = copy.copy(q0)
+        q2 = copy.deepcopy(q0)
+        self.assertEqual(q0,q1)
+        self.assertEqual(q1,q2)
+        self.assertEqual(q0,q2)
 
 
 def suite():

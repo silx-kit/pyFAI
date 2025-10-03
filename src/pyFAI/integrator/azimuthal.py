@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/09/2025"
+__date__ = "01/10/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1185,7 +1185,7 @@ class AzimuthalIntegrator(Integrator):
             result._set_sum_normalization2(norm2d_sq)
             result._set_sum_variance(var2d)
             result._set_std(std)
-            result._set_std(sem)
+            result._set_sem(sem)
 
         if filename is not None:
             save_integrate_result(filename, result)
