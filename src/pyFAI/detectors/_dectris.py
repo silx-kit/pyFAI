@@ -54,6 +54,13 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+#Define sensors used in Dectris detectors
+Si320 = SensorConfig.from_dict({"material": "Si", "thickness": 320e-6})
+Si450 = SensorConfig.from_dict({"material": "Si", "thickness": 450e-6})
+Si1000 = SensorConfig.from_dict({"material": "Si", "thickness": 1000e-6})
+CdTe750 = SensorConfig.from_dict({"material": "CdTe", "thickness": 750e-6})
+CdTe1000 = SensorConfig.from_dict({"material": "CdTe", "thickness": 1000e-6})
+
 
 class _Dectris(Detector):
 
@@ -65,6 +72,7 @@ class _Dectris(Detector):
     DUMMY = -2
     DELTA_DUMMY = 1.5
     ORIENTATION = 3 # should be 2, Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
+    SENSORS = tuple()
 
     def calc_mask(self):
         """
@@ -114,6 +122,7 @@ class Eiger(_Dectris):
     MODULE_SIZE = (514, 1030)
     MODULE_GAP = (37, 10)
     force_pixel = True
+    SENSORS = (Si450,)
 
     def __init__(self,
                  pixel1:float=75e-6,
@@ -354,6 +363,7 @@ class Eiger2CdTe(Eiger2):
     Eiger2 CdTe detector: Like the Eiger2 with an extra 2-pixel gap in the middle
     of every module (vertically)
     """
+    SENSORS = (CdTe750,)
 
     def calc_mask(self):
         """
@@ -429,6 +439,7 @@ class Mythen(_Dectris):
     aliases = ["Mythen 1280"]
     force_pixel = True
     MAX_SHAPE = (1, 1280)
+    SENSORS = (Si320, Si450, Si1000)
 
     def __init__(self, pixel1=8e-3, pixel2=50e-6, orientation=0):
         super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2, orientation=orientation)
@@ -456,7 +467,7 @@ class Pilatus(_Dectris):
     MODULE_SIZE = (195, 487)
     MODULE_GAP = (17, 7)
     force_pixel = True
-
+    SENSORS = (Si320, Si450, Si1000)
 
     def __init__(self,
                  pixel1:float=172e-6,
@@ -534,7 +545,7 @@ class Pilatus(_Dectris):
                 self.offset2 = None
 
         else:
-            self._splineFile = None
+            self._splinefile = None
             self.uniform_pixel = True
 
     get_splineFile = deprecated(splinefile.fget, since_version="2025.09", reason="use property `splinefile`")
@@ -730,6 +741,7 @@ class PilatusCdTe(Pilatus):
     Pilatus CdTe detector: Like the Pilatus with an extra 3 pixel in the middle
     of every module (vertically)
     """
+    SENSORS = (CdTe1000,)
 
     def calc_mask(self):
         """
@@ -796,6 +808,7 @@ class Pilatus4(_Dectris):
     MODULE_SIZE = (255, 513)
     MODULE_GAP = (20, 7)
     force_pixel = True
+    SENSORS = (Si450,)
 
     def __init__(self,
                  pixel1:float=150e-6,
@@ -836,6 +849,7 @@ class Pilatus4_CdTe(Pilatus):
     Pilatus CdTe detector: Like the Pilatus4 with an extra gap of 1 pixel in the middle
     of every module (vertically)
     """
+    SENSORS = (CdTe1000,)
 
     def calc_mask(self):
         """
