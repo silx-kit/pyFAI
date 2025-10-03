@@ -28,11 +28,10 @@ __license__ = "MIT"
 __date__ = "19/03/2024"
 
 import logging
-_logger = logging.getLogger(__name__)
-
 from silx.gui import qt
-
 from ... import method_registry
+
+_logger = logging.getLogger(__name__)
 
 
 class MethodLabel(qt.QLabel):

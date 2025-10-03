@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,19 +25,17 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "06/06/2024"
+__date__ = "25/09/2025"
 
 import os
 import logging
 import textwrap
 from silx.gui import qt
-
-import pyFAI.utils
-import pyFAI.detectors.orientation
+from ...utils import get_ui_file
+from ... import detectors
 from ..widgets.model.AllDetectorItemModel import AllDetectorItemModel
 from ..widgets.model.DetectorFilterProxyModel import DetectorFilterProxyModel
 from ..model.DataModel import DataModel
-# from ..model.DetectorModel import DetectorOrientationModel
 from ..utils import validators
 from ..ApplicationContext import ApplicationContext
 from ..utils import FilterBuilder
@@ -53,9 +51,8 @@ class DetectorSelectorDrop(qt.QWidget):
 
     def __init__(self, parent=None):
         super(DetectorSelectorDrop, self).__init__(parent)
-        qt.loadUi(pyFAI.utils.get_ui_file("detector-selection-drop.ui"), self)
+        qt.loadUi(get_ui_file("detector-selection-drop.ui"), self)
 
-        self.__detector = None
         self.__dialogState = None
         self.__detector = None
         self.__customDetector = None
@@ -139,17 +136,67 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__pixelHeight.changed.connect(self.__customDetectorChanged)
 
         self._initOrientation()
+        self._initSensor()
         # By default select all the manufacturers
         self.__selectAllRegistreredDetector()
 
     def _initOrientation(self):
-        for item in pyFAI.detectors.orientation.Orientation:
+        for item in detectors.orientation.Orientation:
             if item.available:
                 self._detectorOrientation.addItem(f"{item.value}: {item.name} ", userData=item)
 
         self._detectorOrientation.currentIndexChanged.connect(self.__orientationChanged)
-        default = pyFAI.detectors.orientation.Orientation(3)
+        default = detectors.orientation.Orientation(3)
         self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(default))
+
+    def _initSensor(self):
+        "populate the comboBox with all available sensor materials"
+        self._sensorGroup.setEnabled(False)
+        self._detectorSensorParallax.checkStateChanged.connect(self.__sensorParallax)
+        for key, value in detectors.sensors.ALL_MATERIALS.items():
+            self._detectorSensorMaterials.addItem(key, userData=value)
+        self._detectorSensorThickness.setValidator(qt.QDoubleValidator(0.0, 1e4, 1))
+        self._detectorSensorThickness.editingFinished.connect(self.__sensorChanged)
+        self._detectorSensorMaterials.currentIndexChanged.connect(self.__sensorChanged)
+
+    def __sensorParallax(self):
+        self._sensorGroup.setEnabled(self._detectorSensorParallax.isChecked())
+        self.__sensorChanged()
+
+    def getSensorConfig(self):
+        if self._detectorSensorParallax.isChecked():
+            sensor_material = self._detectorSensorMaterials.currentData()
+            sensor = detectors.sensors.SensorConfig(sensor_material)
+            thickness = self._detectorSensorThickness.text()
+            if thickness.strip():
+                sensor.thickness = 1e-6*float(thickness)
+            else:
+                sensor.thickness = None
+        else:
+            sensor = None
+        return sensor
+
+    def setSensorConfig(self, sensor=None):
+        if sensor:
+            thickness = f"{1e6*sensor.thickness:.1f}" or ""
+            self._detectorSensorThickness.setText(thickness)
+            index = self._detectorSensorMaterials.findData(sensor.material)
+            self._detectorSensorMaterials.setCurrentIndex(index)
+            self._detectorSensorParallax.setChecked(True)
+            self._sensorGroup.setEnabled(True)
+        else:
+            self._detectorSensorParallax.setChecked(False)
+            self._sensorGroup.setEnabled(False)
+
+    def __sensorChanged(self, **kwargs):
+        # Finally set sensor config of all possible the detectors
+        sensor = self.getSensorConfig()
+        if self.__customDetector:
+            self.__customDetector.sensor = sensor
+        if self.__detectorFromFile:
+            self.__detectorFromFile.sensor = sensor
+        if self.__detector:
+            self.__detector.sensor = sensor
 
     def getOrientation(self, idx=None):
         if idx is None:
@@ -159,7 +206,7 @@ class DetectorSelectorDrop(qt.QWidget):
 
     def __orientationChanged(self, idx):
         orientation = self._detectorOrientation.itemData(idx)
-        self._detectorOrientationLabel.setText(textwrap.fill(orientation.__doc__, 30))
+        self._detectorOrientationLabel.setText(textwrap.fill(orientation.__doc__, 40))
 
         # Finally set the detector orientation
         if self.__customDetector:
@@ -219,11 +266,12 @@ class DetectorSelectorDrop(qt.QWidget):
             return
 
         maxShape = detectorWidth, detectorHeight
-        detector = pyFAI.detectors.Detector(
-            pixel1=pixelWidth * 1e-6,
-            pixel2=pixelHeight * 1e-6,
-            max_shape=maxShape,
-            orientation=self.getOrientation())
+        detector = detectors.Detector(
+                        pixel1=pixelWidth * 1e-6,
+                        pixel2=pixelHeight * 1e-6,
+                        max_shape=maxShape,
+                        orientation=self.getOrientation(),
+                        sensor=self.getSensorConfig())
         self.__customDetector = detector
         self._customResult.setVisible(True)
         self._customResult.setText("Detector configured")
@@ -275,8 +323,9 @@ class DetectorSelectorDrop(qt.QWidget):
         # TODO: this test should be reworked in case of another extension
         if filename.endswith(".spline"):
             try:
-                self.__detectorFromFile = pyFAI.detectors.Detector(splineFile=filename,
-                                                                   orientation=self.getOrientation())
+                self.__detectorFromFile = detectors.Detector(splineFile=filename,
+                                                             orientation=self.getOrientation(),
+                                                             sensor=self.getSensorConfig())
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("Spline detector loaded")
             except Exception as e:
@@ -290,8 +339,9 @@ class DetectorSelectorDrop(qt.QWidget):
             return
         else:
             try:
-                self.__detectorFromFile = pyFAI.detectors.NexusDetector(filename=filename,
-                                                                        orientation=self.getOrientation())
+                self.__detectorFromFile = detectors.NexusDetector(filename=filename,
+                                                                  orientation=self.getOrientation(),
+                                                                  sensor=self.getSensorConfig())
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("HDF5 detector loaded")
             except Exception as e:
@@ -334,12 +384,13 @@ class DetectorSelectorDrop(qt.QWidget):
         # set orientation:
         orientation = detector.orientation
         self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(orientation))
+        self.setSensorConfig(detector.sensor)
         if self.__detector is None:
             self.__selectNoDetector()
-        elif self.__detector.__class__ is pyFAI.detectors.NexusDetector:
+        elif self.__detector.__class__ is detectors.NexusDetector:
             self.__selectNexusDetector(self.__detector)
-        elif self.__detector.__class__ is pyFAI.detectors.Detector:
-            if self.__detector.get_splineFile() is not None:
+        elif self.__detector.__class__ is detectors.Detector:
+            if self.__detector.splineFile is not None:
                 self.__selectSplineDetector(self.__detector)
             else:
                 self.__selectCustomDetector(self.__detector)
@@ -356,21 +407,26 @@ class DetectorSelectorDrop(qt.QWidget):
             classDetector = self.currentDetectorClass()
             if classDetector is None:
                 return None
-            detector = classDetector(orientation=self.getOrientation())
+            try:
+                detector = classDetector(orientation=self.getOrientation(),
+                                         sensor=self.getSensorConfig())
+            except TypeError as err:
+                _logger.error(err)
+                detector = classDetector(orientation=self.getOrientation())
             if detector.HAVE_TAPER:
                 splineFile = self.__splineFile.value()
                 if splineFile is not None:
                     splineFile = splineFile.strip()
                     if splineFile == "":
                         splineFile = None
-                detector.set_splineFile(splineFile)
+                detector.splineFile = splineFile
             return detector
         else:
             raise RuntimeError("field should be FILE, MANUAL or eventually None")
 
     def __createManufacturerModel(self):
         manufacturers = set([])
-        for detector in pyFAI.detectors.ALL_DETECTORS.values():
+        for detector in detectors.ALL_DETECTORS.values():
             manufacturer = detector.MANUFACTURER
             if isinstance(manufacturer, list):
                 manufacturer = set(manufacturer)
@@ -428,7 +484,7 @@ class DetectorSelectorDrop(qt.QWidget):
     def __selectSplineDetector(self, detector):
         """Select and display the detector using zero copy."""
         self.__descriptionFile.lockSignals()
-        self.__descriptionFile.setValue(detector.get_splineFile())
+        self.__descriptionFile.setValue(detector.splineFile)
         # FIXME: THe unlock send signals, then it's not the way to avoid processing
         self.__descriptionFile.unlockSignals()
         self.__detectorFromFile = detector
@@ -497,7 +553,7 @@ class DetectorSelectorDrop(qt.QWidget):
         selectionModel.select(selection, qt.QItemSelectionModel.ClearAndSelect)
         self._detectorView.scrollTo(indexStart, qt.QAbstractItemView.PositionAtCenter)
 
-        splineFile = detector.get_splineFile()
+        splineFile = detector.splineFile
         if splineFile is not None:
             self.__splineFile.setValue(splineFile)
 

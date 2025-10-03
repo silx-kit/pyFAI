@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/06/2024"
+__date__ = "25/09/2025"
 
 import numpy
 import logging
@@ -232,7 +232,7 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog = DetectorSelectorDialog(self)
         dialog.selectDetector(detector)
         result = dialog.exec_()
-        if result:
+        if result and dialog.selectedDetector():
             newDetector = dialog.selectedDetector()
             settings.detectorModel().setDetector(newDetector)
             # Set also the origin of the detector if appropriate
@@ -266,9 +266,10 @@ class ExperimentTask(AbstractCalibrationTask):
             self._detectorPixelSize.setText("")
             self._detectorOrientationName.setText("")
             self._detectorOrientationValue.setText("")
+            self._detectorSensorLabel.setText("")
+            self._detectorSensorName.setText("")
             self._detectorFileDescription.setVisible(False)
             self._detectorFileDescriptionTitle.setVisible(False)
-
         else:
             self._detectorLabel.setStyleSheet("QLabel { }")
             text = [str(s) for s in detector.max_shape]
@@ -284,6 +285,13 @@ class ExperimentTask(AbstractCalibrationTask):
             self._detectorPixelSize.setText(text)
             self._detectorOrientationName.setText(detector.orientation.name)
             self._detectorOrientationValue.setText(f"({detector.orientation.value})")
+            if detector.sensor:
+                self._detectorSensorLabel.setText("Sensor:")
+                self._detectorSensorName.setText(str(detector.sensor))
+            else:
+                self._detectorSensorLabel.setText("")
+                self._detectorSensorName.setText("")
+
 
             if detector.HAVE_TAPER or detector.__class__ == pyFAI.detectors.Detector:
                 fileDescription = detector.get_splineFile()
@@ -325,7 +333,7 @@ class ExperimentTask(AbstractCalibrationTask):
             self.__plot.removeMarker("ymax")
         else:
             try:
-                binning = detector.get_binning()
+                binning = detector.binning
             except Exception:
                 binning = 1, 1
             # clamping
@@ -355,7 +363,7 @@ class ExperimentTask(AbstractCalibrationTask):
                 self._error.setVisible(False)
                 self.__updateDetectorTemplate()
                 return
-            binning = detector.get_binning()
+            binning = detector.binning
         except Exception as e:
             _logger.error(e.args[0])
             _logger.debug("Backtrace", exc_info=True)

@@ -30,7 +30,7 @@ __authors__ = ["Jerome Kieffer", "H. Payno", "P. Knobel", "V. Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2024"
+__date__ = "03/10/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -39,7 +39,10 @@ import time
 import functools
 import logging
 import traceback
+import inspect
+from typing import Callable
 from ..version import calc_hexversion,  hexversion as pyFAI_hexversion
+
 
 timelog = logging.getLogger("pyFAI.timeit")
 depreclog = logging.getLogger("pyFAI.DEPRECATION")
@@ -128,8 +131,6 @@ def deprecated_warning(type_, name, reason=None, replacement=None,
         msg += f" Use '{replacement}' instead."
     msg += "\n%s"
     limit = 2 + skip_backtrace_count
-    # print(limit)
-    # print(traceback.format_stack(limit=limit))
     backtrace = "".join(traceback.format_stack()[:-limit])
     backtrace = backtrace.rstrip()
     if only_once:
@@ -172,3 +173,51 @@ def timeit(func):
     wrapper.__name__ = func.__name__
     wrapper.__doc__ = func.__doc__
     return wrapper
+
+
+def deprecated_args(mapping: dict,
+                    since_version :str|None=None,
+                    only_once: bool=True) -> Callable[[Callable], Callable]:
+    """
+    Decorator to replace the kwargs name allowed for a function.
+    In case of useage in property, place it after `@property.setter`.
+
+    :param dict mapping: key is the valid kwarg, and value is the deprecated kwarg
+    :param str since_version: First *pyFAI* version for which the function was
+        deprecated (e.g. "0.5.0").
+    :param bool only_once: If true, the deprecation warning will only be
+        generated one time for each different call locations. Default is true.
+    :return: same function with modified signature, accepting deprecated arguments
+        but emitting warnings
+    """
+    imap = {value:key for key,value in mapping.items()}
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            if args and not kwargs:
+                "simple call"
+                return func(*args)
+            new_kwargs = {}
+            for key, val in kwargs.items():
+                if key in imap:
+                    deprecated_warning(type_='Argument',
+                               name=key,
+                               reason="Argument name is deprecated",
+                               replacement=imap[key],
+                               since_version=since_version,
+                               only_once=only_once)
+                    new_kwargs[imap[key]] = val
+                else:
+                    new_kwargs[key] = val
+            if new_kwargs:
+                return func(*args, **new_kwargs)
+
+        try:
+            wrapper.__signature__ = inspect.signature(func)
+            wrapper.__name__ = func.__name__
+            wrapper.__doc__ = func.__doc__
+        except Exception as err:
+            depreclog.error(f"{err.__class__.__name__}: in deprecated_args: {err}")
+        return wrapper
+
+    return decorator

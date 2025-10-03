@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "03/10/2025"
 
 import os
 import shutil
@@ -411,6 +411,22 @@ class TestDetector(unittest.TestCase):
         det1.save(filename)
         det4 = detector_factory(filename)
         self.assertEqual(det2, det4, "after serialization to HDF5")
+
+    def test_sensor2(self):
+        ts = sensors.SensorConfig.from_dict({"material":"Si", "thickness":320e-6})
+        ts1 = sensors.SensorConfig.from_dict(ts.as_dict())
+        self.assertTrue(ts==ts1)
+        ts2 = sensors.SensorConfig.parse(str(ts))
+        self.assertTrue(ts.material==ts2.material)
+        self.assertTrue(numpy.allclose(ts.thickness,ts2.thickness))
+
+        fs = sensors.SensorConfig.from_dict({"material":"Si"})
+        fs1 = sensors.SensorConfig.from_dict(fs.as_dict())
+        self.assertTrue(fs==fs1)
+        fs2 = sensors.SensorConfig.parse(str(fs))
+        self.assertTrue(ts.material==ts2.material)
+        self.assertTrue(fs2==fs)
+
 
 
 class TestOrientation(unittest.TestCase):

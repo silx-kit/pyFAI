@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2024"
+__date__ = "03/10/2025"
 __status__ = "production"
 
 
@@ -42,6 +42,7 @@ import numpy
 import logging
 import json
 from ._common import Detector, Orientation, to_eng
+from ..utils.decorators import deprecated_args
 logger = logging.getLogger(__name__)
 
 try:
@@ -64,9 +65,12 @@ class FReLoN(Detector):
 
     HAVE_TAPER = True
 
-    def __init__(self, splineFile=None, orientation=0):
-        super(FReLoN, self).__init__(splineFile=splineFile, orientation=orientation)
-        if splineFile:
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
+    def __init__(self,
+                splinefile: str|None=None,
+                orientation=0):
+        super(FReLoN, self).__init__(splinefile=splinefile, orientation=orientation)
+        if splinefile:
             self.max_shape = (int(self.spline.ymax - self.spline.ymin),
                               int(self.spline.xmax - self.spline.xmin))
             self.uniform_pixel = False
@@ -81,7 +85,7 @@ class FReLoN(Detector):
         Returns a generic mask for Frelon detectors...
         All pixels which (center) turns to be out of the valid region are by default discarded
         """
-        if not self._splineFile:
+        if not self._splinefile:
             return
         d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1])) + 0.5
         d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1])) + 0.5
@@ -99,7 +103,7 @@ class FReLoN(Detector):
 
         :return: dict with param for serialization
         """
-        return {"splineFile": self._splineFile,
+        return {"splineFile": self._splinefile,
                 "orientation": self.orientation or 3}
 
 

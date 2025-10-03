@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "03/10/2025"
 __status__ = "stable"
 
 import os
@@ -49,7 +49,7 @@ from collections import namedtuple
 from ..containers import dataclass, fields
 import numpy
 from ..resources import resource_filename
-from ..utils.stringutil import to_eng
+from ..utils.stringutil import to_eng, from_eng
 
 EnergyRange = namedtuple("EnergyRange", ["min", "max"])
 logger = logging.getLogger(__name__)
@@ -150,13 +150,13 @@ class SensorMaterial:
 
 
 # For the record: some classical sensors materials
-Si_MATERIAL = SensorMaterial("Si", 2.329)
-CdTe_MATERIAL = SensorMaterial("CdTe",  5.85)
-GaAs_MATERIAL = SensorMaterial("GaAs", 5.3176)
+ALL_MATERIALS = {}
+ALL_MATERIALS["Si"] = Si_MATERIAL = SensorMaterial("Si", density=2.329)
+ALL_MATERIALS["Ge"] = Ge_MATERIAL = SensorMaterial("Ge", density=5.327)
+ALL_MATERIALS["CdTe"] = CdTe_MATERIAL = SensorMaterial("CdTe", density=5.85)
+ALL_MATERIALS["GaAs"] = GaAs_MATERIAL = SensorMaterial("GaAs", density=5.3176)
+ALL_MATERIALS["Gd2O2S"] = Gd2O2S_MATERIAL = SensorMaterial("Gd2O2S", density=7.32)
 
-ALL_MATERIALS = {"Si": Si_MATERIAL,
-                 "CdTe": CdTe_MATERIAL,
-                 "GaAs": GaAs_MATERIAL}
 
 
 @dataclass
@@ -206,3 +206,16 @@ class SensorConfig:
                     value = ALL_MATERIALS.get(value) or value
                 to_init[key] = value
         return cls(**to_init)
+
+    @classmethod
+    def parse(cls, txt:str):
+        """Alternate constructor from strings like `Si,320µm`"""
+        if "," in txt:
+            material,thick = txt.split(",")
+        else:
+            materal = txt.strip()
+            thick = "∞"
+        dico = {"material": material.strip()}
+        if thick != "∞":
+            dico["thickness"] = from_eng(thick)
+        return cls.from_dict(dico, inplace=True)

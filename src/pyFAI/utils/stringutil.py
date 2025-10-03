@@ -28,14 +28,14 @@
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/09/2024"
+__date__ = "03/10/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import string
 import math
 
-prefixes = {-7: "y",
+PREFIXES = {-7: "y",
             -6: "z",
             -5: "a",
             -4: "f",
@@ -174,7 +174,7 @@ def to_ordinal(number):
     return string + _ordinal_suffix[digit]
 
 
-def to_eng(value, fmt=None, space=""):
+def to_eng(value:float, fmt:str|None=None, space=""):
     """Return an engineering notation for the numerical value
 
     :param value: the actual value
@@ -183,7 +183,7 @@ def to_eng(value, fmt=None, space=""):
     :return: string
     """
     key = int(math.log10(value)//3)
-    pfix = prefixes.get(key)
+    pfix = PREFIXES.get(key)
     if pfix is None:
         return str(value)
     else:
@@ -197,3 +197,19 @@ def to_eng(value, fmt=None, space=""):
                 string = string.rstrip("0")
                 string = string.rstrip(".")
             return string + space + pfix
+
+
+def from_eng(txt:str)-> float:
+    """Convert a engineering notation to a floating point value"""
+    value = ""
+    for i in txt:
+        if i.isdigit():
+            value+=i
+        elif i in " _":
+            continue
+        elif i in PREFIXES.values():
+            imap = {v:k*3 for k,v in PREFIXES.items()}
+            return float(value)*(10.0**imap[i])
+        else:
+            break
+    return float(value)

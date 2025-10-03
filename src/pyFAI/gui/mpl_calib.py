@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2021-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2021-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -37,19 +37,21 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2024"
+__date__ = "25/09/2025"
 __status__ = "development"
 
 import logging
 import threading
 import contextlib
 import gc
+import inspect
 from collections import namedtuple
-logger = logging.getLogger(__name__)
 import numpy
 import matplotlib
 from matplotlib import pyplot, colors
 from ..utils.callback import dangling_callback
+
+logger = logging.getLogger(__name__)
 GroupOfPoints = namedtuple("GroupOfPoints", "annotate plot")
 
 
@@ -249,7 +251,7 @@ class MplCalibWidget:
         try:
             while len(self.ax.collections) > 0:
                 self.ax.collections[0].remove()
-        except:  # matplotlib <3.7
+        except Exception:  # matplotlib <3.7
             self.ax.collections.clear()
         if data is not None:
             try:
@@ -257,7 +259,7 @@ class MplCalibWidget:
                 if not isinstance(cmap, colors.Colormap):
                     try:
                         cmap = matplotlib.colormaps[cmap]
-                    except:  # matplotlib<3.9
+                    except Exception:  # matplotlib<3.9
                         cmap = matplotlib.cm.get_cmap(cmap)
 
                 self.ax.contour(data, levels=values, cmap=cmap, linewidths=linewidths, linestyles=linestyles)
@@ -283,7 +285,7 @@ class MplCalibWidget:
                     self.ax.texts[0].remove()
                 while len(self.ax.lines) > 0:
                     self.ax.lines[0].remove()
-            except:  # matplot<3.7
+            except Exception:  # matplot<3.7
                 if len(self.ax.texts) > 0:
                     self.ax.texts.clear()
                 if len(self.ax.lines) > 0:
@@ -327,13 +329,13 @@ class MplCalibWidget:
             if gpt.annotate in self.ax.texts:
                 try:
                     gpt.annotate.remove()
-                except:  # works for matplotlib <3.7
+                except Exception:  # works for matplotlib <3.7
                     self.ax.texts.remove(gpt.annotate)
             for plot in gpt.plot:
                     if plot in self.ax.lines:
                         try:
                             plot.remove()
-                        except:  # works for matplotlib <3.7
+                        except Exception:  # works for matplotlib <3.7
                             self.ax.lines.remove(plot)
             if update:
                 self.update()
@@ -420,17 +422,13 @@ class MplCalibWidget:
 
     # Those methods need to be spacialized:
     def init(self, pick=True, update=True):
-        import inspect
-        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+        raise NotImplementedError(f"MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
 
     def update(self):
-        import inspect
-        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+        raise NotImplementedError(f"MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
 
     def maximize(self, update=True):
-        import inspect
-        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+        raise NotImplementedError(f"MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
 
     def get_ring_value(self):
-        import inspect
-        raise NotImplementedError("MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
+        raise NotImplementedError(f"MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
