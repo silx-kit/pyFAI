@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "25/09/2025"
+__date__ = "03/10/2025"
 
 import os
 import logging
@@ -156,7 +156,7 @@ class DetectorSelectorDrop(qt.QWidget):
         for key, value in detectors.sensors.ALL_MATERIALS.items():
             self._detectorSensorMaterials.addItem(key, userData=value)
         self._detectorSensorThickness.setValidator(qt.QDoubleValidator(0.0, 1e4, 1))
-        self._detectorSensorThickness.editingFinished.connect(self.__sensorChanged)
+        self._detectorSensorThickness.editTextChanged.connect(self.__sensorChanged)
         self._detectorSensorMaterials.currentIndexChanged.connect(self.__sensorChanged)
 
     def __sensorParallax(self):

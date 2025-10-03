@@ -49,7 +49,7 @@ from collections import namedtuple
 from ..containers import dataclass, fields
 import numpy
 from ..resources import resource_filename
-from ..utils.stringutil import to_eng
+from ..utils.stringutil import to_eng, from_eng
 
 EnergyRange = namedtuple("EnergyRange", ["min", "max"])
 logger = logging.getLogger(__name__)
@@ -151,7 +151,6 @@ class SensorMaterial:
 
 # For the record: some classical sensors materials
 ALL_MATERIALS = {}
-
 ALL_MATERIALS["Si"] = Si_MATERIAL = SensorMaterial("Si", density=2.329)
 ALL_MATERIALS["Ge"] = Ge_MATERIAL = SensorMaterial("Ge", density=5.327)
 ALL_MATERIALS["CdTe"] = CdTe_MATERIAL = SensorMaterial("CdTe", density=5.85)
@@ -207,3 +206,16 @@ class SensorConfig:
                     value = ALL_MATERIALS.get(value) or value
                 to_init[key] = value
         return cls(**to_init)
+
+    @classmethod
+    def parse(cls, txt:str):
+        """Alternate constructor from strings like `Si,320µm`"""
+        if "," in txt:
+            material,thick = txt.split(",")
+        else:
+            materal = txt.strip()
+            thick = "∞"
+        dico = {"material": material.strip()}
+        if thick != "∞":
+            dico["thickness"] = from_eng(thick)
+        return cls.from_dict(dico, inplace=True)
