@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2025"
+__date__ = "03/10/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -1700,6 +1700,7 @@ class Geometry:
 
     read = load
 
+    @deprecated(since_version="2025.10", reason="use get_config")
     def getPyFAI(self):
         """
         Export geometry setup with the geometry of PyFAI
@@ -1720,6 +1721,7 @@ class Geometry:
                 out["wavelength"] = self._wavelength
         return out
 
+    @deprecated(since_version="2025.10", reason="use set_config")
     def setPyFAI(self, **kwargs):
         """
         set the geometry from a pyFAI-like dict
@@ -2955,13 +2957,17 @@ class Geometry:
 
     pixel2 = property(get_pixel2, set_pixel2)
 
-    def get_splineFile(self):
+    @property
+    def splinefile(self):
         return self.detector.splineFile
 
-    def set_splineFile(self, splineFile):
+    @splinefile.setter
+    def splinefile(self, splineFile):
         self.detector.splineFile = splineFile
 
-    splineFile = property(get_splineFile, set_splineFile)
+    get_splineFile = deprecated(splinefile.fget, since_version="2025.10", reason="use `splinefile` property")
+    set_splineFile = deprecated(splinefile.fset, since_version="2025.10", reason="use `splinefile` property")
+    splineFile = property(get_splineFile, set_splineFile)  # all deprecated
 
     def get_spline(self):
         return self.detector.spline
