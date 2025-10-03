@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "03/10/2025"
 __status__ = "stable"
 
 import logging
@@ -52,7 +52,7 @@ from .. import spline
 from .. import utils
 from .. import average
 from ..utils import expand2d, crc32, binning as rebin
-from ..utils.decorators import deprecated
+from ..utils.decorators import deprecated, deprecated_args
 from ..utils.stringutil import to_eng
 
 logger = logging.getLogger(__name__)
@@ -119,7 +119,7 @@ class Detector(metaclass=DetectorMeta):
     ORIENTATION = 0
     SENSORS = []
     _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
-                        '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
+                        '_mask_crc', '_maskfile', "_splinefile", "_flatfield_crc",
                         "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy",
                         "_orientation")
     _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners", "sensor")
@@ -189,6 +189,7 @@ class Detector(metaclass=DetectorMeta):
                                  name, config, err)
                     raise err
             binning = config.pop("binning", None)
+            print(inspect.getfullargspec(detectorClass).args)
             kwargs = {key:config.pop(key) for key in inspect.getfullargspec(detectorClass).args if key in config}
             if config:
                 logger.error(f"Factory: Left-over config parameters in detector {detectorClass.__name__}: {config}")
@@ -206,10 +207,11 @@ class Detector(metaclass=DetectorMeta):
 
         return detector
 
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
     def __init__(self,
                  pixel1:float|None=None,
                  pixel2:float|None=None,
-                 splineFile:str|None=None,
+                 splinefile:str|None=None,
                  max_shape:tuple[int,int]|None=None,
                  orientation:int|Orientation=0,
                  sensor:SensorConfig|None=None):
@@ -239,8 +241,6 @@ class Detector(metaclass=DetectorMeta):
         self._mask = False
         self._mask_crc = None
         self._maskfile = None
-        self._splineFile = None
-        self.spline = None
         self._flatfield = None
         self._flatfield_crc = None  # not saved as part of HDF5 structure
         self._darkcurrent = None
@@ -251,8 +251,10 @@ class Detector(metaclass=DetectorMeta):
         self._delta_dummy = None
         self._splineCache = {}  # key=(dx,xpoints,ypoints) value: ndarray
         self._sem = threading.Semaphore()
-        if splineFile:
-            self.set_splineFile(splineFile)
+        self._splinefile = None
+        self.spline = None
+        if splinefile:
+            self.splinefile = splinefile
 
         orientation = Orientation(orientation or self.ORIENTATION or 3)
         if (orientation < 0) or (orientation > 4):
@@ -289,8 +291,8 @@ class Detector(metaclass=DetectorMeta):
         new = self.__class__()
         for key in self._UNMUTABLE_ATTRS + self._MUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
-        if self._splineFile:
-            new.set_splineFile(self._splineFile)
+        if self._splinefile:
+            new.set_splineFile(self._splinefile)
         return new
 
     def __deepcopy__(self, memo=None):
@@ -318,8 +320,8 @@ class Detector(metaclass=DetectorMeta):
                 new_value = 1 * value
             memo[id(value)] = new_value
             new.__setattr__(key, new_value)
-        if self._splineFile:
-            new.set_splineFile(self._splineFile)
+        if self._splinefile:
+            new.set_splineFile(self._splinefile)
         return new
 
     def __eq__(self, other):
@@ -381,19 +383,22 @@ class Detector(metaclass=DetectorMeta):
                 'max_shape': self.max_shape,
                 "orientation": self.orientation or 3
                 }
-        if self._splineFile:
-            dico["splineFile"] = self._splineFile
+        if self._splinefile:
+            dico["splineFile"] = self._splinefile
         if self.sensor:
             dico["sensor"] = self.sensor.as_dict()
         return dico
 
-    def get_splineFile(self):
-        return self._splineFile
+    @property
+    def splinefile(self) -> str:
+        return self._splinefile
 
-    def set_splineFile(self, splineFile):
-        if splineFile is not None:
-            self._splineFile = os.path.abspath(splineFile)
-            self.spline = spline.Spline(self._splineFile)
+    @splinefile.setter
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
+    def splinefile(self, splinefile):
+        if splinefile is not None:
+            self._splinefile = os.path.abspath(splinefile)
+            self.spline = spline.Spline(self._splinefile)
             # NOTA : X is axis 1 and Y is Axis 0
             self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
@@ -403,10 +408,12 @@ class Detector(metaclass=DetectorMeta):
             self.shape = self.max_shape
             self._binning = (1, 1)
         else:
-            self._splineFile = None
+            self._splinefile = None
             self.spline = None
             self.uniform_pixel = True
 
+    get_splineFile = deprecated(splinefile.fget, since_version="2025.09", reason="use property `splinefile`")
+    set_splineFile = deprecated(splinefile.fset, since_version="2025.09", reason="use property `splinefile`")
     splineFile = property(get_splineFile, set_splineFile)
 
     def set_dx(self, dx=None):
@@ -485,10 +492,12 @@ class Detector(metaclass=DetectorMeta):
     def reset_pixel_corners(self):
         self._pixel_corners = None
 
-    def get_binning(self):
+    @property
+    def binning(self) -> tuple[int, int]:
         return self._binning
 
-    def set_binning(self, bin_size=(1, 1)):
+    @binning.setter
+    def binning(self, bin_size:tuple[int, int]=(1, 1)):
         """
         Set the "binning" of the detector,
 
@@ -514,9 +523,10 @@ class Detector(metaclass=DetectorMeta):
             self.shape = (self.max_shape[0] // bin_size[0],
                           self.max_shape[1] // bin_size[1])
 
-    binning = property(get_binning, set_binning)
+    get_binning = deprecated(binning.fget, since_version="2025.09", reason="use property `binning`")
+    set_binning = deprecated(binning.fset, since_version="2025.09", reason="use property `binning`")
 
-    def getPyFAI(self):
+    def getPyFAI(self) -> dict:
         """
         Helper method to serialize the description of a detector using the pyFAI way
         with everything in S.I units.
@@ -529,11 +539,11 @@ class Detector(metaclass=DetectorMeta):
                 "pixel2": self._pixel2,
                 'max_shape': self.max_shape,
                 'orientation': self.orientation or 3}
-        if self._splineFile:
-            dico["splineFile"] = self._splineFile
+        if self._splinefile:
+            dico["splineFile"] = self._splinefile
         return dico
 
-    def getFit2D(self):
+    def getFit2D(self) -> dict:
         """
         Helper method to serialize the description of a detector using the Fit2d units
 
@@ -542,7 +552,7 @@ class Detector(metaclass=DetectorMeta):
         """
         return {"pixelX": self._pixel2 * 1e6,
                 "pixelY": self._pixel1 * 1e6,
-                "splineFile": self._splineFile}
+                "splineFile": self._splinefile}
 
     def setPyFAI(self, **kwarg):
         """
@@ -1293,12 +1303,21 @@ class NexusDetector(Detector):
         "_filename",
         "uniform_pixel") + Detector._UNMUTABLE_ATTRS + Detector._MUTABLE_ATTRS
 
-    def __init__(self, filename=None, orientation=0):
+    def __init__(self,
+                 filename:str|None=None,
+                 orientation:int=0,
+                 sensor:SensorConfig|None=None):
         Detector.__init__(self, orientation=orientation)
         self.uniform_pixel = True
         self._filename = None
         if filename is not None:
-            self.load(filename, orientation=orientation)
+            self.load(filename)
+        if orientation:
+            "overwrite the orientation if provided in input"
+            self._orientation = Orientation(orientation)
+        if sensor:
+            "overwrite the sensor if provided in input"
+            self.sensor = sensor
 
     def __repr__(self):
         txt = f"{self.name} detector from NeXus file: {self._filename}\t"
@@ -1307,14 +1326,13 @@ class NexusDetector(Detector):
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
         return txt
 
-    def load(self, filename, orientation=0):
+    def load(self, filename):
         """
         Loads the detector description from a NeXus file, adapted from:
         http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
 
         :param filename: name of the file on the disk
-        :param orientation: overwrite the orientation (if provided in the file)
-        :return: None
+        :return: self
         """
         if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
@@ -1366,9 +1384,7 @@ class NexusDetector(Detector):
                     self.mask = numpy.logical_or(previous_mask, new_mask).astype(numpy.int8)
             else:
                 self.uniform_pixel = True
-            if orientation:  # Highest priority
-                self._orientation = Orientation(orientation)
-            elif "orientation" in det_grp:  # Restore what was stored in the HDF5 file
+            if "orientation" in det_grp:  # Restore what was stored in the HDF5 file
                 self._orientation = Orientation(det_grp["orientation"][()])
             else:  # Initialize with default value
                 self._orientation = Orientation(self.ORIENTATION or 3)
@@ -1393,15 +1409,16 @@ class NexusDetector(Detector):
             else:
                 self.max_shape = tuple(i * j for i, j in zip(self.shape, self._binning))
         self._filename = filename
+        return self
 
-    def get_filename(self):
+    @property
+    def filename(self) -> str|None:
         """Returns the filename containing the description of this detector.
 
         :rtype: Enum[None|str]
         """
         return self._filename
-
-    filename = property(get_filename)
+    get_filename = filename.fget
 
     def __copy__(self):
         cloned = self.__class__()
