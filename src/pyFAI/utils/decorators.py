@@ -131,8 +131,6 @@ def deprecated_warning(type_, name, reason=None, replacement=None,
         msg += f" Use '{replacement}' instead."
     msg += "\n%s"
     limit = 2 + skip_backtrace_count
-    # print(limit)
-    # print(traceback.format_stack(limit=limit))
     backtrace = "".join(traceback.format_stack()[:-limit])
     backtrace = backtrace.rstrip()
     if only_once:

@@ -189,8 +189,7 @@ class Detector(metaclass=DetectorMeta):
                                  name, config, err)
                     raise err
             binning = config.pop("binning", None)
-            print(inspect.getfullargspec(detectorClass).args)
-            kwargs = {key:config.pop(key) for key in inspect.getfullargspec(detectorClass).args if key in config}
+            kwargs = {key.lower():config.pop(key) for key in inspect.getfullargspec(detectorClass).args if key in config}
             if config:
                 logger.error(f"Factory: Left-over config parameters in detector {detectorClass.__name__}: {config}")
 
