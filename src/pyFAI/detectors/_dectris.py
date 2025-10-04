@@ -251,7 +251,7 @@ class Eiger(_Dectris):
 
 class Eiger500k(Eiger):
     """
-    Eiger 1M detector
+    Eiger 500k detector
     """
     MAX_SHAPE = (514, 1030)
     aliases = ["Eiger 500k"]
