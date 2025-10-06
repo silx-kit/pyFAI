@@ -47,7 +47,7 @@ from collections.abc import Callable
 from math import sin, cos, tan, atan2, pi as PI
 import numpy
 import scipy.constants
-from .utils.decorators import deprecated_warning
+from .utils.decorators import deprecated_warning, deprecated
 
 logger = logging.getLogger(__name__)
 TWO_PI = 2 * PI
@@ -372,20 +372,9 @@ class UnitFiber(Unit):
         self._sample_orientation = sample_orientation
         self._update_ne_equation()
 
-    def set_incident_angle(self, value: float) -> None:
-        deprecated_warning(type_=type(self.set_incident_angle), name="set_incident_agle",
-                           replacement=(f"unit.incident_angle={value}"), since_version="2025.11")
-        self.incident_angle = value
-
-    def set_tilt_angle(self, value: float) -> None:
-        deprecated_warning(type_=type(self.set_tilt_angle), name="set_tilt_angle",
-                           replacement=(f"unit.tilt_angle={value}"), since_version="2025.11")
-        self.tilt_angle = value
-
-    def set_sample_orientation(self, value: int) -> None:
-        deprecated_warning(type_=type(self.set_sample_orientation), name="set_sample_orientation",
-                           replacement=(f"unit.sample_orientation={value}"), since_version="2025.11")
-        self.sample_orientation = value
+    set_incident_angle = deprecated(incident_angle.fset, replacement=(f"unit.incident_angle={value}"), since_version="2025.10")
+    set_tilt_angle = deprecated(tilt_angle,fset,  replacement=(f"unit.tilt_angle={value}"), since_version="2025.10")
+    set_sample_orientation = deprecated(sample_orientation.fset, replacement=(f"unit.set_sample_orientation={value}"), since_version="2025.10")
 
     def get_config(self) -> dict:
         """Serialize the FiberUnit instance into a dictionary
