@@ -658,7 +658,7 @@ class DefaultAiWriter(Writer):
             try:
                 f.write(f"\n# --> {filename}\n")
             except UnicodeError:
-                f.write(f"\n# --> {filename.encode("utf8")}\n")
+                f.write(f"\n# --> {filename.encode('utf8')}\n")
             if error is None:
                 f.write(f"#{str(dim1_unit):14s} {'I':14s}\n")
                 f.write("\n".join([f"{t:14.6e}  {i:14.6e}" for t, i in zip(dim1, intensity)]))
