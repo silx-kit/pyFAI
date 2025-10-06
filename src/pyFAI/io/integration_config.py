@@ -795,7 +795,7 @@ class WorkerFiberConfig(WorkerConfig):
     unit_oop: UnitFiber = None
     ip_range: list = None
     oop_range: list = None
-    vertical_integration: bool = True,
+    vertical_integration: bool = True
     integrator_class: str = "FiberIntegrator"
     OPTIONAL: ClassVar[list] = ["ip_range_min", "ip_range_max",
                                 "oop_range_min", "oop_range_max",
