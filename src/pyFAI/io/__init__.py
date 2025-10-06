@@ -51,17 +51,17 @@ import logging
 import numpy
 import os
 import posixpath
-import sys
 import threading
-import time
 from collections import OrderedDict
 import __main__ as main
 from .integration_config import WorkerConfig
 from ._json import UnitEncoder
-from ..utils import StringTypes, fully_qualified_name
+from ..utils import StringTypes
+from ..utils.decorators import deprecated_args
 from .. import units
 from .. import version
 from .. import containers
+from .nexus import get_isotime, from_isotime, is_hdf5, Nexus, h5py, save_NXcansas, save_NXmonpd
 
 logger = logging.getLogger(__name__)
 try:
@@ -70,11 +70,14 @@ except ImportError:
     fabio = None
     logger.error("fabio module missing")
 
-from .nexus import get_isotime, from_isotime, is_hdf5, Nexus, h5py, save_NXcansas, save_NXmonpd
+
+__all__ = [get_isotime, from_isotime, is_hdf5, Nexus, h5py, save_NXcansas, save_NXmonpd,
+           "FabioWriter", "Writer", "HDF5Writer", "save_integrate_result" ]
+
 # Activating compression has an important performance penalty and,
 # as we are saving Float32, the compression obtained is far from optimal
 #
-# # If compression is activated, thetest pyFAI.test.test_io is likely to fail
+# # If compression is activated, the test pyFAI.test.test_io is likely to fail
 #
 # try:
 #     import hdf5plugin
@@ -611,17 +614,27 @@ class DefaultAiWriter(Writer):
 
         return header
 
-    def save1D(self, filename, dim1, I, error=None, dim1_unit="2th_deg",
-               has_mask=None, has_dark=False, has_flat=False,
-               polarization_factor=None, normalization_factor=None, metadata=None):
+    @deprecated_args({"intensity":"I"}, since_version="2025.10")
+    def save1D(self,
+                filename:str,
+                dim1:numpy.ndarray,
+                intensity:numpy.ndarray,
+                error:numpy.ndarray|None=None,
+                dim1_unit:units.Unit|str="2th_deg",
+                has_mask:bool=None,
+                has_dark:bool=False,
+                has_flat:bool=False,
+                polarization_factor:float|None=None,
+                normalization_factor:float|None=None,
+                metadata:dict|None=None):
         """This method save the result of a 1D integration as ASCII file.
 
         :param filename: the filename used to save the 1D integration
         :type filename: str
         :param dim1: the x coordinates of the integrated curve
         :type dim1: numpy.ndarray
-        :param I: The integrated intensity
-        :type I: numpy.mdarray
+        :param intensity: The integrated intensity
+        :type intensity: numpy.ndarray
         :param error: the error bar for each intensity
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
@@ -643,23 +656,33 @@ class DefaultAiWriter(Writer):
                                       normalization_factor=normalization_factor,
                                       metadata=metadata))
             try:
-                f.write("\n# --> %s\n" % (filename))
+                f.write(f"\n# --> {filename}\n")
             except UnicodeError:
-                f.write("\n# --> %s\n" % (filename.encode("utf8")))
+                f.write(f"\n# --> {filename.encode("utf8")}\n")
             if error is None:
-                f.write("#%14s %14s\n" % (dim1_unit, "I "))
-                f.write("\n".join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
+                f.write(f"#{str(dim1_unit):14s} {'I':14s}\n")
+                f.write("\n".join([f"{t:14.6e}  {i:14.6e}" for t, i in zip(dim1, intensity)]))
             else:
-                f.write("#%14s  %14s  %14s\n" %
-                        (dim1_unit, "I ", "sigma "))
-                f.write("\n".join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
+                f.write("#{str(dim1_unit):14s}  {'I':14s}  {'sigma':14s}\n")
+                f.write("\n".join([f"{t:14.6e}  {i:14.6e} {s:14.6e}" for t, i, s in zip(dim1, intensity, error)]))
             f.write("\n")
 
-    def save2D(self, filename, I, dim1, dim2, error=None,
-               dim1_unit="2th_deg", dim2_unit="chi_deg",
-               has_mask=None, has_dark=False, has_flat=False,
-               polarization_factor=None, normalization_factor=None,
-               metadata=None, format_="edf"):
+    @deprecated_args({"intensity":"I"}, since_version="2025.10")
+    def save2D(self,
+                filename:str,
+                intensity:numpy.ndarray,
+                dim1:numpy.ndarray,
+                dim2:numpy.ndarray,
+                error:numpy.ndarray|None=None,
+                dim1_unit:units.Unit|str="2th_deg",
+                dim2_unit:units.Unit|str="chi_deg",
+                has_mask:bool=None,
+                has_dark:bool=False,
+                has_flat:bool=False,
+                polarization_factor:float|None=None,
+                normalization_factor:float|None=None,
+                metadata:dict|None=None,
+                format_:str="edf"):
         """This method save the result of a 2D integration.
 
         :param filename: the filename used to save the 2D histogram
@@ -668,8 +691,8 @@ class DefaultAiWriter(Writer):
         :type dim1: numpy.ndarray
         :param dim1: the 2nd coordinates of the histogram
         :type dim1: numpy.ndarray
-        :param I: The integrated intensity
-        :type I: numpy.mdarray
+        :param intensity: The integrated intensity
+        :type intensity: numpy.ndarray
         :param error: the error bar for each intensity
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
@@ -723,7 +746,7 @@ class DefaultAiWriter(Writer):
                     header[key] = value
         try:
             des_format = fabio.fabioformats.factory(format_ + "image")
-            img = des_format.__class__(data=I, header=header)
+            img = des_format.__class__(data=intensity, header=header)
 
             if error is not None:
                 try:
@@ -749,7 +772,7 @@ class DefaultAiWriter(Writer):
         if isinstance(data, containers.Integrate1dResult):
             self.save1D(filename=self._filename,
                         dim1=data.radial,
-                        I=data.intensity,
+                        intensity=data.intensity,
                         error=data.sigma,
                         dim1_unit=data.unit,
                         has_mask=data.has_mask_applied,
@@ -761,7 +784,7 @@ class DefaultAiWriter(Writer):
 
         elif isinstance(data, containers.Integrate2dResult):
             self.save2D(filename=self._filename,
-                        I=data.intensity,
+                        intensity=data.intensity,
                         dim1=data.radial,
                         dim2=data.azimuthal,
                         error=data.sigma,
@@ -839,9 +862,9 @@ class AsciiWriter(Writer):
                 header_lst.append(f"Polarization factor: {self.fai_cfg["polarization_factor"]}")
             header_lst.append("")
             if "error_model" in lower_keys:
-                header_lst.append(f"{self.fai_cfg["unit"]:14s} {'I':14s} {'sigma':14s}")
+                header_lst.append(f"{str(self.fai_cfg["unit"]):14s} {'I':14s} {'sigma':14s}")
             else:
-                header_lst.append(f"{self.fai_cfg["unit"]:14s} {'I':14s}")
+                header_lst.append(f"{str(self.fai_cfg["unit"]):14s} {'I':14s}")
             self.header = os.linesep.join([""] + ["# " + i for i in header_lst] + [""])
         self.prefix = lima_cfg.get("prefix", self.prefix)
         self.index_format = lima_cfg.get("index_format", self.index_format)

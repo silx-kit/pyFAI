@@ -35,28 +35,27 @@ __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import logging
-logger = logging.getLogger(__name__)
-import warnings
 import threading
 import gc
-from math import pi, log
+from math import pi
 import numpy
 from ..geometry import Geometry
 from .. import units
 from ..utils import EPS32, deg2rad, crc32
 from ..utils.decorators import deprecated, deprecated_warning, deprecated_args
-from ..containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
+from ..containers import Integrate1dResult, Integrate2dResult
 from ..io import DefaultAiWriter, save_integrate_result
-from ..io.ponifile import PoniFile
-error = None
 from ..method_registry import IntegrationMethod
-from .load_engines import ocl_azim_csr, ocl_azim_lut, ocl_sort, histogram, splitBBox, \
+from .load_engines import ocl_azim_csr, ocl_azim_lut, histogram, splitBBox, \
                           splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
-                          histogram_engine, splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC, \
+                          splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC, \
                           PREFERED_METHODS_1D, PREFERED_METHODS_2D
 from ..engines import Engine
 
+logger = logging.getLogger(__name__)
+
 # Few constants for engine names:
+error = None
 OCL_CSR_ENGINE = "ocl_csr_integr"
 OCL_LUT_ENGINE = "ocl_lut_integr"
 OCL_HIST_ENGINE = "ocl_histogram"
@@ -656,7 +655,8 @@ class Integrator(Geometry):
             azimuth_range = self.normalize_azimuth_range(azimuth_range)
 
         if variance is not None:
-            if variance.size != data.size: raise RuntimeError("variance array shape matches data shape")
+            if variance.size != data.size:
+                raise RuntimeError("variance array shape matches data shape")
         elif error_model:
             error_model = error_model.lower()
             if error_model == "poisson":
@@ -690,7 +690,7 @@ class Integrator(Geometry):
         else:
             has_flat = "provided"
 
-        I = None
+        intensity = None
         sigma = None
         count = None
         sum_ = None
@@ -775,7 +775,7 @@ class Integrator(Geometry):
                                                                              checksum=integr.lut_checksum)
                                 ocl_engine.set_engine(ocl_integr)
                             if ocl_integr is not None:
-                                I, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
+                                intensity, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
                                                                              solidangle=solidangle,
                                                                              solidangle_checksum=self._dssa_crc,
                                                                              dummy=dummy,
@@ -786,7 +786,7 @@ class Integrator(Geometry):
                                 qAxis = integr.bin_centers  # this will be copied later
                                 if error_model == "azimuthal":
 
-                                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
+                                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, intensity, dim1_unit=unit, shape=shape)) ** 2
                                 if variance is not None:
                                     var1d, a, b = ocl_integr.integrate_legacy(variance,
                                                                               solidangle=None,
@@ -798,7 +798,7 @@ class Integrator(Geometry):
                                         sigma = numpy.sqrt(a) / (b * normalization_factor)
                                     sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
-                        qAxis, I, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
+                        qAxis, intensity, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
                                                                         solidAngle=solidangle,
                                                                         dummy=dummy,
                                                                         delta_dummy=delta_dummy,
@@ -806,7 +806,7 @@ class Integrator(Geometry):
                                                                         normalization_factor=normalization_factor)
 
                         if error_model == "azimuthal":
-                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
+                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, intensity, dim1_unit=unit, shape=shape)) ** 2
                         if variance is not None:
                             _, var1d, a, b = integr.integrate_legacy(variance,
                                                                      solidAngle=None,
@@ -886,7 +886,7 @@ class Integrator(Geometry):
                                                                              block_size=block_size,
                                                                              profile=profile)
                                 ocl_engine.set_engine(ocl_integr)
-                            I, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
+                            intensity, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
                                                                          solidangle=solidangle,
                                                                          solidangle_checksum=self._dssa_crc,
                                                                          dummy=dummy,
@@ -896,7 +896,7 @@ class Integrator(Geometry):
                                                                          normalization_factor=normalization_factor)
                             qAxis = integr.bin_centers  # this will be copied later
                             if error_model == "azimuthal":
-                                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
+                                variance = (data - self.calcfrom1d(qAxis * pos0_scale, intensity, dim1_unit=unit, shape=shape)) ** 2
                             if variance is not None:
                                 var1d, a, b = ocl_integr.integrate_legacy(variance,
                                                                           solidangle=None,
@@ -906,7 +906,7 @@ class Integrator(Geometry):
                                     sigma = numpy.sqrt(a) / (b * normalization_factor)
                                 sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
-                        qAxis, I, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
+                        qAxis, intensity, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
                                                                         solidAngle=solidangle,
                                                                         dummy=dummy,
                                                                         delta_dummy=delta_dummy,
@@ -914,7 +914,7 @@ class Integrator(Geometry):
                                                                         normalization_factor=normalization_factor)
 
                         if error_model == "azimuthal":
-                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
+                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, intensity, dim1_unit=unit, shape=shape)) ** 2
                         if variance is not None:
                             _, var1d, a, b = integr.integrate_legacy(variance,
                                                                      solidAngle=None,
@@ -928,7 +928,7 @@ class Integrator(Geometry):
         if method.method[1:4] == ("full", "histogram", "cython"):
             logger.debug("integrate1d uses SplitPixel implementation")
             pos = self.array_from_unit(shape, "corner", unit, scale=False)
-            qAxis, I, sum_, count = splitPixel.fullSplit1D(pos=pos,
+            qAxis, intensity, sum_, count = splitPixel.fullSplit1D(pos=pos,
                                                            weights=data,
                                                            bins=npt,
                                                            pos0_range=radial_range,
@@ -943,7 +943,7 @@ class Integrator(Geometry):
                                                            normalization_factor=normalization_factor
                                                            )
             if error_model == "azimuthal":
-                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
+                variance = (data - self.calcfrom1d(qAxis * pos0_scale, intensity, dim1_unit=unit, shape=shape)) ** 2
             if variance is not None:
                 _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
                                                         weights=variance,
@@ -969,7 +969,7 @@ class Integrator(Geometry):
                 dchi = None
             pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
-            qAxis, I, sum_, count = splitBBox.histoBBox1d(weights=data,
+            qAxis, intensity, sum_, count = splitBBox.histoBBox1d(weights=data,
                                                           pos0=pos0,
                                                           delta_pos0=dpos0,
                                                           pos1=chi,
@@ -986,7 +986,7 @@ class Integrator(Geometry):
                                                           polarization=polarization,
                                                           normalization_factor=normalization_factor)
             if error_model == "azimuthal":
-                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
+                variance = (data - self.calcfrom1d(qAxis * pos0_scale, intensity, dim1_unit=unit, shape=shape)) ** 2
             if variance is not None:
                 _, var1d, a, b = splitBBox.histoBBox1d(weights=variance,
                                                        pos0=pos0,
@@ -1030,7 +1030,7 @@ class Integrator(Geometry):
 
             if method.impl_lower == "cython":
                 logger.debug("integrate1d uses cython implementation")
-                qAxis, I, sum_, count = histogram.histogram(pos=pos0,
+                qAxis, intensity, sum_, count = histogram.histogram(pos=pos0,
                                                             weights=data,
                                                             bins=npt,
                                                             bin_range=radial_range,
@@ -1038,7 +1038,7 @@ class Integrator(Geometry):
                                                             empty=dummy if dummy is not None else self._empty,
                                                             normalization_factor=normalization_factor)
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)[mask]) ** 2
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, intensity, dim1_unit=unit, shape=shape)[mask]) ** 2
                 if variance is not None:
                     _, var1d, a, b = histogram.histogram(pos=pos0,
                                                          weights=variance,
@@ -1056,20 +1056,20 @@ class Integrator(Geometry):
                 sum_, b = numpy.histogram(pos0, npt, weights=data, range=radial_range)
                 with numpy.errstate(divide='ignore', invalid='ignore'):
                     if error_model == "azimuthal":
-                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)[mask]) ** 2
+                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, intensity, dim1_unit=unit, shape=shape)[mask]) ** 2
                     if variance is not None:
                         var1d, b = numpy.histogram(pos0, npt, weights=variance, range=radial_range)
                         sigma = numpy.sqrt(var1d) / (count * normalization_factor)
                         sigma[count == 0] = dummy if dummy is not None else self._empty
                     with numpy.errstate(divide='ignore', invalid='ignore'):
-                        I = sum_ / count / normalization_factor
-                    I[count == 0] = dummy if dummy is not None else self._empty
+                        intensity = sum_ / count / normalization_factor
+                    intensity[count == 0] = dummy if dummy is not None else self._empty
 
         if pos0_scale:
             # not in place to make a copy
             qAxis = qAxis * pos0_scale
 
-        result = Integrate1dResult(qAxis, I, sigma)
+        result = Integrate1dResult(qAxis, intensity, sigma)
         result._set_method_called("integrate1d")
         result._set_method(method)
         result._set_compute_engine(str(method))
@@ -1172,7 +1172,8 @@ class Integrator(Geometry):
             radial_range = tuple([i / pos0_scale for i in radial_range])
 
         if variance is not None:
-            if variance.size != data.size: raise RuntimeError("variance array shape matches data shape")
+            if variance.size != data.size:
+                raise RuntimeError("variance array shape matches data shape")
         elif error_model:
             error_model = error_model.lower()
             if error_model == "poisson":
@@ -1212,7 +1213,7 @@ class Integrator(Geometry):
         else:
             has_flat = "provided"
 
-        I = None
+        intensity = None
         sigma = None
         sum_ = None
         count = None
@@ -1280,7 +1281,7 @@ class Integrator(Geometry):
                                 ocl_engine.set_engine(ocl_integr)
 
                             if (not error) and (ocl_integr is not None):
-                                I, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
+                                intensity, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
                                                                              solidangle=solidangle,
                                                                              solidangle_checksum=self._dssa_crc,
                                                                              dummy=dummy,
@@ -1289,12 +1290,12 @@ class Integrator(Geometry):
                                                                              polarization_checksum=polarization_crc,
                                                                              normalization_factor=normalization_factor,
                                                                              safe=safe)
-                                I.shape = npt
-                                I = I.T
+                                intensity.shape = npt
+                                intensity = intensity.T
                                 bins_rad = integr.bin_centers0  # this will be copied later
                                 bins_azim = integr.bin_centers1
                     else:
-                        I, bins_rad, bins_azim, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
+                        intensity, bins_rad, bins_azim, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
                                                                                       solidAngle=solidangle,
                                                                                       dummy=dummy,
                                                                                       delta_dummy=delta_dummy,
@@ -1371,7 +1372,7 @@ class Integrator(Geometry):
                                                                              checksum=integr.lut_checksum)
                                 ocl_engine.set_engine(ocl_integr)
                         if (not error) and (ocl_integr is not None):
-                                I, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
+                                intensity, sum_, count = ocl_integr.integrate_legacy(data, dark=dark, flat=flat,
                                                                              solidangle=solidangle,
                                                                              solidangle_checksum=self._dssa_crc,
                                                                              dummy=dummy,
@@ -1380,12 +1381,12 @@ class Integrator(Geometry):
                                                                              polarization_checksum=polarization_crc,
                                                                              safe=safe,
                                                                              normalization_factor=normalization_factor)
-                                I.shape = npt
-                                I = I.T
+                                intensity.shape = npt
+                                intensity = intensity.T
                                 bins_rad = integr.bin_centers0  # this will be copied later
                                 bins_azim = integr.bin_centers1
                     else:
-                        I, bins_rad, bins_azim, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
+                        intensity, bins_rad, bins_azim, sum_, count = integr.integrate_legacy(data, dark=dark, flat=flat,
                                                                                       solidAngle=solidangle,
                                                                                       dummy=dummy,
                                                                                       delta_dummy=delta_dummy,
@@ -1395,7 +1396,7 @@ class Integrator(Geometry):
         if method.method[1:4] in (("pseudo", "histogram", "cython"), ("full", "histogram", "cython")):
             logger.debug("integrate2d uses SplitPixel implementation")
             pos = self.array_from_unit(shape, "corner", unit, scale=False)
-            I, bins_rad, bins_azim, sum_, count = splitPixel.fullSplit2D(pos=pos,
+            intensity, bins_rad, bins_azim, sum_, count = splitPixel.fullSplit2D(pos=pos,
                                                                          weights=data,
                                                                          bins=(npt_rad, npt_azim),
                                                                          pos0_range=radial_range,
@@ -1416,7 +1417,7 @@ class Integrator(Geometry):
             dchi = self.deltaChi(shape)
             pos0 = self.center_array(shape, unit, scale=False)
             dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
-            I, bins_rad, bins_azim, sum_, count = splitBBox.histoBBox2d(weights=data,
+            intensity, bins_rad, bins_azim, sum_, count = splitBBox.histoBBox2d(weights=data,
                                                                         pos0=pos0,
                                                                         delta_pos0=dpos0,
                                                                         pos1=chi,
@@ -1471,7 +1472,7 @@ class Integrator(Geometry):
             pos0 = pos0[mask]
             pos1 = pos1[mask]
             if method.impl_lower == "cython":
-                I, bins_azim, bins_rad, sum_, count = histogram.histogram2d(pos0=pos1,
+                intensity, bins_azim, bins_rad, sum_, count = histogram.histogram2d(pos0=pos1,
                                                                             pos1=pos0,
                                                                             weights=data,
                                                                             bins=(npt_azim, npt_rad),
@@ -1486,13 +1487,13 @@ class Integrator(Geometry):
                 count1 = numpy.maximum(1, count)
                 sum_, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
                                                weights=data, range=[azimuth_range, radial_range])
-                I = sum_ / count1 / normalization_factor
-                I[count == 0] = dummy if dummy is not None else self._empty
+                intensity = sum_ / count1 / normalization_factor
+                intensity[count == 0] = dummy if dummy is not None else self._empty
         # I know I make copies ....
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
 
-        result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
+        result = Integrate2dResult(intensity, bins_rad, bins_azim, sigma)
         result._set_method_called("integrate2d")
         result._set_compute_engine(str(method))
         result._set_unit(unit)
@@ -1513,7 +1514,7 @@ class Integrator(Geometry):
     _integrate2d_legacy = integrate2d_legacy
 
     @deprecated(since_version="0.14", reason="Use the class DefaultAiWriter")
-    def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
+    def save1D(self, filename, dim1, intensity, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """This method save the result of a 1D integration.
 
@@ -1523,8 +1524,8 @@ class Integrator(Geometry):
         :type filename: str
         :param dim1: the x coordinates of the integrated curve
         :type dim1: numpy.ndarray
-        :param I: The integrated intensity
-        :type I: numpy.mdarray
+        :param intensity: The integrated intensity
+        :type intensity: numpy.mdarray
         :param error: the error bar for each intensity
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
@@ -1540,7 +1541,7 @@ class Integrator(Geometry):
         """
         self.__save1D(filename=filename,
                       dim1=dim1,
-                      I=I,
+                      intensity=intensity,
                       error=error,
                       dim1_unit=dim1_unit,
                       has_dark=has_dark,
@@ -1548,7 +1549,7 @@ class Integrator(Geometry):
                       polarization_factor=polarization_factor,
                       normalization_factor=normalization_factor)
 
-    def __save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
+    def __save1D(self, filename, dim1, intensity, error=None, dim1_unit=units.TTH,
                  has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """This method save the result of a 1D integration.
 
@@ -1556,8 +1557,8 @@ class Integrator(Geometry):
         :type filename: str
         :param dim1: the x coordinates of the integrated curve
         :type dim1: numpy.ndarray
-        :param I: The integrated intensity
-        :type I: numpy.mdarray
+        :param intensity: The integrated intensity
+        :type intensity: numpy.mdarray
         :param error: the error bar for each intensity
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
@@ -1574,11 +1575,11 @@ class Integrator(Geometry):
         if not filename:
             return
         writer = DefaultAiWriter(None, self)
-        writer.save1D(filename, dim1, I, error, dim1_unit, has_dark, has_flat,
+        writer.save1D(filename, dim1, intensity, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
 
     @deprecated(since_version="0.14", reason="Use the class DefaultAiWriter")
-    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
+    def save2D(self, filename, intensity, dim1, dim2, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None):
         """This method save the result of a 2D integration.
@@ -1591,8 +1592,8 @@ class Integrator(Geometry):
         :type dim1: numpy.ndarray
         :param dim1: the 2nd coordinates of the histogram
         :type dim1: numpy.ndarray
-        :param I: The integrated intensity
-        :type I: numpy.mdarray
+        :param intensity: The integrated intensity
+        :type intensity: numpy.mdarray
         :param error: the error bar for each intensity
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
@@ -1607,7 +1608,7 @@ class Integrator(Geometry):
         :type normalization_factor: float
         """
         self.__save2D(filename=filename,
-                      I=I,
+                      intensity=intensity,
                       dim1=dim1,
                       dim2=dim2,
                       error=error,
@@ -1617,7 +1618,7 @@ class Integrator(Geometry):
                       polarization_factor=polarization_factor,
                       normalization_factor=normalization_factor)
 
-    def __save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
+    def __save2D(self, filename, intensity, dim1, dim2, error=None, dim1_unit=units.TTH,
                  has_dark=False, has_flat=False,
                  polarization_factor=None, normalization_factor=None):
         """This method save the result of a 2D integration.
@@ -1630,8 +1631,8 @@ class Integrator(Geometry):
         :type dim1: numpy.ndarray
         :param dim1: the 2nd coordinates of the histogram
         :type dim1: numpy.ndarray
-        :param I: The integrated intensity
-        :type I: numpy.mdarray
+        :param intensity: The integrated intensity
+        :type intensity: numpy.mdarray
         :param error: the error bar for each intensity
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
@@ -1648,7 +1649,7 @@ class Integrator(Geometry):
         if not filename:
             return
         writer = DefaultAiWriter(None, self)
-        writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat,
+        writer.save2D(filename, intensity, dim1, dim2, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
 
 
@@ -1710,10 +1711,12 @@ class Integrator(Geometry):
     def flatfiles(self):
         return self.detector.flatfiles
 
-    def get_empty(self):
+    @property
+    def empty(self):
         return self._empty
 
-    def set_empty(self, value):
+    @empty.setter
+    def empty(self, value):
         value = value or 0.0
         self._empty = numpy.float32(value)
         # propagate empty values to integrators
@@ -1725,7 +1728,8 @@ class Integrator(Geometry):
                     except Exception as exception:
                         logger.error(f"{type(exception)}: {exception}")
 
-    empty = property(get_empty, set_empty)
+    get_empty = deprecated(empty.fget, since_version="2025.10", replacement="use `empty` property")
+    set_empty = deprecated(empty.fset, since_version="2025.10", replacement="use `empty` property")
 
     def __getnewargs_ex__(self):
         "Helper function for pickling ai"

@@ -565,7 +565,7 @@ class Detector(metaclass=DetectorMeta):
             config = {}
             for key in ("pixel1", "pixel2", 'max_shape', "splineFile", "orientation"):
                 if key in kwarg:
-                    config[key] = kwarg[key]
+                    config[key.lower()] = kwarg[key]
             self = pyFAI.detectors.detector_factory(kwarg["detector"], config)
         return self
 

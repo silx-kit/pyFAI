@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 26/09/2025
+:Date: 06/10/2025
 :Keywords: changelog
 
 Change-log of versions
@@ -34,7 +34,7 @@ Change-log of versions
   * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
 - [Doc] Improve the notebook about "flatfield" calculation.
 - [Integrate1/2dResult] can now be added or subtracted to perform some basic maths, uncertainties are propagated accordingly.
-- [Deprecation] `splineFile` --> `splinefile`
+- [Deprecation] `splineFile` --> `splinefile` in most arguments and also as properties
 - Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the Cython path for geometry initialization, less prone to numerical noise.
   Cython is still prefered for geometry optimization where performance is critical.
 - Supports python 3.10-3.14
