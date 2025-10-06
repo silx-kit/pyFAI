@@ -374,7 +374,7 @@ class UnitFiber(Unit):
 
     set_incident_angle = deprecated(incident_angle.fset, replacement="property unit.incident_angle=...", since_version="2025.10")
     set_tilt_angle = deprecated(tilt_angle.fset,  replacement="property unit.tilt_angle=... ", since_version="2025.10")
-    set_sample_orientation = deprecated(sample_orientation.fset, replacement="property unit.set_sample_orientation=..."), since_version="2025.10")
+    set_sample_orientation = deprecated(sample_orientation.fset, replacement="property unit.set_sample_orientation=...", since_version="2025.10")
 
     def get_config(self) -> dict:
         """Serialize the FiberUnit instance into a dictionary
