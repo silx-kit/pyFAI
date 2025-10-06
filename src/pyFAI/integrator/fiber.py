@@ -369,6 +369,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
         :param str angle_unit: rad/deg, defines the units if incident and tilt angles
+        :param bool use_missing_wedge: when set, mask-out all bins present in the missing edge and restores compatibility with pixel-splitting methods
         :return: regrouped intensity and unit arrays
         :rtype: Integrate2dResult
         """
