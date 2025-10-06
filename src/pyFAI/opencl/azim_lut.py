@@ -27,7 +27,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "19/11/2024"
+__date__ = "07/10/2025"
 __copyright__ = "2012-2024, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 

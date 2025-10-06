@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -42,7 +42,7 @@ import numpy
 import logging
 import json
 from ._common import Detector, Orientation, to_eng, SensorConfig
-from ..utils import expand2d
+from ..utils.mathutil import expand2d
 from ..utils.decorators import deprecated_args, deprecated
 logger = logging.getLogger(__name__)
 

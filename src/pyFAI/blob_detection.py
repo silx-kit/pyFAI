@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Aurore Deschildre
 #                            Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -31,16 +31,19 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "06/10/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 from math import sqrt
 import logging
-
 import numpy
+from .ext.bilinear import Bilinear
+from .utils.mathutil import binning, is_far_from_group
+
 logger = logging.getLogger(__name__)
+
 try:
     from .ext._convolution import gaussian_filter
 except ImportError:
@@ -51,7 +54,6 @@ try:
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     _blob = None
-
 try:
     from .ext import morphology
     pyFAI_morphology = True
@@ -59,11 +61,6 @@ except ImportError:
     logger.debug("Backtrace", exc_info=True)
     from scipy.ndimage import morphology
     pyFAI_morphology = False
-
-from .ext.bilinear import Bilinear
-
-
-from .utils import binning, is_far_from_group
 
 
 def image_test():
@@ -330,24 +327,24 @@ class BlobDetection(object):
         if refine:
             if "startswith" in dir(refine) and refine.startswith("SG"):
                 kpx, kpy, kps, _delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
-                l = kpx.size
+                nb_kp = kpx.size
                 peak_val = self.dogs[(numpy.around(kps).astype(int),
                                       numpy.around(kpy).astype(int),
                                       numpy.around(kpx).astype(int))]
-                valid = numpy.ones(l, dtype=bool)
+                valid = numpy.ones(nb_kp, dtype=bool)
             else:
                 kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
-                l = valid.sum()
+                nb_kp = valid.sum()
                 self.ref_kp.append((kps, kpy, kpx))
-            print('After refinement : %i keypoints' % l)
+            print('After refinement : %i keypoints' % nb_kp)
         else:
             peak_val = self.dogs[kps, kpy, kpx]
-            l = kpx.size
-            valid = numpy.ones(l, bool)
+            nb_kp = kpx.size
+            valid = numpy.ones(nb_kp, bool)
 
-        keypoints = numpy.recarray((l,), dtype=self.dtype)
+        keypoints = numpy.recarray((nb_kp,), dtype=self.dtype)
 
-        if l != 0:
+        if nb_kp != 0:
             keypoints[:].x = (kpx[valid] + 0.5) * self.curr_reduction - 0.5  # Place ourselves at the center of the pixel, and back
             keypoints[:].y = (kpy[valid] + 0.5) * self.curr_reduction - 0.5  # Place ourselves at the center of the pixel, and back
             sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid]) / (self.scale_per_octave))
@@ -381,7 +378,7 @@ class BlobDetection(object):
             self.keypoints = keypoints
         else:
             old_size = self.keypoints.size
-            new_size = old_size + l
+            new_size = old_size + nb_kp
             new_keypoints = numpy.recarray(new_size, dtype=self.dtype)
             new_keypoints[:old_size] = self.keypoints
             new_keypoints[old_size:] = keypoints

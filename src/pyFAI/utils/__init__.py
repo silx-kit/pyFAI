@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2025"
+__date__ = "06/10/2025"
 __status__ = "production"
 
 import logging
@@ -73,11 +73,6 @@ try:
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     from zlib import crc32
-
-# TODO: Added on 2018-01-01 for pyFAI 0.15
-# Can be deprecated for the next release, and then removed
-# Functions should be used directly from the mathutil module
-from .mathutil import *
 
 
 def calc_checksum(ary, safe=True):
