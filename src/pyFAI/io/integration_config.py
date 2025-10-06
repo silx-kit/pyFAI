@@ -69,7 +69,6 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/02/2025"
 __docformat__ = 'restructuredtext'
 
-import sys
 import os
 import json
 import logging
@@ -77,12 +76,12 @@ import copy
 from typing import ClassVar, Union
 import numpy
 from .ponifile import PoniFile
-from ..containers import PolarizationDescription, ErrorModel, dataclass, fields, asdict
+from ..containers import PolarizationDescription, ErrorModel, dataclass, fields
 from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
 from ..utils import decorators
-from ..units import Unit, to_unit, UnitFiber
+from ..units import Unit, UnitFiber
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
@@ -313,7 +312,7 @@ def _patch_v4_to_v5(config):
                       ("dark_current", "dark_current_image"),
                       ("mask_file", "mask_image"),
                       ("val_dummy", "dummy")]:
-        if key2 in config and not key1 in config:
+        if key2 in config and key1 not in config:
             config[key1] = config.pop(key2)
 
 
@@ -333,7 +332,8 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
     if version == 1:
         # NOTE: Previous way to describe an integration process before pyFAI 0.17
         _patch_v1_to_v2(config)
-    if config["version"] == target_version: return config
+    if config["version"] == target_version:
+        return config
     if config["version"] == 2:
         _patch_v2_to_v3(config)
 
@@ -344,11 +344,13 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
             raise ValueError(txt)
         else:
             _logger.error(txt)
-    if config["version"] == target_version: return config
+    if config["version"] == target_version:
+        return config
     if config["version"] == 3:
         _patch_v3_to_v4(config)
 
-    if config["version"] == target_version: return config
+    if config["version"] == target_version:
+        return config
     if config["version"] == 4:
         _patch_v4_to_v5(config)
 
