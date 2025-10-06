@@ -127,7 +127,8 @@ def _patch_v1_to_v2(config):
         # Anachronistic configuration, bug found in #2227
         value = config.copy()
         # warn user about unexpected keys that's gonna be destroyed:
-        valid = ('wavelength', 'dist', 'poni1', 'poni2', 'rot1' , 'rot2' , 'rot3', 'detector', "shape", "pixel1", "pixel2", "splineFile")
+        valid = ('wavelength', 'dist', 'poni1', 'poni2', 'rot1' , 'rot2' , 'rot3',
+                'detector', "shape", "pixel1", "pixel2", "splineFile", "splinefile")
         delta = set(config.keys()).difference(valid)
         if delta:
             _logger.warning("Integration_config v1 contains unexpected keys which will be discared: %s%s", os.linesep,
@@ -172,16 +173,16 @@ def _patch_v1_to_v2(config):
             _ = config.pop("pixel1", None)
             _ = config.pop("pixel2", None)
 
-        splineFile = config.pop("splineFile", None)
-        if splineFile:
-            detector.set_splineFile(splineFile)
+        splinefile = config.pop("splinefile", None) or config.pop("splineFile", None)
+        if splinefile:
+            detector.splinefile = splinefile
     else:
         if "shape" in config and "pixel1" in config and "pixel2" in config:
             max_shape = config["shape"]
             pixel1 = config["pixel1"]
             pixel2 = config["pixel2"]
-            spline = config.get("splineFile")
-            detector = detectors.Detector(pixel1, pixel2, splineFile=spline, max_shape=max_shape)
+            spline = config.get("splinefile") or config.get("splineFile")
+            detector = detectors.Detector(pixel1, pixel2, splinefile=spline, max_shape=max_shape)
     if detector is not None:
         # Feed the detector as version2
         config["detector"] = detector.__class__.__name__

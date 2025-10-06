@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "06/10/2025"
 __status__ = "stable"
 
 import logging
@@ -218,7 +218,7 @@ class Detector(metaclass=DetectorMeta):
         Constructor of the Detector class, most of the time, not used.
         :param pixel1: size of the pixel in meter along the slow dimension (often Y)
         :param pixel2: size of the pixel in meter along the fast dimension (often X)
-        :param splineFile: path to file containing the geometric correction.
+        :param splinefile: path to file containing the geometric correction.
         :param max_shape: maximum size of the detector
         :type max_shape: 2-tuple of integrers
         :param orientation: Orientation of the detector
@@ -270,8 +270,8 @@ class Detector(metaclass=DetectorMeta):
         """Nice representation of the instance
         """
         txt = f"Detector {self.name}"
-        if self.splineFile:
-            txt += f"\t Spline= {self.splineFile}"
+        if self.splinefile:
+            txt += f"\t Spline= {self.splinefile}"
         if (self._pixel1 is None) or (self._pixel2 is None):
             return "Undefined detector"
         else:
@@ -342,7 +342,7 @@ class Detector(metaclass=DetectorMeta):
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
-        keys in that dictionary are:  pixel1, pixel2, splineFile, max_shape
+        keys in that dictionary are:  pixel1, pixel2, splinefile, max_shape
 
         :param config: string or JSON-serialized dict
         :return: self
@@ -354,6 +354,7 @@ class Detector(metaclass=DetectorMeta):
                 logger.error("Unable to parse config %s with JSON: %s, %s",
                              config, err)
                 raise err
+
         if not self.force_pixel:
             pixel1 = config.get("pixel1")
             pixel2 = config.get("pixel2")
@@ -361,8 +362,7 @@ class Detector(metaclass=DetectorMeta):
                 self.set_pixel1(pixel1)
             if pixel2:
                 self.set_pixel2(pixel2)
-            if "splineFile" in config:
-                self.set_splineFile(config.get("splineFile"))
+            self.splinefile = config.get("splinefile") or config.get("splineFile")
             if "max_shape" in config:
                 self.max_shape = config.get("max_shape")
         self._orientation = Orientation(config.get("orientation", 0))
@@ -596,8 +596,8 @@ class Detector(metaclass=DetectorMeta):
                 self.pixel2 = val * 1e-6
             elif kw == "pixelY":
                 self.pixel1 = val * 1e-6
-            elif kw == "splineFile":
-                self.set_splineFile(kwarg[kw])
+            elif kw.lower() == "splinefile":
+                self.splinefile = kwarg[kw]
 
     def _calc_pixel_index_from_orientation(self, center=True):
         """Calculate the pixel index when considering the different orientations"""
@@ -1226,7 +1226,7 @@ class Detector(metaclass=DetectorMeta):
 
     def __getnewargs_ex__(self):
         "Helper function for pickling detectors"
-        return (self.pixel1, self.pixel2, self.splineFile, self.max_shape), {}
+        return (self.pixel1, self.pixel2, self.splinefile, self.max_shape), {}
 
     def __getstate__(self):
         """Helper function for pickling detectors

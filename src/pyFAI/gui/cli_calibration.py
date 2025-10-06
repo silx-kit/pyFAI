@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -37,25 +37,21 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2025"
+__date__ = "06/10/2025"
 __status__ = "production"
 
 import os
 import sys
 import time
 import logging
-logger = logging.getLogger(__name__)
-
 import math
 import numpy
 from silx.image import marchingsquares
 from scipy.stats import linregress
 import fabio
 from fabio.fabioutils import exists as fabio_exists
-
 from argparse import ArgumentParser
 from urllib.parse import urlparse
-
 from .matplotlib import pylab, matplotlib
 from .utils import update_fig
 from . import utils as gui_utils
@@ -74,6 +70,8 @@ from .. import version as PyFAI_VERSION
 from .. import date as PyFAI_DATE
 from ..calibrant import Calibrant, CALIBRANT_FACTORY, get_calibrant
 from .mpl_calib_qt import QtMplCalibWidget
+logger = logging.getLogger(__name__)
+
 try:
     from ..ext._convolution import gaussian_filter
 except ImportError:
@@ -510,12 +508,12 @@ class AbstractCalibration(object):
 
     def read_pixelsSize(self):
         """Read the pixel size from prompt if not available"""
-        if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
+        if (self.detector.pixel1 is None) and (self.detector.splinefile is None):
             pixelSize = [15, 15]
             ans = input("Please enter the pixel size (in micron, comma separated X,Y "
                         " i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
-                self.detector.splineFile = ans
+                self.detector.splinefile = ans
             else:
                 self.get_pixelSize(ans)
 
@@ -1032,8 +1030,11 @@ class AbstractCalibration(object):
         :param rings: list of rings to consider
         """
         from scipy.optimize import leastsq
-        model = lambda x, mean, amp, phase: mean + amp * numpy.sin(x + phase)
-        error = lambda param, xdata, ydata: model(xdata, *param) - ydata
+        def model(x, mean, amp, phase):
+            return mean + amp * numpy.sin(x + phase)
+
+        def error(param, xdata, ydata):
+            return model(xdata, *param) - ydata
 
         def jacob(param, xdata, ydata):
             j = numpy.ones((param.size, xdata.size))
@@ -1416,7 +1417,7 @@ class CliCalibration(AbstractCalibration):
         self.detector = get_detector(detector, dataFiles)
 
         if splineFile and os.path.isfile(splineFile):
-            self.detector.splineFile = os.path.abspath(splineFile)
+            self.detector.splinefile = os.path.abspath(splineFile)
         if pixelSize:
             if "__len__" in dir(pixelSize) and len(pixelSize) >= 2:
                 self.detector.pixel1 = float(pixelSize[0])
@@ -1831,7 +1832,7 @@ class MultiCalib(object):
         self.detector = get_detector(detector, dataFiles)
 
         if splineFile and os.path.isfile(splineFile):
-            self.detector.splineFile = os.path.abspath(splineFile)
+            self.detector.splinefile = os.path.abspath(splineFile)
         if pixelSize:
             if "__len__" in dir(pixelSize) and len(pixelSize) >= 2:
                 self.detector.pixel1 = float(pixelSize[0])
@@ -2047,7 +2048,7 @@ class MultiCalib(object):
             self.detector = get_detector(options.detector_name, options.args)
         if options.spline:
             if os.path.isfile(options.spline):
-                self.detector.splineFile = os.path.abspath(options.spline)
+                self.detector.splinefile = os.path.abspath(options.spline)
             else:
                 logger.error("Unknown spline file %s", options.spline)
         if options.pixel is not None:
@@ -2125,12 +2126,12 @@ class MultiCalib(object):
 
     def read_pixelsSize(self):
         """Read the pixel size from prompt if not available"""
-        if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
+        if (self.detector.pixel1 is None) and (self.detector.splinefile is None):
             pixelSize = [15, 15]
             ans = input("Please enter the pixel size (in micron, comma separated X, Y "
                         "i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
-                self.detector.splineFile = ans
+                self.detector.splinefile = ans
             else:
                 self.get_pixelSize(ans)
 
@@ -2144,7 +2145,7 @@ class MultiCalib(object):
             ans = input("Please enter wavelength in Angstrom:\t").strip()
             try:
                 self.wavelength = 1e-10 * float(ans)
-            except:
+            except Exception:
                 self.wavelength = None
 
     def process(self):

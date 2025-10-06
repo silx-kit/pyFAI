@@ -10,7 +10,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/11/2016"
+__date__ = "06/10/2025"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
@@ -232,9 +232,9 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
                     logger.warning("Wavelength is in meter ... unlikely value %s", fwavelength)
                 self.ai.wavelength = fwavelength
 
-        splineFile = config.get("splineFile")
-        if splineFile and os.path.isfile(splineFile):
-            self.ai.detector.splineFile = splineFile
+        splinefile = config.get("splinefile") or config.get("splineFile")
+        if splinefile and os.path.isfile(splinefile):
+            self.ai.detector.splinefile = splinefile
         self.ai.pixel1 = float(config.get("pixel1", 1))
         self.ai.pixel2 = float(config.get("pixel2", 1))
         self.ai.dist = config.get("dist", 1)

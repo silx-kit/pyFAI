@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "06/10/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -44,7 +44,7 @@ import numpy
 from ..geometry import Geometry
 from .. import units
 from ..utils import EPS32, deg2rad, crc32
-from ..utils.decorators import deprecated, deprecated_warning
+from ..utils.decorators import deprecated, deprecated_warning, deprecated_args
 from ..containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
 from ..io import DefaultAiWriter, save_integrate_result
 from ..io.ponifile import PoniFile
@@ -87,11 +87,11 @@ class Integrator(Geometry):
     value. And any non-zero as masking value (negative or positive value). A
     boolean mask is also accepted (`True` is the masking value).
     """
-
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
     def __init__(self, dist=1, poni1=0, poni2=0,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None,
-                 splineFile=None, detector=None, wavelength=None, orientation=0):
+                 splinefile=None, detector=None, wavelength=None, orientation=0):
         """
         :param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         :type dist: float
@@ -116,11 +116,11 @@ class Integrator(Geometry):
             Prefer defining the detector pixel size on the provided detector
             object (``detector.pixel2 = 5e-6``).
         :type pixel2: float
-        :param splineFile: Deprecated. File containing the geometric distortion of the detector.
+        :param splinefile: Deprecated. File containing the geometric distortion of the detector.
             If not None, pixel1 and pixel2 are ignored and detector spline is overwritten.
             Prefer defining the detector spline manually
             (``detector.splineFile = "file.spline"``).
-        :type splineFile: str
+        :type splinefile: str
         :param detector: name of the detector or Detector instance. String
             description is deprecated. Prefer using the result of the detector
             factory: ``pyFAI.detector_factory("eiger4m")``
@@ -130,7 +130,7 @@ class Integrator(Geometry):
         """
         Geometry.__init__(self, dist, poni1, poni2,
                           rot1, rot2, rot3,
-                          pixel1, pixel2, splineFile, detector, wavelength, orientation)
+                          pixel1, pixel2, splinefile, detector, wavelength, orientation)
 
         # mask, maskfile, darkcurrent and flatfield are properties pointing to
         # self.detector now (16/06/2017)
@@ -1732,7 +1732,7 @@ class Integrator(Geometry):
         return (self.dist, self.poni1, self.poni2,
                 self.rot1, self.rot2, self.rot3,
                 self.pixel1, self.pixel2,
-                self.splineFile, self.detector, self.wavelength), {}
+                self.splinefile, self.detector, self.wavelength), {}
 
     def __getstate__(self):
         """Helper function for pickling ai

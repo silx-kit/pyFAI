@@ -42,7 +42,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/05/2025"
+__date__ = "06/10/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -810,38 +810,38 @@ class AsciiWriter(Writer):
 
         """
         Writer.init(self, fai_cfg, lima_cfg)
+        lower_keys = [i.lower() for i in self.fai_cfg]
         with self._sem:
             header_lst = ["", "== Detector =="]
-            if "detector" in self.fai_cfg:
-                header_lst.append("Detector: %s" % self.fai_cfg["detector"])
-            if "splineFile" in self.fai_cfg:
-                header_lst.append("SplineFile: %s" % self.fai_cfg["splineFile"])
+            if "detector" in lower_keys:
+                header_lst.append(f"Detector: {self.fai_cfg["detector"]}")
+            if "splinefile" in lower_keys:
+                header_lst.append(f"SplineFile: {self.fai_cfg["splinefile"] or self.fai_cfg["splineFile"]}")
             if "pixel1" in self.fai_cfg:
-                header_lst.append("PixelSize: %.3e, %.3e m" % (self.fai_cfg["pixel1"], self.fai_cfg["pixel2"]))
+                header_lst.append(f"PixelSize: {self.fai_cfg["pixel1"]:.3e}, {self.fai_cfg["pixel2"]:.3e} m")
             if "mask_file" in self.fai_cfg:
-                header_lst.append("MaskFile: %s" % (self.fai_cfg["mask_file"]))
+                header_lst.append(f"MaskFile: {self.fai_cfg["mask_file"]}")
 
             header_lst.append("== pyFAI calibration ==")
-            if "poni1" in self.fai_cfg:
-                header_lst.append("PONI: %.3e, %.3e m" % (self.fai_cfg["poni1"], self.fai_cfg["poni2"]))
-            if "dist" in self.fai_cfg:
-                header_lst.append("Distance Sample to Detector: %s m" % self.fai_cfg["dist"])
-            if "rot1" in self.fai_cfg:
-                header_lst.append("Rotations: %.6f %.6f %.6f rad" % (self.fai_cfg["rot1"], self.fai_cfg["rot2"], self.fai_cfg["rot3"]))
-            if "wavelength" in self.fai_cfg:
-                header_lst.append("Wavelength: %s" % self.fai_cfg["wavelength"])
-            if "dark_current" in self.fai_cfg:
-                header_lst.append("Dark current: %s" % self.fai_cfg["dark_current"])
-            if "flat_field" in self.fai_cfg:
-                header_lst.append("Flat field: %s" % self.fai_cfg["flat_field"])
+            if "poni1" in lower_keys:
+                header_lst.append(f"PONI: {self.fai_cfg["poni1"]:.3e}, {self.fai_cfg["poni2"]:.3e} m")
+            if "dist" in lower_keys:
+                header_lst.append(f"Distance Sample to Detector: {self.fai_cfg["dist"]} m")
+            if "rot1" in lower_keys:
+                header_lst.append(f"Rotations: {self.fai_cfg["rot1"]:.6f} {self.fai_cfg["rot2"]:.6f} {self.fai_cfg["rot3"]:.6f} rad")
+            if "wavelength" in lower_keys:
+                header_lst.append(f"Wavelength: {self.fai_cfg["wavelength"]}")
+            if "dark_current" in lower_keys:
+                header_lst.append(f"Dark current: {self.fai_cfg["dark_current"]}")
+            if "flat_field" in lower_keys:
+                header_lst.append(f"Flat field: {self.fai_cfg["flat_field"]}")
             if "polarization_factor" in self.fai_cfg:
-                header_lst.append("Polarization factor: %s" % self.fai_cfg["polarization_factor"])
+                header_lst.append(f"Polarization factor: {self.fai_cfg["polarization_factor"]}")
             header_lst.append("")
-            if "error_model" in self.fai_cfg:
-                header_lst.append("%14s %14s %s" % (self.fai_cfg["unit"], "I", "sigma"))
+            if "error_model" in lower_keys:
+                header_lst.append(f"{self.fai_cfg["unit"]:14s} {'I':14s} {'sigma':14s}")
             else:
-                header_lst.append("%14s %14s" % (self.fai_cfg["unit"], "I"))
-#            header_lst.append("")
+                header_lst.append(f"{self.fai_cfg["unit"]:14s} {'I':14s}")
             self.header = os.linesep.join([""] + ["# " + i for i in header_lst] + [""])
         self.prefix = lima_cfg.get("prefix", self.prefix)
         self.index_format = lima_cfg.get("index_format", self.index_format)
