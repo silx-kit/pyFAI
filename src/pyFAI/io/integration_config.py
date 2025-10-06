@@ -76,7 +76,7 @@ import copy
 from typing import ClassVar, Union
 import numpy
 from .ponifile import PoniFile
-from ..containers import PolarizationDescription, ErrorModel, dataclass, fields
+from ..containers import PolarizationDescription, ErrorModel, dataclass, fields, asdict
 from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
@@ -85,6 +85,8 @@ from ..units import Unit, UnitFiber
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
+
+all = [fields, asdict, "WorkerConfig", "WorkerFiberConfig"]
 
 
 def _normalize_v1_darkflat_files(config, key):
