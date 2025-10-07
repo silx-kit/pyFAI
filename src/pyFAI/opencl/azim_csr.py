@@ -43,7 +43,6 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
-from ..utils.mathutil import EPS32
 from . import processing, OpenclProcessing
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
@@ -257,12 +256,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if "nvidia" in  platform:
                 try:
                     block_size = device.warp_size_nv
-                except:
+                except Exception:
                     block_size = 32
             elif "amd" in  platform:
                 try:
                     block_size = device.wavefront_width_amd
-                except:
+                except Exception:
                     block_size = 64
             elif "intel" in  platform:
                 block_size = 128

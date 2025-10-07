@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,13 +31,11 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "19/11/2024"
-__copyright__ = "2015-2017, ESRF, Grenoble"
+__date__ = "07/10/2025"
+__copyright__ = "2015-2025, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
-logger = logging.getLogger(__name__)
-
 from collections import OrderedDict
 import numpy
 from . import pyopencl
@@ -47,6 +45,7 @@ from . import mf, processing, OpenclProcessing, dtype_converter
 from ..containers import ErrorModel
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
+logger = logging.getLogger(__name__)
 
 
 class OCL_Preproc(OpenclProcessing):
