@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #             Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "07/10/2025"
 __satus__ = "Production"
 
 import os
@@ -41,6 +41,8 @@ import glob
 from argparse import ArgumentParser
 from urllib.parse import urlparse
 import logging
+from .. import version as PyFAI_VERSION, date as PyFAI_DATE
+from ..diffmap import DiffMap
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -49,8 +51,6 @@ try:
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
-from .. import version as PyFAI_VERSION, date as PyFAI_DATE
-from ..diffmap import DiffMap
 
 
 class DiffTomo(DiffMap):

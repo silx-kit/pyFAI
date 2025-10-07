@@ -32,10 +32,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2025"
+__date__ = "07/10/2025"
 __satus__ = "development"
 
 import logging
+from ..gui.cli_calibration import Calibration
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -43,7 +44,6 @@ try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
-from ..gui.cli_calibration import Calibration
 
 
 def main(args=None):

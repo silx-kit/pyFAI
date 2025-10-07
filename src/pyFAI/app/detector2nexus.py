@@ -5,7 +5,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #
@@ -32,11 +32,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "07/10/2025"
 __status__ = "development"
 
 import sys
 from argparse import ArgumentParser
+import numpy
+import fabio
+from .. import version as pyFAI_version, date as pyFAI_date
+from ..detectors import detector_factory
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -45,10 +49,7 @@ try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
-import numpy
-import fabio
-from .. import version as pyFAI_version, date as pyFAI_date
-from ..detectors import detector_factory
+
 
 def main(args=None):
     usage = "detector2nexus [options] [options] -o nxs.h5"

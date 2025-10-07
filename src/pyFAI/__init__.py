@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,23 +28,22 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "09/10/2024"
+__date__ = "07/10/2025"
 
 import sys
 import os
 import logging
-if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
-    logging.basicConfig()
 
 from .version import __date__ as date
 from .version import version, version_info, hexversion, strictversion, citation, calc_hexversion
-
-logger = logging.getLogger(__name__)
-if sys.version_info < (3, 7):
-    logger.error("pyFAI required a python version >= 3.7")
-    raise RuntimeError(f"pyFAI required a python version >= 3.7, now we are running: {sys.version}")
-
 from .utils import decorators
+
+if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
+    logging.basicConfig()
+logger = logging.getLogger(__name__)
+
+__all__ = [date, version, version_info, hexversion, strictversion, citation, calc_hexversion,
+           decorators, "load", "detector_factory", "tests", "benchmarks" ]
 
 use_opencl = True
 """Global configuration which allow to disable OpenCL programatically.
