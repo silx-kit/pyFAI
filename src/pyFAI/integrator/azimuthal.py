@@ -1879,7 +1879,7 @@ class AzimuthalIntegrator(Integrator):
 
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
-            if variance.size != data.size: 
+            if variance.size != data.size:
                 raise RuntimeError("variance array shape does not match data shape")
             error_model = ErrorModel.VARIANCE
 
@@ -2329,7 +2329,7 @@ class AzimuthalIntegrator(Integrator):
 
         from scipy.optimize import minimize_scalar
         def sfun(p):
-            return self.integrate2d_ng(img, npt_rad, npt_azim, 
+            return self.integrate2d_ng(img, npt_rad, npt_azim,
                                 unit=unit, method=method,
                                 polarization_factor=p).intensity[:, bin_idx].std()
         opt = minimize_scalar(sfun, bounds=[-1, 1])
