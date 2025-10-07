@@ -1102,7 +1102,7 @@ def euler_matrix(ai, aj, ak, axes='sxyz'):
     try:
         firstaxis, parity, repetition, frame = _AXES2TUPLE[axes]
     except (AttributeError, KeyError):
-        _TUPLE2AXES[axes]  # noqa: validation
+        _TUPLE2AXES[axes]  
         firstaxis, parity, repetition, frame = axes
 
     i = firstaxis
@@ -1165,7 +1165,7 @@ def euler_from_matrix(matrix, axes='sxyz'):
     try:
         firstaxis, parity, repetition, frame = _AXES2TUPLE[axes.lower()]
     except (AttributeError, KeyError):
-        _TUPLE2AXES[axes]  # noqa: validation
+        _TUPLE2AXES[axes]
         firstaxis, parity, repetition, frame = axes
 
     i = firstaxis
@@ -1226,7 +1226,7 @@ def quaternion_from_euler(ai, aj, ak, axes='sxyz'):
     try:
         firstaxis, parity, repetition, frame = _AXES2TUPLE[axes.lower()]
     except (AttributeError, KeyError):
-        _TUPLE2AXES[axes]  # noqa: validation
+        _TUPLE2AXES[axes]
         firstaxis, parity, repetition, frame = axes
 
     i = firstaxis + 1
@@ -2014,7 +2014,7 @@ _import_module('_transformations', __package__)
 
 if __name__ == '__main__':
     import doctest
-    import random  # noqa: used in doctests
+    import random  # noqa: F401
 
     numpy.set_printoptions(suppress=True, precision=5)
     doctest.testmod()
