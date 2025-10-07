@@ -66,7 +66,6 @@ from . import units
 from .io import ponifile, image as io_image
 from .io.integration_config import WorkerConfig, WorkerFiberConfig
 from .engines.preproc import preproc as preproc_numpy
-from .utils.decorators import deprecated_warning
 from .utils.mathutil import binning as rebin
 logger = logging.getLogger(__name__)
 try:
@@ -665,7 +664,7 @@ class Worker(object):
     def shape(self):
         try:
             shape = self.ai.detector.shape
-        except Exception as err:
+        except Exception:
             logger.warning("The detector does not define its shape !")
             return self._shape
         else:

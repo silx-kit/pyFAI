@@ -30,7 +30,7 @@
 Module with miscelaneous tools
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
@@ -42,7 +42,6 @@ import sys
 import os
 import glob
 import threading
-sem = threading.Semaphore()  # global lock for image processing initialization
 import fabio
 
 from ..version import calc_hexversion
@@ -51,15 +50,16 @@ if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2
 else:
     from os.path import exists
 
-from ..containers import FixedParameters
-
-logger = logging.getLogger(__name__)
+from ..containers import FixedParameters  # noqa:F401 
 from .. import resources
+logger = logging.getLogger(__name__)
 try:
     from ..directories import data_dir
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     data_dir = None
+
+sem = threading.Semaphore()  # global lock for image processing initialization
 
 if sys.platform != "win32":
     WindowsError = RuntimeError
