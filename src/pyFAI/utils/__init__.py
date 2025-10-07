@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "07/10/2025"
 __status__ = "production"
 
 import logging
@@ -107,18 +107,11 @@ def int_(val):
     return f
 
 
-def str_(val):
+def str_(val)->str:
     """
     Convert anything to a string ... but None -> ""
     """
-    s = ""
-    if val is not None:
-        try:
-            s = str(val)
-        except UnicodeError:
-            # Python2 specific...
-            s = unicode(val)
-    return s
+    return str(val) if val else ""
 
 
 def expand_args(args):
