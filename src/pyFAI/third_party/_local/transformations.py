@@ -1102,7 +1102,7 @@ def euler_matrix(ai, aj, ak, axes='sxyz'):
     try:
         firstaxis, parity, repetition, frame = _AXES2TUPLE[axes]
     except (AttributeError, KeyError):
-        _TUPLE2AXES[axes]  
+        _TUPLE2AXES[axes]
         firstaxis, parity, repetition, frame = axes
 
     i = firstaxis
