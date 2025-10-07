@@ -1737,8 +1737,8 @@ register_azimuthal_fiber_unit(
     period=360,
 )
 
-AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
-AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
+# AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
+# AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
 AZIMUTHAL_UNITS["qxgi_nm^-1"] = RADIAL_UNITS["qxgi_nm^-1"]
 AZIMUTHAL_UNITS["qygi_nm^-1"] = RADIAL_UNITS["qygi_nm^-1"]
 AZIMUTHAL_UNITS["qzgi_nm^-1"] = RADIAL_UNITS["qzgi_nm^-1"]
