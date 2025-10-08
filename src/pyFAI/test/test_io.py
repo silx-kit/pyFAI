@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2024"
+__date__ = "08/10/2025"
 
 import unittest
 import os
@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
 from ..io.ponifile import PoniFile
+from ..io import spots
 import h5py
 import fabio
 from ..integrator import azimuthal as azimuthalIntegrator
@@ -305,13 +306,13 @@ class TestSpotWriter(unittest.TestCase):
 
     def test_nexus(self):
         tmpfile = os.path.join(UtilsTest.tempdir, "io_FabIOwriter_spots.nxs")
-        io.spots.save_spots_nexus(tmpfile, self.spots, beamline="beamline", ai=self.ai)
+        spots.save_spots_nexus(tmpfile, self.spots, beamline="beamline", ai=self.ai)
         size = os.stat(tmpfile)
         self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
     def test_cxi(self):
         tmpfile = os.path.join(UtilsTest.tempdir, "io_FabIOwriter_spots.nxs")
-        io.spots.save_spots_cxi(tmpfile, self.spots, beamline="beamline", ai=self.ai)
+        spots.save_spots_cxi(tmpfile, self.spots, beamline="beamline", ai=self.ai)
         size = os.stat(tmpfile)
         self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
