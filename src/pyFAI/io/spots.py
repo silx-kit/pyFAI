@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2025"
+__date__ = "08/10/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -41,14 +41,13 @@ import json
 import posixpath
 from collections import OrderedDict
 import logging
-logger = logging.getLogger(__name__)
 import numpy
 import fabio
 from .. import version
 from ..units import to_unit
 from ._json import UnitEncoder
 from .nexus import Nexus, get_isotime, h5py
-
+logger = logging.getLogger(__name__)
 try:
     import hdf5plugin
 except ImportError:
@@ -206,11 +205,11 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
         entry.attrs["default"] = posixpath.relpath(result.name, entry.name)
 
         for i, s in enumerate(spots):
-            l = len(s)
-            total_int[i,:l] = s["intensity"]
-            xpos[i,:l] = s["pos1"]
-            ypos[i,:l] = s["pos0"]
-            snr[i,:l] = s["intensity"] / s["sigma"]
+            nbs = len(s)
+            total_int[i,:nbs] = s["intensity"]
+            xpos[i,:nbs] = s["pos1"]
+            ypos[i,:nbs] = s["pos0"]
+            snr[i,:nbs] = s["intensity"] / s["sigma"]
         result.create_dataset("peakTotalIntensity", data=total_int, **cmp)
         result.create_dataset("peakXPosRaw", data=xpos, **cmp)
         result.create_dataset("peakYPosRaw", data=ypos, **cmp)
