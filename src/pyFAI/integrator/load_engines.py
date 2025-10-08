@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,21 +25,20 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
+"""
+This module tries to load every possible type of integrator and registers them
+into the registry
+"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2024"
+__date__ = "08/10/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
-"""
-This module tries to load every possible type of integrator and registers them
-into the registry
-"""
 import logging
-logger = logging.getLogger(__name__)
 from collections import OrderedDict
 import numpy
 
@@ -52,6 +51,8 @@ IntegrationMethod(1, "no", "histogram", "python", old_method="numpy",
                   class_funct_ng=(None, histogram_engine.histogram1d_engine))
 IntegrationMethod(2, "no", "histogram", "python", old_method="numpy",
                   class_funct_ng=(None, histogram_engine.histogram2d_engine))
+
+logger = logging.getLogger(__name__)
 
 try:
     from ..ext import histogram
@@ -156,7 +157,7 @@ else:
 
 try:
     from ..ext import splitBBoxLUT
-except ImportError as error:
+except ImportError:
     logger.warning("Unable to import pyFAI.ext.splitBBoxLUT for"
                    " Look-up table based azimuthal integration")
     logger.debug("Backtrace", exc_info=True)
@@ -177,7 +178,7 @@ else:
 
 try:
     from ..ext import splitPixelFullLUT
-except ImportError as error:
+except ImportError:
     logger.warning("Unable to import pyFAI.ext.splitPixelFullLUT for"
                    " Look-up table based azimuthal integration")
     logger.debug("Backtrace", exc_info=True)

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2024-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2024-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,22 +25,24 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-
-__author__ = "Jérôme Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2024"
-__status__ = "stable"
-__docformat__ = 'restructuredtext'
-
 """
 This sub-module contains all types of integrator:
 * azimuthal
 * fiber
 * ...
 """
+
+__author__ = "Jérôme Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "08/10/2025"
+__status__ = "stable"
+__docformat__ = 'restructuredtext'
+
 from . import load_engines
 # from .common import Integrator
 # from .azimuthal import AzimuthalIntegrator
 # from .fiber import FiberIntegrator
+
+__all__ = [load_engines]
