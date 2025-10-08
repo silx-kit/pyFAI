@@ -28,7 +28,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "07/10/2025"
+__date__ = "08/10/2025"
 
 import sys
 import os
@@ -43,7 +43,7 @@ if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
 logger = logging.getLogger(__name__)
 
 __all__ = [date, version, version_info, hexversion, strictversion, citation, calc_hexversion,
-           decorators, "load", "detector_factory", "tests", "benchmarks" ]
+           decorators, "load", "detector_factory", "tests", "benchmarks"]
 
 use_opencl = True
 """Global configuration which allow to disable OpenCL programatically.

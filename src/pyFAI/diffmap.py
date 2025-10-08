@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/05/2025"
+__date__ = "08/10/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -42,7 +42,6 @@ import posixpath
 from argparse import ArgumentParser
 from urllib.parse import urlparse
 import logging
-logger = logging.getLogger(__name__)
 import numpy
 import fabio
 import json
@@ -58,6 +57,8 @@ from .io.ponifile import PoniFile
 from .worker import Worker
 from .utils.decorators import deprecated, deprecated_warning
 from string import digits as DIGITS
+
+logger = logging.getLogger(__name__)
 Position = collections.namedtuple('Position', 'index slow fast')
 
 
@@ -142,7 +143,8 @@ class DiffMap:
                 cur = ""
         return tuple(int(i) for i in res)
 
-    def parse(self, sysargv=None, with_config=False):
+    def parse(self, sysargv:list|None=None, 
+              with_config=False):
         """
         Parse options from command line in order to setup the object.
         Does not configure the worker, please use
@@ -376,7 +378,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             config.experiment_title = self.experiment_title
             config.fast_motor_name = self.fast_motor_name
             config.slow_motor_name = self.slow_motor_name
-            if with_config == dict:
+            if with_config is dict:
                 return options, config.as_dict()
             else:
                 return options, config
