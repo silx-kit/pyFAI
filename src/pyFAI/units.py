@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "08/10/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -1220,8 +1220,8 @@ formula_chi = "arctan2(y, x)"
 formula_q = f"4.0e-9*π/λ*sin(0.5*{formula_2th})"
 formula_d = f"0.5*λ/sin(0.5*{formula_2th})"
 formula_d2 = f"(2.0e-9/λ*sin(0.5*{formula_2th}))**2"
-# formula_qx = f"4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
-# formula_qy = f"4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
+formula_qx = f"4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
+formula_qy = f"4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
 
 formula_scattering_angle_vert = "arctan2(y, sqrt(z*z+x*x))"
 formula_scattering_angle_horz = "arctan2(x,z)"
@@ -1450,25 +1450,25 @@ register_radial_unit(
     positive=True,
 )
 
-# register_radial_unit(
-#     "qx_nm^-1",
-#     scale=1.0,
-#     label=r"Rectilinear scattering vector $q_x$ ($nm^{-1}$)",
-#     formula=formula_qx,
-#     short_name="qx",
-#     unit_symbol="nm^{-1}",
-#     positive=False,
-# )
+register_radial_unit(
+    "qx_nm^-1",
+    scale=1.0,
+    label=r"Rectilinear scattering vector $q_x$ ($nm^{-1}$)",
+    formula=formula_qx,
+    short_name="qx",
+    unit_symbol="nm^{-1}",
+    positive=False,
+)
 
-# register_radial_unit(
-#     "qy_nm^-1",
-#     scale=1.0,
-#     label=r"Rectilinear scattering vector $q_y$ ($nm^{-1}$)",
-#     formula=formula_qy,
-#     short_name="qy",
-#     unit_symbol="nm^{-1}",
-#     positive=False,
-# )
+register_radial_unit(
+    "qy_nm^-1",
+    scale=1.0,
+    label=r"Rectilinear scattering vector $q_y$ ($nm^{-1}$)",
+    formula=formula_qy,
+    short_name="qy",
+    unit_symbol="nm^{-1}",
+    positive=False,
+)
 
 register_radial_fiber_unit(
     "scattering_angle_vert_rad",
@@ -1737,8 +1737,8 @@ register_azimuthal_fiber_unit(
     period=360,
 )
 
-# AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
-# AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
+AZIMUTHAL_UNITS["qx_nm^-1"] = RADIAL_UNITS["qx_nm^-1"]
+AZIMUTHAL_UNITS["qy_nm^-1"] = RADIAL_UNITS["qy_nm^-1"]
 AZIMUTHAL_UNITS["qxgi_nm^-1"] = RADIAL_UNITS["qxgi_nm^-1"]
 AZIMUTHAL_UNITS["qygi_nm^-1"] = RADIAL_UNITS["qygi_nm^-1"]
 AZIMUTHAL_UNITS["qzgi_nm^-1"] = RADIAL_UNITS["qzgi_nm^-1"]
