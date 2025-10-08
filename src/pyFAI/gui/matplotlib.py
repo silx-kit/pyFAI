@@ -33,18 +33,14 @@ to the used backend.
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "16/05/2025"
+__date__ = "08/10/2025"
 
 import sys
 import logging
-
 _logger = logging.getLogger(__name__)
-
 _check_matplotlib = 'matplotlib' in sys.modules
-
-from silx.gui import qt
-
-import matplotlib
+from silx.gui import qt   # noqa: E402
+import matplotlib         # noqa: E402
 
 
 def _configure(backend, backend_qt4=None, check=False):
@@ -69,9 +65,11 @@ elif qt.BINDING in ('PyQt6', 'PySide6', 'PyQt5', 'PySide2'):
     _configure('QtAgg', check=_check_matplotlib)
     from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg  # noqa
 
-from matplotlib import pyplot  # noqa
-from matplotlib import pylab  # noqa
-from matplotlib import colors
+from matplotlib import pyplot  # noqa: E402
+from matplotlib import pylab   # noqa: E402
+from matplotlib import colors  # noqa: E402
 
 #differs from the silx one (no normalization)
 DEFAULT_MPL_COLORMAP = colors.Colormap(name="inferno")
+
+__all__ = [DEFAULT_MPL_COLORMAP, colors, pylab, pyplot, matplotlib, qt]

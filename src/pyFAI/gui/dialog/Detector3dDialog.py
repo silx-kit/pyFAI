@@ -25,20 +25,18 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/01/2025"
+__date__ = "08/10/2025"
 
 import numpy
 import time
 import functools
 import logging
-
-_logger = logging.getLogger(__name__)
-
 import html
 from silx.gui import qt
 from silx.gui.plot3d.items import mesh
 from silx.gui.plot3d.SceneWindow import SceneWindow
 from ..utils.colorutils import DEFAULT_COLORMAP
+_logger = logging.getLogger(__name__)
 
 
 class CreateSceneThread(qt.QThread):
