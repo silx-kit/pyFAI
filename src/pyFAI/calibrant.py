@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/07/2025"
+__date__ = "08/10/2025"
 __status__ = "production"
 
 import os
@@ -55,10 +55,12 @@ from .utils import get_calibration_dir
 from .utils.decorators import deprecated
 from . import units
 from .crystallography.cell import Cell
-from .crystallography.space_groups import ReflectionCondition as Reflection_condition
+from .crystallography.space_groups import ReflectionCondition
 from .crystallography.calibrant import Calibrant
 from .crystallography.calibrant_factory import CALIBRANT_FACTORY
 
+__all__ = ["ALL_CALIBRANTS", "get_calibrant", "names",
+            CALIBRANT_FACTORY, Calibrant, Cell, ReflectionCondition]
 
 ALL_CALIBRANTS = CALIBRANT_FACTORY
 
