@@ -135,7 +135,7 @@ class TestOclSort(unittest.TestCase):
 
     def test_sort_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
-        if self.extra_skip(s.ctx): 
+        if self.extra_skip(s.ctx):
             self.skipTest("Known buggy configuration")
         res = s.sort_horizontal(self.ary).get()
         self.assertTrue(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
