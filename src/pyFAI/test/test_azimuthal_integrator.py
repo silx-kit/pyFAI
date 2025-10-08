@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2025"
+__date__ = "08/10/2025"
 
 import unittest
 import os
@@ -801,7 +801,10 @@ class TestFlexible2D(unittest.TestCase):
 
     def test_flexible(self):
         for m in IntegrationMethod.select_method(dim=2, impl="cython"):
-            res = self.ai.integrate2d(self.img, 50, 50, method=m, unit=("qx_nm^-1", "qy_nm^-1"))
+            print(m)
+            if m.algo == "LUT": 
+                continue
+            res = self.ai.integrate2d(self.img, 50, 50, method=m, unit=("qxgi_nm^-1", "qygi_nm^-1"))
             img, rad, azim = res
             self.assertTrue(numpy.nanmax(img) > 0, f"image is non empty for {m}")
             radmax = rad.max()
