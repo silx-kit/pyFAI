@@ -33,14 +33,14 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2024"
+__date__ = "08/10/2025"
 
 import logging
 import numpy
 import unittest
-from .. import ocl, get_opencl_code
+from .. import ocl
 if ocl:
-    import pyopencl.array
+    pass
 from ...test.utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
@@ -58,7 +58,8 @@ class TestPreproc(unittest.TestCase):
         from ..preproc import preproc
         ary = numpy.arange(12).reshape(4,3)
         for dtype in (numpy.uint8, numpy.int8, numpy.int16, numpy.uint16, numpy.uint32, numpy.int32, numpy.uint64, numpy.int64, numpy.float32):
-            import sys; sys.stderr.write(f"test {dtype}\n")
+            # import sys; 
+            # sys.stderr.write(f"test {dtype}\n")
             self.assertEqual(abs(preproc(ary.astype(dtype),split_result=4)[..., 0]-ary).max(), 0, "Result OK for dtype {dtype}")
 
 

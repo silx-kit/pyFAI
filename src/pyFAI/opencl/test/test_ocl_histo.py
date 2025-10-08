@@ -40,11 +40,10 @@ import logging
 import numpy
 
 import unittest
-from .. import ocl, get_opencl_code
+from .. import ocl
 if ocl:
     import pyopencl.array
 from ...test.utilstest import UtilsTest
-from silx.opencl.common import _measure_workgroup_size
 from ...integrator.azimuthal import AzimuthalIntegrator
 from ...containers import ErrorModel
 from scipy.ndimage import gaussian_filter1d

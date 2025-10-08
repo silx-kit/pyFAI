@@ -43,7 +43,6 @@ from .. import ocl
 if ocl:
     import pyopencl.array
 from ...test.utilstest import UtilsTest
-from silx.opencl.common import _measure_workgroup_size
 from silx.opencl.utils import get_opencl_code
 
 logger = logging.getLogger(__name__)
