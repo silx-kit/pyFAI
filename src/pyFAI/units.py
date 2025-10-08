@@ -1220,8 +1220,8 @@ formula_chi = "arctan2(y, x)"
 formula_q = f"4.0e-9*π/λ*sin(0.5*{formula_2th})"
 formula_d = f"0.5*λ/sin(0.5*{formula_2th})"
 formula_d2 = f"(2.0e-9/λ*sin(0.5*{formula_2th}))**2"
-formula_qx = f"4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
-formula_qy = f"4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
+formula_qx = "4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
+formula_qy = "4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
 
 formula_scattering_angle_vert = "arctan2(y, sqrt(z*z+x*x))"
 formula_scattering_angle_horz = "arctan2(x,z)"

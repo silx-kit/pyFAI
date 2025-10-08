@@ -35,13 +35,12 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "14/05/2025"
 
 import unittest
-import numpy
 import json
 import os
 from dataclasses import fields
 import logging
 logger = logging.getLogger(__name__)
-from ..io.diffmap_config import DiffmapConfig, MotorRange, WorkerConfig, ListDataSet, DataSet, CURRENT_VERSION, parse_bliss
+from ..io.diffmap_config import DiffmapConfig, ListDataSet, DataSet, CURRENT_VERSION, parse_bliss
 from ..diffmap import DiffMap
 from .utilstest import UtilsTest
 

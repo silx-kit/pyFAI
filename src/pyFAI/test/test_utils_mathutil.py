@@ -41,7 +41,6 @@ import logging
 from . import utilstest
 logger = logging.getLogger(__name__)
 import fabio
-from .. import utils
 from .. import load
 from .. import calibrant
 from ..utils import mathutil

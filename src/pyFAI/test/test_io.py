@@ -47,7 +47,6 @@ from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
-from ..io import spots
 from ..io.ponifile import PoniFile
 import h5py
 import fabio
