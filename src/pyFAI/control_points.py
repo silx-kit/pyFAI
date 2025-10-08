@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2025"
+__date__ = "08/10/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -154,7 +154,8 @@ class ControlPoints(object):
                         return
                     lbl = lst[-1]
                 else:
-                    lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
+                    lst = [lb for lb, gpt in self._groups.items() 
+                           if gpt.ring == ring]
                     lst.sort(key=lambda item: self._groups[item].code)
                     if not lst:
                         logger.warning("No group for ring %s in ControlPoints.get", ring)
@@ -184,7 +185,8 @@ class ControlPoints(object):
                         return
                     lbl = lst[-1]
                 else:
-                    lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
+                    lst = [lb for lb, gpt in self._groups.items() 
+                            if gpt.ring == ring]
                     lst.sort(key=lambda item: self._groups[item].code)
                     if not lst:
                         logger.warning("No group for ring %s in ControlPoints.pop", ring)
@@ -540,7 +542,7 @@ class PointGroup(object):
         return self._ring
 
     def set_ring(self, value):
-        if type(value) != int:
+        if not isinstance(value,int):
             logger.error("Ring: %s", value)
             import traceback
             traceback.print_stack()
