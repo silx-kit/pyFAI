@@ -143,7 +143,7 @@ class DiffMap:
                 cur = ""
         return tuple(int(i) for i in res)
 
-    def parse(self, sysargv:list|None=None, 
+    def parse(self, sysargv:list|None=None,
               with_config=False):
         """
         Parse options from command line in order to setup the object.
