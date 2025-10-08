@@ -154,7 +154,7 @@ class ControlPoints(object):
                         return
                     lbl = lst[-1]
                 else:
-                    lst = [lb for lb, gpt in self._groups.items() 
+                    lst = [lb for lb, gpt in self._groups.items()
                            if gpt.ring == ring]
                     lst.sort(key=lambda item: self._groups[item].code)
                     if not lst:
@@ -185,7 +185,7 @@ class ControlPoints(object):
                         return
                     lbl = lst[-1]
                 else:
-                    lst = [lb for lb, gpt in self._groups.items() 
+                    lst = [lb for lb, gpt in self._groups.items()
                             if gpt.ring == ring]
                     lst.sort(key=lambda item: self._groups[item].code)
                     if not lst:

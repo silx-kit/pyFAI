@@ -802,7 +802,7 @@ class TestFlexible2D(unittest.TestCase):
     def test_flexible(self):
         for m in IntegrationMethod.select_method(dim=2, impl="cython"):
             print(m)
-            # if m.algo == "LUT": 
+            # if m.algo == "LUT":
             #     continue
             # res = self.ai.integrate2d(self.img, 50, 50, method=m, unit=("qxgi_nm^-1", "qygi_nm^-1"))
             res = self.ai.integrate2d(self.img, 50, 50, method=m, unit=("qx_nm^-1", "qy_nm^-1"))
