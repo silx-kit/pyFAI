@@ -69,7 +69,7 @@ def suite():
         return test_suite
 
     if importlib.util.find_spec("silx.gui.qt") is None:
-        # 
+        #
         reason = "No Qt binding found"
         _logger.warning(f"pyFAI.gui tests disabled ({reason})")
         test_suite.addTest(SkipGuiTest(reason=reason))
