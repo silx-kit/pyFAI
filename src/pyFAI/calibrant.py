@@ -44,16 +44,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "08/10/2025"
 __status__ = "production"
 
-import os
-import logging
-import numpy
-import itertools
-from typing import Optional, List
-from math import sin, asin, cos, sqrt, pi, ceil
-import threading
-from .utils import get_calibration_dir
-from .utils.decorators import deprecated
-from . import units
+from typing import List
 from .crystallography.cell import Cell
 from .crystallography.space_groups import ReflectionCondition
 from .crystallography.calibrant import Calibrant
