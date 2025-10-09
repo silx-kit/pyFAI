@@ -108,7 +108,7 @@ class Detector(metaclass=DetectorMeta):
     registry = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
-    IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
+    IS_CONTIGUOUS = True  # No gaps: all pixels are adjacent, speeds-up calculation
     API_VERSION = "1.2"
     # 1.1: support for CORNER attribute
     # 1.2: support for sensor_material and sensor_thickness
@@ -623,7 +623,7 @@ class Detector(metaclass=DetectorMeta):
             r1 = numpy.arange(m1, dtype="float32")
             r2 = numpy.arange(m2 - 1, -1, -1, dtype="float32")
         else:
-            raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+            raise RuntimeError(f"Unsupported orientation: {self.orientation.name} ({self.orientation.value})")
         return r1, r2
 
     def _reorder_indexes_from_orientation(self, d1, d2, center=True):
@@ -646,7 +646,7 @@ class Detector(metaclass=DetectorMeta):
         elif self.orientation == 4:
             d2 = shape2 - d2
         else:
-            raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+            raise RuntimeError(f"Unsupported orientation: {self.orientation.name} ({self.orientation.value})")
         return d1, d2
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):

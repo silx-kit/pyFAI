@@ -169,7 +169,7 @@ class Jungfrau(Detector):
         the same shape.
 
         """
-        # if the detctor has been tweaked with an ASCII geometry ... fall-back on the classical method:
+        # if the detector has been tweaked with an ASCII geometry ... fall back on the classical method:
         if self._pixel_corners is not None:
             return Detector.calc_cartesian_positions(self, d1=d1, d2=d2, center=center, use_cython=use_cython)
 
@@ -198,7 +198,7 @@ class Jungfrau(Detector):
 
 class Jungfrau4M(_Dectris):
     """
-    Jungfrau 4M module without sub-module pixel expension applied.
+    Jungfrau 4M module without sub-module pixel expansion applied.
     """
     MANUFACTURER = "PSI"
     MODULE_SIZE = (514, 1030)  # number of pixels per module (y, x)
@@ -220,7 +220,7 @@ class Jungfrau4M(_Dectris):
 
 class Jungfrau1M(Jungfrau4M):
     """
-    Jungfrau 1M module without sub-module pixel expension applied.
+    Jungfrau 1M module without sub-module pixel expansion applied.
     """
     MANUFACTURER = "PSI"
     MODULE_SIZE = (514, 1030)  # number of pixels per module (y, x)

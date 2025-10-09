@@ -66,7 +66,7 @@ class SensorMaterial:
               "um":1e-4}
 
     def __init__(self, name:str, density:float):
-        """Costructor of the class
+        """Constructor of the class
         :param name: name of the sensor material
         :param density: density of the material in g/cm³
         """
@@ -130,7 +130,7 @@ class SensorMaterial:
         return numpy.interp(energy, data[:,0], data[:,1]) * self.rho * self._scale(unit)
 
     def mu_en(self, energy:float=None, unit:str="cm^-1") -> float:
-        """calculate the linear absorption coefficient of depositied energy
+        """calculate the linear absorption coefficient based on the deposited energy
 
         :param energy: in keV
         :return: linear absorption coefficient of deposited energy in the given unit

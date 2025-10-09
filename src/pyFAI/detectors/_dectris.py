@@ -777,7 +777,7 @@ class PilatusCdTe900kw(PilatusCdTe):
     Pilatus CdTe 900k-wide detector, assembly of 1x9 modules
     Available at ESRF ID06-LVP
 
-    This differes from the "Pilatus 900k" detector, assembly of 3x3 modules, available at NSLS-II 12-ID.
+    This differs from the "Pilatus 900k" detector, assembly of 3x3 modules, available at NSLS-II 12-ID.
     """
     MAX_SHAPE = (195, 4439)
     aliases = ["Pilatus CdTe 900kw", "Pilatus 900kw CdTe", "Pilatus900kw CdTe", "Pilatus900kwCdTe"]
