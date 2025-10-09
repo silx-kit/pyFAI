@@ -39,10 +39,16 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, to_eng
+from ._common import Detector, to_eng, SensorConfig
 logger = logging.getLogger(__name__)
 
-logger = logging.getLogger(__name__)
+
+#Define sensors used in X-Spectrum detectors
+Si300 = SensorConfig.from_dict({"material": "Si", "thickness": 300e-6})
+Si500 = SensorConfig.from_dict({"material": "Si", "thickness": 500e-6})
+GaAs500 = SensorConfig.from_dict({"material": "GaAs", "thickness": 500e-6})
+CdTe1000 = SensorConfig.from_dict({"material": "CdTe", "thickness": 1000e-6})
+
 
 
 class _Lambda(Detector):
