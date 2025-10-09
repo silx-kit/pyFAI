@@ -46,7 +46,7 @@ from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from ...utils import float_, str_, get_ui_file
-from ...units import RADIAL_UNITS, to_unit
+from ...units import RADIAL_UNITS, to_unit, Unit, UnitFiber
 from ..model.GeometryModel import GeometryModel
 from ..model.DataModel import DataModel
 from ..utils import units
@@ -130,12 +130,21 @@ class WorkerConfigurator(qt.QWidget):
         npt_validator.setBottom(1)
         self.nbpt_rad.setValidator(npt_validator)
         self.nbpt_azim.setValidator(npt_validator)
-        self.radial_unit.setUnits(RADIAL_UNITS.values())
+
+        radial_units = [v for v in RADIAL_UNITS.values() if type(v) == Unit]
+        self.radial_unit.setUnits(radial_units)
         self.radial_unit.model().setValue(RADIAL_UNITS["2th_deg"])
 
         self.radial_unit.setShortNameDisplay(True)
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
+
+        fiber_units = [v for v in RADIAL_UNITS.values() if type(v) == UnitFiber]
+        self.ip_unit.setUnits(fiber_units)
+        self.ip_unit.model().setValue(RADIAL_UNITS["qip_nm^-1"])
+
+        self.oop_unit.setUnits(fiber_units)
+        self.oop_unit.model().setValue(RADIAL_UNITS["qoop_nm^-1"])
 
         doubleOrEmptyValidator = validators.AdvancedDoubleValidator(self)
         doubleOrEmptyValidator.setAllowEmpty(True)
