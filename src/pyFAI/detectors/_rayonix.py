@@ -149,7 +149,7 @@ class Rayonix133(_Rayonix):
     """
     Rayonix 133 2D CCD detector detector also known as mar133
 
-    Personnal communication from M. Blum
+    personal communication from M. Blum
 
     What should be the default binning factor for those cameras ?
 
@@ -210,7 +210,7 @@ class RayonixSx200(_Rayonix):
     """
     Rayonix sx200 2d CCD Detector.
 
-    Pixel size are personnal communication from M. Blum.
+    Pixel size are personal communication from M. Blum.
     """
     BINNED_PIXEL_SIZE = {1: 48e-6,
                          2: 96e-6,
@@ -295,7 +295,7 @@ class RayonixMx225(_Rayonix):
     Rayonix mx225 2D CCD detector detector
 
     Nota: this is the same definition for mx225he
-    Personnal communication from M. Blum
+    personal communication from M. Blum
     """
     force_pixel = True
     BINNED_PIXEL_SIZE = {1: 36.621e-6,
@@ -316,7 +316,7 @@ class RayonixMx225hs(_Rayonix):
     """
     Rayonix mx225hs 2D CCD detector detector
 
-    Pixel size from a personnal communication from M. Blum
+    Pixel size from a personal communication from M. Blum
     """
     force_pixel = True
     BINNED_PIXEL_SIZE = {1: 39.0625e-6,
@@ -339,7 +339,7 @@ class RayonixMx300(_Rayonix):
     """
     Rayonix mx300 2D detector (4x4 CCDs)
 
-    Pixel size from a personnal communication from M. Blum
+    Pixel size from a personal communication from M. Blum
     """
     force_pixel = True
     BINNED_PIXEL_SIZE = {1: 36.621e-6,
@@ -360,7 +360,7 @@ class RayonixMx300hs(_Rayonix):
     """
     Rayonix mx300hs 2D detector (4x4 CCDs)
 
-    Pixel size from a personnal communication from M. Blum
+    Pixel size from a personal communication from M. Blum
     """
     force_pixel = True
     BINNED_PIXEL_SIZE = {1: 39.0625e-6,
@@ -383,7 +383,7 @@ class RayonixMx340hs(_Rayonix):
     """
     Rayonix mx340hs 2D detector (4x4 CCDs)
 
-    Pixel size from a personnal communication from M. Blum
+    Pixel size from a personal communication from M. Blum
     """
     force_pixel = True
     BINNED_PIXEL_SIZE = {1: 44.2708e-6,
@@ -406,7 +406,7 @@ class RayonixSx30hs(_Rayonix):
     """
     Rayonix sx30hs 2D CCD camera (1 CCD chip)
 
-    Pixel size from a personnal communication from M. Blum
+    Pixel size from a personal communication from M. Blum
     """
     BINNED_PIXEL_SIZE = {1: 15.625e-6,
                          2: 31.25e-6,
@@ -428,7 +428,7 @@ class RayonixSx85hs(_Rayonix):
     """
     Rayonix sx85hs 2D CCD camera (1 CCD chip)
 
-    Pixel size from a personnal communication from M. Blum
+    Pixel size from a personal communication from M. Blum
     """
     BINNED_PIXEL_SIZE = {1: 44.2708e-6,
                          2: 88.5417e-6,
@@ -450,7 +450,7 @@ class RayonixMx425hs(_Rayonix):
     """
     Rayonix mx425hs 2D CCD camera (5x5 CCD chip)
 
-    Pixel size from a personnal communication from M. Blum
+    Pixel size from a personal communication from M. Blum
     """
     BINNED_PIXEL_SIZE = {1: 44.2708e-6,
                          2: 88.5417e-6,
@@ -472,7 +472,7 @@ class RayonixMx325(_Rayonix):
     """
     Rayonix mx325 and mx325he 2D detector (4x4 CCD chips)
 
-    Pixel size from a personnal communication from M. Blum
+    Pixel size from a personal communication from M. Blum
     """
     BINNED_PIXEL_SIZE = {1: 39.673e-6,
                          2: 79.346e-6,
