@@ -58,7 +58,7 @@ class _Lambda(Detector):
     MODULE_GAP = (4, 4)
     DUMMY = 0
     force_pixel = True
-    SENSORS = tuple()
+    SENSORS = (Si300, Si500, GaAs500, CdTe1000)
 
     def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
