@@ -213,7 +213,7 @@ class SensorConfig:
         if "," in txt:
             material,thick = txt.split(",")
         else:
-            materal = txt.strip()
+            material = txt.strip()
             thick = "∞"
         dico = {"material": material.strip()}
         if thick != "∞":
