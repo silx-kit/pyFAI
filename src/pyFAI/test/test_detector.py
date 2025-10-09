@@ -49,6 +49,8 @@ from .. import io
 from ..utils.mathutil import expand2d
 from .utilstest import UtilsTest
 
+from ..detectors._xspectrum import _Lambda
+
 logger = logging.getLogger(__name__)
 
 
@@ -551,11 +553,43 @@ class TestOrientation(unittest.TestCase):
         self.assertEqual(detector_factory("Pilatus100k", {"orientation":4}).origin,(0, 487))
 
 
+def all_subclasses(cls):
+    subs = set(cls.__subclasses__())
+    for c in cls.__subclasses__():
+        subs |= all_subclasses(c)
+    return subs
+
+class TestLambdaDetectors(unittest.TestCase):
+    """Test that all _Lambda-based detectors have reasonable dimensions."""
+
+    def test_detector_shapes(self):
+        for cls in {_Lambda} | all_subclasses(_Lambda):
+            with self.subTest(detector=cls.__name__):
+                # Instantiate the detector
+                det = cls()
+
+                # Prefer MAX_SHAPE if defined, otherwise use module_size
+                det_shape = getattr(det, "MAX_SHAPE", det.module_size)
+
+                # Check that both dimensions are ≥ 256
+                self.assertGreaterEqual(det_shape[0], 256, f"{cls.__name__}: height too small")
+                self.assertGreaterEqual(det_shape[1], 256, f"{cls.__name__}: width too small")
+
+                # Access SENSORS
+                sensors = getattr(cls, "SENSORS", None)
+                # 1. Should exist
+                self.assertIsNotNone(sensors, f"{cls.__name__}: SENSORS is None")
+                # 2. Must not be empty
+                self.assertGreater(len(sensors), 0,
+                                   f"{cls.__name__}: SENSORS tuple is empty")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestDetector))
     testsuite.addTest(loader(TestOrientation))
+    testsuite.addTest(loader(TestLambdaDetectors))
     return testsuite
 
 
