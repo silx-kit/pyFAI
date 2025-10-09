@@ -328,10 +328,10 @@
        <number>0</number>
       </property>
       <item>
-        <widget class="QTabWidget" name="tabWidget"> 
+        <widget class="QTabWidget" name="tabWidget">
           <widget class="QWidget" name="tab_radial">
-            <attribute name="title"> 
-            <string>Radial integration</string> 
+            <attribute name="title">
+            <string>Radial integration</string>
             </attribute>
 
             <layout class="QVBoxLayout" name="radial_vbox">
@@ -425,7 +425,7 @@
 
 
               </layout>
-              
+
 
             </item>
 
@@ -546,8 +546,8 @@
 
 
           <widget class="QWidget" name="tab_fiber">
-            <attribute name="title"> 
-            <string>Fiber integration</string> 
+            <attribute name="title">
+            <string>Fiber integration</string>
             </attribute>
 
             <layout class="QVBoxLayout" name="fiber_vbox">
@@ -641,7 +641,7 @@
 
 
               </layout>
-              
+
 
             </item>
 
