@@ -242,7 +242,7 @@ class Jungfrau8M(Jungfrau):
     """
     Jungfrau 8M module composed of 16 modules, 12 horizontals and 4 vertical
 
-    To simplyfy the layout, one considers the chips (256x256)
+    To simplify the layout, one considers the chips (256x256)
     thus there are 128 chips (8 per modules)
     """
     MANUFACTURER = "PSI"
