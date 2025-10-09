@@ -39,10 +39,13 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, to_eng
+from ._common import Detector, to_eng, SensorConfig
 from ._dectris import _Dectris
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
+
+Si320 = SensorConfig.from_dict({"material": "Si", "thickness": 320e-6})
+Si450 = SensorConfig.from_dict({"material": "Si", "thickness": 450e-6})
 
 
 class Jungfrau(Detector):
@@ -58,6 +61,7 @@ class Jungfrau(Detector):
     force_pixel = True
     aliases = ["Jungfrau 500k"]
     uniform_pixel = False
+    SENSORS=(Si320, Si450)
 
     @classmethod
     def _calc_pixels_size(cls, length, module_size, pixel_size):
@@ -83,8 +87,8 @@ class Jungfrau(Detector):
             size[i * module_size] = cls.BORDER_SIZE_RELATIVE
         return pixel_size * size
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
@@ -208,9 +212,11 @@ class Jungfrau4M(_Dectris):
     force_pixel = True
     aliases = ["Jungfrau 4M"]
     uniform_pixel = True
+    SENSORS=(Si320, Si450)
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0,sensor:SensorConfig|None=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation,sensor=sensor)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
