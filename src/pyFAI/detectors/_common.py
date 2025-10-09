@@ -70,7 +70,7 @@ except ImportError:
     bilinear = None
 
 EPSILON = 1e-6
-"Precision for the positionning of a pixel: 1µm"
+"Precision for the positioning of a pixel: 1µm"
 
 
 class DetectorMeta(type):
