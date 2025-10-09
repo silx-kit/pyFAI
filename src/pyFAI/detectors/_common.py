@@ -118,7 +118,7 @@ class Detector(metaclass=DetectorMeta):
     DUMMY = None
     DELTA_DUMMY = None
     ORIENTATION = 0
-    SENSORS = []
+    SENSORS = ()
     #TODO: Should this be called IMMUTABLE_ATTRS as in cannot be changed 
     _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                         '_mask_crc', '_maskfile', "_splinefile", "_flatfield_crc",
