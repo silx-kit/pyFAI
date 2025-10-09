@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 class Jungfrau(Detector):
     """
-    Raw Jungfrau module without sub-module pixel expension applied.
+    Raw Jungfrau module without sub-module pixel expansion applied.
     """
     MANUFACTURER = "PSI"
 

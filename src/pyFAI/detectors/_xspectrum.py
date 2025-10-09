@@ -72,11 +72,11 @@ class _Lambda(Detector):
             raise NotImplementedError("Generic Lambda detector does not know"
                                       "its max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
+        # working in dim0 = Y
         for i in range(self.module_size[0], self.max_shape[0],
                        self.module_size[0] + self.MODULE_GAP[0]):
             mask[i: i + self.MODULE_GAP[0],:] = 1
-        # workinng in dim1 = X
+        # working in dim1 = X
         for i in range(self.module_size[1], self.max_shape[1],
                        self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i: i + self.MODULE_GAP[1]] = 1

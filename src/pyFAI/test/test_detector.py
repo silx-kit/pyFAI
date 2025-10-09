@@ -271,7 +271,7 @@ class TestDetector(unittest.TestCase):
         tests specific to non flat detectors to ensure consistency
         """
         a = detector_factory("Aarhus")
-        # to limit the memory footprint, devide size by 100
+        # to limit the memory footprint, divide size by 100
         a.binning = (10, 10)
         t0 = time.perf_counter()
         n = a.get_pixel_corners(use_cython=False)
