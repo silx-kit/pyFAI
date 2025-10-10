@@ -40,10 +40,13 @@ __status__ = "production"
 
 import numpy
 import json
-from ._common import Detector, Orientation
+from ._common import Detector, Orientation, SensorConfig
 
 import logging
 logger = logging.getLogger(__name__)
+
+#Define sensors used in Rayonix detectors
+Gd2O2S40 = SensorConfig.from_dict({"material": "Gd2O2S", "thickness": 40e-6})
 
 
 class _Rayonix(Detector):
@@ -53,9 +56,10 @@ class _Rayonix(Detector):
     force_pixel = True
     BINNED_PIXEL_SIZE = {1: 32e-6}
     MAX_SHAPE = (4096, 4096)
+    SENSORS=(Gd2O2S40,)
 
-    def __init__(self, pixel1=32e-6, pixel2=32e-6, max_shape=None, orientation=0):
-        super(_Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=32e-6, pixel2=32e-6, max_shape=None, orientation=0. sensor:SensorConfig|None=None):
+        super(_Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         binning = [1, 1]
         for b, p in self.BINNED_PIXEL_SIZE.items():
             if p == pixel1:

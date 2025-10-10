@@ -292,8 +292,8 @@ class Jungfrau8M(Jungfrau):
                         [3009, 538], [3009, 538+259], [3009, 1055], [3009, 1313],
                         [3078, 1577], [3078, 1836], [3078, 2094], [3078, 2352]]
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
-        Jungfrau.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        Jungfrau.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor = sensor)
 
     def calc_mask(self):
         mask = numpy.ones(self.max_shape, dtype=numpy.int8)
