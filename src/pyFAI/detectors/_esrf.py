@@ -125,9 +125,10 @@ class Maxipix(Detector):
     MAX_SHAPE = (256, 256)
     force_pixel = True
     aliases = ["Maxipix 1x1", "Maxipix1x1"]
+    SENSORS = (Si500,)
 
-    def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0):
-        super(Maxipix, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        super(Maxipix, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
