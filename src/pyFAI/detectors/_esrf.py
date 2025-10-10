@@ -137,7 +137,12 @@ class Maxipix(Detector):
 
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {to_eng(self.pixel1)}m, {to_eng(self.pixel2)}m"
+        if self.orientation:
+            txt += f"\t {self.orientation.name}({self.orientation.value})"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
         return txt
+
 
     def calc_mask(self):
         """
