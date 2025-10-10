@@ -58,7 +58,7 @@ class _Rayonix(Detector):
     MAX_SHAPE = (4096, 4096)
     SENSORS=(Gd2O2S40,)
 
-    def __init__(self, pixel1=32e-6, pixel2=32e-6, max_shape=None, orientation=0. sensor:SensorConfig|None=None):
+    def __init__(self, pixel1=32e-6, pixel2=32e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
         super(_Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         binning = [1, 1]
         for b, p in self.BINNED_PIXEL_SIZE.items():
@@ -173,8 +173,8 @@ class Rayonix133(_Rayonix):
 
     aliases = ["Rayonix133", "MAR 133", "MAR133"]
 
-    def __init__(self, pixel1=64e-6, pixel2=64e-6, max_shape=None, orientation=0):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=64e-6, pixel2=64e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
+        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
 
     def calc_mask(self):
         """Circular mask"""
