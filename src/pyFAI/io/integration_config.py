@@ -68,6 +68,8 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/02/2025"
 __docformat__ = 'restructuredtext'
+__all__ = ["fields", "WorkerConfig", "WorkerFiberConfig"]
+
 
 import os
 import json
@@ -86,7 +88,6 @@ _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
 
-__all__ = ["fields", "WorkerConfig", "WorkerFiberConfig"]
 def _normalize_v1_darkflat_files(config, key):
     """Normalize dark and flat filename list from the version 1 to version 2.
     """
