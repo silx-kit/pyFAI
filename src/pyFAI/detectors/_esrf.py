@@ -175,6 +175,8 @@ class Maxipix(Detector):
         if ((self.module_size is not None) and
                 (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
             dico["module_size"] = self.module_size
+        if self.sensor:
+            dico["sensor"] = self.sensor.as_dict()
         return dico
 
     def set_config(self, config):
