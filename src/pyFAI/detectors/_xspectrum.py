@@ -68,7 +68,10 @@ class _Lambda(Detector):
             self.module_size = module_size
 
     def __repr__(self):
-        return f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
+        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
+        return txt
 
     def calc_mask(self):
         """
