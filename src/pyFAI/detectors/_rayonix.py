@@ -146,10 +146,13 @@ class _Rayonix(Detector):
 
         :return: dict with param for serialization
         """
-        #TODO: Should get_config also include the sensor? 
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
+        config = {
+        "pixel1": self._pixel1,
+        "pixel2": self._pixel2,
+        "orientation": self.orientation or 3, }
+        if getattr(self, "sensor", None) is not None:
+            config["sensor"] = self.sensor
+        return config
 
 
 class Rayonix133(_Rayonix):
