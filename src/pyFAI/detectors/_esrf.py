@@ -149,7 +149,7 @@ class Maxipix(Detector):
         Returns a generic mask for Maxipix detectors...
         """
         if self.max_shape is None:
-            raise NotImplementedError("Generic Pilatus detector does not know "
+            raise NotImplementedError("Generic Maxipix detector does not know "
                                       "its max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
         # workinng in dim0 = Y
