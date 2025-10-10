@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,17 +33,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "10/10/2025"
 
 import unittest
 import sys
 import logging
-logger = logging.getLogger(__name__)
 import numpy
 from ..utils.mathutil import cormap
 from ..detectors import Detector
 from ..integrator.azimuthal import AzimuthalIntegrator
 from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 
 
 class TestErrorModel(unittest.TestCase):
@@ -84,9 +84,9 @@ class TestErrorModel(unittest.TestCase):
         # Generation of a "SAXS-like" curve with the shape of a lorentzian curve
         unit = "q_nm^-1"
         q = numpy.linspace(0, cls.ai.array_from_unit(unit=unit).max(), npt)
-        I = I0 / (1 + q ** 2)
+        intensity = I0 / (1 + q ** 2)
         # Reconstruction of diffusion image:
-        img_theo = cls.ai.calcfrom1d(q, I, dim1_unit="q_nm^-1",
+        img_theo = cls.ai.calcfrom1d(q, intensity, dim1_unit="q_nm^-1",
                          correctSolidAngle=True,
                          polarization_factor=cls.kwargs["polarization_factor"],
                          flat=flat)

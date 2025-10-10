@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,18 +32,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2023"
+__date__ = "10/10/2025"
 
 import os
 import unittest
 import numpy
 import logging
-
-logger = logging.getLogger(__name__)
 from ..containers import ErrorModel
 from ..engines import preproc as python_preproc
 from ..ext import preproc as cython_preproc
 from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 
 
 class TestPreproc(unittest.TestCase):
@@ -57,8 +56,6 @@ class TestPreproc(unittest.TestCase):
         logger.debug("using preproc from: %s", preproc.__name__)
         shape = 8, 8
         dtype = numpy.int32
-        size = shape[0] * shape[1]
-
         target = numpy.ones(shape, dtype=dtype)
         dummy = -1.0
         target[:2, :] = dummy

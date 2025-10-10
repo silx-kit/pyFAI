@@ -32,18 +32,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2025"
+__date__ = "10/10/2025"
 
 import unittest
 import numpy
 import fabio
 import logging
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
 from .. import detectors
 from .. import distortion
 from ..ext import _distortion
 from ..ext import sparse_utils
+logger = logging.getLogger(__name__)
 
 
 class TestHalfCCD(unittest.TestCase):
@@ -166,7 +166,7 @@ class TestHalfCCD(unittest.TestCase):
 
         a, b, c = self.dis.correct(self.preproc)
         cor = c[:-1,:, 0]
-        error = b[:-1,:]
+        # error = b[:-1,:]
         delta = abs(cor - self.fit2d)
         logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
         mask = numpy.where(self.fit2d == 0)
@@ -209,7 +209,7 @@ class TestHalfCCD(unittest.TestCase):
         # Now test with error propagation
         a, b, c = self.dis.correct(self.preproc)
         cor = c[:-1,:, 0]
-        error = b[:-1,:]
+        # error = b[:-1,:]
         delta = abs(cor - self.fit2d)
         logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
         mask = numpy.where(self.fit2d == 0)

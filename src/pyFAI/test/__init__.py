@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2016-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2016-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,14 +32,11 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2024"
+__date__ = "10/10/2025"
 
-import sys
-import os
 import unittest
-
 from . import utilstest
-from pyFAI.test.utilstest import test_options
+from .utilstest import test_options
 
 # Issue https://github.com/silx-kit/fabio/pull/291
 # Relative to fabio 0.8

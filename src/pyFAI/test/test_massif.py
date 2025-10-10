@@ -32,15 +32,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2025"
+__date__ = "10/10/2025"
 
 import unittest
 import numpy
 import logging
-logger = logging.getLogger(__name__)
-
 from .utilstest import UtilsTest
 from ..massif import Massif
+logger = logging.getLogger(__name__)
 
 
 class TestMassif(unittest.TestCase):

@@ -36,7 +36,6 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "04/09/2025"
 
-import sys
 import unittest
 from unittest import mock
 

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/07/2025"
+__date__ = "10/10/2025"
 
 import unittest
 import itertools
@@ -43,12 +43,12 @@ import copy
 import numpy
 import h5py
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
 from ..calibrant import Calibrant, get_calibrant, Cell, CALIBRANT_FACTORY
 from ..detectors import ALL_DETECTORS
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..crystallography.space_groups import ReflectionCondition
 from ..io.calibrant_config import CalibrantConfig
+logger = logging.getLogger(__name__)
 
 
 class TestCalibrant(unittest.TestCase):
@@ -324,14 +324,14 @@ class TestReflection(unittest.TestCase):
     def build_table( funct, size=10):
         """build a 10x10x10 map with True for allowed reflection"""
         table = numpy.zeros((size, size, size), dtype=bool)
-        for i in itertools.product(range(size),range(size), range(size)): table[i]=funct(*i)
+        for i in itertools.product(range(size),range(size), range(size)):
+            table[i]=funct(*i)
         return table
 
 
 
     def test_code(self):
         "Checks the class has no issue and that validated methods are actually correct !"
-        bad =0
         with h5py.File(self.reflection_file) as reflections:
             groups = []
             for name in dir(ReflectionCondition):
@@ -350,7 +350,7 @@ class TestReflection(unittest.TestCase):
                         ref = reflections[good[0]][()]
                 if "validated" in method.__doc__.lower():
                     if not numpy.all(ref==table):
-                        print(name, "differ at hkl=", [(int(h),int(k), int(l)) for h,k,l in zip(*numpy.where(ref!=table))])
+                        print(name, "differ at hkl=", [(int(h), int(k), int(l)) for h,k,l in zip(*numpy.where(ref!=table))])  # noqa
                         raise AssertionError(f"Space group {name} did not validate against xrayutilities")
 
 def suite():

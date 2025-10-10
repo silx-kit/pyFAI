@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,18 +32,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2024"
+__date__ = "10/10/2025"
 
 import unittest
 import numpy
 import sys
 import logging
-logger = logging.getLogger(__name__)
-pyFAI = sys.modules["pyFAI"]
 from ..opencl import ocl
 from .utilstest import UtilsTest
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
+pyFAI = sys.modules["pyFAI"]
+logger = logging.getLogger(__name__)
 
 
 class TestFlat1D(unittest.TestCase):
@@ -76,16 +76,17 @@ class TestFlat1D(unittest.TestCase):
 
     def test_no_correct(self):
         result = self.ai.integrate1d_ng(self.raw, self.bins, unit="r_mm", correctSolidAngle=False)
-        I = result.intensity
-        logger.info("1D Without correction Imin=%s Imax=%s <I>=%s std=%s", I.min(), I.max(), I.mean(), I.std())
-        self.assertNotAlmostEqual(I.mean(), 1, 2, "Mean should not be 1")
-        self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
+        intensity = result.intensity
+        logger.info("1D Without correction Imin=%s Imax=%s <I>=%s std=%s", intensity.min(), intensity.max(), intensity.mean(), intensity.std())
+        self.assertNotAlmostEqual(intensity.mean(), 1, 2, "Mean should not be 1")
+        self.assertFalse(intensity.max() - intensity.min() < self.eps, "deviation should be large")
 
     def test_correct(self):
         methods = { k.method[1:4]:k for k in  IntegrationMethod.select_method(dim=1)}
         logger.info("testing %s methods with 1d integration", len(methods))
         for meth in methods.values():
-            if meth.dimension != 1: continue
+            if meth.dimension != 1:
+                continue
             res = self.ai.integrate1d_ng(self.raw, self.bins, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
 
             if meth.target_name and meth.algo_lower == "histogram":
@@ -97,10 +98,10 @@ class TestFlat1D(unittest.TestCase):
             # print(res.sum_signal)
             # print(res.sum_normalization)
             # print(res.intensity)
-            _, I = res
-            logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", str(meth), I.min(), I.max(), I.mean(), I.std())
-            self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
-            self.assertLess(I.max() - I.min(), eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
+            _, intensity = res
+            logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", str(meth), intensity.min(), intensity.max(), intensity.mean(), intensity.std())
+            self.assertAlmostEqual(intensity.mean(), 1, 2, "Mean should be 1 in %s" % meth)
+            self.assertLess(intensity.max() - intensity.min(), eps, "deviation should be small with meth %s, got %s" % (meth, intensity.max() - intensity.min()))
 
 
 class TestFlat2D(unittest.TestCase):
@@ -133,12 +134,12 @@ class TestFlat2D(unittest.TestCase):
         cls.rng = None
 
     def test_no_correct(self):
-        I, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", correctSolidAngle=False)
-        I = I[numpy.where(I > 0)]
-        logger.info("2D Without correction Imin=%s Imax=%s <I>=%s std=%s", I.min(), I.max(), I.mean(), I.std())
+        intensity, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", correctSolidAngle=False)
+        intensity = intensity[numpy.where(intensity > 0)]
+        logger.info("2D Without correction Imin=%s Imax=%s <I>=%s std=%s", intensity.min(), intensity.max(), intensity.mean(), intensity.std())
 
-        self.assertNotAlmostEqual(I.mean(), 1, 2, "Mean should not be 1")
-        self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
+        self.assertNotAlmostEqual(intensity.mean(), 1, 2, "Mean should not be 1")
+        self.assertFalse(intensity.max() - intensity.min() < self.eps, "deviation should be large")
 
     def test_correct(self):
         test2d = {"numpy": self.eps,
@@ -156,14 +157,14 @@ class TestFlat2D(unittest.TestCase):
         for meth in test2d:
             logger.info("About to test2d %s", meth)
             try:
-                I, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
+                intensity, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             except (MemoryError, pyFAI.opencl.pyopencl.MemoryError):
                 logger.warning("Got MemoryError from OpenCL device")
                 continue
-            I = I[numpy.where(I > 0)]
-            logger.info("2D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
-            self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
-            self.assertTrue(I.max() - I.min() < test2d[meth], "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
+            intensity = intensity[numpy.where(intensity > 0)]
+            logger.info("2D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, intensity.min(), intensity.max(), intensity.mean(), intensity.std())
+            self.assertAlmostEqual(intensity.mean(), 1, 2, "Mean should be 1 in %s" % meth)
+            self.assertTrue(intensity.max() - intensity.min() < test2d[meth], "deviation should be small with meth %s, got %s" % (meth, intensity.max() - intensity.min()))
 
 
 def suite():

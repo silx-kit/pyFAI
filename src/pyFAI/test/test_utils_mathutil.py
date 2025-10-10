@@ -32,22 +32,21 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2025"
+__date__ = "10/10/2025"
 
 import unittest
 import numpy
 import os
 import logging
 from . import utilstest
-logger = logging.getLogger(__name__)
 import fabio
 from .. import utils
 from .. import load
 from .. import calibrant
 from ..utils import mathutil
-
-
 import scipy.ndimage
+logger = logging.getLogger(__name__)
+
 
 _ROUND_FFT_VALUES = [
     (2, 2), (3, 3), (5, 5), (7, 7), (11, 11), (13, 13), (17, 18), (19, 20),

@@ -37,10 +37,7 @@ __date__ = "09/07/2025"
 
 import unittest
 import numpy
-import os
-import ast
 import logging
-import fabio
 from .utilstest import UtilsTest
 from ..crystallography import resolution
 

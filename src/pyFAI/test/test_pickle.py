@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "10/10/2025"
 
 import numpy
 from pyFAI.integrator.azimuthal import AzimuthalIntegrator
@@ -40,8 +40,9 @@ from pyFAI.detectors import detector_factory
 from pickle import dumps, loads
 import unittest
 import logging
-logger = logging.getLogger(__name__)
 from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
+
 
 class TestPickle(unittest.TestCase):
 

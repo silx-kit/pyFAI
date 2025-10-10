@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,14 +32,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "10/10/2025"
 
 import unittest
 import numpy
 import logging
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
 from ..ext import bilinear
+logger = logging.getLogger(__name__)
 
 
 class TestBilinear(unittest.TestCase):
@@ -66,7 +66,7 @@ class TestBilinear(unittest.TestCase):
 
         for _s in range(self.N):
             i, j = int(self.rng.uniform(0, 100)), int(self.rng.uniform(0, 100))
-            k, l = b.local_maxi((i, j))
+            k, l = b.local_maxi((i, j))  # noqa: E741
             if abs(k - 40) > 1e-4 or abs(l - 60) > 1e-4:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
             else:
@@ -86,7 +86,7 @@ class TestBilinear(unittest.TestCase):
         ok = 0
         for _s in range(self.N):
             i, j = int(self.rng.uniform(0,100)), int(self.rng.uniform(0,100))
-            k, l = b.local_maxi((i, j))
+            k, l = b.local_maxi((i, j))  # noqa: E741
             if abs(k - 40.5) > 0.5 or abs(l - 60.5) > 0.5:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
             else:
