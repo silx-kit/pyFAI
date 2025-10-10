@@ -86,7 +86,7 @@ _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
 
-
+__all__ = ["fields", "WorkerConfig", "WorkerFiberConfig"]
 def _normalize_v1_darkflat_files(config, key):
     """Normalize dark and flat filename list from the version 1 to version 2.
     """
