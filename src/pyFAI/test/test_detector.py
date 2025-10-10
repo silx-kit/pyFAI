@@ -46,7 +46,6 @@ from ..detectors import detector_factory, ALL_DETECTORS, Detector, sensors
 from ..calibrant import CALIBRANT_FACTORY as calibrant_factory
 from ..geometryRefinement import GeometryRefinement
 from .. import io
-from .. import utils
 from ..utils.mathutil import expand2d
 from .utilstest import UtilsTest
 

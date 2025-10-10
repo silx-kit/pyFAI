@@ -34,7 +34,7 @@ __contact__ = "jerome.kieffer@esrf.fr"
 import logging
 from collections import OrderedDict
 import numpy
-from . import pyopencl, dtype_converter
+from . import pyopencl
 from ..utils import calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags

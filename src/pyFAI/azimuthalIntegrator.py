@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,11 +35,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2024"
+__date__ = "07/10/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
-from .integrator.azimuthal import AzimuthalIntegrator, logger
+from .integrator.azimuthal import AzimuthalIntegrator, logger  # noqa: F401
 from .utils.decorators import deprecated_warning
 deprecated_warning("Module", "pyFAI.azimuthalIntegrator", replacement="pyFAI.integrator.azimuthal",
                    since_version="2024.10", only_once=False, skip_backtrace_count=1)

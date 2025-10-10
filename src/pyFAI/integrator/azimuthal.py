@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "08/10/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -43,9 +43,9 @@ from .common import Integrator
 # from ..geometry import Geometry
 from .. import units
 from ..utils import crc32
-from ..utils.mathutil import nan_equal, EPS32, deg2rad, rad2rad
+from ..utils.mathutil import nan_equal, deg2rad, rad2rad
 from ..containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
-from ..io import DefaultAiWriter, save_integrate_result
+from ..io import save_integrate_result
 from ..io.ponifile import PoniFile
 from ..method_registry import IntegrationMethod
 from ..utils.decorators import deprecated
@@ -232,7 +232,7 @@ class AzimuthalIntegrator(Integrator):
                     elif (radial_range is None) and (cython_integr.pos0_range is not None):
                         cython_reset = f"radial_range was defined in { method.algo_lower.upper()}"
                     elif (radial_range is not None) and (cython_integr.pos0_range != radial_range):
-                        cython_reset = f"radial_range is defined but differs in %s" % method.algo_lower.upper()
+                        cython_reset = "radial_range is defined but differs in %s" % method.algo_lower.upper()
                     elif (azimuth_range is None) and (cython_integr.pos1_range is not None):
                         cython_reset = f"azimuth_range not defined and {method.algo_lower.upper()} had azimuth_range defined"
                     elif (azimuth_range is not None) and (cython_integr.pos1_range != azimuth_range):
@@ -1141,7 +1141,7 @@ class AzimuthalIntegrator(Integrator):
                                          clip_pos1=bool(azimuth_unit.period),
                                          weighted_average=method.weighted_average,)
 
-        I = intpl.intensity
+        intensity = intpl.intensity
         bins_azim = intpl.azimuthal
         bins_rad = intpl.radial
         signal2d = intpl.signal
@@ -1159,7 +1159,7 @@ class AzimuthalIntegrator(Integrator):
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * pos1_scale
 
-        result = Integrate2dResult(I, bins_rad, bins_azim, sem)
+        result = Integrate2dResult(intensity, bins_rad, bins_azim, sem)
         result._set_method_called("integrate2d")
         result._set_compute_engine(str(method))
         result._set_method(method)

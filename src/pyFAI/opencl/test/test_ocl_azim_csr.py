@@ -39,7 +39,7 @@ import logging
 import numpy
 
 import unittest
-from .. import ocl, get_opencl_code
+from .. import ocl
 if ocl:
     import pyopencl.array
 from ...test.utilstest import UtilsTest

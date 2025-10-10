@@ -36,14 +36,11 @@ __license__ = "MIT"
 __copyright__ = "2024-2024 European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "31/01/2024"
 
-import sys
-import os
 import unittest
 import numpy
 import logging
 logger = logging.getLogger(__name__)
 from .utilstest import UtilsTest
-import fabio
 from .. import load
 
 

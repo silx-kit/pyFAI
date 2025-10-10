@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2024"
+__date__ = "08/10/2025"
 
 import unittest
 import os
@@ -43,7 +43,6 @@ import logging
 import shutil
 import platform
 
-logger = logging.getLogger(__name__)
 
 from .. import ocl
 if ocl is not None:
@@ -53,11 +52,10 @@ if ocl is not None:
 
 from ... import load
 from ...test  import utilstest
-from ...integrator import load_engines
 from ...method_registry import IntegrationMethod
 from ...test.utilstest import test_options
 from ...utils import mathutil
-from ...utils.decorators import depreclog
+logger = logging.getLogger(__name__)
 EPS32 = numpy.finfo("float32").eps
 EPS64 = numpy.finfo("float64").eps
 

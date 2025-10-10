@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2003-2023 European Synchrotron Radiation Facility, Grenoble,
+#    Copyright (C) 2003-2025 European Synchrotron Radiation Facility, Grenoble,
 #             France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "07/10/2025"
 __status__ = "production"
 
 import logging
@@ -569,7 +569,7 @@ class MultiFilesAverageWriter(AverageWriter):
                 image.write(f"{file_name}")
                 logger.info("Wrote %s", file_name)
 
-            except:
+            except Exception:
                 if dim == 3:
                     image = self._fabio_class.__class__(data=data[0], header=header)
                     if hasattr(image, 'append_frame'):
@@ -745,7 +745,7 @@ class Average(object):
                 logger.info("Reading %s", image)
                 try:
                     fabio_image = fabio.open(image)
-                except:
+                except Exception:
                     # Handles the different URL like data
                     data = read_data(image)
                     fabio_image = fabio.numpyimage.NumpyImage(data)

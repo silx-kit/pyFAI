@@ -5,7 +5,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #
@@ -29,16 +29,19 @@
 
 """utility that averages out a serie of files"""
 
-__author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
+__author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "07/10/2025"
 __status__ = "production"
 
 import os
 from argparse import ArgumentParser
 import logging
+from ..utils import logging_utils
+from .. import average
+from .. import version as pyFAI_version, date as pyFAI_date, utils
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -46,10 +49,6 @@ try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
-
-from ..utils import logging_utils, stringutil, shell
-from .. import average
-from .. import version as pyFAI_version, date as pyFAI_date, utils
 
 
 def parse_algorithms(options):

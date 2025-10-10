@@ -27,11 +27,11 @@
 
 """Module for writing sparse frames in HDF5 in the Nexus style"""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/05/2025"
+__date__ = "08/10/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -41,12 +41,12 @@ import json
 import posixpath
 from collections import OrderedDict
 import logging
-logger = logging.getLogger(__name__)
 import numpy
 import fabio
 from .. import version
 from .nexus import Nexus, get_isotime, h5py
 from ._json import UnitEncoder
+logger = logging.getLogger(__name__)
 
 try:
     import hdf5plugin
@@ -161,11 +161,11 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             #entry.attrs["default"] = posixpath.relpath(peak_grp.name, entry.name)  # prevents the densify from working
 
             for i, s in enumerate(peaks):
-                l = len(s)
-                total_int[i,:l] = s["intensity"]
-                xpos[i,:l] = s["pos1"]
-                ypos[i,:l] = s["pos0"]
-                snr[i,:l] = s["intensity"] / s["sigma"]
+                nbs = len(s)
+                total_int[i,:nbs] = s["intensity"]
+                xpos[i,:nbs] = s["pos1"]
+                ypos[i,:nbs] = s["pos0"]
+                snr[i,:nbs] = s["intensity"] / s["sigma"]
             peak_grp.create_dataset("peakTotalIntensity", data=total_int, **cmp)
             peak_grp.create_dataset("peakXPosRaw", data=xpos, **cmp)
             peak_grp.create_dataset("peakYPosRaw", data=ypos, **cmp)

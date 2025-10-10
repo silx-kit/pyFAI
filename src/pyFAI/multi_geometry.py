@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #    Copyright (C)      2016 Synchrotron SOLEIL - L'Orme des Merisiers Saint-Aubin
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,14 +31,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/01/2024"
+__date__ = "08/10/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import collections.abc
 import gc
 import logging
-logger = logging.getLogger(__name__)
 from .integrator.azimuthal import AzimuthalIntegrator
 from .integrator.fiber import FiberIntegrator
 from .containers import Integrate1dResult
@@ -49,6 +48,7 @@ from multiprocessing.pool import ThreadPool
 import threading
 import numpy
 from .method_registry import IntegrationMethod
+logger = logging.getLogger(__name__)
 error = None
 
 
@@ -110,12 +110,12 @@ class MultiGeometry(object):
             (len(self.ais), self.radial_range, self.unit, self.azimuth_range)
 
     def _guess_radial_range(self):
-        logger.info(f"Calculating the radial range of MultiGeometry...")
+        logger.info("Calculating the radial range of MultiGeometry...")
         radial = numpy.concatenate([ai.array_from_unit(unit=self.radial_unit).reshape(-1) for ai in self.ais])
         return (radial.min(), radial.max())
 
     def _guess_azimuth_range(self):
-        logger.info(f"Calculating the azimuthal range of MultiGeometry...")
+        logger.info("Calculating the azimuthal range of MultiGeometry...")
         azimuthal = numpy.concatenate([ai.array_from_unit(unit=self.azimuth_unit).reshape(-1) for ai in self.ais])
         return (azimuthal.min(), azimuthal.max())
 
@@ -200,15 +200,15 @@ class MultiGeometry(object):
         tiny = numpy.finfo("float32").tiny
         norm = numpy.maximum(normalization, tiny)
         invalid = count <= 0.0
-        I = signal / norm
-        I[invalid] = self.empty
+        intensity = signal / norm
+        intensity[invalid] = self.empty
 
         if variance is not None:
             sigma = numpy.sqrt(variance) / norm
             sigma[invalid] = self.empty
-            result = Integrate1dResult(res.radial, I, sigma)
+            result = Integrate1dResult(res.radial, intensity, sigma)
         else:
-            result = Integrate1dResult(res.radial, I)
+            result = Integrate1dResult(res.radial, intensity)
         result._set_compute_engine(res.compute_engine)
         result._set_unit(self.radial_unit)
         result._set_sum_signal(signal)
@@ -299,15 +299,15 @@ class MultiGeometry(object):
         tiny = numpy.finfo("float32").tiny
         norm = numpy.maximum(normalization, tiny)
         invalid = count <= 0
-        I = signal / norm
-        I[invalid] = self.empty
+        intensity = signal / norm
+        intensity[invalid] = self.empty
 
         if variance is not None:
             sigma = numpy.sqrt(variance) / norm
             sigma[invalid] = self.empty
-            result = Integrate2dResult(I, res.radial, res.azimuthal, sigma)
+            result = Integrate2dResult(intensity, res.radial, res.azimuthal, sigma)
         else:
-            result = Integrate2dResult(I, res.radial, res.azimuthal)
+            result = Integrate2dResult(intensity, res.radial, res.azimuthal)
         result._set_sum(signal)
         result._set_compute_engine(res.compute_engine)
         result._set_radial_unit(self.radial_unit)
@@ -423,12 +423,12 @@ class MultiGeometryFiber(object):
             (len(self.fis), self.ip_range, self.unit, self.oop_range)
 
     def _guess_inplane_range(self):
-        logger.info(f"Calculating the in-plane range of MultiGeometry...")
+        logger.info("Calculating the in-plane range of MultiGeometry...")
         ip = numpy.array([fi.array_from_unit(unit=self.ip_unit) for fi in self.fis])
         return (ip.min(), ip.max())
 
     def _guess_outofplane_range(self):
-        logger.info(f"Calculating the out-of-plane range of MultiGeometry...")
+        logger.info("Calculating the out-of-plane range of MultiGeometry...")
         oop = numpy.array([fi.array_from_unit(unit=self.oop_unit) for fi in self.fis])
         return (oop.min(), oop.max())
 
@@ -534,14 +534,14 @@ class MultiGeometryFiber(object):
         tiny = numpy.finfo("float32").tiny
         norm = numpy.maximum(normalization, tiny)
         invalid = count <= 0.0
-        I = signal / norm
-        I[invalid] = self.empty
+        intensity = signal / norm
+        intensity[invalid] = self.empty
         if variance is not None:
             sigma = numpy.sqrt(variance) / norm
             sigma[invalid] = self.empty
-            result = Integrate1dResult(res.radial, I, sigma)
+            result = Integrate1dResult(res.radial, intensity, sigma)
         else:
-            result = Integrate1dResult(res.radial, I)
+            result = Integrate1dResult(res.radial, intensity)
         result._set_compute_engine(res.compute_engine)
 
         if vertical_integration:
@@ -659,15 +659,15 @@ class MultiGeometryFiber(object):
         tiny = numpy.finfo("float32").tiny
         norm = numpy.maximum(normalization, tiny)
         invalid = count <= 0
-        I = signal / norm
-        I[invalid] = self.empty
+        intensity = signal / norm
+        intensity[invalid] = self.empty
 
         if variance is not None:
             sigma = numpy.sqrt(variance) / norm
             sigma[invalid] = self.empty
-            result = Integrate2dResult(I, res.radial, res.azimuthal, sigma)
+            result = Integrate2dResult(intensity, res.radial, res.azimuthal, sigma)
         else:
-            result = Integrate2dResult(I, res.radial, res.azimuthal)
+            result = Integrate2dResult(intensity, res.radial, res.azimuthal)
         result._set_sum(signal)
         result._set_compute_engine(res.compute_engine)
         result._set_radial_unit(self.ip_unit)

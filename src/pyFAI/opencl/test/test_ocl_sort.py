@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@
 """Test for OpenCL sorting on GPU"""
 
 __license__ = "MIT"
-__date__ = "10/01/2022"
+__date__ = "08/10/2025"
 __copyright__ = "2015-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -36,15 +36,13 @@ import unittest
 import numpy
 import logging
 import warnings
-
 from ...test.utilstest import UtilsTest
-logger = logging.getLogger(__name__)
-
 from .. import ocl
 if ocl:
     from .. import sort as ocl_sort
 
 as_strided = numpy.lib.stride_tricks.as_strided
+logger = logging.getLogger(__name__)
 
 
 def sigma_clip(image, sigma_lo=3, sigma_hi=3, max_iter=5, axis=0):
@@ -137,7 +135,8 @@ class TestOclSort(unittest.TestCase):
 
     def test_sort_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
-        if self.extra_skip(s.ctx): self.skipTest("Known buggy configuration")
+        if self.extra_skip(s.ctx):
+            self.skipTest("Known buggy configuration")
         res = s.sort_horizontal(self.ary).get()
         self.assertTrue(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
         if self.PROFILE:
