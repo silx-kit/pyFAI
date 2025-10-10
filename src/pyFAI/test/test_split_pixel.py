@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,19 +35,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "10/10/2025"
 
 import unittest
 import platform
 import numpy
 import logging
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..detectors import Detector
 from ..utils import mathutil
 from ..ext import splitBBox, splitPixel
 from ..method_registry import IntegrationMethod
+logger = logging.getLogger(__name__)
 
 
 class TestRecenter(unittest.TestCase):

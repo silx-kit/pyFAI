@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,6 @@ import unittest
 import numpy
 import logging
 from . import utilstest
-logger = logging.getLogger(__name__)
 from .utilstest import UtilsTest
 from .. import opencl
 from ..containers import Integrate2dtpl
@@ -45,6 +44,7 @@ from ..method_registry import IntegrationMethod
 from ..containers import ErrorModel
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
+logger = logging.getLogger(__name__)
 
 
 class TestCSR(utilstest.ParametricTestCase):

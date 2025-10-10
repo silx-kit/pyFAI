@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/06/2025"
+__date__ = "10/10/2025"
 
 import sys
 import os
@@ -45,7 +45,6 @@ import numpy
 import subprocess
 import copy
 import logging
-logger = logging.getLogger(__name__)
 from .utilstest import UtilsTest
 from ..utils import mathutil
 import fabio
@@ -55,6 +54,7 @@ from .. import detectors
 from .. import units
 from math import pi
 from ..opencl import ocl
+logger = logging.getLogger(__name__)
 
 try:
     import importlib.util
@@ -332,8 +332,10 @@ class TestBugRegression(unittest.TestCase):
             chi_0_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1,:, 1]  # Discard pixel from border...
             logger.debug("disc @0 corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range[1], chi_0_corner.min(), chi_0_corner.max())
 
-            dmin = lambda v: v - chi_range[1][0]
-            dmax = lambda v: v - chi_range[1][1]
+            def dmin(v):
+                return v - chi_range[1][0]
+            def dmax(v):
+                return v - chi_range[1][1]
             self.assertAlmostEqual(dmin(chi_0_center.min()), 0, msg="chi_0_center.min", delta=0.1)
             self.assertAlmostEqual(dmin(chi_0_corner.min()), 0, msg="chi_0_corner.min", delta=0.1)
             self.assertAlmostEqual(dmax(chi_0_center.max()), 0, msg="chi_0_center.max", delta=0.1)

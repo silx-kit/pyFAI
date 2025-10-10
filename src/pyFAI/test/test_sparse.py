@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,19 +32,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2024"
+__date__ = "10/10/2025"
 
 import unittest
 import numpy
 import logging
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
 from .. import load
 from ..detectors import detector_factory
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..ext import sparse_utils
 from ..utils.mathutil import rwp
 import fabio
+logger = logging.getLogger(__name__)
 
 
 class TestSparseIntegrate1d(unittest.TestCase):

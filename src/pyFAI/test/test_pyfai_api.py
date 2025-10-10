@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,17 +32,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "10/10/2025"
 
 import unittest
 import logging
-
-logger = logging.getLogger(__name__)
-
-import pyFAI
+from .. import AzimuthalIntegrator
 from ..detectors import Detector
-from pyFAI.utils.decorators import depreclog
-from pyFAI.test import utilstest
+from ..utils.decorators import depreclog
+from . import utilstest
+logger = logging.getLogger(__name__)
 
 
 class TestAzimuthalIntegrator(unittest.TestCase):
@@ -52,7 +50,7 @@ class TestAzimuthalIntegrator(unittest.TestCase):
         shape = (200, 201)
         det = Detector(1e-4, 1e-4, max_shape=shape)
         with utilstest.TestLogging(logger=depreclog, warning=1):
-            ai = pyFAI.AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
+            ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
         self.assertTrue(ai)
 
 

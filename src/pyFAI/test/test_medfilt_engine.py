@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,16 +32,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2024"
+__date__ = "10/10/2025"
 
 import unittest
 import numpy
 import logging
-logger = logging.getLogger(__name__)
-from .utilstest import UtilsTest
 import fabio
+from .utilstest import UtilsTest
 from .. import load
 from ..opencl import ocl
+logger = logging.getLogger(__name__)
+
 
 class TestMedfilt(unittest.TestCase):
     """Test Azimuthal median filtering results

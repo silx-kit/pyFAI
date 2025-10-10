@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2020-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2020-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2020"
+__date__ = "10/10/2025"
 
 import numpy
 from ..detectors import detector_factory
@@ -54,7 +54,7 @@ class TestRectangle(unittest.TestCase):
         self.assertEqual(rect.height, 17 - 11, "heigth is OK")
         self.assertEqual(rect.width, 37 - 29, "width is OK")
         self.assertEqual(rect.area, (37 - 29) * (17 - 11), "area is OK")
-        self.assertEqual(mask.sum(), rect.area, "Mask is unchanged")
+        self.assertEqual(ref_sum, rect.area, "Mask is unchanged")
 
     def test_decomposition(self):
         mask = detector_factory("PilatusCdTe300k").mask
