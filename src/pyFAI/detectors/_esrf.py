@@ -62,7 +62,7 @@ class FReLoN(Detector):
     FReLoN detector:
     The spline is mandatory to correct for geometric distortion of the taper
 
-    TODO: create automatically a mask that removes pixels out of the "valid reagion"
+    TODO: create automatically a mask that removes pixels out of the "valid region"
     """
     MANUFACTURER = "ESRF"
 
