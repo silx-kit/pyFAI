@@ -146,6 +146,7 @@ class _Rayonix(Detector):
 
         :return: dict with param for serialization
         """
+        #TODO: Should get_config also include the sensor? 
         return {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
                 "orientation": self.orientation or 3}
