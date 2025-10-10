@@ -135,7 +135,7 @@ class Maxipix(Detector):
 
     def calc_mask(self):
         """
-        Returns a generic mask for Mexipix detectors...
+        Returns a generic mask for Maxipix detectors...
         """
         if self.max_shape is None:
             raise NotImplementedError("Generic Pilatus detector does not know "
@@ -169,10 +169,11 @@ class Maxipix(Detector):
     def set_config(self, config):
         """set the config of the detector
 
+        #TODO: Copy paste mistake
         For Eiger detector, possible keys are: max_shape, module_size
 
         :param config: dict or JSON serialized dict
-        :return: detector instance
+        :return: Maxipix instance
         """
         if not isinstance(config, dict):
             try:
