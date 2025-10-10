@@ -41,9 +41,14 @@ __status__ = "production"
 import numpy
 import logging
 import json
-from ._common import Detector, Orientation, to_eng
+from ._common import Detector, Orientation, to_eng, SensorConfig
 from ..utils.decorators import deprecated_args
 logger = logging.getLogger(__name__)
+
+#Define sensor used in Maxipix detectors
+Si500 = SensorConfig.from_dict({"material": "Si", "thickness": 500e-6})
+
+
 
 try:
     import fabio
