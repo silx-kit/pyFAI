@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2019-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2019-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2025"
+__date__ = "06/10/2025"
 __status__ = "development"
 
 import logging
-logger = logging.getLogger(__name__)
 import numpy
-from ..utils import EPS32
+from ..utils.mathutil import EPS32
 from .preproc import preproc as preproc_np
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
+logger = logging.getLogger(__name__)
 try:
     from ..ext.preproc import preproc as preproc_cy
 except ImportError as err:
@@ -42,7 +43,6 @@ except ImportError as err:
 else:
     preproc = preproc_cy
 
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
 
 
 def histogram1d_engine(radial, npt,

@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "06/10/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -60,8 +60,9 @@ from .fit2d import convert_to_Fit2d, convert_from_Fit2d
 from .imaged11 import convert_from_ImageD11, convert_to_ImageD11
 from .. import detectors
 from .. import units
-from ..utils.decorators import deprecated
-from ..utils import crc32, deg2rad, ParallaxNotImplemented
+from ..utils.decorators import deprecated, deprecated_args
+from ..utils import crc32, ParallaxNotImplemented
+from ..utils.mathutil import deg2rad, expand2d
 from .. import utils
 from ..io import integration_config
 from ..io.ponifile import PoniFile
@@ -143,6 +144,7 @@ class Geometry:
         "Geometry": "pyFAI.geometry.core.Geometry",
     }
 
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
     def __init__(
         self,
         dist=1,
@@ -153,7 +155,7 @@ class Geometry:
         rot3=0,
         pixel1=None,
         pixel2=None,
-        splineFile=None,
+        splinefile=None,
         detector=None,
         wavelength=None,
         orientation=0,
@@ -176,11 +178,11 @@ class Geometry:
             Prefer defining the detector pixel size on the provided detector
             object (``detector.pixel2 = 5e-6``).
         :type pixel2: float
-        :param splineFile: Deprecated. File containing the geometric distortion of the detector.
+        :param splinefile: Deprecated. File containing the geometric distortion of the detector.
             If not None, pixel1 and pixel2 are ignored and detector spline is overwritten.
             Prefer defining the detector spline manually
-            (``detector.splineFile = "file.spline"``).
-        :type splineFile: str
+            (``detector.splinefile = "file.spline"``).
+        :type splinefile: str
         :param detector: name of the detector or Detector instance. String
             description is deprecated. Prefer using the result of the detector
             factory: ``pyFAI.detector_factory("eiger4m")``
@@ -223,8 +225,8 @@ class Geometry:
                 self.detector = detector
         else:
             self.detector = detectors.Detector()
-        if splineFile:
-            self.detector.splineFile = os.path.abspath(splineFile)
+        if splinefile:
+            self.detector.splinefile = os.path.abspath(splinefile)
         elif pixel1 and pixel2:
             self.detector.pixel1 = pixel1
             self.detector.pixel2 = pixel2
@@ -1002,10 +1004,10 @@ class Geometry:
                         and (self._parallax is None)
                     ):
                         if self.detector.IS_CONTIGUOUS:
-                            d1 = utils.expand2d(
+                            d1 = expand2d(
                                 numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False
                             )
-                            d2 = utils.expand2d(
+                            d2 = expand2d(
                                 numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True
                             )
                             p1, p2, p3 = self.detector.calc_cartesian_positions(
@@ -1739,7 +1741,7 @@ class Geometry:
                 self.detector = detectors.Detector(
                     pixel1=kwargs.get("pixel1"),
                     pixel2=kwargs.get("pixel2"),
-                    splineFile=kwargs.get("splineFile"),
+                    splineFile=kwargs.get("splinefile") or  kwargs.get("splineFile"),
                     max_shape=kwargs.get("max_shape"),
                 )
             self.param = [
@@ -1767,6 +1769,7 @@ class Geometry:
             f2d = convert_to_Fit2d(self)
         return f2d._asdict()
 
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
     def setFit2D(
         self,
         directDist,
@@ -1776,7 +1779,7 @@ class Geometry:
         tiltPlanRotation=0.0,
         pixelX=None,
         pixelY=None,
-        splineFile=None,
+        splinefile=None,
         detector=None,
         wavelength=None,
     ):
@@ -1799,12 +1802,12 @@ class Geometry:
 
         :param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
         :param centerX, centerY: pixel position of the beam center
-        :param splineFile: name of the file containing the spline
+        :param splinefile: name of the file containing the spline
         :param detector: name of the detector or detector object
         """
         pixelX = pixelX if pixelX is not None else self.detector.pixel2 * 1e6
         pixelY = pixelY if pixelY is not None else self.detector.pixel1 * 1e6
-        splineFile = splineFile if splineFile is not None else self.detector.splineFile
+        splinefile = splinefile if splinefile is not None else self.detector.splinefile
         detector = detector if detector is not None else self.detector
         wavelength = (
             wavelength
@@ -1820,7 +1823,7 @@ class Geometry:
                 "tiltPlanRotation": tiltPlanRotation,
                 "pixelX": pixelX,
                 "pixelY": pixelY,
-                "splineFile": splineFile,
+                "splineFile": splinefile,
                 "detector": detector,
                 "wavelength": wavelength,
             }
@@ -1829,6 +1832,7 @@ class Geometry:
             self._init_from_poni(poni)
         return self
 
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
     def setSPD(
         self,
         SampleDistance,
@@ -1839,7 +1843,7 @@ class Geometry:
         Rot_3=0,
         PSize_1=None,
         PSize_2=None,
-        splineFile=None,
+        splinefile=None,
         BSize_1=1,
         BSize_2=1,
         WaveLength=None,
@@ -1858,15 +1862,15 @@ class Geometry:
         :param Rot_3: rotation around the axis ORTHOGONAL to the detector plan
         :param PSize_1: pixel size in meter along the fastest dimention
         :param PSize_2: pixel size in meter along the slowst dimention
-        :param splineFile: name of the file containing the spline
+        :param splinefile: name of the file containing the spline
         :param BSize_1: pixel binning factor along the fastest dimention
         :param BSize_2: pixel binning factor along the slowst dimention
         :param WaveLength: wavelength used
         """
         # first define the detector
-        if splineFile:
+        if splinefile:
             # let's assume the spline file is for unbinned detectors ...
-            self.detector = detectors.FReLoN(splineFile)
+            self.detector = detectors.FReLoN(splinefile)
             self.detector.binning = (int(BSize_2), int(BSize_1))
         elif PSize_1 and PSize_2:
             self.detector = detectors.Detector(PSize_2, PSize_1)
@@ -1891,6 +1895,7 @@ class Geometry:
         self.reset()
         return self
 
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
     def getSPD(self):
         """
         get the SPD like parameter set: For geometry description see
@@ -1919,7 +1924,7 @@ class Geometry:
                 ("PSize_2", self.detector.pixel1),
                 ("BSize_1", self.detector.binning[1]),
                 ("BSize_2", self.detector.binning[0]),
-                ("splineFile", self.detector.splineFile),
+                ("splineFile", self.detector.splinefile),
                 ("Rot_3", None),
                 ("Rot_2", None),
                 ("Rot_1", None),
@@ -2959,11 +2964,12 @@ class Geometry:
 
     @property
     def splinefile(self):
-        return self.detector.splineFile
+        return self.detector.splinefile
 
     @splinefile.setter
-    def splinefile(self, splineFile):
-        self.detector.splineFile = splineFile
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
+    def splinefile(self, splinefile):
+        self.detector.splinefile = splinefile
 
     get_splineFile = deprecated(splinefile.fget, since_version="2025.10", reason="use `splinefile` property")
     set_splineFile = deprecated(splinefile.fset, since_version="2025.10", reason="use `splinefile` property")
@@ -3065,7 +3071,7 @@ class Geometry:
             self.rot3,
             self.pixel1,
             self.pixel2,
-            self.splineFile,
+            self.splinefile,
             self.detector,
             self.wavelength,
         ), {}

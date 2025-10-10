@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "06/10/2025"
 __status__ = "production"
 
 import os
@@ -42,7 +42,8 @@ import numpy
 import logging
 import json
 from ._common import Detector, Orientation, to_eng, SensorConfig
-from ..utils import expand2d
+from ..utils.mathutil import expand2d
+from ..utils.decorators import deprecated_args, deprecated
 logger = logging.getLogger(__name__)
 
 try:
@@ -502,20 +503,23 @@ class Pilatus(_Dectris):
             self.offset2 = None
             self.uniform_pixel = True
 
-    def get_splineFile(self):
+    @property
+    def splinefile(self):
         if self.x_offset_file and self.y_offset_file:
             return "%s,%s" % (self.x_offset_file, self.y_offset_file)
 
-    def set_splineFile(self, splineFile=None):
+    @splinefile.setter
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
+    def splinefile(self, splinefile=None):
         "In this case splinefile is a couple filenames"
-        if splineFile is not None:
+        if splinefile is not None:
             try:
-                files = splineFile.split(",")
+                files = splinefile.split(",")
                 self.x_offset_file = [os.path.abspath(i) for i in files if "x" in i.lower()][0]
                 self.y_offset_file = [os.path.abspath(i) for i in files if "y" in i.lower()][0]
                 self.uniform_pixel = False
             except Exception as error:
-                logger.error("set_splineFile with %s gave error: %s", splineFile, error)
+                logger.error(f"splinefile setter with {splinefile} gave error: {error.__class__.__name__}: {error}")
                 self.x_offset_file = self.y_offset_file = self.offset1 = self.offset2 = None
                 self.uniform_pixel = True
                 return
@@ -533,6 +537,8 @@ class Pilatus(_Dectris):
             self._splineFile = None
             self.uniform_pixel = True
 
+    get_splineFile = deprecated(splinefile.fget, since_version="2025.09", reason="use property `splinefile`")
+    set_splineFile = deprecated(splinefile.fset, since_version="2025.09", reason="use property `splinefile`")
     splineFile = property(get_splineFile, set_splineFile)
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):

@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "06/10/2025"
 
 import os
 import shutil
@@ -47,6 +47,7 @@ from ..calibrant import CALIBRANT_FACTORY as calibrant_factory
 from ..geometryRefinement import GeometryRefinement
 from .. import io
 from .. import utils
+from ..utils.mathutil import expand2d
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
@@ -464,8 +465,8 @@ class TestOrientation(unittest.TestCase):
         """similar to what is made in geometry ...."""
 
         shape = self.orient1.shape
-        d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
-        d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
+        d1 = expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
+        d2 = expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
         for orient in (self.orient1, self.orient2, self.orient3, self.orient4):
             for use_cython in (True, False):
                 p1, p2, p3 = orient.calc_cartesian_positions(d1, d2, center=False, use_cython=use_cython)

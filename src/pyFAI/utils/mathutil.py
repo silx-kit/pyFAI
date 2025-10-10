@@ -34,33 +34,32 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2025"
+__date__ = "06/10/2025"
 __status__ = "production"
 
 import logging
-logger = logging.getLogger(__name__)
-
 import math
 import numpy
 import time
 import scipy.ndimage
 from scipy.signal import peak_widths
-from .decorators import deprecated
 
+logger = logging.getLogger(__name__)
 try:
     from ..ext import relabel as _relabel
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     _relabel = None
 
-EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+EPS32 = 1.0 + numpy.finfo(numpy.float32).eps
 
 
-def deg2rad(dd, disc=1):
+def deg2rad(dd: float, disc: bool = True) -> float:
     """
     Convert degrees to radian in the range [-π->π[ or [0->2π[
 
     :param dd: angle in degrees
+    :param disc: position of the discontinuity at π if True, else 2π if False
     :return: angle in radians in the selected range
     """
     # range [0:2pi[
@@ -70,21 +69,24 @@ def deg2rad(dd, disc=1):
             rp -= 2.0
     return rp * math.pi
 
-def rad2rad(r, disc=1):
+
+def rad2rad(r: float, disc: bool = True):
     """
     Transform radians in the range [-π->π[ or [0->2π[
 
     :param r: angle in radians
+    :param disc: position of the discontinuity at π if True, else 2π if False
     :return: angle in radians in the selected range
     """
     # Set r between (0,2pi)
-    r = r % (2*math.pi)
+    r = r % (2 * math.pi)
     if disc:
         if r > math.pi:
             r = r - 2 * math.pi
     return r
 
-def expand2d(vect, size2, vertical=True):
+
+def expand2d(vect: numpy.ndarray, size2: int, vertical: bool = True) -> numpy.ndarray:
     """
     This expands a vector to a 2d-array.
 
@@ -104,6 +106,7 @@ def expand2d(vect, size2, vertical=True):
     :param size2: size of the expanded dimension
     :param vertical: if False the vector is expanded to the first dimension.
         If True, it is expanded to the second dimension.
+    :return: 2d-array
     """
     size1 = vect.size
     size2 = int(size2)
@@ -115,11 +118,11 @@ def expand2d(vect, size2, vertical=True):
         out = numpy.empty((size1, size2), vect.dtype)
         q = vect.reshape(-1, 1)
         q.strides = vect.strides[0], 0
-    out[:,:] = q
+    out[:, :] = q
     return out
 
 
-def gaussian(M, std):
+def gaussian(M: int, std: float) -> numpy.ndarray:
     """
     Return a Gaussian window of length M with standard-deviation std.
 
@@ -134,10 +137,16 @@ def gaussian(M, std):
 
     """
     x = numpy.arange(M) - M / 2.0
-    return numpy.exp(-(x / std) ** 2 / 2.0) / std / numpy.sqrt(2 * numpy.pi)
+    return numpy.exp(-((x / std) ** 2) / 2.0) / std / numpy.sqrt(2 * numpy.pi)
 
 
-def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0, use_scipy=True):
+def gaussian_filter(
+    input_img: numpy.ndarray,
+    sigma: float | tuple,
+    mode: str = "reflect",
+    cval: float = 0.0,
+    use_scipy: bool = True,
+) -> numpy.ndarray:
     """
     2-dimensional Gaussian filter implemented with FFT
 
@@ -169,19 +178,22 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0, use_scipy=True):
         s0, s1 = input_img.shape
         g0 = gaussian(s0, sigma[0])
         g1 = gaussian(s1, sigma[1])
-        g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))  # faster than fftshift
-        g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))  # faster than fftshift
+        g0 = numpy.concatenate((g0[s0 // 2 :], g0[: s0 // 2]))  # faster than fftshift
+        g1 = numpy.concatenate((g1[s1 // 2 :], g1[: s1 // 2]))  # faster than fftshift
         g2 = numpy.outer(g0, g1)
-        fftIn = numpy.fft.ifft2(numpy.fft.fft2(input_img) * numpy.fft.fft2(g2).conjugate())
+        fftIn = numpy.fft.ifft2(
+            numpy.fft.fft2(input_img) * numpy.fft.fft2(g2).conjugate()
+        )
         res = fftIn.real.astype(numpy.float32)
         if mode != "wrap":
             res = res[k0:-k0, k1:-k1]
     return res
 
 
-def shift(input_img, shift_val):
+def shift(input_img: numpy.ndarray, shift_val: tuple) -> numpy.ndarray:
     """
     Shift an array like  scipy.ndimage.interpolation.shift(input_img, shift_val, mode="wrap", order=0) but faster
+
     :param input_img: 2d numpy array
     :param shift_val: 2-tuple of integers
     :return: shifted image
@@ -192,29 +204,45 @@ def shift(input_img, shift_val):
     d1 = shift_val[1] % s1
     r0 = (-d0) % s0
     r1 = (-d1) % s1
-    re[d0:, d1:] = input_img[:r0,:r1]
-    re[:d0, d1:] = input_img[r0:,:r1]
-    re[d0:,:d1] = input_img[:r0, r1:]
-    re[:d0,:d1] = input_img[r0:, r1:]
+    re[d0:, d1:] = input_img[:r0, :r1]
+    re[:d0, d1:] = input_img[r0:, :r1]
+    re[d0:, :d1] = input_img[:r0, r1:]
+    re[:d0, :d1] = input_img[r0:, r1:]
     return re
 
 
-def dog(s1, s2, shape=None):
+def dog(s1, s2, shape=None) -> numpy.ndarray:
     """
     2D difference of gaussian
     typically 1 to 10 parameters
+
+    :param s1: width (sigma) of first gaussian
+    :param s2: width (sigma) of second gaussian
+    :param shape: kernel size, 2-tuple of integers
     """
     if shape is None:
         maxi = max(s1, s2) * 5
-        u, v = numpy.ogrid[-maxi:maxi + 1, -maxi:maxi + 1]
+        u, v = numpy.ogrid[-maxi : maxi + 1, -maxi : maxi + 1]
     else:
-        u, v = numpy.ogrid[-shape[0] // 2:shape[0] - shape[0] // 2, -shape[1] // 2:shape[1] - shape[1] // 2]
+        u, v = numpy.ogrid[
+            -shape[0] // 2 : shape[0] - shape[0] // 2,
+            -shape[1] // 2 : shape[1] - shape[1] // 2,
+        ]
     r2 = u * u + v * v
-    centered = numpy.exp(-r2 / (2. * s1) ** 2) / 2. / numpy.pi / s1 - numpy.exp(-r2 / (2. * s2) ** 2) / 2. / numpy.pi / s2
+    centered = (
+        numpy.exp(-r2 / (2.0 * s1) ** 2) / 2.0 / numpy.pi / s1
+        - numpy.exp(-r2 / (2.0 * s2) ** 2) / 2.0 / numpy.pi / s2
+    )
     return centered
 
 
-def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
+def dog_filter(
+    input_img: numpy.ndarray,
+    sigma1: float,
+    sigma2: float,
+    mode: str = "reflect",
+    cval: float = 0.0,
+) -> numpy.ndarray:
     """
     2-dimensional Difference of Gaussian filter implemented with FFT
 
@@ -230,6 +258,7 @@ def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
         'constant'. Default is 'reflect'
     :param cval: scalar, optional
             Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
+    :return: image filtered with a DoG
     """
 
     if 1:  # try:
@@ -243,16 +272,21 @@ def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
         else:
             k0 = k1 = int(math.ceil(4.0 * float(sigma)))
 
-        res = numpy.fft.ifft2(numpy.fft.fft2(input_img.astype(complex)) *
-                              numpy.fft.fft2(shift(dog(sigma1, sigma2, (s0, s1)),
-                                                   (s0 // 2, s1 // 2)).astype(complex)).conjugate())
+        res = numpy.fft.ifft2(
+            numpy.fft.fft2(input_img.astype(complex))
+            * numpy.fft.fft2(
+                shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)
+            ).conjugate()
+        )
         if mode == "wrap":
             return res
         else:
             return res[k0:-k0, k1:-k1]
 
 
-def expand(input_img, sigma, mode="constant", cval=0.0):
+def expand(
+    input_img: numpy.ndarray, sigma: float, mode: str = "constant", cval: float = 0.0
+) -> numpy.ndarray:
     """Expand array a with its reflection on boundaries
 
     :param a: 2D array
@@ -270,53 +304,56 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
     else:
         k0 = k1 = int(math.ceil(float(sigma)))
     if k0 > s0 or k1 > s1:
-        raise RuntimeError("Makes little sense to apply a kernel (%i,%i)larger than the image (%i,%i)" % (k0, k1, s0, s1))
+        raise RuntimeError(
+            "Makes little sense to apply a kernel (%i,%i)larger than the image (%i,%i)"
+            % (k0, k1, s0, s1)
+        )
     output = numpy.zeros((s0 + 2 * k0, s1 + 2 * k1), dtype=dtype) + float(cval)
-    output[k0:k0 + s0, k1:k1 + s1] = input_img
-    if (mode == "mirror"):
+    output[k0 : k0 + s0, k1 : k1 + s1] = input_img
+    if mode == "mirror":
         # 4 corners
-        output[s0 + k0:, s1 + k1:] = input_img[-2:-k0 - 2:-1, -2:-k1 - 2:-1]
-        output[:k0,:k1] = input_img[k0 - 0:0:-1, k1 - 0:0:-1]
-        output[:k0, s1 + k1:] = input_img[k0 - 0:0:-1, s1 - 2: s1 - k1 - 2:-1]
-        output[s0 + k0:,:k1] = input_img[s0 - 2: s0 - k0 - 2:-1, k1 - 0:0:-1]
+        output[s0 + k0 :, s1 + k1 :] = input_img[-2 : -k0 - 2 : -1, -2 : -k1 - 2 : -1]
+        output[:k0, :k1] = input_img[k0 - 0 : 0 : -1, k1 - 0 : 0 : -1]
+        output[:k0, s1 + k1 :] = input_img[k0 - 0 : 0 : -1, s1 - 2 : s1 - k1 - 2 : -1]
+        output[s0 + k0 :, :k1] = input_img[s0 - 2 : s0 - k0 - 2 : -1, k1 - 0 : 0 : -1]
         # 4 sides
-        output[k0:k0 + s0,:k1] = input_img[:s0, k1 - 0:0:-1]
-        output[:k0, k1:k1 + s1] = input_img[k0 - 0:0:-1,:s1]
-        output[-k0:, k1:s1 + k1] = input_img[-2:s0 - k0 - 2:-1,:]
-        output[k0:s0 + k0, -k1:] = input_img[:, -2:s1 - k1 - 2:-1]
+        output[k0 : k0 + s0, :k1] = input_img[:s0, k1 - 0 : 0 : -1]
+        output[:k0, k1 : k1 + s1] = input_img[k0 - 0 : 0 : -1, :s1]
+        output[-k0:, k1 : s1 + k1] = input_img[-2 : s0 - k0 - 2 : -1, :]
+        output[k0 : s0 + k0, -k1:] = input_img[:, -2 : s1 - k1 - 2 : -1]
     elif mode == "reflect":
         # 4 corners
-        output[s0 + k0:, s1 + k1:] = input_img[-1:-k0 - 1:-1, -1:-k1 - 1:-1]
-        output[:k0,:k1] = input_img[k0 - 1::-1, k1 - 1::-1]
-        output[:k0, s1 + k1:] = input_img[k0 - 1::-1, s1 - 1: s1 - k1 - 1:-1]
-        output[s0 + k0:,:k1] = input_img[s0 - 1: s0 - k0 - 1:-1, k1 - 1::-1]
+        output[s0 + k0 :, s1 + k1 :] = input_img[-1 : -k0 - 1 : -1, -1 : -k1 - 1 : -1]
+        output[:k0, :k1] = input_img[k0 - 1 :: -1, k1 - 1 :: -1]
+        output[:k0, s1 + k1 :] = input_img[k0 - 1 :: -1, s1 - 1 : s1 - k1 - 1 : -1]
+        output[s0 + k0 :, :k1] = input_img[s0 - 1 : s0 - k0 - 1 : -1, k1 - 1 :: -1]
         # 4 sides
-        output[k0:k0 + s0,:k1] = input_img[:s0, k1 - 1::-1]
-        output[:k0, k1:k1 + s1] = input_img[k0 - 1::-1,:s1]
-        output[-k0:, k1:s1 + k1] = input_img[:s0 - k0 - 1:-1,:]
-        output[k0:s0 + k0, -k1:] = input_img[:,:s1 - k1 - 1:-1]
+        output[k0 : k0 + s0, :k1] = input_img[:s0, k1 - 1 :: -1]
+        output[:k0, k1 : k1 + s1] = input_img[k0 - 1 :: -1, :s1]
+        output[-k0:, k1 : s1 + k1] = input_img[: s0 - k0 - 1 : -1, :]
+        output[k0 : s0 + k0, -k1:] = input_img[:, : s1 - k1 - 1 : -1]
     elif mode == "nearest":
         # 4 corners
-        output[s0 + k0:, s1 + k1:] = input_img[-1, -1]
-        output[:k0,:k1] = input_img[0, 0]
-        output[:k0, s1 + k1:] = input_img[0, -1]
-        output[s0 + k0:,:k1] = input_img[-1, 0]
+        output[s0 + k0 :, s1 + k1 :] = input_img[-1, -1]
+        output[:k0, :k1] = input_img[0, 0]
+        output[:k0, s1 + k1 :] = input_img[0, -1]
+        output[s0 + k0 :, :k1] = input_img[-1, 0]
         # 4 sides
-        output[k0:k0 + s0,:k1] = expand2d(input_img[:, 0], k1, False)
-        output[:k0, k1:k1 + s1] = expand2d(input_img[0,:], k0)
-        output[-k0:, k1:s1 + k1] = expand2d(input_img[-1,:], k0)
-        output[k0:s0 + k0, -k1:] = expand2d(input_img[:, -1], k1, False)
+        output[k0 : k0 + s0, :k1] = expand2d(input_img[:, 0], k1, False)
+        output[:k0, k1 : k1 + s1] = expand2d(input_img[0, :], k0)
+        output[-k0:, k1 : s1 + k1] = expand2d(input_img[-1, :], k0)
+        output[k0 : s0 + k0, -k1:] = expand2d(input_img[:, -1], k1, False)
     elif mode == "wrap":
         # 4 corners
-        output[s0 + k0:, s1 + k1:] = input_img[:k0,:k1]
-        output[:k0,:k1] = input_img[-k0:, -k1:]
-        output[:k0, s1 + k1:] = input_img[-k0:,:k1]
-        output[s0 + k0:,:k1] = input_img[:k0, -k1:]
+        output[s0 + k0 :, s1 + k1 :] = input_img[:k0, :k1]
+        output[:k0, :k1] = input_img[-k0:, -k1:]
+        output[:k0, s1 + k1 :] = input_img[-k0:, :k1]
+        output[s0 + k0 :, :k1] = input_img[:k0, -k1:]
         # 4 sides
-        output[k0:k0 + s0,:k1] = input_img[:, -k1:]
-        output[:k0, k1:k1 + s1] = input_img[-k0:,:]
-        output[-k0:, k1:s1 + k1] = input_img[:k0,:]
-        output[k0:s0 + k0, -k1:] = input_img[:,:k1]
+        output[k0 : k0 + s0, :k1] = input_img[:, -k1:]
+        output[:k0, k1 : k1 + s1] = input_img[-k0:, :]
+        output[-k0:, k1 : s1 + k1] = input_img[:k0, :]
+        output[k0 : s0 + k0, -k1:] = input_img[:, :k1]
     elif mode == "constant":
         # Nothing to do
         pass
@@ -326,7 +363,12 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
     return output
 
 
-def relabel(label, data, blured, max_size=None):
+def relabel(
+    label: numpy.ndarray,
+    data: numpy.ndarray,
+    blured: numpy.ndarray,
+    max_size: int = None,
+) -> numpy.ndarray:
     """
     Relabel limits the number of region in the label array.
     They are ranked relatively to their max(I0)-max(blur(I0))
@@ -352,8 +394,11 @@ def relabel(label, data, blured, max_size=None):
         return label
 
 
-def binning(input_img, binsize, norm=True):
-    """
+def binning(
+    input_img: numpy.ndarray, binsize: int | tuple, norm: bool = True
+) -> numpy.ndarray:
+    """Perform a 2D binning of the image
+
     :param input_img: input ndarray
     :param binsize: int or 2-tuple representing the size of the binning
     :param norm: if False, do average instead of sum
@@ -367,14 +412,16 @@ def binning(input_img, binsize, norm=True):
         binsize = (binsize, binsize)
     for i, j in zip(inputSize, binsize):
         if i % j:
-            raise RuntimeError("input_img shape should be a multiple of the binning size")
+            raise RuntimeError(
+                "input_img shape should be a multiple of the binning size"
+            )
         outputSize.append(i // j)
 
     if numpy.array(binsize).prod() < 50:
         out = numpy.zeros(tuple(outputSize))
         for i in range(binsize[0]):
             for j in range(binsize[1]):
-                out += input_img[i::binsize[0], j::binsize[1]]
+                out += input_img[i :: binsize[0], j :: binsize[1]]
     else:
         temp = input_img.copy()
         temp.shape = (outputSize[0], binsize[0], outputSize[1], binsize[1])
@@ -384,8 +431,11 @@ def binning(input_img, binsize, norm=True):
     return out
 
 
-def unbinning(binnedArray, binsize, norm=True):
-    """
+def unbinning(
+    binnedArray: numpy.ndarray, binsize: int | tuple, norm=True
+) -> numpy.ndarray:
+    """Opposit operation of binning: go from (n,m)->(2n,2m)
+
     :param binnedArray: input ndarray
     :param binsize: 2-tuple representing the size of the binning
     :param norm: if True (default) decrease the intensity by binning factor. If False, it is non-conservative
@@ -399,19 +449,13 @@ def unbinning(binnedArray, binsize, norm=True):
     out = numpy.zeros(tuple(outputShape), dtype=binnedArray.dtype)
     for i in range(binsize[0]):
         for j in range(binsize[1]):
-            out[i::binsize[0], j::binsize[1]] += binnedArray
+            out[i :: binsize[0], j :: binsize[1]] += binnedArray
     if norm:
         out /= binsize[0] * binsize[1]
     return out
 
 
-@deprecated(replacement="unbinning", since_version="0.15", only_once=True)
-def unBinning(*args, **kwargs):
-    return unbinning(*args, **kwargs)
-
-
-
-def shift_fft(input_img, shift_val, method="fft"):
+def shift_fft(input_img: numpy.ndarray, shift_val: tuple, method: str = "fft"):
     """Do shift using FFTs
 
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity") but faster
@@ -430,19 +474,15 @@ def shift_fft(input_img, shift_val, method="fft"):
         e = e0 * e1
         out = abs(numpy.fft.ifft2(numpy.fft.fft2(input_img) * e))
     else:
-        out = scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity")
+        out = scipy.ndimage.interpolation.shift(
+            input, shift, mode="wrap", order="infinity"
+        )
     return out
 
 
-@deprecated(replacement="shift_fft", since_version="0.15", only_once=True)
-def shiftFFT(*args, **kwargs):
-    return shift_fft(*args, **kwargs)
-
-
-def maximum_position(img):
-    """
-    Same as scipy.ndimage.measurements.maximum_position:
-    Find the position of the maximum of the values of the array.
+def maximum_position(img: numpy.ndarray) -> tuple:
+    """Find the position of the maximum of the values of the array.
+    Same as scipy.ndimage.measurements.maximum_position
 
     :param img: 2-D image
     :return: 2-tuple of int with the position of the maximum
@@ -452,23 +492,30 @@ def maximum_position(img):
     return (maxarg // s1, maxarg % s1)
 
 
-def center_of_mass(img):
-    """
-    Calculate the center of mass of of the array.
+def center_of_mass(img: numpy.ndarray) -> tuple:
+    """Calculate the center of mass of of the array.
     Like scipy.ndimage.measurements.center_of_mass
+
     :param img: 2-D array
     :return: 2-tuple of float with the center of mass
     """
     d0, d1 = img.shape
-    a0, a1 = numpy.ogrid[:d0,:d1]
+    a0, a1 = numpy.ogrid[:d0, :d1]
     img = img.astype("float64")
     img /= img.sum()
     return ((a0 * img).sum(), (a1 * img).sum())
 
 
-def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
+def measure_offset(
+    img1: numpy.ndarray,
+    img2: numpy.ndarray,
+    method: str = "numpy",
+    withLog: bool = False,
+    withCorr: bool = False,
+) -> tuple:
     """
     Measure the actual offset between 2 images
+
     :param img1: ndarray, first image
     :param img2: ndarray, second image, same shape as img1
     :param withLog: shall we return logs as well ? boolean
@@ -497,10 +544,15 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     maxi = res.max()
     std = res.std(dtype="float64")
     SN = (maxi - mean) / std
-    new = numpy.maximum(numpy.zeros(shape), res - numpy.ones(shape) * (mean + std * SN * 0.9))
+    new = numpy.maximum(
+        numpy.zeros(shape), res - numpy.ones(shape) * (mean + std * SN * 0.9)
+    )
     com2 = center_of_mass(new)
     logs.append("MeasureOffset: fine result of the centered image: %s %s " % com2)
-    offset2 = ((com2[0] - shape[0] // 2) % shape[0], (com2[1] - shape[1] // 2) % shape[1])
+    offset2 = (
+        (com2[0] - shape[0] // 2) % shape[0],
+        (com2[1] - shape[1] // 2) % shape[1],
+    )
     delta0 = (offset2[0] - offset1[0]) % shape[0]
     delta1 = (offset2[1] - offset1[1]) % shape[1]
     if delta0 > shape[0] // 2:
@@ -508,7 +560,10 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     if delta1 > shape[1] // 2:
         delta1 -= shape[1]
     if (abs(delta0) > 2) or (abs(delta1) > 2):
-        logs.append("MeasureOffset: Raw offset is %s and refined is %s. Please investigate !" % (offset1, offset2))
+        logs.append(
+            "MeasureOffset: Raw offset is %s and refined is %s. Please investigate !"
+            % (offset1, offset2)
+        )
     listOffset = list(offset2)
     if listOffset[0] > shape[0] // 2:
         listOffset[0] -= shape[0]
@@ -517,7 +572,9 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     offset = tuple(listOffset)
     t2 = time.perf_counter()
     logs.append("MeasureOffset: fine result: %s %s" % offset)
-    logs.append("MeasureOffset: execution time: %.3fs with %.3fs for FFTs" % (t2 - t0, t1 - t0))
+    logs.append(
+        "MeasureOffset: execution time: %.3fs with %.3fs for FFTs" % (t2 - t0, t1 - t0)
+    )
     if withLog:
         if withCorr:
             return offset, logs, new
@@ -635,8 +692,7 @@ def _compute_qth_percentile(sorted_list, q, axis, out):
     Handle sequence of q's without calling sort multiple times
     """
     if not numpy.isscalar(q):
-        p = [_compute_qth_percentile(sorted_list, qi, axis, None)
-             for qi in q]
+        p = [_compute_qth_percentile(sorted_list, qi, axis, None) for qi in q]
 
         if out is not None:
             out.flat = p
@@ -677,7 +733,7 @@ except ImportError:
     percentile = _numpy_backport_percentile
 
 
-def round_fft(N):
+def round_fft(N: int) -> int:
     """
     This function returns the integer >=N for which size the Fourier analysis is faster (fron the FFT point of view)
 
@@ -729,12 +785,7 @@ def round_fft(N):
     return RES
 
 
-@deprecated(replacement="round_fft", since_version="0.15", only_once=True)
-def roundfft(*args, **kwargs):
-    return round_fft(*args, **kwargs)
-
-
-def is_far_from_group_python(pt, lst_pts, d2):
+def is_far_from_group_python(pt: list | tuple, lst_pts: list, d2: float) -> bool:
     """
     Tells if a point is far from a group of points, distance greater than d2 (distance squared)
 
@@ -750,6 +801,7 @@ def is_far_from_group_python(pt, lst_pts, d2):
             return False
     return True
 
+
 try:
     from ..ext.mathutil import is_far_from_group_cython
 except ImportError:
@@ -757,7 +809,8 @@ except ImportError:
 else:
     is_far_from_group = is_far_from_group_cython
 
-def rwp(obt, ref, scale=1.0):
+
+def rwp(obt: list | tuple, ref: list | tuple, scale: float = 1.0) -> float:
     """Compute :math:`\\sqrt{\\sum \\frac{4\\cdot(obt-ref)^2}{(obt + ref)^2}}`.
 
     This is done for symmetry reason between obt and ref
@@ -778,12 +831,12 @@ def rwp(obt, ref, scale=1.0):
     big_ref = numpy.interp(big0, ref0, ref1, 0.0, 0.0)
     big_obt = numpy.interp(big0, obt0, obt1, 0.0, 0.0)
     big_mean = (big_ref + big_obt) / 2.0
-    big_delta = (big_ref - big_obt)
+    big_delta = big_ref - big_obt
     non_null = abs(big_mean) > 1e-10
     return numpy.sqrt(((big_delta[non_null]) ** 2 / ((big_mean[non_null]) ** 2)).sum())
 
 
-def chi_square(obt, ref):
+def chi_square(obt: list | tuple, ref: list | tuple) -> float:
     """Compute :math:`\\sqrt{\\sum \\frac{4\\cdot(obt-ref)^2}{(obt + ref)^2}}`.
 
     This is done for symmetry reason between obt and ref
@@ -801,7 +854,7 @@ def chi_square(obt, ref):
     big_pos = numpy.unique(big_pos)
     big_ref_int = numpy.interp(big_pos, ref_pos, ref_int, 0.0, 0.0)
     big_obt_int = numpy.interp(big_pos, obt_pos, obt_int, 0.0, 0.0)
-    big_delta_int = (big_ref_int - big_obt_int)
+    big_delta_int = big_ref_int - big_obt_int
 
     big_ref_var = numpy.interp(big_pos, ref_pos, ref_std, 0.0, 0.0) ** 2
     big_obt_var = numpy.interp(big_pos, obt_pos, obt_std, 0.0, 0.0) ** 2
@@ -810,7 +863,7 @@ def chi_square(obt, ref):
     return (big_delta_int[non_null] ** 2 / big_variance[non_null]).mean()
 
 
-class LongestRunOfHeads(object):
+class LongestRunOfHeads:
     """Implements the "longest run of heads" by Mark F. Schilling
     The College Mathematics Journal, Vol. 21, No. 3, (1990), pp. 196-207
 
@@ -821,7 +874,7 @@ class LongestRunOfHeads(object):
         "We store already calculated values for (n,c)"
         self.knowledge = {}
 
-    def A(self, n, c):
+    def A(self, n: int, c: int):
         """Calculate A(number_of_toss, length_of_longest_run)
 
         :param n: number of coin toss in the experiment, an integer
@@ -830,7 +883,7 @@ class LongestRunOfHeads(object):
 
         """
         if n <= c:
-            return 2 ** n
+            return 2**n
         elif (n, c) in self.knowledge:
             return self.knowledge[(n, c)]
         else:
@@ -840,7 +893,7 @@ class LongestRunOfHeads(object):
             self.knowledge[(n, c)] = s
             return s
 
-    def B(self, n, c):
+    def B(self, n: int, c: int) -> int:
         """Calculate B(number_of_toss, length_of_longest_run)
         to have either a run of Heads either a run of Tails
 
@@ -850,7 +903,7 @@ class LongestRunOfHeads(object):
         """
         return 2 * self.A(n - 1, c - 1)
 
-    def __call__(self, n, c):
+    def __call__(self, n: int, c: int) -> float:
         """Calculate the probability for the longest run of heads to exceed the observed length
 
         :param n: number of coin toss in the experiment, an integer
@@ -859,12 +912,12 @@ class LongestRunOfHeads(object):
         """
         if c >= n:
             return 0
-        delta = 2 ** n - self.A(n, c)
+        delta = 2**n - self.A(n, c)
         if delta <= 0:
             return 0
         return 2.0 ** (math.log(delta, 2) - n)
 
-    def probaHeadOrTail(self, n, c):
+    def probaHeadOrTail(self, n: int, c: int) -> float:
         """Calculate the probability of a longest run of head or tails to occur
 
         :param n: number of coin toss in the experiment, an integer
@@ -880,7 +933,7 @@ class LongestRunOfHeads(object):
             return 0
         return min(2.0 ** (math.log(delta, 2.0) - n), 1.0)
 
-    def probaLongerRun(self, n, c):
+    def probaLongerRun(self, n: int, c: int) -> float:
         """Calculate the probability for the longest run of heads or tails to exceed the observed length
 
         :param n: number of coin toss in the experiment, an integer
@@ -891,40 +944,44 @@ class LongestRunOfHeads(object):
             return 0
         if c == 0:
             return 0
-        delta = (2 ** n) - self.B(n, c)
+        delta = (2**n) - self.B(n, c)
         if delta <= 0:
             return 0
         return min(2.0 ** (math.log(delta, 2.0) - n), 1.0)
 
+
 LROH = LongestRunOfHeads()
 
 
-def _longest_true(a):
+def _longest_true(a: numpy.ndarray) -> int:
     """measure longest section of only "true" in a binary array"""
     # Convert to array
     a = numpy.asarray(a)
 
     # Attach sentients on either sides w.r.t True
-    b = numpy.r_[False,a,False]
+    b = numpy.r_[False, a, False]
 
     # Get indices of group shifts
-    s = numpy.flatnonzero(b[:-1]!=b[1:])
+    s = numpy.flatnonzero(b[:-1] != b[1:])
     if len(s):
         # Get group lengths and hence the max index group
-        m = (s[1::2]-s[::2]).argmax()
-        return s[2*m+1] - s[2*m]
+        m = (s[1::2] - s[::2]).argmax()
+        return s[2 * m + 1] - s[2 * m]
     else:
         return 0
 
-def cormap(ref, obt):
+
+def cormap(ref: numpy.ndarray, obt: numpy.ndarray) -> float:
     """Calculate the probabily of two array to be the same based on the CorMap algorithm
     This is a simplifed implementation
     """
-    longest = max(_longest_true(ref<obt), _longest_true(ref>obt))
+    longest = max(_longest_true(ref < obt), _longest_true(ref > obt))
     return LROH.probaLongerRun(len(ref), max(1, longest - 1))
 
 
-def interp_filter(ary, out=None):
+def interp_filter(
+    ary: numpy.ndarray, out: numpy.ndarray | None = None
+) -> numpy.ndarray:
     """Interpolate missing values (nan or infinite) in a 1D array
 
     :param ary: 1D array
@@ -943,26 +1000,35 @@ def interp_filter(ary, out=None):
         pass
     else:
         out[mask_valid] = ary[mask_valid]
-    out[mask_invalid] = numpy.interp(x[mask_invalid], x[mask_valid], ary[mask_valid],
-                                     left=first, right=last)
+    out[mask_invalid] = numpy.interp(
+        x[mask_invalid], x[mask_valid], ary[mask_valid], left=first, right=last
+    )
     return out
 
 
-def allclose_mod(a, b, modulo=2*numpy.pi, **kwargs):
+def allclose_mod(
+    a: numpy.ndarray, b: numpy.ndarray, modulo: float = 2 * numpy.pi, **kwargs
+):
     """Returns True if the two arrays a & b are equal within the given
     tolerance modulo `modulo`; False otherwise.
 
     Thanks to "Serguei Sokol" <sokol@insa-toulouse.fr>
     """
-    di = numpy.minimum((a-b)%modulo, (b-a)%modulo)
-    return numpy.allclose(modulo*0.5, (di+modulo*0.5), **kwargs)
+    di = numpy.minimum((a - b) % modulo, (b - a) % modulo)
+    return numpy.allclose(modulo * 0.5, (di + modulo * 0.5), **kwargs)
 
 
-def quality_of_fit(img, ai, calibrant,
-                   npt_rad=1000, npt_azim=360,
-                   unit="q_nm^-1",
-                   method=("full", "csr", "cython"),
-                   empty = numpy.nan, rings=None):
+def quality_of_fit(
+    img: numpy.ndarray,
+    ai,
+    calibrant,
+    npt_rad: int = 1000,
+    npt_azim: int = 360,
+    unit="q_nm^-1",
+    method: tuple = ("full", "csr", "cython"),
+    empty: float = numpy.nan,
+    rings: list | None = None,
+):
     """Provide an indicator for the quality of fit of a given geometry for an image
 
     :param img: 2D image with a calibration image (containing rings)
@@ -983,45 +1049,54 @@ def quality_of_fit(img, ai, calibrant,
     if rings is None:
         rings = list(range(len(calibrant.get_2th())))
     q_theo = q_theo[rings]
-    idx_theo = abs(numpy.add.outer(res.radial,-q_theo)).argmin(axis=0)
+    idx_theo = abs(numpy.add.outer(res.radial, -q_theo)).argmin(axis=0)
     idx_maxi = numpy.empty((res.azimuthal.size, len(rings))) + numpy.nan
     idx_fwhm = numpy.empty((res.azimuthal.size, len(rings))) + numpy.nan
     signal = res.intensity
     gradient = numpy.gradient(signal, axis=-1)
-    minima = numpy.where(numpy.logical_and(gradient[:,:-1]<0, gradient[:,1:]>=0))
-    maxima = numpy.where(numpy.logical_and(gradient[:,:-1]>0, gradient[:,1:]<0))
+    minima = numpy.where(numpy.logical_and(gradient[:, :-1] < 0, gradient[:, 1:] >= 0))
+    maxima = numpy.where(numpy.logical_and(gradient[:, :-1] > 0, gradient[:, 1:] < 0))
     for idx in range(res.azimuthal.size):
         for ring in range(len(rings)):
             q_th = q_theo[ring]
             idx_th = idx_theo[ring]
-            if (q_th<=res.radial[0]) or (q_th>=res.radial[-1]):
+            if (q_th <= res.radial[0]) or (q_th >= res.radial[-1]):
                 continue
-            maxi = maxima[1][maxima[0]==idx]
-            mini = minima[1][minima[0]==idx]
-            idx_max = maxi[abs(maxi-idx_th).argmin()]
-            idx_inf = mini[mini<idx_max]
+            maxi = maxima[1][maxima[0] == idx]
+            mini = minima[1][minima[0] == idx]
+            idx_max = maxi[abs(maxi - idx_th).argmin()]
+            idx_inf = mini[mini < idx_max]
             if idx_inf.size:
                 idx_inf = idx_inf[-1]
-                idx_sup = mini[mini>idx_max]
+                idx_sup = mini[mini > idx_max]
                 if idx_sup.size:
                     idx_sup = idx_sup[0]
-                    if idx_inf< idx_th< idx_sup:
-                        sub = signal[idx, idx_inf:idx_sup+1] - numpy.linspace(signal[idx, idx_inf],signal[idx, idx_sup], 1+idx_sup-idx_inf)
-                        com = (sub*numpy.linspace(idx_inf, idx_sup, 1+idx_sup-idx_inf)).sum()/sub.sum()
+                    if idx_inf < idx_th < idx_sup:
+                        sub = signal[idx, idx_inf : idx_sup + 1] - numpy.linspace(
+                            signal[idx, idx_inf],
+                            signal[idx, idx_sup],
+                            1 + idx_sup - idx_inf,
+                        )
+                        com = (
+                            sub
+                            * numpy.linspace(idx_inf, idx_sup, 1 + idx_sup - idx_inf)
+                        ).sum() / sub.sum()
                         if numpy.isfinite(com):
                             width = peak_widths(sub, [numpy.argmax(sub)])[0][0]
-                            if width==0:
-                                print(f" #{idx}, {ring}: {idx_inf} < th:{idx_th} max:{idx_max} com:{com:.3f} < {idx_sup}; fwhm={width}")
-                                print(signal[idx, idx_inf:idx_sup+1])
+                            if width == 0:
+                                print(
+                                    f" #{idx}, {ring}: {idx_inf} < th:{idx_th} max:{idx_max} com:{com:.3f} < {idx_sup}; fwhm={width}"
+                                )
+                                print(signal[idx, idx_inf : idx_sup + 1])
                                 # print(sub)
                             else:
                                 idx_fwhm[idx, ring] = width
                                 idx_maxi[idx, ring] = idx_max
-    return numpy.nanmean((2.355*(idx_maxi-idx_theo)/idx_fwhm)**2)
+    return numpy.nanmean((2.355 * (idx_maxi - idx_theo) / idx_fwhm) ** 2)
 
 
-def nan_equal(a, b):
+def nan_equal(a: float, b: float) -> bool:
     """return True if a==b, also if a and b are both NaNs"""
-    if a==b:
+    if a == b:
         return True
     return numpy.isnan(a) and numpy.isnan(b)

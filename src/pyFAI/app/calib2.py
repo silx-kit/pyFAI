@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2025"
+__date__ = "06/10/2025"
 __status__ = "production"
 
 import os
@@ -37,6 +37,12 @@ import datetime
 from argparse import ArgumentParser
 
 import logging
+import pyFAI.resources
+import pyFAI.calibrant
+import pyFAI.detectors
+import pyFAI.io.image
+from pyFAI.io.ponifile import PoniFile
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -46,11 +52,6 @@ except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
-import pyFAI.resources
-import pyFAI.calibrant
-import pyFAI.detectors
-import pyFAI.io.image
-from pyFAI.io.ponifile import PoniFile
 
 
 def configure_parser_arguments(parser):
@@ -372,7 +373,7 @@ def setup_model(model, options):
     if options.spline:
         try:
             if detector is None:
-                detector = pyFAI.detectors.Detector(splineFile=options.spline)
+                detector = pyFAI.detectors.Detector(splinefile=options.spline)
             elif detector.__class__ is pyFAI.detectors.Detector or detector.HAVE_TAPER:
                 detector.set_splineFile(options.spline)
             else:

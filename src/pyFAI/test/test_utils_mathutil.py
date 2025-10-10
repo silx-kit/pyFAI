@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2025"
+__date__ = "06/10/2025"
 
 import unittest
 import numpy
@@ -101,15 +101,15 @@ class TestMathUtil(utilstest.ParametricTestCase):
         """Test some rounding values."""
         for value, expected in _ROUND_FFT_VALUES:
             with self.subTest(value=value, expected=expected):
-                self.assertEqual(utils.round_fft(value), expected)
+                self.assertEqual(mathutil.round_fft(value), expected)
 
     def test_binning(self):
         """
         test the binning and unbinning functions
         """
-        binned = utils.binning(self.unbinned, (4, 2))
+        binned = mathutil.binning(self.unbinned, (4, 2))
         self.assertEqual(binned.shape, (64 // 4, 32 // 2), "binned size is OK")
-        unbinned = utils.unbinning(binned, (4, 2))
+        unbinned = mathutil.unbinning(binned, (4, 2))
         self.assertEqual(unbinned.shape, self.unbinned.shape, "unbinned size is OK")
         self.assertAlmostEqual(unbinned.sum(), self.unbinned.sum(), 2, "content is the same")
 
@@ -122,9 +122,9 @@ class TestMathUtil(utilstest.ParametricTestCase):
         res = numpy.ones((11, 12))
         res[5, 7] = 5
         delta = (5 - 2, 7 - 3)
-        self.assertTrue(abs(utils.shift(ref, delta) - res).max() < 1e-12, "shift with integers works")
-        self.assertTrue(abs(utils.shift_fft(ref, delta) - res).max() < 1e-12, "shift with FFTs works")
-        self.assertTrue(utils.measure_offset(res, ref) == delta, "measure offset works")
+        self.assertTrue(abs(mathutil.shift(ref, delta) - res).max() < 1e-12, "shift with integers works")
+        self.assertTrue(abs(mathutil.shift_fft(ref, delta) - res).max() < 1e-12, "shift with FFTs works")
+        self.assertTrue(mathutil.measure_offset(res, ref) == delta, "measure offset works")
 
     def test_gaussian_filter(self):
         """
@@ -133,7 +133,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
         for sigma in [2, 9.0 / 8.0]:
             for mode in ["wrap", "reflect", "constant", "nearest", "mirror"]:
                 blurred1 = scipy.ndimage.filters.gaussian_filter(self.flat, sigma, mode=mode)
-                blurred2 = utils.gaussian_filter(self.flat, sigma, mode=mode, use_scipy=False)
+                blurred2 = mathutil.gaussian_filter(self.flat, sigma, mode=mode, use_scipy=False)
                 delta = abs((blurred1 - blurred2) / (blurred1)).max()
                 logger.info("Error for gaussian blur sigma: %s with mode %s is %s", sigma, mode, delta)
                 self.assertTrue(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
@@ -141,8 +141,8 @@ class TestMathUtil(utilstest.ParametricTestCase):
     def test_expand2d(self):
         vect = numpy.arange(10.)
         size2 = 11
-        self.assertTrue((numpy.outer(vect, numpy.ones(size2)) == utils.expand2d(vect, size2, False)).all(), "horizontal vector expand")
-        self.assertTrue((numpy.outer(numpy.ones(size2), vect) == utils.expand2d(vect, size2, True)).all(), "vertical vector expand")
+        self.assertTrue((numpy.outer(vect, numpy.ones(size2)) == mathutil.expand2d(vect, size2, False)).all(), "horizontal vector expand")
+        self.assertTrue((numpy.outer(numpy.ones(size2), vect) == mathutil.expand2d(vect, size2, True)).all(), "vertical vector expand")
 
     def test_interp_filter(self):
         x = numpy.linspace(0, 10, 1000)
@@ -150,7 +150,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
         w = numpy.random.randint(1, x.shape[0] - 2, size=100)  # Here we remove a tenth of all points !
         z = y.copy()
         z[w] = numpy.nan
-        self.assertLess(abs(y - utils.mathutil.interp_filter(z)).max(), 0.01, "error is small")
+        self.assertLess(abs(y - mathutil.interp_filter(z)).max(), 0.01, "error is small")
 
     def test_is_far_from_group_cython(self):
         rng = utilstest.UtilsTest.get_rng()
