@@ -229,7 +229,7 @@ class Eiger(_Dectris):
         For Eiger detector, possible keys are: max_shape, module_size
 
         :param config: dict or JSON serialized dict
-        :return: detector instance
+        :return: Eiger instance
         """
         if not isinstance(config, dict):
             try:
