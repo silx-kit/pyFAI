@@ -404,7 +404,7 @@ class RayonixMx340hs(_Rayonix):
     MAX_SHAPE = (7680, 7680)
     aliases = ["Rayonix MX340HS", "Rayonix MX340HS"]
 
-    def __init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None:
+    def __init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
         _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
