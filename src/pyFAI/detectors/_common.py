@@ -51,7 +51,8 @@ from .. import io
 from .. import spline
 from .. import utils
 from .. import average
-from ..utils import expand2d, crc32, binning as rebin
+from ..utils import crc32
+from ..utils.mathutil import expand2d, binning as rebin
 from ..utils.decorators import deprecated, deprecated_args
 from ..utils.stringutil import to_eng
 

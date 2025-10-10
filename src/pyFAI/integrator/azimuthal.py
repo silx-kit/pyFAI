@@ -30,34 +30,29 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/10/2025"
+__date__ = "06/10/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import logging
-logger = logging.getLogger(__name__)
 import warnings
 from math import pi, log
 import numpy
+from collections.abc import Iterable
 from .common import Integrator
 # from ..geometry import Geometry
 from .. import units
-from ..utils import EPS32, deg2rad, crc32, rad2rad
-from ..utils.mathutil import nan_equal
+from ..utils import crc32
+from ..utils.mathutil import nan_equal, EPS32, deg2rad, rad2rad
 from ..containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
 from ..io import DefaultAiWriter, save_integrate_result
 from ..io.ponifile import PoniFile
-error = None
 from ..method_registry import IntegrationMethod
 from ..utils.decorators import deprecated
-#
 from .load_engines import ocl_sort
-#ocl_azim_csr, ocl_azim_lut, , histogram, splitBBox, \
-#                           splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
-#                           histogram_engine, splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC, \
-#                           PREFERED_METHODS_1D, PREFERED_METHODS_2D
-#
 from ..engines import Engine
+logger = logging.getLogger(__name__)
+error = None
 
 # Few constants for engine names:
 OCL_CSR_ENGINE = "ocl_csr_integr"
@@ -1423,10 +1418,10 @@ class AzimuthalIntegrator(Integrator):
             else:
                 logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
                 azimuth_range = None
-        try:
-            quant_min = min(percentile)/100
-            quant_max = max(percentile)/100
-        except:
+        if isinstance(percentile, Iterable):
+            quant_min = min(percentile)/100.0
+            quant_max = max(percentile)/100.0
+        else:
             quant_min = quant_max = percentile/100.0
 
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
@@ -1884,7 +1879,8 @@ class AzimuthalIntegrator(Integrator):
 
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
-            if variance.size != data.size: raise RuntimeError("variance array shape does not match data shape")
+            if variance.size != data.size:
+                raise RuntimeError("variance array shape does not match data shape")
             error_model = ErrorModel.VARIANCE
 
         unit = units.to_unit(unit)
@@ -2332,8 +2328,9 @@ class AzimuthalIntegrator(Integrator):
             bin_idx = numpy.argmin(abs(res.radial - target_rad))
 
         from scipy.optimize import minimize_scalar
-        sfun = lambda p:\
-            self.integrate2d_ng(img, npt_rad, npt_azim, unit=unit, method=method,
+        def sfun(p):
+            return self.integrate2d_ng(img, npt_rad, npt_azim,
+                                unit=unit, method=method,
                                 polarization_factor=p).intensity[:, bin_idx].std()
         opt = minimize_scalar(sfun, bounds=[-1, 1])
         logger.info(str(opt))

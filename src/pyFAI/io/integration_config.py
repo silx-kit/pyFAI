@@ -68,7 +68,7 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/02/2025"
 __docformat__ = 'restructuredtext'
-__all__ = ["fields", "WorkerConfig", "WorkerFiberConfig"]
+__all__ = [ "asdict", "fields", "WorkerConfig", "WorkerFiberConfig"]
 
 
 import os
@@ -78,7 +78,7 @@ import copy
 from typing import ClassVar, Union
 import numpy
 from .ponifile import PoniFile
-from ..containers import PolarizationDescription, ErrorModel, dataclass, fields
+from ..containers import PolarizationDescription, ErrorModel, dataclass, fields, asdict
 from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
@@ -86,6 +86,7 @@ from ..utils import decorators
 from ..units import Unit, UnitFiber
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
+
 
 
 def _normalize_v1_darkflat_files(config, key):

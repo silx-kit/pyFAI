@@ -41,7 +41,8 @@ from math import pi
 import numpy
 from ..geometry import Geometry
 from .. import units
-from ..utils import EPS32, deg2rad, crc32
+from ..utils import crc32
+from ..utils.mathutil import EPS32, deg2rad
 from ..utils.decorators import deprecated, deprecated_warning, deprecated_args
 from ..containers import Integrate1dResult, Integrate2dResult
 from ..io import DefaultAiWriter, save_integrate_result

@@ -45,7 +45,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/09/2025"
+__date__ = "06/10/2025"
 __status__ = "development"
 
 import threading
@@ -54,7 +54,6 @@ import logging
 import json
 import numpy
 
-logger = logging.getLogger(__name__)
 
 from . import average
 from . import method_registry
@@ -68,7 +67,8 @@ from .io import ponifile, image as io_image
 from .io.integration_config import WorkerConfig, WorkerFiberConfig
 from .engines.preproc import preproc as preproc_numpy
 from .utils.decorators import deprecated_warning
-from .utils import binning as rebin
+from .utils.mathutil import binning as rebin
+logger = logging.getLogger(__name__)
 try:
     import numexpr
 except ImportError as err:

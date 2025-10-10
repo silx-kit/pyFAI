@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "06/10/2025"
 __status__ = "production"
 
 import sys
@@ -46,7 +46,7 @@ from scipy.ndimage import label, distance_transform_edt
 from silx.math import medfilt as median_filter
 from .utils.decorators import deprecated
 from .ext.bilinear import Bilinear
-from .utils import gaussian_filter, binning, unbinning, is_far_from_group
+from .utils.mathutil import gaussian_filter, binning, unbinning, is_far_from_group
 
 if os.name != "nt":
     WindowsError = RuntimeError
