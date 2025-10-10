@@ -51,7 +51,8 @@ from .. import io
 from .. import spline
 from .. import utils
 from .. import average
-from ..utils import expand2d, crc32, binning as rebin
+from ..utils import crc32
+from ..utils.mathutil import expand2d, binning as rebin
 from ..utils.decorators import deprecated, deprecated_args
 from ..utils.stringutil import to_eng
 
@@ -565,7 +566,7 @@ class Detector(metaclass=DetectorMeta):
             config = {}
             for key in ("pixel1", "pixel2", 'max_shape', "splineFile", "orientation"):
                 if key in kwarg:
-                    config[key] = kwarg[key]
+                    config[key.lower()] = kwarg[key]
             self = pyFAI.detectors.detector_factory(kwarg["detector"], config)
         return self
 

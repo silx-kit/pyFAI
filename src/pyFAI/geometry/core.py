@@ -61,7 +61,8 @@ from .imaged11 import convert_from_ImageD11, convert_to_ImageD11
 from .. import detectors
 from .. import units
 from ..utils.decorators import deprecated, deprecated_args
-from ..utils import crc32, deg2rad, ParallaxNotImplemented
+from ..utils import crc32, ParallaxNotImplemented
+from ..utils.mathutil import deg2rad, expand2d
 from .. import utils
 from ..io import integration_config
 from ..io.ponifile import PoniFile
@@ -1003,10 +1004,10 @@ class Geometry:
                         and (self._parallax is None)
                     ):
                         if self.detector.IS_CONTIGUOUS:
-                            d1 = utils.expand2d(
+                            d1 = expand2d(
                                 numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False
                             )
-                            d2 = utils.expand2d(
+                            d2 = expand2d(
                                 numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True
                             )
                             p1, p2, p3 = self.detector.calc_cartesian_positions(

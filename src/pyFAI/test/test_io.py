@@ -200,6 +200,7 @@ class TestNexus(unittest.TestCase):
                 self.assertEqual(a.method, b.method, "method matches")
             elif isinstance(a, pyFAI.units.Unit):
                 self.assertEqual(str(a), str(b), "unit matches")
+
             elif isinstance(a, dict):
                 for key in a:
                     self.assertEqual(a[key], b[key], f"{k}[{key}]")

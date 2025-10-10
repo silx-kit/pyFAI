@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -29,11 +29,11 @@
 """Jupyter plotting helper functions
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/09/2025"
+__date__ = "08/10/2025"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
@@ -71,7 +71,7 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
         colornorm = SymLogNorm(1, base=10,
                                vmin=numpy.nanmin(img),
                                vmax=numpy.nanmax(img))
-    except:  # elder version of matplotlib <3.2 do not support the base kwarg.
+    except Exception:  # elder version of matplotlib <3.2 do not support the base kwarg.
         colornorm = SymLogNorm(1,
                                vmin=numpy.nanmin(img),
                                vmax=numpy.nanmax(img))
@@ -107,7 +107,7 @@ def plot1d(result, calibrant=None, label=None, ax=None):
 
     try:
         unit = result.unit
-    except:
+    except Exception:
         unit = None
     if len(result) == 3:
         ax.errorbar(*result, label=label)
@@ -190,3 +190,5 @@ def plot2d(result, calibrant=None, label=None, ax=None):
                                     color='red', linestyle='--')
                 ax.add_line(line)
     return ax
+
+__all__ = [plot2d, plot1d, display]

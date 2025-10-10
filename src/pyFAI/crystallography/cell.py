@@ -40,17 +40,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/07/2025"
+__date__ = "06/10/2025"
 __status__ = "production"
 
 import os
 import logging
 import numpy
 import itertools
-from typing import Optional, List
-from math import sin, asin, cos, sqrt, pi, ceil
+from math import sin, cos, sqrt, pi, ceil
 from ..io.calibrant_config import CalibrantConfig, Miller, Reflection
-from ..utils import deprecated
+from ..utils.decorators import deprecated
 
 logger = logging.getLogger(__name__)
 
@@ -230,7 +229,7 @@ class Cell:
         """
         self = cls.cubic(a, lattice_type="F")
         self.selection_rules.append(
-            lambda h, k, l: not (
+            lambda h, k, l: not (  # noqa: E741
                 (h % 2 == 0)
                 and (k % 2 == 0)
                 and (l % 2 == 0)
@@ -259,15 +258,15 @@ class Cell:
     @type.setter
     def type(self, lattice_type):
         self._type = lattice_type if lattice_type in self.types else "P"
-        self.selection_rules = [lambda h, k, l: not (h == 0 and k == 0 and l == 0)]
+        self.selection_rules = [lambda h, k, l: not (h == 0 and k == 0 and l == 0)]  # noqa: E741
         if self._type == "I":
-            self.selection_rules.append(lambda h, k, l: (h + k + l) % 2 == 0)
+            self.selection_rules.append(lambda h, k, l: (h + k + l) % 2 == 0)  # noqa: E741
         if self._type == "F":
             self.selection_rules.append(
-                lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3)
+                lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3)  # noqa: E741
             )
         if self._type == "R":
-            self.selection_rules.append(lambda h, k, l: ((h - k + l) % 3 == 0))
+            self.selection_rules.append(lambda h, k, l: ((h - k + l) % 3 == 0))  # noqa: E741
 
     get_type = deprecated(type.fset, reason="property", replacement="type", since_version="2025.07")
     set_type = deprecated(type.fset, reason="property", replacement="type", since_version="2025.07")
@@ -280,7 +279,7 @@ class Cell:
         :param hkl: 3-tuple of integers
         :return: the inter-planar distance in Angstrom
         """
-        h, k, l = hkl
+        h, k, l = hkl  # noqa: E741
         deg2rad = pi / 180.0
         if self.lattice in ["cubic", "tetragonal", "orthorhombic"]:
             invd2 = (h / self.a) ** 2 + (k / self.b) ** 2 + (l / self.c) ** 2

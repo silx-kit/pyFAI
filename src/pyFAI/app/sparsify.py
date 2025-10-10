@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #
@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "07/10/2025"
 __status__ = "production"
 
 import os
@@ -51,33 +51,32 @@ import argparse
 import time
 import copy
 import signal
+from threading import Thread, Event
+from queue import Queue, Empty
 import gc
 from collections import OrderedDict, namedtuple
 import numexpr
 import logging
+import glob
+import fabio
+from .. import version, load
+from ..units import to_unit
+from ..opencl import ocl
+from ..utils.shell import ProgressBar
+from ..io.sparse_frame import save_sparse
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
-import glob
 try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
-import fabio
-from .. import version, load
-from ..units import to_unit
-from ..opencl import ocl
-
 if ocl is None:
     logger.error("Sparsify requires a valid OpenCL stack to be installed")
 else:
     from ..opencl.peak_finder import OCL_PeakFinder
-from ..utils.shell import ProgressBar
-from ..io.sparse_frame import save_sparse
-
-from threading import Thread, Semaphore, Event
-from queue import Queue, Empty
 
 # Define few constants:
 EXIT_SUCCESS = 0
@@ -483,7 +482,7 @@ def process(options):
             pf.log_profile()
     if pb:
         pb.clear()
-    logger.info(f"Total sparsification time: %.3fs \t (%.3f fps)", t1 - t0, cnt / (t1 - t0))
+    logger.info("Total sparsification time: %.3fs \t (%.3f fps)", t1 - t0, cnt / (t1 - t0))
 
     return EXIT_ARGUMENT_FAILURE if abort.is_set() else EXIT_SUCCESS
 

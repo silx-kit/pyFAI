@@ -40,7 +40,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "12/01/2024"
 __status__ = "production"
 
-from ._common import Detector, Orientation
+from ._common import Detector
 
 import logging
 logger = logging.getLogger(__name__)

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2021-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2021-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,14 +33,15 @@ A tool for determining the geometry of a detector using a reference sample.
 
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/01/2022"
+__date__ = "08/10/2025"
 __status__ = "development"
 
 import logging
+from .mpl_calib import MplCalibWidget
 logger = logging.getLogger(__name__)
 try:
     from silx.gui import qt
@@ -51,8 +52,6 @@ except ImportError:
 if qt is not None:
     from .utils import update_fig, maximize_fig
     from .matplotlib import pyplot
-
-from .mpl_calib import MplCalibWidget
 
 
 class QtMplCalibWidget(MplCalibWidget):

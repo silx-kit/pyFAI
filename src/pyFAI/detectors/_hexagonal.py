@@ -40,7 +40,7 @@ __status__ = "production"
 import numpy
 import logging
 from math import sqrt
-from ._common import Detector, Orientation
+from ._common import Detector
 logger = logging.getLogger(__name__)
 
 

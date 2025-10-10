@@ -32,11 +32,10 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/06/2025"
+__date__ = "07/10/2025"
 __status__ = "development"
 
 from silx.gui import qt
-import sys
 import argparse
 import logging
 from ..gui.pilx.MainWindow import MainWindow
@@ -52,7 +51,7 @@ def guess_file_type(filename, default="diffmap"):
     def read_str(entry, key):
         try:
             raw = entry[key][()]
-        except:
+        except Exception:
             res = ""
         else:
             if isinstance(raw, bytes):

@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "07/10/2025"
 __status__ = "production"
 
 import os
@@ -61,9 +61,8 @@ from .peak_picker import PeakPicker
 from .. import units
 from .. import average
 from ..containers import FixedParameters
-from ..utils import measure_offset, expand_args, \
-            readFloatFromKeyboard, round_fft, \
-            win32
+from ..utils import expand_args, readFloatFromKeyboard, win32
+from ..utils.mathutil import measure_offset, round_fft
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..units import hc, TTH_RAD, CHI_RAD
 from .. import version as PyFAI_VERSION

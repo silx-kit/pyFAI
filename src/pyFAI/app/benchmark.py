@@ -32,11 +32,12 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel, Edgar Gutierrez-Ferna
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2025"
+__date__ = "07/10/2025"
 __status__ = "development"
 
 from argparse import ArgumentParser
 import logging
+from .. import benchmark, version as pyFAI_version, logger as pyFAI_logger
 try:
     logging.basicConfig(level=logging.WARNING, force=True)
 except ValueError:
@@ -47,7 +48,6 @@ try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
-from .. import benchmark, version as pyFAI_version, date as pyFAI_date, logger as pyFAI_logger
 
 
 def main(args=None):
