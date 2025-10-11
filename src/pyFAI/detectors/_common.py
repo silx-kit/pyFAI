@@ -263,11 +263,15 @@ class Detector(metaclass=DetectorMeta):
         if (orientation < 0) or (orientation > 4):
             raise RuntimeError("Unsupported orientation: " + orientation.__doc__)
         self._orientation = orientation
-        if sensor:
-            if isinstance(sensor, dict):
-                self.sensor = SensorConfig.from_dict(sensor)
-            else:
-                self.sensor = sensor
+        
+        if isinstance(sensor, SensorConfig):
+            self.sensor = sensor
+        elif sensor is None:
+            logger.warning("No sensor configuration provided; using default behaviour.")
+        elif isinstance(sensor, dict):
+            self.sensor = SensorConfig.from_dict(sensor)
+        else:
+            logger.warning("Sensor is of unexpected type: %s", type(sensor))
 
 
     def __repr__(self):
