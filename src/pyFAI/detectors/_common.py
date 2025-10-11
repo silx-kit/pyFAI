@@ -222,7 +222,7 @@ class Detector(metaclass=DetectorMeta):
         :param pixel2: size of the pixel in meter along the fast dimension (often X)
         :param splinefile: path to file containing the geometric correction.
         :param max_shape: maximum size of the detector
-        :type max_shape: 2-tuple of integrers
+        :type max_shape: 2-tuple of integers
         :param orientation: Orientation of the detector
         :param sensor: Optional sensor configuration specifying detector material and sensor thickness (in metres).
         :type sensor: SensorConfig | None
