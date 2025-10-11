@@ -280,6 +280,8 @@ class Detector(metaclass=DetectorMeta):
             txt += f"\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
         return txt
 
     def __copy__(self):
