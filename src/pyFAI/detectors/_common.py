@@ -265,11 +265,16 @@ class Detector(metaclass=DetectorMeta):
         self._orientation = orientation
         
         if isinstance(sensor, SensorConfig):
+            if sensor not in self.SENSORS:
+                logger.warning("Sensor %s not in allowed SENSORS: %s", sensor, self.SENSORS)
             self.sensor = sensor
         elif sensor is None:
             logger.warning("No sensor configuration provided; using default behaviour.")
         elif isinstance(sensor, dict):
-            self.sensor = SensorConfig.from_dict(sensor)
+            sensor_obj = SensorConfig.from_dict(sensor)
+            if sensor_obj not in self.SENSORS:
+                logger.warning("Sensor %s not in allowed SENSORS: %s", sensor_obj, self.SENSORS)
+            self.sensor = sensor_obj
         else:
             logger.warning("Sensor is of unexpected type: %s", type(sensor))
 
