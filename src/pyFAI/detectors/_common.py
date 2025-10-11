@@ -224,6 +224,8 @@ class Detector(metaclass=DetectorMeta):
         :param max_shape: maximum size of the detector
         :type max_shape: 2-tuple of integrers
         :param orientation: Orientation of the detector
+        :param sensor: Optional sensor configuration specifying detector material and sensor thickness (in metres).
+        :type sensor: SensorConfig | None
         """
         self._pixel1 = None
         self._pixel2 = None
