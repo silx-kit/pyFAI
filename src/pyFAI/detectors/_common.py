@@ -1488,6 +1488,7 @@ class NexusDetector(Detector):
 
         :return: dict with param for serialization
         """
+        #TODO: Is sensor here missing? 
         return {"filename": self._filename,
                 "orientation": self.orientation or 3}
 
