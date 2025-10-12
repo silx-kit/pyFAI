@@ -896,16 +896,17 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_rot3_max = deprecated(rot3_max.fget, reason="use property", since_version="2025.09")
     set_rot3_max = deprecated(rot3_max.fset, reason="use property", since_version="2025.09")
 
-    def set_wavelength_min(self, value):
-        if isinstance(value, float):
-            self._wavelength_min = value
-        else:
-            self._wavelength_min = float(value)
-
-    def get_wavelength_min(self):
+    @property
+    def wavelength_min(self):
         return self._wavelength_min
 
-    wavelength_min = property(get_wavelength_min, set_wavelength_min)
+    @wavelength_min.setter
+    def wavelength_min(self, value):
+        self._wavelength_min = float(value)
+
+    # deprecated compatibility layer
+    get_wavelength_min = deprecated(wavelength_min.fget, reason="use property", since_version="2025.09")
+    set_wavelength_min = deprecated(wavelength_min.fset, reason="use property", since_version="2025.09")
 
     def set_wavelength_max(self, value):
         if isinstance(value, float):
