@@ -800,16 +800,17 @@ class GeometryRefinement(AzimuthalIntegrator):
     set_poni1_max = deprecated(poni1_max.fset, reason="use property", since_version="2025.09")
 
 
-    def set_poni2_min(self, value):
-        if isinstance(value, float):
-            self._poni2_min = value
-        else:
-            self._poni2_min = float(value)
-
-    def get_poni2_min(self):
+    @property
+    def poni2_min(self):
         return self._poni2_min
 
-    poni2_min = property(get_poni2_min, set_poni2_min)
+    @poni2_min.setter
+    def poni2_min(self, value):
+        self._poni2_min = float(value)
+
+    # deprecated compatibility layer
+    get_poni2_min = deprecated(poni2_min.fget, reason="use property", since_version="2025.09")
+    set_poni2_min = deprecated(poni2_min.fset, reason="use property", since_version="2025.09")
 
     def set_poni2_max(self, value):
         if isinstance(value, float):
