@@ -2927,18 +2927,27 @@ class Geometry:
     del_chia = deprecated(chia.fdel, reason="use property", since_version="2025.09")
 
 
-    def get_dssa(self):
-        key = "solid_angle#%s" % (self._dssa_order)
+    @property
+    def dssa(self):
+        """solid angle array in cache"""
+        key = f"solid_angle#{self._dssa_order}"
         return self._cached_array.get(key)
 
-    def set_dssa(self, _):
+    @dssa.setter
+    def dssa(self, _):
         logger.error("You are not allowed to modify solid angle array")
 
-    def del_dssa(self):
-        self._cached_array["solid_angle#%s" % (self._dssa_order)] = None
-        self._cached_array["solid_angle#%s_crc" % (self._dssa_order)] = None
+    @dssa.deleter
+    def dssa(self):
+        key = f"solid_angle#{self._dssa_order}"
+        self._cached_array[key] = None
+        self._cached_array[f"{key}_crc"] = None
 
-    dssa = property(get_dssa, set_dssa, del_dssa, "solid angle array in cache")
+    # deprecated compatibility layer
+    get_dssa = deprecated(dssa.fget, reason="use property", since_version="2025.09")
+    set_dssa = deprecated(dssa.fset, reason="use property", since_version="2025.09")
+    del_dssa = deprecated(dssa.fdel, reason="use property", since_version="2025.09")
+
 
     def get_qa(self):
         return self._cached_array.get("q_center")
