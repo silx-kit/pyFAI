@@ -2967,18 +2967,24 @@ class Geometry:
     set_qa = deprecated(qa.fset, reason="use property", since_version="2025.09")
     del_qa = deprecated(qa.fdel, reason="use property", since_version="2025.09")
 
-
-
-    def get_ra(self):
+    @property
+    def ra(self):
+        """R array in cache"""
         return self._cached_array.get("r_center")
 
-    def set_ra(self, _):
+    @ra.setter
+    def ra(self, _):
         logger.error("You are not allowed to modify R array")
 
-    def del_ra(self):
-        self.self._cached_array["r_center"] = None
+    @ra.deleter
+    def ra(self):
+        self._cached_array["r_center"] = None  # Fixed: removed extra "self."
 
-    ra = property(get_ra, set_ra, del_ra, "R array in cache")
+    # deprecated compatibility layer
+    get_ra = deprecated(ra.fget, reason="use property", since_version="2025.09")
+    set_ra = deprecated(ra.fset, reason="use property", since_version="2025.09")
+    del_ra = deprecated(ra.fdel, reason="use property", since_version="2025.09")
+
 
     def get_pixel1(self):
         return self.detector.pixel1
