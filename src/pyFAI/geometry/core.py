@@ -2892,6 +2892,7 @@ class Geometry:
 
     @property
     def ttha(self):
+        """2theta array in cache"""
         return self._cached_array.get("2th_center")
 
     @ttha.setter
