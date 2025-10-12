@@ -3078,6 +3078,9 @@ class Geometry:
         v = bool(value)
         with self._sem:
             if v != self._correct_solid_angle_for_spline:
+                # TODO: Confusing - this sets _dssa attribute, not the _dssa property
+                # Should this be clearing the cache via `del self.dssa` instead?
+                # Or is there a historical reason for this attribute assignment?
                 self._dssa = None
                 self._correct_solid_angle_for_spline = v
 
