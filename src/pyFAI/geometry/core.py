@@ -2911,16 +2911,20 @@ class Geometry:
     set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.09")
 
 
-    def get_energy(self):
-        if self._wavelength:
-            return 1e-10 * CONST_hc / self._wavelength
+    @property
+    def energy(self):
+        if self.wavelength:  # Use property instead of private variable
+            return 1e-10 * CONST_hc / self.wavelength
 
-    def set_energy(self, energy):
+    @energy.setter
+    def energy(self, value):
         "Set the energy in keV"
-        wavlength = 1e-10 * CONST_hc / energy
-        self.set_wavelength(wavlength)
+        wavelength = 1e-10 * CONST_hc / value
+        self.wavelength = wavelength  #Use property instead of private variable
 
-    energy = property(get_energy, set_energy)
+    # deprecated compatibility layer
+    get_energy = deprecated(energy.fget, reason="use property", since_version="2025.09")
+    set_energy = deprecated(energy.fset, reason="use property", since_version="2025.09")
 
 
     @property
