@@ -2788,7 +2788,7 @@ class Geometry:
 
     @poni1.setter
     def poni1(self, value):
-        if isinstance(value, float):
+        if isinstance(value, float): #TODO: Is this still necessary? 
             self._poni1 = value
         elif isinstance(value, (tuple, list)):
             self._poni1 = float(value[0])
