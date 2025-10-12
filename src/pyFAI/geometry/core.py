@@ -2889,16 +2889,24 @@ class Geometry:
 
     energy = property(get_energy, set_energy)
 
-    def get_ttha(self):
+
+    @property
+    def ttha(self):
         return self._cached_array.get("2th_center")
 
-    def set_ttha(self, _):
+    @ttha.setter
+    def ttha(self, _):
         logger.error("You are not allowed to modify 2theta array")
 
-    def del_ttha(self):
+    @ttha.deleter
+    def ttha(self):
         self._cached_array["2th_center"] = None
 
-    ttha = property(get_ttha, set_ttha, del_ttha, "2theta array in cache")
+    # deprecated compatibility layer
+    get_ttha = deprecated(ttha.fget, reason="use property", since_version="2025.09")
+    set_ttha = deprecated(ttha.fset, reason="use property", since_version="2025.09")
+    del_ttha = deprecated(ttha.fdel, reason="use property", since_version="2025.09")
+
 
     def get_chia(self):
         return self._cached_array.get("chi_center")
