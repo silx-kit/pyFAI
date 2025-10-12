@@ -592,7 +592,7 @@ class Mar345(Detector):
     def set_config(self, config):
         """set the config of the detector
 
-        #TODO: Copy paste mistake? 
+        #TODO: Copy paste mistake?
         For Eiger detector, possible keys are: max_shape, module_size
 
         :param config: dict or JSON serialized dict
@@ -640,7 +640,7 @@ class Mar555(Detector):
     def set_config(self, config):
         """set the config of the detector
 
-        #TODO: Copy paste mistake? 
+        #TODO: Copy paste mistake?
         For Eiger detector, possible keys are: max_shape, module_size
 
         :param config: dict or JSON serialized dict

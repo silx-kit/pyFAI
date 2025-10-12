@@ -119,7 +119,7 @@ class Detector(metaclass=DetectorMeta):
     DELTA_DUMMY = None
     ORIENTATION = 0
     SENSORS = ()
-    #TODO: Should this be called IMMUTABLE_ATTRS as in cannot be changed 
+    #TODO: Should this be called IMMUTABLE_ATTRS as in cannot be changed
     _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                         '_mask_crc', '_maskfile', "_splinefile", "_flatfield_crc",
                         "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy",
@@ -1495,7 +1495,7 @@ class NexusDetector(Detector):
 
         :return: dict with param for serialization
         """
-        #TODO: Is sensor here missing? 
+        #TODO: Is sensor here missing?
         return {"filename": self._filename,
                 "orientation": self.orientation or 3}
 
