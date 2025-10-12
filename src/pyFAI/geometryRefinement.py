@@ -756,10 +756,8 @@ class GeometryRefinement(AzimuthalIntegrator):
     
     @dist_max.setter
     def dist_max(self, value):
-        if isinstance(value, float):
-            self._dist_max = value
-        else:
-            self._dist_max = float(value)
+        self._dist_max = float(value)
+
     
     # deprecated compatibility layer
     get_dist_max = deprecated(dist_max.fget, reason="use property", since_version="2025.09")
