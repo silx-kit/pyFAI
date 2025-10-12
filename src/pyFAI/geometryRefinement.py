@@ -763,17 +763,18 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_dist_max = deprecated(dist_max.fget, reason="use property", since_version="2025.09")
     set_dist_max = deprecated(dist_max.fset, reason="use property", since_version="2025.09")
 
-    
-    def set_dist_min(self, value):
-        if isinstance(value, float):
-            self._dist_min = value
-        else:
-            self._dist_min = float(value)
-
-    def get_dist_min(self):
+    @property
+    def dist_min(self):
         return self._dist_min
+    
+    @dist_min.setter
+    def dist_min(self, value):
+        self._dist_min = float(value)
 
-    dist_min = property(get_dist_min, set_dist_min)
+    # deprecated compatibility layer
+    get_dist_min = deprecated(dist_min.fget, reason="use property", since_version="2025.09")
+    set_dist_min = deprecated(dist_min.fset, reason="use property", since_version="2025.09")
+
 
     def set_poni1_min(self, value):
         if isinstance(value, float):
