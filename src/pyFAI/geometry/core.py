@@ -2907,17 +2907,24 @@ class Geometry:
     set_ttha = deprecated(ttha.fset, reason="use property", since_version="2025.09")
     del_ttha = deprecated(ttha.fdel, reason="use property", since_version="2025.09")
 
-
-    def get_chia(self):
+    @property
+    def chia(self):
+        """chi array in cache"""
         return self._cached_array.get("chi_center")
 
-    def set_chia(self, _):
+    @chia.setter
+    def chia(self, _):
         logger.error("You are not allowed to modify chi array")
 
-    def del_chia(self):
+    @chia.deleter
+    def chia(self):
         self._cached_array["chi_center"] = None
 
-    chia = property(get_chia, set_chia, del_chia, "chi array in cache")
+    # deprecated compatibility layer
+    get_chia = deprecated(chia.fget, reason="use property", since_version="2025.09")
+    set_chia = deprecated(chia.fset, reason="use property", since_version="2025.09")
+    del_chia = deprecated(chia.fdel, reason="use property", since_version="2025.09")
+
 
     def get_dssa(self):
         key = "solid_angle#%s" % (self._dssa_order)
