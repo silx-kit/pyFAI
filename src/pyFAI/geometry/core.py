@@ -3059,13 +3059,17 @@ class Geometry:
     set_splineFile = deprecated(splinefile.fset, since_version="2025.10", reason="use `splinefile` property")
     splineFile = property(get_splineFile, set_splineFile)  # all deprecated
 
-    def get_spline(self):
+    @property
+    def spline(self):
         return self.detector.spline
 
-    def set_spline(self, spline):
-        self.detector.spline = spline
+    @spline.setter
+    def spline(self, value):
+        self.detector.spline = value 
 
-    spline = property(get_spline, set_spline)
+    # deprecated compatibility layer
+    get_spline = deprecated(spline.fget, reason="use property", since_version="2025.09")
+    set_spline = deprecated(spline.fset, reason="use property", since_version="2025.09")
 
     def get_correct_solid_angle_for_spline(self):
         return self._correct_solid_angle_for_spline
