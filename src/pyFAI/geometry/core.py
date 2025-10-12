@@ -2856,9 +2856,13 @@ class Geometry:
     get_rot2 = deprecated(rot2.fget, reason="use property", since_version="2025.09")
     set_rot2 = deprecated(rot2.fset, reason="use property", since_version="2025.09")
 
+    @property
+    def rot3(self):
+        return self._rot3
 
-    def set_rot3(self, value):
-        if isinstance(value, float):
+    @rot3.setter
+    def rot3(self, value):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._rot3 = value
         elif isinstance(value, (tuple, list)):
             self._rot3 = float(value[0])
@@ -2866,10 +2870,9 @@ class Geometry:
             self._rot3 = float(value)
         self.reset()
 
-    def get_rot3(self):
-        return self._rot3
-
-    rot3 = property(get_rot3, set_rot3)
+    # deprecated compatibility layer
+    get_rot3 = deprecated(rot3.fget, reason="use property", since_version="2025.09")
+    set_rot3 = deprecated(rot3.fset, reason="use property", since_version="2025.09")
 
     def set_wavelength(self, value):
         "Set the wavelength in meter!"
