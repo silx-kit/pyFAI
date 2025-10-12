@@ -2781,7 +2781,13 @@ class Geometry:
     get_dist = deprecated(dist.fget, reason="use property", since_version="2025.09")
     set_dist = deprecated(dist.fset, reason="use property", since_version="2025.09")
 
-    def set_poni1(self, value):
+
+    @property
+    def poni1(self):
+        return self._poni1
+
+    @poni1.setter
+    def poni1(self, value):
         if isinstance(value, float):
             self._poni1 = value
         elif isinstance(value, (tuple, list)):
@@ -2790,10 +2796,11 @@ class Geometry:
             self._poni1 = float(value)
         self.reset()
 
-    def get_poni1(self):
-        return self._poni1
+    # deprecated compatibility layer
+    get_poni1 = deprecated(poni1.fget, reason="use property", since_version="2025.09")
+    set_poni1 = deprecated(poni1.fset, reason="use property", since_version="2025.09")
 
-    poni1 = property(get_poni1, set_poni1)
+
 
     def set_poni2(self, value):
         if isinstance(value, float):
