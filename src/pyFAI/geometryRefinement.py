@@ -750,17 +750,22 @@ class GeometryRefinement(AzimuthalIntegrator):
 
         tmpf.close()
 
-    def set_dist_max(self, value):
+    @property
+    def dist_max(self):
+        return self._dist_max
+    
+    @dist_max.setter
+    def dist_max(self, value):
         if isinstance(value, float):
             self._dist_max = value
         else:
             self._dist_max = float(value)
+    
+    # deprecated compatibility layer
+    get_dist_max = deprecated(dist_max.fget, reason="use property", since_version="2025.09")
+    set_dist_max = deprecated(dist_max.fset, reason="use property", since_version="2025.09")
 
-    def get_dist_max(self):
-        return self._dist_max
-
-    dist_max = property(get_dist_max, set_dist_max)
-
+    
     def set_dist_min(self, value):
         if isinstance(value, float):
             self._dist_min = value
