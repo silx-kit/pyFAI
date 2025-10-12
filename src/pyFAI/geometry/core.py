@@ -3081,13 +3081,17 @@ class Geometry:
         get_correct_solid_angle_for_spline, set_correct_solid_angle_for_spline
     )
 
-    def set_maskfile(self, maskfile):
-        self.detector.set_maskfile(maskfile)
+    @property
+    def maskfile(self):
+        return self.detector.get_maskfile()  # Keep method call for safety,  TODO: requires later update
 
-    def get_maskfile(self):
-        return self.detector.get_maskfile()
+    @maskfile.setter
+    def maskfile(self, value):
+        self.detector.set_maskfile(value)  # Keep method call for safety,  TODO: requires later update
 
-    maskfile = property(get_maskfile, set_maskfile)
+    # deprecated compatibility layer
+    get_maskfile = deprecated(maskfile.fget, reason="use property", since_version="2025.09")
+    set_maskfile = deprecated(maskfile.fset, reason="use property", since_version="2025.09")
 
 
     @property
@@ -3130,12 +3134,12 @@ class Geometry:
     # Property to provide _dssa and _dssa_crc and so one to maintain the API
     @property
     def _dssa(self):
-        key = "solid_angle#%s" % (self._dssa_order)
+        key = f"solid_angle#{self._dssa_order}" 
         return self._cached_array.get(key)
 
     @property
     def _dssa_crc(self):
-        key = "solid_angle#%s_crc" % (self._dssa_order)
+        key = f"solid_angle#{self._dssa_order}_crc"
         return self._cached_array.get(key)
 
     @property
