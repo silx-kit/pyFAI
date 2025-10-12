@@ -2997,14 +2997,17 @@ class Geometry:
     get_pixel1 = deprecated(pixel1.fget, reason="use property", since_version="2025.09")
     set_pixel1 = deprecated(pixel1.fset, reason="use property", since_version="2025.09")
 
-
-    def get_pixel2(self):
+    @property
+    def pixel2(self):
         return self.detector.pixel2
 
-    def set_pixel2(self, pixel2):
-        self.detector.pixel2 = pixel2
+    @pixel2.setter
+    def pixel2(self, value):
+        self.detector.pixel2 = value
 
-    pixel2 = property(get_pixel2, set_pixel2)
+    # deprecated compatibility layer
+    get_pixel2 = deprecated(pixel2.fget, reason="use property", since_version="2025.09")
+    set_pixel2 = deprecated(pixel2.fset, reason="use property", since_version="2025.09")
 
     @property
     def splinefile(self):
