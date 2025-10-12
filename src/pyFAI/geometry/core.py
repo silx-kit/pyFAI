@@ -2949,16 +2949,25 @@ class Geometry:
     del_dssa = deprecated(dssa.fdel, reason="use property", since_version="2025.09")
 
 
-    def get_qa(self):
+    @property
+    def qa(self):
+        """Q array in cache"""
         return self._cached_array.get("q_center")
 
-    def set_qa(self, _):
+    @qa.setter
+    def qa(self, _):
         logger.error("You are not allowed to modify Q array")
 
-    def del_qa(self):
+    @qa.deleter
+    def qa(self):
         self._cached_array["q_center"] = None
 
-    qa = property(get_qa, set_qa, del_qa, "Q array in cache")
+    # deprecated compatibility layer
+    get_qa = deprecated(qa.fget, reason="use property", since_version="2025.09")
+    set_qa = deprecated(qa.fset, reason="use property", since_version="2025.09")
+    del_qa = deprecated(qa.fdel, reason="use property", since_version="2025.09")
+
+
 
     def get_ra(self):
         return self._cached_array.get("r_center")
