@@ -2874,10 +2874,16 @@ class Geometry:
     get_rot3 = deprecated(rot3.fget, reason="use property", since_version="2025.09")
     set_rot3 = deprecated(rot3.fset, reason="use property", since_version="2025.09")
 
-    def set_wavelength(self, value):
+
+    @property
+    def wavelength(self):
+        return self._wavelength
+
+    @wavelength.setter
+    def wavelength(self, value):
         "Set the wavelength in meter!"
         old_wl = self._wavelength
-        if isinstance(value, float):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._wavelength = value
         elif isinstance(value, (tuple, list)):
             self._wavelength = float(value[0])
@@ -2885,6 +2891,7 @@ class Geometry:
             self._wavelength = float(value)
         qa = dqa = q_corner = None
         if old_wl and self._wavelength:
+            # TODO: Could use self.qa property here instead of direct _cached_array access?
             if self._cached_array.get("q_center") is not None:
                 qa = self._cached_array["q_center"] * old_wl / self._wavelength
 
@@ -2895,13 +2902,14 @@ class Geometry:
         self.reset()
         # restore updated values
         self._cached_array["q_delta"] = dqa
+        #TODO: This bypasses the qa read only property? 
         self._cached_array["q_center"] = qa
         self._cached_array["q_corner"] = q_corner
 
-    def get_wavelength(self):
-        return self._wavelength
+    # deprecated compatibility layer
+    get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.09")
+    set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.09")
 
-    wavelength = property(get_wavelength, set_wavelength)
 
     def get_energy(self):
         if self._wavelength:
