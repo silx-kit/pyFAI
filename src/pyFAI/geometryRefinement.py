@@ -908,13 +908,14 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_wavelength_min = deprecated(wavelength_min.fget, reason="use property", since_version="2025.09")
     set_wavelength_min = deprecated(wavelength_min.fset, reason="use property", since_version="2025.09")
 
-    def set_wavelength_max(self, value):
-        if isinstance(value, float):
-            self._wavelength_max = value
-        else:
-            self._wavelength_max = float(value)
-
-    def get_wavelength_max(self):
+    @property
+    def wavelength_max(self):
         return self._wavelength_max
 
-    wavelength_max = property(get_wavelength_max, set_wavelength_max)
+    @wavelength_max.setter
+    def wavelength_max(self, value):
+        self._wavelength_max = float(value)
+
+    # deprecated compatibility layer
+    get_wavelength_max = deprecated(wavelength_max.fget, reason="use property", since_version="2025.09")
+    set_wavelength_max = deprecated(wavelength_max.fset, reason="use property", since_version="2025.09")
