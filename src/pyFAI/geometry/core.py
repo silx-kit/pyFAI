@@ -2985,14 +2985,18 @@ class Geometry:
     set_ra = deprecated(ra.fset, reason="use property", since_version="2025.09")
     del_ra = deprecated(ra.fdel, reason="use property", since_version="2025.09")
 
-
-    def get_pixel1(self):
+    @property
+    def pixel1(self):
         return self.detector.pixel1
 
-    def set_pixel1(self, pixel1):
-        self.detector.pixel1 = pixel1
+    @pixel1.setter
+    def pixel1(self, value): #TODO: Parameter should not shadow property name
+        self.detector.pixel1 = value
 
-    pixel1 = property(get_pixel1, set_pixel1)
+    # deprecated compatibility layer
+    get_pixel1 = deprecated(pixel1.fget, reason="use property", since_version="2025.09")
+    set_pixel1 = deprecated(pixel1.fset, reason="use property", since_version="2025.09")
+
 
     def get_pixel2(self):
         return self.detector.pixel2
