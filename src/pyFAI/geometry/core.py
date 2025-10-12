@@ -144,7 +144,7 @@ class Geometry:
         "Geometry": "pyFAI.geometry.core.Geometry",
     }
 
-    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
+    @deprecated_args({"splinefile": "splineFile"}, since_version="2025.10")
     def __init__(
         self,
         dist=1,
@@ -258,7 +258,7 @@ class Geometry:
         if self._wavelength:
             stng = f"Wavelength= {self._wavelength * wl_unit.scale:.6f} {wl_unit.unit_symbol or wl_unit}"
             if self._parallax:
-                stng += f"\tParallax: \N{MICRO SIGN}= {self.parallax.sensor.mu * 1e-2:.3f} cm\N{Superscript Minus}\N{Superscript One}"
+                stng += f"\tParallax: \N{MICRO SIGN}= {self.parallax.sensor.mu * 1e-2:.3f} cm\N{SUPERSCRIPT MINUS}\N{SUPERSCRIPT ONE}"
             else:
                 if self.detector.sensor is not None:
                     stng += "\tParallax: off"
@@ -1602,7 +1602,7 @@ class Geometry:
             poni = PoniFile(data=self)
             return poni.as_dict()
 
-    def _init_from_poni(self, poni:PoniFile) ->None:
+    def _init_from_poni(self, poni: PoniFile) -> None:
         """Init the geometry from a PoniFile instance."""
         if poni.detector is not None:
             self.detector = poni.detector
@@ -1625,7 +1625,7 @@ class Geometry:
         else:
             self.reset()
 
-    def set_config(self, config:dict):
+    def set_config(self, config: dict):
         """
         Set the config of the geometry and of the underlying detector
 
@@ -1639,7 +1639,7 @@ class Geometry:
         self._init_from_poni(poni)
         return self
 
-    def save(self, filename:str) -> None:
+    def save(self, filename: str) -> None:
         """
         Save the geometry parameters.
 
@@ -1656,7 +1656,7 @@ class Geometry:
     write = save
 
     @classmethod
-    def sload(cls, filename:str|Path):  # Type annotation is postponed to python 3.14
+    def sload(cls, filename: str | Path):  # Type annotation is postponed to python 3.14
         """
         A static method combining the constructor and the loader from
         a file
@@ -1668,7 +1668,7 @@ class Geometry:
         inst.load(filename)
         return inst
 
-    def load(self, filename:str|Path):  # Type annotation is postponed to python 3.14
+    def load(self, filename: str | Path):  # Type annotation is postponed to python 3.14
         """
         Load the refined parameters from a file.
 
@@ -1681,7 +1681,7 @@ class Geometry:
             poni = filename
         elif isinstance(filename, (dict, Geometry)):
             poni = PoniFile(data=filename)
-        elif isinstance(filename, (str,Path)):
+        elif isinstance(filename, (str, Path)):
             try:
                 if os.path.exists(filename):
                     with open(filename) as f:
@@ -1689,7 +1689,9 @@ class Geometry:
                 else:
                     dico = json.loads(filename)
             except Exception:
-                logger.info("Unable to parse `{filename}` as JSON file, defaulting to PoniParser")
+                logger.info(
+                    "Unable to parse `{filename}` as JSON file, defaulting to PoniParser"
+                )
                 poni = PoniFile(data=filename)
             else:
                 config = integration_config.ConfigurationReader(dico)
@@ -1741,7 +1743,7 @@ class Geometry:
                 self.detector = detectors.Detector(
                     pixel1=kwargs.get("pixel1"),
                     pixel2=kwargs.get("pixel2"),
-                    splineFile=kwargs.get("splinefile") or  kwargs.get("splineFile"),
+                    splineFile=kwargs.get("splinefile") or kwargs.get("splineFile"),
                     max_shape=kwargs.get("max_shape"),
                 )
             self.param = [
@@ -1769,7 +1771,7 @@ class Geometry:
             f2d = convert_to_Fit2d(self)
         return f2d._asdict()
 
-    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
+    @deprecated_args({"splinefile": "splineFile"}, since_version="2025.10")
     def setFit2D(
         self,
         directDist,
@@ -1832,7 +1834,7 @@ class Geometry:
             self._init_from_poni(poni)
         return self
 
-    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
+    @deprecated_args({"splinefile": "splineFile"}, since_version="2025.10")
     def setSPD(
         self,
         SampleDistance,
@@ -1895,7 +1897,7 @@ class Geometry:
         self.reset()
         return self
 
-    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
+    @deprecated_args({"splinefile": "splineFile"}, since_version="2025.10")
     def getSPD(self):
         """
         get the SPD like parameter set: For geometry description see
@@ -2640,9 +2642,9 @@ class Geometry:
         """Checks two geometries are equivalent.
 
         Typing will wait python 3.14"""
-        for key in self._UNMUTABLE_ATTRS+("parallax","detector", "orientation"):
+        for key in self._UNMUTABLE_ATTRS + ("parallax", "detector", "orientation"):
             try:
-                here =  self.__getattribute__(key)
+                here = self.__getattribute__(key)
                 there = other.__getattribute__(key)
             except Exception:
                 return False
@@ -2650,7 +2652,7 @@ class Geometry:
                 return False
         return True
 
-    def rotation_matrix(self, param:list|numpy.ndarray=None):
+    def rotation_matrix(self, param: list | numpy.ndarray = None):
         """Compute and return the detector tilts as a single rotation matrix
 
         Corresponds to rotations about axes 1 then 2 then 3 (=> 0 later on)
@@ -2716,10 +2718,12 @@ class Geometry:
         r = ((x**2 + y**2) ** 0.5).max()
         return int(r)
 
-    def enable_parallax(self,
-                        activate:bool=True,
-                        sensor_material:str=None,
-                        sensor_thickness:float|None=None):
+    def enable_parallax(
+        self,
+        activate: bool = True,
+        sensor_material: str = None,
+        sensor_thickness: float | None = None,
+    ):
         """Method to activate parallax correction
 
         :param activate: set to False to disable parralax correction
@@ -2734,8 +2738,10 @@ class Geometry:
                 sensor_config = self.detector.sensor
             else:
                 from ..detectors.sensors import SensorConfig
-                sensor_config = SensorConfig.from_dict({"material": sensor_material,
-                                                 "thickness":sensor_thickness})
+
+                sensor_config = SensorConfig.from_dict(
+                    {"material": sensor_material, "thickness": sensor_thickness}
+                )
             mu = sensor_config.material.mu(energy=self.energy, unit="m")
             if sensor_config.thickness:
                 sensor = ThinSensor(thickness=sensor_config.thickness, mu=mu)
@@ -2766,7 +2772,6 @@ class Geometry:
                         shape = ary.array.shape[:2]
                     break
         return shape
-    
 
     @property
     def dist(self):
@@ -2781,14 +2786,13 @@ class Geometry:
     get_dist = deprecated(dist.fget, reason="use property", since_version="2025.09")
     set_dist = deprecated(dist.fset, reason="use property", since_version="2025.09")
 
-
     @property
     def poni1(self):
         return self._poni1
 
     @poni1.setter
     def poni1(self, value):
-        if isinstance(value, float): #TODO: Is this still necessary? 
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._poni1 = value
         elif isinstance(value, (tuple, list)):
             self._poni1 = float(value[0])
@@ -2818,7 +2822,6 @@ class Geometry:
     get_poni2 = deprecated(poni2.fget, reason="use property", since_version="2025.09")
     set_poni2 = deprecated(poni2.fset, reason="use property", since_version="2025.09")
 
-
     @property
     def rot1(self):
         return self._rot1
@@ -2836,7 +2839,6 @@ class Geometry:
     # deprecated compatibility layer
     get_rot1 = deprecated(rot1.fget, reason="use property", since_version="2025.09")
     set_rot1 = deprecated(rot1.fset, reason="use property", since_version="2025.09")
-
 
     @property
     def rot2(self):
@@ -2874,7 +2876,6 @@ class Geometry:
     get_rot3 = deprecated(rot3.fget, reason="use property", since_version="2025.09")
     set_rot3 = deprecated(rot3.fset, reason="use property", since_version="2025.09")
 
-
     @property
     def wavelength(self):
         return self._wavelength
@@ -2902,14 +2903,17 @@ class Geometry:
         self.reset()
         # restore updated values
         self._cached_array["q_delta"] = dqa
-        #TODO: This bypasses the qa read only property? 
+        # TODO: This bypasses the qa read only property?
         self._cached_array["q_center"] = qa
         self._cached_array["q_corner"] = q_corner
 
     # deprecated compatibility layer
-    get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.09")
-    set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.09")
-
+    get_wavelength = deprecated(
+        wavelength.fget, reason="use property", since_version="2025.09"
+    )
+    set_wavelength = deprecated(
+        wavelength.fset, reason="use property", since_version="2025.09"
+    )
 
     @property
     def energy(self):
@@ -2920,12 +2924,11 @@ class Geometry:
     def energy(self, value):
         "Set the energy in keV"
         wavelength = 1e-10 * CONST_hc / value
-        self.wavelength = wavelength  #Use property instead of private variable
+        self.wavelength = wavelength  # Use property instead of private variable
 
     # deprecated compatibility layer
     get_energy = deprecated(energy.fget, reason="use property", since_version="2025.09")
     set_energy = deprecated(energy.fset, reason="use property", since_version="2025.09")
-
 
     @property
     def ttha(self):
@@ -2963,7 +2966,6 @@ class Geometry:
     set_chia = deprecated(chia.fset, reason="use property", since_version="2025.09")
     del_chia = deprecated(chia.fdel, reason="use property", since_version="2025.09")
 
-
     @property
     def dssa(self):
         """solid angle array in cache"""
@@ -2984,7 +2986,6 @@ class Geometry:
     get_dssa = deprecated(dssa.fget, reason="use property", since_version="2025.09")
     set_dssa = deprecated(dssa.fset, reason="use property", since_version="2025.09")
     del_dssa = deprecated(dssa.fdel, reason="use property", since_version="2025.09")
-
 
     @property
     def qa(self):
@@ -3027,7 +3028,7 @@ class Geometry:
         return self.detector.pixel1
 
     @pixel1.setter
-    def pixel1(self, value): #TODO: Parameter should not shadow property name
+    def pixel1(self, value):  # TODO: Parameter should not shadow property name
         self.detector.pixel1 = value
 
     # deprecated compatibility layer
@@ -3039,7 +3040,7 @@ class Geometry:
         return self.detector.pixel2
 
     @pixel2.setter
-    def pixel2(self, value): #TODO: Parameter should not shadow property name
+    def pixel2(self, value):  # TODO: Parameter should not shadow property name
         self.detector.pixel2 = value
 
     # deprecated compatibility layer
@@ -3051,12 +3052,16 @@ class Geometry:
         return self.detector.splinefile
 
     @splinefile.setter
-    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
+    @deprecated_args({"splinefile": "splineFile"}, since_version="2025.10")
     def splinefile(self, splinefile):
         self.detector.splinefile = splinefile
 
-    get_splineFile = deprecated(splinefile.fget, since_version="2025.10", reason="use `splinefile` property")
-    set_splineFile = deprecated(splinefile.fset, since_version="2025.10", reason="use `splinefile` property")
+    get_splineFile = deprecated(
+        splinefile.fget, since_version="2025.10", reason="use `splinefile` property"
+    )
+    set_splineFile = deprecated(
+        splinefile.fset, since_version="2025.10", reason="use `splinefile` property"
+    )
     splineFile = property(get_splineFile, set_splineFile)  # all deprecated
 
     @property
@@ -3065,7 +3070,7 @@ class Geometry:
 
     @spline.setter
     def spline(self, value):
-        self.detector.spline = value 
+        self.detector.spline = value
 
     # deprecated compatibility layer
     get_spline = deprecated(spline.fget, reason="use property", since_version="2025.09")
@@ -3090,29 +3095,39 @@ class Geometry:
 
     @property
     def maskfile(self):
-        return self.detector.get_maskfile()  # Keep method call for safety,  TODO: requires later update
+        return (
+            self.detector.get_maskfile()
+        )  # Keep method call for safety,  TODO: requires later update
 
     @maskfile.setter
     def maskfile(self, value):
-        self.detector.set_maskfile(value)  # Keep method call for safety,  TODO: requires later update
+        self.detector.set_maskfile(
+            value
+        )  # Keep method call for safety,  TODO: requires later update
 
     # deprecated compatibility layer
-    get_maskfile = deprecated(maskfile.fget, reason="use property", since_version="2025.09")
-    set_maskfile = deprecated(maskfile.fset, reason="use property", since_version="2025.09")
-
+    get_maskfile = deprecated(
+        maskfile.fget, reason="use property", since_version="2025.09"
+    )
+    set_maskfile = deprecated(
+        maskfile.fset, reason="use property", since_version="2025.09"
+    )
 
     @property
     def mask(self):
-        return self.detector.get_mask()  # Keep method call for safety, TODO: requires later update
+        return (
+            self.detector.get_mask()
+        )  # Keep method call for safety, TODO: requires later update
 
     @mask.setter
     def mask(self, value):
-        self.detector.set_mask(value)  # Keep method call for safety, TODO: requires later update
+        self.detector.set_mask(
+            value
+        )  # Keep method call for safety, TODO: requires later update
 
     # deprecated compatibility layer
     get_mask = deprecated(mask.fget, reason="use property", since_version="2025.09")
     set_mask = deprecated(mask.fset, reason="use property", since_version="2025.09")
-
 
     @property
     def parallax(self):
@@ -3141,7 +3156,7 @@ class Geometry:
     # Property to provide _dssa and _dssa_crc and so one to maintain the API
     @property
     def _dssa(self):
-        key = f"solid_angle#{self._dssa_order}" 
+        key = f"solid_angle#{self._dssa_order}"
         return self._cached_array.get(key)
 
     @property
