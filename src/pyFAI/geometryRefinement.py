@@ -836,17 +836,18 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_rot1_min = deprecated(rot1_min.fget, reason="use property", since_version="2025.09")
     set_rot1_min = deprecated(rot1_min.fset, reason="use property", since_version="2025.09")
 
-    def set_rot1_max(self, value):
-        if isinstance(value, float):
-            self._rot1_max = value
-        else:
-            self._rot1_max = float(value)
-
-    def get_rot1_max(self):
+    @property
+    def rot1_max(self):
         return self._rot1_max
 
-    rot1_max = property(get_rot1_max, set_rot1_max)
+    @rot1_max.setter
+    def rot1_max(self, value):
+        self._rot1_max = float(value)
 
+    # deprecated compatibility layer
+    get_rot1_max = deprecated(rot1_max.fget, reason="use property", since_version="2025.09")
+    set_rot1_max = deprecated(rot1_max.fset, reason="use property", since_version="2025.09")
+    
     def set_rot2_min(self, value):
         if isinstance(value, float):
             self._rot2_min = value
