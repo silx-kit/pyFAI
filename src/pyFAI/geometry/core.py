@@ -2800,10 +2800,13 @@ class Geometry:
     get_poni1 = deprecated(poni1.fget, reason="use property", since_version="2025.09")
     set_poni1 = deprecated(poni1.fset, reason="use property", since_version="2025.09")
 
+    @property
+    def poni2(self):
+        return self._poni2
 
-
-    def set_poni2(self, value):
-        if isinstance(value, float):
+    @poni2.setter
+    def poni2(self, value):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._poni2 = value
         elif isinstance(value, (tuple, list)):
             self._poni2 = float(value[0])
@@ -2811,10 +2814,10 @@ class Geometry:
             self._poni2 = float(value)
         self.reset()
 
-    def get_poni2(self):
-        return self._poni2
+    # deprecated compatibility layer
+    get_poni2 = deprecated(poni2.fget, reason="use property", since_version="2025.09")
+    set_poni2 = deprecated(poni2.fset, reason="use property", since_version="2025.09")
 
-    poni2 = property(get_poni2, set_poni2)
 
     def set_rot1(self, value):
         if isinstance(value, float):
