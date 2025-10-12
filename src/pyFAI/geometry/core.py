@@ -3089,13 +3089,19 @@ class Geometry:
 
     maskfile = property(get_maskfile, set_maskfile)
 
-    def set_mask(self, mask):
-        self.detector.set_mask(mask)
 
-    def get_mask(self):
-        return self.detector.get_mask()
+    @property
+    def mask(self):
+        return self.detector.get_mask()  # Keep method call for safety, TODO: requires later update
 
-    mask = property(get_mask, set_mask)
+    @mask.setter
+    def mask(self, value):
+        self.detector.set_mask(value)  # Keep method call for safety, TODO: requires later update
+
+    # deprecated compatibility layer
+    get_mask = deprecated(mask.fget, reason="use property", since_version="2025.09")
+    set_mask = deprecated(mask.fset, reason="use property", since_version="2025.09")
+
 
     @property
     def parallax(self):
