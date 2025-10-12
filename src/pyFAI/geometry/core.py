@@ -2766,18 +2766,20 @@ class Geometry:
                         shape = ary.array.shape[:2]
                     break
         return shape
+    
 
-    def set_dist(self, value):
-        if isinstance(value, float):
-            self._dist = value
-        else:
-            self._dist = float(value)
-        self.reset()
-
-    def get_dist(self):
+    @property
+    def dist(self):
         return self._dist
 
-    dist = property(get_dist, set_dist)
+    @dist.setter
+    def dist(self, value):
+        self._dist = float(value)
+        self.reset()
+
+    # deprecated compatibility layer
+    get_dist = deprecated(dist.fget, reason="use property", since_version="2025.09")
+    set_dist = deprecated(dist.fset, reason="use property", since_version="2025.09")
 
     def set_poni1(self, value):
         if isinstance(value, float):
