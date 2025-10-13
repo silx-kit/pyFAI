@@ -525,9 +525,11 @@ class Mar345(Detector):
                   1800: 100e-6}
 
     aliases = ["MAR 345", "Mar3450"]
+    #TODO: Add sensor materials
+    #SENSORS=()
 
-    def __init__(self, pixel1=100e-6, pixel2=100e-6, max_shape=None, orientation=0):
-        Detector.__init__(self, pixel1, pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=100e-6, pixel2=100e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
+        Detector.__init__(self, pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         self._default_pixel_size = pixel1, pixel2
         self.max_shape = (int(self.max_shape[0] * 100e-6 / self.pixel1),
                           int(self.max_shape[1] * 100e-6 / self.pixel2))
@@ -584,9 +586,12 @@ class Mar345(Detector):
 
         :return: dict with param for serialization
         """
+        #TODO default orientation 0 or 3, please see constructor
         dico = {"pixel1": self.pixel1,
                 "pixel2": self.pixel2,
                 "orientation": self.orientation or 3}
+        if self.sensor:
+            dico["sensor"] = self.sensor.as_dict()
         return dico
 
     def set_config(self, config):
