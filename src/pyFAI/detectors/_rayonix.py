@@ -597,8 +597,7 @@ class Mar345(Detector):
     def set_config(self, config):
         """set the config of the detector
 
-        #TODO: Copy paste mistake?
-        For Eiger detector, possible keys are: max_shape, module_size
+        For Mar345 detector, possible keys are: max_shape, module_size
 
         :param config: dict or JSON serialized dict
         :return: detector instance
@@ -612,7 +611,11 @@ class Mar345(Detector):
                 raise err
         self.set_pixel1(config.get("pixel1"))
         self.set_pixel2(config.get("pixel2"))
+        #TODO: Default orientation 0 or 3 ? 
+        #Or should it be via: super().set_config(config)
         self._orientation = Orientation(config.get("orientation", 3))
+        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+
         return self
 
 
@@ -628,25 +631,30 @@ class Mar555(Detector):
     force_pixel = True
     MAX_SHAPE = (3072, 2560)
     aliases = ["MAR 555"]
+    #TODO: Add sensor information for Mar555
+    #SENSORS=()
 
-    def __init__(self, pixel1=139e-6, pixel2=139e-6, max_shape=None, orientation=0):
-        Detector.__init__(self, pixel1, pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=139e-6, pixel2=139e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
+        Detector.__init__(self, pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
 
         :return: dict with param for serialization
         """
+        #TODO: Default orientation 0 or 3 ? 
         dico = {"pixel1": self.pixel1,
                 "pixel2": self.pixel2,
                 "orientation": self.orientation or 3}
+        if self.sensor:
+            dico["sensor"] = self.sensor.as_dict()
         return dico
 
     def set_config(self, config):
         """set the config of the detector
 
-        #TODO: Copy paste mistake?
-        For Eiger detector, possible keys are: max_shape, module_size
+        #TODO: Extend docstring for sensor, orientation? 
+        For Mar555 detector, possible keys are: max_shape, module_size
 
         :param config: dict or JSON serialized dict
         :return: detector instance
@@ -660,5 +668,9 @@ class Mar555(Detector):
                 raise err
         self.set_pixel1(config.get("pixel1"))
         self.set_pixel2(config.get("pixel2"))
+        #TODO: Default orientation 0 or 3 ? 
+        #Or should it be via: super().set_config(config)
         self._orientation = Orientation(config.get("orientation", 3))
+        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+
         return self
