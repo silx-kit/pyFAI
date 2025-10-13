@@ -1494,9 +1494,17 @@ class NexusDetector(Detector):
 
         :return: dict with param for serialization
         """
-        #TODO: Is sensor here missing?
-        return {"filename": self._filename,
-                "orientation": self.orientation or 3}
+        config = {
+        "filename": self._filename,
+        "orientation": self.orientation or 3
+            }
+        if self.sensor:
+            config["sensor"] = self.sensor.as_dict()
+        return config
+
+
+
+        
 
     def getPyFAI(self):
         """
