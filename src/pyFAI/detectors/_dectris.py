@@ -226,7 +226,7 @@ class Eiger(_Dectris):
     def set_config(self, config):
         """set the config of the detector
 
-        For Eiger detector, possible keys are: max_shape, module_size
+        For Eiger detector, possible keys are: max_shape, module_size, orientation, sensor
 
         :param config: dict or JSON serialized dict
         :return: Eiger instance
@@ -245,7 +245,10 @@ class Eiger(_Dectris):
         module_size = config.get("module_size")
         if module_size is not None:
             self.module_size = tuple(module_size)
+        #TODO Why is fall back 3 and in init 0? 
         self._orientation = Orientation(config.get("orientation", 3))
+        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+
         return self
 
 
