@@ -1283,6 +1283,7 @@ class Detector(metaclass=DetectorMeta):
     def delta_dummy(self, value=None):
         self._delta_dummy = value
 
+    #TODO: I see that filename and orientation are properties, sensor not. Should sensor follow the style? 
     @property
     def orientation(self):
         return self._orientation
@@ -1502,9 +1503,6 @@ class NexusDetector(Detector):
             config["sensor"] = self.sensor.as_dict()
         return config
 
-
-
-        
 
     def getPyFAI(self):
         """
