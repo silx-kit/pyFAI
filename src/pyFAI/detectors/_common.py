@@ -1470,7 +1470,7 @@ class NexusDetector(Detector):
     def set_config(self, config):
         """set the config of the detector
 
-        For Nexus detector, the only valid key is "filename"
+        For Nexus detector, the valid keys are "filename", "orientation, "sensor"
 
         :param config: dict or JSON serialized dict
         :return: detector instance
@@ -1488,6 +1488,10 @@ class NexusDetector(Detector):
         else:
             logger.error("Unable to configure Nexus detector, config: %s",
                          config)
+            
+        self._orientation = Orientation(config.get("orientation", 0))
+        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+
         return self
 
     def get_config(self):
