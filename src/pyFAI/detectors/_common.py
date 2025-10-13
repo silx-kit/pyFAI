@@ -271,9 +271,9 @@ class Detector(metaclass=DetectorMeta):
                 logger.warning("Sensor %s not in allowed SENSORS: %s", sensor, self.SENSORS)
             self.sensor = sensor
         elif sensor is None:
-            logger.warning("No sensor configuration provided; using default behaviour.")
+            logger.info("No sensor configuration provided; using default behaviour.")
         else:
-            logger.warning("Sensor is of unexpected type: %s", type(sensor))
+            logger.error("Sensor is of unexpected type: %s", type(sensor))
 
 
     def __repr__(self):
