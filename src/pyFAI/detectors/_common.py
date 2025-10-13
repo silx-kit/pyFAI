@@ -1318,7 +1318,7 @@ class NexusDetector(Detector):
                  filename:str|None=None,
                  orientation:int=0,
                  sensor:SensorConfig|None=None):
-        Detector.__init__(self, orientation=orientation)
+        Detector.__init__(self, orientation=orientation, sensor = sensor)
         self.uniform_pixel = True
         self._filename = None
         if filename is not None:
