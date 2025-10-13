@@ -1488,7 +1488,7 @@ class NexusDetector(Detector):
         else:
             logger.error("Unable to configure Nexus detector, config: %s",
                          config)
-            
+  
         self._orientation = Orientation(config.get("orientation", 0))
         self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
 
@@ -1499,6 +1499,7 @@ class NexusDetector(Detector):
 
         :return: dict with param for serialization
         """
+        #TODO: Or via  super().get_config() ? 
         config = {
         "filename": self._filename,
         "orientation": self.orientation or 3
