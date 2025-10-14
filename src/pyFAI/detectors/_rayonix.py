@@ -622,19 +622,9 @@ class Mar555(Detector):
     def __init__(self, pixel1=139e-6, pixel2=139e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
         Detector.__init__(self, pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
 
-        :return: dict with param for serialization
-        """
-        #TODO: Default orientation 0 or 3 ?
-        dico = {"pixel1": self.pixel1,
-                "pixel2": self.pixel2,
-                "orientation": self.orientation or 3}
-        if self.sensor:
-            dico["sensor"] = self.sensor.as_dict()
-        return dico
-
+    # get_config inherited from Detector; no changes needed
+    
     def set_config(self, config):
         """set the config of the detector
 
