@@ -167,7 +167,9 @@ class Maxipix(Detector):
 
         :return: dict with param for serialization
         """
-        dico = {"orientation": self.orientation or 3}
+        dico = super().get_config()
+        dico.pop("splineFile", None)  # Maxipix has no spline
+
         if ((self.max_shape is not None) and
                 ("MAX_SHAPE" in dir(self.__class__)) and
                 (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
@@ -175,8 +177,7 @@ class Maxipix(Detector):
         if ((self.module_size is not None) and
                 (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
             dico["module_size"] = self.module_size
-        if self.sensor:
-            dico["sensor"] = self.sensor.as_dict()
+
         return dico
 
     def set_config(self, config):
