@@ -451,9 +451,11 @@ class Mythen(_Dectris):
 
         :return: dict with param for serialization
         """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
+        config = super().get_config()  # handles sensor
+        config["pixel1"] = self._pixel1
+        config["pixel2"] = self._pixel2
+        config["orientation"] = self.orientation or 3  # fallback
+        return config
 
     def calc_mask(self):
         "Mythen have no masks"
