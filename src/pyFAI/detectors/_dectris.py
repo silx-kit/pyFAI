@@ -245,7 +245,6 @@ class Eiger(_Dectris):
         module_size = config.get("module_size")
         if module_size is not None:
             self.module_size = tuple(module_size)
-        #TODO Why is fall back 3 and in init 0?
         self._orientation = Orientation(config.get("orientation", 3))
         self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
 
