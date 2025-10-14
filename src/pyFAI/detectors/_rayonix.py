@@ -598,7 +598,7 @@ class Mar345(Detector):
                 raise err
         self.set_pixel1(config.get("pixel1"))
         self.set_pixel2(config.get("pixel2"))
-        
+
         self._orientation = Orientation(config.get("orientation", 3))
         self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
         return self
@@ -624,7 +624,7 @@ class Mar555(Detector):
 
 
     # get_config inherited from Detector; no changes needed
-    
+
     def set_config(self, config):
         """set the config of the detector
 

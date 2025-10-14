@@ -648,7 +648,7 @@ class Pilatus(_Dectris):
         """set the config of the detector
 
         For Pilatus detector, possible keys are: max_shape, module_size, x_offset_file, y_offset_file, orientation, sensor
-        
+
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
