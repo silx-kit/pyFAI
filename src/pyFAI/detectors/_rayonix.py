@@ -598,11 +598,9 @@ class Mar345(Detector):
                 raise err
         self.set_pixel1(config.get("pixel1"))
         self.set_pixel2(config.get("pixel2"))
-        #TODO: Default orientation 0 or 3 ?
-        #Or should it be via: super().set_config(config)
+        
         self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
-
+        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
         return self
 
 
