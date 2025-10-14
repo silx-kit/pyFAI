@@ -247,7 +247,6 @@ class Eiger(_Dectris):
             self.module_size = tuple(module_size)
         self._orientation = Orientation(config.get("orientation", 3))
         self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
-
         return self
 
 
@@ -665,7 +664,6 @@ class Pilatus(_Dectris):
         self._orientation = Orientation(config.get("orientation", 0))
 
         self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
-
 
         if "max_shape" in config:
             self.max_shape = tuple(config["max_shape"])

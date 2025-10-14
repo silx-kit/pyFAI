@@ -581,19 +581,6 @@ class Mar345(Detector):
         self._mask_crc = None
         return result
 
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        #TODO default orientation 0 or 3, please see constructor
-        dico = {"pixel1": self.pixel1,
-                "pixel2": self.pixel2,
-                "orientation": self.orientation or 3}
-        if self.sensor:
-            dico["sensor"] = self.sensor.as_dict()
-        return dico
-
     def set_config(self, config):
         """set the config of the detector
 
