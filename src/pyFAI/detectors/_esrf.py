@@ -183,8 +183,7 @@ class Maxipix(Detector):
     def set_config(self, config):
         """set the config of the detector
 
-        #TODO: Copy paste mistake
-        For Eiger detector, possible keys are: max_shape, module_size
+        For Maxipix detector, possible keys are: max_shape, module_size, orientation, sensor
 
         :param config: dict or JSON serialized dict
         :return: Maxipix instance
@@ -204,7 +203,7 @@ class Maxipix(Detector):
         if module_size is not None:
             self.module_size = tuple(module_size)
         self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+        self.sensor = SensorConfig(config.get("sensor")) if config.get("sensor") is not None else None
         return self
 
 
