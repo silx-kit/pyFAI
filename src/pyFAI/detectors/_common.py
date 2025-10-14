@@ -1495,16 +1495,9 @@ class NexusDetector(Detector):
         return self
 
     def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        config = {
-        "filename": self._filename,
-        "orientation": self.orientation or 3
-            }
-        if self.sensor:
-            config["sensor"] = self.sensor.as_dict()
+        """Return the configuration with arguments to the constructor."""
+        config = super().get_config()
+        config["filename"] = self._filename
         return config
 
 
