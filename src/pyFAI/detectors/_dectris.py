@@ -246,7 +246,7 @@ class Eiger(_Dectris):
         if module_size is not None:
             self.module_size = tuple(module_size)
         self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
 
         return self
 
