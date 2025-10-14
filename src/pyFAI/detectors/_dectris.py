@@ -663,6 +663,10 @@ class Pilatus(_Dectris):
 
         # pixel size is enforced by the detector itself
         self._orientation = Orientation(config.get("orientation", 0))
+
+        if "sensor" in config:
+            self.sensor = SensorConfig(config["sensor"])
+
         if "max_shape" in config:
             self.max_shape = tuple(config["max_shape"])
         module_size = config.get("module_size")
