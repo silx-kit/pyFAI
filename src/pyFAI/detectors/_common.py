@@ -1499,7 +1499,6 @@ class NexusDetector(Detector):
 
         :return: dict with param for serialization
         """
-        #TODO: Or via  super().get_config() ?
         config = {
         "filename": self._filename,
         "orientation": self.orientation or 3
