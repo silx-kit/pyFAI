@@ -443,8 +443,8 @@ class Mythen(_Dectris):
     MAX_SHAPE = (1, 1280)
     SENSORS = (Si320, Si450, Si1000)
 
-    def __init__(self, pixel1=8e-3, pixel2=50e-6, orientation=0):
-        super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2, orientation=orientation)
+    def __init__(self, pixel1=8e-3, pixel2=50e-6, orientation:int|Orientation=0, sensor:SensorConfig|None=None):
+        super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2, orientation=orientation, sensor=sensor)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
