@@ -648,8 +648,8 @@ class Pilatus(_Dectris):
     def set_config(self, config):
         """set the config of the detector
 
-        For Eiger detector, possible keys are: max_shape, module_size, x_offset_file, y_offset_file
-
+        For Pilatus detector, possible keys are: max_shape, module_size, x_offset_file, y_offset_file, orientation, sensor
+        
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
