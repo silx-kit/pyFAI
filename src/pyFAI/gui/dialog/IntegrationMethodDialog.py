@@ -62,12 +62,12 @@ class IntegrationMethodWidget(qt.QWidget):
     _DESCRIPTION_DOC = {
         "no": "No pixel splitting. Each pixel contributes to a single bin of the result. No bin correlation but more noise",
         "bbox": "Split the bounding box corresponding to the pixel in the integrated geometry. The smoothest splitting, blurs a bit the signal",
-        "pseudo": "Scale down the bounding box to the pixel area, before splitting. Good cost/precision compromize, similar to FIT2D",
+        "pseudo": "Scale down the bounding box to the pixel area, before splitting. Good cost/precision compromise, similar to FIT2D",
         "full": "Split each pixel as a polygon on the output bins. The costly high-precision choice",
         "histogram": "Direct integration method with the lowest memory footprint but slower",
         "lut": "Sparse matrix based integration using a look-up table. Long initalization time and highest memory usage. Often slower than CSR",
         "csr": "Sparse matrix based integration using a a CSR (compressed sparse row) representation. Long initalization time and high memory usage, but the fastest for processing",
-        "csc": "Sparse matrix based integration using a a CSC (compressed sparse column) representation. Long initalization time and high memory usage. Single-threaded but faster processsing than histogram",
+        "csc": "Sparse matrix based integration using a a CSC (compressed sparse column) representation. Long initalization time and high memory usage. Single-threaded but faster processing than histogram",
         "python": "Use a pure Python/numpy/scipy implementation. Slow but portable",
         "cython": "Use a Cython/C/C++ implementation. Fast and reliable default methods",
         "opencl": "Use an OpenCL implementation based on hardware accelerators. Fastest but hardware/driver dependant",
@@ -309,7 +309,7 @@ class IntegrationMethodWidget(qt.QWidget):
         elif not available2d:
             message = "Not available for 2D integration."
         else:
-            message = "Not available for botrh 1D/2D integrations."
+            message = "Not available for both 1D/2D integrations."
 
         self._error.setText(message)
         self._error.setVisible(message != "")
