@@ -80,8 +80,8 @@ class Integrator(Geometry):
     """If true, the Python engine integrator will normalize the mask to use the
     most frequent value of the mask as the non-masking value.
 
-    This behaviour is not consistant with other engines and is now deprecated.
-    This flag will be turned off in the comming releases.
+    This behaviour is not consistent with other engines and is now deprecated.
+    This flag will be turned off in the coming releases.
 
     Turning off this flag force the user to provide a mask with 0 as non-masking
     value. And any non-zero as masking value (negative or positive value). A
@@ -173,7 +173,7 @@ class Integrator(Geometry):
         :type mask: ndarray
         :param dummy: value of dead pixels
         :type dummy: float
-        :param delta_dumy: precision of dummy pixels
+        :param delta_dummy: precision of dummy pixels
         :type delta_dummy: float
         :param mode: can be "normal" or "numpy" (inverted) or "where" applied to the mask
         :type mode: str
@@ -193,10 +193,10 @@ class Integrator(Geometry):
             * "numpy": True for valid pixels, false for others
             * "where": does a numpy.where on the "numpy" output
 
-        This method tries to accomodate various types of masks (like
+        This method tries to accommodate various types of masks (like
         valid=0 & masked=-1, ...)
 
-        Note for the developper: we use a lot of numpy.logical_or in this method,
+        Note for the developer: we use a lot of numpy.logical_or in this method,
         the out= argument allows to recycle buffers and save considerable time in
         allocating temporary arrays.
         """
@@ -211,7 +211,7 @@ class Integrator(Geometry):
             mask = mask.astype(bool)
         if self.USE_LEGACY_MASK_NORMALIZATION:
             if mask.sum(dtype=int) > mask.size // 2:
-                reason = "The provided mask is not complient with other engines. "\
+                reason = "The provided mask is not compliant with other engines. "\
                     "The feature which automatically invert it will be removed soon. "\
                     "For more information see https://github.com/silx-kit/pyFAI/pull/868"
                 deprecated_warning(__name__, name="provided mask content", reason=reason)
@@ -322,7 +322,7 @@ class Integrator(Geometry):
         :type pos1_range: (float, float)
         :param mask_checksum: checksum of the mask buffer
         :type mask_checksum: int (or anything else ...)
-        :param unit: use to propagate the LUT object for further checkings
+        :param unit: use to propagate the LUT object for further checks
         :type unit: pyFAI.units.Unit or 2-tuple of them for 2D integration
         :param split: Splitting scheme: valid options are "no", "bbox", "full"
         :param algo: Sparse matrix format to use: "LUT", "CSR" or "CSC"
@@ -334,12 +334,12 @@ class Integrator(Geometry):
 
         This method is called when a look-up table needs to be set-up.
         The *shape* parameter, correspond to the shape of the original
-        datatset. It is possible to customize the number of point of
+        dataset. It is possible to customize the number of point of
         the output histogram with the *npt* parameter which can be
         either an integer for an 1D integration or a 2-tuple of
         integer in case of a 2D integration. The LUT will have a
         different shape: (npt, lut_max_size), the later parameter
-        being calculated during the instanciation of the splitBBoxLUT
+        being calculated during the instantiation of the splitBBoxLUT
         class.
 
         It is possible to prepare the LUT with a predefine
@@ -355,7 +355,7 @@ class Integrator(Geometry):
         pattern with the *pos0_range* (radial) and *pos1_range* (azimuthal).
 
         The *unit* parameter is just propagated to the LUT integrator
-        for further checkings: The aim is to prevent an integration to
+        for further checks: The aim is to prevent an integration to
         be performed in 2th-space when the LUT was setup in q space.
         Unit can also be a 2-tuple in the case of a 2D integration
         """
