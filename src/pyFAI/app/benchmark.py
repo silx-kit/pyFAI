@@ -79,10 +79,10 @@ def main(args=None):
     parser.add_argument("-n", "--number",
                         dest="number", default=10, type=float,
                         help="Perform the test for this amount of time, by default 10s/measurment")
-    parser.add_argument("-2d", "--2dimention",
+    parser.add_argument("-2d", "--2dimension",
                         action="store_true", dest="twodim", default=False,
                         help="Benchmark also algorithm for 2D-regrouping")
-    parser.add_argument("--no-1dimention",
+    parser.add_argument("--no-1dimension",
                         action="store_false", dest="onedim", default=True,
                         help="Do not benchmark algorithms for 1D-regrouping")
     parser.add_argument("-m", "--memprof",
