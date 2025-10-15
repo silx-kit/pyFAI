@@ -45,7 +45,7 @@ def read_data(image_path):
     Returns a numpy.array image from a file name or a URL.
 
     :param str image_path: Path of the image file
-    :rtype: numpy.ndarray regardless the dimention or the content
+    :rtype: numpy.ndarray regardless the dimension or the content
     :raises IOError: if the data is not reachable
     :raises TypeError: if the data is not an image (wrong size, wrong dimension)
     """
