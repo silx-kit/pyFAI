@@ -273,7 +273,7 @@ class Distortion(object):
                                                                       devicetype=self.device,
                                                                       block_size=self.workgroup,
                                                                       empty = self.empty)
-                    # Enforce the serial execution for the intergration as it is much faster
+                    # Enforce the serial execution for the integration as it is much faster
                     self.integrator.workgroup_size["csr_integrate4"] = 1, 1
             else:
                 if self.method == "lut":

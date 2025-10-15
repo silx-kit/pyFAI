@@ -438,7 +438,7 @@ class ControlPoints(object):
 
 
     def get_labels(self):
-        """Retieve the list of labels
+        """Retrieve the list of labels
 
         :return: list of labels as string
         """
