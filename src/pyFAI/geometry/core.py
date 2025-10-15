@@ -123,7 +123,7 @@ class Geometry:
     _LAST_POLARIZATION = "last_polarization"
 
     # To ease the copy of an instance. Mutable attributes are caches which are regenerated on use
-    _UNMUTABLE_ATTRS = (
+    _IMMUTABLE_ATTRS = (
         "_dist",
         "_poni1",
         "_poni2",
@@ -2593,7 +2593,7 @@ class Geometry:
             else:
                 raise ValueError("Bad FQN class, it must be a Geometry derivative")
 
-            for key in self._UNMUTABLE_ATTRS:
+            for key in self._IMMUTABLE_ATTRS:
                 new.__setattr__(key, self.__getattribute__(key))
         # TODO: replace param with a property, see #2300
         new.param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
@@ -2602,7 +2602,7 @@ class Geometry:
     def __copy__(self):
         """:return: a shallow copy of itself."""
         new = self.__class__(detector=self.detector)
-        for key in self._UNMUTABLE_ATTRS:
+        for key in self._IMMUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
         new._cached_array = self._cached_array.copy()
@@ -2620,7 +2620,7 @@ class Geometry:
         new_det = self.detector.__deepcopy__(memo)
         new.detector = new_det
 
-        for key in self._UNMUTABLE_ATTRS:
+        for key in self._IMMUTABLE_ATTRS:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
@@ -2640,7 +2640,7 @@ class Geometry:
         """Checks two geometries are equivalent.
 
         Typing will wait python 3.14"""
-        for key in self._UNMUTABLE_ATTRS+("parallax","detector", "orientation"):
+        for key in self._IMMUTABLE_ATTRS+("parallax","detector", "orientation"):
             try:
                 here =  self.__getattribute__(key)
                 there = other.__getattribute__(key)
