@@ -183,7 +183,7 @@ class CsrIntegrator1d(CSRIntegrator):
         :param bin_center: position of the bin center
         :param mask_checksum: just a place-holder to track which mask was used
 
-        Nota: bins value is deduced from the dimentionality of bin_centers
+        Nota: bins value is deduced from the dimensionality of bin_centers
         """
         self.bin_centers = bin_centers
         CSRIntegrator.__init__(self, image_size, lut, empty)
@@ -411,17 +411,17 @@ class CsrIntegrator1d(CSRIntegrator):
 
             signal = (raw - dark)
             variance = variance + dark_variance
-            normalization  = normalization_factor*(flat * solidangle * polarization * absortoption)
+            normalization  = normalization_factor*(flat * solidangle * polarization * absorption)
             count = number of pixel contributing
 
         Averaging is performed using the CSR representation of the look-up table on all
-        arrays after sorting pixels by apparant intensity and taking only the selected ones
+        arrays after sorting pixels by apparent intensity and taking only the selected ones
         based on quantiles and the length of the ensemble.
 
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessment
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
