@@ -425,8 +425,8 @@ class Geometry:
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        :param d1: ndarray of dimention 1/2 containing the Y pixel positions
-        :param d2: ndarray of dimention 1/2 containing the X pixel positions
+        :param d1: ndarray of dimension 1/2 containing the Y pixel positions
+        :param d2: ndarray of dimension 1/2 containing the X pixel positions
         :param poni1: value in the Y direction of the poni coordinate (meter)
         :param poni2: value in the X direction of the poni coordinate (meter)
         :param do_parallax: set to True to correct for the parallax effect
