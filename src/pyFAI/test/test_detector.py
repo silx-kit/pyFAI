@@ -49,6 +49,8 @@ from .. import io
 from ..utils.mathutil import expand2d
 from .utilstest import UtilsTest
 
+from ..detectors._xspectrum import _Lambda
+
 logger = logging.getLogger(__name__)
 
 
@@ -271,7 +273,7 @@ class TestDetector(unittest.TestCase):
         tests specific to non flat detectors to ensure consistency
         """
         a = detector_factory("Aarhus")
-        # to limit the memory footprint, devide size by 100
+        # to limit the memory footprint, divide size by 100
         a.binning = (10, 10)
         t0 = time.perf_counter()
         n = a.get_pixel_corners(use_cython=False)
@@ -412,6 +414,22 @@ class TestDetector(unittest.TestCase):
         det4 = detector_factory(filename)
         self.assertEqual(det2, det4, "after serialization to HDF5")
 
+    def test_sensor2(self):
+        ts = sensors.SensorConfig.from_dict({"material":"Si", "thickness":320e-6})
+        ts1 = sensors.SensorConfig.from_dict(ts.as_dict())
+        self.assertTrue(ts==ts1)
+        ts2 = sensors.SensorConfig.parse(str(ts))
+        self.assertTrue(ts.material==ts2.material)
+        self.assertTrue(numpy.allclose(ts.thickness,ts2.thickness))
+
+        fs = sensors.SensorConfig.from_dict({"material":"Si"})
+        fs1 = sensors.SensorConfig.from_dict(fs.as_dict())
+        self.assertTrue(fs==fs1)
+        fs2 = sensors.SensorConfig.parse(str(fs))
+        self.assertTrue(ts.material==ts2.material)
+        self.assertTrue(fs2==fs)
+
+
 
 class TestOrientation(unittest.TestCase):
     @classmethod
@@ -535,11 +553,43 @@ class TestOrientation(unittest.TestCase):
         self.assertEqual(detector_factory("Pilatus100k", {"orientation":4}).origin,(0, 487))
 
 
+def all_subclasses(cls):
+    subs = set(cls.__subclasses__())
+    for c in cls.__subclasses__():
+        subs |= all_subclasses(c)
+    return subs
+
+class TestLambdaDetectors(unittest.TestCase):
+    """Test that all _Lambda-based detectors have reasonable dimensions."""
+
+    def test_detector_shapes(self):
+        for cls in {_Lambda} | all_subclasses(_Lambda):
+            with self.subTest(detector=cls.__name__):
+                # Instantiate the detector
+                det = cls()
+
+                # Prefer MAX_SHAPE if defined, otherwise use module_size
+                det_shape = getattr(det, "MAX_SHAPE", det.module_size)
+
+                # Check that both dimensions are ≥ 256
+                self.assertGreaterEqual(det_shape[0], 256, f"{cls.__name__}: height too small")
+                self.assertGreaterEqual(det_shape[1], 256, f"{cls.__name__}: width too small")
+
+                # Access SENSORS
+                sensors = getattr(cls, "SENSORS", None)
+                # 1. Should exist
+                self.assertIsNotNone(sensors, f"{cls.__name__}: SENSORS is None")
+                # 2. Must not be empty
+                self.assertGreater(len(sensors), 0,
+                                   f"{cls.__name__}: SENSORS tuple is empty")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestDetector))
     testsuite.addTest(loader(TestOrientation))
+    testsuite.addTest(loader(TestLambdaDetectors))
     return testsuite
 
 

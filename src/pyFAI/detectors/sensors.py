@@ -49,7 +49,7 @@ from collections import namedtuple
 from ..containers import dataclass, fields
 import numpy
 from ..resources import resource_filename
-from ..utils.stringutil import to_eng
+from ..utils.stringutil import to_eng, from_eng
 
 EnergyRange = namedtuple("EnergyRange", ["min", "max"])
 logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ class SensorMaterial:
               "um":1e-4}
 
     def __init__(self, name:str, density:float):
-        """Costructor of the class
+        """Constructor of the class
         :param name: name of the sensor material
         :param density: density of the material in g/cm³
         """
@@ -130,7 +130,7 @@ class SensorMaterial:
         return numpy.interp(energy, data[:,0], data[:,1]) * self.rho * self._scale(unit)
 
     def mu_en(self, energy:float=None, unit:str="cm^-1") -> float:
-        """calculate the linear absorption coefficient of depositied energy
+        """calculate the linear absorption coefficient based on the deposited energy
 
         :param energy: in keV
         :return: linear absorption coefficient of deposited energy in the given unit
@@ -151,7 +151,6 @@ class SensorMaterial:
 
 # For the record: some classical sensors materials
 ALL_MATERIALS = {}
-
 ALL_MATERIALS["Si"] = Si_MATERIAL = SensorMaterial("Si", density=2.329)
 ALL_MATERIALS["Ge"] = Ge_MATERIAL = SensorMaterial("Ge", density=5.327)
 ALL_MATERIALS["CdTe"] = CdTe_MATERIAL = SensorMaterial("CdTe", density=5.85)
@@ -207,3 +206,16 @@ class SensorConfig:
                     value = ALL_MATERIALS.get(value) or value
                 to_init[key] = value
         return cls(**to_init)
+
+    @classmethod
+    def parse(cls, txt:str):
+        """Alternate constructor from strings like `Si,320µm`"""
+        if "," in txt:
+            material,thick = txt.split(",")
+        else:
+            material = txt.strip()
+            thick = "∞"
+        dico = {"material": material.strip()}
+        if thick != "∞":
+            dico["thickness"] = from_eng(thick)
+        return cls.from_dict(dico, inplace=True)
