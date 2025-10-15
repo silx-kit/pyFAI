@@ -671,7 +671,7 @@ def save_NXcansas(filename, result,
                   entry="entry",
                   instrument="beamline",
                   source_name="ESRF",
-                  source_type="synchotron",
+                  source_type="synchrotron",
                   source_probe="x-ray",
                   sample="sample",
                   extra=None):
@@ -684,7 +684,7 @@ def save_NXcansas(filename, result,
     :param title: title of the experiment
     :param entry: name of the entry
     :param instrument: name/brand of the instrument
-    :param source_name: name/brand of the particule source
+    :param source_name: name/brand of the particle source
     :param source_type: kind of source as a string
     :param source_probe: Any of these values: 'neutron' | 'x-ray' | 'electron'
     :param sample: sample name
