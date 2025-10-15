@@ -1861,10 +1861,10 @@ class Geometry:
         :param Rot_2: rotation around the slowest axis (y)
         :param Rot_3: rotation around the axis ORTHOGONAL to the detector plan
         :param PSize_1: pixel size in meter along the fastest dimension
-        :param PSize_2: pixel size in meter along the slowst dimension
+        :param PSize_2: pixel size in meter along the slowest dimension
         :param splinefile: name of the file containing the spline
         :param BSize_1: pixel binning factor along the fastest dimension
-        :param BSize_2: pixel binning factor along the slowst dimension
+        :param BSize_2: pixel binning factor along the slowest dimension
         :param WaveLength: wavelength used
         """
         # first define the detector
@@ -1911,10 +1911,10 @@ class Geometry:
             Rot_2: rotation around the slowest axis (y)
             Rot_3: rotation around the axis ORTHOGONAL to the detector plan
             PSize_1: pixel size in meter along the fastest dimension
-            PSize_2: pixel size in meter along the slowst dimension
+            PSize_2: pixel size in meter along the slowest dimension
             splineFile: name of the file containing the spline
             BSize_1: pixel binning factor along the fastest dimension
-            BSize_2: pixel binning factor along the slowst dimension
+            BSize_2: pixel binning factor along the slowest dimension
             WaveLength: wavelength used in meter
         """
 
