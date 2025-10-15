@@ -85,7 +85,7 @@ def _get_monitor_value_from_edf(image, monitor_key):
             raise MonitorNotFound("Monitor mnemonic '%s' not found in the header key '%s'" % (mnemonic, mnemonic_values_key))
 
         if index >= len(pos_values):
-            raise MonitorNotFound("Monitor value '%s' not found in '%s'. Not enougth values." % (pos_values_key))
+            raise MonitorNotFound("Monitor value '%s' not found in '%s'. Not enough values." % (pos_values_key))
 
         monitor = pos_values[index]
 
@@ -105,10 +105,10 @@ def _get_monitor_value_from_edf(image, monitor_key):
 def _get_monitor_value_from_hdf5(image, monitor_key):
     """Return the monitor value from an HDF5 image using an header key.
 
-    The monotor_key is a path from the image path containing:
+    The monitor_key is a path from the image path containing:
 
     - A dataset containing a scalar (a constant monitor)
-    - A dataset containing a vector of values (it must containes enougth values
+    - A dataset containing a vector of values (it must contain enough values
         than the amount of frames)
 
     :param fabio.fabioimage.FabioImage image: Image containing the header
@@ -136,7 +136,7 @@ def _get_monitor_value_from_hdf5(image, monitor_key):
         raise MonitorNotFound("Monitor path '%s' expect a vector of values" % (monitor_key))
 
     if image.currentframe >= monitor_dataset.size:
-        raise MonitorNotFound("Monitor path '%s' does not provide enougth values" % (monitor_key))
+        raise MonitorNotFound("Monitor path '%s' does not provide enough values" % (monitor_key))
 
     return monitor_dataset[image.currentframe]
 
@@ -155,7 +155,7 @@ def get_monitor_value(image, monitor_key):
         return Exception("No monitor defined")
 
     if fabio.version_info[0:2] < (0, 9):
-        # FIXME: Remove this dead code by upgrading the dependancy to fabio>=0.9
+        # FIXME: Remove this dead code by upgrading the dependency to fabio>=0.9
         if isinstance(image, fabio.edfimage.EdfImage):
             return _get_monitor_value_from_edf(image, monitor_key)
         elif isinstance(image, fabio.numpyimage.NumpyImage):
