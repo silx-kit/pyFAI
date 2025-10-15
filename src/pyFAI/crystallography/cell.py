@@ -367,7 +367,7 @@ class Cell:
 
 
     def save(self, name, long_name=None, doi=None, dmin=1.0, dest_dir=None):
-        """Save informations about the cell in a d-spacing file, usable as Calibrant
+        """Save information about the cell in a d-spacing file, usable as Calibrant
 
         :param name: name of the calibrant
         :param doi: reference of the publication used to parametrize the cell
