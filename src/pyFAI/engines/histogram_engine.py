@@ -197,9 +197,9 @@ def histogram2d_engine(radial, azimuthal, bins,
     :param dark_variance: provide an estimation of the variance of the dark_current,
     :param error_model: set to "poisson" for assuming the detector is poissonian and variance = raw + dark
     :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average
-    :param radial_range: enforce boundaries in radial dimention, 2tuple with lower and upper bound
-    :param azimuth_range: enforce boundaries in azimuthal dimention, 2tuple with lower and upper bound
-    :param allow_radial_neg: clip negative radial position (can a dimention be negative ?)
+    :param radial_range: enforce boundaries in radial dimension, 2tuple with lower and upper bound
+    :param azimuth_range: enforce boundaries in azimuthal dimension, 2tuple with lower and upper bound
+    :param allow_radial_neg: clip negative radial position (can a dimension be negative ?)
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[ TODO: unimplemented
     :param clip_pos1: clip the azimuthal range to [-pi pi] (or [0 2pi]), set to False to deactivate behavior TODO: unimplemented
 
@@ -237,7 +237,7 @@ def histogram2d_engine(radial, azimuthal, bins,
     azimuthal = azimuthal.ravel()
     prep.shape = -1, 4
     if prep.shape[0] != radial.size or prep.shape[0] != azimuthal.size:
-        raise RuntimeError("Preprocessed array size is unconsistent with radial or azimuthal array size")
+        raise RuntimeError("Preprocessed array size is inconsistent with radial or azimuthal array size")
     npt = tuple(max(1, i) for i in bins)
     if radial_range is None:
         if allow_radial_neg:
