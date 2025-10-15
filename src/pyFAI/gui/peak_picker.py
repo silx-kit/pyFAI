@@ -265,7 +265,7 @@ class PeakPicker(object):
         :param log: show z in log scale
         :param maximize: set to true to maximize window
         :param pick: activate pixel picking
-        :param widget_klass: provide the MplCalibWidget (either Qt or Jupyter) to instanciate the widget
+        :param widget_klass: provide the MplCalibWidget (either Qt or Jupyter) to instantiate the widget
         :return: None
         """
 

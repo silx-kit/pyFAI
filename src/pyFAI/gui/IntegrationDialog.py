@@ -300,7 +300,7 @@ class IntegrationDialog(qt.QWidget):
     def get_config(self):
         """Read the configuration of the plugin and returns it as a dictionary
 
-        :return: dict with all informations
+        :return: dict with all information
         """
         config = self.get_worker_config().as_dict()
         return config
