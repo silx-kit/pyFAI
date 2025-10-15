@@ -329,8 +329,8 @@ class IntegrationMethod:
     def parse(cls, smth, dim=1):
         """Parse the string/list/tuple/dict for the content
 
-        :param smth: somthing
-        :param int dim: dimentionnalty of integrator
+        :param smth: something
+        :param int dim: dimensionality of integrator
         :return: one method fitting the requirement or the default method
         """
         res = []
@@ -397,7 +397,7 @@ class IntegrationMethod:
         :param class_funct_legacy: class used and function to be used for legacy integrator
         :param class_funct_ng: class used and function to be used for new generation integrator
         :param old_method: former method name (legacy)
-        :param extra: extra informations
+        :param extra: extra 
         """
         self.__dimension = int(dim)
         self.__algorithm = str(algo)
@@ -430,11 +430,11 @@ class IntegrationMethod:
         return "IntegrationMethod(%s)" % string
 
     def __hash__(self):
-        """Make it independant from weighted"""
+        """Make it independent from weighted"""
         return self.__method.__hash__()
 
     def __eq__(self, other):
-        """Make it independant from weighted"""
+        """Make it independent from weighted"""
         if isinstance(other, self.__class__):
             return self.__method == other.method
         elif isinstance(other, Method):
