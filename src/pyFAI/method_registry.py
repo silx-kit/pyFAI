@@ -397,7 +397,7 @@ class IntegrationMethod:
         :param class_funct_legacy: class used and function to be used for legacy integrator
         :param class_funct_ng: class used and function to be used for new generation integrator
         :param old_method: former method name (legacy)
-        :param extra: extra 
+        :param extra: extra
         """
         self.__dimension = int(dim)
         self.__algorithm = str(algo)
