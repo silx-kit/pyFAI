@@ -2766,7 +2766,7 @@ class Geometry:
                         shape = ary.array.shape[:2]
                     break
         return shape
-    
+
 
     @property
     def dist(self):
@@ -2788,7 +2788,7 @@ class Geometry:
 
     @poni1.setter
     def poni1(self, value):
-        if isinstance(value, float): #TODO: Is this still necessary? 
+        if isinstance(value, float): #TODO: Is this still necessary?
             self._poni1 = value
         elif isinstance(value, (tuple, list)):
             self._poni1 = float(value[0])
@@ -2902,7 +2902,7 @@ class Geometry:
         self.reset()
         # restore updated values
         self._cached_array["q_delta"] = dqa
-        #TODO: This bypasses the qa read only property? 
+        #TODO: This bypasses the qa read only property?
         self._cached_array["q_center"] = qa
         self._cached_array["q_corner"] = q_corner
 
@@ -3065,7 +3065,7 @@ class Geometry:
 
     @spline.setter
     def spline(self, value):
-        self.detector.spline = value 
+        self.detector.spline = value
 
     # deprecated compatibility layer
     get_spline = deprecated(spline.fget, reason="use property", since_version="2025.09")
@@ -3141,7 +3141,7 @@ class Geometry:
     # Property to provide _dssa and _dssa_crc and so one to maintain the API
     @property
     def _dssa(self):
-        key = f"solid_angle#{self._dssa_order}" 
+        key = f"solid_angle#{self._dssa_order}"
         return self._cached_array.get(key)
 
     @property
