@@ -294,7 +294,7 @@ def expand(
     :param mode: "constant", "nearest", "reflect" or "mirror"
     :param cval: filling value used for constant, 0.0 by default
 
-    Nota: sigma is the half-width of the kernel. For gaussian convolution it is adviced that it is 4*sigma_of_gaussian
+    Nota: sigma is the half-width of the kernel. For gaussian convolution it is advised that it is 4*sigma_of_gaussian
     """
     s0, s1 = input_img.shape
     dtype = input_img.dtype
@@ -617,7 +617,7 @@ def _numpy_backport_percentile(a, q, axis=None, out=None, overwrite_input=False)
 
     Returns
     -------
-    pcntile : ndarray
+    percentile : ndarray
         A new array holding the result (unless `out` is specified, in
         which case that array is returned instead).  If the input contains
         integers, or floats of smaller precision than 64, then the output
