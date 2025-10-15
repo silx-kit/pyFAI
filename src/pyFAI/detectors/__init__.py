@@ -44,8 +44,8 @@ from ._dectris import *   # noqa: F403
 from ._imxpad import *    # noqa: F403
 from ._rayonix import *   # noqa: F403
 from ._esrf import *      # noqa: F403
-from ._xspectrum import * # noqa: F403 
-from ._psi import *       # noqa: F403  
+from ._xspectrum import * # noqa: F403
+from ._psi import *       # noqa: F403
 from ._non_flat import *  # noqa: F403
 from ._others import *    # noqa: F403
 from ._hexagonal import * # noqa: F403
