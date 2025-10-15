@@ -57,7 +57,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     It also performs the preprocessing using the preproc kernel
     """
     BLOCK_SIZE = 32
-    # Intel CPU driver calims preferred workgroup is 128 !
+    # Intel CPU driver claims preferred workgroup is 128 !
     buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
