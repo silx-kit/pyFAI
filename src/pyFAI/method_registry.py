@@ -385,7 +385,7 @@ class IntegrationMethod:
                  old_method=None, extra=None):
         r"""Constructor of the class, registering the methods.
 
-        ⚠ DO NOT INSTANCIATE THIS CLASS ... IT MAY INTERFER WITH PYFAI ⚠
+        ⚠ DO NOT INSTANTIATE THIS CLASS ... IT MAY INTERFERE WITH PYFAI ⚠
 
 
         :param dim: 1 or 2 integration engine
