@@ -16,7 +16,7 @@ Change-log of versions
 - [GUI] Like `silx`, `pyFAI` moves from pyQt5 to pySide6 (or pyQt6). Several bugs were found
   and addressed to increase compatibility with Qt6. PyQt5 is no more a priority.
 - [Pilx] is now compatible with files produced by mesh-scan on BM29 in addition to diffmap.
-- [median filtering] fix an infinite loop in the OpenCL code
+- [median filtering] fix an infinite loop in the OpenCL code.
 - [Crystallography] improvements:
   * Move most of the `calibrant` file into several other in the crystallography module
   * Calibrant have seen the IO part devoted to a dataclass called CalibrantConfig:
@@ -37,6 +37,8 @@ Change-log of versions
 - [Deprecation] `splineFile` --> `splinefile` in most arguments and also as properties
 - Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the Cython path for geometry initialization, less prone to numerical noise.
   Cython is still prefered for geometry optimization where performance is critical.
+- Start to support type annotation in the code.
+- Start to replace python2.5 style properties with @property dectorator. Deprecate former accessors.
 - Supports python 3.10-3.14
 - List of contributors for this release: Gudrun Lotze, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
 

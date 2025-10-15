@@ -425,7 +425,7 @@ class Parallax:
     due to parallax effect from the sine of the incidence angle
 
     """
-    SIZE = 256  # <8k  best fits into L1 cache
+    SIZE = 1024  # <8k  best fits into L1 cache
 
     def __init__(self, sensor=None, beam=None):
         """Constructor for the Parallax class
@@ -486,6 +486,7 @@ class Parallax:
                 if "class" in bfg:
                     classname = bfg["class"]
                     Klass = globals()[classname]
+                    # Nota: dynamic instanciation could be dangerous, fix this
                 else:
                     Klass = Beam
                 self.beam = Klass()

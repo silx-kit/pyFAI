@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>967</width>
+    <width>815</width>
     <height>954</height>
    </rect>
   </property>
@@ -128,7 +128,7 @@ background-color: transparent;
                </sizepolicy>
               </property>
               <property name="text">
-               <string>TextLabel</string>
+               <string>Description of the orientation</string>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -142,13 +142,6 @@ background-color: transparent;
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="_detectorSensorParallax">
-        <property name="text">
-         <string>Sensor: correct parallax (slower)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QGroupBox" name="_sensorGroup">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -157,9 +150,16 @@ background-color: transparent;
          </sizepolicy>
         </property>
         <property name="title">
-         <string/>
+         <string>Sensor:</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_13">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Manufacturer info</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
@@ -171,7 +171,7 @@ background-color: transparent;
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Material</string>
+              <string>Material:</string>
              </property>
             </widget>
            </item>
@@ -191,21 +191,21 @@ background-color: transparent;
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Thickness</string>
+              <string>Thickness:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="_detectorSensorThickness">
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            <widget class="QComboBox" name="_detectorSensorThickness">
+             <property name="editable">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="label_3">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -216,6 +216,26 @@ background-color: transparent;
             </widget>
            </item>
           </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="_detectorSensorParallax">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Parralax correction modifies the geometry of the detector which depends then on the energy on the x-ray and the material of the sensor. &lt;/p&gt;&lt;p&gt;For now, calculations are performed using &lt;span style=&quot; font-family:'monospace';&quot;&gt;numpy&lt;/span&gt;, thus ~6x slower. &lt;/p&gt;&lt;p&gt;Activate this option when calibrating rings where 2θ&amp;gt;30° &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Correct parallax (slow)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="_detectorSensorAbsorbance">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Modify the &lt;span style=&quot; font-style:italic;&quot;&gt;flatfield&lt;/span&gt; to take into account the larger absorption of more inclined x-ray. Usually negligeable.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Correct absorbance</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -658,9 +678,7 @@ background-color: transparent;
   <tabstop>_manufacturerList</tabstop>
   <tabstop>_customList</tabstop>
   <tabstop>_detectorOrientation</tabstop>
-  <tabstop>_detectorSensorParallax</tabstop>
   <tabstop>_detectorSensorMaterials</tabstop>
-  <tabstop>_detectorSensorThickness</tabstop>
   <tabstop>_detectorView</tabstop>
   <tabstop>_splineFile</tabstop>
   <tabstop>_splineLoader</tabstop>
