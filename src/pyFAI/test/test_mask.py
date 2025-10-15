@@ -32,19 +32,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2024"
+__date__ = "10/10/2025"
 
 import unittest
 import numpy
 import logging
 import fabio
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
-
-if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
 from .. import load, detectors
 from ..integrator.azimuthal import AzimuthalIntegrator
+logger = logging.getLogger(__name__)
+if logger.getEffectiveLevel() <= logging.INFO:
+    import pylab
 
 
 class TestMask(unittest.TestCase):

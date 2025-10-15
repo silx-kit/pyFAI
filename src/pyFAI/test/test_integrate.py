@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2025"
+__date__ = "10/10/2025"
 
 import contextlib
 import os
@@ -40,13 +40,13 @@ import numpy.testing
 import fabio
 import logging
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult, Integrate2dResult
 from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
 from ..utils import mathutil
 from ..method_registry import IntegrationMethod
+logger = logging.getLogger(__name__)
 
 
 @contextlib.contextmanager
@@ -144,10 +144,11 @@ class TestIntegrate1D(unittest.TestCase):
                                                  error_model="poisson")
                 # self.ai.reset()
             keys = list(res.keys())
-            norm = lambda a: a.sum(axis=-1, dtype="float64") if a.ndim == 2 else a
+            # norm = lambda a: a.sum(axis=-1, dtype="float64") if a.ndim == 2 else a
             for i, a in enumerate(keys):
                 for b in keys[i:]:
-                    if a == b: continue
+                    if a == b:
+                        continue
                     resa = res[a]
                     resb = res[b]
                     R = mathutil.rwp(resa[:2], resb[:2])
@@ -288,68 +289,68 @@ class TestIntegrate2D(unittest.TestCase):
 class TestIntegrateResult(unittest.TestCase):
 
     def setUp(self):
-        self.I = numpy.array([[1, 2], [3, 4]])
+        self.intensity = numpy.array([[1, 2], [3, 4]])
         self.radial = numpy.array([[3, 2], [3, 4]])
         self.azimuthal = numpy.array([[2, 2], [3, 4]])
         self.sigma = numpy.array([[4, 2], [3, 4]])
 
     def tearDown(self):
-        self.I = self.radial = self.azimuthal = self.sigma = None
+        self.intensity = self.radial = self.azimuthal = self.sigma = None
 
     def test_result_1d(self):
-        result = Integrate1dResult(self.radial, self.I)
+        result = Integrate1dResult(self.radial, self.intensity)
         # as tuple
-        radial, I = result
-        numpy.testing.assert_equal((self.I, self.radial), (I, radial))
+        radial, intensity = result
+        numpy.testing.assert_equal((self.intensity, self.radial), (intensity, radial))
         # as attributes
-        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.intensity, result.intensity)
         numpy.testing.assert_array_equal(self.radial, result.radial)
         self.assertIsNone(result.sigma)
 
     def test_result_2d(self):
-        result = Integrate2dResult(self.I, self.radial, self.azimuthal)
+        result = Integrate2dResult(self.intensity, self.radial, self.azimuthal)
         # as tuple
-        I, radial, azimuthal = result
-        numpy.testing.assert_equal((self.I, self.radial, self.azimuthal), (I, radial, azimuthal))
+        intensity, radial, azimuthal = result
+        numpy.testing.assert_equal((self.intensity, self.radial, self.azimuthal), (intensity, radial, azimuthal))
         # as attributes
-        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.intensity, result.intensity)
         numpy.testing.assert_array_equal(self.radial, result.radial)
         numpy.testing.assert_array_equal(self.azimuthal, result.azimuthal)
         self.assertIsNone(result.sigma)
 
     def test_result_1d_with_sigma(self):
-        result = Integrate1dResult(self.radial, self.I, self.sigma)
+        result = Integrate1dResult(self.radial, self.intensity, self.sigma)
         # as tuple
-        radial, I, sigma = result
-        numpy.testing.assert_equal((self.radial, self.I, self.sigma), (radial, I, sigma))
+        radial, intensity, sigma = result
+        numpy.testing.assert_equal((self.radial, self.intensity, self.sigma), (radial, intensity, sigma))
         # as attributes
-        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.intensity, result.intensity)
         numpy.testing.assert_array_equal(self.radial, result.radial)
         numpy.testing.assert_array_equal(self.sigma, result.sigma)
 
     def test_result_2d_with_sigma(self):
-        result = Integrate2dResult(self.I, self.radial, self.azimuthal, self.sigma)
+        result = Integrate2dResult(self.intensity, self.radial, self.azimuthal, self.sigma)
         # as tuple
-        I, radial, azimuthal, sigma = result
-        numpy.testing.assert_equal((self.I, self.radial, self.azimuthal, self.sigma), (I, radial, azimuthal, sigma))
+        intensity, radial, azimuthal, sigma = result
+        numpy.testing.assert_equal((self.intensity, self.radial, self.azimuthal, self.sigma), (intensity, radial, azimuthal, sigma))
         # as attributes
-        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.intensity, result.intensity)
         numpy.testing.assert_array_equal(self.radial, result.radial)
         numpy.testing.assert_array_equal(self.azimuthal, result.azimuthal)
         numpy.testing.assert_array_equal(self.sigma, result.sigma)
 
     def test_result_1d_unit(self):
-        result = Integrate1dResult(self.radial, self.I, self.sigma)
+        result = Integrate1dResult(self.radial, self.intensity, self.sigma)
         result._set_unit("foobar")
         numpy.testing.assert_array_equal("foobar", result.unit)
 
     def test_result_1d_count(self):
-        result = Integrate1dResult(self.radial, self.I, self.sigma)
+        result = Integrate1dResult(self.radial, self.intensity, self.sigma)
         result._set_count(self.sigma)
         numpy.testing.assert_array_equal(self.sigma, result.count)
 
     def test_result_2d_sum(self):
-        result = Integrate2dResult(self.I, self.radial, self.azimuthal, self.sigma)
+        result = Integrate2dResult(self.intensity, self.radial, self.azimuthal, self.sigma)
         result._set_sum(self.sigma)
         numpy.testing.assert_array_equal(self.sigma, result.sum)
 

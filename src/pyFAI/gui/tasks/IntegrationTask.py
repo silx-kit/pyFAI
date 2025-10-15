@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2023 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "26/09/2025"
+__date__ = "08/10/2025"
 
 import logging
 import numpy
@@ -1165,7 +1165,6 @@ class IntegrationTask(AbstractCalibrationTask):
         with jsonFile.lockContext():
             jsonFile.setValue(filename)
 
-        experimentSettingsModel = model.experimentSettingsModel()
         workerConfig = integration_config.WorkerConfig(poni=self.__getPoni())
         workerConfig.nbpt_rad = self.model().integrationSettingsModel().nPointsRadial().value()
         workerConfig.nbpt_azim = self.model().integrationSettingsModel().nPointsAzimuthal().value()
@@ -1176,10 +1175,11 @@ class IntegrationTask(AbstractCalibrationTask):
             workerConfig.polarization_factor = self.__polarizationModel.value()
         else:
             workerConfig.polarization_description = None
-        workerConfig.mask_file = model.experimentSettingsModel().mask().filename()
-        workerConfig.flat_field = model.experimentSettingsModel().flat().filename()
-        workerConfig.dark_current = model.experimentSettingsModel().dark().filename()
-        image = model.experimentSettingsModel().image().value()
+        experimentSettingsModel = model.experimentSettingsModel()
+        workerConfig.mask_file = experimentSettingsModel.mask().filename()
+        workerConfig.flat_field = experimentSettingsModel.flat().filename()
+        workerConfig.dark_current = experimentSettingsModel.dark().filename()
+        image = experimentSettingsModel.image().value()
         if image is not None:
             workerConfig.shape = numpy.array(image).shape
         try:

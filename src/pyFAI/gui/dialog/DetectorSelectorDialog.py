@@ -23,9 +23,9 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls", "J. Kieffer"]
+__authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "03/10/2025"
+__date__ = "06/10/2025"
 
 import os
 import logging
@@ -419,7 +419,7 @@ class DetectorSelectorDrop(qt.QWidget):
                     splineFile = splineFile.strip()
                     if splineFile == "":
                         splineFile = None
-                detector.splineFile = splineFile
+                detector.splinefile = splineFile
             return detector
         else:
             raise RuntimeError("field should be FILE, MANUAL or eventually None")
@@ -484,7 +484,7 @@ class DetectorSelectorDrop(qt.QWidget):
     def __selectSplineDetector(self, detector):
         """Select and display the detector using zero copy."""
         self.__descriptionFile.lockSignals()
-        self.__descriptionFile.setValue(detector.splineFile)
+        self.__descriptionFile.setValue(detector.splinefile)
         # FIXME: THe unlock send signals, then it's not the way to avoid processing
         self.__descriptionFile.unlockSignals()
         self.__detectorFromFile = detector
@@ -553,7 +553,7 @@ class DetectorSelectorDrop(qt.QWidget):
         selectionModel.select(selection, qt.QItemSelectionModel.ClearAndSelect)
         self._detectorView.scrollTo(indexStart, qt.QAbstractItemView.PositionAtCenter)
 
-        splineFile = detector.splineFile
+        splineFile = detector.splinefile
         if splineFile is not None:
             self.__splineFile.setValue(splineFile)
 

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,13 +33,12 @@ __author__ = "Edgar Gutiérrez Fernández"
 __contact__ = "edgar.gutierrez-fernandez@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2025"
+__date__ = "10/10/2025"
 
 import unittest
 import logging
 import numpy
 from ..calibrant import get_calibrant
-logger = logging.getLogger(__name__)
 from ..integrator.fiber import FiberIntegrator
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..detectors import detector_factory
@@ -48,6 +47,8 @@ from ..units import parse_fiber_unit
 from ..units import UnitFiber
 from ..test.utilstest import UtilsTest
 from .. import load
+logger = logging.getLogger(__name__)
+
 
 class TestFiberIntegrator(unittest.TestCase):
 
@@ -142,9 +143,10 @@ class TestFiberIntegrator(unittest.TestCase):
     def test_parse_wrong_units(self):
         correct = parse_fiber_unit(unit='qip_nm^-1')
         def wrong():
-            _ = parse_fiber_unit(unit='q_nm^-1')
+            return parse_fiber_unit(unit='q_nm^-1')
 
         self.assertRaises(Exception, wrong)
+        self.assertTrue(bool(correct))
 
     def test_unique_units(self):
         gi_parameters_1 = {"incident_angle" : 0.2,
@@ -294,17 +296,20 @@ class TestFiberIntegrator(unittest.TestCase):
 
     def test_integrate1d_vertical_runtimeerror(self):
         def res1d_ref():
-            wrong = self.fi.integrate1d_grazing_incidence(data=self.data, vertical_integration=True)
+            return self.fi.integrate1d_grazing_incidence(data=self.data, vertical_integration=True)
 
         self.assertRaises(RuntimeError, res1d_ref)
         correct = self.fi.integrate1d_grazing_incidence(data=self.data, npt_oop=100, vertical_integration=True)
+        self.assertTrue(bool(correct))
 
     def test_integrate1d_horizontal_runtimeerror(self):
         def res1d_ref():
-            wrong = self.fi.integrate1d_grazing_incidence(data=self.data, vertical_integration=False)
+            return self.fi.integrate1d_grazing_incidence(data=self.data, vertical_integration=False)
 
         self.assertRaises(RuntimeError, res1d_ref)
         correct = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=100, vertical_integration=False)
+        self.assertTrue(bool(correct))
+
 
     def test_integrate1d_defaults(self):
         res1d_vertical_ref = self.fi.integrate1d_grazing_incidence(data=self.data, npt_oop=100, vertical_integration=True)

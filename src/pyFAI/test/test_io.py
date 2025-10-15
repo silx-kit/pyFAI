@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2024"
+__date__ = "10/10/2025"
 
 import unittest
 import os
@@ -43,15 +43,14 @@ import sys
 import logging
 import pathlib
 from .utilstest import UtilsTest
-
-logger = logging.getLogger(__name__)
-pyFAI = sys.modules["pyFAI"]
-from pyFAI import io
-from ..io import spots
+from .. import io
 from ..io.ponifile import PoniFile
+from ..io import spots
 import h5py
 import fabio
 from ..integrator import azimuthal as azimuthalIntegrator
+logger = logging.getLogger(__name__)
+pyFAI = sys.modules["pyFAI"]
 
 
 class TestPoniFile(unittest.TestCase):
@@ -162,9 +161,8 @@ class TestNexus(unittest.TestCase):
                 self.assertEqual(str(a), str(b), "unit matches")
 
             elif isinstance(a, dict):
-                for l in a:
-                    # print(l, a[l])
-                    self.assertEqual(a[l], b[l], f"{k}[{l}]")
+                for key in a:
+                    self.assertEqual(a[key], b[key], f"{k}[{key}]")
             else:
                 logger.warning("unchecked: %s vs %s", a, b)
         # clean up
@@ -204,9 +202,8 @@ class TestNexus(unittest.TestCase):
                 self.assertEqual(str(a), str(b), "unit matches")
 
             elif isinstance(a, dict):
-                for l in a:
-                    # print(l, a[l])
-                    self.assertEqual(a[l], b[l], f"{k}[{l}]")
+                for key in a:
+                    self.assertEqual(a[key], b[key], f"{k}[{key}]")
             else:
                 logger.warning("unchecked: %s vs %s", a, b)
         # clean up
@@ -306,13 +303,13 @@ class TestSpotWriter(unittest.TestCase):
 
     def test_nexus(self):
         tmpfile = os.path.join(UtilsTest.tempdir, "io_FabIOwriter_spots.nxs")
-        io.spots.save_spots_nexus(tmpfile, self.spots, beamline="beamline", ai=self.ai)
+        spots.save_spots_nexus(tmpfile, self.spots, beamline="beamline", ai=self.ai)
         size = os.stat(tmpfile)
         self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
     def test_cxi(self):
         tmpfile = os.path.join(UtilsTest.tempdir, "io_FabIOwriter_spots.nxs")
-        io.spots.save_spots_cxi(tmpfile, self.spots, beamline="beamline", ai=self.ai)
+        spots.save_spots_cxi(tmpfile, self.spots, beamline="beamline", ai=self.ai)
         size = os.stat(tmpfile)
         self.assertGreater(size.st_size, sum(i.size for i in self.spots), "file is large enough")
 
@@ -347,6 +344,7 @@ class TestXrdmlWriter(unittest.TestCase):
         from xml.etree import ElementTree as et
         with open(tmpfile, "rb") as f:
             xml = et.fromstring(f.read())
+        self.assertTrue(bool(xml))
 
 
 

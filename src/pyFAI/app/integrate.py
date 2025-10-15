@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2025"
+__date__ = "07/10/2025"
 __satus__ = "production"
 
 import sys
@@ -44,13 +44,6 @@ import collections
 import contextlib
 from argparse import ArgumentParser
 import logging
-logging.basicConfig(level=logging.INFO)
-logging.captureWarnings(True)
-logger = logging.getLogger(__name__)
-try:
-    import hdf5plugin  # noqa
-except ImportError:
-    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 import fabio
 from .. import utils, io, version as pyFAI_version, date as pyFAI_date
 from ..io import DefaultAiWriter, HDF5Writer
@@ -58,6 +51,13 @@ from ..io.integration_config import WorkerConfig
 from ..utils.shell import ProgressBar
 from ..utils import logging_utils, header_utils
 from ..worker import Worker
+logging.basicConfig(level=logging.INFO)
+logging.captureWarnings(True)
+logger = logging.getLogger(__name__)
+try:
+    import hdf5plugin  # noqa
+except ImportError:
+    logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
 
 def integrate_gui(options, args):

@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/05/2025"
+__date__ = "08/10/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -40,13 +40,14 @@ import posixpath
 import copy
 import json
 import logging
-logger = logging.getLogger(__name__)
 from collections import namedtuple
 import numpy
 import h5py
 from .tree import TreeItem
 from .integration_config import dataclass, ClassVar, WorkerConfig, fields, asdict
 from .nexus import is_hdf5
+
+logger = logging.getLogger(__name__)
 
 #constants:
 CURRENT_VERSION = 1  # former version were unassigned
@@ -214,10 +215,10 @@ class ListDataSet(list):
         """
         :return: common directory structure
         """
-        l = len(self)
-        if l==0:
+        nbs = len(self)
+        if nbs==0:
             return ""
-        elif l==1:
+        elif nbs==1:
             return os.path.normpath(self[0].path)
         else:
             common = os.path.commonpath([i.path for i in self])

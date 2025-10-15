@@ -893,7 +893,7 @@ class GoniometerRefinement(Goniometer):
         if method.lower() in ["simplex", "nelder-mead"]:
             method = "Nelder-Mead"
             bounds = None
-            logger.warning(f"No bounds for optimization method Nelder-Mead")
+            logger.warning("No bounds for optimization method Nelder-Mead")
         else:
             bounds = self.bounds
         former_error = self.chi2()
@@ -942,7 +942,7 @@ class GoniometerRefinement(Goniometer):
         if method.lower() in ["simplex", "nelder-mead"]:
             method = "Nelder-Mead"
             local_bounds = [(None, None) for i in self.param]
-            logger.warning(f"No bounds for optimization method Nelder-Mead")
+            logger.warning("No bounds for optimization method Nelder-Mead")
         else:
             if self.bounds:
                 local_bounds = self.bounds

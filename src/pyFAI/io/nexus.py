@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2025"
+__date__ = "08/10/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -49,7 +49,7 @@ from ..method_registry import IntegrationMethod
 logger = logging.getLogger(__name__)
 try:
     import h5py
-except ImportError as error:
+except ImportError:
     h5py = None
     logger.error("h5py module missing")
 else:
@@ -454,7 +454,8 @@ def load_nexus(filename):
     :param filename: the name of the nexus file
     :return: parsed result
     """
-    autodecode = lambda ma: ma.decode() if isinstance(ma, bytes) else ma
+    def autodecode(ma):
+        return ma.decode() if isinstance(ma, bytes) else ma
     with Nexus(filename, mode="r") as nxs:
         entry = nxs.get_entries()[0]
         ad = autodecode(entry["definition"][()])
@@ -585,7 +586,7 @@ def save_NXmonpd(filename, result,
         entry_grp["definition"] = "NXmonopd"
         entry_grp["definition"].attrs["version"] = "3.1"
 
-        process = _save_pyFAI(nxs, entry_grp, result)
+        _save_pyFAI(nxs, entry_grp, result)
 
         # sample
         sample_grp = nxs.new_class(entry_grp, sample, "NXsample")

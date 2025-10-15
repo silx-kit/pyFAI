@@ -39,15 +39,18 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, to_eng
+from ._common import Detector, to_eng, SensorConfig
 from ._dectris import _Dectris
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
 
+Si320 = SensorConfig.from_dict({"material": "Si", "thickness": 320e-6})
+Si450 = SensorConfig.from_dict({"material": "Si", "thickness": 450e-6})
+
 
 class Jungfrau(Detector):
     """
-    Raw Jungfrau module without sub-module pixel expension applied.
+    Raw Jungfrau module without sub-module pixel expansion applied.
     """
     MANUFACTURER = "PSI"
 
@@ -58,6 +61,7 @@ class Jungfrau(Detector):
     force_pixel = True
     aliases = ["Jungfrau 500k"]
     uniform_pixel = False
+    SENSORS=(Si320, Si450)
 
     @classmethod
     def _calc_pixels_size(cls, length, module_size, pixel_size):
@@ -83,8 +87,8 @@ class Jungfrau(Detector):
             size[i * module_size] = cls.BORDER_SIZE_RELATIVE
         return pixel_size * size
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
@@ -92,7 +96,13 @@ class Jungfrau(Detector):
             self.module_size = module_size
 
     def __repr__(self):
-        return f"Detector {self.name}%s\t PixelSize= {to_eng(self.pixel1)}m, {to_eng(self.pixel2)}m"
+        txt = f"Detector {self.name}%s\t PixelSize= {to_eng(self.pixel1)}m, {to_eng(self.pixel2)}m"
+        if self.orientation:
+            txt+=f"\t {self.orientation.name} ({self.orientation.value})"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
+        return txt
+
 
     def calc_pixels_edges(self):
         """
@@ -169,7 +179,7 @@ class Jungfrau(Detector):
         the same shape.
 
         """
-        # if the detctor has been tweaked with an ASCII geometry ... fall-back on the classical method:
+        # if the detector has been tweaked with an ASCII geometry ... fall back on the classical method:
         if self._pixel_corners is not None:
             return Detector.calc_cartesian_positions(self, d1=d1, d2=d2, center=center, use_cython=use_cython)
 
@@ -198,7 +208,7 @@ class Jungfrau(Detector):
 
 class Jungfrau4M(_Dectris):
     """
-    Jungfrau 4M module without sub-module pixel expension applied.
+    Jungfrau 4M module without sub-module pixel expansion applied.
     """
     MANUFACTURER = "PSI"
     MODULE_SIZE = (514, 1030)  # number of pixels per module (y, x)
@@ -208,9 +218,11 @@ class Jungfrau4M(_Dectris):
     force_pixel = True
     aliases = ["Jungfrau 4M"]
     uniform_pixel = True
+    SENSORS=(Si320, Si450)
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0,sensor:SensorConfig|None=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation,sensor=sensor)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
@@ -220,7 +232,7 @@ class Jungfrau4M(_Dectris):
 
 class Jungfrau1M(Jungfrau4M):
     """
-    Jungfrau 1M module without sub-module pixel expension applied.
+    Jungfrau 1M module without sub-module pixel expansion applied.
     """
     MANUFACTURER = "PSI"
     MODULE_SIZE = (514, 1030)  # number of pixels per module (y, x)
@@ -236,7 +248,7 @@ class Jungfrau8M(Jungfrau):
     """
     Jungfrau 8M module composed of 16 modules, 12 horizontals and 4 vertical
 
-    To simplyfy the layout, one considers the chips (256x256)
+    To simplify the layout, one considers the chips (256x256)
     thus there are 128 chips (8 per modules)
     """
     MANUFACTURER = "PSI"
@@ -286,8 +298,8 @@ class Jungfrau8M(Jungfrau):
                         [3009, 538], [3009, 538+259], [3009, 1055], [3009, 1313],
                         [3078, 1577], [3078, 1836], [3078, 2094], [3078, 2352]]
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0):
-        Jungfrau.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        Jungfrau.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor = sensor)
 
     def calc_mask(self):
         mask = numpy.ones(self.max_shape, dtype=numpy.int8)

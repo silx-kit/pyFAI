@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 #
-#    Copyright (C) 2016-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2016-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "13/05/2025"
+__date__ = "08/10/2025"
 __license__ = "MIT"
 __copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -298,9 +298,9 @@ class Bench(object):
         pid = os.getpid()
         status_file = f"/proc/{pid}/status"
         if os.path.exists(status_file):
-            for l in open(status_file):
-                if l.startswith("VmRSS"):
-                    mem = int(l.split(":", 1)[1].split()[0]) / 1024.
+            for line in open(status_file):
+                if line.startswith("VmRSS"):
+                    mem = int(line.split(":", 1)[1].split()[0]) / 1024.
         else:
             mem = 0
         return mem
@@ -392,18 +392,18 @@ class Bench(object):
                 t0 = time.perf_counter()
                 res = bench_test.stmt()
                 t1 = time.perf_counter()
-                res2 = bench_test.stmt()
+                bench_test.stmt()
                 t2 = time.perf_counter()
                 loops = int(ceil(self.nbr / (t2 - t1)))
                 self.print_init2(t1 - t0, t2 - t1, loops)
 
             except memory_error as error:
-                print("MemoryError: %s" % error)
+                print(f"MemoryError: {error}")
                 break
             if first:
                 actual_device = bench_test.get_device()
                 if actual_device:
-                    print("Actual device used: %s" % actual_device)
+                    print(f"Actual device used: {actual_device}")
 
             self.update_mp()
             if method.algo_lower in ("lut", "csr"):
@@ -422,7 +422,7 @@ class Bench(object):
                 t = timeit.Timer(bench_test.stmt, bench_test.setup_and_stmt)
                 tmin = min([i / loops for i in t.repeat(repeat=self.repeat, number=loops)])
             except memory_error as error:
-                print(error)
+                print(f"MemoryError: {error}")
                 break
             self.update_mp()
             self.print_exec(tmin)
@@ -507,7 +507,7 @@ class Bench(object):
                 self.print_init(t2 - t0)
                 loops = int(ceil(self.nbr / (t2 - t0)))
             except memory_error as error:
-                print(error)
+                print(f"MemoryError: {error}")
                 break
             self.update_mp()
             if check:
@@ -525,7 +525,7 @@ class Bench(object):
                     try:
                         integrator = bench_test.ai.engines.get(key).engine
                     except MemoryError as error:
-                        print(error)
+                        print(f"MemoryError: {error}")
                     else:
                         if "lut" in method:
                             print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
@@ -538,7 +538,7 @@ class Bench(object):
                 t = timeit.Timer(bench_test.stmt, bench_test.setup_and_stmt)
                 tmin = min([i / loops for i in t.repeat(repeat=self.repeat, number=loops)])
             except memory_error as error:
-                print(error)
+                print(f"MemoryError: {error}")
                 break
             self.update_mp()
             del t
@@ -794,8 +794,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     if ocl:
         try:
             ocl_devices = [(int(i), int(j)) for i, j in devices]
-        except Exception as err:
-            # print(f"{type(err)}: {err}\ndevices is not a list of 2-tuple of integrers, parsing the list")
+        except Exception:
             ocl_devices = []
             for i in ocl.platforms:
                 if devices == "all":

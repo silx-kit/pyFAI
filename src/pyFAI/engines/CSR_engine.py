@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2017-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -26,17 +26,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2024"
+__date__ = "08/10/2025"
 __status__ = "development"
 
-from collections.abc import Iterable
 import logging
 import warnings
-logger = logging.getLogger(__name__)
 import numpy
 from scipy.sparse import csr_matrix
 from .preproc import preproc as preproc_np
 from ..utils.mathutil import interp_filter
+from ..utils import calc_checksum
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
+logger = logging.getLogger(__name__)
 try:
     from ..ext.preproc import preproc as preproc_cy
 except ImportError as err:
@@ -44,10 +45,10 @@ except ImportError as err:
     preproc = preproc_np
 else:
     preproc = preproc_cy
-from ..utils import calc_checksum
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
+
 
 mf_dtype = numpy.dtype([('any', 'f4'),('sig', 'f4'),('var', 'f4'),('norm', 'f4')])
+
 
 class CSRIntegrator(object):
 

@@ -1,6 +1,6 @@
 # coding: utf-8
 # /*##########################################################################
-# Copyright (C) 2016-2020 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,9 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "14/01/2021"
+__date__ = "07/10/2025"
 
 try:
-    from transformations import *
+    from transformations import *  # noqa:F403
 except (ImportError, ModuleNotFoundError):
-    from ._local.transformations import *
+    from ._local.transformations import *  # noqa:F403

@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2016-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2016-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,12 +30,13 @@
 
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/09/2024"
+__date__ = "08/10/2025"
 
 import sys
 import os
 import unittest
 import logging
+import importlib
 
 from pyFAI.test.utilstest import test_options
 
@@ -67,13 +68,10 @@ def suite():
         test_suite.addTest(SkipGuiTest(reason=reason))
         return test_suite
 
-    try:
-        import silx.gui.qt
-    except ImportError as e:
-        _logger.debug("Backtrace", exc_info=True)
-        # No Qt binding found
-        reason = e.args[0]
-        _logger.warning("pyFAI.gui tests disabled (%s)", reason)
+    if importlib.util.find_spec("silx.gui.qt") is None:
+        #
+        reason = "No Qt binding found"
+        _logger.warning(f"pyFAI.gui tests disabled ({reason})")
         test_suite.addTest(SkipGuiTest(reason=reason))
         return test_suite
 

@@ -26,11 +26,11 @@
 # THE SOFTWARE.
 """Bunch of useful decorators"""
 
-__authors__ = ["Jerome Kieffer", "H. Payno", "P. Knobel", "V. Valls"]
+__authors__ = ["Jérôme Kieffer", "H. Payno", "P. Knobel", "V. Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "13/10/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -49,6 +49,18 @@ depreclog = logging.getLogger("pyFAI.DEPRECATION")
 
 DEPRECATION_CACHE = set()
 _CACHE_VERSIONS = {}
+
+
+class SilentDeprecation:
+    """ A context manager to silent-out deprecation warnings"""
+    def __init__(self, logger=depreclog, silent_level=50):
+        self.logger = logger
+        self.silent_level = silent_level
+        self.default_level = logger.level
+    def __enter__(self):
+        self.logger.setLevel(self.silent_level)
+    def __exit__(self, type, value, traceback):
+        self.logger.setLevel(self.default_level)
 
 
 def deprecated(func=None, reason=None, replacement=None, since_version=None,

@@ -44,17 +44,13 @@ __status__ = "production"
 import os
 import logging
 import numpy
-import time
-import itertools
 from typing import Optional, List
 from collections.abc import Iterable
-from math import sin, asin, cos, sqrt, pi, ceil, log, isfinite
+from math import sin, asin, pi
 import threading
 from ..utils import get_calibration_dir
 from ..utils.decorators import deprecated
 from .. import units
-from .cell import Cell
-from .space_groups import ReflectionCondition
 from .resolution import _ResolutionFunction, Caglioti, Constant
 from ..containers import Integrate1dResult, Reflection
 from ..io.calibrant_config import CalibrantConfig

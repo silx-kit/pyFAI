@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "08/10/2025"
 __status__ = "production"
 
 import sys
@@ -39,14 +39,13 @@ import copy
 import threading
 from math import ceil, sqrt
 import logging
-logger = logging.getLogger(__name__)
 import numpy
 import fabio
 from scipy.ndimage import label, distance_transform_edt
 from silx.math import medfilt as median_filter
-from .utils.decorators import deprecated
 from .ext.bilinear import Bilinear
-from .utils import gaussian_filter, binning, unbinning, is_far_from_group
+from .utils.mathutil import gaussian_filter, binning, unbinning, is_far_from_group
+logger = logging.getLogger(__name__)
 
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -198,7 +197,7 @@ class Massif(object):
             if xopt is None:
                 nbFailure += 1
                 continue
-            if (region2[int(xopt[0] + 0.5), int(xopt[1] + 0.5)]) and not (xopt in listpeaks):
+            if (region2[int(xopt[0] + 0.5), int(xopt[1] + 0.5)]) and xopt not in listpeaks:
                 if stdout:
                     stdout.write("[ %4i, %4i ] --> [ %5.1f, %5.1f ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
                 listpeaks.append(xopt)

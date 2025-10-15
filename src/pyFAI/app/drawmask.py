@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2016-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2016-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #             V. Aramdo Solé <sole@esrf.fr>
@@ -33,29 +33,28 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/09/2024"
+__date__ = "07/10/2025"
 __satus__ = "Production"
 
 import os
 import numpy
+from argparse import ArgumentParser
+import fabio
+import silx.gui.plot
+from silx.gui import qt
+from ..version import version as pyFAI_version, date as pyFAI_date
+from .. import utils
+from ..gui.utils.colorutils import DEFAULT_COLORMAP
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
-from argparse import ArgumentParser
 
 try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
-import fabio
-
-import silx.gui.plot
-from silx.gui import qt
-from ..version import version as pyFAI_version, date as pyFAI_date
-from .. import utils
-from ..gui.utils.colorutils import DEFAULT_COLORMAP
 
 
 class AbstractMaskImageWidget(qt.QMainWindow):
@@ -162,7 +161,7 @@ def main(args=None):
     Optionally the script will print the number of pixel masked
     and the intensity masked (as well on other files provided in input)"""
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
-    parser.add_argument("-v", "--version", action='version', version=pyFAI_version)
+    parser.add_argument("-v", "--version", action='version', version=version)
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
                         help="Files to be processed")
 
