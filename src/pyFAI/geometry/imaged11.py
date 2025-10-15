@@ -88,7 +88,7 @@ class ImageD11Geometry(_ImageD11Geometry):
         return obj
 
     def _asdict(self):
-        """work arround for bug in ImageD11"""
+        """workaround for bug in ImageD11"""
         dico = super()._asdict()
         if self.spline is None:
             dico.pop("spline")
