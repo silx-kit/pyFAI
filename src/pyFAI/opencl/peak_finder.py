@@ -207,7 +207,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param data: 2D array with the signal
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessment
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -402,7 +402,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param data: 2D array with the signal
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessment
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
