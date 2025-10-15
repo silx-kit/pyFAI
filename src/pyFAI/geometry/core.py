@@ -344,10 +344,10 @@ class Geometry:
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
-        :param d1: ndarray of dimention 1/2 containing the Y pixel positions
-        :param d2: ndarray of dimention 1/2 containing the X pixel positions
-        :param p1: ndarray of dimention 1/1 containing the x pixel positions in meter. MODIFIED IN PLACE!
-        :param p2: ndarray of dimention 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
+        :param d1: ndarray of dimension 1/2 containing the Y pixel positions
+        :param d2: ndarray of dimension 1/2 containing the X pixel positions
+        :param p1: ndarray of dimension 1/1 containing the x pixel positions in meter. MODIFIED IN PLACE!
+        :param p2: ndarray of dimension 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
         :return: 2-arrays of same shape as d1 & d2 with the displacement in meters
 
         p1 & p2 should contain the pixel coordinates after translation & **rotation**
@@ -376,9 +376,9 @@ class Geometry:
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
-        :param p1: ndarray of dimention 1/2 containing the x pixel positions in meter. MODIFIED IN PLACE!
-        :param p2: ndarray of dimention 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
-        :param p3: ndarray of dimention 1/2 containing the z pixel positions in meter or a scalar.
+        :param p1: ndarray of dimension 1/2 containing the x pixel positions in meter. MODIFIED IN PLACE!
+        :param p2: ndarray of dimension 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
+        :param p3: ndarray of dimension 1/2 containing the z pixel positions in meter or a scalar.
         :return: 2-arrays of same shape as d1 & d2 with the displacement in meters
 
         p1 & p2 should contain the pixel coordinates after translation but **NOT** rotation
@@ -801,9 +801,9 @@ class Geometry:
         at coordinate d1, d2.
         Conversion to lab coordinate system is performed in calc_pos_zyx.
 
-        :param d1: pixel coordinate along the 1st dimention (C convention)
+        :param d1: pixel coordinate along the 1st dimension (C convention)
         :type d1: float or array of them
-        :param d2: pixel coordinate along the 2nd dimention (C convention)
+        :param d2: pixel coordinate along the 2nd dimension (C convention)
         :type d2: float or array of them
         :param path: can be "tan" (i.e via numpy) or "cython"
         :return: chi, the azimuthal angle in rad
@@ -838,9 +838,9 @@ class Geometry:
         Calculate the chi (azimuthal angle) for the corner of a pixel
         at coordinate d1,d2 which in the lab ref has coordinate:
 
-        :param d1: pixel coordinate along the 1st dimention (C convention)
+        :param d1: pixel coordinate along the 1st dimension (C convention)
         :type d1: float or array of them
-        :param d2: pixel coordinate along the 2nd dimention (C convention)
+        :param d2: pixel coordinate along the 2nd dimension (C convention)
         :type d2: float or array of them
         :return: chi, the azimuthal angle in rad
         """
@@ -1355,7 +1355,7 @@ class Geometry:
 
     def array_from_unit(self, shape=None, typ="center", unit=units.TTH, scale=True):
         """
-        Generate an array of position in different dimentions (R, Q, 2Theta ...)
+        Generate an array of position in different dimensions (R, Q, 2Theta ...)
 
         :param shape: shape of the expected array, leave it to None for safety
         :type shape: ndarray.shape
@@ -1860,11 +1860,11 @@ class Geometry:
         :param Rot_1: rotation around the fastest axis (x)
         :param Rot_2: rotation around the slowest axis (y)
         :param Rot_3: rotation around the axis ORTHOGONAL to the detector plan
-        :param PSize_1: pixel size in meter along the fastest dimention
-        :param PSize_2: pixel size in meter along the slowst dimention
+        :param PSize_1: pixel size in meter along the fastest dimension
+        :param PSize_2: pixel size in meter along the slowst dimension
         :param splinefile: name of the file containing the spline
-        :param BSize_1: pixel binning factor along the fastest dimention
-        :param BSize_2: pixel binning factor along the slowst dimention
+        :param BSize_1: pixel binning factor along the fastest dimension
+        :param BSize_2: pixel binning factor along the slowst dimension
         :param WaveLength: wavelength used
         """
         # first define the detector
@@ -1910,11 +1910,11 @@ class Geometry:
             Rot_1: rotation around the fastest axis (x)
             Rot_2: rotation around the slowest axis (y)
             Rot_3: rotation around the axis ORTHOGONAL to the detector plan
-            PSize_1: pixel size in meter along the fastest dimention
-            PSize_2: pixel size in meter along the slowst dimention
+            PSize_1: pixel size in meter along the fastest dimension
+            PSize_2: pixel size in meter along the slowst dimension
             splineFile: name of the file containing the spline
-            BSize_1: pixel binning factor along the fastest dimention
-            BSize_2: pixel binning factor along the slowst dimention
+            BSize_1: pixel binning factor along the fastest dimension
+            BSize_2: pixel binning factor along the slowst dimension
             WaveLength: wavelength used in meter
         """
 
