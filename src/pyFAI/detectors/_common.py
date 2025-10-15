@@ -70,7 +70,7 @@ except ImportError:
     bilinear = None
 
 EPSILON = 1e-6
-"Precision for the positionning of a pixel: 1µm"
+"Precision for the positioning of a pixel: 1µm"
 
 
 class DetectorMeta(type):
@@ -108,7 +108,7 @@ class Detector(metaclass=DetectorMeta):
     registry = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
-    IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
+    IS_CONTIGUOUS = True  # No gaps: all pixels are adjacent, speeds-up calculation
     API_VERSION = "1.2"
     # 1.1: support for CORNER attribute
     # 1.2: support for sensor_material and sensor_thickness
@@ -118,7 +118,7 @@ class Detector(metaclass=DetectorMeta):
     DUMMY = None
     DELTA_DUMMY = None
     ORIENTATION = 0
-    SENSORS = []
+    SENSORS = ()
     _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                         '_mask_crc', '_maskfile', "_splinefile", "_flatfield_crc",
                         "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy",
@@ -221,8 +221,10 @@ class Detector(metaclass=DetectorMeta):
         :param pixel2: size of the pixel in meter along the fast dimension (often X)
         :param splinefile: path to file containing the geometric correction.
         :param max_shape: maximum size of the detector
-        :type max_shape: 2-tuple of integrers
+        :type max_shape: 2-tuple of integers
         :param orientation: Orientation of the detector
+        :param sensor: Optional sensor configuration specifying detector material and sensor thickness (in metres).
+        :type sensor: SensorConfig | None
         """
         self._pixel1 = None
         self._pixel2 = None
@@ -260,11 +262,18 @@ class Detector(metaclass=DetectorMeta):
         if (orientation < 0) or (orientation > 4):
             raise RuntimeError("Unsupported orientation: " + orientation.__doc__)
         self._orientation = orientation
-        if sensor:
-            if isinstance(sensor, dict):
-                self.sensor = SensorConfig.from_dict(sensor)
-            else:
-                self.sensor = sensor
+
+        if isinstance(sensor, dict):
+            sensor = SensorConfig.from_dict(sensor)
+
+        if isinstance(sensor, SensorConfig):
+            if sensor not in self.SENSORS:
+                logger.warning("Sensor %s not in allowed SENSORS: %s", sensor, self.SENSORS)
+            self.sensor = sensor
+        elif sensor is None:
+            logger.info("No sensor configuration provided; using default behaviour.")
+        else:
+            logger.error("Sensor is of unexpected type: %s", type(sensor))
 
 
     def __repr__(self):
@@ -279,6 +288,8 @@ class Detector(metaclass=DetectorMeta):
             txt += f"\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
         return txt
 
     def __copy__(self):
@@ -622,7 +633,7 @@ class Detector(metaclass=DetectorMeta):
             r1 = numpy.arange(m1, dtype="float32")
             r2 = numpy.arange(m2 - 1, -1, -1, dtype="float32")
         else:
-            raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+            raise RuntimeError(f"Unsupported orientation: {self.orientation.name} ({self.orientation.value})")
         return r1, r2
 
     def _reorder_indexes_from_orientation(self, d1, d2, center=True):
@@ -645,7 +656,7 @@ class Detector(metaclass=DetectorMeta):
         elif self.orientation == 4:
             d2 = shape2 - d2
         else:
-            raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+            raise RuntimeError(f"Unsupported orientation: {self.orientation.name} ({self.orientation.value})")
         return d1, d2
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
@@ -1272,6 +1283,7 @@ class Detector(metaclass=DetectorMeta):
     def delta_dummy(self, value=None):
         self._delta_dummy = value
 
+    #TODO: I see that filename and orientation are properties, sensor not. Should sensor follow the style?
     @property
     def orientation(self):
         return self._orientation
@@ -1307,7 +1319,7 @@ class NexusDetector(Detector):
                  filename:str|None=None,
                  orientation:int=0,
                  sensor:SensorConfig|None=None):
-        Detector.__init__(self, orientation=orientation)
+        Detector.__init__(self, orientation=orientation, sensor = sensor)
         self.uniform_pixel = True
         self._filename = None
         if filename is not None:
@@ -1324,6 +1336,8 @@ class NexusDetector(Detector):
         txt += f"PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
         return txt
 
     def load(self, filename):
@@ -1456,7 +1470,7 @@ class NexusDetector(Detector):
     def set_config(self, config):
         """set the config of the detector
 
-        For Nexus detector, the only valid key is "filename"
+        For Nexus detector, the valid keys are "filename", "orientation, "sensor"
 
         :param config: dict or JSON serialized dict
         :return: detector instance
@@ -1474,15 +1488,18 @@ class NexusDetector(Detector):
         else:
             logger.error("Unable to configure Nexus detector, config: %s",
                          config)
+
+        self._orientation = Orientation(config.get("orientation", 0))
+        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+
         return self
 
     def get_config(self):
-        """Return the configuration with arguments to the constructor
+        """Return the configuration with arguments to the constructor."""
+        config = super().get_config()
+        config["filename"] = self._filename
+        return config
 
-        :return: dict with param for serialization
-        """
-        return {"filename": self._filename,
-                "orientation": self.orientation or 3}
 
     def getPyFAI(self):
         """

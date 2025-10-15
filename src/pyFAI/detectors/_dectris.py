@@ -54,6 +54,13 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+#Define sensors used in Dectris detectors
+Si320 = SensorConfig.from_dict({"material": "Si", "thickness": 320e-6})
+Si450 = SensorConfig.from_dict({"material": "Si", "thickness": 450e-6})
+Si1000 = SensorConfig.from_dict({"material": "Si", "thickness": 1000e-6})
+CdTe750 = SensorConfig.from_dict({"material": "CdTe", "thickness": 750e-6})
+CdTe1000 = SensorConfig.from_dict({"material": "CdTe", "thickness": 1000e-6})
+
 
 class _Dectris(Detector):
 
@@ -65,6 +72,7 @@ class _Dectris(Detector):
     DUMMY = -2
     DELTA_DUMMY = 1.5
     ORIENTATION = 3 # should be 2, Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
+    SENSORS = tuple()
 
     def calc_mask(self):
         """
@@ -114,6 +122,7 @@ class Eiger(_Dectris):
     MODULE_SIZE = (514, 1030)
     MODULE_GAP = (37, 10)
     force_pixel = True
+    SENSORS = (Si450,)
 
     def __init__(self,
                  pixel1:float=75e-6,
@@ -217,10 +226,10 @@ class Eiger(_Dectris):
     def set_config(self, config):
         """set the config of the detector
 
-        For Eiger detector, possible keys are: max_shape, module_size
+        For Eiger detector, possible keys are: max_shape, module_size, orientation, sensor
 
         :param config: dict or JSON serialized dict
-        :return: detector instance
+        :return: Eiger instance
         """
         if not isinstance(config, dict):
             try:
@@ -237,12 +246,13 @@ class Eiger(_Dectris):
         if module_size is not None:
             self.module_size = tuple(module_size)
         self._orientation = Orientation(config.get("orientation", 3))
+        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
         return self
 
 
 class Eiger500k(Eiger):
     """
-    Eiger 1M detector
+    Eiger 500k detector
     """
     MAX_SHAPE = (514, 1030)
     aliases = ["Eiger 500k"]
@@ -354,6 +364,7 @@ class Eiger2CdTe(Eiger2):
     Eiger2 CdTe detector: Like the Eiger2 with an extra 2-pixel gap in the middle
     of every module (vertically)
     """
+    SENSORS = (CdTe750,)
 
     def calc_mask(self):
         """
@@ -429,18 +440,21 @@ class Mythen(_Dectris):
     aliases = ["Mythen 1280"]
     force_pixel = True
     MAX_SHAPE = (1, 1280)
+    SENSORS = (Si320, Si450, Si1000)
 
-    def __init__(self, pixel1=8e-3, pixel2=50e-6, orientation=0):
-        super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2, orientation=orientation)
+    def __init__(self, pixel1=8e-3, pixel2=50e-6, orientation:int|Orientation=0, sensor:SensorConfig|None=None):
+        super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2, orientation=orientation, sensor=sensor)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
 
         :return: dict with param for serialization
         """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
+        config = super().get_config()  # handles sensor
+        config["pixel1"] = self._pixel1
+        config["pixel2"] = self._pixel2
+        config["orientation"] = self.orientation or 3  # fallback
+        return config
 
     def calc_mask(self):
         "Mythen have no masks"
@@ -456,7 +470,7 @@ class Pilatus(_Dectris):
     MODULE_SIZE = (195, 487)
     MODULE_GAP = (17, 7)
     force_pixel = True
-
+    SENSORS = (Si320, Si450, Si1000)
 
     def __init__(self,
                  pixel1:float=172e-6,
@@ -534,7 +548,7 @@ class Pilatus(_Dectris):
                 self.offset2 = None
 
         else:
-            self._splineFile = None
+            self._splinefile = None
             self.uniform_pixel = True
 
     get_splineFile = deprecated(splinefile.fget, since_version="2025.09", reason="use property `splinefile`")
@@ -633,7 +647,7 @@ class Pilatus(_Dectris):
     def set_config(self, config):
         """set the config of the detector
 
-        For Eiger detector, possible keys are: max_shape, module_size, x_offset_file, y_offset_file
+        For Pilatus detector, possible keys are: max_shape, module_size, x_offset_file, y_offset_file, orientation, sensor
 
         :param config: dict or JSON serialized dict
         :return: detector instance
@@ -648,6 +662,9 @@ class Pilatus(_Dectris):
 
         # pixel size is enforced by the detector itself
         self._orientation = Orientation(config.get("orientation", 0))
+
+        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
+
         if "max_shape" in config:
             self.max_shape = tuple(config["max_shape"])
         module_size = config.get("module_size")
@@ -730,6 +747,7 @@ class PilatusCdTe(Pilatus):
     Pilatus CdTe detector: Like the Pilatus with an extra 3 pixel in the middle
     of every module (vertically)
     """
+    SENSORS = (CdTe1000,)
 
     def calc_mask(self):
         """
@@ -765,7 +783,7 @@ class PilatusCdTe900kw(PilatusCdTe):
     Pilatus CdTe 900k-wide detector, assembly of 1x9 modules
     Available at ESRF ID06-LVP
 
-    This differes from the "Pilatus 900k" detector, assembly of 3x3 modules, available at NSLS-II 12-ID.
+    This differs from the "Pilatus 900k" detector, assembly of 3x3 modules, available at NSLS-II 12-ID.
     """
     MAX_SHAPE = (195, 4439)
     aliases = ["Pilatus CdTe 900kw", "Pilatus 900kw CdTe", "Pilatus900kw CdTe", "Pilatus900kwCdTe"]
@@ -796,6 +814,7 @@ class Pilatus4(_Dectris):
     MODULE_SIZE = (255, 513)
     MODULE_GAP = (20, 7)
     force_pixel = True
+    SENSORS = (Si450,)
 
     def __init__(self,
                  pixel1:float=150e-6,
@@ -836,6 +855,7 @@ class Pilatus4_CdTe(Pilatus):
     Pilatus CdTe detector: Like the Pilatus4 with an extra gap of 1 pixel in the middle
     of every module (vertically)
     """
+    SENSORS = (CdTe1000,)
 
     def calc_mask(self):
         """
