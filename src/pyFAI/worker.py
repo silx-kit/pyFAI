@@ -67,6 +67,8 @@ from .io import ponifile, image as io_image
 from .io.integration_config import WorkerConfig, WorkerFiberConfig
 from .engines.preproc import preproc as preproc_numpy
 from .utils.mathutil import binning as rebin
+from .utils.decorators import deprecated
+
 logger = logging.getLogger(__name__)
 try:
     import numexpr
