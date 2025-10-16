@@ -506,13 +506,20 @@ class Worker(object):
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
 
-    def set_unit(self, value):
-        self._unit = units.to_unit(value)
-
-    def get_unit(self):
+ 
+    @property
+    def unit(self):
         return self._unit
 
-    unit = property(get_unit, set_unit)
+    @unit.setter
+    def unit(self, value):
+        self._unit = units.to_unit(value)
+
+    # deprecated compatibility layer
+    get_unit = deprecated(unit.fget, reason="use property", since_version="2025.09")
+    set_unit = deprecated(unit.fset, reason="use property", since_version="2025.09")
+
+
 
     def get_worker_config(self):
         """Returns the configuration as a WorkerConfig dataclass instance.
