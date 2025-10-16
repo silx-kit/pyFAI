@@ -1098,14 +1098,14 @@ class Detector(metaclass=DetectorMeta):
     
     @maskfile.setter
     def maskfile(self, maskfile):
-    if fabio:
-        with fabio.open(maskfile) as fimg:
-            mask = numpy.ascontiguousarray(fimg.data,
-                                            dtype=numpy.int8)
-        self.mask = mask
-        self._maskfile = maskfile
-    else:
-        logger.error("FabIO is not available, unable to load the image to set the mask.")
+        if fabio:
+            with fabio.open(maskfile) as fimg:
+                mask = numpy.ascontiguousarray(fimg.data,
+                                                dtype=numpy.int8)
+            self.mask = mask
+            self._maskfile = maskfile
+        else:
+            logger.error("FabIO is not available, unable to load the image to set the mask.")
 
     # Deprecated compatibility layer
     get_maskfile = deprecated(maskfile.fget, reason="use property", since_version="2025.09")
