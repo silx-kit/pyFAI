@@ -1063,12 +1063,19 @@ class GoniometerRefinement(Goniometer):
                     wavelength=dico.get("wavelength"))
         return gonio
 
-    def get_wavelength(self):
-        return Goniometer.get_wavelength(self)
+    @property
+    def wavelength(self) -> float:
+        """Get the wavelength using the Goniometer logic."""
+        return super().wavelength
 
-    def set_wavelength(self, value):
-        Goniometer.set_wavelength(self, value)
+    @wavelength.setter
+    def wavelength(self, value: float) -> None:
+        """Set the wavelength using Goniometer logic, and propagate to single geometries."""
+        super().wavelength = value  # call the Goniometer setter
         for sg in self.single_geometries.values():
-            sg.set_wavelength(value)
+            sg.wavelength = value  # Use the property setter of single geometry
 
-    wavelength = property(get_wavelength, set_wavelength)
+
+    # Deprecated compatibility layer
+    get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.09")
+    set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.09")
