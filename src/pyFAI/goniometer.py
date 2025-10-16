@@ -434,27 +434,41 @@ class Goniometer(object):
     def __repr__(self):
         return "Goniometer with param %s    %s with %s" % (self.nt_param(*self.param), os.linesep, self.detector)
 
-    def get_wavelength(self):
+    
+
+    @property
+    def wavelength(self) -> float:
+        """Get the current wavelength, checking if it depends on motors."""
         wl_fct = self.trans_function.codes.get("wavelength")
         if wl_fct is not None:
-            # check that wavelengt does not depend on the motor position
+            # Check that wavelength does not depend on motor positions
             params = wl_fct.input_names
             for motor in self.trans_function.pos_names:
                 if motor in params:
-                    logger.warning("Wavelength depends on motors, returning the default value")
+                    logger.warning(
+                        "Wavelength depends on motors, returning the default value"
+                    )
                     return self._wavelength
             dummy_position = [0] * len(self.nt_pos._fields)
             return self.trans_function(self.param, dummy_position).wavelength
-        else:
-            return self._wavelength
-
-    def set_wavelength(self, value):
+        return self._wavelength
+        
+    @wavelength.setter
+    def wavelength(self, value: float) -> None:
+        """Set the wavelength if it is not a fitted parameter."""
         if "wavelength" in self.trans_function.codes:
-            logger.warning("Wavelength is a fitted parameter, cannot be set. Please set fitted parameter")
+            logger.warning(
+                "Wavelength is a fitted parameter, cannot be set. Please set fitted parameter"
+            )
         else:
             self._wavelength = value
 
-    wavelength = property(get_wavelength, set_wavelength)
+    # deprecated compatibility layer
+    get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.09")
+    set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.09")
+
+
+
 
     def get_ai(self, position):
         """Creates an azimuthal integrator from the motor position
