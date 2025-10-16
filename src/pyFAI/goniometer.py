@@ -68,7 +68,7 @@ PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "
 
 
 class BaseTransformation(object):
-    """This class, once instanciated, behaves like a function (via the __call__
+    """This class, once instantiated, behaves like a function (via the __call__
     method). It is responsible for taking any input geometry and translate it
     into a set of parameters compatible with pyFAI, i.e. a tuple with:
     (dist, poni1, poni2, rot1, rot2, rot3)
@@ -128,7 +128,7 @@ class BaseTransformation(object):
 
 
 class GeometryTransformation(object):
-    """This class, once instanciated, behaves like a function (via the __call__
+    """This class, once instantiated, behaves like a function (via the __call__
     method). It is responsible for taking any input geometry and translate it
     into a set of parameters compatible with pyFAI, i.e. a tuple with:
     (dist, poni1, poni2, rot1, rot2, rot3)
@@ -563,7 +563,7 @@ class Goniometer(object):
 
     @classmethod
     def sload(cls, filename):
-        """Class method for instanciating a Goniometer object from a JSON file
+        """Class method for instantiating a Goniometer object from a JSON file
 
         :param filename: name of the JSON file
         :return: Goniometer object
@@ -607,7 +607,7 @@ class SingleGeometry(object):
         """Constructor of the SingleGeometry class, used for calibrating a
         multi-geometry setup with a moving detector.
 
-        :param label: name of the geometry, a string or anything unmutable
+        :param label: name of the geometry, a string or anything immutable
         :param image: image with Debye-Scherrer rings as 2d numpy array
         :param metadata: anything which contains the goniometer position
         :param pos_function: a function which takes the metadata as input
