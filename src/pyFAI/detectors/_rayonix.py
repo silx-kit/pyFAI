@@ -69,10 +69,12 @@ class _Rayonix(Detector):
         self._binning = tuple(binning)
         self.shape = tuple(s // b for s, b in zip(self.max_shape, binning))
 
-    def get_binning(self):
+    @property
+    def binning(self):
         return self._binning
 
-    def set_binning(self, bin_size=(1, 1)):
+    @binning.setter
+    def binning(self, bin_size=(1, 1)):
         """
         Set the "binning" of the detector,
 
@@ -96,7 +98,9 @@ class _Rayonix(Detector):
             self.shape = (self.max_shape[0] // bin_size[0],
                           self.max_shape[1] // bin_size[1])
 
-    binning = property(get_binning, set_binning)
+    # Deprecated compatibility layer
+    get_binning = deprecated(binning.fget, since_version="2025.09", replacement="use `binning` property")
+    set_binning = deprecated(binning.fset, since_version="2025.09", replacement="use `binning` property")
 
     def __repr__(self):
         txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
