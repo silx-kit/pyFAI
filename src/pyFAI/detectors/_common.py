@@ -1132,16 +1132,15 @@ class Detector(metaclass=DetectorMeta):
     set_pixel1 = deprecated(pixel1.fset, reason="use property", since_version="2025.09")
 
 
-    def get_pixel2(self):
+    @property
+    def pixel2(self) -> float:
         return self._pixel2
 
-    def set_pixel2(self, value):
-        if isinstance(value, float):
-            value = value
-        elif isinstance(value, (tuple, list)):
-            value = float(value[0])
-        else:
-            value = float(value)
+    @pixel2.setter
+    def pixel2(self, value):
+        """Set the pixel size along the second dimension."""
+        #TODO: Is this on purpose to take the first entry in tuple, list as pixel2? 
+        value = float(value[0] if isinstance(value, (tuple, list)) else value)
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
             if self.force_pixel and (err > EPSILON):
@@ -1149,7 +1148,9 @@ class Detector(metaclass=DetectorMeta):
                                self.__class__.__name__)
         self._pixel2 = value
 
-    pixel2 = property(get_pixel2, set_pixel2)
+    # deprecated compatibility layer
+    get_pixel2 = deprecated(pixel2.fget, reason="use property", since_version="2025.09")
+    set_pixel2 = deprecated(pixel2.fset, reason="use property", since_version="2025.09")
 
     def get_name(self):
         """
