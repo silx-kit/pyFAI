@@ -1057,7 +1057,8 @@ class Detector(metaclass=DetectorMeta):
     ############################################################################
     # Few properties
     ############################################################################
-    def get_mask(self):
+    @property
+    def mask(self):
         if self._mask is False:
             with self._sem:
                 if self._mask is False:
@@ -1069,10 +1070,12 @@ class Detector(metaclass=DetectorMeta):
                         self._mask_crc = crc32(self._mask)
         return self._mask
 
-    def get_mask_crc(self):
+    @property
+    def mask_crc(self):
         return self._mask_crc
 
-    def set_mask(self, mask):
+    @mask.setter
+    def mask(self, mask):
         with self._sem:
             if mask is None:
                 self._mask = self._mask_crc = None
@@ -1083,7 +1086,18 @@ class Detector(metaclass=DetectorMeta):
                 self._mask = mask
                 self._mask_crc = crc32(self._mask)
 
-    mask = property(get_mask, set_mask)
+    # Deprecated compatibility layer
+    get_mask = deprecated(mask.fget, reason="use property", since_version="2025.09")
+    set_mask = deprecated(mask.fset, reason="use property", since_version="2025.09")
+    get_mask_crc = deprecated(mask_crc.fget, reason="use property", since_version="2025.09")
+
+
+
+
+
+
+
+
 
     def set_maskfile(self, maskfile):
         if fabio:
