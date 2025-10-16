@@ -3095,7 +3095,7 @@ class Geometry:
     @maskfile.setter
     def maskfile(self, value):
         self.detector.maskfile = value  
-        
+
     # deprecated compatibility layer
     get_maskfile = deprecated(maskfile.fget, reason="use property", since_version="2025.09")
     set_maskfile = deprecated(maskfile.fset, reason="use property", since_version="2025.09")
@@ -3103,11 +3103,11 @@ class Geometry:
 
     @property
     def mask(self):
-        return self.detector.get_mask()  # Keep method call for safety, TODO: requires later update
+        return self.detector.mask
 
     @mask.setter
     def mask(self, value):
-        self.detector.set_mask(value)  # Keep method call for safety, TODO: requires later update
+        self.detector.mask=value
 
     # deprecated compatibility layer
     get_mask = deprecated(mask.fget, reason="use property", since_version="2025.09")
