@@ -1657,14 +1657,16 @@ class Integrator(Geometry):
 ################################################################################
 # Some properties
 ################################################################################
+    @darkcurrent.setter
+    def darkcurrent(self, dark):
+        self.detector.darkcurrent = dark
 
-    def set_darkcurrent(self, dark):
-        self.detector.set_darkcurrent(dark)
+    @property
+    def darkcurrent(self):
+        return self.detector.darkcurrent
 
-    def get_darkcurrent(self):
-        return self.detector.get_darkcurrent()
-
-    darkcurrent = property(get_darkcurrent, set_darkcurrent)
+    get_darkcurrent = deprecated(darkcurrent.fget, reason="use property", since_version="2025.09")
+    set_darkcurrent = deprecated(darkcurrent.fset, reason="use property", since_version="2025.09")
 
     def set_flatfield(self, flat):
         self.detector.set_flatfield(flat)
