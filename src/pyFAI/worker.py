@@ -508,7 +508,7 @@ class Worker(object):
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
 
- 
+
     @property
     def unit(self):
         return self._unit

@@ -3090,11 +3090,11 @@ class Geometry:
 
     @property
     def maskfile(self):
-        return self.detector.maskfile  
-    
+        return self.detector.maskfile
+
     @maskfile.setter
     def maskfile(self, value):
-        self.detector.maskfile = value  
+        self.detector.maskfile = value
 
     # deprecated compatibility layer
     get_maskfile = deprecated(maskfile.fget, reason="use property", since_version="2025.09")

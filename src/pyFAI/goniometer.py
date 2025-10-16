@@ -435,7 +435,7 @@ class Goniometer(object):
     def __repr__(self):
         return "Goniometer with param %s    %s with %s" % (self.nt_param(*self.param), os.linesep, self.detector)
 
-    
+
 
     @property
     def wavelength(self) -> float:
@@ -453,7 +453,7 @@ class Goniometer(object):
             dummy_position = [0] * len(self.nt_pos._fields)
             return self.trans_function(self.param, dummy_position).wavelength
         return self._wavelength
-        
+
     @wavelength.setter
     def wavelength(self, value: float) -> None:
         """Set the wavelength if it is not a fitted parameter."""

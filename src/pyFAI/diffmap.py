@@ -784,7 +784,7 @@ If the number of files is too large, use double quotes like "*.edf" """
     def use_gpu(self) -> bool:
         """Indicates whether the current method is OpenCL-based."""
         return self.worker._method.impl_lower == "opencl"
-    
+
     @use_gpu.setter
     def use_gpu(self, value: bool) -> None:
         """Set whether to use OpenCL (True) or fallback to Cython (False)."""

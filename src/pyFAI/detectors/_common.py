@@ -1095,7 +1095,7 @@ class Detector(metaclass=DetectorMeta):
     @property
     def maskfile(self):
         return self._maskfile
-    
+
     @maskfile.setter
     def maskfile(self, maskfile):
         if fabio:
@@ -1139,7 +1139,7 @@ class Detector(metaclass=DetectorMeta):
     @pixel2.setter
     def pixel2(self, value):
         """Set the pixel size along the second dimension."""
-        #TODO: Is this on purpose to take the first entry in tuple, list as pixel2? 
+        #TODO: Is this on purpose to take the first entry in tuple, list as pixel2?
         value = float(value[0] if isinstance(value, (tuple, list)) else value)
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
@@ -1187,7 +1187,7 @@ class Detector(metaclass=DetectorMeta):
     set_flatfield = deprecated(flatfield.fset, reason="use property", since_version="2025.09")
     get_flatfield_crc = deprecated(flatfield_crc.fget, reason="use property", since_version="2025.09")
 
-   
+
 
     @deprecated(reason="Not maintained", since_version="0.17")
     def set_flatfiles(self, files, method="mean"):
