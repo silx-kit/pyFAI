@@ -596,15 +596,21 @@ class Worker(object):
         if sync:
             t.join()
 
-    def get_normalization_factor(self):
+    @property
+    def normalization_factor(self):
         with self._sem:
             return self._normalization_factor
 
-    def set_normalization_factor(self, value):
+    @normalization_factor.setter
+    def normalization_factor(self, value):
         with self._sem:
             self._normalization_factor = value
 
-    normalization_factor = property(get_normalization_factor, set_normalization_factor)
+    # deprecated compatibility layer
+    get_normalization_factor = deprecated(normalization_factor.fget, reason="use property", since_version="2025.09")
+    set_normalization_factor = deprecated(normalization_factor.fset, reason="use property", since_version="2025.09")
+
+
 
     def set_method(self, method="csr"):
         "Set the integration method"
