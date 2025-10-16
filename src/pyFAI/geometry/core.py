@@ -3057,7 +3057,7 @@ class Geometry:
 
     get_splineFile = deprecated(splinefile.fget, since_version="2025.10", reason="use `splinefile` property")
     set_splineFile = deprecated(splinefile.fset, since_version="2025.10", reason="use `splinefile` property")
-    splineFile = property(get_splineFile, set_splineFile)  # all deprecated
+    
 
     @property
     def spline(self):
