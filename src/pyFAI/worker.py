@@ -107,7 +107,7 @@ def _init_ai(ai, config, read_maps=True):
     :param AzimuthalIntegrator ai: An :class:`AzimuthalIntegrator`.
     :param config: WorkerConfig dataclass instance
     :param bool read_maps: If true mask, flat, dark will be read.
-    :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
+    :return: A configured (but uninitialized) :class:`AzimuthalIntegrator`.
     """
     ai._init_from_poni(ponifile.PoniFile(config.poni))
 
