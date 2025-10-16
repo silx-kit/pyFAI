@@ -1092,27 +1092,26 @@ class Detector(metaclass=DetectorMeta):
     get_mask_crc = deprecated(mask_crc.fget, reason="use property", since_version="2025.09")
 
 
-
-
-
-
-
-
-
-    def set_maskfile(self, maskfile):
-        if fabio:
-            with fabio.open(maskfile) as fimg:
-                mask = numpy.ascontiguousarray(fimg.data,
-                                               dtype=numpy.int8)
-            self.set_mask(mask)
-            self._maskfile = maskfile
-        else:
-            logger.error("FabIO is not available, unable to load the image to set the mask.")
-
-    def get_maskfile(self):
+    @property
+    def maskfile(self):
         return self._maskfile
+    
+    @maskfile.setter
+    def maskfile(self, maskfile):
+    if fabio:
+        with fabio.open(maskfile) as fimg:
+            mask = numpy.ascontiguousarray(fimg.data,
+                                            dtype=numpy.int8)
+        self.mask = mask
+        self._maskfile = maskfile
+    else:
+        logger.error("FabIO is not available, unable to load the image to set the mask.")
 
-    maskfile = property(get_maskfile, set_maskfile)
+    # Deprecated compatibility layer
+    get_maskfile = deprecated(maskfile.fget, reason="use property", since_version="2025.09")
+    set_maskfile = deprecated(maskfile.fset, reason="use property", since_version="2025.09")
+
+
 
     def get_pixel1(self):
         return self._pixel1
