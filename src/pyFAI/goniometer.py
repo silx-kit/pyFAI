@@ -55,6 +55,7 @@ from .utils import StringTypes
 from .multi_geometry import MultiGeometry
 from .units import CONST_hc, CONST_q, CHI_RAD, TTH_RAD
 from .ext.mathutil import build_qmask
+from .utils.decorators import deprecated
 logger = logging.getLogger(__name__)
 
 try:
