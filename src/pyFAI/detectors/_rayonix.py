@@ -41,6 +41,7 @@ __status__ = "production"
 import numpy
 import json
 from ._common import Detector, Orientation, SensorConfig
+from ..utils.decorators import deprecated
 
 import logging
 logger = logging.getLogger(__name__)
