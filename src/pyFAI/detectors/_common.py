@@ -1216,13 +1216,16 @@ class Detector(metaclass=DetectorMeta):
             self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
             self.flatfiles = "%s(%s)" % (method, ",".join(files))
 
-    def get_darkcurrent(self):
+    @property
+    def darkcurrent(self):
         return self._darkcurrent
 
-    def get_darkcurrent_crc(self):
+    @property
+    def darkcurrent_crc(self):
         return self._darkcurrent_crc
 
-    def set_darkcurrent(self, dark):
+    @darkcurrent.setter
+    def darkcurrent(self, dark):
         if numpy.isscalar(dark):
             dark_ = numpy.empty(self.shape, dtype=numpy.float32)
             dark_[...] = dark
@@ -1230,7 +1233,10 @@ class Detector(metaclass=DetectorMeta):
         self._darkcurrent = dark
         self._darkcurrent_crc = crc32(dark) if dark is not None else None
 
-    darkcurrent = property(get_darkcurrent, set_darkcurrent)
+    # Deprecated compatibility layer
+    get_darkcurrent = deprecated(darkcurrent.fget,reason="use property",since_version="2025.09")
+    get_darkcurrent_crc = deprecated(darkcurrent_crc.fget,reason="use property",since_version="2025.09")
+    set_darkcurrent = deprecated(darkcurrent.fset,reason="use property",since_version="2025.09")
 
     @deprecated(reason="Not maintained", since_version="0.17")
     def set_darkfiles(self, files=None, method="mean"):
