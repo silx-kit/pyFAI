@@ -1164,13 +1164,17 @@ class Detector(metaclass=DetectorMeta):
 
     name = property(get_name)
 
-    def get_flatfield(self):
+
+    @property
+    def flatfield(self):
         return self._flatfield
 
-    def get_flatfield_crc(self):
+    @property
+    def flatfield_crc(self):
         return self._flatfield_crc
 
-    def set_flatfield(self, flat):
+    @flatfield.setter
+    def flatfield(self, flat):
         if numpy.isscalar(flat):
             flat_ = numpy.empty(self.shape, dtype=numpy.float32)
             flat_[...] = flat
@@ -1178,7 +1182,12 @@ class Detector(metaclass=DetectorMeta):
         self._flatfield = flat
         self._flatfield_crc = crc32(flat) if flat is not None else None
 
-    flatfield = property(get_flatfield, set_flatfield)
+    # Deprecated compatibility layer
+    get_flatfield = deprecated(flatfield.fget, reason="use property", since_version="2025.09")
+    set_flatfield = deprecated(flatfield.fset, reason="use property", since_version="2025.09")
+    get_flatfield_crc = deprecated(flatfield_crc.fget, reason="use property", since_version="2025.09")
+
+   
 
     @deprecated(reason="Not maintained", since_version="0.17")
     def set_flatfiles(self, files, method="mean"):
