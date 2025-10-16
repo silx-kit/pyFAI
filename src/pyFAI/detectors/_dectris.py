@@ -553,7 +553,7 @@ class Pilatus(_Dectris):
 
     get_splineFile = deprecated(splinefile.fget, since_version="2025.09", reason="use property `splinefile`")
     set_splineFile = deprecated(splinefile.fset, since_version="2025.09", reason="use property `splinefile`")
-    splineFile = property(get_splineFile, set_splineFile)
+    
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
