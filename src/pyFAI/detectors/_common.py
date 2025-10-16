@@ -1112,17 +1112,14 @@ class Detector(metaclass=DetectorMeta):
     set_maskfile = deprecated(maskfile.fset, reason="use property", since_version="2025.09")
 
 
-
-    def get_pixel1(self):
+    @property
+    def pixel1(self) -> float:
         return self._pixel1
 
-    def set_pixel1(self, value):
-        if isinstance(value, float):
-            value = value
-        elif isinstance(value, (tuple, list)):
-            value = float(value[0])
-        else:
-            value = float(value)
+    @pixel1.setter
+    def pixel1(self, value):
+        """Set the pixel size along the first dimension."""
+        value = float(value[0] if isinstance(value, (tuple, list)) else value)
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
             if self.force_pixel and (err > EPSILON):
@@ -1130,7 +1127,10 @@ class Detector(metaclass=DetectorMeta):
                                self.__class__.__name__)
         self._pixel1 = value
 
-    pixel1 = property(get_pixel1, set_pixel1)
+    # deprecated compatibility layer
+    get_pixel1 = deprecated(pixel1.fget, reason="use property", since_version="2025.09")
+    set_pixel1 = deprecated(pixel1.fset, reason="use property", since_version="2025.09")
+
 
     def get_pixel2(self):
         return self._pixel2
