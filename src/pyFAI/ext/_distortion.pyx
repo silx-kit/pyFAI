@@ -372,7 +372,7 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
     logger.info("CSR matrix: %.3f MByte" % ((indices.nbytes + data.nbytes + indptr.nbytes) / 1.0e6))
     buffer = numpy.empty((delta0, delta1), dtype=buffer_d)
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], lut_size))
-    #global offset (in case the detector is centerred arround the origin)
+    #global offset (in case the detector is centerred around the origin)
     goffset0 = float(offset[0])
     goffset1 = float(offset[1])
 
@@ -506,7 +506,7 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
 
     buffer = numpy.empty((delta0, delta1), dtype=buffer_d)
     counter = -1  # bin index
-    #global offset (in case the detector is centerred arround the origin)
+    #global offset (in case the detector is centerred around the origin)
     goffset0 = float(offset[0])
     goffset1 = float(offset[1])
     with nogil:

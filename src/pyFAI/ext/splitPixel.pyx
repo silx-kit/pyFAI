@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
-## This is for developping
+## This is for developing
 ## cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
@@ -91,7 +91,7 @@ def fullSplit1D(pos,
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
     :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
-    :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
+    :param allow_pos0_neg: allow radial dimension to be negative (useful in log-scale!)
     :return: 2theta, I, weighted histogram, unweighted histogram
     """
     cdef Py_ssize_t  size = weights.size
@@ -292,7 +292,7 @@ def fullSplit1D_engine(pos not None,
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
     :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average.
-    :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
+    :param allow_pos0_neg: allow radial dimension to be negative (useful in log-scale!)
     :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
     :return: namedtuple with "position intensity error signal variance normalization count"
     """
@@ -527,7 +527,7 @@ def fullSplit2D(pos,
     :param flat: array (of float64) with flat-field image
     :param polarization: array (of float64) with polarization correction
     :param solidangle: array (of float64)with solid angle corrections
-    :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
+    :param allow_pos0_neg: allow radial dimension to be negative (useful in log-scale!)
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
@@ -1132,7 +1132,7 @@ def pseudoSplit2D_engine(pos not None,
                 cnt = out_data[i, j, 3]
                 norm2 = out_data[i, j, 4]
                 if cnt > 0.0:
-                    "test on count as norm could be negatve"
+                    "test on count as norm could be negative"
                     out_intensity[i, j] = sig / norm
                     if error_model:
                         sem[i, j] = sqrt(var) / norm
@@ -1352,7 +1352,7 @@ def fullSplit2D_engine(pos not None,
             if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):
                     continue
 
-            # Swith to bin space.
+            # Switch to bin space.
             a0 = get_bin_number(_clip(a0, pos0_min, pos0_maxin), pos0_min, delta0)
             a1 = get_bin_number(_clip(a1, pos1_min, pos1_maxin), pos1_min, delta1)
             b0 = get_bin_number(_clip(b0, pos0_min, pos0_maxin), pos0_min, delta0)
@@ -1424,7 +1424,7 @@ def fullSplit2D_engine(pos not None,
                 cnt = out_data[i, j, 3]
                 norm2 = out_data[i, j, 4]
                 if cnt > 0.0:
-                    "test on count as norm could be negatve"
+                    "test on count as norm could be negative"
                     out_intensity[i, j] = sig / norm
                     if error_model:
                         sem[i, j] = sqrt(var) / norm
