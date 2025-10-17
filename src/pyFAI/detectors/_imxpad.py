@@ -436,7 +436,7 @@ class Xpad_flat(ImXPadS10):
                 +B2 * delta1 * (1.0 - delta2) \
                 +C2 * delta1 * delta2 \
                 +D2 * (1.0 - delta1) * delta2
-            # To ensure numerical consitency with cython procedure.
+            # To ensure numerical consistency with cython procedure.
             p1 = p1.astype(numpy.float32)
             p2 = p2.astype(numpy.float32)
         return p1, p2, None
@@ -689,7 +689,7 @@ class Cirpad(ImXPadS10):
                 +B0 * delta1 * (1.0 - delta2) \
                 +C0 * delta1 * delta2 \
                 +D0 * (1.0 - delta1) * delta2
-            # To ensure numerical consitency with cython procedure.
+            # To ensure numerical consistency with cython procedure.
             p1 = p1.astype(numpy.float32)
             p2 = p2.astype(numpy.float32)
             p3 = p3.astype(numpy.float32)

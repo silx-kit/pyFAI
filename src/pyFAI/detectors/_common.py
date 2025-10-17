@@ -1174,7 +1174,7 @@ class Detector(metaclass=DetectorMeta):
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
 
-        Set the flat field from one or mutliple files, averaged
+        Set the flat field from one or multiple files, averaged
         according to the method provided
         """
         if type(files) in utils.StringTypes:
@@ -1217,7 +1217,7 @@ class Detector(metaclass=DetectorMeta):
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
 
-        Set the dark current from one or mutliple files, avaraged
+        Set the dark current from one or multiple files, avaraged
         according to the method provided
         """
         if type(files) in utils.StringTypes:
@@ -1290,7 +1290,7 @@ class Detector(metaclass=DetectorMeta):
 
     @property
     def origin(self):
-        "What are the coordinnates of the detector's origin ?"
+        "What are the coordinates of the detector's origin ?"
         if self.orientation == 1:
             return self.shape
         elif self.orientation == 2:
