@@ -141,7 +141,7 @@ class TestOptions(object):
         """
         Force the recompilation of pyFAI
 
-        Nonesense, kept for legacy reasons
+        Nonsense, kept for legacy reasons
         """
         return
 
