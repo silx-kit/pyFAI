@@ -56,7 +56,7 @@ class PeakModel(AbstractModel):
 
     def isEnabled(self):
         """
-        True if this group has to be taken into acount.
+        True if this group has to be taken into account.
 
         :rtype: bool
         """
@@ -64,7 +64,7 @@ class PeakModel(AbstractModel):
 
     def setEnabled(self, isEnabled):
         """
-        Set this group to be taken into acount (or not).
+        Set this group to be taken into account (or not).
 
         :param bool isEnabled: True to enable this group.
         """
@@ -84,7 +84,7 @@ class PeakModel(AbstractModel):
         """
         Returns coords as numpy array.
 
-        The first index identify a coord, the seconf identify the coord
+        The first index identify a coord, the second identify the coord
         dimensions.
 
         List of axis/ord can be reached like that.
@@ -172,9 +172,9 @@ class PeakModel(AbstractModel):
     def distanceTo(self, coord):
         """Returns the smallest distance to this coord.
 
-        None is retruned if the group contains no peaks.
+        None is returned if the group contains no peaks.
 
-        :param Tuple[float,float] coord: Distance to mesure
+        :param Tuple[float,float] coord: Distance to measure
         """
         if len(self.__coords) == 0:
             return None

@@ -65,12 +65,12 @@ class IntegrationMethodWidget(qt.QWidget):
         "pseudo": "Scale down the bounding box to the pixel area, before splitting. Good cost/precision compromise, similar to FIT2D",
         "full": "Split each pixel as a polygon on the output bins. The costly high-precision choice",
         "histogram": "Direct integration method with the lowest memory footprint but slower",
-        "lut": "Sparse matrix based integration using a look-up table. Long initalization time and highest memory usage. Often slower than CSR",
-        "csr": "Sparse matrix based integration using a a CSR (compressed sparse row) representation. Long initalization time and high memory usage, but the fastest for processing",
-        "csc": "Sparse matrix based integration using a a CSC (compressed sparse column) representation. Long initalization time and high memory usage. Single-threaded but faster processing than histogram",
+        "lut": "Sparse matrix based integration using a look-up table. Long initialization time and highest memory usage. Often slower than CSR",
+        "csr": "Sparse matrix based integration using a a CSR (compressed sparse row) representation. Long initialization time and high memory usage, but the fastest for processing",
+        "csc": "Sparse matrix based integration using a a CSC (compressed sparse column) representation. Long initialization time and high memory usage. Single-threaded but faster processing than histogram",
         "python": "Use a pure Python/numpy/scipy implementation. Slow but portable",
         "cython": "Use a Cython/C/C++ implementation. Fast and reliable default methods",
-        "opencl": "Use an OpenCL implementation based on hardware accelerators. Fastest but hardware/driver dependant",
+        "opencl": "Use an OpenCL implementation based on hardware accelerators. Fastest but hardware/driver dependent",
     }
 
     CodeRole = qt.Qt.UserRole + 1

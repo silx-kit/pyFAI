@@ -31,7 +31,7 @@ import enum
 from pyFAI import units
 
 
-class Dimentionality(enum.Enum):
+class Dimensionality(enum.Enum):
 
     ANGLE = "Angle"
 
@@ -50,27 +50,27 @@ class Dimentionality(enum.Enum):
 
 class Unit(enum.Enum):
 
-    DEGREE = ("Degree", u"deg", Dimentionality.ANGLE, 1),
+    DEGREE = ("Degree", u"deg", Dimensionality.ANGLE, 1),
 
-    RADIAN = ("Radian", u"rad", Dimentionality.ANGLE, 1),
+    RADIAN = ("Radian", u"rad", Dimensionality.ANGLE, 1),
 
-    METER = ("Meter", u"m", Dimentionality.LENGTH, 1),
+    METER = ("Meter", u"m", Dimensionality.LENGTH, 1),
 
-    CENTIMETER = ("Centimeter", u"cm", Dimentionality.LENGTH, 1),
+    CENTIMETER = ("Centimeter", u"cm", Dimensionality.LENGTH, 1),
 
-    MILLIMETER = ("Millimeter", u"mm", Dimentionality.LENGTH, 1),
+    MILLIMETER = ("Millimeter", u"mm", Dimensionality.LENGTH, 1),
 
-    ANGSTROM = (u"Ångström", u"Å", Dimentionality.WAVELENGTH, 1),
+    ANGSTROM = (u"Ångström", u"Å", Dimensionality.WAVELENGTH, 1),
 
-    METER_WL = ("Meter", u"m", Dimentionality.WAVELENGTH, 1),
+    METER_WL = ("Meter", u"m", Dimensionality.WAVELENGTH, 1),
 
-    ENERGY = ("Energy", u"keV", Dimentionality.WAVELENGTH, -1),
+    ENERGY = ("Energy", u"keV", Dimensionality.WAVELENGTH, -1),
 
-    PIXEL = ("Pixel", u"px", Dimentionality.PIXEL, 1),
+    PIXEL = ("Pixel", u"px", Dimensionality.PIXEL, 1),
 
-    INV_ANGSTROM = (u"Inverse Ångström", u"Å⁻¹", Dimentionality.SCATTERING_VECTOR, 1),
+    INV_ANGSTROM = (u"Inverse Ångström", u"Å⁻¹", Dimensionality.SCATTERING_VECTOR, 1),
 
-    INV_NANOMETER = (u"Inverse nanometer", u"nm⁻¹", Dimentionality.SCATTERING_VECTOR, 1),
+    INV_NANOMETER = (u"Inverse nanometer", u"nm⁻¹", Dimensionality.SCATTERING_VECTOR, 1),
 
     @property
     def fullname(self):
