@@ -92,7 +92,7 @@ def make_ai(config, consume_keys=False):
     :param config: Key-value dictionary with all parameters
     :param bool consume_keys: If true the keys from the dictionary will be
         consumed when used.
-    :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
+    :return: A configured (but uninitialized) :class:`AzimuthalIntegrator`.
     """
     if not isinstance(config, WorkerConfig):
         config = WorkerConfig.from_dict(config, inplace=consume_keys)
@@ -107,7 +107,7 @@ def _init_ai(ai, config, read_maps=True):
     :param AzimuthalIntegrator ai: An :class:`AzimuthalIntegrator`.
     :param config: WorkerConfig dataclass instance
     :param bool read_maps: If true mask, flat, dark will be read.
-    :return: A configured (but uninitialized) :class:`AzimuthalIntgrator`.
+    :return: A configured (but uninitialized) :class:`AzimuthalIntegrator`.
     """
     ai._init_from_poni(ponifile.PoniFile(config.poni))
 
