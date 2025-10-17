@@ -260,7 +260,7 @@ and wavelength. An 1D and 2D diffraction patterns are also produced.
 
 
 def parse_pixel_size(pixel_size):
-    """Convert a comma separated sting into pixel size
+    """Convert a comma separated string into pixel size
 
     :param str pixel_size: String containing pixel size in micron
     :rtype: Tuple[float,float]
@@ -290,7 +290,7 @@ def parse_options():
     """
     Returns parsed command line argument as an `options` object.
 
-    :raises ExitException: In case of the use of `--help` in the comman line
+    :raises ExitException: In case of the use of `--help` in the command line
     """
     usage = "pyFAI-calib2 [options] input_image.edf"
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
@@ -298,7 +298,7 @@ def parse_options():
     parser.add_argument("-V", "--version", action='version', version=version)
     configure_parser_arguments(parser)
 
-    # Analyse aruments and options
+    # Analyse arguments and options
     options = parser.parse_args()
     return options
 

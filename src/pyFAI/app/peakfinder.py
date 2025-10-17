@@ -290,7 +290,7 @@ def parse(args=None):
 
     group = parser.add_argument_group("Experimental setup options")
     group.add_argument("-b", "--beamline", type=str, default="beamline",
-                       help="Name of the instument (for the HDF5 NXinstrument)")
+                       help="Name of the instrument (for the HDF5 NXinstrument)")
     group.add_argument("-p", "--poni", type=str, default=None,
                        help="Geometry description file: Mandatory")
     group.add_argument("-m", "--mask", type=str, default=None,
@@ -341,7 +341,7 @@ def parse(args=None):
         if len(args.IMAGE) == 0:
             raise argparse.ArgumentError(None, "No input file specified.")
         if ocl is None:
-            raise RuntimeError("sparsify-Brgg requires _really_ a valide OpenCL environment. Please install pyopencl !")
+            raise RuntimeError("sparsify-Brgg requires _really_ a valid OpenCL environment. Please install pyopencl !")
 
     except argparse.ArgumentError as e:
         logger.error(e.message)
