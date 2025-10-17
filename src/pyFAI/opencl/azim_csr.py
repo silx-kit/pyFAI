@@ -430,7 +430,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         :param data: numpy array with data
         :param dest: name of the buffer as registered in the class
-        :param checksum: Checksum of the data to determine if the data needs to be transfered
+        :param checksum: Checksum of the data to determine if the data needs to be transferred
         :param workgroup_size: enforce kernel to run with given workgroup size
         :param convert: if True (default) convert dtype on GPU, if false, leave as it is.
         :return: the actual buffer where the data were sent
@@ -492,7 +492,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         return dest_buffer
 
     def get_buffer(self, name, out=None):
-        """retrive a Send a numpy array to the device, including the type conversion on the device if possible
+        """retrieve a Send a numpy array to the device, including the type conversion on the device if possible
 
         :param name: name of the buffer
         :param out: pre-allocated destination numpy array
@@ -1124,7 +1124,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
 
         Averaging is performed using the CSR representation of the look-up table on all
-        arrays after sorting pixels by apparant intensity and taking only the selected ones
+        arrays after sorting pixels by apparent intensity and taking only the selected ones
         based on quantiles and the length of the ensemble.
 
         :param dark: array of same shape as data for pre-processing

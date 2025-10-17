@@ -200,7 +200,7 @@ class OCL_Hist_Pixelsplit(object):
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
-        :param kernel_file: path tothe
+        :param kernel_file: path to the kernel file
         """
         kernel_file = kernel_file or "ocl_hist_pixelsplit.cl"
         kernel_src = concatenate_cl_kernel([kernel_file])

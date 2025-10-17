@@ -591,7 +591,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessment
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -611,7 +611,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param cutoff_peak: cut-off to consider a pixel as part of a peak (activate peak-picking)
         :param radial_range: 2-tuple with the minimum and maximum radius values for picking points. Reduces the region of search.
         :param patch_size: defines the size of the vicinity to explore 3x3 or 5x5 when peak-picking. Depends on `cutoff_peak`
-        :param connected: number of pixels above threshold in local patch ot be considered as a peak. Depends on `cutoff_peak`
+        :param connected: number of pixels above threshold in local patch to be considered as a peak. Depends on `cutoff_peak`
 
         :return: SparseFrame object, see `intensity`, `x` and `y` properties
 
@@ -728,7 +728,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param data: 2D array with the signal
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessement
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -744,7 +744,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         :param cutoff_clip: discard all points with `|value - avg| > cutoff * sigma` during sigma_clipping.
                    Values of 4-5 are quite common.
                    The minimum value is obtained from Chauvenet criterion: sqrt(2ln(n/sqrt(2pi)))
-                   where n is the number of pixel in the bin, usally around 2 to 3.
+                   where n is the number of pixel in the bin, usually around 2 to 3.
         :param cycle: perform at maximum this number of cycles. 5 is common.
         :param noise: minimum meaningful signal. Fixed threshold for picking
         :param cutoff_peak: pick points with `value > background + cutoff * sigma` 3-4 is quite common value
@@ -781,7 +781,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
     __call__ = sparsify
 
 #===============================================================================
-# Simple variante
+# Simple variant
 #===============================================================================
 
 
@@ -1048,7 +1048,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
 
         :param image: 2d array with an image
         :param window: size of the window, i.e. 7 for 7x7 patch size.
-        :param threshhold: keep peaks with I > mean + cutoff*std
+        :param threshold: keep peaks with I > mean + cutoff*std
         :param radius: keep points with centroid on center within this radius (in pixel)
         :param noise: minimum signal for peak to discard noisy region.
         :return: number of peak found in image
@@ -1070,7 +1070,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
 
         :param image: 2d array with an image
         :param window: size of the window, i.e. 7 for 7x7 patch size.
-        :param threshhold: keep peaks with I > mean + cutoff*std
+        :param threshold: keep peaks with I > mean + cutoff*std
         :param radius: keep points with centroid on center within this radius (in pixel)
         :param noise: minimum signal for peak to discard noisy region.
         :return: SparseFrame object, see `intensity`, `x` and `y` properties
@@ -1106,7 +1106,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
     __call__ = sparsify
 
 #===============================================================================
-# Rebuild an array from sparse informations
+# Rebuild an array from sparse information
 #===============================================================================
 
 

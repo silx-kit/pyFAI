@@ -152,7 +152,7 @@ class OCLFullSplit1d(object):
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
-        :param kernel_file: path tothe
+        :param kernel_file: path to the kernel_file
         """
         kernel_name = "ocl_lut.cl"
         if kernel_file is None:
