@@ -835,7 +835,7 @@ class Integrate2dResult(IntegrateResult):
 
 class SeparateResult(_CopyableTuple):
     """
-    Class containing the result of AzimuthalIntegrator.separte which separates the
+    Class containing the result of AzimuthalIntegrator.separate which separates the
 
     * Amorphous isotropic signal (from a median filter or a sigma-clip)
     * Bragg peaks (signal > amorphous)
@@ -1619,7 +1619,7 @@ class Integrate2dFiberResult(IntegrateResult):
 
 
 class Miller(NamedTuple):
-    """This represents the Miller index of a family of latice plans"""
+    """This represents the Miller index of a family of lattice plans"""
 
     h: int  # noqa: E741
     k: int  # noqa: E741
@@ -1685,7 +1685,7 @@ class FixedParameters(set):
         """
         Add a value to a set if value, else discard it.
 
-        :param key: element to added or discared from set
+        :param key: element to add or discard from set
         :type value: boolean. If None do nothing !
         :return: None
         """

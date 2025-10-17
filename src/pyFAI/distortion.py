@@ -288,7 +288,7 @@ class Distortion(object):
                                                                       platformid=self.device[0], deviceid=self.device[1],
                                                                       block_size=self.workgroup,
                                                                       empty = self.empty)
-                    # Enforce the serial execution for the intergration as it is much faster
+                    # Enforce the serial execution for the integration as it is much faster
                     self.integrator.workgroup_size["csr_integrate4"] = 1, 1
 
     def calc_LUT_regular(self):
