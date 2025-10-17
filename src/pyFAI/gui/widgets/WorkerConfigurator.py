@@ -245,7 +245,7 @@ class WorkerConfigurator(qt.QWidget):
         def splitFiles(filenames):
             """In case files was provided with comma.
 
-            The file brower was in this case not working, but the returned
+            The file browser was in this case not working, but the returned
             config will be valid.
             """
             filenames = filenames.strip()
@@ -339,7 +339,7 @@ class WorkerConfigurator(qt.QWidget):
         def normalizeFiles(filenames):
             """Normalize different versions of the filename list.
 
-            FIXME: The file brower will not work, but the returned config will
+            FIXME: The file browser will not work, but the returned config will
             be valid
             """
             if filenames is None:
