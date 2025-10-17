@@ -1676,7 +1676,7 @@ class Integrator(Geometry):
 
     @deprecated(reason="Not maintained", since_version="0.17")
     def set_darkfiles(self, files=None, method="mean"):
-        """Set the dark current from one or mutliple files, avaraged
+        """Set the dark current from one or multiple files, avaraged
         according to the method provided.
 
         Moved to Detector.
@@ -1695,7 +1695,7 @@ class Integrator(Geometry):
 
     @deprecated(reason="Not maintained", since_version="0.17")
     def set_flatfiles(self, files, method="mean"):
-        """Set the flat field from one or mutliple files, averaged
+        """Set the flat field from one or multiple files, averaged
         according to the method provided.
 
         Moved to Detector.

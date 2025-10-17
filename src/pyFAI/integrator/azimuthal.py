@@ -1221,7 +1221,7 @@ class AzimuthalIntegrator(Integrator):
         :param unit: unit to be used for integration
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param percentile: which percentile use for cutting out
-                           percentil can be a 2-tuple to specify a region to
+                           percentile can be a 2-tuple to specify a region to
                            average out
         :param mask: masked out pixels array
         :param normalization_factor: Value of a normalization monitor
@@ -1382,7 +1382,7 @@ class AzimuthalIntegrator(Integrator):
         :param unit: unit to be used for integration
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param percentile: which percentile use for cutting out.
-                           percentil can be a 2-tuple to specify a region to average out,
+                           percentile can be a 2-tuple to specify a region to average out,
                            like: (25,75) to average the second and third quartile.
         :param mask: masked out pixels array
         :param float normalization_factor: Value of a normalization monitor
@@ -1829,7 +1829,7 @@ class AzimuthalIntegrator(Integrator):
 
             ``|I - <I>| < thres * σ(I)``
 
-        This enforces a symmetric, bell-shaped distibution (i.e. gaussian-like)
+        This enforces a symmetric, bell-shaped distribution (i.e. gaussian-like)
         and is very good at extracting background or amorphous isotropic scattering
         out of Bragg peaks.
 
@@ -1873,7 +1873,7 @@ class AzimuthalIntegrator(Integrator):
         """
         for k in kwargs:
             if k == "npt_azim":
-                logger.warning("'npt_azim' argument is not used in sigma_clip_ng as not 2D intergration is performed anymore")
+                logger.warning("'npt_azim' argument is not used in sigma_clip_ng as not 2D integration is performed anymore")
             else:
                 logger.warning("Got unknown argument %s %s", k, kwargs[k])
 
@@ -2191,8 +2191,8 @@ class AzimuthalIntegrator(Integrator):
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param poissonian: If True, add some poisonian noise to the data to make
                            then more realistic
-        :param grow_mask: grow mask in polar coordinated to accomodate pixel
-            splitting algoritm
+        :param grow_mask: grow mask in polar coordinated to accommodate pixel
+            splitting algorithm
         :return: inpainting object which contains the restored image as .data
         """
         from ..ext import inpainting
@@ -2269,10 +2269,10 @@ class AzimuthalIntegrator(Integrator):
 
     def guess_max_bins(self, redundancy=1, search_range=None, unit="q_nm^-1", radial_range=None, azimuth_range=None):
         """
-        Guess the maximum number of bins, considering the excpected minimum redundancy:
+        Guess the maximum number of bins, considering the expected minimum redundancy:
 
         :param redundancy: minimum number of pixel per bin
-        :param search_range: the minimum and maximun number of bins to be considered
+        :param search_range: the minimum and maximum number of bins to be considered
         :param unit: the unit to be considered like "2th_deg" or "q_nm^-1"
         :param radial_range: radial range to be considered, depends on unit !
         :param azimuth_range: azimuthal range to be considered
