@@ -210,7 +210,7 @@ class Geometry:
         self._dssa_order = (
             3  # Used to be 1 (False) in very old version of pyFAI: was a bug.
         )
-        # The correct value is 3 where 2 come from the apparant pixels area and 1 from the incidence angle.
+        # The correct value is 3 where 2 come from the apparent pixels area and 1 from the incidence angle.
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
@@ -903,7 +903,7 @@ class Geometry:
         :param dtype: output format requested. Double precision is needed for fitting the geometry
         :param (bool) use_cython: set to false to test the Python path (slower)
         :param do_parallax: correct for parallax effect (if parametrized)
-        :return: 3D coodinates as nd-array of size (...,3) or (...,3) (default)
+        :return: 3D coordinates as nd-array of size (...,3) or (...,3) (default)
 
         Nota: this value is not cached and actually generated on demand (costly)
         """
@@ -1591,7 +1591,7 @@ class Geometry:
 
     def get_config(self):
         """
-        return the configuration as a dictionnary
+        return the configuration as a dictionary
 
         :return: dictionary with the current configuration
         """
@@ -1789,12 +1789,12 @@ class Geometry:
         https://doi.org/10.1080/08957959608201408
 
         Warning: Fit2D flips automatically images depending on their file-format.
-        By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
-        To obtaine correct result you will have to flip images using numpy.flipud.
+        By reverse engineering we noticed this behaviour for Tiff and Mar345 images (at least).
+        To obtain correct result you will have to flip images using numpy.flipud.
 
         :param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
         :param tilt: tilt in degrees
-        :param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
+        :param tiltPlanRotation: Rotation (in degrees) of the tilt plan around the Z-detector axis
                 * 0deg -> Y does not move, +X goes to Z<0
                 * 90deg -> X does not move, +Y goes to Z<0
                 * 180deg -> Y does not move, +X goes to Z>0
@@ -1903,7 +1903,7 @@ class Geometry:
 
         Basically the main difference with pyFAI is the order of the axis which are flipped
 
-        :return: dictionnary with those parameters:
+        :return: dictionary with those parameters:
             SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
             Center_1, pixel position of the PONI along fastest axis
             Center_2: pixel position of the PONI along slowest axis
@@ -2030,7 +2030,7 @@ class Geometry:
         geometry = {"translation": [-self.poni2, -self.poni1, self.dist]}
         # This is the matrix that transforms the sample's orientation to the detector's orientation
         rot = numpy.linalg.inv(self.rotation_matrix())
-        # TODO: double check this with CXI gemetry visualizer. Indices could be transposed.
+        # TODO: double check this with CXI geometry visualizer. Indices could be transposed.
         geometry["orientation"] = [
             rot[1, 1],  # x′ · x,
             rot[1, 0],  # x′ · y,
@@ -2118,7 +2118,7 @@ class Geometry:
     def set_rot_from_quaternion(self, w, x, y, z):
         """Quaternions are convieniant ways to represent 3D rotation
         This method allows to define rot1(left-handed), rot2(left-handed) and
-        rot3 (right handed) as definied in the documentation from a quaternion,
+        rot3 (right handed) as defined in the documentation from a quaternion,
         expressed in the right handed (x1, x2, x3) basis set.
 
         Uses the transformations-library from C. Gohlke
@@ -2210,7 +2210,7 @@ class Geometry:
     def setChiDiscAtPi(self):
         """
         Set the position of the discontinuity of the chi axis between
-        -pi and +pi.  This is the default behavour
+        -pi and +pi.  This is the default behaviour
         """
         if self.chiDiscAtPi is True:
             return
@@ -2257,7 +2257,7 @@ class Geometry:
         path="numexpr",
     ):
         """
-        Calculate the polarization correction accoding to the
+        Calculate the polarization correction according to the
         polarization factor:
 
         * If the polarization factor is None,
@@ -2270,17 +2270,17 @@ class Geometry:
             there is no correction in the horizontal plane and a node at 2th=90, chi=90
         * If the polarization is elliptical, the polarization factor varies between -1 and +1.
 
-        The axis_offset parameter allows correction for the misalignement of
+        The axis_offset parameter allows correction for the misalignment of
         the polarization plane (or ellipse main axis) and the the detector's X axis.
 
         :param shape: the shape of the array,
                     can be guessed most of the time from the detector definition
         :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization)
-                    and 1 (where division by 0 could occure at 2th=90, chi=0)
+                    and 1 (where division by 0 could occur at 2th=90, chi=0)
         :param axis_offset: Angle between the polarization main axis and
                             detector's X direction (in radians !!!)
         :param with_checksum: calculate also the checksum (used with OpenCL integration)
-        :param path: set to numpy to enforce the use of numpy, else uses numexpr (mutithreaded)
+        :param path: set to numpy to enforce the use of numpy, else uses numexpr (multithreaded)
         :return: 2D array with polarization correction (normalization) array
                  or namedtuple if with_checksum
 
@@ -2372,7 +2372,7 @@ class Geometry:
                 raise RuntimeError(
                     (
                         "You should provide a shape if the"
-                        " geometry is not yet initiallized"
+                        " geometry is not yet initialized"
                     )
                 )
 
@@ -2435,7 +2435,7 @@ class Geometry:
         :param polarization_factor: set to true to use previously used value
         :param polarization_axis_offset: axis_offset to be send to the polarization method
         :param dark: dark current correction
-        :param flat: flatfield corrction
+        :param flat: flatfield correction
         :return: 2D image reconstructed
 
         """
@@ -2501,7 +2501,7 @@ class Geometry:
         :param polarization_factor: set to true to use previously used value
         :param polarization_axis_offset: axis_offset to be send to the polarization method
         :param dark: dark current correction
-        :param flat: flatfield corrction
+        :param flat: flatfield correction
         :return: 2D image reconstructed
 
         """
@@ -2724,9 +2724,9 @@ class Geometry:
 
         :param activate: set to False to disable parralax correction
         :param sensor_material: provide the name of the sensor material,
-                                by default use the one definined in the detector
+                                by default use the one defined in the detector
         :param sensor_thickness: provide the name of the sensor thickness,
-                                by default use the one definined in the detector
+                                by default use the one defined in the detector
         """
 
         if activate:

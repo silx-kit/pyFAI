@@ -60,7 +60,7 @@ class ImageD11Geometry(_ImageD11Geometry):
     :param centerX: Position of the beam-center on the detector in pixels, along the fastest axis of the image.
     :param centerY: Position of the beam-center on the detector in pixels, along the slowest axis of the image.
     :param tilt: Angle of tilt of the detector in degrees
-    :param tiltPlanRotation: Direction of the tilt (unefined when tilt is 0)
+    :param tiltPlanRotation: Direction of the tilt (undefined when tilt is 0)
     :param detector: Detector definition as is pyFAI.
     :param wavelength: Wavelength of the beam in Angstrom
     """
