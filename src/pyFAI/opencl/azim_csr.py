@@ -708,7 +708,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessement
         :param error_model: enum ErrorModel
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
@@ -940,7 +940,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessement
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -1129,7 +1129,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessement
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing

@@ -908,7 +908,7 @@ class LongestRunOfHeads:
 
         :param n: number of coin toss in the experiment, an integer
         :param c: length of the longest run of heads, an integer
-        :return: The probablility of having c subsequent heads in a n toss of fair coin
+        :return: The probability of having c subsequent heads in a n toss of fair coin
         """
         if c >= n:
             return 0
@@ -922,7 +922,7 @@ class LongestRunOfHeads:
 
         :param n: number of coin toss in the experiment, an integer
         :param c: length of the longest run of heads or tails, an integer
-        :return: The probablility of having c subsequent heads or tails in a n toss of fair coin
+        :return: The probability of having c subsequent heads or tails in a n toss of fair coin
         """
         if c > n:
             return 0
@@ -938,7 +938,7 @@ class LongestRunOfHeads:
 
         :param n: number of coin toss in the experiment, an integer
         :param c: length of thee observed run of heads or tails, an integer
-        :return: The probablility of having more than c subsequent heads or tails in a n toss of fair coin
+        :return: The probability of having more than c subsequent heads or tails in a n toss of fair coin
         """
         if c > n:
             return 0

@@ -118,7 +118,7 @@ class AzimuthalIntegrator(Integrator):
         :param float normalization_factor: Value of a normalization monitor
         :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :param ndarray absorption: detector absorption
-        :return: Integrate1dResult namedtuple with (q,I,sigma) +extra informations in it.
+        :return: Integrate1dResult namedtuple with (q,I,sigma) +extra information in it.
         """
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
         if method.dimension != 1:
@@ -273,7 +273,7 @@ class AzimuthalIntegrator(Integrator):
                                             weighted_average=method.weighted_average)
             else:  # method.impl_lower in ("opencl", "python"):
                 if method not in self.engines:
-                    # instanciated the engine
+                    # instantiated the engine
                     engine = self.engines[method] = Engine()
                 else:
                     engine = self.engines[method]
@@ -422,7 +422,7 @@ class AzimuthalIntegrator(Integrator):
             result._set_count(intpl.count)
         elif method.method[1:4] == ("no", "histogram", "opencl"):
             if method not in self.engines:
-                # instanciated the engine
+                # instantiated the engine
                 engine = self.engines[method] = Engine()
             else:
                 engine = self.engines[method]
@@ -865,7 +865,7 @@ class AzimuthalIntegrator(Integrator):
             if method.impl_lower != "cython":
                 # method.impl_lower in ("opencl", "python"):
                 if method not in self.engines:
-                    # instanciated the engine
+                    # instantiated the engine
                     engine = self.engines[method] = Engine()
                 else:
                     engine = self.engines[method]
@@ -1036,7 +1036,7 @@ class AzimuthalIntegrator(Integrator):
                 if method.impl_lower == "opencl":
                     logger.debug("integrate2d uses OpenCL histogram implementation")
                     if method not in self.engines:
-                    # instanciated the engine
+                    # instantiated the engine
                         engine = self.engines[method] = Engine()
                     else:
                         engine = self.engines[method]
@@ -1395,7 +1395,7 @@ class AzimuthalIntegrator(Integrator):
         """
         for k in kwargs:
             if k == "npt_azim":
-                logger.warning("'npt_azim' argument is not used in sigma_clip_ng as not 2D intergration is performed anymore")
+                logger.warning("'npt_azim' argument is not used in sigma_clip_ng as not 2D integration is performed anymore")
             else:
                 logger.warning("Got unknown argument %s %s", k, kwargs[k])
 
@@ -1525,7 +1525,7 @@ class AzimuthalIntegrator(Integrator):
                     else:
                         cython_engine.set_engine(cython_integr)
             if method not in self.engines:
-                # instanciated the engine
+                # instantiated the engine
                 engine = self.engines[method] = Engine()
             else:
                 engine = self.engines[method]
@@ -2002,7 +2002,7 @@ class AzimuthalIntegrator(Integrator):
                     else:
                         cython_engine.set_engine(cython_integr)
             if method not in self.engines:
-                # instanciated the engine
+                # instantiated the engine
                 engine = self.engines[method] = Engine()
             else:
                 engine = self.engines[method]
