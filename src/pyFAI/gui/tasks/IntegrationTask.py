@@ -413,7 +413,7 @@ class _StatusBar(qt.QStatusBar):
             self.__2theta.setVisible(True)
             self.__2theta.setValue(tth)
             # NOTE: warelength could be updated, and the the display would not
-            # be updated. But here it is safe enougth.
+            # be updated. But here it is safe enough.
             wavelength = CalibrationContext.instance().getCalibrationModel().fittedGeometry().wavelength().value()
             q = unitutils.from2ThRad(tth, core_units.Q_A, wavelength)
             self.__q.setVisible(True)
@@ -523,14 +523,14 @@ class IntegrationPlot(qt.QFrame):
         self.__angleUnderMouse = None
 
     def __plot1dSignalReceived(self, event):
-        """Called when old style signals at emmited from the plot."""
+        """Called when old style signals at emitted from the plot."""
         if event["event"] == "mouseMoved":
             x, y = event["x"], event["y"]
             self.__mouseMoved(x, y)
             self.__updateStatusBar(x, None)
 
     def __plot2dSignalReceived(self, event):
-        """Called when old style signals at emmited from the plot."""
+        """Called when old style signals at emitted from the plot."""
         if event["event"] == "mouseMoved":
             x, y = event["x"], event["y"]
             self.__mouseMoved(x, y)

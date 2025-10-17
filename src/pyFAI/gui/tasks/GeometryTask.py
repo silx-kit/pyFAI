@@ -445,7 +445,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             for item in items:
                 item.setVisible(False)
 
-        # Do not dispaly all rings, but at least the 10 first
+        # Do not display all rings, but at least the 10 first
         firstRings = [a for a in angles if a[0] <= 10]
         sampledRings = [a for a in angles if (a[0] % step == 0)]
         displayedRings = set(firstRings + sampledRings)
@@ -635,9 +635,9 @@ class GeometryTask(AbstractCalibrationTask):
         self.__synchronizeRawView.registerPlot(self.__plot)
 
         constraintLayout = qt.QHBoxLayout()
-        defaultConstraintsButton = qt.QPushButton("Default contraints", self)
+        defaultConstraintsButton = qt.QPushButton("Default constraints", self)
         defaultConstraintsButton.setToolTip("Remove all the custom constraints.")
-        saxsConstraintsButton = qt.QPushButton("SAXS contraints", self)
+        saxsConstraintsButton = qt.QPushButton("SAXS constraints", self)
         saxsConstraintsButton.setToolTip("Force all the rotations to zero.")
         constraintLayout.addWidget(defaultConstraintsButton)
         constraintLayout.addWidget(saxsConstraintsButton)
@@ -653,13 +653,13 @@ class GeometryTask(AbstractCalibrationTask):
         super()._initGui()
 
     def __setDefaultConstraints(self):
-        """Apply default contraints imposed by the refinment process"""
+        """Apply default constraints imposed by the refinement process"""
         calibrationModel = self.model()
         constraintsModel = calibrationModel.geometryConstraintsModel()
         constraintsModel.set(self.__defaultConstraints)
 
     def __setSaxsConstraints(self):
-        """Apply default contraints use by SAXS experiments"""
+        """Apply default constraints use by SAXS experiments"""
         calibrationModel = self.model()
         constraintsModel = calibrationModel.geometryConstraintsModel()
         constraintsModel.lockSignals()
