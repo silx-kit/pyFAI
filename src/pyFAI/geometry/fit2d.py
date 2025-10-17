@@ -88,7 +88,7 @@ class Fit2dGeometry(NamedTuple):
         return f"DirectBeamDist= {self.directDist:.3f} mm\tCenter: x={self.centerX:.3f}, y={self.centerY:.3f} pix\t"\
                f"Tilt= {self.tilt:.3f}° tiltPlanRotation= {self.tiltPlanRotation:.3f}°" + \
                (f" \N{GREEK SMALL LETTER LAMDA}= {self.wavelength:.3f}\N{LATIN CAPITAL LETTER A WITH RING ABOVE}" if self.wavelength else "")
-                
+
 
 def convert_to_Fit2d(poni):
     """Convert a Geometry|PONI object to the geometry of Fit2D
