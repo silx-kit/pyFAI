@@ -391,7 +391,7 @@ class PeakPicker(object):
         gpt = self.points.get(ring)
         if gpt:
             self.widget.remove_grp(gpt.label, update=False)
-            # matplotlib coord to pixel coord, avoinding use of banker's round
+            # matplotlib coord to pixel coord, avoiding use of banker's round
             newpeak = self.massif.nearest_peak(yx)
             if newpeak:
                 gpt.points.append(newpeak)
@@ -421,7 +421,7 @@ class PeakPicker(object):
             self.widget.remove_grp(gpt.label, update=True)
             if len(gpt) > 1:
                 # delete single closest point from current group
-                # matplotlib coord to pixel coord, avoinding use of banker's round
+                # matplotlib coord to pixel coord, avoiding use of banker's round
                 y0, x0 = yx
                 distsq = [((p[1] - x0) ** 2 + (p[0] - y0) ** 2) for p in gpt.points]
                 # index and distance of smallest distance:
