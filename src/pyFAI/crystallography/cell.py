@@ -113,7 +113,7 @@ class Cell:
         self.S22 = None
         self.S23 = None
         self.selection_rules = []
-        "contains a list of functions returning True(allowed)/False(forbiden)/None(unknown), see space_groups.py"
+        "contains a list of functions returning True(allowed)/False(forbidden)/None(unknown), see space_groups.py"
         self._type = None
         self.type = lattice_type
 
@@ -342,7 +342,7 @@ class Cell:
             if d < dmin:
                 continue
 
-            # Trucate precision at 8 digits to mitigate numerical noise. At most, 8 digits are used for saving.
+            # Truncate precision at 8 digits to mitigate numerical noise. At most, 8 digits are used for saving.
             d = numpy.round(d, 8)
 
             if d in res:

@@ -87,7 +87,7 @@ class Fit2dGeometry(NamedTuple):
     def __repr__(self):
         return f"DirectBeamDist= {self.directDist:.3f} mm\tCenter: x={self.centerX:.3f}, y={self.centerY:.3f} pix\t"\
                f"Tilt= {self.tilt:.3f}° tiltPlanRotation= {self.tiltPlanRotation:.3f}°" + \
-               (f" \N{greek small letter lamda}= {self.wavelength:.3f}\N{Latin Capital Letter a with Ring Above}" if self.wavelength else "")
+               (f" \N{greek small letter lambda}= {self.wavelength:.3f}\N{Latin Capital Letter a with Ring Above}" if self.wavelength else "")
 
 
 def convert_to_Fit2d(poni):

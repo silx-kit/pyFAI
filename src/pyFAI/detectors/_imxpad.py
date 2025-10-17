@@ -360,7 +360,7 @@ class Xpad_flat(ImXPadS10):
         """
         Returns a generic mask for Xpad detectors...
         discards the first line and raw form all modules:
-        those are 2.5x bigger and often mis - behaving
+        those are 2.5x bigger and often misbehaving
         """
         if self.max_shape is None:
             raise NotImplementedError("Generic Xpad detector does not"
