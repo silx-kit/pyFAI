@@ -152,7 +152,7 @@ class CSRIntegrator(object):
         res[:, 3] = self._csr.dot(flat_cnt)  # Σ c·1
         if error_model is ErrorModel.AZIMUTHAL:
             avg = res[:, 0] / res[:, 2]
-            avg2d = self._csr.T.dot(avg)  # tranform 1D average into 2D (works only if splitting is disabled)
+            avg2d = self._csr.T.dot(avg)  # transform 1D average into 2D (works only if splitting is disabled)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 delta = (flat_sig / flat_nrm - avg2d)
@@ -294,7 +294,7 @@ class CsrIntegrator1d(CSRIntegrator):
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessment
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
