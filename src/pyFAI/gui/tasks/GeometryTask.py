@@ -126,7 +126,7 @@ class _StatusBar(qt.QStatusBar):
         self.__2theta.setValue(tth)
         if not numpy.isnan(tth):
             # NOTE: wavelength could be updated, and the the display would not
-            # be updated. But here it is safe enougth.
+            # be updated. But here it is safe enough.
             wavelength = CalibrationContext.instance().getCalibrationModel().fittedGeometry().wavelength().value()
             q = unitutils.from2ThRad(tth, core_units.Q_A, wavelength)
             self.__q.setValue(q)
@@ -187,8 +187,8 @@ class CalibrationState(qt.QObject):
         return self.__geoRef
 
     def popGeometryRefinement(self):
-        """Invalidate the object and remove the ownershit of the geometry
-        refinment"""
+        """Invalidate the object and remove the ownership of the geometry
+        refinement"""
         geoRef = self.__geoRef
         self.reset()
         return geoRef
@@ -321,7 +321,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         menu.exec_(handle.mapToGlobal(pos))
 
     def __plotSignalReceived(self, event):
-        """Called when old style signals at emmited from the plot."""
+        """Called when old style signals at emitted from the plot."""
         if event["event"] == "mouseMoved":
             x, y = event["x"], event["y"]
             self.__mouseMoved(x, y)

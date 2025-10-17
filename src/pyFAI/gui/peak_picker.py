@@ -66,7 +66,7 @@ if qt is not None:
 
 
 def preprocess_image(data, log=False, clip=0.001):
-    """Preforms the pre-processing of the image
+    """Performs the pre-processing of the image
 
     :param data: the input image
     :param log: set to apply logarithmic intensity scale

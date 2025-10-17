@@ -274,7 +274,7 @@ class IntegrationProcess(object):
             try:
                 rings = unitutils.from2ThRad(rings, self.__radialUnit, self.__wavelength, self.__directDist)
             except ValueError:
-                message = "Convertion to unit %s not supported. Ring locations ignored."
+                message = "Conversion to unit %s not supported. Ring locations ignored."
                 _logger.warning(message, self.__radialUnit)
                 self.__errorMessage = message % self.__radialUnit
                 rings = []

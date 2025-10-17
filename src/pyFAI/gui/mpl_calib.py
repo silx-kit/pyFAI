@@ -215,7 +215,7 @@ class MplCalibWidget:
                 self.update()
 
     def shadow(self, mask=None, update=True):
-        """Apply som shadowing overlay on top of background image
+        """Apply some shadowing overlay on top of background image
 
         :param mask: mask to be overlaid. set to None to remove
         :param update: finally update the plot
