@@ -27,7 +27,7 @@
 #  THE SOFTWARE.
 
 """
-Module with miscelaneous tools
+Module with miscellaneous tools
 """
 
 __author__ = "Jérôme Kieffer"
@@ -120,7 +120,7 @@ def expand_args(args):
     into a list of files.
     Keeps only valid files (thanks to glob)
 
-    :param args: list of files or wilcards
+    :param args: list of files or wildcards
     :return: list of actual args
     """
     new = []

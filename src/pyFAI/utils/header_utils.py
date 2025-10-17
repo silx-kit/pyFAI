@@ -123,7 +123,7 @@ def _get_monitor_value_from_hdf5(image, monitor_key):
 
     monitor_dataset = image.hdf5[monitor_key]
     if not hasattr(monitor_dataset, "dtype"):
-        raise MonitorNotFound("Monitor path '%s' is not a datatset" % (monitor_key))
+        raise MonitorNotFound("Monitor path '%s' is not a dataset" % (monitor_key))
 
     if monitor_dataset.dtype.kind not in "fiu":
         raise MonitorNotFound("Monitor path '%s' does not contain a numerical value" % (monitor_key))
