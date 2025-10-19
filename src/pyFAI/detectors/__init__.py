@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,21 +34,21 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2024"
+__date__ = "15/10/2025"
 __status__ = "stable"
 
-
-from ._common import *
-from ._adsc import *
-from ._dectris import *
-from ._imxpad import *
-from ._rayonix import *
-from ._esrf import *
-from ._xspectrum import *
-from ._psi import *
-from ._non_flat import *
-from ._others import *
-from ._hexagonal import *
+import inspect
+from ._common import Detector, NexusDetector
+from ._adsc import *      # noqa: F403
+from ._dectris import *   # noqa: F403
+from ._imxpad import *    # noqa: F403
+from ._rayonix import *   # noqa: F403
+from ._esrf import *      # noqa: F403
+from ._xspectrum import * # noqa: F403
+from ._psi import *       # noqa: F403
+from ._non_flat import *  # noqa: F403
+from ._others import *    # noqa: F403
+from ._hexagonal import * # noqa: F403
 
 
 ALL_DETECTORS = Detector.registry
@@ -56,6 +56,5 @@ detector_factory = Detector.factory
 load = NexusDetector.sload
 
 # Expose all the classes, else it is not part of the documentation
-import inspect
 _detector_class_names = [i[0] for i in locals().items() if inspect.isclass(i[1]) and issubclass(i[1], Detector)]
 __all__ = _detector_class_names + ["ALL_DETECTORS", "detector_factory", "load"]

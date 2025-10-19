@@ -36,16 +36,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2025"
+__date__ = "15/10/2025"
 __status__ = "production"
 
 
 import numpy
 import logging
-logger = logging.getLogger(__name__)
 import json
 from ._common import Detector, Orientation
-from pyFAI.utils import mathutil
+from ..utils import mathutil
+logger = logging.getLogger(__name__)
 try:
     from ..ext import bilinear
 except ImportError:
