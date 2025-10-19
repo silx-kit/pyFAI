@@ -37,10 +37,8 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "02/02/2017"
 
 import os
-import sys
 import numpy
 import pyFAI
-import h5py
 import logging
 from pyFAI.third_party import six
 logger = logging.getLogger("xpad")

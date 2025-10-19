@@ -25,9 +25,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-import cProfile, pstats, StringIO
-import unittest
-import pyFAI, fabio
+import cProfile
+import pyFAI
+import fabio
 aimg = fabio.open("testimages/halfccd.edf").data
 ai = pyFAI.load("testimages/halfccd.poni")
 a, b = ai.separate(aimg)

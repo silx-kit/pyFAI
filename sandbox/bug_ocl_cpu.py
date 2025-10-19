@@ -22,7 +22,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import pyFAI, numpy
+import pyFAI
+import numpy
 ai = pyFAI.load("mock.poni")
 shape = (600, 600)
 ai.xrpd_OpenCL(numpy.ones(shape), 500, devicetype="cpu", useFp64=False)

@@ -29,13 +29,11 @@
 
 #tests if the distribution of Chi2 is centered around 1:
 # Needs a large dataset (thousands of images)
-import utilstest
 import sys
 import glob
 import pylab
 pylab.ion()
 import numpy
-from math import sqrt
 import fabio
 import logging
 logger = logging.getLogger(__file__)
@@ -50,7 +48,7 @@ images.sort()
 I_splitBB = [];sigma_splitBB = [];I_splitFull = [];sigma_splitFull = [];I_nosplit = [];sigma_nosplit = []
 for fn in images[:]:
     img = fabio.open(fn).data
-    print(fn);
+    print(fn)
     variance = numpy.maximum(img, 1)
     q, i, s = ai.integrate1d(img, 1040, unit="q_nm^-1", method="numpy", variance=variance)
     I_nosplit.append(i)

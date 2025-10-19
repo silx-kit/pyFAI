@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from picamera.array import PiYUVArray
 from picamera import PiCamera
-from PIL import Image
 from PyQt4 import QtCore
 import numpy
 import pyFAI

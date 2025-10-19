@@ -25,8 +25,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-import utilstest
-import pyFAI, numpy
+import pyFAI
+import numpy
 from pyFAI.third_party import six
 img = numpy.zeros((512,512))
 for i in range(1,6):img[i*100,i*100]=1
