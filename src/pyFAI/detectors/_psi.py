@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,11 +30,11 @@
 Detectors manufactured by PSI, those may be different from the one from Dectris
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
-__copyright__ = "2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2024"
+__copyright__ = "2021-2025 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "15/10/2025"
 __status__ = "production"
 
 import numpy
@@ -326,8 +326,8 @@ class Jungfrau_16M_cor(Jungfrau):
                          '[ \t]*(?P<val>.+)')
         module_geom = {}
         with open(geom_fname) as ifile:
-            for l in ifile:
-                m = geom_re.match(l)
+            for line in ifile:
+                m = geom_re.match(line)
                 if not m:
                     continue
                 mod = int(m.group('mod'))
