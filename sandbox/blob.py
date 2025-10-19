@@ -23,12 +23,13 @@
 #
 
 from __future__ import print_function
-import sys, scipy
+import sys
+import scipy
 import matplotlib
 matplotlib.use('Qt4Agg')
 import pylab
-from math import sqrt
-import fabio, numpy
+import fabio
+import numpy
 import logging
 from pyFAI.test.utilstest import UtilsTest
 logger = logging.getLogger(__file__)

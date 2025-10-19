@@ -7,8 +7,8 @@ Created on Fri Mar 07 09:52:51 2014
 from __future__ import absolute_import
 from __future__ import print_function
 
-import sys, numpy, time
-from . import utilstest
+import sys
+import numpy
 import fabio
 import pyopencl as cl
 from pylab import *
@@ -16,10 +16,7 @@ from pyFAI.third_party import six
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
-from pyFAI import ocl_hist_pixelsplit
 # from pyFAI import splitBBoxLUT
-from pyFAI import splitBBoxCSR
-from pyFAI import splitPixelFull
 # logger = utilstest.getLogger("profile")
 
 

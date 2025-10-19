@@ -35,7 +35,8 @@ Usage python -m mactrace test.py
 it prints all line number for any executed statement
 """
 
-import sys, os
+import sys
+import os
 from optparse import OptionParser
 
 class TraceWriter(object):

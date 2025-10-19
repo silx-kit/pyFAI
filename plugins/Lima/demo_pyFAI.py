@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 import time
-import signal
 import threading
 import numpy
 import visvis as vv
 import pyFAI
-import pyopencl
 from Lima import Core, Basler
 
 fps = 30

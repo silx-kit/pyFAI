@@ -14,7 +14,6 @@
 import sys
 import os
 from pathlib import Path
-import pydata_sphinx_theme
 
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 # If extensions (or modules to document with autodoc) are in another directory,
