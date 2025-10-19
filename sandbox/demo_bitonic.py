@@ -30,7 +30,10 @@
 simple demonstrator for bitonic sort
 """
 
-import numpy, pyopencl, pyopencl.array, time
+import numpy
+import pyopencl
+import pyopencl.array
+import time
 
 N = 1024
 ws = N // 8

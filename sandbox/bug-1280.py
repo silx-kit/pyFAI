@@ -23,8 +23,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import sys, os
-import numpy
 import fabio
 from utilstest import  UtilsTest
 pyFAI = UtilsTest.pyFAI

@@ -18,12 +18,8 @@ __satus__ = "development"
 
 import sys
 import time
-import signal
-import threading
-import numpy
 import pyFAI.worker
 from pyFAI import io
-import pyopencl
 import os
 op = os.path
 import logging
@@ -43,7 +39,7 @@ class DoubleView(QtGui.QWidget):
         QtGui.QWidget.__init__(self)
         try:
             uic.loadUi(UIC, self)
-        except AttributeError as error:
+        except AttributeError:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
         self.ip = str(ip)

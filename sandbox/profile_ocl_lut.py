@@ -29,14 +29,15 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import sys, numpy, time
+import sys
+import numpy
+import time
 from pyFAI.utils import mathutil
-from . import utilstest
-import fabio, pyopencl
+import fabio
+import pyopencl
 from pylab import *
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
-from pyFAI import splitBBox
 #splitBBox = sys.modules["pyFAI.splitBBox"]
 ai = pyFAI.load("testimages/Pilatus1M.poni")
 data = fabio.open("testimages/Pilatus1M.edf").data

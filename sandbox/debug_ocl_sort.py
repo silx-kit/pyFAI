@@ -27,9 +27,10 @@
 # THE SOFTWARE.
 
 from __future__ import print_function
-import utilstest
-import numpy, time
-import pyFAI, pyFAI.opencl
+import numpy
+import time
+import pyFAI
+import pyFAI.opencl
 from pyFAI.opencl import pyopencl, ocl
 import pyopencl.array
 

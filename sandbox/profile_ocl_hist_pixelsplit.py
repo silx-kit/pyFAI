@@ -7,7 +7,9 @@ Created on Fri Mar 07 09:52:51 2014
 from __future__ import absolute_import
 from __future__ import print_function
 
-import sys, numpy, time, os
+import sys
+import numpy
+import os
 
 import fabio
 import pyopencl as cl
@@ -17,12 +19,9 @@ print("#"*50)
 if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
-from pyFAI.test.utilstest import UtilsTest
 
 pyFAI = sys.modules["pyFAI"]
-from pyFAI import splitPixelFullLUT
 from pyFAI import splitPixelFull
-from pyFAI import ocl_hist_pixelsplit
 # from pyFAI import splitBBoxLUT
 # from pyFAI import splitBBoxCSR
 

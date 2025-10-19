@@ -1,13 +1,11 @@
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
-import time, gc
+import time
+import gc
 import numpy
-import fabio, pyFAI
+import fabio
+import pyFAI
 import pyFAI.test.utilstest
-import os
-import scipy.sparse
-from pyFAI.ext.splitBBoxCSR import HistoBBox1d as HistoBBox1dCSR
-from pyFAI.ext.splitBBoxCSC import HistoBBox1d as HistoBBox1dCSC
 
 img = fabio.open(pyFAI.test.utilstest.UtilsTest.getimage("Eiger4M.edf"))
 ai = pyFAI.load(pyFAI.test.utilstest.UtilsTest.getimage("Eiger4M.poni"))
