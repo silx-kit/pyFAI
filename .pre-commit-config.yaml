@@ -19,7 +19,8 @@ repos:
     # Run the linter.
     - id: ruff-check
       types_or: [ python, pyi ]
-      args: [ --fix src]
+      args: [ --fix ]
+      files: ^src/
     # Run the formatter.
     #- id: ruff-format
     #  types_or: [ python, pyi ]
