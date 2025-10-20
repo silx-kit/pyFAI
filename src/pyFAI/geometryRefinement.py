@@ -401,7 +401,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         return numpy.dot(t, t)
 
     def residu3(self, param, free, const, d1, d2, rings, weights=None):
-        "Preform the calculation of $sum_(2\theta_e-2\theta_i)²$"
+        "Perform the calculation of $sum_(2\theta_e-2\theta_i)²$"
         param7 = self.calc_param7(param, free, const)
         delta_theta = self.tth(d1, d2, param7[:6]) - self.calc_2th(rings, param7[6])
         if weights is not None:
@@ -590,7 +590,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         """Refine the geometry and provide confidence interval
         Use curve_fit from scipy.optimize to not only refine the geometry (unconstrained fit)
 
-        :param with_rot: include rotation intro error measurment
+        :param with_rot: include rotation intro error measurement
         :return: std_dev, confidence
         """
         if not curve_fit:
@@ -639,7 +639,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         """Confidence interval obtained from the second derivative of the error function
         next to its minimum value.
 
-        Note the confidence interval increases with the number of points which is "surprizing"
+        Note the confidence interval increases with the number of points which is "surprising"
 
         :param with_rot: if true include rot1 & rot2 in the parameter set.
         :return: std_dev, confidence

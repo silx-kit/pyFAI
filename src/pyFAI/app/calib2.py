@@ -438,7 +438,7 @@ def setup_model(model, options):
         logger.error("Too much images provided. Only one is expected")
 
     # Geometry
-    # FIXME it will not be used cause the fitted geometry will be overwrited
+    # FIXME it will not be used cause the fitted geometry will be overwritten
     geometry = model.fittedGeometry()
     if (options.dist_mm is not None or options.dist is not None or
             options.poni1 is not None or options.poni2 is not None or

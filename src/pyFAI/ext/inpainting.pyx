@@ -193,7 +193,7 @@ def polar_inpaint(floating[:, :] img not None,
                     while not values:
                         radius += 1
                         if radius > max(npt_azim, npt_radial):
-                            # Avoid infinit loop
+                            # Avoid infinite loop
                             break
                         idx_col = max(0, col - radius)
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)):

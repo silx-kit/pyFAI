@@ -51,7 +51,7 @@ class TestRectangle(unittest.TestCase):
         rect = dynamic_rectangle.get_largest_rectangle(mask)
         self.assertEqual(rect.row, 11, "row is OK")
         self.assertEqual(rect.col, 29, "col is OK")
-        self.assertEqual(rect.height, 17 - 11, "heigth is OK")
+        self.assertEqual(rect.height, 17 - 11, "height is OK")
         self.assertEqual(rect.width, 37 - 29, "width is OK")
         self.assertEqual(rect.area, (37 - 29) * (17 - 11), "area is OK")
         self.assertEqual(ref_sum, rect.area, "Mask is unchanged")

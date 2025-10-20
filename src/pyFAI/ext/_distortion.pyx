@@ -218,7 +218,7 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
     :param shape: output shape
     :param bin_size: number of input element per output element (numpy array)
     :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
-    :param mask: arry with bad pixels marked as True
+    :param mask: array with bad pixels marked as True
     :param offset: global offset for pixel position
     :return: look-up table
     """
@@ -801,7 +801,7 @@ def resize_image_3D(image not None,
                     shape=None):
     """
     Reshape the image in such a way it has the required shape
-    This version is optimized for n-channel images used after preprocesing like:
+    This version is optimized for n-channel images used after preprocessing like:
     nlines * ncolumn * (value, variance, normalization)
 
     :param image: 3D-array with the preprocessed image

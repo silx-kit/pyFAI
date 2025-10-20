@@ -191,7 +191,7 @@ class TestOptions(object):
             self.TEST_RANDOM = True
 
     def add_parser_argument(self, parser):
-        """Add extrat arguments to the test argument parser
+        """Add extract arguments to the test argument parser
 
         :param ArgumentParser parser: An argument parser
         """
@@ -277,7 +277,7 @@ class TestOptions(object):
         return Path(self.tempdir)
 
     def tempfile(self, suffix=None, prefix=None, dir=None, text=False):
-        """create a temporary file, openend
+        """create a temporary file, opened
 
         See tempfile.mkstemp for the description of the options
         :param suffix: end of the filename
