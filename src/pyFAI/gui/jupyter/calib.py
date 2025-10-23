@@ -74,7 +74,7 @@ class JupyCalibration(AbstractCalibration):
         :param img: 2D image with Debye-Scherrer rings
         :param mask: 2D image with marked invalid pixels
         :param detector: instance of detector used
-        :param wavelengh: wavelength in A as a float
+        :param wavelength: wavelength in A as a float
         :param calibrant: instance of calibrant
         """
         AbstractCalibration.__init__(self, img,

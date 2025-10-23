@@ -133,9 +133,9 @@ if __name__ == "__main__":
 
     parser = ArgumentParser(usage="print the version of the software")
     parser.add_argument("--wheel", action="store_true", dest="wheel", default=None,
-                        help="print version formated for wheel")
+                        help="print version formatted for wheel")
     parser.add_argument("--debian", action="store_true", dest="debian", default=None,
-                        help="print version formated for debian")
+                        help="print version formatted for debian")
     options = parser.parse_args()
     if options.debian:
         print(debianversion)

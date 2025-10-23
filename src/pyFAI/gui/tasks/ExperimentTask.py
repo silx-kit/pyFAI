@@ -208,9 +208,9 @@ class ExperimentTask(AbstractCalibrationTask):
                 detector = settings.detector()
                 binning = detector.guess_binning(image)
                 if not binning:
-                    raise Exception("inconsistancy")
+                    raise Exception("inconsistency")
             except Exception:
-                warnings.append("Inconsistancy between sizes of image and detector")
+                warnings.append("Inconsistency between sizes of image and detector")
 
         self._globalWarnings = warnings
         self.updateNextStepStatus()

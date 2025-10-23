@@ -119,7 +119,7 @@ class Detector(metaclass=DetectorMeta):
     DELTA_DUMMY = None
     ORIENTATION = 0
     SENSORS = ()
-    _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
+    _IMMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                         '_mask_crc', '_maskfile', "_splinefile", "_flatfield_crc",
                         "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy",
                         "_orientation")
@@ -300,7 +300,7 @@ class Detector(metaclass=DetectorMeta):
         :return: A copy of this detector
         """
         new = self.__class__()
-        for key in self._UNMUTABLE_ATTRS + self._MUTABLE_ATTRS:
+        for key in self._IMMUTABLE_ATTRS + self._MUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         if self._splinefile:
             new.set_splineFile(self._splinefile)
@@ -317,7 +317,7 @@ class Detector(metaclass=DetectorMeta):
             memo = {}
         new = self.__class__()
         memo[id(self)] = new
-        for key in self._UNMUTABLE_ATTRS:
+        for key in self._IMMUTABLE_ATTRS:
             old = self.__getattribute__(key)
             memo[id(old)] = old
             new.__setattr__(key, old)
@@ -1174,7 +1174,7 @@ class Detector(metaclass=DetectorMeta):
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
 
-        Set the flat field from one or mutliple files, averaged
+        Set the flat field from one or multiple files, averaged
         according to the method provided
         """
         if type(files) in utils.StringTypes:
@@ -1217,7 +1217,7 @@ class Detector(metaclass=DetectorMeta):
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
 
-        Set the dark current from one or mutliple files, avaraged
+        Set the dark current from one or multiple files, avaraged
         according to the method provided
         """
         if type(files) in utils.StringTypes:
@@ -1290,7 +1290,7 @@ class Detector(metaclass=DetectorMeta):
 
     @property
     def origin(self):
-        "What are the coordinnates of the detector's origin ?"
+        "What are the coordinates of the detector's origin ?"
         if self.orientation == 1:
             return self.shape
         elif self.orientation == 2:
@@ -1313,7 +1313,7 @@ class NexusDetector(Detector):
         "CORNERS"
         "force_pixel",
         "_filename",
-        "uniform_pixel") + Detector._UNMUTABLE_ATTRS + Detector._MUTABLE_ATTRS
+        "uniform_pixel") + Detector._IMMUTABLE_ATTRS + Detector._MUTABLE_ATTRS
 
     def __init__(self,
                  filename:str|None=None,

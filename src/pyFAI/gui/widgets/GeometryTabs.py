@@ -42,7 +42,7 @@ class GeometryTabs(qt.QWidget):
     * Fit2D
     * More to come.
 
-    This widget is ment to be used in GeometryDialog and in IntegrationTask in calib2
+    This widget is meant to be used in GeometryDialog and in IntegrationTask in calib2
     """
 
     def __init__(self, parent=None):

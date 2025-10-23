@@ -59,7 +59,7 @@ class Fit2dGeometry(NamedTuple):
     :param centerX: Position of the beam-center on the detector in pixels, along the fastest axis of the image.
     :param centerY: Position of the beam-center on the detector in pixels, along the slowest axis of the image.
     :param tilt: Angle of tilt of the detector in degrees
-    :param tiltPlanRotation: Direction of the tilt (unefined when tilt is 0)
+    :param tiltPlanRotation: Direction of the tilt (undefined when tilt is 0)
     :param detector: Detector definition as is pyFAI.
     :param wavelength: Wavelength of the beam in Angstrom
     """
@@ -87,7 +87,7 @@ class Fit2dGeometry(NamedTuple):
     def __repr__(self):
         return f"DirectBeamDist= {self.directDist:.3f} mm\tCenter: x={self.centerX:.3f}, y={self.centerY:.3f} pix\t"\
                f"Tilt= {self.tilt:.3f}° tiltPlanRotation= {self.tiltPlanRotation:.3f}°" + \
-               (f" \N{greek small letter lamda}= {self.wavelength:.3f}\N{Latin Capital Letter a with Ring Above}" if self.wavelength else "")
+               (f" \N{GREEK SMALL LETTER LAMDA}= {self.wavelength:.3f}\N{LATIN CAPITAL LETTER A WITH RING ABOVE}" if self.wavelength else "")
 
 
 def convert_to_Fit2d(poni):
@@ -187,7 +187,7 @@ def convert_from_Fit2d(f2d):
         rot1 = -rot1
     res._rot1 = rot1
     if abs(cos_tilt - cos(rot1) * cos(rot2)) >= 1e-6:
-        raise RuntimeError("Unconsistency in geometry conversion")
+        raise RuntimeError("Inconsistency in geometry conversion")
     if f2d.tilt == 0.0:
         rot3 = 0
     else:

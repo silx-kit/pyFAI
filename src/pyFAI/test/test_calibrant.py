@@ -181,7 +181,7 @@ class TestCalibrant(unittest.TestCase):
 
     def test_all_calibrants_idempotent(self):
         """Check that all calibrant from the factory can be:
-        * instanciated
+        * instantiated
         * parsed without loss of information"""
         for c in CALIBRANT_FACTORY.all:
             print(c, end=": ")

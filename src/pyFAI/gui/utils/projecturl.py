@@ -42,7 +42,7 @@ BASE_DOC_URL = None
 _DEFAULT_BASE_DOC_URL = "http://www.silx.org/pub/doc/pyFAI/{silx_doc_version}/{subpath}"
 """Identify the base URL of the project documentation.
 
-It supportes string replacement:
+It supports string replacement:
 
 - `{major}` the major version
 - `{minor}` the minor version
@@ -58,7 +58,7 @@ def get_documentation_url(subpath):
     """Returns the URL to the documentation"""
 
     if version_info.releaselevel == "final":
-        # Released verison will point to a specific documentation
+        # Released version will point to a specific documentation
         silx_doc_version = "%d.%d.%d" % (version_info.major, version_info.minor, version_info.micro)
     else:
         # Dev versions will point to a single 'dev' documentation

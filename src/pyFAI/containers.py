@@ -220,7 +220,7 @@ class IntegrateResult(_CopyableTuple):
 
     def __are_compatible__(self, other) -> None | str:
         """Ensure two objects are compatible to make some basic maths together.
-        If compable, return None, else return the reason for the incompatibility
+        If compatible, return None, else return the reason for the incompatibility
 
         :return None if compatible, else the reason with a string.
         """
@@ -302,7 +302,7 @@ class IntegrateResult(_CopyableTuple):
     @property
     def method(self):
         """return the name of the integration method _actually_ used,
-        represented as a 4-tuple (dimention, splitting, algorithm, implementation)
+        represented as a 4-tuple (dimension, splitting, algorithm, implementation)
         """
         return self._method
 
@@ -606,8 +606,8 @@ class IntegrateResult(_CopyableTuple):
 
 class Integrate1dResult(IntegrateResult):
     """
-    Result of an 1D integration. Provide a tuple access as a simple way to reach main attrbutes.
-    Default result, extra results, and some interagtion parameters are available from attributes.
+    Result of an 1D integration. Provide a tuple access as a simple way to reach main attributes.
+    Default result, extra results, and some integration parameters are available from attributes.
 
     For compatibility with older API, the object can be read as a tuple in different ways:
 
@@ -684,8 +684,8 @@ class Integrate1dResult(IntegrateResult):
 
 class Integrate2dResult(IntegrateResult):
     """
-    Result of an 2D integration. Provide a tuple access as a simple way to reach main attrbutes.
-    Default result, extra results, and some interagtion parameters are available from attributes.
+    Result of an 2D integration. Provide a tuple access as a simple way to reach main attributes.
+    Default result, extra results, and some integration parameters are available from attributes.
 
     For compatibility with older API, the object can be read as a tuple in different ways:
 
@@ -835,7 +835,7 @@ class Integrate2dResult(IntegrateResult):
 
 class SeparateResult(_CopyableTuple):
     """
-    Class containing the result of AzimuthalIntegrator.separte which separates the
+    Class containing the result of AzimuthalIntegrator.separate which separates the
 
     * Amorphous isotropic signal (from a median filter or a sigma-clip)
     * Bragg peaks (signal > amorphous)
@@ -950,7 +950,7 @@ class SeparateResult(_CopyableTuple):
     @property
     def method(self):
         """return the name of the integration method _actually_ used,
-        represented as a 4-tuple (dimention, splitting, algorithm, implementation)
+        represented as a 4-tuple (dimension, splitting, algorithm, implementation)
         """
         return self._method
 
@@ -1380,7 +1380,7 @@ def rebin1d(res2d: Integrate2dResult) -> Integrate1dResult:
 
 
 def symmetrize(res2d: Integrate2dResult) -> Integrate2dResult:
-    """Function that symmetrize an Integrate2dResult, i.e. merge data with those 180° appart in azimuthal space
+    """Function that symmetrize an Integrate2dResult, i.e. merge data with those 180° apart in azimuthal space
 
     :param res2d: Integrate2dResult instance obtained from ai.integrate2d
     :return: Integrate1dResult
@@ -1619,7 +1619,7 @@ class Integrate2dFiberResult(IntegrateResult):
 
 
 class Miller(NamedTuple):
-    """This represents the Miller index of a family of latice plans"""
+    """This represents the Miller index of a family of lattice plans"""
 
     h: int  # noqa: E741
     k: int  # noqa: E741
@@ -1685,7 +1685,7 @@ class FixedParameters(set):
         """
         Add a value to a set if value, else discard it.
 
-        :param key: element to added or discared from set
+        :param key: element to add or discard from set
         :type value: boolean. If None do nothing !
         :return: None
         """

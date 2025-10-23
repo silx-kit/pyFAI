@@ -131,7 +131,7 @@ def gaussian(M: int, std: float) -> numpy.ndarray:
     - This implementation is normalized
 
     :param M: length of the windows (int)
-    :param std: standatd deviation sigma
+    :param std: standard deviation sigma
 
     The FWHM is 2*numpy.sqrt(2 * numpy.pi)*std
 
@@ -294,7 +294,7 @@ def expand(
     :param mode: "constant", "nearest", "reflect" or "mirror"
     :param cval: filling value used for constant, 0.0 by default
 
-    Nota: sigma is the half-width of the kernel. For gaussian convolution it is adviced that it is 4*sigma_of_gaussian
+    Nota: sigma is the half-width of the kernel. For gaussian convolution it is advised that it is 4*sigma_of_gaussian
     """
     s0, s1 = input_img.shape
     dtype = input_img.dtype
@@ -434,7 +434,7 @@ def binning(
 def unbinning(
     binnedArray: numpy.ndarray, binsize: int | tuple, norm=True
 ) -> numpy.ndarray:
-    """Opposit operation of binning: go from (n,m)->(2n,2m)
+    """Opposite operation of binning: go from (n,m)->(2n,2m)
 
     :param binnedArray: input ndarray
     :param binsize: 2-tuple representing the size of the binning
@@ -617,7 +617,7 @@ def _numpy_backport_percentile(a, q, axis=None, out=None, overwrite_input=False)
 
     Returns
     -------
-    pcntile : ndarray
+    percentile : ndarray
         A new array holding the result (unless `out` is specified, in
         which case that array is returned instead).  If the input contains
         integers, or floats of smaller precision than 64, then the output
@@ -735,11 +735,11 @@ except ImportError:
 
 def round_fft(N: int) -> int:
     """
-    This function returns the integer >=N for which size the Fourier analysis is faster (fron the FFT point of view)
+    This function returns the integer >=N for which size the Fourier analysis is faster (from the FFT point of view)
 
     Credit: Alessandro Mirone, ESRF, 2012
 
-    :param N: interger on which one would like to do a Fourier transform
+    :param N: integer on which one would like to do a Fourier transform
     :return: integer with a better choice
     """
     FA, FB, FC, FD, FE, FFF = 2, 3, 5, 7, 11, 13
@@ -820,7 +820,7 @@ def rwp(obt: list | tuple, ref: list | tuple, scale: float = 1.0) -> float:
     :param obt: reference data
     :type obt: 2-list of array of the same size
     :param scale: scale obt intensity
-    :return:  Rwp value, lineary interpolated
+    :return:  Rwp value, linearly interpolated
     """
     ref0, ref1 = ref[:2]
     obt0, obt1 = obt[:2]
@@ -845,7 +845,7 @@ def chi_square(obt: list | tuple, ref: list | tuple) -> float:
     :type obt: 3-tuple of array of the same size containing position, intensity, variance
     :param obt: reference data
     :type obt: 3-tuple of array of the same size containing position, intensity, variance
-    :return:  Chi² value, lineary interpolated
+    :return:  Chi² value, linearly interpolated
     """
     ref_pos, ref_int, ref_std = ref
     obt_pos, obt_int, obt_std = obt
@@ -908,7 +908,7 @@ class LongestRunOfHeads:
 
         :param n: number of coin toss in the experiment, an integer
         :param c: length of the longest run of heads, an integer
-        :return: The probablility of having c subsequent heads in a n toss of fair coin
+        :return: The probability of having c subsequent heads in a n toss of fair coin
         """
         if c >= n:
             return 0
@@ -922,7 +922,7 @@ class LongestRunOfHeads:
 
         :param n: number of coin toss in the experiment, an integer
         :param c: length of the longest run of heads or tails, an integer
-        :return: The probablility of having c subsequent heads or tails in a n toss of fair coin
+        :return: The probability of having c subsequent heads or tails in a n toss of fair coin
         """
         if c > n:
             return 0
@@ -938,7 +938,7 @@ class LongestRunOfHeads:
 
         :param n: number of coin toss in the experiment, an integer
         :param c: length of thee observed run of heads or tails, an integer
-        :return: The probablility of having more than c subsequent heads or tails in a n toss of fair coin
+        :return: The probability of having more than c subsequent heads or tails in a n toss of fair coin
         """
         if c > n:
             return 0
@@ -972,8 +972,8 @@ def _longest_true(a: numpy.ndarray) -> int:
 
 
 def cormap(ref: numpy.ndarray, obt: numpy.ndarray) -> float:
-    """Calculate the probabily of two array to be the same based on the CorMap algorithm
-    This is a simplifed implementation
+    """Calculate the probability of two array to be the same based on the CorMap algorithm
+    This is a simplified implementation
     """
     longest = max(_longest_true(ref < obt), _longest_true(ref > obt))
     return LROH.probaLongerRun(len(ref), max(1, longest - 1))
@@ -1036,9 +1036,9 @@ def quality_of_fit(
     :param calibrant: calibration object, instance of pyFAI.calibrant.Calibrant
     :param npt_rad: int with the number of radial bins
     :param npt_azim: int with the number of azimuthal bins
-    :param unit: typically "2th_deg" or "q_nm^-1", the quality of fit should be largely independant from the space.
+    :param unit: typically "2th_deg" or "q_nm^-1", the quality of fit should be largely independent from the space.
     :param method: integration method
-    :param empty: value of the empy bins, discarded values
+    :param empty: value of the empty bins, discarded values
     :param rings: list of rings to evaluate (0-based)
     :return: QoF indicator, similar to reduced χ²,  the smaller, the better
     """

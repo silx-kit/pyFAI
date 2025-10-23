@@ -91,7 +91,7 @@ _RESOURCES_DIR = None
 
 # For packaging purpose, patch this variable to use an alternative directory
 # E.g., replace with _RESOURCES_DIR = '/usr/share/pyFAI/doc'
-# Not in use, uncomment when functionnality is needed
+# Not in use, uncomment when functionality is needed
 # _RESOURCES_DOC_DIR = None
 
 # cx_Freeze forzen support
@@ -115,7 +115,7 @@ def resource_filename(resource):
                          using '/' path separator.
     :return: Absolute resource path in the file system
     """
-    # Not in use, uncomment when functionnality is needed
+    # Not in use, uncomment when functionality is needed
     # If _RESOURCES_DOC_DIR is set, use it to get resources in doc/ subflodler
     # from an alternative directory.
     # if _RESOURCES_DOC_DIR is not None and (resource is 'doc' or
@@ -138,7 +138,7 @@ _integrated = False
 
 
 def silx_integration():
-    """Provide pyFAI resources accessible throug silx using a prefix."""
+    """Provide pyFAI resources accessible through silx using a prefix."""
     global _integrated
     if _integrated:
         return

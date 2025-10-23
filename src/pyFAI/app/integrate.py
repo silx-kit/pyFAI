@@ -238,11 +238,11 @@ class IntegrationObserver(object):
         pass
 
     def processing_succeeded(self):
-        """Called before `processing_finished` if the processing succedded."""
+        """Called before `processing_finished` if the processing succeeded."""
         pass
 
     def processing_finished(self):
-        """Called when the full processing is finisehd (interupted or not)."""
+        """Called when the full processing is finished (interrupted or not)."""
         pass
 
 
@@ -277,7 +277,7 @@ class ShellIntegrationObserver(IntegrationObserver):
     def processing_data(self, data_info, approximate_count=None):
         if data_info.source_filename:
             if data_info.data_id == 0 and data_info.frame_id in [0, None]:
-                # While we can't execute independantly the preprocessing
+                # While we can't execute independently the preprocessing
                 message = "Preprocessing"
             elif len(data_info.source_filename) > 100:
                 message = os.path.basename(data_info.source_filename)
@@ -487,7 +487,7 @@ class DataSource(object):
 
 
 class MultiFileWriter(io.Writer):
-    """Broadcast writing to differnet files for each frames"""
+    """Broadcast writing to different files for each frames"""
 
     def __init__(self, output_path, mode=HDF5Writer.MODE_ERROR):
         super(MultiFileWriter, self).__init__()
@@ -637,7 +637,7 @@ def process(input_data, output, config, observer, write_mode=HDF5Writer.MODE_ERR
 
     observer.worker_initialized(worker)
 
-    # Skip invalide data
+    # Skip invalid data
     source = DataSource(statistics=statistics)
     for item in input_data:
         if isinstance(item, (str,)):
@@ -661,7 +661,7 @@ def process(input_data, output, config, observer, write_mode=HDF5Writer.MODE_ERR
             source.append(item)
         else:
             logger.warning("Type %s unsopported. Data ignored.", item)
-    print(f"Initialize worker wih shape {source.shape}")
+    print(f"Initialize worker with shape {source.shape}")
     worker.reconfig(source.shape, sync=True)
     print(worker.ai)
     observer.processing_started(source.approximate_count())

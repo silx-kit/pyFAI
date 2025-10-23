@@ -211,7 +211,7 @@ class TestSparseUtils(unittest.TestCase):
         idptr = numpy.zeros(shape[0] + 1, int)
         idptr[1:] = nnzpr.cumsum()
         self.assertEqual(nnz, idptr[-1])
-        # self.assertEqual(nnz, idptr[-1], "number of data is consitent")
+        # self.assertEqual(nnz, idptr[-1], "number of data is consistent")
         csr_ref = (dense[loc], idx, idptr)
 
         lut_out = sparse_utils.CSR_to_LUT(*csr_ref)

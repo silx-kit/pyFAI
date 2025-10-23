@@ -46,7 +46,7 @@ __all__ = [date, version, version_info, hexversion, strictversion, citation, cal
            decorators, "load", "detector_factory", "tests", "benchmarks"]
 
 use_opencl = True
-"""Global configuration which allow to disable OpenCL programatically.
+"""Global configuration which allow to disable OpenCL programmatically.
 It must be set before requesting any OpenCL modules.
 
 .. code-block:: python
@@ -67,7 +67,7 @@ def load(filename, type_="AzimuthalIntegrator"):
     Load an azimuthal integrator from a filename description.
 
     :param str filename: name of the file to load, or dict of config or ponifile ...
-    :return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.
+    :return: instance of Geometry of AzimuthalIntegrator set-up with the parameter from the file.
     """
     if type_=="AzimuthalIntegrator":
         from .integrator.azimuthal import AzimuthalIntegrator

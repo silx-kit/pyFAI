@@ -139,7 +139,7 @@ class ControlPoints(object):
             self.append(points, None, ring)
 
     def get(self, ring=None, lbl=None):
-        """Retireves the last group of points for a given ring (by default the last)
+        """Retrieves the last group of points for a given ring (by default the last)
 
         :param ring: index of ring to search for
         :param lbl: label of the group to retrieve
@@ -438,7 +438,7 @@ class ControlPoints(object):
 
 
     def get_labels(self):
-        """Retieve the list of labels
+        """Retrieve the list of labels
 
         :return: list of labels as string
         """
@@ -501,7 +501,7 @@ class PointGroup(object):
     @classmethod
     def reset_label(cls):
         """
-        reset intenal counter
+        reset internal counter
         """
         cls.last_label = 0
 
