@@ -93,7 +93,7 @@ class GeometryConstraintsModel(AbstractModel):
         """
         Copy this model to a new model
 
-        :param qt.QObject parent: Parent of the copyed model
+        :param qt.QObject parent: Parent of the copied model
         :rtype: GeometryConstraintsModel
         """
         model = GeometryConstraintsModel(parent=parent)
@@ -107,7 +107,7 @@ class GeometryConstraintsModel(AbstractModel):
         return model
 
     def set(self, other):
-        """Set this geometry constraints with the other informations.
+        """Set this geometry constraints with the other information.
 
         :param GeometryConstraintsModel other:
         """

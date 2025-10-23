@@ -55,7 +55,7 @@ def check_sse4():
     return bool(_check_sse4())
 
 def get_crc_table():
-    "retruns the internal table for calculating the CRC"
+    "returns the internal table for calculating the CRC"
     cdef:
         uint32_t[::1] table = numpy.empty(1<<8, dtype=numpy.uint32)
     _get_crc32_table(<uint32_t*> &table[0])

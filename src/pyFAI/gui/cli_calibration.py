@@ -135,7 +135,7 @@ class AbstractCalibration(object):
              'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract and the algorithm to use (blob, massif, watershed) and the nb_pts_per_deg in azimuth",
              'done': "finishes the processing, performs an integration and quits",
              'validate': "plot the offset between the calibrated image and the back-projected image",
-             'validate2': "measures the offset of the center as function of azimuthal angle by cross-correlation of 2 plots, 180 deg appart. Option: number of azimuthal sliced, default: 36",
+             'validate2': "measures the offset of the center as function of azimuthal angle by cross-correlation of 2 plots, 180 deg apart. Option: number of azimuthal sliced, default: 36",
              'integrate': "perform the azimuthal integration and display results",
              'abort': "quit immediately, discarding any unsaved changes",
              'show': "Just print out the current parameter set. Optional parameters are units for length, rotation and wavelength, i.e. 'show mm deg A'",
@@ -484,7 +484,7 @@ class AbstractCalibration(object):
         return options, args
 
     def get_pixelSize(self, ans):
-        """convert a comma separated sting into pixel size"""
+        """convert a comma separated string into pixel size"""
         sp = ans.split(",")
         if len(sp) >= 2:
             try:
@@ -522,7 +522,7 @@ class AbstractCalibration(object):
             comments = ["pyFAI calib has changed !!!",
                         "Instead of entering the 2theta value, which was tedious,"
                         "the program takes a calibrant name or a d-spacing file in input "
-                        "(just a serie of number representing the inter-planar "
+                        "(just a series of number representing the inter-planar "
                         "distance in Angstrom)",
                         "and an associated wavelength",
                         "You will be asked to enter the ring number,"
@@ -1217,7 +1217,7 @@ class AbstractCalibration(object):
 
     def validate_center(self, slices=36):
         """
-        Validate the position of the center by cross-correlating two spectra 180 deg appart.
+        Validate the position of the center by cross-correlating two spectra 180 deg apart.
         Output values are in micron.
 
         Designed for orthogonal setup with centered beam...
@@ -1245,7 +1245,7 @@ class AbstractCalibration(object):
         centered[:, npt:] = crosscor[:,:npt]
 
         center = numpy.zeros(slices)  # in micron
-        dr = (tth[1] - tth[0]) * 1000.0  # ouput in r(mm) -> micron
+        dr = (tth[1] - tth[0]) * 1000.0  # output in r(mm) -> micron
 
         # sub-bin precision obtained by second order expantion of peak
         range_half_slices = range(half_slices)
@@ -1301,7 +1301,7 @@ class AbstractCalibration(object):
         :param refine: launch the refinement (argument not used)
         """
         if how not in ["center", "ring"]:  # ,"best"]:
-            logger.warning("unknow geometry reset method: %s, fall back on detector center", how)
+            logger.warning("unknown geometry reset method: %s, fall back on detector center", how)
             how = "center"
         if self.data is None:
             logger.warning("No datapoint: fall back on detector center")
@@ -1597,7 +1597,7 @@ decrease the value if arcs are mixed together.""", default=None)
                                  help="size of the pixel in micron", default=None)
 
         (options, _) = self.analyse_options(sysargv=args)
-        # Analyse remaining aruments and options
+        # Analyse remaining arguments and options
         self.reconstruct = options.reconstruct
         self.gaussianWidth = options.gaussian
         if options.square:
@@ -1749,7 +1749,7 @@ The --calibrant option is mandatory !
 
         epilog = """The main difference with pyFAI-calib is the way control-point hence Debye-Sherrer
 rings are extracted. While pyFAI-calib relies on the contiguity of a region of peaks
-called massif; pyFAI-recalib knows approximatly the geometry and is able to select
+called massif; pyFAI-recalib knows approximately the geometry and is able to select
 the region where the ring should be. From this region it selects automatically
 the various peaks; making pyFAI-recalib able to run without graphical interface and
 without human intervention (--no-gui and --no-interactive options).
@@ -1758,7 +1758,7 @@ without human intervention (--no-gui and --no-interactive options).
 Note that `pyFAI-recalib` program is obsolete as the same functionality is
 available from within pyFAI-calib, using the `recalib` command in the
 refinement process.
-Two option are available for recalib: the numbe of rings to extract (similar to the -r option of this program)
+Two option are available for recalib: the number of rings to extract (similar to the -r option of this program)
 and a new option which lets you choose between the original `massif` algorithm and newer ones like `blob` and `watershed` detection.
         """
         usage = "pyFAI-recalib [options] -i ponifile -w 1 -c calibrant.D imagefile.edf"
@@ -1772,7 +1772,7 @@ and a new option which lets you choose between the original `massif` algorithm a
 
         options = self.parser.parse_args(args)
         args = options.args
-        # Analyse aruments and options
+        # Analyse arguments and options
         if (not options.poni) or (not os.path.isfile(options.poni)):
             logger.error("You should provide a PONI file as starting point !!")
         else:
@@ -1884,7 +1884,7 @@ class MultiCalib(object):
             version = "%s from pyFAI version %s: %s" % (exe, PyFAI_VERSION, PyFAI_DATE)
             description = """
         Calibrate automatically a set of frames taken at various sample-detector distance.
-        Return the linear regression of the fit in funtion of the sample-setector distance.
+        Return the linear regression of the fit in function of the sample-setector distance.
 
         Nota: this tool is deprecated in favor of the jupyter notebook found in the documentation
         (with the same name).
@@ -2027,7 +2027,7 @@ class MultiCalib(object):
                             default="blob", type=str)
         options = parser.parse_args(args)
 
-        # Analyse aruments and options
+        # Analyse arguments and options
         if options.debug:
             logger.setLevel(logging.DEBUG)
         if options.background is not None:
@@ -2102,7 +2102,7 @@ class MultiCalib(object):
             self.peakPicker = options.peakPicker.lower()
 
     def get_pixelSize(self, ans):
-        """convert a comma separated sting into pixel size"""
+        """convert a comma separated string into pixel size"""
         sp = ans.split(",")
         if len(sp) >= 2:
             try:

@@ -380,7 +380,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
     def setInteractiveMode(self, mode, color='black',
                            shape='polygon', label=None,
                            zoomOnWheel=True, source=None, width=None):
-        """Override the function to allow to disable extrat interaction modes.
+        """Override the function to allow to disable extract interaction modes.
         """
         self.setPeakInteractiveMode(self.PEAK_SELECTION_MODE)
         silx.gui.plot.PlotWidget.setInteractiveMode(self, mode, color=color, shape=shape, label=label, zoomOnWheel=zoomOnWheel, source=source, width=width)
@@ -788,13 +788,13 @@ class _RingSelectionBehaviour(qt.QObject):
     This ensure coherence between many widgets.
 
     - If "always new ring" activated
-        - The spinner is diabled
+        - The spinner is disabled
         - The spinner have to display the number of the next ring created.
-        - The spinner value is decorelated from the hilighted ring
+        - The spinner value is decorelated from the highlighted ring
             of the table view
     - Else
         - The spinner is enabled
-        - The value of the spinner has to be consistant with the hilighted
+        - The value of the spinner has to be consistent with the highlighted
             ring from the table view.
     """
 
@@ -904,7 +904,7 @@ class _RingSelectionBehaviour(qt.QObject):
         self.__spinnerRing.valueChanged.connect(self.__spinerRingChanged)
 
     def ringNumber(self):
-        """Returns the targetted ring.
+        """Returns the targeted ring.
 
         :rtype: int
         """
@@ -1590,7 +1590,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         extractor.setExperimentSettings(experimentSettings, copy=False)
         extractor.sigProcessLocationChanged.connect(self.__autoExtractLocationChanged)
 
-        # Constant dependant of the ui file
+        # Constant dependent of the ui file
         FROM_PEAKS = 0
         FROM_FIT = 1
 

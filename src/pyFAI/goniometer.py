@@ -630,7 +630,7 @@ class SingleGeometry(object):
         if control_points is None or isinstance(control_points, ControlPoints):
             self.control_points = control_points
         else:
-            # Probaly a NPT file
+            # Probably a NPT file
             self.control_points = ControlPoints(control_points, calibrant=calibrant)
 
         if detector is not None:
@@ -753,9 +753,7 @@ class SingleGeometry(object):
     def wavelength(self) -> float:
         """Get or set the wavelength, ensuring consistency between calibrant and geometry_refinement."""
         if self.calibrant.wavelength != self.geometry_refinement.wavelength:
-            raise RuntimeError(
-                "Wavelength inconsistency between calibrant and geometry_refinement"
-            )
+            raise RuntimeError("Wavelength inconsistency between calibrant and geometry_refinement")
         return self.geometry_refinement.wavelength
 
     @wavelength.setter
@@ -839,7 +837,7 @@ class GoniometerRefinement(Goniometer):
         return "%s with %i geometries labeled: %s." % (name, count, geometry_list)
 
     def residu2(self, param):
-        "Actually performs the calulation of the average of the error squared"
+        "Actually performs the calculation of the average of the error squared"
         sumsquare = 0.0
         npt = 0
         for single in self.single_geometries.values():
@@ -1030,7 +1028,7 @@ class GoniometerRefinement(Goniometer):
 
     @classmethod
     def sload(cls, filename, pos_function=None):
-        """Class method for instanciating a Goniometer object from a JSON file
+        """Class method for instantiating a Goniometer object from a JSON file
 
         :param filename: name of the JSON file
         :param pos_function: a function taking metadata and extracting the

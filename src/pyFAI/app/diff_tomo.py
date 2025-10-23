@@ -103,7 +103,7 @@ user interface.
                             metavar="FILE", default="diff_tomo.h5")
         parser.add_argument("-v", "--verbose",
                             action="store_true", dest="verbose", default=False,
-                            help="switch to verbose/debug mode, defaut: quiet")
+                            help="switch to verbose/debug mode, default: quiet")
         parser.add_argument("-P", "--prefix", dest="prefix",
                             help="Prefix or common base for all files",
                             metavar="FILE", default="", type=str)

@@ -55,7 +55,7 @@ struct lut_point_t
  *
  * An image instensity value is spread across the bins according to the positions stored in the LUT.
  * The lut is an 2D-array of index (contains the positions of the pixel in the input array)
- * and coeficients (fraction of pixel going to the bin)
+ * and coefficients (fraction of pixel going to the bin)
  * Values of 0 in the mask are processed and values of 1 ignored as per PyFAI
  *
  * This implementation is especially efficient on CPU where each core reads adjacents memory.
@@ -132,7 +132,7 @@ lut_integrate(  const     global    float              *weights,
  * \brief OpenCL function for 1d azimuthal integration based on LUT matrix multiplication after normalization !
  *
  * @param data        float4 array in global memory storing the data as signal/variance/normalization/count.
- * @param lut         lut_point 2d array in global memory holding the coeficient part of the LUT
+ * @param lut         lut_point 2d array in global memory holding the coefficient part of the LUT
  * @return (sum_signal_main, sum_signal_neg, sum_variance_main, sum_variance_neg,
  *          sum_norm_main, sum_norm_neg, sum_count_main, sum_count_neg)
  *

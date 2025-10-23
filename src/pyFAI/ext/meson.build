@@ -1,7 +1,7 @@
 # OpenMP can be used? several ways to disable it:
 #  -> use -Duse_openmp=disabled
 #  -> or the file PYFAI_WITH_OPENMP should contain False
-#  -> or OpenMP can be unsuported on your achitecture/compiler
+#  -> or OpenMP can be unsupported on your architecture/compiler
 
 omp = dependency('openmp', required: get_option('use_openmp').disable_auto_if(openmp_var=='False'))
 

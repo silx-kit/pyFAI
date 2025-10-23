@@ -57,7 +57,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     It also performs the preprocessing using the preproc kernel
     """
     BLOCK_SIZE = 32
-    # Intel CPU driver calims preferred workgroup is 128 !
+    # Intel CPU driver claims preferred workgroup is 128 !
     buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
@@ -430,7 +430,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         :param data: numpy array with data
         :param dest: name of the buffer as registered in the class
-        :param checksum: Checksum of the data to determine if the data needs to be transfered
+        :param checksum: Checksum of the data to determine if the data needs to be transferred
         :param workgroup_size: enforce kernel to run with given workgroup size
         :param convert: if True (default) convert dtype on GPU, if false, leave as it is.
         :return: the actual buffer where the data were sent
@@ -492,7 +492,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         return dest_buffer
 
     def get_buffer(self, name, out=None):
-        """retrive a Send a numpy array to the device, including the type conversion on the device if possible
+        """retrieve a Send a numpy array to the device, including the type conversion on the device if possible
 
         :param name: name of the buffer
         :param out: pre-allocated destination numpy array
@@ -708,7 +708,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessement
         :param error_model: enum ErrorModel
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
@@ -940,7 +940,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessement
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing
@@ -1124,12 +1124,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
 
         Averaging is performed using the CSR representation of the look-up table on all
-        arrays after sorting pixels by apparant intensity and taking only the selected ones
+        arrays after sorting pixels by apparent intensity and taking only the selected ones
         based on quantiles and the length of the ensemble.
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessement
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing
         :param flat: array of same shape as data for pre-processing

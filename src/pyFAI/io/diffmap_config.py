@@ -57,9 +57,9 @@ CURRENT_VERSION = 1  # former version were unassigned
 class MotorRange:
     """ This object represents a motor range
 
-    :param start: Begining of the movement
+    :param start: Beginning of the movement
     :param stop: End of the movement, included
-    :param points: Number of points (i.e. numberof steps + 1)
+    :param points: Number of points (i.e. number of steps + 1)
     :param name: Name of the motor
     """
     start: float = None
@@ -119,7 +119,7 @@ def parse_bliss(filename, motors, transpose=False):
 
     :param filename: name of the Bliss master file
     :param motors: 2-tuple of 1d-datasets names in the masterfile. Both have the same shape.
-    :param transpose: set to True to have the fast dimention along y instead of x.
+    :param transpose: set to True to have the fast dimension along y instead of x.
     :return: map_ptr, [MotorRange_y, MotorRange_x]
     """
     def build_dict(posi):
@@ -276,7 +276,7 @@ class ListDataSet(list):
 
     @property
     def shape(self):
-        "Common shape. Emits a warning is unconsistant or None when empty"
+        "Common shape. Emits a warning if inconsistent or None when empty"
         if len(self) == 0:
             return
         shape = self[0].shape  # could be None

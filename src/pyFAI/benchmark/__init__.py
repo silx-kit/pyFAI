@@ -336,7 +336,7 @@ class Bench(object):
 
     def bench_1d(self, method="splitBBox", check=False, opencl=None, function="integrate1d"):
         """
-        :param method: method to be bechmarked
+        :param method: method to be benchmarked
         :param check: check results vs ref if method is LUT based
         :param opencl: dict containing platformid, deviceid and devicetype
         """
@@ -782,8 +782,8 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     :param repeat: number of measurement, takes the best of them
     :param memprof: set to True to enable memory profiling to hunt memory leaks
     :param max_size: maximum image size in megapixel, set it to 2 to speed-up the tests.
-    :param do_1d: perfrom benchmarking using integrate1d
-    :param do_2d: perfrom benchmarking using integrate2d
+    :param do_1d: perform benchmarking using integrate1d
+    :param do_2d: perform benchmarking using integrate2d
     :devices: "all", "cpu", "gpu" or "acc" or a list of devices [(proc_id, dev_id)]
     """
     print(f"Benchmarking over {number} seconds (best of {repeat} repetitions).")

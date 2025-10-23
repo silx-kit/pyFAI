@@ -175,7 +175,7 @@ class TestSparseBuilder(utilstest.ParametricTestCase):
             sparse_builder.feed_histogram(builder, tth, data, npt)
             self.assertEqual(builder.size(), shape[0] * shape[1])
 
-            # Check consistancy of the results
+            # Check consistency of the results
             coefs, indexes, bin_indexes = builder.to_csr()
             if previous_coefs is not None:
                 self.assertTrue(numpy.allclose(coefs, previous_coefs))

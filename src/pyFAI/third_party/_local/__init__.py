@@ -26,9 +26,9 @@
 Package containing external modules which can be available as it is as an
 external python library.
 
-They are stored here to reduce python library dependancies.
+They are stored here to reduce python library dependencies.
 
-This package can be removed if all dependancies are available in the target
+This package can be removed if all dependencies are available in the target
 system as python libraries.
 """
 __authors__ = ["Valentin Valls"]

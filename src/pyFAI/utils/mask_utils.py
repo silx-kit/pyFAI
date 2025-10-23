@@ -127,7 +127,7 @@ def crystfel_mask(mask):
 
 def crystfel_detector(detector):
     """
-    Generate a CrystFEL detector definiton as text file
+    Generate a CrystFEL detector definition as text file
     """
     res = [crystfel_mask(detector.mask),"", ";Panel description"]
     corners = detector.get_pixel_corners()

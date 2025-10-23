@@ -63,7 +63,7 @@ class MarkerManager(object):
 
     def updateProjection(self, geometry, radialUnit, wavelength, directDist, redraw=True):
         if self.__pixelBasedPlot:
-            raise RuntimeError("Invalide operation for this kind of plot")
+            raise RuntimeError("Invalid operation for this kind of plot")
         self.__geometry = geometry
         self.__radialUnit = radialUnit
         self.__invertGeometry = InvertGeometry(

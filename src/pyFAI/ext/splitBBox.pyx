@@ -1,7 +1,7 @@
 # coding: utf-8
 #cython: embedsignature=True, language_level=3, binding=True
 #cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
-## This is for developping
+## This is for developing
 ##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 #
 #    Project: Fast Azimuthal integration
@@ -307,7 +307,7 @@ def histoBBox1d_engine(weights,
     :param solidangle: array (of float32) with solid angle corrections
     :param polarization: array (of float32) with polarization corrections
     :param ndarray absorption: detector absorption
-    :param allow_pos0_neg: allow radial dimention to be negative (useful in log-scale!)
+    :param allow_pos0_neg: allow radial dimension to be negative (useful in log-scale!)
     :param empty: value of output bins without any contribution when dummy is None
     :param float normalization_factor: divide the result by this value
     :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
@@ -1062,7 +1062,7 @@ def histoBBox2d_engine(weights,
                 cnt = out_data[i, j, 3]
                 nrm2 = out_data[i, j, 4]
                 if cnt:
-                    "test on count as norm could be negatve"
+                    "test on count as norm could be negative"
                     out_intensity[i, j] = sig / nrm
                     if error_model:
                         sem[i, j] = sqrt(var) / nrm

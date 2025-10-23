@@ -34,7 +34,7 @@ from .DataModel import DataModel
 class PlotViewModel(DataModel):
     """This model allow to store and restitute a plot view.
 
-    Stored data can be applyed to another plot in order to synchronize
+    Stored data can be applied to another plot in order to synchronize
     location of the data coords.
     """
 

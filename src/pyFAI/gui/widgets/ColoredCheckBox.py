@@ -35,7 +35,7 @@ _logger = logging.getLogger(__name__)
 
 
 class ColoredCheckBox(qt.QCheckBox):
-    """Check box with an explict API to change the background color of the
+    """Check box with an explicit API to change the background color of the
     indicator.
     """
 
