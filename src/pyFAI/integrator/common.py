@@ -1676,7 +1676,7 @@ class Integrator(Geometry):
         return self.detector.flatfield
 
     @flatfield.setter
-    def set_flatfield(self, flat):
+    def flatfield(self, flat):
         self.detector.flatfield = flat
 
     get_flatfield  = deprecated(flatfield.fget, reason="use property", since_version="2025.09")
