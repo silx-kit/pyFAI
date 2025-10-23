@@ -54,7 +54,7 @@ class BadCalibrantName(KeyError):
 class CalibrantFactory:
     """Behaves like a dict but is actually a factory:
 
-    Each time one retrieves an object it is a new geniune new calibrant (unmodified)
+    Each time one retrieves an object it is a new genuine new calibrant (unmodified)
     """
 
     def __init__(self, basedir=None):

@@ -70,7 +70,7 @@ class QuantityEdit(qt.QLineEdit):
         if event.type() == 207:
             if self.__previousText != self.text():
                 # TODO: This tries to capture Linux copy-paste using middle mouse
-                # button. But this event do not match exactly what it is intented.
+                # button. But this event does not match exactly what it is intended.
                 # None of the available events capture this special copy-paste.
                 self.__wasModified = True
         return qt.QLineEdit.event(self, event)
@@ -144,7 +144,7 @@ class QuantityEdit(qt.QLineEdit):
 
     def setModelUnit(self, modelUnit):
         """
-        Set the unit of the stroed data in the model.
+        Set the unit of the stored data in the model.
 
         :param pyFAI.gui.units.Unit unit: An unit
         """
@@ -238,7 +238,7 @@ class QuantityEdit(qt.QLineEdit):
         old = self.blockSignals(True)
         self.setText(text)
         self.__updateMinimumSizeHint(text)
-        # For very big numbers, make the begining visible
+        # For very big numbers, make the beginning visible
         self.setCursorPosition(0)
         # Avoid sending further signals
         self.__previousText = text

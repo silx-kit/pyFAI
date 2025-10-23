@@ -107,7 +107,7 @@ class TestExtractControlPoints(RingExtractionTestBase):
 
         self.assertEqual(self.mock_extract_peaks_in_one_ring.call_count, 3)
 
-        # work arround for this issue https://github.com/python/cpython/issues/84147 and
+        # work around for this issue https://github.com/python/cpython/issues/84147 and
         # #2189 related to threads being used and the function callability checked.
         self.mock_extract_peaks_in_one_ring.assert_called()
         # self.mock_extract_peaks_in_one_ring.assert_has_calls(

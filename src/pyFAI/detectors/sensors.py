@@ -115,7 +115,7 @@ class SensorMaterial:
             raise RuntimeError(f"Energy {energy} outside of tabulated range for {self}")
 
     def _scale(self, unit:str):
-        """Helper function that return the scale muliplier"""
+        """Helper function that return the scale multiplier"""
         if "^" in unit:
             unit = unit.split("^")[0]
         return self.SCALES[unit]

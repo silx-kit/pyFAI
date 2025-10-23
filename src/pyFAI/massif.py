@@ -284,7 +284,7 @@ class Massif(object):
         if self._cleaned_data is None:
             data = self.data.copy()
             if self.median_prefilter:
-                "First stage of cleaning, localy 3x3"
+                "First stage of cleaning, locally 3x3"
                 data[numpy.where(self.mask)] = numpy.nan
                 data = median_filter(data, 3)
                 mask = numpy.logical_not(numpy.isfinite(data))

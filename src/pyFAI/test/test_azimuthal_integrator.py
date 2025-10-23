@@ -182,7 +182,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         logger.info(self.ai.__repr__())
         self.ai.corner_array(self.data.shape, unit=units.TTH_RAD, scale=False)
-        # this was just to enforce the initalization of the array
+        # this was just to enforce the initialization of the array
         t0 = time.perf_counter()
         logger.info("in test_cythonSP_vs_fit2d Before SP")
 
@@ -255,7 +255,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
 
         self.assertLess(amorphous.max(), bragg.max(), "bragg is more intense than amorphous")
         self.assertLess(amorphous.std(), bragg.std(), "bragg is more variatic than amorphous")
-        self.assertGreater(numpy.diff(res.radial).min(), 0, "radial position is stricly monotonic")
+        self.assertGreater(numpy.diff(res.radial).min(), 0, "radial position is strictly monotonic")
         self.assertEqual(res.radial.shape, res.intensity.shape, "1D intensities are of proper shape")
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
@@ -733,7 +733,7 @@ class TestRange(unittest.TestCase):
                     # abs(ref.__getattribute__(what) - obt.__getattribute__(what)).max(),
                     # abs((ref.__getattribute__(what) - obt.__getattribute__(what)) / ref.__getattribute__(what)).max())
                     self.assertTrue(numpy.allclose(obt.__getattribute__(what), ref.__getattribute__(what), atol=10, rtol=tol),
-                                    msg=f"Sigma clipping matches for impl {impl} on paramter {what} with error_model {case['error_model']}")
+                                    msg=f"Sigma clipping matches for impl {impl} on parameter {what} with error_model {case['error_model']}")
 
     def test_variance_2d(self, error_model="poisson"):
         """This test checks that the variance is actually calculated and positive

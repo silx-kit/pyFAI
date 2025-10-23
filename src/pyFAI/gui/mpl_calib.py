@@ -215,7 +215,7 @@ class MplCalibWidget:
                 self.update()
 
     def shadow(self, mask=None, update=True):
-        """Apply som shadowing overlay on top of background image
+        """Apply some shadowing overlay on top of background image
 
         :param mask: mask to be overlaid. set to None to remove
         :param update: finally update the plot
@@ -351,7 +351,7 @@ class MplCalibWidget:
             ring = self.get_ring_value()
 
             if (event.xdata and event.ydata) is None:  # no coordinates
-                logger.info("invalid coodinates")
+                logger.info("invalid coordinates")
                 return
             yx = int(event.ydata + 0.5), int(event.xdata + 0.5)
 
@@ -420,7 +420,7 @@ class MplCalibWidget:
         if self.fig is not None:
             self.fig.show()
 
-    # Those methods need to be spacialized:
+    # Those methods need to be specialized:
     def init(self, pick=True, update=True):
         raise NotImplementedError(f"MplCalibWidget is an Abstract class, {inspect.currentframe().f_code.co_name} not defined!")
 

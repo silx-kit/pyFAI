@@ -69,7 +69,7 @@
          <item>
           <widget class="QLabel" name="label_17">
            <property name="text">
-            <string>maximun</string>
+            <string>maximum</string>
            </property>
           </widget>
          </item>
@@ -125,7 +125,7 @@
          <item>
           <widget class="QLabel" name="label_19">
            <property name="text">
-            <string>maximun</string>
+            <string>maximum</string>
            </property>
           </widget>
          </item>
@@ -178,7 +178,7 @@
          <item>
           <widget class="QLabel" name="label_21">
            <property name="text">
-            <string>maximun</string>
+            <string>maximum</string>
            </property>
           </widget>
          </item>
@@ -235,7 +235,7 @@
          <item>
           <widget class="QLabel" name="label_23">
            <property name="text">
-            <string>maximun</string>
+            <string>maximum</string>
            </property>
           </widget>
          </item>
@@ -288,7 +288,7 @@
          <item>
           <widget class="QLabel" name="label_25">
            <property name="text">
-            <string>maximun</string>
+            <string>maximum</string>
            </property>
           </widget>
          </item>
@@ -341,7 +341,7 @@
          <item>
           <widget class="QLabel" name="label_27">
            <property name="text">
-            <string>maximun</string>
+            <string>maximum</string>
            </property>
           </widget>
          </item>

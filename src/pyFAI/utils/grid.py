@@ -91,9 +91,9 @@ class Kabsch:
         :param points: 2d array like with `n` lines of `d` coordinates. The point to match to the reference
 
         The transformation provided is the rigid transformation:
-        `P·U + V` where U is the rotation matix and V the the translation
+        `P·U + V` where U is the rotation matrix and V the the translation
 
-        `d` is usally 2 for 2D detectors but 3 is very common. More shouldn't be an issue
+        `d` is usually 2 for 2D detectors but 3 is very common. More shouldn't be an issue
         """
         R = numpy.ascontiguousarray(reference, dtype=numpy.float64)
         P = numpy.ascontiguousarray(points, dtype=numpy.float64)
@@ -136,12 +136,12 @@ class Kabsch:
 
     @classmethod
     def test(cls, reference, points, verbose=True):
-        "Perform a basic self consitancy test"
+        "Perform a basic self consistency test"
         k = cls(reference, points)
         if verbose:
             print(k)
             print("correct", k.correct(points) - reference, "RMSD=", sqrt(((k.correct(points) - reference) ** 2).sum() / len(reference)))
-            print("uncorct", points - k.uncorrect(reference), "RMSD=", sqrt(((points - k.uncorrect(reference)) ** 2).sum() / len(reference)))
+            print("uncorrect", points - k.uncorrect(reference), "RMSD=", sqrt(((points - k.uncorrect(reference)) ** 2).sum() / len(reference)))
         else:
             assert numpy.isclose(sqrt(((k.correct(points) - reference) ** 2).sum() / len(reference)), k.rmsd)
             assert numpy.isclose(sqrt(((points - k.uncorrect(reference)) ** 2).sum() / len(reference)), k.rmsd)

@@ -123,7 +123,7 @@ class Geometry:
     _LAST_POLARIZATION = "last_polarization"
 
     # To ease the copy of an instance. Mutable attributes are caches which are regenerated on use
-    _UNMUTABLE_ATTRS = (
+    _IMMUTABLE_ATTRS = (
         "_dist",
         "_poni1",
         "_poni2",
@@ -210,7 +210,7 @@ class Geometry:
         self._dssa_order = (
             3  # Used to be 1 (False) in very old version of pyFAI: was a bug.
         )
-        # The correct value is 3 where 2 come from the apparant pixels area and 1 from the incidence angle.
+        # The correct value is 3 where 2 come from the apparent pixels area and 1 from the incidence angle.
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
@@ -344,10 +344,10 @@ class Geometry:
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
-        :param d1: ndarray of dimention 1/2 containing the Y pixel positions
-        :param d2: ndarray of dimention 1/2 containing the X pixel positions
-        :param p1: ndarray of dimention 1/1 containing the x pixel positions in meter. MODIFIED IN PLACE!
-        :param p2: ndarray of dimention 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
+        :param d1: ndarray of dimension 1/2 containing the Y pixel positions
+        :param d2: ndarray of dimension 1/2 containing the X pixel positions
+        :param p1: ndarray of dimension 1/1 containing the x pixel positions in meter. MODIFIED IN PLACE!
+        :param p2: ndarray of dimension 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
         :return: 2-arrays of same shape as d1 & d2 with the displacement in meters
 
         p1 & p2 should contain the pixel coordinates after translation & **rotation**
@@ -376,9 +376,9 @@ class Geometry:
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
-        :param p1: ndarray of dimention 1/2 containing the x pixel positions in meter. MODIFIED IN PLACE!
-        :param p2: ndarray of dimention 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
-        :param p3: ndarray of dimention 1/2 containing the z pixel positions in meter or a scalar.
+        :param p1: ndarray of dimension 1/2 containing the x pixel positions in meter. MODIFIED IN PLACE!
+        :param p2: ndarray of dimension 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
+        :param p3: ndarray of dimension 1/2 containing the z pixel positions in meter or a scalar.
         :return: 2-arrays of same shape as d1 & d2 with the displacement in meters
 
         p1 & p2 should contain the pixel coordinates after translation but **NOT** rotation
@@ -425,8 +425,8 @@ class Geometry:
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        :param d1: ndarray of dimention 1/2 containing the Y pixel positions
-        :param d2: ndarray of dimention 1/2 containing the X pixel positions
+        :param d1: ndarray of dimension 1/2 containing the Y pixel positions
+        :param d2: ndarray of dimension 1/2 containing the X pixel positions
         :param poni1: value in the Y direction of the poni coordinate (meter)
         :param poni2: value in the X direction of the poni coordinate (meter)
         :param do_parallax: set to True to correct for the parallax effect
@@ -801,9 +801,9 @@ class Geometry:
         at coordinate d1, d2.
         Conversion to lab coordinate system is performed in calc_pos_zyx.
 
-        :param d1: pixel coordinate along the 1st dimention (C convention)
+        :param d1: pixel coordinate along the 1st dimension (C convention)
         :type d1: float or array of them
-        :param d2: pixel coordinate along the 2nd dimention (C convention)
+        :param d2: pixel coordinate along the 2nd dimension (C convention)
         :type d2: float or array of them
         :param path: can be "tan" (i.e via numpy) or "cython"
         :return: chi, the azimuthal angle in rad
@@ -838,9 +838,9 @@ class Geometry:
         Calculate the chi (azimuthal angle) for the corner of a pixel
         at coordinate d1,d2 which in the lab ref has coordinate:
 
-        :param d1: pixel coordinate along the 1st dimention (C convention)
+        :param d1: pixel coordinate along the 1st dimension (C convention)
         :type d1: float or array of them
-        :param d2: pixel coordinate along the 2nd dimention (C convention)
+        :param d2: pixel coordinate along the 2nd dimension (C convention)
         :type d2: float or array of them
         :return: chi, the azimuthal angle in rad
         """
@@ -903,7 +903,7 @@ class Geometry:
         :param dtype: output format requested. Double precision is needed for fitting the geometry
         :param (bool) use_cython: set to false to test the Python path (slower)
         :param do_parallax: correct for parallax effect (if parametrized)
-        :return: 3D coodinates as nd-array of size (...,3) or (...,3) (default)
+        :return: 3D coordinates as nd-array of size (...,3) or (...,3) (default)
 
         Nota: this value is not cached and actually generated on demand (costly)
         """
@@ -1355,7 +1355,7 @@ class Geometry:
 
     def array_from_unit(self, shape=None, typ="center", unit=units.TTH, scale=True):
         """
-        Generate an array of position in different dimentions (R, Q, 2Theta ...)
+        Generate an array of position in different dimensions (R, Q, 2Theta ...)
 
         :param shape: shape of the expected array, leave it to None for safety
         :type shape: ndarray.shape
@@ -1591,7 +1591,7 @@ class Geometry:
 
     def get_config(self):
         """
-        return the configuration as a dictionnary
+        return the configuration as a dictionary
 
         :return: dictionary with the current configuration
         """
@@ -1789,12 +1789,12 @@ class Geometry:
         https://doi.org/10.1080/08957959608201408
 
         Warning: Fit2D flips automatically images depending on their file-format.
-        By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
-        To obtaine correct result you will have to flip images using numpy.flipud.
+        By reverse engineering we noticed this behaviour for Tiff and Mar345 images (at least).
+        To obtain correct result you will have to flip images using numpy.flipud.
 
         :param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
         :param tilt: tilt in degrees
-        :param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
+        :param tiltPlanRotation: Rotation (in degrees) of the tilt plan around the Z-detector axis
                 * 0deg -> Y does not move, +X goes to Z<0
                 * 90deg -> X does not move, +Y goes to Z<0
                 * 180deg -> Y does not move, +X goes to Z>0
@@ -1860,11 +1860,11 @@ class Geometry:
         :param Rot_1: rotation around the fastest axis (x)
         :param Rot_2: rotation around the slowest axis (y)
         :param Rot_3: rotation around the axis ORTHOGONAL to the detector plan
-        :param PSize_1: pixel size in meter along the fastest dimention
-        :param PSize_2: pixel size in meter along the slowst dimention
+        :param PSize_1: pixel size in meter along the fastest dimension
+        :param PSize_2: pixel size in meter along the slowest dimension
         :param splinefile: name of the file containing the spline
-        :param BSize_1: pixel binning factor along the fastest dimention
-        :param BSize_2: pixel binning factor along the slowst dimention
+        :param BSize_1: pixel binning factor along the fastest dimension
+        :param BSize_2: pixel binning factor along the slowest dimension
         :param WaveLength: wavelength used
         """
         # first define the detector
@@ -1903,18 +1903,18 @@ class Geometry:
 
         Basically the main difference with pyFAI is the order of the axis which are flipped
 
-        :return: dictionnary with those parameters:
+        :return: dictionary with those parameters:
             SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
             Center_1, pixel position of the PONI along fastest axis
             Center_2: pixel position of the PONI along slowest axis
             Rot_1: rotation around the fastest axis (x)
             Rot_2: rotation around the slowest axis (y)
             Rot_3: rotation around the axis ORTHOGONAL to the detector plan
-            PSize_1: pixel size in meter along the fastest dimention
-            PSize_2: pixel size in meter along the slowst dimention
+            PSize_1: pixel size in meter along the fastest dimension
+            PSize_2: pixel size in meter along the slowest dimension
             splineFile: name of the file containing the spline
-            BSize_1: pixel binning factor along the fastest dimention
-            BSize_2: pixel binning factor along the slowst dimention
+            BSize_1: pixel binning factor along the fastest dimension
+            BSize_2: pixel binning factor along the slowest dimension
             WaveLength: wavelength used in meter
         """
 
@@ -2030,7 +2030,7 @@ class Geometry:
         geometry = {"translation": [-self.poni2, -self.poni1, self.dist]}
         # This is the matrix that transforms the sample's orientation to the detector's orientation
         rot = numpy.linalg.inv(self.rotation_matrix())
-        # TODO: double check this with CXI gemetry visualizer. Indices could be transposed.
+        # TODO: double check this with CXI geometry visualizer. Indices could be transposed.
         geometry["orientation"] = [
             rot[1, 1],  # x′ · x,
             rot[1, 0],  # x′ · y,
@@ -2118,7 +2118,7 @@ class Geometry:
     def set_rot_from_quaternion(self, w, x, y, z):
         """Quaternions are convieniant ways to represent 3D rotation
         This method allows to define rot1(left-handed), rot2(left-handed) and
-        rot3 (right handed) as definied in the documentation from a quaternion,
+        rot3 (right handed) as defined in the documentation from a quaternion,
         expressed in the right handed (x1, x2, x3) basis set.
 
         Uses the transformations-library from C. Gohlke
@@ -2210,7 +2210,7 @@ class Geometry:
     def setChiDiscAtPi(self):
         """
         Set the position of the discontinuity of the chi axis between
-        -pi and +pi.  This is the default behavour
+        -pi and +pi.  This is the default behaviour
         """
         if self.chiDiscAtPi is True:
             return
@@ -2257,7 +2257,7 @@ class Geometry:
         path="numexpr",
     ):
         """
-        Calculate the polarization correction accoding to the
+        Calculate the polarization correction according to the
         polarization factor:
 
         * If the polarization factor is None,
@@ -2270,17 +2270,17 @@ class Geometry:
             there is no correction in the horizontal plane and a node at 2th=90, chi=90
         * If the polarization is elliptical, the polarization factor varies between -1 and +1.
 
-        The axis_offset parameter allows correction for the misalignement of
+        The axis_offset parameter allows correction for the misalignment of
         the polarization plane (or ellipse main axis) and the the detector's X axis.
 
         :param shape: the shape of the array,
                     can be guessed most of the time from the detector definition
         :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization)
-                    and 1 (where division by 0 could occure at 2th=90, chi=0)
+                    and 1 (where division by 0 could occur at 2th=90, chi=0)
         :param axis_offset: Angle between the polarization main axis and
                             detector's X direction (in radians !!!)
         :param with_checksum: calculate also the checksum (used with OpenCL integration)
-        :param path: set to numpy to enforce the use of numpy, else uses numexpr (mutithreaded)
+        :param path: set to numpy to enforce the use of numpy, else uses numexpr (multithreaded)
         :return: 2D array with polarization correction (normalization) array
                  or namedtuple if with_checksum
 
@@ -2372,7 +2372,7 @@ class Geometry:
                 raise RuntimeError(
                     (
                         "You should provide a shape if the"
-                        " geometry is not yet initiallized"
+                        " geometry is not yet initialized"
                     )
                 )
 
@@ -2435,7 +2435,7 @@ class Geometry:
         :param polarization_factor: set to true to use previously used value
         :param polarization_axis_offset: axis_offset to be send to the polarization method
         :param dark: dark current correction
-        :param flat: flatfield corrction
+        :param flat: flatfield correction
         :return: 2D image reconstructed
 
         """
@@ -2501,7 +2501,7 @@ class Geometry:
         :param polarization_factor: set to true to use previously used value
         :param polarization_axis_offset: axis_offset to be send to the polarization method
         :param dark: dark current correction
-        :param flat: flatfield corrction
+        :param flat: flatfield correction
         :return: 2D image reconstructed
 
         """
@@ -2593,7 +2593,7 @@ class Geometry:
             else:
                 raise ValueError("Bad FQN class, it must be a Geometry derivative")
 
-            for key in self._UNMUTABLE_ATTRS:
+            for key in self._IMMUTABLE_ATTRS:
                 new.__setattr__(key, self.__getattribute__(key))
         # TODO: replace param with a property, see #2300
         new.param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
@@ -2602,7 +2602,7 @@ class Geometry:
     def __copy__(self):
         """:return: a shallow copy of itself."""
         new = self.__class__(detector=self.detector)
-        for key in self._UNMUTABLE_ATTRS:
+        for key in self._IMMUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
         new._cached_array = self._cached_array.copy()
@@ -2620,7 +2620,7 @@ class Geometry:
         new_det = self.detector.__deepcopy__(memo)
         new.detector = new_det
 
-        for key in self._UNMUTABLE_ATTRS:
+        for key in self._IMMUTABLE_ATTRS:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
@@ -2640,7 +2640,7 @@ class Geometry:
         """Checks two geometries are equivalent.
 
         Typing will wait python 3.14"""
-        for key in self._UNMUTABLE_ATTRS+("parallax","detector", "orientation"):
+        for key in self._IMMUTABLE_ATTRS+("parallax","detector", "orientation"):
             try:
                 here =  self.__getattribute__(key)
                 there = other.__getattribute__(key)
@@ -2724,9 +2724,9 @@ class Geometry:
 
         :param activate: set to False to disable parralax correction
         :param sensor_material: provide the name of the sensor material,
-                                by default use the one definined in the detector
+                                by default use the one defined in the detector
         :param sensor_thickness: provide the name of the sensor thickness,
-                                by default use the one definined in the detector
+                                by default use the one defined in the detector
         """
 
         if activate:

@@ -107,7 +107,7 @@ class CylindricalDetector(Detector):
 
     def _get_compact_pixel_corners(self):
         "The core function which calculates the pixel corner coordinates"
-        raise NotImplementedError("This is an abtract class")
+        raise NotImplementedError("This is an abstract class")
 
     def get_pixel_corners(self, correct_binning=False, use_cython=True):
         """
@@ -171,7 +171,7 @@ class CylindricalDetector(Detector):
         :param d2: the X pixel positions (fast dimension)
         :type d2: ndarray (1D or 2D)
         :param center: retrieve the coordinate of the center of the pixel
-        :param use_cython: set to False to test Python implementeation
+        :param use_cython: set to False to test Python implementation
         :return: position in meter of the center of each pixels.
         :rtype: ndarray
 
@@ -244,7 +244,7 @@ class CylindricalDetector(Detector):
                 + B0 * delta1 * (1.0 - delta2) \
                 + C0 * delta1 * delta2 \
                 + D0 * (1.0 - delta1) * delta2
-            # To ensure numerical consitency with cython procedure.
+            # To ensure numerical consistency with cython procedure.
             p1 = p1.astype(numpy.float32)
             p2 = p2.astype(numpy.float32)
             p3 = p3.astype(numpy.float32)
@@ -254,7 +254,7 @@ class CylindricalDetector(Detector):
 class Aarhus(CylindricalDetector):
     """
     Cylindrical detector made of a bent imaging-plate.
-    Developped at the Danish university of Aarhus
+    Developed at the Danish university of Aarhus
     r = 1.2m or 0.3m
 
     Credits:

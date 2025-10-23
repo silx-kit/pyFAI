@@ -248,7 +248,7 @@ cdef class CscIntegrator(object):
                         if sum_norm_sq[bin_idx] > 0.0:
                             # Inspired from https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                             # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
-                            # Emprically validated against 2-pass implementation in Python/scipy-sparse
+                            # Empirically validated against 2-pass implementation in Python/scipy-sparse
 
                             omega_A = sum_norm[bin_idx]
                             omega_B = w
@@ -274,7 +274,7 @@ cdef class CscIntegrator(object):
                             sum_norm_sq[bin_idx] += w * w
                             sum_var[bin_idx] += coef * coef * value.variance
 
-            #calulate means from accumulators:
+            #calculate means from accumulators:
             for bin_idx in range(self.output_size):
                 if sum_count[bin_idx]:
                     merged[bin_idx] = sum_sig[bin_idx] / sum_norm[bin_idx]

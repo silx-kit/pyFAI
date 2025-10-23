@@ -303,7 +303,7 @@ class RingExtraction:
         self, mask: numpy.ndarray
     ) -> tuple[float, float]:
         """
-        Calculates mean and standard deviation of pixel intensities of image which are emcompassed
+        Calculates mean and standard deviation of pixel intensities of image which are encompassed
         by mask.
 
         Parameters

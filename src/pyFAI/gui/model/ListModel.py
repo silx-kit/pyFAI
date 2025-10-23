@@ -84,7 +84,7 @@ class ChangeListEvent(object):
 
     def __iter__(self):
         """
-        Iterates throug of the change events.
+        Iterates through of the change events.
 
         :rtype: Iterator[ChangeEvent]
         """

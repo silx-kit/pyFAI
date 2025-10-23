@@ -353,7 +353,7 @@ cdef class LutIntegrator(object):
                     else:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                         # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
-                        # Emprically validated against 2-pass implementation in Python/scipy-sparse
+                        # Empirically validated against 2-pass implementation in Python/scipy-sparse
 
                         omega_A = acc_norm
                         omega_B = coef * norm # ω_i = c_i * norm_i

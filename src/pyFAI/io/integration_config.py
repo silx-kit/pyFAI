@@ -132,7 +132,7 @@ def _patch_v1_to_v2(config):
                 'detector', "shape", "pixel1", "pixel2", "splineFile", "splinefile")
         delta = set(config.keys()).difference(valid)
         if delta:
-            _logger.warning("Integration_config v1 contains unexpected keys which will be discared: %s%s", os.linesep,
+            _logger.warning("Integration_config v1 contains unexpected keys which will be discarded: %s%s", os.linesep,
                             os.linesep.join([f"{key}: {config[key]}" for key in delta]))
         config.clear()  # Do not change the object: empty in place
     if value:

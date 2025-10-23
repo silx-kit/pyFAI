@@ -393,7 +393,7 @@ cdef class CsrIntegrator(object):
                     else:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                         # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
-                        # Emprically validated against 2-pass implementation in Python/scipy-sparse
+                        # Empirically validated against 2-pass implementation in Python/scipy-sparse
 
                         omega_A = acc_norm
                         omega_B = coef * norm # ω_i = c_i * norm_i
@@ -487,7 +487,7 @@ cdef class CsrIntegrator(object):
         Integration is performed using the CSR representation of the look-up table on all
         arrays: signal, variance, normalization and count
 
-        The threshold can automaticlly be calculated from Chauvenet's: sqrt(2*log(nbpix/sqrt(2.0f*pi)))
+        The threshold can automatically be calculated from Chauvenet's: sqrt(2*log(nbpix/sqrt(2.0f*pi)))
 
         :param weights: input image
         :type weights: ndarray

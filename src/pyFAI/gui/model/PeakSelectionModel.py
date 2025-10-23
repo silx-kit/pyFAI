@@ -55,7 +55,7 @@ class PeakSelectionModel(AbstractModel):
         return len(self.__peaks)
 
     def peakCount(self):
-        """Returns the amout of peak selected throug all the groups
+        """Returns the amount of peak selected through all the groups
 
         :rtype: int
         """
@@ -133,7 +133,7 @@ class PeakSelectionModel(AbstractModel):
 
         :param Tuple[float,float]: Position coord to search around.
         :param float threshold: If specified, filter out groups when the
-            distance is highter than this value.
+            distance is higher than this value.
         """
         closestGroup = None
         closestDistance = None

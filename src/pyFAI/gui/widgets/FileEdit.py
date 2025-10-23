@@ -67,7 +67,7 @@ class FileEdit(qt.QLineEdit):
         if event.type() == 207:
             if self.__previousText != self.text():
                 # TODO: This tries to capture Linux copy-paste using middle mouse
-                # button. But this event do not match exactly what it is intented.
+                # button. But this event does not match exactly what it is intended.
                 # None of the available events capture this special copy-paste.
                 self.__wasModified = True
         return qt.QLineEdit.event(self, event)

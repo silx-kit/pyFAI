@@ -74,7 +74,7 @@ class OCLFullSplit1d(object):
         if not (pos.ndim in [3,4] and
                 pos.shape[-2] == 4 and
                 pos.shape[-1] == 2):
-            raise ValueError("Pos array dimentions are wrong")
+            raise ValueError("Pos array dimensions are wrong")
         self.pos_size = pos.size
         self.size = self.pos_size / 8
         self.pos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
@@ -105,7 +105,7 @@ class OCLFullSplit1d(object):
 
         if mask is not None:
             if mask.size != self.size:
-                raise RuntimeError("Mask shape does not matche size")
+                raise RuntimeError("Mask shape does not match size")
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
             if mask_checksum:
@@ -152,7 +152,7 @@ class OCLFullSplit1d(object):
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
-        :param kernel_file: path tothe
+        :param kernel_file: path to the kernel_file
         """
         kernel_name = "ocl_lut.cl"
         if kernel_file is None:

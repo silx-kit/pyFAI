@@ -76,9 +76,9 @@ class RingExtractorThread(qt.QThread):
 
     def isAborted(self):
         """
-        Returns whether the theard was aborted or not.
+        Returns whether the thread was aborted or not.
 
-        .. note:: Aborted thead are not finished theads.
+        .. note:: Aborted threads are not finished threads.
         """
         return self.__isAborted
 
@@ -96,7 +96,7 @@ class RingExtractorThread(qt.QThread):
                 self.__isAborted = True
 
     def setUserData(self, name, value):
-        """Store key-value information from caller to be retrived when the
+        """Store key-value information from caller to be retrieved when the
         processing finish."""
         self.__keys[name] = value
 
@@ -256,7 +256,7 @@ class RingExtractorThread(qt.QThread):
 
         :raises ValueError: If a mandatory setting is not initialized.
         :rtype: bool
-        :returns: True if successed
+        :returns: True if successful
         """
         if self.__detector is None:
             raise ValueError("No detector defined")
@@ -303,7 +303,7 @@ class RingExtractorThread(qt.QThread):
             newPeaks[ringNumber] = coords
             countPeaks += len(coords)
         if (countPeaks != len(raw)):
-            raise RuntimeError("countPeaks unconsistent with size of peak array")
+            raise RuntimeError("countPeaks inconsistent with size of peak array")
         return newPeaks
 
     def _updateProcessingLocation(self, mask):
