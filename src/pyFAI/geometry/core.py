@@ -2901,7 +2901,6 @@ class Geometry:
         self.reset()
         # restore updated values
         self._cached_array["q_delta"] = dqa
-        #TODO: This bypasses the qa read only property?
         self._cached_array["q_center"] = qa
         self._cached_array["q_corner"] = q_corner
 
