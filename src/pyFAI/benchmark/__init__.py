@@ -45,6 +45,7 @@ from .. import load, detector_factory
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod, Method
 from ..utils import mathutil
+from ..utils.decorators import deprecated
 from ..test.utilstest import UtilsTest
 from ..opencl import pyopencl, ocl
 try:
