@@ -2892,11 +2892,11 @@ class Geometry:
         qa = dqa = q_corner = None
         if old_wl and self._wavelength:
             if self._cached_array.get("q_center") is not None:
-                qa = self._cached_array["q_center"] * old_wl / self._wavelength
+                qa = (old_wl / self._wavelength) * self._cached_array["q_center"]
 
             q_corner = self._cached_array.get("q_corner")
             if q_corner is not None:
-                q_corner[..., 0] = q_corner[..., 0] * old_wl / self._wavelength
+                q_corner[..., 0] = (old_wl / self._wavelength) * q_corner[..., 0]
 
         self.reset()
         # restore updated values
