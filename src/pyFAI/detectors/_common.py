@@ -1150,7 +1150,8 @@ class Detector(metaclass=DetectorMeta):
     get_pixel2 = deprecated(pixel2.fget, reason="use property", since_version="2025.09")
     set_pixel2 = deprecated(pixel2.fset, reason="use property", since_version="2025.09")
 
-    def get_name(self):
+    @property
+    def name(self):
         """
         Get a meaningful name for detector
         """
@@ -1160,8 +1161,8 @@ class Detector(metaclass=DetectorMeta):
             name = self.__class__.__name__
         return name
 
-    name = property(get_name)
-
+    # Deprecated compatibility layer
+    get_name = deprecated(name.fget, reason="use property", since_version="2025.09")
 
     @property
     def flatfield(self):
