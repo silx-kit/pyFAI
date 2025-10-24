@@ -1070,8 +1070,7 @@ class Detector(metaclass=DetectorMeta):
                         self._mask_crc = crc32(self._mask)
         return self._mask
 
-    @property
-    def mask_crc(self):
+    def get_mask_crc(self):
         return self._mask_crc
 
     @mask.setter
@@ -1089,7 +1088,6 @@ class Detector(metaclass=DetectorMeta):
     # Deprecated compatibility layer
     get_mask = deprecated(mask.fget, reason="use property", since_version="2025.09")
     set_mask = deprecated(mask.fset, reason="use property", since_version="2025.09")
-    get_mask_crc = deprecated(mask_crc.fget, reason="use property", since_version="2025.09")
 
 
     @property
