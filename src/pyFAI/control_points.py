@@ -538,18 +538,30 @@ class PointGroup(object):
     def __repr__(self):
         return "#%2s ring %s: %s points" % (self.label, self.ring, len(self.points))
 
-    def get_ring(self):
+
+    @property
+    def ring(self) -> int:
         return self._ring
 
-    def set_ring(self, value):
-        if not isinstance(value,int):
+    @ring.setter
+    def ring(self, value: int) -> None:
+        if not isinstance(value, int):
             logger.error("Ring: %s", value)
             import traceback
             traceback.print_stack()
-            self._ring = int(value)
+            try:
+                value = int(value)
+            except Exception as exc:
+                raise ValueError(f"Cannot convert {value!r} to int.") from exc
         self._ring = value
 
-    ring = property(get_ring, set_ring)
+    # deprecated compatibility layer:
+    get_ring = deprecated(ring.fget, reason="use property", since_version="2025.09")
+    set_ring = deprecated(ring.fset, reason="use property", since_version="2025.09")
+
+
+
+
 
     @property
     def code(self):

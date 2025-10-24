@@ -2767,20 +2767,28 @@ class Geometry:
                     break
         return shape
 
-    def set_dist(self, value):
-        if isinstance(value, float):
-            self._dist = value
-        else:
-            self._dist = float(value)
-        self.reset()
 
-    def get_dist(self):
+    @property
+    def dist(self):
         return self._dist
 
-    dist = property(get_dist, set_dist)
+    @dist.setter
+    def dist(self, value):
+        self._dist = float(value)
+        self.reset()
 
-    def set_poni1(self, value):
-        if isinstance(value, float):
+    # deprecated compatibility layer
+    get_dist = deprecated(dist.fget, reason="use property", since_version="2025.09")
+    set_dist = deprecated(dist.fset, reason="use property", since_version="2025.09")
+
+
+    @property
+    def poni1(self):
+        return self._poni1
+
+    @poni1.setter
+    def poni1(self, value):
+        if isinstance(value, float): #TODO: Is this still necessary?
             self._poni1 = value
         elif isinstance(value, (tuple, list)):
             self._poni1 = float(value[0])
@@ -2788,13 +2796,17 @@ class Geometry:
             self._poni1 = float(value)
         self.reset()
 
-    def get_poni1(self):
-        return self._poni1
+    # deprecated compatibility layer
+    get_poni1 = deprecated(poni1.fget, reason="use property", since_version="2025.09")
+    set_poni1 = deprecated(poni1.fset, reason="use property", since_version="2025.09")
 
-    poni1 = property(get_poni1, set_poni1)
+    @property
+    def poni2(self):
+        return self._poni2
 
-    def set_poni2(self, value):
-        if isinstance(value, float):
+    @poni2.setter
+    def poni2(self, value):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._poni2 = value
         elif isinstance(value, (tuple, list)):
             self._poni2 = float(value[0])
@@ -2802,13 +2814,18 @@ class Geometry:
             self._poni2 = float(value)
         self.reset()
 
-    def get_poni2(self):
-        return self._poni2
+    # deprecated compatibility layer
+    get_poni2 = deprecated(poni2.fget, reason="use property", since_version="2025.09")
+    set_poni2 = deprecated(poni2.fset, reason="use property", since_version="2025.09")
 
-    poni2 = property(get_poni2, set_poni2)
 
-    def set_rot1(self, value):
-        if isinstance(value, float):
+    @property
+    def rot1(self):
+        return self._rot1
+
+    @rot1.setter
+    def rot1(self, value):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._rot1 = value
         elif isinstance(value, (tuple, list)):
             self._rot1 = float(value[0])
@@ -2816,13 +2833,18 @@ class Geometry:
             self._rot1 = float(value)
         self.reset()
 
-    def get_rot1(self):
-        return self._rot1
+    # deprecated compatibility layer
+    get_rot1 = deprecated(rot1.fget, reason="use property", since_version="2025.09")
+    set_rot1 = deprecated(rot1.fset, reason="use property", since_version="2025.09")
 
-    rot1 = property(get_rot1, set_rot1)
 
-    def set_rot2(self, value):
-        if isinstance(value, float):
+    @property
+    def rot2(self):
+        return self._rot2
+
+    @rot2.setter
+    def rot2(self, value):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._rot2 = value
         elif isinstance(value, (tuple, list)):
             self._rot2 = float(value[0])
@@ -2830,13 +2852,17 @@ class Geometry:
             self._rot2 = float(value)
         self.reset()
 
-    def get_rot2(self):
-        return self._rot2
+    # deprecated compatibility layer
+    get_rot2 = deprecated(rot2.fget, reason="use property", since_version="2025.09")
+    set_rot2 = deprecated(rot2.fset, reason="use property", since_version="2025.09")
 
-    rot2 = property(get_rot2, set_rot2)
+    @property
+    def rot3(self):
+        return self._rot3
 
-    def set_rot3(self, value):
-        if isinstance(value, float):
+    @rot3.setter
+    def rot3(self, value):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._rot3 = value
         elif isinstance(value, (tuple, list)):
             self._rot3 = float(value[0])
@@ -2844,15 +2870,20 @@ class Geometry:
             self._rot3 = float(value)
         self.reset()
 
-    def get_rot3(self):
-        return self._rot3
+    # deprecated compatibility layer
+    get_rot3 = deprecated(rot3.fget, reason="use property", since_version="2025.09")
+    set_rot3 = deprecated(rot3.fset, reason="use property", since_version="2025.09")
 
-    rot3 = property(get_rot3, set_rot3)
 
-    def set_wavelength(self, value):
+    @property
+    def wavelength(self):
+        return self._wavelength
+
+    @wavelength.setter
+    def wavelength(self, value):
         "Set the wavelength in meter!"
         old_wl = self._wavelength
-        if isinstance(value, float):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._wavelength = value
         elif isinstance(value, (tuple, list)):
             self._wavelength = float(value[0])
@@ -2861,11 +2892,11 @@ class Geometry:
         qa = dqa = q_corner = None
         if old_wl and self._wavelength:
             if self._cached_array.get("q_center") is not None:
-                qa = self._cached_array["q_center"] * old_wl / self._wavelength
+                qa = (old_wl / self._wavelength) * self._cached_array["q_center"]
 
             q_corner = self._cached_array.get("q_corner")
             if q_corner is not None:
-                q_corner[..., 0] = q_corner[..., 0] * old_wl / self._wavelength
+                q_corner[..., 0] = (old_wl / self._wavelength) * q_corner[..., 0]
 
         self.reset()
         # restore updated values
@@ -2873,94 +2904,145 @@ class Geometry:
         self._cached_array["q_center"] = qa
         self._cached_array["q_corner"] = q_corner
 
-    def get_wavelength(self):
-        return self._wavelength
+    # deprecated compatibility layer
+    get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.09")
+    set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.09")
 
-    wavelength = property(get_wavelength, set_wavelength)
 
-    def get_energy(self):
-        if self._wavelength:
-            return 1e-10 * CONST_hc / self._wavelength
+    @property
+    def energy(self):
+        if self.wavelength:  # Use property instead of private variable
+            return 1e-10 * CONST_hc / self.wavelength
 
-    def set_energy(self, energy):
+    @energy.setter
+    def energy(self, value):
         "Set the energy in keV"
-        wavlength = 1e-10 * CONST_hc / energy
-        self.set_wavelength(wavlength)
+        wavelength = 1e-10 * CONST_hc / value
+        self.wavelength = wavelength  #Use property instead of private variable
 
-    energy = property(get_energy, set_energy)
+    # deprecated compatibility layer
+    get_energy = deprecated(energy.fget, reason="use property", since_version="2025.09")
+    set_energy = deprecated(energy.fset, reason="use property", since_version="2025.09")
 
-    def get_ttha(self):
+
+    @property
+    def ttha(self):
+        """2theta array in cache"""
         return self._cached_array.get("2th_center")
 
-    def set_ttha(self, _):
+    @ttha.setter
+    def ttha(self, _):
         logger.error("You are not allowed to modify 2theta array")
 
-    def del_ttha(self):
+    @ttha.deleter
+    def ttha(self):
         self._cached_array["2th_center"] = None
 
-    ttha = property(get_ttha, set_ttha, del_ttha, "2theta array in cache")
+    # deprecated compatibility layer
+    get_ttha = deprecated(ttha.fget, reason="use property", since_version="2025.09")
+    set_ttha = deprecated(ttha.fset, reason="use property", since_version="2025.09")
+    del_ttha = deprecated(ttha.fdel, reason="use property", since_version="2025.09")
 
-    def get_chia(self):
+    @property
+    def chia(self):
+        """chi array in cache"""
         return self._cached_array.get("chi_center")
 
-    def set_chia(self, _):
+    @chia.setter
+    def chia(self, _):
         logger.error("You are not allowed to modify chi array")
 
-    def del_chia(self):
+    @chia.deleter
+    def chia(self):
         self._cached_array["chi_center"] = None
 
-    chia = property(get_chia, set_chia, del_chia, "chi array in cache")
+    # deprecated compatibility layer
+    get_chia = deprecated(chia.fget, reason="use property", since_version="2025.09")
+    set_chia = deprecated(chia.fset, reason="use property", since_version="2025.09")
+    del_chia = deprecated(chia.fdel, reason="use property", since_version="2025.09")
 
-    def get_dssa(self):
-        key = "solid_angle#%s" % (self._dssa_order)
+
+    @property
+    def dssa(self):
+        """solid angle array in cache"""
+        key = f"solid_angle#{self._dssa_order}"
         return self._cached_array.get(key)
 
-    def set_dssa(self, _):
+    @dssa.setter
+    def dssa(self, _):
         logger.error("You are not allowed to modify solid angle array")
 
-    def del_dssa(self):
-        self._cached_array["solid_angle#%s" % (self._dssa_order)] = None
-        self._cached_array["solid_angle#%s_crc" % (self._dssa_order)] = None
+    @dssa.deleter
+    def dssa(self):
+        key = f"solid_angle#{self._dssa_order}"
+        self._cached_array[key] = None
+        self._cached_array[f"{key}_crc"] = None
 
-    dssa = property(get_dssa, set_dssa, del_dssa, "solid angle array in cache")
+    # deprecated compatibility layer
+    get_dssa = deprecated(dssa.fget, reason="use property", since_version="2025.09")
+    set_dssa = deprecated(dssa.fset, reason="use property", since_version="2025.09")
+    del_dssa = deprecated(dssa.fdel, reason="use property", since_version="2025.09")
 
-    def get_qa(self):
+
+    @property
+    def qa(self):
+        """Q array in cache"""
         return self._cached_array.get("q_center")
 
-    def set_qa(self, _):
+    @qa.setter
+    def qa(self, _):
         logger.error("You are not allowed to modify Q array")
 
-    def del_qa(self):
+    @qa.deleter
+    def qa(self):
         self._cached_array["q_center"] = None
 
-    qa = property(get_qa, set_qa, del_qa, "Q array in cache")
+    # deprecated compatibility layer
+    get_qa = deprecated(qa.fget, reason="use property", since_version="2025.09")
+    set_qa = deprecated(qa.fset, reason="use property", since_version="2025.09")
+    del_qa = deprecated(qa.fdel, reason="use property", since_version="2025.09")
 
-    def get_ra(self):
+    @property
+    def ra(self):
+        """R array in cache"""
         return self._cached_array.get("r_center")
 
-    def set_ra(self, _):
+    @ra.setter
+    def ra(self, _):
         logger.error("You are not allowed to modify R array")
 
-    def del_ra(self):
-        self.self._cached_array["r_center"] = None
+    @ra.deleter
+    def ra(self):
+        self._cached_array["r_center"] = None  # Fixed: removed extra "self."
 
-    ra = property(get_ra, set_ra, del_ra, "R array in cache")
+    # deprecated compatibility layer
+    get_ra = deprecated(ra.fget, reason="use property", since_version="2025.09")
+    set_ra = deprecated(ra.fset, reason="use property", since_version="2025.09")
+    del_ra = deprecated(ra.fdel, reason="use property", since_version="2025.09")
 
-    def get_pixel1(self):
+    @property
+    def pixel1(self):
         return self.detector.pixel1
 
-    def set_pixel1(self, pixel1):
-        self.detector.pixel1 = pixel1
+    @pixel1.setter
+    def pixel1(self, value): #TODO: Parameter should not shadow property name
+        self.detector.pixel1 = value
 
-    pixel1 = property(get_pixel1, set_pixel1)
+    # deprecated compatibility layer
+    get_pixel1 = deprecated(pixel1.fget, reason="use property", since_version="2025.09")
+    set_pixel1 = deprecated(pixel1.fset, reason="use property", since_version="2025.09")
 
-    def get_pixel2(self):
+    @property
+    def pixel2(self):
         return self.detector.pixel2
 
-    def set_pixel2(self, pixel2):
-        self.detector.pixel2 = pixel2
+    @pixel2.setter
+    def pixel2(self, value): #TODO: Parameter should not shadow property name
+        self.detector.pixel2 = value
 
-    pixel2 = property(get_pixel2, set_pixel2)
+    # deprecated compatibility layer
+    get_pixel2 = deprecated(pixel2.fget, reason="use property", since_version="2025.09")
+    set_pixel2 = deprecated(pixel2.fset, reason="use property", since_version="2025.09")
 
     @property
     def splinefile(self):
@@ -2975,43 +3057,63 @@ class Geometry:
     set_splineFile = deprecated(splinefile.fset, since_version="2025.10", reason="use `splinefile` property")
     splineFile = property(get_splineFile, set_splineFile)  # all deprecated
 
-    def get_spline(self):
+    @property
+    def spline(self):
         return self.detector.spline
 
-    def set_spline(self, spline):
-        self.detector.spline = spline
+    @spline.setter
+    def spline(self, value):
+        self.detector.spline = value
 
-    spline = property(get_spline, set_spline)
+    # deprecated compatibility layer
+    get_spline = deprecated(spline.fget, reason="use property", since_version="2025.09")
+    set_spline = deprecated(spline.fset, reason="use property", since_version="2025.09")
 
-    def get_correct_solid_angle_for_spline(self):
+    @property
+    def correct_SA_spline(self):
         return self._correct_solid_angle_for_spline
 
-    def set_correct_solid_angle_for_spline(self, value):
+    @correct_SA_spline.setter
+    def correct_SA_spline(self, value):
         v = bool(value)
         with self._sem:
             if v != self._correct_solid_angle_for_spline:
-                self._dssa = None
+                # Clear ALL solid_angle arrays of ALL orders
+                for key in list(self._cached_array.keys()):
+                    if key.startswith("solid_angle"):
+                        self._cached_array[key] = None
                 self._correct_solid_angle_for_spline = v
 
-    correct_SA_spline = property(
-        get_correct_solid_angle_for_spline, set_correct_solid_angle_for_spline
-    )
+    # deprecated compatibility layer
+    get_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fget, reason="use property", since_version="2025.09")
+    set_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fset, reason="use property", since_version="2025.09")
+  
 
-    def set_maskfile(self, maskfile):
-        self.detector.set_maskfile(maskfile)
+    @property
+    def maskfile(self):
+        return self.detector.maskfile
 
-    def get_maskfile(self):
-        return self.detector.get_maskfile()
+    @maskfile.setter
+    def maskfile(self, value):
+        self.detector.maskfile = value
 
-    maskfile = property(get_maskfile, set_maskfile)
+    # deprecated compatibility layer
+    get_maskfile = deprecated(maskfile.fget, reason="use property", since_version="2025.09")
+    set_maskfile = deprecated(maskfile.fset, reason="use property", since_version="2025.09")
 
-    def set_mask(self, mask):
-        self.detector.set_mask(mask)
 
-    def get_mask(self):
-        return self.detector.get_mask()
+    @property
+    def mask(self):
+        return self.detector.mask
 
-    mask = property(get_mask, set_mask)
+    @mask.setter
+    def mask(self, value):
+        self.detector.mask=value
+
+    # deprecated compatibility layer
+    get_mask = deprecated(mask.fget, reason="use property", since_version="2025.09")
+    set_mask = deprecated(mask.fset, reason="use property", since_version="2025.09")
+
 
     @property
     def parallax(self):
@@ -3040,12 +3142,12 @@ class Geometry:
     # Property to provide _dssa and _dssa_crc and so one to maintain the API
     @property
     def _dssa(self):
-        key = "solid_angle#%s" % (self._dssa_order)
+        key = f"solid_angle#{self._dssa_order}"
         return self._cached_array.get(key)
 
     @property
     def _dssa_crc(self):
-        key = "solid_angle#%s_crc" % (self._dssa_order)
+        key = f"solid_angle#{self._dssa_order}_crc"
         return self._cached_array.get(key)
 
     @property

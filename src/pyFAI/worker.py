@@ -67,6 +67,8 @@ from .io import ponifile, image as io_image
 from .io.integration_config import WorkerConfig, WorkerFiberConfig
 from .engines.preproc import preproc as preproc_numpy
 from .utils.mathutil import binning as rebin
+from .utils.decorators import deprecated
+
 logger = logging.getLogger(__name__)
 try:
     import numexpr
@@ -506,13 +508,20 @@ class Worker(object):
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
 
-    def set_unit(self, value):
-        self._unit = units.to_unit(value)
 
-    def get_unit(self):
+    @property
+    def unit(self):
         return self._unit
 
-    unit = property(get_unit, set_unit)
+    @unit.setter
+    def unit(self, value):
+        self._unit = units.to_unit(value)
+
+    # deprecated compatibility layer
+    get_unit = deprecated(unit.fget, reason="use property", since_version="2025.09")
+    set_unit = deprecated(unit.fset, reason="use property", since_version="2025.09")
+
+
 
     def get_worker_config(self):
         """Returns the configuration as a WorkerConfig dataclass instance.
@@ -589,15 +598,21 @@ class Worker(object):
         if sync:
             t.join()
 
-    def get_normalization_factor(self):
+    @property
+    def normalization_factor(self):
         with self._sem:
             return self._normalization_factor
 
-    def set_normalization_factor(self, value):
+    @normalization_factor.setter
+    def normalization_factor(self, value):
         with self._sem:
             self._normalization_factor = value
 
-    normalization_factor = property(get_normalization_factor, set_normalization_factor)
+    # deprecated compatibility layer
+    get_normalization_factor = deprecated(normalization_factor.fget, reason="use property", since_version="2025.09")
+    set_normalization_factor = deprecated(normalization_factor.fset, reason="use property", since_version="2025.09")
+
+
 
     def set_method(self, method="csr"):
         "Set the integration method"
