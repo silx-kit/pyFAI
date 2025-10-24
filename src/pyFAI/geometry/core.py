@@ -3069,10 +3069,12 @@ class Geometry:
     get_spline = deprecated(spline.fget, reason="use property", since_version="2025.09")
     set_spline = deprecated(spline.fset, reason="use property", since_version="2025.09")
 
-    def get_correct_solid_angle_for_spline(self):
+    @property
+    def correct_SA_spline(self):
         return self._correct_solid_angle_for_spline
 
-    def set_correct_solid_angle_for_spline(self, value):
+    @correct_SA_spline.setter
+    def correct_SA_spline(self, value):
         v = bool(value)
         with self._sem:
             if v != self._correct_solid_angle_for_spline:
@@ -3082,9 +3084,10 @@ class Geometry:
                         self._cached_array[key] = None
                 self._correct_solid_angle_for_spline = v
 
-    correct_SA_spline = property(
-        get_correct_solid_angle_for_spline, set_correct_solid_angle_for_spline
-    )
+    # deprecated compatibility layer
+    get_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fget, reason="use property", since_version="2025.09")
+    set_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fset, reason="use property", since_version="2025.09")
+  
 
     @property
     def maskfile(self):
