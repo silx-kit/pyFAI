@@ -36,7 +36,7 @@ logger = logging.getLogger("pyFAI.refinment2D")
 
 from .azimuthalIntegrator import AzimuthalIntegrator
 from PyMca import SGModule
-
+from pyFAI.utils.decorators import deprecated
 
 class Refinment2D(object):
     """
