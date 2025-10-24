@@ -1169,8 +1169,7 @@ class Detector(metaclass=DetectorMeta):
     def flatfield(self):
         return self._flatfield
 
-    @property
-    def flatfield_crc(self):
+    def get_flatfield_crc(self):
         return self._flatfield_crc
 
     @flatfield.setter
@@ -1185,8 +1184,6 @@ class Detector(metaclass=DetectorMeta):
     # Deprecated compatibility layer
     get_flatfield = deprecated(flatfield.fget, reason="use property", since_version="2025.09")
     set_flatfield = deprecated(flatfield.fset, reason="use property", since_version="2025.09")
-    get_flatfield_crc = deprecated(flatfield_crc.fget, reason="use property", since_version="2025.09")
-
 
 
     @deprecated(reason="Not maintained", since_version="0.17")
