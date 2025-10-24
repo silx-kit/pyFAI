@@ -56,9 +56,12 @@ class Refinment2D(object):
         else:
             self.ai = ai
 
-    def get_shape(self):
+    @property
+    def shape(self):
         return self.img.shape
-    shape = property(get_shape)
+   
+    # Deprecated compatibility layer
+    get_shape = deprecated(shape.fget, reason="use property", since_version="2025.09")
 
     def reconstruct(self, tth, I):
         """
