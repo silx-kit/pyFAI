@@ -63,6 +63,7 @@ from .. import average
 from ..containers import FixedParameters
 from ..utils import expand_args, readFloatFromKeyboard, win32
 from ..utils.mathutil import measure_offset, round_fft
+from ..utils.decorators import deprecated
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..units import hc, TTH_RAD, CHI_RAD
 from .. import version as PyFAI_VERSION
