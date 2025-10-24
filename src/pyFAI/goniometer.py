@@ -759,7 +759,7 @@ class SingleGeometry(object):
     @wavelength.setter
     def wavelength(self, value: float) -> None:
         self.calibrant.setWavelength_change2th(value)
-        self.geometry_refinement.set_wavelength(value)
+        self.geometry_refinement.wavelength = value
 
 
     # Deprecated compatibility layer
