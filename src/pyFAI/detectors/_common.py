@@ -1220,8 +1220,7 @@ class Detector(metaclass=DetectorMeta):
     def darkcurrent(self):
         return self._darkcurrent
 
-    @property
-    def darkcurrent_crc(self):
+    def get_darkcurrent_crc(self):
         return self._darkcurrent_crc
 
     @darkcurrent.setter
@@ -1235,7 +1234,6 @@ class Detector(metaclass=DetectorMeta):
 
     # Deprecated compatibility layer
     get_darkcurrent = deprecated(darkcurrent.fget,reason="use property",since_version="2025.09")
-    get_darkcurrent_crc = deprecated(darkcurrent_crc.fget,reason="use property",since_version="2025.09")
     set_darkcurrent = deprecated(darkcurrent.fset,reason="use property",since_version="2025.09")
 
     @deprecated(reason="Not maintained", since_version="0.17")
