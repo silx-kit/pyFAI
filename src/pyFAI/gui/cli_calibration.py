@@ -2363,11 +2363,13 @@ refinement process.
         #     self.read_wavelength()
         return True
 
-    def get_1dsize(self):
+    @property
+    def size1d(self):
         logger.debug("in get_1dsize")
         return int(numpy.sqrt(self.img.shape[0] ** 2 + self.img.shape[1] ** 2))
 
-    size1d = property(get_1dsize)
+    # Deprecated compatibility layer
+    get_1dsize = deprecated(size1d.fget, reason="use property", since_version="2025.09")
 
     def integrate(self):
         logger.debug("in integrate")
