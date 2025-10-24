@@ -2891,7 +2891,6 @@ class Geometry:
             self._wavelength = float(value)
         qa = dqa = q_corner = None
         if old_wl and self._wavelength:
-            # TODO: Could use self.qa property here instead of direct _cached_array access?
             if self._cached_array.get("q_center") is not None:
                 qa = self._cached_array["q_center"] * old_wl / self._wavelength
 
