@@ -3076,7 +3076,10 @@ class Geometry:
         v = bool(value)
         with self._sem:
             if v != self._correct_solid_angle_for_spline:
-                del self.dssa # clear cached solid angle properly
+                # Clear ALL solid_angle arrays of ALL orders
+                for key in list(self._cached_array.keys()):
+                    if key.startswith("solid_angle"):
+                        self._cached_array[key] = None
                 self._correct_solid_angle_for_spline = v
 
     correct_SA_spline = property(
