@@ -758,7 +758,8 @@ class Bench(object):
         if self.fig_mp.canvas:
             update_fig(self.fig_mp)
 
-    def get_size(self):
+    @property
+    def size(self):
         if len(self.meth) == 0:
             return []
         size = list(self.results[self.meth[0]].keys())
@@ -769,7 +770,8 @@ class Bench(object):
         size.sort()
         return size
 
-    size = property(get_size)
+    # Deprecated compatibility layer
+    get_size = deprecated(size.fget, reason="use property", since_version="2025.09")    
 
 
 def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
