@@ -2816,9 +2816,7 @@ class Geometry:
 
     @poni2.setter
     def poni2(self, value):
-        if isinstance(value, float):
-            self._poni2 = value
-        elif isinstance(value, (tuple, list)):
+        if isinstance(value, (tuple, list)):
             deprecated_warning(
             type_="Parameter",
             name="poni2",
@@ -2828,9 +2826,12 @@ class Geometry:
             only_once=True,
             skip_backtrace_count=2
             )
-            self._poni2 = float(value[0])
-        else:
-            raise TypeError(f"poni2 must be a float, got {type(value).__name__}")
+            value = float(value[0])
+        try:
+            self._poni2 = float(value)
+        except (TypeError, ValueError):
+            raise TypeError(f"poni2 must be convertible to float, got {type(value).__name__}")
+
         self.reset()
 
     # deprecated compatibility layer
