@@ -2845,7 +2845,6 @@ class Geometry:
         if isinstance(value, float):
             self._rot1 = value
         elif isinstance(value, (tuple, list)):
-            # Issue a deprecation warning
             deprecated_warning(
             type_="Parameter",
             name="rot1",
