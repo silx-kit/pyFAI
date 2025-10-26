@@ -2862,12 +2862,22 @@ class Geometry:
 
     @rot3.setter
     def rot3(self, value):
-        if isinstance(value, float):  # TODO: Is this still necessary?
+        if isinstance(value, float):
             self._rot3 = value
         elif isinstance(value, (tuple, list)):
+            # Issue a deprecation warning
+            deprecated_warning(
+            type_="Parameter",
+            name="rot3",
+            reason="Passing a tuple or list is deprecated",
+            replacement="a scalar float value",
+            since_version="2025.10",
+            only_once=True,
+            skip_backtrace_count=2
+            )
             self._rot3 = float(value[0])
         else:
-            self._rot3 = float(value)
+            raise TypeError(f"rot3 must be a float, got {type(value).__name__}")
         self.reset()
 
     # deprecated compatibility layer
