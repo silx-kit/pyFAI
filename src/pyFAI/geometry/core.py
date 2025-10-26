@@ -2845,9 +2845,7 @@ class Geometry:
 
     @rot1.setter
     def rot1(self, value):
-        if isinstance(value, float):
-            self._rot1 = value
-        elif isinstance(value, (tuple, list)):
+        if isinstance(value, (tuple, list)):
             deprecated_warning(
             type_="Parameter",
             name="rot1",
@@ -2857,9 +2855,11 @@ class Geometry:
             only_once=True,
             skip_backtrace_count=2
             )
-            self._rot1 = float(value[0])
-        else:
-            raise TypeError(f"rot1 must be a float, got {type(value).__name__}")
+            value = float(value[0])
+        try:
+            self._rot1 = float(value)
+        except (TypeError, ValueError):
+            raise TypeError(f"rot1 must be convertible to float, got {type(value).__name__}")
         self.reset()
 
     # deprecated compatibility layer
