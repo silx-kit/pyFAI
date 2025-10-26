@@ -25,8 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Module used to perform the geometric refinement of the model
-"""
+"""Module used to perform the geometric refinement of the model"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -74,11 +73,23 @@ ROCA = "/opt/saxs/roca"
 class GeometryRefinement(AzimuthalIntegrator):
     PARAM_ORDER = ("dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength")
 
-    def __init__(self, data=None, calibrant=None,
-                 dist=1, poni1=None, poni2=None,
-                 rot1=0, rot2=0, rot3=0,
-                 pixel1=None, pixel2=None, splineFile=None, detector=None,
-                 wavelength=None, **kwargs):
+    def __init__(
+        self,
+        data=None,
+        calibrant=None,
+        dist=1,
+        poni1=None,
+        poni2=None,
+        rot1=0,
+        rot2=0,
+        rot3=0,
+        pixel1=None,
+        pixel2=None,
+        splineFile=None,
+        detector=None,
+        wavelength=None,
+        **kwargs,
+    ):
         """
         :param data: ndarray float64 shape = n, 3
             col0: pos in dim0 (in pixels)
@@ -105,18 +116,39 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             self.data = numpy.array(data, dtype=numpy.float64)
             if self.data.ndim != 2:
-                raise RuntimeError("data is expected to be of shape (nb control-points, [3|4])")
+                raise RuntimeError(
+                    "data is expected to be of shape (nb control-points, [3|4])"
+                )
             if self.data.shape[1] not in (3, 4):
-                raise RuntimeError("data shape's last dim should be 3 for non weighted or 4 for weighted refinement")
+                raise RuntimeError(
+                    "data shape's last dim should be 3 for non weighted or 4 for weighted refinement"
+                )
             if self.data.shape[0] == 0:
                 raise RuntimeError("expected at least one control point !")
 
-        if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
-            raise RuntimeError("Setting up the geometry refinement without knowing the detector makes little sense")
-        super().__init__(dist, 0, 0,
-                         rot1, rot2, rot3,
-                         pixel1, pixel2, splineFile, detector,
-                         wavelength=wavelength, **kwargs)
+        if (
+            (pixel1 is None)
+            and (pixel2 is None)
+            and (splineFile is None)
+            and (detector is None)
+        ):
+            raise RuntimeError(
+                "Setting up the geometry refinement without knowing the detector makes little sense"
+            )
+        super().__init__(
+            dist,
+            0,
+            0,
+            rot1,
+            rot2,
+            rot3,
+            pixel1,
+            pixel2,
+            splineFile,
+            detector,
+            wavelength=wavelength,
+            **kwargs,
+        )
 
         if calibrant is None:
             self.calibrant = Calibrant()
@@ -155,53 +187,74 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._rot3_min = -pi
         self._rot3_max = pi
         self._wavelength_min = 1e-15
-        self._wavelength_max = 100.e-10
+        self._wavelength_max = 100.0e-10
 
     def __deepcopy__(self, memo=None):
         if memo is None:
             memo = {}
         data = copy.deepcopy(self.data, memo=memo)
-        dist=copy.deepcopy(self._dist, memo=memo)
-        poni1=copy.deepcopy(self._poni1, memo=memo)
-        poni2=copy.deepcopy(self._poni2, memo=memo)
-        rot1=copy.deepcopy(self._rot1, memo=memo)
-        rot2=copy.deepcopy(self._rot2, memo=memo)
-        rot3=copy.deepcopy(self._rot3, memo=memo)
-        pixel1=copy.deepcopy(self.detector.pixel1, memo=memo)
-        pixel2=copy.deepcopy(self.detector.pixel2, memo=memo)
-        splineFile=copy.deepcopy(self.detector.splineFile, memo=memo)
+        dist = copy.deepcopy(self._dist, memo=memo)
+        poni1 = copy.deepcopy(self._poni1, memo=memo)
+        poni2 = copy.deepcopy(self._poni2, memo=memo)
+        rot1 = copy.deepcopy(self._rot1, memo=memo)
+        rot2 = copy.deepcopy(self._rot2, memo=memo)
+        rot3 = copy.deepcopy(self._rot3, memo=memo)
+        pixel1 = copy.deepcopy(self.detector.pixel1, memo=memo)
+        pixel2 = copy.deepcopy(self.detector.pixel2, memo=memo)
+        splineFile = copy.deepcopy(self.detector.splineFile, memo=memo)
         detector = copy.deepcopy(self.detector, memo=memo)
-        wavelength=copy.deepcopy(self.wavelength, memo=memo)
-        calibrant=copy.deepcopy(self.calibrant, memo=memo)
+        wavelength = copy.deepcopy(self.wavelength, memo=memo)
+        calibrant = copy.deepcopy(self.calibrant, memo=memo)
 
-        new = self.__class__(data=data,
-                             dist=dist,
-                             poni1=poni1,
-                             poni2=poni2,
-                             rot1=rot1,
-                             rot2=rot2,
-                             rot3=rot3,
-                             pixel1=pixel1,
-                             pixel2=pixel2,
-                             splineFile=splineFile,
-                             detector=detector,
-                             wavelength=wavelength,
-                             calibrant=calibrant
-                              )
-        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_dssa_order", "_wavelength",
-                     '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_normal',
-                     "_dist_min", "_dist_max", "_poni1_min", "_poni1_max", "_poni2_min", "_poni2_max",
-                     "_rot1_min", "_rot1_max", "_rot2_min", "_rot2_max", "_rot3_min", "_rot3_max",
-                     "_wavelength_min", "_wavelength_max"]
+        new = self.__class__(
+            data=data,
+            dist=dist,
+            poni1=poni1,
+            poni2=poni2,
+            rot1=rot1,
+            rot2=rot2,
+            rot3=rot3,
+            pixel1=pixel1,
+            pixel2=pixel2,
+            splineFile=splineFile,
+            detector=detector,
+            wavelength=wavelength,
+            calibrant=calibrant,
+        )
+        numerical = [
+            "_dist",
+            "_poni1",
+            "_poni2",
+            "_rot1",
+            "_rot2",
+            "_rot3",
+            "chiDiscAtPi",
+            "_dssa_order",
+            "_wavelength",
+            "_oversampling",
+            "_correct_solid_angle_for_spline",
+            "_transmission_normal",
+            "_dist_min",
+            "_dist_max",
+            "_poni1_min",
+            "_poni1_max",
+            "_poni2_min",
+            "_poni2_max",
+            "_rot1_min",
+            "_rot1_max",
+            "_rot2_min",
+            "_rot2_max",
+            "_rot3_min",
+            "_rot3_max",
+            "_wavelength_min",
+            "_wavelength_max",
+        ]
         memo[id(self)] = new
         for key in numerical:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
-        new_param = [new._dist, new._poni1, new._poni2,
-                     new._rot1, new._rot2, new._rot3]
+        new_param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
         memo[id(self.param)] = new_param
         new.param = new_param
         cached = {}
@@ -222,7 +275,6 @@ class GeometryRefinement(AzimuthalIntegrator):
             logger.warning("No input data, not guessing the PONI")
             return
         if len(self.calibrant.dspacing):
-
             tth = self.calc_2th(self.data[:, 2])
         else:  # rings are in decreasing dSpacing
             tth = self.data[:, 2]
@@ -233,8 +285,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         smallRing = srtdata[tth < (tth_min + 1e-6)]
         smallRing1 = smallRing[:, 0]
         smallRing2 = smallRing[:, 1]
-        smallRing_in_m = self.detector.calc_cartesian_positions(smallRing1,
-                                                                smallRing2)
+        smallRing_in_m = self.detector.calc_cartesian_positions(smallRing1, smallRing2)
         nbpt = len(smallRing)
         worked = False
         if nbpt > 5:
@@ -242,7 +293,10 @@ class GeometryRefinement(AzimuthalIntegrator):
             try:
                 ellipse = fit_ellipse(*smallRing_in_m[:2])
                 direct_dist = ellipse.half_long_axis / numpy.tan(tth_min)
-                tilt = numpy.arctan2(ellipse.half_long_axis - ellipse.half_short_axis, ellipse.half_short_axis)
+                tilt = numpy.arctan2(
+                    ellipse.half_long_axis - ellipse.half_short_axis,
+                    ellipse.half_short_axis,
+                )
                 cos_tilt = numpy.cos(tilt)
                 sin_tilt = numpy.sin(tilt)
                 angle = (ellipse.angle + numpy.pi / 2.0) % numpy.pi
@@ -252,7 +306,20 @@ class GeometryRefinement(AzimuthalIntegrator):
                 poni1 = ellipse.center_1 - direct_dist * sin_tilt * sin_tpr
                 poni2 = ellipse.center_2 - direct_dist * sin_tilt * cos_tpr
                 rot2 = numpy.arcsin(sin_tilt * sin_tpr)  # or pi-
-                rot1 = numpy.arccos(min(1.0, max(-1.0, (cos_tilt / numpy.sqrt(1 - sin_tpr * sin_tpr * sin_tilt * sin_tilt)))))  # + or -
+                rot1 = numpy.arccos(
+                    min(
+                        1.0,
+                        max(
+                            -1.0,
+                            (
+                                cos_tilt
+                                / numpy.sqrt(
+                                    1 - sin_tpr * sin_tpr * sin_tilt * sin_tilt
+                                )
+                            ),
+                        ),
+                    )
+                )  # + or -
                 if cos_tpr * sin_tilt > 0:
                     rot1 = -rot1
                 rot3 = 0
@@ -263,18 +330,32 @@ class GeometryRefinement(AzimuthalIntegrator):
                     worked = False
                 else:
                     worked = True
-                    self.update_values(dist=dist, poni1=poni1, poni2=poni2,
-                                       rot1=rot1, rot2=rot2, rot3=rot3,
-                                       fixed=fixed)
+                    self.update_values(
+                        dist=dist,
+                        poni1=poni1,
+                        poni2=poni2,
+                        rot1=rot1,
+                        rot2=rot2,
+                        rot3=rot3,
+                        fixed=fixed,
+                    )
         if not worked:
             poni1 = smallRing_in_m[0].sum() / nbpt
             poni2 = smallRing_in_m[1].sum() / nbpt
             self.update_values(poni1=poni1, poni2=poni2, fixed=fixed)
 
-    def update_values(self, dist=None, wavelength=None, poni1=None, poni2=None,
-                      rot1=None, rot2=None, rot3=None, fixed=None):
-        """Update values taking care of fixed parameters.
-        """
+    def update_values(
+        self,
+        dist=None,
+        wavelength=None,
+        poni1=None,
+        poni2=None,
+        rot1=None,
+        rot2=None,
+        rot3=None,
+        fixed=None,
+    ):
+        """Update values taking care of fixed parameters."""
         # TODO: Take care of ranges too
         if fixed is None:
             fixed = set([])
@@ -300,40 +381,40 @@ class GeometryRefinement(AzimuthalIntegrator):
         :param value: Tolerance as a percentage
 
         """
-        low = 1.0 - value / 100.
-        hi = 1.0 + value / 100.
+        low = 1.0 - value / 100.0
+        hi = 1.0 + value / 100.0
         self.dist_min = low * self.dist
         self.dist_max = hi * self.dist
-        if abs(self.poni1) > (value / 100.) ** 2:
+        if abs(self.poni1) > (value / 100.0) ** 2:
             self.poni1_min = min(low * self.poni1, hi * self.poni1)
             self.poni1_max = max(low * self.poni1, hi * self.poni1)
         else:
-            self.poni1_min = -(value / 100.) ** 2
-            self.poni1_max = (value / 100.) ** 2
-        if abs(self.poni2) > (value / 100.) ** 2:
+            self.poni1_min = -((value / 100.0) ** 2)
+            self.poni1_max = (value / 100.0) ** 2
+        if abs(self.poni2) > (value / 100.0) ** 2:
             self.poni2_min = min(low * self.poni2, hi * self.poni2)
             self.poni2_max = max(low * self.poni2, hi * self.poni2)
         else:
-            self.poni2_min = -(value / 100.) ** 2
-            self.poni2_max = (value / 100.) ** 2
-        if abs(self.rot1) > (value / 100.) ** 2:
+            self.poni2_min = -((value / 100.0) ** 2)
+            self.poni2_max = (value / 100.0) ** 2
+        if abs(self.rot1) > (value / 100.0) ** 2:
             self.rot1_min = min(low * self.rot1, hi * self.rot1)
             self.rot1_max = max(low * self.rot1, hi * self.rot1)
         else:
-            self.rot1_min = -(value / 100.) ** 2
-            self.rot1_max = (value / 100.) ** 2
-        if abs(self.rot2) > (value / 100.) ** 2:
+            self.rot1_min = -((value / 100.0) ** 2)
+            self.rot1_max = (value / 100.0) ** 2
+        if abs(self.rot2) > (value / 100.0) ** 2:
             self.rot2_min = min(low * self.rot2, hi * self.rot2)
             self.rot2_max = max(low * self.rot2, hi * self.rot2)
         else:
-            self.rot2_min = -(value / 100.) ** 2
-            self.rot2_max = (value / 100.) ** 2
-        if abs(self.rot3) > (value / 100.) ** 2:
+            self.rot2_min = -((value / 100.0) ** 2)
+            self.rot2_max = (value / 100.0) ** 2
+        if abs(self.rot3) > (value / 100.0) ** 2:
             self.rot3_min = min(low * self.rot3, hi * self.rot3)
             self.rot3_max = max(low * self.rot3, hi * self.rot3)
         else:
-            self.rot3_min = -(value / 100.) ** 2
-            self.rot3_max = (value / 100.) ** 2
+            self.rot3_min = -((value / 100.0) ** 2)
+            self.rot3_max = (value / 100.0) ** 2
         self.wavelength_min = low * self.wavelength
         self.wavelength_max = hi * self.wavelength
 
@@ -356,12 +437,15 @@ class GeometryRefinement(AzimuthalIntegrator):
             ary += [10.0 * (rings.max() - len(ary))] * (1 + rings.max() - len(ary))
         tth = numpy.array(ary, dtype=numpy.float64)
         if rings.max() >= len(tth):
-            raise IndexError("Ring indices %s are not all available at this wavelength (%s)" % (numpy.unique(rings), wavelength))
+            raise IndexError(
+                "Ring indices %s are not all available at this wavelength (%s)"
+                % (numpy.unique(rings), wavelength)
+            )
         return tth[rings]
 
     def calc_param7(self, param, free, const):
         """Calculate the "legacy" 6/7 parameters from a number of free and fixed parameters"""
-        param7 = [   ]
+        param7 = []
         for name in self.PARAM_ORDER:
             if name in free:
                 value = param[free.index(name)]
@@ -409,22 +493,22 @@ class GeometryRefinement(AzimuthalIntegrator):
         return numpy.dot(delta_theta, delta_theta)
 
     def refine1(self):
-        self.param = numpy.array([self._dist, self._poni1, self._poni2,
-                                  self._rot1, self._rot2, self._rot3],
-                                 dtype=numpy.float64)
-        new_param, rc = leastsq(self.residu1, self.param,
-                                args=(self.data[:, 0],
-                                      self.data[:, 1],
-                                      self.data[:, 2]))
+        self.param = numpy.array(
+            [self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3],
+            dtype=numpy.float64,
+        )
+        new_param, rc = leastsq(
+            self.residu1,
+            self.param,
+            args=(self.data[:, 0], self.data[:, 1], self.data[:, 2]),
+        )
         oldDeltaSq = self.chi2(tuple(self.param))
         newDeltaSq = self.chi2(tuple(new_param))
-        logger.info("Least square retcode=%s %s --> %s",
-                    rc, oldDeltaSq, newDeltaSq)
+        logger.info("Least square retcode=%s %s --> %s", rc, oldDeltaSq, newDeltaSq)
         if newDeltaSq < oldDeltaSq:
             i = abs(self.param - new_param).argmax()
             d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
-            logger.info("maxdelta on %s: %s --> %s ",
-                        d[i], self.param[i], new_param[i])
+            logger.info("maxdelta on %s: %s --> %s ", d[i], self.param[i], new_param[i])
             self.set_param(new_param)
             return newDeltaSq
         else:
@@ -441,7 +525,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         :return: $sum_(2\theta_e-2\theta_i)²$
         """
         npt, ncol = self.data.shape
-        if  ncol >= 3:
+        if ncol >= 3:
             pos0 = self.data[:, 0]
             pos1 = self.data[:, 1]
             ring = self.data[:, 2].astype(numpy.int32)
@@ -461,7 +545,10 @@ class GeometryRefinement(AzimuthalIntegrator):
             if name in fix:
                 const[name] = value
             else:
-                minmax = (getattr(self, "_%s_min" % name), getattr(self, "_%s_max" % name))
+                minmax = (
+                    getattr(self, "_%s_min" % name),
+                    getattr(self, "_%s_max" % name),
+                )
                 if name == "wavelength":
                     # enforces an upper limit to the wavelength depending on the number of rings.
                     max_wavelength = self.calibrant.get_max_wavelength(ring.max())
@@ -473,24 +560,33 @@ class GeometryRefinement(AzimuthalIntegrator):
                 bounds.append(minmax)
         param = numpy.array(param)
 
-        old_delta_theta2 = self.residu3(param, free, const, pos0, pos1, ring, weight) / npt
+        old_delta_theta2 = (
+            self.residu3(param, free, const, pos0, pos1, ring, weight) / npt
+        )
 
-        new_param = fmin_slsqp(self.residu3, param, iter=maxiter,
-                               args=(free, const, pos0, pos1, ring, weight),
-                               bounds=bounds,
-                               acc=1.0e-12,
-                               iprint=(logger.getEffectiveLevel() <= logging.INFO))
+        new_param = fmin_slsqp(
+            self.residu3,
+            param,
+            iter=maxiter,
+            args=(free, const, pos0, pos1, ring, weight),
+            bounds=bounds,
+            acc=1.0e-12,
+            iprint=(logger.getEffectiveLevel() <= logging.INFO),
+        )
         # new_param7 = self.calc_param7(new_param, free, const)
 
-        new_delta_theta2 = self.residu3(new_param, free, const, pos0, pos1, ring, weight) / npt
+        new_delta_theta2 = (
+            self.residu3(new_param, free, const, pos0, pos1, ring, weight) / npt
+        )
 
-        logger.info("Constrained Least square %s --> %s", old_delta_theta2, new_delta_theta2)
+        logger.info(
+            "Constrained Least square %s --> %s", old_delta_theta2, new_delta_theta2
+        )
 
         if new_delta_theta2 < old_delta_theta2:
             i = abs(param - new_param).argmax()
 
-            logger.info("maxdelta on %s: %s --> %s ",
-                        free[i], param[i], new_param[i])
+            logger.info("maxdelta on %s: %s --> %s ", free[i], param[i], new_param[i])
 
             param7 = self.calc_param7(new_param, free, const)
             self.set_param(param7)
@@ -514,48 +610,62 @@ class GeometryRefinement(AzimuthalIntegrator):
         return self.refine3(maxiter=maxiter, fix=fix)
 
     def simplex(self, maxiter=1000000):
-        self.param = numpy.array([self.dist, self.poni1, self.poni2,
-                                  self.rot1, self.rot2, self.rot3],
-                                 dtype=numpy.float64)
-        new_param = fmin(self.residu2, self.param,
-                         args=(self.data[:, 0],
-                               self.data[:, 1],
-                               self.data[:, 2]),
-                         maxiter=maxiter,
-                         xtol=1.0e-12)
+        self.param = numpy.array(
+            [self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3],
+            dtype=numpy.float64,
+        )
+        new_param = fmin(
+            self.residu2,
+            self.param,
+            args=(self.data[:, 0], self.data[:, 1], self.data[:, 2]),
+            maxiter=maxiter,
+            xtol=1.0e-12,
+        )
         oldDeltaSq = self.chi2(tuple(self.param)) / self.data.shape[0]
         newDeltaSq = self.chi2(tuple(new_param)) / self.data.shape[0]
         logger.info("Simplex %s --> %s", oldDeltaSq, newDeltaSq)
         if newDeltaSq < oldDeltaSq:
             i = abs(self.param - new_param).argmax()
             d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
-            logger.info("maxdelta on %s : %s --> %s ",
-                        d[i], self.param[i], new_param[i])
+            logger.info(
+                "maxdelta on %s : %s --> %s ", d[i], self.param[i], new_param[i]
+            )
             self.set_param(new_param)
             return newDeltaSq
         else:
             return oldDeltaSq
 
     def anneal(self, maxiter=1000000):
-        self.param = [self.dist, self.poni1, self.poni2,
-                      self.rot1, self.rot2, self.rot3]
-        result = anneal(self.residu2, self.param,
-                        args=(self.data[:, 0],
-                              self.data[:, 1],
-                              self.data[:, 2]),
-                        lower=[self._dist_min,
-                               self._poni1_min,
-                               self._poni2_min,
-                               self._rot1_min,
-                               self._rot2_min,
-                               self._rot3_min],
-                        upper=[self._dist_max,
-                               self._poni1_max,
-                               self._poni2_max,
-                               self._rot1_max,
-                               self._rot2_max,
-                               self._rot3_max],
-                        maxiter=maxiter)
+        self.param = [
+            self.dist,
+            self.poni1,
+            self.poni2,
+            self.rot1,
+            self.rot2,
+            self.rot3,
+        ]
+        result = anneal(
+            self.residu2,
+            self.param,
+            args=(self.data[:, 0], self.data[:, 1], self.data[:, 2]),
+            lower=[
+                self._dist_min,
+                self._poni1_min,
+                self._poni2_min,
+                self._rot1_min,
+                self._rot2_min,
+                self._rot3_min,
+            ],
+            upper=[
+                self._dist_max,
+                self._poni1_max,
+                self._poni2_max,
+                self._rot1_max,
+                self._rot2_max,
+                self._rot3_max,
+            ],
+            maxiter=maxiter,
+        )
         new_param = result[0]
         oldDeltaSq = self.chi2() / self.data.shape[0]
         newDeltaSq = self.chi2(new_param) / self.data.shape[0]
@@ -563,8 +673,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         if newDeltaSq < oldDeltaSq:
             i = abs(self.param - new_param).argmax()
             d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
-            logger.info("maxdelta on %s : %s --> %s ",
-                        d[i], self.param[i], new_param[i])
+            logger.info(
+                "maxdelta on %s : %s --> %s ", d[i], self.param[i], new_param[i]
+            )
             self.set_param(new_param)
             return newDeltaSq
         else:
@@ -573,18 +684,16 @@ class GeometryRefinement(AzimuthalIntegrator):
     def chi2(self, param=None):
         if param is None:
             param = self.param[:]
-        return self.residu2(param,
-                            self.data[:, 0], self.data[:, 1], self.data[:, 2])
+        return self.residu2(param, self.data[:, 0], self.data[:, 1], self.data[:, 2])
 
     def chi2_wavelength(self, param=None):
         if param is None:
             param = self.param
             if len(param) == 6:
                 param.append(1e10 * self.wavelength)
-        return self.residu2_wavelength(param,
-                                       self.data[:, 0],
-                                       self.data[:, 1],
-                                       self.data[:, 2])
+        return self.residu2_wavelength(
+            param, self.data[:, 0], self.data[:, 1], self.data[:, 2]
+        )
 
     def curve_fit(self, with_rot=True):
         """Refine the geometry and provide confidence interval
@@ -595,7 +704,11 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         if not curve_fit:
             import scipy
-            logger.error("curve_fit method needs a newer scipy: at lease scipy 0.9, you are running: %s", scipy.version.version)
+
+            logger.error(
+                "curve_fit method needs a newer scipy: at lease scipy 0.9, you are running: %s",
+                scipy.version.version,
+            )
         d1 = self.data[:, 0]
         d2 = self.data[:, 1]
         size = d1.size
@@ -606,10 +719,17 @@ class GeometryRefinement(AzimuthalIntegrator):
             return self.tth(x[0], x[1], numpy.concatenate((param, [self.rot3])))
 
         def f_no_rot(x, *param):
-            return self.tth(x[0], x[1], numpy.concatenate((param, [self.rot1, self.rot2, self.rot3])))
+            return self.tth(
+                x[0],
+                x[1],
+                numpy.concatenate((param, [self.rot1, self.rot2, self.rot3])),
+            )
 
         y = self.calc_2th(rings, self.wavelength)
-        param0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
+        param0 = numpy.array(
+            [self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3],
+            dtype=numpy.float64,
+        )
         ref = self.residu2(param0, d1, d2, rings)
         print("param0: %s %s" % (param0, ref))
         if with_rot:
@@ -648,7 +768,10 @@ class GeometryRefinement(AzimuthalIntegrator):
         d1 = self.data[:, 0]
         d2 = self.data[:, 1]
         r = self.data[:, 2].astype(numpy.int32)
-        param0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
+        param0 = numpy.array(
+            [self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3],
+            dtype=numpy.float64,
+        )
         ref = self.residu2(param0, d1, d2, r)
         print(ref)
         if with_rot:
@@ -669,7 +792,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             param = param0.copy()
             param[i] -= deltai
             value_moins = self.residu2(param, d1, d2, r)
-            hessian[i, i] = (value_plus + value_moins - 2.0 * ref) / (deltai ** 2)
+            hessian[i, i] = (value_plus + value_moins - 2.0 * ref) / (deltai**2)
 
             for j in range(i + 1, size):
                 # if i == j: continue
@@ -690,7 +813,12 @@ class GeometryRefinement(AzimuthalIntegrator):
                 param[i] -= deltai
                 param[j] += deltaj
                 value_moins_plus = self.residu2(param, d1, d2, r)
-                hessian[j, i] = hessian[i, j] = (value_plus_plus + value_moins_moins - value_plus_moins - value_moins_plus) / (4.0 * deltai * deltaj)
+                hessian[j, i] = hessian[i, j] = (
+                    value_plus_plus
+                    + value_moins_moins
+                    - value_plus_moins
+                    - value_moins_plus
+                ) / (4.0 * deltai * deltaj)
         print(hessian)
         w, v = numpy.linalg.eigh(hessian)
         print("eigen val: %s" % w)
@@ -720,13 +848,23 @@ class GeometryRefinement(AzimuthalIntegrator):
             tmpf.write("%s %s %s %s" % (line[2], line[0], line[1], os.linesep))
         tmpf.flush()
         roca = subprocess.Popen(
-            [ROCA, "debug=8", "maxdev=1", "input=" + tmpf.name,
-             str(self.pixel1), str(self.pixel2),
-             str(self.poni1 / self.pixel1), str(self.poni2 / self.pixel2),
-             str(self.dist), str(self.rot1), str(self.rot2), str(self.rot3)],
-            stdout=subprocess.PIPE)
-        new_param = [self.dist, self.poni1, self.poni2,
-                     self.rot1, self.rot2, self.rot3]
+            [
+                ROCA,
+                "debug=8",
+                "maxdev=1",
+                "input=" + tmpf.name,
+                str(self.pixel1),
+                str(self.pixel2),
+                str(self.poni1 / self.pixel1),
+                str(self.poni2 / self.pixel2),
+                str(self.dist),
+                str(self.rot1),
+                str(self.rot2),
+                str(self.rot3),
+            ],
+            stdout=subprocess.PIPE,
+        )
+        new_param = [self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3]
         for line in roca.stdout:
             word = line.split()
             if len(word) == 3:
@@ -742,164 +880,241 @@ class GeometryRefinement(AzimuthalIntegrator):
                     new_param[4] = float(word[1])
                 if word[0] == "rot3":
                     new_param[5] = float(word[1])
-        print("Roca %s --> %s" % (self.chi2() / self.data.shape[0], self.chi2(new_param) / self.data.shape[0]))
+        print(
+            "Roca %s --> %s"
+            % (
+                self.chi2() / self.data.shape[0],
+                self.chi2(new_param) / self.data.shape[0],
+            )
+        )
         if self.chi2(tuple(new_param)) < self.chi2(tuple(self.param)):
             self.param = new_param
-            self.dist, self.poni1, self.poni2, \
-                self.rot1, self.rot2, self.rot3 = tuple(new_param)
+            self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3 = tuple(
+                new_param
+            )
 
         tmpf.close()
 
-    def set_dist_max(self, value):
-        if isinstance(value, float):
-            self._dist_max = value
-        else:
-            self._dist_max = float(value)
-
-    def get_dist_max(self):
+    @property
+    def dist_max(self):
         return self._dist_max
 
-    dist_max = property(get_dist_max, set_dist_max)
+    @dist_max.setter
+    def dist_max(self, value):
+        self._dist_max = float(value)
 
-    def set_dist_min(self, value):
-        if isinstance(value, float):
-            self._dist_min = value
-        else:
-            self._dist_min = float(value)
+    # deprecated compatibility layer
+    get_dist_max = deprecated(
+        dist_max.fget, reason="use property", since_version="2025.09"
+    )
+    set_dist_max = deprecated(
+        dist_max.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_dist_min(self):
+    @property
+    def dist_min(self):
         return self._dist_min
 
-    dist_min = property(get_dist_min, set_dist_min)
+    @dist_min.setter
+    def dist_min(self, value):
+        self._dist_min = float(value)
 
-    def set_poni1_min(self, value):
-        if isinstance(value, float):
-            self._poni1_min = value
-        else:
-            self._poni1_min = float(value)
+    # deprecated compatibility layer
+    get_dist_min = deprecated(
+        dist_min.fget, reason="use property", since_version="2025.09"
+    )
+    set_dist_min = deprecated(
+        dist_min.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_poni1_min(self):
+    @property
+    def poni1_min(self):
         return self._poni1_min
 
-    poni1_min = property(get_poni1_min, set_poni1_min)
+    @poni1_min.setter
+    def poni1_min(self, value):
+        self._poni1_min = float(value)
 
-    def set_poni1_max(self, value):
-        if isinstance(value, float):
-            self._poni1_max = value
-        else:
-            self._poni1_max = float(value)
+    # deprecated compatibility layer
+    get_poni1_min = deprecated(
+        poni1_min.fget, reason="use property", since_version="2025.09"
+    )
+    set_poni1_min = deprecated(
+        poni1_min.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_poni1_max(self):
+    @property
+    def poni1_max(self):
         return self._poni1_max
 
-    poni1_max = property(get_poni1_max, set_poni1_max)
+    @poni1_max.setter
+    def poni1_max(self, value):
+        self._poni1_max = float(value)
 
-    def set_poni2_min(self, value):
-        if isinstance(value, float):
-            self._poni2_min = value
-        else:
-            self._poni2_min = float(value)
+    # deprecated compatibility layer
+    get_poni1_max = deprecated(
+        poni1_max.fget, reason="use property", since_version="2025.09"
+    )
+    set_poni1_max = deprecated(
+        poni1_max.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_poni2_min(self):
+    @property
+    def poni2_min(self):
         return self._poni2_min
 
-    poni2_min = property(get_poni2_min, set_poni2_min)
+    @poni2_min.setter
+    def poni2_min(self, value):
+        self._poni2_min = float(value)
 
-    def set_poni2_max(self, value):
-        if isinstance(value, float):
-            self._poni2_max = value
-        else:
-            self._poni2_max = float(value)
+    # deprecated compatibility layer
+    get_poni2_min = deprecated(
+        poni2_min.fget, reason="use property", since_version="2025.09"
+    )
+    set_poni2_min = deprecated(
+        poni2_min.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_poni2_max(self):
+    @property
+    def poni2_max(self):
         return self._poni2_max
 
-    poni2_max = property(get_poni2_max, set_poni2_max)
+    @poni2_max.setter
+    def poni2_max(self, value):
+        self._poni2_max = float(value)
 
-    def set_rot1_min(self, value):
-        if isinstance(value, float):
-            self._rot1_min = value
-        else:
-            self._rot1_min = float(value)
+    # deprecated compatibility layer
+    get_poni2_max = deprecated(
+        poni2_max.fget, reason="use property", since_version="2025.09"
+    )
+    set_poni2_max = deprecated(
+        poni2_max.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_rot1_min(self):
+    @property
+    def rot1_min(self):
         return self._rot1_min
 
-    rot1_min = property(get_rot1_min, set_rot1_min)
+    @rot1_min.setter
+    def rot1_min(self, value):
+        self._rot1_min = float(value)
 
-    def set_rot1_max(self, value):
-        if isinstance(value, float):
-            self._rot1_max = value
-        else:
-            self._rot1_max = float(value)
+    # deprecated compatibility layer
+    get_rot1_min = deprecated(
+        rot1_min.fget, reason="use property", since_version="2025.09"
+    )
+    set_rot1_min = deprecated(
+        rot1_min.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_rot1_max(self):
+    @property
+    def rot1_max(self):
         return self._rot1_max
 
-    rot1_max = property(get_rot1_max, set_rot1_max)
+    @rot1_max.setter
+    def rot1_max(self, value):
+        self._rot1_max = float(value)
 
-    def set_rot2_min(self, value):
-        if isinstance(value, float):
-            self._rot2_min = value
-        else:
-            self._rot2_min = float(value)
+    # deprecated compatibility layer
+    get_rot1_max = deprecated(
+        rot1_max.fget, reason="use property", since_version="2025.09"
+    )
+    set_rot1_max = deprecated(
+        rot1_max.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_rot2_min(self):
+    @property
+    def rot2_min(self):
         return self._rot2_min
 
-    rot2_min = property(get_rot2_min, set_rot2_min)
+    @rot2_min.setter
+    def rot2_min(self, value):
+        self._rot2_min = float(value)
 
-    def set_rot2_max(self, value):
-        if isinstance(value, float):
-            self._rot2_max = value
-        else:
-            self._rot2_max = float(value)
+    # deprecated compatibility layer
+    get_rot2_min = deprecated(
+        rot2_min.fget, reason="use property", since_version="2025.09"
+    )
+    set_rot2_min = deprecated(
+        rot2_min.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_rot2_max(self):
+    @property
+    def rot2_max(self):
         return self._rot2_max
 
-    rot2_max = property(get_rot2_max, set_rot2_max)
+    @rot2_max.setter
+    def rot2_max(self, value):
+        self._rot2_max = float(value)
 
-    def set_rot3_min(self, value):
-        if isinstance(value, float):
-            self._rot3_min = value
-        else:
-            self._rot3_min = float(value)
+    # deprecated compatibility layer
+    get_rot2_max = deprecated(
+        rot2_max.fget, reason="use property", since_version="2025.09"
+    )
+    set_rot2_max = deprecated(
+        rot2_max.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_rot3_min(self):
+    @property
+    def rot3_min(self):
         return self._rot3_min
 
-    rot3_min = property(get_rot3_min, set_rot3_min)
+    @rot3_min.setter
+    def rot3_min(self, value):
+        self._rot3_min = float(value)
 
-    def set_rot3_max(self, value):
-        if isinstance(value, float):
-            self._rot3_max = value
-        else:
-            self._rot3_max = float(value)
+    # deprecated compatibility layer
+    get_rot3_min = deprecated(
+        rot3_min.fget, reason="use property", since_version="2025.09"
+    )
+    set_rot3_min = deprecated(
+        rot3_min.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_rot3_max(self):
+    @property
+    def rot3_max(self):
         return self._rot3_max
 
-    rot3_max = property(get_rot3_max, set_rot3_max)
+    @rot3_max.setter
+    def rot3_max(self, value):
+        self._rot3_max = float(value)
 
-    def set_wavelength_min(self, value):
-        if isinstance(value, float):
-            self._wavelength_min = value
-        else:
-            self._wavelength_min = float(value)
+    # deprecated compatibility layer
+    get_rot3_max = deprecated(
+        rot3_max.fget, reason="use property", since_version="2025.09"
+    )
+    set_rot3_max = deprecated(
+        rot3_max.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_wavelength_min(self):
+    @property
+    def wavelength_min(self):
         return self._wavelength_min
 
-    wavelength_min = property(get_wavelength_min, set_wavelength_min)
+    @wavelength_min.setter
+    def wavelength_min(self, value):
+        self._wavelength_min = float(value)
 
-    def set_wavelength_max(self, value):
-        if isinstance(value, float):
-            self._wavelength_max = value
-        else:
-            self._wavelength_max = float(value)
+    # deprecated compatibility layer
+    get_wavelength_min = deprecated(
+        wavelength_min.fget, reason="use property", since_version="2025.09"
+    )
+    set_wavelength_min = deprecated(
+        wavelength_min.fset, reason="use property", since_version="2025.09"
+    )
 
-    def get_wavelength_max(self):
+    @property
+    def wavelength_max(self):
         return self._wavelength_max
 
-    wavelength_max = property(get_wavelength_max, set_wavelength_max)
+    @wavelength_max.setter
+    def wavelength_max(self, value):
+        self._wavelength_max = float(value)
+
+    # deprecated compatibility layer
+    get_wavelength_max = deprecated(
+        wavelength_max.fget, reason="use property", since_version="2025.09"
+    )
+    set_wavelength_max = deprecated(
+        wavelength_max.fset, reason="use property", since_version="2025.09"
+    )
