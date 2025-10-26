@@ -60,7 +60,7 @@ from .fit2d import convert_to_Fit2d, convert_from_Fit2d
 from .imaged11 import convert_from_ImageD11, convert_to_ImageD11
 from .. import detectors
 from .. import units
-from ..utils.decorators import deprecated, deprecated_args
+from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
 from ..utils import crc32, ParallaxNotImplemented
 from ..utils.mathutil import deg2rad, expand2d
 from .. import utils
