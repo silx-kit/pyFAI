@@ -3071,7 +3071,7 @@ class Geometry:
         return self.detector.pixel1
 
     @pixel1.setter
-    def pixel1(self, value): #TODO: Parameter should not shadow property name
+    def pixel1(self, value):
         self.detector.pixel1 = value
 
     # deprecated compatibility layer
@@ -3083,7 +3083,7 @@ class Geometry:
         return self.detector.pixel2
 
     @pixel2.setter
-    def pixel2(self, value): #TODO: Parameter should not shadow property name
+    def pixel2(self, value): 
         self.detector.pixel2 = value
 
     # deprecated compatibility layer
