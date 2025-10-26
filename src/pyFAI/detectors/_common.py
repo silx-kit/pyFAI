@@ -1134,11 +1134,11 @@ class Detector(metaclass=DetectorMeta):
             if hasattr(value, "item"):
                 value = value.item()
             value = float(value)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as exc:
             raise TypeError(
                 f"pixel1 must be a numeric value or numeric string convertible to float, "
                 f"got {type(value).__name__}"
-            )
+            ) from exc
                     
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
@@ -1159,8 +1159,29 @@ class Detector(metaclass=DetectorMeta):
     @pixel2.setter
     def pixel2(self, value):
         """Set the pixel size along the second dimension."""
-        #TODO: Is this on purpose to take the first entry in tuple, list as pixel2?
-        value = float(value[0] if isinstance(value, (tuple, list)) else value)
+        # handle legacy tuple/list input
+        if isinstance(value, (tuple, list)):
+            deprecated_warning(
+                type_="Parameter",
+                name="pixel2",
+                reason="Passing a tuple or list is deprecated",
+                replacement="a scalar float value",
+                since_version="2025.10",
+                only_once=True,
+                skip_backtrace_count=2,
+            )
+            value = value[0]
+        try:
+            # handle NumPy 0-D scalars
+            if hasattr(value, "item"):
+                value = value.item()
+            value = float(value)
+        except (TypeError, ValueError) as exc:
+            raise TypeError(
+                f"pixel2 must be a numeric value or numeric string convertible to float, "
+                f"got {type(value).__name__}"
+            ) from exc
+            
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
             if self.force_pixel and (err > EPSILON):
