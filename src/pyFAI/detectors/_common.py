@@ -53,7 +53,7 @@ from .. import utils
 from .. import average
 from ..utils import crc32
 from ..utils.mathutil import expand2d, binning as rebin
-from ..utils.decorators import deprecated, deprecated_args
+from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
 from ..utils.stringutil import to_eng
 
 logger = logging.getLogger(__name__)
