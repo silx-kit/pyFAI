@@ -780,18 +780,25 @@ If the number of files is too large, use double quotes like "*.edf" """
               f"Average execution time: {1000. * t0 / cnt:.1f} ms/img")
         self.nxs.close()
 
-    def get_use_gpu(self):
+    @property
+    def use_gpu(self) -> bool:
+        """Indicates whether the current method is OpenCL-based."""
         return self.worker._method.impl_lower == "opencl"
 
-    def set_use_gpu(self, value):
-        if self.worker:
-            if value:
-                method = self.worker._method.method.fixed("opencl")
-            else:
-                method = self.worker._method.method.fixed("cython")
-            self.worker.set_method(method)
+    @use_gpu.setter
+    def use_gpu(self, value: bool) -> None:
+        """Set whether to use OpenCL (True) or fallback to Cython (False)."""
+        if not self.worker:
+            return
+        method_name = "opencl" if value else "cython"
+        method = self.worker._method.method.fixed(method_name)
+        self.worker.set_method(method)
 
-    use_gpu = property(get_use_gpu, set_use_gpu)
+    # deprecated compatibility layer
+    get_use_gpu = deprecated(use_gpu.fget, reason="use property", since_version="2025.09")
+    set_use_gpu = deprecated(use_gpu.fset, reason="use property", since_version="2025.09")
+
+
 
     @property
     def ai(self):
