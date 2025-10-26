@@ -2788,12 +2788,20 @@ class Geometry:
 
     @poni1.setter
     def poni1(self, value):
-        if isinstance(value, float): #TODO: Is this still necessary?
+        if isinstance(value, float):
             self._poni1 = value
         elif isinstance(value, (tuple, list)):
+            deprecated_warning(
+            type_="Parameter",
+            name="poni1",
+            reason="Passing a tuple or list is deprecated",
+            replacement="a scalar float value",
+            since_version="2025.10",
+            only_once=True,
+            skip_backtrace_count=2)
             self._poni1 = float(value[0])
         else:
-            self._poni1 = float(value)
+            raise TypeError(f"poni1 must be a float, got {type(value).__name__}")
         self.reset()
 
     # deprecated compatibility layer
@@ -2806,12 +2814,21 @@ class Geometry:
 
     @poni2.setter
     def poni2(self, value):
-        if isinstance(value, float):  # TODO: Is this still necessary?
+        if isinstance(value, float):
             self._poni2 = value
         elif isinstance(value, (tuple, list)):
+            deprecated_warning(
+            type_="Parameter",
+            name="poni2",
+            reason="Passing a tuple or list is deprecated",
+            replacement="a scalar float value",
+            since_version="2025.10",
+            only_once=True,
+            skip_backtrace_count=2
+            )
             self._poni2 = float(value[0])
         else:
-            self._poni2 = float(value)
+            raise TypeError(f"poni2 must be a float, got {type(value).__name__}")
         self.reset()
 
     # deprecated compatibility layer
