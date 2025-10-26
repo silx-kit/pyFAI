@@ -306,20 +306,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                 poni1 = ellipse.center_1 - direct_dist * sin_tilt * sin_tpr
                 poni2 = ellipse.center_2 - direct_dist * sin_tilt * cos_tpr
                 rot2 = numpy.arcsin(sin_tilt * sin_tpr)  # or pi-
-                rot1 = numpy.arccos(
-                    min(
-                        1.0,
-                        max(
-                            -1.0,
-                            (
-                                cos_tilt
-                                / numpy.sqrt(
-                                    1 - sin_tpr * sin_tpr * sin_tilt * sin_tilt
-                                )
-                            ),
-                        ),
-                    )
-                )  # + or -
+                rot1 = numpy.arccos(min(1.0, max(-1.0, (cos_tilt / numpy.sqrt(1 - sin_tpr * sin_tpr * sin_tilt * sin_tilt)))))  # + or -
                 if cos_tpr * sin_tilt > 0:
                     rot1 = -rot1
                 rot3 = 0
