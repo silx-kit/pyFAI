@@ -2929,12 +2929,21 @@ class Geometry:
     def wavelength(self, value):
         "Set the wavelength in meter!"
         old_wl = self._wavelength
-        if isinstance(value, float):  # TODO: Is this still necessary?
+        if isinstance(value, float):
             self._wavelength = value
         elif isinstance(value, (tuple, list)):
+            deprecated_warning(
+            type_="Parameter",
+            name="wavelength",
+            reason="Passing a tuple or list is deprecated",
+            replacement="a scalar float value",
+            since_version="2025.10",
+            only_once=True,
+            skip_backtrace_count=2
+            )
             self._wavelength = float(value[0])
         else:
-            self._wavelength = float(value)
+            raise TypeError(f"wavelength must be a float, got {type(value).__name__}")
         qa = dqa = q_corner = None
         if old_wl and self._wavelength:
             if self._cached_array.get("q_center") is not None:
