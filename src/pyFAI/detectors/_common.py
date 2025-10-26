@@ -1117,7 +1117,29 @@ class Detector(metaclass=DetectorMeta):
     @pixel1.setter
     def pixel1(self, value):
         """Set the pixel size along the first dimension."""
-        value = float(value[0] if isinstance(value, (tuple, list)) else value)
+        # handle legacy tuple/list input
+        if isinstance(value, (tuple, list)):
+            deprecated_warning(
+                type_="Parameter",
+                name="pixel1",
+                reason="Passing a tuple or list is deprecated",
+                replacement="a scalar float value",
+                since_version="2025.10",
+                only_once=True,
+                skip_backtrace_count=2,
+            )
+            value = value[0]
+        try:
+            # handle NumPy 0-D scalars
+            if hasattr(value, "item"):
+                value = value.item()
+            value = float(value)
+        except (TypeError, ValueError):
+            raise TypeError(
+                f"pixel1 must be a numeric value or numeric string convertible to float, "
+                f"got {type(value).__name__}"
+            )
+                    
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
             if self.force_pixel and (err > EPSILON):
