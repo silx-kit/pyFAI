@@ -2802,7 +2802,7 @@ class Geometry:
         try:
             self._poni1 = float(value)
         except (TypeError, ValueError):
-            raise TypeError(f"poni1 must be a float, got {type(value).__name__}")
+            raise TypeError(f"poni1 must be convertible to float, got {type(value).__name__}")
 
         self.reset()
 
