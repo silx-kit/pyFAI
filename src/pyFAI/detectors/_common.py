@@ -1129,16 +1129,11 @@ class Detector(metaclass=DetectorMeta):
                 skip_backtrace_count=2,
             )
             value = value[0]
-        try:
-            # handle NumPy 0-D scalars
-            if hasattr(value, "item"):
-                value = value.item()
-            value = float(value)
-        except (TypeError, ValueError) as exc:
-            raise TypeError(
-                f"pixel1 must be a numeric value or numeric string convertible to float, "
-                f"got {type(value).__name__}"
-            ) from exc
+
+        # handle NumPy 0-D scalars
+        if hasattr(value, "item"):
+            value = value.item()
+        value = float(value)
                     
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
@@ -1171,16 +1166,11 @@ class Detector(metaclass=DetectorMeta):
                 skip_backtrace_count=2,
             )
             value = value[0]
-        try:
-            # handle NumPy 0-D scalars
-            if hasattr(value, "item"):
-                value = value.item()
-            value = float(value)
-        except (TypeError, ValueError) as exc:
-            raise TypeError(
-                f"pixel2 must be a numeric value or numeric string convertible to float, "
-                f"got {type(value).__name__}"
-            ) from exc
+
+        # handle NumPy 0-D scalars
+        if hasattr(value, "item"):
+            value = value.item()
+        value = float(value)
             
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
