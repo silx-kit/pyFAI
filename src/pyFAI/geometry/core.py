@@ -2911,11 +2911,9 @@ class Geometry:
             only_once=True,
             skip_backtrace_count=2
             )
-            value = float(value[0])
-        try:
-            self._rot3 = float(value)
-        except (TypeError, ValueError):
-            raise TypeError(f"rot3 must be convertible to float, got {type(value).__name__}")
+            value = value[0]
+            
+        self._rot3 = float(value)
         self.reset()
 
     # deprecated compatibility layer
