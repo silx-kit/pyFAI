@@ -2823,7 +2823,7 @@ class Geometry:
             only_once=True,
             skip_backtrace_count=2
             )
-            value = float(value[0])
+            value = value[0]
 
         self._poni2 = float(value)
         self.reset()
@@ -2849,7 +2849,7 @@ class Geometry:
             only_once=True,
             skip_backtrace_count=2
             )
-            value = float(value[0])
+            value = value[0]
 
         self._rot1 = float(value)
         self.reset()
@@ -2875,7 +2875,7 @@ class Geometry:
             only_once=True,
             skip_backtrace_count=2
             )
-            value = float(value[0])
+            value = value[0]
 
         self._rot2 = float(value)
         self.reset()
@@ -2929,7 +2929,7 @@ class Geometry:
             only_once=True,
             skip_backtrace_count=2
             )
-            value = float(value[0])
+            value = value[0]
         
         self._wavelength = float(value)
 
