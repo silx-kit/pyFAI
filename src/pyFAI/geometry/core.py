@@ -2799,11 +2799,8 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = value[0]
-        try:
-            self._poni1 = float(value)
-        except (TypeError, ValueError):
-            raise TypeError(f"poni1 must be convertible to float, got {type(value).__name__}")
-
+            
+        self._poni1 = float(value)
         self.reset()
 
     # deprecated compatibility layer
@@ -2827,11 +2824,8 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = float(value[0])
-        try:
-            self._poni2 = float(value)
-        except (TypeError, ValueError):
-            raise TypeError(f"poni2 must be convertible to float, got {type(value).__name__}")
 
+        self._poni2 = float(value)
         self.reset()
 
     # deprecated compatibility layer
@@ -2856,10 +2850,8 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = float(value[0])
-        try:
-            self._rot1 = float(value)
-        except (TypeError, ValueError):
-            raise TypeError(f"rot1 must be convertible to float, got {type(value).__name__}")
+
+        self._rot1 = float(value)
         self.reset()
 
     # deprecated compatibility layer
@@ -2884,10 +2876,8 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = float(value[0])
-        try:
-            self._rot2 = float(value)
-        except (TypeError, ValueError):
-            raise TypeError(f"rot2 must be convertible to float, got {type(value).__name__}")
+
+        self._rot2 = float(value)
         self.reset()
 
     # deprecated compatibility layer
@@ -2940,10 +2930,8 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = float(value[0])
-        try:
-            self._wavelength = float(value)
-        except (TypeError, ValueError):
-            raise TypeError(f"wavelength must be convertible to float, got {type(value).__name__}")
+        
+        self._wavelength = float(value)
 
         qa = dqa = q_corner = None
         if old_wl and self._wavelength:
