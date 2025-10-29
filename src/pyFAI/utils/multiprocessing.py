@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2023-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2023"
+__date__ = "07/10/2025"
 __status__ = "production"
 
 import os
@@ -44,9 +44,9 @@ def cpu_count():
     count = None
     try:
         count = len(os.sched_getaffinity(0))
-    except:
+    except Exception:
         try:
             count = os.cpu_count()
-        except:
+        except Exception:
             pass
     return count

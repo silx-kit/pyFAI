@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer, Carsten DETLEFS"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2025"
+__date__ = "06/10/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -147,7 +147,7 @@ def convert_to_ImageD11(poni, distance_unit="µm", wavelength_unit="nm"):
     id11["y_size"] = detector.pixel2 * distance_unit.scale
     id11["z_size"] = detector.pixel1 * distance_unit.scale
     id11["shape"] = detector.shape or detector.max_shape
-    id11["spline"] = detector.splineFile
+    id11["spline"] = detector.splinefile
 
     return ImageD11Geometry._fromdict(id11, distance_unit=distance_unit, wavelength_unit=wavelength_unit)
 
@@ -203,7 +203,7 @@ def convert_from_ImageD11(id11):
     poni._poni2 = +distance * cos(poni.rot2) * sin(poni.rot1) + pixel_h * (id11.y_center or 0)
     shape = id11.shape
     spline = id11.spline
-    poni._detector = Detector(pixel1=pixel_v, pixel2=pixel_h, splineFile=spline, max_shape=shape, orientation=orientation)
+    poni._detector = Detector(pixel1=pixel_v, pixel2=pixel_h, splinefile=spline, max_shape=shape, orientation=orientation)
     wl = id11.wavelength
     if wl:
         poni._wavelength = wl / wl_scale

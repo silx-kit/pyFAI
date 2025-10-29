@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,16 +36,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "08/10/2025"
 __status__ = "development"
 
 import logging
 import json
 import os.path as op
 import time
-
-logger = logging.getLogger(__name__)
-
 from silx.gui import qt
 from silx.gui import icons
 
@@ -57,6 +54,7 @@ from ..app import integrate
 from .. import containers
 from .utils.eventutils import QtProxifier
 from .utils.colorutils import DEFAULT_COLORMAP
+logger = logging.getLogger(__name__)
 
 
 class _ThreadSafeIntegrationProcess(QtProxifier):

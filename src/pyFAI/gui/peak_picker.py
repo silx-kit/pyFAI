@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "08/10/2025"
 __status__ = "production"
 
 import os
@@ -51,9 +51,9 @@ from ..detectors import Detector
 from ..ext.reconstruct import reconstruct
 from ..ext.watershed import InverseWatershed
 from ..utils.callback import dangling_callback
+from .mpl_calib import MplCalibWidget
 
 logger = logging.getLogger(__name__)
-
 try:
     from silx.gui import qt
 except ImportError:
@@ -63,7 +63,6 @@ except ImportError:
 if qt is not None:
     from .matplotlib import pylab
     from . import utils as gui_utils
-from .mpl_calib import MplCalibWidget
 
 
 def preprocess_image(data, log=False, clip=0.001):

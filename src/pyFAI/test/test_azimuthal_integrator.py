@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2025"
+__date__ = "10/10/2025"
 
 import unittest
 import os
@@ -44,18 +44,17 @@ import copy
 import fabio
 import gc
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
 from ..containers import ErrorModel
 from ..detectors import Detector, detector_factory
-if logger.getEffectiveLevel() <= logging.DEBUG:
-    import pylab
 from pyFAI import units
 from ..utils import mathutil
 from ..utils.logging_utils import logging_disabled
 from ..opencl import pyopencl
-
+logger = logging.getLogger(__name__)
+if logger.getEffectiveLevel() <= logging.DEBUG:
+    import pylab
 
 class TestAzimHalfFrelon(unittest.TestCase):
     """basic test"""
@@ -129,13 +128,13 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare numpy histogram with results of fit2d
         """
-        tth, I = self.ai.integrate1d_ng(self.data,
+        tth, intensity = self.ai.integrate1d_ng(self.data,
                                         len(self.fit2d),
                                         filename=self.tmpfiles["numpy"],
                                         correctSolidAngle=False,
                                         method=("no", "histogram", "cython"),
                                         unit="2th_deg")
-        rwp = mathutil.rwp((tth, I), self.fit2d.T)
+        rwp = mathutil.rwp((tth, intensity), self.fit2d.T)
         logger.info("Rwp numpy/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
@@ -143,7 +142,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.suptitle('Numpy Histogram vs Fit2D: Rwp=%.3f' % rwp)
             sp = fig.add_subplot(111)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-b", label='fit2d')
-            sp.plot(tth, I, "-r", label="numpy histogram")
+            sp.plot(tth, intensity, "-r", label="numpy histogram")
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
@@ -155,13 +154,13 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare cython histogram with results of fit2d
         """
-        tth, I = self.ai.integrate1d_ng(self.data,
+        tth, intensity = self.ai.integrate1d_ng(self.data,
                                      len(self.fit2d),
                                      filename=self.tmpfiles["cython"],
                                      correctSolidAngle=False,
                                      unit='2th_deg',
                                      method=("no", "histogram", "cython"))
-        rwp = mathutil.rwp((tth, I), self.fit2d.T)
+        rwp = mathutil.rwp((tth, intensity), self.fit2d.T)
         logger.info("Rwp cython/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
@@ -169,7 +168,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.suptitle('Cython Histogram vs Fit2D: Rwp=%.3f' % rwp)
             sp = fig.add_subplot(111)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-b", label='fit2d')
-            sp.plot(tth, I, "-r", label="cython")
+            sp.plot(tth, intensity, "-r", label="cython")
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
@@ -187,7 +186,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         t0 = time.perf_counter()
         logger.info("in test_cythonSP_vs_fit2d Before SP")
 
-        tth, I = self.ai.integrate1d_ng(self.data,
+        tth, intensity = self.ai.integrate1d_ng(self.data,
                                         len(self.fit2d),
                                         filename=self.tmpfiles["cythonSP"],
                                         method=("full", "histogram", "cython"),
@@ -195,7 +194,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                         unit="2th_deg")
         logger.info("in test_cythonSP_vs_fit2d Before")
         t1 = time.perf_counter() - t0
-        rwp = mathutil.rwp((tth, I), self.fit2d.T)
+        rwp = mathutil.rwp((tth, intensity), self.fit2d.T)
         logger.info("Rwp cythonSP(t=%.3fs)/fit2d = %.3f", t1, rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
@@ -203,7 +202,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.suptitle('CythonSP Histogram vs Fit2D: Rwp=%.3f' % rwp)
             sp = fig.add_subplot(111)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-b", label='fit2d')
-            sp.plot(tth, I, "-r", label="cython")
+            sp.plot(tth, intensity, "-r", label="cython")
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
@@ -330,10 +329,10 @@ class TestAzimHalfFrelon(unittest.TestCase):
         self.assertLess(res[1].max(), 10000, "intensity max in ok")
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
-    def test_separate(self):
+    def test_separate2(self):
         "Non regression for #2473"
         res = self.ai.separate(self.data)
-
+        self.assertTrue(bool(res))
 
 
 class TestFlatimage(unittest.TestCase):
@@ -355,32 +354,32 @@ class TestFlatimage(unittest.TestCase):
     def test_splitPixel(self):
         res = self.ai.integrate2d(self.data, 256, 256, correctSolidAngle=False, dummy=-1.0,
                            method='splitpixel', unit='2th_deg')
-        I = res[0]
+        intensity = res[0]
         # if logger.getEffectiveLevel() == logging.DEBUG:
         #     logging.info("Plotting results")
         #     fig, ax = pylab.subplots()
         #     fig.suptitle('cacking of a flat image: SplitPixel')
-        #     ax.imshow(I, interpolation="nearest")
+        #     ax.imshow(intensity, interpolation="nearest")
         #     fig.show()
         #     input("Press enter to quit")
-        I[I == -1.0] = 1.0
-        self.assertLess(abs(I.min() - 1.0), self.epsilon)
-        self.assertLess( abs(I.max() - 1.0), self.epsilon)
+        intensity[intensity == -1.0] = 1.0
+        self.assertLess(abs(intensity.min() - 1.0), self.epsilon)
+        self.assertLess( abs(intensity.max() - 1.0), self.epsilon)
 
     def test_splitBBox(self):
-        I = self.ai.integrate2d(self.data, 256, 256, correctSolidAngle=False, dummy=-1.0,
+        intensity = self.ai.integrate2d(self.data, 256, 256, correctSolidAngle=False, dummy=-1.0,
                            unit="2th_deg", method='splitbbox')[0]
 
         # if logger.getEffectiveLevel() == logging.DEBUG:
         #     logging.info("Plotting results")
         #     fig, ax = pylab.subplots()
         #     fig.suptitle('caking of a flat image: SplitBBox')
-        #     ax.imshow(I, interpolation="nearest")
+        #     ax.imshow(intensity, interpolation="nearest")
         #     fig.show()
         #     input("Press enter to quit")
-        I[I == -1.0] = 1.0
-        self.assertLess(abs(I.min() - 1.0), self.epsilon)
-        self.assertLess( abs(I.max() - 1.0), self.epsilon)
+        intensity[intensity == -1.0] = 1.0
+        self.assertLess(abs(intensity.min() - 1.0), self.epsilon)
+        self.assertLess( abs(intensity.max() - 1.0), self.epsilon)
 
     def test_guess_bins(self):
         "This test can be rather noisy on 32bits platforms !!!"

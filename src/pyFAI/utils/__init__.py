@@ -30,11 +30,11 @@
 Module with miscelaneous tools
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2025"
+__date__ = "07/10/2025"
 __status__ = "production"
 
 import logging
@@ -42,7 +42,6 @@ import sys
 import os
 import glob
 import threading
-sem = threading.Semaphore()  # global lock for image processing initialization
 import fabio
 
 from ..version import calc_hexversion
@@ -51,15 +50,16 @@ if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2
 else:
     from os.path import exists
 
-from ..containers import FixedParameters
-
-logger = logging.getLogger(__name__)
+from ..containers import FixedParameters  # noqa:F401
 from .. import resources
+logger = logging.getLogger(__name__)
 try:
     from ..directories import data_dir
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     data_dir = None
+
+sem = threading.Semaphore()  # global lock for image processing initialization
 
 if sys.platform != "win32":
     WindowsError = RuntimeError
@@ -73,11 +73,6 @@ try:
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     from zlib import crc32
-
-# TODO: Added on 2018-01-01 for pyFAI 0.15
-# Can be deprecated for the next release, and then removed
-# Functions should be used directly from the mathutil module
-from .mathutil import *
 
 
 def calc_checksum(ary, safe=True):
@@ -112,18 +107,11 @@ def int_(val):
     return f
 
 
-def str_(val):
+def str_(val)->str:
     """
     Convert anything to a string ... but None -> ""
     """
-    s = ""
-    if val is not None:
-        try:
-            s = str(val)
-        except UnicodeError:
-            # Python2 specific...
-            s = unicode(val)
-    return s
+    return str(val) if val else ""
 
 
 def expand_args(args):

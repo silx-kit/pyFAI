@@ -1,6 +1,6 @@
 # coding: utf-8
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,9 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2025"
-
-PACKAGE = "pyFAI"
+__date__ = "10/10/2025"
 
 import os
 import sys
@@ -45,12 +43,11 @@ import functools
 import struct
 from pathlib import Path
 import numpy
-
 from silx.resources import ExternalResources
 from ..directories import testimages
 
 logger = logging.getLogger(__name__)
-
+PACKAGE = "pyFAI"
 TEST_HOME = os.path.dirname(os.path.abspath(__file__))
 
 

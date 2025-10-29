@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #             Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
@@ -29,15 +29,16 @@
 
 """GUI interface for reduction of diffraction tomography experiments"""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/05/2025"
+__date__ = "07/10/2025"
 __satus__ = "Production"
 
 import sys
 import logging
+from ..diffmap import DiffMap
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -46,7 +47,6 @@ try:
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
 
-from ..diffmap import DiffMap
 
 
 def main(args=None):
@@ -71,6 +71,7 @@ def main(args=None):
         # window.restore()
         window.show()
         sys.exit(app.exec_())
+        del context
     else:
         dt.configure_worker(config.ai)
         dt.makeHDF5()

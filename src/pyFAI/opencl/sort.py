@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,13 +33,12 @@ separation on GPU.
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "08/04/2024"
+__date__ = "07/10/2025"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import os
 import logging
-logger = logging.getLogger(__name__)
 from collections import OrderedDict
 import numpy
 from . import ocl
@@ -51,6 +50,7 @@ if ocl:
 else:
     raise ImportError("pyopencl is not installed or no device is available")
 from. import release_cl_buffers, kernel_workgroup_size, get_x87_volatile_option
+logger = logging.getLogger(__name__)
 
 
 class Separator(OpenclProcessing):

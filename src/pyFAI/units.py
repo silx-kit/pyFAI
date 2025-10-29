@@ -37,14 +37,14 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/10/2025"
+__date__ = "08/10/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
 import copy
 import logging
 from collections.abc import Callable
-from math import sin, cos, tan, atan2, pi as PI
+from math import sin, cos, pi as PI
 import numpy
 import scipy.constants
 from .utils.decorators import deprecated
@@ -1220,8 +1220,8 @@ formula_chi = "arctan2(y, x)"
 formula_q = f"4.0e-9*π/λ*sin(0.5*{formula_2th})"
 formula_d = f"0.5*λ/sin(0.5*{formula_2th})"
 formula_d2 = f"(2.0e-9/λ*sin(0.5*{formula_2th}))**2"
-formula_qx = f"4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
-formula_qy = f"4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
+formula_qx = "4.0e-9*π/λ*sin(arctan2(x, z)/2.0)"  # TODO: wrong, fix me
+formula_qy = "4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
 
 formula_scattering_angle_vert = "arctan2(y, sqrt(z*z+x*x))"
 formula_scattering_angle_horz = "arctan2(x,z)"

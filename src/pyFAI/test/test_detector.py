@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2023 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "06/10/2025"
 
 import os
 import shutil
@@ -46,8 +46,10 @@ from ..detectors import detector_factory, ALL_DETECTORS, Detector, sensors
 from ..calibrant import CALIBRANT_FACTORY as calibrant_factory
 from ..geometryRefinement import GeometryRefinement
 from .. import io
-from .. import utils
+from ..utils.mathutil import expand2d
 from .utilstest import UtilsTest
+
+from ..detectors._xspectrum import _Lambda
 
 logger = logging.getLogger(__name__)
 
@@ -271,7 +273,7 @@ class TestDetector(unittest.TestCase):
         tests specific to non flat detectors to ensure consistency
         """
         a = detector_factory("Aarhus")
-        # to limit the memory footprint, devide size by 100
+        # to limit the memory footprint, divide size by 100
         a.binning = (10, 10)
         t0 = time.perf_counter()
         n = a.get_pixel_corners(use_cython=False)
@@ -480,8 +482,8 @@ class TestOrientation(unittest.TestCase):
         """similar to what is made in geometry ...."""
 
         shape = self.orient1.shape
-        d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
-        d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
+        d1 = expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
+        d2 = expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
         for orient in (self.orient1, self.orient2, self.orient3, self.orient4):
             for use_cython in (True, False):
                 p1, p2, p3 = orient.calc_cartesian_positions(d1, d2, center=False, use_cython=use_cython)
@@ -551,11 +553,43 @@ class TestOrientation(unittest.TestCase):
         self.assertEqual(detector_factory("Pilatus100k", {"orientation":4}).origin,(0, 487))
 
 
+def all_subclasses(cls):
+    subs = set(cls.__subclasses__())
+    for c in cls.__subclasses__():
+        subs |= all_subclasses(c)
+    return subs
+
+class TestLambdaDetectors(unittest.TestCase):
+    """Test that all _Lambda-based detectors have reasonable dimensions."""
+
+    def test_detector_shapes(self):
+        for cls in {_Lambda} | all_subclasses(_Lambda):
+            with self.subTest(detector=cls.__name__):
+                # Instantiate the detector
+                det = cls()
+
+                # Prefer MAX_SHAPE if defined, otherwise use module_size
+                det_shape = getattr(det, "MAX_SHAPE", det.module_size)
+
+                # Check that both dimensions are ≥ 256
+                self.assertGreaterEqual(det_shape[0], 256, f"{cls.__name__}: height too small")
+                self.assertGreaterEqual(det_shape[1], 256, f"{cls.__name__}: width too small")
+
+                # Access SENSORS
+                sensors = getattr(cls, "SENSORS", None)
+                # 1. Should exist
+                self.assertIsNotNone(sensors, f"{cls.__name__}: SENSORS is None")
+                # 2. Must not be empty
+                self.assertGreater(len(sensors), 0,
+                                   f"{cls.__name__}: SENSORS tuple is empty")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestDetector))
     testsuite.addTest(loader(TestOrientation))
+    testsuite.addTest(loader(TestLambdaDetectors))
     return testsuite
 
 

@@ -2,12 +2,11 @@
 import numpy
 from ..mpl_calib import MplCalibWidget
 from matplotlib import pyplot
-# from ...geometryRefinement import GeometryRefinement
 from ..cli_calibration import AbstractCalibration, FixedParameters
 try:
     from IPython.core.display import display
     import ipywidgets as widgets
-except:
+except Exception:
     from ...utils.callback import dangling_callback as display
 
 

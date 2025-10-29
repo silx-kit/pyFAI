@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2020 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/03/2021"
+__date__ = "08/10/2025"
 __status__ = "development"
 
 import logging
 import threading
 import os
 import numpy
-logger = logging.getLogger(__name__)
 from math import ceil, floor
 from . import detectors
 from .opencl import ocl
@@ -45,6 +44,7 @@ if ocl:
 else:
     ocl_azim_lut = ocl_azim_csr = None
 
+logger = logging.getLogger(__name__)
 try:
     from .ext import _distortion
     from .ext import sparse_utils

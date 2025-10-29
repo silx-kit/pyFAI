@@ -5,7 +5,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #             Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
@@ -29,11 +29,11 @@
 #  THE SOFTWARE.
 #
 """Integrate 2D images into powder diffraction patterns"""
-__author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
+__author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2025"
+__date__ = "07/10/2025"
 __status__ = "production"
 
 import os
@@ -41,6 +41,12 @@ import sys
 import time
 from argparse import ArgumentParser
 import logging
+import fabio
+from fabio.fabioutils import exists as fabio_exists
+from .. import date as pyFAI_date, version as pyFAI_version, units, utils
+from ..average import average_dark
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..method_registry import IntegrationMethod
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -48,13 +54,7 @@ try:
     import hdf5plugin  # noqa
 except ImportError:
     logger.debug("Unable to load hdf5plugin, backtrace:", exc_info=True)
-import fabio
-from fabio.fabioutils import exists as fabio_exists
 
-from .. import date as pyFAI_date, version as pyFAI_version, units, utils
-from ..average import average_dark
-from ..integrator.azimuthal import AzimuthalIntegrator
-from ..method_registry import IntegrationMethod
 hc = units.hc
 
 

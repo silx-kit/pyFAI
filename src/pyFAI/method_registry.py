@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,19 +30,18 @@
 Contains a registry of all integrator available
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/03/2025"
+__date__ = "08/10/2025"
 __status__ = "development"
 
 import inspect
 import copy
 from logging import getLogger
-logger = getLogger(__name__)
 from collections import OrderedDict, namedtuple
-
+logger = getLogger(__name__)
 ClassFunction = namedtuple("ClassFunction", ["klass", "function"])
 
 

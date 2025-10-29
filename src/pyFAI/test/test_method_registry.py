@@ -35,7 +35,6 @@ __date__ = "30/10/2024"
 
 import unittest
 from silx.utils.testutils import ParametricTestCase
-from ..integrator import load_engines
 from ..method_registry import Method, IntegrationMethod
 
 

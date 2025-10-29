@@ -42,7 +42,6 @@ import logging
 import threading
 import numpy
 from . import ocl, pyopencl
-from ..ext.splitBBoxLUT import HistoBBox1d
 
 if pyopencl:
     mf = pyopencl.mem_flags

@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2021-2021 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2021-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,17 +29,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2025"
+__date__ = "07/10/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import logging
-logger = logging.getLogger(__name__)
 import numpy
 import numexpr
-import scipy.integrate, scipy.signal
+import scipy.integrate
+import scipy.signal
 from math import sin, cos, pi, log, sqrt, exp
-from .utils.decorators import timeit
+
+logger = logging.getLogger(__name__)
 EPS = numpy.finfo("float64").eps
 OVERSAMPLING = 1024  # Default oversampling value
 

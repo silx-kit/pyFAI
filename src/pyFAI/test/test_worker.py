@@ -46,7 +46,7 @@ from ..worker import Worker, PixelwiseWorker
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
-from ..io.integration_config import ConfigurationReader, WorkerConfig
+from ..io.integration_config import ConfigurationReader
 from ..io.ponifile import PoniFile
 from .. import detector_factory
 from . import utilstest

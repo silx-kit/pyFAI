@@ -32,27 +32,25 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "18/03/2025"
+__date__ = "07/10/2025"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-
-from . import ocl, pyopencl
+from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
+from ..utils import calc_checksum
+from . import pyopencl
 if pyopencl is not None:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
 
-from . import allocate_cl_buffers, release_cl_buffers, kernel_workgroup_size
-from . import concatenate_cl_kernel, processing, OpenclProcessing
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
-from ..utils.decorators import deprecated
+from . import kernel_workgroup_size
+from . import processing, OpenclProcessing
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
-from ..utils import calc_checksum
 logger = logging.getLogger(__name__)
 
 

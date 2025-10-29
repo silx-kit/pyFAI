@@ -27,14 +27,14 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "19/11/2024"
+__date__ = "07/10/2025"
 __copyright__ = "2012-2024, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-from . import pyopencl, dtype_converter
+from . import pyopencl
 from ..utils import calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags

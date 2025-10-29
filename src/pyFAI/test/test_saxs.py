@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,18 +32,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "10/10/2025"
 
 import unittest
 import logging
 import fabio
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..detectors import Pilatus1M
+from ..utils import mathutil
+logger = logging.getLogger(__name__)
+
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
-from ..utils import mathutil
 
 
 class TestSaxs(unittest.TestCase):
@@ -69,18 +70,18 @@ class TestSaxs(unittest.TestCase):
     def testNumpy(self):
         method = ("no", "histogram", "python")
         qref, Iref, _ = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson")
-        q, I, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
+        q, intensity, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
         self.assertTrue(s.max() < 21, "s.max() < 21 got %s" % (s.max()))
-        self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
-        self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
-        R = mathutil.rwp((q, I), (qref, Iref))
+        self.assertTrue(intensity.max() < 52000, "I.max() < 52000 got %s" % (intensity.max()))
+        self.assertTrue(intensity.min() >= 0, "I.min() >= 0 got %s" % (intensity.min()))
+        R = mathutil.rwp((q, intensity), (qref, Iref))
         if R > 20:
             logger.error("Numpy has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
-            pylab.errorbar(q, I, s, label="Numpy R=%.1f" % R)
+            pylab.errorbar(q, intensity, s, label="Numpy R=%.1f" % R)
             pylab.yscale("log")
         self.assertTrue(R < 20, "Numpy: Measure R=%s<2" % R)
 
@@ -88,54 +89,54 @@ class TestSaxs(unittest.TestCase):
     def testCython(self):
         method = ("no", "histogram", "cython")
         qref, Iref, _s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson")
-        q, I, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
+        q, intensity, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
         self.assertTrue(s.max() < 21, "s.max() < 21 got %s" % (s.max()))
-        self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
-        self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
-        R = mathutil.rwp((q, I), (qref, Iref))
+        self.assertTrue(intensity.max() < 52000, "I.max() < 52000 got %s" % (intensity.max()))
+        self.assertTrue(intensity.min() >= 0, "I.min() >= 0 got %s" % (intensity.min()))
+        R = mathutil.rwp((q, intensity), (qref, Iref))
         if R > 20:
             logger.error("Cython has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
-            pylab.errorbar(q, I, s, label="Cython R=%.1f" % R)
+            pylab.errorbar(q, intensity, s, label="Cython R=%.1f" % R)
             pylab.yscale("log")
         self.assertTrue(R < 20, "Cython: Measure R=%s<2" % R)
 
     def testSplitBBox(self):
         method = ("bbox", "histogram", "cython")
         qref, Iref, _s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson")
-        q, I, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
+        q, intensity, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
         self.assertTrue(s.max() < 21, "s.max() < 21 got %s" % (s.max()))
-        self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
-        self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
-        R = mathutil.rwp((q, I), (qref, Iref))
+        self.assertTrue(intensity.max() < 52000, "I.max() < 52000 got %s" % (intensity.max()))
+        self.assertTrue(intensity.min() >= 0, "I.min() >= 0 got %s" % (intensity.min()))
+        R = mathutil.rwp((q, intensity), (qref, Iref))
         if R > 20:
             logger.error("SplitPixel has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
-            pylab.errorbar(q, I, s, label="SplitBBox R=%.1f" % R)
+            pylab.errorbar(q, intensity, s, label="SplitBBox R=%.1f" % R)
             pylab.yscale("log")
         self.assertEqual(R < 20, True, "SplitBBox: Measure R=%s<20" % R)
 
     def testSplitPixel(self):
         method = ("full", "histogram", "cython")
         qref, Iref, _s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson")
-        q, I, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
+        q, intensity, s = self.ai.integrate1d_ng(self.data, self.npt, error_model="poisson", method=method)
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
         self.assertTrue(s.max() < 21, "s.max() < 21 got %s" % (s.max()))
-        self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
-        self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
-        R = mathutil.rwp((q, I), (qref, Iref))
+        self.assertTrue(intensity.max() < 52000, "I.max() < 52000 got %s" % (intensity.max()))
+        self.assertTrue(intensity.min() >= 0, "I.min() >= 0 got %s" % (intensity.min()))
+        R = mathutil.rwp((q, intensity), (qref, Iref))
         if R > 20:
             logger.error("SplitPixel has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
-            pylab.errorbar(q, I, s, label="SplitPixel R=%.1f" % R)
+            pylab.errorbar(q, intensity, s, label="SplitPixel R=%.1f" % R)
             pylab.yscale("log")
         self.assertEqual(R < 20, True, "SplitPixel: Measure R=%s<20" % R)
 

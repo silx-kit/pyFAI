@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -26,23 +26,20 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"""
+Compatibility layer, the code has been moved to pyFAI.integrator.load
+Deprecated since: 09/10/2024
+"""
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2024"
+__date__ = "08/10/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
-"""
-Compatibility layer, the code has been moved to pyFAI.integrator.load
 
-09/10/2024
-"""
-
-# TODO put in place a deprecation warning when importing this module
-
-from .integrator.load_engines import *
+from .integrator.load_engines import *  # noqa: F403
 from .utils.decorators import deprecated_warning
 deprecated_warning("Module", "pyFAI.load_integrators", replacement="pyFAI.integrator.load_engines",
                    since_version="2024.10", only_once=False, skip_backtrace_count=1)

@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "06/10/2025"
 __status__ = "production"
 
 import os
@@ -42,7 +42,8 @@ import numpy
 import logging
 import json
 from ._common import Detector, Orientation, to_eng, SensorConfig
-from ..utils import expand2d
+from ..utils.mathutil import expand2d
+from ..utils.decorators import deprecated_args, deprecated
 logger = logging.getLogger(__name__)
 
 try:
@@ -225,10 +226,10 @@ class Eiger(_Dectris):
     def set_config(self, config):
         """set the config of the detector
 
-        For Eiger detector, possible keys are: max_shape, module_size
+        For Eiger detector, possible keys are: max_shape, module_size, orientation, sensor
 
         :param config: dict or JSON serialized dict
-        :return: detector instance
+        :return: Eiger instance
         """
         if not isinstance(config, dict):
             try:
@@ -245,12 +246,13 @@ class Eiger(_Dectris):
         if module_size is not None:
             self.module_size = tuple(module_size)
         self._orientation = Orientation(config.get("orientation", 3))
+        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
         return self
 
 
 class Eiger500k(Eiger):
     """
-    Eiger 1M detector
+    Eiger 500k detector
     """
     MAX_SHAPE = (514, 1030)
     aliases = ["Eiger 500k"]
@@ -440,17 +442,19 @@ class Mythen(_Dectris):
     MAX_SHAPE = (1, 1280)
     SENSORS = (Si320, Si450, Si1000)
 
-    def __init__(self, pixel1=8e-3, pixel2=50e-6, orientation=0):
-        super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2, orientation=orientation)
+    def __init__(self, pixel1=8e-3, pixel2=50e-6, orientation:int|Orientation=0, sensor:SensorConfig|None=None):
+        super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2, orientation=orientation, sensor=sensor)
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
 
         :return: dict with param for serialization
         """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
+        config = super().get_config()  # handles sensor
+        config["pixel1"] = self._pixel1
+        config["pixel2"] = self._pixel2
+        config["orientation"] = self.orientation or 3  # fallback
+        return config
 
     def calc_mask(self):
         "Mythen have no masks"
@@ -513,20 +517,23 @@ class Pilatus(_Dectris):
             self.offset2 = None
             self.uniform_pixel = True
 
-    def get_splineFile(self):
+    @property
+    def splinefile(self):
         if self.x_offset_file and self.y_offset_file:
             return "%s,%s" % (self.x_offset_file, self.y_offset_file)
 
-    def set_splineFile(self, splineFile=None):
+    @splinefile.setter
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
+    def splinefile(self, splinefile=None):
         "In this case splinefile is a couple filenames"
-        if splineFile is not None:
+        if splinefile is not None:
             try:
-                files = splineFile.split(",")
+                files = splinefile.split(",")
                 self.x_offset_file = [os.path.abspath(i) for i in files if "x" in i.lower()][0]
                 self.y_offset_file = [os.path.abspath(i) for i in files if "y" in i.lower()][0]
                 self.uniform_pixel = False
             except Exception as error:
-                logger.error("set_splineFile with %s gave error: %s", splineFile, error)
+                logger.error(f"splinefile setter with {splinefile} gave error: {error.__class__.__name__}: {error}")
                 self.x_offset_file = self.y_offset_file = self.offset1 = self.offset2 = None
                 self.uniform_pixel = True
                 return
@@ -544,6 +551,8 @@ class Pilatus(_Dectris):
             self._splinefile = None
             self.uniform_pixel = True
 
+    get_splineFile = deprecated(splinefile.fget, since_version="2025.09", reason="use property `splinefile`")
+    set_splineFile = deprecated(splinefile.fset, since_version="2025.09", reason="use property `splinefile`")
     splineFile = property(get_splineFile, set_splineFile)
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
@@ -638,7 +647,7 @@ class Pilatus(_Dectris):
     def set_config(self, config):
         """set the config of the detector
 
-        For Eiger detector, possible keys are: max_shape, module_size, x_offset_file, y_offset_file
+        For Pilatus detector, possible keys are: max_shape, module_size, x_offset_file, y_offset_file, orientation, sensor
 
         :param config: dict or JSON serialized dict
         :return: detector instance
@@ -653,6 +662,9 @@ class Pilatus(_Dectris):
 
         # pixel size is enforced by the detector itself
         self._orientation = Orientation(config.get("orientation", 0))
+
+        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
+
         if "max_shape" in config:
             self.max_shape = tuple(config["max_shape"])
         module_size = config.get("module_size")
@@ -771,7 +783,7 @@ class PilatusCdTe900kw(PilatusCdTe):
     Pilatus CdTe 900k-wide detector, assembly of 1x9 modules
     Available at ESRF ID06-LVP
 
-    This differes from the "Pilatus 900k" detector, assembly of 3x3 modules, available at NSLS-II 12-ID.
+    This differs from the "Pilatus 900k" detector, assembly of 3x3 modules, available at NSLS-II 12-ID.
     """
     MAX_SHAPE = (195, 4439)
     aliases = ["Pilatus CdTe 900kw", "Pilatus 900kw CdTe", "Pilatus900kw CdTe", "Pilatus900kwCdTe"]

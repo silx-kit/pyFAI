@@ -39,7 +39,6 @@ __docformat__ = "restructuredtext"
 import os
 from dataclasses import field
 from ..containers import Reflection, Miller, dataclass
-from typing import Optional
 
 
 @dataclass

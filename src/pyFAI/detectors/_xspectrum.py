@@ -39,10 +39,15 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, to_eng
+from ._common import Detector, to_eng, SensorConfig
 logger = logging.getLogger(__name__)
 
-logger = logging.getLogger(__name__)
+
+#Define sensors used in X-Spectrum detectors
+Si300 = SensorConfig.from_dict({"material": "Si", "thickness": 300e-6})
+Si500 = SensorConfig.from_dict({"material": "Si", "thickness": 500e-6})
+GaAs500 = SensorConfig.from_dict({"material": "GaAs", "thickness": 500e-6})
+CdTe1000 = SensorConfig.from_dict({"material": "CdTe", "thickness": 1000e-6})
 
 
 class _Lambda(Detector):
@@ -53,16 +58,22 @@ class _Lambda(Detector):
     MODULE_GAP = (4, 4)
     DUMMY = 0
     force_pixel = True
+    SENSORS = (Si300, Si500, GaAs500, CdTe1000)
 
-    def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
             self.module_size = module_size
 
     def __repr__(self):
-        return f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
+        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
+        if self.orientation:
+            txt+=f"\t {self.orientation.name} ({self.orientation.value})"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
+        return txt
 
     def calc_mask(self):
         """
@@ -72,11 +83,11 @@ class _Lambda(Detector):
             raise NotImplementedError("Generic Lambda detector does not know"
                                       "its max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
+        # working in dim0 = Y
         for i in range(self.module_size[0], self.max_shape[0],
                        self.module_size[0] + self.MODULE_GAP[0]):
             mask[i: i + self.MODULE_GAP[0],:] = 1
-        # workinng in dim1 = X
+        # working in dim1 = X
         for i in range(self.module_size[1], self.max_shape[1],
                        self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i: i + self.MODULE_GAP[1]] = 1

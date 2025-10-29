@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,13 +32,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2025"
+__date__ = "10/10/2025"
 
 import os
 import unittest
 import logging
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
 import numpy
 from .. import utils
 from ..version import calc_hexversion
@@ -50,6 +49,7 @@ from ..utils.grid import Kabsch
 from ..utils.stringutil import to_scientific_unicode
 from ..utils.multiprocessing import cpu_count
 from ..utils.mask_utils import search_gaps, build_gaps
+logger = logging.getLogger(__name__)
 
 
 class TestUtils(unittest.TestCase):
@@ -76,10 +76,10 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(calc_hexversion(0, 0, 0, 0, 1), 1, "Serial is OK")
 
     def test_method_registry(self):
-        l = IntegrationMethod.list_available()
+        lst = IntegrationMethod.list_available()
         logger.info("Found %s integration methods available on this computer: %s",
-                    len(l), os.linesep.join([""] + l))
-        self.assertGreater(len(l), 2, "at least 2 integration methods are available")
+                    len(lst), os.linesep.join([""] + lst))
+        self.assertGreater(len(lst), 2, "at least 2 integration methods are available")
 
     def test_directories(self):
         logger.info("data directories exists: %s %s", directories.PYFAI_DATA, os.path.exists(directories.PYFAI_DATA))

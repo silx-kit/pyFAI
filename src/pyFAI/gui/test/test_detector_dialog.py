@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2025"
+__date__ = "06/10/2025"
 
 import unittest
 import logging
@@ -62,9 +62,9 @@ class TestDetectorDialog(testutils.TestCaseQt):
         self.assertEqual(detector, newDetector)
 
     def test_detector_splinefile(self):
-        splineFile = UtilsTest.getimage("frelon.spline")
+        splinefile = UtilsTest.getimage("frelon.spline")
         detector = detectors.Detector()
-        detector.set_splineFile(splineFile)
+        detector.splinefile = splinefile
         widget = DetectorSelectorDrop()
         widget.setDetector(detector)
         newDetector = widget.detector()
@@ -78,8 +78,8 @@ class TestDetectorDialog(testutils.TestCaseQt):
         self.assertEqual(detector, newDetector)
 
     def test_frelon_splinefile(self):
-        splineFile = UtilsTest.getimage("frelon.spline")
-        detector = detectors.FReLoN(splineFile=splineFile)
+        splinefile = UtilsTest.getimage("frelon.spline")
+        detector = detectors.FReLoN(splinefile=splinefile)
         widget = DetectorSelectorDrop()
         widget.setDetector(detector)
         newDetector = widget.detector()

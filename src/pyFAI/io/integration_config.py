@@ -68,8 +68,9 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/02/2025"
 __docformat__ = 'restructuredtext'
+__all__ = [ "asdict", "fields", "WorkerConfig", "WorkerFiberConfig"]
 
-import sys
+
 import os
 import json
 import logging
@@ -82,7 +83,7 @@ from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
 from ..utils import decorators
-from ..units import Unit, to_unit, UnitFiber
+from ..units import Unit, UnitFiber
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
@@ -127,7 +128,8 @@ def _patch_v1_to_v2(config):
         # Anachronistic configuration, bug found in #2227
         value = config.copy()
         # warn user about unexpected keys that's gonna be destroyed:
-        valid = ('wavelength', 'dist', 'poni1', 'poni2', 'rot1' , 'rot2' , 'rot3', 'detector', "shape", "pixel1", "pixel2", "splineFile")
+        valid = ('wavelength', 'dist', 'poni1', 'poni2', 'rot1' , 'rot2' , 'rot3',
+                'detector', "shape", "pixel1", "pixel2", "splineFile", "splinefile")
         delta = set(config.keys()).difference(valid)
         if delta:
             _logger.warning("Integration_config v1 contains unexpected keys which will be discared: %s%s", os.linesep,
@@ -172,16 +174,16 @@ def _patch_v1_to_v2(config):
             _ = config.pop("pixel1", None)
             _ = config.pop("pixel2", None)
 
-        splineFile = config.pop("splineFile", None)
-        if splineFile:
-            detector.set_splineFile(splineFile)
+        splinefile = config.pop("splinefile", None) or config.pop("splineFile", None)
+        if splinefile:
+            detector.splinefile = splinefile
     else:
         if "shape" in config and "pixel1" in config and "pixel2" in config:
             max_shape = config["shape"]
             pixel1 = config["pixel1"]
             pixel2 = config["pixel2"]
-            spline = config.get("splineFile")
-            detector = detectors.Detector(pixel1, pixel2, splineFile=spline, max_shape=max_shape)
+            spline = config.get("splinefile") or config.get("splineFile")
+            detector = detectors.Detector(pixel1, pixel2, splinefile=spline, max_shape=max_shape)
     if detector is not None:
         # Feed the detector as version2
         config["detector"] = detector.__class__.__name__
@@ -312,7 +314,7 @@ def _patch_v4_to_v5(config):
                       ("dark_current", "dark_current_image"),
                       ("mask_file", "mask_image"),
                       ("val_dummy", "dummy")]:
-        if key2 in config and not key1 in config:
+        if key2 in config and key1 not in config:
             config[key1] = config.pop(key2)
 
 
@@ -332,7 +334,8 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
     if version == 1:
         # NOTE: Previous way to describe an integration process before pyFAI 0.17
         _patch_v1_to_v2(config)
-    if config["version"] == target_version: return config
+    if config["version"] == target_version:
+        return config
     if config["version"] == 2:
         _patch_v2_to_v3(config)
 
@@ -343,11 +346,13 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
             raise ValueError(txt)
         else:
             _logger.error(txt)
-    if config["version"] == target_version: return config
+    if config["version"] == target_version:
+        return config
     if config["version"] == 3:
         _patch_v3_to_v4(config)
 
-    if config["version"] == target_version: return config
+    if config["version"] == target_version:
+        return config
     if config["version"] == 4:
         _patch_v4_to_v5(config)
 

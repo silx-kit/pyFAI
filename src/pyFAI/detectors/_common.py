@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "06/10/2025"
 __status__ = "stable"
 
 import logging
@@ -51,7 +51,8 @@ from .. import io
 from .. import spline
 from .. import utils
 from .. import average
-from ..utils import expand2d, crc32, binning as rebin
+from ..utils import crc32
+from ..utils.mathutil import expand2d, binning as rebin
 from ..utils.decorators import deprecated, deprecated_args
 from ..utils.stringutil import to_eng
 
@@ -69,7 +70,7 @@ except ImportError:
     bilinear = None
 
 EPSILON = 1e-6
-"Precision for the positionning of a pixel: 1µm"
+"Precision for the positioning of a pixel: 1µm"
 
 
 class DetectorMeta(type):
@@ -107,7 +108,7 @@ class Detector(metaclass=DetectorMeta):
     registry = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
-    IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
+    IS_CONTIGUOUS = True  # No gaps: all pixels are adjacent, speeds-up calculation
     API_VERSION = "1.2"
     # 1.1: support for CORNER attribute
     # 1.2: support for sensor_material and sensor_thickness
@@ -117,7 +118,7 @@ class Detector(metaclass=DetectorMeta):
     DUMMY = None
     DELTA_DUMMY = None
     ORIENTATION = 0
-    SENSORS = []
+    SENSORS = ()
     _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                         '_mask_crc', '_maskfile', "_splinefile", "_flatfield_crc",
                         "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy",
@@ -218,10 +219,12 @@ class Detector(metaclass=DetectorMeta):
         Constructor of the Detector class, most of the time, not used.
         :param pixel1: size of the pixel in meter along the slow dimension (often Y)
         :param pixel2: size of the pixel in meter along the fast dimension (often X)
-        :param splineFile: path to file containing the geometric correction.
+        :param splinefile: path to file containing the geometric correction.
         :param max_shape: maximum size of the detector
-        :type max_shape: 2-tuple of integrers
+        :type max_shape: 2-tuple of integers
         :param orientation: Orientation of the detector
+        :param sensor: Optional sensor configuration specifying detector material and sensor thickness (in metres).
+        :type sensor: SensorConfig | None
         """
         self._pixel1 = None
         self._pixel2 = None
@@ -259,25 +262,34 @@ class Detector(metaclass=DetectorMeta):
         if (orientation < 0) or (orientation > 4):
             raise RuntimeError("Unsupported orientation: " + orientation.__doc__)
         self._orientation = orientation
-        if sensor:
-            if isinstance(sensor, dict):
-                self.sensor = SensorConfig.from_dict(sensor)
-            else:
-                self.sensor = sensor
+
+        if isinstance(sensor, dict):
+            sensor = SensorConfig.from_dict(sensor)
+
+        if isinstance(sensor, SensorConfig):
+            if sensor not in self.SENSORS:
+                logger.warning("Sensor %s not in allowed SENSORS: %s", sensor, self.SENSORS)
+            self.sensor = sensor
+        elif sensor is None:
+            logger.info("No sensor configuration provided; using default behaviour.")
+        else:
+            logger.error("Sensor is of unexpected type: %s", type(sensor))
 
 
     def __repr__(self):
         """Nice representation of the instance
         """
         txt = f"Detector {self.name}"
-        if self.splineFile:
-            txt += f"\t Spline= {self.splineFile}"
+        if self.splinefile:
+            txt += f"\t Spline= {self.splinefile}"
         if (self._pixel1 is None) or (self._pixel2 is None):
             return "Undefined detector"
         else:
             txt += f"\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
         return txt
 
     def __copy__(self):
@@ -342,7 +354,7 @@ class Detector(metaclass=DetectorMeta):
         The configuration is either a python dictionary or a JSON string or a
         file containing this JSON configuration
 
-        keys in that dictionary are:  pixel1, pixel2, splineFile, max_shape
+        keys in that dictionary are:  pixel1, pixel2, splinefile, max_shape
 
         :param config: string or JSON-serialized dict
         :return: self
@@ -354,6 +366,7 @@ class Detector(metaclass=DetectorMeta):
                 logger.error("Unable to parse config %s with JSON: %s, %s",
                              config, err)
                 raise err
+
         if not self.force_pixel:
             pixel1 = config.get("pixel1")
             pixel2 = config.get("pixel2")
@@ -361,8 +374,7 @@ class Detector(metaclass=DetectorMeta):
                 self.set_pixel1(pixel1)
             if pixel2:
                 self.set_pixel2(pixel2)
-            if "splineFile" in config:
-                self.set_splineFile(config.get("splineFile"))
+            self.splinefile = config.get("splinefile") or config.get("splineFile")
             if "max_shape" in config:
                 self.max_shape = config.get("max_shape")
         self._orientation = Orientation(config.get("orientation", 0))
@@ -565,7 +577,7 @@ class Detector(metaclass=DetectorMeta):
             config = {}
             for key in ("pixel1", "pixel2", 'max_shape', "splineFile", "orientation"):
                 if key in kwarg:
-                    config[key] = kwarg[key]
+                    config[key.lower()] = kwarg[key]
             self = pyFAI.detectors.detector_factory(kwarg["detector"], config)
         return self
 
@@ -596,8 +608,8 @@ class Detector(metaclass=DetectorMeta):
                 self.pixel2 = val * 1e-6
             elif kw == "pixelY":
                 self.pixel1 = val * 1e-6
-            elif kw == "splineFile":
-                self.set_splineFile(kwarg[kw])
+            elif kw.lower() == "splinefile":
+                self.splinefile = kwarg[kw]
 
     def _calc_pixel_index_from_orientation(self, center=True):
         """Calculate the pixel index when considering the different orientations"""
@@ -621,7 +633,7 @@ class Detector(metaclass=DetectorMeta):
             r1 = numpy.arange(m1, dtype="float32")
             r2 = numpy.arange(m2 - 1, -1, -1, dtype="float32")
         else:
-            raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+            raise RuntimeError(f"Unsupported orientation: {self.orientation.name} ({self.orientation.value})")
         return r1, r2
 
     def _reorder_indexes_from_orientation(self, d1, d2, center=True):
@@ -644,7 +656,7 @@ class Detector(metaclass=DetectorMeta):
         elif self.orientation == 4:
             d2 = shape2 - d2
         else:
-            raise RuntimeError(f"Unsuported orientation: {self.orientation.name} ({self.orientation.value})")
+            raise RuntimeError(f"Unsupported orientation: {self.orientation.name} ({self.orientation.value})")
         return d1, d2
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
@@ -1226,7 +1238,7 @@ class Detector(metaclass=DetectorMeta):
 
     def __getnewargs_ex__(self):
         "Helper function for pickling detectors"
-        return (self.pixel1, self.pixel2, self.splineFile, self.max_shape), {}
+        return (self.pixel1, self.pixel2, self.splinefile, self.max_shape), {}
 
     def __getstate__(self):
         """Helper function for pickling detectors
@@ -1271,6 +1283,7 @@ class Detector(metaclass=DetectorMeta):
     def delta_dummy(self, value=None):
         self._delta_dummy = value
 
+    #TODO: I see that filename and orientation are properties, sensor not. Should sensor follow the style?
     @property
     def orientation(self):
         return self._orientation
@@ -1306,7 +1319,7 @@ class NexusDetector(Detector):
                  filename:str|None=None,
                  orientation:int=0,
                  sensor:SensorConfig|None=None):
-        Detector.__init__(self, orientation=orientation)
+        Detector.__init__(self, orientation=orientation, sensor = sensor)
         self.uniform_pixel = True
         self._filename = None
         if filename is not None:
@@ -1323,6 +1336,8 @@ class NexusDetector(Detector):
         txt += f"PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
         if self.orientation:
             txt += f"\t {self.orientation.name} ({self.orientation.value})"
+        if self.sensor:
+            txt += f"\t {self.sensor}"
         return txt
 
     def load(self, filename):
@@ -1455,7 +1470,7 @@ class NexusDetector(Detector):
     def set_config(self, config):
         """set the config of the detector
 
-        For Nexus detector, the only valid key is "filename"
+        For Nexus detector, the valid keys are "filename", "orientation, "sensor"
 
         :param config: dict or JSON serialized dict
         :return: detector instance
@@ -1473,15 +1488,18 @@ class NexusDetector(Detector):
         else:
             logger.error("Unable to configure Nexus detector, config: %s",
                          config)
+
+        self._orientation = Orientation(config.get("orientation", 0))
+        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+
         return self
 
     def get_config(self):
-        """Return the configuration with arguments to the constructor
+        """Return the configuration with arguments to the constructor."""
+        config = super().get_config()
+        config["filename"] = self._filename
+        return config
 
-        :return: dict with param for serialization
-        """
-        return {"filename": self._filename,
-                "orientation": self.orientation or 3}
 
     def getPyFAI(self):
         """

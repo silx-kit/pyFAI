@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,16 +33,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/09/2023"
+__date__ = "10/10/2025"
 
 import os
 import unittest
 import logging
 from .utilstest import UtilsTest
-logger = logging.getLogger(__name__)
 import numpy
 from ..goniometer import GeometryTranslation, Goniometer, numexpr, \
                          ExtendedTransformation, GoniometerRefinement
+logger = logging.getLogger(__name__)
 
 
 @unittest.skipUnless(numexpr, "Numexpr package is missing")

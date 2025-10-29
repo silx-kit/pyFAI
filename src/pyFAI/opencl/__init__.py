@@ -4,7 +4,7 @@
 #    Project: python fast azimuthal integration project
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,17 +36,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2024"
+__date__ = "07/10/2025"
 __status__ = "stable"
 
 import os
 import logging
 import platform
 import numpy
-from ..utils.decorators import deprecated
-logger = logging.getLogger(__name__)
-
 import pyFAI
+logger = logging.getLogger(__name__)
 
 if not pyFAI.use_opencl:
     pyopencl = None
@@ -60,13 +58,13 @@ else:
     from silx.opencl import common
     ocl = common.ocl    # /!\ lasy loading of ocl at the silx level !!!
     from silx.opencl.common import pyopencl, mf, release_cl_buffers, allocate_cl_buffers, \
-                                    measure_workgroup_size, kernel_workgroup_size
+                                    measure_workgroup_size, kernel_workgroup_size # noqa: F401
 
     from .. import resources
     resources.silx_integration()
 
-    from silx.opencl import utils
-    from silx.opencl.utils import get_opencl_code, concatenate_cl_kernel, read_cl_file
+    from silx.opencl import utils  # noqa: F401
+    from silx.opencl.utils import get_opencl_code, concatenate_cl_kernel, read_cl_file # noqa: F401
     from silx.opencl import processing
     OpenclProcessing = processing.OpenclProcessing
 

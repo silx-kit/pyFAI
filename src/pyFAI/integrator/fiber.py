@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2023-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2023-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,13 +30,19 @@ __author__ = "Edgar Gutiérrez Fernández "
 __contact__ = "edgar.gutierrez-fernandez@esr.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2024"
+__date__ = "08/10/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import logging
-logger = logging.getLogger(__name__)
 import numpy
+from .azimuthal import AzimuthalIntegrator
+from ..containers import Integrate1dFiberResult, Integrate2dFiberResult
+from ..method_registry import IntegrationMethod
+from ..io import save_integrate_result
+from ..units import parse_fiber_unit, ANGLE_UNITS, to_unit
+from ..utils.decorators import deprecated_warning
+logger = logging.getLogger(__name__)
 try:
     import numexpr
 except ImportError as err:
@@ -44,12 +50,7 @@ except ImportError as err:
     USE_NUMEXPR = False
 else:
     USE_NUMEXPR = True
-from .azimuthal import AzimuthalIntegrator
-from ..containers import Integrate1dFiberResult, Integrate2dFiberResult
-from ..method_registry import IntegrationMethod
-from ..io import save_integrate_result
-from ..units import parse_fiber_unit, ANGLE_UNITS, to_unit
-from ..utils.decorators import deprecated_warning
+
 
 def get_deprecated_params_1d(**kwargs) -> dict:
     deprecated = {}
@@ -79,6 +80,7 @@ def get_deprecated_params_1d(**kwargs) -> dict:
         deprecated['vertical_integration'] = True
     return deprecated
 
+
 def get_deprecated_params_2d(**kwargs) -> dict:
     deprecated = {}
     if "npt_horizontal" in kwargs:
@@ -100,6 +102,7 @@ def get_deprecated_params_2d(**kwargs) -> dict:
         deprecated_warning(type_=type(kwargs["vertical_unit_range"]), name="vertical_unit_range", replacement="oop_range", since_version="2024.11/12")
         deprecated['oop_range'] = kwargs["vertical_unit_range"]
     return deprecated
+
 
 class FiberIntegrator(AzimuthalIntegrator):
 

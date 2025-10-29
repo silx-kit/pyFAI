@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2024 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,19 +32,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/04/2024"
+__date__ = "10/10/2025"
 
 import unittest
 import numpy
 import logging
-logger = logging.getLogger(__name__)
 from ..detectors import detector_factory
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..blob_detection import BlobDetection, local_max
 from ..ext import _blob
 from ..ext import morphology
 from scipy import ndimage
-
+logger = logging.getLogger(__name__)
 
 def image_test_rings():
     rings = 10
