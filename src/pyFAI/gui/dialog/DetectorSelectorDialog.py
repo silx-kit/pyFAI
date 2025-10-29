@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "06/10/2025"
+__date__ = "29/10/2025"
 
 import os
 import logging
@@ -323,7 +323,7 @@ class DetectorSelectorDrop(qt.QWidget):
         # TODO: this test should be reworked in case of another extension
         if filename.endswith(".spline"):
             try:
-                self.__detectorFromFile = detectors.Detector(splineFile=filename,
+                self.__detectorFromFile = detectors.Detector(splinefile=filename,
                                                              orientation=self.getOrientation(),
                                                              sensor=self.getSensorConfig())
                 self._fileResult.setVisible(True)
@@ -390,7 +390,7 @@ class DetectorSelectorDrop(qt.QWidget):
         elif self.__detector.__class__ is detectors.NexusDetector:
             self.__selectNexusDetector(self.__detector)
         elif self.__detector.__class__ is detectors.Detector:
-            if self.__detector.splineFile is not None:
+            if self.__detector.splinefile is not None:
                 self.__selectSplineDetector(self.__detector)
             else:
                 self.__selectCustomDetector(self.__detector)
