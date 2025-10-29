@@ -5,15 +5,12 @@ Created on Fri Mar 07 09:52:51 2014
 @author: ashiotis
 """
 
-import sys, numpy, time
-import utilstest
+import sys
 import fabio
-import pyopencl as cl
 from pylab import *
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
-import scipy
 # logger = utilstest.getLogger("profile")
 
 

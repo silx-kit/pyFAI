@@ -28,8 +28,12 @@
 
 from __future__ import absolute_import, print_function, with_statement, division
 # this is a very simple tool that checks the calibratation
-import utilstest
-import pyFAI, fabio, numpy, sys, os, optparse, time
+import pyFAI
+import fabio
+import numpy
+import sys
+import os
+import time
 import pylab
 from pyFAI.third_party import six
 

@@ -72,7 +72,7 @@ def preproc(raw,
     :param normalization_factor: final value is divided by this
     :param empty: value to be given for empty bins
     :param split_result: set to true to separate signal from normalization and
-            return an array of float2, float3 (with variance) ot float4 (including counts)
+            return an array of float2, float3 (with variance) or float4 (including counts)
     :param variance: provide an estimation of the variance, enforce
             split_result=True and return an float3 array with variance in second position.
     :param dark_variance: provide an estimation of the variance of the dark_current,

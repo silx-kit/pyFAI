@@ -1,7 +1,7 @@
 import logging
-import pyFAI, fabio
+import pyFAI
+import fabio
 from pyFAI.test.utilstest import UtilsTest
-from pyFAI.gui.mpl_calib_qt import QtMplCalibWidget
 from pyFAI.gui.peak_picker import PeakPicker
 logging.basicConfig()
 

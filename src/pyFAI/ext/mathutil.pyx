@@ -31,7 +31,7 @@
 
 
 """
-Extenstion with Cython implementation of pyFAI.utils.mathutil
+Extension with Cython implementation of pyFAI.utils.mathutil
 """
 
 __author__ = "Jerome Kieffer"

@@ -29,17 +29,14 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "23/06/2016"
 __status__ = "development"
 
-import unittest
 from pyFAI.test.utilstest import UtilsTest
-import logging, threading
-import types, os, sys
+import logging
+import sys
 import numpy
 logger = logging.getLogger(__file__)
 logging.basicConfig(level=logging.INFO)
-from math import ceil, floor
 pyFAI = sys.modules["pyFAI"]
-from pyFAI import detectors, ocl_azim_lut, _distortion, _distortionCSR, distortion
-from pyFAI.utils import timeit
+from pyFAI import detectors, _distortion, _distortionCSR, distortion
 import fabio
 
 # import pyFAI._distortion

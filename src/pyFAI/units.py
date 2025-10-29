@@ -63,7 +63,7 @@ except (ImportError, ModuleNotFoundError):
 
 CONST_hc = hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e7
 """Product of h the Planck constant, and c the speed of light in vacuum
-in Angstrom.KeV. It is approximatively equal to:
+in Angstrom.KeV. It is approximately equal to:
 
 - pyFAI reference: 12.398419292004204
 - scipy v1.3.1:   12.398419739640717
@@ -114,7 +114,7 @@ class Unit(object):
         self.name = name
         self.space = "_".join(
             self.name.split("_")[:-1]
-        )  # used to idenfify compatible spaces.
+        )  # used to identify compatible spaces.
         self.scale = scale
         self.label = label if label is not None else name
         self.corner = corner

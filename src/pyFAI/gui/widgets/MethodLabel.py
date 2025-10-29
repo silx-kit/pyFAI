@@ -128,7 +128,7 @@ class MethodLabel(qt.QLabel):
                 if len(usedMethods) == 0:
                     label = "No method fit"
                     toolTip = self.__methodToString(method, self._TOOLTIP_TEMPLATE)
-                    toolTip = ("No method fit. Integration could be compromized. "
+                    toolTip = ("No method fit. Integration could be compromised. "
                                "The following configuration is defined:"
                                "%s</html>" % toolTip)
                 else:

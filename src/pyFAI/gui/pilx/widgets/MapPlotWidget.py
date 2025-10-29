@@ -176,9 +176,9 @@ class MapPlotWidget(ImagePlotWidget):
         rows, cols = image.shape[:2]
         if (x is not None)  and (y is not None):
             if x.size != cols:
-                raise RuntimeError(f"size of x({x.size}) does not march the number of colunms of the image ({cols})")
+                raise RuntimeError(f"size of x({x.size}) does not march the number of columns of the image ({cols})")
             if y.size != rows:
-                raise RuntimeError(f"size of x({y.size}) does not march the number of colunms of the image ({rows})")
+                raise RuntimeError(f"size of x({y.size}) does not march the number of columns of the image ({rows})")
 
         if self._first_plot:
             if (x is None) or (y is None):

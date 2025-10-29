@@ -32,7 +32,6 @@ import glob
 import pylab
 pylab.ion()
 import numpy
-from math import sqrt
 import fabio
 import logging
 logger = logging.getLogger(__file__)
@@ -58,7 +57,7 @@ for fn in images[:10]:
     img = fabio.open(fn).data
     xml = etree.parse(os.path.splitext(fn)[0] + ".xml")
     monitor = float(xml.xpath("//beamStopDiode")[0].getchildren()[0].text)
-    print(fn, monitor);
+    print(fn, monitor)
     variance = numpy.maximum(img, 1)
     q, i, s = ai.integrate1d(img, 1040, unit="q_nm^-1", method="numpy", variance=variance, mask=msk, normalization_factor=monitor)
     I_nosplit.append(i)

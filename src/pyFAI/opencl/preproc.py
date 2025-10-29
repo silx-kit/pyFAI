@@ -100,7 +100,7 @@ class OCL_Preproc(OpenclProcessing):
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
         :param platformid: integer with the platform_identifier, as given by clinfo
         :param deviceid: Integer with the device identifier, as given by clinfo
-        :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
+        :param block_size: preferred workgroup size, may vary depending on the outcome of the compilation
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slower)
         """
@@ -551,7 +551,7 @@ def preproc(raw,
       :math:`I = (raw - dark)/(flat * solidangle * polarization * absorption)`
       Invalid pixels are set to the dummy or empty value.
 
-    * When split_ressult is set to True, each result result is a float2
+    * When split_result is set to True, each result result is a float2
       or a float3 (with an additional value for the variance) as such:
 
       :math:`I = [(raw - dark), (variance), (flat * solidangle * polarization * absorption)]`

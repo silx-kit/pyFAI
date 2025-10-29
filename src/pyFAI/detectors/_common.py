@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "15/10/2025"
 __status__ = "stable"
 
 import logging
@@ -119,7 +119,7 @@ class Detector(metaclass=DetectorMeta):
     DELTA_DUMMY = None
     ORIENTATION = 0
     SENSORS = ()
-    _UNMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
+    _IMMUTABLE_ATTRS = ('_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
                         '_mask_crc', '_maskfile', "_splinefile", "_flatfield_crc",
                         "_darkcurrent_crc", "flatfiles", "darkfiles", "_dummy", "_delta_dummy",
                         "_orientation")
@@ -300,7 +300,7 @@ class Detector(metaclass=DetectorMeta):
         :return: A copy of this detector
         """
         new = self.__class__()
-        for key in self._UNMUTABLE_ATTRS + self._MUTABLE_ATTRS:
+        for key in self._IMMUTABLE_ATTRS + self._MUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         if self._splinefile:
             new.set_splineFile(self._splinefile)
@@ -317,7 +317,7 @@ class Detector(metaclass=DetectorMeta):
             memo = {}
         new = self.__class__()
         memo[id(self)] = new
-        for key in self._UNMUTABLE_ATTRS:
+        for key in self._IMMUTABLE_ATTRS:
             old = self.__getattribute__(key)
             memo[id(old)] = old
             new.__setattr__(key, old)
@@ -1057,7 +1057,8 @@ class Detector(metaclass=DetectorMeta):
     ############################################################################
     # Few properties
     ############################################################################
-    def get_mask(self):
+    @property
+    def mask(self):
         if self._mask is False:
             with self._sem:
                 if self._mask is False:
@@ -1072,7 +1073,8 @@ class Detector(metaclass=DetectorMeta):
     def get_mask_crc(self):
         return self._mask_crc
 
-    def set_mask(self, mask):
+    @mask.setter
+    def mask(self, mask):
         with self._sem:
             if mask is None:
                 self._mask = self._mask_crc = None
@@ -1083,33 +1085,39 @@ class Detector(metaclass=DetectorMeta):
                 self._mask = mask
                 self._mask_crc = crc32(self._mask)
 
-    mask = property(get_mask, set_mask)
+    # Deprecated compatibility layer
+    get_mask = deprecated(mask.fget, reason="use property", since_version="2025.09")
+    set_mask = deprecated(mask.fset, reason="use property", since_version="2025.09")
 
-    def set_maskfile(self, maskfile):
+
+    @property
+    def maskfile(self):
+        return self._maskfile
+
+    @maskfile.setter
+    def maskfile(self, maskfile):
         if fabio:
             with fabio.open(maskfile) as fimg:
                 mask = numpy.ascontiguousarray(fimg.data,
-                                               dtype=numpy.int8)
-            self.set_mask(mask)
+                                                dtype=numpy.int8)
+            self.mask = mask
             self._maskfile = maskfile
         else:
             logger.error("FabIO is not available, unable to load the image to set the mask.")
 
-    def get_maskfile(self):
-        return self._maskfile
+    # Deprecated compatibility layer
+    get_maskfile = deprecated(maskfile.fget, reason="use property", since_version="2025.09")
+    set_maskfile = deprecated(maskfile.fset, reason="use property", since_version="2025.09")
 
-    maskfile = property(get_maskfile, set_maskfile)
 
-    def get_pixel1(self):
+    @property
+    def pixel1(self) -> float:
         return self._pixel1
 
-    def set_pixel1(self, value):
-        if isinstance(value, float):
-            value = value
-        elif isinstance(value, (tuple, list)):
-            value = float(value[0])
-        else:
-            value = float(value)
+    @pixel1.setter
+    def pixel1(self, value):
+        """Set the pixel size along the first dimension."""
+        value = float(value[0] if isinstance(value, (tuple, list)) else value)
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
             if self.force_pixel and (err > EPSILON):
@@ -1117,18 +1125,20 @@ class Detector(metaclass=DetectorMeta):
                                self.__class__.__name__)
         self._pixel1 = value
 
-    pixel1 = property(get_pixel1, set_pixel1)
+    # deprecated compatibility layer
+    get_pixel1 = deprecated(pixel1.fget, reason="use property", since_version="2025.09")
+    set_pixel1 = deprecated(pixel1.fset, reason="use property", since_version="2025.09")
 
-    def get_pixel2(self):
+
+    @property
+    def pixel2(self) -> float:
         return self._pixel2
 
-    def set_pixel2(self, value):
-        if isinstance(value, float):
-            value = value
-        elif isinstance(value, (tuple, list)):
-            value = float(value[0])
-        else:
-            value = float(value)
+    @pixel2.setter
+    def pixel2(self, value):
+        """Set the pixel size along the second dimension."""
+        #TODO: Is this on purpose to take the first entry in tuple, list as pixel2?
+        value = float(value[0] if isinstance(value, (tuple, list)) else value)
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
             if self.force_pixel and (err > EPSILON):
@@ -1136,9 +1146,12 @@ class Detector(metaclass=DetectorMeta):
                                self.__class__.__name__)
         self._pixel2 = value
 
-    pixel2 = property(get_pixel2, set_pixel2)
+    # deprecated compatibility layer
+    get_pixel2 = deprecated(pixel2.fget, reason="use property", since_version="2025.09")
+    set_pixel2 = deprecated(pixel2.fset, reason="use property", since_version="2025.09")
 
-    def get_name(self):
+    @property
+    def name(self):
         """
         Get a meaningful name for detector
         """
@@ -1148,15 +1161,18 @@ class Detector(metaclass=DetectorMeta):
             name = self.__class__.__name__
         return name
 
-    name = property(get_name)
+    # Deprecated compatibility layer
+    get_name = deprecated(name.fget, reason="use property", since_version="2025.09")
 
-    def get_flatfield(self):
+    @property
+    def flatfield(self):
         return self._flatfield
 
     def get_flatfield_crc(self):
         return self._flatfield_crc
 
-    def set_flatfield(self, flat):
+    @flatfield.setter
+    def flatfield(self, flat):
         if numpy.isscalar(flat):
             flat_ = numpy.empty(self.shape, dtype=numpy.float32)
             flat_[...] = flat
@@ -1164,7 +1180,10 @@ class Detector(metaclass=DetectorMeta):
         self._flatfield = flat
         self._flatfield_crc = crc32(flat) if flat is not None else None
 
-    flatfield = property(get_flatfield, set_flatfield)
+    # Deprecated compatibility layer
+    get_flatfield = deprecated(flatfield.fget, reason="use property", since_version="2025.09")
+    set_flatfield = deprecated(flatfield.fset, reason="use property", since_version="2025.09")
+
 
     @deprecated(reason="Not maintained", since_version="0.17")
     def set_flatfiles(self, files, method="mean"):
@@ -1174,7 +1193,7 @@ class Detector(metaclass=DetectorMeta):
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
 
-        Set the flat field from one or mutliple files, averaged
+        Set the flat field from one or multiple files, averaged
         according to the method provided
         """
         if type(files) in utils.StringTypes:
@@ -1193,13 +1212,15 @@ class Detector(metaclass=DetectorMeta):
             self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
             self.flatfiles = "%s(%s)" % (method, ",".join(files))
 
-    def get_darkcurrent(self):
+    @property
+    def darkcurrent(self):
         return self._darkcurrent
 
     def get_darkcurrent_crc(self):
         return self._darkcurrent_crc
 
-    def set_darkcurrent(self, dark):
+    @darkcurrent.setter
+    def darkcurrent(self, dark):
         if numpy.isscalar(dark):
             dark_ = numpy.empty(self.shape, dtype=numpy.float32)
             dark_[...] = dark
@@ -1207,7 +1228,9 @@ class Detector(metaclass=DetectorMeta):
         self._darkcurrent = dark
         self._darkcurrent_crc = crc32(dark) if dark is not None else None
 
-    darkcurrent = property(get_darkcurrent, set_darkcurrent)
+    # Deprecated compatibility layer
+    get_darkcurrent = deprecated(darkcurrent.fget,reason="use property",since_version="2025.09")
+    set_darkcurrent = deprecated(darkcurrent.fset,reason="use property",since_version="2025.09")
 
     @deprecated(reason="Not maintained", since_version="0.17")
     def set_darkfiles(self, files=None, method="mean"):
@@ -1217,7 +1240,7 @@ class Detector(metaclass=DetectorMeta):
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
 
-        Set the dark current from one or mutliple files, avaraged
+        Set the dark current from one or multiple files, avaraged
         according to the method provided
         """
         if type(files) in utils.StringTypes:
@@ -1290,7 +1313,7 @@ class Detector(metaclass=DetectorMeta):
 
     @property
     def origin(self):
-        "What are the coordinnates of the detector's origin ?"
+        "What are the coordinates of the detector's origin ?"
         if self.orientation == 1:
             return self.shape
         elif self.orientation == 2:
@@ -1313,7 +1336,7 @@ class NexusDetector(Detector):
         "CORNERS"
         "force_pixel",
         "_filename",
-        "uniform_pixel") + Detector._UNMUTABLE_ATTRS + Detector._MUTABLE_ATTRS
+        "uniform_pixel") + Detector._IMMUTABLE_ATTRS + Detector._MUTABLE_ATTRS
 
     def __init__(self,
                  filename:str|None=None,

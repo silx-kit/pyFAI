@@ -6,15 +6,13 @@ Created on Fri Mar 07 09:52:51 2014
 """
 from __future__ import absolute_import, division, print_function
 
-import sys, numpy, time
-import fabio, pyopencl
+import sys
+import numpy
+import fabio
 import logging
 from pylab import *
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
-from pyFAI import splitBBox
-from pyFAI import splitBBoxLUT
-from pyFAI import splitBBoxCSR
 from pyFAI.third_party import six
 logger = logging.getLogger("profile")
 

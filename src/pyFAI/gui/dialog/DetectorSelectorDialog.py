@@ -627,7 +627,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self._stacked.setCurrentWidget(self._modelPanel)
 
     def __customSelectionChanged(self, selected, deselected):
-        # Clean up manufacurer selection
+        # Clean up manufacturer selection
         selection = self._detectorView.selectionModel()
         selection.reset()
         selection = self._manufacturerList.selectionModel()

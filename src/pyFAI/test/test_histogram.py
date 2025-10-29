@@ -57,7 +57,7 @@ class TestHistogram1d(unittest.TestCase):
     def setUpClass(cls):
         super(TestHistogram1d, cls).setUpClass()
 
-        # CSR logger should stop complaining about desactivated
+        # CSR logger should stop complaining about deactivated
         csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
         csr_logger.setLevel(logging.ERROR)
 
@@ -215,7 +215,7 @@ class TestHistogram2d(unittest.TestCase):
     def setUpClass(cls):
         super(TestHistogram2d, cls).setUpClass()
 
-        # CSR logger should stop complaining about desactivated
+        # CSR logger should stop complaining about deactivated
         csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
         csr_logger.setLevel(logging.ERROR)
 

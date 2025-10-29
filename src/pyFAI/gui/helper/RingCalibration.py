@@ -328,7 +328,7 @@ class RingCalibration:
         """
         Returns the 2th array corresponding to the calibrated image
         """
-        # 2th array is cached insided
+        # 2th array is cached inside
         tth = self.__geoRef.center_array(self.__peakPicker.shape, unit=units.TTH_RAD, scale=False)
         return tth
 

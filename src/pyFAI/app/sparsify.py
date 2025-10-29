@@ -290,7 +290,7 @@ def parse(args=None):
 
     group = parser.add_argument_group("Experimental setup options")
     group.add_argument("-b", "--beamline", type=str, default="beamline",
-                       help="Name of the instument (for the HDF5 NXinstrument, beamline by default)")
+                       help="Name of the instrument (for the HDF5 NXinstrument, beamline by default)")
     group.add_argument("-p", "--poni", type=str, default=None,
                        help="geometry description file (mandatory)")
     group.add_argument("-m", "--mask", type=str, default=None,
@@ -322,7 +322,7 @@ def parse(args=None):
                        help="Noise level: quadratically added to the background uncertainty (default 1)")
     group = parser.add_argument_group("Extra peak picking")
     group.add_argument("--cutoff-peak", dest="cutoff_peak", type=float, default=None,
-                       help="Activate the peak-picking in addition of the sparsification, threshold to descide if a pixel is part of a peak (deactivated by default, 3-5 is by adviced)")
+                       help="Activate the peak-picking in addition of the sparsification, threshold to decide if a pixel is part of a peak (deactivated by default, 3-5 is by advised)")
     group.add_argument("--peak-patch-size", dest="patch_size", type=int, default=3,
                        help="size of the local patch for searching for a peak, typically 3(default) or 5. Used only with `--cutoff-peak`")
     group.add_argument("--peak-connected", dest="connected", default=2, type=int,
@@ -343,7 +343,7 @@ def parse(args=None):
         if len(arguments.IMAGE) == 0:
             raise argparse.ArgumentError(None, "No input file specified.")
         if ocl is None:
-            raise RuntimeError("sparsify-Brgg requires _really_ a valide OpenCL environment. Please install pyopencl !")
+            raise RuntimeError("sparsify-Brgg requires _really_ a valid OpenCL environment. Please install pyopencl !")
 
     except argparse.ArgumentError as e:
         logger.error(e.message)

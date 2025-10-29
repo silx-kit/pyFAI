@@ -528,7 +528,7 @@ class TestDoubleWord(unittest.TestCase):
         cls.ctx = ocl.create_context(devicetype="GPU")
         cls.queue = pyopencl.CommandQueue(cls.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
 
-        # this is running 32 bits OpenCL woth POCL
+        # this is running 32 bits OpenCL with POCL
         if (platform.machine() in ("i386", "i686", "x86_64") and (tuple.__itemsize__ == 4) and
                 cls.ctx.devices[0].platform.name == 'Portable Computing Language'):
             cls.args = "-DX87_VOLATILE=volatile"

@@ -123,7 +123,7 @@ class Geometry:
     _LAST_POLARIZATION = "last_polarization"
 
     # To ease the copy of an instance. Mutable attributes are caches which are regenerated on use
-    _UNMUTABLE_ATTRS = (
+    _IMMUTABLE_ATTRS = (
         "_dist",
         "_poni1",
         "_poni2",
@@ -210,7 +210,7 @@ class Geometry:
         self._dssa_order = (
             3  # Used to be 1 (False) in very old version of pyFAI: was a bug.
         )
-        # The correct value is 3 where 2 come from the apparant pixels area and 1 from the incidence angle.
+        # The correct value is 3 where 2 come from the apparent pixels area and 1 from the incidence angle.
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
@@ -344,10 +344,10 @@ class Geometry:
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
-        :param d1: ndarray of dimention 1/2 containing the Y pixel positions
-        :param d2: ndarray of dimention 1/2 containing the X pixel positions
-        :param p1: ndarray of dimention 1/1 containing the x pixel positions in meter. MODIFIED IN PLACE!
-        :param p2: ndarray of dimention 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
+        :param d1: ndarray of dimension 1/2 containing the Y pixel positions
+        :param d2: ndarray of dimension 1/2 containing the X pixel positions
+        :param p1: ndarray of dimension 1/1 containing the x pixel positions in meter. MODIFIED IN PLACE!
+        :param p2: ndarray of dimension 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
         :return: 2-arrays of same shape as d1 & d2 with the displacement in meters
 
         p1 & p2 should contain the pixel coordinates after translation & **rotation**
@@ -376,9 +376,9 @@ class Geometry:
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
-        :param p1: ndarray of dimention 1/2 containing the x pixel positions in meter. MODIFIED IN PLACE!
-        :param p2: ndarray of dimention 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
-        :param p3: ndarray of dimention 1/2 containing the z pixel positions in meter or a scalar.
+        :param p1: ndarray of dimension 1/2 containing the x pixel positions in meter. MODIFIED IN PLACE!
+        :param p2: ndarray of dimension 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
+        :param p3: ndarray of dimension 1/2 containing the z pixel positions in meter or a scalar.
         :return: 2-arrays of same shape as d1 & d2 with the displacement in meters
 
         p1 & p2 should contain the pixel coordinates after translation but **NOT** rotation
@@ -425,8 +425,8 @@ class Geometry:
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        :param d1: ndarray of dimention 1/2 containing the Y pixel positions
-        :param d2: ndarray of dimention 1/2 containing the X pixel positions
+        :param d1: ndarray of dimension 1/2 containing the Y pixel positions
+        :param d2: ndarray of dimension 1/2 containing the X pixel positions
         :param poni1: value in the Y direction of the poni coordinate (meter)
         :param poni2: value in the X direction of the poni coordinate (meter)
         :param do_parallax: set to True to correct for the parallax effect
@@ -801,9 +801,9 @@ class Geometry:
         at coordinate d1, d2.
         Conversion to lab coordinate system is performed in calc_pos_zyx.
 
-        :param d1: pixel coordinate along the 1st dimention (C convention)
+        :param d1: pixel coordinate along the 1st dimension (C convention)
         :type d1: float or array of them
-        :param d2: pixel coordinate along the 2nd dimention (C convention)
+        :param d2: pixel coordinate along the 2nd dimension (C convention)
         :type d2: float or array of them
         :param path: can be "tan" (i.e via numpy) or "cython"
         :return: chi, the azimuthal angle in rad
@@ -838,9 +838,9 @@ class Geometry:
         Calculate the chi (azimuthal angle) for the corner of a pixel
         at coordinate d1,d2 which in the lab ref has coordinate:
 
-        :param d1: pixel coordinate along the 1st dimention (C convention)
+        :param d1: pixel coordinate along the 1st dimension (C convention)
         :type d1: float or array of them
-        :param d2: pixel coordinate along the 2nd dimention (C convention)
+        :param d2: pixel coordinate along the 2nd dimension (C convention)
         :type d2: float or array of them
         :return: chi, the azimuthal angle in rad
         """
@@ -903,7 +903,7 @@ class Geometry:
         :param dtype: output format requested. Double precision is needed for fitting the geometry
         :param (bool) use_cython: set to false to test the Python path (slower)
         :param do_parallax: correct for parallax effect (if parametrized)
-        :return: 3D coodinates as nd-array of size (...,3) or (...,3) (default)
+        :return: 3D coordinates as nd-array of size (...,3) or (...,3) (default)
 
         Nota: this value is not cached and actually generated on demand (costly)
         """
@@ -1355,7 +1355,7 @@ class Geometry:
 
     def array_from_unit(self, shape=None, typ="center", unit=units.TTH, scale=True):
         """
-        Generate an array of position in different dimentions (R, Q, 2Theta ...)
+        Generate an array of position in different dimensions (R, Q, 2Theta ...)
 
         :param shape: shape of the expected array, leave it to None for safety
         :type shape: ndarray.shape
@@ -1591,7 +1591,7 @@ class Geometry:
 
     def get_config(self):
         """
-        return the configuration as a dictionnary
+        return the configuration as a dictionary
 
         :return: dictionary with the current configuration
         """
@@ -1789,12 +1789,12 @@ class Geometry:
         https://doi.org/10.1080/08957959608201408
 
         Warning: Fit2D flips automatically images depending on their file-format.
-        By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
-        To obtaine correct result you will have to flip images using numpy.flipud.
+        By reverse engineering we noticed this behaviour for Tiff and Mar345 images (at least).
+        To obtain correct result you will have to flip images using numpy.flipud.
 
         :param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
         :param tilt: tilt in degrees
-        :param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
+        :param tiltPlanRotation: Rotation (in degrees) of the tilt plan around the Z-detector axis
                 * 0deg -> Y does not move, +X goes to Z<0
                 * 90deg -> X does not move, +Y goes to Z<0
                 * 180deg -> Y does not move, +X goes to Z>0
@@ -1860,11 +1860,11 @@ class Geometry:
         :param Rot_1: rotation around the fastest axis (x)
         :param Rot_2: rotation around the slowest axis (y)
         :param Rot_3: rotation around the axis ORTHOGONAL to the detector plan
-        :param PSize_1: pixel size in meter along the fastest dimention
-        :param PSize_2: pixel size in meter along the slowst dimention
+        :param PSize_1: pixel size in meter along the fastest dimension
+        :param PSize_2: pixel size in meter along the slowest dimension
         :param splinefile: name of the file containing the spline
-        :param BSize_1: pixel binning factor along the fastest dimention
-        :param BSize_2: pixel binning factor along the slowst dimention
+        :param BSize_1: pixel binning factor along the fastest dimension
+        :param BSize_2: pixel binning factor along the slowest dimension
         :param WaveLength: wavelength used
         """
         # first define the detector
@@ -1903,18 +1903,18 @@ class Geometry:
 
         Basically the main difference with pyFAI is the order of the axis which are flipped
 
-        :return: dictionnary with those parameters:
+        :return: dictionary with those parameters:
             SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
             Center_1, pixel position of the PONI along fastest axis
             Center_2: pixel position of the PONI along slowest axis
             Rot_1: rotation around the fastest axis (x)
             Rot_2: rotation around the slowest axis (y)
             Rot_3: rotation around the axis ORTHOGONAL to the detector plan
-            PSize_1: pixel size in meter along the fastest dimention
-            PSize_2: pixel size in meter along the slowst dimention
+            PSize_1: pixel size in meter along the fastest dimension
+            PSize_2: pixel size in meter along the slowest dimension
             splineFile: name of the file containing the spline
-            BSize_1: pixel binning factor along the fastest dimention
-            BSize_2: pixel binning factor along the slowst dimention
+            BSize_1: pixel binning factor along the fastest dimension
+            BSize_2: pixel binning factor along the slowest dimension
             WaveLength: wavelength used in meter
         """
 
@@ -2030,7 +2030,7 @@ class Geometry:
         geometry = {"translation": [-self.poni2, -self.poni1, self.dist]}
         # This is the matrix that transforms the sample's orientation to the detector's orientation
         rot = numpy.linalg.inv(self.rotation_matrix())
-        # TODO: double check this with CXI gemetry visualizer. Indices could be transposed.
+        # TODO: double check this with CXI geometry visualizer. Indices could be transposed.
         geometry["orientation"] = [
             rot[1, 1],  # x′ · x,
             rot[1, 0],  # x′ · y,
@@ -2118,7 +2118,7 @@ class Geometry:
     def set_rot_from_quaternion(self, w, x, y, z):
         """Quaternions are convieniant ways to represent 3D rotation
         This method allows to define rot1(left-handed), rot2(left-handed) and
-        rot3 (right handed) as definied in the documentation from a quaternion,
+        rot3 (right handed) as defined in the documentation from a quaternion,
         expressed in the right handed (x1, x2, x3) basis set.
 
         Uses the transformations-library from C. Gohlke
@@ -2210,7 +2210,7 @@ class Geometry:
     def setChiDiscAtPi(self):
         """
         Set the position of the discontinuity of the chi axis between
-        -pi and +pi.  This is the default behavour
+        -pi and +pi.  This is the default behaviour
         """
         if self.chiDiscAtPi is True:
             return
@@ -2257,7 +2257,7 @@ class Geometry:
         path="numexpr",
     ):
         """
-        Calculate the polarization correction accoding to the
+        Calculate the polarization correction according to the
         polarization factor:
 
         * If the polarization factor is None,
@@ -2270,17 +2270,17 @@ class Geometry:
             there is no correction in the horizontal plane and a node at 2th=90, chi=90
         * If the polarization is elliptical, the polarization factor varies between -1 and +1.
 
-        The axis_offset parameter allows correction for the misalignement of
+        The axis_offset parameter allows correction for the misalignment of
         the polarization plane (or ellipse main axis) and the the detector's X axis.
 
         :param shape: the shape of the array,
                     can be guessed most of the time from the detector definition
         :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization)
-                    and 1 (where division by 0 could occure at 2th=90, chi=0)
+                    and 1 (where division by 0 could occur at 2th=90, chi=0)
         :param axis_offset: Angle between the polarization main axis and
                             detector's X direction (in radians !!!)
         :param with_checksum: calculate also the checksum (used with OpenCL integration)
-        :param path: set to numpy to enforce the use of numpy, else uses numexpr (mutithreaded)
+        :param path: set to numpy to enforce the use of numpy, else uses numexpr (multithreaded)
         :return: 2D array with polarization correction (normalization) array
                  or namedtuple if with_checksum
 
@@ -2372,7 +2372,7 @@ class Geometry:
                 raise RuntimeError(
                     (
                         "You should provide a shape if the"
-                        " geometry is not yet initiallized"
+                        " geometry is not yet initialized"
                     )
                 )
 
@@ -2435,7 +2435,7 @@ class Geometry:
         :param polarization_factor: set to true to use previously used value
         :param polarization_axis_offset: axis_offset to be send to the polarization method
         :param dark: dark current correction
-        :param flat: flatfield corrction
+        :param flat: flatfield correction
         :return: 2D image reconstructed
 
         """
@@ -2501,7 +2501,7 @@ class Geometry:
         :param polarization_factor: set to true to use previously used value
         :param polarization_axis_offset: axis_offset to be send to the polarization method
         :param dark: dark current correction
-        :param flat: flatfield corrction
+        :param flat: flatfield correction
         :return: 2D image reconstructed
 
         """
@@ -2593,7 +2593,7 @@ class Geometry:
             else:
                 raise ValueError("Bad FQN class, it must be a Geometry derivative")
 
-            for key in self._UNMUTABLE_ATTRS:
+            for key in self._IMMUTABLE_ATTRS:
                 new.__setattr__(key, self.__getattribute__(key))
         # TODO: replace param with a property, see #2300
         new.param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
@@ -2602,7 +2602,7 @@ class Geometry:
     def __copy__(self):
         """:return: a shallow copy of itself."""
         new = self.__class__(detector=self.detector)
-        for key in self._UNMUTABLE_ATTRS:
+        for key in self._IMMUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
         new._cached_array = self._cached_array.copy()
@@ -2620,7 +2620,7 @@ class Geometry:
         new_det = self.detector.__deepcopy__(memo)
         new.detector = new_det
 
-        for key in self._UNMUTABLE_ATTRS:
+        for key in self._IMMUTABLE_ATTRS:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
@@ -2640,7 +2640,7 @@ class Geometry:
         """Checks two geometries are equivalent.
 
         Typing will wait python 3.14"""
-        for key in self._UNMUTABLE_ATTRS+("parallax","detector", "orientation"):
+        for key in self._IMMUTABLE_ATTRS+("parallax","detector", "orientation"):
             try:
                 here =  self.__getattribute__(key)
                 there = other.__getattribute__(key)
@@ -2724,9 +2724,9 @@ class Geometry:
 
         :param activate: set to False to disable parralax correction
         :param sensor_material: provide the name of the sensor material,
-                                by default use the one definined in the detector
+                                by default use the one defined in the detector
         :param sensor_thickness: provide the name of the sensor thickness,
-                                by default use the one definined in the detector
+                                by default use the one defined in the detector
         """
 
         if activate:
@@ -2767,20 +2767,28 @@ class Geometry:
                     break
         return shape
 
-    def set_dist(self, value):
-        if isinstance(value, float):
-            self._dist = value
-        else:
-            self._dist = float(value)
-        self.reset()
 
-    def get_dist(self):
+    @property
+    def dist(self):
         return self._dist
 
-    dist = property(get_dist, set_dist)
+    @dist.setter
+    def dist(self, value):
+        self._dist = float(value)
+        self.reset()
 
-    def set_poni1(self, value):
-        if isinstance(value, float):
+    # deprecated compatibility layer
+    get_dist = deprecated(dist.fget, reason="use property", since_version="2025.09")
+    set_dist = deprecated(dist.fset, reason="use property", since_version="2025.09")
+
+
+    @property
+    def poni1(self):
+        return self._poni1
+
+    @poni1.setter
+    def poni1(self, value):
+        if isinstance(value, float): #TODO: Is this still necessary?
             self._poni1 = value
         elif isinstance(value, (tuple, list)):
             self._poni1 = float(value[0])
@@ -2788,13 +2796,17 @@ class Geometry:
             self._poni1 = float(value)
         self.reset()
 
-    def get_poni1(self):
-        return self._poni1
+    # deprecated compatibility layer
+    get_poni1 = deprecated(poni1.fget, reason="use property", since_version="2025.09")
+    set_poni1 = deprecated(poni1.fset, reason="use property", since_version="2025.09")
 
-    poni1 = property(get_poni1, set_poni1)
+    @property
+    def poni2(self):
+        return self._poni2
 
-    def set_poni2(self, value):
-        if isinstance(value, float):
+    @poni2.setter
+    def poni2(self, value):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._poni2 = value
         elif isinstance(value, (tuple, list)):
             self._poni2 = float(value[0])
@@ -2802,13 +2814,18 @@ class Geometry:
             self._poni2 = float(value)
         self.reset()
 
-    def get_poni2(self):
-        return self._poni2
+    # deprecated compatibility layer
+    get_poni2 = deprecated(poni2.fget, reason="use property", since_version="2025.09")
+    set_poni2 = deprecated(poni2.fset, reason="use property", since_version="2025.09")
 
-    poni2 = property(get_poni2, set_poni2)
 
-    def set_rot1(self, value):
-        if isinstance(value, float):
+    @property
+    def rot1(self):
+        return self._rot1
+
+    @rot1.setter
+    def rot1(self, value):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._rot1 = value
         elif isinstance(value, (tuple, list)):
             self._rot1 = float(value[0])
@@ -2816,13 +2833,18 @@ class Geometry:
             self._rot1 = float(value)
         self.reset()
 
-    def get_rot1(self):
-        return self._rot1
+    # deprecated compatibility layer
+    get_rot1 = deprecated(rot1.fget, reason="use property", since_version="2025.09")
+    set_rot1 = deprecated(rot1.fset, reason="use property", since_version="2025.09")
 
-    rot1 = property(get_rot1, set_rot1)
 
-    def set_rot2(self, value):
-        if isinstance(value, float):
+    @property
+    def rot2(self):
+        return self._rot2
+
+    @rot2.setter
+    def rot2(self, value):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._rot2 = value
         elif isinstance(value, (tuple, list)):
             self._rot2 = float(value[0])
@@ -2830,13 +2852,17 @@ class Geometry:
             self._rot2 = float(value)
         self.reset()
 
-    def get_rot2(self):
-        return self._rot2
+    # deprecated compatibility layer
+    get_rot2 = deprecated(rot2.fget, reason="use property", since_version="2025.09")
+    set_rot2 = deprecated(rot2.fset, reason="use property", since_version="2025.09")
 
-    rot2 = property(get_rot2, set_rot2)
+    @property
+    def rot3(self):
+        return self._rot3
 
-    def set_rot3(self, value):
-        if isinstance(value, float):
+    @rot3.setter
+    def rot3(self, value):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._rot3 = value
         elif isinstance(value, (tuple, list)):
             self._rot3 = float(value[0])
@@ -2844,15 +2870,20 @@ class Geometry:
             self._rot3 = float(value)
         self.reset()
 
-    def get_rot3(self):
-        return self._rot3
+    # deprecated compatibility layer
+    get_rot3 = deprecated(rot3.fget, reason="use property", since_version="2025.09")
+    set_rot3 = deprecated(rot3.fset, reason="use property", since_version="2025.09")
 
-    rot3 = property(get_rot3, set_rot3)
 
-    def set_wavelength(self, value):
+    @property
+    def wavelength(self):
+        return self._wavelength
+
+    @wavelength.setter
+    def wavelength(self, value):
         "Set the wavelength in meter!"
         old_wl = self._wavelength
-        if isinstance(value, float):
+        if isinstance(value, float):  # TODO: Is this still necessary?
             self._wavelength = value
         elif isinstance(value, (tuple, list)):
             self._wavelength = float(value[0])
@@ -2861,11 +2892,11 @@ class Geometry:
         qa = dqa = q_corner = None
         if old_wl and self._wavelength:
             if self._cached_array.get("q_center") is not None:
-                qa = self._cached_array["q_center"] * old_wl / self._wavelength
+                qa = (old_wl / self._wavelength) * self._cached_array["q_center"]
 
             q_corner = self._cached_array.get("q_corner")
             if q_corner is not None:
-                q_corner[..., 0] = q_corner[..., 0] * old_wl / self._wavelength
+                q_corner[..., 0] = (old_wl / self._wavelength) * q_corner[..., 0]
 
         self.reset()
         # restore updated values
@@ -2873,94 +2904,145 @@ class Geometry:
         self._cached_array["q_center"] = qa
         self._cached_array["q_corner"] = q_corner
 
-    def get_wavelength(self):
-        return self._wavelength
+    # deprecated compatibility layer
+    get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.09")
+    set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.09")
 
-    wavelength = property(get_wavelength, set_wavelength)
 
-    def get_energy(self):
-        if self._wavelength:
-            return 1e-10 * CONST_hc / self._wavelength
+    @property
+    def energy(self):
+        if self.wavelength:  # Use property instead of private variable
+            return 1e-10 * CONST_hc / self.wavelength
 
-    def set_energy(self, energy):
+    @energy.setter
+    def energy(self, value):
         "Set the energy in keV"
-        wavlength = 1e-10 * CONST_hc / energy
-        self.set_wavelength(wavlength)
+        wavelength = 1e-10 * CONST_hc / value
+        self.wavelength = wavelength  #Use property instead of private variable
 
-    energy = property(get_energy, set_energy)
+    # deprecated compatibility layer
+    get_energy = deprecated(energy.fget, reason="use property", since_version="2025.09")
+    set_energy = deprecated(energy.fset, reason="use property", since_version="2025.09")
 
-    def get_ttha(self):
+
+    @property
+    def ttha(self):
+        """2theta array in cache"""
         return self._cached_array.get("2th_center")
 
-    def set_ttha(self, _):
+    @ttha.setter
+    def ttha(self, _):
         logger.error("You are not allowed to modify 2theta array")
 
-    def del_ttha(self):
+    @ttha.deleter
+    def ttha(self):
         self._cached_array["2th_center"] = None
 
-    ttha = property(get_ttha, set_ttha, del_ttha, "2theta array in cache")
+    # deprecated compatibility layer
+    get_ttha = deprecated(ttha.fget, reason="use property", since_version="2025.09")
+    set_ttha = deprecated(ttha.fset, reason="use property", since_version="2025.09")
+    del_ttha = deprecated(ttha.fdel, reason="use property", since_version="2025.09")
 
-    def get_chia(self):
+    @property
+    def chia(self):
+        """chi array in cache"""
         return self._cached_array.get("chi_center")
 
-    def set_chia(self, _):
+    @chia.setter
+    def chia(self, _):
         logger.error("You are not allowed to modify chi array")
 
-    def del_chia(self):
+    @chia.deleter
+    def chia(self):
         self._cached_array["chi_center"] = None
 
-    chia = property(get_chia, set_chia, del_chia, "chi array in cache")
+    # deprecated compatibility layer
+    get_chia = deprecated(chia.fget, reason="use property", since_version="2025.09")
+    set_chia = deprecated(chia.fset, reason="use property", since_version="2025.09")
+    del_chia = deprecated(chia.fdel, reason="use property", since_version="2025.09")
 
-    def get_dssa(self):
-        key = "solid_angle#%s" % (self._dssa_order)
+
+    @property
+    def dssa(self):
+        """solid angle array in cache"""
+        key = f"solid_angle#{self._dssa_order}"
         return self._cached_array.get(key)
 
-    def set_dssa(self, _):
+    @dssa.setter
+    def dssa(self, _):
         logger.error("You are not allowed to modify solid angle array")
 
-    def del_dssa(self):
-        self._cached_array["solid_angle#%s" % (self._dssa_order)] = None
-        self._cached_array["solid_angle#%s_crc" % (self._dssa_order)] = None
+    @dssa.deleter
+    def dssa(self):
+        key = f"solid_angle#{self._dssa_order}"
+        self._cached_array[key] = None
+        self._cached_array[f"{key}_crc"] = None
 
-    dssa = property(get_dssa, set_dssa, del_dssa, "solid angle array in cache")
+    # deprecated compatibility layer
+    get_dssa = deprecated(dssa.fget, reason="use property", since_version="2025.09")
+    set_dssa = deprecated(dssa.fset, reason="use property", since_version="2025.09")
+    del_dssa = deprecated(dssa.fdel, reason="use property", since_version="2025.09")
 
-    def get_qa(self):
+
+    @property
+    def qa(self):
+        """Q array in cache"""
         return self._cached_array.get("q_center")
 
-    def set_qa(self, _):
+    @qa.setter
+    def qa(self, _):
         logger.error("You are not allowed to modify Q array")
 
-    def del_qa(self):
+    @qa.deleter
+    def qa(self):
         self._cached_array["q_center"] = None
 
-    qa = property(get_qa, set_qa, del_qa, "Q array in cache")
+    # deprecated compatibility layer
+    get_qa = deprecated(qa.fget, reason="use property", since_version="2025.09")
+    set_qa = deprecated(qa.fset, reason="use property", since_version="2025.09")
+    del_qa = deprecated(qa.fdel, reason="use property", since_version="2025.09")
 
-    def get_ra(self):
+    @property
+    def ra(self):
+        """R array in cache"""
         return self._cached_array.get("r_center")
 
-    def set_ra(self, _):
+    @ra.setter
+    def ra(self, _):
         logger.error("You are not allowed to modify R array")
 
-    def del_ra(self):
-        self.self._cached_array["r_center"] = None
+    @ra.deleter
+    def ra(self):
+        self._cached_array["r_center"] = None  # Fixed: removed extra "self."
 
-    ra = property(get_ra, set_ra, del_ra, "R array in cache")
+    # deprecated compatibility layer
+    get_ra = deprecated(ra.fget, reason="use property", since_version="2025.09")
+    set_ra = deprecated(ra.fset, reason="use property", since_version="2025.09")
+    del_ra = deprecated(ra.fdel, reason="use property", since_version="2025.09")
 
-    def get_pixel1(self):
+    @property
+    def pixel1(self):
         return self.detector.pixel1
 
-    def set_pixel1(self, pixel1):
-        self.detector.pixel1 = pixel1
+    @pixel1.setter
+    def pixel1(self, value): #TODO: Parameter should not shadow property name
+        self.detector.pixel1 = value
 
-    pixel1 = property(get_pixel1, set_pixel1)
+    # deprecated compatibility layer
+    get_pixel1 = deprecated(pixel1.fget, reason="use property", since_version="2025.09")
+    set_pixel1 = deprecated(pixel1.fset, reason="use property", since_version="2025.09")
 
-    def get_pixel2(self):
+    @property
+    def pixel2(self):
         return self.detector.pixel2
 
-    def set_pixel2(self, pixel2):
-        self.detector.pixel2 = pixel2
+    @pixel2.setter
+    def pixel2(self, value): #TODO: Parameter should not shadow property name
+        self.detector.pixel2 = value
 
-    pixel2 = property(get_pixel2, set_pixel2)
+    # deprecated compatibility layer
+    get_pixel2 = deprecated(pixel2.fget, reason="use property", since_version="2025.09")
+    set_pixel2 = deprecated(pixel2.fset, reason="use property", since_version="2025.09")
 
     @property
     def splinefile(self):
@@ -2975,43 +3057,63 @@ class Geometry:
     set_splineFile = deprecated(splinefile.fset, since_version="2025.10", reason="use `splinefile` property")
     splineFile = property(get_splineFile, set_splineFile)  # all deprecated
 
-    def get_spline(self):
+    @property
+    def spline(self):
         return self.detector.spline
 
-    def set_spline(self, spline):
-        self.detector.spline = spline
+    @spline.setter
+    def spline(self, value):
+        self.detector.spline = value
 
-    spline = property(get_spline, set_spline)
+    # deprecated compatibility layer
+    get_spline = deprecated(spline.fget, reason="use property", since_version="2025.09")
+    set_spline = deprecated(spline.fset, reason="use property", since_version="2025.09")
 
-    def get_correct_solid_angle_for_spline(self):
+    @property
+    def correct_SA_spline(self):
         return self._correct_solid_angle_for_spline
 
-    def set_correct_solid_angle_for_spline(self, value):
+    @correct_SA_spline.setter
+    def correct_SA_spline(self, value):
         v = bool(value)
         with self._sem:
             if v != self._correct_solid_angle_for_spline:
-                self._dssa = None
+                # Clear ALL solid_angle arrays of ALL orders
+                for key in list(self._cached_array.keys()):
+                    if key.startswith("solid_angle"):
+                        self._cached_array[key] = None
                 self._correct_solid_angle_for_spline = v
 
-    correct_SA_spline = property(
-        get_correct_solid_angle_for_spline, set_correct_solid_angle_for_spline
-    )
+    # deprecated compatibility layer
+    get_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fget, reason="use property", since_version="2025.09")
+    set_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fset, reason="use property", since_version="2025.09")
+  
 
-    def set_maskfile(self, maskfile):
-        self.detector.set_maskfile(maskfile)
+    @property
+    def maskfile(self):
+        return self.detector.maskfile
 
-    def get_maskfile(self):
-        return self.detector.get_maskfile()
+    @maskfile.setter
+    def maskfile(self, value):
+        self.detector.maskfile = value
 
-    maskfile = property(get_maskfile, set_maskfile)
+    # deprecated compatibility layer
+    get_maskfile = deprecated(maskfile.fget, reason="use property", since_version="2025.09")
+    set_maskfile = deprecated(maskfile.fset, reason="use property", since_version="2025.09")
 
-    def set_mask(self, mask):
-        self.detector.set_mask(mask)
 
-    def get_mask(self):
-        return self.detector.get_mask()
+    @property
+    def mask(self):
+        return self.detector.mask
 
-    mask = property(get_mask, set_mask)
+    @mask.setter
+    def mask(self, value):
+        self.detector.mask=value
+
+    # deprecated compatibility layer
+    get_mask = deprecated(mask.fget, reason="use property", since_version="2025.09")
+    set_mask = deprecated(mask.fset, reason="use property", since_version="2025.09")
+
 
     @property
     def parallax(self):
@@ -3040,12 +3142,12 @@ class Geometry:
     # Property to provide _dssa and _dssa_crc and so one to maintain the API
     @property
     def _dssa(self):
-        key = "solid_angle#%s" % (self._dssa_order)
+        key = f"solid_angle#{self._dssa_order}"
         return self._cached_array.get(key)
 
     @property
     def _dssa_crc(self):
-        key = "solid_angle#%s_crc" % (self._dssa_order)
+        key = f"solid_angle#{self._dssa_order}_crc"
         return self._cached_array.get(key)
 
     @property

@@ -63,7 +63,7 @@ class TestSolidAngle(unittest.TestCase):
     """
     Test case for solid angle compared to Fit2D results
 
-    Masked region have values set to 0 (not negative) and native mask from pilatus desactivated
+    Masked region have values set to 0 (not negative) and native mask from pilatus deactivated
     Detector Pilatus6M     PixelSize= 1.720e-04, 1.720e-04 m
     Wavelength= 1.072274e-10m
     SampleDetDist= 1.994993e-01m    PONI= 2.143248e-01, 2.133315e-01m    rot1=0.007823  rot2= 0.006716  rot3= -0.000000 rad
@@ -591,7 +591,7 @@ class TestBugRegression(unittest.TestCase):
         cls.geo = None
 
     def test_bug747(self):
-        """This bug is about PONI coordinates not subtracted from x&y coodinates in Cython"""
+        """This bug is about PONI coordinates not subtracted from x&y coordinates in Cython"""
         # self.geo.reset()
         rc = self.geo.position_array(use_cython=True)
         rp = self.geo.position_array(use_cython=False)
@@ -710,7 +710,7 @@ class TestOrientation(unittest.TestCase):
         self.assertFalse(numpy.allclose(z2, z4), "orientation 2,4 differ")
         self.assertFalse(numpy.allclose(z3, z4), "orientation 3,4 differ")
 
-        # Check that the tranformation is OK. This is with complex number thus dense & complicated !
+        # Check that the transformation is OK. This is with complex number thus dense & complicated !
         self.assertTrue(numpy.allclose(z1, -numpy.fliplr(z2.conj())), "orientation 1,2 flipped")
         self.assertTrue(numpy.allclose(z1, -z3[-1::-1, -1::-1]), "orientation 1,3 inversed")
         self.assertTrue(numpy.allclose(z1, numpy.flipud(z4.conj())), "orientation 1,4 flipped")

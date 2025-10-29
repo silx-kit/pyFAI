@@ -139,7 +139,7 @@ class ControlPoints(object):
             self.append(points, None, ring)
 
     def get(self, ring=None, lbl=None):
-        """Retireves the last group of points for a given ring (by default the last)
+        """Retrieves the last group of points for a given ring (by default the last)
 
         :param ring: index of ring to search for
         :param lbl: label of the group to retrieve
@@ -438,7 +438,7 @@ class ControlPoints(object):
 
 
     def get_labels(self):
-        """Retieve the list of labels
+        """Retrieve the list of labels
 
         :return: list of labels as string
         """
@@ -501,7 +501,7 @@ class PointGroup(object):
     @classmethod
     def reset_label(cls):
         """
-        reset intenal counter
+        reset internal counter
         """
         cls.last_label = 0
 
@@ -538,18 +538,30 @@ class PointGroup(object):
     def __repr__(self):
         return "#%2s ring %s: %s points" % (self.label, self.ring, len(self.points))
 
-    def get_ring(self):
+
+    @property
+    def ring(self) -> int:
         return self._ring
 
-    def set_ring(self, value):
-        if not isinstance(value,int):
+    @ring.setter
+    def ring(self, value: int) -> None:
+        if not isinstance(value, int):
             logger.error("Ring: %s", value)
             import traceback
             traceback.print_stack()
-            self._ring = int(value)
+            try:
+                value = int(value)
+            except Exception as exc:
+                raise ValueError(f"Cannot convert {value!r} to int.") from exc
         self._ring = value
 
-    ring = property(get_ring, set_ring)
+    # deprecated compatibility layer:
+    get_ring = deprecated(ring.fget, reason="use property", since_version="2025.09")
+    set_ring = deprecated(ring.fset, reason="use property", since_version="2025.09")
+
+
+
+
 
     @property
     def code(self):
