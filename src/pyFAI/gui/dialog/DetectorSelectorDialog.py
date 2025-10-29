@@ -151,29 +151,49 @@ class DetectorSelectorDrop(qt.QWidget):
 
     def _initSensor(self):
         "populate the comboBox with all available sensor materials"
-        self._sensorGroup.setEnabled(False)
-        self._detectorSensorParallax.checkStateChanged.connect(self.__sensorParallax)
-        for key, value in detectors.sensors.ALL_MATERIALS.items():
-            self._detectorSensorMaterials.addItem(key, userData=value)
+        self._detectorSensorParallax.stateChanged.connect(self.__sensorParallax)
         self._detectorSensorThickness.setValidator(qt.QDoubleValidator(0.0, 1e4, 1))
-        self._detectorSensorThickness.editTextChanged.connect(self.__sensorChanged)
+        # self._detectorSensorThickness.editTextChanged.connect(self.__sensorChanged)
         self._detectorSensorMaterials.currentIndexChanged.connect(self.__sensorChanged)
+        self._detectorSensorThickness.currentIndexChanged.connect(self.__sensorChanged)
+        self._detectorSensorThickness.currentTextChanged.connect(self.__sensorChanged)
+        self._resetSensor()
 
-    def __sensorParallax(self):
-        self._sensorGroup.setEnabled(self._detectorSensorParallax.isChecked())
+    def _resetSensor(self, detector=None):
+        """populate the 2 comboBox with information from the detector.
+        By default, expose all possible settings"""
+        # Flush
+        self._detectorSensorMaterials.clear()
+        self._detectorSensorThickness.clear()
+
+        # Repopulate
+        if detector:
+            for config in detector.SENSORS:
+                mat = config.material
+                thick = config.thickness
+                self._detectorSensorMaterials.addItem(mat.name, userData=mat)
+                self._detectorSensorThickness.addItem(f"{1e6*thick:4.0f}" if thick else "")
+        else:
+            for key, value in detectors.sensors.ALL_MATERIALS.items():
+                self._detectorSensorMaterials.addItem(key, userData=value)
+            self._detectorSensorThickness.addItem("")
+
+    def __sensorParallax(self, *arg):
+        self._detectorSensorParallax.setEnabled(self._detectorSensorParallax.isChecked())
         self.__sensorChanged()
 
     def getSensorConfig(self):
         if self._detectorSensorParallax.isChecked():
             sensor_material = self._detectorSensorMaterials.currentData()
             sensor = detectors.sensors.SensorConfig(sensor_material)
-            thickness = self._detectorSensorThickness.text()
+            thickness = self._detectorSensorThickness.currentText()
             if thickness.strip():
                 sensor.thickness = 1e-6*float(thickness)
             else:
                 sensor.thickness = None
         else:
             sensor = None
+        print("In getSensorConfig", str(sensor))
         return sensor
 
     def setSensorConfig(self, sensor=None):
@@ -183,10 +203,8 @@ class DetectorSelectorDrop(qt.QWidget):
             index = self._detectorSensorMaterials.findData(sensor.material)
             self._detectorSensorMaterials.setCurrentIndex(index)
             self._detectorSensorParallax.setChecked(True)
-            self._sensorGroup.setEnabled(True)
         else:
             self._detectorSensorParallax.setChecked(False)
-            self._sensorGroup.setEnabled(False)
 
     def __sensorChanged(self, **kwargs):
         # Finally set sensor config of all possible the detectors
@@ -384,6 +402,7 @@ class DetectorSelectorDrop(qt.QWidget):
         # set orientation:
         orientation = detector.orientation
         self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(orientation))
+        self._resetSensor(detector)
         self.setSensorConfig(detector.sensor)
         if self.__detector is None:
             self.__selectNoDetector()
@@ -469,6 +488,7 @@ class DetectorSelectorDrop(qt.QWidget):
 
     def __selectNoDetector(self):
         self.__setManufacturer("*")
+        self.__initSensors()
 
     def __selectNexusDetector(self, detector):
         """Select and display the detector using zero copy."""
