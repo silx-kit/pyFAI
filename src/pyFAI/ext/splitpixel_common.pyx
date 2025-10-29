@@ -259,8 +259,8 @@ class FullSplitIntegrator:
                     # All pixel is within a single bin
                     builder.cinsert(bin0_min, idx, 1.0)
                 else:
-                    # else we have pixel spliting.
-                    # offseting the min bin of the pixel to be zero to avoid percision problems
+                    # else we have pixel splitting.
+                    # offsetting the min bin of the pixel to be zero to avoid precision problems
                     bin0_min = max(0, bin0_min)
                     bin0_max = min(bins, bin0_max + 1)
 
@@ -320,7 +320,7 @@ class FullSplitIntegrator:
 
                 # Play with coordinates ...
                 v8[:, :] = cpos[idx, :, :]
-                area = _recenter(v8, chiDiscAtPi) # this is an unprecise measurement of the surface of the pixels
+                area = _recenter(v8, chiDiscAtPi) # this is an imprecise measurement of the surface of the pixels
                 a0 = v8[0, 0]
                 a1 = v8[0, 1]
                 b0 = v8[1, 0]
@@ -338,7 +338,7 @@ class FullSplitIntegrator:
                 if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 >= pos1_max):
                         continue
 
-                # Swith to bin space.
+                # Switch to bin space.
                 a0 = get_bin_number(_clip(a0, pos0_min, pos0_maxin), pos0_min, delta0)
                 a1 = get_bin_number(_clip(a1, pos1_min, pos1_maxin), pos1_min, delta1)
                 b0 = get_bin_number(_clip(b0, pos0_min, pos0_maxin), pos0_min, delta0)

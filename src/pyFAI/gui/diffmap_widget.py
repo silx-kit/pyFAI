@@ -316,7 +316,7 @@ class DiffMapWidget(qt.QWidget):
                 if self.integration_config.nbpt_rad:
                     break
                 else:
-                    qt.QMessageBox.about(self, "Unconsistent configuration", "Some essential parameters are missing ... Did you set the radial number of points ?")
+                    qt.QMessageBox.about(self, "Inconsistent configuration", "Some essential parameters are missing ... Did you set the radial number of points ?")
             else:
                 break
 
@@ -413,7 +413,7 @@ class DiffMapWidget(qt.QWidget):
                 if shape is None:
                     shape = new_shape
                 elif shape != new_shape:
-                    MessageBox.exception(self, "Frame shape missmatch: got {fimg.shape}, expected {shape}", None, None)
+                    MessageBox.exception(self, "Frame shape mismatch: got {fimg.shape}, expected {shape}", None, None)
                     return
                 total_frames += nframes
         self.numberOfFrames.setText(str(total_frames))

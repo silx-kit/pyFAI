@@ -93,7 +93,7 @@ cdef class Stack:
             res=Pair(self.stack[self.last-1, 0], self.stack[self.last-1, 1])
             return res
         else:
-            print("Emtpy stack")
+            print("Empty stack")
 
     cpdef Pair pop(self):
         cdef Pair res
@@ -102,7 +102,7 @@ cdef class Stack:
             self.last -= 1
             return res
         else:
-            print("Emtpy stack")
+            print("Empty stack")
 
     cpdef bint empty(self):
         return self.last == 0
@@ -221,7 +221,7 @@ def decompose_mask(mask, overlap=True):
             clean_mask[r.row: r.row+r.height, r.col: r.col+r.width] = 0
         remaining = clean_mask
     else:
-        #Make an expicit copy
+        #Make an explicit copy
         remaining = numpy.array(mask, dtype=numpy.int8)
     width = remaining.shape[1]
 

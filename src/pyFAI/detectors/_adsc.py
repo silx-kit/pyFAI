@@ -69,7 +69,7 @@ class ADSC_Q315(_ADSC):
     """
     ADSC Quantum 315r detector, 3x3 chips
 
-    Informations from
+    Information from
     http://www.adsc-xray.com/products/ccd-detectors/q315r-ccd-detector/
 
     Question: how are the gaps handled ?
@@ -86,7 +86,7 @@ class ADSC_Q210(_ADSC):
     """
     ADSC Quantum 210r detector, 2x2 chips
 
-    Informations from
+    Information from
     http://www.adsc-xray.com/products/ccd-detectors/q210r-ccd-detector/
 
     Question: how are the gaps handled ?
@@ -103,7 +103,7 @@ class ADSC_Q270(_ADSC):
     """
     ADSC Quantum 270r detector, 2x2 chips
 
-    Informations from
+    Information from
     http://www.adsc-xray.com/products/ccd-detectors/q270-ccd-detector/
 
     Question: how are the gaps handled ?
@@ -120,7 +120,7 @@ class ADSC_Q4(_ADSC):
     """
     ADSC Quantum 4r detector, 2x2 chips
 
-    Informations from
+    Information from
     http://proteincrystallography.org/detectors/adsc.php
 
     Question: how are the gaps handled ?
@@ -137,7 +137,7 @@ class HF_130K(_ADSC):
     """
     ADSC HF-130K 1 module
 
-    Informations from
+    Information from
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-130k/
 
     """
@@ -153,7 +153,7 @@ class HF_262k(_ADSC):
     """
     ADSC HF-262k 2 module
 
-    Informations from
+    Information from
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-262k/
 
     Nota: gaps between modules is not known/described
@@ -170,7 +170,7 @@ class HF_1M(_ADSC):
     """
     ADSC HF-1M 2x4 modules
 
-    Informations from
+    Information from
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-1m/
 
     Nota: gaps between modules is not known/described
@@ -187,7 +187,7 @@ class HF_2M(_ADSC):
     """
     ADSC HF-1M 3x6 modules
 
-    Informations from
+    Information from
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-2.4m/
 
     Nota: gaps between modules is not known/described
@@ -204,7 +204,7 @@ class HF_4M(_ADSC):
     """
     ADSC HF-4M 4x8 modules
 
-    Informations from
+    Information from
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-4m/
     """
     force_pixel = True
@@ -219,7 +219,7 @@ class HF_9M(_ADSC):
     """
     ADSC HF-130K 1 module
 
-    Informations from
+    Information from
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-9-4m/
 
     """

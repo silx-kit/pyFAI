@@ -388,28 +388,28 @@ cdef class SparseBuilder(object):
     This class provade an API to build a sparse matrix from bin data
 
     It provides different internal structure to be able to use it in different
-    context. It can boost a fast insert, or speed up fast convertion to CSR
+    context. It can boost a fast insert, or speed up fast conversion to CSR
     format.
 
     :param: int nbin: Number of bin to store
     :param str mode: Internal structure used to store the data:
 
         - "pack": Alloc a `heap_size` and feed it with tuple (bin, indice, value).
-            The insert is very fast, conversion to CSR is done using sequencial
+            The insert is very fast, conversion to CSR is done using sequential
             read and a random write.
         - "heaplist": Alloc a `heap_size` and feed it with a linked list per bins
             containing (indice, value, next).
             The insert is very fast, conversion to CSR is done using random read
-            and a sequencial write.
+            and a sequential write.
         - "block": Alloc `block_size` per bins and feed it with values and indices.
-            The conversion to CSR is done sequencially using block copy.
+            The conversion to CSR is done sequentially using block copy.
             The `heap_size` should be a multiple of the `block_size`. If the
             `heap_size` is zero, block are allocated one by one without management.
         - "stdlist": Use standard C++ list. It is head as reference for testing.
     :param Union[None|int] block_size: Number of element in a block if used. If more
         space is needed another block are allocated on the fly.
     :param Union[None|int] heap_size: Number of element in the global memory
-        managment. This system allocation a single time memory for many needs.
+        management. This system allocation a single time memory for many needs.
         It reduce the overhead of memory allocation. If set to `None` or `0`,
         this management is disabled.
     """

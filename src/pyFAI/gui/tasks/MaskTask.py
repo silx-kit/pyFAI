@@ -104,7 +104,7 @@ class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
         return result
 
     def load(self, filename):
-        """Override the fuction importing a new mask."""
+        """Override the function importing a new mask."""
         try:
             result = silx.gui.plot.MaskToolsWidget.MaskToolsWidget.load(self, filename)
             self.__maskFilenameUpdated(filename)

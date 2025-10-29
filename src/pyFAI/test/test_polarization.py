@@ -80,12 +80,12 @@ class TestPolarization(unittest.TestCase):
     def testVertPol(self):
         "Vertical polarization should decay in (cos2θ)**2 in vertical plane and no correction in horizontal one"
         self.assertTrue(abs(self.ai.polarization(factor=-1)[6] - numpy.ones(13)).max() == 0, "No correction in the horizontal plane")
-        self.assertTrue(abs(self.ai.polarization(factor=-1)[:, 6] - (numpy.cos((2 * self.rotX)) + 1) / 2).max() < self.epsilon, "cos(2th)^2 like in the verical plane")
+        self.assertTrue(abs(self.ai.polarization(factor=-1)[:, 6] - (numpy.cos((2 * self.rotX)) + 1) / 2).max() < self.epsilon, "cos(2th)^2 like in the vertical plane")
 
     def testoffsetPol(self):
         "test for the rotation of the polarization axis"
         self.assertTrue(abs(self.ai.polarization(factor=1, axis_offset=numpy.pi / 2)[6] - numpy.ones(13)).max() == 0, "No correction in the horizontal plane")
-        self.assertTrue(abs(self.ai.polarization(factor=1, axis_offset=numpy.pi / 2)[:, 6] - (numpy.cos((2 * self.rotX)) + 1) / 2).max() < self.epsilon, "cos(2th)^2 like in the verical plane")
+        self.assertTrue(abs(self.ai.polarization(factor=1, axis_offset=numpy.pi / 2)[:, 6] - (numpy.cos((2 * self.rotX)) + 1) / 2).max() < self.epsilon, "cos(2th)^2 like in the vertical plane")
 
     def testNumExpr(self):
         for _ in range(10):

@@ -69,5 +69,5 @@ def get_calibrant(calibrant_name: str, wavelength: float = None) -> Calibrant:
 
 
 def names() -> List[str]:
-    """Returns the list of registred calibrant names."""
+    """Returns the list of registered calibrant names."""
     return CALIBRANT_FACTORY.keys()

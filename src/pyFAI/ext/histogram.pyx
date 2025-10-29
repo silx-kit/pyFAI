@@ -403,7 +403,7 @@ def histogram_preproc(pos,
                     if sum_norm_sq > 0.0:
                         # Inspired from https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                         # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
-                        # Emprically validated against 2-pass implementation in Python/scipy-sparse
+                        # Empirically validated against 2-pass implementation in Python/scipy-sparse
                         if nrm:
                             omega_A = sum_norm
                             omega_B = nrm
@@ -605,9 +605,9 @@ def histogram2d_engine(radial, azimuthal,
     :param dark_variance: provide an estimation of the variance of the dark_current,
     :param error_model: set to "poisson" for assuming the detector is poissonian and variance = raw + dark
     :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
-    :param radial_range: enforce boundaries in radial dimention, 2tuple with lower and upper bound
-    :param azimuth_range: enforce boundaries in azimuthal dimention, 2tuple with lower and upper bound
-    :param allow_radial_neg: clip negative radial position (can a dimention be negative ?)
+    :param radial_range: enforce boundaries in radial dimension, 2tuple with lower and upper bound
+    :param azimuth_range: enforce boundaries in azimuthal dimension, 2tuple with lower and upper bound
+    :param allow_radial_neg: clip negative radial position (can a dimension be negative ?)
     :param chiDiscAtPi: set the azimuthal discontinuity at π (True) or at 0/2π (False)
     :param clip_pos1: clip the azimuthal range to [-π π] (or [0 2π]), set to False to deactivate behavior.
 
@@ -642,7 +642,7 @@ def histogram2d_engine(radial, azimuthal,
         data_t[::1] cdata = numpy.ascontiguousarray(raw.ravel(), dtype=data_d)
         data_t[::1] cflat, cdark, cpolarization, csolidangle, cvariance, cabsorption, cdark_variance
         data_t cdummy, ddummy=0.0
-        # Related to positon: double precision
+        # Related to position: double precision
         position_t[::1] cpos0 = numpy.ascontiguousarray(radial.ravel(), dtype=position_d)
         position_t[::1] cpos1 = numpy.ascontiguousarray(azimuthal.ravel(), dtype=position_d)
         #Accumulated data are also double
@@ -768,7 +768,7 @@ def histogram2d_engine(radial, azimuthal,
                 cnt = out_data[i, j, 3]
                 norm2 = out_data[i, j, 4]
                 if cnt > 0.0:
-                    "test on count as norm could be negatve"
+                    "test on count as norm could be negative"
                     out_intensity[i, j] = sig / norm
                     if do_variance:
                         out_sem[i, j] = sqrt(var) / norm

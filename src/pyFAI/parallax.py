@@ -64,13 +64,13 @@ class Beam:
         return f"Beam of shape {self.profile} with a width of {self.width}m"
 
     def get_config(self):
-        """Gets the configuration as a dictionnary"""
+        """Gets the configuration as a dictionary"""
         return {"class": self.__class__.__name__,
                 "width": self.width,
                 "profile":self.profile}
 
     def set_config(self, cfg):
-        """Set the configuration from a dictionnary"""
+        """Set the configuration from a dictionary"""
         if "class" in cfg:
             if cfg["class"] != self.__class__.__name__:
                 raise RuntimeError("class does not match name")
@@ -175,12 +175,12 @@ class BaseSensor:
         return f"Thick sensor with µ={self.mu} 1/m"
 
     def get_config(self):
-        """Gets the configuration as a dictionnary"""
+        """Gets the configuration as a dictionary"""
         return {"class": self.__class__.__name__,
                 "mu": self.mu, }
 
     def set_config(self, cfg):
-        """Set the configuration from a dictionnary"""
+        """Set the configuration from a dictionary"""
         if "class" in cfg:
             if cfg["class"] != self.__class__.__name__:
                 raise RuntimeError("class does not match name")
@@ -201,10 +201,10 @@ class ThinSensor(BaseSensor):
 
     The sensor is defined by its thickness (in meter) and the apparent (normal) efficiency
     of the material which is usually easier to obtain from the manufacturer than the
-    exect composition of the sensor or the absortion coefficient.
+    exact composition of the sensor or the absorption coefficient.
 
-    Nota: the absortion coefficient µ depends on the wavelength, but the effect is expected to
-    be negligeable when refining the wavelength in a calibration experiment.
+    Nota: the absorption coefficient µ depends on the wavelength, but the effect is expected to
+    be negligible when refining the wavelength in a calibration experiment.
     It is expected in 1/m (many text-books work in 1/cm).
     """
 
@@ -236,14 +236,14 @@ class ThinSensor(BaseSensor):
         return f"Thin sensor with µ={self.mu:.3f} 1/m, thickness={self.thickness}m and efficiency={self.efficiency:.3f}"
 
     def get_config(self):
-        """Gets the configuration as a dictionnary"""
+        """Gets the configuration as a dictionary"""
         return {"class": self.__class__.__name__,
                 "mu": self.mu,
                 "thickness": self.thickness,
                 "efficiency": self.efficiency}
 
     def set_config(self, cfg):
-        """Set the configuration from a dictionnary"""
+        """Set the configuration from a dictionary"""
         if "class" in cfg:
             if cfg["class"] != self.__class__.__name__:
                 raise RuntimeError("class does not match name")
@@ -405,7 +405,7 @@ class ThinSensor(BaseSensor):
         else:
             idx = idx_max[0]
             if idx > 1 or idx < len(y) - 1:
-                # Second order tailor expension
+                # Second order tailor expansion
                 f_prime = 0.5 * (y[idx + 1] - y[idx - 1])
                 f_sec = (y[idx + 1] + y[idx - 1] - 2 * y[idx])
                 if f_sec == 0:
@@ -474,7 +474,7 @@ class Parallax:
         return dico
 
     def set_config(self, cfg):
-        """Set the configuration from a dictionnary"""
+        """Set the configuration from a dictionary"""
         if "class" in cfg:
             if cfg["class"] != self.__class__.__name__:
                 raise RuntimeError("class key is expected to be the class-name")

@@ -80,9 +80,9 @@ class CreateSceneThread(qt.QThread):
 
     def isAborted(self):
         """
-        Returns whether the theard has aborted or not.
+        Returns whether the thread has been aborted.
 
-        .. note:: Aborted thead are not finished theads.
+        .. note:: Aborted threads are not finished threads.
         """
         return self.__isAborted
 

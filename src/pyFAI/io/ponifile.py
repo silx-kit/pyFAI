@@ -142,7 +142,7 @@ class PoniFile(object):
     def read_from_dict(self, config:dict) -> None:
         """Initialize this object using a dictionary.
 
-        .. note:: The dictionary is versionned.
+        .. note:: The dictionary is versioned.
         Version:
 
             * 1: Historical version (i.e. unversioned)
@@ -217,7 +217,7 @@ class PoniFile(object):
             self._parallax = None
 
         if version > self.__class__.API_VERSION:
-            raise RuntimeError("PONI file verison %s too recent. Please upgrade installation of pyFAI.", version)
+            raise RuntimeError("PONI file version %s too recent. Please upgrade installation of pyFAI.", version)
 
         if "distance" in config:
             self._dist = float(config["distance"]) if config["distance"] is not None else None

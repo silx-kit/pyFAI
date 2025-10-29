@@ -509,8 +509,8 @@ void lut3(__global float8* pos,
  * the use of local pointer can help on the CPU.
  *
  * @param weights     Float pointer to global memory storing the input image.
- * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
- * @param row_ind     Integer pointer to global memory holding the corresponding index of the coeficient
+ * @param coefs       Float pointer to global memory holding the coefficient part of the LUT
+ * @param row_ind     Integer pointer to global memory holding the corresponding index of the coefficient
  * @param col_ptr     Integer pointer to global memory holding the pointers to the coefs and row_ind for the CSR matrix
  * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
  * @param dummy       Float: value for bad pixels
