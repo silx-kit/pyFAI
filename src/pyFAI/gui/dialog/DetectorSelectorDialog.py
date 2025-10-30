@@ -165,36 +165,35 @@ class DetectorSelectorDrop(qt.QWidget):
     def _resetSensor(self, detector=None):
         """populate the 2 comboBox with information from the detector.
         By default, expose all possible settings"""
-        with block_signals(self._detectorSensorMaterials):
-            with block_signals(self._detectorSensorThickness):
-                # Flush
-                self._detectorSensorMaterials.clear()
-                self._detectorSensorThickness.clear()
-                info = []  # used to populate SensorInfo
+        with block_signals(self._detectorSensorMaterials),  block_signals(self._detectorSensorThickness):
+            # Flush
+            self._detectorSensorMaterials.clear()
+            self._detectorSensorThickness.clear()
+            info = []  # used to populate SensorInfo
 
-                # Repopulate
-                if detector and detector.SENSORS:
-                    materials = set()  # Avoid duplicated population
-                    thicknesses = set()
-                    for config in detector.SENSORS:
-                        info.append(str(config))
-                        mat = config.material
-                        thick = config.thickness
-                        if mat not in materials:
-                            self._detectorSensorMaterials.addItem(
-                                mat.name, userData=mat
-                            )
-                            materials.add(mat)
-                        if thick not in thicknesses:
-                            stg = f"{1e6 * thick:4.0f}" if thick else ""
-                            self._detectorSensorThickness.addItem(stg, userData=thick)
-                            thicknesses.add(thick)
-                else:
-                    self._detectorSensorMaterials.addItem(" ", userData=None)
-                    for key, value in detectors.sensors.ALL_MATERIALS.items():
-                        self._detectorSensorMaterials.addItem(key, userData=value)
-                    self._detectorSensorThickness.addItem("", userData=None)
-                self._detectorSensorInfo.setText("|".join(info))
+            # Repopulate
+            if detector and detector.SENSORS:
+                materials = set()  # Avoid duplicated population
+                thicknesses = set()
+                for config in detector.SENSORS:
+                    info.append(str(config))
+                    mat = config.material
+                    thick = config.thickness
+                    if mat not in materials:
+                        self._detectorSensorMaterials.addItem(
+                            mat.name, userData=mat
+                        )
+                        materials.add(mat)
+                    if thick not in thicknesses:
+                        stg = f"{1e6 * thick:4.0f}" if thick else ""
+                        self._detectorSensorThickness.addItem(stg, userData=thick)
+                        thicknesses.add(thick)
+            else:
+                self._detectorSensorMaterials.addItem(" ", userData=None)
+                for key, value in detectors.sensors.ALL_MATERIALS.items():
+                    self._detectorSensorMaterials.addItem(key, userData=value)
+                self._detectorSensorThickness.addItem("", userData=None)
+            self._detectorSensorInfo.setText("|".join(info))
 
         if isinstance(detector, detectors.Detector):
             self.setSensorConfig(detector.sensor)

@@ -172,64 +172,10 @@
           <string>Detector</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0">
-          <item row="4" column="0">
-           <widget class="QLabel" name="_detectorOrientationLabel">
-            <property name="toolTip">
-             <string>Detector orientation</string>
-            </property>
-            <property name="text">
-             <string>Orientation:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="_detectorSizeLabel">
-            <property name="toolTip">
-             <string>Detector size without binning</string>
-            </property>
-            <property name="text">
-             <string>Size (h×w):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QToolButton" name="_customDetector">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_9">
             <property name="text">
              <string>Name:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLabel" name="_detectorSize">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLabel" name="_detectorPixelSize">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QLabel" name="_detectorSizeUnit">
-            <property name="text">
-             <string>px</string>
             </property>
            </widget>
           </item>
@@ -246,27 +192,10 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="ElidedLabel" name="_detectorFileDescription">
+          <item row="0" column="2">
+           <widget class="QToolButton" name="_customDetector">
             <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="_detectorPixelSizeLabel">
-            <property name="toolTip">
-             <string>Detector pixel size without binning</string>
-            </property>
-            <property name="text">
-             <string>Pixel size (h×w):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QLabel" name="_detectorOrientationValue">
-            <property name="text">
-             <string>0</string>
+             <string>...</string>
             </property>
            </widget>
           </item>
@@ -283,10 +212,54 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QLabel" name="_detectorOrientationName">
+          <item row="1" column="1">
+           <widget class="ElidedLabel" name="_detectorFileDescription">
             <property name="text">
-             <string>Unknown</string>
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="_detectorSizeLabel">
+            <property name="toolTip">
+             <string>Detector size without binning</string>
+            </property>
+            <property name="text">
+             <string>Size (h×w):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="_detectorSize">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="_detectorSizeUnit">
+            <property name="text">
+             <string>px</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="_detectorPixelSizeLabel">
+            <property name="toolTip">
+             <string>Detector pixel size without binning</string>
+            </property>
+            <property name="text">
+             <string>Pixel size (h×w):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLabel" name="_detectorPixelSize">
+            <property name="text">
+             <string/>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -297,6 +270,33 @@
            <widget class="QLabel" name="_detectorPixelSizeUnit">
             <property name="text">
              <string>µm</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="_detectorOrientationLabel">
+            <property name="toolTip">
+             <string>Detector orientation</string>
+            </property>
+            <property name="text">
+             <string>Orientation:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="_detectorOrientationName">
+            <property name="text">
+             <string>Unknown</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLabel" name="_detectorOrientationValue">
+            <property name="text">
+             <string>0</string>
             </property>
            </widget>
           </item>
@@ -324,9 +324,9 @@
            </widget>
           </item>
           <item row="5" column="2">
-           <widget class="QLabel" name="_detectorParallax">
+           <widget class="QCheckBox" name="_detectorParallax">
             <property name="toolTip">
-             <string extracomment="Parallax correction is activated">Is parallax correction enabled?</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correct geometry for parrallax effect (much slower)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string/>

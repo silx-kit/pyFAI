@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/09/2025"
+__date__ = "30/10/2025"
 
 import numpy
 import logging
@@ -268,8 +268,10 @@ class ExperimentTask(AbstractCalibrationTask):
             self._detectorOrientationValue.setText("")
             self._detectorSensorLabel.setText("")
             self._detectorSensorName.setText("")
+            self._detectorParallax.setVisible(False)
             self._detectorFileDescription.setVisible(False)
             self._detectorFileDescriptionTitle.setVisible(False)
+            
         else:
             self._detectorLabel.setStyleSheet("QLabel { }")
             text = [str(s) for s in detector.max_shape]
@@ -288,9 +290,11 @@ class ExperimentTask(AbstractCalibrationTask):
             if detector.sensor:
                 self._detectorSensorLabel.setText("Sensor:")
                 self._detectorSensorName.setText(str(detector.sensor))
+                self._detectorParallax.setVisible(True)
             else:
                 self._detectorSensorLabel.setText("")
                 self._detectorSensorName.setText("")
+                self._detectorParallax.setVisible(False)
 
 
             if detector.HAVE_TAPER or detector.__class__ == pyFAI.detectors.Detector:
