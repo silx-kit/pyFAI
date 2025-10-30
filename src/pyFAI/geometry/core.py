@@ -60,7 +60,7 @@ from .fit2d import convert_to_Fit2d, convert_from_Fit2d
 from .imaged11 import convert_from_ImageD11, convert_to_ImageD11
 from .. import detectors
 from .. import units
-from ..utils.decorators import deprecated, deprecated_args
+from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
 from ..utils import crc32, ParallaxNotImplemented
 from ..utils.mathutil import deg2rad, expand2d
 from .. import utils
@@ -2788,12 +2788,19 @@ class Geometry:
 
     @poni1.setter
     def poni1(self, value):
-        if isinstance(value, float): #TODO: Is this still necessary?
-            self._poni1 = value
-        elif isinstance(value, (tuple, list)):
-            self._poni1 = float(value[0])
-        else:
-            self._poni1 = float(value)
+        if isinstance(value, (tuple, list)):
+            deprecated_warning(
+            type_="Parameter",
+            name="poni1",
+            reason="Passing a tuple or list is deprecated",
+            replacement="a scalar float value",
+            since_version="2025.10",
+            only_once=True,
+            skip_backtrace_count=2
+            )
+            value = value[0]
+            
+        self._poni1 = float(value)
         self.reset()
 
     # deprecated compatibility layer
@@ -2806,12 +2813,19 @@ class Geometry:
 
     @poni2.setter
     def poni2(self, value):
-        if isinstance(value, float):  # TODO: Is this still necessary?
-            self._poni2 = value
-        elif isinstance(value, (tuple, list)):
-            self._poni2 = float(value[0])
-        else:
-            self._poni2 = float(value)
+        if isinstance(value, (tuple, list)):
+            deprecated_warning(
+            type_="Parameter",
+            name="poni2",
+            reason="Passing a tuple or list is deprecated",
+            replacement="a scalar float value",
+            since_version="2025.10",
+            only_once=True,
+            skip_backtrace_count=2
+            )
+            value = value[0]
+
+        self._poni2 = float(value)
         self.reset()
 
     # deprecated compatibility layer
@@ -2825,12 +2839,19 @@ class Geometry:
 
     @rot1.setter
     def rot1(self, value):
-        if isinstance(value, float):  # TODO: Is this still necessary?
-            self._rot1 = value
-        elif isinstance(value, (tuple, list)):
-            self._rot1 = float(value[0])
-        else:
-            self._rot1 = float(value)
+        if isinstance(value, (tuple, list)):
+            deprecated_warning(
+            type_="Parameter",
+            name="rot1",
+            reason="Passing a tuple or list is deprecated",
+            replacement="a scalar float value",
+            since_version="2025.10",
+            only_once=True,
+            skip_backtrace_count=2
+            )
+            value = value[0]
+
+        self._rot1 = float(value)
         self.reset()
 
     # deprecated compatibility layer
@@ -2844,12 +2865,19 @@ class Geometry:
 
     @rot2.setter
     def rot2(self, value):
-        if isinstance(value, float):  # TODO: Is this still necessary?
-            self._rot2 = value
-        elif isinstance(value, (tuple, list)):
-            self._rot2 = float(value[0])
-        else:
-            self._rot2 = float(value)
+        if isinstance(value, (tuple, list)):
+            deprecated_warning(
+            type_="Parameter",
+            name="rot2",
+            reason="Passing a tuple or list is deprecated",
+            replacement="a scalar float value",
+            since_version="2025.10",
+            only_once=True,
+            skip_backtrace_count=2
+            )
+            value = value[0]
+
+        self._rot2 = float(value)
         self.reset()
 
     # deprecated compatibility layer
@@ -2862,12 +2890,20 @@ class Geometry:
 
     @rot3.setter
     def rot3(self, value):
-        if isinstance(value, float):  # TODO: Is this still necessary?
-            self._rot3 = value
-        elif isinstance(value, (tuple, list)):
-            self._rot3 = float(value[0])
-        else:
-            self._rot3 = float(value)
+        if isinstance(value, (tuple, list)):
+            # Issue a deprecation warning
+            deprecated_warning(
+            type_="Parameter",
+            name="rot3",
+            reason="Passing a tuple or list is deprecated",
+            replacement="a scalar float value",
+            since_version="2025.10",
+            only_once=True,
+            skip_backtrace_count=2
+            )
+            value = value[0]
+            
+        self._rot3 = float(value)
         self.reset()
 
     # deprecated compatibility layer
@@ -2883,12 +2919,20 @@ class Geometry:
     def wavelength(self, value):
         "Set the wavelength in meter!"
         old_wl = self._wavelength
-        if isinstance(value, float):  # TODO: Is this still necessary?
-            self._wavelength = value
-        elif isinstance(value, (tuple, list)):
-            self._wavelength = float(value[0])
-        else:
-            self._wavelength = float(value)
+        if isinstance(value, (tuple, list)):
+            deprecated_warning(
+            type_="Parameter",
+            name="wavelength",
+            reason="Passing a tuple or list is deprecated",
+            replacement="a scalar float value",
+            since_version="2025.10",
+            only_once=True,
+            skip_backtrace_count=2
+            )
+            value = value[0]
+        
+        self._wavelength = float(value)
+
         qa = dqa = q_corner = None
         if old_wl and self._wavelength:
             if self._cached_array.get("q_center") is not None:
@@ -3025,7 +3069,7 @@ class Geometry:
         return self.detector.pixel1
 
     @pixel1.setter
-    def pixel1(self, value): #TODO: Parameter should not shadow property name
+    def pixel1(self, value):
         self.detector.pixel1 = value
 
     # deprecated compatibility layer
@@ -3037,7 +3081,7 @@ class Geometry:
         return self.detector.pixel2
 
     @pixel2.setter
-    def pixel2(self, value): #TODO: Parameter should not shadow property name
+    def pixel2(self, value): 
         self.detector.pixel2 = value
 
     # deprecated compatibility layer

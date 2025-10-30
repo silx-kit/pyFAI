@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2025"
+__date__ = "30/10/2025"
 __status__ = "stable"
 
 import logging
@@ -53,7 +53,7 @@ from .. import utils
 from .. import average
 from ..utils import crc32
 from ..utils.mathutil import expand2d, binning as rebin
-from ..utils.decorators import deprecated, deprecated_args
+from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
 from ..utils.stringutil import to_eng
 
 logger = logging.getLogger(__name__)
@@ -232,8 +232,12 @@ class Detector(metaclass=DetectorMeta):
         self.sensor = None
         if pixel1:
             self._pixel1 = float(pixel1)
+        elif self.force_pixel and "PIXEL_SIZE" in dir(self.__class__):
+            self._pixel1 = self.__class__.PIXEL_SIZE[0]
         if pixel2:
             self._pixel2 = float(pixel2)
+        elif self.force_pixel and "PIXEL_SIZE" in dir(self.__class__):
+            self._pixel2 = self.__class__.PIXEL_SIZE[1]
         if max_shape is None:
             self.max_shape = tuple(self.MAX_SHAPE) if "MAX_SHAPE" in dir(self.__class__) else None
         else:
@@ -391,9 +395,11 @@ class Detector(metaclass=DetectorMeta):
         """
         dico = {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                'max_shape': self.max_shape,
                 "orientation": self.orientation or 3
                 }
+        if (self.max_shape and "MAX_SHAPE" in dir(self.__class__) and 
+                tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE)):
+            dico["max_shape"] = self.max_shape
         if self._splinefile:
             dico["splineFile"] = self._splinefile
         if self.sensor:
@@ -1117,7 +1123,24 @@ class Detector(metaclass=DetectorMeta):
     @pixel1.setter
     def pixel1(self, value):
         """Set the pixel size along the first dimension."""
-        value = float(value[0] if isinstance(value, (tuple, list)) else value)
+        # handle legacy tuple/list input
+        if isinstance(value, (tuple, list)):
+            deprecated_warning(
+                type_="Parameter",
+                name="pixel1",
+                reason="Passing a tuple or list is deprecated",
+                replacement="a scalar float value",
+                since_version="2025.10",
+                only_once=True,
+                skip_backtrace_count=2,
+            )
+            value = value[0]
+
+        # handle NumPy 0-D scalars
+        if hasattr(value, "item"):
+            value = value.item()
+        value = float(value)
+                    
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
             if self.force_pixel and (err > EPSILON):
@@ -1137,8 +1160,24 @@ class Detector(metaclass=DetectorMeta):
     @pixel2.setter
     def pixel2(self, value):
         """Set the pixel size along the second dimension."""
-        #TODO: Is this on purpose to take the first entry in tuple, list as pixel2?
-        value = float(value[0] if isinstance(value, (tuple, list)) else value)
+        # handle legacy tuple/list input
+        if isinstance(value, (tuple, list)):
+            deprecated_warning(
+                type_="Parameter",
+                name="pixel2",
+                reason="Passing a tuple or list is deprecated",
+                replacement="a scalar float value",
+                since_version="2025.10",
+                only_once=True,
+                skip_backtrace_count=2,
+            )
+            value = value[0]
+
+        # handle NumPy 0-D scalars
+        if hasattr(value, "item"):
+            value = value.item()
+        value = float(value)
+            
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
             if self.force_pixel and (err > EPSILON):
