@@ -38,8 +38,7 @@ __date__ = "30/10/2025"
 __status__ = "production"
 
 import logging
-import json
-from ._common import Detector, Orientation, to_eng
+from ._common import Detector
 logger = logging.getLogger(__name__)
 
 
