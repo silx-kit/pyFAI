@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2025"
+__date__ = "30/10/2025"
 __status__ = "production"
 
 import numpy
@@ -58,6 +58,7 @@ class _Lambda(Detector):
     MODULE_GAP = (4, 4)
     DUMMY = 0
     force_pixel = True
+    PIXEL_SIZE = (55e-6, 55e-6)
     SENSORS = (Si300, Si500, GaAs500, CdTe1000)
 
     def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
@@ -66,14 +67,6 @@ class _Lambda(Detector):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
             self.module_size = module_size
-
-    def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-        if self.orientation:
-            txt+=f"\t {self.orientation.name} ({self.orientation.value})"
-        if self.sensor:
-            txt += f"\t {self.sensor}"
-        return txt
 
     def calc_mask(self):
         """

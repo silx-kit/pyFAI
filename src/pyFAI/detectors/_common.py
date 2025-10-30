@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2025"
+__date__ = "30/10/2025"
 __status__ = "stable"
 
 import logging
@@ -232,8 +232,12 @@ class Detector(metaclass=DetectorMeta):
         self.sensor = None
         if pixel1:
             self._pixel1 = float(pixel1)
+        elif self.force_pixel and "PIXEL_SIZE" in dir(self.__class__):
+            self._pixel1 = self.__class__.PIXEL_SIZE[0]
         if pixel2:
             self._pixel2 = float(pixel2)
+        elif self.force_pixel and "PIXEL_SIZE" in dir(self.__class__):
+            self._pixel2 = self.__class__.PIXEL_SIZE[1]
         if max_shape is None:
             self.max_shape = tuple(self.MAX_SHAPE) if "MAX_SHAPE" in dir(self.__class__) else None
         else:
@@ -391,9 +395,11 @@ class Detector(metaclass=DetectorMeta):
         """
         dico = {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                'max_shape': self.max_shape,
                 "orientation": self.orientation or 3
                 }
+        if (self.max_shape and "MAX_SHAPE" in dir(self.__class__) and 
+                tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE)):
+            dico["max_shape"] = self.max_shape
         if self._splinefile:
             dico["splineFile"] = self._splinefile
         if self.sensor:
