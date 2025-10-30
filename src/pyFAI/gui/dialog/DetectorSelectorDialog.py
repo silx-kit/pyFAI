@@ -40,11 +40,11 @@ from ..utils import validators, block_signals
 from ..ApplicationContext import ApplicationContext
 from ..utils import FilterBuilder
 from ...detectors.sensors import SensorConfig
+
 _logger = logging.getLogger(__name__)
 
 
 class DetectorSelectorDrop(qt.QWidget):
-
     _ManufacturerRole = qt.Qt.UserRole
 
     _CustomDetectorRole = qt.Qt.UserRole
@@ -144,15 +144,19 @@ class DetectorSelectorDrop(qt.QWidget):
     def _initOrientation(self):
         for item in detectors.orientation.Orientation:
             if item.available:
-                self._detectorOrientation.addItem(f"{item.value}: {item.name} ", userData=item)
+                self._detectorOrientation.addItem(
+                    f"{item.value}: {item.name} ", userData=item
+                )
 
         self._detectorOrientation.currentIndexChanged.connect(self.__orientationChanged)
         default = detectors.orientation.Orientation(3)
-        self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(default))
+        self._detectorOrientation.setCurrentIndex(
+            self._detectorOrientation.findData(default)
+        )
 
     def _initSensor(self):
         "Wire signals/slots"
-        self._detectorSensorThickness.setValidator(qt.QDoubleValidator(0.0, 1e4, 1))        
+        self._detectorSensorThickness.setValidator(qt.QDoubleValidator(0.0, 1e4, 1))
         self._resetSensor()
         self._detectorSensorMaterials.currentIndexChanged.connect(self.__sensorChanged)
         self._detectorSensorThickness.currentIndexChanged.connect(self.__sensorChanged)
@@ -178,10 +182,12 @@ class DetectorSelectorDrop(qt.QWidget):
                         mat = config.material
                         thick = config.thickness
                         if mat not in materials:
-                            self._detectorSensorMaterials.addItem(mat.name, userData=mat)
+                            self._detectorSensorMaterials.addItem(
+                                mat.name, userData=mat
+                            )
                             materials.add(mat)
                         if thick not in thicknesses:
-                            stg = f"{1e6*thick:4.0f}" if thick else ""
+                            stg = f"{1e6 * thick:4.0f}" if thick else ""
                             self._detectorSensorThickness.addItem(stg, userData=thick)
                             thicknesses.add(thick)
                 else:
@@ -196,7 +202,6 @@ class DetectorSelectorDrop(qt.QWidget):
         # else:
         #     _logger.warning("Not triggering setSensorConfig %s", detector)
 
-
     def getSensorConfig(self) -> SensorConfig:
         sensor_material = self._detectorSensorMaterials.currentData()
         sensor = None
@@ -204,31 +209,35 @@ class DetectorSelectorDrop(qt.QWidget):
             sensor = SensorConfig(sensor_material)
             thickness = self._detectorSensorThickness.currentText()
             if thickness.strip():
-                sensor.thickness = 1e-6*float(thickness)
+                sensor.thickness = 1e-6 * float(thickness)
             else:
                 sensor.thickness = None
-            
-        #_logger.info("In getSensorConfig: %s", sensor)
+
+        # _logger.info("In getSensorConfig: %s", sensor)
         return sensor
 
-    def setSensorConfig(self, sensor:SensorConfig|None=None):
-        #_logger.info("In setSensorConfig: %s", sensor)
+    def setSensorConfig(self, sensor: SensorConfig | None = None):
+        # _logger.info("In setSensorConfig: %s", sensor)
         if sensor:
-            thickness = f"{1e6*sensor.thickness:4.0f}" or ""
+            thickness = f"{1e6 * sensor.thickness:4.0f}" or ""
             index = self._detectorSensorThickness.findData(sensor.thickness)
             with block_signals(self._detectorSensorThickness):
-                if index<0:
-                    self._detectorSensorThickness.addItem(thickness, userData=sensor.thickness)
+                if index < 0:
+                    self._detectorSensorThickness.addItem(
+                        thickness, userData=sensor.thickness
+                    )
                     index = self._detectorSensorThickness.findData(sensor.thickness)
                 self._detectorSensorThickness.setCurrentIndex(index)
 
             index = self._detectorSensorMaterials.findData(sensor.material)
-            with block_signals(self._detectorSensorMaterials):    
-                if index<0:
-                    self._detectorSensorMaterials.addItem(sensor.material.name, userData=sensor.material)
+            with block_signals(self._detectorSensorMaterials):
+                if index < 0:
+                    self._detectorSensorMaterials.addItem(
+                        sensor.material.name, userData=sensor.material
+                    )
                     index = self._detectorSensorMaterials.findData(sensor.material)
                 self._detectorSensorMaterials.setCurrentIndex(index)
-        #_logger.info("out setSensorConfig: %s", self.getSensorConfig())
+        # _logger.info("out setSensorConfig: %s", self.getSensorConfig())
 
     def __sensorChanged(self, **kwargs):
         # Finally set sensor config of all possible the detectors
@@ -279,6 +288,7 @@ class DetectorSelectorDrop(qt.QWidget):
 
         try:
             import pyFAI.spline
+
             pyFAI.spline.Spline(splineFile)
             self._splineError.setVisible(False)
         except Exception as e:
@@ -310,17 +320,20 @@ class DetectorSelectorDrop(qt.QWidget):
 
         maxShape = detectorWidth, detectorHeight
         detector = detectors.Detector(
-                        pixel1=pixelWidth * 1e-6,
-                        pixel2=pixelHeight * 1e-6,
-                        max_shape=maxShape,
-                        orientation=self.getOrientation(),
-                        sensor=self.getSensorConfig())
+            pixel1=pixelWidth * 1e-6,
+            pixel2=pixelHeight * 1e-6,
+            max_shape=maxShape,
+            orientation=self.getOrientation(),
+            sensor=self.getSensorConfig(),
+        )
         self.__customDetector = detector
         self._customResult.setVisible(True)
         self._customResult.setText("Detector configured")
 
     def createSplineDialog(self, title, previousFile):
-        dialog = ApplicationContext.instance().createFileDialog(self, previousFile=previousFile)
+        dialog = ApplicationContext.instance().createFileDialog(
+            self, previousFile=previousFile
+        )
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -366,9 +379,11 @@ class DetectorSelectorDrop(qt.QWidget):
         # TODO: this test should be reworked in case of another extension
         if filename.endswith(".spline"):
             try:
-                self.__detectorFromFile = detectors.Detector(splinefile=filename,
-                                                             orientation=self.getOrientation(),
-                                                             sensor=self.getSensorConfig())
+                self.__detectorFromFile = detectors.Detector(
+                    splinefile=filename,
+                    orientation=self.getOrientation(),
+                    sensor=self.getSensorConfig(),
+                )
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("Spline detector loaded")
             except Exception as e:
@@ -382,9 +397,11 @@ class DetectorSelectorDrop(qt.QWidget):
             return
         else:
             try:
-                self.__detectorFromFile = detectors.NexusDetector(filename=filename,
-                                                                  orientation=self.getOrientation(),
-                                                                  sensor=self.getSensorConfig())
+                self.__detectorFromFile = detectors.NexusDetector(
+                    filename=filename,
+                    orientation=self.getOrientation(),
+                    sensor=self.getSensorConfig(),
+                )
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("HDF5 detector loaded")
             except Exception as e:
@@ -398,7 +415,9 @@ class DetectorSelectorDrop(qt.QWidget):
 
     def __loadDetectorFormFile(self):
         previousFile = self.__descriptionFile.value()
-        dialog = self.createFileDialog("Load detector from HDF5 file", previousFile=previousFile)
+        dialog = self.createFileDialog(
+            "Load detector from HDF5 file", previousFile=previousFile
+        )
         result = dialog.exec_()
         if not result:
             return
@@ -406,7 +425,9 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__descriptionFile.setValue(filename)
 
     def createFileDialog(self, title, h5file=True, splineFile=True, previousFile=None):
-        dialog = ApplicationContext.instance().createFileDialog(self, previousFile=previousFile)
+        dialog = ApplicationContext.instance().createFileDialog(
+            self, previousFile=previousFile
+        )
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -427,7 +448,9 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detector = detector
         # set orientation:
         orientation = detector.orientation
-        self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(orientation))
+        self._detectorOrientation.setCurrentIndex(
+            self._detectorOrientation.findData(orientation)
+        )
         if self.__detector is None:
             self.__selectNoDetector()
         elif self.__detector.__class__ is detectors.NexusDetector:
@@ -453,8 +476,9 @@ class DetectorSelectorDrop(qt.QWidget):
             if classDetector is None:
                 return None
             try:
-                detector = classDetector(orientation=self.getOrientation(),
-                                         sensor=self.getSensorConfig())
+                detector = classDetector(
+                    orientation=self.getOrientation(), sensor=self.getSensorConfig()
+                )
             except TypeError as err:
                 _logger.error(err)
                 detector = classDetector(orientation=self.getOrientation())
@@ -611,7 +635,9 @@ class DetectorSelectorDrop(qt.QWidget):
             if manufacturer == storedManufacturer:
                 selection = self._manufacturerList.selectionModel()
                 selection.select(index, qt.QItemSelectionModel.ClearAndSelect)
-                self._manufacturerList.scrollTo(index, qt.QAbstractItemView.PositionAtCenter)
+                self._manufacturerList.scrollTo(
+                    index, qt.QAbstractItemView.PositionAtCenter
+                )
                 return
 
     def __setCustomField(self, field):
@@ -697,7 +723,6 @@ class DetectorSelectorDrop(qt.QWidget):
 
 
 class DetectorSelectorDialog(qt.QDialog):
-
     def __init__(self, parent=None):
         super(DetectorSelectorDialog, self).__init__(parent=parent)
         self.setWindowTitle("Detector selection")
@@ -707,8 +732,9 @@ class DetectorSelectorDialog(qt.QDialog):
         layout = qt.QVBoxLayout(self)
         layout.addWidget(self.__content)
 
-        buttonBox = qt.QDialogButtonBox(qt.QDialogButtonBox.Ok |
-                                        qt.QDialogButtonBox.Cancel)
+        buttonBox = qt.QDialogButtonBox(
+            qt.QDialogButtonBox.Ok | qt.QDialogButtonBox.Cancel
+        )
         buttonBox.accepted.connect(self.accept)
         buttonBox.rejected.connect(self.reject)
         layout.addWidget(buttonBox)
