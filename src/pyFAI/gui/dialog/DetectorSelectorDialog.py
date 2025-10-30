@@ -165,7 +165,6 @@ class DetectorSelectorDrop(qt.QWidget):
     def _resetSensor(self, detector=None):
         """populate the 2 comboBox with information from the detector.
         By default, expose all possible settings"""
-        # _logger.info("in _resetSensor: %s", detector)
         with block_signals(self._detectorSensorMaterials):
             with block_signals(self._detectorSensorThickness):
                 # Flush
@@ -199,49 +198,45 @@ class DetectorSelectorDrop(qt.QWidget):
 
         if isinstance(detector, detectors.Detector):
             self.setSensorConfig(detector.sensor)
-        # else:
-        #     _logger.warning("Not triggering setSensorConfig %s", detector)
 
     def getSensorConfig(self) -> SensorConfig:
         sensor_material = self._detectorSensorMaterials.currentData()
-        sensor = None
         if sensor_material:
             sensor = SensorConfig(sensor_material)
-            thickness = self._detectorSensorThickness.currentText()
+            thickness = self._detectorSensorThickness.currentText()  # Not data since can be user modified
             if thickness.strip():
                 sensor.thickness = 1e-6 * float(thickness)
             else:
                 sensor.thickness = None
-
-        # _logger.info("In getSensorConfig: %s", sensor)
+        else:
+            sensor = None
         return sensor
 
     def setSensorConfig(self, sensor: SensorConfig | None = None):
-        # _logger.info("In setSensorConfig: %s", sensor)
-        if sensor:
-            thickness = f"{1e6 * sensor.thickness:4.0f}" or ""
-            index = self._detectorSensorThickness.findData(sensor.thickness)
-            with block_signals(self._detectorSensorThickness):
-                if index < 0:
-                    self._detectorSensorThickness.addItem(
-                        thickness, userData=sensor.thickness
-                    )
-                    index = self._detectorSensorThickness.findData(sensor.thickness)
-                self._detectorSensorThickness.setCurrentIndex(index)
+        if sensor is None:
+            sensor = SensorConfig(None, None)
+        index = self._detectorSensorThickness.findData(sensor.thickness)
+        with block_signals(self._detectorSensorThickness):
+            if index < 0:
+                self._detectorSensorThickness.addItem(
+                    f"{1e6 * sensor.thickness:4.0f}" if sensor.thickness else "", 
+                    userData=sensor.thickness
+                )
+                index = self._detectorSensorThickness.findData(sensor.thickness)
+            self._detectorSensorThickness.setCurrentIndex(index)
 
-            index = self._detectorSensorMaterials.findData(sensor.material)
-            with block_signals(self._detectorSensorMaterials):
-                if index < 0:
-                    self._detectorSensorMaterials.addItem(
-                        sensor.material.name, userData=sensor.material
-                    )
-                    index = self._detectorSensorMaterials.findData(sensor.material)
-                self._detectorSensorMaterials.setCurrentIndex(index)
-        # _logger.info("out setSensorConfig: %s", self.getSensorConfig())
+        index = self._detectorSensorMaterials.findData(sensor.material)
+        with block_signals(self._detectorSensorMaterials):
+            if index < 0:
+                self._detectorSensorMaterials.addItem(
+                    sensor.material.name if sensor.material else "", 
+                    userData=sensor.material
+                )
+                index = self._detectorSensorMaterials.findData(sensor.material)
+            self._detectorSensorMaterials.setCurrentIndex(index)
 
     def __sensorChanged(self, **kwargs):
         # Finally set sensor config of all possible the detectors
-        # _logger.info("in __sensorChanged %s",kwargs)
         sensor = self.getSensorConfig()
         if self.__customDetector:
             self.__customDetector.sensor = sensor
