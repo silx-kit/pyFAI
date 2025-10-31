@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "31/10/2025"
 __status__ = "production"
 
 import os
@@ -45,6 +45,7 @@ import sys
 import time
 import logging
 import math
+from math import pi
 import numpy
 from silx.image import marchingsquares
 from scipy.stats import linregress
@@ -894,33 +895,33 @@ class AbstractCalibration(object):
                 readFloatFromKeyboard("Enter Distance in meter "
                                       "(or dist_min[%.3f] dist[%.3f] dist_max[%.3f]):\t " %
                                       (self.geoRef.dist_min, self.geoRef.dist, self.geoRef.dist_max),
-                                      {1: [self.geoRef.set_dist], 2: [self.geoRef.set_dist_min, self.geoRef.set_dist_max],
-                                       3: [self.geoRef.set_dist_min, self.geoRef.set_dist, self.geoRef.set_dist_max]})
+                                      {1: [self.geoRef.dist.fset], 2: [self.geoRef.dist_min.fset, self.geoRef.dist_max.fset],
+                                       3: [self.geoRef.dist_min.fset, self.geoRef.dist.fset, self.geoRef.dist_max.fset]})
                 readFloatFromKeyboard("Enter Poni1 in meter "
                                       "(or poni1_min[%.3f] poni1[%.3f] poni1_max[%.3f]):\t " %
                                       (self.geoRef.poni1_min, self.geoRef.poni1, self.geoRef.poni1_max),
-                                      {1: [self.geoRef.set_poni1], 2: [self.geoRef.set_poni1_min, self.geoRef.set_poni1_max],
-                                       3: [self.geoRef.set_poni1_min, self.geoRef.set_poni1, self.geoRef.set_poni1_max]})
+                                      {1: [self.geoRef.poni1.fset], 2: [self.geoRef.poni1_min.fset, self.geoRef.poni1_max.fset],
+                                       3: [self.geoRef.poni1_min.fset, self.geoRef.poni1.fset, self.geoRef.poni1_max.fset]})
                 readFloatFromKeyboard("Enter Poni2 in meter "
                                       "(or poni2_min[%.3f] poni2[%.3f] poni2_max[%.3f]):\t " %
                                       (self.geoRef.poni2_min, self.geoRef.poni2, self.geoRef.poni2_max),
-                                      {1: [self.geoRef.set_poni2], 2: [self.geoRef.set_poni2_min, self.geoRef.set_poni2_max],
-                                       3: [self.geoRef.set_poni2_min, self.geoRef.set_poni2, self.geoRef.set_poni2_max]})
+                                      {1: [self.geoRef.poni2.fset], 2: [self.geoRef.poni2_min.fset, self.geoRef.poni2_max.fset],
+                                       3: [self.geoRef.poni2_min.fset, self.geoRef.poni2.fset, self.geoRef.poni2_max.fset]})
                 readFloatFromKeyboard("Enter Rot1 in rad "
                                       "(or rot1_min[%.3f] rot1[%.3f] rot1_max[%.3f]):\t " %
                                       (self.geoRef.rot1_min, self.geoRef.rot1, self.geoRef.rot1_max),
-                                      {1: [self.geoRef.set_rot1], 2: [self.geoRef.set_rot1_min, self.geoRef.set_rot1_max],
-                                       3: [self.geoRef.set_rot1_min, self.geoRef.set_rot1, self.geoRef.set_rot1_max]})
+                                      {1: [self.geoRef.rot1.fset], 2: [self.geoRef.rot1_min.fset, self.geoRef.set_rot1_max],
+                                       3: [self.geoRef.rot1_min.fset, self.geoRef.rot1.fset, self.geoRef.rot1_max.fset]})
                 readFloatFromKeyboard("Enter Rot2 in rad "
                                       "(or rot2_min[%.3f] rot2[%.3f] rot2_max[%.3f]):\t " %
                                       (self.geoRef.rot2_min, self.geoRef.rot2, self.geoRef.rot2_max),
-                                      {1: [self.geoRef.set_rot2], 2: [self.geoRef.set_rot2_min, self.geoRef.set_rot2_max],
-                                       3: [self.geoRef.set_rot2_min, self.geoRef.set_rot2, self.geoRef.set_rot2_max]})
+                                      {1: [self.geoRef.rot2.fset], 2: [self.geoRef.rot2_min.fset, self.geoRef.rot2_max.fset],
+                                       3: [self.geoRef.rot2_min.fset, self.geoRef.rot2.fset, self.geoRef.rot2_max.fset]})
                 readFloatFromKeyboard("Enter Rot3 in rad "
                                       "(or rot3_min[%.3f] rot3[%.3f] rot3_max[%.3f]):\t " %
                                       (self.geoRef.rot3_min, self.geoRef.rot3, self.geoRef.rot3_max),
-                                      {1: [self.geoRef.set_rot3], 2: [self.geoRef.set_rot3_min, self.geoRef.set_rot3_max],
-                                       3: [self.geoRef.set_rot3_min, self.geoRef.set_rot3, self.geoRef.set_rot3_max]})
+                                      {1: [self.geoRef.rot3.fset], 2: [self.geoRef.rot3_min.fset, self.geoRef.rot3_max.fset],
+                                       3: [self.geoRef.rot3_min.fset, self.geoRef.rot3.fset, self.geoRef.rot3_max.fset]})
             elif action == "done":
                 self.postProcess()
                 return True
@@ -1335,29 +1336,29 @@ class AbstractCalibration(object):
 
         if self.geoRef:
             # reset geoRef object
-            self.geoRef.set_dist_min(0)
-            self.geoRef.set_dist_max(100)
-            self.geoRef.set_dist(self.ai.dist)
+            self.geoRef.dist_min = 0
+            self.geoRef.dist_max = 100
+            self.geoRef.dist = self.ai.dist
 
-            self.geoRef.set_poni1_min(-10.0 * self.ai.poni1)
-            self.geoRef.set_poni1_max(10.0 * self.ai.poni1)
-            self.geoRef.set_poni1(self.ai.poni1)
+            self.geoRef.poni1_min = -10.0 * abs(self.ai.poni1)
+            self.geoRef.poni1_max = 10.0 * abs(self.ai.poni1)
+            self.geoRef.poni1 = self.ai.poni1
 
-            self.geoRef.set_poni2_min(-10.0 * self.ai.poni2)
-            self.geoRef.set_poni2_max(10.0 * self.ai.poni2)
-            self.geoRef.set_poni2(self.ai.poni2)
+            self.geoRef.poni2_min = -10.0 * abs(self.ai.poni2)
+            self.geoRef.poni2_max = 10.0 * abs(self.ai.poni2)
+            self.geoRef.poni2 = self.ai.poni2
 
-            self.geoRef.set_rot1_min(-math.pi)
-            self.geoRef.set_rot1_max(math.pi)
-            self.geoRef.set_rot1(self.ai.rot1)
+            self.geoRef.rot1_min = -pi
+            self.geoRef.rot1_max = pi
+            self.geoRef.rot1 = self.ai.rot1
 
-            self.geoRef.set_rot2_min(-math.pi)
-            self.geoRef.set_rot2_max(math.pi)
-            self.geoRef.set_rot2(self.ai.rot2)
+            self.geoRef.rot2_min = -pi
+            self.geoRef.rot2_max = pi
+            self.geoRef.rot2 = self.ai.rot2
 
-            self.geoRef.set_rot3_min(-math.pi)
-            self.geoRef.set_rot3_max(math.pi)
-            self.geoRef.set_rot3(self.ai.rot3)
+            self.geoRef.rot3_min = -pi
+            self.geoRef.rot3_max = pi
+            self.geoRef.rot3 = self.ai.rot3
 
     def initgeoRef(self, defaults=None):
         """
