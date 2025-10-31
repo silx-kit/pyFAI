@@ -174,20 +174,20 @@
           <item>
            <widget class="QPushButton" name="_savePoniButton">
             <property name="toolTip">
-             <string>A PONI file contains the geometry, the wavelength and the detector information.</string>
+             <string>A PONI-file contains the geometry, the wavelength and the detector information.</string>
             </property>
             <property name="text">
-             <string>Save as PONI file...</string>
+             <string>Save as PONI-file...</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="_saveJsonButton">
             <property name="toolTip">
-             <string>A .json file with PONI and integration parameters.</string>
+             <string>A .json file with PONI and all integration parameters.</string>
             </property>
             <property name="text">
-             <string>Save integration JSON file</string>
+             <string>Save integration JSON-file</string>
             </property>
            </widget>
           </item>

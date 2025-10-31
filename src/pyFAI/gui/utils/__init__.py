@@ -30,16 +30,18 @@
 Module providing gui util tools
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "30/10/2025"
 __status__ = "production"
 
 
 from .. import matplotlib
 from silx.gui import qt
+from contextlib import contextmanager
+
 
 main_loop = False
 
@@ -83,3 +85,12 @@ def maximize_fig(fig=None):
             except TypeError:
                 mng.resize(*win_shape)
     update_fig(fig)
+
+
+@contextmanager
+def block_signals(w: qt.QWidget):
+    old = w.blockSignals(True)
+    try:
+        yield
+    finally:
+        w.blockSignals(old)

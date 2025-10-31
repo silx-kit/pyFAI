@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,11 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "29/01/2024"
+__date__ = "31/10/2025"
 
 import logging
-
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
 from .CalibrantModel import CalibrantModel
@@ -37,6 +36,7 @@ from .MaskedImageModel import MaskedImageModel
 from .ImageModel import ImageFromFilenameModel
 from .FilenameModel import FilenameModel
 from .PreProcessedImageModel import PreProcessedImageModel
+
 _logger = logging.getLogger(__name__)
 
 class ExperimentSettingsModel(AbstractModel):
@@ -63,6 +63,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__detectorModel = DetectorModel()
         self.__poniFile = FilenameModel()
         self.__jsonFile = FilenameModel()
+        self.__parallaxCorrection = DataModel()
 
         self.__image.changed.connect(self.wasChanged)
         self.__image.filenameChanged.connect(self.wasChanged)
@@ -74,6 +75,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__detectorModel.changed.connect(self.wasChanged)
         self.__poniFile.changed.connect(self.wasChanged)
         self.__jsonFile.changed.connect(self.wasChanged)
+        self.__parallaxCorrection.changed.connect(self.wasChanged)
 
         self.__dark.changed.connect(self.wasChanged)
         self.__dark.filenameChanged.connect(self.wasChanged)
@@ -83,6 +85,17 @@ class ExperimentSettingsModel(AbstractModel):
         self.__image.changed.connect(self.__updateDetectorMask)
         self.__detectorModel.changed.connect(self.__updateDetectorMask)
         self.__mask.changed.connect(self.__notAnymoreADetectorMask)
+
+
+    def __repr__(self) -> str:
+        res = [f"wavelength: {self.__wavelength.value()}",
+               f"polarization: {self.__polarizationFactor.value()}",
+               f"__calibrantModel: {self.__calibrant}",
+               f"detectorModel: {self.__detectorModel}",
+               f"poniFile: {self.__poniFile}",
+               f"self.__jsonFile: {self.__jsonFile}",
+               f"parallaxCorrection: {self.__parallaxCorrection.value}"]
+        return ", ".join(res)
 
     def __updateDetectorMask(self):
         if self.mask().filename() is not None:
@@ -179,3 +192,6 @@ class ExperimentSettingsModel(AbstractModel):
 
     def preprocessedImage(self):
         return self.__preprocessed_image
+
+    def parallaxCorrection(self):
+        return self.__parallaxCorrection

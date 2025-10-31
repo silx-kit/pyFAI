@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/01/2024"
+__date__ = "31/10/2025"
 
 import logging
 import numpy
@@ -925,8 +925,9 @@ class GeometryTask(AbstractCalibrationTask):
         constraints = self.model().geometryConstraintsModel().copy(self)
         constraints.fillDefault(self.__defaultConstraints)
         calibration.fromGeometryConstraintsModel(constraints)
+        do_parallax = self.model().experimentSettingsModel().parallaxCorrection().value()
 
-        calibration.refine()
+        calibration.refine(parallax=do_parallax)
         if calibration.isValid():
             # write result to the fitted model
             geometry = self.model().fittedGeometry()
