@@ -161,7 +161,7 @@ def _patch_v1_to_v2(config):
         # NOTE: pixel1/pixel2/splineFile was not parsed here
         detector_name = value.lower()
         detector = detectors.detector_factory(detector_name)
-        
+
         if detector_name == "detector":
             value = config.pop("pixel1", None)
             if value:

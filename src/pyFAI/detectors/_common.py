@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2025"
+__date__ = "31/10/2025"
 __status__ = "stable"
 
 import logging
@@ -397,9 +397,12 @@ class Detector(metaclass=DetectorMeta):
                 "pixel2": self._pixel2,
                 "orientation": self.orientation or 3
                 }
-        if (self.max_shape and "MAX_SHAPE" in dir(self.__class__) and 
-                tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE)):
-            dico["max_shape"] = self.max_shape
+        if self.max_shape:
+            if "MAX_SHAPE" in dir(self.__class__):
+                if tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE):
+                    dico["max_shape"] = self.max_shape
+            else:
+                dico["max_shape"] = self.max_shape
         if self._splinefile:
             dico["splineFile"] = self._splinefile
         if self.sensor:
