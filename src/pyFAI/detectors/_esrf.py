@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "30/10/2025"
 __status__ = "production"
 
 
@@ -124,6 +124,7 @@ class Maxipix(Detector):
     MODULE_GAP = (4, 4)
     MAX_SHAPE = (256, 256)
     force_pixel = True
+    PIXEL_SIZE = (55e-6, 55e-6)
     aliases = ["Maxipix 1x1", "Maxipix1x1"]
     SENSORS = (Si500,)
 

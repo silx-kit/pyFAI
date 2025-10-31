@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2024"
+__date__ = "30/10/2025"
 __status__ = "production"
 
 from ._common import Detector
@@ -51,18 +51,8 @@ class _ADSC(Detector):
     they all share the same constructor signature
     """
     MANUFACTURER = "ADSC"
-
-    def __init__(self, pixel1=51e-6, pixel2=51e-6, max_shape=None, orientation=0):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
+    force_pixel = True
+    PIXEL_SIZE = (51e-6, 51e-6)
 
 
 class ADSC_Q315(_ADSC):
@@ -74,12 +64,10 @@ class ADSC_Q315(_ADSC):
 
     Question: how are the gaps handled ?
     """
-    force_pixel = True
     MAX_SHAPE = (6144, 6144)
     aliases = ["Quantum 315"]
-
-    def __init__(self, pixel1=51e-6, pixel2=51e-6, max_shape=None, orientation=0):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    force_pixel = True
+    PIXEL_SIZE = (51e-6, 51e-6)
 
 
 class ADSC_Q210(_ADSC):
@@ -91,12 +79,10 @@ class ADSC_Q210(_ADSC):
 
     Question: how are the gaps handled ?
     """
-    force_pixel = True
     MAX_SHAPE = (4096, 4096)
     aliases = ["Quantum 210"]
-
-    def __init__(self, pixel1=51e-6, pixel2=51e-6, max_shape=None, orientation=0):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    force_pixel = True
+    PIXEL_SIZE = (51e-6, 51e-6)
 
 
 class ADSC_Q270(_ADSC):
@@ -108,12 +94,10 @@ class ADSC_Q270(_ADSC):
 
     Question: how are the gaps handled ?
     """
-    force_pixel = True
     MAX_SHAPE = (4168, 4168)
     aliases = ["Quantum 270"]
-
-    def __init__(self, pixel1=64.8e-6, pixel2=64.8e-6, max_shape=None, orientation=0):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    force_pixel = True
+    PIXEL_SIZE = (51e-6, 51e-6)
 
 
 class ADSC_Q4(_ADSC):
@@ -125,12 +109,10 @@ class ADSC_Q4(_ADSC):
 
     Question: how are the gaps handled ?
     """
-    force_pixel = True
     MAX_SHAPE = (2304, 2304)
     aliases = ["Quantum 4"]
-
-    def __init__(self, pixel1=82e-6, pixel2=82e-6, max_shape=None, orientation=0):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    force_pixel = True
+    PIXEL_SIZE = (51e-6, 51e-6)
 
 
 class HF_130K(_ADSC):
@@ -144,9 +126,7 @@ class HF_130K(_ADSC):
     force_pixel = True
     MAX_SHAPE = (256, 512)
     aliases = ["HF-130k"]
-
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    PIXEL_SIZE = (150e-6, 150e-6)
 
 
 class HF_262k(_ADSC):
@@ -158,12 +138,10 @@ class HF_262k(_ADSC):
 
     Nota: gaps between modules is not known/described
     """
-    force_pixel = True
     MAX_SHAPE = (512, 512)
     aliases = ["HF-262k"]
-
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    PIXEL_SIZE = (150e-6, 150e-6)
+    force_pixel = True
 
 
 class HF_1M(_ADSC):
@@ -175,12 +153,10 @@ class HF_1M(_ADSC):
 
     Nota: gaps between modules is not known/described
     """
-    force_pixel = True
     MAX_SHAPE = (1024, 1024)
     aliases = ["HF-1M"]
-
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    PIXEL_SIZE = (150e-6, 150e-6)
+    force_pixel = True
 
 
 class HF_2M(_ADSC):
@@ -192,12 +168,10 @@ class HF_2M(_ADSC):
 
     Nota: gaps between modules is not known/described
     """
-    force_pixel = True
     MAX_SHAPE = (1536, 1536)
     aliases = ["HF-2.4M"]
-
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    PIXEL_SIZE = (150e-6, 150e-6)
+    force_pixel = True
 
 
 class HF_4M(_ADSC):
@@ -207,12 +181,10 @@ class HF_4M(_ADSC):
     Information from
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-4m/
     """
-    force_pixel = True
     MAX_SHAPE = (2048, 2048)
     aliases = ["HF-4M"]
-
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    PIXEL_SIZE = (150e-6, 150e-6)
+    force_pixel = True
 
 
 class HF_9M(_ADSC):
@@ -226,6 +198,6 @@ class HF_9M(_ADSC):
     force_pixel = True
     MAX_SHAPE = (3072, 3072)
     aliases = ["HF-9.4M"]
+    PIXEL_SIZE = (150e-6, 150e-6)
+    force_pixel = True
 
-    def __init__(self, pixel1=150e-6, pixel2=150e-6, max_shape=None, orientation=0):
-        _ADSC.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
