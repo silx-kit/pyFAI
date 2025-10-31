@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "31/10/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -2779,7 +2779,7 @@ class Geometry:
 
     # deprecated compatibility layer
     get_dist = deprecated(dist.fget, reason="use property", since_version="2025.09")
-    set_dist = deprecated(dist.fset, reason="use property", since_version="2025.09")
+    set_dist = dist.fset
 
 
     @property
@@ -2805,7 +2805,7 @@ class Geometry:
 
     # deprecated compatibility layer
     get_poni1 = deprecated(poni1.fget, reason="use property", since_version="2025.09")
-    set_poni1 = deprecated(poni1.fset, reason="use property", since_version="2025.09")
+    set_poni1 = poni1.fset
 
     @property
     def poni2(self):
@@ -2830,7 +2830,7 @@ class Geometry:
 
     # deprecated compatibility layer
     get_poni2 = deprecated(poni2.fget, reason="use property", since_version="2025.09")
-    set_poni2 = deprecated(poni2.fset, reason="use property", since_version="2025.09")
+    set_poni2 = poni2.fset
 
 
     @property
