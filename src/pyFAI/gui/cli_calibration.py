@@ -845,7 +845,7 @@ class AbstractCalibration(object):
                                 "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " % (
                                     param, self.geoRef.__getattribute__(f"{param}_min"),
                                     param, self.geoRef.__getattribute__(param),
-                                    param, self.geoRef.__getattribute__(f"{parm}_max")))
+                                    param, self.geoRef.__getattribute__(f"{param}_max")))
                         values = {
                             1: [self.geoRef.__getattribute__(f"set_{param}")],
                             2: [self.geoRef.__getattribute__(f"set_{param}_min"),

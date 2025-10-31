@@ -894,9 +894,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_dist_max = deprecated(
         dist_max.fget, reason="use property", since_version="2025.09"
     )
-    set_dist_max = deprecated(
-        dist_max.fset, reason="use property", since_version="2025.09"
-    )
+    set_dist_max = dist_max.fset
 
     @property
     def dist_min(self):
@@ -910,9 +908,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_dist_min = deprecated(
         dist_min.fget, reason="use property", since_version="2025.09"
     )
-    set_dist_min = deprecated(
-        dist_min.fset, reason="use property", since_version="2025.09"
-    )
+    set_dist_min = dist_min.fset
 
     @property
     def poni1_min(self):
@@ -982,8 +978,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_rot1_min = deprecated(
         rot1_min.fget, reason="use property", since_version="2025.09"
     )
-    set_rot1_min = 
-        rot1_min.fset
+    set_rot1_min = rot1_min.fset
 
     @property
     def rot1_max(self):
