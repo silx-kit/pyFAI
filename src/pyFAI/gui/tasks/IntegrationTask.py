@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "08/10/2025"
+__date__ = "31/10/2025"
 
 import logging
 import numpy
@@ -931,7 +931,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self.__integrationUpToDate = True
         self.__integrationResetZoomPolicy = None
-        method = method_registry.Method(666, "bbox", "histogram", "cython", None)
+        method = method_registry.Method(666, "full", "histogram", "cython", None)
         self.__setMethod(method)
 
         positiveValidator = validators.IntegerAndEmptyValidator(self)
@@ -1105,7 +1105,7 @@ class IntegrationTask(AbstractCalibrationTask):
             "detector":detector.__class__.__name__,
             "detector_config":detector.get_config(),
             }
-        if detector.sensor:
+        if detector.sensor and experimentSettingsModel.parallaxCorrection().value():
             dico["parallax"] = True
         return ponifile.PoniFile(dico)
 

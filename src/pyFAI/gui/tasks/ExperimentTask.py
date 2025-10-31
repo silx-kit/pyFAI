@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/10/2025"
+__date__ = "31/10/2025"
 
 import numpy
 import logging
@@ -97,6 +97,7 @@ class ExperimentTask(AbstractCalibrationTask):
         validator.setAllowEmpty(True)
         self._energy.setValidator(validator)
         self._wavelength.setValidator(validator)
+        self._detectorParallax.stateChanged.connect(self.__parallaxChanged)
         super()._initGui()
 
     def aboutToClose(self):
@@ -169,6 +170,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._energy.setDisplayedUnit(units.Unit.ENERGY)
         self._wavelength.setModel(settings.wavelength())
         self._energy.setModel(settings.wavelength())
+
 
         settings.image().changed.connect(self.__imageUpdated)
 
@@ -252,6 +254,10 @@ class ExperimentTask(AbstractCalibrationTask):
         settings = self.model().experimentSettingsModel()
         self._calibrantPreview.setWaveLength(settings.wavelength().value())
 
+    def __parallaxChanged(self):
+        settings = self.model().experimentSettingsModel()
+        settings.parallaxCorrection().setValue(self._detectorParallax.isChecked())
+
     def __calibrantChanged(self):
         settings = self.model().experimentSettingsModel()
         self._calibrantPreview.setCalibrant(settings.calibrantModel().calibrant())
@@ -268,10 +274,11 @@ class ExperimentTask(AbstractCalibrationTask):
             self._detectorOrientationValue.setText("")
             self._detectorSensorLabel.setText("")
             self._detectorSensorName.setText("")
+            self._detectorParallax.setChecked(False)
             self._detectorParallax.setVisible(False)
             self._detectorFileDescription.setVisible(False)
             self._detectorFileDescriptionTitle.setVisible(False)
-            
+
         else:
             self._detectorLabel.setStyleSheet("QLabel { }")
             text = [str(s) for s in detector.max_shape]
@@ -294,11 +301,11 @@ class ExperimentTask(AbstractCalibrationTask):
             else:
                 self._detectorSensorLabel.setText("")
                 self._detectorSensorName.setText("")
+                self._detectorParallax.setCheckState(False)
                 self._detectorParallax.setVisible(False)
 
-
             if detector.HAVE_TAPER or detector.__class__ == pyFAI.detectors.Detector:
-                fileDescription = detector.get_splineFile()
+                fileDescription = detector.splinefile
             elif isinstance(detector, pyFAI.detectors.NexusDetector):
                 fileDescription = detector.filename
             else:

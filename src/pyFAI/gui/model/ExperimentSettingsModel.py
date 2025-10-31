@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "30/10/2025"
+__date__ = "31/10/2025"
 
 import logging
 from .AbstractModel import AbstractModel

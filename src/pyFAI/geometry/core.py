@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "31/10/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -2736,12 +2736,16 @@ class Geometry:
                 from ..detectors.sensors import SensorConfig
                 sensor_config = SensorConfig.from_dict({"material": sensor_material,
                                                  "thickness":sensor_thickness})
-            mu = sensor_config.material.mu(energy=self.energy, unit="m")
+            try:
+                mu = sensor_config.material.mu(energy=self.energy, unit="m")
+            except Exception as err:
+                logger.error(f"Unable to activate parallax with {sensor_config}; {type(err)}: {err}")
+                return
             if sensor_config.thickness:
                 sensor = ThinSensor(thickness=sensor_config.thickness, mu=mu)
             else:
                 sensor = ThickSensor(mu=mu)
-            self.parallax = Parallax(sensor)
+            self.parallax = Parallax(sensor)  # performs the reset
         else:
             self._parallax = None
             self.reset()
@@ -3087,7 +3091,7 @@ class Geometry:
     # deprecated compatibility layer
     get_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fget, reason="use property", since_version="2025.09")
     set_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fset, reason="use property", since_version="2025.09")
-  
+
 
     @property
     def maskfile(self):
