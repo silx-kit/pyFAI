@@ -598,12 +598,8 @@ class AbstractCalibration(object):
         tth_min += tth
 
         if self.geoRef:
-            ttha = self.geoRef.get_ttha()
-            chia = self.geoRef.get_chia()
-            if (ttha is None) or (ttha.shape != self.peakPicker.data.shape):
-                ttha = self.geoRef.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
-            if (chia is None) or (chia.shape != self.peakPicker.data.shape):
-                chia = self.geoRef.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
+            ttha = self.geoRef.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
+            chia = self.geoRef.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
         else:
             ttha = self.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
             chia = self.ai.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
@@ -707,9 +703,7 @@ class AbstractCalibration(object):
                 self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
             if self.basename:
                 self.geoRef.save(self.basename + ".poni")
-            self.geoRef.del_ttha()
-            self.geoRef.del_dssa()
-            self.geoRef.del_chia()
+
             tth = self.geoRef.center_array(self.peakPicker.shape, unit=TTH_RAD, scale=False)
             dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
             # self.geoRef.chiArray(self.peakPicker.shape)
@@ -847,18 +841,18 @@ class AbstractCalibration(object):
                 if len(words) >= 2 and words[1] in self.PARAMETERS:
                     param = words[1]
                     if len(words) == 2:
-                        text = ("Enter %s in %s " % (param, self.UNITS[param]) +
+                        text = (f"Enter {param} in {self.UNITS[param]} "+
                                 "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " % (
-                                    param, self.geoRef.__getattribute__("get_%s_min" % param)(),
-                                    param, self.geoRef.__getattribute__("get_%s" % param)(),
-                                    param, self.geoRef.__getattribute__("get_%s_max" % param)()))
+                                    param, self.geoRef.__getattribute__(f"{param}_min"),
+                                    param, self.geoRef.__getattribute__(param),
+                                    param, self.geoRef.__getattribute__(f"{parm}_max")))
                         values = {
-                            1: [self.geoRef.__getattribute__("set_%s" % param)],
-                            2: [self.geoRef.__getattribute__("set_%s_min" % param),
-                                self.geoRef.__getattribute__("set_%s_max" % param)],
-                            3: [self.geoRef.__getattribute__("set_%s_min" % param),
-                                self.geoRef.__getattribute__("set_%s" % param),
-                                self.geoRef.__getattribute__("set_%s_max" % param)]}
+                            1: [self.geoRef.__getattribute__(f"set_{param}")],
+                            2: [self.geoRef.__getattribute__(f"set_{param}_min"),
+                                self.geoRef.__getattribute__(f"set_{param}_max")],
+                            3: [self.geoRef.__getattribute__(f"set_{param}_min"),
+                                self.geoRef.__getattribute__(f"set_{param}"),
+                                self.geoRef.__getattribute__(f"set_{param}_max")]}
                         readFloatFromKeyboard(text, values)
                     elif len(words) == 3:
                         try:
@@ -874,8 +868,8 @@ class AbstractCalibration(object):
                         except ValueError:
                             logger.warning("invalid value")
                         else:
-                            self.geoRef.__getattribute__("set_%s_min" % param)(value_min)
-                            self.geoRef.__getattribute__("set_%s_max" % param)(value_max)
+                            self.geoRef.__getattribute__(f"set_{param}_min")(value_min)
+                            self.geoRef.__getattribute__(f"set_{param}_max")(value_max)
                     elif len(words) == 5:
                         try:
                             value_min = float(words[2])
@@ -884,9 +878,9 @@ class AbstractCalibration(object):
                         except ValueError:
                             logger.warning("invalid value")
                         else:
-                            self.geoRef.__getattribute__("set_%s_min" % param)(value_min)
-                            self.geoRef.__getattribute__("set_%s" % param)(value)
-                            self.geoRef.__getattribute__("set_%s_max" % param)(value_max)
+                            self.geoRef.__getattribute__(f"set_{param}_min")(value_min)
+                            self.geoRef.__getattribute__(f"set_{param}")(value)
+                            self.geoRef.__getattribute__(f"set_{param}_max")(value_max)
                     else:
                         print(self._HELP[action])
                 else:
@@ -1114,9 +1108,7 @@ class AbstractCalibration(object):
         self.peakPicker.points.save(self.basename + ".npt")
         self.geoRef.save(self.basename + ".poni")
         self.geoRef.mask = self.mask
-        self.geoRef.del_ttha()
-        self.geoRef.del_dssa()
-        self.geoRef.del_chia()
+        self.geoRef.reset()
         t0 = time.perf_counter()
         _tth = self.geoRef.center_array(self.peakPicker.shape, unit=TTH_RAD, scale=False)
         t1 = time.perf_counter()
@@ -1513,7 +1505,7 @@ class CliCalibration(AbstractCalibration):
                 self.peakPicker.points.calibrant.wavelength = self.ai.wavelength
             elif self.ai.wavelength != self.peakPicker.points.calibrant.wavelength:
                 self.peakPicker.points.calibrant.setWavelength_change2th(self.ai.wavelength)
-        if not self.peakPicker.points.calibrant.dSpacing:
+        if not self.peakPicker.points.calibrant.dspacing:
             wl = self.peakPicker.points.calibrant.wavelength
             self.read_dSpacingFile()
             if wl:
