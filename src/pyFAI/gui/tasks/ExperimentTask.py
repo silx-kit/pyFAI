@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/10/2025"
+__date__ = "03/11/2025"
 
 import numpy
 import logging
@@ -97,7 +97,6 @@ class ExperimentTask(AbstractCalibrationTask):
         validator.setAllowEmpty(True)
         self._energy.setValidator(validator)
         self._wavelength.setValidator(validator)
-        self._detectorParallax.stateChanged.connect(self.__parallaxChanged)
         super()._initGui()
 
     def aboutToClose(self):
@@ -171,12 +170,15 @@ class ExperimentTask(AbstractCalibrationTask):
         self._wavelength.setModel(settings.wavelength())
         self._energy.setModel(settings.wavelength())
 
+        self.__parallaxChangedUpdateModel()  # Initialize & wire
+        self._detectorParallax.clicked.connect(self.__parallaxChangedUpdateModel)
 
         settings.image().changed.connect(self.__imageUpdated)
 
         settings.calibrantModel().changed.connect(self.__calibrantChanged)
         settings.detectorModel().changed.connect(self.__detectorModelUpdated)
         settings.wavelength().changed.connect(self.__waveLengthChanged)
+        settings.parallaxCorrection().changed.connect(self.__parallaxChangedUpdateUI)
 
         settings.changed.connect(self.__settingsChanged)
 
@@ -254,9 +256,13 @@ class ExperimentTask(AbstractCalibrationTask):
         settings = self.model().experimentSettingsModel()
         self._calibrantPreview.setWaveLength(settings.wavelength().value())
 
-    def __parallaxChanged(self):
+    def __parallaxChangedUpdateModel(self):
         settings = self.model().experimentSettingsModel()
         settings.parallaxCorrection().setValue(self._detectorParallax.isChecked())
+
+    def __parallaxChangedUpdateUI(self):
+        parallaxModel = self.model().experimentSettingsModel().parallaxCorrection()
+        self._detectorParallax.setChecked(parallaxModel.value())
 
     def __calibrantChanged(self):
         settings = self.model().experimentSettingsModel()

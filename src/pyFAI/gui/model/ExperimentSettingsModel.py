@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "31/10/2025"
+__date__ = "03/11/2025"
 
 import logging
 from .AbstractModel import AbstractModel
@@ -64,6 +64,8 @@ class ExperimentSettingsModel(AbstractModel):
         self.__poniFile = FilenameModel()
         self.__jsonFile = FilenameModel()
         self.__parallaxCorrection = DataModel()
+        #Initialize the model
+        self.__parallaxCorrection.setValue(False)
 
         self.__image.changed.connect(self.wasChanged)
         self.__image.filenameChanged.connect(self.wasChanged)
@@ -94,7 +96,7 @@ class ExperimentSettingsModel(AbstractModel):
                f"detectorModel: {self.__detectorModel}",
                f"poniFile: {self.__poniFile}",
                f"self.__jsonFile: {self.__jsonFile}",
-               f"parallaxCorrection: {self.__parallaxCorrection.value}"]
+               f"parallaxCorrection: {self.__parallaxCorrection.value()}"]
         return ", ".join(res)
 
     def __updateDetectorMask(self):

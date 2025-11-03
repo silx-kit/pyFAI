@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "31/10/2025"
+__date__ = "03/11/2025"
 
 import logging
 import numpy
@@ -165,6 +165,7 @@ class IntegrationProcess(object):
         self.__rotation1 = geometry.rotation1().value()
         self.__rotation2 = geometry.rotation2().value()
         self.__rotation3 = geometry.rotation3().value()
+        self.__parallaxCorrection = model.experimentSettingsModel().parallaxCorrection().value()
         return True
 
     def setDisplayMask(self, displayed):
@@ -196,6 +197,7 @@ class IntegrationProcess(object):
             detector=self.__detector,
             wavelength=self.__wavelength)
 
+        ai.enable_parallax(self.__parallaxCorrection)
         # FIXME Add error model
         method = method_registry.Method(0, self.__method.split, self.__method.algo, self.__method.impl, None)
         method1d = method.fixed(dim=1)
@@ -1075,6 +1077,7 @@ class IntegrationTask(AbstractCalibrationTask):
         experimentSettings.detectorModel().changed.connect(self.__invalidateIntegrationNoReset)
         experimentSettings.mask().changed.connect(self.__invalidateIntegrationNoReset)
         experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegrationNoReset)
+        experimentSettings.parallaxCorrection().changed.connect(self.__invalidateIntegration)
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
         model.fittedGeometry().changed.connect(self.__fittedGeometryChanged)
         integrationSettings.radialUnit().changed.connect(self.__invalidateIntegration)

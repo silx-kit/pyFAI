@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/10/2025"
+__date__ = "03/11/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -340,7 +340,11 @@ class Geometry:
         return azimuth_range
 
     def _correct_parallax(
-        self, d1: numpy.ndarray, d2: numpy.ndarray, p1: numpy.ndarray, p2: numpy.ndarray
+        self,
+        d1: numpy.ndarray,
+        d2: numpy.ndarray,
+        p1: numpy.ndarray,
+        p2: numpy.ndarray
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
@@ -355,7 +359,7 @@ class Geometry:
         d1, d2, p1 and p2 should all have the same shape !!!
         p1 & p2 get modified in place !
         """
-        logger.info("_correct_parallax")
+        logger.info("in _correct_parallax")
         delta1 = delta2 = 0
         if self._parallax is not None:
             r0 = numpy.vstack((p1.ravel(), p2.ravel()))
@@ -372,7 +376,9 @@ class Geometry:
         return delta1, delta2
 
     def _correct_parallax_v2(
-        self, p1: numpy.ndarray, p2: numpy.ndarray, p3: float | numpy.ndarray
+        self, p1: numpy.ndarray,
+        p2: numpy.ndarray,
+        p3: float | numpy.ndarray
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
@@ -386,7 +392,7 @@ class Geometry:
         p1, p2 & P3 should all have the same shape !!!
         p1 & p2 get modified in place !
         """
-        logger.info("_correct_parallax_v2")
+        logger.info("in _correct_parallax_v2")
         delta1 = delta2 = 0
         if self._parallax is not None:
             r0 = numpy.vstack((p1.ravel(), p2.ravel()))
@@ -2803,7 +2809,7 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = value[0]
-            
+
         self._poni1 = float(value)
         self.reset()
 
@@ -2906,7 +2912,7 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = value[0]
-            
+
         self._rot3 = float(value)
         self.reset()
 
@@ -2934,7 +2940,7 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = value[0]
-        
+
         self._wavelength = float(value)
 
         qa = dqa = q_corner = None
@@ -3085,7 +3091,7 @@ class Geometry:
         return self.detector.pixel2
 
     @pixel2.setter
-    def pixel2(self, value): 
+    def pixel2(self, value):
         self.detector.pixel2 = value
 
     # deprecated compatibility layer
