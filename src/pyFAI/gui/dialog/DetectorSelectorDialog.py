@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "29/10/2025"
+__date__ = "30/10/2025"
 
 import os
 import logging
@@ -36,15 +36,15 @@ from ... import detectors
 from ..widgets.model.AllDetectorItemModel import AllDetectorItemModel
 from ..widgets.model.DetectorFilterProxyModel import DetectorFilterProxyModel
 from ..model.DataModel import DataModel
-from ..utils import validators
+from ..utils import validators, block_signals
 from ..ApplicationContext import ApplicationContext
 from ..utils import FilterBuilder
+from ...detectors.sensors import SensorConfig
 
 _logger = logging.getLogger(__name__)
 
 
 class DetectorSelectorDrop(qt.QWidget):
-
     _ManufacturerRole = qt.Qt.UserRole
 
     _CustomDetectorRole = qt.Qt.UserRole
@@ -122,6 +122,7 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight = DataModel()
         self.__pixelWidth = DataModel()
         self.__pixelHeight = DataModel()
+        # self.__sensor = DataModel()
 
         self._detectorWidth.setModel(self.__detectorWidth)
         self._detectorHeight.setModel(self.__detectorHeight)
@@ -143,68 +144,95 @@ class DetectorSelectorDrop(qt.QWidget):
     def _initOrientation(self):
         for item in detectors.orientation.Orientation:
             if item.available:
-                self._detectorOrientation.addItem(f"{item.value}: {item.name} ", userData=item)
+                self._detectorOrientation.addItem(
+                    f"{item.value}: {item.name} ", userData=item
+                )
 
         self._detectorOrientation.currentIndexChanged.connect(self.__orientationChanged)
         default = detectors.orientation.Orientation(3)
-        self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(default))
+        self._detectorOrientation.setCurrentIndex(
+            self._detectorOrientation.findData(default)
+        )
 
     def _initSensor(self):
-        "populate the comboBox with all available sensor materials"
-        self._detectorSensorParallax.stateChanged.connect(self.__sensorParallax)
+        "Wire signals/slots"
         self._detectorSensorThickness.setValidator(qt.QDoubleValidator(0.0, 1e4, 1))
-        # self._detectorSensorThickness.editTextChanged.connect(self.__sensorChanged)
+        self._resetSensor()
         self._detectorSensorMaterials.currentIndexChanged.connect(self.__sensorChanged)
         self._detectorSensorThickness.currentIndexChanged.connect(self.__sensorChanged)
         self._detectorSensorThickness.currentTextChanged.connect(self.__sensorChanged)
-        self._resetSensor()
 
     def _resetSensor(self, detector=None):
         """populate the 2 comboBox with information from the detector.
         By default, expose all possible settings"""
-        # Flush
-        self._detectorSensorMaterials.clear()
-        self._detectorSensorThickness.clear()
+        with block_signals(self._detectorSensorMaterials),  block_signals(self._detectorSensorThickness):
+            # Flush
+            self._detectorSensorMaterials.clear()
+            self._detectorSensorThickness.clear()
+            info = []  # used to populate SensorInfo
 
-        # Repopulate
-        if detector:
-            for config in detector.SENSORS:
-                mat = config.material
-                thick = config.thickness
-                self._detectorSensorMaterials.addItem(mat.name, userData=mat)
-                self._detectorSensorThickness.addItem(f"{1e6*thick:4.0f}" if thick else "")
-        else:
-            for key, value in detectors.sensors.ALL_MATERIALS.items():
-                self._detectorSensorMaterials.addItem(key, userData=value)
-            self._detectorSensorThickness.addItem("")
+            # Repopulate
+            if detector and detector.SENSORS:
+                materials = set()  # Avoid duplicated population
+                thicknesses = set()
+                for config in detector.SENSORS:
+                    info.append(str(config))
+                    mat = config.material
+                    thick = config.thickness
+                    if mat not in materials:
+                        self._detectorSensorMaterials.addItem(
+                            mat.name, userData=mat
+                        )
+                        materials.add(mat)
+                    if thick not in thicknesses:
+                        stg = f"{1e6 * thick:4.0f}" if thick else ""
+                        self._detectorSensorThickness.addItem(stg, userData=thick)
+                        thicknesses.add(thick)
+            else:
+                self._detectorSensorMaterials.addItem(" ", userData=None)
+                for key, value in detectors.sensors.ALL_MATERIALS.items():
+                    self._detectorSensorMaterials.addItem(key, userData=value)
+                self._detectorSensorThickness.addItem("", userData=None)
+            self._detectorSensorInfo.setText("|".join(info))
 
-    def __sensorParallax(self, *arg):
-        self._detectorSensorParallax.setEnabled(self._detectorSensorParallax.isChecked())
-        self.__sensorChanged()
+        if isinstance(detector, detectors.Detector):
+            self.setSensorConfig(detector.sensor)
 
-    def getSensorConfig(self):
-        if self._detectorSensorParallax.isChecked():
-            sensor_material = self._detectorSensorMaterials.currentData()
-            sensor = detectors.sensors.SensorConfig(sensor_material)
-            thickness = self._detectorSensorThickness.currentText()
+    def getSensorConfig(self) -> SensorConfig:
+        sensor_material = self._detectorSensorMaterials.currentData()
+        if sensor_material:
+            sensor = SensorConfig(sensor_material)
+            thickness = self._detectorSensorThickness.currentText()  # Not data since can be user modified
             if thickness.strip():
-                sensor.thickness = 1e-6*float(thickness)
+                sensor.thickness = 1e-6 * float(thickness)
             else:
                 sensor.thickness = None
         else:
             sensor = None
-        print("In getSensorConfig", str(sensor))
         return sensor
 
-    def setSensorConfig(self, sensor=None):
-        if sensor:
-            thickness = f"{1e6*sensor.thickness:.1f}" or ""
-            self._detectorSensorThickness.setText(thickness)
-            index = self._detectorSensorMaterials.findData(sensor.material)
+    def setSensorConfig(self, sensor: SensorConfig | None = None):
+        if sensor is None:
+            sensor = SensorConfig(None, None)
+        index = self._detectorSensorThickness.findData(sensor.thickness)
+        with block_signals(self._detectorSensorThickness):
+            if index < 0:
+                self._detectorSensorThickness.addItem(
+                    f"{1e6 * sensor.thickness:4.0f}" if sensor.thickness else "", 
+                    userData=sensor.thickness
+                )
+                index = self._detectorSensorThickness.findData(sensor.thickness)
+            self._detectorSensorThickness.setCurrentIndex(index)
+
+        index = self._detectorSensorMaterials.findData(sensor.material)
+        with block_signals(self._detectorSensorMaterials):
+            if index < 0:
+                self._detectorSensorMaterials.addItem(
+                    sensor.material.name if sensor.material else "", 
+                    userData=sensor.material
+                )
+                index = self._detectorSensorMaterials.findData(sensor.material)
             self._detectorSensorMaterials.setCurrentIndex(index)
-            self._detectorSensorParallax.setChecked(True)
-        else:
-            self._detectorSensorParallax.setChecked(False)
 
     def __sensorChanged(self, **kwargs):
         # Finally set sensor config of all possible the detectors
@@ -254,6 +282,7 @@ class DetectorSelectorDrop(qt.QWidget):
 
         try:
             import pyFAI.spline
+
             pyFAI.spline.Spline(splineFile)
             self._splineError.setVisible(False)
         except Exception as e:
@@ -285,17 +314,20 @@ class DetectorSelectorDrop(qt.QWidget):
 
         maxShape = detectorWidth, detectorHeight
         detector = detectors.Detector(
-                        pixel1=pixelWidth * 1e-6,
-                        pixel2=pixelHeight * 1e-6,
-                        max_shape=maxShape,
-                        orientation=self.getOrientation(),
-                        sensor=self.getSensorConfig())
+            pixel1=pixelWidth * 1e-6,
+            pixel2=pixelHeight * 1e-6,
+            max_shape=maxShape,
+            orientation=self.getOrientation(),
+            sensor=self.getSensorConfig(),
+        )
         self.__customDetector = detector
         self._customResult.setVisible(True)
         self._customResult.setText("Detector configured")
 
     def createSplineDialog(self, title, previousFile):
-        dialog = ApplicationContext.instance().createFileDialog(self, previousFile=previousFile)
+        dialog = ApplicationContext.instance().createFileDialog(
+            self, previousFile=previousFile
+        )
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -341,9 +373,11 @@ class DetectorSelectorDrop(qt.QWidget):
         # TODO: this test should be reworked in case of another extension
         if filename.endswith(".spline"):
             try:
-                self.__detectorFromFile = detectors.Detector(splinefile=filename,
-                                                             orientation=self.getOrientation(),
-                                                             sensor=self.getSensorConfig())
+                self.__detectorFromFile = detectors.Detector(
+                    splinefile=filename,
+                    orientation=self.getOrientation(),
+                    sensor=self.getSensorConfig(),
+                )
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("Spline detector loaded")
             except Exception as e:
@@ -357,9 +391,11 @@ class DetectorSelectorDrop(qt.QWidget):
             return
         else:
             try:
-                self.__detectorFromFile = detectors.NexusDetector(filename=filename,
-                                                                  orientation=self.getOrientation(),
-                                                                  sensor=self.getSensorConfig())
+                self.__detectorFromFile = detectors.NexusDetector(
+                    filename=filename,
+                    orientation=self.getOrientation(),
+                    sensor=self.getSensorConfig(),
+                )
                 self._fileResult.setVisible(True)
                 self._fileResult.setText("HDF5 detector loaded")
             except Exception as e:
@@ -373,7 +409,9 @@ class DetectorSelectorDrop(qt.QWidget):
 
     def __loadDetectorFormFile(self):
         previousFile = self.__descriptionFile.value()
-        dialog = self.createFileDialog("Load detector from HDF5 file", previousFile=previousFile)
+        dialog = self.createFileDialog(
+            "Load detector from HDF5 file", previousFile=previousFile
+        )
         result = dialog.exec_()
         if not result:
             return
@@ -381,7 +419,9 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__descriptionFile.setValue(filename)
 
     def createFileDialog(self, title, h5file=True, splineFile=True, previousFile=None):
-        dialog = ApplicationContext.instance().createFileDialog(self, previousFile=previousFile)
+        dialog = ApplicationContext.instance().createFileDialog(
+            self, previousFile=previousFile
+        )
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
@@ -396,14 +436,15 @@ class DetectorSelectorDrop(qt.QWidget):
         return dialog
 
     def setDetector(self, detector):
+        # _logger.info("in setDetector: %s", detector)
         if self.__detector == detector:
             return
         self.__detector = detector
         # set orientation:
         orientation = detector.orientation
-        self._detectorOrientation.setCurrentIndex(self._detectorOrientation.findData(orientation))
-        self._resetSensor(detector)
-        self.setSensorConfig(detector.sensor)
+        self._detectorOrientation.setCurrentIndex(
+            self._detectorOrientation.findData(orientation)
+        )
         if self.__detector is None:
             self.__selectNoDetector()
         elif self.__detector.__class__ is detectors.NexusDetector:
@@ -415,6 +456,8 @@ class DetectorSelectorDrop(qt.QWidget):
                 self.__selectCustomDetector(self.__detector)
         else:
             self.__selectRegistreredDetector(detector)
+        # # Finally, set the senor information
+        self.setSensorConfig(detector.sensor)
 
     def detector(self):
         field = self.currentCustomField()
@@ -427,8 +470,9 @@ class DetectorSelectorDrop(qt.QWidget):
             if classDetector is None:
                 return None
             try:
-                detector = classDetector(orientation=self.getOrientation(),
-                                         sensor=self.getSensorConfig())
+                detector = classDetector(
+                    orientation=self.getOrientation(), sensor=self.getSensorConfig()
+                )
             except TypeError as err:
                 _logger.error(err)
                 detector = classDetector(orientation=self.getOrientation())
@@ -585,7 +629,9 @@ class DetectorSelectorDrop(qt.QWidget):
             if manufacturer == storedManufacturer:
                 selection = self._manufacturerList.selectionModel()
                 selection.select(index, qt.QItemSelectionModel.ClearAndSelect)
-                self._manufacturerList.scrollTo(index, qt.QAbstractItemView.PositionAtCenter)
+                self._manufacturerList.scrollTo(
+                    index, qt.QAbstractItemView.PositionAtCenter
+                )
                 return
 
     def __setCustomField(self, field):
@@ -631,6 +677,12 @@ class DetectorSelectorDrop(qt.QWidget):
         model = self.currentDetectorClass()
         splineAvailable = model is not None and model.HAVE_TAPER
         self._splinePanel.setVisible(splineAvailable)
+        # _logger.info("in __modelChanged: %s %s",type(model), model)
+        if isinstance(self.__detector, model):
+            # more precise, contains sensor information
+            self._resetSensor(detector=self.__detector)
+        else:
+            self._resetSensor(detector=model)
 
     def __manufacturerChanged(self, selected, deselected):
         # Clean up custom selection
@@ -665,7 +717,6 @@ class DetectorSelectorDrop(qt.QWidget):
 
 
 class DetectorSelectorDialog(qt.QDialog):
-
     def __init__(self, parent=None):
         super(DetectorSelectorDialog, self).__init__(parent=parent)
         self.setWindowTitle("Detector selection")
@@ -675,8 +726,9 @@ class DetectorSelectorDialog(qt.QDialog):
         layout = qt.QVBoxLayout(self)
         layout.addWidget(self.__content)
 
-        buttonBox = qt.QDialogButtonBox(qt.QDialogButtonBox.Ok |
-                                        qt.QDialogButtonBox.Cancel)
+        buttonBox = qt.QDialogButtonBox(
+            qt.QDialogButtonBox.Ok | qt.QDialogButtonBox.Cancel
+        )
         buttonBox.accepted.connect(self.accept)
         buttonBox.rejected.connect(self.reject)
         layout.addWidget(buttonBox)

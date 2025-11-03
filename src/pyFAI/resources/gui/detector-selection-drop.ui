@@ -152,49 +152,38 @@ background-color: transparent;
         <property name="title">
          <string>Sensor:</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_13">
-         <item>
-          <widget class="QLabel" name="label_4">
+        <layout class="QGridLayout" name="gridLayout_5">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
-            <string>Manufacturer info</string>
+            <string>Material:</string>
            </property>
           </widget>
          </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Material:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="_detectorSensorMaterials"/>
-           </item>
-          </layout>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="_detectorSensorMaterials"/>
          </item>
-         <item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Thickness:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
           <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Thickness:</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QComboBox" name="_detectorSensorThickness">
              <property name="editable">
@@ -217,23 +206,17 @@ background-color: transparent;
            </item>
           </layout>
          </item>
-         <item>
-          <widget class="QCheckBox" name="_detectorSensorParallax">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Parralax correction modifies the geometry of the detector which depends then on the energy on the x-ray and the material of the sensor. &lt;/p&gt;&lt;p&gt;For now, calculations are performed using &lt;span style=&quot; font-family:'monospace';&quot;&gt;numpy&lt;/span&gt;, thus ~6x slower. &lt;/p&gt;&lt;p&gt;Activate this option when calibrating rings where 2θ&amp;gt;30° &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>Correct parallax (slow)</string>
+            <string>Hint:</string>
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QCheckBox" name="_detectorSensorAbsorbance">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Modify the &lt;span style=&quot; font-style:italic;&quot;&gt;flatfield&lt;/span&gt; to take into account the larger absorption of more inclined x-ray. Usually negligeable.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
+         <item row="2" column="1">
+          <widget class="QLabel" name="_detectorSensorInfo">
            <property name="text">
-            <string>Correct absorbance</string>
+            <string>-</string>
            </property>
           </widget>
          </item>
@@ -246,7 +229,7 @@ background-color: transparent;
    <item>
     <widget class="QStackedWidget" name="_stacked">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="_modelPanel">
       <layout class="QVBoxLayout" name="verticalLayout_3">
