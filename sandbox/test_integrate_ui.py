@@ -307,7 +307,7 @@ class AIWidget(QtGui.QWidget):
         splinefile = str(QtGui.QFileDialog.getOpenFileName())
         if splinefile:
             try:
-                self.ai.detector.set_splineFile(splinefile)
+                self.ai.detector.splinefile = splinefile
                 self.pixel1.setText(str(self.ai.pixel1))
                 self.pixel2.setText(str(self.ai.pixel2))
                 self.splineFile.setText(self.ai.detector.splineFile or "")
