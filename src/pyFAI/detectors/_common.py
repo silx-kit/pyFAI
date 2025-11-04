@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/10/2025"
+__date__ = "04/11/2025"
 __status__ = "stable"
 
 import logging
@@ -1143,7 +1143,7 @@ class Detector(metaclass=DetectorMeta):
         if hasattr(value, "item"):
             value = value.item()
         value = float(value)
-                    
+
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
             if self.force_pixel and (err > EPSILON):
@@ -1180,7 +1180,7 @@ class Detector(metaclass=DetectorMeta):
         if hasattr(value, "item"):
             value = value.item()
         value = float(value)
-            
+
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
             if self.force_pixel and (err > EPSILON):
@@ -1384,7 +1384,7 @@ class NexusDetector(Detector):
                  filename:str|None=None,
                  orientation:int=0,
                  sensor:SensorConfig|None=None):
-        Detector.__init__(self, orientation=orientation, sensor = sensor)
+        super().__init__(self, orientation=orientation, sensor = sensor)
         self.uniform_pixel = True
         self._filename = None
         if filename is not None:
