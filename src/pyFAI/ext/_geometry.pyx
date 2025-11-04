@@ -50,7 +50,7 @@ from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
 
 cdef:
-    Py_ssize_t MIN_SIZE = 1024  # Minumum size of the array to go parallel.
+    Py_ssize_t MIN_SIZE = 1024  # Minimum size of the array to go parallel.
     Py_ssize_t MAX_THREADS = 8  # Limit to 8 cores at maximum, avoids using multiple sockets usually. The value comes from numexpr
     double twopi = 2.0 * M_PI
 
@@ -376,7 +376,7 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
     :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
     :param pos2: numpy array with distances in meter along dim2 from PONI (X)
     :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
-    :param orientaion: orientation of the detector, values 1-4
+    :param orientation: orientation of the detector, values 1-4
     :param chi_discontinuity_at_pi: set to False to obtain chi in the range [0, 2pi[ instead of [-pi, pi[
     :return: ndarray of double with same shape and size as pos1
     """
@@ -700,7 +700,7 @@ def calc_delta_chi(floating[:, ::1] centers,
 
     :param centers: numpy array with chi angles of the center of the pixels
     :param corners: numpy array with chi angles of the corners of the pixels
-    :return: ndarray of double with same shape and size as centers woth the delta chi per pixel
+    :return: ndarray of double with same shape and size as centers with the delta chi per pixel
     """
     cdef:
         Py_ssize_t width, height, row, col, corn, nbcorn

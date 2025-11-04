@@ -172,7 +172,7 @@ cdef inline bint preproc_value_inplace(preproc_t* result,
     :param flat, solidangle, polarization, absorption, normalization_factor: all normalization to be multiplied togeather
     :param dummy, delta_dummy, mask,check_dummy: controls the masking of the pixel
     :param normalization_factor: multiply normalization with this value
-    :param error_model: 0 to diable, 1 for variance, 2 for Poisson model, ...
+    :param error_model: 0 to disable, 1 for variance, 2 for Poisson model, ...
     :param apply_normalization: False by default, set to True to perform an unweighted average later on. WIP
     :return: isvalid, i.e. True if the pixel is worth further processing
 
@@ -246,9 +246,9 @@ cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
 
     :param out_data: output 1D+(,4) accumulator
     :param bin: in which bin assign this data
-    :param value: 4-uplet with (signal, variance, nomalisation, count)
+    :param value: 4-uplet with (signal, variance, normalisation, count)
     :param weight: weight associated with this value
-    :param error_model: 0:disable, 1:variance, 2: poisson, 3:azimuhal
+    :param error_model: 0:disable, 1:variance, 2: poisson, 3:azimuthal
     :return: Nothing
     """
     cdef:
@@ -266,7 +266,7 @@ cdef inline void update_1d_accumulator(acc_t[:, ::1] out_data,
         if sum_nrm2 > 0.0:
             # Inspired from https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
             # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
-            # Emprically validated against 2-pass implementation in Python/scipy-sparse
+            # Empirically validated against 2-pass implementation in Python/scipy-sparse
             if value.norm:
                 omega_A = sum_nrm
                 omega2_A = sum_nrm2
@@ -358,7 +358,7 @@ cdef inline floating area4(floating a0,
 
     see http://villemin.gerard.free.fr/GeomLAV/Carre/QuadAire.htm
 
-    :return: area, i.e. a complicated formule, not 1/2 * (AC ^ BD)
+    :return: area, i.e. a complicated formula, not 1/2 * (AC ^ BD)
     """
     cdef floating a, b, c, d, p, q
 
@@ -415,7 +415,7 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) noe
 
 def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
     """This function checks the pixel to be on the azimuthal discontinuity
-    via the sign of its algebric area and recenters the corner coordinates in a
+    via the sign of its algebraic area and recenters the corner coordinates in a
     consistent manner to have all azimuthal coordinate in
 
     Nota: the returned area is negative since the positive area indicate the pixel is on the discontinuity.
@@ -512,10 +512,10 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
     """Integrate in a box a line between start and stop0, line defined by its slope & intercept
 
     :param box: buffer with the relative area. Gets modified in place
-    :param start0: coodinate of the start of the segment in dim0
-    :param start1: coodinate of the start of the segment in dim1
-    :param start0: coodinate of the end of the segment in dim0
-    :param start0: coodinate of the end of the segment in dim1
+    :param start0: coordinate of the start of the segment in dim0
+    :param start1: coordinate of the start of the segment in dim1
+    :param start0: coordinate of the end of the segment in dim0
+    :param start0: coordinate of the end of the segment in dim1
 
     """
     cdef:

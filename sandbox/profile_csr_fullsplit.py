@@ -32,9 +32,9 @@ Created on Fri Mar 07 09:52:51 2014
 from __future__ import absolute_import
 from __future__ import print_function
 
-import sys, numpy, time
+import sys
 from pyFAI.test import utilstest
-import fabio, pyopencl
+import fabio
 from pylab import *
 from pyFAI.third_party import six
 print("#"*50)

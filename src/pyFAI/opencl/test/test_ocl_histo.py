@@ -26,7 +26,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 """
-Simple test of histgrams within pyFAI
+Simple test of histograms within pyFAI
 """
 
 __authors__ = ["Jérôme Kieffer"]

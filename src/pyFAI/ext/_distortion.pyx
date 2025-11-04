@@ -218,7 +218,7 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
     :param shape: output shape
     :param bin_size: number of input element per output element (numpy array)
     :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
-    :param mask: arry with bad pixels marked as True
+    :param mask: array with bad pixels marked as True
     :param offset: global offset for pixel position
     :return: look-up table
     """
@@ -372,7 +372,7 @@ def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size
     logger.info("CSR matrix: %.3f MByte" % ((indices.nbytes + data.nbytes + indptr.nbytes) / 1.0e6))
     buffer = numpy.empty((delta0, delta1), dtype=buffer_d)
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], lut_size))
-    #global offset (in case the detector is centerred arround the origin)
+    #global offset (in case the detector is centerred around the origin)
     goffset0 = float(offset[0])
     goffset1 = float(offset[1])
 
@@ -506,7 +506,7 @@ def calc_sparse(float32_t[:, :, :, ::1] pos not None,
 
     buffer = numpy.empty((delta0, delta1), dtype=buffer_d)
     counter = -1  # bin index
-    #global offset (in case the detector is centerred arround the origin)
+    #global offset (in case the detector is centerred around the origin)
     goffset0 = float(offset[0])
     goffset1 = float(offset[1])
     with nogil:
@@ -801,7 +801,7 @@ def resize_image_3D(image not None,
                     shape=None):
     """
     Reshape the image in such a way it has the required shape
-    This version is optimized for n-channel images used after preprocesing like:
+    This version is optimized for n-channel images used after preprocessing like:
     nlines * ncolumn * (value, variance, normalization)
 
     :param image: 3D-array with the preprocessed image

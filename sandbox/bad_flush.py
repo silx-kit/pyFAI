@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 import logging
 logger = logging.basicConfig(level=logging.INFO)
-import numpy, pyFAI, pyFAI.azimuthalIntegrator
+import numpy
+import pyFAI
+import pyFAI.azimuthalIntegrator
 method = ("no", "csr", "cython")
 detector = pyFAI.detector_factory("Pilatus_100k")
 ai = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector=detector)

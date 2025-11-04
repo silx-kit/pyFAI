@@ -52,7 +52,7 @@ PREFIXES = {-7: "y",
              7: "Z"}
 
 class SafeFormatter(string.Formatter):
-    """Like default formater but unmatched keys are still present
+    """Like default formatter but unmatched keys are still present
     into the result string"""
 
     def get_field(self, field_name, args, kwargs):
@@ -68,7 +68,7 @@ _safe_formater = SafeFormatter()
 
 
 def safe_format(format_string, arguments):
-    """Like default str.format but unmatching patterns will be
+    """Like default str.format but unmatched patterns will be
     still present into the result string.
 
     :param format_string str: Format string as defined in the default
@@ -164,7 +164,7 @@ def to_ordinal(number):
     """
     Returns a string from an ordinal value with it's suffix.
 
-    :param int number: A number refering to a position
+    :param int number: A number referring to a position
     :rtype: str
     """
     string = "%d" % number
@@ -178,7 +178,7 @@ def to_eng(value:float, fmt:str|None=None, space=""):
     """Return an engineering notation for the numerical value
 
     :param value: the actual value
-    :param fmt: the formating, for example "5.3f"
+    :param fmt: the formatting, for example "5.3f"
     :param space: can be used to insert a "_"  im 1_k
     :return: string
     """

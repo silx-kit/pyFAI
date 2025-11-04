@@ -165,7 +165,7 @@ def get_radial_dataset(parent: h5py.Group,
                     if ds.shape[0] == size:
                         break
             else:
-                logger.warning("No dataset matchs radial size !")
+                logger.warning("No dataset matches radial size !")
     else:
         radial_path = axes
     return get_dataset(nxdata, radial_path)

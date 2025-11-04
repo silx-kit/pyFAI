@@ -34,8 +34,8 @@ from silx.gui import qt
 class SynchronizeRawView(object):
     """Synchronize the raw view of plots altogether.
 
-    The active plot of each tasks synchonizing a model containing information
-    to reach the loacation of the view.
+    The active plot of each tasks synchronizing a model containing information
+    to reach the location of the view.
 
     When the task is shown, the view of the visible plot is synchronized only
     if the shared view was changed.
@@ -47,7 +47,7 @@ class SynchronizeRawView(object):
 
     def registerModel(self, model):
         if self.__model is not None:
-            raise RuntimeError("A model is already registed, cannot overwrite")
+            raise RuntimeError("A model is already registered, cannot overwrite")
         self.__model = model
         self.__model.changed.connect(self.__rawPlotViewChanged)
 
@@ -64,7 +64,7 @@ class SynchronizeRawView(object):
 
     def registerPlot(self, plot):
         if self.__plot is not None:
-            raise RuntimeError("A plot is already registed, cannot overwrite")
+            raise RuntimeError("A plot is already registered, cannot overwrite")
         self.__plot = weakref.ref(plot)
         self.__synchronizePlot = False
         if hasattr(plot, "sigVisibilityChanged"):

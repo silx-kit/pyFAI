@@ -152,7 +152,7 @@ class QuantityLabel(qt.QLabel):
                     if symbol is not None:
                         text = text + " " + symbol
                 except Exception as e:
-                    _logger.error("Error while formating value: %s", e.args[0])
+                    _logger.error("Error while formatting value: %s", e.args[0])
                     _logger.debug("Backtrace", exc_info=True)
                     text = "error"
 

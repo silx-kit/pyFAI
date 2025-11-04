@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/09/2025"
+__date__ = "03/11/2025"
 
 import numpy
 import logging
@@ -170,11 +170,15 @@ class ExperimentTask(AbstractCalibrationTask):
         self._wavelength.setModel(settings.wavelength())
         self._energy.setModel(settings.wavelength())
 
+        self.__parallaxChangedUpdateModel()  # Initialize & wire
+        self._detectorParallax.clicked.connect(self.__parallaxChangedUpdateModel)
+
         settings.image().changed.connect(self.__imageUpdated)
 
         settings.calibrantModel().changed.connect(self.__calibrantChanged)
         settings.detectorModel().changed.connect(self.__detectorModelUpdated)
         settings.wavelength().changed.connect(self.__waveLengthChanged)
+        settings.parallaxCorrection().changed.connect(self.__parallaxChangedUpdateUI)
 
         settings.changed.connect(self.__settingsChanged)
 
@@ -208,9 +212,9 @@ class ExperimentTask(AbstractCalibrationTask):
                 detector = settings.detector()
                 binning = detector.guess_binning(image)
                 if not binning:
-                    raise Exception("inconsistancy")
+                    raise Exception("inconsistency")
             except Exception:
-                warnings.append("Inconsistancy between sizes of image and detector")
+                warnings.append("Inconsistency between sizes of image and detector")
 
         self._globalWarnings = warnings
         self.updateNextStepStatus()
@@ -252,6 +256,14 @@ class ExperimentTask(AbstractCalibrationTask):
         settings = self.model().experimentSettingsModel()
         self._calibrantPreview.setWaveLength(settings.wavelength().value())
 
+    def __parallaxChangedUpdateModel(self):
+        settings = self.model().experimentSettingsModel()
+        settings.parallaxCorrection().setValue(self._detectorParallax.isChecked())
+
+    def __parallaxChangedUpdateUI(self):
+        parallaxModel = self.model().experimentSettingsModel().parallaxCorrection()
+        self._detectorParallax.setChecked(parallaxModel.value())
+
     def __calibrantChanged(self):
         settings = self.model().experimentSettingsModel()
         self._calibrantPreview.setCalibrant(settings.calibrantModel().calibrant())
@@ -268,8 +280,11 @@ class ExperimentTask(AbstractCalibrationTask):
             self._detectorOrientationValue.setText("")
             self._detectorSensorLabel.setText("")
             self._detectorSensorName.setText("")
+            self._detectorParallax.setChecked(False)
+            self._detectorParallax.setVisible(False)
             self._detectorFileDescription.setVisible(False)
             self._detectorFileDescriptionTitle.setVisible(False)
+
         else:
             self._detectorLabel.setStyleSheet("QLabel { }")
             text = [str(s) for s in detector.max_shape]
@@ -288,13 +303,15 @@ class ExperimentTask(AbstractCalibrationTask):
             if detector.sensor:
                 self._detectorSensorLabel.setText("Sensor:")
                 self._detectorSensorName.setText(str(detector.sensor))
+                self._detectorParallax.setVisible(True)
             else:
                 self._detectorSensorLabel.setText("")
                 self._detectorSensorName.setText("")
-
+                self._detectorParallax.setCheckState(False)
+                self._detectorParallax.setVisible(False)
 
             if detector.HAVE_TAPER or detector.__class__ == pyFAI.detectors.Detector:
-                fileDescription = detector.get_splineFile()
+                fileDescription = detector.splinefile
             elif isinstance(detector, pyFAI.detectors.NexusDetector):
                 fileDescription = detector.filename
             else:

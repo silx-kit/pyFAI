@@ -1,4 +1,5 @@
-import fabio, pyFAI
+import fabio
+import pyFAI
 import pyFAI.test.utilstest
 from pyFAI.io.nexus import save_NXcansas
 import os

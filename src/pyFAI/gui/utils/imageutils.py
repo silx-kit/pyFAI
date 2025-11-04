@@ -76,7 +76,7 @@ def convertArrayToQImage(image):
 def maskArrayToRgba(mask, falseColor, trueColor):
     """
     Returns an RGBA uint8 numpy array using colors to map True (usually masked pixels)
-    and Flase (valid pixel) from
+    and False (valid pixel) from
     the mask array.
     """
     trueColor = numpy.array(colors.rgba(trueColor))

@@ -55,6 +55,7 @@ from .utils import StringTypes
 from .multi_geometry import MultiGeometry
 from .units import CONST_hc, CONST_q, CHI_RAD, TTH_RAD
 from .ext.mathutil import build_qmask
+from .utils.decorators import deprecated
 logger = logging.getLogger(__name__)
 
 try:
@@ -68,7 +69,7 @@ PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "
 
 
 class BaseTransformation(object):
-    """This class, once instanciated, behaves like a function (via the __call__
+    """This class, once instantiated, behaves like a function (via the __call__
     method). It is responsible for taking any input geometry and translate it
     into a set of parameters compatible with pyFAI, i.e. a tuple with:
     (dist, poni1, poni2, rot1, rot2, rot3)
@@ -128,7 +129,7 @@ class BaseTransformation(object):
 
 
 class GeometryTransformation(object):
-    """This class, once instanciated, behaves like a function (via the __call__
+    """This class, once instantiated, behaves like a function (via the __call__
     method). It is responsible for taking any input geometry and translate it
     into a set of parameters compatible with pyFAI, i.e. a tuple with:
     (dist, poni1, poni2, rot1, rot2, rot3)
@@ -434,27 +435,41 @@ class Goniometer(object):
     def __repr__(self):
         return "Goniometer with param %s    %s with %s" % (self.nt_param(*self.param), os.linesep, self.detector)
 
-    def get_wavelength(self):
+
+
+    @property
+    def wavelength(self) -> float:
+        """Get the current wavelength, checking if it depends on motors."""
         wl_fct = self.trans_function.codes.get("wavelength")
         if wl_fct is not None:
-            # check that wavelengt does not depend on the motor position
+            # Check that wavelength does not depend on motor positions
             params = wl_fct.input_names
             for motor in self.trans_function.pos_names:
                 if motor in params:
-                    logger.warning("Wavelength depends on motors, returning the default value")
+                    logger.warning(
+                        "Wavelength depends on motors, returning the default value"
+                    )
                     return self._wavelength
             dummy_position = [0] * len(self.nt_pos._fields)
             return self.trans_function(self.param, dummy_position).wavelength
-        else:
-            return self._wavelength
+        return self._wavelength
 
-    def set_wavelength(self, value):
+    @wavelength.setter
+    def wavelength(self, value: float) -> None:
+        """Set the wavelength if it is not a fitted parameter."""
         if "wavelength" in self.trans_function.codes:
-            logger.warning("Wavelength is a fitted parameter, cannot be set. Please set fitted parameter")
+            logger.warning(
+                "Wavelength is a fitted parameter, cannot be set. Please set fitted parameter"
+            )
         else:
             self._wavelength = value
 
-    wavelength = property(get_wavelength, set_wavelength)
+    # deprecated compatibility layer
+    get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.09")
+    set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.09")
+
+
+
 
     def get_ai(self, position):
         """Creates an azimuthal integrator from the motor position
@@ -549,7 +564,7 @@ class Goniometer(object):
 
     @classmethod
     def sload(cls, filename):
-        """Class method for instanciating a Goniometer object from a JSON file
+        """Class method for instantiating a Goniometer object from a JSON file
 
         :param filename: name of the JSON file
         :return: Goniometer object
@@ -593,7 +608,7 @@ class SingleGeometry(object):
         """Constructor of the SingleGeometry class, used for calibrating a
         multi-geometry setup with a moving detector.
 
-        :param label: name of the geometry, a string or anything unmutable
+        :param label: name of the geometry, a string or anything immutable
         :param image: image with Debye-Scherrer rings as 2d numpy array
         :param metadata: anything which contains the goniometer position
         :param pos_function: a function which takes the metadata as input
@@ -615,7 +630,7 @@ class SingleGeometry(object):
         if control_points is None or isinstance(control_points, ControlPoints):
             self.control_points = control_points
         else:
-            # Probaly a NPT file
+            # Probably a NPT file
             self.control_points = ControlPoints(control_points, calibrant=calibrant)
 
         if detector is not None:
@@ -734,16 +749,22 @@ class SingleGeometry(object):
         ai.set_config(config)
         return ai
 
-    def get_wavelength(self):
+    @property
+    def wavelength(self) -> float:
+        """Get or set the wavelength, ensuring consistency between calibrant and geometry_refinement."""
         if self.calibrant.wavelength != self.geometry_refinement.wavelength:
-            raise RuntimeError("Wavelength unconsistency beetween calibrant and geometry_refinement")
+            raise RuntimeError("Wavelength inconsistency between calibrant and geometry_refinement")
         return self.geometry_refinement.wavelength
 
-    def set_wavelength(self, value):
+    @wavelength.setter
+    def wavelength(self, value: float) -> None:
         self.calibrant.setWavelength_change2th(value)
-        self.geometry_refinement.set_wavelength(value)
+        self.geometry_refinement.wavelength = value
 
-    wavelength = property(get_wavelength, set_wavelength)
+
+    # Deprecated compatibility layer
+    get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.09")
+    set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.09")
 
 
 class GoniometerRefinement(Goniometer):
@@ -816,7 +837,7 @@ class GoniometerRefinement(Goniometer):
         return "%s with %i geometries labeled: %s." % (name, count, geometry_list)
 
     def residu2(self, param):
-        "Actually performs the calulation of the average of the error squared"
+        "Actually performs the calculation of the average of the error squared"
         sumsquare = 0.0
         npt = 0
         for single in self.single_geometries.values():
@@ -1007,7 +1028,7 @@ class GoniometerRefinement(Goniometer):
 
     @classmethod
     def sload(cls, filename, pos_function=None):
-        """Class method for instanciating a Goniometer object from a JSON file
+        """Class method for instantiating a Goniometer object from a JSON file
 
         :param filename: name of the JSON file
         :param pos_function: a function taking metadata and extracting the
@@ -1041,12 +1062,19 @@ class GoniometerRefinement(Goniometer):
                     wavelength=dico.get("wavelength"))
         return gonio
 
-    def get_wavelength(self):
-        return Goniometer.get_wavelength(self)
+    @property
+    def wavelength(self) -> float:
+        """Get the wavelength using the Goniometer logic."""
+        return super().wavelength
 
-    def set_wavelength(self, value):
-        Goniometer.set_wavelength(self, value)
+    @wavelength.setter
+    def wavelength(self, value: float) -> None:
+        """Set the wavelength using Goniometer logic, and propagate to single geometries."""
+        super().wavelength = value  # call the Goniometer setter
         for sg in self.single_geometries.values():
-            sg.set_wavelength(value)
+            sg.wavelength = value  # Use the property setter of single geometry
 
-    wavelength = property(get_wavelength, set_wavelength)
+
+    # Deprecated compatibility layer
+    get_wavelength = deprecated(wavelength.fget, reason="use property", since_version="2025.09")
+    set_wavelength = deprecated(wavelength.fset, reason="use property", since_version="2025.09")

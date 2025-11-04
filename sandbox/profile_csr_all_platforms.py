@@ -27,17 +27,16 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import sys, numpy, time
+import sys
+import numpy
+import time
 from  pyFAI.test import utilstest
-import fabio, pyopencl
+import fabio
 from pylab import *
 from pyFAI.third_party import six
 from six.moves import range
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
-from pyFAI import splitBBox
-from pyFAI import splitBBoxLUT
-from pyFAI import splitBBoxCSR
 from pyFAI import ocl_azim_csr
 
 

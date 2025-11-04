@@ -486,7 +486,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
 
             signal = (raw - dark)
             variance = variance + dark_variance
-            normalization  = normalization_factor*(flat * solidangle * polarization * absortoption)
+            normalization  = normalization_factor*(flat * solidangle * polarization * absorption)
             count = number of pixel contributing
 
         Integration is performed using the LUT representation of the look-up table on all
@@ -494,7 +494,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
 
         :param dark: array of same shape as data for pre-processing
         :param dummy: value for invalid data
-        :param delta_dummy: precesion for dummy assessement
+        :param delta_dummy: precision for dummy assessment
         :param error_model: select the ErrorModel (defined in enum), use POISSON to enforce variance=signal
         :param variance: array of same shape as data for pre-processing
         :param dark_variance: array of same shape as data for pre-processing

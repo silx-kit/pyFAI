@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "08/10/2025"
+__date__ = "03/11/2025"
 
 import logging
 import numpy
@@ -165,6 +165,7 @@ class IntegrationProcess(object):
         self.__rotation1 = geometry.rotation1().value()
         self.__rotation2 = geometry.rotation2().value()
         self.__rotation3 = geometry.rotation3().value()
+        self.__parallaxCorrection = model.experimentSettingsModel().parallaxCorrection().value()
         return True
 
     def setDisplayMask(self, displayed):
@@ -196,6 +197,7 @@ class IntegrationProcess(object):
             detector=self.__detector,
             wavelength=self.__wavelength)
 
+        ai.enable_parallax(self.__parallaxCorrection)
         # FIXME Add error model
         method = method_registry.Method(0, self.__method.split, self.__method.algo, self.__method.impl, None)
         method1d = method.fixed(dim=1)
@@ -274,7 +276,7 @@ class IntegrationProcess(object):
             try:
                 rings = unitutils.from2ThRad(rings, self.__radialUnit, self.__wavelength, self.__directDist)
             except ValueError:
-                message = "Convertion to unit %s not supported. Ring locations ignored."
+                message = "Conversion to unit %s not supported. Ring locations ignored."
                 _logger.warning(message, self.__radialUnit)
                 self.__errorMessage = message % self.__radialUnit
                 rings = []
@@ -413,7 +415,7 @@ class _StatusBar(qt.QStatusBar):
             self.__2theta.setVisible(True)
             self.__2theta.setValue(tth)
             # NOTE: warelength could be updated, and the the display would not
-            # be updated. But here it is safe enougth.
+            # be updated. But here it is safe enough.
             wavelength = CalibrationContext.instance().getCalibrationModel().fittedGeometry().wavelength().value()
             q = unitutils.from2ThRad(tth, core_units.Q_A, wavelength)
             self.__q.setVisible(True)
@@ -523,14 +525,14 @@ class IntegrationPlot(qt.QFrame):
         self.__angleUnderMouse = None
 
     def __plot1dSignalReceived(self, event):
-        """Called when old style signals at emmited from the plot."""
+        """Called when old style signals at emitted from the plot."""
         if event["event"] == "mouseMoved":
             x, y = event["x"], event["y"]
             self.__mouseMoved(x, y)
             self.__updateStatusBar(x, None)
 
     def __plot2dSignalReceived(self, event):
-        """Called when old style signals at emmited from the plot."""
+        """Called when old style signals at emitted from the plot."""
         if event["event"] == "mouseMoved":
             x, y = event["x"], event["y"]
             self.__mouseMoved(x, y)
@@ -931,7 +933,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self.__integrationUpToDate = True
         self.__integrationResetZoomPolicy = None
-        method = method_registry.Method(666, "bbox", "histogram", "cython", None)
+        method = method_registry.Method(666, "full", "histogram", "cython", None)
         self.__setMethod(method)
 
         positiveValidator = validators.IntegerAndEmptyValidator(self)
@@ -1075,6 +1077,7 @@ class IntegrationTask(AbstractCalibrationTask):
         experimentSettings.detectorModel().changed.connect(self.__invalidateIntegrationNoReset)
         experimentSettings.mask().changed.connect(self.__invalidateIntegrationNoReset)
         experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegrationNoReset)
+        experimentSettings.parallaxCorrection().changed.connect(self.__invalidateIntegration)
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
         model.fittedGeometry().changed.connect(self.__fittedGeometryChanged)
         integrationSettings.radialUnit().changed.connect(self.__invalidateIntegration)
@@ -1105,7 +1108,7 @@ class IntegrationTask(AbstractCalibrationTask):
             "detector":detector.__class__.__name__,
             "detector_config":detector.get_config(),
             }
-        if detector.sensor:
+        if detector.sensor and experimentSettingsModel.parallaxCorrection().value():
             dico["parallax"] = True
         return ponifile.PoniFile(dico)
 

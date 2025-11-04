@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "30/10/2025"
 __status__ = "production"
 
 import os
@@ -123,6 +123,7 @@ class Eiger(_Dectris):
     MODULE_GAP = (37, 10)
     force_pixel = True
     SENSORS = (Si450,)
+    PIXEL_SIZE = (75e-6, 75e-6) 
 
     def __init__(self,
                  pixel1:float=75e-6,
@@ -441,9 +442,7 @@ class Mythen(_Dectris):
     force_pixel = True
     MAX_SHAPE = (1, 1280)
     SENSORS = (Si320, Si450, Si1000)
-
-    def __init__(self, pixel1=8e-3, pixel2=50e-6, orientation:int|Orientation=0, sensor:SensorConfig|None=None):
-        super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2, orientation=orientation, sensor=sensor)
+    PIXEL_SIZE = (8e-3, 50e-6) 
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
@@ -469,8 +468,9 @@ class Pilatus(_Dectris):
     """
     MODULE_SIZE = (195, 487)
     MODULE_GAP = (17, 7)
-    force_pixel = True
     SENSORS = (Si320, Si450, Si1000)
+    force_pixel = True
+    PIXEL_SIZE = (172e-6, 172e-6)
 
     def __init__(self,
                  pixel1:float=172e-6,
@@ -611,7 +611,7 @@ class Pilatus(_Dectris):
                     delta1 = -delta1 / 100.0  # Offsets are in percent of pixel and negative
                     delta2 = -delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprizing situation !!! please investigate:"
+                    logger.warning("Surprising situation !!! please investigate:"
                                    " offset has shape %s and input array have %s",
                                    self.offset1.shape, d1.shape)
                     delta1 = delta2 = 0.
@@ -815,6 +815,8 @@ class Pilatus4(_Dectris):
     MODULE_GAP = (20, 7)
     force_pixel = True
     SENSORS = (Si450,)
+    force_pixel = True
+    PIXEL_SIZE = (150e-6, 150e-6)
 
     def __init__(self,
                  pixel1:float=150e-6,

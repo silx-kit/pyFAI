@@ -22,7 +22,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import fabio, pyFAI, numpy
+import pyFAI
+import numpy
 shape = (1000, 1000)
 a = numpy.ones(shape)
 ai = pyFAI.load("mock.poni")

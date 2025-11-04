@@ -38,10 +38,10 @@ class DoubleValidator(qt.QDoubleValidator):
     Double validator with extra feature.
 
     The default locale used is not the default one. It uses locale C with
-    RejectGroupSeparator option. This allows to have consistant rendering of
+    RejectGroupSeparator option. This allows to have consistent rendering of
     double using dot separator without any comma.
 
-    QLocale provides an API to support or not groups on numbers. Unfortunatly
+    QLocale provides an API to support or not groups on numbers. Unfortunately,
     the default Qt QDoubleValidator do not filter out the group character in
     case the locale rejected it. This implementation reject the group character
     from the validation, and remove it from the fixup. Only if the locale is

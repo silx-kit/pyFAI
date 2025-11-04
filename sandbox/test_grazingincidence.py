@@ -1,12 +1,8 @@
-from pyFAI.units import Unit, get_unit_fiber, to_unit
-from pyFAI.integrator.azimuthal import AzimuthalIntegrator
 from pyFAI.calibrant import get_calibrant
 from pyFAI.integrator.fiber import FiberIntegrator
 from pyFAI import detector_factory
-import time
-from pyFAI.gui.jupyter import subplots, display, plot2d
+from pyFAI.gui.jupyter import subplots, plot2d
 import matplotlib.pyplot as plt
-import numpy
 from pyFAI.test.utilstest import UtilsTest
 import fabio
 from pyFAI import load

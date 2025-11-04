@@ -22,7 +22,9 @@ logger = logging.getLogger("lima.tango.pyfai")
 if logger.getEffectiveLevel() > logging.INFO:
     logger.setLevel(logging.INFO)
 import sys
-import os, json, distutils.util
+import os
+import json
+import distutils.util
 from os.path import dirname
 try:
     import pyFAI

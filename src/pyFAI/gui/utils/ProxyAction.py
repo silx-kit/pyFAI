@@ -92,7 +92,7 @@ class ProxyAction(qt.QAction):
 class CustomProxyAction(ProxyAction):
     """Create a QAction synchronized with a source action.
 
-    Some properties of the source can be overrided.
+    Some properties of the source can be overridden.
     """
 
     def __init__(self, parent, source):

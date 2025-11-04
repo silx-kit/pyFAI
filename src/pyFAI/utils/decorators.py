@@ -192,7 +192,7 @@ def deprecated_args(mapping: dict,
                     only_once: bool=True) -> Callable[[Callable], Callable]:
     """
     Decorator to replace the kwargs name allowed for a function.
-    In case of useage in property, place it after `@property.setter`.
+    In case of usage in property, place it after `@property.setter`.
 
     :param dict mapping: key is the valid kwarg, and value is the deprecated kwarg
     :param str since_version: First *pyFAI* version for which the function was

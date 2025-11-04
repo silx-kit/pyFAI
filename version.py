@@ -47,11 +47,15 @@ Thus 2.1.0a3 is hexversion 0x020100a3.
 __authors__ = ["Jérôme Kieffer", "V. Valls"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "19/10/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 __all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion",
            "calc_hexversion", "citation"]
+
+
+from collections import namedtuple
+
 
 RELEASE_LEVEL_VALUE = {"dev": 0,
                        "alpha": 10,
@@ -59,19 +63,15 @@ RELEASE_LEVEL_VALUE = {"dev": 0,
                        "gamma": 12,
                        "rc": 13,
                        "final": 15}
-
 MAJOR = 2025
-MINOR = 10
+MINOR = 11
 MICRO = 0
 RELEV = "dev"  # <16
 SERIAL = 0  # <16
 
 date = __date__
 
-from collections import namedtuple
-
 _version_info = namedtuple("version_info", ["major", "minor", "micro", "releaselevel", "serial"])
-
 version_info = _version_info(MAJOR, MINOR, MICRO, RELEV, SERIAL)
 
 strictversion = version = debianversion = "%d.%d.%d" % version_info[:3]
@@ -133,9 +133,9 @@ if __name__ == "__main__":
 
     parser = ArgumentParser(usage="print the version of the software")
     parser.add_argument("--wheel", action="store_true", dest="wheel", default=None,
-                        help="print version formated for wheel")
+                        help="print version formatted for wheel")
     parser.add_argument("--debian", action="store_true", dest="debian", default=None,
-                        help="print version formated for debian")
+                        help="print version formatted for debian")
     options = parser.parse_args()
     if options.debian:
         print(debianversion)

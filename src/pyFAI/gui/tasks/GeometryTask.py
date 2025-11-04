@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/01/2024"
+__date__ = "31/10/2025"
 
 import logging
 import numpy
@@ -126,7 +126,7 @@ class _StatusBar(qt.QStatusBar):
         self.__2theta.setValue(tth)
         if not numpy.isnan(tth):
             # NOTE: wavelength could be updated, and the the display would not
-            # be updated. But here it is safe enougth.
+            # be updated. But here it is safe enough.
             wavelength = CalibrationContext.instance().getCalibrationModel().fittedGeometry().wavelength().value()
             q = unitutils.from2ThRad(tth, core_units.Q_A, wavelength)
             self.__q.setValue(q)
@@ -187,8 +187,8 @@ class CalibrationState(qt.QObject):
         return self.__geoRef
 
     def popGeometryRefinement(self):
-        """Invalidate the object and remove the ownershit of the geometry
-        refinment"""
+        """Invalidate the object and remove the ownership of the geometry
+        refinement"""
         geoRef = self.__geoRef
         self.reset()
         return geoRef
@@ -321,7 +321,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         menu.exec_(handle.mapToGlobal(pos))
 
     def __plotSignalReceived(self, event):
-        """Called when old style signals at emmited from the plot."""
+        """Called when old style signals at emitted from the plot."""
         if event["event"] == "mouseMoved":
             x, y = event["x"], event["y"]
             self.__mouseMoved(x, y)
@@ -445,7 +445,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             for item in items:
                 item.setVisible(False)
 
-        # Do not dispaly all rings, but at least the 10 first
+        # Do not display all rings, but at least the 10 first
         firstRings = [a for a in angles if a[0] <= 10]
         sampledRings = [a for a in angles if (a[0] % step == 0)]
         displayedRings = set(firstRings + sampledRings)
@@ -635,9 +635,9 @@ class GeometryTask(AbstractCalibrationTask):
         self.__synchronizeRawView.registerPlot(self.__plot)
 
         constraintLayout = qt.QHBoxLayout()
-        defaultConstraintsButton = qt.QPushButton("Default contraints", self)
+        defaultConstraintsButton = qt.QPushButton("Default constraints", self)
         defaultConstraintsButton.setToolTip("Remove all the custom constraints.")
-        saxsConstraintsButton = qt.QPushButton("SAXS contraints", self)
+        saxsConstraintsButton = qt.QPushButton("SAXS constraints", self)
         saxsConstraintsButton.setToolTip("Force all the rotations to zero.")
         constraintLayout.addWidget(defaultConstraintsButton)
         constraintLayout.addWidget(saxsConstraintsButton)
@@ -653,13 +653,13 @@ class GeometryTask(AbstractCalibrationTask):
         super()._initGui()
 
     def __setDefaultConstraints(self):
-        """Apply default contraints imposed by the refinment process"""
+        """Apply default constraints imposed by the refinement process"""
         calibrationModel = self.model()
         constraintsModel = calibrationModel.geometryConstraintsModel()
         constraintsModel.set(self.__defaultConstraints)
 
     def __setSaxsConstraints(self):
-        """Apply default contraints use by SAXS experiments"""
+        """Apply default constraints use by SAXS experiments"""
         calibrationModel = self.model()
         constraintsModel = calibrationModel.geometryConstraintsModel()
         constraintsModel.lockSignals()
@@ -925,8 +925,9 @@ class GeometryTask(AbstractCalibrationTask):
         constraints = self.model().geometryConstraintsModel().copy(self)
         constraints.fillDefault(self.__defaultConstraints)
         calibration.fromGeometryConstraintsModel(constraints)
+        do_parallax = self.model().experimentSettingsModel().parallaxCorrection().value()
 
-        calibration.refine()
+        calibration.refine(parallax=do_parallax)
         if calibration.isValid():
             # write result to the fitted model
             geometry = self.model().fittedGeometry()

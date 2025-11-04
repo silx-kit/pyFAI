@@ -420,7 +420,7 @@ class TestBugRegression(unittest.TestCase):
         with fabio.open(filename) as fimg:
             frame = fimg.data
 
-        # Approximatively the position of the beam center ...
+        # Approximately the position of the beam center ...
         x = 200  # x-coordinate of the beam-center in pixels
         y = 300  # y-coordinate of the beam-center in pixels
         d = 1600  # This is the distance in mm (unit used by Fit2d)
@@ -681,7 +681,7 @@ class TestBugRegression(unittest.TestCase):
 
 class TestBug1703(unittest.TestCase):
     """
-    Check the normalization affect propely the propagated errors/intensity
+    Check the normalization affect properly the propagated errors/intensity
     """
 
     @classmethod

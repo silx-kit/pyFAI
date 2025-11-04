@@ -86,7 +86,7 @@ class _LoadImageFromFileDialogAction(qt.QAction):
                 data = None
 
             self.parent()._setValue(filename=filename, data=data)
-        # adress #2047
+        # address #2047
         dialog.deleteLater()
 
 
@@ -112,7 +112,7 @@ class _LoadImageFromImageDialogAction(qt.QAction):
             url = dialog.selectedUrl()
             data = dialog.selectedImage()
             self.parent()._setValue(filename=url, data=data)
-        # adress #2047
+        # address #2047
         dialog.deleteLater()
 
 

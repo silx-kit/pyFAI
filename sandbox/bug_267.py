@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sys
-import numpy
 
 import fabio
 from pyFAI.calibration import calib, get_detector
