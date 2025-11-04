@@ -614,7 +614,7 @@ class Pilatus(_Dectris):
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
-        config = _ensure_dict(config)
+        config = _ensure_dict(config).copy()
         x_offset_file = config.pop("x_offset_file", None)
         y_offset_file = config.get("y_offset_file", None)
         super().set_config(config)

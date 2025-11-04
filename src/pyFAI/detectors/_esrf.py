@@ -169,7 +169,7 @@ class Maxipix(Detector):
         :param config: dict or JSON serialized dict
         :return: Maxipix instance
         """
-        config = _ensure_dict(config)
+        config = _ensure_dict(config).copy()
         module_size = config.pop("module_size", None)
         super().set_config(config)
         self.module_size = tuple(module_size) if module_size else None

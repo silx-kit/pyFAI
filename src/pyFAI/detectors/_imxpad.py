@@ -247,7 +247,7 @@ class ImXPadS10(Detector):
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
-        config = _ensure_dict(config)
+        config = _ensure_dict(config).copy()
         # pixel size is enforced by the detector itself
         module_size = config.pop("module_size", None)
         super().set_config(config)
