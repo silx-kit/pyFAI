@@ -74,6 +74,16 @@ class _Dectris(Detector):
     ORIENTATION = 3 # should be 2, Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
     SENSORS = tuple()
 
+    def __init__(self,
+                 pixel1:float=75e-6,
+                 pixel2:float=75e-6,
+                 max_shape:tuple[int,int]|None=None,
+                 module_size:tuple[int,int]|None=None,
+                 orientation:int|Orientation=0,
+                 sensor:SensorConfig|None=None):
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
+        self.module_size = tuple(self.MODULE_SIZE) if module_size is None else tuple(module_size)
+
     def calc_mask(self):
         """
         Returns a generic mask for module based detectors...
@@ -82,11 +92,11 @@ class _Dectris(Detector):
             raise NotImplementedError("Generic Dectris detector does not know"
                                       "its max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
+        # working in dim0 = Y
         for i in range(self.module_size[0], self.max_shape[0],
                        self.module_size[0] + self.MODULE_GAP[0]):
             mask[i: i + self.MODULE_GAP[0],:] = 1
-        # workinng in dim1 = X
+        # working in dim1 = X
         for i in range(self.module_size[1], self.max_shape[1],
                        self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
@@ -97,10 +107,38 @@ class _Dectris(Detector):
 
         :return: dict with param for serialization
         """
-        dico = {"orientation": self.orientation}
-        if self.sensor:
-            dico["sensor"] = self.sensor.as_dict()
+        dico = super().get_config()
+
+        if ((self.module_size is not None) and
+                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
+            dico["module_size"] = self.module_size
         return dico
+
+    def set_config(self, config):
+        """set the config of the detector
+
+        For Dectris detector, possible keys are: max_shape, module_size, orientation, sensor
+
+        :param config: dict or JSON serialized dict
+        :return: Eiger instance
+        """
+        if not isinstance(config, dict):
+            try:
+                config = json.loads(config)
+            except Exception as err:  # IGNORE:W0703:
+                logger.error("Unable to parse config %s with JSON: %s, %s",
+                             config, err)
+                raise err
+
+        # pixel size is enforced by the detector itself
+        if "max_shape" in config:
+            self.max_shape = tuple(config["max_shape"])
+        module_size = config.get("module_size")
+        if module_size is not None:
+            self.module_size = tuple(module_size)
+        self._orientation = Orientation(config.get("orientation", 3))
+        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
+        return self
 
     def __repr__(self):
         txt = f"Detector {self.name}\tPixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
@@ -123,7 +161,7 @@ class Eiger(_Dectris):
     MODULE_GAP = (37, 10)
     force_pixel = True
     SENSORS = (Si450,)
-    PIXEL_SIZE = (75e-6, 75e-6) 
+    PIXEL_SIZE = (75e-6, 75e-6)
 
     def __init__(self,
                  pixel1:float=75e-6,
@@ -132,11 +170,7 @@ class Eiger(_Dectris):
                  module_size:tuple[int,int]|None=None,
                  orientation:int|Orientation=0,
                  sensor:SensorConfig|None=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor=sensor)
         self.offset1 = self.offset2 = None
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
@@ -207,48 +241,6 @@ class Eiger(_Dectris):
         p1 = (self._pixel1 * (delta1 + d1))
         p2 = (self._pixel2 * (delta2 + d2))
         return p1, p2, None
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        dico = super().get_config()
-
-        if ((self.max_shape is not None) and
-                ("MAX_SHAPE" in dir(self.__class__)) and
-                (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
-            dico["max_shape"] = self.max_shape
-        if ((self.module_size is not None) and
-                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
-            dico["module_size"] = self.module_size
-        return dico
-
-    def set_config(self, config):
-        """set the config of the detector
-
-        For Eiger detector, possible keys are: max_shape, module_size, orientation, sensor
-
-        :param config: dict or JSON serialized dict
-        :return: Eiger instance
-        """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
-                raise err
-
-        # pixel size is enforced by the detector itself
-        if "max_shape" in config:
-            self.max_shape = tuple(config["max_shape"])
-        module_size = config.get("module_size")
-        if module_size is not None:
-            self.module_size = tuple(module_size)
-        self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
-        return self
 
 
 class Eiger500k(Eiger):
@@ -436,27 +428,17 @@ class Eiger2CdTe_16M(Eiger2CdTe):
     aliases = ["Eiger2 CdTe 16M"]
 
 
-class Mythen(_Dectris):
+class Mythen(Detector):
     "Mythen strip detector from Dectris"
+    MANUFACTURER = "Dectris"
     aliases = ["Mythen 1280"]
     force_pixel = True
     MAX_SHAPE = (1, 1280)
     SENSORS = (Si320, Si450, Si1000)
-    PIXEL_SIZE = (8e-3, 50e-6) 
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        config = super().get_config()  # handles sensor
-        config["pixel1"] = self._pixel1
-        config["pixel2"] = self._pixel2
-        config["orientation"] = self.orientation or 3  # fallback
-        return config
+    PIXEL_SIZE = (8e-3, 50e-6)
 
     def calc_mask(self):
-        "Mythen have no masks"
+        "Mythen has no masks"
         return None
 
 
@@ -482,11 +464,7 @@ class Pilatus(_Dectris):
                  orientation:int|Orientation=0,
                  sensor:SensorConfig|None=None):
 
-        super(Pilatus, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor=sensor)
         self.set_offset_files(x_offset_file, y_offset_file)
 
     def __repr__(self):
@@ -630,14 +608,6 @@ class Pilatus(_Dectris):
         :return: dict with param for serialization
         """
         dico = super().get_config()
-
-        if ((self.max_shape is not None) and
-                ("MAX_SHAPE" in dir(self.__class__)) and
-                (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
-            dico["max_shape"] = self.max_shape
-        if ((self.module_size is not None) and
-                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
-            dico["module_size"] = self.module_size
         if self.x_offset_file is not None:
             dico["x_offset_file"] = self.x_offset_file
         if self.y_offset_file is not None:
@@ -656,21 +626,12 @@ class Pilatus(_Dectris):
             try:
                 config = json.loads(config)
             except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
+                logger.error(f"Unable to parse config {config} with JSON: {type(err)}: {err}")
                 raise err
-
-        # pixel size is enforced by the detector itself
-        self._orientation = Orientation(config.get("orientation", 0))
-
-        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
-
-        if "max_shape" in config:
-            self.max_shape = tuple(config["max_shape"])
-        module_size = config.get("module_size")
-        if module_size is not None:
-            self.module_size = tuple(module_size)
-        self.set_offset_files(config.get("x_offset_file"), config.get("y_offset_file"))
+        x_offset_file = config.pop("x_offset_file", None)
+        y_offset_file = config.get("y_offset_file", None)
+        super().set_config(config)
+        self.set_offset_files(x_offset_file, y_offset_file)
         return self
 
 
@@ -758,7 +719,6 @@ class PilatusCdTe(Pilatus):
         for i in range(self.module_size[1] // 2, self.max_shape[1],
                        self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i - 1: i + 2] = 1
-
         return mask
 
 
@@ -822,10 +782,10 @@ class Pilatus4(_Dectris):
                  pixel1:float=150e-6,
                  pixel2:float=150e-6,
                  max_shape:tuple[int,int]|None=None,
+                 module_size:tuple[int,int]|None=None,
                  orientation:int|Orientation=0,
                  sensor:SensorConfig|None=None):
-        super(Pilatus4, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
-        self.module_size = tuple(self.MODULE_SIZE)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor=sensor)
 
 class Pilatus4_1M(Pilatus4):
     MAX_SHAPE = 1080, 1033
