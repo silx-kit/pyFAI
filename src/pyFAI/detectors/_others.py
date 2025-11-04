@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2025"
+__date__ = "04/11/2025"
 __status__ = "production"
 
 import logging
@@ -102,10 +102,10 @@ class Perkin(Detector):
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 200e-6
     PIXEL_SIZE = (DEFAULT_PIXEL1, DEFAULT_PIXEL2)
     MAX_SHAPE = (4096, 4096)
-    
+
 
     def __init__(self, pixel1=200e-6, pixel2=200e-6, max_shape=None, orientation=0):
-        super(Perkin, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (pixel1 != self.PIXEL_SIZE[0]) or (pixel2 != self.PIXEL_SIZE[1]):
             self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
             self.shape = tuple(s // b for s, b in zip(self.max_shape, self._binning))
@@ -131,7 +131,7 @@ class Pixium(Detector):
     def __init__(self, pixel1=308e-6, pixel2=308e-6, max_shape=None, orientation=0):
         """Defaults to 2x2 binning
         """
-        super(Pixium, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
             self._binning = (int(round(pixel1 / self.DEFAULT_PIXEL1)),
                              int(round(pixel2 / self.DEFAULT_PIXEL2)))
@@ -152,7 +152,7 @@ class Apex2(Detector):
     def __init__(self, pixel1=120e-6, pixel2=120e-6, max_shape=None, orientation=0):
         """Defaults to 2x2 binning
         """
-        super(Apex2, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (pixel1 != self.PIXEL_SIZE[0]) or (pixel2 != self.PIXEL_SIZE[1]):
             self._binning = (int(round(pixel1 / self.PIXEL_SIZE[0])),
                              int(round(pixel2 / self.PIXEL_SIZE[1])))
@@ -166,7 +166,7 @@ class RaspberryPi5M(Detector):
     force_pixel = True
     PIXEL_SIZE = (1.4e-6, 1.4e-6)
     MAX_SHAPE = (1944, 2592)
-    
+
 
 class RaspberryPi8M(Detector):
     """8 Mpix detector from Raspberry Pi

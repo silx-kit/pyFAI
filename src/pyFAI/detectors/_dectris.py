@@ -34,14 +34,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2025"
+__date__ = "04/11/2025"
 __status__ = "production"
 
 import os
 import numpy
 import logging
-import json
-from ._common import Detector, Orientation, to_eng, SensorConfig
+from ._common import Detector, Orientation, to_eng, SensorConfig, _ensure_dict
 from ..utils.mathutil import expand2d
 from ..utils.decorators import deprecated_args, deprecated
 logger = logging.getLogger(__name__)
@@ -114,7 +113,7 @@ class _Dectris(Detector):
             dico["module_size"] = self.module_size
         return dico
 
-    def set_config(self, config):
+    def set_config(self, config:dict|str):
         """set the config of the detector
 
         For Dectris detector, possible keys are: max_shape, module_size, orientation, sensor
@@ -122,14 +121,7 @@ class _Dectris(Detector):
         :param config: dict or JSON serialized dict
         :return: Eiger instance
         """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
-                raise err
-
+        config = _ensure_dict(config)
         # pixel size is enforced by the detector itself
         if "max_shape" in config:
             self.max_shape = tuple(config["max_shape"])
@@ -614,7 +606,7 @@ class Pilatus(_Dectris):
             dico["y_offset_file"] = self.y_offset_file
         return dico
 
-    def set_config(self, config):
+    def set_config(self, config:dict|str):
         """set the config of the detector
 
         For Pilatus detector, possible keys are: max_shape, module_size, x_offset_file, y_offset_file, orientation, sensor
@@ -622,12 +614,7 @@ class Pilatus(_Dectris):
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error(f"Unable to parse config {config} with JSON: {type(err)}: {err}")
-                raise err
+        config = _ensure_dict(config)
         x_offset_file = config.pop("x_offset_file", None)
         y_offset_file = config.get("y_offset_file", None)
         super().set_config(config)

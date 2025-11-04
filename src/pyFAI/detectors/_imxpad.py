@@ -34,13 +34,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2023"
+__date__ = "04/11/2025"
 __status__ = "production"
 
 import functools
 import numpy
-import json
-from ._common import Detector, Orientation
+from ._common import Detector, _ensure_dict
 from ..utils import mathutil
 
 import logging
@@ -95,7 +94,7 @@ class ImXPadS10(Detector):
         return pixel_size * size
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
@@ -229,22 +228,18 @@ class ImXPadS10(Detector):
             p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
 
-    def get_config(self):
+    def get_config(self) -> dict:
         """Return the configuration with arguments to the constructor
 
         :return: dict with param for serialization
         """
-        dico = {"orientation": self.orientation or 3}
-        if ((self.max_shape is not None) and
-                ("MAX_SHAPE" in dir(self.__class__)) and
-                (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
-            dico["max_shape"] = self.max_shape
+        config = super().get_config()
         if ((self.module_size is not None) and
                 (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
-            dico["module_size"] = self.module_size
-        return dico
+            config["module_size"] = self.module_size
+        return config
 
-    def set_config(self, config):
+    def set_config(self, config:dict|str):
         """set the config of the detector
 
         For Xpad detector, possible keys are: max_shape, module_size
@@ -252,21 +247,12 @@ class ImXPadS10(Detector):
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
-                raise err
-
+        config = _ensure_dict(config)
         # pixel size is enforced by the detector itself
-        if "max_shape" in config:
-            self.max_shape = tuple(config["max_shape"])
-        module_size = config.get("module_size")
+        module_size = config.pop("module_size", None)
+        super().set_config(config)
         if module_size is not None:
             self.module_size = tuple(module_size)
-        self._orientation = Orientation(config.get("orientation", 3))
         return self
 
 
@@ -328,18 +314,12 @@ class Xpad_flat(ImXPadS10):
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
-        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         self._pixel_corners = None
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
             self.module_size = module_size
-
-    def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {self.pixel1:.3e}, {self.pixel2:.3e} m"
-        if self.orientation:
-            txt += f"\t {self.orientation.name} ({self.orientation.value})({self.orientation.value})"
-        return txt
 
     def calc_pixels_edges(self):
         """
