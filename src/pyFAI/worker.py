@@ -130,11 +130,11 @@ def _init_ai(ai, config, read_maps=True):
 
         filename = config.dark_current
         if filename:
-            ai.detector.set_darkcurrent(_reduce_images(_normalize_filenames(filename)))
+            ai.detector.darkcurrent = _reduce_images(_normalize_filenames(filename))
 
         filename = config.flat_field
         if filename:
-            ai.detector.set_flatfield(_reduce_images(_normalize_filenames(filename)))
+            ai.detector.flatfield = _reduce_images(_normalize_filenames(filename))
     return ai
 
 
