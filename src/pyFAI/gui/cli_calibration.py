@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "31/10/2025"
 __status__ = "production"
 
 import os
@@ -45,6 +45,7 @@ import sys
 import time
 import logging
 import math
+from math import pi
 import numpy
 from silx.image import marchingsquares
 from scipy.stats import linregress
@@ -597,12 +598,8 @@ class AbstractCalibration(object):
         tth_min += tth
 
         if self.geoRef:
-            ttha = self.geoRef.get_ttha()
-            chia = self.geoRef.get_chia()
-            if (ttha is None) or (ttha.shape != self.peakPicker.data.shape):
-                ttha = self.geoRef.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
-            if (chia is None) or (chia.shape != self.peakPicker.data.shape):
-                chia = self.geoRef.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
+            ttha = self.geoRef.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
+            chia = self.geoRef.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
         else:
             ttha = self.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
             chia = self.ai.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
@@ -706,9 +703,7 @@ class AbstractCalibration(object):
                 self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
             if self.basename:
                 self.geoRef.save(self.basename + ".poni")
-            self.geoRef.del_ttha()
-            self.geoRef.del_dssa()
-            self.geoRef.del_chia()
+
             tth = self.geoRef.center_array(self.peakPicker.shape, unit=TTH_RAD, scale=False)
             dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
             # self.geoRef.chiArray(self.peakPicker.shape)
@@ -846,18 +841,18 @@ class AbstractCalibration(object):
                 if len(words) >= 2 and words[1] in self.PARAMETERS:
                     param = words[1]
                     if len(words) == 2:
-                        text = ("Enter %s in %s " % (param, self.UNITS[param]) +
+                        text = (f"Enter {param} in {self.UNITS[param]} "+
                                 "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " % (
-                                    param, self.geoRef.__getattribute__("get_%s_min" % param)(),
-                                    param, self.geoRef.__getattribute__("get_%s" % param)(),
-                                    param, self.geoRef.__getattribute__("get_%s_max" % param)()))
+                                    param, self.geoRef.__getattribute__(f"{param}_min"),
+                                    param, self.geoRef.__getattribute__(param),
+                                    param, self.geoRef.__getattribute__(f"{param}_max")))
                         values = {
-                            1: [self.geoRef.__getattribute__("set_%s" % param)],
-                            2: [self.geoRef.__getattribute__("set_%s_min" % param),
-                                self.geoRef.__getattribute__("set_%s_max" % param)],
-                            3: [self.geoRef.__getattribute__("set_%s_min" % param),
-                                self.geoRef.__getattribute__("set_%s" % param),
-                                self.geoRef.__getattribute__("set_%s_max" % param)]}
+                            1: [self.geoRef.__getattribute__(f"set_{param}")],
+                            2: [self.geoRef.__getattribute__(f"set_{param}_min"),
+                                self.geoRef.__getattribute__(f"set_{param}_max")],
+                            3: [self.geoRef.__getattribute__(f"set_{param}_min"),
+                                self.geoRef.__getattribute__(f"set_{param}"),
+                                self.geoRef.__getattribute__(f"set_{param}_max")]}
                         readFloatFromKeyboard(text, values)
                     elif len(words) == 3:
                         try:
@@ -873,8 +868,8 @@ class AbstractCalibration(object):
                         except ValueError:
                             logger.warning("invalid value")
                         else:
-                            self.geoRef.__getattribute__("set_%s_min" % param)(value_min)
-                            self.geoRef.__getattribute__("set_%s_max" % param)(value_max)
+                            self.geoRef.__getattribute__(f"set_{param}_min")(value_min)
+                            self.geoRef.__getattribute__(f"set_{param}_max")(value_max)
                     elif len(words) == 5:
                         try:
                             value_min = float(words[2])
@@ -883,9 +878,9 @@ class AbstractCalibration(object):
                         except ValueError:
                             logger.warning("invalid value")
                         else:
-                            self.geoRef.__getattribute__("set_%s_min" % param)(value_min)
-                            self.geoRef.__getattribute__("set_%s" % param)(value)
-                            self.geoRef.__getattribute__("set_%s_max" % param)(value_max)
+                            self.geoRef.__getattribute__(f"set_{param}_min")(value_min)
+                            self.geoRef.__getattribute__(f"set_{param}")(value)
+                            self.geoRef.__getattribute__(f"set_{param}_max")(value_max)
                     else:
                         print(self._HELP[action])
                 else:
@@ -894,33 +889,33 @@ class AbstractCalibration(object):
                 readFloatFromKeyboard("Enter Distance in meter "
                                       "(or dist_min[%.3f] dist[%.3f] dist_max[%.3f]):\t " %
                                       (self.geoRef.dist_min, self.geoRef.dist, self.geoRef.dist_max),
-                                      {1: [self.geoRef.set_dist], 2: [self.geoRef.set_dist_min, self.geoRef.set_dist_max],
-                                       3: [self.geoRef.set_dist_min, self.geoRef.set_dist, self.geoRef.set_dist_max]})
+                                      {1: [self.geoRef.dist.fset], 2: [self.geoRef.dist_min.fset, self.geoRef.dist_max.fset],
+                                       3: [self.geoRef.dist_min.fset, self.geoRef.dist.fset, self.geoRef.dist_max.fset]})
                 readFloatFromKeyboard("Enter Poni1 in meter "
                                       "(or poni1_min[%.3f] poni1[%.3f] poni1_max[%.3f]):\t " %
                                       (self.geoRef.poni1_min, self.geoRef.poni1, self.geoRef.poni1_max),
-                                      {1: [self.geoRef.set_poni1], 2: [self.geoRef.set_poni1_min, self.geoRef.set_poni1_max],
-                                       3: [self.geoRef.set_poni1_min, self.geoRef.set_poni1, self.geoRef.set_poni1_max]})
+                                      {1: [self.geoRef.poni1.fset], 2: [self.geoRef.poni1_min.fset, self.geoRef.poni1_max.fset],
+                                       3: [self.geoRef.poni1_min.fset, self.geoRef.poni1.fset, self.geoRef.poni1_max.fset]})
                 readFloatFromKeyboard("Enter Poni2 in meter "
                                       "(or poni2_min[%.3f] poni2[%.3f] poni2_max[%.3f]):\t " %
                                       (self.geoRef.poni2_min, self.geoRef.poni2, self.geoRef.poni2_max),
-                                      {1: [self.geoRef.set_poni2], 2: [self.geoRef.set_poni2_min, self.geoRef.set_poni2_max],
-                                       3: [self.geoRef.set_poni2_min, self.geoRef.set_poni2, self.geoRef.set_poni2_max]})
+                                      {1: [self.geoRef.poni2.fset], 2: [self.geoRef.poni2_min.fset, self.geoRef.poni2_max.fset],
+                                       3: [self.geoRef.poni2_min.fset, self.geoRef.poni2.fset, self.geoRef.poni2_max.fset]})
                 readFloatFromKeyboard("Enter Rot1 in rad "
                                       "(or rot1_min[%.3f] rot1[%.3f] rot1_max[%.3f]):\t " %
                                       (self.geoRef.rot1_min, self.geoRef.rot1, self.geoRef.rot1_max),
-                                      {1: [self.geoRef.set_rot1], 2: [self.geoRef.set_rot1_min, self.geoRef.set_rot1_max],
-                                       3: [self.geoRef.set_rot1_min, self.geoRef.set_rot1, self.geoRef.set_rot1_max]})
+                                      {1: [self.geoRef.rot1.fset], 2: [self.geoRef.rot1_min.fset, self.geoRef.set_rot1_max],
+                                       3: [self.geoRef.rot1_min.fset, self.geoRef.rot1.fset, self.geoRef.rot1_max.fset]})
                 readFloatFromKeyboard("Enter Rot2 in rad "
                                       "(or rot2_min[%.3f] rot2[%.3f] rot2_max[%.3f]):\t " %
                                       (self.geoRef.rot2_min, self.geoRef.rot2, self.geoRef.rot2_max),
-                                      {1: [self.geoRef.set_rot2], 2: [self.geoRef.set_rot2_min, self.geoRef.set_rot2_max],
-                                       3: [self.geoRef.set_rot2_min, self.geoRef.set_rot2, self.geoRef.set_rot2_max]})
+                                      {1: [self.geoRef.rot2.fset], 2: [self.geoRef.rot2_min.fset, self.geoRef.rot2_max.fset],
+                                       3: [self.geoRef.rot2_min.fset, self.geoRef.rot2.fset, self.geoRef.rot2_max.fset]})
                 readFloatFromKeyboard("Enter Rot3 in rad "
                                       "(or rot3_min[%.3f] rot3[%.3f] rot3_max[%.3f]):\t " %
                                       (self.geoRef.rot3_min, self.geoRef.rot3, self.geoRef.rot3_max),
-                                      {1: [self.geoRef.set_rot3], 2: [self.geoRef.set_rot3_min, self.geoRef.set_rot3_max],
-                                       3: [self.geoRef.set_rot3_min, self.geoRef.set_rot3, self.geoRef.set_rot3_max]})
+                                      {1: [self.geoRef.rot3.fset], 2: [self.geoRef.rot3_min.fset, self.geoRef.rot3_max.fset],
+                                       3: [self.geoRef.rot3_min.fset, self.geoRef.rot3.fset, self.geoRef.rot3_max.fset]})
             elif action == "done":
                 self.postProcess()
                 return True
@@ -1113,9 +1108,7 @@ class AbstractCalibration(object):
         self.peakPicker.points.save(self.basename + ".npt")
         self.geoRef.save(self.basename + ".poni")
         self.geoRef.mask = self.mask
-        self.geoRef.del_ttha()
-        self.geoRef.del_dssa()
-        self.geoRef.del_chia()
+        self.geoRef.reset()
         t0 = time.perf_counter()
         _tth = self.geoRef.center_array(self.peakPicker.shape, unit=TTH_RAD, scale=False)
         t1 = time.perf_counter()
@@ -1335,29 +1328,29 @@ class AbstractCalibration(object):
 
         if self.geoRef:
             # reset geoRef object
-            self.geoRef.set_dist_min(0)
-            self.geoRef.set_dist_max(100)
-            self.geoRef.set_dist(self.ai.dist)
+            self.geoRef.dist_min = 0
+            self.geoRef.dist_max = 100
+            self.geoRef.dist = self.ai.dist
 
-            self.geoRef.set_poni1_min(-10.0 * self.ai.poni1)
-            self.geoRef.set_poni1_max(10.0 * self.ai.poni1)
-            self.geoRef.set_poni1(self.ai.poni1)
+            self.geoRef.poni1_min = -10.0 * abs(self.ai.poni1)
+            self.geoRef.poni1_max = 10.0 * abs(self.ai.poni1)
+            self.geoRef.poni1 = self.ai.poni1
 
-            self.geoRef.set_poni2_min(-10.0 * self.ai.poni2)
-            self.geoRef.set_poni2_max(10.0 * self.ai.poni2)
-            self.geoRef.set_poni2(self.ai.poni2)
+            self.geoRef.poni2_min = -10.0 * abs(self.ai.poni2)
+            self.geoRef.poni2_max = 10.0 * abs(self.ai.poni2)
+            self.geoRef.poni2 = self.ai.poni2
 
-            self.geoRef.set_rot1_min(-math.pi)
-            self.geoRef.set_rot1_max(math.pi)
-            self.geoRef.set_rot1(self.ai.rot1)
+            self.geoRef.rot1_min = -pi
+            self.geoRef.rot1_max = pi
+            self.geoRef.rot1 = self.ai.rot1
 
-            self.geoRef.set_rot2_min(-math.pi)
-            self.geoRef.set_rot2_max(math.pi)
-            self.geoRef.set_rot2(self.ai.rot2)
+            self.geoRef.rot2_min = -pi
+            self.geoRef.rot2_max = pi
+            self.geoRef.rot2 = self.ai.rot2
 
-            self.geoRef.set_rot3_min(-math.pi)
-            self.geoRef.set_rot3_max(math.pi)
-            self.geoRef.set_rot3(self.ai.rot3)
+            self.geoRef.rot3_min = -pi
+            self.geoRef.rot3_max = pi
+            self.geoRef.rot3 = self.ai.rot3
 
     def initgeoRef(self, defaults=None):
         """
@@ -1512,7 +1505,7 @@ class CliCalibration(AbstractCalibration):
                 self.peakPicker.points.calibrant.wavelength = self.ai.wavelength
             elif self.ai.wavelength != self.peakPicker.points.calibrant.wavelength:
                 self.peakPicker.points.calibrant.setWavelength_change2th(self.ai.wavelength)
-        if not self.peakPicker.points.calibrant.dSpacing:
+        if not self.peakPicker.points.calibrant.dspacing:
             wl = self.peakPicker.points.calibrant.wavelength
             self.read_dSpacingFile()
             if wl:
