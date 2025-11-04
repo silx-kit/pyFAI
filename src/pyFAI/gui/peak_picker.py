@@ -459,7 +459,7 @@ class PeakPicker(object):
                 callback(cpt)
         else:
             if not self.points.calibrant.dspacing:
-                logger.error("Calibrant has no line ! check input parameters please, especially the '-c' option")
+                logger.error("Calibrant has no line! Check input parameters please, especially the '-c' option")
                 print(CALIBRANT_FACTORY)
                 raise RuntimeError("Invalid calibrant")
             input("Please press enter when you are happy with your selection" + os.linesep)
