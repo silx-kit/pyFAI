@@ -84,7 +84,7 @@ class ControlPoints(object):
             else:
                 logger.error("Unable to handle such calibrant: %s", calibrant)
         if not self.calibrant.wavelength:
-            self.calibrant.set_wavelength(wavelength)
+            self.calibrant.wavelength = wavelength 
 
     def __repr__(self):
         self.check()
