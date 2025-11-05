@@ -39,7 +39,7 @@ __date__ = "04/11/2025"
 __status__ = "production"
 
 import numpy
-from ._common import Detector, Orientation, SensorConfig, _ensure_dict
+from ._common import Detector, SensorConfig
 from ..utils.decorators import deprecated
 
 import logging
