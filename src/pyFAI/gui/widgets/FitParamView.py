@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2019 European Synchrotron Radiation Facility
+# Copyright (C) 2019-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,9 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "05/09/2023"
+__date__ = "05/11/2025"
 
 from silx.gui import icons
 
@@ -245,7 +245,7 @@ class FitParamView(qt.QObject):
         qt.QObject.__init__(self, parent=parent)
         self.__label = label
         self.__labelWidget = qt.QLabel(parent)
-        self.__labelWidget.setText("%s:" % label)
+        self.__labelWidget.setText(f"{label}:")
         self.__quantity = QuantityEdit(parent)
         self.__quantity.setAlignment(qt.Qt.AlignRight)
         self.__quantity.sigValueAccepted.connect(self.__fireValueAccepted)
@@ -411,3 +411,14 @@ class FitParamView(qt.QObject):
 
     def widgets(self):
         return [self.__labelWidget, self.__subLayout, self.__unit, self.__constraints]
+
+    def label(self):
+        """getter for the label"""
+        return self.__label
+
+    def setLabel(self, label):
+        """Change the label"""
+        if label != self.__label:
+            self.__label = label
+            self.__labelWidget.setText(f"{label}:")
+
