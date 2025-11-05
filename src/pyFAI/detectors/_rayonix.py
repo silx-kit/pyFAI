@@ -575,7 +575,6 @@ class Mar345(Detector):
         return result
 
 
-
 class Mar555(Detector):
 
     """Mar555 is a Selenium flat panel detector.
@@ -596,21 +595,6 @@ class Mar555(Detector):
 
 
     # get_config inherited from Detector; no changes needed
+    
+    # set_config inherited from Detector; no changes needed
 
-    def set_config(self, config:dict|str):
-        """set the config of the detector
-
-        #TODO: Extend docstring for sensor, orientation?
-        For Mar555 detector, possible keys are: max_shape, module_size
-
-        :param config: dict or JSON serialized dict
-        :return: detector instance
-        """
-        config = _ensure_dict(config)
-        self.pixel1 = config.get("pixel1")
-        self.pixel2 = config.get("pixel2")
-
-        self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
-
-        return self
