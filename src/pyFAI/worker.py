@@ -474,7 +474,7 @@ class Worker(object):
             filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
-            self.ai.detector.set_darkcurrent(data)
+            self.ai.detector.darkcurrent = data
             self.dark_current_image = filenames
 
         # Do it here while we have to store metadata
@@ -483,7 +483,7 @@ class Worker(object):
             filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
-            self.ai.detector.set_flatfield(data)
+            self.ai.detector.flatfield = data
             self.flat_field_image = filenames
 
         self._nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
