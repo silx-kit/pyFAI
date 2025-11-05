@@ -1225,15 +1225,15 @@ class Detector(metaclass=DetectorMeta):
         elif not files:
             files = []
         if len(files) == 0:
-            self.set_flatfield(None)
+            self.flatfield = None
         elif len(files) == 1:
             if fabio is None:
                 raise RuntimeError("FabIO is missing")
             with fabio.open(files[0]) as fimg:
-                self.set_flatfield(fimg.data.astype(numpy.float32))
+                self.flatfield = fimg.data.astype(numpy.float32)
             self.flatfiles = files[0]
         else:
-            self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
+            self.flatfield = average.average_images(files, filter_=method, fformat=None, threshold=0)
             self.flatfiles = "%s(%s)" % (method, ",".join(files))
 
     @property
