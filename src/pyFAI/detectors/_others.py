@@ -34,12 +34,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2025"
+__date__ = "04/11/2025"
 __status__ = "production"
 
 import logging
-import json
-from ._common import Detector, Orientation, to_eng
+from ._common import Detector
 logger = logging.getLogger(__name__)
 
 
@@ -50,24 +49,10 @@ class Fairchild(Detector):
     MANUFACTURER = "Fairchild Semiconductor"
 
     force_pixel = True
+    PIXEL_SIZE = (15e-6, 15e-6)
     uniform_pixel = True
     aliases = ["Fairchild", "Condor", "Fairchild Condor 486:90"]
     MAX_SHAPE = (4096, 4096)
-
-    def __init__(self, pixel1=15e-6, pixel2=15e-6, max_shape=None, orientation=0):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
-
-    def __repr__(self):
-        return f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
 
 
 class Titan(Detector):
@@ -77,24 +62,10 @@ class Titan(Detector):
     MANUFACTURER = ["Agilent", "Oxford Diffraction"]
 
     force_pixel = True
+    PIXEL_SIZE = (60e-6, 60e-6)
     MAX_SHAPE = (2048, 2048)
     aliases = ["Titan 2k x 2k", "Titan 2k x 2k", "OXD Titan", "Agilent Titan"]
     uniform_pixel = True
-
-    def __init__(self, pixel1=60e-6, pixel2=60e-6, max_shape=None, orientation=0):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
-
-    def __repr__(self):
-        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
 
 
 class Dexela2923(Detector):
@@ -102,23 +73,9 @@ class Dexela2923(Detector):
     Dexela CMOS family detector
     """
     force_pixel = True
+    PIXEL_SIZE = (75e-6, 75e-6)
     aliases = ["Dexela 2923"]
     MAX_SHAPE = (3888, 3072)
-
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, orientation=0):
-        super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
-
-    def __repr__(self):
-        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
 
 
 class Basler(Detector):
@@ -127,52 +84,10 @@ class Basler(Detector):
 
     """
     MANUFACTURER = "Basler"
-
     force_pixel = True
+    PIXEL_SIZE = (3.75e-6, 3.75e-6)
     aliases = ["aca1300"]
     MAX_SHAPE = (966, 1296)
-
-    def __init__(self, pixel1=3.75e-6, pixel2=3.75e-6, max_shape=None, orientation=0):
-        super(Basler, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
-
-    def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
-
-    def set_config(self, config):
-        """Sets the configuration of the detector.
-
-        The configuration is either a python dictionary or a JSON string or a
-        file containing this JSON configuration
-
-        keys in that dictionary are:  pixel
-
-        :param config: string or JSON-serialized dict
-        :return: self
-        """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
-                raise err
-        pixel1 = config.get("pixel1")
-        pixel2 = config.get("pixel2")
-        if pixel1 or pixel2:
-            self.set_pixel1(pixel1 or pixel2)
-            self.set_pixel2(pixel2 or pixel1)
-        self._orientation = Orientation(config.get("orientation", 3))
-        return self
 
 
 class Perkin(Detector):
@@ -184,29 +99,19 @@ class Perkin(Detector):
 
     aliases = ["Perkin detector", "Perkin Elmer"]
     force_pixel = True
-    MAX_SHAPE = (4096, 4096)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 200e-6
+    PIXEL_SIZE = (DEFAULT_PIXEL1, DEFAULT_PIXEL2)
+    MAX_SHAPE = (4096, 4096)
+
 
     def __init__(self, pixel1=200e-6, pixel2=200e-6, max_shape=None, orientation=0):
-        super(Perkin, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
-        if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+        if (pixel1 != self.PIXEL_SIZE[0]) or (pixel2 != self.PIXEL_SIZE[1]):
             self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
             self.shape = tuple(s // b for s, b in zip(self.max_shape, self._binning))
         else:
             self.shape = (2048, 2048)
             self._binning = (2, 2)
-
-    def __repr__(self):
-        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
 
 
 class Pixium(Detector):
@@ -219,29 +124,18 @@ class Pixium(Detector):
 
     aliases = ["Pixium 4700", "Pixium 4700 detector", "Thales Electronics"]
     force_pixel = True
+    PIXEL_SIZE = (308e-6, 308e-6)
     MAX_SHAPE = (1910, 2480)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 154e-6
 
     def __init__(self, pixel1=308e-6, pixel2=308e-6, max_shape=None, orientation=0):
         """Defaults to 2x2 binning
         """
-        super(Pixium, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
             self._binning = (int(round(pixel1 / self.DEFAULT_PIXEL1)),
                              int(round(pixel2 / self.DEFAULT_PIXEL2)))
             self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
-
-    def __repr__(self):
-        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
 
 
 class Apex2(Detector):
@@ -250,71 +144,43 @@ class Apex2(Detector):
     Actually a derivative from the Fairchild detector with higher binning
     """
     MANUFACTURER = "Bruker"
-
     aliases = ["ApexII", "Bruker"]
     force_pixel = True
+    PIXEL_SIZE = (120e-6, 120e-6)
     MAX_SHAPE = (1024, 1024)
-    DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 60e-6
 
     def __init__(self, pixel1=120e-6, pixel2=120e-6, max_shape=None, orientation=0):
         """Defaults to 2x2 binning
         """
-        super(Apex2, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
-        if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
-            self._binning = (int(round(pixel1 / self.DEFAULT_PIXEL1)),
-                             int(round(pixel2 / self.DEFAULT_PIXEL2)))
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+        if (pixel1 != self.PIXEL_SIZE[0]) or (pixel2 != self.PIXEL_SIZE[1]):
+            self._binning = (int(round(pixel1 / self.PIXEL_SIZE[0])),
+                             int(round(pixel2 / self.PIXEL_SIZE[1])))
             self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
-
-    def __repr__(self):
-        return f"Detector {self.name}%s\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
 
 
 class RaspberryPi5M(Detector):
     """5 Mpix detector from Raspberry Pi
-
     """
     aliases = ["Picam v1"]
     force_pixel = True
+    PIXEL_SIZE = (1.4e-6, 1.4e-6)
     MAX_SHAPE = (1944, 2592)
-
-    def __init__(self, pixel1=1.4e-6, pixel2=1.4e-6, max_shape=None, orientation=0):
-        super(RaspberryPi5M, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
 
 
 class RaspberryPi8M(Detector):
     """8 Mpix detector from Raspberry Pi
-
     """
     aliases = ["Picam v2"]
     force_pixel = True
+    PIXEL_SIZE = (1.12e-6, 1.12e-6)
     MAX_SHAPE = (2464, 3280)
 
-    def __init__(self, pixel1=1.12e-6, pixel2=1.12e-6, max_shape=None, orientation=0):
-        super(RaspberryPi8M, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
 
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "orientation": self.orientation or 3}
+class RaspberryPi12M(Detector):
+    """8 Mpix detector from Raspberry Pi
+    """
+    aliases = ["Picam HQ"]
+    force_pixel = True
+    PIXEL_SIZE = (1.55e-6, 1.55e-6)
+    MAX_SHAPE = (3040, 4056)

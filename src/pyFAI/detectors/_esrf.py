@@ -34,20 +34,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "04/11/2025"
 __status__ = "production"
 
 
 import numpy
 import logging
-import json
-from ._common import Detector, Orientation, to_eng, SensorConfig
+from ._common import Detector, SensorConfig, _ensure_dict
 from ..utils.decorators import deprecated_args
 logger = logging.getLogger(__name__)
 
 #Define sensor used in Maxipix detectors
 Si500 = SensorConfig.from_dict({"material": "Si", "thickness": 500e-6})
-
 
 
 try:
@@ -65,16 +63,14 @@ class FReLoN(Detector):
     TODO: create automatically a mask that removes pixels out of the "valid region"
     """
     MANUFACTURER = "ESRF"
-
     MAX_SHAPE = (2048, 2048)
-
     HAVE_TAPER = True
 
     @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
     def __init__(self,
                 splinefile: str|None=None,
                 orientation=0):
-        super(FReLoN, self).__init__(splinefile=splinefile, orientation=orientation)
+        super().__init__(splinefile=splinefile, orientation=orientation)
         if splinefile:
             self.max_shape = (int(self.spline.ymax - self.spline.ymin),
                               int(self.spline.xmax - self.spline.xmin))
@@ -119,30 +115,21 @@ class Maxipix(Detector):
     Sub-classed by Maxipix2x2 and Maxipix5x1
     """
     MANUFACTURER = "ESRF"
-
     MODULE_SIZE = (256, 256)
     MODULE_GAP = (4, 4)
     MAX_SHAPE = (256, 256)
     force_pixel = True
+    PIXEL_SIZE = (55e-6, 55e-6)
     aliases = ["Maxipix 1x1", "Maxipix1x1"]
     SENSORS = (Si500,)
 
     def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
-        super(Maxipix, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
             self.module_size = module_size
         self.uniform_pixel = True
-
-    def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {to_eng(self.pixel1)}m, {to_eng(self.pixel2)}m"
-        if self.orientation:
-            txt += f"\t {self.orientation.name}({self.orientation.value})"
-        if self.sensor:
-            txt += f"\t {self.sensor}"
-        return txt
-
 
     def calc_mask(self):
         """
@@ -169,15 +156,9 @@ class Maxipix(Detector):
         """
         dico = super().get_config()
         dico.pop("splineFile", None)  # Maxipix has no spline
-
-        if ((self.max_shape is not None) and
-                ("MAX_SHAPE" in dir(self.__class__)) and
-                (tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE))):
-            dico["max_shape"] = self.max_shape
         if ((self.module_size is not None) and
                 (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
             dico["module_size"] = self.module_size
-
         return dico
 
     def set_config(self, config):
@@ -188,22 +169,10 @@ class Maxipix(Detector):
         :param config: dict or JSON serialized dict
         :return: Maxipix instance
         """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
-                raise err
-
-        # pixel size is enforced by the detector itself
-        if "max_shape" in config:
-            self.max_shape = tuple(config["max_shape"])
-        module_size = config.get("module_size")
-        if module_size is not None:
-            self.module_size = tuple(module_size)
-        self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config.get("sensor")) if config.get("sensor") is not None else None
+        config = _ensure_dict(config).copy()
+        module_size = config.pop("module_size", None)
+        super().set_config(config)
+        self.module_size = tuple(module_size) if module_size else None
         return self
 
 

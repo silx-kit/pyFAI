@@ -34,12 +34,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2025"
+__date__ = "04/11/2025"
 __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, to_eng, SensorConfig
+from ._common import Detector, SensorConfig
 logger = logging.getLogger(__name__)
 
 
@@ -58,22 +58,15 @@ class _Lambda(Detector):
     MODULE_GAP = (4, 4)
     DUMMY = 0
     force_pixel = True
+    PIXEL_SIZE = (55e-6, 55e-6)
     SENSORS = (Si300, Si500, GaAs500, CdTe1000)
 
     def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
             self.module_size = module_size
-
-    def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-        if self.orientation:
-            txt+=f"\t {self.orientation.name} ({self.orientation.value})"
-        if self.sensor:
-            txt += f"\t {self.sensor}"
-        return txt
 
     def calc_mask(self):
         """

@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2025"
+__date__ = "04/11/2025"
 __status__ = "stable"
 
 import logging
@@ -180,31 +180,20 @@ class Detector(metaclass=DetectorMeta):
         # Create the detector
         detector = None
         if config is not None:
-            if isinstance(config, dict):
-                config = config.copy()
-            else:
-                try:
-                    config = json.loads(config)
-                except Exception as err:  # IGNORE:W0703:
-                    logger.error("Unable to parse config %s with JSON: %s, %s",
-                                 name, config, err)
-                    raise err
+            config = _ensure_dict(config).copy()
             binning = config.pop("binning", None)
             kwargs = {key.lower():config.pop(key) for key in inspect.getfullargspec(detectorClass).args if key in config}
             if config:
                 logger.error(f"Factory: Left-over config parameters in detector {detectorClass.__name__}: {config}")
-
             try:
                 detector = detectorClass(**kwargs)
             except Exception as err:  # IGNORE:W0703:
-                logger.error("%s: %s\nUnable to configure detector %s with config: %s\n",
-                             type(err).__name__, err, name, config)
+                logger.error(f"Unable to configure detector {name} with config: {config}\n{type(err).__name__}: {err}")
                 raise err
             if binning:
                 detector.set_binning(binning)
         else:
             detector = detectorClass()
-
         return detector
 
     @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
@@ -232,8 +221,12 @@ class Detector(metaclass=DetectorMeta):
         self.sensor = None
         if pixel1:
             self._pixel1 = float(pixel1)
+        elif self.force_pixel and "PIXEL_SIZE" in dir(self.__class__):
+            self._pixel1 = self.__class__.PIXEL_SIZE[0]
         if pixel2:
             self._pixel2 = float(pixel2)
+        elif self.force_pixel and "PIXEL_SIZE" in dir(self.__class__):
+            self._pixel2 = self.__class__.PIXEL_SIZE[1]
         if max_shape is None:
             self.max_shape = tuple(self.MAX_SHAPE) if "MAX_SHAPE" in dir(self.__class__) else None
         else:
@@ -359,14 +352,7 @@ class Detector(metaclass=DetectorMeta):
         :param config: string or JSON-serialized dict
         :return: self
         """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
-                raise err
-
+        config = _ensure_dict(config)
         if not self.force_pixel:
             pixel1 = config.get("pixel1")
             pixel2 = config.get("pixel2")
@@ -391,9 +377,14 @@ class Detector(metaclass=DetectorMeta):
         """
         dico = {"pixel1": self._pixel1,
                 "pixel2": self._pixel2,
-                'max_shape': self.max_shape,
                 "orientation": self.orientation or 3
                 }
+        if self.max_shape:
+            if "MAX_SHAPE" in dir(self.__class__):
+                if tuple(self.max_shape) != tuple(self.__class__.MAX_SHAPE):
+                    dico["max_shape"] = self.max_shape
+            else:
+                dico["max_shape"] = self.max_shape
         if self._splinefile:
             dico["splineFile"] = self._splinefile
         if self.sensor:
@@ -1134,7 +1125,7 @@ class Detector(metaclass=DetectorMeta):
         if hasattr(value, "item"):
             value = value.item()
         value = float(value)
-                    
+
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
             if self.force_pixel and (err > EPSILON):
@@ -1171,7 +1162,7 @@ class Detector(metaclass=DetectorMeta):
         if hasattr(value, "item"):
             value = value.item()
         value = float(value)
-            
+
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
             if self.force_pixel and (err > EPSILON):
@@ -1375,7 +1366,7 @@ class NexusDetector(Detector):
                  filename:str|None=None,
                  orientation:int=0,
                  sensor:SensorConfig|None=None):
-        Detector.__init__(self, orientation=orientation, sensor = sensor)
+        super().__init__(orientation=orientation, sensor = sensor)
         self.uniform_pixel = True
         self._filename = None
         if filename is not None:
@@ -1388,13 +1379,12 @@ class NexusDetector(Detector):
             self.sensor = sensor
 
     def __repr__(self):
-        txt = f"{self.name} detector from NeXus file: {self._filename}\t"
-        txt += f"PixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-        if self.orientation:
-            txt += f"\t {self.orientation.name} ({self.orientation.value})"
-        if self.sensor:
-            txt += f"\t {self.sensor}"
-        return txt
+        base = super().__repr__()
+        return base.replace(
+            f"Detector {self.name}",
+            f"{self.name} detector from NeXus file: {self._filename}",
+            1
+        )
 
     def load(self, filename):
         """
@@ -1523,7 +1513,7 @@ class NexusDetector(Detector):
         cls.load(filename)
         return obj
 
-    def set_config(self, config):
+    def set_config(self, config: dict|str):
         """set the config of the detector
 
         For Nexus detector, the valid keys are "filename", "orientation, "sensor"
@@ -1531,13 +1521,7 @@ class NexusDetector(Detector):
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
-                raise err
+        config = _ensure_dict(config)
         filename = config.get("filename")
         if os.path.exists(filename):
             self.load(filename)
@@ -1581,3 +1565,16 @@ class NexusDetector(Detector):
         return {"pixelX": self._pixel2 * 1e6,
                 "pixelY": self._pixel1 * 1e6
                 }
+
+
+def _ensure_dict(dico_or_str:str|dict)-> dict:
+    """Helper function decoding a JSON string into a dict if needed"""
+    if isinstance(dico_or_str, dict):
+        config = dico_or_str
+    else:
+        try:
+            config = json.loads(dico_or_str)
+        except Exception as err:  # IGNORE:W0703:
+            logger.error(f"Unable to parse config `{config}` as JSON.\n{type(err).__name__}: {err}")
+            raise err
+    return config
