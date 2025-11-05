@@ -122,7 +122,6 @@ class DetectorSelectorDrop(qt.QWidget):
         self.__detectorHeight = DataModel()
         self.__pixelWidth = DataModel()
         self.__pixelHeight = DataModel()
-        # self.__sensor = DataModel()
 
         self._detectorWidth.setModel(self.__detectorWidth)
         self._detectorHeight.setModel(self.__detectorHeight)
