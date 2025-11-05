@@ -185,17 +185,15 @@ class Detector(metaclass=DetectorMeta):
             kwargs = {key.lower():config.pop(key) for key in inspect.getfullargspec(detectorClass).args if key in config}
             if config:
                 logger.error(f"Factory: Left-over config parameters in detector {detectorClass.__name__}: {config}")
-
             try:
                 detector = detectorClass(**kwargs)
             except Exception as err:  # IGNORE:W0703:
-                logger.error(f"{type(err).__name__}: {err}\nUnable to configure detector {name} with config: {config}")
+                logger.error(f"Unable to configure detector {name} with config: {config}\n{type(err).__name__}: {err}")
                 raise err
             if binning:
                 detector.set_binning(binning)
         else:
             detector = detectorClass()
-
         return detector
 
     @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
