@@ -428,7 +428,7 @@ class Worker(object):
             self.extension = None
 
     def set_dark_current_file(self, imagefile):
-        self.ai.detector.set_darkcurrent(_reduce_images(imagefile))
+        self.ai.detector.darkcurrent = _reduce_images(imagefile)
         self.dark_current_image = imagefile
 
     setDarkcurrentFile = set_dark_current_file
