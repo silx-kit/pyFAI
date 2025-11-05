@@ -325,7 +325,7 @@ class Detector(metaclass=DetectorMeta):
             memo[id(value)] = new_value
             new.__setattr__(key, new_value)
         if self._splinefile:
-            new.set_splineFile(self._splinefile)
+            new.splinefile = self._splinefile
         return new
 
     def __eq__(self, other):
