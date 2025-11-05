@@ -87,10 +87,10 @@ class CylindricalDetector(Detector):
         config = _ensure_dict(config)
         pixel1 = config.get("pixel1")
         if pixel1:
-            self.set_pixel1(pixel1)
+            self.pixel1 = pixel1
         pixel2 = config.get("pixel2")
         if pixel2:
-            self.set_pixel1(pixel2)
+            self.set_pixel2(pixel2)
         radius = config.get("radius")
         if radius:
             self.radius = radius
