@@ -1272,15 +1272,15 @@ class Detector(metaclass=DetectorMeta):
         elif not files:
             files = []
         if len(files) == 0:
-            self.set_darkcurrent(None)
+            self.darkcurrent = None
         elif len(files) == 1:
             if fabio is None:
                 raise RuntimeError("FabIO is missing")
             with fabio.open(files[0]) as fimg:
-                self.set_darkcurrent(fimg.data.astype(numpy.float32))
+                self.darkcurrent = fimg.data.astype(numpy.float32)
             self.darkfiles = files[0]
         else:
-            self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
+            self.darkcurrent = average.average_images(files, filter_=method, fformat=None, threshold=0)
             self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
     def __getnewargs_ex__(self):
