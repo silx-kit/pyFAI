@@ -35,12 +35,11 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2023"
+__date__ = "04/11/2025"
 __status__ = "production"
 
 import numpy
-import json
-from ._common import Detector, Orientation, SensorConfig
+from ._common import Detector, Orientation, SensorConfig, _ensure_dict
 from ..utils.decorators import deprecated
 
 import logging
@@ -60,7 +59,7 @@ class _Rayonix(Detector):
     SENSORS=(Gd2O2S40,)
 
     def __init__(self, pixel1=32e-6, pixel2=32e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        super(_Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         binning = [1, 1]
         for b, p in self.BINNED_PIXEL_SIZE.items():
             if p == pixel1:
@@ -102,14 +101,6 @@ class _Rayonix(Detector):
     # Deprecated compatibility layer
     get_binning = deprecated(binning.fget, since_version="2025.09", replacement="use `binning` property")
     set_binning = deprecated(binning.fset, since_version="2025.09", replacement="use `binning` property")
-
-    def __repr__(self):
-        txt = f"Detector {self.name}\t PixelSize= {self._pixel1:.3e}, {self._pixel2:.3e} m"
-        if self.orientation:
-            txt+=f"\t {self.orientation.name} ({self.orientation.value})"
-        if self.sensor:
-            txt += f"\t {self.sensor}"
-        return txt
 
     def guess_binning(self, data):
         """
@@ -183,7 +174,7 @@ class Rayonix133(_Rayonix):
     aliases = ["Rayonix133", "MAR 133", "MAR133"]
 
     def __init__(self, pixel1=64e-6, pixel2=64e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
 
     def calc_mask(self):
         """Circular mask"""
@@ -211,7 +202,7 @@ class RayonixSx165(_Rayonix):
     force_pixel = True
 
     def __init__(self, pixel1=39.5e-6, pixel2=39.5e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
     def calc_mask(self):
         """Circular mask"""
@@ -237,7 +228,7 @@ class RayonixSx200(_Rayonix):
     aliases = ["Rayonix SX200"]
 
     def __init__(self, pixel1=48e-6, pixel2=48e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 class RayonixLx170(_Rayonix):
     """
@@ -259,7 +250,8 @@ class RayonixLx170(_Rayonix):
     aliases = ["Rayonix LX170", "Rayonix LX170-HS", "Rayonix LX170 HS", "RayonixLX170HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+
 
 class RayonixMx170(_Rayonix):
     """
@@ -280,7 +272,7 @@ class RayonixMx170(_Rayonix):
     aliases = ["Rayonix MX170", "Rayonix MX170-HS", "RayonixMX170HS", "Rayonix MX170 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
 class RayonixLx255(_Rayonix):
@@ -302,7 +294,7 @@ class RayonixLx255(_Rayonix):
     aliases = ["Rayonix LX255", "Rayonix LX255-HS", "Rayonix LX 255HS", "RayonixLX225HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
 class RayonixMx225(_Rayonix):
@@ -324,7 +316,7 @@ class RayonixMx225(_Rayonix):
     aliases = ["Rayonix MX225", "MAR 225", "MAR225"]
 
     def __init__(self, pixel1=73.242e-6, pixel2=73.242e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
 class RayonixMx225hs(_Rayonix):
@@ -347,7 +339,7 @@ class RayonixMx225hs(_Rayonix):
     aliases = ["Rayonix MX225HS", "Rayonix MX225 HS"]
 
     def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
 class RayonixMx300(_Rayonix):
@@ -368,7 +360,7 @@ class RayonixMx300(_Rayonix):
     aliases = ["Rayonix MX300", "MAR 300", "MAR300"]
 
     def __init__(self, pixel1=73.242e-6, pixel2=73.242e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
 class RayonixMx300hs(_Rayonix):
@@ -391,7 +383,7 @@ class RayonixMx300hs(_Rayonix):
     aliases = ["Rayonix MX300HS", "Rayonix MX300 HS"]
 
     def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
 class RayonixMx340hs(_Rayonix):
@@ -414,7 +406,7 @@ class RayonixMx340hs(_Rayonix):
     aliases = ["Rayonix MX340HS", "Rayonix MX340HS"]
 
     def __init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
 class RayonixSx30hs(_Rayonix):
@@ -436,7 +428,7 @@ class RayonixSx30hs(_Rayonix):
     aliases = ["Rayonix SX30HS", "Rayonix SX30 HS"]
 
     def __init__(self, pixel1=15.625e-6, pixel2=15.625e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
 class RayonixSx85hs(_Rayonix):
@@ -458,7 +450,7 @@ class RayonixSx85hs(_Rayonix):
     aliases = ["Rayonix SX85HS", "Rayonix SX85 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
 class RayonixMx425hs(_Rayonix):
@@ -480,7 +472,7 @@ class RayonixMx425hs(_Rayonix):
     aliases = ["Rayonix MX425HS", "Rayonix MX425 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
 class RayonixMx325(_Rayonix):
@@ -499,7 +491,7 @@ class RayonixMx325(_Rayonix):
     aliases = ["Rayonix MX325"]
 
     def __init__(self, pixel1=79.346e-6, pixel2=79.346e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        _Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 ################################################################################
 # Because Rayonix and MAR-Research used to be the same company
@@ -534,7 +526,7 @@ class Mar345(Detector):
     #SENSORS=()
 
     def __init__(self, pixel1=100e-6, pixel2=100e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        Detector.__init__(self, pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
+        super().__init__(pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         self._default_pixel_size = pixel1, pixel2
         self.max_shape = (int(self.max_shape[0] * 100e-6 / self.pixel1),
                           int(self.max_shape[1] * 100e-6 / self.pixel2))
@@ -586,7 +578,7 @@ class Mar345(Detector):
         self._mask_crc = None
         return result
 
-    def set_config(self, config):
+    def set_config(self, config:dict|str):
         """set the config of the detector
 
         For Mar345 detector, possible keys are: max_shape, module_size
@@ -594,13 +586,7 @@ class Mar345(Detector):
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
-                raise err
+        config = _ensure_dict(config)
         self.set_pixel1(config.get("pixel1"))
         self.set_pixel2(config.get("pixel2"))
 
@@ -625,12 +611,12 @@ class Mar555(Detector):
     #SENSORS=()
 
     def __init__(self, pixel1=139e-6, pixel2=139e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
-        Detector.__init__(self, pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
 
 
     # get_config inherited from Detector; no changes needed
 
-    def set_config(self, config):
+    def set_config(self, config:dict|str):
         """set the config of the detector
 
         #TODO: Extend docstring for sensor, orientation?
@@ -639,13 +625,7 @@ class Mar555(Detector):
         :param config: dict or JSON serialized dict
         :return: detector instance
         """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
-                raise err
+        config = _ensure_dict(config)
         self.set_pixel1(config.get("pixel1"))
         self.set_pixel2(config.get("pixel2"))
 

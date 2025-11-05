@@ -2789,7 +2789,7 @@ class Geometry:
 
     # deprecated compatibility layer
     get_dist = deprecated(dist.fget, reason="use property", since_version="2025.09")
-    set_dist = deprecated(dist.fset, reason="use property", since_version="2025.09")
+    set_dist = dist.fset
 
 
     @property
@@ -2815,7 +2815,7 @@ class Geometry:
 
     # deprecated compatibility layer
     get_poni1 = deprecated(poni1.fget, reason="use property", since_version="2025.09")
-    set_poni1 = deprecated(poni1.fset, reason="use property", since_version="2025.09")
+    set_poni1 = poni1.fset
 
     @property
     def poni2(self):
@@ -2840,7 +2840,7 @@ class Geometry:
 
     # deprecated compatibility layer
     get_poni2 = deprecated(poni2.fget, reason="use property", since_version="2025.09")
-    set_poni2 = deprecated(poni2.fset, reason="use property", since_version="2025.09")
+    set_poni2 = poni2.fset
 
 
     @property

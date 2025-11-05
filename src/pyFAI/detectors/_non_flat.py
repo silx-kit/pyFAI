@@ -36,14 +36,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2025"
+__date__ = "04/11/2025"
 __status__ = "production"
 
 
 import numpy
 import logging
-import json
-from ._common import Detector, Orientation
+from ._common import Detector, Orientation, _ensure_dict
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
 try:
@@ -60,7 +59,7 @@ class CylindricalDetector(Detector):
     force_pixel = True
 
     def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989, orientation=0):
-        Detector.__init__(self, pixel1, pixel2, orientation=orientation)
+        super().__init__(pixel1, pixel2, orientation=orientation)
         self.radius = radius
         self._pixel_corners = None
 
@@ -85,13 +84,7 @@ class CylindricalDetector(Detector):
         :param config: string or JSON-serialized dict
         :return: self
         """
-        if not isinstance(config, dict):
-            try:
-                config = json.loads(config)
-            except Exception as err:  # IGNORE:W0703:
-                logger.error("Unable to parse config %s with JSON: %s, %s",
-                             config, err)
-                raise err
+        config = _ensure_dict(config)
         pixel1 = config.get("pixel1")
         if pixel1:
             self.set_pixel1(pixel1)
@@ -274,7 +267,7 @@ class Aarhus(CylindricalDetector):
     MAX_SHAPE = (1000, 16000)
 
     def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989, orientation=0):
-        CylindricalDetector.__init__(self, pixel1, pixel2, radius, orientation=orientation)
+        super().__init__(pixel1, pixel2, radius, orientation=orientation)
 
     def _get_compact_pixel_corners(self):
         "The core function which calculates the pixel corner coordinates"
@@ -310,7 +303,7 @@ class Rapid(CylindricalDetector):
     MAX_SHAPE = (2560, 4700)
 
     def __init__(self, pixel1=0.1e-3, pixel2=0.1e-3, radius=0.12726, orientation=0):
-        CylindricalDetector.__init__(self, pixel1, pixel2, radius, orientation=orientation)
+        super().__init__(pixel1, pixel2, radius, orientation=orientation)
 
     def _get_compact_pixel_corners(self):
         "The core function which calculates the pixel corner coordinates"

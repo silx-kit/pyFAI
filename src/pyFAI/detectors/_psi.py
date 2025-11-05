@@ -34,12 +34,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2025"
+__date__ = "04/11/2025"
 __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, to_eng, SensorConfig
+from ._common import Detector, SensorConfig
 from ._dectris import _Dectris
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
@@ -88,21 +88,12 @@ class Jungfrau(Detector):
         return pixel_size * size
 
     def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
             self.module_size = module_size
-
-    def __repr__(self):
-        txt = f"Detector {self.name}%s\t PixelSize= {to_eng(self.pixel1)}m, {to_eng(self.pixel2)}m"
-        if self.orientation:
-            txt+=f"\t {self.orientation.name} ({self.orientation.value})"
-        if self.sensor:
-            txt += f"\t {self.sensor}"
-        return txt
-
 
     def calc_pixels_edges(self):
         """
@@ -221,8 +212,8 @@ class Jungfrau4M(_Dectris):
     SENSORS=(Si320, Si450)
 
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0,sensor:SensorConfig|None=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation,sensor=sensor)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
             self.module_size = tuple(self.MODULE_SIZE)
         else:
@@ -299,13 +290,14 @@ class Jungfrau8M(Jungfrau):
                         [3078, 1577], [3078, 1836], [3078, 2094], [3078, 2352]]
 
     def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
-        Jungfrau.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor = sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor=sensor)
 
     def calc_mask(self):
         mask = numpy.ones(self.max_shape, dtype=numpy.int8)
         for i, j in self.module_positions:
             mask[i:i+self.module_size[0], j:j+self.module_size[1]] = 0
         return mask
+
 
 class Jungfrau_16M_cor(Jungfrau):
     """Jungfrau 16 corrected for double-sized pixels

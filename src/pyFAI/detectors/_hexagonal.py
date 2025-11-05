@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2024"
+__date__ = "04/11/2025"
 __status__ = "production"
 
 
@@ -94,7 +94,7 @@ class HexDetector(Detector):
         else: #fallback on standard signature
             pitch = pixel2
             h = pixel1
-        Detector.__init__(self, pixel1=h, pixel2=pitch, max_shape=max_shape, orientation=orientation)
+        super().__init__(pixel1=h, pixel2=pitch, max_shape=max_shape, orientation=orientation)
         self.set_pixel_corners(self.build_pixel_coordinates(self.max_shape, self.pitch))
 
     @property
@@ -111,7 +111,7 @@ class Pixirad1(HexDetector):
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-1"]
     def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
-        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2,
+        super().__init__(pitch=pitch, pixel1=pixel1, pixel2=pixel2,
                              max_shape=max_shape, orientation=orientation)
 
 
@@ -120,7 +120,7 @@ class Pixirad2(HexDetector):
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-2"]
     def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
-        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2,
+        super().__init__(pitch=pitch, pixel1=pixel1, pixel2=pixel2,
                              max_shape=max_shape, orientation=orientation)
 
 
@@ -129,7 +129,7 @@ class Pixirad4(HexDetector):
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-4"]
     def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
-        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2,
+        super().__init__(pitch=pitch, pixel1=pixel1, pixel2=pixel2,
                              max_shape=max_shape, orientation=orientation)
 
 
@@ -138,5 +138,5 @@ class Pixirad8(HexDetector):
     MANUFACTURER = "Pixirad"
     aliases = ["Pixirad-8"]
     def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
-        HexDetector.__init__(self, pitch=pitch, pixel1=pixel1, pixel2=pixel2,
+        super().__init__(pitch=pitch, pixel1=pixel1, pixel2=pixel2,
                              max_shape=max_shape, orientation=orientation)

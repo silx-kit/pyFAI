@@ -169,6 +169,7 @@ def _patch_v1_to_v2(config):
             value = config.pop("pixel2", None)
             if value:
                 detector.set_pixel2(value)
+            detector.max_shape = config.get("shape")
         else:
             # Drop it as it was not really used
             _ = config.pop("pixel1", None)
