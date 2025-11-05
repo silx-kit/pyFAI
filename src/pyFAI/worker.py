@@ -434,7 +434,7 @@ class Worker(object):
     setDarkcurrentFile = set_dark_current_file
 
     def set_flat_field_file(self, imagefile):
-        self.ai.detector.set_flatfield(_reduce_images(imagefile))
+        self.ai.detector.flatfield = _reduce_images(imagefile)
         self.flat_field_image = imagefile
 
     setFlatfieldFile = set_flat_field_file
