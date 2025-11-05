@@ -23,7 +23,7 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
 __date__ = "03/11/2025"
 
@@ -307,7 +307,7 @@ class ExperimentTask(AbstractCalibrationTask):
             else:
                 self._detectorSensorLabel.setText("")
                 self._detectorSensorName.setText("")
-                self._detectorParallax.setCheckState(False)
+                self._detectorParallax.setChecked(False)
                 self._detectorParallax.setVisible(False)
 
             if detector.HAVE_TAPER or detector.__class__ == pyFAI.detectors.Detector:
