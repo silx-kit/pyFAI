@@ -40,7 +40,7 @@ __status__ = "production"
 import os
 import numpy
 import logging
-from ._common import Detector, Orientation, to_eng, SensorConfig, _ensure_dict
+from ._common import Detector, Orientation, SensorConfig, _ensure_dict
 from ..utils.mathutil import expand2d
 from ..utils.decorators import deprecated_args, deprecated
 logger = logging.getLogger(__name__)
