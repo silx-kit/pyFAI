@@ -539,10 +539,6 @@ class Mar345(Detector):
         mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
         return mask.astype(numpy.int8)
 
-    def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
-
     def guess_binning(self, data):
         """
         Guess the binning/mode depending on the image shape
