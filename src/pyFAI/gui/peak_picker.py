@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "31/10/2025"
 __status__ = "production"
 
 import os
@@ -458,8 +458,8 @@ class PeakPicker(object):
             if callable(callback):
                 callback(cpt)
         else:
-            if not self.points.calibrant.dSpacing:
-                logger.error("Calibrant has no line ! check input parameters please, especially the '-c' option")
+            if not self.points.calibrant.dspacing:
+                logger.error("Calibrant has no line! Check input parameters please, especially the '-c' option")
                 print(CALIBRANT_FACTORY)
                 raise RuntimeError("Invalid calibrant")
             input("Please press enter when you are happy with your selection" + os.linesep)

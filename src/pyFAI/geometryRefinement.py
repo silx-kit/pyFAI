@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/09/2025"
+__date__ = "31/10/2025"
 __status__ = "development"
 
 import os
@@ -306,20 +306,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                 poni1 = ellipse.center_1 - direct_dist * sin_tilt * sin_tpr
                 poni2 = ellipse.center_2 - direct_dist * sin_tilt * cos_tpr
                 rot2 = numpy.arcsin(sin_tilt * sin_tpr)  # or pi-
-                rot1 = numpy.arccos(
-                    min(
-                        1.0,
-                        max(
-                            -1.0,
-                            (
-                                cos_tilt
-                                / numpy.sqrt(
-                                    1 - sin_tpr * sin_tpr * sin_tilt * sin_tilt
-                                )
-                            ),
-                        ),
-                    )
-                )  # + or -
+                rot1 = numpy.arccos(numpy.clip((cos_tilt / numpy.sqrt(1 - sin_tpr * sin_tpr * sin_tilt * sin_tilt)),-1.0, 1.0))  # + or -
                 if cos_tpr * sin_tilt > 0:
                     rot1 = -rot1
                 rot3 = 0
@@ -907,9 +894,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_dist_max = deprecated(
         dist_max.fget, reason="use property", since_version="2025.09"
     )
-    set_dist_max = deprecated(
-        dist_max.fset, reason="use property", since_version="2025.09"
-    )
+    set_dist_max = dist_max.fset
 
     @property
     def dist_min(self):
@@ -923,9 +908,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_dist_min = deprecated(
         dist_min.fget, reason="use property", since_version="2025.09"
     )
-    set_dist_min = deprecated(
-        dist_min.fset, reason="use property", since_version="2025.09"
-    )
+    set_dist_min = dist_min.fset
 
     @property
     def poni1_min(self):
@@ -939,9 +922,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_poni1_min = deprecated(
         poni1_min.fget, reason="use property", since_version="2025.09"
     )
-    set_poni1_min = deprecated(
-        poni1_min.fset, reason="use property", since_version="2025.09"
-    )
+    set_poni1_min = poni1_min.fset
 
     @property
     def poni1_max(self):
@@ -955,9 +936,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_poni1_max = deprecated(
         poni1_max.fget, reason="use property", since_version="2025.09"
     )
-    set_poni1_max = deprecated(
-        poni1_max.fset, reason="use property", since_version="2025.09"
-    )
+    set_poni1_max = poni1_max.fset
 
     @property
     def poni2_min(self):
@@ -971,9 +950,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_poni2_min = deprecated(
         poni2_min.fget, reason="use property", since_version="2025.09"
     )
-    set_poni2_min = deprecated(
-        poni2_min.fset, reason="use property", since_version="2025.09"
-    )
+    set_poni2_min = poni2_min.fset
 
     @property
     def poni2_max(self):
@@ -987,9 +964,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_poni2_max = deprecated(
         poni2_max.fget, reason="use property", since_version="2025.09"
     )
-    set_poni2_max = deprecated(
-        poni2_max.fset, reason="use property", since_version="2025.09"
-    )
+    set_poni2_max = poni2_max.fset
 
     @property
     def rot1_min(self):
@@ -1003,9 +978,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_rot1_min = deprecated(
         rot1_min.fget, reason="use property", since_version="2025.09"
     )
-    set_rot1_min = deprecated(
-        rot1_min.fset, reason="use property", since_version="2025.09"
-    )
+    set_rot1_min = rot1_min.fset
 
     @property
     def rot1_max(self):
@@ -1019,9 +992,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_rot1_max = deprecated(
         rot1_max.fget, reason="use property", since_version="2025.09"
     )
-    set_rot1_max = deprecated(
-        rot1_max.fset, reason="use property", since_version="2025.09"
-    )
+    set_rot1_max = rot1_max.fset
 
     @property
     def rot2_min(self):
@@ -1035,9 +1006,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_rot2_min = deprecated(
         rot2_min.fget, reason="use property", since_version="2025.09"
     )
-    set_rot2_min = deprecated(
-        rot2_min.fset, reason="use property", since_version="2025.09"
-    )
+    set_rot2_min = rot2_min.fset
 
     @property
     def rot2_max(self):
@@ -1051,9 +1020,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_rot2_max = deprecated(
         rot2_max.fget, reason="use property", since_version="2025.09"
     )
-    set_rot2_max = deprecated(
-        rot2_max.fset, reason="use property", since_version="2025.09"
-    )
+    set_rot2_max = rot2_max.fset
 
     @property
     def rot3_min(self):
@@ -1067,9 +1034,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_rot3_min = deprecated(
         rot3_min.fget, reason="use property", since_version="2025.09"
     )
-    set_rot3_min = deprecated(
-        rot3_min.fset, reason="use property", since_version="2025.09"
-    )
+    set_rot3_min = rot3_min.fset
 
     @property
     def rot3_max(self):
@@ -1083,9 +1048,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_rot3_max = deprecated(
         rot3_max.fget, reason="use property", since_version="2025.09"
     )
-    set_rot3_max = deprecated(
-        rot3_max.fset, reason="use property", since_version="2025.09"
-    )
+    set_rot3_max = rot3_max.fset
 
     @property
     def wavelength_min(self):
@@ -1099,9 +1062,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_wavelength_min = deprecated(
         wavelength_min.fget, reason="use property", since_version="2025.09"
     )
-    set_wavelength_min = deprecated(
-        wavelength_min.fset, reason="use property", since_version="2025.09"
-    )
+    set_wavelength_min = wavelength_min.fset
 
     @property
     def wavelength_max(self):
@@ -1115,6 +1076,4 @@ class GeometryRefinement(AzimuthalIntegrator):
     get_wavelength_max = deprecated(
         wavelength_max.fget, reason="use property", since_version="2025.09"
     )
-    set_wavelength_max = deprecated(
-        wavelength_max.fset, reason="use property", since_version="2025.09"
-    )
+    set_wavelength_max = wavelength_max.fset
