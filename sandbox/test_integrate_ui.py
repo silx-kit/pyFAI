@@ -444,7 +444,7 @@ class AIWidget(QtGui.QWidget):
         elif self.splineFile.text():
             splineFile = str(self.splineFile.text()).strip()
             if os.path.isfile(splineFile):
-                inst.set_splineFile(splineFile)
+                inst.splinefile = splineFile
                 self.pixel1.setText(str(inst.pixel1))
                 self.pixel2.setText(str(inst.pixel2))
             else:
