@@ -132,14 +132,6 @@ class _Dectris(Detector):
         self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
         return self
 
-    def __repr__(self):
-        txt = f"Detector {self.name}\tPixelSize= {to_eng(self._pixel1)}m, {to_eng(self._pixel2)}m"
-        if self.orientation:
-            txt += f"\t {self.orientation.name}({self.orientation.value})"
-        if self.sensor:
-            txt += f"\t {self.sensor}"
-        return txt
-
 
 class Eiger(_Dectris):
     """
