@@ -191,7 +191,7 @@ class Detector(metaclass=DetectorMeta):
                 logger.error(f"Unable to configure detector {name} with config: {config}\n{type(err).__name__}: {err}")
                 raise err
             if binning:
-                detector.set_binning(binning)
+                detector.binning = binning
         else:
             detector = detectorClass()
         return detector
