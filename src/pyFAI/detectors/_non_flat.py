@@ -90,7 +90,7 @@ class CylindricalDetector(Detector):
             self.pixel1 = pixel1
         pixel2 = config.get("pixel2")
         if pixel2:
-            self.set_pixel2(pixel2)
+            self.pixel2 = pixel2
         radius = config.get("radius")
         if radius:
             self.radius = radius
