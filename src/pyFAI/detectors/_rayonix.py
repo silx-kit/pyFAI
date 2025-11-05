@@ -574,21 +574,6 @@ class Mar345(Detector):
         self._mask_crc = None
         return result
 
-    def set_config(self, config:dict|str):
-        """set the config of the detector
-
-        For Mar345 detector, possible keys are: max_shape, module_size
-
-        :param config: dict or JSON serialized dict
-        :return: detector instance
-        """
-        config = _ensure_dict(config)
-        self.pixel1=config.get("pixel1")
-        self.pixel2=config.get("pixel2")
-
-        self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
-        return self
 
 
 class Mar555(Detector):
