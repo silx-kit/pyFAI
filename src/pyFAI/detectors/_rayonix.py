@@ -587,8 +587,8 @@ class Mar345(Detector):
         :return: detector instance
         """
         config = _ensure_dict(config)
-        self.set_pixel1(config.get("pixel1"))
-        self.set_pixel2(config.get("pixel2"))
+        self.pixel1 = config.get("pixel1")
+        self.pixel2 = config.get("pixel2")
 
         self._orientation = Orientation(config.get("orientation", 3))
         self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
@@ -626,8 +626,8 @@ class Mar555(Detector):
         :return: detector instance
         """
         config = _ensure_dict(config)
-        self.set_pixel1(config.get("pixel1"))
-        self.set_pixel2(config.get("pixel2"))
+        self.pixel1 =config.get("pixel1")
+        self.pixel2 =config.get("pixel2")
 
         self._orientation = Orientation(config.get("orientation", 3))
         self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
