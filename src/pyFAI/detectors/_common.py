@@ -357,9 +357,9 @@ class Detector(metaclass=DetectorMeta):
             pixel1 = config.get("pixel1")
             pixel2 = config.get("pixel2")
             if pixel1:
-                self.set_pixel1(pixel1)
+                self.pixel1 = pixel1
             if pixel2:
-                self.set_pixel2(pixel2)
+                self.pixel2 = pixel2
             self.splinefile = config.get("splinefile") or config.get("splineFile")
             if "max_shape" in config:
                 self.max_shape = config.get("max_shape")
