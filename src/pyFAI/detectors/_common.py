@@ -296,7 +296,7 @@ class Detector(metaclass=DetectorMeta):
         for key in self._IMMUTABLE_ATTRS + self._MUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         if self._splinefile:
-            new.set_splineFile(self._splinefile)
+            new.splinefile = self._splinefile
         return new
 
     def __deepcopy__(self, memo=None):
