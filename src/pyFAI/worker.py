@@ -440,7 +440,7 @@ class Worker(object):
     setFlatfieldFile = set_flat_field_file
 
     def set_mask_file(self, imagefile):
-        self.ai.set_mask(mask=_reduce_images(imagefile))
+        self.ai.mask = _reduce_images(imagefile)
         self.mask_image = imagefile
 
     setMaskFile = set_mask_file
