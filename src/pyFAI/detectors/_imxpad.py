@@ -39,7 +39,7 @@ __status__ = "production"
 
 import functools
 import numpy
-from ._common import Detector, _ensure_dict, ModuleDetector
+from ._common import SensorConfig, ModuleDetector
 from ..utils import mathutil
 
 import logging
