@@ -102,38 +102,6 @@ class _Dectris(ModuleDetector):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        dico = super().get_config()
-
-        if ((self.module_size is not None) and
-                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
-            dico["module_size"] = self.module_size
-        return dico
-
-    def set_config(self, config:dict|str):
-        """set the config of the detector
-
-        For Dectris detector, possible keys are: max_shape, module_size, orientation, sensor
-
-        :param config: dict or JSON serialized dict
-        :return: Eiger instance
-        """
-        config = _ensure_dict(config)
-        # pixel size is enforced by the detector itself
-        if "max_shape" in config:
-            self.max_shape = tuple(config["max_shape"])
-        module_size = config.get("module_size")
-        if module_size is not None:
-            self.module_size = tuple(module_size)
-        self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
-        return self
-
-
 class Eiger(_Dectris):
     """
     Eiger detector: generic description containing mask algorithm
