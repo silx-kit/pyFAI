@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/10/2025"
+__date__ = "06/11/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -363,7 +363,7 @@ class Geometry:
             length[length == 0] = 1.0  # avoid zero division error
             r0 /= length  # normalize array r0
 
-            displacement = self._parallax(self.sin_incidence(d1.ravel(), d2.ravel()))
+            displacement = self._parallax.correct(self.sin_incidence(d1.ravel(), d2.ravel()), self.dist)
             delta1, delta2 = displacement * r0
             delta1.shape = p1.shape
             delta2.shape = p2.shape
@@ -394,14 +394,13 @@ class Geometry:
             length = numpy.linalg.norm(r0, axis=0)
             if numexpr is None:
                 tan_incidence = length / z
-                sin_incidence = tan_incidence / numpy.sqrt(
-                    1.0 + tan_incidence * tan_incidence
-                )
+                sin_incidence = tan_incidence / (
+                    numpy.sqrt(1.0 + tan_incidence**2))
             else:
                 sin_incidence = numexpr.evaluate("length/z/sqrt(1.0+(length/z)**2)")
             numpy.clip(sin_incidence, 0.0, 1.0, out=sin_incidence)
 
-            displacement = self._parallax(sin_incidence)
+            displacement = self._parallax.correct(sin_incidence, self.dist)
 
             length[length == 0] = 1.0  # avoid zero division error
             r0 /= length  # normalize array r0
@@ -2799,7 +2798,7 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = value[0]
-            
+
         self._poni1 = float(value)
         self.reset()
 
@@ -2902,7 +2901,7 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = value[0]
-            
+
         self._rot3 = float(value)
         self.reset()
 
@@ -2930,7 +2929,7 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = value[0]
-        
+
         self._wavelength = float(value)
 
         qa = dqa = q_corner = None
@@ -3081,7 +3080,7 @@ class Geometry:
         return self.detector.pixel2
 
     @pixel2.setter
-    def pixel2(self, value): 
+    def pixel2(self, value):
         self.detector.pixel2 = value
 
     # deprecated compatibility layer
@@ -3131,7 +3130,7 @@ class Geometry:
     # deprecated compatibility layer
     get_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fget, reason="use property", since_version="2025.09")
     set_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fset, reason="use property", since_version="2025.09")
-  
+
 
     @property
     def maskfile(self):
