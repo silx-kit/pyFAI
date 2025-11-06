@@ -1618,6 +1618,7 @@ class ModuleDetector(Detector):
         """
 
         config = _ensure_dict(config).copy()
+        # pixel size is enforced by the detector itself
         module_size = config.pop("module_size", None)
         super().set_config(config)
         if module_size is not None:
