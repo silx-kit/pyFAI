@@ -39,7 +39,7 @@ __status__ = "production"
 
 import functools
 import numpy
-from ._common import Detector, _ensure_dict
+from ._common import SensorConfig, ModuleDetector
 from ..utils import mathutil
 
 import logging
@@ -52,7 +52,7 @@ except ImportError:
     bilinear = None
 
 
-class ImXPadS10(Detector):
+class ImXPadS10(ModuleDetector):
     """
     ImXPad detector: ImXPad s10 detector with 1x1modules
     """
@@ -65,6 +65,7 @@ class ImXPadS10(Detector):
     force_pixel = True
     aliases = ["Imxpad S10"]
     uniform_pixel = False
+    SENSORS = tuple()
 
     @classmethod
     def _calc_pixels_size(cls, length, module_size, pixel_size):
@@ -93,15 +94,11 @@ class ImXPadS10(Detector):
         # size[-1] = 1.0
         return pixel_size * size
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                        module_size=module_size, orientation=orientation, sensor=sensor)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
-
-
+        
     def calc_pixels_edges(self):
         """
         Calculate the position of the pixel edges
@@ -223,33 +220,6 @@ class ImXPadS10(Detector):
             p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
 
-    def get_config(self) -> dict:
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        config = super().get_config()
-        if ((self.module_size is not None) and
-                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
-            config["module_size"] = self.module_size
-        return config
-
-    def set_config(self, config:dict|str):
-        """set the config of the detector
-
-        For Xpad detector, possible keys are: max_shape, module_size
-
-        :param config: dict or JSON serialized dict
-        :return: detector instance
-        """
-        config = _ensure_dict(config).copy()
-        # pixel size is enforced by the detector itself
-        module_size = config.pop("module_size", None)
-        super().set_config(config)
-        if module_size is not None:
-            self.module_size = tuple(module_size)
-        return self
-
 
 class ImXPadS70(ImXPadS10):
     """
@@ -263,9 +233,9 @@ class ImXPadS70(ImXPadS10):
     aliases = ["Imxpad S70"]
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
-                           module_size=module_size, orientation=orientation)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                           module_size=module_size, orientation=orientation, sensor=sensor)
 
 
 class ImXPadS70V(ImXPadS10):
@@ -308,13 +278,9 @@ class Xpad_flat(ImXPadS10):
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor=sensor)
         self._pixel_corners = None
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
 
     def calc_pixels_edges(self):
         """
@@ -525,8 +491,8 @@ class Cirpad(ImXPadS10):
     def _translation(md, u):
         return md + u
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor = sensor)
 
     def _calc_pixels_size(self, length, module_size, pixel_size):
         size = numpy.ones(length)

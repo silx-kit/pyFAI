@@ -40,7 +40,7 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, SensorConfig, _ensure_dict
+from ._common import Detector, SensorConfig, ModuleDetector
 from ..utils.decorators import deprecated_args
 logger = logging.getLogger(__name__)
 
@@ -99,16 +99,9 @@ class FReLoN(Detector):
         mask = numpy.logical_or(below_min, above_max).astype(numpy.int8)
         return mask
 
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"splineFile": self._splinefile,
-                "orientation": self.orientation or 3}
 
 
-class Maxipix(Detector):
+class Maxipix(ModuleDetector):
     """
     ESRF Maxipix detector: generic description containing mask algorithm
 
@@ -124,11 +117,8 @@ class Maxipix(Detector):
     SENSORS = (Si500,)
 
     def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                        module_size=module_size, orientation=orientation, sensor=sensor)
         self.uniform_pixel = True
 
     def calc_mask(self):
@@ -149,32 +139,7 @@ class Maxipix(Detector):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        dico = super().get_config()
-        dico.pop("splineFile", None)  # Maxipix has no spline
-        if ((self.module_size is not None) and
-                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
-            dico["module_size"] = self.module_size
-        return dico
-
-    def set_config(self, config):
-        """set the config of the detector
-
-        For Maxipix detector, possible keys are: max_shape, module_size, orientation, sensor
-
-        :param config: dict or JSON serialized dict
-        :return: Maxipix instance
-        """
-        config = _ensure_dict(config).copy()
-        module_size = config.pop("module_size", None)
-        super().set_config(config)
-        self.module_size = tuple(module_size) if module_size else None
-        return self
-
+    
 
 class Maxipix2x2(Maxipix):
     """
