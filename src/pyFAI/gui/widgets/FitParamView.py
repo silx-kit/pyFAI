@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "05/11/2025"
+__date__ = "06/11/2025"
 
 from silx.gui import icons
 from silx.gui import qt
@@ -241,7 +241,7 @@ class FitParamView(qt.QObject):
     _iconConstraintMax = None
     _iconConstraintNoMax = None
 
-    def __init__(self, parent, label, internalUnit, displayedUnit=None):
+    def __init__(self, parent, label:str, internalUnit, displayedUnit=None):
         qt.QObject.__init__(self, parent=parent)
         self.__label = label
         self.__labelWidget = qt.QLabel(parent)
@@ -306,8 +306,8 @@ class FitParamView(qt.QObject):
         if self._iconConstraintNoMax is None:
             self._iconConstraintNoMax = icons.getQIcon("pyfai:gui/icons/constraint-no-max")
 
-        displayedUnit.changed.connect(self.changeUnit)
-        self.changeUnit()  # enforcee the relabeling if needed
+        displayedUnit.changed.connect(self.__unitChanged)
+        self.__unitChanged()  # enforce the relabeling if needed, only occures when saved config was with `energy`
 
     def __fireValueAccepted(self):
         self.sigValueAccepted.emit()
@@ -415,17 +415,13 @@ class FitParamView(qt.QObject):
     def widgets(self):
         return [self.__labelWidget, self.__subLayout, self.__unit, self.__constraints]
 
-    def changeUnit(self):
+    def __unitChanged(self):
         if self.__units[0] == Unit.METER_WL:
-            self.setLabel("Energy"
-                        if self.__units[1].value() == Unit.ENERGY
-                        else "Wavelength")
+            self.__setLabel("Energy"
+                            if self.__units[1].value() == Unit.ENERGY
+                            else "Wavelength")
 
-    def label(self):
-        """getter for the label"""
-        return self.__label
-
-    def setLabel(self, label):
+    def __setLabel(self, label:str):
         """Change the label, if needed"""
         if label != self.__label:
             self.__label = label
