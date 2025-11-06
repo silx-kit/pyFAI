@@ -220,16 +220,6 @@ class ImXPadS10(ModuleDetector):
             p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
 
-    def get_config(self) -> dict:
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        config = super().get_config()
-        if ((self.module_size is not None) and
-                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
-            config["module_size"] = self.module_size
-        return config
 
     def set_config(self, config:dict|str):
         """set the config of the detector
