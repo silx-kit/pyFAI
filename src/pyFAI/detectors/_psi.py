@@ -211,11 +211,8 @@ class Jungfrau4M(_Dectris):
 
 
     def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                        module_size=module_size, orientation=orientation, sensor=sensor)
         self.offset1 = self.offset2 = None
 
 
