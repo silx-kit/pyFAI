@@ -279,13 +279,9 @@ class Xpad_flat(ImXPadS10):
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor=sensor)
         self._pixel_corners = None
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
 
     def calc_pixels_edges(self):
         """
