@@ -99,7 +99,6 @@ class ImXPadS10(ModuleDetector):
                         module_size=module_size, orientation=orientation, sensor=sensor)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
         
-
     def calc_pixels_edges(self):
         """
         Calculate the position of the pixel edges
