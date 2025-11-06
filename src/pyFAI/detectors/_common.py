@@ -1586,7 +1586,6 @@ class ModuleDetector(Detector):
     Factors out the common logic for handling module size and gaps in configuration.
     """
     MODULE_SIZE = (None, None)
-    MODULE_GAP = (None, None)
     
     def __init__(self,
                 pixel1:float|None=None,
