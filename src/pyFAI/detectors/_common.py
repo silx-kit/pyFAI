@@ -360,7 +360,7 @@ class Detector(metaclass=DetectorMeta):
                 self.set_pixel1(pixel1)
             if pixel2:
                 self.set_pixel2(pixel2)
-            self.splinefile = config.get("splinefile") or config.get("splineFile")
+        self.splinefile = config.get("splinefile") or config.get("splineFile")
         if "max_shape" in config:
             self.max_shape = config.get("max_shape")
         self._orientation = Orientation(config.get("orientation", 0))
