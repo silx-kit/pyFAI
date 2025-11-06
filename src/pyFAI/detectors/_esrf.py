@@ -147,20 +147,6 @@ class Maxipix(ModuleDetector):
         return mask
 
     
-    def set_config(self, config):
-        """set the config of the detector
-
-        For Maxipix detector, possible keys are: max_shape, module_size, orientation, sensor
-
-        :param config: dict or JSON serialized dict
-        :return: Maxipix instance
-        """
-        config = _ensure_dict(config).copy()
-        module_size = config.pop("module_size", None)
-        super().set_config(config)
-        self.module_size = tuple(module_size) if module_size else None
-        return self
-
 
 class Maxipix2x2(Maxipix):
     """
