@@ -40,7 +40,7 @@ __status__ = "production"
 import os
 import numpy
 import logging
-from ._common import Detector, Orientation, SensorConfig, _ensure_dict
+from ._common import Detector, Orientation, SensorConfig, _ensure_dict, ModuleDetector
 from ..utils.mathutil import expand2d
 from ..utils.decorators import deprecated_args, deprecated
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ CdTe750 = SensorConfig.from_dict({"material": "CdTe", "thickness": 750e-6})
 CdTe1000 = SensorConfig.from_dict({"material": "CdTe", "thickness": 1000e-6})
 
 
-class _Dectris(Detector):
+class _Dectris(ModuleDetector):
 
     MANUFACTURER = "Dectris"
     # This detector does not exist but those are place-holder
@@ -80,8 +80,9 @@ class _Dectris(Detector):
                  module_size:tuple[int,int]|None=None,
                  orientation:int|Orientation=0,
                  sensor:SensorConfig|None=None):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
-        self.module_size = tuple(self.MODULE_SIZE) if module_size is None else tuple(module_size)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                        module_size=module_size, orientation=orientation, sensor=sensor)
+        
 
     def calc_mask(self):
         """
