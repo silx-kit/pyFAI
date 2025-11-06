@@ -306,7 +306,7 @@ class Jungfrau_16M_cor(Jungfrau):
     def load_geom(geom_fname):
         """"Load module geometry from ASCII file
 
-        Stollen from Alejandro Homs' code
+        Based on Alejandro Homs' code
         """
         import re
         geom_re = re.compile('m(?P<mod>[0-9]+)/(?P<par>[^ \t=]+)[ \t]*='
