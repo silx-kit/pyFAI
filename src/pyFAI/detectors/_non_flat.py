@@ -42,7 +42,7 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, Orientation, _ensure_dict
+from ._common import Detector, Orientation, _ensure_dict, SensorConfig
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
 try:
@@ -58,8 +58,8 @@ class CylindricalDetector(Detector):
     IS_FLAT = False
     force_pixel = True
 
-    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989, orientation=0):
-        super().__init__(pixel1, pixel2, orientation=orientation)
+    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989, orientation=0, sensor:SensorConfig|None=None):
+        super().__init__(pixel1, pixel2, orientation=orientation, sensor = sensor)
         self.radius = radius
         self._pixel_corners = None
 
