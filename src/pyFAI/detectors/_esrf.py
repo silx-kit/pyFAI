@@ -146,18 +146,7 @@ class Maxipix(ModuleDetector):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        dico = super().get_config()
-        dico.pop("splineFile", None)  # Maxipix has no spline
-        if ((self.module_size is not None) and
-                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
-            dico["module_size"] = self.module_size
-        return dico
-
+    
     def set_config(self, config):
         """set the config of the detector
 
