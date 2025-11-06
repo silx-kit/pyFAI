@@ -42,7 +42,7 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, Orientation, _ensure_dict, SensorConfig
+from ._common import Detector, _ensure_dict, SensorConfig
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
 try:
