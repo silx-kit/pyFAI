@@ -99,13 +99,6 @@ class FReLoN(Detector):
         mask = numpy.logical_or(below_min, above_max).astype(numpy.int8)
         return mask
 
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        return {"splineFile": self._splinefile,
-                "orientation": self.orientation or 3}
 
 
 class Maxipix(ModuleDetector):
