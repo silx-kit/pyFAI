@@ -65,13 +65,12 @@ class CylindricalDetector(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-
+    
         :return: dict with param for serialization
         """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "radius": self.radius,
-                "orientation": self.orientation or 3}
+        dico = super().get_config()  
+        dico["radius"] = self.radius 
+        return dico
 
     def set_config(self, config):
         """Sets the configuration of the detector.
