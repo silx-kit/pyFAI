@@ -221,23 +221,6 @@ class ImXPadS10(ModuleDetector):
         return p1, p2, None
 
 
-    def set_config(self, config:dict|str):
-        """set the config of the detector
-
-        For Xpad detector, possible keys are: max_shape, module_size
-
-        :param config: dict or JSON serialized dict
-        :return: detector instance
-        """
-        config = _ensure_dict(config).copy()
-        # pixel size is enforced by the detector itself
-        module_size = config.pop("module_size", None)
-        super().set_config(config)
-        if module_size is not None:
-            self.module_size = tuple(module_size)
-        return self
-
-
 class ImXPadS70(ImXPadS10):
     """
     ImXPad detector: ImXPad s70 detector with 1x7modules
