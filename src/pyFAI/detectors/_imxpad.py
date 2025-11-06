@@ -341,11 +341,11 @@ class Xpad_flat(ImXPadS10):
             raise NotImplementedError("Generic Xpad detector does not"
                                       " know the max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
+        # working in dim0 = Y
         for i in range(0, self.max_shape[0], self.module_size[0]):
             mask[i,:] = 1
             mask[i + self.module_size[0] - 1,:] = 1
-        # workinng in dim1 = X
+        # working in dim1 = X
         for i in range(0, self.max_shape[1], self.module_size[1]):
             mask[:, i] = 1
             mask[:, i + self.module_size[1] - 1] = 1
@@ -434,7 +434,7 @@ class Xpad_flat(ImXPadS10):
                     # half pixel offset
                     pixel_center1 = pixel_size1 / 2.0  # half pixel offset
                     pixel_center2 = pixel_size2 / 2.0
-                    # size of all preceeding pixels
+                    # size of all preceding pixels
                     pixel_center1[1:] += numpy.cumsum(pixel_size1[:-1])
                     pixel_center2[1:] += numpy.cumsum(pixel_size2[:-1])
                     # gaps
@@ -556,7 +556,7 @@ class Cirpad(ImXPadS10):
         # half pixel offset
         pixel_center1 = pixel_size1 / 2.0  # half pixel offset
         pixel_center2 = pixel_size2 / 2.0
-        # size of all preceeding pixels
+        # size of all preceding pixels
         pixel_center1[1:] += numpy.cumsum(pixel_size1[:-1])
         pixel_center2[1:] += numpy.cumsum(pixel_size2[:-1])
 
