@@ -39,7 +39,7 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, SensorConfig, ModuleDetector
+from ._common import SensorConfig, ModuleDetector
 logger = logging.getLogger(__name__)
 
 
