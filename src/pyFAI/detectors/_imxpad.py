@@ -65,6 +65,7 @@ class ImXPadS10(ModuleDetector):
     force_pixel = True
     aliases = ["Imxpad S10"]
     uniform_pixel = False
+    SENSORS = tuple()
 
     @classmethod
     def _calc_pixels_size(cls, length, module_size, pixel_size):
@@ -93,7 +94,7 @@ class ImXPadS10(ModuleDetector):
         # size[-1] = 1.0
         return pixel_size * size
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
         super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
                         module_size=module_size, orientation=orientation, sensor=sensor)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
