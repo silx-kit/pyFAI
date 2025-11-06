@@ -28,22 +28,22 @@ __license__ = "MIT"
 __date__ = "05/11/2025"
 
 from silx.gui import icons
-
-import pyFAI.utils
-from ..utils import units
 from silx.gui import qt
+from ...utils import get_ui_file
+from ..utils import units
 from ..widgets.UnitLabel import UnitLabel
 from ..widgets.QuantityEdit import QuantityEdit
 from ..model.DataModel import DataModel
 from ..utils import eventutils
 from ..utils import validators
+from ..utils.units import Unit
 
 
 class ConstraintsPopup(qt.QFrame):
 
     def __init__(self, parent=None):
         super(ConstraintsPopup, self).__init__(parent=parent)
-        qt.loadUi(pyFAI.utils.get_ui_file("constraint-drop.ui"), self)
+        qt.loadUi(get_ui_file("constraint-drop.ui"), self)
         validator = validators.AdvancedDoubleValidator(self)
         validator.setAllowEmpty(True)
         self.__useDefaultMin = False
@@ -306,6 +306,9 @@ class FitParamView(qt.QObject):
         if self._iconConstraintNoMax is None:
             self._iconConstraintNoMax = icons.getQIcon("pyfai:gui/icons/constraint-no-max")
 
+        displayedUnit.changed.connect(self.changeUnit)
+        self.changeUnit()  # enforcee the relabeling if needed
+
     def __fireValueAccepted(self):
         self.sigValueAccepted.emit()
 
@@ -412,12 +415,18 @@ class FitParamView(qt.QObject):
     def widgets(self):
         return [self.__labelWidget, self.__subLayout, self.__unit, self.__constraints]
 
+    def changeUnit(self):
+        if self.__units[0] == Unit.METER_WL:
+            self.setLabel("Energy"
+                        if self.__units[1].value() == Unit.ENERGY
+                        else "Wavelength")
+
     def label(self):
         """getter for the label"""
         return self.__label
 
     def setLabel(self, label):
-        """Change the label"""
+        """Change the label, if needed"""
         if label != self.__label:
             self.__label = label
             self.__labelWidget.setText(f"{label}:")
