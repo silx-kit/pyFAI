@@ -234,9 +234,9 @@ class ImXPadS70(ImXPadS10):
     aliases = ["Imxpad S70"]
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
-        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
-                           module_size=module_size, orientation=orientation)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                           module_size=module_size, orientation=orientation, sensor=sensor)
 
 
 class ImXPadS70V(ImXPadS10):
