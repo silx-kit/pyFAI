@@ -361,8 +361,8 @@ class Detector(metaclass=DetectorMeta):
             if pixel2:
                 self.set_pixel2(pixel2)
             self.splinefile = config.get("splinefile") or config.get("splineFile")
-            if "max_shape" in config:
-                self.max_shape = config.get("max_shape")
+        if "max_shape" in config:
+            self.max_shape = config.get("max_shape")
         self._orientation = Orientation(config.get("orientation", 0))
         self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
         return self
