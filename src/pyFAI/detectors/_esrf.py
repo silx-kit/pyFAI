@@ -40,7 +40,7 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, SensorConfig, _ensure_dict
+from ._common import Detector, SensorConfig, _ensure_dict, ModuleDetector
 from ..utils.decorators import deprecated_args
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ class FReLoN(Detector):
                 "orientation": self.orientation or 3}
 
 
-class Maxipix(Detector):
+class Maxipix(ModuleDetector):
     """
     ESRF Maxipix detector: generic description containing mask algorithm
 
@@ -124,11 +124,8 @@ class Maxipix(Detector):
     SENSORS = (Si500,)
 
     def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                        module_size=module_size, orientation=orientation, sensor=sensor)
         self.uniform_pixel = True
 
     def calc_mask(self):
