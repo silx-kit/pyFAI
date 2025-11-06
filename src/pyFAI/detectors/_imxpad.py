@@ -39,7 +39,7 @@ __status__ = "production"
 
 import functools
 import numpy
-from ._common import Detector, _ensure_dict
+from ._common import Detector, _ensure_dict, ModuleDetector
 from ..utils import mathutil
 
 import logging
@@ -52,7 +52,7 @@ except ImportError:
     bilinear = None
 
 
-class ImXPadS10(Detector):
+class ImXPadS10(ModuleDetector):
     """
     ImXPad detector: ImXPad s10 detector with 1x1modules
     """
@@ -94,13 +94,10 @@ class ImXPadS10(Detector):
         return pixel_size * size
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                        module_size=module_size, orientation=orientation, sensor=sensor)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
-
+        
 
     def calc_pixels_edges(self):
         """
