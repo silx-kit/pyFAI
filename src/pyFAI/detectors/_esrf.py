@@ -40,7 +40,7 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, SensorConfig, _ensure_dict, ModuleDetector
+from ._common import Detector, SensorConfig, ModuleDetector
 from ..utils.decorators import deprecated_args
 logger = logging.getLogger(__name__)
 
