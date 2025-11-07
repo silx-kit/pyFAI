@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "03/11/2025"
+__date__ = "07/11/2025"
 
 import numpy
 import logging
@@ -171,7 +171,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._energy.setModel(settings.wavelength())
 
         self.__parallaxChangedUpdateModel()  # Initialize & wire
-        self._detectorParallax.clicked.connect(self.__parallaxChangedUpdateModel)
+        self._detectorParallax.toggled.connect(self.__parallaxChangedUpdateModel)
 
         settings.image().changed.connect(self.__imageUpdated)
 
@@ -282,8 +282,8 @@ class ExperimentTask(AbstractCalibrationTask):
             self._detectorSensorName.setText("")
             self._detectorParallax.setChecked(False)
             self._detectorParallax.setVisible(False)
-            self._detectorFileDescription.setVisible(False)
-            self._detectorFileDescriptionTitle.setVisible(False)
+            self._detectorFileDescription.setEnable(False)
+            self._detectorFileDescriptionTitle.setEnabled(False)
 
         else:
             self._detectorLabel.setStyleSheet("QLabel { }")

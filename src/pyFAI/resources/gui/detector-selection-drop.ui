@@ -110,7 +110,7 @@ background-color: transparent;
       <item>
        <widget class="QGroupBox" name="groupBox_6">
         <property name="title">
-         <string>Detector orientation: </string>
+         <string>Detector orientation</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_10">
          <item>
