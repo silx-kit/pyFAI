@@ -426,7 +426,7 @@ class Parallax:
     due to parallax effect from the sine of the incidence angle
 
     """
-    SIZE = 256  # <8k  best fits into L1 cache
+    SIZE = 1024  # <8k  best fits into L1 cache
 
     def __init__(self, sensor=None, beam=None):
         """Constructor for the Parallax class
@@ -469,9 +469,9 @@ class Parallax:
         if distance != self.distance:
             si = self.sin_incidence
             dr = self.displacement
-            radius = distance * si/(numpy.sqrt(1.0-si**2))  # tan(arcsin())
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
+                radius = distance * si/(numpy.sqrt(1.0-si**2))  # tan(arcsin())
                 self.correction = numpy.interp(radius, radius+dr, radius) - radius  # <0
             self.distance = distance
         return self.correction
@@ -519,6 +519,7 @@ class Parallax:
                 if "class" in bfg:
                     classname = bfg["class"]
                     Klass = globals()[classname]
+                    # Nota: dynamic instanciation could be dangerous, fix this
                 else:
                     Klass = Beam
                 self.beam = Klass()

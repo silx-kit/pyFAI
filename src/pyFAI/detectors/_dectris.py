@@ -40,7 +40,7 @@ __status__ = "production"
 import os
 import numpy
 import logging
-from ._common import Detector, Orientation, SensorConfig, _ensure_dict
+from ._common import Detector, Orientation, SensorConfig, _ensure_dict, ModuleDetector
 from ..utils.mathutil import expand2d
 from ..utils.decorators import deprecated_args, deprecated
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ CdTe750 = SensorConfig.from_dict({"material": "CdTe", "thickness": 750e-6})
 CdTe1000 = SensorConfig.from_dict({"material": "CdTe", "thickness": 1000e-6})
 
 
-class _Dectris(Detector):
+class _Dectris(ModuleDetector):
 
     MANUFACTURER = "Dectris"
     # This detector does not exist but those are place-holder
@@ -80,8 +80,9 @@ class _Dectris(Detector):
                  module_size:tuple[int,int]|None=None,
                  orientation:int|Orientation=0,
                  sensor:SensorConfig|None=None):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
-        self.module_size = tuple(self.MODULE_SIZE) if module_size is None else tuple(module_size)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                        module_size=module_size, orientation=orientation, sensor=sensor)
+        
 
     def calc_mask(self):
         """
@@ -100,38 +101,6 @@ class _Dectris(Detector):
                        self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
-
-    def get_config(self):
-        """Return the configuration with arguments to the constructor
-
-        :return: dict with param for serialization
-        """
-        dico = super().get_config()
-
-        if ((self.module_size is not None) and
-                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
-            dico["module_size"] = self.module_size
-        return dico
-
-    def set_config(self, config:dict|str):
-        """set the config of the detector
-
-        For Dectris detector, possible keys are: max_shape, module_size, orientation, sensor
-
-        :param config: dict or JSON serialized dict
-        :return: Eiger instance
-        """
-        config = _ensure_dict(config)
-        # pixel size is enforced by the detector itself
-        if "max_shape" in config:
-            self.max_shape = tuple(config["max_shape"])
-        module_size = config.get("module_size")
-        if module_size is not None:
-            self.module_size = tuple(module_size)
-        self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
-        return self
-
 
 class Eiger(_Dectris):
     """

@@ -39,7 +39,7 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, SensorConfig
+from ._common import Detector, SensorConfig, ModuleDetector
 from ._dectris import _Dectris
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ Si320 = SensorConfig.from_dict({"material": "Si", "thickness": 320e-6})
 Si450 = SensorConfig.from_dict({"material": "Si", "thickness": 450e-6})
 
 
-class Jungfrau(Detector):
+class Jungfrau(ModuleDetector):
     """
     Raw Jungfrau module without sub-module pixel expansion applied.
     """
@@ -88,12 +88,10 @@ class Jungfrau(Detector):
         return pixel_size * size
 
     def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                        module_size=module_size, orientation=orientation, sensor=sensor)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
+
 
     def calc_pixels_edges(self):
         """
@@ -213,11 +211,8 @@ class Jungfrau4M(_Dectris):
 
 
     def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                        module_size=module_size, orientation=orientation, sensor=sensor)
         self.offset1 = self.offset2 = None
 
 
@@ -311,7 +306,7 @@ class Jungfrau_16M_cor(Jungfrau):
     def load_geom(geom_fname):
         """"Load module geometry from ASCII file
 
-        Stollen from Alejandro Homs' code
+        Based on Alejandro Homs' code
         """
         import re
         geom_re = re.compile('m(?P<mod>[0-9]+)/(?P<par>[^ \t=]+)[ \t]*='

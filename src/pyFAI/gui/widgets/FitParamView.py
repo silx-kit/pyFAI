@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2019 European Synchrotron Radiation Facility
+# Copyright (C) 2019-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,27 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "05/09/2023"
+__date__ = "06/11/2025"
 
 from silx.gui import icons
-
-import pyFAI.utils
-from ..utils import units
 from silx.gui import qt
+from ...utils import get_ui_file
+from ..utils import units
 from ..widgets.UnitLabel import UnitLabel
 from ..widgets.QuantityEdit import QuantityEdit
 from ..model.DataModel import DataModel
 from ..utils import eventutils
 from ..utils import validators
+from ..utils.units import Unit
 
 
 class ConstraintsPopup(qt.QFrame):
 
     def __init__(self, parent=None):
         super(ConstraintsPopup, self).__init__(parent=parent)
-        qt.loadUi(pyFAI.utils.get_ui_file("constraint-drop.ui"), self)
+        qt.loadUi(get_ui_file("constraint-drop.ui"), self)
         validator = validators.AdvancedDoubleValidator(self)
         validator.setAllowEmpty(True)
         self.__useDefaultMin = False
@@ -241,11 +241,11 @@ class FitParamView(qt.QObject):
     _iconConstraintMax = None
     _iconConstraintNoMax = None
 
-    def __init__(self, parent, label, internalUnit, displayedUnit=None):
+    def __init__(self, parent, label:str, internalUnit, displayedUnit=None):
         qt.QObject.__init__(self, parent=parent)
         self.__label = label
         self.__labelWidget = qt.QLabel(parent)
-        self.__labelWidget.setText("%s:" % label)
+        self.__labelWidget.setText(f"{label}:")
         self.__quantity = QuantityEdit(parent)
         self.__quantity.setAlignment(qt.Qt.AlignRight)
         self.__quantity.sigValueAccepted.connect(self.__fireValueAccepted)
@@ -305,6 +305,9 @@ class FitParamView(qt.QObject):
             self._iconConstraintMax = icons.getQIcon("pyfai:gui/icons/constraint-max")
         if self._iconConstraintNoMax is None:
             self._iconConstraintNoMax = icons.getQIcon("pyfai:gui/icons/constraint-no-max")
+
+        displayedUnit.changed.connect(self.__unitChanged)
+        self.__unitChanged()  # enforce the relabeling if needed, only occures when saved config was with `energy`
 
     def __fireValueAccepted(self):
         self.sigValueAccepted.emit()
@@ -411,3 +414,16 @@ class FitParamView(qt.QObject):
 
     def widgets(self):
         return [self.__labelWidget, self.__subLayout, self.__unit, self.__constraints]
+
+    def __unitChanged(self):
+        if self.__units[0] == Unit.METER_WL:
+            self.__setLabel("Energy"
+                            if self.__units[1].value() == Unit.ENERGY
+                            else "Wavelength")
+
+    def __setLabel(self, label:str):
+        """Change the label, if needed"""
+        if label != self.__label:
+            self.__label = label
+            self.__labelWidget.setText(f"{label}:")
+

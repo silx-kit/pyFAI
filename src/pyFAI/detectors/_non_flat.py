@@ -42,7 +42,7 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, Orientation, _ensure_dict
+from ._common import Detector, _ensure_dict, SensorConfig
 from ..utils import mathutil
 logger = logging.getLogger(__name__)
 try:
@@ -58,20 +58,19 @@ class CylindricalDetector(Detector):
     IS_FLAT = False
     force_pixel = True
 
-    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989, orientation=0):
-        super().__init__(pixel1, pixel2, orientation=orientation)
+    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989, orientation=0, sensor:SensorConfig|None=None):
+        super().__init__(pixel1, pixel2, orientation=orientation, sensor = sensor)
         self.radius = radius
         self._pixel_corners = None
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-
+    
         :return: dict with param for serialization
         """
-        return {"pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "radius": self.radius,
-                "orientation": self.orientation or 3}
+        dico = super().get_config()  
+        dico["radius"] = self.radius 
+        return dico
 
     def set_config(self, config):
         """Sets the configuration of the detector.
@@ -85,17 +84,14 @@ class CylindricalDetector(Detector):
         :return: self
         """
         config = _ensure_dict(config)
-        pixel1 = config.get("pixel1")
-        if pixel1:
-            self.set_pixel1(pixel1)
-        pixel2 = config.get("pixel2")
-        if pixel2:
-            self.set_pixel1(pixel2)
+        
+        super().set_config(config)
+            
         radius = config.get("radius")
         if radius:
-            self.radius = radius
+            self.radius = float(radius)
             self._pixel_corners = None
-        self._orientation = Orientation(config.get("orientation", 3))
+        
         return self
 
     def _get_compact_pixel_corners(self):

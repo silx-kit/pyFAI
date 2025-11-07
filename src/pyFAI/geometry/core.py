@@ -340,7 +340,11 @@ class Geometry:
         return azimuth_range
 
     def _correct_parallax(
-        self, d1: numpy.ndarray, d2: numpy.ndarray, p1: numpy.ndarray, p2: numpy.ndarray
+        self,
+        d1: numpy.ndarray,
+        d2: numpy.ndarray,
+        p1: numpy.ndarray,
+        p2: numpy.ndarray
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
@@ -355,7 +359,7 @@ class Geometry:
         d1, d2, p1 and p2 should all have the same shape !!!
         p1 & p2 get modified in place !
         """
-        logger.info("_correct_parallax")
+        logger.info("in _correct_parallax")
         delta1 = delta2 = 0
         if self._parallax is not None:
             r0 = numpy.vstack((p1.ravel(), p2.ravel()))
@@ -372,7 +376,9 @@ class Geometry:
         return delta1, delta2
 
     def _correct_parallax_v2(
-        self, p1: numpy.ndarray, p2: numpy.ndarray, p3: float | numpy.ndarray
+        self, p1: numpy.ndarray,
+        p2: numpy.ndarray,
+        p3: float | numpy.ndarray
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
@@ -2735,12 +2741,16 @@ class Geometry:
                 from ..detectors.sensors import SensorConfig
                 sensor_config = SensorConfig.from_dict({"material": sensor_material,
                                                  "thickness":sensor_thickness})
-            mu = sensor_config.material.mu(energy=self.energy, unit="m")
+            try:
+                mu = sensor_config.material.mu(energy=self.energy, unit="m")
+            except Exception as err:
+                logger.error(f"Unable to activate parallax with {sensor_config}; {type(err)}: {err}")
+                return
             if sensor_config.thickness:
                 sensor = ThinSensor(thickness=sensor_config.thickness, mu=mu)
             else:
                 sensor = ThickSensor(mu=mu)
-            self.parallax = Parallax(sensor)
+            self.parallax = Parallax(sensor)  # performs the reset
         else:
             self._parallax = None
             self.reset()
@@ -3080,7 +3090,7 @@ class Geometry:
         return self.detector.pixel2
 
     @pixel2.setter
-    def pixel2(self, value):
+    def pixel2(self, value): 
         self.detector.pixel2 = value
 
     # deprecated compatibility layer
