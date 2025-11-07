@@ -191,7 +191,7 @@ class Detector(metaclass=DetectorMeta):
                 logger.error(f"Unable to configure detector {name} with config: {config}\n{type(err).__name__}: {err}")
                 raise err
             if binning:
-                detector.set_binning(binning)
+                detector.binning = binning
         else:
             detector = detectorClass()
         return detector
@@ -296,7 +296,7 @@ class Detector(metaclass=DetectorMeta):
         for key in self._IMMUTABLE_ATTRS + self._MUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
         if self._splinefile:
-            new.set_splineFile(self._splinefile)
+            new.splinefile = self._splinefile
         return new
 
     def __deepcopy__(self, memo=None):
@@ -325,7 +325,7 @@ class Detector(metaclass=DetectorMeta):
             memo[id(value)] = new_value
             new.__setattr__(key, new_value)
         if self._splinefile:
-            new.set_splineFile(self._splinefile)
+            new.splinefile = self._splinefile
         return new
 
     def __eq__(self, other):
@@ -357,9 +357,10 @@ class Detector(metaclass=DetectorMeta):
             pixel1 = config.get("pixel1")
             pixel2 = config.get("pixel2")
             if pixel1:
-                self.set_pixel1(pixel1)
+                self.pixel1 = pixel1
             if pixel2:
-                self.set_pixel2(pixel2)
+                self.pixel2 = pixel2
+
         self.splinefile = config.get("splinefile") or config.get("splineFile")
         if "max_shape" in config:
             self.max_shape = config.get("max_shape")
@@ -1225,15 +1226,15 @@ class Detector(metaclass=DetectorMeta):
         elif not files:
             files = []
         if len(files) == 0:
-            self.set_flatfield(None)
+            self.flatfield = None
         elif len(files) == 1:
             if fabio is None:
                 raise RuntimeError("FabIO is missing")
             with fabio.open(files[0]) as fimg:
-                self.set_flatfield(fimg.data.astype(numpy.float32))
+                self.flatfield = fimg.data.astype(numpy.float32)
             self.flatfiles = files[0]
         else:
-            self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
+            self.flatfield = average.average_images(files, filter_=method, fformat=None, threshold=0)
             self.flatfiles = "%s(%s)" % (method, ",".join(files))
 
     @property
@@ -1272,15 +1273,15 @@ class Detector(metaclass=DetectorMeta):
         elif not files:
             files = []
         if len(files) == 0:
-            self.set_darkcurrent(None)
+            self.darkcurrent = None
         elif len(files) == 1:
             if fabio is None:
                 raise RuntimeError("FabIO is missing")
             with fabio.open(files[0]) as fimg:
-                self.set_darkcurrent(fimg.data.astype(numpy.float32))
+                self.darkcurrent = fimg.data.astype(numpy.float32)
             self.darkfiles = files[0]
         else:
-            self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
+            self.darkcurrent = average.average_images(files, filter_=method, fformat=None, threshold=0)
             self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
     def __getnewargs_ex__(self):

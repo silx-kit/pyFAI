@@ -130,11 +130,11 @@ def _init_ai(ai, config, read_maps=True):
 
         filename = config.dark_current
         if filename:
-            ai.detector.set_darkcurrent(_reduce_images(_normalize_filenames(filename)))
+            ai.detector.darkcurrent = _reduce_images(_normalize_filenames(filename))
 
         filename = config.flat_field
         if filename:
-            ai.detector.set_flatfield(_reduce_images(_normalize_filenames(filename)))
+            ai.detector.flatfield = _reduce_images(_normalize_filenames(filename))
     return ai
 
 
@@ -428,19 +428,19 @@ class Worker(object):
             self.extension = None
 
     def set_dark_current_file(self, imagefile):
-        self.ai.detector.set_darkcurrent(_reduce_images(imagefile))
+        self.ai.detector.darkcurrent = _reduce_images(imagefile)
         self.dark_current_image = imagefile
 
     setDarkcurrentFile = set_dark_current_file
 
     def set_flat_field_file(self, imagefile):
-        self.ai.detector.set_flatfield(_reduce_images(imagefile))
+        self.ai.detector.flatfield = _reduce_images(imagefile)
         self.flat_field_image = imagefile
 
     setFlatfieldFile = set_flat_field_file
 
     def set_mask_file(self, imagefile):
-        self.ai.set_mask(mask=_reduce_images(imagefile))
+        self.ai.mask = _reduce_images(imagefile)
         self.mask_image = imagefile
 
     setMaskFile = set_mask_file
@@ -474,7 +474,7 @@ class Worker(object):
             filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
-            self.ai.detector.set_darkcurrent(data)
+            self.ai.detector.darkcurrent = data
             self.dark_current_image = filenames
 
         # Do it here while we have to store metadata
@@ -483,7 +483,7 @@ class Worker(object):
             filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
-            self.ai.detector.set_flatfield(data)
+            self.ai.detector.flatfield = data
             self.flat_field_image = filenames
 
         self._nbpt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
@@ -871,7 +871,7 @@ class WorkerFiber(Worker):
             filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
-            self.ai.detector.set_darkcurrent(data)
+            self.ai.detector.darkcurrent=data
             self.dark_current_image = filenames
 
         # Do it here while we have to store metadata
@@ -880,7 +880,7 @@ class WorkerFiber(Worker):
             filenames = _normalize_filenames(filename)
             method = "mean"
             data = _reduce_images(filenames, method=method)
-            self.ai.detector.set_flatfield(data)
+            self.ai.detector.flatfield = data
             self.flat_field_image = filenames
 
         self.npt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1

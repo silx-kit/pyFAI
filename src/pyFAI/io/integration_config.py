@@ -165,10 +165,10 @@ def _patch_v1_to_v2(config):
         if detector_name == "detector":
             value = config.pop("pixel1", None)
             if value:
-                detector.set_pixel1(value)
+                detector.pixel1 =value
             value = config.pop("pixel2", None)
             if value:
-                detector.set_pixel2(value)
+                detector.pixel2= value
             detector.max_shape = config.get("shape")
         else:
             # Drop it as it was not really used

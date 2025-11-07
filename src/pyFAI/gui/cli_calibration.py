@@ -393,9 +393,9 @@ class AbstractCalibration(object):
             self.ai.detector = self.detector
         if options.spline:
             if "Pilatus" in self.detector.name:
-                self.detector.set_splineFile(options.spline)  # is as 2-tuple of path
+                self.detector.splinefile = options.spline  # is as 2-tuple of path
             elif os.path.isfile(options.spline):
-                self.detector.set_splineFile(os.path.abspath(options.spline))
+                self.detector.splinefile = os.path.abspath(options.spline)
             else:
                 logger.error("Unknown spline file %s", options.spline)
 

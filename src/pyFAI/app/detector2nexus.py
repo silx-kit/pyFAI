@@ -131,7 +131,7 @@ def main(args=None):
         with fabio.open(options.dark) as fimg:
             detector.dark = fimg.data
     if options.splinefile:
-        detector.set_splineFile(options.splinefile)
+        detector.splinefile = options.splinefile
     else:
         if options.pixel:
             p = options.pixel.split(",")

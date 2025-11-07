@@ -102,7 +102,7 @@ class TestCalibrant(unittest.TestCase):
                 continue
             ai = AzimuthalIntegrator(dist=0.01, poni1=0, poni2=0, detector=det)
             calibrant = get_calibrant("LaB6")
-            calibrant.set_wavelength(1e-10)
+            calibrant.wavelength = 1e-10
             img = calibrant.fake_calibration_image(ai)
 
             logger.info("%s min: %s max: %s ", det.name, img.min(), img.max())
@@ -142,7 +142,7 @@ class TestCalibrant(unittest.TestCase):
     def test_same2(self):
         c1 = get_calibrant("LaB6")
         c2 = get_calibrant("LaB6")
-        c1.set_wavelength(1e-10)  # -> deprecation
+        c1.wavelength = 1e-10 
         c2.wavelength = 1e-10
         self.assertEqual(c1, c2)
 
@@ -154,7 +154,7 @@ class TestCalibrant(unittest.TestCase):
 
     def test_not_same_wavelength(self):
         c1 = get_calibrant("LaB6")
-        c1.set_wavelength(1e-10)
+        c1.wavelength=1e-10
         c2 = get_calibrant("LaB6")
         self.assertNotEqual(c1, c2)
 
@@ -163,14 +163,14 @@ class TestCalibrant(unittest.TestCase):
         c2 = copy.copy(c1)
         self.assertIsNot(c1, c2)
         self.assertEqual(c1, c2)
-        c2.set_wavelength(1e-10)
+        c2.wavelength=1e-10
         self.assertNotEqual(c1, c2)
 
     def test_hash(self):
         c1 = get_calibrant("AgBh")
         c2 = get_calibrant("AgBh")
         c3 = get_calibrant("AgBh")
-        c3.set_wavelength(1e-10)
+        c3.wavelength=1e-10
         c4 = get_calibrant("LaB6")
         store = {}
         store[c1] = True

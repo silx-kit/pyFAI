@@ -2022,8 +2022,8 @@ class Geometry:
         cxi = {"cxi_version": 160}
         if self._wavelength:
             cxi["beam"] = {
-                "incident_energy": self.get_energy(),
-                "incident_wavelength": self.get_wavelength(),
+                "incident_energy": self.energy,
+                "incident_wavelength": self.wavelength,
                 # "incident_polarization": #TODO
             }
         detector = {

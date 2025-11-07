@@ -324,7 +324,7 @@ class MultiGeometry(object):
         """
         self.wavelength = float(value)
         for ai in self.ais:
-            ai.set_wavelength(self.wavelength)
+            ai.wavelength = self.wavelength
 
     def reset(self, collect_garbage=True):
         """Clean up all caches for all integrators, resets the thread-pool as well.
@@ -687,7 +687,7 @@ class MultiGeometryFiber(object):
         """
         self.wavelength = float(value)
         for fi in self.fis:
-            fi.set_wavelength(self.wavelength)
+            fi.wavelength = self.wavelength
 
     def reset(self, collect_garbage=True):
         """Clean up all caches for all integrators, resets the thread-pool as well.
