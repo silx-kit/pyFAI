@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 #cython: embedsignature=True, language_level=3, binding=True
-##cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
+#cython: boundscheck=False, wraparound=False, cdivision=True, initializedcheck=False,
 ################################################################################
 # #This is for developping
-#cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
+##cython: profile=True, warn.undeclared=True, warn.unused=True, warn.unused_result=False, warn.unused_arg=True
 ################################################################################
 #
 #    Project: Fast Azimuthal integration
@@ -51,18 +51,15 @@ __contact__ = "jerome.kieffer@esrf.fr"
 
 from .shared_types cimport int8_t, uint8_t, int16_t, uint16_t, \
                            int32_t, uint32_t, int64_t, uint64_t,\
-                           float32_t, float64_t, floating, any_int_t, any_t
+                           float32_t, float64_t
+import logging
 import cython
 import numpy
 from libc.math cimport sqrt, exp
 from cython.parallel import prange
-from libc.stdint cimport int8_t, uint8_t, int16_t, uint16_t, \
-                         int32_t, uint32_t, int64_t, uint64_t
 
-ctypedef double float64_t
-ctypedef float float32_t
+logger = logging.getLogger(__name__)
 
-cdef int32_t BUFFER_SIZE = 16
 cdef float64_t BIG = numpy.finfo(numpy.float32).max
 
 
@@ -84,29 +81,31 @@ cdef class Raytracing:
         public int8_t[:, ::1] mask
 
     def __init__(self,
-                 ponifile,
-                 mask,
-                 int buffer_size=BUFFER_SIZE):
+                 geom,
+                 int buffer_size=16):
         """Constructor of the class:
 
-        :param vox, voy: detector pixel size in the plane
-        :param thickness: thickness of the sensor in meters
-        :param mask:
-        :param mu: absorption coefficient of the sensor material
-        :param dist: sample detector distance as defined in the geometry-file
-        :param poni1, poni2: coordinates of the PONI as defined in the geometry
+        :param geom: Geometry instance with parallax enabled
+        :param buffer_size: how many pixel a photon could be spread on ... if too small, you will get a warning (not an error)
         """
-        self.vox = float(vox)
-        self.voy = float(voy)
-        self.voz = float(thickness)
-        self.mu = float(mu)
-        self.dist = float(dist)
-        self.poni1 = float(poni1)
-        self.poni2 = float(poni2)
-        self.width = int(mask.shape[1])
-        self.height = int(mask.shape[0])
+        if not geom.parallax:
+            raise RuntimeError("Expected a geometry with parallax enabled")
+        detector = geom.detector
+        shape = detector.shape
+        self.vox = float(detector.pixel2)
+        self.voy = float(detector.pixel2)
+        self.voz = float(detector.sensor.thickness)
+        self.mu = float(geom.parallax.sensor.mu)
+        self.dist = float(geom.dist)
+        self.poni1 = float(geom.poni1)
+        self.poni2 = float(geom.poni2)
+        self.width = int(detector.shape[1])
+        self.height = int(detector.shape[0])
         self.size = self.width*self.height
-        self.mask = numpy.ascontiguousarray(mask, numpy.int8)
+        if detector.mask is None:
+            self.mask = numpy.zeros(shape, numpy.int8)
+        else:
+            self.mask = numpy.ascontiguousarray(detector.mask, numpy.int8)
         self.oversampling = 1
         self.buffer_size = int(buffer_size)
 
@@ -305,10 +304,12 @@ cdef class Raytracing:
         return tmp_size
 
     def calc_csr(self, sample=0, int threads=0):
-        """Calculate the content of the sparse matrix for the whole image
-        :param sample: Oversampling factor
-        :param threads: number of threads to be used
-        :return: spase matrix?
+        """Calculate the content of the sparse matrix for the whole image in CSR format.
+        The blurring matrix is actually the transposed array.
+
+        :param sample: Oversampling factor, actually if you request 2 it will trace 2x2 rays
+        :param threads: number of threads to be used, 0 for max_threads
+        :return: 3-tuple of arrays to build a CSR sparse matrix (in scipy)
         """
         cdef:
             int pos, i, current, next, size
@@ -337,6 +338,9 @@ cdef class Raytracing:
             size = sizes[pos] = self._one_pixel(pos//self.width, pos%self.width,
                                              indices[pos], data[pos],
                                              array_x[pos], array_y[pos], array_len[pos])
+        if numpy.max(sizes) >= self.buffer_size:
+            logger.warning("It is very possible that some rays were not recorded properly due to too small buffer."
+                           f" Please restart with a buffer size >{self.buffer_size} !")
         size = numpy.sum(sizes)
         csr_indices = numpy.empty(size, numpy.int32)
         csr_data = numpy.empty(size, numpy.float32)
