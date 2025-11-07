@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/09/2025"
+__date__ = "31/10/2025"
 
 import logging
 import numpy
@@ -42,7 +42,7 @@ _logger = logging.getLogger(__name__)
 inf = numpy.inf
 
 
-class GeometryRefinementContext(object):
+class GeometryRefinementContext:
     """Store the full context of the GeometryRefinement object
 
     Right now, GeometryRefinement store the bound but do not store the fixed
@@ -58,13 +58,9 @@ class GeometryRefinementContext(object):
 
         self.__bounds = {}
         for name in self.PARAMETERS:
-            min_getter = getattr(self.__geoRef, "get_%s_min" % name)
-            max_getter = getattr(self.__geoRef, "get_%s_max" % name)
-            minValue, maxValue = min_getter(), max_getter()
+            minValue = getattr(self.__geoRef, f"{name}_min")
+            maxValue = getattr(self.__geoRef, f"{name}_max")
             self.__bounds[name] = minValue, maxValue
-        if self.__geoRef.detector.sensor:
-            print("Enable parallax in GeometryRefinementContext")
-            self.__geoRef.enable_parallax()
 
     def __getattr__(self, name):
         return object.__getattribute__(self.__geoRef, name)
@@ -117,8 +113,8 @@ class GeometryRefinementContext(object):
         for name in attrs:
             if name in self.__fixed:
                 continue
-            min_setter = getattr(self.__geoRef, "set_%s_min" % name)
-            max_setter = getattr(self.__geoRef, "set_%s_max" % name)
+            min_setter = getattr(self.__geoRef, f"set_{name}_min")
+            max_setter = getattr(self.__geoRef, f"set_{name}_max")
             if name in self.__bounds:
                 minValue, maxValue = self.__bounds[name]
             else:
@@ -133,6 +129,13 @@ class GeometryRefinementContext(object):
             return inf
         else:
             return deltaS
+
+    def parallax(self):
+        return self.__geoRef.parallax
+
+    def enable_parallax(self, value):
+        _logger.info(f"in enable_parallax({value})")
+        self.__geoRef.enable_parallax(bool(value))
 
 
 class RingCalibration:
@@ -284,12 +287,13 @@ class RingCalibration:
     def getPyfaiGeometry(self):
         return self.__geoRef
 
-    def refine(self, max_iter=500, seconds=10):
+    def refine(self, max_iter=500, seconds=10, parallax=None):
         """
         Contains the common geometry refinement part
         """
         self.__calibrant.setWavelength_change2th(self.__wavelength)
         self.__peakPicker.points.setWavelength_change2th(self.__wavelength)
+        self.__geoRef.enable_parallax(parallax)
 
         residual = previous_residual = float("+inf")
 

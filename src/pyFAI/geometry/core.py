@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/10/2025"
+__date__ = "05/11/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -340,7 +340,11 @@ class Geometry:
         return azimuth_range
 
     def _correct_parallax(
-        self, d1: numpy.ndarray, d2: numpy.ndarray, p1: numpy.ndarray, p2: numpy.ndarray
+        self,
+        d1: numpy.ndarray,
+        d2: numpy.ndarray,
+        p1: numpy.ndarray,
+        p2: numpy.ndarray
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
@@ -355,7 +359,7 @@ class Geometry:
         d1, d2, p1 and p2 should all have the same shape !!!
         p1 & p2 get modified in place !
         """
-        logger.info("_correct_parallax")
+        logger.info("in _correct_parallax")
         delta1 = delta2 = 0
         if self._parallax is not None:
             r0 = numpy.vstack((p1.ravel(), p2.ravel()))
@@ -367,12 +371,14 @@ class Geometry:
             delta1, delta2 = displacement * r0
             delta1.shape = p1.shape
             delta2.shape = p2.shape
-            p1 += delta1
-            p2 += delta2
+            p1 -= delta1
+            p2 -= delta2
         return delta1, delta2
 
     def _correct_parallax_v2(
-        self, p1: numpy.ndarray, p2: numpy.ndarray, p3: float | numpy.ndarray
+        self, p1: numpy.ndarray,
+        p2: numpy.ndarray,
+        p3: float | numpy.ndarray
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
@@ -386,7 +392,7 @@ class Geometry:
         p1, p2 & P3 should all have the same shape !!!
         p1 & p2 get modified in place !
         """
-        logger.info("_correct_parallax_v2")
+        logger.info("in _correct_parallax_v2")
         delta1 = delta2 = 0
         if self._parallax is not None:
             r0 = numpy.vstack((p1.ravel(), p2.ravel()))
@@ -408,8 +414,8 @@ class Geometry:
             delta1, delta2 = displacement * r0
             delta1.shape = p1.shape
             delta2.shape = p2.shape
-            p1 += delta1
-            p2 += delta2
+            p1 -= delta1
+            p2 -= delta2
         return delta1, delta2
 
     def _calc_cartesian_positions(
@@ -2736,12 +2742,16 @@ class Geometry:
                 from ..detectors.sensors import SensorConfig
                 sensor_config = SensorConfig.from_dict({"material": sensor_material,
                                                  "thickness":sensor_thickness})
-            mu = sensor_config.material.mu(energy=self.energy, unit="m")
+            try:
+                mu = sensor_config.material.mu(energy=self.energy, unit="m")
+            except Exception as err:
+                logger.error(f"Unable to activate parallax with {sensor_config}; {type(err)}: {err}")
+                return
             if sensor_config.thickness:
                 sensor = ThinSensor(thickness=sensor_config.thickness, mu=mu)
             else:
                 sensor = ThickSensor(mu=mu)
-            self.parallax = Parallax(sensor)
+            self.parallax = Parallax(sensor)  # performs the reset
         else:
             self._parallax = None
             self.reset()
@@ -2799,7 +2809,7 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = value[0]
-            
+
         self._poni1 = float(value)
         self.reset()
 
@@ -2902,7 +2912,7 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = value[0]
-            
+
         self._rot3 = float(value)
         self.reset()
 
@@ -2930,7 +2940,7 @@ class Geometry:
             skip_backtrace_count=2
             )
             value = value[0]
-        
+
         self._wavelength = float(value)
 
         qa = dqa = q_corner = None
@@ -3081,7 +3091,7 @@ class Geometry:
         return self.detector.pixel2
 
     @pixel2.setter
-    def pixel2(self, value): 
+    def pixel2(self, value):
         self.detector.pixel2 = value
 
     # deprecated compatibility layer
@@ -3131,7 +3141,7 @@ class Geometry:
     # deprecated compatibility layer
     get_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fget, reason="use property", since_version="2025.09")
     set_correct_solid_angle_for_spline = deprecated(correct_SA_spline.fset, reason="use property", since_version="2025.09")
-  
+
 
     @property
     def maskfile(self):
