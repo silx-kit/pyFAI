@@ -109,3 +109,6 @@ py.extension_module('fastcrc', ['fastcrc.pyx','src/crc32.c'],
 
 py.extension_module('mathutil', ['mathutil.pyx'],
         dependencies : [py_dep], install: true, subdir: 'pyFAI/ext')
+
+py.extension_module('parallax_raytracing', 'parallax_raytracing.pyx',
+        dependencies : [py_dep, omp], install: true, subdir: 'pyFAI/ext')
