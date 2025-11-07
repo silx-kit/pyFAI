@@ -196,7 +196,7 @@ class DetectorSelectorDrop(qt.QWidget):
         if isinstance(detector, detectors.Detector):
             self.setSensorConfig(detector.sensor)
 
-    def getSensorConfig(self) -> SensorConfig:
+    def getSensorConfig(self) -> SensorConfig | None:
         sensor_material = self._detectorSensorMaterials.currentData()
         if sensor_material:
             sensor = SensorConfig(sensor_material)
