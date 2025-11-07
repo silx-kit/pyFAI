@@ -40,7 +40,7 @@ __status__ = "production"
 
 from .. import matplotlib
 from silx.gui import qt
-from contextlib import contextmanager
+from silx.gui.utils import blockSignals as block_signals  # noqa
 
 
 main_loop = False
@@ -86,11 +86,3 @@ def maximize_fig(fig=None):
                 mng.resize(*win_shape)
     update_fig(fig)
 
-
-@contextmanager
-def block_signals(w: qt.QWidget):
-    old = w.blockSignals(True)
-    try:
-        yield
-    finally:
-        w.blockSignals(old)
