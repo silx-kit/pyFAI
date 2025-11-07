@@ -150,7 +150,7 @@ background-color: transparent;
          </sizepolicy>
         </property>
         <property name="title">
-         <string>Sensor:</string>
+         <string>Sensor</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_5">
          <item row="0" column="0">
