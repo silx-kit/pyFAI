@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/11/2025"
+__date__ = "07/11/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -464,7 +464,7 @@ class Parallax:
         """Initialize and cache the correction array
 
         :param distance: sample-detector distance in meters
-        :return: correction array aas function of sine incidence angle
+        :return: correction array as a function of sine incidence angle
         """
         if distance != self.distance:
             si = self.sin_incidence
@@ -482,18 +482,18 @@ class Parallax:
     def __str__(self):
         return f"Parallax correction: beam `{self.beam}`, sensor `{self.sensor}`"
 
-    def __call__(self, sin_incidence:numpy.ndarray, distance:float|None=None) -> numpy.array:
-        """Calculate the displacement from the sine of the incidence angle
+    def displace(self, sin_incidence:numpy.ndarray, distance:float|None=None) -> numpy.array:
+        """Calculate the displacement using the sine of the incidence angle
 
-        :param sin_incidence: array with the sine of the incidence angle (can be any dimentionnality)
-        :return: the displacement (bluring, positive)
+        :param sin_incidence: array with the sine of the incidence angle (can be any dimensionality)
+        :return: the displacement (blurring, positive)
         """
         return numpy.interp(sin_incidence, self.sin_incidence, self.displacement)
 
     def correct(self, sin_incidence:numpy.ndarray, distance:float|None=None) -> numpy.array:
         """Calculate the correction (in distance, meters) from the sine of the incidence angle
 
-        :param sin_incidence: array with the sine of the incidence angle (can be any dimentionnality)
+        :param sin_incidence: array with the sine of the incidence angle (can be any dimensionality)
         :param distance: sample-detector distance (orthogonal)
         :return
         """
