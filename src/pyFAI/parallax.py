@@ -29,11 +29,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "07/11/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import logging
+import warnings
 import numpy
 import numexpr
 import scipy.integrate
@@ -442,6 +443,8 @@ class Parallax:
         self.sensor = sensor
         self.beam = beam
         self.displacement = None
+        self.correction = None
+        self.distance = None
         self.sin_incidence = None
         if self.sensor:
             self.init()
@@ -457,15 +460,45 @@ class Parallax:
         self.sin_incidence = numpy.sin(angles)
         self.displacement = numpy.array(displacement)
 
+    def calc_corrections(self, distance:float):
+        """Initialize and cache the correction array
+
+        :param distance: sample-detector distance in meters
+        :return: correction array as a function of sine incidence angle
+        """
+        if distance != self.distance:
+            si = self.sin_incidence
+            dr = self.displacement
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore')
+                radius = distance * si/(numpy.sqrt(1.0-si**2))  # tan(arcsin())
+                self.correction = numpy.interp(radius, radius+dr, radius) - radius  # <0
+            self.distance = distance
+        return self.correction
+
     def __repr__(self):
         return f"{self.__class__.__name__}({self.sensor!r}, beam={self.beam!r})"
 
     def __str__(self):
         return f"Parallax correction: beam `{self.beam}`, sensor `{self.sensor}`"
 
-    def __call__(self, sin_incidence):
-        """Calculate the displacement from the sine of the incidence angle"""
+    def displace(self, sin_incidence:numpy.ndarray, distance:float|None=None) -> numpy.array:
+        """Calculate the displacement using the sine of the incidence angle
+
+        :param sin_incidence: array with the sine of the incidence angle (can be any dimensionality)
+        :return: the displacement (blurring, positive)
+        """
         return numpy.interp(sin_incidence, self.sin_incidence, self.displacement)
+
+    def correct(self, sin_incidence:numpy.ndarray, distance:float|None=None) -> numpy.array:
+        """Calculate the correction (in distance, meters) from the sine of the incidence angle
+
+        :param sin_incidence: array with the sine of the incidence angle (can be any dimensionality)
+        :param distance: sample-detector distance (orthogonal)
+        :return
+        """
+        correction = self.calc_corrections(distance)
+        return numpy.interp(sin_incidence, self.sin_incidence, correction)
 
     def get_config(self):
         dico = {"class": self.__class__.__name__}

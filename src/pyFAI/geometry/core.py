@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/11/2025"
+__date__ = "06/11/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -367,12 +367,12 @@ class Geometry:
             length[length == 0] = 1.0  # avoid zero division error
             r0 /= length  # normalize array r0
 
-            displacement = self._parallax(self.sin_incidence(d1.ravel(), d2.ravel()))
+            displacement = self._parallax.correct(self.sin_incidence(d1.ravel(), d2.ravel()), self.dist)
             delta1, delta2 = displacement * r0
             delta1.shape = p1.shape
             delta2.shape = p2.shape
-            p1 -= delta1
-            p2 -= delta2
+            p1 += delta1
+            p2 += delta2
         return delta1, delta2
 
     def _correct_parallax_v2(
@@ -392,7 +392,7 @@ class Geometry:
         p1, p2 & P3 should all have the same shape !!!
         p1 & p2 get modified in place !
         """
-        logger.info("in _correct_parallax_v2")
+        logger.info("_correct_parallax_v2")
         delta1 = delta2 = 0
         if self._parallax is not None:
             r0 = numpy.vstack((p1.ravel(), p2.ravel()))
@@ -400,22 +400,21 @@ class Geometry:
             length = numpy.linalg.norm(r0, axis=0)
             if numexpr is None:
                 tan_incidence = length / z
-                sin_incidence = tan_incidence / numpy.sqrt(
-                    1.0 + tan_incidence * tan_incidence
-                )
+                sin_incidence = tan_incidence / (
+                    numpy.sqrt(1.0 + tan_incidence**2))
             else:
                 sin_incidence = numexpr.evaluate("length/z/sqrt(1.0+(length/z)**2)")
             numpy.clip(sin_incidence, 0.0, 1.0, out=sin_incidence)
 
-            displacement = self._parallax(sin_incidence)
+            displacement = self._parallax.correct(sin_incidence, self.dist)
 
             length[length == 0] = 1.0  # avoid zero division error
             r0 /= length  # normalize array r0
             delta1, delta2 = displacement * r0
             delta1.shape = p1.shape
             delta2.shape = p2.shape
-            p1 -= delta1
-            p2 -= delta2
+            p1 += delta1
+            p2 += delta2
         return delta1, delta2
 
     def _calc_cartesian_positions(
@@ -3091,7 +3090,7 @@ class Geometry:
         return self.detector.pixel2
 
     @pixel2.setter
-    def pixel2(self, value):
+    def pixel2(self, value): 
         self.detector.pixel2 = value
 
     # deprecated compatibility layer
