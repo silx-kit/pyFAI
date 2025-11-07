@@ -158,7 +158,6 @@ class DetectorSelectorDrop(qt.QWidget):
         self._detectorSensorThickness.setValidator(qt.QDoubleValidator(0.0, 1e4, 1))
         self._resetSensor()
         self._detectorSensorMaterials.currentIndexChanged.connect(self.__sensorChanged)
-        self._detectorSensorThickness.currentIndexChanged.connect(self.__sensorChanged)
         self._detectorSensorThickness.currentTextChanged.connect(self.__sensorChanged)
 
     def _resetSensor(self, detector=None):
