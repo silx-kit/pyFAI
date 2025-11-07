@@ -39,7 +39,7 @@ __status__ = "production"
 
 import numpy
 import logging
-from ._common import Detector, SensorConfig
+from ._common import SensorConfig, ModuleDetector
 logger = logging.getLogger(__name__)
 
 
@@ -50,7 +50,7 @@ GaAs500 = SensorConfig.from_dict({"material": "GaAs", "thickness": 500e-6})
 CdTe1000 = SensorConfig.from_dict({"material": "CdTe", "thickness": 1000e-6})
 
 
-class _Lambda(Detector):
+class _Lambda(ModuleDetector):
 
     MANUFACTURER = "X-Spectrum"
     # This detector does not exist but those are place-holder
@@ -62,11 +62,8 @@ class _Lambda(Detector):
     SENSORS = (Si300, Si500, GaAs500, CdTe1000)
 
     def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
-        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
-        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
-            self.module_size = tuple(self.MODULE_SIZE)
-        else:
-            self.module_size = module_size
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
+                        module_size=module_size, orientation=orientation, sensor=sensor)
 
     def calc_mask(self):
         """

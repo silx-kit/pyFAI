@@ -39,7 +39,7 @@ __date__ = "04/11/2025"
 __status__ = "production"
 
 import numpy
-from ._common import Detector, Orientation, SensorConfig, _ensure_dict
+from ._common import Detector, SensorConfig
 from ..utils.decorators import deprecated
 
 import logging
@@ -539,10 +539,6 @@ class Mar345(Detector):
         mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
         return mask.astype(numpy.int8)
 
-    def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
-
     def guess_binning(self, data):
         """
         Guess the binning/mode depending on the image shape
@@ -578,22 +574,6 @@ class Mar345(Detector):
         self._mask_crc = None
         return result
 
-    def set_config(self, config:dict|str):
-        """set the config of the detector
-
-        For Mar345 detector, possible keys are: max_shape, module_size
-
-        :param config: dict or JSON serialized dict
-        :return: detector instance
-        """
-        config = _ensure_dict(config)
-        self.pixel1 = config.get("pixel1")
-        self.pixel2 = config.get("pixel2")
-
-        self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
-        return self
-
 
 class Mar555(Detector):
 
@@ -615,21 +595,7 @@ class Mar555(Detector):
 
 
     # get_config inherited from Detector; no changes needed
+    
+    # set_config inherited from Detector; no changes needed
 
-    def set_config(self, config:dict|str):
-        """set the config of the detector
 
-        #TODO: Extend docstring for sensor, orientation?
-        For Mar555 detector, possible keys are: max_shape, module_size
-
-        :param config: dict or JSON serialized dict
-        :return: detector instance
-        """
-        config = _ensure_dict(config)
-        self.pixel1 =config.get("pixel1")
-        self.pixel2 =config.get("pixel2")
-
-        self._orientation = Orientation(config.get("orientation", 3))
-        self.sensor = SensorConfig(config["sensor"]) if config.get("sensor") is not None else None
-
-        return self

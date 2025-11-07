@@ -360,9 +360,10 @@ class Detector(metaclass=DetectorMeta):
                 self.pixel1 = pixel1
             if pixel2:
                 self.pixel2 = pixel2
-            self.splinefile = config.get("splinefile") or config.get("splineFile")
-            if "max_shape" in config:
-                self.max_shape = config.get("max_shape")
+
+        self.splinefile = config.get("splinefile") or config.get("splineFile")
+        if "max_shape" in config:
+            self.max_shape = config.get("max_shape")
         self._orientation = Orientation(config.get("orientation", 0))
         self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
         return self
@@ -1578,3 +1579,55 @@ def _ensure_dict(dico_or_str:str|dict)-> dict:
             logger.error(f"Unable to parse config `{config}` as JSON.\n{type(err).__name__}: {err}")
             raise err
     return config
+
+
+class ModuleDetector(Detector):
+    """
+    Base class for all modular detectors (e.g., Dectris, Lambda, Imxpad).
+    Factors out the common logic for handling module size and gaps in configuration.
+    """
+    MODULE_SIZE = (None, None)
+    
+    def __init__(self,
+                pixel1:float|None=None,
+                pixel2:float|None=None,
+                max_shape:tuple[int,int]|None=None,
+                module_size:tuple[int,int]|None=None,
+                orientation:int|Orientation=0,
+                sensor:SensorConfig|None=None):
+        super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
+        self.module_size = tuple(self.MODULE_SIZE) if module_size is None else tuple(module_size)
+            
+            
+    
+    def get_config(self):
+        """
+        Detector.get_config handles already: pixel1, pixel2, orientation,
+        max_shape, splinefile, sensor
+        Extends Detector.get_config to include module_size
+        """ 
+        config = super().get_config()
+        if ((self.module_size is not None) and
+                (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
+            config["module_size"] = self.module_size
+        return config
+    
+    def set_config(self, config:dict|str):
+        """
+        Detector.set_config handles already enforcment of pixel, splinefile, orientation, sensor
+        Extends Detector.set_config to handle module_size.
+        """
+
+        config = _ensure_dict(config).copy()
+        # pixel size is enforced by the detector itself
+        module_size = config.pop("module_size", None)
+        super().set_config(config)
+        if module_size is not None:
+            self.module_size = tuple(module_size)
+        return self
+        
+        
+        
+        
+        
+    
