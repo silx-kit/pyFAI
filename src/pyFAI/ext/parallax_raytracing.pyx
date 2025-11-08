@@ -339,7 +339,7 @@ cdef class Raytracing:
                                              indices[pos], data[pos],
                                              array_x[pos], array_y[pos], array_len[pos])
         if numpy.max(sizes) >= self.buffer_size:
-            logger.warning("It is very possible that some rays were not recorded properly due to too small buffer."
+            logger.warning("It is very possible that some rays were not recorded properly due to a buffer too small."
                            f" Please restart with a buffer size >{self.buffer_size} !")
         size = numpy.sum(sizes)
         csr_indices = numpy.empty(size, numpy.int32)
