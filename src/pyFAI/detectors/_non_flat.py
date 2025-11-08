@@ -84,14 +84,11 @@ class CylindricalDetector(Detector):
         :return: self
         """
         config = _ensure_dict(config)
-        
         super().set_config(config)
-            
         radius = config.get("radius")
         if radius:
             self.radius = float(radius)
             self._pixel_corners = None
-        
         return self
 
     def _get_compact_pixel_corners(self):

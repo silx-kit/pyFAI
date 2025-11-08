@@ -169,12 +169,15 @@ class TestFiberIntegrator(unittest.TestCase):
 
         qip_2 = get_unit_fiber(name='qip_nm^-1')
         qoop_2 = get_unit_fiber(name='qoop_nm^-1')
-        qip_2.set_incident_angle(gi_parameters_2['incident_angle'])
-        qoop_2.set_incident_angle(gi_parameters_2['incident_angle'])
-        qip_2.set_tilt_angle(gi_parameters_2['tilt_angle'])
-        qoop_2.set_tilt_angle(gi_parameters_2['tilt_angle'])
-        qip_2.set_sample_orientation(gi_parameters_2['sample_orientation'])
-        qoop_2.set_sample_orientation(gi_parameters_2['sample_orientation'])
+        qip_2.incident_angle = gi_parameters_2['incident_angle']
+        qoop_2.incident_angle = gi_parameters_2['incident_angle']
+
+        qip_2.tilt_angle = gi_parameters_2['tilt_angle']
+        qoop_2.tilt_angle = gi_parameters_2['tilt_angle']
+
+        qip_2.sample_orientation = gi_parameters_2['sample_orientation']
+        qoop_2.sample_orientation = gi_parameters_2['sample_orientation']
+
 
         for k,v in gi_parameters_1.items():
             self.assertEqual(getattr(qip_1, k), v)

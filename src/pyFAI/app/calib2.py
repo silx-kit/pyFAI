@@ -375,7 +375,7 @@ def setup_model(model, options):
             if detector is None:
                 detector = pyFAI.detectors.Detector(splinefile=options.spline)
             elif detector.__class__ is pyFAI.detectors.Detector or detector.HAVE_TAPER:
-                detector.set_splineFile(options.spline)
+                detector.splinefile = options.spline
             else:
                 logger.warning("Spline file not supported with this kind of detector. Argument ignored.")
         except Exception as e:

@@ -598,3 +598,4 @@ class Mar555(Detector):
     
     # set_config inherited from Detector; no changes needed
 
+
