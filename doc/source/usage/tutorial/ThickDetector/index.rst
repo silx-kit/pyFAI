@@ -40,3 +40,4 @@ with the absorption profile, leading to some numerical correction to apply to th
    raytracing
    deconvolution
    Parallax_model
+   synthetic_parallax

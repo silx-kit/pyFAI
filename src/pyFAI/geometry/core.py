@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/11/2025"
+__date__ = "08/11/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -392,7 +392,7 @@ class Geometry:
         p1, p2 & P3 should all have the same shape !!!
         p1 & p2 get modified in place !
         """
-        logger.info("_correct_parallax_v2")
+        logger.info("in _correct_parallax_v2")
         delta1 = delta2 = 0
         if self._parallax is not None:
             r0 = numpy.vstack((p1.ravel(), p2.ravel()))
@@ -2744,7 +2744,7 @@ class Geometry:
             try:
                 mu = sensor_config.material.mu(energy=self.energy, unit="m")
             except Exception as err:
-                logger.error(f"Unable to activate parallax with {sensor_config}; {type(err)}: {err}")
+                logger.error(f"Unable to activate parallax with {sensor_config}\n{type(err).__name__}: {err}")
                 return
             if sensor_config.thickness:
                 sensor = ThinSensor(thickness=sensor_config.thickness, mu=mu)
@@ -3090,7 +3090,7 @@ class Geometry:
         return self.detector.pixel2
 
     @pixel2.setter
-    def pixel2(self, value): 
+    def pixel2(self, value):
         self.detector.pixel2 = value
 
     # deprecated compatibility layer
