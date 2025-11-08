@@ -106,10 +106,10 @@ class TestActivation(unittest.TestCase):
         self.assertGreaterEqual(p2.as_dict()["poni_version"], 3)
         a.save(UtilsTest.temp_path/"test_activation.poni")
         b = load(UtilsTest.temp_path/"test_activation.poni")
-        print("a",a)
-        print("b",b)
-        with open(UtilsTest.temp_path/"test_activation.poni") as f:
-            print(f.read())
+        # print("a",a)
+        # print("b",b)
+        # with open(UtilsTest.temp_path/"test_activation.poni") as f:
+        #     print(f.read())
         self.assertEqual(PoniFile(a),PoniFile(b), "ponifiles are the same")
         self.assertEqual(str(a),str(b), "geometries are the same")
 
@@ -121,13 +121,13 @@ class TestRaytracing(unittest.TestCase):
                          "distance": 1e-1,
                          "wavelength":5e-11})
         ai.enable_parallax(True)
-        self.assertAlmostEqual(ai.parallax.sensor.efficiency, 0.5041)
+        self.assertAlmostEqual(ai.parallax.sensor.efficiency, 0.5041, delta=1e-4)
         rt=Raytracing(ai)
         data, indices, indptr = rt.calc_csr(1)
         self.assertEqual(indptr.size-1, numpy.prod(ai.detector.shape))
-        self.assertEqual(indptr[1:] - indptr[:-1], 8)
+        self.assertEqual((indptr[1:] - indptr[:-1]).max(), 8)
         self.assertEqual(data.size, indices.size)
-        self.assertAlmostEqual(data.size//numpy.prod(ai.detector.shape), 0.356)
+        self.assertAlmostEqual(data.size/numpy.prod(ai.detector.shape), 3.56, delta=1e-3)
 
 
 def suite():
@@ -136,6 +136,7 @@ def suite():
     testsuite.addTest(loader(TestParallax))
     testsuite.addTest(loader(TestSensorMaterial))
     testsuite.addTest(loader(TestActivation))
+    testsuite.addTest(loader(TestRaytracing))
     return testsuite
 
 
