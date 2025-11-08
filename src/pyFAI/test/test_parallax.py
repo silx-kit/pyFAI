@@ -116,7 +116,7 @@ class TestActivation(unittest.TestCase):
 class TestRaytracing(unittest.TestCase):
     def test_extension(self):
         """Simple test that validates the extension works"""
-        ai = pyFAI.load({"detector": "Pilatus 100k",
+        ai = load({"detector": "Pilatus 100k",
                          "detector_config":{"sensor": {"material":"Si", "thickness":1e-3}},
                          "distance": 1e-1,
                          "wavelength":5e-11})
