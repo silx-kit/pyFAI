@@ -282,7 +282,7 @@ class ExperimentTask(AbstractCalibrationTask):
             self._detectorSensorName.setText("")
             self._detectorParallax.setChecked(False)
             self._detectorParallax.setVisible(False)
-            self._detectorFileDescription.setEnable(False)
+            self._detectorFileDescription.setEnabled(False)
             self._detectorFileDescriptionTitle.setEnabled(False)
 
         else:

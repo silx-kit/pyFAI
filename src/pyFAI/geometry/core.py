@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/11/2025"
+__date__ = "08/11/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -367,12 +367,12 @@ class Geometry:
             length[length == 0] = 1.0  # avoid zero division error
             r0 /= length  # normalize array r0
 
-            displacement = self._parallax(self.sin_incidence(d1.ravel(), d2.ravel()))
+            displacement = self._parallax.correct(self.sin_incidence(d1.ravel(), d2.ravel()), self.dist)
             delta1, delta2 = displacement * r0
             delta1.shape = p1.shape
             delta2.shape = p2.shape
-            p1 -= delta1
-            p2 -= delta2
+            p1 += delta1
+            p2 += delta2
         return delta1, delta2
 
     def _correct_parallax_v2(
@@ -400,22 +400,21 @@ class Geometry:
             length = numpy.linalg.norm(r0, axis=0)
             if numexpr is None:
                 tan_incidence = length / z
-                sin_incidence = tan_incidence / numpy.sqrt(
-                    1.0 + tan_incidence * tan_incidence
-                )
+                sin_incidence = tan_incidence / (
+                    numpy.sqrt(1.0 + tan_incidence**2))
             else:
                 sin_incidence = numexpr.evaluate("length/z/sqrt(1.0+(length/z)**2)")
             numpy.clip(sin_incidence, 0.0, 1.0, out=sin_incidence)
 
-            displacement = self._parallax(sin_incidence)
+            displacement = self._parallax.correct(sin_incidence, self.dist)
 
             length[length == 0] = 1.0  # avoid zero division error
             r0 /= length  # normalize array r0
             delta1, delta2 = displacement * r0
             delta1.shape = p1.shape
             delta2.shape = p2.shape
-            p1 -= delta1
-            p2 -= delta2
+            p1 += delta1
+            p2 += delta2
         return delta1, delta2
 
     def _calc_cartesian_positions(
@@ -2022,8 +2021,8 @@ class Geometry:
         cxi = {"cxi_version": 160}
         if self._wavelength:
             cxi["beam"] = {
-                "incident_energy": self.get_energy(),
-                "incident_wavelength": self.get_wavelength(),
+                "incident_energy": self.energy,
+                "incident_wavelength": self.wavelength,
                 # "incident_polarization": #TODO
             }
         detector = {
@@ -2745,7 +2744,7 @@ class Geometry:
             try:
                 mu = sensor_config.material.mu(energy=self.energy, unit="m")
             except Exception as err:
-                logger.error(f"Unable to activate parallax with {sensor_config}; {type(err)}: {err}")
+                logger.error(f"Unable to activate parallax with {sensor_config}\n{type(err).__name__}: {err}")
                 return
             if sensor_config.thickness:
                 sensor = ThinSensor(thickness=sensor_config.thickness, mu=mu)
