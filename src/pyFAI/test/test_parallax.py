@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2025"
+__date__ = "08/11/2025"
 
 import unittest
 import numpy
@@ -42,6 +42,7 @@ from ..detectors.sensors import Si_MATERIAL, CdTe_MATERIAL, SensorConfig
 from .. import load
 from ..io.ponifile import PoniFile
 from ..test.utilstest import UtilsTest
+from ..ext.parallax_raytracing import Raytracing
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +112,22 @@ class TestActivation(unittest.TestCase):
             print(f.read())
         self.assertEqual(PoniFile(a),PoniFile(b), "ponifiles are the same")
         self.assertEqual(str(a),str(b), "geometries are the same")
+
+class TestRaytracing(unittest.TestCase):
+    def test_extension(self):
+        """Simple test that validates the extension works"""
+        ai = pyFAI.load({"detector": "Pilatus 100k",
+                         "detector_config":{"sensor": {"material":"Si", "thickness":1e-3}},
+                         "distance": 1e-1,
+                         "wavelength":5e-11})
+        ai.enable_parallax(True)
+        self.assertAlmostEqual(ai.parallax.sensor.efficiency, 0.5041)
+        rt=Raytracing(ai)
+        data, indices, indptr = rt.calc_csr(1)
+        self.assertEqual(indptr.size-1, numpy.prod(ai.detector.shape))
+        self.assertEqual(indptr[1:] - indptr[:-1], 8)
+        self.assertEqual(data.size, indices.size)
+        self.assertAlmostEqual(data.size//numpy.prod(ai.detector.shape), 0.356)
 
 
 def suite():
