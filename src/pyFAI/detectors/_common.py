@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "10/11/2025"
 __status__ = "stable"
 
 import logging
@@ -180,9 +180,10 @@ class Detector(metaclass=DetectorMeta):
         # Create the detector
         detector = None
         if config is not None:
-            config = _ensure_dict(config).copy()
+            config = {key.lower():value for key, value in _ensure_dict(config).items()}  # copy with lower case key
             binning = config.pop("binning", None)
-            kwargs = {key.lower():config.pop(key) for key in inspect.getfullargspec(detectorClass).args if key in config}
+            fullargs_lower = {key.lower() for key in inspect.getfullargspec(detectorClass).args}
+            kwargs = {key:config.pop(key) for key in fullargs_lower if key in config}
             if config:
                 logger.error(f"Factory: Left-over config parameters in detector {detectorClass.__name__}: {config}")
             try:
@@ -1587,7 +1588,7 @@ class ModuleDetector(Detector):
     Factors out the common logic for handling module size and gaps in configuration.
     """
     MODULE_SIZE = (None, None)
-    
+
     def __init__(self,
                 pixel1:float|None=None,
                 pixel2:float|None=None,
@@ -1597,21 +1598,21 @@ class ModuleDetector(Detector):
                 sensor:SensorConfig|None=None):
         super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
         self.module_size = tuple(self.MODULE_SIZE) if module_size is None else tuple(module_size)
-            
-            
-    
+
+
+
     def get_config(self):
         """
         Detector.get_config handles already: pixel1, pixel2, orientation,
         max_shape, splinefile, sensor
         Extends Detector.get_config to include module_size
-        """ 
+        """
         config = super().get_config()
         if ((self.module_size is not None) and
                 (tuple(self.module_size) != tuple(self.__class__.MODULE_SIZE))):
             config["module_size"] = self.module_size
         return config
-    
+
     def set_config(self, config:dict|str):
         """
         Detector.set_config handles already enforcment of pixel, splinefile, orientation, sensor
@@ -1625,9 +1626,8 @@ class ModuleDetector(Detector):
         if module_size is not None:
             self.module_size = tuple(module_size)
         return self
-        
-        
-        
-        
-        
-    
+
+
+
+
+
