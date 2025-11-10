@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "10/11/2025"
 __status__ = "production"
 
 import os
@@ -414,26 +414,27 @@ def setup_model(model, options):
 
     if options.mask:
         try:
-            with settings.mask().lockContext() as image_model:
-                image_model.setFilename(options.mask)
-                data = pyFAI.io.image.read_image_data(options.mask)
-                image_model.setValue(data)
-                image_model.setSynchronized(True)
+            data = pyFAI.io.image.read_image_data(options.mask)
         except Exception as e:
             displayExceptionBox("Error while loading the mask", e)
-
+        else:
+            with settings.mask().lockContext() as image_model:
+                image_model.setFilename(options.mask)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
     if len(args) == 0:
         pass
     elif len(args) == 1:
         image_file = args[0]
         try:
-            with settings.image().lockContext() as image_model:
-                image_model.setFilename(image_file)
-                data = pyFAI.io.image.read_image_data(image_file)
-                image_model.setValue(data)
-                image_model.setSynchronized(True)
+            data = pyFAI.io.image.read_image_data(image_file)
         except Exception as e:
             displayExceptionBox("Error while loading the image", e)
+        else:
+            with settings.image().lockContext() as image_model:
+                image_model.setFilename(image_file)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
     else:
         logger.error("Too much images provided. Only one is expected")
 
@@ -535,25 +536,26 @@ def setup_model(model, options):
         logger.error("background option not supported")
     if options.dark:
         try:
-            with settings.dark().lockContext() as image_model:
-                image_model.setFilename(options.dark)
-                data = pyFAI.io.image.read_image_data(options.dark)
-                image_model.setValue(data)
-                image_model.setSynchronized(True)
+            data = pyFAI.io.image.read_image_data(options.dark)
         except Exception as e:
             displayExceptionBox("Error while loading the dark current image", e)
-    if options.flat:
-        try:
-            with settings.flat().lockContext() as image_model:
-                image_model.setFilename(options.flat)
-                data = pyFAI.io.image.read_image_data(options.flat)
+        else:
+            with settings.dark().lockContext() as image_model:
+                image_model.setFilename(options.dark)
                 image_model.setValue(data)
                 image_model.setSynchronized(True)
+    if options.flat:
+        try:
+            data = pyFAI.io.image.read_image_data(options.flat)
         except Exception as e:
             displayExceptionBox("Error while loading the flat-field image", e)
+        else:
+            with settings.flat().lockContext() as image_model:
+                image_model.setFilename(options.flat)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
     if options.filter:
         logger.error("filter option not supported")
-
     if options.tilt:
         logger.error("tilt option not supported")
     if options.saturation:
