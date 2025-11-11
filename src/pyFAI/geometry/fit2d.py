@@ -29,11 +29,11 @@
 """This modules contains helper function to convert to/from FIT2D geometry
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2025"
+__date__ = "11/11/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -77,11 +77,9 @@ class Fit2dGeometry(NamedTuple):
     @classmethod
     def _fromdict(cls, dico):
         "Mirror of _asdict: take the dict and populate the tuple to be returned"
-        try:
-            obj = cls(**dico)
-        except TypeError as err:
-            logger.warning("TypeError: %s", err)
-            obj = cls(**{key: dico[key] for key in [i for i in cls._fields if i in dico]})
+        # adaptation of keys, in lower-case
+        dico_lower = {k.lower():v for k,v in dico.items()}
+        obj = cls(**{key: dico_lower[key.lower()] for key in [i for i in cls._fields if i.lower() in dico_lower]})
         return obj
 
     def __repr__(self):
@@ -135,10 +133,10 @@ def convert_to_Fit2d(poni):
     out["detector"] = poni.detector
     out["pixelX"] = poni.detector.pixel2 * 1e6
     out["pixelY"] = poni.detector.pixel1 * 1e6
-    out["splinefile"] = poni.detector.splinefile
+    out["splineFile"] = poni.detector.splinefile
     if poni.wavelength:
         out["wavelength"] = poni.wavelength * 1e10
-    return Fit2dGeometry(**out)
+    return Fit2dGeometry._fromdict(out)
 
 
 def convert_from_Fit2d(f2d):
