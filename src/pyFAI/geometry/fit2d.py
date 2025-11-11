@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "10/11/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -135,7 +135,7 @@ def convert_to_Fit2d(poni):
     out["detector"] = poni.detector
     out["pixelX"] = poni.detector.pixel2 * 1e6
     out["pixelY"] = poni.detector.pixel1 * 1e6
-    out["splineFile"] = poni.detector.splinefile
+    out["splinefile"] = poni.detector.splinefile
     if poni.wavelength:
         out["wavelength"] = poni.wavelength * 1e10
     return Fit2dGeometry(**out)
