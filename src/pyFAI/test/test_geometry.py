@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "10/11/2025"
 
 import unittest
 import random
@@ -529,6 +529,16 @@ class TestGeometry(utilstest.ParametricTestCase):
         geom = geometry.Geometry()
         geom.load(ponifile)
         self.assertEqual(geom.detector.get_config(), config)
+
+    def test_ponifile_splineFile(self):
+        "bug #2677"
+        config = {"pixel1": 48.42252e-6, "pixel2": 46.84483e-6, "orientation":3}
+        splinefile = UtilsTest.getimage("frelon.spline")
+        config["splineFile"] = splinefile
+        det = detector_factory("Detector", config)
+        self.assertTrue(det.spline is not None)
+        geom = geometry.Geometry.sload({"detector": "Detector", "detector_config":config})
+        self.assertTrue(geom.detector.spline is not None)
 
     def test_energy(self):
         g = geometry.Geometry()
