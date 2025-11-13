@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "13/11/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -78,7 +78,8 @@ class AzimuthalIntegrator(Integrator):
     """
 
 
-    def integrate1d(self, data, npt, filename=None,
+    def integrate1d(self, data, npt, *,
+                    filename=None,
                     correctSolidAngle=True,
                     variance=None, error_model=None,
                     radial_range=None, azimuth_range=None,
@@ -565,7 +566,7 @@ class AzimuthalIntegrator(Integrator):
 
     _integrate1d_ng = integrate1d_ng = integrate1d
 
-    def integrate_radial(self, data, npt, npt_rad=100,
+    def integrate_radial(self, data, npt, npt_rad=100, *,
                          correctSolidAngle=True,
                          radial_range=None, azimuth_range=None,
                          mask=None, dummy=None, delta_dummy=None,
@@ -645,7 +646,7 @@ class AzimuthalIntegrator(Integrator):
         return result
 
 
-    def integrate2d_ng(self, data, npt_rad, npt_azim=360,
+    def integrate2d_ng(self, data, npt_rad, npt_azim=360, *,
                         filename=None, correctSolidAngle=True, variance=None,
                         error_model=None, radial_range=None, azimuth_range=None,
                         mask=None, dummy=None, delta_dummy=None,
@@ -1190,7 +1191,7 @@ class AzimuthalIntegrator(Integrator):
     integrate2d = _integrate2d_ng = integrate2d_ng
 
     @deprecated(since_version="2024.12.0", only_once=True, replacement="medfilt1d_ng", deprecated_since="2024.12.0")
-    def medfilt1d_legacy(self, data, npt_rad=1024, npt_azim=512,
+    def medfilt1d_legacy(self, data, npt_rad=1024, npt_azim=512, *,
                   correctSolidAngle=True,
                   radial_range=None, azimuth_range=None,
                   polarization_factor=None, dark=None, flat=None,
@@ -1330,7 +1331,7 @@ class AzimuthalIntegrator(Integrator):
     medfilt1d = medfilt1d_legacy
 
     def medfilt1d_ng(self, data,
-                     npt=1024,
+                     npt=1024, *,
                      correctSolidAngle=True,
                      polarization_factor=None,
                      variance=None,
@@ -1638,7 +1639,7 @@ class AzimuthalIntegrator(Integrator):
         result._set_error_model(error_model)
         return result
 
-    def sigma_clip_legacy(self, data, npt_rad=1024, npt_azim=512,
+    def sigma_clip_legacy(self, data, npt_rad=1024, npt_azim=512, *,
                           correctSolidAngle=True, polarization_factor=None,
                           radial_range=None, azimuth_range=None,
                           dark=None, flat=None,
@@ -1799,7 +1800,7 @@ class AzimuthalIntegrator(Integrator):
     _sigma_clip_legacy = sigma_clip_legacy
 
     def sigma_clip(self, data,
-                   npt=1024,
+                   npt=1024, *,
                    correctSolidAngle=True,
                    polarization_factor=None,
                    variance=None,
@@ -2111,7 +2112,7 @@ class AzimuthalIntegrator(Integrator):
 
     sigma_clip_ng = sigma_clip
 
-    def separate(self, data, npt=1024,
+    def separate(self, data, npt=1024, *,
                  unit="2th_deg", method=("full", "csr", "cython"),
                  polarization_factor=None,
                  percentile=50, mask=None, restore_mask=True):
@@ -2178,7 +2179,7 @@ class AzimuthalIntegrator(Integrator):
 
         return result
 
-    def inpainting(self, data, mask, npt_rad=1024, npt_azim=512,
+    def inpainting(self, data, mask, npt_rad=1024, npt_azim=512, *,
                    unit="r_m", method="splitpixel", poissonian=False,
                    grow_mask=3):
         """Re-invent the values of masked pixels
