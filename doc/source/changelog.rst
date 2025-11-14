@@ -41,7 +41,7 @@ Change-log of versions
 - Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the Cython path for geometry initialization, less prone to numerical noise.
   Cython is still prefered for geometry optimization where performance is critical.
 - Start to support type annotation in the code.
-- Replace python2.5 style properties with @property dectorator. Deprecate former accessors where wise.
+- Replace python2.5 style properties with @property dectorator. Deprecate former accessors where appropriate.
 - Supports python 3.10-3.14
 - List of contributors for this release: Gudrun Lotze, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
 
