@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/10/2025"
+__date__ = "14/11/2025"
 __status__ = "production"
 
 import os
@@ -584,7 +584,7 @@ class AbstractCalibration(object):
         self.peakPicker.reset()
         self.peakPicker.init(method, False)
         if self.geoRef:
-            self.ai.setPyFAI(**self.geoRef.getPyFAI())
+            self.ai.set_config(self.geoRef.get_config())
         tth = numpy.array([i for i in self.calibrant.get_2th() if i is not None])
         tth = numpy.unique(tth)
         tth_min = numpy.zeros_like(tth)
@@ -1199,7 +1199,7 @@ class AbstractCalibration(object):
         if not self.check_calib:
             self.check_calib = CheckCalib()
         if self.geoRef:
-            self.ai.setPyFAI(**self.geoRef.getPyFAI())
+            self.ai.set_config(self.geoRef.get_config())
             self.ai.wavelength = self.geoRef.wavelength
         self.check_calib.ai = self.ai
         self.check_calib.img = self.peakPicker.data
@@ -1228,7 +1228,7 @@ class AbstractCalibration(object):
         npt = round_fft(int(math.sqrt(self.peakPicker.data.shape[0] ** 2 + self.peakPicker.data.shape[1] ** 2) + 1))
 
         if self.geoRef:
-            self.ai.setPyFAI(**self.geoRef.getPyFAI())
+            self.ai.set_config(self.geoRef.get_config())
             self.ai.wavelength = self.geoRef.wavelength
         logger.info("Performing autocorrelation on %sx%s, Fourier analysis may take some time", slices, npt)
         img, tth, chi = self.ai.integrate2d(self.peakPicker.data, npt, slices, azimuth_range=(-180, 180), unit="r_mm", method="splitpixel")
