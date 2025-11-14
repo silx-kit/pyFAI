@@ -5,14 +5,14 @@
 Change-log of versions
 ======================
 
-2025.10? YY/10/2025 --> 3.14 comes out in October
+2025.11? YY/11/2025 --> 3.14 comes out in October
 -------------------
 - [Parallax] This effect shifts the pixel position when the inclinaison of the beam is large (>30°) making calibration challenging
   * Provide absorption coefficients of most common sensor materials
-  * Update the database of detectors with sensor material and thickness (WIP #2606)
+  * Update the database of detectors with sensor material and thickness
   * New PONI-file version (backwards compatible when possible)
   * [Calib2] exposes the feature in detector configuration
-  * Performance regression while calibrating and geometry initialization (should be addressed in the future)
+  * Performance regression while calibrating and geometry initialization (will be addressed in the future)
 - [GUI] Like `silx`, `pyFAI` moves from pyQt5 to pySide6 (or pyQt6). Several bugs were found
   and addressed to increase compatibility with Qt6. PyQt5 is no more a priority.
 - [Pilx] is now compatible with files produced by mesh-scan on BM29 in addition to diffmap.
@@ -32,13 +32,16 @@ Change-log of versions
   * Added `fake_xrpdp` method to generate 1D powder patterns with configurable resolution
   * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp`
   * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
+- [integrate1|2d] enforce arguments to be kwargs to limit user errors
 - [Doc] Improve the notebook about "flatfield" calculation.
 - [Integrate1/2dResult] can now be added or subtracted to perform some basic maths, uncertainties are propagated accordingly.
-- [Deprecation] `splineFile` --> `splinefile` in most arguments and also as properties
+- [Deprecation]
+    * `splineFile` --> `splinefile` in most arguments and also as properties
+    * SPD and FIT2D dataclasses are becoming case insensitive (PEP8 enforcement)
 - Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the Cython path for geometry initialization, less prone to numerical noise.
   Cython is still prefered for geometry optimization where performance is critical.
 - Start to support type annotation in the code.
-- Start to replace python2.5 style properties with @property dectorator. Deprecate former accessors.
+- Replace python2.5 style properties with @property dectorator. Deprecate former accessors where appropriate.
 - Supports python 3.10-3.14
 - List of contributors for this release: Gudrun Lotze, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
 
