@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2025"
+__date__ = "14/11/2025"
 
 import unittest
 import random
@@ -48,7 +48,7 @@ import fabio
 from math import pi
 from . import utilstest
 from ..io.ponifile import PoniFile
-from .. import geometry
+from .. import geometry, load
 from ..integrator.azimuthal import AzimuthalIntegrator
 from .. import units
 from ..detectors import detector_factory
@@ -56,6 +56,8 @@ from ..third_party import transformations
 from .utilstest import UtilsTest
 from ..utils.mathutil import allclose_mod
 from ..geometry.crystfel import build_geometry, parse_crystfel_geom
+from ..geometry.fit2d import Fit2dGeometry
+
 logger = logging.getLogger(__name__)
 
 
@@ -617,6 +619,16 @@ class TestBugRegression(unittest.TestCase):
         delta_array = self.geo.delta_array(unit="chi_rad")
         self.assertLess(delta_array.max(), numpy.pi, "delta_array is less than pi")
         self.assertTrue(numpy.allclose(delta_array, deltaChi, atol=7e-6), "delta_array matches deltaChi")
+
+    def test_bug2679(self):
+        ai = load({"dist":0.1, "rot1":0.1, "detector":"Pilatus100k"})
+        # print(ai)
+        f2d = ai.getFit2D()
+        f2ddc = Fit2dGeometry(**f2d)
+        # print(f2ddc.tilt)
+        f2ddc.tilt=0
+        ai.setFit2D(**f2ddc._asdict())
+        # print(ai)
 
 
 class TestOrientation(unittest.TestCase):

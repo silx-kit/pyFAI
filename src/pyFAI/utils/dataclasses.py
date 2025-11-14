@@ -38,7 +38,6 @@ __docformat__ = 'restructuredtext'
 import sys
 import logging
 import typing
-import inspect
 from dataclasses import dataclass as _dataclass
 
 
@@ -51,26 +50,33 @@ else:
     dataclass = _dataclass
 
 
-class CaseInsensitiveMixin:
+class CaseInsensitiveMeta(type):
+    """ Avoid using metaclasses !"""
+    def __new__(mcls, name, bases, namespace, **kw):
+        cls = super().__new__(mcls, name, bases, namespace, **kw)
+
+        # Only process classes that are dataclasses (they have __dataclass_fields__)
+        if hasattr(cls, '__dataclass_fields__'):
+            ci_map = {}
+            for f, v in cls.__dataclass_fields__.items():
+                if v.type == typing.ClassVar:
+                    continue
+                lowered = f.lower()
+                if lowered in ci_map:
+                    raise ValueError(
+                        f"Case-insensitive field name clash in {cls.__name__}: "
+                        f"'{f}' and '{ci_map[lowered]}' differ only by case."
+                    )
+                ci_map[lowered] = f
+            cls._ci_map = ci_map
+        return cls
+
+
+class CaseInsensitiveMixin(metaclass=CaseInsensitiveMeta):
     """
     All dataclasses that inherit from this mixin become case-insensitive.
     The mixin does **not** interfere with normal positional arguments.
     """
-    @classmethod
-    def __init_ci_map__(cls):
-        "initialize the ci_map"
-        ci_map = {}
-        for f, v in inspect.get_annotations(cls).items():
-            if typing.ClassVar in v.__mro__:
-                continue
-            lowered = f.lower()
-            if lowered in ci_map:
-                raise ValueError(
-                    f"Case-insensitive field name clash in {cls.__name__}: "
-                    f"'{f}' and '{ci_map[lowered]}' differ only by case."
-                )
-            ci_map[lowered] = f
-        cls._ci_map = ci_map
 
     @classmethod
     def _ci_resolve(cls, key: str) -> str:
@@ -80,20 +86,18 @@ class CaseInsensitiveMixin:
         except (AttributeError, KeyError):
             raise AttributeError(f"{cls.__name__!r} has no field named {key!r}")
 
-    def __init_ci__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         """
         Positional arguments are handed to the normal dataclass __init__.
         Keyword arguments are first normalized to lower case, then matched
         against the real field names.
         """
         cls = self.__class__
-        if "_ci_resolv" not in dir(cls):
-            cls.__init_ci_map__()
-
         # First deal with positional args
         new_kw = {}
         for k, v in zip(cls._ci_map.values(), args):
             new_kw[k] = v
+        # then with keyword args
         for k, v in kwargs.items():
             try:
                 new_k = cls._ci_map[k.lower()]
@@ -101,7 +105,7 @@ class CaseInsensitiveMixin:
                 raise AttributeError(f"{cls.__name__!r} has no field named {k!r}")
             new_kw[new_k] = v
         #finally call the constructor of the dataclass
-        self.__init_dataclass__(**new_kw)
+        super().__init__(**new_kw)
 
     def __getattr__(self, name: str):
         # Called only when normal attribute lookup fails.
@@ -124,15 +128,20 @@ class CaseInsensitiveMixin:
         field_name = self._ci_resolve(name)
         object.__delattr__(self, field_name)
 
+
 def case_insensitive_dataclass(_cls=None, *,
                                 init: bool = True,
                                 repr: bool = True,
                                 eq: bool = True,
                                 order: bool = False,
                                 unsafe_hash: bool = False,
-                                frozen: bool = False):
+                                frozen: bool = False,
+                                match_args: bool =True,
+                                kw_only: bool =False,
+                                slots: bool =False,
+                                weakref_slot: bool =False) :
     """
-    Use on top of the builtin ``@dataclass``:
+    Use instead of the builtin ``@dataclass``:
 
         @case_insensitive_dataclass
         class Person:
@@ -143,30 +152,18 @@ def case_insensitive_dataclass(_cls=None, *,
     All arguments are forwarded to the standard ``dataclasses.dataclass``.
     """
     def wrap(cls):
-        bases = (CaseInsensitiveMixin,) + cls.__bases__
-        cls_dict = dict(cls.__dict__)          # copy to avoid mutation
-        # Remove __dict__ and __weakref__ entries that Python injects for
-        # normal classes – they would otherwise become descriptors.
-        cls_dict.pop('__dict__', None)
-        cls_dict.pop('__weakref__', None)
-
-        # Create a new class with the same name, the new bases and the same
-        # dict, preserving the original module and qualname.
-        new_cls = type(cls.__name__, bases, cls_dict)
-        new_cls.__module__ = cls.__module__
-        new_cls.__qualname__ = cls.__qualname__
-
         # Run the regular dataclass decorator on the new class.
-        dc = _dataclass(new_cls, init=init, repr=repr, eq=eq,
+        dc = _dataclass(cls, init=init, repr=repr, eq=eq,
                         order=order, unsafe_hash=unsafe_hash,
-                        frozen=frozen)
-        # Finally change the order of the constructor of the new dataclass
-        dc.__init_dataclass__ = dc.__init__
-        dc.__init__ = dc.__init_ci__
-        return dc
+                        frozen=frozen, match_args=match_args,
+                        kw_only=kw_only, slots=slots, weakref_slot=weakref_slot)
+        cidc = type(dc.__name__, (CaseInsensitiveMixin, dc), {"__init__": CaseInsensitiveMixin.__init__})
+        return cidc
 
     # The decorator can be used with or without parentheses.
     if _cls is None:
         return wrap
     else:
         return wrap(_cls)
+
+# TODO CaseInsensitiveNamedTuple ?
