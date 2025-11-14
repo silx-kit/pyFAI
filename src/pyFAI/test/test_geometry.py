@@ -622,13 +622,11 @@ class TestBugRegression(unittest.TestCase):
 
     def test_bug2679(self):
         ai = load({"dist":0.1, "rot1":0.1, "detector":"Pilatus100k"})
-        # print(ai)
-        f2d = ai.getFit2D()
-        f2ddc = Fit2dGeometry(**f2d)
-        # print(f2ddc.tilt)
-        f2ddc.tilt=0
-        ai.setFit2D(**f2ddc._asdict())
-        # print(ai)
+        with utilstest.TestLogging(logger='pyFAI.DEPRECATION', warning=0):
+            f2d = ai.getFit2D()
+            f2ddc = Fit2dGeometry(**f2d)
+            f2ddc.tilt=0
+            ai.setFit2D(**f2ddc._asdict())
 
 
 class TestOrientation(unittest.TestCase):

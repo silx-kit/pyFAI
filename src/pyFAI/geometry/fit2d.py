@@ -71,7 +71,7 @@ class Fit2dGeometry:
     tiltPlanRotation: float = 0.0
     pixelX: float = None
     pixelY: float = None
-    splineFile: str = None
+    splinefile: str = None
     detector: Detector = None
     wavelength: float = None
 
