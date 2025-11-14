@@ -147,7 +147,6 @@ class TestUtils(unittest.TestCase):
         self.assertAlmostEqual(a.name, "Alice")
         self.assertAlmostEqual(a.Age, 10)
         self.assertAlmostEqual(a.age, 10)
-        raise RuntimeError("plop")
 
 
 def suite():

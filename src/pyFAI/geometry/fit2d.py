@@ -33,13 +33,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "14/11/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
-from typing import NamedTuple
+from ..utils.dataclasses import case_insensitive_dataclass
 from math import pi, cos, sin, sqrt, acos, asin
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
@@ -52,7 +52,8 @@ def radians(deg:float) -> float:
     return deg * pi / 180
 
 
-class Fit2dGeometry(NamedTuple):
+@case_insensitive_dataclass(slots=True)
+class Fit2dGeometry:
     """ This object represents the geometry as configured in Fit2D
 
     :param directDist: Distance from sample to the detector along the incident beam in mm. The detector may be extrapolated when tilted.
@@ -77,12 +78,12 @@ class Fit2dGeometry(NamedTuple):
     @classmethod
     def _fromdict(cls, dico):
         "Mirror of _asdict: take the dict and populate the tuple to be returned"
-        try:
-            obj = cls(**dico)
-        except TypeError as err:
-            logger.warning("TypeError: %s", err)
-            obj = cls(**{key: dico[key] for key in [i for i in cls._fields if i in dico]})
+        obj = cls(**dico)
         return obj
+
+    def _asdict(self):
+        "Mirror of _asdict method from NamedTuple"
+        return {k: self.__getattr__(k) for k in self.__annotations__}
 
     def __repr__(self):
         return f"DirectBeamDist= {self.directDist:.3f} mm\tCenter: x={self.centerX:.3f}, y={self.centerY:.3f} pix\t"\
