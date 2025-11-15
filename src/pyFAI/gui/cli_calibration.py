@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/10/2025"
+__date__ = "11/11/2025"
 __status__ = "production"
 
 import os
@@ -584,7 +584,7 @@ class AbstractCalibration(object):
         self.peakPicker.reset()
         self.peakPicker.init(method, False)
         if self.geoRef:
-            self.ai.setPyFAI(**self.geoRef.getPyFAI())
+            self.ai.set_config(**self.geoRef.get_config())
         tth = numpy.array([i for i in self.calibrant.get_2th() if i is not None])
         tth = numpy.unique(tth)
         tth_min = numpy.zeros_like(tth)
