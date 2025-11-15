@@ -1,11 +1,11 @@
 :Author: Jérôme Kieffer
-:Date: 06/10/2025
+:Date: 15/11/2025
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2025.10? YY/10/2025 --> 3.14 comes out in October
+2025.11? YY/11/2025 --> 3.14 came out in October, drop 3.9
 -------------------
 - [Parallax] This effect shifts the pixel position when the inclinaison of the beam is large (>30°) making calibration challenging
   * Provide absorption coefficients of most common sensor materials
