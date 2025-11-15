@@ -40,7 +40,6 @@ __docformat__ = 'restructuredtext'
 import os
 import logging
 from math import pi, cos, sin, sqrt, acos, asin
-from collections.abc import Mapping
 from ..utils.dataclasses import case_insensitive_dataclass
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
