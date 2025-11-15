@@ -33,14 +33,15 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2025"
+__date__ = "15/11/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
-from ..utils.dataclasses import case_insensitive_dataclass
 from math import pi, cos, sin, sqrt, acos, asin
+from collections.abc import Mapping
+from ..utils.dataclasses import case_insensitive_dataclass
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
 logger = logging.getLogger(__name__)
@@ -54,7 +55,9 @@ def radians(deg:float) -> float:
 
 @case_insensitive_dataclass(slots=True)
 class Fit2dGeometry:
-    """ This object represents the geometry as configured in Fit2D
+    """ This object represents the geometry as configured in Fit2D.
+
+    It behaves like a dataclass, is case insensitive and can behave like a dict as well but cannnot be extended.
 
     :param directDist: Distance from sample to the detector along the incident beam in mm. The detector may be extrapolated when tilted.
     :param centerX: Position of the beam-center on the detector in pixels, along the fastest axis of the image.
@@ -89,6 +92,28 @@ class Fit2dGeometry:
         return f"DirectBeamDist= {self.directDist:.3f} mm\tCenter: x={self.centerX:.3f}, y={self.centerY:.3f} pix\t"\
                f"Tilt= {self.tilt:.3f}° tiltPlanRotation= {self.tiltPlanRotation:.3f}°" + \
                (f" \N{GREEK SMALL LETTER LAMDA}= {self.wavelength:.3f}\N{LATIN CAPITAL LETTER A WITH RING ABOVE}" if self.wavelength else "")
+
+    # dict-like interface:
+    def __getitem__(self, key:str):
+        return self.__getattr__(key)
+    def __setitem__(self, key:str, value):
+        self.__setattr__(key, value)
+    def get(key:str, default=None):
+        if key.lower() in self._ci_map:
+            return self.__getattr__(key)
+        return default
+    def __contains__(self, key:str):
+        return key.lower() in self._ci_map
+    def __iter__(self):
+        yield from self._ci_map.values()
+    def keys(self):
+        return self._ci_map.values()
+    def values(self):
+        return [self.__getattr__(i) for i in self._ci_map.values()]
+    def items(self):
+        return [(i, self.__getattr__(i)) for i in self._ci_map.values()]
+    def __len__(self):
+        return self._ci_map.__len__()
 
 
 def convert_to_Fit2d(poni):
@@ -139,7 +164,7 @@ def convert_to_Fit2d(poni):
     out["splineFile"] = poni.detector.splinefile
     if poni.wavelength:
         out["wavelength"] = poni.wavelength * 1e10
-    return Fit2dGeometry(**out)
+    return Fit2dGeometry._fromdict(out)
 
 
 def convert_from_Fit2d(f2d):
@@ -150,7 +175,7 @@ def convert_from_Fit2d(f2d):
     """
     if not isinstance(f2d, Fit2dGeometry):
         if isinstance(f2d, dict):
-            f2d = Fit2dGeometry(**f2d)
+            f2d = Fit2dGeometry._fromdict(f2d)
         else:
             f2d = Fit2dGeometry(f2d)
     res = PoniFile()
