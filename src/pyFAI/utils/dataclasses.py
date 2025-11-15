@@ -30,7 +30,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2025"
+__date__ = "15/11/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -138,8 +138,7 @@ def case_insensitive_dataclass(_cls=None, *,
                                 frozen: bool = False,
                                 match_args: bool =True,
                                 kw_only: bool =False,
-                                slots: bool =False,
-                                weakref_slot: bool =False) :
+                                slots: bool =False):
     """
     Use instead of the builtin ``@dataclass``:
 
@@ -156,7 +155,7 @@ def case_insensitive_dataclass(_cls=None, *,
         dc = _dataclass(cls, init=init, repr=repr, eq=eq,
                         order=order, unsafe_hash=unsafe_hash,
                         frozen=frozen, match_args=match_args,
-                        kw_only=kw_only, slots=slots, weakref_slot=weakref_slot)
+                        kw_only=kw_only, slots=slots)
         cidc = type(dc.__name__, (CaseInsensitiveMixin, dc), {"__init__": CaseInsensitiveMixin.__init__})
         return cidc
 
