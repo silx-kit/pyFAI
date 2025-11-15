@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "14/11/2025"
 
 import sys
 import os
@@ -537,13 +537,16 @@ class TestBugRegression(unittest.TestCase):
         detector = detectors.Detector(5e-4, 5e-4, max_shape=(1100, 1000))
         ref = AzimuthalIntegrator(detector=detector)
         geo = ref.getPyFAI()
-        # print(geo)
-        # print(ref.get_config())
         obt = AzimuthalIntegrator()
         obt.setPyFAI(**geo)
-
-        # print(obt)
         self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
+
+        # same with get/set_config
+        geo = ref.get_config()
+        obt = AzimuthalIntegrator()
+        obt.set_config(geo)
+        self.assertEqual(ref.detector.max_shape, obt.detector.max_shape, "max_shape matches")
+
 
     def test_bug_1810(self):
         "impossible to deepcopy goniometer calibration"

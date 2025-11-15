@@ -1,11 +1,11 @@
 :Author: Jérôme Kieffer
-:Date: 06/10/2025
+:Date: 15/11/2025
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2025.11? YY/11/2025 --> 3.14 comes out in October
+2025.11? YY/11/2025 --> 3.14 came out in October, drop 3.9
 -------------------
 - [Parallax] This effect shifts the pixel position when the inclinaison of the beam is large (>30°) making calibration challenging
   * Provide absorption coefficients of most common sensor materials
@@ -35,9 +35,8 @@ Change-log of versions
 - [integrate1|2d] enforce arguments to be kwargs to limit user errors
 - [Doc] Improve the notebook about "flatfield" calculation.
 - [Integrate1/2dResult] can now be added or subtracted to perform some basic maths, uncertainties are propagated accordingly.
-- [Deprecation]
-    * `splineFile` --> `splinefile` in most arguments and also as properties
-    * SPD and FIT2D dataclasses are becoming case insensitive (PEP8 enforcement)
+- [Fit2dGeometry] becomes a case-insensitive dataclass (thus mutable, was NamedTuple) which behaves like a dict.
+- [Deprecation] `splineFile` --> `splinefile` in most arguments and also as properties
 - Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the Cython path for geometry initialization, less prone to numerical noise.
   Cython is still prefered for geometry optimization where performance is critical.
 - Start to support type annotation in the code.
