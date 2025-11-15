@@ -2,6 +2,7 @@ py.install_sources(
    ['__init__.py',
     'bayes.py',
     'callback.py',
+    'dataclasses.py',
     'decorators.py',
     'ellipse.py',
     'grid.py',
