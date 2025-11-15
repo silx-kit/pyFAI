@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2021-2022 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2021-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,13 +33,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/11/2025"
+__date__ = "15/11/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
-from typing import NamedTuple
+from ..utils.dataclasses import case_insensitive_dataclass
 from math import pi, cos, sin, sqrt, acos, asin
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
@@ -52,7 +52,8 @@ def radians(deg:float) -> float:
     return deg * pi / 180
 
 
-class Fit2dGeometry(NamedTuple):
+@case_insensitive_dataclass(slots=True)
+class Fit2dGeometry:
     """ This object represents the geometry as configured in Fit2D
 
     :param directDist: Distance from sample to the detector along the incident beam in mm. The detector may be extrapolated when tilted.
@@ -70,17 +71,19 @@ class Fit2dGeometry(NamedTuple):
     tiltPlanRotation: float = 0.0
     pixelX: float = None
     pixelY: float = None
-    splineFile: str = None
+    splinefile: str = None
     detector: Detector = None
     wavelength: float = None
 
     @classmethod
     def _fromdict(cls, dico):
         "Mirror of _asdict: take the dict and populate the tuple to be returned"
-        # adaptation of keys, in lower-case
-        dico_lower = {k.lower():v for k,v in dico.items()}
-        obj = cls(**{key: dico_lower[key.lower()] for key in [i for i in cls._fields if i.lower() in dico_lower]})
+        obj = cls(**dico)
         return obj
+
+    def _asdict(self):
+        "Mirror of _asdict method from NamedTuple"
+        return {k: self.__getattr__(k) for k in self.__annotations__}
 
     def __repr__(self):
         return f"DirectBeamDist= {self.directDist:.3f} mm\tCenter: x={self.centerX:.3f}, y={self.centerY:.3f} pix\t"\
