@@ -97,7 +97,7 @@ class Fit2dGeometry:
         return self.__getattr__(key)
     def __setitem__(self, key:str, value):
         self.__setattr__(key, value)
-    def get(key:str, default=None):
+    def get(self, key:str, default=None):
         if key.lower() in self._ci_map:
             return self.__getattr__(key)
         return default
