@@ -29,11 +29,11 @@
 """This modules contains helper function to convert to/from FIT2D geometry
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2025"
+__date__ = "15/11/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -139,7 +139,7 @@ def convert_to_Fit2d(poni):
     out["splineFile"] = poni.detector.splinefile
     if poni.wavelength:
         out["wavelength"] = poni.wavelength * 1e10
-    return Fit2dGeometry(**out)
+    return Fit2dGeometry._fromdict(out)
 
 
 def convert_from_Fit2d(f2d):
