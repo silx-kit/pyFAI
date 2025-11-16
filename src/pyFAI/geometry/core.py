@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/11/2025"
+__date__ = "15/11/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -1772,7 +1772,7 @@ class Geometry:
         """
         with self._sem:
             f2d = convert_to_Fit2d(self)
-        return f2d._asdict()
+        return f2d
 
     @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
     def setFit2D(
