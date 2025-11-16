@@ -2238,7 +2238,6 @@ class AzimuthalIntegrator(Integrator):
                   "flat": ones_data}
 
         imgb = self.integrate2d(blank_data, **kwargs)
-        imgp = self.integrate2d(masked, **kwargs)
         imgd = self.integrate2d(masked_data, **kwargs)
         omask = (imgb.count == 0).astype(numpy.int8)
         to_paint = abs((imgd.count == 0).astype("int8") - omask)
