@@ -2180,7 +2180,7 @@ class AzimuthalIntegrator(Integrator):
         return result
 
     def inpainting(self, data, mask, npt_rad=1024, npt_azim=512, *,
-                   unit="r_m", method=("full", "histogram", "cython"),
+                   unit="r_m", method=("full", "csr", "cython"),
                    poissonian=False, grow_mask=3):
         """Re-invent the values of masked pixels
 
