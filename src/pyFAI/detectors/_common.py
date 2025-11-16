@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2025"
+__date__ = "16/11/2025"
 __status__ = "stable"
 
 import logging
@@ -558,6 +558,7 @@ class Detector(metaclass=DetectorMeta):
                 "pixelY": self._pixel1 * 1e6,
                 "splineFile": self._splinefile}
 
+    @deprecated(since_version="2025.10", reason="use set_config")
     def setPyFAI(self, **kwarg):
         """
         Twin method of getPyFAI: setup a detector instance according to a description
@@ -568,7 +569,7 @@ class Detector(metaclass=DetectorMeta):
         if "detector" in kwarg:
             import pyFAI.detectors
             config = {}
-            for key in ("pixel1", "pixel2", 'max_shape', "splineFile", "orientation"):
+            for key in ("pixel1", "pixel2", 'max_shape', "splineFile", "orientation", "sensor"):
                 if key in kwarg:
                     config[key.lower()] = kwarg[key]
             self = pyFAI.detectors.detector_factory(kwarg["detector"], config)
@@ -1626,8 +1627,3 @@ class ModuleDetector(Detector):
         if module_size is not None:
             self.module_size = tuple(module_size)
         return self
-
-
-
-
-

@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "16/11/2025"
 __status__ = "production"
 
 import os
@@ -42,6 +42,7 @@ import logging
 from ..utils import logging_utils
 from .. import average
 from .. import version as pyFAI_version, date as pyFAI_date, utils
+from ..utils.shell import ProgressBar
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -157,7 +158,7 @@ class ShellAverageObserver(average.AverageObserver):
 
     def image_loaded(self, fabio_image, image_index, images_count):
         if self.__bar is None:
-            self.__bar = utils.shell.ProgressBar("Loading", images_count, self.__size)
+            self.__bar = ProgressBar("Loading", images_count, self.__size)
         self.__bar.update(image_index, fabio_image.filename)
 
     def process_started(self):
@@ -174,7 +175,7 @@ class ShellAverageObserver(average.AverageObserver):
         if self.__bar is None:
             title = "Process %s" % algorithm.name
             self.__frames_count = frames_count + 1
-            self.__bar = utils.shell.ProgressBar(title, self.__frames_count, self.__size)
+            self.__bar = ProgressBar(title, self.__frames_count, self.__size)
         self.__bar.update(frame_index, "Feeding frames")
 
     def result_processing(self, algorithm):
