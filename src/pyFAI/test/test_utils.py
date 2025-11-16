@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "14/11/2025"
 
 import os
 import unittest
@@ -49,6 +49,7 @@ from ..utils.grid import Kabsch
 from ..utils.stringutil import to_scientific_unicode
 from ..utils.multiprocessing import cpu_count
 from ..utils.mask_utils import search_gaps, build_gaps
+from ..utils.dataclasses import case_insensitive_dataclass
 logger = logging.getLogger(__name__)
 
 
@@ -117,6 +118,35 @@ class TestUtils(unittest.TestCase):
         mask[:, -1] =1
         mask[-1, :] =1
         numpy.allclose(build_gaps(mask.shape, search_gaps(mask)), mask)
+
+    def test_case_insensitive_dataclass(self):
+        @case_insensitive_dataclass
+        class Person:
+            Name: str
+            Age: int = 0
+        a = Person("Alice", 10)
+        self.assertAlmostEqual(a.Name, "Alice")
+        self.assertAlmostEqual(a.name, "Alice")
+        self.assertAlmostEqual(a.Age, 10)
+        self.assertAlmostEqual(a.age, 10)
+
+        a = Person("Alice")
+        self.assertAlmostEqual(a.Name, "Alice")
+        self.assertAlmostEqual(a.name, "Alice")
+        self.assertAlmostEqual(a.Age, 0)
+        self.assertAlmostEqual(a.age, 0)
+
+        a = Person("Alice", age=10)
+        self.assertAlmostEqual(a.Name, "Alice")
+        self.assertAlmostEqual(a.name, "Alice")
+        self.assertAlmostEqual(a.Age, 10)
+        self.assertAlmostEqual(a.age, 10)
+
+        a = Person(age=10, name="Alice")
+        self.assertAlmostEqual(a.Name, "Alice")
+        self.assertAlmostEqual(a.name, "Alice")
+        self.assertAlmostEqual(a.Age, 10)
+        self.assertAlmostEqual(a.age, 10)
 
 
 def suite():
