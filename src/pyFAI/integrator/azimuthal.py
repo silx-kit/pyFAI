@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/11/2025"
+__date__ = "16/11/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2180,8 +2180,8 @@ class AzimuthalIntegrator(Integrator):
         return result
 
     def inpainting(self, data, mask, npt_rad=1024, npt_azim=512, *,
-                   unit="r_m", method="splitpixel", poissonian=False,
-                   grow_mask=3):
+                   unit="r_m", method=("full", "csr", "cython"),
+                   poissonian=False, grow_mask=3):
         """Re-invent the values of masked pixels
 
         :param data: input image as 2d numpy array
@@ -2238,11 +2238,9 @@ class AzimuthalIntegrator(Integrator):
                   "flat": ones_data}
 
         imgb = self.integrate2d(blank_data, **kwargs)
-        imgp = self.integrate2d(masked, **kwargs)
         imgd = self.integrate2d(masked_data, **kwargs)
-        omask = numpy.ascontiguousarray(numpy.round(imgb.intensity / dummy), numpy.int8)
-        imask = numpy.ascontiguousarray(numpy.round(imgp.intensity / dummy), numpy.int8)
-        to_paint = (imask - omask)
+        omask = (imgb.count == 0).astype(numpy.int8)
+        to_paint = abs((imgd.count == 0).astype("int8") - omask)
 
         if grow_mask:
             # inpaint a bit more than needed to avoid "side" effects.

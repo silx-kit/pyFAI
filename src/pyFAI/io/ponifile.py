@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "16/11/2025"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -198,7 +198,7 @@ class PoniFile(object):
 
             if "splinefile" in config:
                 if config["splinefile"].lower() != "none":
-                    self._detector.set_splineFile(config["splinefile"])
+                    self._detector.splinefile = config["splinefile"]
 
         elif version >=2:
                 detector_name = config["detector"]
