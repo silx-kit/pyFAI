@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/11/2025"
+__date__ = "16/11/2025"
 __status__ = "production"
 
 import os
@@ -601,7 +601,7 @@ class AbstractCalibration(object):
             ttha = self.geoRef.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
             chia = self.geoRef.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
         else:
-            ttha = self.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
+            ttha = self.ai.center_array(self.peakPicker.data.shape, unit=TTH_RAD, scale=False)
             chia = self.ai.center_array(self.peakPicker.data.shape, unit=CHI_RAD, scale=False)
         rings = 0
         self.peakPicker.sync_init()
