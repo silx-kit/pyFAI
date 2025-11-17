@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,15 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "17/11/2025"
 
 import logging
 import sys
 
 from silx.gui import qt
+from ..utils import patch_exec
 
 _logger = logging.getLogger(__name__)
 
@@ -72,4 +73,4 @@ def exception(parent, title, exc_info, logger=None):
     msg.setDetailedText(detailed)
 
     msg.raise_()
-    msg.exec_()
+    patch_exec(msg).exec_()

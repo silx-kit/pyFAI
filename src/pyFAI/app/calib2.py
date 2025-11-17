@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2025"
+__date__ = "17/11/2025"
 __status__ = "production"
 
 import os
@@ -37,11 +37,14 @@ import datetime
 from argparse import ArgumentParser
 
 import logging
-import pyFAI.resources
-import pyFAI.calibrant
-import pyFAI.detectors
-import pyFAI.io.image
-from pyFAI.io.ponifile import PoniFile
+from .. import resources
+from .. import calibrant
+from .. import detectors
+from ..io import image
+from ..io.ponifile import PoniFile
+from ..gui.utils import patch_exec
+from .. import version as pyFAI_version, date as pyFAI_date
+from .. import units as pyFAI_units
 
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -85,7 +88,7 @@ def configure_parser_arguments(parser):
     parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                         help="wavelength of the X-Ray beam in Angstrom.", default=None)
     parser.add_argument("-e", "--energy", dest="energy", type=float,
-                        help="energy of the X-Ray beam in keV (hc=%skeV.A)." % pyFAI.units.hc, default=None)
+                        help="energy of the X-Ray beam in keV (hc=%skeV.A)." % pyFAI_units.hc, default=None)
     parser.add_argument("-P", "--polarization", dest="polarization_factor",
                         type=float, default=None,
                         help="polarization factor, from -1 (vertical) to +1 (horizontal)," +
@@ -251,7 +254,7 @@ Debye-Sherrer rings images without a priori knowledge of your setup.
 You will need to provide a calibrant or a "d-spacing" file containing the
 spacing of Miller plans in Angstrom (in decreasing order).
 %s or search in the American Mineralogist database:
-http://rruff.geo.arizona.edu/AMS/amcsd.php""" % str(pyFAI.calibrant.ALL_CALIBRANTS)
+http://rruff.geo.arizona.edu/AMS/amcsd.php""" % str(calibrant.ALL_CALIBRANTS)
 
 epilog = """The output of this program is a "PONI" file containing the
 detector description and the 6 refined parameters (distance, center, rotation)
@@ -294,7 +297,7 @@ def parse_options():
     """
     usage = "pyFAI-calib2 [options] input_image.edf"
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
-    version = "calibration from pyFAI  version %s: %s" % (pyFAI.version, pyFAI.date)
+    version = "calibration from pyFAI  version %s: %s" % (pyFAI_version, pyFAI_date)
     parser.add_argument("-V", "--version", action='version', version=version)
     configure_parser_arguments(parser)
 
@@ -333,10 +336,10 @@ def setup_model(model, options):
     if options.spacing:
         calibrant = None
         try:
-            if options.spacing in pyFAI.calibrant.CALIBRANT_FACTORY:
-                calibrant = pyFAI.calibrant.CALIBRANT_FACTORY(options.spacing)
+            if options.spacing in calibrant.CALIBRANT_FACTORY:
+                calibrant = calibrant.CALIBRANT_FACTORY(options.spacing)
             elif os.path.isfile(options.spacing):
-                calibrant = pyFAI.calibrant.Calibrant(options.spacing)
+                calibrant = calibrant.Calibrant(options.spacing)
             else:
                 logger.error("No such Calibrant / d-Spacing file: %s", options.spacing)
         except Exception as e:
@@ -366,15 +369,15 @@ def setup_model(model, options):
             displayExceptionBox("Error while loading the detector", e)
     elif options.pixel:
         pixel_size = parse_pixel_size(options.pixel)
-        detector = pyFAI.detectors.Detector(pixel1=pixel_size[0], pixel2=pixel_size[0])
+        detector = detectors.Detector(pixel1=pixel_size[0], pixel2=pixel_size[0])
     else:
         detector = None
 
     if options.spline:
         try:
             if detector is None:
-                detector = pyFAI.detectors.Detector(splinefile=options.spline)
-            elif detector.__class__ is pyFAI.detectors.Detector or detector.HAVE_TAPER:
+                detector = detectors.Detector(splinefile=options.spline)
+            elif detector.__class__ is detectors.Detector or detector.HAVE_TAPER:
                 detector.splinefile = options.spline
             else:
                 logger.warning("Spline file not supported with this kind of detector. Argument ignored.")
@@ -414,7 +417,7 @@ def setup_model(model, options):
 
     if options.mask:
         try:
-            data = pyFAI.io.image.read_image_data(options.mask)
+            data = image.read_image_data(options.mask)
         except Exception as e:
             displayExceptionBox("Error while loading the mask", e)
         else:
@@ -427,7 +430,7 @@ def setup_model(model, options):
     elif len(args) == 1:
         image_file = args[0]
         try:
-            data = pyFAI.io.image.read_image_data(image_file)
+            data = image.read_image_data(image_file)
         except Exception as e:
             displayExceptionBox("Error while loading the image", e)
         else:
@@ -517,7 +520,7 @@ def setup_model(model, options):
 
     # Integration
     if options.unit:
-        unit = pyFAI.units.to_unit(options.unit)
+        unit = pyFAI_units.to_unit(options.unit)
         integrationSettingsModel.radialUnit().setValue(unit)
 
     if options.outfile:
@@ -536,7 +539,7 @@ def setup_model(model, options):
         logger.error("background option not supported")
     if options.dark:
         try:
-            data = pyFAI.io.image.read_image_data(options.dark)
+            data = image.read_image_data(options.dark)
         except Exception as e:
             displayExceptionBox("Error while loading the dark current image", e)
         else:
@@ -546,7 +549,7 @@ def setup_model(model, options):
                 image_model.setSynchronized(True)
     if options.flat:
         try:
-            data = pyFAI.io.image.read_image_data(options.flat)
+            data = image.read_image_data(options.flat)
         except Exception as e:
             displayExceptionBox("Error while loading the flat-field image", e)
         else:
@@ -616,8 +619,8 @@ def main():
 
     # Make sure matplotlib is loaded first by silx
     import silx.gui.utils.matplotlib
-    from pyFAI.gui.CalibrationWindow import CalibrationWindow
-    from pyFAI.gui.CalibrationContext import CalibrationContext
+    from ..gui.CalibrationWindow import CalibrationWindow
+    from ..gui.CalibrationContext import CalibrationContext
 
     sys.excepthook = logUncaughtExceptions
     if options.qtargs is None:
@@ -625,7 +628,7 @@ def main():
     else:
         qtArgs = options.qtargs.split()
     app = qt.QApplication(qtArgs)
-    pyFAI.resources.silx_integration()
+    resources.silx_integration()
 
     settings = qt.QSettings(qt.QSettings.IniFormat,
                             qt.QSettings.UserScope,
@@ -641,7 +644,8 @@ def main():
     window.setVisible(True)
     window.setAttribute(qt.Qt.WA_DeleteOnClose, True)
 
-    result = app.exec_()
+    result = patch_exec(app).exec_()
+
     context.saveSettings()
 
     # remove ending warnings relative to QTimer

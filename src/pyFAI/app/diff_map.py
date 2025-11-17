@@ -33,12 +33,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "17/11/2025"
 __satus__ = "Production"
 
 import sys
 import logging
 from ..diffmap import DiffMap
+from ..gui.utils import patch_exec
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -70,7 +71,8 @@ def main(args=None):
         window.set_config(config)
         # window.restore()
         window.show()
-        sys.exit(app.exec_())
+        result = patch_exec(app).exec_()
+        sys.exit(result)
         del context
     else:
         dt.configure_worker(config.ai)

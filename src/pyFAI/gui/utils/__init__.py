@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2025"
+__date__ = "17/11/2025"
 __status__ = "production"
 
 
@@ -86,3 +86,12 @@ def maximize_fig(fig=None):
                 mng.resize(*win_shape)
     update_fig(fig)
 
+def patch_exec(widget):
+    """Ensure a `exec_` method exists, use `exec` instead if needed.
+
+    patches PyQt6 for PySide6 compatibility.
+    """
+    lst = dir(widget)
+    if "exec_" not in lst and "exec" in lst:
+        widget.exec_ = widget.exec
+    return widget

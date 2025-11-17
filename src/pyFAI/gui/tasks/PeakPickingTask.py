@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/01/2024"
+__date__ = "17/11/2025"
 
 import logging
 import numpy
@@ -49,7 +49,7 @@ from ..CalibrationContext import CalibrationContext
 from ..helper.MarkerManager import MarkerManager
 from ..helper import ProcessingWidget
 from ..utils import FilterBuilder
-from ..utils import validators
+from ..utils import validators, patch_exec
 from ..helper import model_transform
 from ..widgets.ColoredCheckBox import ColoredCheckBox
 from ..widgets.AdvancedSpinBox import AdvancedSpinBox
@@ -1144,7 +1144,7 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __loadPeaksFromFile(self):
         dialog = self.__createLoadPeakDialog()
 
-        result = dialog.exec_()
+        result = patch_exec(dialog).exec_()
         if not result:
             return
 
@@ -1169,7 +1169,7 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __savePeaksAsFile(self):
         dialog = self.__createSavePeakDialog()
 
-        result = dialog.exec_()
+        result = patch_exec(dialog).exec_()
         if not result:
             return
 

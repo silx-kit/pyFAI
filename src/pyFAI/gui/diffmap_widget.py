@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/05/2025"
+__date__ = "17/11/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -48,6 +48,7 @@ from silx.gui import icons
 from .matplotlib import pyplot, colors
 import threading
 from ..utils import int_, str_, float_, get_ui_file
+from .utils import patch_exec
 from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
@@ -310,7 +311,7 @@ class DiffMapWidget(qt.QWidget):
         if self.integration_config is not None:
             iw.widget.setWorkerConfig(self.integration_config)
         while True:
-            res = iw.exec_()
+            res = patch_exec(iw).exec_()
             if res == qt.QDialog.Accepted:
                 self.integration_config = iw.widget.getWorkerConfig()
                 if self.integration_config.nbpt_rad:

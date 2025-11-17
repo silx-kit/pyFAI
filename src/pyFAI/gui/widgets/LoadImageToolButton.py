@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,9 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "29/01/2024"
+__date__ = "17/11/2025"
 
 import fabio
 import os
@@ -35,6 +35,7 @@ from ..model.ImageModel import ImageFilenameModel
 from ..model.ImageModel import ImageFromFilenameModel
 from ..ApplicationContext import ApplicationContext
 from ..utils.FilterBuilder import FilterBuilder
+from ..utils import patch_exec
 
 _logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ class _LoadImageFromFileDialogAction(qt.QAction):
         dialog.setModal(True)
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
 
-        result = dialog.exec_()
+        result = patch_exec(dialog).exec_()
         if result:
             filename = dialog.selectedFiles()[0]
             if self.parent()._isDataSupported():
@@ -107,7 +108,7 @@ class _LoadImageFromImageDialogAction(qt.QAction):
         dialog.setWindowTitle(self.parent().dialogTitle())
         dialog.setModal(True)
 
-        result = dialog.exec_()
+        result = patch_exec(dialog).exec_()
         if result:
             url = dialog.selectedUrl()
             data = dialog.selectedImage()

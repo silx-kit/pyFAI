@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "03/11/2025"
+__date__ = "17/11/2025"
 
 import logging
 import numpy
@@ -52,7 +52,7 @@ from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
 from ..helper import ProcessingWidget
 from pyFAI.ext.invert_geometry import InvertGeometry
 from ..utils import FilterBuilder
-from ..utils import imageutils
+from ..utils import imageutils, patch_exec
 from ...utils import stringutil
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry
@@ -759,7 +759,7 @@ class IntegrationPlot(qt.QFrame):
             menu.addAction(action)
 
         handle = self.__plot2d.getWidgetHandle()
-        menu.exec_(handle.mapToGlobal(pos))
+        patch_exec(menu).exec_(handle.mapToGlobal(pos))
 
     def __clearRings(self):
         """Remove of ring item cached on the plots"""
@@ -893,7 +893,7 @@ class IntegrationPlot(qt.QFrame):
         if self.__result1d is None:
             return
         dialog = createSaveDialog(self, "Save 1D integration as CSV file", csv=True)
-        result = dialog.exec_()
+        result = patch_exec(dialog).exec_()
         if not result:
             return
         filename = dialog.selectedFiles()[0]
@@ -961,7 +961,7 @@ class IntegrationTask(AbstractCalibrationTask):
     def __customIntegrationMethod(self):
         dialog = IntegrationMethodDialog(self)
         dialog.selectMethod(self.__method)
-        result = dialog.exec_()
+        result = patch_exec(dialog).exec_()
         if result:
             method = dialog.selectedMethod()
             self.__setMethod(method)
@@ -1123,7 +1123,7 @@ class IntegrationTask(AbstractCalibrationTask):
         if previousPoniFile is not None:
             dialog.selectFile(previousPoniFile)
 
-        result = dialog.exec_()
+        result = patch_exec(dialog).exec_()
         if not result:
             return
         filename = dialog.selectedFiles()[0]
@@ -1157,7 +1157,7 @@ class IntegrationTask(AbstractCalibrationTask):
         if previousJsonFile is not None:
             dialog.selectFile(previousJsonFile)
 
-        result = dialog.exec_()
+        result = patch_exec(dialog).exec_()
         if not result:
             return
         filename = dialog.selectedFiles()[0]
