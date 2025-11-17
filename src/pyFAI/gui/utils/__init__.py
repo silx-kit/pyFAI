@@ -85,13 +85,3 @@ def maximize_fig(fig=None):
             except TypeError:
                 mng.resize(*win_shape)
     update_fig(fig)
-
-def patch_exec(widget):
-    """Ensure a `exec_` method exists, use `exec` instead if needed.
-
-    patches PyQt6 for PySide6 compatibility.
-    """
-    lst = dir(widget)
-    if "exec_" not in lst and "exec" in lst:
-        widget.exec_ = widget.exec
-    return widget

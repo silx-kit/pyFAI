@@ -39,7 +39,7 @@ __satus__ = "Production"
 import sys
 import logging
 from ..diffmap import DiffMap
-from ..gui.utils import patch_exec
+from ..gui import patch_exec
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)

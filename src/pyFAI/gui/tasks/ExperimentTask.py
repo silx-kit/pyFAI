@@ -43,7 +43,8 @@ from ..helper.SynchronizeRawView import SynchronizeRawView
 from ..CalibrationContext import CalibrationContext
 from ..utils import units
 from ..utils import validators
-from ..utils import FilterBuilder, patch_exec
+from ..utils import FilterBuilder
+from .. import patch_exec
 from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
 from ..model import MarkerModel
 _logger = logging.getLogger(__name__)

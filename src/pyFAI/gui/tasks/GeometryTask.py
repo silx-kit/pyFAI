@@ -50,7 +50,8 @@ from ..utils import units
 from ..helper.MarkerManager import MarkerManager
 from ..helper import ProcessingWidget
 from ..helper import model_transform
-from ..utils import unitutils, patch_exec
+from ..utils import unitutils
+from .. import patch_exec
 from ... import units as core_units
 from ...geometry import fit2d
 from ...io.ponifile import PoniFile

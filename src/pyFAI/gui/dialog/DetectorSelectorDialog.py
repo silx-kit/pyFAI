@@ -38,7 +38,8 @@ from ..widgets.model.DetectorFilterProxyModel import DetectorFilterProxyModel
 from ..model.DataModel import DataModel
 from ..utils import validators, block_signals
 from ..ApplicationContext import ApplicationContext
-from ..utils import FilterBuilder, patch_exec
+from ..utils import FilterBuilder
+from .. import patch_exec
 from ...detectors.sensors import SensorConfig
 
 _logger = logging.getLogger(__name__)

@@ -52,7 +52,8 @@ from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
 from ..helper import ProcessingWidget
 from pyFAI.ext.invert_geometry import InvertGeometry
 from ..utils import FilterBuilder
-from ..utils import imageutils, patch_exec
+from ..utils import imageutils
+from .. import patch_exec
 from ...utils import stringutil
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from pyFAI import method_registry

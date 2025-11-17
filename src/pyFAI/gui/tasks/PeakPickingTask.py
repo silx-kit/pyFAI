@@ -49,7 +49,8 @@ from ..CalibrationContext import CalibrationContext
 from ..helper.MarkerManager import MarkerManager
 from ..helper import ProcessingWidget
 from ..utils import FilterBuilder
-from ..utils import validators, patch_exec
+from ..utils import validators
+from .. import patch_exec
 from ..helper import model_transform
 from ..widgets.ColoredCheckBox import ColoredCheckBox
 from ..widgets.AdvancedSpinBox import AdvancedSpinBox

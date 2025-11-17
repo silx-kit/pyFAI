@@ -46,7 +46,7 @@ from silx.gui import qt
 from ..version import version as pyFAI_version, date as pyFAI_date
 from .. import utils
 from ..gui.utils.colorutils import DEFAULT_COLORMAP
-from ..gui.utils import patch_exec
+from ..gui import patch_exec
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)

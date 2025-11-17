@@ -49,7 +49,8 @@ from ...utils import float_, str_, get_ui_file
 from ...units import RADIAL_UNITS, to_unit
 from ..model.GeometryModel import GeometryModel
 from ..model.DataModel import DataModel
-from ..utils import units, patch_exec
+from ..utils import units
+from .. import patch_exec
 from ...utils import stringutil
 from ..utils import FilterBuilder
 from ..model.ImageModel import ImageFilenameModel

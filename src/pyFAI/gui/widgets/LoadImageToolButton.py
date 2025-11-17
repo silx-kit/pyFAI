@@ -35,7 +35,7 @@ from ..model.ImageModel import ImageFilenameModel
 from ..model.ImageModel import ImageFromFilenameModel
 from ..ApplicationContext import ApplicationContext
 from ..utils.FilterBuilder import FilterBuilder
-from ..utils import patch_exec
+from .. import patch_exec
 
 _logger = logging.getLogger(__name__)
 

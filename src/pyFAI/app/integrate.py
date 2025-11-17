@@ -51,7 +51,7 @@ from ..io.integration_config import WorkerConfig
 from ..utils.shell import ProgressBar
 from ..utils import logging_utils, header_utils
 from ..worker import Worker
-from ..gui.utils import patch_exec
+from ..gui import patch_exec
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)

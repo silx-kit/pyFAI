@@ -42,7 +42,7 @@ from .. import calibrant
 from .. import detectors
 from ..io import image
 from ..io.ponifile import PoniFile
-from ..gui.utils import patch_exec
+from ..gui import patch_exec
 from .. import version as pyFAI_version, date as pyFAI_date
 from .. import units as pyFAI_units
 

@@ -31,7 +31,7 @@ import logging
 import sys
 
 from silx.gui import qt
-from ..utils import patch_exec
+from .. import patch_exec
 
 _logger = logging.getLogger(__name__)
 

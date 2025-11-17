@@ -48,7 +48,7 @@ from silx.gui import icons
 from .matplotlib import pyplot, colors
 import threading
 from ..utils import int_, str_, float_, get_ui_file
-from .utils import patch_exec
+from . import patch_exec
 from ..units import to_unit
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
