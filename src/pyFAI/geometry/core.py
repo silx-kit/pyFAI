@@ -1772,7 +1772,7 @@ class Geometry:
         """
         with self._sem:
             f2d = convert_to_Fit2d(self)
-        return f2d._asdict()
+        return f2d
 
     @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
     def setFit2D(

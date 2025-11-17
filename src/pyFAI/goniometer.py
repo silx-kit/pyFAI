@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "14/11/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -638,23 +638,29 @@ class SingleGeometry(object):
         else:
             self.detector = None
         if isinstance(geometry, Geometry):
-            dict_geo = geometry.getPyFAI()
+            dict_geo = geometry.get_config()
         elif isinstance(geometry, StringTypes) and os.path.exists(geometry):
-            dict_geo = Geometry.sload(geometry).getPyFAI()
+            dict_geo = Geometry.sload(geometry).get_config()
         elif isinstance(geometry, dict):
             dict_geo = geometry
 
         if self.detector is not None:
             dict_geo["detector"] = self.detector
+            dict_geo.pop("detector_config", None)
+        elif "detector" in dict_geo:
+            self.detector = detector_factory(dict_geo["detector"], dict_geo.pop("detector_config", None))
+            dict_geo["detector"] = self.detector
+
         if self.control_points is not None:
             dict_geo["data"] = self.control_points.getList()
         if self.calibrant is not None:
             dict_geo["calibrant"] = self.calibrant
             if self.calibrant.wavelength:
                 dict_geo["wavelength"] = self.calibrant.wavelength
-        if "max_shape" in dict_geo:
+        for key in ("max_shape", "poni_version"):
             # not used in constructor
-            dict_geo.pop("max_shape")
+            dict_geo.pop(key, None)
+
         self.geometry_refinement = GeometryRefinement(**dict_geo)
         if self.detector is None:
             self.detector = self.geometry_refinement.detector
