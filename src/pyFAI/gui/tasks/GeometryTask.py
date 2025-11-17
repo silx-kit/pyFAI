@@ -34,9 +34,10 @@ import datetime
 from silx.gui import qt
 from silx.gui import icons
 import silx.gui.plot
+from silx.image import marchingsquares
 
 from ... import utils as pyFAI_utils
-from ..utils import stringutil
+from ...utils import stringutil
 from .AbstractCalibrationTask import AbstractCalibrationTask
 from ..helper.RingCalibration import RingCalibration
 from ..helper.SynchronizeRawView import SynchronizeRawView
@@ -54,7 +55,6 @@ from ... import units as core_units
 from ...geometry import fit2d
 from ...io.ponifile import PoniFile
 
-from silx.image import marchingsquares
 
 _logger = logging.getLogger(__name__)
 
