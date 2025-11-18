@@ -35,7 +35,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/04/2024"
+__date__ = "18/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -145,7 +145,7 @@ class FullSplitIntegrator:
                  mask_checksum=None,
                  bint allow_pos0_neg=False,
                  bint chiDiscAtPi=True,
-                 bint clip_pos1=True):
+                 position_t pos1_period=twopi):
         """Constructor of the class:
 
         :param pos: 3D or 4D array with the coordinates of each pixel point
@@ -156,8 +156,10 @@ class FullSplitIntegrator:
         :param mask_checksum: int with the checksum of the mask
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param chiDiscAtPi: tell if azimuthal discontinuity is at 0 (0° when False) or π (180° when True)
-        :param clip_pos1: clip the azimuthal range to [-π π] (or [0 2π] depending on chiDiscAtPi), set to False to deactivate behavior
+        :param pos1_period: periodicity of dim1, 2π, or 0 to non-periodic dimension
+        If pos1_period: clip_pos1 is enforced.
         """
+
         if pos.ndim > 3:  # create a view
             pos = pos.reshape((-1, 4, 2))
         assert pos.shape[1] == 4, "pos.shape[1] == 4"
@@ -171,6 +173,7 @@ class FullSplitIntegrator:
             self.bins = bins or 1
         self.allow_pos0_neg = allow_pos0_neg
         self.chiDiscAtPi = chiDiscAtPi
+        self.pos1_period = pos1_period
 
         if mask is None:
             self.cmask = None
@@ -185,6 +188,7 @@ class FullSplitIntegrator:
         self.pos1_range = pos1_range
         cdef:
             position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
+            bint clip_pos1 = True if pos1_period>0 else False
         pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.pos, self.cmask,
                                                                      pos0_range, pos1_range,
                                                                      allow_pos0_neg, chiDiscAtPi, clip_pos1)
@@ -207,7 +211,7 @@ class FullSplitIntegrator:
             position_t areaPixel = 0, delta = 0, areaPixel2 = 0
             position_t a0, b0, c0, d0, a1, b1, c1, d1
             position_t inv_area, area_pixel, sub_area, sum_area
-            position_t min0, max0, min1, max1
+            position_t min0, max0, min1, max1, pos1_period=self.pos1_period
             Py_ssize_t bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, size = 0
             bint check_pos1=self.pos1_range is not None, check_mask = False, chiDiscAtPi=self.chiDiscAtPi
             SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=(size+1023)&~(1023))
@@ -231,7 +235,7 @@ class FullSplitIntegrator:
                     continue
                 # Play with coordinates ...
                 v8[:, :] = cpos[idx, :, :]
-                area_pixel = - _recenter(v8, chiDiscAtPi) / delta
+                area_pixel = - _recenter(v8, pos1_period, chiDiscAtPi) / delta
                 a0 = get_bin_number(v8[0, 0], pos0_min, delta)
                 a1 = v8[0, 1]
                 b0 = get_bin_number(v8[1, 0], pos0_min, delta)
@@ -292,7 +296,7 @@ class FullSplitIntegrator:
             position_t min0 = 0.0, max0 = 0.0, min1 = 0.0, max1 = 0.0, inv_area = 0.0
             position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0, pos0_maxin = 0.0, pos1_maxin = 0.0
             position_t a0 = 0.0, a1 = 0.0, b0 = 0.0, b1 = 0.0, c0 = 0.0, c1 = 0.0, d0 = 0.0, d1 = 0.0
-            position_t delta0, delta1
+            position_t delta0, delta1, pos1_period=self.pos1_period
             position_t foffset0, foffset1, sum_area, area
             Py_ssize_t i = 0, j = 0, idx = 0
             Py_ssize_t ioffset0, ioffset1, w0, w1, bw0=15, bw1=15
@@ -320,7 +324,7 @@ class FullSplitIntegrator:
 
                 # Play with coordinates ...
                 v8[:, :] = cpos[idx, :, :]
-                area = _recenter(v8, chiDiscAtPi) # this is an imprecise measurement of the surface of the pixels
+                area = _recenter(v8, pos1_period, chiDiscAtPi) # this is an imprecise measurement of the surface of the pixels
                 a0 = v8[0, 0]
                 a1 = v8[0, 1]
                 b0 = v8[1, 0]

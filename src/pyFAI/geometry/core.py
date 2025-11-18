@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/11/2025"
+__date__ = "18/11/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -1410,6 +1410,7 @@ class Geometry:
                 else:
                     out = self.corner_array(shape, unit2[0], scale=scale)
                     if unit2[1].space != "chi":
+                        out = copy.copy(out)
                         out1 = self.corner_array(shape, unit2[1], scale=scale)
                         out[..., 1] = out1[..., 0]
             elif typ == "delta":

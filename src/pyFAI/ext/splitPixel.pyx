@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/06/2024"
+__date__ = "18/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -267,6 +267,7 @@ def fullSplit1D_engine(pos not None,
                        double normalization_factor=1.0,
                        bint weighted_average=True,
                        bint allow_pos0_neg=True,
+                       position_t pos1_period=twopi,
                        bint chiDiscAtPi=True
                        ):
     """
@@ -409,7 +410,7 @@ def fullSplit1D_engine(pos not None,
 
             # Play with coordinates ...
             v8[:, :] = cpos[idx, :, :]
-            area_pixel = _recenter(v8, chiDiscAtPi) # this area is only approximate
+            area_pixel = _recenter(v8, pos1_period, chiDiscAtPi) # this area is only approximate
             a0 = get_bin_number(v8[0, 0], pos0_min, dpos)
             a1 = v8[0, 1]
             b0 = get_bin_number(v8[1, 0], pos0_min, dpos)
@@ -1174,6 +1175,7 @@ def fullSplit2D_engine(pos not None,
                          polarization=None,
                          absorption=None,
                          bint allow_pos0_neg=0,
+                         position_t pos1_period=twopi,
                          bint chiDiscAtPi=1,
                          float empty=0.0,
                          double normalization_factor=1.0,
@@ -1334,7 +1336,7 @@ def fullSplit2D_engine(pos not None,
 
             # Play with coordinates ...
             v8[:, :] = cpos[idx, :, :]
-            area = _recenter(v8, chiDiscAtPi)
+            area = _recenter(v8, pos1_period, chiDiscAtPi)
             a0 = v8[0, 0]
             a1 = v8[0, 1]
             b0 = v8[1, 0]
