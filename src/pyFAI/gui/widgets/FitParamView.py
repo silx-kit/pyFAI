@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "06/11/2025"
+__date__ = "18/11/2025"
 
 from silx.gui import icons
 from silx.gui import qt
@@ -37,6 +37,7 @@ from ..model.DataModel import DataModel
 from ..utils import eventutils
 from ..utils import validators
 from ..utils.units import Unit
+# from .. import patch_exec
 
 
 class ConstraintsPopup(qt.QFrame):
@@ -309,6 +310,10 @@ class FitParamView(qt.QObject):
         displayedUnit.changed.connect(self.__unitChanged)
         self.__unitChanged()  # enforce the relabeling if needed, only occures when saved config was with `energy`
 
+        # right-click menu
+        self.__constraints.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        self.__constraints.customContextMenuRequested.connect(self.__show_context_menu)
+
     def __fireValueAccepted(self):
         self.sigValueAccepted.emit()
 
@@ -427,3 +432,27 @@ class FitParamView(qt.QObject):
             self.__label = label
             self.__labelWidget.setText(f"{label}:")
 
+    def __show_context_menu(self, pos: qt.QPoint) -> None:
+        """
+        Create a context menu to copy wavelength between experiments settings and the refinement widget
+        """
+        if self.__units[0] == Unit.METER_WL:
+            menu = qt.QMenu(self.__constraints)
+
+            # Action 1
+            action_one = menu.addAction("Update experiment settings's value")
+            action_one.triggered.connect(self.__option_one)
+
+            # Action 2
+            action_two = menu.addAction("Restore experiment settings's value")
+            action_two.triggered.connect(self.__option_two)
+
+            global_pos = self.__constraints.mapToGlobal(pos)
+
+            # patch_exec(menu).exec_(global_pos)
+            menu.exec_(global_pos)
+
+    def __option_one(self, *args ):
+        print("option1, units[0]", self.__units[0])
+    def __option_two(self, *args ):
+        print("option2, units[1]", self.__units[1].value())
