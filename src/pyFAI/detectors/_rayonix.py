@@ -600,8 +600,7 @@ class Mar555(Detector):
     force_pixel = True
     MAX_SHAPE = (3072, 2560)
     aliases = ["MAR 555"]
-    #TODO: Add sensor information for Mar555
-    #SENSORS=()
+    SENSORS=(aSe)
 
     def __init__(self, pixel1=139e-6, pixel2=139e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
         super().__init__(pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
