@@ -158,7 +158,7 @@ ALL_MATERIALS["GaAs"] = GaAs_MATERIAL = SensorMaterial("GaAs", density=5.3176)
 ALL_MATERIALS["Gd2O2S"] = Gd2O2S_MATERIAL = SensorMaterial("Gd2O2S", density=7.32)
 
 ALL_MATERIALS["BaFBrI:Eu"] = BaFBrI_Eu_MATERIAL = SensorMaterial("BaFBr(0.85)I(0.15):Eu2+", density=5.1)  # https://pmc.ncbi.nlm.nih.gov/articles/PMC2801734/
-ALL_MATERIALS["AmorphousSe"] = AmorphousSe_MATERIAL = SensorMaterial("Amorphous Selenium", density=4.26)  # https://pubchem.ncbi.nlm.nih.gov/compound/Selenium#section=Solubility
+ALL_MATERIALS["AmorphousSe"] = AmorphousSe_MATERIAL = SensorMaterial("Amorphous Se", density=4.26)  # https://pubchem.ncbi.nlm.nih.gov/compound/Selenium#section=Solubility
 
 
 @dataclass
