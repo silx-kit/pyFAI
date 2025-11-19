@@ -9,7 +9,7 @@ try:
 except Exception:
     from ...utils.callback import dangling_callback as display
 
-import ipywidgets as widgets #widgets now always exists
+import ipywidgets as widgets
 
 class JupyCalibWidget(MplCalibWidget):
 
