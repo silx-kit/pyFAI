@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "18/11/2025"
+__date__ = "19/11/2025"
 
 from silx.gui import icons
 from silx.gui import qt
@@ -37,7 +37,8 @@ from ..model.DataModel import DataModel
 from ..utils import eventutils
 from ..utils import validators
 from ..utils.units import Unit
-# from .. import patch_exec
+from ..CalibrationContext import CalibrationContext
+# from .. import patch_exec  # after PR2689 is merged
 
 
 class ConstraintsPopup(qt.QFrame):
@@ -438,21 +439,21 @@ class FitParamView(qt.QObject):
         """
         if self.__units[0] == Unit.METER_WL:
             menu = qt.QMenu(self.__constraints)
-
-            # Action 1
             action_one = menu.addAction("Update experiment settings's value")
-            action_one.triggered.connect(self.__option_one)
-
-            # Action 2
+            action_one.triggered.connect(self.__update_experiment_settings)
             action_two = menu.addAction("Restore experiment settings's value")
-            action_two.triggered.connect(self.__option_two)
-
+            action_two.triggered.connect(self.__restore_wavelength)
             global_pos = self.__constraints.mapToGlobal(pos)
 
-            # patch_exec(menu).exec_(global_pos)
+            # patch_exec(menu).exec_(global_pos) #TODO after PR2689 is merged
             menu.exec_(global_pos)
 
-    def __option_one(self, *args ):
-        print("option1, units[0]", self.__units[0])
-    def __option_two(self, *args ):
-        print("option2, units[1]", self.__units[1].value())
+    def __update_experiment_settings(self, *args ):
+        wavelength = self.__quantity.model().value()
+        context = CalibrationContext.instance()  # singleton!
+        context.getCalibrationModel().experimentSettingsModel().wavelength().setValue(wavelength)
+
+    def __restore_wavelength(self, *args ):
+        context = CalibrationContext.instance()  # singleton!
+        wavelength = context.getCalibrationModel().experimentSettingsModel().wavelength().value()
+        self.__quantity.model().setValue(wavelength)
