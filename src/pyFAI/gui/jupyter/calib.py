@@ -4,11 +4,12 @@ from ..mpl_calib import MplCalibWidget
 from matplotlib import pyplot
 from ..cli_calibration import AbstractCalibration, FixedParameters
 try:
-    from IPython.core.display import display
-    import ipywidgets as widgets
+    from IPython.display import display
+
 except Exception:
     from ...utils.callback import dangling_callback as display
 
+import ipywidgets as widgets #widgets now always exists
 
 class JupyCalibWidget(MplCalibWidget):
 
