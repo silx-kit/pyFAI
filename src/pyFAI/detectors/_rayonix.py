@@ -49,6 +49,8 @@ logger = logging.getLogger(__name__)
 Gd2O2S40 = SensorConfig.from_dict({"material": "Gd2O2S", "thickness": 40e-6})
 
 
+
+
 class _Rayonix(Detector):
 
     MANUFACTURER = "Rayonix"
@@ -497,6 +499,18 @@ class RayonixMx325(_Rayonix):
 # Because Rayonix and MAR-Research used to be the same company
 # (some detectors are the same)
 ################################################################################
+
+# Define sensors used in MAR detectors
+
+# MAR345 detector: BaFBr0.85I0.15:Eu2+ coating, 100 μm thickness
+BaFBrIEu = SensorConfig.from_dict({"material": "BaFBr0.85I0.15:Eu2+", "thickness": 100e-6})
+
+# MARCCD detector: Gd2O2S phosphor, 400 μm thickness
+Gd2O2S = SensorConfig.from_dict({"material": "Gd2O2S","thickness": 400e-6})
+
+# MAR555 detector: Amorphous Selenium, 300 μm thickness
+aSe = SensorConfig.from_dict({"material": "aSe", "thickness": 300e-6})
+
 
 
 class Mar345(Detector):
