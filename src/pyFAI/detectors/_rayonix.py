@@ -536,8 +536,7 @@ class Mar345(Detector):
                   1800: 100e-6}
 
     aliases = ["MAR 345", "Mar3450"]
-    #TODO: Add sensor materials
-    #SENSORS=()
+    SENSORS=(BaFBrIEu)
 
     def __init__(self, pixel1=100e-6, pixel2=100e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
         super().__init__(pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
