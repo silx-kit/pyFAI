@@ -45,3 +45,6 @@
 /pyFAI/ext/*.cpp
 /benchmark*.json
 /benchmark*.svg
+
+#poni file
+doc/source/usage/cookbook/jupyter.poni
