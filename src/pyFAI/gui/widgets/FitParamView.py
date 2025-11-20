@@ -448,7 +448,7 @@ class FitParamView(qt.QObject):
             # patch_exec(menu).exec_(global_pos) #TODO after PR2689 is merged
             menu.exec_(global_pos)
 
-    def __update_experiment_settings(self, *args ):
+    def __update_experiment_settings(self):
         wavelength = self.__quantity.model().value()
         context = CalibrationContext.instance()  # singleton!
         context.getCalibrationModel().experimentSettingsModel().wavelength().setValue(wavelength)
