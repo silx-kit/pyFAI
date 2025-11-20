@@ -10,7 +10,8 @@ numexpr != 2.8.6
 h5py
 silx >= 2
 PyOpenGL
-PySide6
+PySide6; python_version < '3.14'
+pyqt6; python_version >= '3.14'
 hdf5plugin
 nbsphinx
 pydata-sphinx-theme
