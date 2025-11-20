@@ -31,12 +31,13 @@ __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "20/11/2025"
-__status__ = "development"
+__status__ = "production"
 
 import sys
 import copy
 import logging
 import warnings
+import math
 from dataclasses import dataclass as _dataclass, fields as fields, asdict as asdict
 from typing import NamedTuple
 from enum import IntEnum
@@ -680,6 +681,23 @@ class Integrate1dResult(IntegrateResult):
 
     def __isub__(self, other):
         return super().__isub__(other).__recalculate_means__()
+
+    def calc_spottiness(self, weighted:bool=False) -> float:
+        """Calculate the spottiness of a powder diffraction pattern:
+        Inspired by doi:10.1107/S1600576713029713
+        Requires the azimuthal error propagation.
+
+        :param weighted: Weight the spottiness by the intensity of each ring.
+        :return: a value that increases with the spottiness
+        """
+        if self.error_model != ErrorModel.AZIMUTHAL:
+            logger.warning("Error model must be azimuthal to calculate spottiness !")
+
+        intensity = numpy.maximum(0.0, self.intensity) if weighted else numpy.ones_like(self.intensity)
+        sum_variance = numpy.zeros_like(self.sum_signal) if self.sum_variance is None else numpy.maximum(0.0, self.sum_variance)
+        sum_signal = numpy.maximum(1.0, self.sum_signal)
+        proportion = sum_variance/sum_signal**2
+        return math.sqrt((proportion*intensity).sum(dtype=numpy.float64)/intensity.sum(dtype=numpy.float64))
 
 
 class Integrate2dResult(IntegrateResult):

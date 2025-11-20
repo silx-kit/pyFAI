@@ -99,6 +99,12 @@ class TestContainer(unittest.TestCase):
         sym = containers.symmetrize(res2d)
         self.assertAlmostEqual(res2d.intensity.mean(), sym.intensity.mean(), places=0)
 
+    def test_spottiness(self):
+        python = self.ai.integrate1d(self.img, 100, method=("no","csr", "python"), error_model="azimuth").calc_spottiness()
+        cython = self.ai.integrate1d(self.img, 100, method=("no","csr", "cython"), error_model="azimuth").calc_spottiness()
+        self.assertAlmostEqual(python, 0.06396, msg="python", places=4)
+        self.assertAlmostEqual(cython, 0.06396, msg="cython", places=4)
+
     def test_maths(self):
         method = ("no", "histogram", "cython")
         a1d = self.ai.integrate1d(self.img, 10, method=method, error_model="poisson")
