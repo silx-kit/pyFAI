@@ -32,16 +32,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/10/2025"
+__date__ = "20/11/2025"
 
 import unittest
 import copy
 import numpy
 import logging
 import fabio
-from .utilstest import UtilsTest
+from .utilstest import UtilsTest,TestLogging
 from .. import load as pyFAI_load
 from .. import containers
+from ..utils.decorators import depreclog
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,8 @@ class TestContainer(unittest.TestCase):
             self.img, 500, 360, method=method, error_model="poisson"
         )
         ref1d = self.ai.integrate1d(self.img, 500, method=method, error_model="poisson")
-        res1d = containers.rebin1d(res2d)
+        with TestLogging(logger=depreclog, warning=1):
+            res1d = containers.rebin1d(res2d)
         self.assertTrue(numpy.allclose(res1d[0], ref1d[0]), "radial matches")
         self.assertTrue(numpy.allclose(res1d[1], ref1d[1]), "intensity matches")
         self.assertTrue(numpy.allclose(res1d[2], ref1d[2]), "sem matches")
@@ -96,6 +98,12 @@ class TestContainer(unittest.TestCase):
         )
         sym = containers.symmetrize(res2d)
         self.assertAlmostEqual(res2d.intensity.mean(), sym.intensity.mean(), places=0)
+
+    def test_spottiness(self):
+        python = self.ai.integrate1d(self.img, 100, method=("no","csr", "python"), error_model="azimuth").calc_spottiness()
+        cython = self.ai.integrate1d(self.img, 100, method=("no","csr", "cython"), error_model="azimuth").calc_spottiness()
+        self.assertAlmostEqual(python, 0.06396, msg="python", places=4)
+        self.assertAlmostEqual(cython, 0.06396, msg="cython", places=4)
 
     def test_maths(self):
         method = ("no", "histogram", "cython")

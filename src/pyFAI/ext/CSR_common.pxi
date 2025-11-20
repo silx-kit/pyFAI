@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/03/2025"
+__date__ = "20/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -390,7 +390,7 @@ cdef class CsrIntegrator(object):
                         #Variance remains at 0
                         acc_norm = coef * norm
                         acc_norm_sq = acc_norm * acc_norm
-                    else:
+                    elif norm != 0.0:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                         # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
                         # Empirically validated against 2-pass implementation in Python/scipy-sparse

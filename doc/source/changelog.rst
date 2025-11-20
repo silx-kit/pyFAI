@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 16/11/2025
+:Date: 20/11/2025
 :Keywords: changelog
 
 Change-log of versions
@@ -41,7 +41,12 @@ Change-log of versions
   * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
 - [integrate1|2d] enforce arguments to be kwargs to limit user errors
 - [Doc] Improve the notebook about "flatfield" calculation.
-- [Integrate1/2dResult] can now be added or subtracted to perform some basic maths, uncertainties are propagated accordingly.
+- [Integrate1/2dResult] 
+
+  * can perform some basic maths (+, -), uncertainties are propagated accordingly.
+  * 2D container can be rebinned in 1D containers.
+  * 1D container can calculate the spottiness of the initial frame (with azimuthal error-model).
+
 - [Fit2dGeometry] becomes a case-insensitive dataclass (thus mutable, was NamedTuple) which behaves like a dict.
 - [Deprecation] `splineFile` --> `splinefile` in most arguments and also as properties
 - Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the `Cython` path for geometry initialization, less prone to numerical noise.
