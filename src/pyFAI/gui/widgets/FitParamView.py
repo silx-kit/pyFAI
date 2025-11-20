@@ -453,7 +453,7 @@ class FitParamView(qt.QObject):
         context = CalibrationContext.instance()  # singleton!
         context.getCalibrationModel().experimentSettingsModel().wavelength().setValue(wavelength)
 
-    def __restore_wavelength(self, *args ):
+    def __restore_wavelength(self):
         context = CalibrationContext.instance()  # singleton!
         wavelength = context.getCalibrationModel().experimentSettingsModel().wavelength().value()
         self.__quantity.model().setValue(wavelength)
