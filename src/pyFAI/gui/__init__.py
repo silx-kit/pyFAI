@@ -26,14 +26,14 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "17/11/2025"
+__date__ = "20/11/2025"
 
 def patch_exec(widget):
     """Ensure a `exec_` method exists, use `exec` instead if needed.
 
-    patches PyQt6 for PySide6/PyQt5 compatibility.
+    patches PySide6/PyQt5 for PyQt6 compatibility.
     """
     lst = dir(widget)
-    if "exec_" not in lst and "exec" in lst:
-        widget.exec_ = widget.exec
+    if "exec" not in lst and "exec_" in lst:
+        widget.exec = widget.exec_
     return widget

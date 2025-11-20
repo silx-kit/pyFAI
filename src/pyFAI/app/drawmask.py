@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2025"
+__date__ = "20/11/2025"
 __satus__ = "Production"
 
 import os
@@ -184,7 +184,7 @@ def main(args=None):
     window.setOutputFile(outfile)
 
     print("Your mask-file will be saved into %s" % (outfile))
-    result = patch_exec(app).exec_()
+    result = patch_exec(app).exec()
 
     mask = window.getSelectionMask()
     postProcessId21(processFile, mask)

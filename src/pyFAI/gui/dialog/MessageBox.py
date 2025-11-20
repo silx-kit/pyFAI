@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "17/11/2025"
+__date__ = "20/11/2025"
 
 import logging
 import sys
@@ -73,4 +73,4 @@ def exception(parent, title, exc_info, logger=None):
     msg.setDetailedText(detailed)
 
     msg.raise_()
-    patch_exec(msg).exec_()
+    patch_exec(msg).exec()

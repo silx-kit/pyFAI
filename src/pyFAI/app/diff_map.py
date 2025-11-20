@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2025"
+__date__ = "20/11/2025"
 __satus__ = "Production"
 
 import sys
@@ -71,7 +71,7 @@ def main(args=None):
         window.set_config(config)
         # window.restore()
         window.show()
-        result = patch_exec(app).exec_()
+        result = patch_exec(app).exec()
         sys.exit(result)
         del context
     else:

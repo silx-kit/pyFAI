@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "17/11/2025"
+__date__ = "20/11/2025"
 
 import fabio
 import os
@@ -70,7 +70,7 @@ class _LoadImageFromFileDialogAction(qt.QAction):
         dialog.setModal(True)
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
 
-        result = patch_exec(dialog).exec_()
+        result = patch_exec(dialog).exec()
         if result:
             filename = dialog.selectedFiles()[0]
             if self.parent()._isDataSupported():
@@ -108,7 +108,7 @@ class _LoadImageFromImageDialogAction(qt.QAction):
         dialog.setWindowTitle(self.parent().dialogTitle())
         dialog.setModal(True)
 
-        result = patch_exec(dialog).exec_()
+        result = patch_exec(dialog).exec()
         if result:
             url = dialog.selectedUrl()
             data = dialog.selectedImage()

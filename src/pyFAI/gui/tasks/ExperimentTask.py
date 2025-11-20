@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "17/11/2025"
+__date__ = "20/11/2025"
 
 import numpy
 import logging
@@ -146,7 +146,7 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setData(detector=detector,
                        image=image, mask=mask, colormap=colormap,
                        geometry=None)
-        patch_exec(dialog).exec_()
+        patch_exec(dialog).exec()
 
     def _updateModel(self, model):
         self.__synchronizeRawView.registerModel(model.rawPlotView())
@@ -236,7 +236,7 @@ class ExperimentTask(AbstractCalibrationTask):
         detector = settings.detectorModel().detector()
         dialog = DetectorSelectorDialog(self)
         dialog.selectDetector(detector)
-        result = patch_exec(dialog).exec_()
+        result = patch_exec(dialog).exec()
         if result and dialog.selectedDetector():
             newDetector = dialog.selectedDetector()
             settings.detectorModel().setDetector(newDetector)
@@ -450,7 +450,7 @@ class ExperimentTask(AbstractCalibrationTask):
     def loadCalibrant(self):
         dialog = self.createCalibrantDialog("Load calibrant file")
 
-        result = patch_exec(dialog).exec_()
+        result = patch_exec(dialog).exec()
         if not result:
             return
 

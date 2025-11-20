@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2025"
+__date__ = "20/11/2025"
 __status__ = "production"
 
 import os
@@ -644,7 +644,7 @@ def main():
     window.setVisible(True)
     window.setAttribute(qt.Qt.WA_DeleteOnClose, True)
 
-    result = patch_exec(app).exec_()
+    result = patch_exec(app).exec()
 
     context.saveSettings()
 

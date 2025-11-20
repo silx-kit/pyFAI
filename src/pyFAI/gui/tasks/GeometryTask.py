@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "17/11/2025"
+__date__ = "20/11/2025"
 
 import logging
 import numpy
@@ -1124,4 +1124,4 @@ class GeometryTask(AbstractCalibrationTask):
         dialog.setData(detector=detector,
                        image=image, mask=mask, colormap=colormap,
                        geometry=geometry)
-        patch_exec(dialog).exec_()
+        patch_exec(dialog).exec()
