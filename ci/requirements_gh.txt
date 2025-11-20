@@ -23,6 +23,6 @@ silx >= 2
 psutil
 # Needed for ImageD11:
 numba; python_version < '3.14'
-numba>0.63.0b1; python_version >= '3.14'
+numba>=0.63.0b1; python_version >= '3.14'
 ImageD11
 importlib_resources; python_version < '3.9'
