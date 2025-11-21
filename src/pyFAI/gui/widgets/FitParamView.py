@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "19/11/2025"
+__date__ = "21/11/2025"
 
 from silx.gui import icons
 from silx.gui import qt
@@ -312,8 +312,8 @@ class FitParamView(qt.QObject):
         self.__unitChanged()  # enforce the relabeling if needed, only occures when saved config was with `energy`
 
         # right-click menu
-        self.__constraints.setContextMenuPolicy(qt.Qt.CustomContextMenu)
-        self.__constraints.customContextMenuRequested.connect(self.__show_context_menu)
+        self.__labelWidget.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        self.__labelWidget.customContextMenuRequested.connect(self.__show_context_menu)
 
     def __fireValueAccepted(self):
         self.sigValueAccepted.emit()
@@ -445,8 +445,8 @@ class FitParamView(qt.QObject):
             action_two.triggered.connect(self.__restore_wavelength)
             global_pos = self.__constraints.mapToGlobal(pos)
 
-            # patch_exec(menu).exec_(global_pos) #TODO after PR2689 is merged
-            menu.exec_(global_pos)
+            # patch_exec(menu).exec(global_pos) #TODO after PR2689 is merged
+            menu.exec(global_pos)
 
     def __update_experiment_settings(self):
         wavelength = self.__quantity.model().value()
