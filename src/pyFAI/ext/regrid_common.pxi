@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/11/2024"
+__date__ = "18/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -373,16 +373,20 @@ cdef inline floating area4(floating a0,
 def _sp_area4(floating a0, floating a1, floating b0, floating b1, floating c0, floating c1, floating d0, floating d1):
     return area4(a0, a1, b0, b1, c0, c1, d0, d1)
 
-cdef inline position_t _recenter_helper(position_t azim, bint chiDiscAtPi) noexcept nogil:
+cdef inline position_t _recenter_helper(position_t azim,
+                                        position_t period,
+                                        bint chiDiscAtPi=1) noexcept nogil:
     """Helper function
     """
-    if (chiDiscAtPi and azim<0) or (not chiDiscAtPi and azim<pi):
-        return azim + twopi
+    if (chiDiscAtPi and azim<0) or (not chiDiscAtPi and azim<0.5*period):
+        return azim + period
     else:
         return azim
 
 
-cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) noexcept nogil:
+cdef inline position_t _recenter(position_t[:, ::1] pixel,
+                                 position_t pos1_period=twopi,
+                                 bint chiDiscAtPi=1) noexcept nogil:
     cdef position_t a0, a1, b0, b1, c0, c1, d0, d1, center1, area, hi
     a0 = pixel[0, 0]
     a1 = pixel[0, 1]
@@ -393,19 +397,19 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) noe
     d0 = pixel[3, 0]
     d1 = pixel[3, 1]
     area = area4p(a0, a1, b0, b1, c0, c1, d0, d1) # check if the quad is crossed
-    if area>0:
+    if pos1_period>0.0 and area>0:
         # area are expected to be negative except for pixel on the boundary
-        a1 = _recenter_helper(a1, chiDiscAtPi)
-        b1 = _recenter_helper(b1, chiDiscAtPi)
-        c1 = _recenter_helper(c1, chiDiscAtPi)
-        d1 = _recenter_helper(d1, chiDiscAtPi)
+        a1 = _recenter_helper(a1, pos1_period, chiDiscAtPi)
+        b1 = _recenter_helper(b1, pos1_period, chiDiscAtPi)
+        c1 = _recenter_helper(c1, pos1_period, chiDiscAtPi)
+        d1 = _recenter_helper(d1, pos1_period, chiDiscAtPi)
         center1 = 0.25 * (a1 + b1 + c1 + d1)
-        hi = pi if chiDiscAtPi else twopi
+        hi = 0.5*pos1_period if chiDiscAtPi else pos1_period
         if center1>hi:
-            a1 -= twopi
-            b1 -= twopi
-            c1 -= twopi
-            d1 -= twopi
+            a1 -= pos1_period
+            b1 -= pos1_period
+            c1 -= pos1_period
+            d1 -= pos1_period
         pixel[0, 1] = a1
         pixel[1, 1] = b1
         pixel[2, 1] = c1
@@ -413,7 +417,9 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel, bint chiDiscAtPi) noe
         area = area4p(a0, a1, b0, b1, c0, c1, d0, d1)
     return area
 
-def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
+def recenter(position_t[:, ::1] pixel,
+             position_t pos1_period=twopi,
+             bint chiDiscAtPi=True):
     """This function checks the pixel to be on the azimuthal discontinuity
     via the sign of its algebraic area and recenters the corner coordinates in a
     consistent manner to have all azimuthal coordinate in
@@ -424,7 +430,7 @@ def recenter(position_t[:, ::1] pixel, bint chiDiscAtPi=1):
     :param chiDiscAtPi: set to 0 to indicate the range goes from 0-2π instead of the default -π:π
     :return: signed area (approximate & negative)
     """
-    return _recenter(pixel, chiDiscAtPi)
+    return _recenter(pixel, pos1_period, chiDiscAtPi)
 
 
 cdef inline any_t _clip(any_t value, any_t min_val, any_t max_val) noexcept nogil:

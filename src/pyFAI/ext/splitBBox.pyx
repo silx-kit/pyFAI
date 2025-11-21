@@ -36,7 +36,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/06/2024"
+__date__ = "18/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -123,6 +123,7 @@ def histoBBox1d(weights,
         mask_t[::1] cmask=None
         acc_t inv_area, delta_right, delta_left
         acc_t[::1] sum_data, sum_count
+
 
     cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
     cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
@@ -526,11 +527,11 @@ def histoBBox2d(weights,
                 solidangle=None,
                 polarization=None,
                 bint allow_pos0_neg=0,
+                position_t pos1_period=twopi,
                 bint chiDiscAtPi=1,
                 empty=0.0,
                 double normalization_factor=1.0,
                 int coef_power=1,
-                bint clip_pos1=1,
                 **back_compat_kwargs):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
@@ -557,8 +558,8 @@ def histoBBox2d(weights,
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
     :param coef_power: set to 2 for variance propagation, leave to 1 for mean calculation
-    :param clip_pos1: clip the azimuthal range to -pi/pi (or 0-2pi), set to False to deactivate behavior
-
+    :param pos1_period: periodicity of dim1, 2π, or 0 to non-periodic dimension
+        If pos1_period: clip_pos1 is enforced, the azimuthal range is set to [-π π] (or [0 2π] depending on chiDiscAtPi)
 
     :return: I, bin_centers0, bin_centers1, weighted histogram(2D), unweighted histogram (2D)
     """
@@ -611,6 +612,7 @@ def histoBBox2d(weights,
         Py_ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
         bint check_mask = False, check_dummy = False
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
+        bint clip_pos1 = True if pos1_period>0 else False
 
     if mask is not None:
         assert mask.size == size, "mask size"
@@ -810,12 +812,11 @@ def histoBBox2d_engine(weights,
                        polarization=None,
                        absorption=None,
                        bint allow_pos0_neg=False,
+                       position_t pos1_period=twopi,
                        bint chiDiscAtPi=1,
                        data_t empty=0.0,
                        double normalization_factor=1.0,
-                       bint weighted_average=True,
-                       bint clip_pos1=True
-                       ):
+                       bint weighted_average=True):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
 
@@ -845,7 +846,8 @@ def histoBBox2d_engine(weights,
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the result by this value
     :param bool weighted_average: set to False to use an unweighted mean (similar to legacy) instead of the weighted average.
-    :param clip_pos1: clip the azimuthal range to [-pi pi] (or [0 2pi]), set to False to deactivate behavior
+    :param pos1_period: periodicity of dim1, 2π, or 0 to non-periodic dimension
+        If pos1_period: clip_pos1 is enforced, the azimuthal range is set to [-π π] (or [0 2π] depending on chiDiscAtPi)
     :return: Integrate2dtpl namedtuple: "radial azimuthal intensity error signal variance normalization count"
     """
 
@@ -887,6 +889,7 @@ def histoBBox2d_engine(weights,
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
         bint do_absorption = False
         preproc_t value
+        bint clip_pos1 = True if pos1_period>0 else False
 
     if variance is not None:
         assert variance.size == size, "variance size"
