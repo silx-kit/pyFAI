@@ -38,7 +38,6 @@ from ..utils import eventutils
 from ..utils import validators
 from ..utils.units import Unit
 from ..CalibrationContext import CalibrationContext
-# from .. import patch_exec  # after PR2689 is merged
 
 
 class ConstraintsPopup(qt.QFrame):
@@ -445,7 +444,6 @@ class FitParamView(qt.QObject):
             action_two.triggered.connect(self.__restore_wavelength)
             global_pos = self.__constraints.mapToGlobal(pos)
 
-            # patch_exec(menu).exec(global_pos) #TODO after PR2689 is merged
             menu.exec(global_pos)
 
     def __update_experiment_settings(self):
