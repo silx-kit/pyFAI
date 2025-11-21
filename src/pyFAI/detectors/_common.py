@@ -558,6 +558,7 @@ class Detector(metaclass=DetectorMeta):
                 "pixelY": self._pixel1 * 1e6,
                 "splineFile": self._splinefile}
 
+    @deprecated(since_version="2025.10", reason="use set_config")
     def setPyFAI(self, **kwarg):
         """
         Twin method of getPyFAI: setup a detector instance according to a description
@@ -568,7 +569,7 @@ class Detector(metaclass=DetectorMeta):
         if "detector" in kwarg:
             import pyFAI.detectors
             config = {}
-            for key in ("pixel1", "pixel2", 'max_shape', "splineFile", "orientation"):
+            for key in ("pixel1", "pixel2", 'max_shape', "splineFile", "orientation", "sensor"):
                 if key in kwarg:
                     config[key.lower()] = kwarg[key]
             self = pyFAI.detectors.detector_factory(kwarg["detector"], config)

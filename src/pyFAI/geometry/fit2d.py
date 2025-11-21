@@ -38,9 +38,10 @@ __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
+import typing
 import logging
-from math import pi, cos, sin, sqrt, acos, asin
 from ..utils.dataclasses import case_insensitive_dataclass
+from math import pi, cos, sin, sqrt, acos, asin
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
 logger = logging.getLogger(__name__)
@@ -85,7 +86,7 @@ class Fit2dGeometry:
 
     def _asdict(self):
         "Mirror of _asdict method from NamedTuple"
-        return {k: self.__getattr__(k) for k in self.__annotations__}
+        return {k: self.__getattr__(k) for k in typing.get_type_hints(self.__class__)}
 
     def __repr__(self):
         return f"DirectBeamDist= {self.directDist:.3f} mm\tCenter: x={self.centerX:.3f}, y={self.centerY:.3f} pix\t"\

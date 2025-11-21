@@ -35,7 +35,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "28/09/2023"
+__date__ = "18/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -147,7 +147,7 @@ class SplitBBoxIntegrator:
                  mask_checksum=None,
                  bint allow_pos0_neg=False,
                  bint chiDiscAtPi=True,
-                 bint clip_pos1=True):
+                 position_t pos1_period=twopi):
         """Constructor of the class:
 
         :param pos0: 1D array with pos0: tth or q_vect
@@ -161,7 +161,8 @@ class SplitBBoxIntegrator:
         :param mask_checksum: int with the checksum of the mask
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param chiDiscAtPi: tell if azimuthal discontinuity is at 0 (0° when False) or π (180° when True)
-        :param clip_pos1: clip the azimuthal range to [-π π] (or [0 2π] depending on chiDiscAtPi), set to False to deactivate behavior
+        :param pos1_period: periodicity of dim1, 2π, or 0 to non-periodic dimension
+        If pos1_period: clip_pos1 is enforced, the azimuthal range is set to [-π π] (or [0 2π] depending on chiDiscAtPi)
         """
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
         self.size = pos0.size
@@ -199,6 +200,7 @@ class SplitBBoxIntegrator:
         self.pos1_range = pos1_range
         cdef:
             position_t pos0_max, pos1_max, pos0_maxin, pos1_maxin
+            bint clip_pos1 = True if pos1_period>0 else False
         pos0_min, pos0_maxin, pos1_min, pos1_maxin = calc_boundaries(self.cpos0, self.dpos0,
                                                                      self.cpos1, self.dpos1,
                                                                      self.cmask, pos0_range, pos1_range,
