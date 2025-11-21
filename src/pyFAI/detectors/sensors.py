@@ -157,7 +157,7 @@ ALL_MATERIALS["CdTe"] = CdTe_MATERIAL = SensorMaterial("CdTe", density=5.85)
 ALL_MATERIALS["GaAs"] = GaAs_MATERIAL = SensorMaterial("GaAs", density=5.3176)
 ALL_MATERIALS["Gd2O2S"] = Gd2O2S_MATERIAL = SensorMaterial("Gd2O2S", density=7.32)
 
-ALL_MATERIALS["BaFBrIEu"] = BaFBrIEu_MATERIAL = SensorMaterial("BaFBr0.85I0.15:Eu2+", density=5.1)  # https://pmc.ncbi.nlm.nih.gov/articles/PMC2801734/
+ALL_MATERIALS["BaFBrIEu"] = BaFBrIEu_MATERIAL = SensorMaterial("BaFBr0.85I0.15:Eu2+", density=3.18)  # https://theses.hal.science/tel-04521313v1/file/SONG_PANYI_2023.pdf, p94
 ALL_MATERIALS["aSe"] = aSe_MATERIAL = SensorMaterial("aSe", density=4.26)  # https://pubchem.ncbi.nlm.nih.gov/compound/Selenium#section=Solubility
 
 @dataclass
