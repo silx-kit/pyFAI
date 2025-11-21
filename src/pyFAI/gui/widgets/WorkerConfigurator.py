@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2025"
+__date__ = "21/11/2025"
 __status__ = "development"
 
 import logging
@@ -50,7 +50,6 @@ from ...units import RADIAL_UNITS, to_unit
 from ..model.GeometryModel import GeometryModel
 from ..model.DataModel import DataModel
 from ..utils import units
-from .. import patch_exec
 from ...utils import stringutil
 from ..utils import FilterBuilder
 from ..model.ImageModel import ImageFilenameModel
@@ -466,7 +465,7 @@ class WorkerConfigurator(qt.QWidget):
         dialog.setModal(True)
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
 
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if not result:
             return None
 
@@ -476,7 +475,7 @@ class WorkerConfigurator(qt.QWidget):
     def selectDetector(self):
         dialog = DetectorSelectorDialog(self)
         dialog.selectDetector(self.__detector)
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if result:
             newDetector = dialog.selectedDetector()
             self.setDetector(newDetector)
@@ -497,7 +496,7 @@ class WorkerConfigurator(qt.QWidget):
         dialog = GeometryDialog(self)
         dialog.setGeometryModel(self.__geometryModel)
         dialog.setDetector(self.__detector)
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if result:
             geometry = dialog.geometryModel()
             if geometry.isValid(checkWaveLength=False):
@@ -508,7 +507,7 @@ class WorkerConfigurator(qt.QWidget):
     def selectOpenclDevice(self):
         dialog = OpenClDeviceDialog(self)
         dialog.selectDevice(self.__openclDevice)
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if result:
             device = dialog.device()
             self.__setOpenclDevice(device)
@@ -516,7 +515,7 @@ class WorkerConfigurator(qt.QWidget):
     def selectMethod(self):
         dialog = IntegrationMethodDialog(self)
         dialog.selectMethod(self.__method)
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if result:
             method = dialog.selectedMethod()
             dim = 2 if self.do_2D.isChecked() else 1
@@ -546,7 +545,7 @@ class WorkerConfigurator(qt.QWidget):
         builder.addFileFormat("JSON files", "json")
         dialog.setNameFilters(builder.getFilters())
 
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if not result:
             return
 
@@ -569,7 +568,7 @@ class WorkerConfigurator(qt.QWidget):
 #         builder.addFileFormat("JSON files", "json")
         dialog.setNameFilters(builder.getFilters())
 
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if not result:
             return
 

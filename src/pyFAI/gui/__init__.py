@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,4 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "20/11/2025"
-
-def patch_exec(widget):
-    """Ensure a `exec_` method exists, use `exec` instead if needed.
-
-    patches PySide6/PyQt5 for PyQt6 compatibility.
-    """
-    lst = dir(widget)
-    if "exec" not in lst and "exec_" in lst:
-        widget.exec = widget.exec_
-    return widget
+__date__ = "21/11/2025"

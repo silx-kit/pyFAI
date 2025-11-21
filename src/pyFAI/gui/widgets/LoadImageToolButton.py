@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "20/11/2025"
+__date__ = "21/11/2025"
 
 import fabio
 import os
@@ -35,7 +35,6 @@ from ..model.ImageModel import ImageFilenameModel
 from ..model.ImageModel import ImageFromFilenameModel
 from ..ApplicationContext import ApplicationContext
 from ..utils.FilterBuilder import FilterBuilder
-from .. import patch_exec
 
 _logger = logging.getLogger(__name__)
 
@@ -70,7 +69,7 @@ class _LoadImageFromFileDialogAction(qt.QAction):
         dialog.setModal(True)
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
 
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if result:
             filename = dialog.selectedFiles()[0]
             if self.parent()._isDataSupported():
@@ -108,7 +107,7 @@ class _LoadImageFromImageDialogAction(qt.QAction):
         dialog.setWindowTitle(self.parent().dialogTitle())
         dialog.setModal(True)
 
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if result:
             url = dialog.selectedUrl()
             data = dialog.selectedImage()

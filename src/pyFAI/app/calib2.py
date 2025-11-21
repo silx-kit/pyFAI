@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2025"
+__date__ = "21/11/2025"
 __status__ = "production"
 
 import os
@@ -42,7 +42,6 @@ from .. import calibrant
 from .. import detectors
 from ..io import image
 from ..io.ponifile import PoniFile
-from ..gui import patch_exec
 from .. import version as pyFAI_version, date as pyFAI_date
 from .. import units as pyFAI_units
 
@@ -644,7 +643,7 @@ def main():
     window.setVisible(True)
     window.setAttribute(qt.Qt.WA_DeleteOnClose, True)
 
-    result = patch_exec(app).exec()
+    result = app.exec()
 
     context.saveSettings()
 

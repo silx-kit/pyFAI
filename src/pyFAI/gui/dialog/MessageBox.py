@@ -25,13 +25,12 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "20/11/2025"
+__date__ = "21/11/2025"
 
 import logging
 import sys
 
 from silx.gui import qt
-from .. import patch_exec
 
 _logger = logging.getLogger(__name__)
 
@@ -73,4 +72,4 @@ def exception(parent, title, exc_info, logger=None):
     msg.setDetailedText(detailed)
 
     msg.raise_()
-    patch_exec(msg).exec()
+    (msg).exec()

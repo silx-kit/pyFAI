@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "20/11/2025"
+__date__ = "21/11/2025"
 
 import logging
 import numpy
@@ -51,7 +51,6 @@ from ..helper.MarkerManager import MarkerManager
 from ..helper import ProcessingWidget
 from ..helper import model_transform
 from ..utils import unitutils
-from .. import patch_exec
 from ... import units as core_units
 from ...geometry import fit2d
 from ...io.ponifile import PoniFile
@@ -1124,4 +1123,4 @@ class GeometryTask(AbstractCalibrationTask):
         dialog.setData(detector=detector,
                        image=image, mask=mask, colormap=colormap,
                        geometry=geometry)
-        patch_exec(dialog).exec()
+        (dialog).exec()

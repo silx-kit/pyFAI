@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2025"
+__date__ = "21/11/2025"
 __satus__ = "Production"
 
 import os
@@ -46,7 +46,6 @@ from silx.gui import qt
 from ..version import version as pyFAI_version, date as pyFAI_date
 from .. import utils
 from ..gui.utils.colorutils import DEFAULT_COLORMAP
-from ..gui import patch_exec
 import logging
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -184,7 +183,7 @@ def main(args=None):
     window.setOutputFile(outfile)
 
     print("Your mask-file will be saved into %s" % (outfile))
-    result = patch_exec(app).exec()
+    result = app.exec()
 
     mask = window.getSelectionMask()
     postProcessId21(processFile, mask)

@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "20/11/2025"
+__date__ = "21/11/2025"
 
 import os
 import logging
@@ -39,7 +39,6 @@ from ..model.DataModel import DataModel
 from ..utils import validators, block_signals
 from ..ApplicationContext import ApplicationContext
 from ..utils import FilterBuilder
-from .. import patch_exec
 from ...detectors.sensors import SensorConfig
 
 _logger = logging.getLogger(__name__)
@@ -340,7 +339,7 @@ class DetectorSelectorDrop(qt.QWidget):
     def loadSplineFile(self):
         previousFile = self.__splineFile.value()
         dialog = self.createSplineDialog("Load spline image", previousFile=previousFile)
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if not result:
             return
         filename = dialog.selectedFiles()[0]
@@ -411,7 +410,7 @@ class DetectorSelectorDrop(qt.QWidget):
         dialog = self.createFileDialog(
             "Load detector from HDF5 file", previousFile=previousFile
         )
-        result = patch_exec(dialog).exec()
+        result = (dialog).exec()
         if not result:
             return
         filename = dialog.selectedFiles()[0]
