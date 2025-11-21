@@ -31,7 +31,7 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "07/10/2025"
+__date__ = "21/11/2025"
 __copyright__ = "2015-2025, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -342,8 +342,12 @@ class OCL_Preproc(OpenclProcessing):
         # concatenate all needed source files into a single openCL module
         kernel_files = kernel_files or self.kernel_files
         # Explicit handling of fp64 since Apple silicon compiler wrongly clams fp64 support see issue #2339
+        compile_options = f"-D NIMAGE={self.size}"
         fp64_support = 1 if "cl_khr_fp64" in self.ctx.devices[0].extensions else 0
-        compile_options = f"-D NIMAGE={self.size} -D cl_khr_fp64={fp64_support}"
+        device = self.ctx.devices[0]
+        if not(device.platform.name == "Apple" and devices.platform.get_device()[0].type == 2):
+            # not Apple CPU
+            compile_options += f" -D cl_khr_fp64={fp64_support}"
         OpenclProcessing.compile_kernels(self, kernel_files, compile_options)
 
     def send_buffer(self, data, dest, convert=True):

@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2020-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "21/11/2025"
 
 import logging
 import numpy
@@ -167,6 +167,10 @@ class TestOclPeakFinder(unittest.TestCase):
         """
         test for peakfinder
         """
+        valid_opencl = False if ocl.get_platform("Apple") else True
+        if not valid_opencl:
+            self.skipTest("Apple platform detected")
+
         unit = "r_m"
         msk = self.img < 0
         engine = self.ai.setup_sparse_integrator(self.img.shape, 1000, mask=msk, split="no", algo="CSR", unit=unit)
