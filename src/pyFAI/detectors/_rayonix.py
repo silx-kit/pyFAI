@@ -503,13 +503,10 @@ class RayonixMx325(_Rayonix):
 # Define sensors used in MAR detectors
 
 # MAR345 detector: BaFBr0.85I0.15:Eu2+ coating, 100 μm thickness
-BaFBrIEu = SensorConfig.from_dict({"material": "BaFBr0.85I0.15:Eu2+", "thickness": 100e-6})
-
-# MARCCD detector: Gd2O2S phosphor, 400 μm thickness
-Gd2O2S = SensorConfig.from_dict({"material": "Gd2O2S","thickness": 400e-6})
+BaFBrIEu100 = SensorConfig.from_dict({"material": "BaFBr0.85I0.15:Eu2+", "thickness": 100e-6})
 
 # MAR555 detector: Amorphous Selenium, 300 μm thickness
-aSe = SensorConfig.from_dict({"material": "aSe", "thickness": 300e-6})
+aSe300 = SensorConfig.from_dict({"material": "aSe", "thickness": 300e-6})
 
 
 
@@ -536,7 +533,7 @@ class Mar345(Detector):
                   1800: 100e-6}
 
     aliases = ["MAR 345", "Mar3450"]
-    SENSORS=(BaFBrIEu)
+    SENSORS=(BaFBrIEu100)
 
     def __init__(self, pixel1=100e-6, pixel2=100e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
         super().__init__(pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor=sensor)
@@ -600,7 +597,7 @@ class Mar555(Detector):
     force_pixel = True
     MAX_SHAPE = (3072, 2560)
     aliases = ["MAR 555"]
-    SENSORS=(aSe)
+    SENSORS=(aSe300)
 
     def __init__(self, pixel1=139e-6, pixel2=139e-6, max_shape=None, orientation=0, sensor:SensorConfig|None=None):
         super().__init__(pixel1, pixel2, max_shape=max_shape, orientation=orientation, sensor = sensor)
