@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2025"
+__date__ = "18/11/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1031,7 +1031,7 @@ class AzimuthalIntegrator(Integrator):
                                      variance=variance,
                                      error_model=error_model,
                                      allow_pos0_neg=not radial_unit.positive,
-                                     clip_pos1=bool(azimuth_unit.period),
+                                     pos1_period=azimuth_unit.period if azimuth_unit.period else 0.0,
                                      weighted_average=method.weighted_average,)
             elif method.split_lower == "no":
                 if method.impl_lower == "opencl":
@@ -1139,7 +1139,7 @@ class AzimuthalIntegrator(Integrator):
                                          radial_range=radial_range,
                                          azimuth_range=azimuth_range,
                                          allow_radial_neg=not radial_unit.positive,
-                                         clip_pos1=bool(azimuth_unit.period),
+                                         pos1_period=azimuth_unit.period if azimuth_unit.period else 0.0,
                                          weighted_average=method.weighted_average,)
 
         intensity = intpl.intensity
