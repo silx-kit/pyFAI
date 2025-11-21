@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/03/2025"
+__date__ = "21/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -68,7 +68,7 @@ cdef inline void sort_float4(float4_t[::1] ary) noexcept nogil:
     cdef:
         int size
     size = ary.shape[0]
-    sort(&ary[0], &ary[size-1]+1, cmp)
+    sort(&ary[0], &ary[size-1]+1, &cmp)
 
 
 cdef class CsrIntegrator(object):
