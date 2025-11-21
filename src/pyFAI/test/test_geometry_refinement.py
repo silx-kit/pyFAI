@@ -32,13 +32,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/11/2025"
 
 import unittest
 import os
 import numpy
 import random
 import logging
+import copy
 from .utilstest import UtilsTest
 from .. import geometryRefinement
 from .. import calibrant
@@ -839,6 +840,8 @@ class TestGeometryRefinement(unittest.TestCase):
         mycalibrant.wavelength = 1e-10
         r2 = GeometryRefinement(data, calibrant=mycalibrant, detector="Fairchild",
                                 wavelength=mycalibrant.wavelength)
+        r3 = copy.copy(r2)
+        r4 = copy.copy(r2)
         # print(r2)
         r2.guess_poni()
         # print(r2)
@@ -855,6 +858,25 @@ class TestGeometryRefinement(unittest.TestCase):
             self.assertAlmostEqual(ref[key][0], r2.__getattribute__(key), delta=ref[key][1],
                                    msg="%s is %s, I expected %s%s%s" % (key, r2.__getattribute__(key), ref[key], os.linesep, r2))
 
+        # test the copy
+        self.assertEqual(r3.calibrant, r2.calibrant)
+        self.assertEqual(r3.data, r2.data)
+        r3.guess_poni()
+        r3.refine2(10000000, fix=[])
+        for key in ref.keys():
+            self.assertAlmostEqual(r3.__getattribute__(key), r2.__getattribute__(key), delta=ref[key][1],
+                                   msg="%s is %s, I expected %s%s%s" % (key, r3.__getattribute__(key), ref[key], os.linesep, r3))
+
+        # test the deep-copy
+        self.assertEqual(r4.calibrant, r2.calibrant)
+        self.assertEqual(r4.data, r2.data)
+        r4.guess_poni()
+        r4.refine2(10000000, fix=[])
+        for key in ref.keys():
+            self.assertAlmostEqual(r4.__getattribute__(key), r2.__getattribute__(key), delta=ref[key][1],
+                                   msg="%s is %s, I expected %s%s%s" % (key, r4.__getattribute__(key), ref[key], os.linesep, r4))
+
+        raise RuntimeError("Pipo")
 
 def suite():
     testsuite = unittest.TestSuite()
