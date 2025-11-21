@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2025"
+__date__ = "21/11/2025"
 __satus__ = "production"
 
 import sys
@@ -51,7 +51,6 @@ from ..io.integration_config import WorkerConfig
 from ..utils.shell import ProgressBar
 from ..utils import logging_utils, header_utils
 from ..worker import Worker
-from ..gui import patch_exec
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -110,7 +109,7 @@ def integrate_gui(options, args):
 
             dialog.setFileMode(qt.QFileDialog.ExistingFiles)
             moveCenterTo(dialog, center)
-            result = patch_exec(dialog).exec()
+            result = dialog.exec()
             if not result:
                 return
             input_data = [str(i) for i in dialog.selectedFiles()]
@@ -139,7 +138,7 @@ def integrate_gui(options, args):
         qtProcess = QtProcess()
         qtProcess.start()
 
-        result = patch_exec(dialog).exec()
+        result = dialog.exec()
         if result:
             qt.QMessageBox.information(dialog,
                                        "Integration",
@@ -154,7 +153,7 @@ def integrate_gui(options, args):
     window.batchProcessRequested.connect(validateConfig)
     window.show()
 
-    result = patch_exec(app).exec()
+    result = app.exec()
     context.saveSettings()
     return result
 
