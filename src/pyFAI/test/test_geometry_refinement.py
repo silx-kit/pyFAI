@@ -860,7 +860,7 @@ class TestGeometryRefinement(unittest.TestCase):
 
         # test the copy
         self.assertEqual(r3.calibrant, r2.calibrant)
-        self.assertEqual(r3.data, r2.data)
+        self.assertTrue(numpy.all(r3.data==r2.data))
         r3.guess_poni()
         r3.refine2(10000000, fix=[])
         for key in ref.keys():
@@ -869,14 +869,13 @@ class TestGeometryRefinement(unittest.TestCase):
 
         # test the deep-copy
         self.assertEqual(r4.calibrant, r2.calibrant)
-        self.assertEqual(r4.data, r2.data)
+        self.assertTrue(numpy.all(r4.data == r2.data))
         r4.guess_poni()
         r4.refine2(10000000, fix=[])
         for key in ref.keys():
             self.assertAlmostEqual(r4.__getattribute__(key), r2.__getattribute__(key), delta=ref[key][1],
                                    msg="%s is %s, I expected %s%s%s" % (key, r4.__getattribute__(key), ref[key], os.linesep, r4))
 
-        raise RuntimeError("Pipo")
 
 def suite():
     testsuite = unittest.TestSuite()

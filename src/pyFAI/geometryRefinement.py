@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/10/2025"
+__date__ = "21/11/2025"
 __status__ = "development"
 
 import os
@@ -71,6 +71,23 @@ ROCA = "/opt/saxs/roca"
 
 
 class GeometryRefinement(AzimuthalIntegrator):
+    _IMMUTABLE_ATTRS = AzimuthalIntegrator._IMMUTABLE_ATTRS + (
+            "_dist_min",
+            "_dist_max",
+            "_poni1_min",
+            "_poni1_max",
+            "_poni2_min",
+            "_poni2_max",
+            "_rot1_min",
+            "_rot1_max",
+            "_rot2_min",
+            "_rot2_max",
+            "_rot3_min",
+            "_rot3_max",
+            "_wavelength_min",
+            "_wavelength_max",
+    )
+
     PARAM_ORDER = ("dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength")
 
     def __init__(
@@ -189,9 +206,23 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._wavelength_min = 1e-15
         self._wavelength_max = 100.0e-10
 
+    def __copy__(self):
+        """:return: a shallow copy of itself."""
+        new = self.__class__(data=self.data,
+                             detector=self.detector,
+                             calibrant = self.calibrant)
+        for key in self._IMMUTABLE_ATTRS:
+            new.__setattr__(key, self.__getattribute__(key))
+        new.param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
+        new._cached_array = self._cached_array.copy()
+        return new
+
     def __deepcopy__(self, memo=None):
-        if memo is None:
-            memo = {}
+        """deep copy helper function
+
+        :param memo: dict with modified objects
+        :return: a deep copy of itself."""
+
         data = copy.deepcopy(self.data, memo=memo)
         dist = copy.deepcopy(self._dist, memo=memo)
         poni1 = copy.deepcopy(self._poni1, memo=memo)
@@ -221,36 +252,8 @@ class GeometryRefinement(AzimuthalIntegrator):
             wavelength=wavelength,
             calibrant=calibrant,
         )
-        numerical = [
-            "_dist",
-            "_poni1",
-            "_poni2",
-            "_rot1",
-            "_rot2",
-            "_rot3",
-            "chiDiscAtPi",
-            "_dssa_order",
-            "_wavelength",
-            "_oversampling",
-            "_correct_solid_angle_for_spline",
-            "_transmission_normal",
-            "_dist_min",
-            "_dist_max",
-            "_poni1_min",
-            "_poni1_max",
-            "_poni2_min",
-            "_poni2_max",
-            "_rot1_min",
-            "_rot1_max",
-            "_rot2_min",
-            "_rot2_max",
-            "_rot3_min",
-            "_rot3_max",
-            "_wavelength_min",
-            "_wavelength_max",
-        ]
         memo[id(self)] = new
-        for key in numerical:
+        for key in self._IMMUTABLE_ATTRS:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
