@@ -344,8 +344,8 @@ class OCL_Preproc(OpenclProcessing):
         # Explicit handling of fp64 since Apple silicon compiler wrongly clams fp64 support see issue #2339
         compile_options = f"-D NIMAGE={self.size}"
         fp64_support = 1 if "cl_khr_fp64" in self.ctx.devices[0].extensions else 0
-        device = self.ctx.devices[0]
-        if not(device.platform.name == "Apple" and devices.platform.get_device()[0].type == 2):
+        platform = self.ctx.devices[0].platform
+        if not(platform.name == "Apple" and platform.get_device()[0].type == 2):
             # not Apple CPU
             compile_options += f" -D cl_khr_fp64={fp64_support}"
         OpenclProcessing.compile_kernels(self, kernel_files, compile_options)

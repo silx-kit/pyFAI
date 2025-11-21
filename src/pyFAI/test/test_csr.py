@@ -64,9 +64,8 @@ class TestCSR(utilstest.ParametricTestCase):
 
     @unittest.skipIf((utilstest.UtilsTest.opencl is None) or (opencl.ocl is None), "Test on OpenCL disabled")
     def test_opencl_csr(self):
-        if UtilsTest.opencl and pyopencl:
-            import pyFAI.opencl
-            valid_opencl = False if pyFAI.opencl.ocl.get_platform("Apple") else True
+        if UtilsTest.opencl and opencl.ocl:
+            valid_opencl = False if opencl.ocl.get_platform("Apple") else True
         else:
             valid_opencl = False
         if not valid_opencl:
