@@ -2171,7 +2171,7 @@ class Geometry:
         """
         res = None
         if type_ == "dict":
-            res = self.getPyFAI()
+            res = self.get_config()
         else:  # type_ == "list":
             f2d = self.getFit2D()
             res = [

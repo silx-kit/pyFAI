@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "21/11/2025"
 __satus__ = "Production"
 
 import sys
@@ -70,7 +70,8 @@ def main(args=None):
         window.set_config(config)
         # window.restore()
         window.show()
-        sys.exit(app.exec_())
+        result = app.exec()
+        sys.exit(result)
         del context
     else:
         dt.configure_worker(config.ai)

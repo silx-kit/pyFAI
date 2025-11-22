@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2025"
+__date__ = "17/11/2025"
 __status__ = "production"
 
 
@@ -85,4 +85,3 @@ def maximize_fig(fig=None):
             except TypeError:
                 mng.resize(*win_shape)
     update_fig(fig)
-

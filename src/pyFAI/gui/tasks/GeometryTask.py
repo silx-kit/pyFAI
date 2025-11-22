@@ -23,9 +23,9 @@
 #
 # ###########################################################################*/
 
-__authors__ = ["V. Valls"]
+__authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "31/10/2025"
+__date__ = "21/11/2025"
 
 import logging
 import numpy
@@ -34,9 +34,10 @@ import datetime
 from silx.gui import qt
 from silx.gui import icons
 import silx.gui.plot
+from silx.image import marchingsquares
 
-import pyFAI.utils
-from pyFAI.utils import stringutil
+from ... import utils as pyFAI_utils
+from ...utils import stringutil
 from .AbstractCalibrationTask import AbstractCalibrationTask
 from ..helper.RingCalibration import RingCalibration
 from ..helper.SynchronizeRawView import SynchronizeRawView
@@ -54,7 +55,6 @@ from ... import units as core_units
 from ...geometry import fit2d
 from ...io.ponifile import PoniFile
 
-from silx.image import marchingsquares
 
 _logger = logging.getLogger(__name__)
 
@@ -561,7 +561,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
 class GeometryTask(AbstractCalibrationTask):
 
     def _initGui(self):
-        qt.loadUi(pyFAI.utils.get_ui_file("calibration-geometry.ui"), self)
+        qt.loadUi(pyFAI_utils.get_ui_file("calibration-geometry.ui"), self)
         icon = icons.getQIcon("pyfai:gui/icons/task-fit-geometry")
         self.setWindowIcon(icon)
 
@@ -1123,4 +1123,4 @@ class GeometryTask(AbstractCalibrationTask):
         dialog.setData(detector=detector,
                        image=image, mask=mask, colormap=colormap,
                        geometry=geometry)
-        dialog.exec_()
+        (dialog).exec()
