@@ -64,6 +64,13 @@ class TestCSR(utilstest.ParametricTestCase):
 
     @unittest.skipIf((utilstest.UtilsTest.opencl is None) or (opencl.ocl is None), "Test on OpenCL disabled")
     def test_opencl_csr(self):
+        if UtilsTest.opencl and opencl.ocl:
+            valid_opencl = False if opencl.ocl.get_platform("Apple") else True
+        else:
+            valid_opencl = False
+        if not valid_opencl:
+            self.skipTest("Apple platform detected")
+
         testcases = [8 * 2 ** i for i in range(6)]  # [8, 16, 32, 64, 128, 256]
         for workgroup_size in testcases:
             with self.subTest(workgroup_size=workgroup_size):
