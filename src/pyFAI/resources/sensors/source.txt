@@ -1,2 +1,6 @@
 https://physics.nist.gov/PhysRefData/XrayMassCoef/tab3.html
 https://physics.nist.gov/PhysRefData/XrayMassCoef/tab4.html
+
+For Fuji-I.P.: 
+ * data from https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html
+ * calculated by Paul Antoine DOUISSARD, ESRF
