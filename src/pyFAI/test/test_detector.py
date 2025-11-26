@@ -431,6 +431,9 @@ class TestDetector(unittest.TestCase):
         fs2 = sensors.SensorConfig.parse(str(fs))
         self.assertTrue(ts.material==ts2.material)
         self.assertTrue(fs2==fs)
+    
+    def test_sensor3(self):
+        self.assertAlmostEqual(sensors.BaFBr085I015_MATERIAL.absorbance(20, 1e-4), 0.6538, 3)
 
 
 
