@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "21/11/2025"
 __satus__ = "production"
 
 import sys
@@ -109,7 +109,7 @@ def integrate_gui(options, args):
 
             dialog.setFileMode(qt.QFileDialog.ExistingFiles)
             moveCenterTo(dialog, center)
-            result = dialog.exec_()
+            result = dialog.exec()
             if not result:
                 return
             input_data = [str(i) for i in dialog.selectedFiles()]
@@ -138,7 +138,7 @@ def integrate_gui(options, args):
         qtProcess = QtProcess()
         qtProcess.start()
 
-        result = dialog.exec_()
+        result = dialog.exec()
         if result:
             qt.QMessageBox.information(dialog,
                                        "Integration",
@@ -153,7 +153,7 @@ def integrate_gui(options, args):
     window.batchProcessRequested.connect(validateConfig)
     window.show()
 
-    result = app.exec_()
+    result = app.exec()
     context.saveSettings()
     return result
 

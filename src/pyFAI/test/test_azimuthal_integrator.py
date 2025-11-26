@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/11/2025"
 
 import unittest
 import os
@@ -262,8 +262,14 @@ class TestAzimHalfFrelon(unittest.TestCase):
     def test_medfilt1d(self):
         N = 1000
         param = {"unit": "2th_deg"}
-        # legacy version"
         if UtilsTest.opencl and pyopencl:
+            import pyFAI.opencl
+            valid_opencl = False if pyFAI.opencl.ocl.get_platform("Apple") else True
+        else:
+            valid_opencl = False
+
+        # legacy version"
+        if valid_opencl:
             with logging_disabled(logging.WARNING):
                 ref = self.ai.medfilt1d_legacy(self.data, N, method="bbox_csr", **param)
                 ocl = self.ai.medfilt1d_legacy(self.data, N, method="bbox_ocl_csr", **param)
@@ -285,7 +291,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         logger.info("test_medfilt1d ng median Rwp_python = %.3f", rwp_pyt)
         self.assertLess(rwp_pyt, 0.1, "Rwp medfilt1d_ng Cython/Python: %.3f" % rwp_pyt)
 
-        if UtilsTest.opencl and pyopencl:
+        if valid_opencl:
             ocl = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "opencl"), **param)
             rwp_ocl = mathutil.rwp(ref, ocl)
             logger.info("test_medfilt1d ng median Rwp_opencl = %.3f", rwp_ocl)
@@ -296,7 +302,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         rwp_pyt = mathutil.rwp(ref, pyt)
         logger.info("test_medfilt1d ng trimmed-mean Rwp_python = %.3f", rwp_pyt)
         self.assertLess(rwp_pyt, 2, "Rwp trimmed-mean Cython/Python: %.3f" % rwp_pyt)
-        if UtilsTest.opencl and pyopencl:
+        if valid_opencl:
             ocl = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", 'opencl'), percentile=(20, 80), **param)
             rwp_ocl = mathutil.rwp(ref, ocl)
             logger.info("test_medfilt1d ng trimmed-mean Rwp_opencl = %.3f", rwp_ocl)

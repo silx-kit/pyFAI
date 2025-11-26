@@ -26,30 +26,24 @@
 
 """Module containing holder classes, like returned objects."""
 
-__author__ = "Valentin Valls"
+__authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2025"
-__status__ = "production"
+__date__ = "17/11/2025"
+__status__ = "development"
 
-import sys
 import copy
 import logging
 import warnings
-import math
-from dataclasses import dataclass as _dataclass, fields as fields, asdict as asdict
 from typing import NamedTuple
 from enum import IntEnum
-from .utils.decorators import deprecated_warning
+from dataclasses import fields, asdict  # noqa
 import numpy
 from numpy.typing import ArrayLike
+from .utils.dataclasses import dataclass, case_insensitive_dataclass  # noqa
+from .utils.decorators import deprecated_warning
 
-# User defined dataclasses
-if sys.version_info >= (3, 10):
-    dataclass = _dataclass(slots=True)
-else:
-    dataclass = _dataclass
 
 logger = logging.getLogger(__name__)
 

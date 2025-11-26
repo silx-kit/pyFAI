@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20/11/2025"
+__date__ = "21/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -60,15 +60,17 @@ cdef struct float4_t:
     float s3
 float4_d = numpy.dtype([('s0','f4'),('s1','f4'),('s2','f4'),('s3','f4')])
 
+
 cdef inline bool cmp(float4_t a, float4_t b) noexcept nogil:
     return True if a.s0<b.s0 else False
+
 
 cdef inline void sort_float4(float4_t[::1] ary) noexcept nogil:
     "Sort in place of an array of float4 along first element (s0)"
     cdef:
         int size
     size = ary.shape[0]
-    sort(&ary[0], &ary[size-1]+1, cmp)
+    sort(&ary[0], &ary[size-1]+1, &cmp)
 
 
 cdef class CsrIntegrator(object):

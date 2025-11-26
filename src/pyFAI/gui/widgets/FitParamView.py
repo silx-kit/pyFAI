@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "06/11/2025"
+__date__ = "21/11/2025"
 
 from silx.gui import icons
 from silx.gui import qt
@@ -37,6 +37,7 @@ from ..model.DataModel import DataModel
 from ..utils import eventutils
 from ..utils import validators
 from ..utils.units import Unit
+from ..CalibrationContext import CalibrationContext
 
 
 class ConstraintsPopup(qt.QFrame):
@@ -309,6 +310,10 @@ class FitParamView(qt.QObject):
         displayedUnit.changed.connect(self.__unitChanged)
         self.__unitChanged()  # enforce the relabeling if needed, only occures when saved config was with `energy`
 
+        # right-click menu
+        self.__labelWidget.setContextMenuPolicy(qt.Qt.CustomContextMenu)
+        self.__labelWidget.customContextMenuRequested.connect(self.__show_context_menu)
+
     def __fireValueAccepted(self):
         self.sigValueAccepted.emit()
 
@@ -427,3 +432,26 @@ class FitParamView(qt.QObject):
             self.__label = label
             self.__labelWidget.setText(f"{label}:")
 
+    def __show_context_menu(self, pos: qt.QPoint) -> None:
+        """
+        Create a context menu to copy wavelength between experiments settings and the refinement widget
+        """
+        if self.__units[0] == Unit.METER_WL:
+            menu = qt.QMenu(self.__constraints)
+            action_one = menu.addAction("Update experiment settings's value")
+            action_one.triggered.connect(self.__update_experiment_settings)
+            action_two = menu.addAction("Restore experiment settings's value")
+            action_two.triggered.connect(self.__restore_wavelength)
+            global_pos = self.__constraints.mapToGlobal(pos)
+
+            menu.exec(global_pos)
+
+    def __update_experiment_settings(self):
+        wavelength = self.__quantity.model().value()
+        context = CalibrationContext.instance()  # singleton!
+        context.getCalibrationModel().experimentSettingsModel().wavelength().setValue(wavelength)
+
+    def __restore_wavelength(self):
+        context = CalibrationContext.instance()  # singleton!
+        wavelength = context.getCalibrationModel().experimentSettingsModel().wavelength().value()
+        self.__quantity.model().setValue(wavelength)
