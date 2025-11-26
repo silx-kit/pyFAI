@@ -1,6 +1,7 @@
 https://physics.nist.gov/PhysRefData/XrayMassCoef/tab3.html
 https://physics.nist.gov/PhysRefData/XrayMassCoef/tab4.html
 
-For Fuji-I.P.: 
+For Fuji-I.P. phosphor BaFBr0.85I0.15: 
  * data from https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html
  * calculated by Paul Antoine DOUISSARD, ESRF
+ * density from https://theses.hal.science/tel-04521313v1/file/SONG_PANYI_2023.pdf, p94
