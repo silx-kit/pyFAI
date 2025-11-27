@@ -806,7 +806,6 @@ class TestFlexible2D(unittest.TestCase):
 
     def test_flexible(self):
         for m in IntegrationMethod.select_method(dim=2, impl="cython"):
-            print(m)
             res = self.ai.integrate2d(self.img, 50, 50, method=m, unit=("qxgi_nm^-1", "qygi_nm^-1"))
             img, rad, azim = res
             self.assertTrue(numpy.nanmax(img) > 0, f"image is non empty for {m}")
@@ -818,7 +817,6 @@ class TestFlexible2D(unittest.TestCase):
             azimin = azim.min()
             self.assertTrue(10 < azimax < 20, f"Upper bound azimuthal is  10<{azimax}<20 for {m} ")
             self.assertTrue(-20 < azimin < -15, f"Lower bound azimuthal is  -20<{azimin}<-15 for {m}")
-        raise RuntimeError("plop")
 
 
 class TestUnweighted(unittest.TestCase):

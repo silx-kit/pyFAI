@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/11/2025"
+__date__ = "27/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -512,6 +512,7 @@ def _sp_integrate1d(buffer_t[::1] buffer,
                     floating stop0, floating stop1):
     _integrate1d(buffer, start0, start1, stop0, stop1)
 
+
 cdef inline void _integrate2d(buffer_t[:, ::1] box,
                               floating start0, floating start1,
                               floating stop0, floating stop1) noexcept nogil:
@@ -545,7 +546,7 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
                 abs_area = fabs(segment_area)
                 dA = (stop0 - start0)  # always positive
                 h = 0
-                while abs_area > 0:
+                while abs_area > 0 and h<box.shape[1]:
                     if dA > abs_area:
                         dA = abs_area
                         abs_area = -1
@@ -559,7 +560,7 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
                     abs_area = fabs(segment_area)
                     h = 0
                     dA = dP
-                    while abs_area > 0:
+                    while abs_area > 0 and h<box.shape[1]:
                         if dA > abs_area:
                             dA = abs_area
                             abs_area = -1
@@ -573,7 +574,7 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
                     abs_area = fabs(segment_area)
                     h = 0
                     dA = 1.0
-                    while abs_area > 0:
+                    while abs_area > 0 and h<box.shape[1]:
                         if dA > abs_area:
                             dA = abs_area
                             abs_area = -1
@@ -589,7 +590,7 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
                     abs_area = fabs(segment_area)
                     h = 0
                     dA = fabs(dP)
-                    while abs_area > 0:
+                    while abs_area > 0 and h<box.shape[1]:
                         if dA > abs_area:
                             dA = abs_area
                             abs_area = -1
@@ -605,7 +606,7 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
                 # sign = segment_area / abs_area
                 dA = (start0 - stop0)  # always positive
                 h = 0
-                while abs_area > 0:
+                while abs_area > 0 and h<box.shape[1]:
                     if dA > abs_area:
                         dA = abs_area
                         abs_area = -1
@@ -620,7 +621,7 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
                     abs_area = fabs(segment_area)
                     h = 0
                     dA = fabs(dP)
-                    while abs_area > 0:
+                    while abs_area > 0 and h<box.shape[1]:
                         if dA > abs_area:
                             dA = abs_area
                             abs_area = -1
@@ -634,7 +635,7 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
                     abs_area = fabs(segment_area)
                     h = 0
                     dA = 1
-                    while abs_area > 0:
+                    while abs_area > 0 and h<box.shape[1]:
                         if dA > abs_area:
                             dA = abs_area
                             abs_area = -1
@@ -650,7 +651,7 @@ cdef inline void _integrate2d(buffer_t[:, ::1] box,
                     abs_area = fabs(segment_area)
                     h = 0
                     dA = fabs(dP)
-                    while abs_area > 0:
+                    while abs_area > 0 and h<box.shape[1]:
                         if dA > abs_area:
                             dA = abs_area
                             abs_area = -1
