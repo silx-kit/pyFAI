@@ -38,7 +38,7 @@ Can be replaced by ``silx.math.histogramnd``.
 """
 
 __author__ = "Jérôme Kieffer"
-__date__ = "25/04/2024"
+__date__ = "18/11/2025"
 __license__ = "MIT"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -583,7 +583,7 @@ def histogram2d_engine(radial, azimuthal,
                        azimuth_range=None,
                        bint allow_radial_neg=False,
                        bint chiDiscAtPi=1,
-                       bint clip_pos1=True
+                       position_t pos1_period=twopi
                        ):
     """Implementation of 2D rebinning engine using pure numpy histograms
 
@@ -609,7 +609,8 @@ def histogram2d_engine(radial, azimuthal,
     :param azimuth_range: enforce boundaries in azimuthal dimension, 2tuple with lower and upper bound
     :param allow_radial_neg: clip negative radial position (can a dimension be negative ?)
     :param chiDiscAtPi: set the azimuthal discontinuity at π (True) or at 0/2π (False)
-    :param clip_pos1: clip the azimuthal range to [-π π] (or [0 2π]), set to False to deactivate behavior.
+    :param pos1_period: periodicity of dim1, 2π, or 0 to non-periodic dimension
+    If pos1_period: clip_pos1 is enforced, the azimuthal range is set to [-π π] (or [0 2π] depending on chiDiscAtPi)
 
     NaN are always considered as invalid values
 
@@ -659,6 +660,7 @@ def histogram2d_engine(radial, azimuthal,
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False, do_absorption=False
         bint do_variance=error_model, do_dark_variance=False
         preproc_t value
+        bint clip_pos1 = True if pos1_period>0 else False
 
     if variance is not None:
         assert variance.size == size, "variance size matches"

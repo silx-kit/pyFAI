@@ -35,7 +35,7 @@ Sparse matrix represented using the CompressedSparseRow.
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/11/2024"
+__date__ = "18/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -142,7 +142,7 @@ class FullSplitCSR_2d(CsrIntegrator, FullSplitIntegrator):
                  unit="undefined",
                  empty=None,
                  bint chiDiscAtPi=True,
-                 bint clip_pos1=True):
+                 position_t pos1_period=twopi):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins (tth=100, chi=36 by default)
@@ -153,9 +153,12 @@ class FullSplitCSR_2d(CsrIntegrator, FullSplitIntegrator):
         :param unit: can be 2th_deg or r_nm^-1 ...
         :param empty: value for bins where no pixels are contributing
         :param chiDiscAtPi: tell if azimuthal discontinuity is at 0° or 180°
-        :param clip_pos1: True if azimuthal direction is periodic (chi angle), False for non periodic units
+        :param pos1_period: periodicity of dim1, 2π, or 0 to non-periodic dimension
+            If pos1_period: clip_pos1 is enforced, the azimuthal range is set to [-π π] (or [0 2π] depending on chiDiscAtPi)
         """
-        FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi, clip_pos1)
+        FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range,
+                                    mask, mask_checksum, allow_pos0_neg, chiDiscAtPi,
+                                    pos1_period=pos1_period)
         self.unit = unit
         self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = None

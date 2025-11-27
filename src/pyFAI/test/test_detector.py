@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "21/11/2025"
 
 import os
 import shutil
@@ -412,6 +412,9 @@ class TestDetector(unittest.TestCase):
         filename = os.path.join(UtilsTest.tempdir, "test_sensor.h5")
         det1.save(filename)
         det4 = detector_factory(filename)
+        print(det2)
+        print(det4)
+        print(det2==det4)
         self.assertEqual(det2, det4, "after serialization to HDF5")
 
     def test_sensor2(self):
@@ -428,6 +431,9 @@ class TestDetector(unittest.TestCase):
         fs2 = sensors.SensorConfig.parse(str(fs))
         self.assertTrue(ts.material==ts2.material)
         self.assertTrue(fs2==fs)
+    
+    def test_sensor3(self):
+        self.assertAlmostEqual(sensors.BaFBr085I015_MATERIAL.absorbance(20, 1e-4), 0.6538, 3)
 
 
 

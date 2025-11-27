@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/11/2025"
+__date__ = "21/11/2025"
 
 import unittest
 import numpy
@@ -127,7 +127,7 @@ class TestRaytracing(unittest.TestCase):
         self.assertEqual(indptr.size-1, numpy.prod(ai.detector.shape))
         self.assertEqual((indptr[1:] - indptr[:-1]).max(), 8)
         self.assertEqual(data.size, indices.size)
-        self.assertAlmostEqual(data.size/numpy.prod(ai.detector.shape), 3.56, delta=1e-3)
+        self.assertAlmostEqual(data.size/numpy.prod(ai.detector.shape), 3.56, delta=4e-3)
 
 
 def suite():

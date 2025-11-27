@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "30/10/2025"
+__date__ = "21/11/2025"
 
 import os
 import logging
@@ -216,7 +216,7 @@ class DetectorSelectorDrop(qt.QWidget):
         with block_signals(self._detectorSensorThickness):
             if index < 0:
                 self._detectorSensorThickness.addItem(
-                    f"{1e6 * sensor.thickness:4.0f}" if sensor.thickness else "", 
+                    f"{1e6 * sensor.thickness:4.0f}" if sensor.thickness else "",
                     userData=sensor.thickness
                 )
                 index = self._detectorSensorThickness.findData(sensor.thickness)
@@ -226,7 +226,7 @@ class DetectorSelectorDrop(qt.QWidget):
         with block_signals(self._detectorSensorMaterials):
             if index < 0:
                 self._detectorSensorMaterials.addItem(
-                    sensor.material.name if sensor.material else "", 
+                    sensor.material.name if sensor.material else "",
                     userData=sensor.material
                 )
                 index = self._detectorSensorMaterials.findData(sensor.material)
@@ -339,7 +339,7 @@ class DetectorSelectorDrop(qt.QWidget):
     def loadSplineFile(self):
         previousFile = self.__splineFile.value()
         dialog = self.createSplineDialog("Load spline image", previousFile=previousFile)
-        result = dialog.exec_()
+        result = (dialog).exec()
         if not result:
             return
         filename = dialog.selectedFiles()[0]
@@ -410,7 +410,7 @@ class DetectorSelectorDrop(qt.QWidget):
         dialog = self.createFileDialog(
             "Load detector from HDF5 file", previousFile=previousFile
         )
-        result = dialog.exec_()
+        result = (dialog).exec()
         if not result:
             return
         filename = dialog.selectedFiles()[0]
