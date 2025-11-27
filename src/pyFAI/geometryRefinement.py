@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "27/11/2025"
 __status__ = "development"
 
 import os
@@ -213,7 +213,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                              calibrant = self.calibrant)
         for key in self._IMMUTABLE_ATTRS:
             new.__setattr__(key, self.__getattribute__(key))
-        new.param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
+        new.param = [new.__getattribute__(key) for key in self.PARAM_ORDER]
         new._cached_array = self._cached_array.copy()
         return new
 
@@ -257,7 +257,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
-        new_param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
+        new_param = [new.__getattribute__(key) for key in self.PARAM_ORDER]
         memo[id(self.param)] = new_param
         new.param = new_param
         cached = {}
