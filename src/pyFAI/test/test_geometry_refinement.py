@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "27/11/2025"
 
 import unittest
 import os
@@ -841,10 +841,10 @@ class TestGeometryRefinement(unittest.TestCase):
         r2 = GeometryRefinement(data, calibrant=mycalibrant, detector="Fairchild",
                                 wavelength=mycalibrant.wavelength)
         r3 = copy.copy(r2)
-        r4 = copy.copy(r2)
+        r4 = copy.deepcopy(r2)
         # print(r2)
         r2.guess_poni()
-        # print(r2)
+        #print(r2)
         r2.refine2(10000000, fix=[])
         ref = {"dist": (0.1, 1e-5),  # value, tolerance
                "poni1": (0.05, 1e-5),
@@ -853,7 +853,7 @@ class TestGeometryRefinement(unittest.TestCase):
                "poni2": (0.06, 1e-5),
                "rot1": (0.07, 1e-4),
                "wavelength": (1e-10, 1e-10)}
-        # print(r2)
+        print(r2)
         for key in ref.keys():
             self.assertAlmostEqual(ref[key][0], r2.__getattribute__(key), delta=ref[key][1],
                                    msg="%s is %s, I expected %s%s%s" % (key, r2.__getattribute__(key), ref[key], os.linesep, r2))
@@ -863,6 +863,8 @@ class TestGeometryRefinement(unittest.TestCase):
         self.assertTrue(numpy.all(r3.data==r2.data))
         r3.guess_poni()
         r3.refine2(10000000, fix=[])
+        for k in r2._IMMUTABLE_ATTRS:
+            self.assertEqual(r3.__getattribute__(k), r2.__getattribute__(k), k)
         for key in ref.keys():
             self.assertAlmostEqual(r3.__getattribute__(key), r2.__getattribute__(key), delta=ref[key][1],
                                    msg="%s is %s, I expected %s%s%s" % (key, r3.__getattribute__(key), ref[key], os.linesep, r3))
@@ -872,9 +874,20 @@ class TestGeometryRefinement(unittest.TestCase):
         self.assertTrue(numpy.all(r4.data == r2.data))
         r4.guess_poni()
         r4.refine2(10000000, fix=[])
+        for k in r2._IMMUTABLE_ATTRS:
+            self.assertEqual(r4.__getattribute__(k), r2.__getattribute__(k), k)
+
+
         for key in ref.keys():
             self.assertAlmostEqual(r4.__getattribute__(key), r2.__getattribute__(key), delta=ref[key][1],
                                    msg="%s is %s, I expected %s%s%s" % (key, r4.__getattribute__(key), ref[key], os.linesep, r4))
+
+        # Mutation check, done last:
+        r4.data[...] = 4
+        self.assertFalse(numpy.all(r4.data == r2.data))
+        # works also because data are copied in constructor ...
+        r2.data[...] = 2
+        self.assertFalse(numpy.all(r3.data == r2.data))
 
 
 def suite():
