@@ -49,8 +49,6 @@ logger = logging.getLogger(__name__)
 Gd2O2S40 = SensorConfig.from_dict({"material": "Gd2O2S", "thickness": 40e-6})
 
 
-
-
 class _Rayonix(Detector):
 
     MANUFACTURER = "Rayonix"
