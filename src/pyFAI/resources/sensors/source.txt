@@ -6,6 +6,5 @@ For Fuji-I.P. phosphor BaFBr0.85I0.15:
  * calculated by Paul Antoine DOUISSARD, ESRF
  * density from https://theses.hal.science/tel-04521313v1/file/SONG_PANYI_2023.pdf, p94
 
-
 For armorphous Se
  * density from https://pubchem.ncbi.nlm.nih.gov/compound/Selenium#section=Solubility
