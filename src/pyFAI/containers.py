@@ -30,9 +30,10 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2025"
+__date__ = "26/11/2025"
 __status__ = "development"
 
+import math
 import copy
 import logging
 import warnings
@@ -676,6 +677,23 @@ class Integrate1dResult(IntegrateResult):
     def __isub__(self, other):
         return super().__isub__(other).__recalculate_means__()
 
+    def calc_spottiness(self, weighted:bool=False) -> float:
+        """Calculate the spottiness of a powder diffraction pattern:
+        Inspired by doi:10.1107/S1600576713029713
+        Requires the azimuthal error propagation.
+
+        :param weighted: Weight the spottiness by the intensity of each ring.
+        :return: a value that increases with the spottiness
+        """
+        if self.error_model != ErrorModel.AZIMUTHAL:
+            logger.warning("Error model must be azimuthal to calculate spottiness !")
+
+        intensity = numpy.maximum(0.0, self.intensity) if weighted else numpy.ones_like(self.intensity)
+        sum_variance = numpy.zeros_like(self.sum_signal) if self.sum_variance is None else numpy.maximum(0.0, self.sum_variance)
+        sum_signal = numpy.maximum(1.0, self.sum_signal)
+        proportion = sum_variance/sum_signal**2
+        return math.sqrt((proportion*intensity).sum(dtype=numpy.float64)/intensity.sum(dtype=numpy.float64))
+
 
 class Integrate2dResult(IntegrateResult):
     """
@@ -826,6 +844,45 @@ class Integrate2dResult(IntegrateResult):
         :type unit: str
         """
         self._azimuthal_unit = unit
+
+
+    def rebin1d(self) -> Integrate1dResult:
+        """Function that rebins an Integrate2dResult into a Integrate1dResult
+
+        :return: Integrate1dResult
+        """
+        bins_rad = self.radial
+        sum_signal = self.sum_signal.sum(axis=0)
+        sum_normalization = self.sum_normalization.sum(axis=0)
+        intensity = sum_signal / sum_normalization
+        if self.sum_variance is not None:
+            sum_variance = self.sum_variance.sum(axis=0)
+            sem = numpy.sqrt(sum_variance) / sum_normalization
+            result = Integrate1dResult(bins_rad, intensity, sem)
+            result._set_sum_normalization2(self.sum_normalization2.sum(axis=0))
+            result._set_sum_variance(sum_variance)
+            result._set_std(numpy.sqrt(sum_variance / result.sum_normalization2))
+            result._set_std(sem)
+        else:
+            result = Integrate1dResult(bins_rad, intensity)
+
+        result._set_sum_signal(sum_signal)
+        result._set_sum_normalization(sum_normalization)
+
+        result._set_method_called("integrate1d")
+        result._set_compute_engine(self.compute_engine)
+        result._set_method(self.method)
+        result._set_unit(self.radial_unit)
+        # result._set_azimuthal_unit(self.azimuth_unit)
+        result._set_count(self.count.sum(axis=0))
+        # result._set_sum(sum_)
+        result._set_has_dark_correction(self.has_dark_correction)
+        result._set_has_flat_correction(self.has_flat_correction)
+        result._set_has_mask_applied(self.has_mask_applied)
+        result._set_polarization_factor(self.polarization_factor)
+        result._set_normalization_factor(self.normalization_factor)
+        result._set_metadata(self.metadata)
+        return result
 
 
 class SeparateResult(_CopyableTuple):
@@ -1340,38 +1397,12 @@ def rebin1d(res2d: Integrate2dResult) -> Integrate1dResult:
     :param res2d: Integrate2dResult instance obtained from ai.integrate2d
     :return: Integrate1dResult
     """
-    bins_rad = res2d.radial
-    sum_signal = res2d.sum_signal.sum(axis=0)
-    sum_normalization = res2d.sum_normalization.sum(axis=0)
-    intensity = sum_signal / sum_normalization
-    if res2d.sum_variance is not None:
-        sum_variance = res2d.sum_variance.sum(axis=0)
-        sem = numpy.sqrt(sum_variance) / sum_normalization
-        result = Integrate1dResult(bins_rad, intensity, sem)
-        result._set_sum_normalization2(res2d.sum_normalization2.sum(axis=0))
-        result._set_sum_variance(sum_variance)
-        result._set_std(numpy.sqrt(sum_variance / result.sum_normalization2))
-        result._set_std(sem)
-    else:
-        result = Integrate1dResult(bins_rad, intensity)
-
-    result._set_sum_signal(sum_signal)
-    result._set_sum_normalization(sum_normalization)
-
-    result._set_method_called("integrate1d")
-    result._set_compute_engine(res2d.compute_engine)
-    result._set_method(res2d.method)
-    result._set_unit(res2d.radial_unit)
-    # result._set_azimuthal_unit(res2d.azimuth_unit)
-    result._set_count(res2d.count.sum(axis=0))
-    # result._set_sum(sum_)
-    result._set_has_dark_correction(res2d.has_dark_correction)
-    result._set_has_flat_correction(res2d.has_flat_correction)
-    result._set_has_mask_applied(res2d.has_mask_applied)
-    result._set_polarization_factor(res2d.polarization_factor)
-    result._set_normalization_factor(res2d.normalization_factor)
-    result._set_metadata(res2d.metadata)
-    return result
+    deprecated_warning(type_='Function',
+                       name="rebin1d",
+                       reason="use method `rebin1d` of Integrate2dResult",
+                       since_version="2025.11",
+                       only_once=True)
+    return res2d.rebin1d()
 
 
 def symmetrize(res2d: Integrate2dResult) -> Integrate2dResult:

@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2025"
+__date__ = "20/11/2025"
 
 import sys
 import os
@@ -681,6 +681,15 @@ class TestBugRegression(unittest.TestCase):
         # raise RuntimeError("infinite loop")
         self.assertTrue(numpy.allclose(ref[0], res[0]))
         self.assertTrue(numpy.allclose(ref[1], res[1]))
+
+    def test_bug_2697(self):
+        """ This hunts NaNs appearing in sum_variance in Python/Cython (OpenCL is clean)"""
+        fimg = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        ai = load(UtilsTest.getimage("Pilatus1M.poni"))
+        res = numpy.isnan(ai.integrate1d(fimg.data, 300, method=("no","csr", "python"), error_model="azimuth").sum_variance).sum()
+        self.assertEqual(res, 0, "No NaNs found in Python")
+        res = numpy.isnan(ai.integrate1d(fimg.data, 300, method=("no","csr", "cython"), error_model="azimuth").sum_variance).sum()
+        self.assertEqual(res, 0, "No NaNs found in Cython")
 
 class TestBug1703(unittest.TestCase):
     """

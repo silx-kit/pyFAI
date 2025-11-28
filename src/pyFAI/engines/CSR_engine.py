@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "20/11/2025"
 __status__ = "development"
 
 import logging
@@ -153,9 +153,10 @@ class CSRIntegrator(object):
         if error_model is ErrorModel.AZIMUTHAL:
             avg = res[:, 0] / res[:, 2]
             avg2d = self._csr.T.dot(avg)  # transform 1D average into 2D (works only if splitting is disabled)
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                delta = (flat_sig / flat_nrm - avg2d)
+            delta = numpy.zeros(avg2d.shape, dtype=numpy.float64)
+            numpy.divide(flat_sig, flat_nrm, where=flat_nrm!=0, out=delta)
+            numpy.subtract(delta, avg2d, out=delta)
+
             res[:, 1] = self._csr2.dot((delta * flat_nrm) ** 2)  # Σ c²·ω²·(x-x̄ )²
             res[:, 4] = self._csr2.dot(flat_nrm ** 2)  # Σ c²·ω²
         elif error_model.do_variance:
