@@ -131,7 +131,7 @@ class WorkerConfigurator(qt.QWidget):
         self.nbpt_rad.setValidator(npt_validator)
         self.nbpt_azim.setValidator(npt_validator)
 
-        radial_units = [v for v in RADIAL_UNITS.values() if isinstance(v, Unit)]
+        radial_units = [v for v in RADIAL_UNITS.values() if (isinstance(v, Unit) and not isinstance(v, UnitFiber))]
         self.radial_unit.setUnits(radial_units)
         self.radial_unit.model().setValue(RADIAL_UNITS["2th_deg"])
 
