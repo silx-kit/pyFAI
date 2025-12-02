@@ -227,7 +227,7 @@ class IntegrateResult(_CopyableTuple):
         if self.unit != other.unit:
             return f"unit differs: {self.unit} != {other.unit}"
         if strict and not numpy.allclose(self._sum_normalization, other.sum_normalization):
-            return "Normalization differs"
+            return "normalization differs"
 
     def __add__(self, other):
         """Calculate the out-of-place addition of anther IntegrateResult
