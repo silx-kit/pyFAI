@@ -30,7 +30,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2025"
+__date__ = "02/12/2025"
 __status__ = "development"
 
 import math
@@ -214,21 +214,27 @@ class IntegrateResult(_CopyableTuple):
         self._poni = None  # Contains the geometry which was used for the integration
         self._weighted_average = None  # Should be True for weighted average and False for unweighted (legacy)
 
-    def __are_compatible__(self, other) -> None | str:
+    def __are_compatible__(self, other, strict:bool=True) -> None | str:
         """Ensure two objects are compatible to make some basic maths together.
         If compatible, return None, else return the reason for the incompatibility
 
+        :param other: another instance of IntegrateResult
+        :param strict: ensures also that normalizations are the same, used for basic math but not for union
         :return None if compatible, else the reason with a string.
         """
         if not isinstance(other, self.__class__):
             return f"class incompatible: {self.__class__.__name__} != {other.__class__.__name__}"
         if self.unit != other.unit:
             return f"unit differs: {self.unit} != {other.unit}"
-        if not numpy.allclose(self._sum_normalization, other.sum_normalization):
-            return "normalization differs"
+        if strict and not numpy.allclose(self._sum_normalization, other.sum_normalization):
+            return "Normalization differs"
 
     def __add__(self, other):
-        """External add, common part"""
+        """Calculate the out-of-place addition of anther IntegrateResult
+
+        :param other: the same datatype as self
+        :return: another instance with updated values
+        """
         reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
@@ -240,10 +246,14 @@ class IntegrateResult(_CopyableTuple):
             res._sum_variance = self._sum_variance
         else:
             res._sum_variance = self._sum_variance + other._sum_variance
-        return res
+        return res.__recalculate_means__()
 
     def __sub__(self, other):
-        """External subtraction, common part"""
+        """Calculate the out-of-place subtraction of anther IntegrateResult
+
+        :param other: the same datatype as self
+        :return: another instance with updated values
+        """
         reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot subtract `IntegrateResult` because of {reason}")
@@ -255,10 +265,14 @@ class IntegrateResult(_CopyableTuple):
             res._sum_variance = self._sum_variance
         else:
             res._sum_variance = self._sum_variance + other.sum_variance
-        return res
+        return res.__recalculate_means__()
 
     def __iadd__(self, other):
-        """Inplace add, common part"""
+        """Calculate the inplace addition of anther IntegrateResult
+
+        :param other: the same datatype as self
+        :return: same instance with updated values
+        """
         reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
@@ -267,10 +281,14 @@ class IntegrateResult(_CopyableTuple):
             self._sum_variance = other.sum_variance
         elif other._sum_variance is not None:
             self._sum_variance += other._sum_variance
-        return self
+        return self.__recalculate_means__()
 
     def __isub__(self, other):
-        """Inplace subtraction, common part"""
+        """Calculate the inplace subtraction of anther IntegrateResult
+
+        :param other: the same datatype as self
+        :return: same instance with updated values
+        """
         reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot subtract `IntegrateResult` because of {reason}")
@@ -279,21 +297,48 @@ class IntegrateResult(_CopyableTuple):
             self._sum_variance = other.sum_variance
         elif other._sum_variance is not None:
             self._sum_variance += other._sum_variance
-        return self
+        return self.__recalculate_means__()
 
     def __recalculate_means__(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self.intensity[...] = self.sum_signal / self.sum_normalization
-            mask = self.sum_normalization == 0.0
-            self.intensity[mask] = self.dummy
-            if self.sum_variance is not None:
-                self._sem = numpy.sqrt(self.sum_variance) / self.sum_normalization
-                self._std = numpy.sqrt(self.sum_variance / self.sum_normalization2)
-                self._sem[mask] = self.dummy
-                self._std[mask] = self.dummy
-                self.sigma[...] = self._sem
+        mask = (self.sum_normalization == 0.0)
+        nomask = numpy.logical_not(mask)
+        numpy.divide(self._sum_signal, self._sum_normalization,
+                        out=self.intensity, where=nomask)
+        self.intensity[mask] = self.dummy
+        if self.sum_variance is not None:
+            numpy.sqrt(self._sum_variance, out=self._sem)
+            numpy.divide(self._sem, self.sum_normalization,
+                         out=self._sem, where=nomask)
+            self._sem[mask] = self.dummy
+
+            self._std = numpy.divide(self._sum_variance, self._sum_normalization2,
+                                    out=self._sem, where=nomask)
+            self._std = numpy.sqrt(self._std, out=self._std)
+            self._std[mask] = self.dummy
+            self.sigma[...] = self._sem
         return self
+
+    def union(self, other):
+        """Calculate the weighted average of two results in a new IntegrateResult
+
+        :param other: the same datatype as self
+        :return: another instance of same datatype with the weighted average
+        """
+        reason = self.__are_compatible__(other, strict=False)
+        reason = reason or None if self.error_model == other.error_model else f"differing error models: {self.error_model.name}!={other.error_model.name}"
+        if reason:
+            raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
+        res = copy.deepcopy(self)
+        res._sum_signal = self._sum_signal + other._sum_signal
+        res._sum_normalization = self._sum_normalization + other._sum_normalization
+        res._count = self._count + other._count
+        if self._sum_variance is None or other._sum_variance is None:
+            res._sum_variance = None
+            res._sum_normalization2 = None
+        else:
+            res._sum_variance = self._sum_variance + other._sum_variance
+            res._sum_normalization2 = self._sum_normalization2 + other._sum_normalization2
+        return res.__recalculate_means__()
 
     @property
     def method(self):
@@ -657,25 +702,13 @@ class Integrate1dResult(IntegrateResult):
             return None
         return self[2]
 
-    def __are_compatible__(self, other):
+    def __are_compatible__(self, other, strict:bool=True):
         """Ensure two objects are compatible to make some basic maths together"""
-        reason = super().__are_compatible__(other)
+        reason = super().__are_compatible__(other, strict=strict)
         if reason:
             return reason
         if not numpy.allclose(self.radial, other.radial):
             return "radial differs"
-
-    def __add__(self, other):
-        return super().__add__(other).__recalculate_means__()
-
-    def __sub__(self, other):
-        return super().__sub__(other).__recalculate_means__()
-
-    def __iadd__(self, other):
-        return super().__iadd__(other).__recalculate_means__()
-
-    def __isub__(self, other):
-        return super().__isub__(other).__recalculate_means__()
 
     def calc_spottiness(self, weighted:bool=False) -> float:
         """Calculate the spottiness of a powder diffraction pattern:
@@ -727,27 +760,15 @@ class Integrate2dResult(IntegrateResult):
         self._radial_unit = None
         self._azimuthal_unit = None
 
-    def __are_compatible__(self, other):
+    def __are_compatible__(self, other, strict:bool=True):
         """Ensure two objects are compatible to make some basic maths together"""
-        reason = super().__are_compatible__(other)
+        reason = super().__are_compatible__(other, strict=strict)
         if reason:
             return reason
         if not numpy.allclose(self.radial, other.radial):
             return "radial differs"
         if not numpy.allclose(self.azimuthal, other.azimuthal):
             return "azimuthal differs"
-
-    def __add__(self, other):
-        return super().__add__(other).__recalculate_means__()
-
-    def __sub__(self, other):
-        return super().__sub__(other).__recalculate_means__()
-
-    def __iadd__(self, other):
-        return super().__iadd__(other).__recalculate_means__()
-
-    def __isub__(self, other):
-        return super().__isub__(other).__recalculate_means__()
 
     @property
     def intensity(self):
