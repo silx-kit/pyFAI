@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2025"
+__date__ = "02/12/2025"
 
 import unittest
 import copy
@@ -173,6 +173,18 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(numpy.allclose(f1d.sem, d1d.sem))
         self.assertTrue(numpy.allclose(f1d.sigma, d1d.sigma))
 
+        g1d = a1d.union(b1d)
+        self.assertTrue(numpy.allclose(g1d.sum_signal, a1d.sum_signal+b1d.sum_signal))
+        self.assertTrue(numpy.allclose(g1d.sum_variance, a1d.sum_variance+b1d.sum_variance))
+        self.assertTrue(numpy.allclose(g1d.sum_normalization, a1d.sum_normalization+b1d.sum_normalization))
+        self.assertTrue(numpy.allclose(g1d.sum_normalization2, a1d.sum_normalization2+b1d.sum_normalization2))
+        self.assertTrue(numpy.allclose(g1d.count, a1d.count+b1d.count))
+        self.assertTrue(numpy.allclose(g1d.radial, a1d.radial))
+        self.assertFalse(numpy.allclose(g1d.intensity, a1d.intensity))
+        self.assertFalse(numpy.allclose(g1d.std, a1d.std))
+        self.assertFalse(numpy.allclose(g1d.sem, a1d.sem))
+        self.assertFalse(numpy.allclose(g1d.sigma, a1d.sigma))
+
         # same with 2D arrays
         a2d = self.ai.integrate2d(
             self.img, 40, 36, method=method, error_model="poisson"
@@ -241,6 +253,18 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(numpy.allclose(f2d.std, d2d.std))
         self.assertTrue(numpy.allclose(f2d.sem, d2d.sem))
         self.assertTrue(numpy.allclose(f2d.sigma, d2d.sigma))
+
+        g2d = a2d.union(b2d)
+        self.assertTrue(numpy.allclose(g2d.sum_signal, a2d.sum_signal+b2d.sum_signal))
+        self.assertTrue(numpy.allclose(g2d.sum_variance, a2d.sum_variance+b2d.sum_variance))
+        self.assertTrue(numpy.allclose(g2d.sum_normalization, a2d.sum_normalization+b2d.sum_normalization))
+        self.assertTrue(numpy.allclose(g2d.sum_normalization2, a2d.sum_normalization2+b2d.sum_normalization2))
+        self.assertTrue(numpy.allclose(g2d.count, a2d.count+b2d.count))
+        self.assertTrue(numpy.allclose(g2d.radial, a2d.radial))
+        self.assertFalse(numpy.allclose(g2d.intensity, a2d.intensity))
+        self.assertFalse(numpy.allclose(g2d.std, a2d.std))
+        self.assertFalse(numpy.allclose(g2d.sem, a2d.sem))
+        self.assertFalse(numpy.allclose(g2d.sigma, a2d.sigma))
 
 
 def suite():
