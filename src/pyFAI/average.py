@@ -29,7 +29,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "04/12/2025"
 __status__ = "production"
 
 import logging
@@ -441,11 +441,10 @@ def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)
         output = center
     else:
         std = stack.std(axis=0)
-        strides = 0, std.strides[0], std.strides[1]
-        std.shape = 1, shape[0], shape[1]
-        std.strides = strides
-        center.shape = 1, shape[0], shape[1]
-        center.strides = strides
+        std.shape = shape
+        std = std[numpy.newaxis, ...]
+        center.shape = shape
+        center = center[numpy.newaxis, ...]
         mask = ((abs(stack - center) / std) > cutoff)
         stack[numpy.where(mask)] = 0.0
         summed = stack.sum(axis=0)

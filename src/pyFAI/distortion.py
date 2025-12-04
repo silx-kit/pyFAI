@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "04/12/2025"
 __status__ = "development"
 
 import logging
@@ -202,8 +202,7 @@ class Distortion(object):
                     else:
                         pixel_size = numpy.array([self.detector.pixel1, self.detector.pixel2], dtype=numpy.float32)
                         # make it a 4D array
-                        pixel_size.shape = 1, 1, 1, 2
-                        pixel_size.strides = 0, 0, 0, pixel_size.strides[-1]
+                        pixel_size = pixel_size[numpy.newaxis, numpy.newaxis, numpy.newaxis, :]
                         self.pos = self.detector.get_pixel_corners()[..., 1:] / pixel_size
                         if self._shape_out is None:
                             # if defined, it is probably because resize=False

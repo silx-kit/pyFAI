@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "04/12/2025"
 __status__ = "production"
 
 
@@ -65,11 +65,11 @@ class CylindricalDetector(Detector):
 
     def get_config(self):
         """Return the configuration with arguments to the constructor
-    
+
         :return: dict with param for serialization
         """
-        dico = super().get_config()  
-        dico["radius"] = self.radius 
+        dico = super().get_config()
+        dico["radius"] = self.radius
         return dico
 
     def set_config(self, config):
@@ -118,12 +118,9 @@ class CylindricalDetector(Detector):
                         d3 = mathutil.expand2d(p3, self.shape[0] + 1, True)
                         corners = bilinear.convert_corner_2D_to_4D(3, d1, d2, d3)
                     else:
-                        p1.shape = -1, 1
-                        p1.strides = p1.strides[0], 0
-                        p2.shape = 1, -1
-                        p2.strides = 0, p2.strides[1]
-                        p3.shape = 1, -1
-                        p3.strides = 0, p3.strides[1]
+                        p1 = p1.ravel()[:, numpy.newaxis]
+                        p2 = p2.ravel()[numpy.newaxis, :]
+                        p3 = p3.ravel()[numpy.newaxis, :]
                         corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
                         corners[:, :, 0, 0] = p3[:, :-1]
                         corners[:, :, 0, 1] = p1[:-1, :]

@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "04/12/2025"
 __status__ = "production"
 
 import functools
@@ -98,7 +98,7 @@ class ImXPadS10(ModuleDetector):
         super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
                         module_size=module_size, orientation=orientation, sensor=sensor)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
-        
+
     def calc_pixels_edges(self):
         """
         Calculate the position of the pixel edges
@@ -411,17 +411,10 @@ class Xpad_flat(ImXPadS10):
                         pixel_center2[i * self.module_size[1]:
                                       (i + 1) * self.module_size[1]] += i * self.MODULE_GAP[1]
 
-                    pixel_center1.shape = -1, 1
-                    pixel_center1.strides = pixel_center1.strides[0], 0
-
-                    pixel_center2.shape = 1, -1
-                    pixel_center2.strides = 0, pixel_center2.strides[1]
-
-                    pixel_size1.shape = -1, 1
-                    pixel_size1.strides = pixel_size1.strides[0], 0
-
-                    pixel_size2.shape = 1, -1
-                    pixel_size2.strides = 0, pixel_size2.strides[1]
+                    pixel_center1 = pixel_center1[:, numpy.newaxis]
+                    pixel_center2 = pixel_center2[numpy.newaxis, :]
+                    pixel_size1 = pixel_size1[:, numpy.newaxis]
+                    pixel_size2 = pixel_size2[numpy.newaxis, :]
 
                     corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
                     corners[:,:, 0, 1] = pixel_center1 - pixel_size1 / 2.0
@@ -526,17 +519,10 @@ class Cirpad(ImXPadS10):
         pixel_center1[1:] += numpy.cumsum(pixel_size1[:-1])
         pixel_center2[1:] += numpy.cumsum(pixel_size2[:-1])
 
-        pixel_center1.shape = -1, 1
-        pixel_center1.strides = pixel_center1.strides[0], 0
-
-        pixel_center2.shape = 1, -1
-        pixel_center2.strides = 0, pixel_center2.strides[1]
-
-        pixel_size1.shape = -1, 1
-        pixel_size1.strides = pixel_size1.strides[0], 0
-
-        pixel_size2.shape = 1, -1
-        pixel_size2.strides = 0, pixel_size2.strides[1]
+        pixel_center1 = pixel_center1[:, numpy.newaxis]
+        pixel_center2 = pixel_center2[numpy.newaxis, :]
+        pixel_size1 = pixel_size1[:, numpy.newaxis]
+        pixel_size2 = pixel_size2[numpy.newaxis, :]
 
         # Position of the first module
         corners = numpy.zeros((self.MEDIUM_MODULE_SIZE[0], self.MEDIUM_MODULE_SIZE[1], 4, 3), dtype=numpy.float32)
