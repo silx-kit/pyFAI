@@ -26,10 +26,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "18/11/2025"
 __status__ = "development"
 
 import logging
+from math import pi
 import numpy
 from ..utils.mathutil import EPS32
 from .preproc import preproc as preproc_np
@@ -42,7 +43,7 @@ except ImportError as err:
     preproc = preproc_np
 else:
     preproc = preproc_cy
-
+twopi = 2.0*pi
 
 
 def histogram1d_engine(radial, npt,
@@ -175,7 +176,7 @@ def histogram2d_engine(radial, azimuthal, bins,
                        azimuth_range=None,
                        allow_radial_neg=False,
                        chiDiscAtPi=True,
-                       clip_pos1=True
+                       pos1_period=twopi
                        ):
     """Implementation of 2D rebinning engine using pure numpy histograms
 

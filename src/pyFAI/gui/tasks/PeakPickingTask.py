@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/01/2024"
+__date__ = "21/11/2025"
 
 import logging
 import numpy
@@ -1144,7 +1144,7 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __loadPeaksFromFile(self):
         dialog = self.__createLoadPeakDialog()
 
-        result = dialog.exec_()
+        result = (dialog).exec()
         if not result:
             return
 
@@ -1169,7 +1169,7 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __savePeaksAsFile(self):
         dialog = self.__createSavePeakDialog()
 
-        result = dialog.exec_()
+        result = (dialog).exec()
         if not result:
             return
 

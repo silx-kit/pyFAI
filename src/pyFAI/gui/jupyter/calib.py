@@ -4,10 +4,15 @@ from ..mpl_calib import MplCalibWidget
 from matplotlib import pyplot
 from ..cli_calibration import AbstractCalibration, FixedParameters
 try:
-    from IPython.core.display import display
+    from IPython.display import display
     import ipywidgets as widgets
-except Exception:
-    from ...utils.callback import dangling_callback as display
+except (ImportError, ModuleNotFoundError):
+    try:
+        # for compatibility with older Python
+        from IPython.core.display import display
+        import ipywidgets as widgets
+    except (ImportError, ModuleNotFoundError):
+        from ...utils.callback import dangling_callback as display
 
 
 class JupyCalibWidget(MplCalibWidget):

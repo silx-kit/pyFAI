@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "18/11/2025"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -412,7 +412,7 @@ class Integrator(Geometry):
                                                     unit=unit,
                                                     empty=empty,
                                                     chiDiscAtPi=self.chiDiscAtPi,
-                                                    clip_pos1=bool(unit1.period),
+                                                    pos1_period=unit1.period if unit1.period else 0.0,
                                                     )
                 else:
                     return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
@@ -433,7 +433,7 @@ class Integrator(Geometry):
                                                     mask=mask,
                                                     mask_checksum=mask_checksum,
                                                     allow_pos0_neg=not unit0.positive,
-                                                    clip_pos1=bool(unit1.period),
+                                                    pos1_period=unit1.period if unit1.period else 0.0,
                                                     unit=unit,
                                                     empty=empty)
                 else:
@@ -459,7 +459,7 @@ class Integrator(Geometry):
                                                              unit=unit,
                                                              empty=empty,
                                                              chiDiscAtPi=self.chiDiscAtPi,
-                                                             clip_pos1=bool(unit1.period),
+                                                             pos1_period=unit1.period if unit1.period else 0.0,
                                                              )
                 else:
                     return splitPixelFullCSR.FullSplitCSR_1d(pos,
@@ -482,8 +482,7 @@ class Integrator(Geometry):
                                                     unit=unit,
                                                     empty=empty,
                                                     allow_pos0_neg=not unit0.positive,
-                                                    clip_pos1=bool(unit1.period)
-)
+                                                    pos1_period=unit1.period if unit1.period else 0.0)
                 else:
                     return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                     bins=npt,
@@ -507,7 +506,7 @@ class Integrator(Geometry):
                                                              unit=unit,
                                                              empty=empty,
                                                              chiDiscAtPi=self.chiDiscAtPi,
-                                                             clip_pos1=bool(unit1.period)
+                                                             pos1_period=unit1.period if unit1.period else 0.0
                                                              )
                 else:
                     return splitPixelFullCSC.FullSplitCSC_1d(pos,
@@ -530,8 +529,7 @@ class Integrator(Geometry):
                                                     unit=unit,
                                                     empty=empty,
                                                     allow_pos0_neg=not unit0.positive,
-                                                    clip_pos1=bool(unit1.period)
-)
+                                                    pos1_period=unit1.period if unit1.period else 0.0)
                 else:
                     return splitBBoxCSC.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                     bins=npt,

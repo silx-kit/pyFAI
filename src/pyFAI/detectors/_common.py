@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2025"
+__date__ = "21/11/2025"
 __status__ = "stable"
 
 import logging
@@ -890,7 +890,7 @@ class Detector(metaclass=DetectorMeta):
             if self.delta_dummy is not None:
                 det_grp["delta_dummy"] = self.delta_dummy
             det_grp.create_dataset("pixel_size",
-                data=numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32),
+                data=numpy.array([self.pixel1, self.pixel2], dtype=numpy.float64),
                 ).attrs["unit"]="m"
 
             det_grp["force_pixel"] = self.force_pixel

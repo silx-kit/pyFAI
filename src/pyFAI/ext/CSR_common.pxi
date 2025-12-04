@@ -29,7 +29,7 @@
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "12/03/2025"
+__date__ = "21/11/2025"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -60,15 +60,17 @@ cdef struct float4_t:
     float s3
 float4_d = numpy.dtype([('s0','f4'),('s1','f4'),('s2','f4'),('s3','f4')])
 
+
 cdef inline bool cmp(float4_t a, float4_t b) noexcept nogil:
     return True if a.s0<b.s0 else False
+
 
 cdef inline void sort_float4(float4_t[::1] ary) noexcept nogil:
     "Sort in place of an array of float4 along first element (s0)"
     cdef:
         int size
     size = ary.shape[0]
-    sort(&ary[0], &ary[size-1]+1, cmp)
+    sort(&ary[0], &ary[size-1]+1, &cmp)
 
 
 cdef class CsrIntegrator(object):
@@ -390,7 +392,7 @@ cdef class CsrIntegrator(object):
                         #Variance remains at 0
                         acc_norm = coef * norm
                         acc_norm_sq = acc_norm * acc_norm
-                    else:
+                    elif norm != 0.0:
                         # see https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
                         # Not correct, Inspired by VV_{A+b} = VV_A + ω²·(b-V_A/Ω_A)·(b-V_{A+b}/Ω_{A+b})
                         # Empirically validated against 2-pass implementation in Python/scipy-sparse

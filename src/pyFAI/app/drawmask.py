@@ -33,10 +33,11 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "21/11/2025"
 __satus__ = "Production"
 
 import os
+import sys
 import numpy
 from argparse import ArgumentParser
 import fabio
@@ -182,12 +183,11 @@ def main(args=None):
     window.setOutputFile(outfile)
 
     print("Your mask-file will be saved into %s" % (outfile))
-
-    app.exec_()
+    result = app.exec()
 
     mask = window.getSelectionMask()
     postProcessId21(processFile, mask)
-
+    sys.exit(result)
 
 if __name__ == "__main__":
     main()

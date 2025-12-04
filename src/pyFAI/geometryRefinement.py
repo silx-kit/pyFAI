@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/10/2025"
+__date__ = "27/11/2025"
 __status__ = "development"
 
 import os
@@ -42,11 +42,12 @@ import logging
 import numpy
 import math
 from math import pi
+from scipy.optimize import fmin, leastsq, fmin_slsqp
 from .integrator.azimuthal import AzimuthalIntegrator
 from .calibrant import Calibrant, CALIBRANT_FACTORY
 from .utils.ellipse import fit_ellipse
-from .utils.decorators import deprecated
-from scipy.optimize import fmin, leastsq, fmin_slsqp
+from .utils.decorators import deprecated, deprecated_args
+
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +72,26 @@ ROCA = "/opt/saxs/roca"
 
 
 class GeometryRefinement(AzimuthalIntegrator):
+    _IMMUTABLE_ATTRS = AzimuthalIntegrator._IMMUTABLE_ATTRS + (
+            "_dist_min",
+            "_dist_max",
+            "_poni1_min",
+            "_poni1_max",
+            "_poni2_min",
+            "_poni2_max",
+            "_rot1_min",
+            "_rot1_max",
+            "_rot2_min",
+            "_rot2_max",
+            "_rot3_min",
+            "_rot3_max",
+            "_wavelength_min",
+            "_wavelength_max",
+    )
+
     PARAM_ORDER = ("dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength")
 
+    @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
     def __init__(
         self,
         data=None,
@@ -85,7 +104,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         rot3=0,
         pixel1=None,
         pixel2=None,
-        splineFile=None,
+        splinefile=None,
         detector=None,
         wavelength=None,
         **kwargs,
@@ -105,7 +124,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         :param rot3: guessed tilt of the detector around the incoming beam axis (optional, in rad)
         :param pixel1: Pixel size along the vertical direction of the detector (in m), almost mandatory
         :param pixel2: Pixel size along the horizontal direction of the detector (in m), almost mandatory
-        :param splineFile: file describing the detector as 2 cubic splines. Replaces pixel1 & pixel2
+        :param splinefile: file describing the detector as 2 cubic splines. Replaces pixel1 & pixel2
         :param detector: name of the detector or Detector instance. Replaces splineFile, pixel1 & pixel2
         :param wavelength: wavelength in m (1.54e-10)
 
@@ -129,7 +148,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         if (
             (pixel1 is None)
             and (pixel2 is None)
-            and (splineFile is None)
+            and (splinefile is None)
             and (detector is None)
         ):
             raise RuntimeError(
@@ -144,7 +163,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             rot3,
             pixel1,
             pixel2,
-            splineFile,
+            splinefile,
             detector,
             wavelength=wavelength,
             **kwargs,
@@ -189,9 +208,23 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._wavelength_min = 1e-15
         self._wavelength_max = 100.0e-10
 
+    def __copy__(self):
+        """:return: a shallow copy of itself."""
+        new = self.__class__(data=self.data,
+                             detector=self.detector,
+                             calibrant = self.calibrant)
+        for key in self._IMMUTABLE_ATTRS:
+            new.__setattr__(key, self.__getattribute__(key))
+        new.param = [new.__getattribute__(key) for key in self.PARAM_ORDER]
+        new._cached_array = self._cached_array.copy()
+        return new
+
     def __deepcopy__(self, memo=None):
-        if memo is None:
-            memo = {}
+        """deep copy helper function
+
+        :param memo: dict with modified objects
+        :return: a deep copy of itself."""
+
         data = copy.deepcopy(self.data, memo=memo)
         dist = copy.deepcopy(self._dist, memo=memo)
         poni1 = copy.deepcopy(self._poni1, memo=memo)
@@ -201,7 +234,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         rot3 = copy.deepcopy(self._rot3, memo=memo)
         pixel1 = copy.deepcopy(self.detector.pixel1, memo=memo)
         pixel2 = copy.deepcopy(self.detector.pixel2, memo=memo)
-        splineFile = copy.deepcopy(self.detector.splineFile, memo=memo)
+        splinefile = copy.deepcopy(self.detector.splinefile, memo=memo)
         detector = copy.deepcopy(self.detector, memo=memo)
         wavelength = copy.deepcopy(self.wavelength, memo=memo)
         calibrant = copy.deepcopy(self.calibrant, memo=memo)
@@ -216,45 +249,17 @@ class GeometryRefinement(AzimuthalIntegrator):
             rot3=rot3,
             pixel1=pixel1,
             pixel2=pixel2,
-            splineFile=splineFile,
+            splinefile=splinefile,
             detector=detector,
             wavelength=wavelength,
             calibrant=calibrant,
         )
-        numerical = [
-            "_dist",
-            "_poni1",
-            "_poni2",
-            "_rot1",
-            "_rot2",
-            "_rot3",
-            "chiDiscAtPi",
-            "_dssa_order",
-            "_wavelength",
-            "_oversampling",
-            "_correct_solid_angle_for_spline",
-            "_transmission_normal",
-            "_dist_min",
-            "_dist_max",
-            "_poni1_min",
-            "_poni1_max",
-            "_poni2_min",
-            "_poni2_max",
-            "_rot1_min",
-            "_rot1_max",
-            "_rot2_min",
-            "_rot2_max",
-            "_rot3_min",
-            "_rot3_max",
-            "_wavelength_min",
-            "_wavelength_max",
-        ]
         memo[id(self)] = new
-        for key in numerical:
+        for key in self._IMMUTABLE_ATTRS:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
-        new_param = [new._dist, new._poni1, new._poni2, new._rot1, new._rot2, new._rot3]
+        new_param = [new.__getattribute__(key) for key in self.PARAM_ORDER]
         memo[id(self.param)] = new_param
         new.param = new_param
         cached = {}
