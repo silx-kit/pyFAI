@@ -358,7 +358,7 @@ class ExtendedTransformation(object):
                 variables[name] = value
         for name, code in self.codes.items():
             signa = [variables.get(name, numpy.nan) for name in code.input_names]
-            res[name] = (float(code(*signa)[()]))
+            res[name] = float(code(*signa).item())
             # could ne done in a single liner but harder to understand !
         return self.ParamNT(**res)
 
