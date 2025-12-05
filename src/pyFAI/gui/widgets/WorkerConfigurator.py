@@ -460,9 +460,6 @@ class WorkerConfigurator(qt.QWidget):
         :return: dict with all information
         """
         return self.getWorkerConfig().as_dict()
-            
-    def _getIntegratorClass(self, dico):
-        return dico.get("integrator_class", "AzimuthalIntegrator")
         
     def setConfig(self, dico):
         """Setup the widget from its description
@@ -470,7 +467,7 @@ class WorkerConfigurator(qt.QWidget):
         :param dico: dictionary|WorkerConfig/WorkerFiberConfig with description of the widget
         :type dico: dict
         """
-        integrator_class = self._getIntegratorClass(dico)
+        integrator_class = dico.get("integrator_class", "AzimuthalIntegrator")
         if integrator_class == "AzimuthalIntegrator":
             self.setWorkerConfig(integration_config.WorkerConfig.from_dict(dico, inplace=False))
         elif integrator_class == "FiberIntegrator":
