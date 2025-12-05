@@ -111,7 +111,7 @@ def str_(val)->str:
     """
     Convert anything to a string ... but None -> ""
     """
-    return str(val) if val else ""
+    return str(val) if val is not None else ""
 
 
 def expand_args(args):
