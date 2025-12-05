@@ -47,7 +47,7 @@
       <item row="0" column="0" colspan="2">
        <widget class="QWidget" name="widget" native="true">
         <layout class="QHBoxLayout" name="horizontalLayout">
-         <property name="margin">
+         <property name="margin" stdset="0">
           <number>0</number>
          </property>
          <item>
@@ -600,10 +600,13 @@
                <string>Integration range</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_4_fib">
-               <item row="2" column="2">
-                <widget class="QLabel" name="label_9_fib">
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="oop_range_min">
+                 <property name="toolTip">
+                  <string>Lower out-of-plane bound</string>
+                 </property>
                  <property name="text">
-                  <string>...</string>
+                  <string/>
                  </property>
                 </widget>
                </item>
@@ -614,27 +617,10 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0">
-                <widget class="QCheckBox" name="do_ip_range">
-                 <property name="toolTip">
-                  <string>Limit/Force the in-plane range</string>
-                 </property>
+               <item row="3" column="2">
+                <widget class="QLabel" name="label_10_fib">
                  <property name="text">
-                  <string>In-plane range:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QLineEdit" name="ip_range_min">
-                 <property name="toolTip">
-                  <string>Lower in-plane bound</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="4">
-                <widget class="QLabel" name="_ipRangeUnit">
-                 <property name="text">
-                  <string>?</string>
+                  <string>...</string>
                  </property>
                 </widget>
                </item>
@@ -648,20 +634,10 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="1">
-                <widget class="QLineEdit" name="oop_range_min">
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="ip_range_min">
                  <property name="toolTip">
-                  <string>Lower out-of-plane bound</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="3">
-                <widget class="QLineEdit" name="oop_range_max">
-                 <property name="toolTip">
-                  <string>Upper out-of-plane bound</string>
+                  <string>Lower in-plane bound</string>
                  </property>
                 </widget>
                </item>
@@ -672,10 +648,44 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="2">
-                <widget class="QLabel" name="label_10_fib">
+               <item row="2" column="2">
+                <widget class="QLabel" name="label_9_fib">
                  <property name="text">
                   <string>...</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="3">
+                <widget class="QLineEdit" name="oop_range_max">
+                 <property name="toolTip">
+                  <string>Upper out-of-plane bound</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="do_ip_range">
+                 <property name="toolTip">
+                  <string>Limit/Force the in-plane range</string>
+                 </property>
+                 <property name="text">
+                  <string>In-plane range:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="4">
+                <widget class="QLabel" name="_ipRangeUnit">
+                 <property name="text">
+                  <string>?</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QCheckBox" name="vertical_integration">
+                 <property name="text">
+                  <string>Vertical Integration</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -683,16 +693,6 @@
              </widget>
             </item>
            </layout>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="vertical_integration">
-            <property name="text">
-             <string>Vertical Integration</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
           </item>
          </layout>
         </widget>
@@ -715,8 +715,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-        <widget class="QComboBox" name="error_model">
-        </widget>
+       <widget class="QComboBox" name="error_model"/>
       </item>
       <item row="1" column="0">
        <widget class="QCheckBox" name="do_normalization">
@@ -808,8 +807,7 @@
        </widget>
       </item>
       <item row="4" column="1">
-        <widget class="QComboBox" name="integrator_name">
-        </widget>
+       <widget class="QComboBox" name="integrator_name"/>
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_50">
