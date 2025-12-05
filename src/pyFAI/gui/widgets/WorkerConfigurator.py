@@ -561,14 +561,10 @@ class WorkerConfigurator(qt.QWidget):
         elif type(wc) is integration_config.WorkerFiberConfig:
             self.nbpt_ip.setText(str_(wc.npt_ip))
             self.nbpt_oop.setText(str_(wc.npt_oop))
-            if wc.ip_range_min is not None:
-                self.ip_range_min.setText(str(wc.ip_range_min))
-            if wc.ip_range_max is not None:
-                self.ip_range_max.setText(str(wc.ip_range_max))
-            if wc.oop_range_min is not None:
-                self.oop_range_min.setText(str(wc.oop_range_min))
-            if wc.oop_range_max is not None:
-                self.oop_range_max.setText(str(wc.oop_range_max))
+            self.ip_range_min.setText(str_(wc.ip_range_min))
+            self.ip_range_max.setText(str_(wc.ip_range_max))
+            self.oop_range_min.setText(str_(wc.oop_range_min))
+            self.oop_range_max.setText(str_(wc.oop_range_max))
             self.do_ip_range.setChecked(wc.do_ip_range)
             self.do_oop_range.setChecked(wc.do_oop_range)
             self.vertical_integration.setChecked(wc.vertical_integration)
