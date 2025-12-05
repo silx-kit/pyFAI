@@ -460,20 +460,6 @@ class WorkerConfigurator(qt.QWidget):
         :return: dict with all information
         """
         return self.getWorkerConfig().as_dict()
-
-    def setConfigGeneric(self, dico):
-        """Setup the widget from its description
-
-        :param dico: dictionary|WorkerConfig/WorkerFiberConfig with description of the widget
-        :type dico: dict
-        """
-        integrator_class = self._getIntegratorClass(dico)
-        if integrator_class == "AzimuthalIntegrator":
-            self.setConfig(dico=dico)
-        elif integrator_class == "FiberIntegrator":
-            self.setConfigFiber(dico=dico)
-        else:
-            raise ValueError(f"{integrator_class} is not a valid Integrator class")
             
     def _getIntegratorClass(self, dico):
         return dico.get("integrator_class", "AzimuthalIntegrator")
@@ -481,23 +467,21 @@ class WorkerConfigurator(qt.QWidget):
     def setConfig(self, dico):
         """Setup the widget from its description
 
-        :param dico: dictionary|WorkerConfig with description of the widget
+        :param dico: dictionary|WorkerConfig/WorkerFiberConfig with description of the widget
         :type dico: dict
         """
-        self.setWorkerConfig(integration_config.WorkerConfig.from_dict(dico, inplace=False))
-
-    def setConfigFiber(self, dico):
-        """Setup the widget from its description
-
-        :param dico: dictionary|WorkerFiberConfig with description of the widget
-        :type dico: dict
-        """
-        self.setWorkerFiberConfig(integration_config.WorkerFiberConfig.from_dict(dico, inplace=False))
+        integrator_class = self._getIntegratorClass(dico)
+        if integrator_class == "AzimuthalIntegrator":
+            self.setWorkerConfig(integration_config.WorkerConfig.from_dict(dico, inplace=False))
+        elif integrator_class == "FiberIntegrator":
+            self.setWorkerConfig(integration_config.WorkerFiberConfig.from_dict(dico, inplace=False))
+        else:
+            raise ValueError(f"{integrator_class} is not a valid Integrator class")
         
     def setWorkerConfig(self, wc):
         """Setup the widget from its description
 
-        :param wc: WorkerConfig instance with the description of the widget
+        :param wc: WorkerConfig/WorkerFiberConfig instance with the description of the widget
         :type dico: WorkerConfig
         """
 
@@ -556,145 +540,26 @@ class WorkerConfigurator(qt.QWidget):
             self.polarization_factor.setValue(wc.polarization_factor)
         elif isinstance(wc.polarization_factor, (tuple, list)):
             self.polarization_factor.setValue(wc.polarization_factor[0])
-        self.nbpt_rad.setText(str_(wc.nbpt_rad))
-        self.nbpt_azim.setText(str_(wc.nbpt_azim))
-        self.chi_discontinuity_at_0.setChecked(wc.chi_discontinuity_at_0)
-        self.radial_range_min.setText(str_(wc.radial_range_min))
-        self.radial_range_max.setText(str_(wc.radial_range_max))
-        self.azimuth_range_min.setText(str_(wc.azimuth_range_min))
-        self.azimuth_range_max.setText(str_(wc.azimuth_range_max))
-        self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
-        self.do_dummy.setChecked(wc.do_dummy)
-        self.do_dark.setChecked(wc.do_dark)
-        self.do_flat.setChecked(wc.do_flat)
-        self.do_polarization.setChecked(wc.do_polarization)
-        self.do_mask.setChecked(wc.do_mask)
-        self.do_radial_range.setChecked(wc.do_radial_range)
-        self.do_azimuthal_range.setChecked(wc.do_azimuthal_range)
-        self.__setNormalization(wc.normalization_factor, wc.monitor_name)
-
-        value = wc.unit
-        if value is not None:
-            self.radial_unit.model().setValue(value)
-        if wc.error_model is not None:
-            self.error_model.setCurrentIndex(int(wc.error_model))
-
-        dim = 2 if wc.do_2D else 1
-        method = wc.method
-        target = wc.opencl_device
-        if isinstance(target, list):
-            target = tuple(target)
-
-        if method is None:
-            lngm = load_engines.PREFERED_METHODS_2D[0] if dim == 2 else load_engines.PREFERED_METHODS_1D[0]
-            method = lngm.method
-        elif isinstance(method, (str,)):
-            method = method_registry.Method.parsed(method)
-            method = method.fixed(dim=dim, target=target)
-        elif isinstance(method, (list, tuple)):
-            if len(method) == 3:
-                split, algo, impl = method
-                method = method_registry.Method(dim, split, algo, impl, target)
-            elif 3 < len(method) <= 5:
-                method = method_registry.Method(*method)
-            else:
-                raise TypeError(f"Method size {len(method)} is unsupported, method={method}.")
-
-        self.__setMethod(method)
-        self.__setOpenclDevice(method.target)
-
-        self.do_2D.setChecked(wc.do_2D)
-        if self.__only1dIntegration:
-            # Force unchecked
-            self.do_2D.setChecked(False)
-
-        integrator_name = wc.integrator_method or "integrate"
-        self.integrator_name.setCurrentText(integrator_name)
-        if integrator_name.startswith("sigma_clip"):
-            extra_options = wc.extra_options or {}
-            self.sigmaclip_threshold.setText(str(extra_options.get("thres", 5.0)))
-            self.sigmaclip_maxiter.setText(str(extra_options.get("max_iter", 5)))
-
-        self.__updateDisabledStates()
-
-    def setWorkerFiberConfig(self, wc):
-        """Setup the widget from its description
-
-        :param wc: WorkerConfig instance with the description of the widget
-        :type dico: WorkerConfig
-        """
-
-        def normalizeFiles(filenames):
-            """Normalize different versions of the filename list.
-
-            FIXME: The file browser will not work, but the returned config will
-            be valid
-            """
-            if filenames is None:
-                return ""
-            if isinstance(filenames, list):
-                return "|".join(filenames)
-            filenames = filenames.strip()
-            return filenames
-
-        # Clean up the GUI
-        self.setDetector(None)
-        self.__geometryModel.wavelength().setValue(None)
-        self.__geometryModel.distance().setValue(None)
-        self.__geometryModel.poni1().setValue(None)
-        self.__geometryModel.poni2().setValue(None)
-        self.__geometryModel.rotation1().setValue(None)
-        self.__geometryModel.rotation2().setValue(None)
-        self.__geometryModel.rotation3().setValue(None)
-
-        poni = wc.poni
-        if not isinstance(poni, PoniFile):
-            poni = PoniFile(poni)
-
-        if poni.wavelength:
-            self.__geometryModel.wavelength().setValue(poni.wavelength)
-        if poni.dist:
-            self.__geometryModel.distance().setValue(poni.dist)
-        if poni.poni1 is not None:
-            self.__geometryModel.poni1().setValue(poni.poni1)
-        if poni.poni2 is not None:
-            self.__geometryModel.poni2().setValue(poni.poni2)
-        if poni.rot1 is not None:
-            self.__geometryModel.rotation1().setValue(poni.rot1)
-        if poni.rot2 is not None:
-            self.__geometryModel.rotation2().setValue(poni.rot2)
-        if poni.rot3 is not None:
-            self.__geometryModel.rotation3().setValue(poni.rot3)
-
-        # detector
-        if poni.detector is not None:
-            self.setDetector(poni.detector)
-
-        self.val_dummy.setText(str_(wc.val_dummy))
-        self.delta_dummy.setText(str_(wc.delta_dummy))
-        self.__model.maskFileModel.setFilename(str_(wc.mask_image))
-        self.__model.darkFileModel.setFilename(normalizeFiles(wc.dark_current_image))
-        self.__model.flatFileModel.setFilename(normalizeFiles(wc.flat_field_image))
-        if isinstance(wc.polarization_factor, float):
-            self.polarization_factor.setValue(wc.polarization_factor)
-        elif isinstance(wc.polarization_factor, (tuple, list)):
-            self.polarization_factor.setValue(wc.polarization_factor[0])
-        self.nbpt_rad.setText(str_(wc.nbpt_rad))
-        self.nbpt_azim.setText(str_(wc.nbpt_azim))
-        self.chi_discontinuity_at_0.setChecked(wc.chi_discontinuity_at_0)
-        self.radial_range_min.setText(str_(wc.radial_range_min))
-        self.radial_range_max.setText(str_(wc.radial_range_max))
-        self.azimuth_range_min.setText(str_(wc.azimuth_range_min))
-        self.azimuth_range_max.setText(str_(wc.azimuth_range_max))
-        self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
-        self.do_dummy.setChecked(wc.do_dummy)
-        self.do_dark.setChecked(wc.do_dark)
-        self.do_flat.setChecked(wc.do_flat)
-        self.do_polarization.setChecked(wc.do_polarization)
-        self.do_mask.setChecked(wc.do_mask)
-        self.do_radial_range.setChecked(wc.do_radial_range)
-        self.do_azimuthal_range.setChecked(wc.do_azimuthal_range)
-        self.__setNormalization(wc.normalization_factor, wc.monitor_name)
+            
+        if isinstance(wc, integration_config.WorkerConfig):
+            self.nbpt_rad.setText(str_(wc.nbpt_rad))
+            self.nbpt_azim.setText(str_(wc.nbpt_azim))
+            self.chi_discontinuity_at_0.setChecked(wc.chi_discontinuity_at_0)
+            self.radial_range_min.setText(str_(wc.radial_range_min))
+            self.radial_range_max.setText(str_(wc.radial_range_max))
+            self.azimuth_range_min.setText(str_(wc.azimuth_range_min))
+            self.azimuth_range_max.setText(str_(wc.azimuth_range_max))
+            self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
+            self.do_dummy.setChecked(wc.do_dummy)
+            self.do_dark.setChecked(wc.do_dark)
+            self.do_flat.setChecked(wc.do_flat)
+            self.do_polarization.setChecked(wc.do_polarization)
+            self.do_mask.setChecked(wc.do_mask)
+            self.do_radial_range.setChecked(wc.do_radial_range)
+            self.do_azimuthal_range.setChecked(wc.do_azimuthal_range)
+            self.__setNormalization(wc.normalization_factor, wc.monitor_name)
+        elif isinstance(wc, integration_config.WorkerFiberConfig):
+            ...
 
         value = wc.unit
         if value is not None:

@@ -347,7 +347,7 @@ class IntegrationDialog(qt.QWidget):
         :type dico: dict
         """
         dico = integration_config.normalize(dico)
-        self.__workerConfigurator.setConfigGeneric(dico)
+        self.__workerConfigurator.setConfig(dico)
 
     def set_input_data(self, stack):
         self.input_data = stack
