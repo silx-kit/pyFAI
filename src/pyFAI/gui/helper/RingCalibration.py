@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/10/2025"
+__date__ = "05/12/2025"
 
 import logging
 import numpy
@@ -61,6 +61,9 @@ class GeometryRefinementContext:
             minValue = getattr(self.__geoRef, f"{name}_min")
             maxValue = getattr(self.__geoRef, f"{name}_max")
             self.__bounds[name] = minValue, maxValue
+
+    def __repr__(self):
+        return f"GeometryRefinementContext:\n    GeoRef: {self.__geoRef}\n    Fixed: {self.__fixed}"
 
     def __getattr__(self, name):
         return object.__getattribute__(self.__geoRef, name)
@@ -148,13 +151,17 @@ class RingCalibration:
         self.__detector = detector
         self.__wavelength = wavelength
         self.__defaultConstraints = None
-
+        self.__peakPicker = None
+        self.__geoRef = None
         self.__isValid = True
         try:
             self.__init(peaks, method)
         except Exception:
             _logger.error("Error while initializing the calibration", exc_info=True)
             self.__isValid = False
+
+    def __repr__(self):
+        return f"RingCalibration:\n  PeakPicker: {self.__peakPicker}\n  GeoRef: {self.__geoRef}"
 
     def isValid(self):
         """

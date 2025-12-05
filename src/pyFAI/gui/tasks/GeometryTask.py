@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "05/12/2025"
 
 import logging
 import numpy
@@ -993,12 +993,14 @@ class GeometryTask(AbstractCalibrationTask):
         now = datetime.datetime.now()
         geometryHistory.appendGeometry("Customed", now, geometry, state.getRms())
 
-    def __showDialogCalibrationDiverge(self):
+    def __showDialogCalibrationDiverge(self, extra:str=''):
         title = "Error while calibrating"
         message = ("It is not possible to calibrate/refine the geometry. " +
                    "The refinement <b>diverge</b>. " +
                    "It may be due to a mistake on specified wavelength, or selected peaks. " +
                    "<b>Check your input data</b>.")
+        if extra:
+            message += "<br>" + extra
         qt.QMessageBox.critical(self, title, message)
 
     def __geometryUpdated(self):
@@ -1007,7 +1009,7 @@ class GeometryTask(AbstractCalibrationTask):
             self.__calibrationState.reset()
             return
         if not calibration.isValid():
-            self.__showDialogCalibrationDiverge()
+            self.__showDialogCalibrationDiverge(str(calibration))
             self.__calibrationState.reset()
             return
         geometry = self.model().fittedGeometry()

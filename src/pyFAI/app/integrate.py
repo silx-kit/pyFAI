@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "05/12/2025"
 __satus__ = "production"
 
 import sys
@@ -183,8 +183,9 @@ class IntegrationObserver(object):
     """Interface providing access to the to the processing of the `process`
     function."""
 
-    def __init__(self):
+    def __init__(self, parent=None):
         self.__is_interruption_requested = False
+        # Discard parent ...
 
     def is_interruption_requested(self):
         return self.__is_interruption_requested
