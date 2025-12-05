@@ -149,6 +149,11 @@ class WorkerConfigurator(qt.QWidget):
         
         self.nbpt_ip.setValidator(npt_validator)
         self.nbpt_oop.setValidator(npt_validator)
+        
+        so_validator = qt.QIntValidator()
+        so_validator.setBottom(1)
+        so_validator.setTop(8)
+        self.sample_orientation.setValidator(so_validator)
         #
         
         doubleOrEmptyValidator = validators.AdvancedDoubleValidator(self)
@@ -410,11 +415,16 @@ class WorkerConfigurator(qt.QWidget):
         wc.npt_ip = self.__getInPlaneNbpt()
         wc.unit_oop = to_unit(str(self.oop_unit.model().value()))
         wc.unit_ip = to_unit(str(self.ip_unit.model().value()))
-        
-        # if self.do_2D.isChecked():
-        #     wc.nbpt_azim = self.__getAzimuthalNbpt()
-        # wc.nbpt_rad = self.__getRadialNbpt()
-        #wc.unit = to_unit(str(self.radial_unit.model().value()))
+        incident_angle = numpy.deg2rad(float(self.incident_angle_deg.text()))
+        tilt_angle = numpy.deg2rad(float(self.tilt_angle_deg.text()))
+        sample_orientation = int(self.sample_orientation.text())
+        wc.unit_oop.incident_angle = incident_angle
+        wc.unit_ip.incident_angle = incident_angle
+        wc.unit_oop.tilt_angle = tilt_angle
+        wc.unit_ip.tilt_angle = tilt_angle
+        wc.unit_oop.sample_orientation = sample_orientation
+        wc.unit_ip.sample_orientation = sample_orientation
+
         if self.do_ip_range.isChecked():
             wc.ip_range = [self._float("ip_range_min", -numpy.inf),
                                self._float("ip_range_max", numpy.inf)]
