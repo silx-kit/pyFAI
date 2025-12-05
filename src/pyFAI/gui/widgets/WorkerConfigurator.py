@@ -280,6 +280,8 @@ class WorkerConfigurator(qt.QWidget):
             return self.getWorkerConfig()
         elif active_tab == 1:
             return self.getWorkerFiberConfig()
+        else:
+            raise ValueError(f"Tab with index {active_tab} is not associated to any worker config")
 
     def getWorkerConfig(self):
         """Read the configuration of the plugin and returns it as a WorkerConfig instance
