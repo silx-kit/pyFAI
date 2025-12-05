@@ -470,8 +470,10 @@ class WorkerConfigurator(qt.QWidget):
         integrator_class = dico.get("integrator_class", "AzimuthalIntegrator")
         if integrator_class == "AzimuthalIntegrator":
             self.setWorkerConfig(integration_config.WorkerConfig.from_dict(dico, inplace=False))
+            self.tabWidget.setCurrentIndex(0)
         elif integrator_class == "FiberIntegrator":
             self.setWorkerConfig(integration_config.WorkerFiberConfig.from_dict(dico, inplace=False))
+            self.tabWidget.setCurrentIndex(1)
         else:
             raise ValueError(f"{integrator_class} is not a valid Integrator class")
         
@@ -537,8 +539,8 @@ class WorkerConfigurator(qt.QWidget):
             self.polarization_factor.setValue(wc.polarization_factor)
         elif isinstance(wc.polarization_factor, (tuple, list)):
             self.polarization_factor.setValue(wc.polarization_factor[0])
-            
-        if isinstance(wc, integration_config.WorkerConfig):
+                        
+        if type(wc) is integration_config.WorkerConfig:
             self.nbpt_rad.setText(str_(wc.nbpt_rad))
             self.nbpt_azim.setText(str_(wc.nbpt_azim))
             self.chi_discontinuity_at_0.setChecked(wc.chi_discontinuity_at_0)
@@ -546,21 +548,34 @@ class WorkerConfigurator(qt.QWidget):
             self.radial_range_max.setText(str_(wc.radial_range_max))
             self.azimuth_range_min.setText(str_(wc.azimuth_range_min))
             self.azimuth_range_max.setText(str_(wc.azimuth_range_max))
-            self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
-            self.do_dummy.setChecked(wc.do_dummy)
-            self.do_dark.setChecked(wc.do_dark)
-            self.do_flat.setChecked(wc.do_flat)
-            self.do_polarization.setChecked(wc.do_polarization)
-            self.do_mask.setChecked(wc.do_mask)
             self.do_radial_range.setChecked(wc.do_radial_range)
             self.do_azimuthal_range.setChecked(wc.do_azimuthal_range)
-            self.__setNormalization(wc.normalization_factor, wc.monitor_name)
-        elif isinstance(wc, integration_config.WorkerFiberConfig):
-            ...
+            value = wc.unit
+            if value is not None:
+                self.radial_unit.model().setValue(value)
+        elif type(wc) is integration_config.WorkerFiberConfig:
+            self.nbpt_ip.setText(str_(wc.npt_ip))
+            self.nbpt_oop.setText(str_(wc.npt_oop))
+            if wc.ip_range_min is not None:
+                self.ip_range_min.setText(str(wc.ip_range_min))
+            if wc.ip_range_max is not None:
+                self.ip_range_max.setText(str(wc.ip_range_max))
+            if wc.oop_range_min is not None:
+                self.oop_range_min.setText(str(wc.oop_range_min))
+            if wc.oop_range_max is not None:
+                self.oop_range_max.setText(str(wc.oop_range_max))
+            self.do_ip_range.setChecked(wc.do_ip_range)
+            self.do_oop_range.setChecked(wc.do_oop_range)
+            self.vertical_integration.setChecked(wc.vertical_integration)
+            
+        self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
+        self.do_dummy.setChecked(wc.do_dummy)
+        self.do_dark.setChecked(wc.do_dark)
+        self.do_flat.setChecked(wc.do_flat)
+        self.do_polarization.setChecked(wc.do_polarization)
+        self.do_mask.setChecked(wc.do_mask)
+        self.__setNormalization(wc.normalization_factor, wc.monitor_name)
 
-        value = wc.unit
-        if value is not None:
-            self.radial_unit.model().setValue(value)
         if wc.error_model is not None:
             self.error_model.setCurrentIndex(int(wc.error_model))
 
