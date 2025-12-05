@@ -138,14 +138,19 @@ class WorkerConfigurator(qt.QWidget):
         self.radial_unit.setShortNameDisplay(True)
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
-
+        
+        # Fiber integration parameters
         fiber_units = [v for v in RADIAL_UNITS.values() if isinstance(v, UnitFiber)]
         self.ip_unit.setUnits(fiber_units)
         self.ip_unit.model().setValue(RADIAL_UNITS["qip_nm^-1"])
 
         self.oop_unit.setUnits(fiber_units)
         self.oop_unit.model().setValue(RADIAL_UNITS["qoop_nm^-1"])
-
+        
+        self.nbpt_ip.setValidator(npt_validator)
+        self.nbpt_oop.setValidator(npt_validator)
+        #
+        
         doubleOrEmptyValidator = validators.AdvancedDoubleValidator(self)
         doubleOrEmptyValidator.setAllowEmpty(True)
         self.normalization_factor.setValidator(doubleOrEmptyValidator)
@@ -226,7 +231,21 @@ class WorkerConfigurator(qt.QWidget):
         if value == "":
             return None
         return int(value)
-
+    
+    def __getInPlaneNbpt(self):
+        # Only for WorkerFiberConfig
+        value = str(self.nbpt_ip.text()).strip()
+        if value == "":
+            return None
+        return int(value)
+    
+    def __getOutOfPlaneNbpt(self):
+        # Only for WorkerFiberConfig
+        value = str(self.nbpt_oop.text()).strip()
+        if value == "":
+            return None
+        return int(value)
+    
     def getPoni(self):
         poni = {"wavelength": self.__geometryModel.wavelength().value(),
                 "dist": self.__geometryModel.distance().value(),
@@ -244,6 +263,17 @@ class WorkerConfigurator(qt.QWidget):
 
     def getPoniDict(self):
         return self.getPoni().as_dict()
+    
+    def getWorkerConfigGeneric(self):
+        """Read the configuration of the plugin and returns it as a WorkerConfig / WorkerFiberConfig instance
+
+        :return: WorkerConfig/WorkerFiberConfig instance
+        """
+        condition = True
+        if condition:
+            return self.getWorkerConfig()
+        else:
+            return self.getWorkerFiberConfig()
 
     def getWorkerConfig(self):
         """Read the configuration of the plugin and returns it as a WorkerConfig instance
@@ -288,6 +318,93 @@ class WorkerConfigurator(qt.QWidget):
         if self.do_azimuthal_range.isChecked():
             wc.azimuth_range = [self._float("azimuth_range_min", -numpy.inf),
                                 self._float("azimuth_range_max", numpy.inf)]
+
+        # processing-config
+        wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
+        wc.correct_solid_angle = bool(self.do_solid_angle.isChecked())
+        wc.error_model = ErrorModel(self.error_model.currentIndex())
+
+        method = self.__method
+        if method is not None:
+            wc.method = (method.split, method.algo, method.impl)
+            if method.impl == "opencl":
+                wc.opencl_device = self.__openclDevice
+
+        if self.do_normalization.isChecked():
+            value = self.normalization_factor.text()
+            if value != "":
+                try:
+                    value = float(value)
+                except ValueError:
+                    value = None
+                if value not in [1.0, None]:
+                    wc.normalization_factor = value
+
+            value = self.monitor_name.text()
+            if value != "":
+                value = str(value)
+                wc.monitor_name = value
+
+        if self.integrator_name.currentText() == "sigma_clip_ng":
+            wc.nbpt_azim = 1
+            wc.integrator_method = "sigma_clip_ng"
+            wc.extra_options = {"thres": float(self.sigmaclip_threshold.text()),
+                                "max_iter": float(self.sigmaclip_maxiter.text()),
+                               }
+        return wc
+
+    def getWorkerFiberConfig(self):
+        """Read the configuration of the plugin and returns it as a WorkerFiberConfig instance
+
+        :return: WorkerFiberConfig instance
+        """
+
+        def splitFiles(filenames):
+            """In case files was provided with comma.
+
+            The file browser was in this case not working, but the returned
+            config will be valid.
+            """
+            filenames = filenames.strip()
+            if filenames == "":
+                return None
+            return [name.strip() for name in filenames.split("|")]
+
+        wc = integration_config.WorkerFiberConfig(application="pyfai-integrate",
+                                             poni=self.getPoni())
+        # pre-processing
+        if self.do_mask.isChecked():
+            wc.mask_image = str_(self.mask_file.text()).strip()
+        if self.do_dark.isChecked():
+            wc.dark_current_image = splitFiles(self.dark_current.text())
+        if self.do_flat.isChecked():
+            wc.flat_field_image = splitFiles(self.flat_field.text())
+        if self.do_polarization.isChecked():
+            wc.polarization_description = PolarizationDescription(float_(self.polarization_factor.value()), 0.0)
+        if self.do_dummy.isChecked():
+            wc.val_dummy = self._float("val_dummy", None)
+            wc.delta_dummy = self._float("delta_dummy", None)
+
+        # integration-fiber
+        wc.nbpt_oop = self.__getOutOfPlaneNbpt()
+        wc.nbpt_ip = self.__getInPlaneNbpt()
+        wc.oop_unit = self.oop_unit
+        wc.ip_unit = self.ip_unit
+        
+        
+        
+        
+        
+        # if self.do_2D.isChecked():
+        #     wc.nbpt_azim = self.__getAzimuthalNbpt()
+        # wc.nbpt_rad = self.__getRadialNbpt()
+        wc.unit = to_unit(str(self.radial_unit.model().value()))
+        if self.do_ip_range.isChecked():
+            wc.ip_range = [self._float("ip_range_min", -numpy.inf),
+                               self._float("ip_range_max", numpy.inf)]
+        if self.do_oop_range.isChecked():
+            wc.oop_range = [self._float("oop_range_min", -numpy.inf),
+                                self._float("oop_range_max", numpy.inf)]
 
         # processing-config
         wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())

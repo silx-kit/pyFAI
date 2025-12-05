@@ -290,15 +290,11 @@ class IntegrationDialog(qt.QWidget):
         qt.QDesktopServices.openUrl(qt.QUrl(url))
 
     def get_worker_config(self):
-        """Read the configuration of the plugin and returns it as a WorkerConfig dataclass
+        """Read the configuration of the plugin and returns it as a WorkerConfig/WorkerFiberConfig dataclass
 
         :return: WorkerConfig dataclass instance
         """
-        condition = True
-        if condition:
-            wc = self.__workerConfigurator.getWorkerConfig()
-        else:
-            wc = self.__workerConfigurator.getWorkerFiberConfig()
+        wc = self.__workerConfigurator.getWorkerConfigGeneric()
         return wc
 
     def get_config(self):
