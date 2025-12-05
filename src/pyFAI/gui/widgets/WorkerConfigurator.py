@@ -417,6 +417,8 @@ class WorkerConfigurator(qt.QWidget):
         if self.do_oop_range.isChecked():
             wc.oop_range = [self._float("oop_range_min", -numpy.inf),
                                 self._float("oop_range_max", numpy.inf)]
+            
+        wc.vertical_integration = self.vertical_integration.isChecked()
 
         # processing-config
         wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
