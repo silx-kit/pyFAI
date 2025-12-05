@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "05/12/2025"
 __status__ = "development"
 
 import logging
@@ -354,11 +354,16 @@ class IntegrationDialog(qt.QWidget):
 
     def save_config(self):
         logger.debug("save_config")
-
-        result = qt.QFileDialog.getSaveFileName(
-            caption="Save configuration as json",
-            directory=self.json_file,
-            filter="Config (*.json)")
+        if "PyQt" in qt.QtBinding.__name__:
+            result = qt.QFileDialog.getSaveFileName(
+                caption="Save configuration as json",
+                directory=self.json_file,
+                filter="Config (*.json)")
+        else: # PySide6
+            result = qt.QFileDialog.getSaveFileName(
+                caption="Save configuration as json",
+                dir=self.json_file,
+                filter="Config (*.json)")
         if isinstance(result, tuple):
             # PyQt5 compatibility
             result = result[0]
