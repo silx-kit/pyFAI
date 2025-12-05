@@ -698,10 +698,12 @@ class WorkerFiber(Worker):
                  incident_angle:float=0.0,
                  tilt_angle:float=0.0,
                  sample_orientation:int=1,
+                 integration_1d:bool=False,
+                 vertical_integration:bool=True,
                  dummy=None, delta_dummy=None,
                  method=("no", "csr", "cython"),
                  use_missing_wedge:bool=False,
-                 integrator_name="integrate2d_grazing_incidence",
+                 integrator_name=None,
                  extra_options=None,
                  ):
         """
@@ -723,7 +725,6 @@ class WorkerFiber(Worker):
         self.ai = self.fi
         self._normalization_factor = None  # Value of the monitor: divides the intensity by this value for normalization
 
-        self.integrator_name = integrator_name
         self._processor = None
         if isinstance(method, (str, list, tuple, Method, IntegrationMethod)):
             method = IntegrationMethod.parse(method)
@@ -746,6 +747,10 @@ class WorkerFiber(Worker):
         self.oop_range = oop_range
         self._npt_oop = npt_oop
         self._npt_ip = npt_ip
+        
+        self.vertical_integration = vertical_integration
+        self.do_integration_1d = integration_1d
+        self.integrator_name = integrator_name
         self.update_processor()
 
         self._incident_angle = config_unit["incident_angle"]
@@ -773,6 +778,10 @@ class WorkerFiber(Worker):
         """
         pretty print of myself
         """
+        if self.do_integration_1d:
+            msg_dim = f"Integration in 1 dimension: {'Vertical' if self.vertical_integration else 'Horizontal'}"
+        else:
+            msg_dim = "Integration in 2 dimensions"
         lstout = ["Fiber Integrator:", self.fi.__repr__(),
                   f"Input image shape: {self._shape}",
                   f"Number of points in out-of-plane direction: {self._npt_oop}",
@@ -781,6 +790,7 @@ class WorkerFiber(Worker):
                   f"Unit in in-plane direction: {self.unit_ip}",
                   f"Out-of-plane range: {self.oop_range}",
                   f"In-plane range: {self.ip_range}",
+                  f"{msg_dim}",
                   f"Correct for solid angle: {self.correct_solid_angle}",
                   f"Polarization factor: {self.polarization_factor}",
                   f"Dark current image: {self.dark_current_image}",
@@ -791,9 +801,38 @@ class WorkerFiber(Worker):
         ]
         return os.linesep.join(lstout)
 
-    def update_processor(self, integrator_name=None):
-        integrator_name = integrator_name or self.integrator_name
-        return super().update_processor(integrator_name=integrator_name)
+    def update_processor(self):
+        if self.do_integration_1d:
+            integrator_name="integrate1d_grazing_incidence"
+        else:
+            integrator_name="integrate2d_grazing_incidence"
+        self._processor = self.ai.__getattribute__(integrator_name)
+        
+        # The actual method is always `integrate2d` (always 2dim)
+        dim = 2
+        if isinstance(self.method, (list, tuple)):
+            if isinstance(self.method, Method):
+                methods = IntegrationMethod.select_method(dim=dim, split=self.method[1], algo=self.method[2], impl=self.method[3],
+                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else self.method[4],
+                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else self.method[4],
+                                      degradable=True)
+            else:
+                methods = IntegrationMethod.select_method(dim=dim, split=self.method[0], algo=self.method[1], impl=self.method[2],
+                                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None,
+                                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else None,
+                                                      degradable=True)
+            self._method = methods[0]
+        elif isinstance(self.method, str) or self.method is None:
+            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
+        elif isinstance(self.method, IntegrationMethod):
+            self._method = self.method
+        else:
+            logger.error(f"No method available for {dim}D integration on {self.method} with target {self.opencl_device}")
+            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
+        
+        self.integrator_name = self._processor.__name__
+        self.radial = None
+        self.azimuthal = None
 
     @property
     def npt_oop(self):
@@ -838,9 +877,7 @@ class WorkerFiber(Worker):
         self._sample_orientation = sample_orientation
 
     def do_2D(self):
-        if self.npt_ip == 1 or self.npt_oop == 1:
-            return False
-        return True
+        return not self.do_integration_1d
 
     def set_config(self, config:dict | WorkerFiberConfig, consume_keys:bool=False):
         """
@@ -883,8 +920,8 @@ class WorkerFiber(Worker):
             self.ai.detector.flatfield = data
             self.flat_field_image = filenames
 
-        self.npt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
-        self.npt_rad = config.nbpt_rad
+        self.npt_oop = int(config.npt_oop)
+        self.npt_ip = int(config.npt_ip)
         self.unit_ip = units.parse_fiber_unit(**config.unit_ip)
         self.unit_oop = units.parse_fiber_unit(**config.unit_oop)
         config_unit = self.unit_ip.get_config_shared()
@@ -899,6 +936,8 @@ class WorkerFiber(Worker):
 
         self.oop_range = config.oop_range
         self.ip_range = config.ip_range
+        self.vertical_integration = config.vertical_integration
+        self.do_integration_1d = config.integration_1d
 
         self.method = config.method  # expand to Method ?
         self.opencl_device = config.opencl_device
@@ -910,7 +949,7 @@ class WorkerFiber(Worker):
         self.delta_dummy = config.delta_dummy
         self._normalization_factor = config.normalization_factor
         self.extra_options = config.extra_options or {}
-        self.update_processor(integrator_name=config.integrator_method)
+        self.update_processor()
         if config.monitor_name:
             logger.warning("Monitor name defined but unsupported by the worker.")
 
@@ -988,6 +1027,7 @@ class WorkerFiber(Worker):
                     "unit_ip", "unit_oop",
                     "ip_range", "oop_range",
                     "incident_angle", "tilt_angle", "sample_orientation",
+                    "vertical_integration",
                     "use_missing_wedge",
         ):
             kwarg[key] = self.__getattribute__(key)
