@@ -33,8 +33,8 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
-__status__ = "development"
+__date__ = "05/12/2025"
+__status__ = "production"
 
 import logging
 import os.path
@@ -59,6 +59,7 @@ from ...io import integration_config
 from ... import method_registry
 from ...containers import PolarizationDescription, ErrorModel
 from ...integrator import load_engines
+from ..utils.units import Unit
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +86,7 @@ class WorkerConfigurator(qt.QWidget):
 
         self.__openclDevice = None
         self.__method = None
-
+        self.__wavelengthLabel = None
         self.__geometryModel = GeometryModel()
         self.__detector = None
         self.__only1dIntegration = False
@@ -94,12 +95,14 @@ class WorkerConfigurator(qt.QWidget):
 
         # Connect widget to edit the wavelength
         wavelengthUnit = DataModel()
-        wavelengthUnit.setValue(units.Unit.ENERGY)
+
         self.wavelengthEdit.setModel(self.__geometryModel.wavelength())
         self.wavelengthEdit.setDisplayedUnitModel(wavelengthUnit)
         self.wavelengthEdit.setModelUnit(units.Unit.METER_WL)
         self.wavelengthUnit.setUnitModel(wavelengthUnit)
         self.wavelengthUnit.setUnitEditable(True)
+        wavelengthUnit.changed.connect(self.__unitChanged)
+        wavelengthUnit.setValue(units.Unit.ENERGY)
 
         self.load_detector.clicked.connect(self.selectDetector)
         self.opencl_config_button.clicked.connect(self.selectOpenclDevice)
@@ -149,6 +152,7 @@ class WorkerConfigurator(qt.QWidget):
 
         for value in ["integrate",
                       "sigma_clip_ng",
+                      "medfilt_ng"
                       ]:
             text = value
             self.integrator_name.addItem(text, value)
@@ -191,6 +195,19 @@ class WorkerConfigurator(qt.QWidget):
         self.monitor_name.setEnabled(self.do_normalization.isChecked())
         self.sigmaclip_threshold.setEnabled(self.integrator_name.currentText() == "sigma_clip_ng")
         self.sigmaclip_maxiter.setEnabled(self.integrator_name.currentText() == "sigma_clip_ng")
+
+    def __unitChanged(self):
+        unit = self.wavelengthUnit.getUnit()
+        print(unit)
+        self.setUnitLabel("Energy"
+                        if unit == Unit.ENERGY
+                        else "Wavelength")
+
+    def setUnitLabel(self, label:str):
+        """Change the label, if needed"""
+        if label != self.__wavelengthLabel:
+            self.__wavelengthLabel = label
+            self.wavelengthLabel.setText(f"{label}:")
 
     def set1dIntegrationOnly(self, only1d):
         """Enable only 1D integration for this widget."""

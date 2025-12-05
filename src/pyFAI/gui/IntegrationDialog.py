@@ -355,15 +355,16 @@ class IntegrationDialog(qt.QWidget):
     def save_config(self):
         logger.debug("save_config")
         if "PyQt" in qt.QtBinding.__name__:
-            result = qt.QFileDialog.getSaveFileName(
-                caption="Save configuration as json",
-                directory=self.json_file,
-                filter="Config (*.json)")
-        else: # PySide6
-            result = qt.QFileDialog.getSaveFileName(
-                caption="Save configuration as json",
-                dir=self.json_file,
-                filter="Config (*.json)")
+            kwargs = {
+                "caption":"Save configuration as json",
+                "directory":self.json_file,
+                "filter":"Config (*.json)"}
+        else:  # PySide6
+            kwargs = {
+                "caption":"Save configuration as json",
+                "dir":self.json_file,
+                "filter":"Config (*.json)"}
+        result = qt.QFileDialog.getSaveFileName(**kwargs)
         if isinstance(result, tuple):
             # PyQt5 compatibility
             result = result[0]
