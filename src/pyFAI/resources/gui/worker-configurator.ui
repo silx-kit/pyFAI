@@ -11,7 +11,7 @@
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="margin">
+   <property name="margin" stdset="0">
     <number>0</number>
    </property>
    <item>
@@ -321,11 +321,14 @@
    <item>
     <widget class="QWidget" name="widget_2" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="margin">
+      <property name="margin" stdset="0">
        <number>0</number>
       </property>
       <item>
        <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
         <widget class="QWidget" name="tab_radial">
          <attribute name="title">
           <string>Radial integration</string>
@@ -335,9 +338,6 @@
            <layout class="QHBoxLayout" name="radial_hbox_1">
             <item>
              <widget class="QGroupBox" name="do_1D">
-              <property name="title">
-               <string>1D integration</string>
-              </property>
               <layout class="QGridLayout" name="gridLayout_8">
                <item row="2" column="0">
                 <widget class="QLabel" name="label_21">
@@ -520,9 +520,6 @@
            <layout class="QHBoxLayout" name="fiber_hbox_1">
             <item>
              <widget class="QGroupBox" name="do_1D_fiber">
-              <property name="title">
-               <string>1D integration</string>
-              </property>
               <layout class="QGridLayout" name="gridLayout_fib_8">
                <item row="2" column="0">
                 <widget class="QLabel" name="label_21_fib">
@@ -553,15 +550,6 @@
             </item>
             <item>
              <widget class="QGroupBox" name="do_2D_fiber">
-              <property name="title">
-               <string>2D integration</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
               <layout class="QGridLayout" name="gridLayout_7_fib">
                <item row="1" column="0">
                 <widget class="QLabel" name="label_20_fib">
@@ -600,20 +588,10 @@
                <string>Integration range</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_4_fib">
-               <item row="3" column="1">
-                <widget class="QLineEdit" name="oop_range_min">
-                 <property name="toolTip">
-                  <string>Lower out-of-plane bound</string>
-                 </property>
+               <item row="2" column="4">
+                <widget class="QLabel" name="_ipRangeUnit">
                  <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="3">
-                <widget class="QLineEdit" name="ip_range_max">
-                 <property name="toolTip">
-                  <string>upper in-plane bound</string>
+                  <string>?</string>
                  </property>
                 </widget>
                </item>
@@ -634,17 +612,23 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="1">
-                <widget class="QLineEdit" name="ip_range_min">
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="oop_range_min">
                  <property name="toolTip">
-                  <string>Lower in-plane bound</string>
+                  <string>Lower out-of-plane bound</string>
+                 </property>
+                 <property name="text">
+                  <string/>
                  </property>
                 </widget>
                </item>
-               <item row="3" column="4">
-                <widget class="QLabel" name="label_24_fib">
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="do_ip_range">
+                 <property name="toolTip">
+                  <string>Limit/Force the in-plane range</string>
+                 </property>
                  <property name="text">
-                  <string>?</string>
+                  <string>In-plane range:</string>
                  </property>
                 </widget>
                </item>
@@ -662,27 +646,47 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0">
-                <widget class="QCheckBox" name="do_ip_range">
+               <item row="2" column="3">
+                <widget class="QLineEdit" name="ip_range_max">
                  <property name="toolTip">
-                  <string>Limit/Force the in-plane range</string>
-                 </property>
-                 <property name="text">
-                  <string>In-plane range:</string>
+                  <string>upper in-plane bound</string>
                  </property>
                 </widget>
                </item>
-               <item row="2" column="4">
-                <widget class="QLabel" name="_ipRangeUnit">
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="ip_range_min">
+                 <property name="toolTip">
+                  <string>Lower in-plane bound</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="4">
+                <widget class="QLabel" name="label_24_fib">
                  <property name="text">
                   <string>?</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QCheckBox" name="vertical_integration">
+                <widget class="QCheckBox" name="do_1d_integration">
                  <property name="text">
-                  <string>Vertical Integration</string>
+                  <string>1D integration</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QCheckBox" name="vertical_integration">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>Vertical int.</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
                  </property>
                  <property name="checked">
                   <bool>true</bool>

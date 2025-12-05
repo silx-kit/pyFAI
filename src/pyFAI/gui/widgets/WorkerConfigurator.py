@@ -186,6 +186,7 @@ class WorkerConfigurator(qt.QWidget):
         self.do_ip_range.clicked.connect(self.__updateDisabledStates)
         self.do_oop_range.clicked.connect(self.__updateDisabledStates)
         self.do_normalization.clicked.connect(self.__updateDisabledStates)
+        self.do_1d_integration.clicked.connect(self.__updateDisabledStates)
         self.integrator_name.currentTextChanged.connect(self.__updateDisabledStates)
 
         self.__updateDisabledStates()
@@ -209,6 +210,9 @@ class WorkerConfigurator(qt.QWidget):
         enabled = self.do_oop_range.isChecked()
         self.oop_range_min.setEnabled(enabled)
         self.oop_range_max.setEnabled(enabled)
+        enabled = self.do_1d_integration.isChecked()
+        self.vertical_integration.setEnabled(enabled)
+        
         self.normalization_factor.setEnabled(self.do_normalization.isChecked())
         self.monitor_name.setEnabled(self.do_normalization.isChecked())
         self.sigmaclip_threshold.setEnabled(self.integrator_name.currentText() == "sigma_clip_ng")
@@ -419,6 +423,7 @@ class WorkerConfigurator(qt.QWidget):
                                 self._float("oop_range_max", numpy.inf)]
             
         wc.vertical_integration = self.vertical_integration.isChecked()
+        wc.integration_1d = self.do_1d_integration.isChecked()
 
         # processing-config
         wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
@@ -567,6 +572,7 @@ class WorkerConfigurator(qt.QWidget):
             self.do_ip_range.setChecked(wc.do_ip_range)
             self.do_oop_range.setChecked(wc.do_oop_range)
             self.vertical_integration.setChecked(wc.vertical_integration)
+            self.do_1d_integration.setChecked(wc.integration_1d)
             
         self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
         self.do_dummy.setChecked(wc.do_dummy)

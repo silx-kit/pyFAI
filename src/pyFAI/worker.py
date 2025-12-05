@@ -698,6 +698,8 @@ class WorkerFiber(Worker):
                  incident_angle:float=0.0,
                  tilt_angle:float=0.0,
                  sample_orientation:int=1,
+                 integration_1d:bool=False,
+                 vertical_integration:bool=True,
                  dummy=None, delta_dummy=None,
                  method=("no", "csr", "cython"),
                  use_missing_wedge:bool=False,
@@ -723,7 +725,6 @@ class WorkerFiber(Worker):
         self.ai = self.fi
         self._normalization_factor = None  # Value of the monitor: divides the intensity by this value for normalization
 
-        self.integrator_name = integrator_name
         self._processor = None
         if isinstance(method, (str, list, tuple, Method, IntegrationMethod)):
             method = IntegrationMethod.parse(method)
@@ -746,6 +747,12 @@ class WorkerFiber(Worker):
         self.oop_range = oop_range
         self._npt_oop = npt_oop
         self._npt_ip = npt_ip
+        
+        self.vertical_integration = vertical_integration
+        self.do_2d = not integration_1d
+        self.integrator_name = integrator_name
+        if not self.do_2D:
+            self.integrator_name = "integrate1d_grazing_incidence"
         self.update_processor()
 
         self._incident_angle = config_unit["incident_angle"]
@@ -837,11 +844,6 @@ class WorkerFiber(Worker):
     def sample_orientation(self, sample_orientation):
         self._sample_orientation = sample_orientation
 
-    def do_2D(self):
-        if self.npt_ip == 1 or self.npt_oop == 1:
-            return False
-        return True
-
     def set_config(self, config:dict | WorkerFiberConfig, consume_keys:bool=False):
         """
         Configure the working from the dictionary|WorkerFiberConfig.
@@ -883,8 +885,8 @@ class WorkerFiber(Worker):
             self.ai.detector.flatfield = data
             self.flat_field_image = filenames
 
-        self.npt_azim = int(config.nbpt_azim) if config.nbpt_azim else 1
-        self.npt_rad = config.nbpt_rad
+        self.npt_oop = int(config.npt_oop)
+        self.npt_ip = int(config.npt_ip)
         self.unit_ip = units.parse_fiber_unit(**config.unit_ip)
         self.unit_oop = units.parse_fiber_unit(**config.unit_oop)
         config_unit = self.unit_ip.get_config_shared()
@@ -899,6 +901,8 @@ class WorkerFiber(Worker):
 
         self.oop_range = config.oop_range
         self.ip_range = config.ip_range
+        self.vertical_integration = config.vertical_integration
+        self.do_2d = not config.integration_1d
 
         self.method = config.method  # expand to Method ?
         self.opencl_device = config.opencl_device
