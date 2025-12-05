@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>454</width>
-    <height>940</height>
+    <width>549</width>
+    <height>1057</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -521,16 +521,6 @@
             <item>
              <widget class="QGroupBox" name="do_1D_fiber">
               <layout class="QGridLayout" name="gridLayout_fib_8">
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_21_fib">
-                 <property name="text">
-                  <string>Number of points:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QLineEdit" name="nbpt_ip"/>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_12_fib">
                  <property name="text">
@@ -542,6 +532,16 @@
                 <widget class="UnitSelector" name="ip_unit">
                  <property name="sizeAdjustPolicy">
                   <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="nbpt_ip"/>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_21_fib">
+                 <property name="text">
+                  <string>Number of points:</string>
                  </property>
                 </widget>
                </item>
@@ -585,30 +585,20 @@
             <item>
              <widget class="QGroupBox" name="groupBox_5_fib">
               <property name="title">
-               <string>Integration range</string>
+               <string/>
               </property>
               <layout class="QGridLayout" name="gridLayout_4_fib">
-               <item row="2" column="4">
-                <widget class="QLabel" name="_ipRangeUnit">
-                 <property name="text">
-                  <string>?</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="2">
-                <widget class="QLabel" name="label_10_fib">
+               <item row="2" column="2">
+                <widget class="QLabel" name="label_9_fib">
                  <property name="text">
                   <string>...</string>
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0">
-                <widget class="QCheckBox" name="do_oop_range">
-                 <property name="toolTip">
-                  <string>Limit/force the out-of-plane range</string>
-                 </property>
+               <item row="2" column="6">
+                <widget class="QLineEdit" name="incident_angle_deg">
                  <property name="text">
-                  <string>Out-of-plane range:</string>
+                  <string>0.0</string>
                  </property>
                 </widget>
                </item>
@@ -622,27 +612,36 @@
                  </property>
                 </widget>
                </item>
+               <item row="3" column="3">
+                <widget class="QLineEdit" name="oop_range_max">
+                 <property name="toolTip">
+                  <string>Upper out-of-plane bound</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QCheckBox" name="vertical_integration">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>Vertical</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
                <item row="2" column="0">
                 <widget class="QCheckBox" name="do_ip_range">
                  <property name="toolTip">
                   <string>Limit/Force the in-plane range</string>
                  </property>
                  <property name="text">
-                  <string>In-plane range:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="2">
-                <widget class="QLabel" name="label_9_fib">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="3">
-                <widget class="QLineEdit" name="oop_range_max">
-                 <property name="toolTip">
-                  <string>Upper out-of-plane bound</string>
+                  <string>IP range:</string>
                  </property>
                 </widget>
                </item>
@@ -653,6 +652,23 @@
                  </property>
                 </widget>
                </item>
+               <item row="3" column="0">
+                <widget class="QCheckBox" name="do_oop_range">
+                 <property name="toolTip">
+                  <string>Limit/force the out-of-plane range</string>
+                 </property>
+                 <property name="text">
+                  <string>OOP range:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="6">
+                <widget class="QLineEdit" name="tilt_angle_deg">
+                 <property name="text">
+                  <string>0.0</string>
+                 </property>
+                </widget>
+               </item>
                <item row="2" column="1">
                 <widget class="QLineEdit" name="ip_range_min">
                  <property name="toolTip">
@@ -660,10 +676,24 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="4">
-                <widget class="QLabel" name="label_24_fib">
+               <item row="4" column="6">
+                <widget class="QLineEdit" name="sample_orientation">
                  <property name="text">
-                  <string>?</string>
+                  <string>1</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="5">
+                <widget class="QLabel" name="label_6">
+                 <property name="text">
+                  <string>Orientation</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="5">
+                <widget class="QLabel" name="label_4">
+                 <property name="text">
+                  <string>Tilt angle (º)</string>
                  </property>
                 </widget>
                </item>
@@ -677,19 +707,17 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
-                <widget class="QCheckBox" name="vertical_integration">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
+               <item row="3" column="2">
+                <widget class="QLabel" name="label_10_fib">
                  <property name="text">
-                  <string>Vertical int.</string>
+                  <string>...</string>
                  </property>
-                 <property name="checkable">
-                  <bool>true</bool>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
+                </widget>
+               </item>
+               <item row="2" column="5">
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>Incident angle (º)</string>
                  </property>
                 </widget>
                </item>

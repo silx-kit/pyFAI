@@ -46,7 +46,7 @@ from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from ...utils import float_, str_, get_ui_file
-from ...units import RADIAL_UNITS, to_unit, Unit, UnitFiber
+from ...units import RADIAL_UNITS, to_unit, Unit, UnitFiber, parse_fiber_unit
 from ..model.GeometryModel import GeometryModel
 from ..model.DataModel import DataModel
 from ..utils import units
@@ -573,6 +573,25 @@ class WorkerConfigurator(qt.QWidget):
             self.do_oop_range.setChecked(wc.do_oop_range)
             self.vertical_integration.setChecked(wc.vertical_integration)
             self.do_1d_integration.setChecked(wc.integration_1d)
+            unit_ip = parse_fiber_unit(**wc.unit_ip)
+            
+            # In UnitSelector, searching the unit is made with 'is' not '==', not valid for FiberUnit (which are copies)
+            for index in range(self.ip_unit.count()):
+                item = self.ip_unit.itemData(index)
+                if item == unit_ip: 
+                    self.ip_unit.setCurrentIndex(index)
+                    break
+                
+            unit_oop = parse_fiber_unit(**wc.unit_oop)
+            for index in range(self.oop_unit.count()):
+                item = self.oop_unit.itemData(index)
+                if item == unit_oop: 
+                    self.oop_unit.setCurrentIndex(index)
+                    break
+
+            self.incident_angle_deg.setText(f"{numpy.rad2deg(unit_ip.incident_angle):.2f}")
+            self.tilt_angle_deg.setText(f"{numpy.rad2deg(unit_ip.tilt_angle):.2f}")
+            self.sample_orientation.setText(str(unit_ip.sample_orientation))
             
         self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
         self.do_dummy.setChecked(wc.do_dummy)
