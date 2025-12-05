@@ -33,15 +33,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "04/12/2025"
 
 import os
+import math
 import unittest
 import logging
 from .utilstest import UtilsTest
 import numpy
 from ..goniometer import GeometryTranslation, Goniometer, numexpr, \
-                         ExtendedTransformation, GoniometerRefinement
+                         ExtendedTransformation, GoniometerRefinement,\
+                         PoniParam
 logger = logging.getLogger(__name__)
 
 
@@ -114,6 +116,11 @@ class TestTranslation(unittest.TestCase):
         if os.path.exists(fname):
             os.unlink(fname)
 
+    def test_evaluate(self):
+        param = self.gt([1, 2, 3, 4, 5, 6, 7], (0, 0))
+        self.assertEqual(param, PoniParam(2, 3, 4, 5, 7, 0))
+
+
     def test_extended(self):
         jsons = """
 {
@@ -179,6 +186,8 @@ class TestTranslation(unittest.TestCase):
         self.assertTrue(isinstance(gonio.trans_function, ExtendedTransformation))
         gonio = GoniometerRefinement.sload(fname)
         self.assertTrue(isinstance(gonio.trans_function, ExtendedTransformation))
+        param = gonio.trans_function([1,2,3,4,5,6,7], 0)
+        self.assertAlmostEqual(param, gonio.trans_function.ParamNT(1, 2, 3, -4, 6, math.pi/2, 1.7712028347600038e-10))
         if os.path.exists(fname):
             os.unlink(fname)
 

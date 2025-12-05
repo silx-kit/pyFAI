@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "04/12/2025"
 __status__ = "production"
 
 import logging
@@ -112,13 +112,11 @@ def expand2d(vect: numpy.ndarray, size2: int, vertical: bool = True) -> numpy.nd
     size2 = int(size2)
     if vertical:
         out = numpy.empty((size2, size1), vect.dtype)
-        q = vect.reshape(1, -1)
-        q.strides = 0, vect.strides[0]
+        q = vect[numpy.newaxis, :]
     else:
         out = numpy.empty((size1, size2), vect.dtype)
-        q = vect.reshape(-1, 1)
-        q.strides = vect.strides[0], 0
-    out[:, :] = q
+        q = vect[:, numpy.newaxis]
+    out[...] = q
     return out
 
 
