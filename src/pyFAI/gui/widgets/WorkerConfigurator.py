@@ -264,15 +264,21 @@ class WorkerConfigurator(qt.QWidget):
     def getPoniDict(self):
         return self.getPoni().as_dict()
     
+    def _getIntegrationActiveTab(self) -> int:
+        # tab_index = 0 -> Azimuthal integration
+        # tab_index = 1 -> Fiber integration
+        tab_index = int(self.tabWidget.currentIndex())
+        return tab_index
+    
     def getWorkerConfigGeneric(self):
         """Read the configuration of the plugin and returns it as a WorkerConfig / WorkerFiberConfig instance
 
         :return: WorkerConfig/WorkerFiberConfig instance
         """
-        condition = True
-        if condition:
+        active_tab = self._getIntegrationActiveTab()
+        if active_tab == 0:
             return self.getWorkerConfig()
-        else:
+        elif active_tab == 1:
             return self.getWorkerFiberConfig()
 
     def getWorkerConfig(self):
