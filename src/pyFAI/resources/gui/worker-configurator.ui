@@ -530,21 +530,9 @@
                   </widget>
                 </item>
               </layout>
-
             </item>
             </layout>
-
           </widget>
-
-
-
-
-
-
-
-
-
-
           <widget class="QWidget" name="tab_fiber">
             <attribute name="title">
             <string>Fiber integration</string>
@@ -634,17 +622,8 @@
                   </layout>
                 </widget>
               </item>
-
-
-
-
-
-
               </layout>
-
-
             </item>
-
             <item>
               <layout class="QHBoxLayout" name="fiber_hbox_2">
                 <item>
@@ -692,9 +671,9 @@
                     </widget>
                     </item>
                     <item row="3" column="0">
-                    <widget class="QCheckBox" name="do_ip_range">
+                    <widget class="QCheckBox" name="do_oop_range">
                       <property name="toolTip">
-                      <string>Limit/force the in-plane range</string>
+                      <string>Limit/force the out-of-plane range</string>
                       </property>
                       <property name="text">
                       <string>Out-of-plane range:</string>
@@ -736,27 +715,14 @@
                   </widget>
                 </item>
               </layout>
-
             </item>
             </layout>
-
           </widget>
-
-
-
-
         </widget>
-
-
       </item>
-
      </layout>
     </widget>
    </item>
-
-
-
-
    <item>
     <widget class="QGroupBox" name="groupBox_4">
      <property name="title">
