@@ -394,19 +394,15 @@ class WorkerConfigurator(qt.QWidget):
             wc.delta_dummy = self._float("delta_dummy", None)
 
         # integration-fiber
-        wc.nbpt_oop = self.__getOutOfPlaneNbpt()
-        wc.nbpt_ip = self.__getInPlaneNbpt()
-        wc.oop_unit = self.oop_unit
-        wc.ip_unit = self.ip_unit
-        
-        
-        
-        
+        wc.npt_oop = self.__getOutOfPlaneNbpt()
+        wc.npt_ip = self.__getInPlaneNbpt()
+        wc.unit_oop = to_unit(str(self.oop_unit.model().value()))
+        wc.unit_ip = to_unit(str(self.ip_unit.model().value()))
         
         # if self.do_2D.isChecked():
         #     wc.nbpt_azim = self.__getAzimuthalNbpt()
         # wc.nbpt_rad = self.__getRadialNbpt()
-        wc.unit = to_unit(str(self.radial_unit.model().value()))
+        #wc.unit = to_unit(str(self.radial_unit.model().value()))
         if self.do_ip_range.isChecked():
             wc.ip_range = [self._float("ip_range_min", -numpy.inf),
                                self._float("ip_range_max", numpy.inf)]

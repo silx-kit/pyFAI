@@ -83,7 +83,7 @@ from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
 from ..utils import decorators
-from ..units import Unit, UnitFiber
+from ..units import Unit, UnitFiber, parse_fiber_unit
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
@@ -877,6 +877,13 @@ class WorkerFiberConfig(WorkerConfig):
     def save(self, filename, pop_azimuthal_params:bool=True):
         """Dump the content of the dataclass as JSON file"""
         config = self.as_dict()
+        
+        # Serialize fiber units
+        for key in ("unit_ip", "unit_oop"):
+            if key in config:
+                unit = parse_fiber_unit(config[key])
+                config[key] = unit.get_config()
+        
         if pop_azimuthal_params:
             for key in ["nbpt_rad", "nbpt_azim",
                         "radial_range", "azimuth_range",
