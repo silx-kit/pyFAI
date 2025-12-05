@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "04/12/2025"
 
 import unittest
 import itertools
@@ -197,7 +197,14 @@ class TestCalibrant(unittest.TestCase):
             self.assertFalse(res.any(), f"Non idempotent: `{c}` lines {numpy.where(res)[0]}: {ref[res]} vs {obt[res]}")
 
 
-        # raise RuntimeError("plop")
+    def test_energy(self):
+        calibrant = get_calibrant("LaB6")
+        calibrant.energy = 20  # keV
+        self.assertAlmostEqual(calibrant.wavelength, 6.19920e-11, places=15)
+        self.assertEqual(len(calibrant.dspacing), 151)
+        self.assertEqual(calibrant.energy, 20)
+
+
 
 class TestCell(unittest.TestCase):
     """

@@ -336,6 +336,9 @@
      </layout>
     </widget>
    </item>
+
+
+
    <item>
     <widget class="QWidget" name="widget_2" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -352,178 +355,435 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QGroupBox" name="groupBox_8">
-        <property name="title">
-         <string>Radial integration</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_8">
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_21">
-           <property name="text">
-            <string>Number of points:</string>
-           </property>
+        <widget class="QTabWidget" name="tabWidget">
+          <widget class="QWidget" name="tab_radial">
+            <attribute name="title">
+            <string>Radial integration</string>
+            </attribute>
+
+            <layout class="QVBoxLayout" name="radial_vbox">
+            <item>
+              <layout class="QHBoxLayout" name="radial_hbox_1">
+              <item>
+                <widget class="QGroupBox" name="do_1D">
+                  <property name="title">
+                  <string>1D integration</string>
+                  </property>
+
+                  <layout class="QGridLayout" name="gridLayout_8">
+                  <item row="2" column="0">
+                    <widget class="QLabel" name="label_21">
+                    <property name="text">
+                      <string>Number of points:</string>
+                    </property>
+                    </widget>
+                  </item>
+
+                  <item row="2" column="1">
+                    <widget class="QLineEdit" name="nbpt_rad"/>
+                  </item>
+
+                  <item row="1" column="0">
+                    <widget class="QLabel" name="label_12">
+                    <property name="text">
+                      <string>Radial unit:</string>
+                    </property>
+                    </widget>
+                  </item>
+
+                  <item row="1" column="1">
+                    <widget class="UnitSelector" name="radial_unit">
+                    <property name="sizeAdjustPolicy">
+                      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+                    </property>
+                    </widget>
+                  </item>
+
+                  </layout>
+                </widget>
+              </item>
+
+              <item>
+                <widget class="QGroupBox" name="do_2D">
+                  <property name="title">
+                  <string>2D integration</string>
+                  </property>
+                  <property name="checkable">
+                  <bool>true</bool>
+                  </property>
+
+                  <property name="checked">
+                  <bool>false</bool>
+                  </property>
+
+                  <layout class="QGridLayout" name="gridLayout_7">
+
+                  <item row="1" column="0">
+                    <widget class="QLabel" name="label_20">
+                    <property name="text">
+                      <string>Number of points:</string>
+                    </property>
+                    </widget>
+                  </item>
+                  <item row="0" column="0">
+                    <widget class="QLabel" name="label_17">
+                    <property name="text">
+                      <string>Azimuthal unit:</string>
+                    </property>
+                    </widget>
+                  </item>
+                  <item row="1" column="1">
+                    <widget class="QLineEdit" name="nbpt_azim"/>
+                  </item>
+                  <item row="0" column="1">
+                    <widget class="QLabel" name="azimuthal_unit">
+                    <property name="text">
+                      <string>χ (rad)</string>
+                    </property>
+                    </widget>
+                  </item>
+                  </layout>
+                </widget>
+              </item>
+
+
+
+
+
+
+              </layout>
+
+
+            </item>
+
+            <item>
+              <layout class="QHBoxLayout" name="radial_hbox_2">
+                <item>
+                  <widget class="QGroupBox" name="groupBox_5">
+                  <property name="title">
+                    <string>Integration range</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_4">
+                    <item row="2" column="2">
+                    <widget class="QLabel" name="label_9">
+                      <property name="text">
+                      <string>...</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="2" column="3">
+                    <widget class="QLineEdit" name="radial_range_max">
+                      <property name="toolTip">
+                      <string>upper radial bound</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="2" column="0">
+                    <widget class="QCheckBox" name="do_radial_range">
+                      <property name="toolTip">
+                      <string>Limit/Force the radial range</string>
+                      </property>
+                      <property name="text">
+                      <string>Radial range:</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="2" column="1">
+                    <widget class="QLineEdit" name="radial_range_min">
+                      <property name="toolTip">
+                      <string>Lower radial bound</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="2" column="4">
+                    <widget class="QLabel" name="_radialRangeUnit">
+                      <property name="text">
+                      <string>?</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="4" column="0">
+                    <widget class="QCheckBox" name="chi_discontinuity_at_0">
+                      <property name="toolTip">
+                      <string>if unset, the discontinuity is at 180°</string>
+                      </property>
+                      <property name="text">
+                      <string>χ discontinuity at 0</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="3" column="0">
+                    <widget class="QCheckBox" name="do_azimuthal_range">
+                      <property name="toolTip">
+                      <string>Limit/force the azimuthal range</string>
+                      </property>
+                      <property name="text">
+                      <string>Azimuthal range:</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="3" column="1">
+                    <widget class="QLineEdit" name="azimuth_range_min">
+                      <property name="toolTip">
+                      <string>Lower azimuthal bound</string>
+                      </property>
+                      <property name="text">
+                      <string/>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="3" column="3">
+                    <widget class="QLineEdit" name="azimuth_range_max">
+                      <property name="toolTip">
+                      <string>Upper azimuthal bound</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="3" column="4">
+                    <widget class="QLabel" name="label_24">
+                      <property name="text">
+                      <string>deg</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="3" column="2">
+                    <widget class="QLabel" name="label_10">
+                      <property name="text">
+                      <string>...</string>
+                      </property>
+                    </widget>
+                    </item>
+                  </layout>
+                  </widget>
+                </item>
+              </layout>
+
+            </item>
+            </layout>
+
           </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="nbpt_rad"/>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_12">
-           <property name="text">
-            <string>Radial unit:</string>
-           </property>
+
+
+
+
+
+
+
+
+
+
+          <widget class="QWidget" name="tab_fiber">
+            <attribute name="title">
+            <string>Fiber integration</string>
+            </attribute>
+
+            <layout class="QVBoxLayout" name="fiber_vbox">
+            <item>
+              <layout class="QHBoxLayout" name="fiber_hbox_1">
+              <item>
+                <widget class="QGroupBox" name="do_1D_fiber">
+                  <property name="title">
+                  <string>1D integration</string>
+                  </property>
+
+                  <layout class="QGridLayout" name="gridLayout_fib_8">
+                  <item row="2" column="0">
+                    <widget class="QLabel" name="label_21_fib">
+                    <property name="text">
+                      <string>Number of points:</string>
+                    </property>
+                    </widget>
+                  </item>
+
+                  <item row="2" column="1">
+                    <widget class="QLineEdit" name="nbpt_ip"/>
+                  </item>
+
+                  <item row="1" column="0">
+                    <widget class="QLabel" name="label_12_fib">
+                    <property name="text">
+                      <string>In-Plane unit:</string>
+                    </property>
+                    </widget>
+                  </item>
+
+                  <item row="1" column="1">
+                    <widget class="UnitSelector" name="ip_unit">
+                    <property name="sizeAdjustPolicy">
+                      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+                    </property>
+                    </widget>
+                  </item>
+
+                  </layout>
+                </widget>
+              </item>
+
+              <item>
+                <widget class="QGroupBox" name="do_2D_fiber">
+                  <property name="title">
+                  <string>2D integration</string>
+                  </property>
+                  <property name="checkable">
+                  <bool>true</bool>
+                  </property>
+
+                  <property name="checked">
+                  <bool>true</bool>
+                  </property>
+
+                  <layout class="QGridLayout" name="gridLayout_7_fib">
+
+                  <item row="1" column="0">
+                    <widget class="QLabel" name="label_20_fib">
+                    <property name="text">
+                      <string>Number of points:</string>
+                    </property>
+                    </widget>
+                  </item>
+                  <item row="0" column="0">
+                    <widget class="QLabel" name="label_17_fib">
+                    <property name="text">
+                      <string>Out-of-plane unit:</string>
+                    </property>
+                    </widget>
+                  </item>
+                  <item row="1" column="1">
+                    <widget class="QLineEdit" name="nbpt_oop"/>
+                  </item>
+                  <item row="0" column="1">
+                    <widget class="UnitSelector" name="oop_unit">
+                    <property name="sizeAdjustPolicy">
+                      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+                    </property>
+                    </widget>
+                  </item>
+                  </layout>
+                </widget>
+              </item>
+
+
+
+
+
+
+              </layout>
+
+
+            </item>
+
+            <item>
+              <layout class="QHBoxLayout" name="fiber_hbox_2">
+                <item>
+                  <widget class="QGroupBox" name="groupBox_5_fib">
+                  <property name="title">
+                    <string>Integration range</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_4_fib">
+                    <item row="2" column="2">
+                    <widget class="QLabel" name="label_9_fib">
+                      <property name="text">
+                      <string>...</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="2" column="3">
+                    <widget class="QLineEdit" name="ip_range_max">
+                      <property name="toolTip">
+                      <string>upper in-plane bound</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="2" column="0">
+                    <widget class="QCheckBox" name="do_ip_range">
+                      <property name="toolTip">
+                      <string>Limit/Force the in-plane range</string>
+                      </property>
+                      <property name="text">
+                      <string>In-plane range:</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="2" column="1">
+                    <widget class="QLineEdit" name="ip_range_min">
+                      <property name="toolTip">
+                      <string>Lower in-plane bound</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="2" column="4">
+                    <widget class="QLabel" name="_ipRangeUnit">
+                      <property name="text">
+                      <string>?</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="3" column="0">
+                    <widget class="QCheckBox" name="do_ip_range">
+                      <property name="toolTip">
+                      <string>Limit/force the in-plane range</string>
+                      </property>
+                      <property name="text">
+                      <string>Out-of-plane range:</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="3" column="1">
+                    <widget class="QLineEdit" name="oop_range_min">
+                      <property name="toolTip">
+                      <string>Lower out-of-plane bound</string>
+                      </property>
+                      <property name="text">
+                      <string/>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="3" column="3">
+                    <widget class="QLineEdit" name="oop_range_max">
+                      <property name="toolTip">
+                      <string>Upper out-of-plane bound</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="3" column="4">
+                    <widget class="QLabel" name="label_24_fib">
+                      <property name="text">
+                      <string>?</string>
+                      </property>
+                    </widget>
+                    </item>
+                    <item row="3" column="2">
+                    <widget class="QLabel" name="label_10_fib">
+                      <property name="text">
+                      <string>...</string>
+                      </property>
+                    </widget>
+                    </item>
+                  </layout>
+                  </widget>
+                </item>
+              </layout>
+
+            </item>
+            </layout>
+
           </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="UnitSelector" name="radial_unit">
-           <property name="sizeAdjustPolicy">
-            <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
+
+
+
+
+        </widget>
+
+
       </item>
-      <item>
-       <widget class="QGroupBox" name="do_2D">
-        <property name="title">
-         <string>2D integration</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_7">
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_20">
-           <property name="text">
-            <string>Number of points:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_17">
-           <property name="text">
-            <string>Azimuthal unit:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="nbpt_azim"/>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLabel" name="azimuthal_unit">
-           <property name="text">
-            <string>χ (rad)</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
+
      </layout>
     </widget>
    </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox_5">
-     <property name="title">
-      <string>Integration range</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="2" column="2">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="3">
-       <widget class="QLineEdit" name="radial_range_max">
-        <property name="toolTip">
-         <string>upper radial bound</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="do_radial_range">
-        <property name="toolTip">
-         <string>Limit/Force the radial range</string>
-        </property>
-        <property name="text">
-         <string>Radial range:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="radial_range_min">
-        <property name="toolTip">
-         <string>Lower radial bound</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="4">
-       <widget class="QLabel" name="_radialRangeUnit">
-        <property name="text">
-         <string>?</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QCheckBox" name="chi_discontinuity_at_0">
-        <property name="toolTip">
-         <string>if unset, the discontinuity is at 180°</string>
-        </property>
-        <property name="text">
-         <string>χ discontinuity at 0</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="do_azimuthal_range">
-        <property name="toolTip">
-         <string>Limit/force the azimuthal range</string>
-        </property>
-        <property name="text">
-         <string>Azimuthal range:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="azimuth_range_min">
-        <property name="toolTip">
-         <string>Lower azimuthal bound</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
-       <widget class="QLineEdit" name="azimuth_range_max">
-        <property name="toolTip">
-         <string>Upper azimuthal bound</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="4">
-       <widget class="QLabel" name="label_24">
-        <property name="text">
-         <string>deg</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>...</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
+
+
+
+
    <item>
     <widget class="QGroupBox" name="groupBox_4">
      <property name="title">

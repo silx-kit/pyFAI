@@ -38,7 +38,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/09/2025"
+__date__ = "04/12/2025"
 __status__ = "production"
 
 import os
@@ -54,6 +54,8 @@ from .. import units
 from .resolution import _ResolutionFunction, Caglioti, Constant
 from ..containers import Integrate1dResult, Reflection
 from ..io.calibrant_config import CalibrantConfig
+from ..units import CONST_hc
+
 logger = logging.getLogger(__name__)
 try:
     import numexpr
@@ -397,6 +399,17 @@ class Calibrant:
     set_wavelength = deprecated(wavelength.fset,
                                 reason="use property",
                                 since_version="2025.07")
+
+    @property
+    def energy(self):
+        if self.wavelength:  # Use property instead of private variable
+            return 1e-10 * CONST_hc / self.wavelength
+
+    @energy.setter
+    def energy(self, value):
+        "Set the energy in keV"
+        wavelength = 1e-10 * CONST_hc / value
+        self.wavelength = wavelength  #Use property instead of private variable
 
     def _calc_2th(self):
         """Calculate the 2theta positions for all peaks"""
