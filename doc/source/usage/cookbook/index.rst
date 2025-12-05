@@ -17,7 +17,7 @@ Cookbooks are short tutorials which explain how to use pyFAI on a practical exam
    calib-gui/index
    calib-cli/calibrate
    calibration_with_jupyter
-   integration_with_the_GUI
+   Integration_with_the_GUI
    integration_with_scripts
    integration_with_python
 
