@@ -294,7 +294,11 @@ class IntegrationDialog(qt.QWidget):
 
         :return: WorkerConfig dataclass instance
         """
-        wc = self.__workerConfigurator.getWorkerConfig()
+        condition = True
+        if condition:
+            wc = self.__workerConfigurator.getWorkerConfig()
+        else:
+            wc = self.__workerConfigurator.getWorkerFiberConfig()
         return wc
 
     def get_config(self):
