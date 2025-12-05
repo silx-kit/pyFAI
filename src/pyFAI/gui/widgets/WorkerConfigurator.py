@@ -467,11 +467,16 @@ class WorkerConfigurator(qt.QWidget):
         :param dico: dictionary|WorkerConfig/WorkerFiberConfig with description of the widget
         :type dico: dict
         """
-        condition = True
-        if condition:
+        integrator_class = self._getIntegratorClass(dico)
+        if integrator_class == "AzimuthalIntegrator":
             self.setConfig(dico=dico)
-        else:
+        elif integrator_class == "FiberIntegrator":
             self.setConfigFiber(dico=dico)
+        else:
+            raise ValueError(f"{integrator_class} is not a valid Integrator class")
+            
+    def _getIntegratorClass(self, dico):
+        return dico.get("integrator_class", "AzimuthalIntegrator")
         
     def setConfig(self, dico):
         """Setup the widget from its description
@@ -481,6 +486,14 @@ class WorkerConfigurator(qt.QWidget):
         """
         self.setWorkerConfig(integration_config.WorkerConfig.from_dict(dico, inplace=False))
 
+    def setConfigFiber(self, dico):
+        """Setup the widget from its description
+
+        :param dico: dictionary|WorkerFiberConfig with description of the widget
+        :type dico: dict
+        """
+        self.setWorkerFiberConfig(integration_config.WorkerFiberConfig.from_dict(dico, inplace=False))
+        
     def setWorkerConfig(self, wc):
         """Setup the widget from its description
 
@@ -604,11 +617,11 @@ class WorkerConfigurator(qt.QWidget):
 
         self.__updateDisabledStates()
 
-    def setConfigFiber(self, wc):
+    def setWorkerFiberConfig(self, wc):
         """Setup the widget from its description
 
-        :param wc: WorkerFiberConfig instance with the description of the widget
-        :type dico: WorkerFiberConfig
+        :param wc: WorkerConfig instance with the description of the widget
+        :type dico: WorkerConfig
         """
 
         def normalizeFiles(filenames):
@@ -726,7 +739,7 @@ class WorkerConfigurator(qt.QWidget):
             self.sigmaclip_maxiter.setText(str(extra_options.get("max_iter", 5)))
 
         self.__updateDisabledStates()
-
+        
     def getOpenFileName(self, title):
         """Display a dialog to select a filename and return it.
 
