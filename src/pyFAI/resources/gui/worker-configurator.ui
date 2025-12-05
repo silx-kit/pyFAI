@@ -625,7 +625,7 @@
                   <bool>false</bool>
                  </property>
                  <property name="text">
-                  <string>Vertical</string>
+                  <string>Vertical integration</string>
                  </property>
                  <property name="checkable">
                   <bool>true</bool>
