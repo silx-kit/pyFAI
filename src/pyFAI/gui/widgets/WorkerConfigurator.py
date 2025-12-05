@@ -59,7 +59,6 @@ from ...io import integration_config
 from ... import method_registry
 from ...containers import PolarizationDescription, ErrorModel
 from ...integrator import load_engines
-from ..utils.units import Unit
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +165,9 @@ class WorkerConfigurator(qt.QWidget):
             text = value
             self.integrator_name.addItem(text, value)
         self.integrator_name.setCurrentIndex(0)
+        self.sigmaclip_threshold.setValidator(qt.QDoubleValidator(0.0, 100.0, 1))
         self.sigmaclip_threshold.setText("5.0")
+        self.sigmaclip_maxiter.setValidator(qt.QIntValidator(0, 100))
         self.sigmaclip_maxiter.setText("5")
 
         self.__configureDisabledStates()
@@ -207,9 +208,8 @@ class WorkerConfigurator(qt.QWidget):
 
     def __unitChanged(self):
         unit = self.wavelengthUnit.getUnit()
-        print(unit)
         self.setUnitLabel("Energy"
-                        if unit == Unit.ENERGY
+                        if unit == units.Unit.ENERGY
                         else "Wavelength")
 
     def setUnitLabel(self, label:str):

@@ -203,9 +203,10 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
         self.__was_interrupted = False
 
     def processing_finished(self):
-        """Called when the full processing is finisehd."""
+        """Called when the full processing is finished."""
         self._progressBar.setValue(self._progressBar.maximum())
         self.__lastResult = None
+        print("Processing finished", self.__was_interrupted)
         if self.__was_interrupted:
             self.reject()
         else:
@@ -281,7 +282,7 @@ class IntegrationDialog(qt.QWidget):
         self.batchProcessRequested.emit()
 
     def die(self):
-        logger.debug("bye bye")
+        print("bye bye")
         self.deleteLater()
 
     def help(self):

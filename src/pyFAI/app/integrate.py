@@ -62,8 +62,7 @@ except ImportError:
 
 def integrate_gui(options, args):
     from silx.gui import qt
-    from ..gui.IntegrationDialog import IntegrationDialog
-    from ..gui.IntegrationDialog import IntegrationProcess
+    from ..gui.IntegrationDialog import IntegrationDialog, IntegrationProcess
 
     app = qt.QApplication([])
 
@@ -129,11 +128,11 @@ def integrate_gui(options, args):
         moveCenterTo(dialog, center)
 
         class QtProcess(qt.QThread):
-
             def run(self):
                 observer = dialog.createObserver(qtSafe=True)
                 config.monitor_name = options.monitor_key
                 process(input_data, window.output_path, config, observer, options.write_mode, format_=options.format.lower())
+                logger.debug("QtProcess reached the end")
 
         qtProcess = QtProcess()
         qtProcess.start()
@@ -148,6 +147,8 @@ def integrate_gui(options, args):
                                        "Integration",
                                        "Batch processing interrupted.")
         dialog.deleteLater()
+        logger.debug("`processData` reached the end, now quit Qt event loop")
+        app.quit()
 
     window = IntegrationDialog(args, options.output, json_file=options.json, context=context)
     window.batchProcessRequested.connect(validateConfig)
@@ -291,6 +292,7 @@ class ShellIntegrationObserver(IntegrationObserver):
                                   max_value=approximate_count)
 
     def processing_finished(self):
+        print("processing_finished")
         self.__disconnect_interrupt()
         self._progress_bar.clear()
         self._progress_bar = None
@@ -869,6 +871,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
 
 def main(args=None):
     result = _main(args)
+    logger.debug(f"Exit reached with RC={result}")
     sys.exit(result)
 
 

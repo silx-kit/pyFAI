@@ -1000,7 +1000,7 @@ class GeometryTask(AbstractCalibrationTask):
                    "It may be due to a mistake on specified wavelength, or selected peaks. " +
                    "<b>Check your input data</b>.")
         if extra:
-            message += "<br>" + extra
+            message += "<br><br>" + extra.replace("\n","<br>")
         qt.QMessageBox.critical(self, title, message)
 
     def __geometryUpdated(self):
