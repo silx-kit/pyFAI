@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2025"
+__date__ = "08/12/2025"
 __status__ = "development"
 
 import logging
@@ -249,11 +249,11 @@ class IntegrationDialog(qt.QWidget):
         layout.addWidget(self.__workerConfigurator)
 
         self._holder.setWidget(self.__content)
-        self._holder.minimumSizeHint = self.__minimumScrollbarSizeHint
-        size = self.__content.minimumSizeHint()
-        self._holder.setMaximumHeight(size.height() + 2)
-        size = self.minimumSizeHint() - self._holder.minimumSizeHint() + size
-        self.setMaximumHeight(size.height() + 2)
+        # self._holder.minimumSizeHint = self.__minimumScrollbarSizeHint
+        # size = self.__content.minimumSizeHint()
+        # self._holder.setMaximumHeight(size.height() + 2)
+        # size = self.minimumSizeHint() - self._holder.minimumSizeHint() + size
+        # self.setMaximumHeight(size.height() + 2)
 
         self.input_data = input_data
         self.output_path = output_path
