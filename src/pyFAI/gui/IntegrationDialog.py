@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "05/12/2025"
 __status__ = "development"
 
 import logging
@@ -203,9 +203,10 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
         self.__was_interrupted = False
 
     def processing_finished(self):
-        """Called when the full processing is finisehd."""
+        """Called when the full processing is finished."""
         self._progressBar.setValue(self._progressBar.maximum())
         self.__lastResult = None
+        logger.debug("Processing finished, was_interupted: %s", self.__was_interrupted)
         if self.__was_interrupted:
             self.reject()
         else:
@@ -281,7 +282,7 @@ class IntegrationDialog(qt.QWidget):
         self.batchProcessRequested.emit()
 
     def die(self):
-        logger.debug("bye bye")
+        logger.debug("In `self.die`: bye bye")
         self.deleteLater()
 
     def help(self):
@@ -354,11 +355,17 @@ class IntegrationDialog(qt.QWidget):
 
     def save_config(self):
         logger.debug("save_config")
-
-        result = qt.QFileDialog.getSaveFileName(
-            caption="Save configuration as json",
-            directory=self.json_file,
-            filter="Config (*.json)")
+        if "PyQt" in qt.QtBinding.__name__:
+            kwargs = {
+                "caption":"Save configuration as json",
+                "directory":self.json_file,
+                "filter":"Config (*.json)"}
+        else:  # PySide6
+            kwargs = {
+                "caption":"Save configuration as json",
+                "dir":self.json_file,
+                "filter":"Config (*.json)"}
+        result = qt.QFileDialog.getSaveFileName(**kwargs)
         if isinstance(result, tuple):
             # PyQt5 compatibility
             result = result[0]

@@ -11,7 +11,16 @@
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="margin" stdset="0">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
@@ -47,7 +56,16 @@
       <item row="0" column="0" colspan="2">
        <widget class="QWidget" name="widget" native="true">
         <layout class="QHBoxLayout" name="horizontalLayout">
-         <property name="margin" stdset="0">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
           <number>0</number>
          </property>
          <item>
@@ -136,7 +154,7 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="wavelengthLabel">
         <property name="text">
          <string>Wavelength:</string>
         </property>
@@ -321,7 +339,16 @@
    <item>
     <widget class="QWidget" name="widget_2" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="margin" stdset="0">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item>
@@ -876,24 +903,29 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DetectorLabel</class>
-   <extends>QLabel</extends>
-   <header>pyFAI.gui.widgets.DetectorLabel</header>
-  </customwidget>
-  <customwidget>
    <class>QuantityEdit</class>
    <extends>QLineEdit</extends>
    <header>pyFAI.gui.widgets.QuantityEdit</header>
   </customwidget>
   <customwidget>
-   <class>LoadImageToolButton</class>
-   <extends>QToolButton</extends>
-   <header>pyFAI.gui.widgets.LoadImageToolButton</header>
-  </customwidget>
-  <customwidget>
    <class>FileEdit</class>
    <extends>QLineEdit</extends>
    <header>pyFAI.gui.widgets.FileEdit</header>
+  </customwidget>
+  <customwidget>
+   <class>UnitLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.UnitLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>DetectorLabel</class>
+   <extends>QLabel</extends>
+   <header>pyFAI.gui.widgets.DetectorLabel</header>
+  </customwidget>
+  <customwidget>
+   <class>LoadImageToolButton</class>
+   <extends>QToolButton</extends>
+   <header>pyFAI.gui.widgets.LoadImageToolButton</header>
   </customwidget>
   <customwidget>
    <class>UnitSelector</class>
@@ -904,11 +936,6 @@
    <class>MethodLabel</class>
    <extends>QLabel</extends>
    <header>pyFAI.gui.widgets.MethodLabel</header>
-  </customwidget>
-  <customwidget>
-   <class>UnitLabel</class>
-   <extends>QLabel</extends>
-   <header>pyFAI.gui.widgets.UnitLabel</header>
   </customwidget>
   <customwidget>
    <class>OpenClDeviceLabel</class>

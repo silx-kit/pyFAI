@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "05/12/2025"
 __status__ = "production"
 
 import os
@@ -333,19 +333,19 @@ def setup_model(model, options):
     # Settings
     settings = model.experimentSettingsModel()
     if options.spacing:
-        calibrant = None
+        local_calibrant = None
         try:
             if options.spacing in calibrant.CALIBRANT_FACTORY:
-                calibrant = calibrant.CALIBRANT_FACTORY(options.spacing)
+                local_calibrant = calibrant.CALIBRANT_FACTORY(options.spacing)
             elif os.path.isfile(options.spacing):
-                calibrant = calibrant.Calibrant(options.spacing)
+                local_calibrant = calibrant.Calibrant(options.spacing)
             else:
                 logger.error("No such Calibrant / d-Spacing file: %s", options.spacing)
         except Exception as e:
-            calibrant = None
+            local_calibrant = None
             displayExceptionBox("Error while loading the calibrant", e)
-        if calibrant:
-            settings.calibrantModel().setCalibrant(calibrant)
+        if local_calibrant:
+            settings.calibrantModel().setCalibrant(local_calibrant)
 
     if options.wavelength:
         value = units.convert(options.wavelength, units.Unit.ANGSTROM, units.Unit.METER_WL)
