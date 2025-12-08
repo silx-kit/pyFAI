@@ -46,7 +46,7 @@ from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from ...utils import float_, str_, get_ui_file
-from ...units import RADIAL_UNITS, to_unit, Unit, UnitFiber
+from ...units import RADIAL_UNITS, to_unit, Unit, UnitFiber, parse_fiber_unit
 from ..model.GeometryModel import GeometryModel
 from ..model.DataModel import DataModel
 from ..utils import units
@@ -140,14 +140,24 @@ class WorkerConfigurator(qt.QWidget):
         self.radial_unit.setShortNameDisplay(True)
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
-
+        
+        # Fiber integration parameters
         fiber_units = [v for v in RADIAL_UNITS.values() if isinstance(v, UnitFiber)]
         self.ip_unit.setUnits(fiber_units)
         self.ip_unit.model().setValue(RADIAL_UNITS["qip_nm^-1"])
 
         self.oop_unit.setUnits(fiber_units)
         self.oop_unit.model().setValue(RADIAL_UNITS["qoop_nm^-1"])
-
+        
+        self.nbpt_ip.setValidator(npt_validator)
+        self.nbpt_oop.setValidator(npt_validator)
+        
+        so_validator = qt.QIntValidator()
+        so_validator.setBottom(1)
+        so_validator.setTop(8)
+        self.sample_orientation.setValidator(so_validator)
+        #
+        
         doubleOrEmptyValidator = validators.AdvancedDoubleValidator(self)
         doubleOrEmptyValidator.setAllowEmpty(True)
         self.normalization_factor.setValidator(doubleOrEmptyValidator)
@@ -183,7 +193,10 @@ class WorkerConfigurator(qt.QWidget):
         self.do_polarization.clicked.connect(self.__updateDisabledStates)
         self.do_radial_range.clicked.connect(self.__updateDisabledStates)
         self.do_azimuthal_range.clicked.connect(self.__updateDisabledStates)
+        self.do_ip_range.clicked.connect(self.__updateDisabledStates)
+        self.do_oop_range.clicked.connect(self.__updateDisabledStates)
         self.do_normalization.clicked.connect(self.__updateDisabledStates)
+        self.do_1d_integration.clicked.connect(self.__updateDisabledStates)
         self.integrator_name.currentTextChanged.connect(self.__updateDisabledStates)
 
         self.__updateDisabledStates()
@@ -201,6 +214,15 @@ class WorkerConfigurator(qt.QWidget):
         enabled = self.do_azimuthal_range.isChecked()
         self.azimuth_range_min.setEnabled(enabled)
         self.azimuth_range_max.setEnabled(enabled)
+        enabled = self.do_ip_range.isChecked()
+        self.ip_range_min.setEnabled(enabled)
+        self.ip_range_max.setEnabled(enabled)
+        enabled = self.do_oop_range.isChecked()
+        self.oop_range_min.setEnabled(enabled)
+        self.oop_range_max.setEnabled(enabled)
+        enabled = self.do_1d_integration.isChecked()
+        self.vertical_integration.setEnabled(enabled)
+        
         self.normalization_factor.setEnabled(self.do_normalization.isChecked())
         self.monitor_name.setEnabled(self.do_normalization.isChecked())
         self.sigmaclip_threshold.setEnabled(self.integrator_name.currentText() == "sigma_clip_ng")
@@ -243,7 +265,21 @@ class WorkerConfigurator(qt.QWidget):
         if value == "":
             return None
         return int(value)
-
+    
+    def __getInPlaneNbpt(self):
+        # Only for WorkerFiberConfig
+        value = str(self.nbpt_ip.text()).strip()
+        if value == "":
+            return None
+        return int(value)
+    
+    def __getOutOfPlaneNbpt(self):
+        # Only for WorkerFiberConfig
+        value = str(self.nbpt_oop.text()).strip()
+        if value == "":
+            return None
+        return int(value)
+    
     def getPoni(self):
         poni = {"wavelength": self.__geometryModel.wavelength().value(),
                 "dist": self.__geometryModel.distance().value(),
@@ -261,6 +297,25 @@ class WorkerConfigurator(qt.QWidget):
 
     def getPoniDict(self):
         return self.getPoni().as_dict()
+    
+    def _getIntegrationActiveTab(self) -> int:
+        # tab_index = 0 -> Azimuthal integration
+        # tab_index = 1 -> Fiber integration
+        tab_index = int(self.tabWidget.currentIndex())
+        return tab_index
+    
+    def getWorkerConfigGeneric(self):
+        """Read the configuration of the plugin and returns it as a WorkerConfig / WorkerFiberConfig instance
+
+        :return: WorkerConfig/WorkerFiberConfig instance
+        """
+        active_tab = self._getIntegrationActiveTab()
+        if active_tab == 0:
+            return self.getWorkerConfig()
+        elif active_tab == 1:
+            return self.getWorkerFiberConfig()
+        else:
+            raise ValueError(f"Tab with index {active_tab} is not associated to any worker config")
 
     def getWorkerConfig(self):
         """Read the configuration of the plugin and returns it as a WorkerConfig instance
@@ -340,25 +395,124 @@ class WorkerConfigurator(qt.QWidget):
                                }
         return wc
 
+    def getWorkerFiberConfig(self):
+        """Read the configuration of the plugin and returns it as a WorkerFiberConfig instance
+
+        :return: WorkerFiberConfig instance
+        """
+
+        def splitFiles(filenames):
+            """In case files was provided with comma.
+
+            The file browser was in this case not working, but the returned
+            config will be valid.
+            """
+            filenames = filenames.strip()
+            if filenames == "":
+                return None
+            return [name.strip() for name in filenames.split("|")]
+
+        wc = integration_config.WorkerFiberConfig(application="pyfai-integrate",
+                                             poni=self.getPoni())
+        # pre-processing
+        if self.do_mask.isChecked():
+            wc.mask_image = str_(self.mask_file.text()).strip()
+        if self.do_dark.isChecked():
+            wc.dark_current_image = splitFiles(self.dark_current.text())
+        if self.do_flat.isChecked():
+            wc.flat_field_image = splitFiles(self.flat_field.text())
+        if self.do_polarization.isChecked():
+            wc.polarization_description = PolarizationDescription(float_(self.polarization_factor.value()), 0.0)
+        if self.do_dummy.isChecked():
+            wc.val_dummy = self._float("val_dummy", None)
+            wc.delta_dummy = self._float("delta_dummy", None)
+
+        # integration-fiber
+        wc.npt_oop = self.__getOutOfPlaneNbpt()
+        wc.npt_ip = self.__getInPlaneNbpt()
+        wc.unit_oop = to_unit(str(self.oop_unit.model().value()))
+        wc.unit_ip = to_unit(str(self.ip_unit.model().value()))
+        incident_angle = numpy.deg2rad(float(self.incident_angle_deg.text()))
+        tilt_angle = numpy.deg2rad(float(self.tilt_angle_deg.text()))
+        sample_orientation = int(self.sample_orientation.text())
+        wc.unit_oop.incident_angle = incident_angle
+        wc.unit_ip.incident_angle = incident_angle
+        wc.unit_oop.tilt_angle = tilt_angle
+        wc.unit_ip.tilt_angle = tilt_angle
+        wc.unit_oop.sample_orientation = sample_orientation
+        wc.unit_ip.sample_orientation = sample_orientation
+
+        if self.do_ip_range.isChecked():
+            wc.ip_range = [self._float("ip_range_min", -numpy.inf),
+                               self._float("ip_range_max", numpy.inf)]
+        if self.do_oop_range.isChecked():
+            wc.oop_range = [self._float("oop_range_min", -numpy.inf),
+                                self._float("oop_range_max", numpy.inf)]
+            
+        wc.vertical_integration = self.vertical_integration.isChecked()
+        wc.integration_1d = self.do_1d_integration.isChecked()
+
+        # processing-config
+        wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
+        wc.correct_solid_angle = bool(self.do_solid_angle.isChecked())
+        wc.error_model = ErrorModel(self.error_model.currentIndex())
+
+        method = self.__method
+        if method is not None:
+            wc.method = (method.split, method.algo, method.impl)
+            if method.impl == "opencl":
+                wc.opencl_device = self.__openclDevice
+
+        if self.do_normalization.isChecked():
+            value = self.normalization_factor.text()
+            if value != "":
+                try:
+                    value = float(value)
+                except ValueError:
+                    value = None
+                if value not in [1.0, None]:
+                    wc.normalization_factor = value
+
+            value = self.monitor_name.text()
+            if value != "":
+                value = str(value)
+                wc.monitor_name = value
+
+        if self.integrator_name.currentText() == "sigma_clip_ng":
+            wc.nbpt_azim = 1
+            wc.integrator_method = "sigma_clip_ng"
+            wc.extra_options = {"thres": float(self.sigmaclip_threshold.text()),
+                                "max_iter": float(self.sigmaclip_maxiter.text()),
+                               }
+        return wc
+
     def getConfig(self):
         """Read the configuration of the plugin and returns it as a dictionary
 
         :return: dict with all information
         """
         return self.getWorkerConfig().as_dict()
-
+        
     def setConfig(self, dico):
         """Setup the widget from its description
 
-        :param dico: dictionary|WorkerConfig with description of the widget
+        :param dico: dictionary|WorkerConfig/WorkerFiberConfig with description of the widget
         :type dico: dict
         """
-        self.setWorkerConfig(integration_config.WorkerConfig.from_dict(dico, inplace=False))
-
+        integrator_class = dico.get("integrator_class", "AzimuthalIntegrator")
+        if integrator_class == "AzimuthalIntegrator":
+            self.setWorkerConfig(integration_config.WorkerConfig.from_dict(dico, inplace=False))
+            self.tabWidget.setCurrentIndex(0)
+        elif integrator_class == "FiberIntegrator":
+            self.setWorkerConfig(integration_config.WorkerFiberConfig.from_dict(dico, inplace=False))
+            self.tabWidget.setCurrentIndex(1)
+        else:
+            raise ValueError(f"{integrator_class} is not a valid Integrator class")
+        
     def setWorkerConfig(self, wc):
         """Setup the widget from its description
 
-        :param wc: WorkerConfig instance with the description of the widget
+        :param wc: WorkerConfig/WorkerFiberConfig instance with the description of the widget
         :type dico: WorkerConfig
         """
 
@@ -417,26 +571,59 @@ class WorkerConfigurator(qt.QWidget):
             self.polarization_factor.setValue(wc.polarization_factor)
         elif isinstance(wc.polarization_factor, (tuple, list)):
             self.polarization_factor.setValue(wc.polarization_factor[0])
-        self.nbpt_rad.setText(str_(wc.nbpt_rad))
-        self.nbpt_azim.setText(str_(wc.nbpt_azim))
-        self.chi_discontinuity_at_0.setChecked(wc.chi_discontinuity_at_0)
-        self.radial_range_min.setText(str_(wc.radial_range_min))
-        self.radial_range_max.setText(str_(wc.radial_range_max))
-        self.azimuth_range_min.setText(str_(wc.azimuth_range_min))
-        self.azimuth_range_max.setText(str_(wc.azimuth_range_max))
+                        
+        if type(wc) is integration_config.WorkerConfig:
+            self.nbpt_rad.setText(str_(wc.nbpt_rad))
+            self.nbpt_azim.setText(str_(wc.nbpt_azim))
+            self.chi_discontinuity_at_0.setChecked(wc.chi_discontinuity_at_0)
+            self.radial_range_min.setText(str_(wc.radial_range_min))
+            self.radial_range_max.setText(str_(wc.radial_range_max))
+            self.azimuth_range_min.setText(str_(wc.azimuth_range_min))
+            self.azimuth_range_max.setText(str_(wc.azimuth_range_max))
+            self.do_radial_range.setChecked(wc.do_radial_range)
+            self.do_azimuthal_range.setChecked(wc.do_azimuthal_range)
+            value = wc.unit
+            if value is not None:
+                self.radial_unit.model().setValue(value)
+        elif type(wc) is integration_config.WorkerFiberConfig:
+            self.nbpt_ip.setText(str_(wc.npt_ip))
+            self.nbpt_oop.setText(str_(wc.npt_oop))
+            self.ip_range_min.setText(str_(wc.ip_range_min))
+            self.ip_range_max.setText(str_(wc.ip_range_max))
+            self.oop_range_min.setText(str_(wc.oop_range_min))
+            self.oop_range_max.setText(str_(wc.oop_range_max))
+            self.do_ip_range.setChecked(wc.do_ip_range)
+            self.do_oop_range.setChecked(wc.do_oop_range)
+            self.vertical_integration.setChecked(wc.vertical_integration)
+            self.do_1d_integration.setChecked(wc.integration_1d)
+            unit_ip = parse_fiber_unit(**wc.unit_ip)
+            
+            # In UnitSelector, searching the unit is made with 'is' not '==', not valid for FiberUnit (which are copies)
+            for index in range(self.ip_unit.count()):
+                item = self.ip_unit.itemData(index)
+                if item == unit_ip: 
+                    self.ip_unit.setCurrentIndex(index)
+                    break
+                
+            unit_oop = parse_fiber_unit(**wc.unit_oop)
+            for index in range(self.oop_unit.count()):
+                item = self.oop_unit.itemData(index)
+                if item == unit_oop: 
+                    self.oop_unit.setCurrentIndex(index)
+                    break
+
+            self.incident_angle_deg.setText(f"{numpy.rad2deg(unit_ip.incident_angle):.2f}")
+            self.tilt_angle_deg.setText(f"{numpy.rad2deg(unit_ip.tilt_angle):.2f}")
+            self.sample_orientation.setText(str(unit_ip.sample_orientation))
+            
         self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
         self.do_dummy.setChecked(wc.do_dummy)
         self.do_dark.setChecked(wc.do_dark)
         self.do_flat.setChecked(wc.do_flat)
         self.do_polarization.setChecked(wc.do_polarization)
         self.do_mask.setChecked(wc.do_mask)
-        self.do_radial_range.setChecked(wc.do_radial_range)
-        self.do_azimuthal_range.setChecked(wc.do_azimuthal_range)
         self.__setNormalization(wc.normalization_factor, wc.monitor_name)
 
-        value = wc.unit
-        if value is not None:
-            self.radial_unit.model().setValue(value)
         if wc.error_model is not None:
             self.error_model.setCurrentIndex(int(wc.error_model))
 
@@ -477,7 +664,7 @@ class WorkerConfigurator(qt.QWidget):
             self.sigmaclip_maxiter.setText(str(extra_options.get("max_iter", 5)))
 
         self.__updateDisabledStates()
-
+        
     def getOpenFileName(self, title):
         """Display a dialog to select a filename and return it.
 
