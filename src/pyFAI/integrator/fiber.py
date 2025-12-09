@@ -600,9 +600,10 @@ def get_missing_wedge_threshold(intensity:numpy.ndarray, threshold_bins=None) ->
     counts, bin = numpy.histogram(intensity.ravel(), bins=threshold_bins)
     return bin[counts.argmax()] / 2
 
-def get_missing_wedge_mask_by_percentile(result: Integrate2dFiberResult, percentile=0.2) -> numpy.ndarray:
-    """Calculate a mask for the missing wedge based on the percentage of bins falling into the missing wedge.
+def get_missing_wedge_mask_by_percentile(result: Integrate2dFiberResult, percentile=20) -> numpy.ndarray:
+    """Calculate a mask for the missing wedge based on the percentage of bins of result.count array falling into the missing wedge.
 
-    :param result: Integrate2dFiberResult
+    :param result: Integrate2DFiberResult, the return of a FiberIntegrator.integrate2d_grazing_incidence
+    :param percentile: float (0 -> 100), upper limit of bins to filter out of the result.count array
     """
-    return result.count < numpy.percentile(result.count, percentile * 100)
+    return result.count < numpy.percentile(result.count, percentile)
