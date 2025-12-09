@@ -131,9 +131,7 @@ def integrate_gui(options, args):
             if integrator_class == "AzimuthalIntegrator":
                 config = WorkerConfig.from_dict(config)
             elif integrator_class == "FiberIntegrator":
-                from pprint import pprint
                 config = WorkerFiberConfig.from_dict(config)
-                pprint(config)
             else:
                 raise ValueError(f"{integrator_class} is not a valid integrator class")
         dialog = IntegrationProcess(None)
