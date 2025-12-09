@@ -875,6 +875,10 @@ class WorkerFiberConfig(WorkerConfig):
             self.oop_range = [-numpy.inf, numpy.inf]
         self.oop_range[1] = numpy.inf if value is None else value
 
+    @property
+    def do_2D(self):
+        return not self.integration_1d
+
     def save(self, filename, pop_azimuthal_params:bool=True):
         """Dump the content of the dataclass as JSON file"""
         config = self.as_dict()
