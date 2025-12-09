@@ -638,11 +638,24 @@ def process(input_data, output, config, observer, write_mode=HDF5Writer.MODE_ERR
         # Create a null observer to avoid to deal with None
         observer = IntegrationObserver()
 
-    worker = Worker()
-    if isinstance(config, WorkerConfig):
+    if isinstance(config, dict):
+        integrator_class = config.get("integrator_class", "AzimuthalIntegrator")
+        if integrator_class == "AzimuthalIntegrator":
+            worker_config = WorkerConfig.from_dict(config)
+            worker = Worker()
+        elif integrator_class == "FiberIntegrator":
+            worker_config = WorkerFiberConfig.from_dict(config)
+            worker = WorkerFiber()
+        else:
+            raise TypeError(f"{integrator_class} is not a valid integrator class")
+    elif type(config) is WorkerConfig:
         worker_config = config
+        worker = Worker()
+    elif type(config) is WorkerFiberConfig:
+        worker_config = config
+        worker = WorkerFiber()
     else:
-        worker_config = WorkerConfig.from_dict(config)
+        raise TypeError(f"{config} should be dictionary, WorkerConfig or WorkerFiberConfig")
 
     monitor_name = worker_config.monitor_name
     worker.set_config(worker_config)
