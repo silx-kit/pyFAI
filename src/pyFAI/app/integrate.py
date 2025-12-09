@@ -292,7 +292,7 @@ class ShellIntegrationObserver(IntegrationObserver):
                                   max_value=approximate_count)
 
     def processing_finished(self):
-        print("processing_finished")
+        logger.debug("In processing_finished")
         self.__disconnect_interrupt()
         self._progress_bar.clear()
         self._progress_bar = None
