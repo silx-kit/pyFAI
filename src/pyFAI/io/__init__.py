@@ -304,7 +304,6 @@ class HDF5Writer(Writer):
                 with open("lima_cfg.debug.json", "w") as w:
                     w.write(json.dumps(self.lima_cfg, indent=4, cls=UnitEncoder))
 
-            self.fai_cfg.nbpt_rad = 1000 if self.fai_cfg.nbpt_rad is None else self.fai_cfg.nbpt_rad
 
             self.entry_grp = self._require_main_entry(self._mode)
 
@@ -327,72 +326,82 @@ class HDF5Writer(Writer):
             self.config_grp["type"] = "text/json"
             self.config_grp["data"] = json.dumps(self.fai_cfg.as_dict(), indent=2, separators=(",\r\n", ": "))
 
-            unit = self.fai_cfg.unit
-            if unit is None:
-                unit = self.fai_cfg.unit = units.TTH_DEG
-            rad_name = unit.space
-            rad_unit = unit.unit_symbol
+            if isinstance(fai_cfg, WorkerConfig):
+                self._init_azimuthal()
+            elif isinstance(fai_cfg, WorkerFiberConfig):
+                self._init_fiber()
+        
+    def _init_azimuthal(self):
+        self.fai_cfg.nbpt_rad = 1000 if self.fai_cfg.nbpt_rad is None else self.fai_cfg.nbpt_rad
+        unit = self.fai_cfg.unit
+        if unit is None:
+            unit = self.fai_cfg.unit = units.TTH_DEG
+        rad_name = unit.space
+        rad_unit = unit.unit_symbol
 
-            self.radial_ds = self.nxdata_grp.require_dataset("radial", (self.fai_cfg.nbpt_rad,), numpy.float32)
-            self.radial_ds.attrs["unit"] = rad_unit
-            self.radial_ds.attrs["interpretation"] = "scalar"
-            self.radial_ds.attrs["name"] = rad_name
-            self.radial_ds.attrs["long_name"] = "Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
+        self.radial_ds = self.nxdata_grp.require_dataset("radial", (self.fai_cfg.nbpt_rad,), numpy.float32)
+        self.radial_ds.attrs["unit"] = rad_unit
+        self.radial_ds.attrs["interpretation"] = "scalar"
+        self.radial_ds.attrs["name"] = rad_name
+        self.radial_ds.attrs["long_name"] = "Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
 
+        if self.fai_cfg.do_2D:
+            self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg.nbpt_azim,), numpy.float32)
+            self.azimuthal_ds.attrs["unit"] = "deg"
+            self.azimuthal_ds.attrs["interpretation"] = "scalar"
+            self.azimuthal_ds.attrs["long_name"] = "Azimuthal angle χ (degree)"
+            self.nxdata_grp["title"] = "2D azimuthaly integrated data"
+        else:
+            self.nxdata_grp["title"] = "Azimuthaly integrated data"
+
+        if self.fast_scan_width:
+            self.fast_motor = self.entry_grp.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
+            self.fast_motor.attrs["long_name"] = "Fast motor position"
+            self.fast_motor.attrs["interpretation"] = "scalar"
             if self.fai_cfg.do_2D:
-                self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg.nbpt_azim,), numpy.float32)
-                self.azimuthal_ds.attrs["unit"] = "deg"
-                self.azimuthal_ds.attrs["interpretation"] = "scalar"
-                self.azimuthal_ds.attrs["long_name"] = "Azimuthal angle χ (degree)"
-                self.nxdata_grp["title"] = "2D azimuthaly integrated data"
+                chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_azim, self.fai_cfg.nbpt_rad
+                self.ndim = 4
+                axis_definition = [".", "fast", "chi", "radial"]
             else:
-                self.nxdata_grp["title"] = "Azimuthaly integrated data"
-
-            if self.fast_scan_width:
-                self.fast_motor = self.entry_grp.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
-                self.fast_motor.attrs["long_name"] = "Fast motor position"
-                self.fast_motor.attrs["interpretation"] = "scalar"
-                if self.fai_cfg.do_2D:
-                    chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_azim, self.fai_cfg.nbpt_rad
-                    self.ndim = 4
-                    axis_definition = [".", "fast", "chi", "radial"]
-                else:
-                    chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_rad
-                    self.ndim = 3
-                    axis_definition = [".", "fast", "radial"]
+                chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_rad
+                self.ndim = 3
+                axis_definition = [".", "fast", "radial"]
+        else:
+            if self.fai_cfg.do_2D:
+                axis_definition = [".", "chi", "radial"]
+                chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg.nbpt_rad
+                self.ndim = 3
             else:
-                if self.fai_cfg.do_2D:
-                    axis_definition = [".", "chi", "radial"]
-                    chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg.nbpt_rad
-                    self.ndim = 3
-                else:
-                    axis_definition = [".", "radial"]
-                    chunk = 1, self.fai_cfg.nbpt_rad
-                    self.ndim = 2
+                axis_definition = [".", "radial"]
+                chunk = 1, self.fai_cfg.nbpt_rad
+                self.ndim = 2
 
-            utf8vlen_dtype = h5py.special_dtype(vlen=str)
-            self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
+        utf8vlen_dtype = h5py.special_dtype(vlen=str)
+        self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
 
-            if self.DATASET_NAME in self.nxdata_grp:
-                del self.nxdata_grp[self.DATASET_NAME]
-            shape = list(chunk)
-            if self.lima_cfg.get("number_of_frames", 0) > 0:
-                if self.fast_scan_width is not None:
-                    shape[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
-                else:
-                    shape[0] = self.lima_cfg["number_of_frames"]
-            dtype = self.lima_cfg.get("dtype")
-            if dtype is None:
-                dtype = numpy.float32
+        if self.DATASET_NAME in self.nxdata_grp:
+            del self.nxdata_grp[self.DATASET_NAME]
+        shape = list(chunk)
+        if self.lima_cfg.get("number_of_frames", 0) > 0:
+            if self.fast_scan_width is not None:
+                shape[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
             else:
-                dtype = numpy.dtype(dtype)
-            self.chunk = tuple(chunk)
-            self.shape = tuple(shape)
-            self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
-            name = "Mapping " if self.fast_scan_width else "Scanning "
-            name += "2D" if self.fai_cfg.do_2D else "1D"
-            name += " experiment"
-            self.entry_grp["title"] = name
+                shape[0] = self.lima_cfg["number_of_frames"]
+        dtype = self.lima_cfg.get("dtype")
+        if dtype is None:
+            dtype = numpy.float32
+        else:
+            dtype = numpy.dtype(dtype)
+        self.chunk = tuple(chunk)
+        self.shape = tuple(shape)
+        self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
+        name = "Mapping " if self.fast_scan_width else "Scanning "
+        name += "2D" if self.fai_cfg.do_2D else "1D"
+        name += " experiment"
+        self.entry_grp["title"] = name
+        
+    def _init_fiber(self):
+        ...
 
     def flush(self, radial=None, azimuthal=None):
         """
