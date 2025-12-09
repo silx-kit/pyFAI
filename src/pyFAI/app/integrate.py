@@ -88,7 +88,7 @@ def integrate_gui(options, args):
         elif integrator_class == "FiberIntegrator":
             reason = WorkerFiber.validate_config(config, raise_exception=None)
         else:
-            raise ValueError(f"{integrator_class} is not a valid integrator class")
+            raise TypeError(f"{integrator_class} is not a valid integrator class")
         if reason is None:
             processData(config)
         else:
@@ -133,7 +133,7 @@ def integrate_gui(options, args):
             elif integrator_class == "FiberIntegrator":
                 config = WorkerFiberConfig.from_dict(config)
             else:
-                raise ValueError(f"{integrator_class} is not a valid integrator class")
+                raise TypeError(f"{integrator_class} is not a valid integrator class")
         dialog = IntegrationProcess(None)
         dialog.adjustSize()
         moveCenterTo(dialog, center)
