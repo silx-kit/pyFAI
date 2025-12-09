@@ -47,10 +47,10 @@ import logging
 import fabio
 from .. import utils, io, version as pyFAI_version, date as pyFAI_date
 from ..io import DefaultAiWriter, HDF5Writer
-from ..io.integration_config import WorkerConfig
+from ..io.integration_config import WorkerConfig, WorkerFiberConfig
 from ..utils.shell import ProgressBar
 from ..utils import logging_utils, header_utils
-from ..worker import Worker
+from ..worker import Worker, WorkerFiber
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -82,7 +82,13 @@ def integrate_gui(options, args):
 
     def validateConfig():
         config = window.get_config()
-        reason = Worker.validate_config(config, raise_exception=None)
+        integrator_class = config.get("integrator_class", "AzimuthalIntegrator")
+        if integrator_class == "AzimuthalIntegrator":
+            reason = Worker.validate_config(config, raise_exception=None)
+        elif integrator_class == "FiberIntegrator":
+            reason = WorkerFiber.validate_config(config, raise_exception=None)
+        else:
+            raise ValueError(f"{integrator_class} is not a valid integrator class")
         if reason is None:
             processData(config)
         else:
@@ -121,8 +127,15 @@ def integrate_gui(options, args):
         if config is None:
             config = window.get_worker_config()
         elif isinstance(config, dict):
-            config = WorkerConfig.from_dict(config)
-
+            integrator_class = config.get("integrator_class", "AzimuthalIntegrator")
+            if integrator_class == "AzimuthalIntegrator":
+                config = WorkerConfig.from_dict(config)
+            elif integrator_class == "FiberIntegrator":
+                from pprint import pprint
+                config = WorkerFiberConfig.from_dict(config)
+                pprint(config)
+            else:
+                raise ValueError(f"{integrator_class} is not a valid integrator class")
         dialog = IntegrationProcess(None)
         dialog.adjustSize()
         moveCenterTo(dialog, center)
