@@ -54,7 +54,7 @@ import posixpath
 import threading
 from collections import OrderedDict
 import __main__ as main
-from .integration_config import WorkerConfig
+from .integration_config import WorkerConfig, WorkerFiberConfig
 from ._json import UnitEncoder
 from ..utils import StringTypes
 from ..utils.decorators import deprecated_args
@@ -289,8 +289,14 @@ class HDF5Writer(Writer):
         :param lima_cfg: the configuration of the acquisition made by LIMA as a dictionary
         """
         logger.debug("Init")
-        if not isinstance(fai_cfg, WorkerConfig):
-            fai_cfg = WorkerConfig.from_dict(fai_cfg)
+        if isinstance(fai_cfg, dict):
+            integrator_class = fai_cfg.get("integrator_class", "AzimuthalIntegrator")
+            if integrator_class == "AzimuthalIntegrator":
+                fai_cfg = WorkerConfig.from_dict(fai_cfg)
+            elif integrator_class == "FiberIntegrator":
+                fai_cfg = WorkerFiberConfig.from_dict(fai_cfg)
+            else:
+                raise TypeError(f"{integrator_class} is not a valid integrator class")
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
