@@ -330,7 +330,7 @@ class HDF5Writer(Writer):
                 self._init_azimuthal()
             elif isinstance(fai_cfg, WorkerFiberConfig):
                 self._init_fiber()
-        
+
     def _init_azimuthal(self):
         self.fai_cfg.nbpt_rad = 1000 if self.fai_cfg.nbpt_rad is None else self.fai_cfg.nbpt_rad
         unit = self.fai_cfg.unit
@@ -401,7 +401,94 @@ class HDF5Writer(Writer):
         self.entry_grp["title"] = name
         
     def _init_fiber(self):
-        ...
+        self.fai_cfg.npt_ip = 1000 if self.fai_cfg.npt_ip is None else self.fai_cfg.npt_ip
+        self.fai_cfg.npt_oop = 1000 if self.fai_cfg.npt_oop is None else self.fai_cfg.npt_oop
+        
+        ip = self.fai_cfg.unit_ip
+        oop = self.fai_cfg.unit_oop
+        
+        ip_name= ip.space
+        oop_name = oop.space
+        ip_unit = ip.unit_symbol
+        oop_unit =oop.unit_symbol
+        
+        self.oop_ds = None
+        self.ip_ds = None
+        if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and self.fai_cfg.vertical_integration):
+            self.oop_ds = self.nxdata_grp.require_dataset("out-of-plane", (self.fai_cfg.npt_oop,), numpy.float32)
+            self.oop_ds.attrs.update({
+                "unit" : oop_unit,
+                "interpretation" : "scalar",
+                "name" : oop_name,
+                "long_name" : "Diffraction out-of-plane direction %s (%s)" % (oop_name, oop_unit)
+            })
+        if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and not self.fai_cfg.vertical_integration):
+            self.ip_ds = self.nxdata_grp.require_dataset("in-plane", (self.fai_cfg.npt_ip,), numpy.float32)
+            self.ip_ds.attrs.update({
+                "unit" : ip_unit,
+                "interpretation" : "scalar",
+                "name" : ip_name,
+                "long_name" : "Diffraction in-plane direction %s (%s)" % (ip_name, ip_unit)
+            })
+
+        if self.fai_cfg.do_2D:
+            self.nxdata_grp["title"] = "2D Fiber/Grazing-Incidence integrated data"
+        else:
+            self.nxdata_grp["title"] = "1D Fiber/Grazing-Incidence integrated data"
+
+        if self.fast_scan_width:
+            self.fast_motor = self.entry_grp.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
+            self.fast_motor.attrs["long_name"] = "Fast motor position"
+            self.fast_motor.attrs["interpretation"] = "scalar"
+            if self.fai_cfg.do_2D:
+                chunk = 1, self.fast_scan_width, self.fai_cfg.npt_oop, self.fai_cfg.npt_ip
+                self.ndim = 4
+                axis_definition = [".", "fast", "oop", "ip"]
+            elif self.fai_cfg.vertical_integration:
+                chunk = 1, self.fast_scan_width, self.fai_cfg.npt_oop
+                self.ndim = 3
+                axis_definition = [".", "fast", "oop"]
+            elif not self.fai_cfg.vertical_integration:
+                chunk = 1, self.fast_scan_width, self.fai_cfg.npt_ip
+                self.ndim = 3
+                axis_definition = [".", "fast", "ip"]
+        else:
+            if self.fai_cfg.do_2D:
+                axis_definition = [".", "oop", "ip"]
+                chunk = 1, self.fai_cfg.npt_oop, self.fai_cfg.npt_ip
+                self.ndim = 3
+            elif self.fai_cfg.vertical_integration:
+                axis_definition = [".", "ip"]
+                chunk = 1, self.fai_cfg.npt_ip
+                self.ndim = 2
+            elif not self.fai_cfg.vertical_integration:
+                axis_definition = [".", "oop"]
+                chunk = 1, self.fai_cfg.npt_oop
+                self.ndim = 2
+                
+        utf8vlen_dtype = h5py.special_dtype(vlen=str)
+        self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
+
+        if self.DATASET_NAME in self.nxdata_grp:
+            del self.nxdata_grp[self.DATASET_NAME]
+        shape = list(chunk)
+        if self.lima_cfg.get("number_of_frames", 0) > 0:
+            if self.fast_scan_width is not None:
+                shape[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
+            else:
+                shape[0] = self.lima_cfg["number_of_frames"]
+        dtype = self.lima_cfg.get("dtype")
+        if dtype is None:
+            dtype = numpy.float32
+        else:
+            dtype = numpy.dtype(dtype)
+        self.chunk = tuple(chunk)
+        self.shape = tuple(shape)
+        self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
+        name = "Mapping " if self.fast_scan_width else "Scanning "
+        name += "2D" if self.fai_cfg.do_2D else "1D"
+        name += " experiment"
+        self.entry_grp["title"] = name
 
     def flush(self, radial=None, azimuthal=None):
         """
