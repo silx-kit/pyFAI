@@ -922,8 +922,8 @@ class WorkerFiber(Worker):
 
         self.npt_oop = int(config.npt_oop)
         self.npt_ip = int(config.npt_ip)
-        self.unit_ip = units.parse_fiber_unit(**config.unit_ip)
-        self.unit_oop = units.parse_fiber_unit(**config.unit_oop)
+        self.unit_ip = units.parse_fiber_unit(**config.unit_ip.get_config())
+        self.unit_oop = units.parse_fiber_unit(**config.unit_oop.get_config())
         config_unit = self.unit_ip.get_config_shared()
         self._incident_angle = config_unit["incident_angle"]
         self._tilt_angle = config_unit["tilt_angle"]
