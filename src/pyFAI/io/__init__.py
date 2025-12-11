@@ -208,10 +208,12 @@ class HDF5Writer(Writer):
         self.config_grp = None
         self.radial_ds = None
         self.azimuthal_ds = None
-        self.ip_ds = None
-        self.oop_ds = None
+        self.inplane_ds = None
+        self.outofplane_ds = None
         self.has_radial_values = False
         self.has_azimuthal_values = False
+        self.has_ip_values = False
+        self.has_oop_values = False
         self.has_error_values = False
         self.chunk = None
         self.shape = None
@@ -415,16 +417,16 @@ class HDF5Writer(Writer):
         oop_unit =oop.unit_symbol
         
         if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and self.fai_cfg.vertical_integration):
-            self.oop_ds = self.nxdata_grp.require_dataset("out-of-plane", (self.fai_cfg.npt_oop,), numpy.float32)
-            self.oop_ds.attrs.update({
+            self.outofplane_ds = self.nxdata_grp.require_dataset("out-of-plane", (self.fai_cfg.npt_oop,), numpy.float32)
+            self.outofplane_ds.attrs.update({
                 "unit" : oop_unit,
                 "interpretation" : "scalar",
                 "name" : oop_name,
                 "long_name" : "Diffraction out-of-plane direction %s (%s)" % (oop_name, oop_unit)
             })
         if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and not self.fai_cfg.vertical_integration):
-            self.ip_ds = self.nxdata_grp.require_dataset("in-plane", (self.fai_cfg.npt_ip,), numpy.float32)
-            self.ip_ds.attrs.update({
+            self.inplane_ds = self.nxdata_grp.require_dataset("in-plane", (self.fai_cfg.npt_ip,), numpy.float32)
+            self.inplane_ds.attrs.update({
                 "unit" : ip_unit,
                 "interpretation" : "scalar",
                 "name" : ip_name,
@@ -513,13 +515,13 @@ class HDF5Writer(Writer):
                 else:
                     logger.warning("Unable to assign azimuthal axis position")
             if ip is not None:
-                if ip.shape == self.ip_ds.shape:
-                    self.ip_ds[:] = ip
+                if ip.shape == self.inplane_ds.shape:
+                    self.inplane_ds[:] = ip
                 else:
                     logger.warning("Unable to assign in-plane axis position")
             if oop is not None:
-                if oop.shape == self.oop_ds.shape:
-                    self.oop_ds[:] = oop
+                if oop.shape == self.outofplane_ds.shape:
+                    self.outofplane_ds[:] = oop
                 else:
                     logger.warning("Unable to assign out-of-plane axis position")
             self.nxs.flush()
@@ -538,8 +540,8 @@ class HDF5Writer(Writer):
                 self.error_ds = None
                 self.radial_ds = None
                 self.azimuthal_ds = None
-                self.ip_ds = None
-                self.oop_ds = None
+                self.inplane_ds = None
+                self.outofplane_ds = None
                 self.fast_motor = None
                 # Close the file
                 self.nxs.close()
@@ -633,6 +635,16 @@ class HDF5Writer(Writer):
                self.radial_ds is not None:
                 self.radial_ds[:] = radial
                 self.has_radial_values = True
+            if (not self.has_ip_values) and \
+               (inplane is not None) and \
+               self.inplane_ds is not None:
+                self.inplane_ds[:] = inplane
+                self.has_ip_values = True
+            if (not self.has_oop_values) and \
+               (outofplane is not None) and \
+               self.outofplane_ds is not None:
+                self.outofplane_ds[:] = outofplane
+                self.has_oop_values = True
 
     def _require_dataset(self, name, dtype):
         """Returns the dataset to store data/error ."""
