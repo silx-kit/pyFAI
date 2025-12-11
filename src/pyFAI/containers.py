@@ -1505,6 +1505,7 @@ class Integrate1dFiberResult(IntegrateResult):
 
     def __init__(self, integrated, intensity, sigma=None):
         super(Integrate1dFiberResult, self).__init__()
+        self._vertical_integration = None
 
     @property
     def integrated(self):
@@ -1542,6 +1543,22 @@ class Integrate1dFiberResult(IntegrateResult):
             return None
         return self[2]
 
+    @property
+    def vertical_integration(self):
+        """Vertical integration
+
+        :rtype: bool
+        """
+        if self._vertical_integration is None:
+            logger.warning("Direction of 1D integration is unknown.")
+        return self._vertical_integration
+
+    def _set_vertical_integration(self, vertical_integration):
+        """Define the direction of the 1D fiber/grazing-incidence integration
+
+        :type unit: bool
+        """
+        self._vertical_integration = vertical_integration
 
 class Integrate2dFiberResult(IntegrateResult):
     """
