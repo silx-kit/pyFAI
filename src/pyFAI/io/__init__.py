@@ -116,7 +116,7 @@ class Writer(object):
     def init(self, fai_cfg=None, lima_cfg=None):
         """
         Creates the directory that will host the output file(s)
-        :param fai_cfg: configuration for worker
+        :param fai_cfg: configuration for worker (standard worker or fiber worker)
         :param lima_cfg: configuration for acquisition
         """
 
@@ -208,6 +208,8 @@ class HDF5Writer(Writer):
         self.config_grp = None
         self.radial_ds = None
         self.azimuthal_ds = None
+        self.ip_ds = None
+        self.oop_ds = None
         self.has_radial_values = False
         self.has_azimuthal_values = False
         self.has_error_values = False
@@ -412,8 +414,6 @@ class HDF5Writer(Writer):
         ip_unit = ip.unit_symbol
         oop_unit =oop.unit_symbol
         
-        self.oop_ds = None
-        self.ip_ds = None
         if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and self.fai_cfg.vertical_integration):
             self.oop_ds = self.nxdata_grp.require_dataset("out-of-plane", (self.fai_cfg.npt_oop,), numpy.float32)
             self.oop_ds.attrs.update({
