@@ -562,6 +562,8 @@ class HDF5Writer(Writer):
         logger.debug("Write frame %s", index)
         radial = None
         azimuthal = None
+        inplane = None
+        outofplane = None
         error = None
         if isinstance(data, containers.Integrate1dResult):
             intensity = data.intensity
@@ -571,6 +573,15 @@ class HDF5Writer(Writer):
             intensity = data.intensity
             radial = data.radial
             azimuthal = data.azimuthal
+            error = data.sigma
+        elif isinstance(data, containers.Integrate1dFiberResult):
+            intensity = data.intensity
+            radial = data.radial # Could be inplane or outofplane depending on bool vertical_integration
+            error = data.sigma
+        elif isinstance(data, containers.Integrate2dFiberResult):
+            intensity = data.intensity
+            inplane = data.inplane
+            outofplane = data.outofplane
             error = data.sigma
         elif isinstance(data, numpy.ndarray):
             intensity = data
