@@ -538,6 +538,8 @@ class HDF5Writer(Writer):
                 self.error_ds = None
                 self.radial_ds = None
                 self.azimuthal_ds = None
+                self.ip_ds = None
+                self.oop_ds = None
                 self.fast_motor = None
                 # Close the file
                 self.nxs.close()
