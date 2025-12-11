@@ -490,12 +490,14 @@ class HDF5Writer(Writer):
         name += " experiment"
         self.entry_grp["title"] = name
 
-    def flush(self, radial=None, azimuthal=None):
+    def flush(self, radial=None, azimuthal=None, ip=None, oop=None):
         """
         Update some data like axis units and so on.
 
         :param radial: position in radial direction
         :param  azimuthal: position in azimuthal direction
+        :param  ip: position in in-plane direction (only for FiberIntegrator)
+        :param  oop: position in out-of-plane direction (only for FiberIntegrator)
         """
         with self._sem:
             if not (self.nxs and self.nxs.h5):
@@ -510,6 +512,16 @@ class HDF5Writer(Writer):
                     self.azimuthal_ds[:] = azimuthal
                 else:
                     logger.warning("Unable to assign azimuthal axis position")
+            if ip is not None:
+                if ip.shape == self.ip_ds.shape:
+                    self.ip_ds[:] = ip
+                else:
+                    logger.warning("Unable to assign in-plane axis position")
+            if oop is not None:
+                if oop.shape == self.oop_ds.shape:
+                    self.oop_ds[:] = oop
+                else:
+                    logger.warning("Unable to assign out-of-plane axis position")
             self.nxs.flush()
 
     def close(self):
