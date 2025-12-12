@@ -117,17 +117,21 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
     def __displayResult(self, result, resetZoom=False):
         self._plot.clear()
         if isinstance(result, (containers.Integrate1dResult, containers.Integrate1dFiberResult)):
-            self._plot.setGraphXLabel("Radial")
+            if isinstance(result, containers.Integrate1dFiberResult):
+                self._plot.setGraphXLabel("Integrated (in-plane / out-of-plane)")
+                edges = result.integrated
+            else:
+                self._plot.setGraphXLabel("Radial")
+                edges = result.radial
             self._plot.setGraphYLabel("Intensity")
+
             self._plot.addHistogram(
                 legend="result1d",
                 align="center",
-                edges=result.radial,
+                edges=edges,
                 color="blue",
                 histogram=result.intensity,
                 resetzoom=False)
-            if isinstance(result, containers.Integrate1dFiberResult):
-                self._plot.setGraphXLabel("Integrated (in-plane / out-of-plane)")
         elif isinstance(result, containers.Integrate2dResult):
 
             def computeLocation(result):

@@ -588,11 +588,11 @@ class HDF5Writer(Writer):
         elif isinstance(data, containers.Integrate1dFiberResult):
             intensity = data.intensity
             if data.vertical_integration is True:
-                outofplane = data.radial
+                outofplane = data.integrated
             elif data.vertical_integration is False:
-                inplane = data.radial
+                inplane = data.integrated
             else:
-                radial = data.radial
+                radial = data.integrated
             error = data.sigma
         elif isinstance(data, containers.Integrate2dFiberResult):
             intensity = data.intensity
