@@ -421,12 +421,6 @@ class HDF5Writer(Writer):
         
         if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and self.fai_cfg.vertical_integration):
             self.outofplane_ds = self.nxdata_grp.require_dataset("out-of-plane", (self.fai_cfg.npt_oop,), numpy.float32)
-            kw = {
-                "unit" : oop_unit,
-                "interpretation" : "scalar",
-                "name" : oop_name,
-                "long_name" : f"Diffraction out-of-plane direction {oop_name} ({oop_unit})"
-            }
             self.outofplane_ds.attrs.update({
                 "unit" : oop_unit,
                 "interpretation" : "scalar",
