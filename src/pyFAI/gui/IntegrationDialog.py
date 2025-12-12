@@ -152,6 +152,33 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
                 scale=scale,
                 colormap=DEFAULT_COLORMAP,
                 resetzoom=False)
+        elif isinstance(result, containers.Integrate2dFiberResult):
+
+            def computeLocation(result):
+                # Assume that axes are linear
+                if result.intensity.shape[1] > 1:
+                    scaleX = (result.inplane[-1] - result.inplane[0]) / (result.intensity.shape[1] - 1)
+                else:
+                    scaleX = 1.0
+                if result.intensity.shape[0] > 1:
+                    scaleY = (result.outofplane[-1] - result.outofplane[0]) / (result.intensity.shape[0] - 1)
+                else:
+                    scaleY = 1.0
+                halfPixel = 0.5 * scaleX, 0.5 * scaleY
+                origin = (result.inplane[0] - halfPixel[0], result.outofplane[0] - halfPixel[1])
+                return origin, (scaleX, scaleY)
+
+            self._plot.setGraphXLabel("In-plane")
+            self._plot.setGraphYLabel("Out-of-plane")
+            origin, scale = computeLocation(result)
+            self._plot.addImage(
+                legend="result2d",
+                data=result.intensity,
+                origin=origin,
+                scale=scale,
+                colormap=DEFAULT_COLORMAP,
+                resetzoom=False)
+            
         else:
             logger.error("Unsupported result type %s", type(result))
         if resetZoom:
