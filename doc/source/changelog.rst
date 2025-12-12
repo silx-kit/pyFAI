@@ -7,7 +7,7 @@ Change-log of versions
 
 2025.12 12/12/2025
 ------------------
-- [Parallax] This effect shifts the pixel position when the inclinaison of the beam is large (>30°) making calibration challenging
+- [Parallax] This effect shifts the pixel position when the inclination of the beam is large (>30°) making calibration challenging
 
   * Provide absorption coefficients of most common sensor materials
   * Update the database of detectors with sensor material and thickness (#2606)
@@ -25,7 +25,7 @@ Change-log of versions
 - [median filtering] fix an infinite loop in the OpenCL code
 - [Crystallography] improvements:
 
-  * Move most of the `calibrant` file into several other in the crystallography module
+  * Move most of the `calibrant` file into the crystallography module
   * Calibrant have seen the IO part devoted to a dataclass called CalibrantConfig:
 
     - Import/export of D-file, including now the relative intensity
