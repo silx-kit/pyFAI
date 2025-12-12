@@ -47,10 +47,10 @@ import logging
 import fabio
 from .. import utils, io, version as pyFAI_version, date as pyFAI_date
 from ..io import DefaultAiWriter, HDF5Writer
-from ..io.integration_config import WorkerConfig
+from ..io.integration_config import WorkerConfig, WorkerFiberConfig
 from ..utils.shell import ProgressBar
 from ..utils import logging_utils, header_utils
-from ..worker import Worker
+from ..worker import Worker, WorkerFiber
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -82,7 +82,13 @@ def integrate_gui(options, args):
 
     def validateConfig():
         config = window.get_config()
-        reason = Worker.validate_config(config, raise_exception=None)
+        integrator_class = config.get("integrator_class", "AzimuthalIntegrator")
+        if integrator_class == "AzimuthalIntegrator":
+            reason = Worker.validate_config(config, raise_exception=None)
+        elif integrator_class == "FiberIntegrator":
+            reason = WorkerFiber.validate_config(config, raise_exception=None)
+        else:
+            raise TypeError(f"{integrator_class} is not a valid integrator class")
         if reason is None:
             processData(config)
         else:
@@ -121,8 +127,13 @@ def integrate_gui(options, args):
         if config is None:
             config = window.get_worker_config()
         elif isinstance(config, dict):
-            config = WorkerConfig.from_dict(config)
-
+            integrator_class = config.get("integrator_class", "AzimuthalIntegrator")
+            if integrator_class == "AzimuthalIntegrator":
+                config = WorkerConfig.from_dict(config)
+            elif integrator_class == "FiberIntegrator":
+                config = WorkerFiberConfig.from_dict(config)
+            else:
+                raise TypeError(f"{integrator_class} is not a valid integrator class")
         dialog = IntegrationProcess(None)
         dialog.adjustSize()
         moveCenterTo(dialog, center)
@@ -627,11 +638,24 @@ def process(input_data, output, config, observer, write_mode=HDF5Writer.MODE_ERR
         # Create a null observer to avoid to deal with None
         observer = IntegrationObserver()
 
-    worker = Worker()
-    if isinstance(config, WorkerConfig):
+    if isinstance(config, dict):
+        integrator_class = config.get("integrator_class", "AzimuthalIntegrator")
+        if integrator_class == "AzimuthalIntegrator":
+            worker_config = WorkerConfig.from_dict(config)
+            worker = Worker()
+        elif integrator_class == "FiberIntegrator":
+            worker_config = WorkerFiberConfig.from_dict(config)
+            worker = WorkerFiber()
+        else:
+            raise TypeError(f"{integrator_class} is not a valid integrator class")
+    elif type(config) is WorkerConfig:
         worker_config = config
+        worker = Worker()
+    elif type(config) is WorkerFiberConfig:
+        worker_config = config
+        worker = WorkerFiber()
     else:
-        worker_config = WorkerConfig.from_dict(config)
+        raise TypeError(f"{config} should be dictionary, WorkerConfig or WorkerFiberConfig")
 
     monitor_name = worker_config.monitor_name
     worker.set_config(worker_config)

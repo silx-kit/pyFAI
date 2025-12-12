@@ -922,8 +922,8 @@ class WorkerFiber(Worker):
 
         self.npt_oop = int(config.npt_oop)
         self.npt_ip = int(config.npt_ip)
-        self.unit_ip = units.parse_fiber_unit(**config.unit_ip)
-        self.unit_oop = units.parse_fiber_unit(**config.unit_oop)
+        self.unit_ip = config.unit_ip
+        self.unit_oop = config.unit_oop
         config_unit = self.unit_ip.get_config_shared()
         self._incident_angle = config_unit["incident_angle"]
         self._tilt_angle = config_unit["tilt_angle"]
@@ -1068,6 +1068,42 @@ class WorkerFiber(Worker):
                     return integrated_result.intensity, integrated_result.sigma
             else:
                 return numpy.vstack(integrated_result).T
+
+    @staticmethod
+    def validate_config(config, raise_exception=RuntimeError):
+        """
+        Validates a configuration for any inconsistencies
+
+        :param config: dict containing the configuration
+        :param raise_exception: Exception class to raise when configuration is not consistent
+        :return: None or reason as a string when raise_exception is None, else raise the given exception
+        """
+        reason = None
+
+        config = config.copy()
+        if "poni" in config and config.get("version", 0) > 3:
+            config.update(config.pop("poni"))
+        if not config.get("dist"):
+            reason = "Detector distance is undefined"
+        elif config.get("poni1") is None:
+            reason = "Distance `poni1` is undefined"
+        elif config.get("poni2") is None:
+            reason = "Distance `poni2` is undefined"
+        elif config.get("rot1") is None:
+            reason = "Rotation `rot1` is undefined"
+        elif config.get("rot2") is None:
+            reason = "Rotation `rot2` is undefined"
+        elif config.get("rot3") is None:
+            reason = "Rotation `rot3` is undefined"
+        elif config.get("wavelength") is None:
+            unit = config.get("unit", "_").split("_")[0]
+            if "q" in unit:
+                reason = "Wavelength undefined but integration in q-space"
+            elif "d" in unit:
+                reason = "Wavelength undefined but integration in d*-space"
+        if reason and isinstance(raise_exception, Exception):
+            raise_exception(reason)
+        return reason
 
 class PixelwiseWorker(object):
     """

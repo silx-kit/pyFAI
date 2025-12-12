@@ -54,7 +54,7 @@ import posixpath
 import threading
 from collections import OrderedDict
 import __main__ as main
-from .integration_config import WorkerConfig
+from .integration_config import WorkerConfig, WorkerFiberConfig
 from ._json import UnitEncoder
 from ..utils import StringTypes
 from ..utils.decorators import deprecated_args
@@ -116,7 +116,7 @@ class Writer(object):
     def init(self, fai_cfg=None, lima_cfg=None):
         """
         Creates the directory that will host the output file(s)
-        :param fai_cfg: configuration for worker
+        :param fai_cfg: configuration for worker (standard worker or fiber worker)
         :param lima_cfg: configuration for acquisition
         """
 
@@ -208,8 +208,12 @@ class HDF5Writer(Writer):
         self.config_grp = None
         self.radial_ds = None
         self.azimuthal_ds = None
+        self.inplane_ds = None
+        self.outofplane_ds = None
         self.has_radial_values = False
         self.has_azimuthal_values = False
+        self.has_ip_values = False
+        self.has_oop_values = False
         self.has_error_values = False
         self.chunk = None
         self.shape = None
@@ -289,8 +293,14 @@ class HDF5Writer(Writer):
         :param lima_cfg: the configuration of the acquisition made by LIMA as a dictionary
         """
         logger.debug("Init")
-        if not isinstance(fai_cfg, WorkerConfig):
-            fai_cfg = WorkerConfig.from_dict(fai_cfg)
+        if isinstance(fai_cfg, dict):
+            integrator_class = fai_cfg.get("integrator_class", "AzimuthalIntegrator")
+            if integrator_class == "AzimuthalIntegrator":
+                fai_cfg = WorkerConfig.from_dict(fai_cfg)
+            elif integrator_class == "FiberIntegrator":
+                fai_cfg = WorkerFiberConfig.from_dict(fai_cfg)
+            else:
+                raise TypeError(f"{integrator_class} is not a valid integrator class")
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
@@ -298,7 +308,6 @@ class HDF5Writer(Writer):
                 with open("lima_cfg.debug.json", "w") as w:
                     w.write(json.dumps(self.lima_cfg, indent=4, cls=UnitEncoder))
 
-            self.fai_cfg.nbpt_rad = 1000 if self.fai_cfg.nbpt_rad is None else self.fai_cfg.nbpt_rad
 
             self.entry_grp = self._require_main_entry(self._mode)
 
@@ -321,79 +330,179 @@ class HDF5Writer(Writer):
             self.config_grp["type"] = "text/json"
             self.config_grp["data"] = json.dumps(self.fai_cfg.as_dict(), indent=2, separators=(",\r\n", ": "))
 
-            unit = self.fai_cfg.unit
-            if unit is None:
-                unit = self.fai_cfg.unit = units.TTH_DEG
-            rad_name = unit.space
-            rad_unit = unit.unit_symbol
+            if type(fai_cfg) is WorkerConfig:
+                self._init_azimuthal()
+            elif type(fai_cfg) is WorkerFiberConfig:
+                self._init_fiber()
 
-            self.radial_ds = self.nxdata_grp.require_dataset("radial", (self.fai_cfg.nbpt_rad,), numpy.float32)
-            self.radial_ds.attrs["unit"] = rad_unit
-            self.radial_ds.attrs["interpretation"] = "scalar"
-            self.radial_ds.attrs["name"] = rad_name
-            self.radial_ds.attrs["long_name"] = "Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
+    def _init_azimuthal(self):
+        self.fai_cfg.nbpt_rad = 1000 if self.fai_cfg.nbpt_rad is None else self.fai_cfg.nbpt_rad
+        unit = self.fai_cfg.unit
+        if unit is None:
+            unit = self.fai_cfg.unit = units.TTH_DEG
+        rad_name = unit.space
+        rad_unit = unit.unit_symbol
 
+        self.radial_ds = self.nxdata_grp.require_dataset("radial", (self.fai_cfg.nbpt_rad,), numpy.float32)
+        self.radial_ds.attrs["unit"] = rad_unit
+        self.radial_ds.attrs["interpretation"] = "scalar"
+        self.radial_ds.attrs["name"] = rad_name
+        self.radial_ds.attrs["long_name"] = "Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
+
+        if self.fai_cfg.do_2D:
+            self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg.nbpt_azim,), numpy.float32)
+            self.azimuthal_ds.attrs["unit"] = "deg"
+            self.azimuthal_ds.attrs["interpretation"] = "scalar"
+            self.azimuthal_ds.attrs["long_name"] = "Azimuthal angle χ (degree)"
+            self.nxdata_grp["title"] = "2D azimuthaly integrated data"
+        else:
+            self.nxdata_grp["title"] = "Azimuthaly integrated data"
+
+        if self.fast_scan_width:
+            self.fast_motor = self.entry_grp.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
+            self.fast_motor.attrs["long_name"] = "Fast motor position"
+            self.fast_motor.attrs["interpretation"] = "scalar"
             if self.fai_cfg.do_2D:
-                self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg.nbpt_azim,), numpy.float32)
-                self.azimuthal_ds.attrs["unit"] = "deg"
-                self.azimuthal_ds.attrs["interpretation"] = "scalar"
-                self.azimuthal_ds.attrs["long_name"] = "Azimuthal angle χ (degree)"
-                self.nxdata_grp["title"] = "2D azimuthaly integrated data"
+                chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_azim, self.fai_cfg.nbpt_rad
+                self.ndim = 4
+                axis_definition = [".", "fast", "chi", "radial"]
             else:
-                self.nxdata_grp["title"] = "Azimuthaly integrated data"
-
-            if self.fast_scan_width:
-                self.fast_motor = self.entry_grp.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
-                self.fast_motor.attrs["long_name"] = "Fast motor position"
-                self.fast_motor.attrs["interpretation"] = "scalar"
-                if self.fai_cfg.do_2D:
-                    chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_azim, self.fai_cfg.nbpt_rad
-                    self.ndim = 4
-                    axis_definition = [".", "fast", "chi", "radial"]
-                else:
-                    chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_rad
-                    self.ndim = 3
-                    axis_definition = [".", "fast", "radial"]
+                chunk = 1, self.fast_scan_width, self.fai_cfg.nbpt_rad
+                self.ndim = 3
+                axis_definition = [".", "fast", "radial"]
+        else:
+            if self.fai_cfg.do_2D:
+                axis_definition = [".", "chi", "radial"]
+                chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg.nbpt_rad
+                self.ndim = 3
             else:
-                if self.fai_cfg.do_2D:
-                    axis_definition = [".", "chi", "radial"]
-                    chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg.nbpt_rad
-                    self.ndim = 3
-                else:
-                    axis_definition = [".", "radial"]
-                    chunk = 1, self.fai_cfg.nbpt_rad
-                    self.ndim = 2
+                axis_definition = [".", "radial"]
+                chunk = 1, self.fai_cfg.nbpt_rad
+                self.ndim = 2
 
-            utf8vlen_dtype = h5py.special_dtype(vlen=str)
-            self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
+        utf8vlen_dtype = h5py.special_dtype(vlen=str)
+        self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
 
-            if self.DATASET_NAME in self.nxdata_grp:
-                del self.nxdata_grp[self.DATASET_NAME]
-            shape = list(chunk)
-            if self.lima_cfg.get("number_of_frames", 0) > 0:
-                if self.fast_scan_width is not None:
-                    shape[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
-                else:
-                    shape[0] = self.lima_cfg["number_of_frames"]
-            dtype = self.lima_cfg.get("dtype")
-            if dtype is None:
-                dtype = numpy.float32
+        if self.DATASET_NAME in self.nxdata_grp:
+            del self.nxdata_grp[self.DATASET_NAME]
+        shape = list(chunk)
+        if self.lima_cfg.get("number_of_frames", 0) > 0:
+            if self.fast_scan_width is not None:
+                shape[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
             else:
-                dtype = numpy.dtype(dtype)
-            self.chunk = tuple(chunk)
-            self.shape = tuple(shape)
-            self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
-            name = "Mapping " if self.fast_scan_width else "Scanning "
-            name += "2D" if self.fai_cfg.do_2D else "1D"
-            name += " experiment"
-            self.entry_grp["title"] = name
+                shape[0] = self.lima_cfg["number_of_frames"]
+        dtype = self.lima_cfg.get("dtype")
+        if dtype is None:
+            dtype = numpy.float32
+        else:
+            dtype = numpy.dtype(dtype)
+        self.chunk = tuple(chunk)
+        self.shape = tuple(shape)
+        self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
+        name = "Mapping " if self.fast_scan_width else "Scanning "
+        name += "2D" if self.fai_cfg.do_2D else "1D"
+        name += " experiment"
+        self.entry_grp["title"] = name
+        
+    def _init_fiber(self):
+        self.fai_cfg.npt_ip = 1000 if self.fai_cfg.npt_ip is None else self.fai_cfg.npt_ip
+        self.fai_cfg.npt_oop = 1000 if self.fai_cfg.npt_oop is None else self.fai_cfg.npt_oop
+        
+        ip = self.fai_cfg.unit_ip
+        oop = self.fai_cfg.unit_oop
+        
+        ip_name= ip.space
+        oop_name = oop.space
+        ip_unit = ip.unit_symbol
+        oop_unit =oop.unit_symbol
 
-    def flush(self, radial=None, azimuthal=None):
+        if self.fai_cfg.do_2D:
+            self.do2D = True
+        
+        if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and self.fai_cfg.vertical_integration):
+            self.outofplane_ds = self.nxdata_grp.require_dataset("out-of-plane", (self.fai_cfg.npt_oop,), numpy.float32)
+            self.outofplane_ds.attrs.update({
+                "unit" : oop_unit,
+                "interpretation" : "scalar",
+                "name" : oop_name,
+                "long_name" : f"Diffraction out-of-plane direction {oop_name} ({oop_unit})"
+            })
+        if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and not self.fai_cfg.vertical_integration):
+            self.inplane_ds = self.nxdata_grp.require_dataset("in-plane", (self.fai_cfg.npt_ip,), numpy.float32)
+            self.inplane_ds.attrs.update({
+                "unit" : ip_unit,
+                "interpretation" : "scalar",
+                "name" : ip_name,
+                "long_name" : f"Diffraction out-of-plane direction {ip_name} ({ip_unit})"
+            })
+
+        if self.fai_cfg.do_2D:
+            self.nxdata_grp["title"] = "2D Fiber/Grazing-Incidence integrated data"
+        else:
+            self.nxdata_grp["title"] = "1D Fiber/Grazing-Incidence integrated data"
+
+        if self.fast_scan_width:
+            self.fast_motor = self.entry_grp.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
+            self.fast_motor.attrs["long_name"] = "Fast motor position"
+            self.fast_motor.attrs["interpretation"] = "scalar"
+            if self.fai_cfg.do_2D:
+                chunk = 1, self.fast_scan_width, self.fai_cfg.npt_oop, self.fai_cfg.npt_ip
+                self.ndim = 4
+                axis_definition = [".", "fast", "out-of-plane", "in-plane"]
+            elif self.fai_cfg.vertical_integration:
+                chunk = 1, self.fast_scan_width, self.fai_cfg.npt_oop
+                self.ndim = 3
+                axis_definition = [".", "fast", "out-of-plane"]
+            elif not self.fai_cfg.vertical_integration:
+                chunk = 1, self.fast_scan_width, self.fai_cfg.npt_ip
+                self.ndim = 3
+                axis_definition = [".", "fast", "in-plane"]
+        else:
+            if self.fai_cfg.do_2D:
+                axis_definition = [".", "out-of-plane", "in-plane"]
+                chunk = 1, self.fai_cfg.npt_oop, self.fai_cfg.npt_ip
+                self.ndim = 3
+            elif self.fai_cfg.vertical_integration:
+                axis_definition = [".", "in-plane"]
+                chunk = 1, self.fai_cfg.npt_ip
+                self.ndim = 2
+            elif not self.fai_cfg.vertical_integration:
+                axis_definition = [".", "out-of-plane"]
+                chunk = 1, self.fai_cfg.npt_oop
+                self.ndim = 2
+                
+        utf8vlen_dtype = h5py.special_dtype(vlen=str)
+        self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
+
+        if self.DATASET_NAME in self.nxdata_grp:
+            del self.nxdata_grp[self.DATASET_NAME]
+        shape = list(chunk)
+        if self.lima_cfg.get("number_of_frames", 0) > 0:
+            if self.fast_scan_width is not None:
+                shape[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
+            else:
+                shape[0] = self.lima_cfg["number_of_frames"]
+        dtype = self.lima_cfg.get("dtype")
+        if dtype is None:
+            dtype = numpy.float32
+        else:
+            dtype = numpy.dtype(dtype)
+        self.chunk = tuple(chunk)
+        self.shape = tuple(shape)
+        self.intensity_ds = self._require_dataset(self.DATASET_NAME, dtype=dtype)
+        name = "Mapping " if self.fast_scan_width else "Scanning "
+        name += "2D" if self.fai_cfg.do_2D else "1D"
+        name += " experiment"
+        self.entry_grp["title"] = name
+
+    def flush(self, radial=None, azimuthal=None, ip=None, oop=None):
         """
         Update some data like axis units and so on.
 
         :param radial: position in radial direction
         :param  azimuthal: position in azimuthal direction
+        :param  ip: position in in-plane direction (only for FiberIntegrator)
+        :param  oop: position in out-of-plane direction (only for FiberIntegrator)
         """
         with self._sem:
             if not (self.nxs and self.nxs.h5):
@@ -408,6 +517,16 @@ class HDF5Writer(Writer):
                     self.azimuthal_ds[:] = azimuthal
                 else:
                     logger.warning("Unable to assign azimuthal axis position")
+            if ip is not None:
+                if ip.shape == self.inplane_ds.shape:
+                    self.inplane_ds[:] = ip
+                else:
+                    logger.warning("Unable to assign in-plane axis position")
+            if oop is not None:
+                if oop.shape == self.outofplane_ds.shape:
+                    self.outofplane_ds[:] = oop
+                else:
+                    logger.warning("Unable to assign out-of-plane axis position")
             self.nxs.flush()
 
     def close(self):
@@ -424,6 +543,8 @@ class HDF5Writer(Writer):
                 self.error_ds = None
                 self.radial_ds = None
                 self.azimuthal_ds = None
+                self.inplane_ds = None
+                self.outofplane_ds = None
                 self.fast_motor = None
                 # Close the file
                 self.nxs.close()
@@ -446,6 +567,8 @@ class HDF5Writer(Writer):
         logger.debug("Write frame %s", index)
         radial = None
         azimuthal = None
+        inplane = None
+        outofplane = None
         error = None
         if isinstance(data, containers.Integrate1dResult):
             intensity = data.intensity
@@ -455,6 +578,20 @@ class HDF5Writer(Writer):
             intensity = data.intensity
             radial = data.radial
             azimuthal = data.azimuthal
+            error = data.sigma
+        elif isinstance(data, containers.Integrate1dFiberResult):
+            intensity = data.intensity
+            if data.vertical_integration is True:
+                outofplane = data.integrated
+            elif data.vertical_integration is False:
+                inplane = data.integrated
+            else:
+                radial = data.integrated
+            error = data.sigma
+        elif isinstance(data, containers.Integrate2dFiberResult):
+            intensity = data.intensity
+            inplane = data.inplane
+            outofplane = data.outofplane
             error = data.sigma
         elif isinstance(data, numpy.ndarray):
             intensity = data
@@ -506,6 +643,16 @@ class HDF5Writer(Writer):
                self.radial_ds is not None:
                 self.radial_ds[:] = radial
                 self.has_radial_values = True
+            if (not self.has_ip_values) and \
+               (inplane is not None) and \
+               self.inplane_ds is not None:
+                self.inplane_ds[:] = inplane
+                self.has_ip_values = True
+            if (not self.has_oop_values) and \
+               (outofplane is not None) and \
+               self.outofplane_ds is not None:
+                self.outofplane_ds[:] = outofplane
+                self.has_oop_values = True
 
     def _require_dataset(self, name, dtype):
         """Returns the dataset to store data/error ."""
