@@ -61,7 +61,14 @@ Change-log of versions
   * Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the `Cython` path for geometry initialization, less prone to numerical noise.
     `Cython` is still preferred for geometry optimization where performance is critical.
 
-- Supports python 3.10-3.14
+- [Bugs] There are several known bugs:
+
+  * Regression in pixel-splitting methods when dealing with pixels on the boundary #2736
+  * `array_from_unit`` and `chiArray` are not consistent  #2589
+  * Uncollectable objects when using PySide6 GUI (PyQt6 is OK) #2523
+  * pyFAI-calib2 crashes when loading the image (PyQt5 only issue. Wont'fix, please upgrade) #2422
+
+- Supports python 3.10-3.14, 3.14t is untested.
 - 1600+ commits, 500+ files modified over 9 months: big baby.
 - List of contributors for this release: Gudrun Lotze, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
 
