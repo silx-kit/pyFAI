@@ -38,11 +38,11 @@ TODO:
 - Add monitor to HDF5
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "12/12/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -308,6 +308,7 @@ class HDF5Writer(Writer):
                 with open("lima_cfg.debug.json", "w") as w:
                     w.write(json.dumps(self.lima_cfg, indent=4, cls=UnitEncoder))
 
+            #self.fai_cfg.nbpt_rad = 1000 if self.fai_cfg.nbpt_rad is None else self.fai_cfg.nbpt_rad
 
             self.entry_grp = self._require_main_entry(self._mode)
 

@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 16/04/2025
+:Date: 12/12/2025
 :Keywords: List of publications
 
 
@@ -42,5 +42,5 @@ For the plain application of azimuthal averaging: JAC2015, for the calibration: 
 In case of doubt, the latest paper should be fine.
 There are already 1500 publications referring to pyFAI, some of them in the most
 prestigious scientific journals (Nature, Science, PNAS, ...) and
-44 other `applications <https://github.com/silx-kit/pyFAI/network/dependents?dependent_type=PACKAGE>`_
+52 other `applications <https://github.com/silx-kit/pyFAI/network/dependents?dependent_type=PACKAGE>`_
 using pyFAI as a library.
