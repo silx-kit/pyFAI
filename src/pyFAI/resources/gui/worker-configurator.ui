@@ -354,11 +354,11 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab_radial">
          <attribute name="title">
-          <string>Radial integration</string>
+          <string>Azimuthal integration</string>
          </attribute>
          <layout class="QVBoxLayout" name="radial_vbox">
           <item>
@@ -766,12 +766,15 @@
       <string>Processing</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_22">
-        <property name="text">
-         <string>Error propagation:</string>
+      <item row="3" column="1" colspan="3">
+       <widget class="OpenClDeviceLabel" name="opencl_label">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="integrator_name"/>
       </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="error_model"/>
@@ -783,6 +786,79 @@
         </property>
         <property name="text">
          <string>Normalization:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
+       <widget class="QToolButton" name="opencl_config_button">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="sigmaclip_threshold">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sigma-clip threshold: i.e. drop any value not in the &amp;lt;I&amp;gt; ± n⋅σ(I) interval.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="opencl_title">
+        <property name="text">
+         <string>OpenCL device:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="3">
+       <widget class="MethodLabel" name="methodLabel">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QToolButton" name="method_config_button">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="3">
+       <widget class="QLineEdit" name="sigmaclip_maxiter">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of sigma-clipping iterations to perform, the higher, the better (and the solver). &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
+       <widget class="QLabel" name="sigmaclip_maxiter_label">
+        <property name="text">
+         <string>SigmaClip Max.Iter:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>×</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_22">
+        <property name="text">
+         <string>Error propagation:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="MonitorNameEdit" name="monitor_name">
+        <property name="toolTip">
+         <string>Monitor name to reach normalization from the header of the input data</string>
+        </property>
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
@@ -799,62 +875,10 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QLabel" name="label_2">
+      <item row="5" column="0">
+       <widget class="QLabel" name="sigmaclip_threshold_label">
         <property name="text">
-         <string>×</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="MonitorNameEdit" name="monitor_name">
-        <property name="toolTip">
-         <string>Monitor name to reach normalization from the header of the input data</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string>Algorithm:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="4">
-       <widget class="QToolButton" name="method_config_button">
-        <property name="text">
-         <string>...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="opencl_title">
-        <property name="text">
-         <string>OpenCL device:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="4">
-       <widget class="QToolButton" name="opencl_config_button">
-        <property name="text">
-         <string>...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1" colspan="3">
-       <widget class="MethodLabel" name="methodLabel">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1" colspan="3">
-       <widget class="OpenClDeviceLabel" name="opencl_label">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         <string>SigmaClip threshold:</string>
         </property>
        </widget>
       </item>
@@ -865,36 +889,35 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QComboBox" name="integrator_name"/>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_50">
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_13">
         <property name="text">
-         <string>SigmaClip threshold:</string>
+         <string>Algorithm:</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
-       <widget class="QLineEdit" name="sigmaclip_threshold">
-        <property name="toolTip">
-         <string>SigmaClip threshold</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="2">
-       <widget class="QLabel" name="label_52">
+      <item row="6" column="0">
+       <widget class="QLabel" name="medfilt_lower_label">
         <property name="text">
-         <string>SigmaClip Max.Iter:</string>
+         <string>MedFilt lower:</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="3">
-       <widget class="QLineEdit" name="sigmaclip_maxiter">
+      <item row="6" column="1">
+       <widget class="QLineEdit" name="medfilt_lower"/>
+      </item>
+      <item row="6" column="2">
+       <widget class="QLabel" name="medfilt_upper_label">
         <property name="toolTip">
-         <string>SigmaClip max iter</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Upper percentile for quantile-average. &lt;/p&gt;&lt;p&gt;Leave at 50 to get obtain filtering.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>MedFilt upper:</string>
         </property>
        </widget>
+      </item>
+      <item row="6" column="3">
+       <widget class="QLineEdit" name="medfilt_upper"/>
       </item>
      </layout>
     </widget>

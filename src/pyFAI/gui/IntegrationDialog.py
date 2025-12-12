@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/12/2025"
+__date__ = "10/12/2025"
 __status__ = "development"
 
 import logging
@@ -260,6 +260,8 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
 
 class IntegrationDialog(qt.QWidget):
     """Dialog to configure an azimuthal integration.
+
+    TODO: this is not a Dialog !!!
     """
 
     batchProcessRequested = qt.Signal()
