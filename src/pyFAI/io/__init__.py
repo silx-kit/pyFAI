@@ -330,9 +330,9 @@ class HDF5Writer(Writer):
             self.config_grp["type"] = "text/json"
             self.config_grp["data"] = json.dumps(self.fai_cfg.as_dict(), indent=2, separators=(",\r\n", ": "))
 
-            if isinstance(fai_cfg, WorkerConfig):
+            if type(fai_cfg) is WorkerConfig:
                 self._init_azimuthal()
-            elif isinstance(fai_cfg, WorkerFiberConfig):
+            elif type(fai_cfg) is WorkerFiberConfig:
                 self._init_fiber()
 
     def _init_azimuthal(self):
@@ -415,14 +415,23 @@ class HDF5Writer(Writer):
         oop_name = oop.space
         ip_unit = ip.unit_symbol
         oop_unit =oop.unit_symbol
+
+        if self.fai_cfg.do_2D:
+            self.do2D = True
         
         if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and self.fai_cfg.vertical_integration):
             self.outofplane_ds = self.nxdata_grp.require_dataset("out-of-plane", (self.fai_cfg.npt_oop,), numpy.float32)
+            kw = {
+                "unit" : oop_unit,
+                "interpretation" : "scalar",
+                "name" : oop_name,
+                "long_name" : f"Diffraction out-of-plane direction {oop_name} ({oop_unit})"
+            }
             self.outofplane_ds.attrs.update({
                 "unit" : oop_unit,
                 "interpretation" : "scalar",
                 "name" : oop_name,
-                "long_name" : "Diffraction out-of-plane direction %s (%s)" % (oop_name, oop_unit)
+                "long_name" : f"Diffraction out-of-plane direction {oop_name} ({oop_unit})"
             })
         if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and not self.fai_cfg.vertical_integration):
             self.inplane_ds = self.nxdata_grp.require_dataset("in-plane", (self.fai_cfg.npt_ip,), numpy.float32)
@@ -430,7 +439,7 @@ class HDF5Writer(Writer):
                 "unit" : ip_unit,
                 "interpretation" : "scalar",
                 "name" : ip_name,
-                "long_name" : "Diffraction in-plane direction %s (%s)" % (ip_name, ip_unit)
+                "long_name" : f"Diffraction out-of-plane direction {ip_name} ({ip_unit})"
             })
 
         if self.fai_cfg.do_2D:
@@ -445,26 +454,26 @@ class HDF5Writer(Writer):
             if self.fai_cfg.do_2D:
                 chunk = 1, self.fast_scan_width, self.fai_cfg.npt_oop, self.fai_cfg.npt_ip
                 self.ndim = 4
-                axis_definition = [".", "fast", "oop", "ip"]
+                axis_definition = [".", "fast", "out-of-plane", "in-plane"]
             elif self.fai_cfg.vertical_integration:
                 chunk = 1, self.fast_scan_width, self.fai_cfg.npt_oop
                 self.ndim = 3
-                axis_definition = [".", "fast", "oop"]
+                axis_definition = [".", "fast", "out-of-plane"]
             elif not self.fai_cfg.vertical_integration:
                 chunk = 1, self.fast_scan_width, self.fai_cfg.npt_ip
                 self.ndim = 3
-                axis_definition = [".", "fast", "ip"]
+                axis_definition = [".", "fast", "in-plane"]
         else:
             if self.fai_cfg.do_2D:
-                axis_definition = [".", "oop", "ip"]
+                axis_definition = [".", "out-of-plane", "in-plane"]
                 chunk = 1, self.fai_cfg.npt_oop, self.fai_cfg.npt_ip
                 self.ndim = 3
             elif self.fai_cfg.vertical_integration:
-                axis_definition = [".", "ip"]
+                axis_definition = [".", "in-plane"]
                 chunk = 1, self.fai_cfg.npt_ip
                 self.ndim = 2
             elif not self.fai_cfg.vertical_integration:
-                axis_definition = [".", "oop"]
+                axis_definition = [".", "out-of-plane"]
                 chunk = 1, self.fai_cfg.npt_oop
                 self.ndim = 2
                 
