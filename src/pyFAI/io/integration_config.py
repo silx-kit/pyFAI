@@ -83,7 +83,7 @@ from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
 from ..utils import decorators
-from ..units import Unit, UnitFiber, parse_fiber_unit, get_unit_fiber
+from ..units import Unit, UnitFiber, get_unit_fiber
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 

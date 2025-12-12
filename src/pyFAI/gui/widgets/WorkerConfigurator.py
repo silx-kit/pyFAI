@@ -46,7 +46,7 @@ from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
 from ...utils import float_, str_, get_ui_file
-from ...units import RADIAL_UNITS, to_unit, Unit, UnitFiber, parse_fiber_unit
+from ...units import RADIAL_UNITS, to_unit, Unit, UnitFiber
 from ..model.GeometryModel import GeometryModel
 from ..model.DataModel import DataModel
 from ..utils import units
