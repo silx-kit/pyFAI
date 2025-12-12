@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 28/01/2025
+:Date: 12/12/2025
 :Keywords: Project management description
 :Target: developers
 
@@ -10,7 +10,7 @@ PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
 
 PyFAI is an open source project licensed under the MIT license mainly written
-in Python (3.9 or newer).
+in Python (3.10 or newer).
 It is managed by the Silx team and is heavily relying on the
 Python scientific ecosystem: numpy, scipy, h5py and matplotlib.
 It provides high performances image treatment thanks to Cython and
@@ -21,9 +21,9 @@ Programming language
 
 PyFAI is a Python project but uses many programming languages:
 
-* 130000 lines of Python (of which 12000 are for the test)
-* 16000 lines of Cython which are converted into ... C or C++
-* 12000 lines of OpenCL kernels
+* 150000 lines of Python (of which 15000 are for the test)
+* 18000 lines of Cython which are converted into ... C or C++
+* 14000 lines of OpenCL kernels
 
 The OpenCL code has been tested using:
 
@@ -90,14 +90,14 @@ continue funding development.
 Run dependencies
 ----------------
 
-* Python version 3.9 to 3.13
+* Python version 3.10 to 3.14 (3.14t is untested)
 * NumPy
 * SciPy
 * Matplotlib
 * FabIO
 * h5py
 * pyopencl (optional)
-* PyQt5/6 or PySide6 (for the graphical user interface)
+* PyQt6 or PySide6 (for the graphical user interface, PyQt5 is deprecated)
 * Silx
 
 Build dependencies
@@ -152,7 +152,7 @@ To test the development version (built but not yet installed):
     python run_tests.py
 
 
-PyFAI comes with 65 test-suites (445 tests in total) representing a coverage of 55%.
+PyFAI comes with 84 test-suites (583 tests in total) representing a coverage of 58%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
 Test may not pass on computer featuring less than 2GB of memory or 32 bit architectures.
@@ -197,14 +197,14 @@ Linux
 .....
 
 `Github workflows provides continuous integration on Linux <https://github.com/silx-kit/pyFAI/actions>`_,
-64 bits computer with Python 3.9 to 3.13 and is also used to build the wheels for the release.
+64 bits computer with Python 3.10 to 3.14 and is also used to build the wheels for the release.
 
 AppVeyor
 ........
 
-`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 3.9 to 3.13.
+`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 3.10 to 3.14.
 Successful builds provide installers for pyFAI as *wheels* and *msi*, they are anonymously available as *artifacts*.
-Due to the limitation of AppVeyor's build system, those installers have openMP disabled.
+Due to the limitation of AppVeyor's build system, those installers have OpenMP disabled.
 
 List of contributors in code
 ----------------------------
@@ -213,9 +213,10 @@ List of contributors in code
 
     git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn
 
-As of 01/2025:
+As of 12/2025:
  * Jérôme Kieffer (ESRF)
  * Valentin Valls (ESRF)
+ * Gudrun Lotze
  * Edgar GUTIERREZ FERNANDEZ (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)
  * Aurore Deschildre (ESRF)
