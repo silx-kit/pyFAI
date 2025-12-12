@@ -607,7 +607,7 @@ class WorkerConfigurator(qt.QWidget):
             self.do_oop_range.setChecked(wc.do_oop_range)
             self.vertical_integration.setChecked(wc.vertical_integration)
             self.do_1d_integration.setChecked(wc.integration_1d)
-            unit_ip = parse_fiber_unit(**wc.unit_ip)
+            unit_ip = wc.unit_ip
 
             # In UnitSelector, searching the unit is made with 'is' not '==', not valid for FiberUnit (which are copies)
             for index in range(self.ip_unit.count()):
@@ -616,7 +616,7 @@ class WorkerConfigurator(qt.QWidget):
                     self.ip_unit.setCurrentIndex(index)
                     break
 
-            unit_oop = parse_fiber_unit(**wc.unit_oop)
+            unit_oop = wc.unit_oop
             for index in range(self.oop_unit.count()):
                 item = self.oop_unit.itemData(index)
                 if item == unit_oop:
