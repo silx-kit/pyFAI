@@ -312,6 +312,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             sigma = None
 
         result = Integrate1dFiberResult(integrated_vector, intensity, sigma)
+        result._set_vertical_integration(vertical_integration)
         result._set_method_called("integrate_radial")
         result._set_unit(output_unit)
         result._set_sum_normalization(sum_normalization)
@@ -445,9 +446,15 @@ class FiberIntegrator(AzimuthalIntegrator):
 
         empty = self._empty
         if use_missing_wedge:
-            missing_wedge_mask = get_missing_wedge_mask(res2d, threshold_bins=kwargs.get("missing_wedge_threshold_bins", None))
+            # Mask by percentile or by threshold bins
+            missing_wedge_percentile = kwargs.get("missing_wedge_percentile")
+            if missing_wedge_percentile:
+                missing_wedge_mask = get_missing_wedge_mask_by_percentile(result=res2d, percentile=missing_wedge_percentile)
+            else:
+                missing_wedge_mask = get_missing_wedge_mask(res2d, threshold_bins=kwargs.get("missing_wedge_threshold_bins", None))
             intensity[missing_wedge_mask] = empty
             sum_signal[missing_wedge_mask] = empty
+            sum_normalization[missing_wedge_mask] = empty
             count[missing_wedge_mask] = 0
             sum_normalization[missing_wedge_mask] = empty
             if sum_normalization2 is not None:
@@ -593,3 +600,11 @@ def get_missing_wedge_threshold(intensity:numpy.ndarray, threshold_bins=None) ->
     threshold_bins = threshold_bins or max(intensity.shape)
     counts, bin = numpy.histogram(intensity.ravel(), bins=threshold_bins)
     return bin[counts.argmax()] / 2
+
+def get_missing_wedge_mask_by_percentile(result: Integrate2dFiberResult, percentile=20) -> numpy.ndarray:
+    """Calculate a mask for the missing wedge based on the percentage of bins of result.count array falling into the missing wedge.
+
+    :param result: Integrate2DFiberResult, the return of a FiberIntegrator.integrate2d_grazing_incidence
+    :param percentile: float (0 -> 100), upper limit of bins to filter out of the result.count array
+    """
+    return result.count < numpy.percentile(result.count, percentile)
