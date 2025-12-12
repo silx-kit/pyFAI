@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "10/12/2025"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -2176,22 +2176,19 @@ class Geometry:
             f2d = self.getFit2D()
             res = [
                 "== pyFAI calibration ==",
-                "Distance Sample to Detector: %s m" % self.dist,
-                "PONI: %.3e, %.3e m" % (self.poni1, self.poni2),
-                "Rotations: %.6f %.6f %.6f rad" % (self.rot1, self.rot2, self.rot3),
+                f"Distance Sample to Detector: {self.dist} m",
+                f"PONI: {self.poni1:.3e}, {self.poni2:.3e} m",
+                f"Rotations: {self.rot1:.6f} {self.rot2:.6f} {self.rot3:.6f} rad",
                 "",
                 "== Fit2d calibration ==",
-                "Distance Sample-beamCenter: %.3f mm" % f2d["directDist"],
-                "Center: x=%.3f, y=%.3f pix" % (f2d["centerX"], f2d["centerY"]),
-                "Tilt: %.3f deg  TiltPlanRot: %.3f deg"
-                % (f2d["tilt"], f2d["tiltPlanRotation"]),
+                f"Distance Sample-beamCenter: {f2d.directDist:.3f} mm",
+                f"Center: x={f2d.centerX:.3f}, y={f2d.centerY:.3f} pix",
+                f"Tilt: {f2d.tilt:.3f} deg  TiltPlanRot: {f2d.tiltPlanRotation:.3f} deg",
                 "",
                 str(self.detector),
                 "   Detector has a mask: %s " % (self.detector.mask is not None),
-                "   Detector has a dark current: %s "
-                % (self.detector.darkcurrent is not None),
-                "   detector has a flat field: %s "
-                % (self.detector.flatfield is not None),
+                f"   Detector has a dark current: {self.detector.darkcurrent is not None}",
+                f"   Detector has a flat field: {self.detector.flatfield is not None}",
                 "",
             ]
 
