@@ -12,10 +12,15 @@ Change-log of versions
   * Provide absorption coefficients of most common sensor materials
   * Update the database of detectors with sensor material and thickness (#2606)
   * New PONI-file version (backwards compatible when possible)
-  * [Calib2] exposes the feature in detector configuration
   * Known performance regression while calibrating and geometry initialization (should be addressed in the future)
-- [GUI] Like `silx`, `pyFAI` moves from pyQt5 to pySide6 (or pyQt6). Several bugs were found
-  and addressed to increase compatibility with Qt6. PyQt5 is no more a priority and will be dropped in next release
+
+- [GUI]
+
+  * Like `silx`, `pyFAI` moves from pyQt5 to pySide6 (or pyQt6). Several bugs were found
+    and addressed to increase compatibility with Qt6. PyQt5 is no more a priority and will be dropped in next release
+  * `Integrate` is now able to perform fiber integration.
+  * `Calib2` exposes the sensor definition in detector configuration
+
 - [Pilx] is now compatible with files produced by mesh-scan on BM29 in addition to `diffmap`.
 - [median filtering] fix an infinite loop in the OpenCL code
 - [Crystallography] improvements:
@@ -38,24 +43,24 @@ Change-log of versions
   * Added `fake_xrpdp` method to generate 1D powder patterns with configurable resolution
   * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp` improvements
   * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
-- [integrate1|2d] enforce arguments to be kwargs to limit user errors
+
+- [integrate1|2d] enforce arguments to be kwargs to limit input errors
 - [Doc] Improve the notebook about "flatfield" calculation.
 - [Integrate1/2dResult]
 
-  * can perform some basic maths (+, -), uncertainties are propagated accordingly.
+  * They can perform some basic maths (+, -), uncertainties are propagated accordingly.
   * 2D container can be rebinned in 1D containers.
   * 1D container can calculate the spottiness of the initial frame (with azimuthal error-model).
 
 - [Fit2dGeometry] becomes a case-insensitive dataclass (thus mutable, was NamedTuple) which behaves like a dict.
-- [Deprecation] `splineFile` --> `splinefile` in most arguments and also as properties (PEP8 compliance)
-- [IntegratedResult] are the tuples returned by the integration.
-    + They can now be added or subtracted to perform some basic maths, uncertainties are propagated accordingly.
-    + 2D integration results can be rebinned in 1D for free.
+- [Deprecation]
 
-- Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the `Cython` path for geometry initialization, less prone to numerical noise.
-  `Cython` is still prefered for geometry optimization where performance is critical.
-- Start to support type annotation in the code.
-- Replace python2.5 style properties with @property dectorator. Deprecate former accessors where appropriate.
+  * `splineFile` --> `splinefile` in most arguments and also as properties (PEP8 compliance)
+  * Replace python2.5 style properties with @property decorators. Deprecate former accessors where appropriate.
+  * Start to support type annotation in the code (proper doc-string is still mandatory).
+  * Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the `Cython` path for geometry initialization, less prone to numerical noise.
+    `Cython` is still prefered for geometry optimization where performance is critical.
+
 - Supports python 3.10-3.14
 - 1600+ commits, 500+ files modified over 9 months: big baby.
 - List of contributors for this release: Gudrun Lotze, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
