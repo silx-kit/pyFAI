@@ -321,7 +321,8 @@ class UnitFiber(Unit):
 
             self.equation = ne_equation
         else:
-            self.equation = self._equation
+            self._equation_ne = None
+            self.equation = self._equation_np
 
     def __repr__(self):
         incident_angle_degs = numpy.rad2deg(self.incident_angle)
@@ -386,17 +387,19 @@ class UnitFiber(Unit):
                 "incident_angle" : self._incident_angle,
                 "tilt_angle" : self._tilt_angle,
                 "sample_orientation" : self._sample_orientation,
-                "unit" : self.name,
+                "name" : self.name,
             }
         )
         return fiberunit_config
+    
+    as_dict = get_config
 
     def get_config_shared(self) -> dict:
         """Get a config without name, whose parameters can be shared between FiberUnits
         :return: dictionary with fiber parameters
         """
         config = self.get_config()
-        config.pop("unit")
+        config.pop("name")
         return config
 
     def set_config(self, config:dict=None, **kwargs) -> None:
@@ -410,7 +413,7 @@ class UnitFiber(Unit):
         kwargs = {k:v for k,v in kwargs.items() if k in FIBERUNIT_CONFIG_TEMPLATE}
         config = {k:v for k,v in config.items() if k in FIBERUNIT_CONFIG_TEMPLATE}
         config.update(kwargs)
-        if config.get("unit") is not None:
+        if config.get("name") is not None:
             logger.error("The unit itself cannot be set. Create a new UnitFiber instance.")
             return
 
@@ -431,7 +434,7 @@ FIBERUNIT_CONFIG_TEMPLATE = {
     "incident_angle" : None,
     "tilt_angle" : None,
     "sample_orientation" : None,
-    "unit" : None,
+    "name" : None,
 }
 
 
@@ -1805,7 +1808,7 @@ def get_unit_fiber(
 
 
 def parse_fiber_unit(
-    unit, incident_angle=None, tilt_angle=None, sample_orientation=None
+    unit, incident_angle=None, tilt_angle=None, sample_orientation=None,
 ):
     if isinstance(unit, str):
         unit = get_unit_fiber(name=unit)

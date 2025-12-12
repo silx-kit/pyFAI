@@ -83,7 +83,7 @@ from .. import detectors
 from .. import method_registry
 from ..integrator import load_engines as load_integrators
 from ..utils import decorators
-from ..units import Unit, UnitFiber, parse_fiber_unit
+from ..units import Unit, UnitFiber, get_unit_fiber
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
@@ -541,6 +541,8 @@ class WorkerConfig:
                     else:
                         _logger.warning(f"Unable to construct class {klass} with input {value} for key {key} in WorkerConfig.from_dict()")
                         to_init[key] = value
+                    if klass is UnitFiber:
+                        to_init[key] = get_unit_fiber(**value)
                 else:
                     to_init[key] = value
         self = cls(**to_init)
@@ -808,6 +810,7 @@ class WorkerFiberConfig(WorkerConfig):
                                 "oop_range_min", "oop_range_max",
                                 ]
     GUESSED: ClassVar[list] = ["do_ip_range", "do_oop_range"]
+    ENFORCED: ClassVar[list] = ["polarization_description", "poni", "error_model", "unit_ip", "unit_oop"]
 
     @property
     def do_ip_range(self):
@@ -886,7 +889,7 @@ class WorkerFiberConfig(WorkerConfig):
         # Serialize fiber units
         for key in ("unit_ip", "unit_oop"):
             if key in config:
-                unit = parse_fiber_unit(config[key])
+                unit = get_unit_fiber(**config[key])
                 config[key] = unit.get_config()
         
         if pop_azimuthal_params:

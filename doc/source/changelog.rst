@@ -1,75 +1,65 @@
 :Author: Jérôme Kieffer
-:Date: 12/12/2025
+:Date: 20/11/2025
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2025.12 12/12/2025
-------------------
-- [Parallax] This effect shifts the pixel position when the inclination of the beam is large (>30°) making calibration challenging
+2025.11? DD/11/2025 --> 3.14 came out in October, drop 3.9
+-------------------
+- [Parallax] This effect shifts the pixel position when the inclinaison of the beam is large (>30°) making calibration challenging
 
   * Provide absorption coefficients of most common sensor materials
-  * Update the database of detectors with sensor material and thickness (#2606)
+  * Update the database of detectors with sensor material and thickness
   * New PONI-file version (backwards compatible when possible)
-  * Known performance regression while calibrating and geometry initialization (should be addressed in the future)
+  * [Calib2] exposes the feature in detector configuration
+  * Performance regression while calibrating and geometry initialization (will be addressed in the future)
 
-- [GUI]
-
-  * Like `silx`, `pyFAI` moves from pyQt5 to pySide6 (or pyQt6). Several bugs were found
-    and addressed to increase compatibility with Qt6. PyQt5 is no more a priority and will be dropped in next release
-  * `Integrate` is now able to perform fiber integration.
-  * `Calib2` exposes the sensor definition in detector configuration
-
-- [Pilx] is now compatible with files produced by mesh-scan on BM29 in addition to `diffmap`.
-- [median filtering] fix an infinite loop in the OpenCL code
+- [GUI] Like `silx`, `pyFAI` moves from pyQt5 to pySide6 (or pyQt6). Several bugs were found
+  and addressed to increase compatibility with Qt6. PyQt5 is no more a priority.
+- [Pilx] is now compatible with files produced by mesh-scan on BM29 in addition to diffmap.
+- [median filtering] fix an infinite loop in the OpenCL code.
 - [Crystallography] improvements:
 
-  * Move most of the `calibrant` file into the crystallography module
+  * Move most of the `calibrant` file into several other in the crystallography module
   * Calibrant have seen the IO part devoted to a dataclass called CalibrantConfig:
 
     - Import/export of D-file, including now the relative intensity
-    - Import from diff-files available from the American Mineralogist Database
+    - Import from diff-files available from the american mineralogist database
 
   * `space_groups` contain an extensive list of 2320 space-groups with their extinctions for use in the `Cell` class
   * The `Cell` class can now be directly exported as calibrant
   * Added new resolution functions for powder diffraction peak shapes with:
 
     - Constant resolution
-    - Caglioti model (U, V, W parametrization)
-    - Langford model (4 parameters)
-    - Chernyshov model (3 parameters)
+    - Caglioti model (U,V,W parametrization)
+    - Langford model (4-parameter)
+    - Chernyshov model (3-parameter)
 
   * Added `fake_xrpdp` method to generate 1D powder patterns with configurable resolution
-  * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp` improvements
+  * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp`
   * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
-
-- [integrate1|2d] enforce arguments to be kwargs to limit input errors
+- [integrate1|2d] enforce arguments to be kwargs to limit user errors
 - [Doc] Improve the notebook about "flatfield" calculation.
-- [Integrate1/2dResult]
+- [Fiber/GrazingIncidence]
 
-  * They can perform some basic maths (+, -), uncertainties are propagated accordingly.
+  * Compatibility with pyFAI-integrate GUI and Worker
+  * Build the missing wedge mask using percentile threshold of counts
+
+- [Integrate1/2dResult] 
+
+  * can perform some basic maths (+, -), uncertainties are propagated accordingly.
   * 2D container can be rebinned in 1D containers.
   * 1D container can calculate the spottiness of the initial frame (with azimuthal error-model).
 
 - [Fit2dGeometry] becomes a case-insensitive dataclass (thus mutable, was NamedTuple) which behaves like a dict.
-- [Deprecation]
-
-  * `splineFile` --> `splinefile` in most arguments and also as properties (PEP8 compliance)
-  * Replace python2.5 style properties with @property decorators. Deprecate former accessors where appropriate.
-  * Start to support type annotation in the code (proper doc-string is still mandatory).
-  * Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the `Cython` path for geometry initialization, less prone to numerical noise.
-    `Cython` is still preferred for geometry optimization where performance is critical.
-
-- [Bugs] There are several known bugs:
-
-  * Regression in pixel-splitting methods when dealing with pixels on the boundary #2736
-  * `array_from_unit`` and `chiArray` are not consistent  #2589
-  * Uncollectable objects when using PySide6 GUI (PyQt6 is OK) #2523
-  * pyFAI-calib2 crashes when loading the image (PyQt5 only issue. Wont'fix, please upgrade) #2422
-
-- Supports python 3.10-3.14, 3.14t is untested.
-- 1600+ commits, 500+ files modified over 9 months: big baby.
+- [Deprecation] `splineFile` --> `splinefile` in most arguments and also as properties
+- Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the `Cython` path for geometry initialization, less prone to numerical noise.
+  `Cython` is still prefered for geometry optimization where performance is critical.
+- Start to support type annotation in the code.
+- Replace python2.5 style properties with @property dectorator. Deprecate former accessors where appropriate.
+- Supports python 3.10-3.14
+- ~1500 commits, 500+ files modified over 8 months.
 - List of contributors for this release: Gudrun Lotze, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
 
 2025.03 14/03/2025
@@ -85,7 +75,7 @@ Change-log of versions
 - Improve the plot generated by the benchmarking tool (Thanks to Jon)
 - `MultiGeometry` allows the mixing of different kind of detectors (Thanks ThomasK)
 - `WorkerConfig` dataclass, many fixes at several places, Ewoks compatibility.
-- `Diffmap` compatibility with binned images
+- `Diffmap` compatiblity with binned images
 - `Pilx` uses now the dynamic mask to hide hot/defective pixels
 - Improvement of the `fake_calibration_image` to provide both `Imin` and `Imax`
 - New Lambda 9M detector
