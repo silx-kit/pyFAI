@@ -1,24 +1,23 @@
 :Author: Jérôme Kieffer
-:Date: 20/11/2025
+:Date: 12/12/2025
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2025.11? DD/11/2025 --> 3.14 came out in October, drop 3.9
--------------------
+2025.12 12/12/2025
+------------------
 - [Parallax] This effect shifts the pixel position when the inclinaison of the beam is large (>30°) making calibration challenging
 
   * Provide absorption coefficients of most common sensor materials
-  * Update the database of detectors with sensor material and thickness
+  * Update the database of detectors with sensor material and thickness (#2606)
   * New PONI-file version (backwards compatible when possible)
   * [Calib2] exposes the feature in detector configuration
-  * Performance regression while calibrating and geometry initialization (will be addressed in the future)
-
+  * Known performance regression while calibrating and geometry initialization (should be addressed in the future)
 - [GUI] Like `silx`, `pyFAI` moves from pyQt5 to pySide6 (or pyQt6). Several bugs were found
-  and addressed to increase compatibility with Qt6. PyQt5 is no more a priority.
-- [Pilx] is now compatible with files produced by mesh-scan on BM29 in addition to diffmap.
-- [median filtering] fix an infinite loop in the OpenCL code.
+  and addressed to increase compatibility with Qt6. PyQt5 is no more a priority and will be dropped in next release
+- [Pilx] is now compatible with files produced by mesh-scan on BM29 in addition to `diffmap`.
+- [median filtering] fix an infinite loop in the OpenCL code
 - [Crystallography] improvements:
 
   * Move most of the `calibrant` file into several other in the crystallography module
@@ -37,24 +36,28 @@ Change-log of versions
     - Chernyshov model (3-parameter)
 
   * Added `fake_xrpdp` method to generate 1D powder patterns with configurable resolution
-  * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp`
+  * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp` improvements
   * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
 - [integrate1|2d] enforce arguments to be kwargs to limit user errors
 - [Doc] Improve the notebook about "flatfield" calculation.
-- [Integrate1/2dResult] 
+- [Integrate1/2dResult]
 
   * can perform some basic maths (+, -), uncertainties are propagated accordingly.
   * 2D container can be rebinned in 1D containers.
   * 1D container can calculate the spottiness of the initial frame (with azimuthal error-model).
 
 - [Fit2dGeometry] becomes a case-insensitive dataclass (thus mutable, was NamedTuple) which behaves like a dict.
-- [Deprecation] `splineFile` --> `splinefile` in most arguments and also as properties
+- [Deprecation] `splineFile` --> `splinefile` in most arguments and also as properties (PEP8 compliance)
+- [IntegratedResult] are the tuples returned by the integration.
+    + They can now be added or subtracted to perform some basic maths, uncertainties are propagated accordingly.
+    + 2D integration results can be rebinned in 1D for free.
+
 - Prefer the `numexpr` (fallback on `numpy`) function evaluation in favor of the `Cython` path for geometry initialization, less prone to numerical noise.
   `Cython` is still prefered for geometry optimization where performance is critical.
 - Start to support type annotation in the code.
 - Replace python2.5 style properties with @property dectorator. Deprecate former accessors where appropriate.
 - Supports python 3.10-3.14
-- ~1500 commits, 500+ files modified over 8 months.
+- 1600+ commits, 500+ files modified over 9 months: big baby.
 - List of contributors for this release: Gudrun Lotze, Loic Huder, Edgar Gutierrez-Fernandez and Jérôme Kieffer
 
 2025.03 14/03/2025
