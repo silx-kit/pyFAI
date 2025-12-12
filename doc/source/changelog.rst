@@ -41,6 +41,10 @@ Change-log of versions
   * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
 - [integrate1|2d] enforce arguments to be kwargs to limit user errors
 - [Doc] Improve the notebook about "flatfield" calculation.
+- [Fiber/GrazingIncidence]
+  * Compatibility with pyFAI-integrate GUI and Worker
+  * Build the missing wedge mask using percentile threshold of counts
+
 - [Integrate1/2dResult] 
 
   * can perform some basic maths (+, -), uncertainties are propagated accordingly.
