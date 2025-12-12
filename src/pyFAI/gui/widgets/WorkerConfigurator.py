@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2025"
+__date__ = "10/12/2025"
 __status__ = "production"
 
 import logging
@@ -75,6 +75,9 @@ class WorkerConfigurator(qt.QWidget):
     """Frame displaying integration configuration which can be used as input
     param of the ~`pyFAI.worker.Worker`.
     """
+    INTEGRATOR_METHODS = {"integrate/average": "integrate1d_ng",
+                          "sigma-clip": "sigma_clip_ng",
+                          "median-filter": "medfilt1d_ng"}
 
     def __init__(self, parent=None):
         qt.QWidget.__init__(self, parent)
@@ -140,7 +143,7 @@ class WorkerConfigurator(qt.QWidget):
         self.radial_unit.setShortNameDisplay(True)
         self.radial_unit.model().changed.connect(self.__radialUnitUpdated)
         self.__radialUnitUpdated()
-        
+
         # Fiber integration parameters
         fiber_units = [v for v in RADIAL_UNITS.values() if isinstance(v, UnitFiber)]
         self.ip_unit.setUnits(fiber_units)
@@ -148,16 +151,16 @@ class WorkerConfigurator(qt.QWidget):
 
         self.oop_unit.setUnits(fiber_units)
         self.oop_unit.model().setValue(RADIAL_UNITS["qoop_nm^-1"])
-        
+
         self.nbpt_ip.setValidator(npt_validator)
         self.nbpt_oop.setValidator(npt_validator)
-        
+
         so_validator = qt.QIntValidator()
         so_validator.setBottom(1)
         so_validator.setTop(8)
         self.sample_orientation.setValidator(so_validator)
         #
-        
+
         doubleOrEmptyValidator = validators.AdvancedDoubleValidator(self)
         doubleOrEmptyValidator.setAllowEmpty(True)
         self.normalization_factor.setValidator(doubleOrEmptyValidator)
@@ -168,17 +171,17 @@ class WorkerConfigurator(qt.QWidget):
             self.error_model.addItem(text, value)
         self.error_model.setCurrentIndex(0)
 
-        for value in ["integrate",
-                      "sigma_clip_ng",
-                      "medfilt_ng"
-                      ]:
-            text = value
+        for text, value in self.INTEGRATOR_METHODS.items():
             self.integrator_name.addItem(text, value)
         self.integrator_name.setCurrentIndex(0)
         self.sigmaclip_threshold.setValidator(qt.QDoubleValidator(0.0, 100.0, 1))
         self.sigmaclip_threshold.setText("5.0")
         self.sigmaclip_maxiter.setValidator(qt.QIntValidator(0, 100))
         self.sigmaclip_maxiter.setText("5")
+        self.medfilt_lower.setValidator(qt.QDoubleValidator(0.0, 100.0, 1))
+        self.medfilt_upper.setValidator(qt.QDoubleValidator(0.0, 100.0, 1))
+        self.medfilt_upper.setText("50.0")
+        self.medfilt_lower.setText("50.0")
 
         self.__configureDisabledStates()
 
@@ -222,11 +225,13 @@ class WorkerConfigurator(qt.QWidget):
         self.oop_range_max.setEnabled(enabled)
         enabled = self.do_1d_integration.isChecked()
         self.vertical_integration.setEnabled(enabled)
-        
+
         self.normalization_factor.setEnabled(self.do_normalization.isChecked())
         self.monitor_name.setEnabled(self.do_normalization.isChecked())
-        self.sigmaclip_threshold.setEnabled(self.integrator_name.currentText() == "sigma_clip_ng")
-        self.sigmaclip_maxiter.setEnabled(self.integrator_name.currentText() == "sigma_clip_ng")
+        self.sigmaclip_threshold.setEnabled(self.integrator_name.currentText() == "sigma-clip")
+        self.sigmaclip_maxiter.setEnabled(self.integrator_name.currentText() == "sigma-clip")
+        self.medfilt_lower.setEnabled(self.integrator_name.currentText() == "median-filter")
+        self.medfilt_upper.setEnabled(self.integrator_name.currentText() == "median-filter")
 
     def __unitChanged(self):
         unit = self.wavelengthUnit.getUnit()
@@ -265,21 +270,21 @@ class WorkerConfigurator(qt.QWidget):
         if value == "":
             return None
         return int(value)
-    
+
     def __getInPlaneNbpt(self):
         # Only for WorkerFiberConfig
         value = str(self.nbpt_ip.text()).strip()
         if value == "":
             return None
         return int(value)
-    
+
     def __getOutOfPlaneNbpt(self):
         # Only for WorkerFiberConfig
         value = str(self.nbpt_oop.text()).strip()
         if value == "":
             return None
         return int(value)
-    
+
     def getPoni(self):
         poni = {"wavelength": self.__geometryModel.wavelength().value(),
                 "dist": self.__geometryModel.distance().value(),
@@ -297,13 +302,13 @@ class WorkerConfigurator(qt.QWidget):
 
     def getPoniDict(self):
         return self.getPoni().as_dict()
-    
+
     def _getIntegrationActiveTab(self) -> int:
         # tab_index = 0 -> Azimuthal integration
         # tab_index = 1 -> Fiber integration
         tab_index = int(self.tabWidget.currentIndex())
         return tab_index
-    
+
     def getWorkerConfigGeneric(self):
         """Read the configuration of the plugin and returns it as a WorkerConfig / WorkerFiberConfig instance
 
@@ -387,11 +392,17 @@ class WorkerConfigurator(qt.QWidget):
                 value = str(value)
                 wc.monitor_name = value
 
-        if self.integrator_name.currentText() == "sigma_clip_ng":
+        if self.integrator_name.currentText() == "sigma-clip":
             wc.nbpt_azim = 1
             wc.integrator_method = "sigma_clip_ng"
             wc.extra_options = {"thres": float(self.sigmaclip_threshold.text()),
-                                "max_iter": float(self.sigmaclip_maxiter.text()),
+                                "max_iter": int(self.sigmaclip_maxiter.text()),
+                               }
+        elif self.integrator_name.currentText() == "median-filter":
+            wc.nbpt_azim = 1
+            wc.integrator_method = "medfilt1d_ng"
+            wc.extra_options = {"percentile":(float(self.medfilt_lower.text()),
+                                              float(self.medfilt_upper.text())),
                                }
         return wc
 
@@ -448,7 +459,7 @@ class WorkerConfigurator(qt.QWidget):
         if self.do_oop_range.isChecked():
             wc.oop_range = [self._float("oop_range_min", -numpy.inf),
                                 self._float("oop_range_max", numpy.inf)]
-            
+
         wc.vertical_integration = self.vertical_integration.isChecked()
         wc.integration_1d = self.do_1d_integration.isChecked()
 
@@ -492,7 +503,7 @@ class WorkerConfigurator(qt.QWidget):
         :return: dict with all information
         """
         return self.getWorkerConfig().as_dict()
-        
+
     def setConfig(self, dico):
         """Setup the widget from its description
 
@@ -508,7 +519,7 @@ class WorkerConfigurator(qt.QWidget):
             self.tabWidget.setCurrentIndex(1)
         else:
             raise ValueError(f"{integrator_class} is not a valid Integrator class")
-        
+
     def setWorkerConfig(self, wc):
         """Setup the widget from its description
 
@@ -571,7 +582,7 @@ class WorkerConfigurator(qt.QWidget):
             self.polarization_factor.setValue(wc.polarization_factor)
         elif isinstance(wc.polarization_factor, (tuple, list)):
             self.polarization_factor.setValue(wc.polarization_factor[0])
-                        
+
         if type(wc) is integration_config.WorkerConfig:
             self.nbpt_rad.setText(str_(wc.nbpt_rad))
             self.nbpt_azim.setText(str_(wc.nbpt_azim))
@@ -597,25 +608,25 @@ class WorkerConfigurator(qt.QWidget):
             self.vertical_integration.setChecked(wc.vertical_integration)
             self.do_1d_integration.setChecked(wc.integration_1d)
             unit_ip = parse_fiber_unit(**wc.unit_ip)
-            
+
             # In UnitSelector, searching the unit is made with 'is' not '==', not valid for FiberUnit (which are copies)
             for index in range(self.ip_unit.count()):
                 item = self.ip_unit.itemData(index)
-                if item == unit_ip: 
+                if item == unit_ip:
                     self.ip_unit.setCurrentIndex(index)
                     break
-                
+
             unit_oop = parse_fiber_unit(**wc.unit_oop)
             for index in range(self.oop_unit.count()):
                 item = self.oop_unit.itemData(index)
-                if item == unit_oop: 
+                if item == unit_oop:
                     self.oop_unit.setCurrentIndex(index)
                     break
 
             self.incident_angle_deg.setText(f"{numpy.rad2deg(unit_ip.incident_angle):.2f}")
             self.tilt_angle_deg.setText(f"{numpy.rad2deg(unit_ip.tilt_angle):.2f}")
             self.sample_orientation.setText(str(unit_ip.sample_orientation))
-            
+
         self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
         self.do_dummy.setChecked(wc.do_dummy)
         self.do_dark.setChecked(wc.do_dark)
@@ -664,7 +675,7 @@ class WorkerConfigurator(qt.QWidget):
             self.sigmaclip_maxiter.setText(str(extra_options.get("max_iter", 5)))
 
         self.__updateDisabledStates()
-        
+
     def getOpenFileName(self, title):
         """Display a dialog to select a filename and return it.
 
