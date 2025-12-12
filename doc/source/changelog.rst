@@ -21,9 +21,8 @@ Change-log of versions
     and addressed to increase compatibility with Qt6. PyQt5 is no more a priority and will be dropped in next release
   * `Integrate` is now able to perform fiber integration.
   * `Calib2` exposes the sensor definition in detector configuration
-
-- [Pilx] is now compatible with files produced by mesh-scan on BM29 in addition to `diffmap`.
-- [median filtering] fix an infinite loop in the OpenCL code
+  * `Pilx` is now compatible with files produced by mesh-scan on BM29 in addition to `diffmap`.
+- [Median filtering] fix an infinite loop in the OpenCL code
 - [Crystallography] improvements:
 
   * Move most of the `calibrant` file into the crystallography module
@@ -44,6 +43,7 @@ Change-log of versions
   * Added `fake_xrpdp` method to generate 1D powder patterns with configurable resolution
   * Refactoring of the `fake_image` method which takes benefit of `fake_xrpdp` improvements
   * Documentation with a new tutorial on carbon polymorphs (diamond, graphite and C60)
+
 - [integrate1|2d] enforce arguments to be kwargs to limit user errors
 - [Doc] Improve the notebook about "flatfield" calculation.
 - [Fiber/GrazingIncidence]
@@ -51,9 +51,9 @@ Change-log of versions
   * Compatibility with pyFAI-integrate GUI and Worker
   * Build the missing wedge mask using percentile threshold of counts
 
-- [Integrate1/2dResult] 
+- [Integrate1/2dResult]
 
-  * can perform some basic maths (+, -), uncertainties are propagated accordingly.
+  * Can perform some basic maths (+, -), uncertainties are propagated accordingly.
   * 2D container can be rebinned in 1D containers.
   * 1D container can calculate the spottiness of the initial frame (with azimuthal error-model).
 
