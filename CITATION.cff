@@ -1,5 +1,14 @@
 cff-version: 1.2.0
 message: "If you use pyFAI, please cite it as below."
+title: "pyFAI: Fast Azimuthal Integration in Python"
+version: v2025.12
+date-released: '2025-12-14'
+type: software
+license: MIT
+repository-code: https://github.com/silx-kit/pyFAI
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.832896
 authors:
   - family-names: Kieffer
     given-names: Jerome
@@ -60,7 +69,7 @@ authors:
   - family-names: De Nolf
     given-names: Wout
     affiliation: ESRF
-  - family-names:  Wright
+  - family-names: Wright
     given-names: Christopher J.
     affiliation: NSLS-II
   - family-names: Hopkins
@@ -76,7 +85,7 @@ authors:
   - family-names: Detlefs
     given-names: Carsten
     affiliation: ESRF
-  - family-names:  Plaswig
+  - family-names: Plaswig
     given-names: Florian
     affiliation: ESRF
   - family-names: Lavanchy
@@ -86,19 +95,8 @@ authors:
   - family-names: iltommi
     affiliation: LULI
   - family-names: dodogerstlin
-date-released: '2025-03-14'
-doi: 10.5281/zenodo.15023377
-license: MIT
-repository-code: https://github.com/silx-kit/pyFAI/tree/v2025.03
-type: software
-title: "pyFAI: Fast Azimuthal Integration in Python"
-version: v2025.03
-identifiers:
-  - type: doi
-    value: 10.5281/zenodo.15023377
-cff-version: 1.2.0
-identifiers:
-- type: swh
-  value: swh:1:dir:152f2a14f5adb8a55584ab09eaa911aab3bb3714;origin=https://doi.org/10.5281/zenodo.832896;visit=swh:1:snp:d3e7c816f5a8655ea86e2fa3c32138881bcc42cd;anchor=swh:1:rel:811cecda6ccff076118796e57847c5540b9d3407;path=silx-kit-pyFAI-8cfd244
-license:
-- mit
+  - family-names: harshal301002
+  - family-names: Lotze
+    given-names: Gudrun
+    orcid: https://orcid.org/0000-0001-7995-2693
+
