@@ -182,6 +182,7 @@ Contributors
 ------------
 
 * Valentin Valls (ESRF)
+* Gudrun Lotze
 * Frédéric-Emmanuel Picca (Soleil)
 * Thomas Vincent (ESRF)
 * Dimitris Karkoulis (Formerly ESRF)
