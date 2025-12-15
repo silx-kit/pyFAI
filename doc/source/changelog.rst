@@ -31,7 +31,7 @@ Change-log of versions
     - Import/export of D-file, including now the relative intensity
     - Import from diff-files available from the American Mineralogist Database
 
-  * `space_groups` contain an extensive list of 2320 space-groups with their extinctions for use in the `Cell` class
+  * `space_groups` contain an extensive list of 230 space-groups with their extinctions for use in the `Cell` class
   * The `Cell` class can now be directly exported as calibrant
   * Added new resolution functions for powder diffraction peak shapes with:
 
