@@ -99,7 +99,7 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 3.9, ... 3.13 are well tested and officially supported.
+Python 3.10, ... 3.14 are well tested and officially supported (thread-free is untested).
 For full functionality of pyFAI the following modules need to be installed.
 
 * ``numpy``      - http://www.numpy.org
@@ -146,7 +146,7 @@ using apt-get these can be installed as::
 MacOSX
 ------
 
-One needs to manually install a recent version of `Python` (>=3.8) prior to installing pyFAI.
+One needs to manually install a recent version of `Python` (>=3.10) prior to installing pyFAI.
 Apple provides only an outdated version of Python 2.7 which is now incomatible.
 If you want to build pyFAI from sources, you will also need `Xcode` which is available from the Apple store.
 The compiled extension will use only one core due to the limitation of the compiler.
@@ -159,7 +159,7 @@ Then install the missing dependencies with `pip`::
 Windows
 -------
 
-Under Windows, one needs to install `Python` (>=3.8) prior to pyFAI.
+Under Windows, one needs to install `Python` (>=3.10) prior to pyFAI.
 The Visual Studio C++ compiler is also needed when building from sources.
 Then install the missing dependencies with `pip`::
 
@@ -194,6 +194,7 @@ Contributors
 * Gunthard Benecke (Desy)
 * Gero Flucke (Desy)
 * Maciej Jankowski (ESRF)
+* Gudrun Lotze
 
 Indirect contributors (ideas...)
 --------------------------------
