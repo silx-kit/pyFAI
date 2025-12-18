@@ -13,7 +13,7 @@ py.install_sources(
  '_xspectrum.py',
  'sensors.py',
  'orientation.py',
- 'multi_module.py],
+ 'multi_module.py'],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/detectors'  # Folder relative to site-packages to install to
 )
