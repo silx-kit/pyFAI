@@ -1,9 +1,16 @@
 :Author: Jérôme Kieffer
-:Date: 12/12/2025
+:Date: 19/12/2025
 :Keywords: changelog
 
 Change-log of versions
 ======================
+
+2025.12.1 19/12/2025: bugfix
+----------------------------
+- Fix documentation for pixel-splitting + non-regression test on the Cython part
+- Fix pixel size for Pilatus4-CdTe
+- Fix CITATION.cff which prevented Zenodo upload
+- Clean-up repository from deprecated example/debug files
 
 2025.12 12/12/2025
 ------------------
