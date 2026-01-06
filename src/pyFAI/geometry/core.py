@@ -774,7 +774,7 @@ class Geometry:
 
     @deprecated(
         reason="not so precise",
-        replacement="center_array('2th_rad')",
+        replacement="center_array(unit='2th_rad')",
         since_version="2025.09",
     )
     def twoThetaArray(self, shape=None):
