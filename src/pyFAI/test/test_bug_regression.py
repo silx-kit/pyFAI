@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2025"
+__date__ = "05/01/2026"
 
 import sys
 import os
@@ -726,6 +726,12 @@ class TestBugRegression(unittest.TestCase):
         self.assertEqual((pos[..., 1]< 0).sum(), 1, "1 pixels below pi azim angle")
         self.assertEqual((pos[..., 1]> 2*pi).sum(), 3, "3 pixels above pi azim angle")
 
+    def test_bug_2750(self):
+        """Checks a detector with a sensor config can be deep-copied"""
+        ai = load({"detector":"Pilatus100k","detector_config":{"sensor":{"material":"Si","thickness":450e-6}}})
+        cpy = copy.deepcopy(ai)
+        self.assertEqual(ai.detector, cpy.detector)
+        self.assertEqual(ai.detector.sensor, cpy.detector.sensor)
 
 
 class TestBug1703(unittest.TestCase):
