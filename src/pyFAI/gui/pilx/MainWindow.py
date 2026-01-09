@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2023-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2023-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Loïc Huder (loic.huder@ESRF.eu)
 #
@@ -326,7 +326,6 @@ class MainWindow(qt.QMainWindow):
                 maskfile = None
 
         image_base = ImageBase(data=image, mask=self.getMask(image, maskfile))
-        #title = f"{posixpath.basename(dataset_path)} #{image_index}"
         title = f"{image_dset.file.filename}\n::{image_dset.name}\n#{image_index}"
         self._image_plot_widget.setImageData(image_base.getValueData(), title)
 
