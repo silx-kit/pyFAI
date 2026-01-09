@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "05/01/2026"
 __status__ = "stable"
 
 import logging
@@ -44,6 +44,8 @@ import threading
 import json
 from typing import Dict, Any, Union
 import inspect
+import copy
+import types
 
 from .orientation import Orientation
 from .sensors import SensorConfig
@@ -317,12 +319,12 @@ class Detector(metaclass=DetectorMeta):
             new.__setattr__(key, old)
         for key in self._MUTABLE_ATTRS:
             value = self.__getattribute__(key)
-            if (value is None) or (value is False):
+            if type(value) in (types.NoneType, bool, int, float):
                 new_value = value
             elif "copy" in dir(value):
                 new_value = value.copy()
-            else:
-                new_value = 1 * value
+            else:  # poor's men copy
+                new_value = value * 1
             memo[id(value)] = new_value
             new.__setattr__(key, new_value)
         if self._splinefile:
@@ -1492,7 +1494,6 @@ class NexusDetector(Detector):
         return cloned
 
     def __deepcopy__(self, memo=None):
-        import copy
         cloned = self.__class__()
         if memo is not None:
             memo[id(self)] = cloned

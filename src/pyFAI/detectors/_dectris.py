@@ -760,7 +760,7 @@ class Pilatus4_260kw(Pilatus4):
     aliases = ["Pilatus4 260kw"]
 
 
-class Pilatus4_CdTe(Pilatus):
+class Pilatus4_CdTe(Pilatus4):
     """
     Pilatus CdTe detector: Like the Pilatus4 with an extra gap of 1 pixel in the middle
     of every module (vertically)

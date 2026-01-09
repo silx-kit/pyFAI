@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2025"
+__date__ = "05/01/2026"
 
 import sys
 import os
@@ -45,6 +45,7 @@ import numpy
 import subprocess
 import copy
 import logging
+from math import pi
 from .utilstest import UtilsTest
 from ..utils import mathutil
 import fabio
@@ -52,8 +53,8 @@ from .. import load
 from ..integrator.azimuthal import AzimuthalIntegrator
 from .. import detectors
 from .. import units
-from math import pi
 from ..opencl import ocl
+from ..ext import splitPixel
 logger = logging.getLogger(__name__)
 
 try:
@@ -690,6 +691,48 @@ class TestBugRegression(unittest.TestCase):
         self.assertEqual(res, 0, "No NaNs found in Python")
         res = numpy.isnan(ai.integrate1d(fimg.data, 300, method=("no","csr", "cython"), error_model="azimuth").sum_variance).sum()
         self.assertEqual(res, 0, "No NaNs found in Cython")
+
+    def test_bug_2736(self):
+        """Checks the pixel splitting with boundaries, see tutorial entitled PixelSplitting"""
+        ai = load({"dist":1,
+                 "poni1":2.2e-3,
+                 "poni2":2.8e-3,
+                 "rot3":-0.3,
+                 "detector":"Detector",
+                 "detector_config":{"pixel1":1e-3,
+                                    "pixel2":1e-3,
+                                    "max_shape":(5,5)}
+                })
+        ai.setChiDiscAtPi()
+        pos = numpy.array(ai.array_from_unit(typ="corner", unit="r_mm", scale=True), dtype="float64")
+        self.assertEqual((pos[..., 1]< -pi).sum(), 0, "No pixels below pi azim angle")
+        self.assertEqual((pos[..., 1]> +pi).sum(), 0, "No pixels above pi azim angle")
+        for i0 in range(pos.shape[0]):
+            for i1 in range(pos.shape[1]):
+                p = pos[i0, i1]
+                splitPixel.recenter(p, chiDiscAtPi=True)
+        self.assertEqual((pos[..., 1]< -pi).sum(), 5, "5 pixels below pi azim angle")
+        self.assertEqual((pos[..., 1]> +pi).sum(), 1, "1 pixels above pi azim angle")
+
+        # Change origin to zero
+        ai.setChiDiscAtZero()
+        pos = numpy.array(ai.array_from_unit(typ="corner", unit="r_mm", scale=True), dtype="float64")
+        self.assertEqual((pos[..., 1]< 0).sum(), 0, "No pixels below 0 azim angle")
+        self.assertEqual((pos[..., 1]> 2*pi).sum(), 0, "No pixels above 2pi azim angle")
+        for i0 in range(pos.shape[0]):
+            for i1 in range(pos.shape[1]):
+                p = pos[i0, i1]
+                splitPixel.recenter(p, chiDiscAtPi=False)
+        self.assertEqual((pos[..., 1]< 0).sum(), 1, "1 pixels below pi azim angle")
+        self.assertEqual((pos[..., 1]> 2*pi).sum(), 3, "3 pixels above pi azim angle")
+
+    def test_bug_2750(self):
+        """Checks a detector with a sensor config can be deep-copied"""
+        ai = load({"detector":"Pilatus100k","detector_config":{"sensor":{"material":"Si","thickness":450e-6}}})
+        cpy = copy.deepcopy(ai)
+        self.assertEqual(ai.detector, cpy.detector)
+        self.assertEqual(ai.detector.sensor, cpy.detector.sensor)
+
 
 class TestBug1703(unittest.TestCase):
     """
