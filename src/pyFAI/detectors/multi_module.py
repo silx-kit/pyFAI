@@ -41,14 +41,9 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "09/01/2026"
 __status__ = "development"
 
-import glob
 import numpy
 from scipy import ndimage
-import fabio
-import pyFAI
-from pyFAI.gui import jupyter
 from pyFAI.control_points import ControlPoints
-from pyFAI.io.ponifile import PoniFile
 from pyFAI.ext import _geometry
 from math import sin, cos, pi
 
