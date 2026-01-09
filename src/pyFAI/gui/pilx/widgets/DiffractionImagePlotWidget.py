@@ -33,7 +33,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/09/2024"
+__date__ = "06/01/2026"
 __status__ = "development"
 
 import numpy
@@ -64,11 +64,14 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
 
         return image[indices.row, indices.col]
 
-    def setImageData(self, image: numpy.ndarray):
+    def setImageData(self,
+                     image: numpy.ndarray,
+                     title: str=""):
         self._image_item.setData(image)
         if self._first_plot:
             self.resetZoom()
             self._first_plot = False
+        self.setGraphTitle(title)
 
     def getImageIndices(self, x_data: float, y_data: float) -> ImageIndices | None:
         tmp = self.dataToPixel(x_data, y_data)

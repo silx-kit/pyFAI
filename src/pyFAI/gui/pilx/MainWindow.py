@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2023-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2023-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Loïc Huder (loic.huder@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/06/2025"
+__date__ = "06/01/2026"
 __status__ = "development"
 
 from typing import Tuple
@@ -326,8 +326,8 @@ class MainWindow(qt.QMainWindow):
                 maskfile = None
 
         image_base = ImageBase(data=image, mask=self.getMask(image, maskfile))
-        self._image_plot_widget.setImageData(image_base.getValueData())
-        self._image_plot_widget.setGraphTitle(f"{posixpath.basename(dataset_path)} #{image_index}")
+        title = f"{image_dset.file.filename}\n::{image_dset.name}\n#{image_index}"
+        self._image_plot_widget.setImageData(image_base.getValueData(), title)
 
     def selectMapPoint(self, x: float, y: float):
         indices = self._map_plot_widget.getImageIndices(x, y)
