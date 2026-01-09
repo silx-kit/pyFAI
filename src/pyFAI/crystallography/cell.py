@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "09/01/2026"
 __status__ = "production"
 
 import os
@@ -74,7 +74,9 @@ class Cell:
         "P": "Primitive",
         "I": "Body centered",
         "F": "Face centered",
-        "C": "Side centered",
+        "A": "a-End centered",
+        "B": "b-End centered",
+        "C": "c-End centered",
         "R": "Rhombohedral",
     }
 
@@ -91,7 +93,7 @@ class Cell:
     ):
         """Constructor of the Cell class:
 
-        Crystalographic units are Angstrom for distances and degrees for angles !
+        Crystallographic units are Angstrom for distances and degrees for angles !
 
         :param a,b,c: unit cell length in Angstrom
         :param alpha, beta, gamma: unit cell angle in degrees
@@ -261,12 +263,18 @@ class Cell:
         self.selection_rules = [lambda h, k, l: not (h == 0 and k == 0 and l == 0)]  # noqa: E741
         if self._type == "I":
             self.selection_rules.append(lambda h, k, l: (h + k + l) % 2 == 0)  # noqa: E741
-        if self._type == "F":
+        elif self._type == "F":
             self.selection_rules.append(
                 lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3)  # noqa: E741
             )
-        if self._type == "R":
+        elif self._type == "R":
             self.selection_rules.append(lambda h, k, l: ((h - k + l) % 3 == 0))  # noqa: E741
+        elif self._type == "A":
+            self.selection_rules.append(lambda h, k, l: ((h + l) % 2 == 0))  # noqa: E741
+        elif self._type == "B":
+            self.selection_rules.append(lambda h, k, l: ((k + l) % 2 == 0))  # noqa: E741
+        elif self._type == "C":
+            self.selection_rules.append(lambda h, k, l: ((h + k) % 2 == 0))  # noqa: E741
 
     get_type = deprecated(type.fset, reason="property", replacement="type", since_version="2025.07")
     set_type = deprecated(type.fset, reason="property", replacement="type", since_version="2025.07")
