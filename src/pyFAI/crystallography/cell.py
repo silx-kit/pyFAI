@@ -49,6 +49,7 @@ import numpy
 import itertools
 from math import sin, cos, sqrt, pi, ceil
 from ..io.calibrant_config import CalibrantConfig, Miller, Reflection
+from .space_groups import ReflectionCondition
 from ..utils.decorators import deprecated
 
 logger = logging.getLogger(__name__)
@@ -260,21 +261,9 @@ class Cell:
     @type.setter
     def type(self, lattice_type):
         self._type = lattice_type if lattice_type in self.types else "P"
-        self.selection_rules = [lambda h, k, l: not (h == 0 and k == 0 and l == 0)]  # noqa: E741
-        if self._type == "I":
-            self.selection_rules.append(lambda h, k, l: (h + k + l) % 2 == 0)  # noqa: E741
-        elif self._type == "F":
-            self.selection_rules.append(
-                lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3)  # noqa: E741
-            )
-        elif self._type == "R":
-            self.selection_rules.append(lambda h, k, l: ((h - k + l) % 3 == 0))  # noqa: E741
-        elif self._type == "A":
-            self.selection_rules.append(lambda h, k, l: ((h + l) % 2 == 0))  # noqa: E741
-        elif self._type == "B":
-            self.selection_rules.append(lambda h, k, l: ((k + l) % 2 == 0))  # noqa: E741
-        elif self._type == "C":
-            self.selection_rules.append(lambda h, k, l: ((h + k) % 2 == 0))  # noqa: E741
+        self.selection_rules = [ReflectionCondition.default]
+        if self._type != "P":
+            self.selection_rules.append(getattr(ReflectionCondition, f"type_{self._type}"))
 
     get_type = deprecated(type.fset, reason="property", replacement="type", since_version="2025.07")
     set_type = deprecated(type.fset, reason="property", replacement="type", since_version="2025.07")
