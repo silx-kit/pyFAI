@@ -41,7 +41,7 @@ __authors__ = ["Jérôme Kieffer", "Gudrun Lotze"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2026"
+__date__ = "12/01/2026"
 __status__ = "production"
 
 
@@ -69,16 +69,16 @@ class ReflectionCondition:
     @staticmethod
     def type_A(h: int, k: int, l: int) -> bool:  # noqa: E741
         """
-        End-centered A type: h+l even
+        End-centered A type: k+l even
         """
-        return ((h + l) % 2 == 0)
+        return ((k + l) % 2 == 0)
 
     @staticmethod
     def type_B(h: int, k: int, l: int) -> bool:  # noqa: E741
         """
-        End-centered B type: k+l even
+        End-centered B type: h+l even
         """
-        return ((k + l) % 2 == 0)
+        return ((h + l) % 2 == 0)
 
     @staticmethod
     def type_C(h: int, k: int, l: int) -> bool:  # noqa: E741
@@ -104,9 +104,10 @@ class ReflectionCondition:
     @staticmethod
     def type_R(h: int, k: int, l: int) -> bool:  # noqa: E741
         """
-        Rhombohedral type: h-k+l multiple of 3
+        Rhombohedral type: -h+k+l multiple of 3
+        http://img.chem.ucl.ac.uk/sgp/large/146bz2.htm
         """
-        return ((h - k + l) % 3 == 0)
+        return ((-h + k + l) % 3 == 0)
 
     @staticmethod
     def group1_P1(h: int, k: int, l: int) -> bool:  # noqa: E741
