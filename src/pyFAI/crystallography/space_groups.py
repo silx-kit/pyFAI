@@ -41,7 +41,7 @@ __authors__ = ["Jérôme Kieffer", "Gudrun Lotze"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "12/01/2026"
 __status__ = "production"
 
 
@@ -56,6 +56,58 @@ class ReflectionCondition:
 
     Help is welcome to polish this class and fix the non-validated ones.
     """
+
+    @staticmethod
+    def default(h: int, k: int, l: int) -> bool:  # noqa: E741
+        """
+        Default selection rule: h=k=l=0 is forbidden
+        """
+        return not (h == 0 and k == 0 and l == 0)
+
+    type_P = default
+
+    @staticmethod
+    def type_A(h: int, k: int, l: int) -> bool:  # noqa: E741
+        """
+        End-centered A type: k+l even
+        """
+        return ((k + l) % 2 == 0)
+
+    @staticmethod
+    def type_B(h: int, k: int, l: int) -> bool:  # noqa: E741
+        """
+        End-centered B type: h+l even
+        """
+        return ((h + l) % 2 == 0)
+
+    @staticmethod
+    def type_C(h: int, k: int, l: int) -> bool:  # noqa: E741
+        """
+        End-centered C type: h+k even
+        """
+        return ((h + k) % 2 == 0)
+
+    @staticmethod
+    def type_F(h: int, k: int, l: int) -> bool:  # noqa: E741
+        """
+        Face-centered type: h,k,l all even or all odd
+        """
+        return (h % 2 + k % 2 + l % 2) in (0, 3)
+
+    @staticmethod
+    def type_I(h: int, k: int, l: int) -> bool:  # noqa: E741
+        """
+        Body-centered type: h+k+l even
+        """
+        return (h + k + l) % 2 == 0
+
+    @staticmethod
+    def type_R(h: int, k: int, l: int) -> bool:  # noqa: E741
+        """
+        Rhombohedral type: -h+k+l multiple of 3
+        http://img.chem.ucl.ac.uk/sgp/large/146bz2.htm
+        """
+        return ((-h + k + l) % 3 == 0)
 
     @staticmethod
     def group1_P1(h: int, k: int, l: int) -> bool:  # noqa: E741
