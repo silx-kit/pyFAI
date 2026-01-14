@@ -1426,7 +1426,7 @@ class NexusDetector(Detector):
             if "binning" in det_grp:
                 self._binning = tuple(i for i in det_grp["binning"][()])
             if "pixel_size" in det_grp:
-                self._pixel1, self._pixel2 = det_grp["pixel_size"][()]
+                self._pixel1, self._pixel2 = [float(i) for i in det_grp["pixel_size"][()]]
             if "dummy"  in det_grp:
                 self._dummy = det_grp["dummy"][()]
             if "delta_dummy"  in det_grp:
