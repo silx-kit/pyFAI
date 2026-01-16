@@ -11,7 +11,7 @@ Thick detectors
 This is a long journey in the depth of the physics of the X-ray detector to
 understand the effect of the thickness of the sensor layer on our data.
 This study has been sponsored by ESRF's beamlines ID31 and ID22 with the contribution
-from the SNBL and from the detector group.
+from ID15A, the SNBL and from the ESRF's detector group.
 Most images were taken at ESRF-ID28 on a Pilatus 1M, mounted on a goniometer stage.
 Thus I would like to thank Veijo Honkimaki for the subject and Thanh Tra Nguyen
 for the images.
@@ -30,7 +30,9 @@ some thickness, and the signal is then deconvolved to invert this effect.
 Finally the corrected images are used to validate the correction.
 
 Another approach is presented where the *parallax* is modeled as a convolution of the beam profile
-with the absorption profile, leading to some numerical correction to apply to the position of absorption (WIP).
+with the absorption profile, leading to some numerical correction to apply to the position of absorption.
+
+Finally, we present how parallax actually affects (perfect) data and how the correction handles the effect.
 
 
 .. toctree::
@@ -41,3 +43,5 @@ with the absorption profile, leading to some numerical correction to apply to th
    deconvolution
    Parallax_model
    synthetic_parallax
+   Parallax_simple
+
