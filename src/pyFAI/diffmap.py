@@ -477,9 +477,9 @@ If the number of files is too large, use double quotes like "*.edf" """
             os.unlink(self.hdf5)
 
         # create motor range if not yet existing ...
-        if self.fast_motor_range is None:
+        if self.fast_motor_range is None or self.fast_motor_range == (None, None) :
             self.fast_motor_range = (0, self.nbpt_fast - 1)
-        if self.slow_motor_range is None:
+        if self.slow_motor_range is None or self.slow_motor_range == (None, None) :
             self.slow_motor_range = (0, self.nbpt_slow - 1)
 
         nxs = Nexus(self.hdf5, mode="w", creator="pyFAI")
