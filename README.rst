@@ -182,6 +182,7 @@ Contributors
 ------------
 
 Thanks to all who have contributed to pyFAI!
+
 .. raw:: html
    <a href="https://github.com/silx-kit/pyFAI/graphs/contributors">
      <img src="https://contrib.rocks/image?repo=silx-kit/pyFAI" />
