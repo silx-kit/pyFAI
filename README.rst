@@ -181,21 +181,12 @@ Maintainers
 Contributors
 ------------
 
-* Valentin Valls (ESRF)
-* Gudrun Lotze
-* Frédéric-Emmanuel Picca (Soleil)
-* Thomas Vincent (ESRF)
-* Dimitris Karkoulis (Formerly ESRF)
-* Aurore Deschildre (Formerly ESRF)
-* Giannis Ashiotis (Formerly ESRF)
-* Zubair Nawaz (Formerly Sesame)
-* Jon Wright (ESRF)
-* Amund Hov (Formerly ESRF)
-* Dodogerstlin @github
-* Gunthard Benecke (Desy)
-* Gero Flucke (Desy)
-* Maciej Jankowski (ESRF)
-* Gudrun Lotze
+Thanks to all who have contributed to pyFAI!
+.. raw:: html
+   <a href="https://github.com/silx-kit/pyFAI/graphs/contributors">
+     <img src="https://contrib.rocks/image?repo=silx-kit/pyFAI" />
+   </a>
+   <br>
 
 Indirect contributors (ideas...)
 --------------------------------
