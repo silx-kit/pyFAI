@@ -129,24 +129,6 @@ To use pyFAI on Ubuntu/Debian, the needed Python modules can be installed either
 sudo apt-get install pyfai
 ```
 
-The extra Ubuntu packages needed are:
-
-- `python3-numpy`
-- `python3-scipy`
-- `python3-matplotlib`
-- `python3-dev`
-- `python3-fabio`
-- `python3-pyopencl`
-- `python3-qtpy`
-- `python3-silx`
-- `python3-numexpr`
-
-Using apt-get these can be installed as:
-
-```sh
-sudo apt-get build-dep pyfai
-```
-
 ## MacOSX
 
 One needs to manually install a recent version of [Python](https://www.python.org/downloads/) (>=3.10) prior to installing pyFAI.
