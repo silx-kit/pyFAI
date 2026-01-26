@@ -3,16 +3,13 @@ name = 'pyFAI'
 dynamic = ['version',]
 license = {file = 'copyright'}
 requires-python = '>=3.10'
-readme = 'README.rst'
+readme = 'README.md'
 description = 'Python implementation of fast azimuthal integration'
 authors = [
   { name = 'Jérôme Kieffer', email = 'jerome.kieffer@esrf.fr'},
   { name = 'Edgar Gutierrez Fernandez', email = 'edgar.gutierrez-fernandez@esrf.fr'},
   { name = 'Valentin Valls', email = 'valentin.valls@esrf.fr'},
   { name = 'Loïc Huder', email = 'loic.huder@esrf.fr'},
-  { name = 'Jonathan P. Wright', email= 'wright@esrf.fr'},
-  { name = 'Gael Goret'},
-  { name = 'Brian Pauw'},
 ]
 
 # double check classifiers on https://pypi.python.org/pypi?%3Aaction=list_classifiers
