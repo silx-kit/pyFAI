@@ -184,6 +184,8 @@ class SensorConfig:
         if (self.material == other.material):
             if self.thickness and other.thickness and abs(self.thickness - other.thickness)<1e-6:
                 return True
+            else:
+                return self.thickness == other.thickness
         return False
 
     def as_dict(self):
