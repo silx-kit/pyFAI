@@ -44,6 +44,7 @@ from ..integrator.azimuthal import AzimuthalIntegrator
 from ..detectors import detector_factory
 from ..units import get_unit_fiber
 from ..units import parse_fiber_unit
+from ..units import ANY_FIBER_UNITS
 from ..units import UnitFiber
 from ..test.utilstest import UtilsTest
 from .. import load
@@ -564,6 +565,23 @@ class TestFiberIntegrator(unittest.TestCase):
             diff = numpy.abs(intensity - result_ref.intensity)
             self.assertGreater(diff.max(), 6e-2)
 
+    def test_equivalence_numpy_numexpr(self):
+        for unit_name in ANY_FIBER_UNITS.keys():
+            for so in range(1,9):
+                fiberunit = parse_fiber_unit(unit=unit_name, sample_orientation=so)
+                self.fi.reset()
+                array_numexpr = self.fi.array_from_unit(unit=fiberunit)
+
+                fiberunit.formula = None
+                fiberunit._equation_ne = None
+                fiberunit.equation = fiberunit._equation_np
+                fiberunit._update_ne_equation()
+
+                self.fi.reset()        
+                array_numpy = self.fi.array_from_unit(unit=fiberunit)
+                
+                self.assertTrue(numpy.allclose(array_numexpr, array_numpy))
+                
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
