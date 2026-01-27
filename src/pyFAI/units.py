@@ -213,6 +213,17 @@ class UnitFiber(Unit):
     It has at least a name and a scale (in SI-unit)
     """
 
+    map_change_orientation = {
+        1 : {"x" : "x", "y" : "y"},
+        2 : {"x" : "(-x)", "y" : "y"},
+        3 : {"x" : "(-x)", "y" : "(-y)"},
+        4 : {"x" : "x", "y" : "(-y)"},
+        5 : {"x" : "(-y)", "y" : "(-x)"},
+        6 : {"x" : "(-y)", "y" : "x"},
+        7 : {"x" : "y", "y" : "x"},
+        8 : {"x" : "y", "y" : "(-x)"},
+    }
+
     def __init__(
         self,
         name,
@@ -271,34 +282,11 @@ class UnitFiber(Unit):
                 (key, numpy.float64) for key in "xyzλπηχ" if key in self.formula
             ]
 
-            formula_ = self.formula
-            if self._sample_orientation == 1:
-                ...
-            elif self._sample_orientation == 2:
-                formula_ = self.formula_so1.replace("x", "(-x)")
-            elif self._sample_orientation == 3:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace("x", "ψ").replace("y", "ξ")
-                formula_ = formula_.replace("ψ", "(-x)").replace("ξ", "(-y)")
-            elif self._sample_orientation == 4:
-                formula_ = self.formula_so1.replace("y", "(-y)")
-            elif self._sample_orientation == 5:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace("x", "ψ").replace("y", "ξ")
-                formula_ = formula_.replace("ψ", "(-y)").replace("ξ", "(-x)")
-            elif self._sample_orientation == 6:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace("x", "ψ").replace("y", "ξ")
-                formula_ = formula_.replace("ψ", "(-y)").replace("ξ", "(x)")
-            elif self._sample_orientation == 7:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace("x", "ψ").replace("y", "ξ")
-                formula_ = formula_.replace("ψ", "(y)").replace("ξ", "(x)")
-            elif self._sample_orientation == 8:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace("x", "ψ").replace("y", "ξ")
-                formula_ = formula_.replace("ψ", "(y)").replace("ξ", "(-x)")
-            self.formula = formula_
+            self.formula = self.formula_.replace("x", "ψ").replace("y", "ξ")
+            self.formula = self.formula_.replace(
+                "ψ", self.map_change_orientation[self._sample_orientation]["x"],
+                "ξ", self.map_change_orientation[self._sample_orientation]["y"],
+            )
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
             def ne_equation(
