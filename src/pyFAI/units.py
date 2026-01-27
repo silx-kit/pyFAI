@@ -214,14 +214,14 @@ class UnitFiber(Unit):
     """
 
     map_change_orientation = {
-        1 : {"x" : "x", "y" : "y"},
-        2 : {"x" : "(-x)", "y" : "y"},
-        3 : {"x" : "(-x)", "y" : "(-y)"},
-        4 : {"x" : "x", "y" : "(-y)"},
-        5 : {"x" : "(-y)", "y" : "(-x)"},
-        6 : {"x" : "(-y)", "y" : "x"},
-        7 : {"x" : "y", "y" : "x"},
-        8 : {"x" : "y", "y" : "(-x)"},
+        1 : str.maketrans({"x" : "x", "y" : "y"}),
+        2 : str.maketrans({"x" : "(-x)", "y" : "y"}),
+        3 : str.maketrans({"x" : "(-x)", "y" : "(-y)"}),
+        4 : str.maketrans({"x" : "x", "y" : "(-y)"}),
+        5 : str.maketrans({"x" : "(-y)", "y" : "(-x)"}),
+        6 : str.maketrans({"x" : "(-y)", "y" : "x"}),
+        7 : str.maketrans({"x" : "y", "y" : "x"}),
+        8 : str.maketrans({"x" : "y", "y" : "(-x)"}),
     }
 
     def __init__(
@@ -281,14 +281,9 @@ class UnitFiber(Unit):
             signature = [
                 (key, numpy.float64) for key in "xyzλπηχ" if key in self.formula
             ]
-
-            formula_ = self.formula_so1.replace("x", "ψ").replace("y", "ξ")
-            self.formula = formula_.replace(
-                "ψ",
-                self.map_change_orientation[self._sample_orientation]["x"]
-            ).replace(
-                "ξ",
-                self.map_change_orientation[self._sample_orientation]["y"]
+            
+            self.formula = self.formula_so1.translate(
+                self.map_change_orientation[self._sample_orientation]
             )
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
