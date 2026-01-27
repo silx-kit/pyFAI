@@ -181,11 +181,12 @@ class SensorConfig:
 
     def __eq__(self, other):
         """Check for equality, especially for the thickness within 1µm"""
-        if (self.material == other.material):
-            if self.thickness and other.thickness and abs(self.thickness - other.thickness)<1e-6:
-                return True
-            else:
-                return self.thickness == other.thickness
+        if isinstance(other, self.__class__):
+            if (self.material == other.material):
+                if self.thickness and other.thickness and abs(self.thickness - other.thickness)<1e-6:
+                    return True
+                else:
+                    return self.thickness == other.thickness
         return False
 
     def as_dict(self):
