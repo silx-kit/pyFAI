@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2026"
+__date__ = "27/01/2026"
 __status__ = "stable"
 
 import os
@@ -178,6 +178,13 @@ class SensorConfig:
         "helper function for the `detector` module"
         return self.__class__(self.material,  # expected to be immutable
                               self.thickness)
+
+    def __eq__(self, other):
+        """Check for equality, especially for the thickness within 1µm"""
+        if (self.material == other.material):
+            if self.thickness and other.thickness and abs(self.thickness - other.thickness)<1e-6:
+                return True
+        return False
 
     def as_dict(self):
         """Like asdict, but with some more features:
