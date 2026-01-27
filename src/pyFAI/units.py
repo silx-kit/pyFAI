@@ -282,10 +282,13 @@ class UnitFiber(Unit):
                 (key, numpy.float64) for key in "xyzλπηχ" if key in self.formula
             ]
 
-            self.formula = self.formula_.replace("x", "ψ").replace("y", "ξ")
-            self.formula = self.formula_.replace(
-                "ψ", self.map_change_orientation[self._sample_orientation]["x"],
-                "ξ", self.map_change_orientation[self._sample_orientation]["y"],
+            formula_ = self.formula_so1.replace("x", "ψ").replace("y", "ξ")
+            self.formula = formula_.replace(
+                "ψ",
+                self.map_change_orientation[self._sample_orientation]["x"]
+            ).replace(
+                "ξ",
+                self.map_change_orientation[self._sample_orientation]["y"]
             )
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
