@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2026"
+__date__ = "27/01/2026"
 
 import sys
 import os
@@ -732,6 +732,42 @@ class TestBugRegression(unittest.TestCase):
         cpy = copy.deepcopy(ai)
         self.assertEqual(ai.detector, cpy.detector)
         self.assertEqual(ai.detector.sensor, cpy.detector.sensor)
+
+    def test_bug_2765(self):
+        """Check that loading a config file with approximate sensor thickness does not emit a warning"""
+        config_almost_good = {'poni_version': 2.1,
+                            'dist': 1.0,
+                            'poni1': 2.0,
+                            'poni2': 3.0,
+                            'rot1': 0.0,
+                            'rot2': 0.0,
+                            'rot3': 0.0,
+                            'detector': 'Pilatus1M',
+                            'detector_config': {'pixel1': 0.000172,
+                            'pixel2': 0.000172,
+                            'orientation': 3,
+                            'sensor': {'material': 'Si', 'thickness': 0.00031999999999999997}}}
+        config_not_good = {'poni_version': 2.1,
+                            'dist': 1.0,
+                            'poni1': 2.0,
+                            'poni2': 3.0,
+                            'rot1': 0.0,
+                            'rot2': 0.0,
+                            'rot3': 0.0,
+                            'detector': 'Pilatus1M',
+                            'detector_config': {'pixel1': 0.000172,
+                            'pixel2': 0.000172,
+                            'orientation': 3,
+                            'sensor': {'material': 'Si', 'thickness': 0.0003}}}
+        with self.assertLogs("pyFAI.detectors._common", level="WARNING") as cm:
+            _ = load(config_almost_good)
+            print(cm.output)
+            self.assertEqual(len(cm.output), 0, "No warning when almost good")
+
+            _ = load(config_not_good)
+            print(cm.output)
+            self.assertEqual(len(cm.output), 1, "Warning when not good")
+
 
 
 class TestBug1703(unittest.TestCase):
