@@ -45,6 +45,7 @@ import copy
 import logging
 from collections.abc import Callable
 from math import sin, cos, pi as PI
+from functools import wraps
 import numpy
 import scipy.constants
 from scipy.spatial.transform import Rotation
@@ -74,6 +75,16 @@ in Angstrom.KeV. It is approximately equal to:
 CONST_q = scipy.constants.e
 """One electron-volt is equal to 1.602176634⋅10-19 joules"""
 
+MAPS_SAMPLE_ORIENTATION = {
+    1 : {"x" : "x", "y" : "y"},
+    2 : {"x" : "(-x)", "y" : "y"},
+    3 : {"x" : "(-x)", "y" : "(-y)"},
+    4 : {"x" : "x", "y" : "(-y)"},
+    5 : {"x" : "(-y)", "y" : "(-x)"},
+    6 : {"x" : "(-y)", "y" : "x"},
+    7 : {"x" : "y", "y" : "x"},
+    8 : {"x" : "y", "y" : "(-x)"},
+}
 
 class Unit(object):
     """Represents a unit.
@@ -214,17 +225,6 @@ class UnitFiber(Unit):
     It has at least a name and a scale (in SI-unit)
     """
 
-    map_change_orientation = {
-        1 : str.maketrans({"x" : "x", "y" : "y"}),
-        2 : str.maketrans({"x" : "(-x)", "y" : "y"}),
-        3 : str.maketrans({"x" : "(-x)", "y" : "(-y)"}),
-        4 : str.maketrans({"x" : "x", "y" : "(-y)"}),
-        5 : str.maketrans({"x" : "(-y)", "y" : "(-x)"}),
-        6 : str.maketrans({"x" : "(-y)", "y" : "x"}),
-        7 : str.maketrans({"x" : "y", "y" : "x"}),
-        8 : str.maketrans({"x" : "y", "y" : "(-x)"}),
-    }
-
     def __init__(
         self,
         name,
@@ -280,7 +280,7 @@ class UnitFiber(Unit):
         """
         if (numexpr is not None) and isinstance(self.formula, str):
             self.formula = self.formula_so1.translate(
-                self.map_change_orientation[self._sample_orientation]
+                str.maketrans(MAPS_SAMPLE_ORIENTATION[self._sample_orientation])
             )
             signature = [
                 (key, numpy.float64) for key in "xyzλπηχ" if key in self.formula
@@ -621,6 +621,27 @@ def eq_chi(x, y, z, wavelength):
     return numpy.arctan2(y, x)
 
 
+def with_sample_orientation(fn):
+    @wraps(fn)
+    def _wrapped(x, y, z, wavelength, incident_angle, tilt_angle, sample_orientation):
+        map_so = MAPS_SAMPLE_ORIENTATION[sample_orientation]
+        if map_so['x'] == '(-x)':
+            x_ = x * (-1)
+        elif map_so['x'] == '(-y)':
+            x_ = y * (-1)
+        else:
+            x_ = locals().get(map_so['x'])
+        if map_so['y'] == '(-x)':
+            y_ = x * (-1)
+        elif map_so['y'] == '(-y)':
+            y_ = y * (-1)
+        else:
+            y_ = locals().get(map_so['y'])
+        return fn(x_, y_, z, wavelength, incident_angle, tilt_angle, sample_orientation)
+    return _wrapped
+
+
+@with_sample_orientation
 def eq_scattering_angle_vertical(
     x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1
 ):
@@ -635,6 +656,7 @@ def eq_scattering_angle_vertical(
     return numpy.arctan2(y, numpy.sqrt(z**2 + x**2))
 
 
+@with_sample_orientation
 def eq_scattering_angle_horz(
     x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1
 ):
