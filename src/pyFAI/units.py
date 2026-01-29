@@ -1067,6 +1067,13 @@ formula_exit_angle = formula_scattering_angle_vert
 formula_qbeam_lab = f"2.0e-9/λ*π*(cos({formula_scattering_angle_vert})*cos({formula_scattering_angle_horz}) - 1)"
 formula_qhorz_lab = f"2.0e-9/λ*π*cos({formula_scattering_angle_vert})*sin({formula_scattering_angle_horz})"
 formula_qvert_lab = f"2.0e-9/λ*π*sin({formula_scattering_angle_vert})"
+
+# Shortcut through the position arrays
+formula_r_3d = "sqrt(x * x + y * y + z * z)"
+formula_qbeam_lab = f"2.0e-9/λ*π*(z / {formula_r_3d} - 1)"
+formula_qhorz_lab = f"2.0e-9/λ*π*(x / {formula_r_3d})"
+formula_qvert_lab = f"2.0e-9/λ*π*(y / {formula_r_3d})"
+
 formula_qbeam_rot = f"cos(η)*({formula_qbeam_lab})+sin(η)*({formula_qvert_lab})"
 formula_qhorz_rot = f"cos(χ)*({formula_qhorz_lab})-sin(χ)*sin(η)*({formula_qbeam_lab})+sin(χ)*cos(η)*({formula_qvert_lab})"
 formula_qvert_rot = f"-sin(χ)*({formula_qhorz_lab})-cos(χ)*sin(η)*({formula_qbeam_lab})+cos(χ)*cos(η)*({formula_qvert_lab})"
