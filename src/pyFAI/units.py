@@ -45,8 +45,10 @@ import copy
 import logging
 from collections.abc import Callable
 from math import sin, cos, pi as PI
+from functools import wraps
 import numpy
 import scipy.constants
+from scipy.spatial.transform import Rotation
 from .utils.decorators import deprecated
 
 logger = logging.getLogger(__name__)
@@ -73,6 +75,16 @@ in Angstrom.KeV. It is approximately equal to:
 CONST_q = scipy.constants.e
 """One electron-volt is equal to 1.602176634⋅10-19 joules"""
 
+MAPS_SAMPLE_ORIENTATION = {
+    1 : {"x" : "x", "y" : "y"},
+    2 : {"x" : "(-x)", "y" : "y"},
+    3 : {"x" : "(-x)", "y" : "(-y)"},
+    4 : {"x" : "x", "y" : "(-y)"},
+    5 : {"x" : "(-y)", "y" : "(-x)"},
+    6 : {"x" : "(-y)", "y" : "x"},
+    7 : {"x" : "y", "y" : "x"},
+    8 : {"x" : "y", "y" : "(-x)"},
+}
 
 class Unit(object):
     """Represents a unit.
@@ -267,38 +279,13 @@ class UnitFiber(Unit):
         8 - Image is rotated 90 degrees clockwise
         """
         if (numexpr is not None) and isinstance(self.formula, str):
+            self.formula = self.formula_so1.translate(
+                str.maketrans(MAPS_SAMPLE_ORIENTATION[self._sample_orientation])
+            )
             signature = [
                 (key, numpy.float64) for key in "xyzλπηχ" if key in self.formula
             ]
-
-            formula_ = self.formula
-            if self._sample_orientation == 1:
-                ...
-            elif self._sample_orientation == 2:
-                formula_ = self.formula_so1.replace("x", "(-x)")
-            elif self._sample_orientation == 3:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace("x", "ψ").replace("y", "ξ")
-                formula_ = formula_.replace("ψ", "(-x)").replace("ξ", "(-y)")
-            elif self._sample_orientation == 4:
-                formula_ = self.formula_so1.replace("y", "(-y)")
-            elif self._sample_orientation == 5:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace("x", "ψ").replace("y", "ξ")
-                formula_ = formula_.replace("ψ", "(-y)").replace("ξ", "(-x)")
-            elif self._sample_orientation == 6:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace("x", "ψ").replace("y", "ξ")
-                formula_ = formula_.replace("ψ", "(-y)").replace("ξ", "(x)")
-            elif self._sample_orientation == 7:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace("x", "ψ").replace("y", "ξ")
-                formula_ = formula_.replace("ψ", "(y)").replace("ξ", "(x)")
-            elif self._sample_orientation == 8:
-                formula_ = self.formula_so1
-                formula_ = formula_.replace("x", "ψ").replace("y", "ξ")
-                formula_ = formula_.replace("ψ", "(y)").replace("ξ", "(-x)")
-            self.formula = formula_
+                        
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
             def ne_equation(
@@ -329,8 +316,8 @@ class UnitFiber(Unit):
         tilt_angle_degs = numpy.rad2deg(self.tilt_angle)
         return (
             f"{self.name}\n"
-            f"Incident_angle={incident_angle_degs:.2f}° ({self.incident_angle:.3f} rads)\n"
-            f"Tilt_angle={tilt_angle_degs:.2f}° ({self.tilt_angle:.3f} rads)\n"
+            f"Incident angle={incident_angle_degs:.2f}° ({self.incident_angle:.3f} rads)\n"
+            f"Tilt angle={tilt_angle_degs:.2f}° ({self.tilt_angle:.3f} rads)\n"
             f"Sample orientation={self.sample_orientation}"
         )
 
@@ -634,6 +621,60 @@ def eq_chi(x, y, z, wavelength):
     return numpy.arctan2(y, x)
 
 
+def change_sample_orientation(fn):
+    """
+    Decorator to change the sample orientation of numpy equation for grazing-incidence units
+    """
+    @wraps(fn)
+    def _wrapped(x, y, z, wavelength, incident_angle, tilt_angle, sample_orientation):
+        print("change orientation")
+        map_so = MAPS_SAMPLE_ORIENTATION[sample_orientation]
+        if map_so['x'] == '(-x)':
+            x_ = x * (-1)
+        elif map_so['x'] == '(-y)':
+            x_ = y * (-1)
+        else:
+            x_ = locals().get(map_so['x'])
+        if map_so['y'] == '(-x)':
+            y_ = x * (-1)
+        elif map_so['y'] == '(-y)':
+            y_ = y * (-1)
+        else:
+            y_ = locals().get(map_so['y'])
+        return fn(x_, y_, z, wavelength, incident_angle, tilt_angle, sample_orientation)
+    return _wrapped
+
+def rotate_incident_and_tilt(fn):
+    """
+    Decorator to apply:
+        1) A rotation matrix around the horizontal axis (x) an incident angle, right-handed
+        2) Rotation matrix around the beam axis (z) a tilt angle, right-handed
+    """
+    @wraps(fn)
+    def _wrapped(x, y, z, wavelenth, incident_angle, tilt_angle, sample_orientation):
+        print("rotate")
+        rotation = Rotation.from_euler(
+            seq="xz", # Rz (t-angle, right-handed) @ Rx(i-angle, right-handed)
+            angles=[incident_angle, tilt_angle],
+            degrees=False,
+        )
+        x_rot, y_rot, z_rot = rotation.as_matrix() @ numpy.vstack((x.ravel(), y.ravel(), z.ravel()))
+        x_rot = x_rot.reshape(x.shape)
+        y_rot = y_rot.reshape(y.shape)
+        z_rot = z_rot.reshape(z.shape)
+        return fn(x_rot, y_rot, z_rot, wavelenth, incident_angle, tilt_angle, sample_orientation)
+    return _wrapped
+
+
+def _eq_scattering_angle_vertical(x, y, z):
+    return numpy.arctan2(y, numpy.sqrt(z**2 + x**2))
+
+
+def _eq_scattering_angle_horizontal(x, z):
+    return numpy.arctan2(x, z)
+
+
+@change_sample_orientation
 def eq_scattering_angle_vertical(
     x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1
 ):
@@ -645,9 +686,10 @@ def eq_scattering_angle_vertical(
     :param wavelength: in meter
     :return: vertical exit angle in radians
     """
-    return numpy.arctan2(y, numpy.sqrt(z**2 + x**2))
+    return _eq_scattering_angle_vertical(x=x, y=y, z=z)
 
 
+@change_sample_orientation
 def eq_scattering_angle_horz(
     x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1
 ):
@@ -659,9 +701,11 @@ def eq_scattering_angle_horz(
     :param wavelength: in meter
     :return: horizontal exit angle in radians
     """
-    return numpy.arctan2(x, z)
+    return _eq_scattering_angle_horizontal(x=x, z=z)
 
 
+@change_sample_orientation
+@rotate_incident_and_tilt
 def eq_exit_angle_vert(
     x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1
 ):
@@ -675,30 +719,10 @@ def eq_exit_angle_vert(
     :param wavelength: in meter
     :return: vertical exit angle in radians
     """
-    cos_incident_angle = cos(incident_angle)
-    sin_incident_angle = sin(incident_angle)
-    cos_tilt_angle = cos(tilt_angle)
-    sin_tilt_angle = sin(tilt_angle)
+    return _eq_scattering_angle_vertical(x=x, y=y, z=z)
 
-    rot_incident_angle = numpy.array(
-        [
-            [1.0, 0.0, 0.0],
-            [0.0, cos_incident_angle, -sin_incident_angle],
-            [0.0, sin_incident_angle, cos_incident_angle],
-        ],
-    )
-    rot_tilt_angle = numpy.array(
-        [
-            [cos_tilt_angle, -sin_tilt_angle, 0.0],
-            [sin_tilt_angle, cos_tilt_angle, 0.0],
-            [0.0, 0.0, 1.0],
-        ],
-    )
-    rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x, y, z)), axes=1)
-    xp, yp, zp = numpy.tensordot(rot_tilt_angle, rotated_xyz, axes=1)
-    return numpy.arctan2(yp, numpy.sqrt(zp**2 + xp**2))
-
-
+@change_sample_orientation
+@rotate_incident_and_tilt
 def eq_exit_angle_horz(
     x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1
 ):
@@ -712,27 +736,8 @@ def eq_exit_angle_horz(
     :param wavelength: in meter
     :return: horizontal exit angle in radians
     """
-    cos_incident_angle = cos(incident_angle)
-    sin_incident_angle = sin(incident_angle)
-    cos_tilt_angle = cos(tilt_angle)
-    sin_tilt_angle = sin(tilt_angle)
-    rot_incident_angle = numpy.array(
-        [
-            [1.0, 0.0, 0.0],
-            [0.0, cos_incident_angle, -sin_incident_angle],
-            [0.0, sin_incident_angle, cos_incident_angle],
-        ],
-    )
-    rot_tilt_angle = numpy.array(
-        [
-            [cos_tilt_angle, -sin_tilt_angle, 0.0],
-            [sin_tilt_angle, cos_tilt_angle, 0.0],
-            [0.0, 0.0, 1.0],
-        ],
-    )
-    rotated_xyz = numpy.tensordot(rot_incident_angle, numpy.stack((x, y, z)), axes=1)
-    xp, yp, zp = numpy.tensordot(rot_tilt_angle, rotated_xyz, axes=1)
-    return numpy.arctan2(xp, zp)
+    return _eq_scattering_angle_horizontal(x=x, z=z)
+
 
 
 eq_exitangle = eq_exit_angle_vert
@@ -869,6 +874,13 @@ def eq_qbeam(
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :return: component of the scattering vector along the beam propagation direction in inverse nm
     """
+    rotation = Rotation.from_euler(
+        seq="xy",
+        angles=[tilt_angle, incident_angle],
+        degrees=False,
+    )
+    
+    
     return numpy.tensordot(
         numpy.dot(
             rotation_tilt_angle(tilt_angle=tilt_angle),
@@ -960,14 +972,49 @@ def q_sample(
     :param tilt_angle: tilting of the sample orthogonal to the beam direction (analog to rot3): in radians
     :return: scattering vector in the laboratory frame reference in inverse nm
     """
-    return numpy.tensordot(
-        numpy.dot(
-            rotation_tilt_angle(tilt_angle=tilt_angle),
-            rotation_incident_angle(incident_angle=incident_angle),
-        ),
-        q_lab(x=hpos, y=vpos, z=z, wavelength=wavelength),
-        axes=(1, 0),
+    rotation = Rotation.from_euler(
+        seq="xy",
+        angles=[tilt_angle, incident_angle],
+        degrees=False,
     )
+
+    q_lab_stack = numpy.vstack((
+        q_lab_beam(x=hpos, y=vpos, z=z, wavelength=wavelength).ravel(),
+        q_lab_horz(x=hpos, y=vpos, z=z, wavelength=wavelength).ravel(),
+        q_lab_vert(x=hpos, y=vpos, z=z, wavelength=wavelength).ravel(),
+    ))
+    
+    qsample = rotation.as_matrix() @ q_lab_stack
+    qsample_beam = qsample[0].reshape(hpos.shape)
+    qsample_horz = qsample[1].reshape(vpos.shape)
+    qsample_vert = qsample[2].reshape(z.shape)
+    
+    return (
+        qsample_beam,
+        qsample_horz,
+        qsample_vert,
+    )
+    # return numpy.stack(
+    #     (
+    #         q_lab_beam(x=hpos, y=vpos, z=z, wavelength=wavelength),
+    #         q_lab_horz(x=hpos, y=vpos, z=z, wavelength=wavelength),
+    #         q_lab_vert(x=hpos, y=vpos, z=z, wavelength=wavelength),
+    #     )
+    # )
+    
+    
+    
+    
+    
+    
+    # return numpy.tensordot(
+    #     numpy.dot(
+    #         rotation_tilt_angle(tilt_angle=tilt_angle),
+    #         rotation_incident_angle(incident_angle=incident_angle),
+    #     ),
+    #     q_lab(x=hpos, y=vpos, z=z, wavelength=wavelength),
+    #     axes=(1, 0),
+    # )
 
 
 def rotate_sample_orientation(x, y, sample_orientation=1):
