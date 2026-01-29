@@ -5,6 +5,11 @@
 Change-log of versions
 ======================
 
+2026.xx
+----------------------------
+- Fix errors on numpy equations for fiber units
+- Unify the calculation of rotation matrix for grazing incidence
+
 2025.12.1 19/12/2025: bugfix
 ----------------------------
 - Fix documentation for pixel-splitting + non-regression test on the Cython part
