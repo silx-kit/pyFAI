@@ -568,7 +568,7 @@ class TestFiberIntegrator(unittest.TestCase):
     def test_equivalence_numpy_numexpr(self):
         for unit_name in ANY_FIBER_UNITS.keys():
             for so in range(1,9):
-                fiberunit = parse_fiber_unit(unit=unit_name, sample_orientation=so)
+                fiberunit = parse_fiber_unit(unit=unit_name, sample_orientation=so, incident_angle=0.2, tilt_angle=0.5)
                 self.fi.reset()
                 array_numexpr = self.fi.array_from_unit(unit=fiberunit)
 
