@@ -829,9 +829,7 @@ def q_lab_beam(
     return 2.0e-9 * PI / wavelength * (numpy.cos(scattering_angle_vertical) * numpy.cos(scattering_angle_horz) - 1.0)
 
 
-def q_lab(
-    x, y, z, wavelength=None, incident_angle=None, tilt_angle=None, sample_orientation=1
-) -> tuple:
+def q_lab(x, y, z, wavelength=None, sample_orientation=1) -> tuple:
     """Calculates the scattering vector in the laboratory frame (for GI/Fiber diffraction): no sample rotations are applied
 
     :param z: horizontal position, towards the center of the ring, from sample position
