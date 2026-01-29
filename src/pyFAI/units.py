@@ -621,9 +621,13 @@ def eq_chi(x, y, z, wavelength):
     return numpy.arctan2(y, x)
 
 
-def with_sample_orientation(fn):
+def change_sample_orientation(fn):
+    """
+    Decorator to change the sample orientation of numpy equation for grazing-incidence units
+    """
     @wraps(fn)
     def _wrapped(x, y, z, wavelength, incident_angle, tilt_angle, sample_orientation):
+        print("change orientation")
         map_so = MAPS_SAMPLE_ORIENTATION[sample_orientation]
         if map_so['x'] == '(-x)':
             x_ = x * (-1)
@@ -640,8 +644,37 @@ def with_sample_orientation(fn):
         return fn(x_, y_, z, wavelength, incident_angle, tilt_angle, sample_orientation)
     return _wrapped
 
+def rotate_incident_and_tilt(fn):
+    """
+    Decorator to apply:
+        1) A rotation matrix around the horizontal axis (x) an incident angle, right-handed
+        2) Rotation matrix around the beam axis (z) a tilt angle, right-handed
+    """
+    @wraps(fn)
+    def _wrapped(x, y, z, wavelenth, incident_angle, tilt_angle, sample_orientation):
+        print("rotate")
+        rotation = Rotation.from_euler(
+            seq="xz", # Rz (t-angle, right-handed) @ Rx(i-angle, right-handed)
+            angles=[incident_angle, tilt_angle],
+            degrees=False,
+        )
+        x_rot, y_rot, z_rot = rotation.as_matrix() @ numpy.vstack((x.ravel(), y.ravel(), z.ravel()))
+        x_rot = x_rot.reshape(x.shape)
+        y_rot = y_rot.reshape(y.shape)
+        z_rot = z_rot.reshape(z.shape)
+        return fn(x_rot, y_rot, z_rot, wavelenth, incident_angle, tilt_angle, sample_orientation)
+    return _wrapped
 
-@with_sample_orientation
+
+def _eq_scattering_angle_vertical(x, y, z):
+    return numpy.arctan2(y, numpy.sqrt(z**2 + x**2))
+
+
+def _eq_scattering_angle_horizontal(x, z):
+    return numpy.arctan2(x, z)
+
+
+@change_sample_orientation
 def eq_scattering_angle_vertical(
     x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1
 ):
@@ -653,10 +686,10 @@ def eq_scattering_angle_vertical(
     :param wavelength: in meter
     :return: vertical exit angle in radians
     """
-    return numpy.arctan2(y, numpy.sqrt(z**2 + x**2))
+    return _eq_scattering_angle_vertical(x=x, y=y, z=z)
 
 
-@with_sample_orientation
+@change_sample_orientation
 def eq_scattering_angle_horz(
     x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1
 ):
@@ -668,9 +701,11 @@ def eq_scattering_angle_horz(
     :param wavelength: in meter
     :return: horizontal exit angle in radians
     """
-    return numpy.arctan2(x, z)
+    return _eq_scattering_angle_horizontal(x=x, z=z)
 
 
+@change_sample_orientation
+@rotate_incident_and_tilt
 def eq_exit_angle_vert(
     x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1
 ):
@@ -684,19 +719,10 @@ def eq_exit_angle_vert(
     :param wavelength: in meter
     :return: vertical exit angle in radians
     """
-    rotation = Rotation.from_euler(
-        seq="xz", # Rz (t-angle, right-handed) @ Rx(i-angle, right-handed)
-        angles=[incident_angle, tilt_angle],
-        degrees=False,
-    )
-    xp, yp, zp = rotation.as_matrix() @ numpy.vstack((x.ravel(), y.ravel(), z.ravel()))
-    xp = xp.reshape(x.shape)
-    yp = yp.reshape(y.shape)
-    zp = zp.reshape(z.shape)
+    return _eq_scattering_angle_vertical(x=x, y=y, z=z)
 
-    return numpy.arctan2(yp, numpy.sqrt(zp**2 + xp**2))
-
-
+@change_sample_orientation
+@rotate_incident_and_tilt
 def eq_exit_angle_horz(
     x, y, z, wavelength=None, incident_angle=0.0, tilt_angle=0.0, sample_orientation=1
 ):
@@ -710,17 +736,8 @@ def eq_exit_angle_horz(
     :param wavelength: in meter
     :return: horizontal exit angle in radians
     """
-    rotation = Rotation.from_euler(
-        seq="xz", # Rz (t-angle, right-handed) @ Rx(i-angle, right-handed)
-        angles=[incident_angle, tilt_angle],
-        degrees=False,
-    )
-    xp, yp, zp = rotation.as_matrix() @ numpy.vstack((x.ravel(), y.ravel(), z.ravel()))
-    xp = xp.reshape(x.shape)
-    yp = yp.reshape(y.shape)
-    zp = zp.reshape(z.shape)
+    return _eq_scattering_angle_horizontal(x=x, z=z)
 
-    return numpy.arctan2(xp, zp)
 
 
 eq_exitangle = eq_exit_angle_vert
