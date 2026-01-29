@@ -759,7 +759,7 @@ def eq_exit_angle_horz(
 
 eq_exitangle = eq_exit_angle_vert
 
-
+@change_sample_orientation
 def q_lab_horz(
     x, y, z, wavelength=None, incident_angle=None, tilt_angle=None, sample_orientation=1
 ):
@@ -771,20 +771,11 @@ def q_lab_horz(
     :param wavelength: in meter
     :return: horizontal scattering vector in inverse nm
     """
-    # Scattering angles are alredy corrected for sample orientation
-    scattering_angle_vertical = eq_scattering_angle_vertical(
-        x=x, y=y, z=z, wavelength=wavelength, 
-        incident_angle=incident_angle, tilt_angle=tilt_angle,
-        sample_orientation=sample_orientation,
-    )
-    scattering_angle_horz = eq_scattering_angle_horz(
-        x=x, y=y, z=z, wavelength=wavelength, 
-        incident_angle=incident_angle, tilt_angle=tilt_angle,
-        sample_orientation=sample_orientation,
-    )
-    return 2.0e-9 * PI / wavelength * numpy.cos(scattering_angle_vertical) * numpy.sin(scattering_angle_horz)
+    # Through angles: 2.0e-9 * PI / wavelength * numpy.cos(scattering_angle_vertical) * numpy.sin(scattering_angle_horz)
+    return 2.0e-9 * PI / wavelength * x / numpy.sqrt(x ** 2 + y ** 2 + z ** 2)
 
 
+@change_sample_orientation
 def q_lab_vert(
     x, y, z, wavelength=None, incident_angle=None, tilt_angle=None, sample_orientation=1
 ):
@@ -796,14 +787,11 @@ def q_lab_vert(
     :param wavelength: in meter
     :return: vertical scattering vector in inverse nm
     """
-    # Scattering angles are alredy corrected for sample orientation
-    scattering_angle_vertical = eq_scattering_angle_vertical(
-        x=x, y=y, z=z, wavelength=wavelength, sample_orientation=sample_orientation,
-        incident_angle=incident_angle, tilt_angle=tilt_angle,
-    )
-    return 2.0e-9 / wavelength * PI * numpy.sin(scattering_angle_vertical)
+    # Through angles: 2.0e-9 / wavelength * PI * numpy.sin(scattering_angle_vertical)
+    return 2.0e-9 * PI / wavelength * y / numpy.sqrt(x ** 2 + y ** 2 + z ** 2)
 
 
+@change_sample_orientation
 def q_lab_beam(
     x, y, z, wavelength=None, incident_angle=None, tilt_angle=None, sample_orientation=1
 ):
@@ -815,18 +803,8 @@ def q_lab_beam(
     :param wavelength: in meter
     :return: beam scattering vector in inverse nm
     """
-    # Scattering angles are alredy corrected for sample orientation
-    scattering_angle_vertical = eq_scattering_angle_vertical(
-        x=x, y=y, z=z, wavelength=wavelength, 
-        incident_angle=incident_angle, tilt_angle=tilt_angle,
-        sample_orientation=sample_orientation,
-    )
-    scattering_angle_horz = eq_scattering_angle_horz(
-        x=x, y=y, z=z, wavelength=wavelength, 
-        incident_angle=incident_angle, tilt_angle=tilt_angle,
-        sample_orientation=sample_orientation,
-    )
-    return 2.0e-9 * PI / wavelength * (numpy.cos(scattering_angle_vertical) * numpy.cos(scattering_angle_horz) - 1.0)
+    # Through angles: 2.0e-9 * PI / wavelength * (numpy.cos(scattering_angle_vertical) * numpy.cos(scattering_angle_horz) - 1.0)
+    return 2.0e-9 * PI / wavelength * (z / numpy.sqrt(x ** 2 + y ** 2 + z ** 2) - 1)
 
 
 def q_lab(x, y, z, wavelength=None, sample_orientation=1) -> tuple:
@@ -839,9 +817,9 @@ def q_lab(x, y, z, wavelength=None, sample_orientation=1) -> tuple:
     :return: scattering vector in the laboratory frame reference in inverse nm
     """
     return (
-        q_lab_beam(x=x, y=y, z=z, wavelength=wavelength, sample_orientation=sample_orientation),
-        q_lab_horz(x=x, y=y, z=z, wavelength=wavelength, sample_orientation=sample_orientation),
-        q_lab_vert(x=x, y=y, z=z, wavelength=wavelength, sample_orientation=sample_orientation),
+        q_lab_beam(x=x, y=y, z=z, wavelength=wavelength, sample_orientation=sample_orientation, incident_angle=None, tilt_angle=None),
+        q_lab_horz(x=x, y=y, z=z, wavelength=wavelength, sample_orientation=sample_orientation, incident_angle=None, tilt_angle=None),
+        q_lab_vert(x=x, y=y, z=z, wavelength=wavelength, sample_orientation=sample_orientation, incident_angle=None, tilt_angle=None),
     )
 
 
