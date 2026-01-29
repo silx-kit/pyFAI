@@ -648,13 +648,13 @@ def change_sample_orientation(fn):
 def rotate_cartesian(x, y, z, incident_angle:float=0.0, tilt_angle:float=0.0):
     """
     Rotate three position arrays in this order:
-        1st) Around the horizontal axis (x) an incident angle, right-handed
+        1st) Around the horizontal axis (x) an incident angle, left-handed
         2nd) Around the beam axis (z) a tilt angle, right-handed
-        (x_rot, y_rot, z_rot) = Rz(tilt, RH) @ Rx(inc, RH) @ (x,y,z)
+        (x_rot, y_rot, z_rot) = Rz(tilt, RH) @ Rx(inc, LH) @ (x,y,z)
     """
     rotation = Rotation.from_euler(
         seq="xz", # Rz (t-angle, right-handed) @ Rx(i-angle, right-handed)
-        angles=[incident_angle, tilt_angle],
+        angles=[incident_angle * (-1), tilt_angle],
         degrees=False,
     )
     x_rot, y_rot, z_rot = rotation.as_matrix() @ numpy.vstack((x.ravel(), y.ravel(), z.ravel()))
@@ -1075,8 +1075,8 @@ formula_qy = "4.0e-9*π/λ*sin(arctan2(y, z)/2.0)"  # TODO: wrong, fix me
 formula_scattering_angle_vert = "arctan2(y, sqrt(z*z+x*x))"
 formula_scattering_angle_horz = "arctan2(x,z)"
 formula_x_rot_iangle = "x"
-formula_y_rot_iangle = "(y*cos(η)-z*sin(η))"
-formula_z_rot_iangle = "(y*sin(η)+z*cos(η))"
+formula_y_rot_iangle = "(y*cos(η)+z*sin(η))"
+formula_z_rot_iangle = "(y*sin(-η)+z*cos(η))"
 formula_x_rot_tangle = (
     f"({formula_x_rot_iangle} * cos(χ) - {formula_y_rot_iangle} * sin(χ))"
 )
