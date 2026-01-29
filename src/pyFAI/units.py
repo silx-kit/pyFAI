@@ -44,7 +44,7 @@ __docformat__ = "restructuredtext"
 import copy
 import logging
 from collections.abc import Callable
-from math import sin, cos, pi as PI
+from math import pi as PI
 from functools import wraps
 import numpy
 import scipy.constants
