@@ -188,7 +188,7 @@ class SensorConfig:
             if (self.material == other.material):
                 if (self.thickness and 
                     other.thickness and 
-                    numpy.isclose(self.thickness, other.thickness, abs_tol=self.THICKNESS_TOLERANCE)):
+                    numpy.isclose(self.thickness, other.thickness, atol=self.THICKNESS_TOLERANCE)):
                     
                         return True
                 else:
