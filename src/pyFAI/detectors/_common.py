@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2026"
+__date__ = "30/01/2026"
 __status__ = "stable"
 
 import logging
@@ -264,7 +264,7 @@ class Detector(metaclass=DetectorMeta):
 
         if isinstance(sensor, SensorConfig):
             if sensor not in self.SENSORS:
-                logger.warning("Sensor %s not in allowed SENSORS: %s", sensor, self.SENSORS)
+                logger.warning("Sensor %s not in allowed SENSORS: [%s].", sensor, "|".join(str(i) for i in self.SENSORS))
             self.sensor = sensor
         elif sensor is None:
             logger.info("No sensor configuration provided; using default behaviour.")
