@@ -46,6 +46,7 @@ import json
 import copy
 from math import exp
 from collections import namedtuple
+from typing import ClassVar
 from ..containers import dataclass, fields
 import numpy
 from ..resources import resource_filename
@@ -165,6 +166,8 @@ class SensorConfig:
     "class for configuration of a sensor"
     material: SensorMaterial|str
     thickness: float=None
+    
+    THICKNESS_TOLERANCE: ClassVar[float] = 1e-6
 
     def __repr__(self):
         return json.dumps(self.as_dict(), indent=4)
@@ -183,8 +186,11 @@ class SensorConfig:
         """Check for equality, especially for the thickness within 1µm"""
         if isinstance(other, self.__class__):
             if (self.material == other.material):
-                if self.thickness and other.thickness and abs(self.thickness - other.thickness)<1e-6:
-                    return True
+                if (self.thickness and 
+                    other.thickness and 
+                    numpy.isclose(self.thickness, other.thickness, abs_tol=self.THICKNESS_TOLERANCE)):
+                    
+                        return True
                 else:
                     return self.thickness == other.thickness
         return False
