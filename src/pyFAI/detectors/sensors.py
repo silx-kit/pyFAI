@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2026"
+__date__ = "28/01/2026"
 __status__ = "stable"
 
 import os
@@ -181,7 +181,7 @@ class SensorConfig:
 
     def __eq__(self, other):
         """Check for equality, especially for the thickness within 1µm"""
-        if isinstance(other, self.__class__):
+        if isinstance(other, SensorConfig):  # not self.__class__ as it could be a derived class
             if (self.material == other.material):
                 if self.thickness and other.thickness and abs(self.thickness - other.thickness)<1e-6:
                     return True
