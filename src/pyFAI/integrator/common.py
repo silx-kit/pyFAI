@@ -411,7 +411,7 @@ class Integrator(Geometry):
                                           unit0_range,
                                           unit1_range,
                                           safe: bool = True,
-    ):
+    ) -> tuple:
         if cython_integr is None:
             cython_reset = "of first initialization"
 
@@ -459,7 +459,7 @@ class Integrator(Geometry):
                 self.reset_engines()
                 method = self.DEFAULT_METHOD_1D
             else:
-                return cython_integr
+                return cython_integr, cython_reset
 
     def setup_sparse_integrator(self,
                                 shape,
