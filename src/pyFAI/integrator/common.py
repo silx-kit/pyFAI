@@ -400,7 +400,7 @@ class Integrator(Geometry):
         
         return (error_model, variance)
 
-    def _get_persistent_sparse_integrator(self,
+    def _get_persistent_sparse_cython_integrator(self,
                                           cython_integr,
                                           data, npt,
                                           unit,

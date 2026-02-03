@@ -152,7 +152,7 @@ class AzimuthalIntegrator(Integrator):
             with cython_engine.lock:
                 # Validate that the engine used is the proper one
                 cython_integr = cython_engine.engine
-                cython_integr, cython_reset = self._get_persistent_sparse_integrator(
+                cython_integr, cython_reset = self._get_persistent_sparse_cython_integrator(
                     cython_integr=cython_integr,
                     data=data, npt=npt, unit=unit, empty=empty,
                     mask=mask, mask_crc=mask_crc,
