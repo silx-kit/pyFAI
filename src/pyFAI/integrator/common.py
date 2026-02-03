@@ -458,8 +458,7 @@ class Integrator(Geometry):
                 cython_integr = None
                 self.reset_engines()
                 method = self.DEFAULT_METHOD_1D
-            else:
-                return cython_integr, cython_reset
+        return cython_integr, cython_reset
 
     def setup_sparse_integrator(self,
                                 shape,
