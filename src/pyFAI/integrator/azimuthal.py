@@ -135,10 +135,11 @@ class AzimuthalIntegrator(Integrator):
         mask, mask_crc, has_mask = self._normalize_mask(mask)
         solidangle, solidangle_crc = self._normalize_solidangle(shape, correctSolidAngle, with_checksum=False)
         polarization, polarization_crc = self._normalize_polarization(shape, polarization_factor, with_checksum=True)
-        dark, has_dark = self._normalize_dark()
-        flat, has_flat = self._normalize_flat()
+        dark, has_dark = self._normalize_dark(dark)
+        flat, has_flat = self._normalize_flat(flat)
 
-        error_model, variance = self._normalize_error_model_variance(data, error_model, variance)
+        error_model, variance = self._normalize_error_model_variance(data, method, dark, 
+                                                                     error_model, variance)
 
         # Prepare LUT if needed!
         if method.algo_is_sparse:
