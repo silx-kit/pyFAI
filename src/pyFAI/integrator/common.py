@@ -298,12 +298,21 @@ class Integrator(Geometry):
         method = IntegrationMethod.select_one_available(requested_method, dim=dim, default=default, degradable=True)
         logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
         return default
-
-    def _get_polarization(self, shape, polarization_factor:float=None, with_checksum=True) -> tuple:
+    
+    def _get_solidangle(self, shape:tuple, correctSolidAngle:bool=True, with_checksum:bool=False) -> tuple:
         """
-        :param shape: tuple
-        :param polarization_factor: float
-        :param with_checksum: bool
+        Requests the solid angle array, with/without checksum
+        """
+        if correctSolidAngle:
+            solidangle = self.solidAngleArray(shape, correctSolidAngle)
+            solidangle_crc = self._cached_array[f"solid_angle#{self._dssa_order}_crc"]
+        else:
+            solidangle_crc = solidangle = None
+        return (solidangle, solidangle_crc)
+
+    def _get_polarization(self, shape:tuple, polarization_factor:float=None, with_checksum:bool=True) -> tuple:
+        """
+        Requests the polarization array if polarization_factor is not None, with/without checksum
         """
         if polarization_factor is None:
             polarization = polarization_crc = None

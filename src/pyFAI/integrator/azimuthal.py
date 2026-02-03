@@ -160,11 +160,7 @@ class AzimuthalIntegrator(Integrator):
             mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
 
-        if correctSolidAngle:
-            solidangle = self.solidAngleArray(shape, correctSolidAngle)
-            solidangle_crc = self._cached_array[f"solid_angle#{self._dssa_order}_crc"]
-        else:
-            solidangle_crc = solidangle = None
+        solidangle, solidangle_crc = self._get_solidangle(shape, correctSolidAngle, with_checksum=False)
 
         polarization, polarization_crc = self._get_polarization(shape, polarization_factor, with_checksum=True)
 
