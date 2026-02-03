@@ -44,7 +44,7 @@ from .. import units
 from ..utils import crc32
 from ..utils.mathutil import EPS32, deg2rad
 from ..utils.decorators import deprecated, deprecated_warning, deprecated_args
-from ..containers import Integrate1dResult, Integrate2dResult
+from ..containers import Integrate1dResult, Integrate2dResult, ErrorModel
 from ..io import DefaultAiWriter, save_integrate_result
 from ..method_registry import IntegrationMethod
 from .load_engines import ocl_azim_csr, ocl_azim_lut, histogram, splitBBox, \
@@ -361,7 +361,6 @@ class Integrator(Geometry):
             has_flat = "provided"
         return flat, has_flat
 
-
     def _normalize_solidangle(self, shape:tuple, correctSolidAngle:bool=True, with_checksum:bool=False) -> tuple:
         """
         Requests the solid angle array, with/without checksum
@@ -382,6 +381,25 @@ class Integrator(Geometry):
         else:
             polarization, polarization_crc = self.polarization(shape, polarization_factor, with_checksum=True)
         return (polarization, polarization_crc)
+    
+    def _normalize_error_model_variance(self, data:numpy.ndarray, method, dark:numpy.ndarray=None, error_model:str=None, variance:numpy.ndarray=None):
+        if error_model:
+            error_model = ErrorModel.parse(error_model)
+
+        if variance is not None:
+            if variance.size != data.size:
+                raise RuntimeError("Variance array shape does not match data shape")
+            error_model = ErrorModel.VARIANCE
+        
+        if error_model.poissonian and not method.manage_variance:
+            error_model = ErrorModel.VARIANCE
+            if dark is None:
+                variance = numpy.maximum(data, 1.0).astype(numpy.float32)
+            else:
+                variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
+        
+        return (error_model, variance)
+
 
     def setup_sparse_integrator(self,
                                 shape,

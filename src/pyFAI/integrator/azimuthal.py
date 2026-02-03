@@ -139,17 +139,7 @@ class AzimuthalIntegrator(Integrator):
         dark, has_dark = self._normalize_dark()
         flat, has_flat = self._normalize_flat()
 
-        error_model = ErrorModel.parse(error_model)
-        if variance is not None:
-            if variance.size != data.size:
-                raise RuntimeError("Variance array shape does not match data shape")
-            error_model = ErrorModel.VARIANCE
-        if error_model.poissonian and not method.manage_variance:
-            error_model = ErrorModel.VARIANCE
-            if dark is None:
-                variance = numpy.maximum(data, 1.0).astype(numpy.float32)
-            else:
-                variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
+        error_model, variance = self._normalize_error_model_variance(data, error_model, variance)
 
         # Prepare LUT if needed!
         if method.algo_is_sparse:
