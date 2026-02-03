@@ -300,6 +300,11 @@ class Integrator(Geometry):
         return default
 
     def _get_polarization(self, shape, polarization_factor:float=None, with_checksum=True) -> tuple:
+        """
+        :param shape: tuple
+        :param polarization_factor: float
+        :param with_checksum: bool
+        """
         if polarization_factor is None:
             polarization = polarization_crc = None
         else:
