@@ -449,7 +449,7 @@ class Integrator(Geometry):
                 split = "full"
             try:
                 cython_integr = self.setup_sparse_integrator(data.shape, npt, mask,
-                                                                radial_range, azimuth_range,
+                                                                unit0_range, unit1_range,
                                                                 mask_checksum=mask_crc,
                                                                 unit=unit, split=split, algo=method.algo_lower,
                                                                 empty=empty, scale=False)
