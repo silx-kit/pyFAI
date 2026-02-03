@@ -299,6 +299,13 @@ class Integrator(Geometry):
         logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
         return default
 
+    def _get_polarization(self, shape, polarization_factor:float=None, with_checksum=True) -> tuple:
+        if polarization_factor is None:
+            polarization = polarization_crc = None
+        else:
+            polarization, polarization_crc = self.polarization(shape, polarization_factor, with_checksum=True)
+        return (polarization, polarization_crc)
+
     def setup_sparse_integrator(self,
                                 shape,
                                 npt,

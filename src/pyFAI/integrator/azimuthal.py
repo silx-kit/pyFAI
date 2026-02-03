@@ -166,10 +166,7 @@ class AzimuthalIntegrator(Integrator):
         else:
             solidangle_crc = solidangle = None
 
-        if polarization_factor is None:
-            polarization = polarization_crc = None
-        else:
-            polarization, polarization_crc = self.polarization(shape, polarization_factor, with_checksum=True)
+        polarization, polarization_crc = self._get_polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
             dark = self.detector.darkcurrent
