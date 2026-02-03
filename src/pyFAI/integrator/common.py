@@ -299,7 +299,7 @@ class Integrator(Geometry):
         logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
         return default
     
-    def _get_mask(self, mask:numpy.array=None) -> tuple:
+    def _get_mask(self, mask:numpy.ndarray=None) -> tuple:
         if mask is None:
             has_mask = "from detector"
             mask = self.mask
@@ -311,7 +311,30 @@ class Integrator(Geometry):
             has_mask = "user provided"
             mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
-        return (mask, mask_crc)
+        return (mask, mask_crc, has_mask)
+    
+    def _get_dark(self, dark:numpy.ndarray):
+        if dark is None:
+            dark = self.detector.darkcurrent
+            if dark is None:
+                has_dark = False
+            else:
+                has_dark = "from detector"
+        else:
+            has_dark = "provided"
+        return dark, has_dark
+
+    def _get_flat(self, flat:numpy.ndarray):
+        if flat is None:
+            flat = self.detector.flatfield
+            if flat is None:
+                has_flat = False
+            else:
+                has_flat = "from detector"
+        else:
+            has_flat = "provided"
+        return flat, has_flat
+
 
     def _get_solidangle(self, shape:tuple, correctSolidAngle:bool=True, with_checksum:bool=False) -> tuple:
         """

@@ -148,30 +148,11 @@ class AzimuthalIntegrator(Integrator):
                 logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
                 azimuth_range = None
 
-        mask, mask_crc = self._get_mask(mask)
-        has_mask = True if mask is not None else False
-
+        mask, mask_crc, has_mask = self._get_mask(mask)
         solidangle, solidangle_crc = self._get_solidangle(shape, correctSolidAngle, with_checksum=False)
-
         polarization, polarization_crc = self._get_polarization(shape, polarization_factor, with_checksum=True)
-
-        if dark is None:
-            dark = self.detector.darkcurrent
-            if dark is None:
-                has_dark = False
-            else:
-                has_dark = "from detector"
-        else:
-            has_dark = "provided"
-
-        if flat is None:
-            flat = self.detector.flatfield
-            if dark is None:
-                has_flat = False
-            else:
-                has_flat = "from detector"
-        else:
-            has_flat = "provided"
+        dark, has_dark = self._get_dark()
+        flat, has_flat = self._get_flat()
 
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
