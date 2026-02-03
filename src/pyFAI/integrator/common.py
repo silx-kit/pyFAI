@@ -299,6 +299,20 @@ class Integrator(Geometry):
         logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
         return default
     
+    def _get_mask(self, mask:numpy.array=None) -> tuple:
+        if mask is None:
+            has_mask = "from detector"
+            mask = self.mask
+            mask_crc = self.detector.get_mask_crc()
+            if mask is None:
+                has_mask = False
+                mask_crc = None
+        else:
+            has_mask = "user provided"
+            mask = numpy.ascontiguousarray(mask)
+            mask_crc = crc32(mask)
+        return (mask, mask_crc)
+
     def _get_solidangle(self, shape:tuple, correctSolidAngle:bool=True, with_checksum:bool=False) -> tuple:
         """
         Requests the solid angle array, with/without checksum

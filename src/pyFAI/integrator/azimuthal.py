@@ -148,17 +148,7 @@ class AzimuthalIntegrator(Integrator):
                 logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
                 azimuth_range = None
 
-        if mask is None:
-            has_mask = "from detector"
-            mask = self.mask
-            mask_crc = self.detector.get_mask_crc()
-            if mask is None:
-                has_mask = False
-                mask_crc = None
-        else:
-            has_mask = "user provided"
-            mask = numpy.ascontiguousarray(mask)
-            mask_crc = crc32(mask)
+        mask, mask_crc = self._get_mask(mask)
 
         solidangle, solidangle_crc = self._get_solidangle(shape, correctSolidAngle, with_checksum=False)
 
