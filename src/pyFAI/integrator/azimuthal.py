@@ -149,6 +149,7 @@ class AzimuthalIntegrator(Integrator):
                 azimuth_range = None
 
         mask, mask_crc = self._get_mask(mask)
+        has_mask = True if mask is not None else False
 
         solidangle, solidangle_crc = self._get_solidangle(shape, correctSolidAngle, with_checksum=False)
 
