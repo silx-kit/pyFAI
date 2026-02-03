@@ -299,7 +299,33 @@ class Integrator(Geometry):
         logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
         return default
     
-    def _get_mask(self, mask:numpy.ndarray=None) -> tuple:
+    def _normalize_dummies(self, dummy:float=None, delta_dummy:float=None, data:numpy.ndarray=None) -> tuple:
+        if dummy is None:
+            dummy, delta_dummy = self.detector.get_dummies(data)
+        else:
+            dummy = numpy.float32(dummy)
+            delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
+        return dummy, delta_dummy
+    
+    def _normalize_range(self, unit_range:tuple, unit:units.Unit):
+        if unit_range:
+            if numpy.isfinite(unit_range).all():
+                unit_range = tuple(unit_range[i] / unit.scale for i in (0, -1))
+            else:
+                logger.warning(f"Semi-defined ranges are not supported for ={unit}")
+                unit_range = None
+        return unit_range
+    
+    def _normalize_azimuth_range(self, unit_range:tuple, unit:units.Unit):
+        if unit_range is not None:
+            if numpy.isfinite(unit_range).all():
+                unit_range = self.normalize_azimuth_range(unit_range)
+            else:
+                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={unit_range}")
+                unit_range = None
+        return unit_range
+
+    def _normalize_mask(self, mask:numpy.ndarray=None) -> tuple:
         if mask is None:
             has_mask = "from detector"
             mask = self.mask
@@ -313,7 +339,7 @@ class Integrator(Geometry):
             mask_crc = crc32(mask)
         return (mask, mask_crc, has_mask)
     
-    def _get_dark(self, dark:numpy.ndarray):
+    def _normalize_dark(self, dark:numpy.ndarray) -> tuple:
         if dark is None:
             dark = self.detector.darkcurrent
             if dark is None:
@@ -324,7 +350,7 @@ class Integrator(Geometry):
             has_dark = "provided"
         return dark, has_dark
 
-    def _get_flat(self, flat:numpy.ndarray):
+    def _normalize_flat(self, flat:numpy.ndarray) -> tuple:
         if flat is None:
             flat = self.detector.flatfield
             if flat is None:
@@ -336,7 +362,7 @@ class Integrator(Geometry):
         return flat, has_flat
 
 
-    def _get_solidangle(self, shape:tuple, correctSolidAngle:bool=True, with_checksum:bool=False) -> tuple:
+    def _normalize_solidangle(self, shape:tuple, correctSolidAngle:bool=True, with_checksum:bool=False) -> tuple:
         """
         Requests the solid angle array, with/without checksum
         """
@@ -347,7 +373,7 @@ class Integrator(Geometry):
             solidangle_crc = solidangle = None
         return (solidangle, solidangle_crc)
 
-    def _get_polarization(self, shape:tuple, polarization_factor:float=None, with_checksum:bool=True) -> tuple:
+    def _normalize_polarization(self, shape:tuple, polarization_factor:float=None, with_checksum:bool=True) -> tuple:
         """
         Requests the polarization array if polarization_factor is not None, with/without checksum
         """

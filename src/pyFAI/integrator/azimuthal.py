@@ -125,34 +125,19 @@ class AzimuthalIntegrator(Integrator):
         if method.dimension != 1:
             raise RuntimeError("integration method is not 1D")
         unit = units.to_unit(unit)
-        if dummy is None:
-            dummy, delta_dummy = self.detector.get_dummies(data)
-        else:
-            dummy = numpy.float32(dummy)
-            delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
+
+        dummy, delta_dummy = self._normalize_dummies(dummy, delta_dummy, data)
         empty = self._empty
-
         shape = data.shape
-        pos0_scale = unit.scale
 
-        if radial_range:
-            if numpy.isfinite(radial_range).all():
-                radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
-            else:
-                logger.warning(f"Semi-defined ranges are not supported for radial_range={radial_range}")
-                radial_range = None
-        if azimuth_range is not None:
-            if numpy.isfinite(azimuth_range).all():
-                azimuth_range = self.normalize_azimuth_range(azimuth_range)
-            else:
-                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
-                azimuth_range = None
+        radial_range = self._normalize_range()
+        azimuth_range = self._normalize_azimuth_range()
 
-        mask, mask_crc, has_mask = self._get_mask(mask)
-        solidangle, solidangle_crc = self._get_solidangle(shape, correctSolidAngle, with_checksum=False)
-        polarization, polarization_crc = self._get_polarization(shape, polarization_factor, with_checksum=True)
-        dark, has_dark = self._get_dark()
-        flat, has_flat = self._get_flat()
+        mask, mask_crc, has_mask = self._normalize_mask(mask)
+        solidangle, solidangle_crc = self._normalize_solidangle(shape, correctSolidAngle, with_checksum=False)
+        polarization, polarization_crc = self._normalize_polarization(shape, polarization_factor, with_checksum=True)
+        dark, has_dark = self._normalize_dark()
+        flat, has_flat = self._normalize_flat()
 
         error_model = ErrorModel.parse(error_model)
         if variance is not None:
