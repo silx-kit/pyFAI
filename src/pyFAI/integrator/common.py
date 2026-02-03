@@ -390,6 +390,9 @@ class Integrator(Geometry):
             if variance.size != data.size:
                 raise RuntimeError("Variance array shape does not match data shape")
             error_model = ErrorModel.VARIANCE
+            
+        if not error_model:
+            return (None, None)
         
         if error_model.poissonian and not method.manage_variance:
             error_model = ErrorModel.VARIANCE
