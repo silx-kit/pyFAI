@@ -144,6 +144,7 @@ class AzimuthalIntegrator(Integrator):
         # Prepare LUT if needed!
         if method.algo_is_sparse:
             # initialize the CSR/LUT integrator in Cython as it may be needed later on.
+            cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
             cython_integr = self._get_persistent_sparse_cython_integrator(
                 data=data, npt=npt, unit=unit, empty=empty,
                 mask=mask, mask_crc=mask_crc,
