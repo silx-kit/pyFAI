@@ -316,7 +316,7 @@ class Integrator(Geometry):
                 unit_range = None
         return unit_range
     
-    def _normalize_azimuth_range(self, unit_range:tuple, unit:units.Unit):
+    def _normalize_azimuth_range(self, unit_range:tuple):
         if unit_range is not None:
             if numpy.isfinite(unit_range).all():
                 unit_range = self.normalize_azimuth_range(unit_range)

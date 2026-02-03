@@ -130,8 +130,8 @@ class AzimuthalIntegrator(Integrator):
         empty = self._empty
         shape = data.shape
 
-        radial_range = self._normalize_range()
-        azimuth_range = self._normalize_azimuth_range()
+        radial_range = self._normalize_range(radial_range, unit)
+        azimuth_range = self._normalize_azimuth_range(azimuth_range)
 
         mask, mask_crc, has_mask = self._normalize_mask(mask)
         solidangle, solidangle_crc = self._normalize_solidangle(shape, correctSolidAngle, with_checksum=False)
