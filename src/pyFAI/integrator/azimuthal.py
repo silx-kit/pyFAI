@@ -144,28 +144,18 @@ class AzimuthalIntegrator(Integrator):
         # Prepare LUT if needed!
         if method.algo_is_sparse:
             # initialize the CSR/LUT integrator in Cython as it may be needed later on.
-            cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
-            if cython_method not in self.engines:
-                cython_engine = self.engines[cython_method] = Engine()
-            else:
-                cython_engine = self.engines[cython_method]
-            with cython_engine.lock:
-                # Validate that the engine used is the proper one
-                cython_integr = cython_engine.engine
-                cython_integr, cython_reset = self._get_persistent_sparse_cython_integrator(
-                    cython_integr=cython_integr,
-                    data=data, npt=npt, unit=unit, empty=empty,
-                    mask=mask, mask_crc=mask_crc,
-                    method=method,
-                    unit0_range=radial_range, unit1_range=azimuth_range,
-                    safe=safe,
-                )
-                if cython_reset:
-                    cython_engine.set_engine(cython_integr)
+            cython_integr = self._get_persistent_sparse_cython_integrator(
+                data=data, npt=npt, unit=unit, empty=empty,
+                mask=mask, mask_crc=mask_crc,
+                method=method,
+                unit0_range=radial_range, unit1_range=azimuth_range,
+                safe=safe,
+            )
+
             # This whole block uses CSR, Now we should treat all the various implementation: Cython, OpenCL and finally Python.
             if method.impl_lower == "cython":
                 # The integrator has already been initialized previously
-                integr = self.engines[method].engine
+                integr = cython_integr
                 intpl = integr.integrate_ng(data,
                                             variance=variance,
                                             error_model=error_model,
