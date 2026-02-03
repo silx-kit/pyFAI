@@ -41,7 +41,7 @@ from math import pi
 import numpy
 from ..geometry import Geometry
 from .. import units
-from ..utils import crc32
+from ..utils import crc32, nan_equal
 from ..utils.mathutil import EPS32, deg2rad
 from ..utils.decorators import deprecated, deprecated_warning, deprecated_args
 from ..containers import Integrate1dResult, Integrate2dResult, ErrorModel
@@ -400,6 +400,66 @@ class Integrator(Geometry):
         
         return (error_model, variance)
 
+    def _get_persistent_sparse_integrator(self,
+                                          cython_integr,
+                                          data, npt,
+                                          unit,
+                                          empty,
+                                          mask,
+                                          mask_crc,
+                                          method,
+                                          unit0_range,
+                                          unit1_range,
+                                          safe: bool = True,
+    ):
+        if cython_integr is None:
+            cython_reset = "of first initialization"
+
+        cython_reset = None
+        if cython_integr is None:
+            cython_reset = "of first initialization"
+        if (not cython_reset) and safe:
+            if cython_integr.unit != unit:
+                cython_reset = "unit was changed"
+            elif cython_integr.bins != npt:
+                cython_reset = "number of points changed"
+            elif cython_integr.size != data.size:
+                cython_reset = "input image size changed"
+            elif not nan_equal(cython_integr.empty, empty):
+                cython_reset = f"empty value changed {cython_integr.empty}!={empty}"
+            elif (mask is not None) and (not cython_integr.check_mask):
+                cython_reset = f"mask but {method.algo_lower.upper()} was without mask"
+            elif (mask is None) and (cython_integr.cmask is not None):
+                cython_reset = f"no mask but { method.algo_lower.upper()} has mask"
+            elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
+                cython_reset = "mask changed"
+            elif (unit0_range is None) and (cython_integr.pos0_range is not None):
+                cython_reset = f"range in unit0 was defined in { method.algo_lower.upper()}"
+            elif (unit0_range is not None) and (cython_integr.pos0_range != unit0_range):
+                cython_reset = "range in unit0 is defined but differs in %s" % method.algo_lower.upper()
+            elif (unit1_range is None) and (cython_integr.pos1_range is not None):
+                cython_reset = f"range in unit1 not defined and {method.algo_lower.upper()} had azimuth_range defined"
+            elif (unit1_range is not None) and (cython_integr.pos1_range != unit1_range):
+                cython_reset = f"range in unit1 requested and {method.algo_lower.upper()}'s azimuth_range don't match"
+
+        if cython_reset:
+            logger.info("AI.integrate1d_ng: Resetting Cython integrator because %s", cython_reset)
+            split = method.split_lower
+            if split == "pseudo":
+                split = "full"
+            try:
+                cython_integr = self.setup_sparse_integrator(data.shape, npt, mask,
+                                                                radial_range, azimuth_range,
+                                                                mask_checksum=mask_crc,
+                                                                unit=unit, split=split, algo=method.algo_lower,
+                                                                empty=empty, scale=False)
+            except MemoryError:  # sparse methods are hungry...
+                logger.warning("MemoryError: falling back on forward implementation")
+                cython_integr = None
+                self.reset_engines()
+                method = self.DEFAULT_METHOD_1D
+            else:
+                return cython_integr
 
     def setup_sparse_integrator(self,
                                 shape,

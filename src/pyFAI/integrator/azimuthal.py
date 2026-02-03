@@ -77,7 +77,6 @@ class AzimuthalIntegrator(Integrator):
         >>> regrouped = ai.integrate2d(data, npt_rad, npt_azim, unit="q_nm^-1")[0]
     """
 
-
     def integrate1d(self, data, npt, *,
                     filename=None,
                     correctSolidAngle=True,
@@ -152,50 +151,16 @@ class AzimuthalIntegrator(Integrator):
             with cython_engine.lock:
                 # Validate that the engine used is the proper one
                 cython_integr = cython_engine.engine
-                cython_reset = None
-                if cython_integr is None:
-                    cython_reset = "of first initialization"
-                if (not cython_reset) and safe:
-                    if cython_integr.unit != unit:
-                        cython_reset = "unit was changed"
-                    elif cython_integr.bins != npt:
-                        cython_reset = "number of points changed"
-                    elif cython_integr.size != data.size:
-                        cython_reset = "input image size changed"
-                    elif not nan_equal(cython_integr.empty, empty):
-                        cython_reset = f"empty value changed {cython_integr.empty}!={empty}"
-                    elif (mask is not None) and (not cython_integr.check_mask):
-                        cython_reset = f"mask but {method.algo_lower.upper()} was without mask"
-                    elif (mask is None) and (cython_integr.cmask is not None):
-                        cython_reset = f"no mask but { method.algo_lower.upper()} has mask"
-                    elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
-                        cython_reset = "mask changed"
-                    elif (radial_range is None) and (cython_integr.pos0_range is not None):
-                        cython_reset = f"radial_range was defined in { method.algo_lower.upper()}"
-                    elif (radial_range is not None) and (cython_integr.pos0_range != radial_range):
-                        cython_reset = "radial_range is defined but differs in %s" % method.algo_lower.upper()
-                    elif (azimuth_range is None) and (cython_integr.pos1_range is not None):
-                        cython_reset = f"azimuth_range not defined and {method.algo_lower.upper()} had azimuth_range defined"
-                    elif (azimuth_range is not None) and (cython_integr.pos1_range != azimuth_range):
-                        cython_reset = f"azimuth_range requested and {method.algo_lower.upper()}'s azimuth_range don't match"
+                cython_integr, cython_reset = self._get_persistent_sparse_integrator(
+                    cython_integr=cython_integr,
+                    data=data, npt=npt, unit=unit, empty=empty,
+                    mask=mask, mask_crc=mask_crc,
+                    method=method,
+                    unit0_range=radial_range, unit1_range=azimuth_range,
+                    safe=safe,
+                )
                 if cython_reset:
-                    logger.info("AI.integrate1d_ng: Resetting Cython integrator because %s", cython_reset)
-                    split = method.split_lower
-                    if split == "pseudo":
-                        split = "full"
-                    try:
-                        cython_integr = self.setup_sparse_integrator(shape, npt, mask,
-                                                                     radial_range, azimuth_range,
-                                                                     mask_checksum=mask_crc,
-                                                                     unit=unit, split=split, algo=method.algo_lower,
-                                                                     empty=empty, scale=False)
-                    except MemoryError:  # sparse methods are hungry...
-                        logger.warning("MemoryError: falling back on forward implementation")
-                        cython_integr = None
-                        self.reset_engines()
-                        method = self.DEFAULT_METHOD_1D
-                    else:
-                        cython_engine.set_engine(cython_integr)
+                    cython_engine.set_engine(cython_integr)
             # This whole block uses CSR, Now we should treat all the various implementation: Cython, OpenCL and finally Python.
             if method.impl_lower == "cython":
                 # The integrator has already been initialized previously
