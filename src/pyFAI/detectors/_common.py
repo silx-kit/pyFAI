@@ -286,7 +286,7 @@ class Detector(metaclass=DetectorMeta):
 
         if isinstance(sensor, SensorConfig):
             if sensor not in self.SENSORS:
-                logger.warning("Sensor %s not in allowed SENSORS: %s", sensor, self.SENSORS)
+                logger.warning("Sensor %s not in allowed SENSORS: [%s].", sensor, "|".join(str(i) for i in self.SENSORS))
             self.sensor = sensor
         elif sensor is None:
             logger.info("No sensor configuration provided; using default behaviour.")
