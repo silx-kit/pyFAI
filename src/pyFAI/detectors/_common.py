@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2026"
+__date__ = "04/02/2026"
 __status__ = "stable"
 
 import logging
@@ -222,20 +222,42 @@ class Detector(metaclass=DetectorMeta):
         self._pixel2 = None
         self._pixel_corners = None
         self.sensor = None
-        if pixel1:
-            self._pixel1 = float(pixel1)
-        elif self.force_pixel and "PIXEL_SIZE" in dir(self.__class__):
-            self._pixel1 = self.__class__.PIXEL_SIZE[0]
-        if pixel2:
-            self._pixel2 = float(pixel2)
-        elif self.force_pixel and "PIXEL_SIZE" in dir(self.__class__):
-            self._pixel2 = self.__class__.PIXEL_SIZE[1]
+
         if max_shape is None:
             self.max_shape = tuple(self.MAX_SHAPE) if "MAX_SHAPE" in dir(self.__class__) else None
         else:
             self.max_shape = tuple(max_shape)
         self.shape = self.max_shape
         self._binning = (1, 1)
+
+        #Ensure float
+        pixel1 = float(pixel1) if pixel1 else None
+        pixel2 = float(pixel2) if pixel2 else None
+
+        if self.force_pixel and "PIXEL_SIZE" in dir(self.__class__):
+            ref = self.PIXEL_SIZE
+            if pixel1 is None:
+                self._pixel1 = ref[0]
+            elif pixel1/ref[0]>1:
+                factor1 = round(pixel1/ref[0])
+                self._binning = (factor1, self._binning[1])
+                self.shape = (self.max_shape[0]//factor1, self.shape[1])
+                self._pixel1 = pixel1
+            else:
+                self._pixel1 = pixel1
+            if pixel2 is None:
+                self._pixel2 = ref[1]
+            elif pixel2/ref[1]>1:
+                factor2 = round(pixel2/ref[1])
+                self._binning = (self._binning[0], factor2)
+                self.shape = (self.shape[0], self.max_shape[1]//factor2)
+                self._pixel2 = pixel2
+            else:
+                self._pixel2 = pixel2
+        else:
+            self._pixel1 = pixel1
+            self._pixel2 = pixel2
+
         self._mask = False
         self._mask_crc = None
         self._maskfile = None
