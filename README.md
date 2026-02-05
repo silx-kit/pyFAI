@@ -1,4 +1,4 @@
-# pyFAI: Fast Azimuthal Integration in Python
+# Fast Azimuthal Integration in Python
 
 Main development website: [https://github.com/silx-kit/pyFAI](https://github.com/silx-kit/pyFAI)
 
@@ -12,7 +12,7 @@ PyFAI is an azimuthal integration library designed for high-performance, achievi
 It is based on histogramming the 2θ/Q positions of each pixel centre, weighted by pixel intensity, whereas the parallel version performs a SparseMatrix-DenseVector multiplication.
 Both method achieve the same numerical result.
 Neighboring output bins also receive contributions from pixels adjacent to the border through pixel splitting.
-pyFAI also provides tools to calibrate the experimental setup using Debye-Scherrer rings of a reference compound.
+PyFAI also provides tools to calibrate the experimental setup using Debye-Scherrer rings of a reference compound.
 
 ## References
 
@@ -157,6 +157,7 @@ pip install -r requirements.txt
 
 A mailing-list, pyfai@esrf.fr, is available to get help on the program and how to use it.
 One needs to subscribe by sending an email to sympa@esrf.fr with the subject "subscribe pyfai".
+There is also a discussion space at [GitHub](https://github.com/silx-kit/pyFAI/discussions) and an [issue tracker](https://github.com/silx-kit/pyFAI/issues) where bugs can be reported.
 
 ## Maintainers
 
