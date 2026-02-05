@@ -8,9 +8,10 @@ Main development website: [https://github.com/silx-kit/pyFAI](https://github.com
 [![RTD docs](https://readthedocs.org/projects/pyfai/badge/?version=latest)](https://pyfai.readthedocs.io/en/latest/)
 [![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.832896.svg)](https://doi.org/10.5281/zenodo.832896)
 
-pyFAI is an azimuthal integration library that tries to be fast (as fast as C and even more using OpenCL and GPU).
-It is based on histogramming of the 2theta/Q positions of each (center of) pixel weighted by the intensity of each pixel, but the parallel version uses a SparseMatrix-DenseVector multiplication.
-Neighboring output bins also get a contribution of pixels next to the border thanks to pixel splitting.
+PyFAI is an azimuthal integration library designed for high-performance, achieving performance comparable to C and even greater through OpenCL-based GPU acceleration.
+It is based on histogramming the 2θ/Q positions of each pixel centre, weighted by pixel intensity, whereas the parallel version performs a SparseMatrix-DenseVector multiplication.
+Both method achieve the same numerical result.
+Neighboring output bins also receive contributions from pixels adjacent to the border through pixel splitting.
 pyFAI also provides tools to calibrate the experimental setup using Debye-Scherrer rings of a reference compound.
 
 ## References
@@ -23,21 +24,21 @@ pyFAI also provides tools to calibrate the experimental setup using Debye-Scherr
 
 ## Installation
 
-### With PIP
+### Using PIP (python-package installer)
 
-As most Python packages, pyFAI is available via PIP:
+As with most Python packages, pyFAI is available via pip:
 
 ```sh
 pip install pyFAI[gui]
 ```
 
-It is advised to run this in a [virtual environment](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments).
+It is recommended to run this in a [virtual environment](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments).
 Provide the `--user` option to perform an installation local to your user-space (**not recommended**).
 Under UNIX, you may have to run the command via `sudo` to gain root access and perform a system wide installation (which is **neither recommended**).
 
-### With conda
+### Using conda installer
 
-pyFAI is also available via conda:
+PyFAI is also available via the `conda` installer from Anaconda:
 
 ```sh
 conda install pyfai -c conda-forge
@@ -48,7 +49,7 @@ To install conda please see either [conda](https://conda.io/docs/install/quick.h
 ### From source code
 
 The current development version of pyFAI can be downloaded from [GitHub](https://github.com/silx-kit/pyFAI/archive/main.zip).
-Presently the source code has been distributed as a zip package.
+The source code is currently distributed as a zip package. 
 
 Download and unpack it:
 
@@ -66,7 +67,7 @@ pip install -r requirements.txt
 Build and test it:
 
 ```sh
-python3 run_tests.py
+python run_tests.py
 ```
 
 For its tests, pyFAI downloads test images from the internet. Depending on your network connection and your local network configuration, you may have to set up a proxy configuration like this (not needed at ESRF):
@@ -81,7 +82,7 @@ Finally, install pyFAI in the virtualenv after testing it:
 pip install .
 ```
 
-The newest development version can also be obtained by checking out from the git repository:
+The latest development version is available by checking out the Git repository:
 
 ```sh
 git clone https://github.com/silx-kit/pyFAI.git
@@ -89,14 +90,14 @@ cd pyFAI
 pip install .
 ```
 
-If you want pyFAI to make use of your graphic card, please install [pyopencl](http://mathema.tician.de/software/pyopencl).
+To enable GPU acceleration in pyFAI, please install [pyopencl](http://mathema.tician.de/software/pyopencl).
 
 ## Documentation
 
 Documentation can be built using this command and Sphinx (installed on your computer):
 
 ```sh
-python3 build-doc.py
+python build-doc.py
 ```
 
 ## Dependencies
@@ -123,7 +124,7 @@ pip install -r requirements.txt
 
 ## Ubuntu and Debian-like Linux distributions
 
-To use pyFAI on Ubuntu/Debian, the needed Python modules can be installed either through the Synaptic Package Manager (found in System -> Administration) or using apt-get from the command line:
+On Ubuntu or Debian, the required Python modules for pyFAI can be installed either via the Synaptic Package Manager (under System → Administration) or from the command line using apt-get: 
 
 ```sh
 sudo apt-get install pyfai
@@ -131,12 +132,12 @@ sudo apt-get install pyfai
 
 ## MacOSX
 
-One needs to manually install a recent version of [Python](https://www.python.org/downloads/) (>=3.10) prior to installing pyFAI.
-Apple provides only an outdated version of Python 2.7 which is now incompatible.
-If you want to build pyFAI from sources, you will also need `Xcode` which is available from the Apple store.
-The compiled extension will use only one core due to the limitation of the compiler.
+On macOS, a recent version of [Python](https://www.python.org/downloads/) (≥3.10) must be installed before installing pyFAI. 
+Apple provides only an outdated version of Python 2.7 which is deprecated.
+To build pyFAI from source, you will also need Xcode, which is available from the Mac App Store.
+The binary extensions will use only a single core due to the limitation of the compiler from Apple.
 OpenCL is hence greatly advised on Apple systems.
-Then install the missing dependencies with pip:
+Next, install the missing dependencies using pip:
 
 ```sh
 pip install -r requirements.txt
@@ -144,9 +145,9 @@ pip install -r requirements.txt
 
 ## Windows
 
-Under Windows, one needs to install [Python](https://www.python.org/downloads/) (>=3.10) prior to pyFAI.
-The Visual Studio C++ compiler is also needed when building from sources.
-Then install the missing dependencies with pip:
+On Windows, a recent version of [Python](https://www.python.org/downloads/) (>=3.10) must be installed before pyFAI.
+The Visual Studio C++ compiler is required when building from source
+Next, install any missing dependencies using pip:
 
 ```sh
 pip install -r requirements.txt
@@ -169,10 +170,11 @@ Thanks to all who have contributed to pyFAI!
 
 [![Contributors image](https://contrib.rocks/image?repo=silx-kit/pyFAI)](https://github.com/silx-kit/pyFAI/graphs/contributors)
 
-## Indirect contributors (ideas...)
+## Indirect contributors (ideas, ...)
 
 - Peter Boesecke
 - Manuel Sánchez del Río
+- Thomas Vincent
 - Vicente Armando Solé
 - Brian Pauw
 - Veijo Honkimaki
