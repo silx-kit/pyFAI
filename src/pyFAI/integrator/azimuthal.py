@@ -77,7 +77,6 @@ class AzimuthalIntegrator(Integrator):
         >>> regrouped = ai.integrate2d(data, npt_rad, npt_azim, unit="q_nm^-1")[0]
     """
 
-
     def integrate1d(self, data, npt, *,
                     filename=None,
                     correctSolidAngle=True,
@@ -125,141 +124,39 @@ class AzimuthalIntegrator(Integrator):
         if method.dimension != 1:
             raise RuntimeError("integration method is not 1D")
         unit = units.to_unit(unit)
-        if dummy is None:
-            dummy, delta_dummy = self.detector.get_dummies(data)
-        else:
-            dummy = numpy.float32(dummy)
-            delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
+
+        dummy, delta_dummy = self._normalize_dummies(dummy, delta_dummy, data)
         empty = self._empty
-
         shape = data.shape
-        pos0_scale = unit.scale
 
-        if radial_range:
-            if numpy.isfinite(radial_range).all():
-                radial_range = tuple(radial_range[i] / pos0_scale for i in (0, -1))
-            else:
-                logger.warning(f"Semi-defined ranges are not supported for radial_range={radial_range}")
-                radial_range = None
-        if azimuth_range is not None:
-            if numpy.isfinite(azimuth_range).all():
-                azimuth_range = self.normalize_azimuth_range(azimuth_range)
-            else:
-                logger.warning(f"Semi-defined ranges are not supported for azimuth_range={azimuth_range}")
-                azimuth_range = None
+        radial_range = self._normalize_range(radial_range, unit)
+        azimuth_range = self._normalize_azimuth_range(azimuth_range)
 
-        if mask is None:
-            has_mask = "from detector"
-            mask = self.mask
-            mask_crc = self.detector.get_mask_crc()
-            if mask is None:
-                has_mask = False
-                mask_crc = None
-        else:
-            has_mask = "user provided"
-            mask = numpy.ascontiguousarray(mask)
-            mask_crc = crc32(mask)
+        mask, mask_crc, has_mask = self._normalize_mask(mask)
+        solidangle, solidangle_crc = self._normalize_solidangle(shape, correctSolidAngle, with_checksum=False)
+        polarization, polarization_crc = self._normalize_polarization(shape, polarization_factor, with_checksum=True)
+        dark, has_dark = self._normalize_dark(dark)
+        flat, has_flat = self._normalize_flat(flat)
 
-        if correctSolidAngle:
-            solidangle = self.solidAngleArray(shape, correctSolidAngle)
-            solidangle_crc = self._cached_array[f"solid_angle#{self._dssa_order}_crc"]
-        else:
-            solidangle_crc = solidangle = None
-
-        if polarization_factor is None:
-            polarization = polarization_crc = None
-        else:
-            polarization, polarization_crc = self.polarization(shape, polarization_factor, with_checksum=True)
-
-        if dark is None:
-            dark = self.detector.darkcurrent
-            if dark is None:
-                has_dark = False
-            else:
-                has_dark = "from detector"
-        else:
-            has_dark = "provided"
-
-        if flat is None:
-            flat = self.detector.flatfield
-            if dark is None:
-                has_flat = False
-            else:
-                has_flat = "from detector"
-        else:
-            has_flat = "provided"
-
-        error_model = ErrorModel.parse(error_model)
-        if variance is not None:
-            if variance.size != data.size:
-                raise RuntimeError("Variance array shape does not match data shape")
-            error_model = ErrorModel.VARIANCE
-        if error_model.poissonian and not method.manage_variance:
-            error_model = ErrorModel.VARIANCE
-            if dark is None:
-                variance = numpy.maximum(data, 1.0).astype(numpy.float32)
-            else:
-                variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
+        error_model, variance = self._normalize_error_model_variance(data, method, dark, 
+                                                                     error_model, variance)
 
         # Prepare LUT if needed!
         if method.algo_is_sparse:
             # initialize the CSR/LUT integrator in Cython as it may be needed later on.
             cython_method = IntegrationMethod.select_method(method.dimension, method.split_lower, method.algo_lower, "cython")[0]
-            if cython_method not in self.engines:
-                cython_engine = self.engines[cython_method] = Engine()
-            else:
-                cython_engine = self.engines[cython_method]
-            with cython_engine.lock:
-                # Validate that the engine used is the proper one
-                cython_integr = cython_engine.engine
-                cython_reset = None
-                if cython_integr is None:
-                    cython_reset = "of first initialization"
-                if (not cython_reset) and safe:
-                    if cython_integr.unit != unit:
-                        cython_reset = "unit was changed"
-                    elif cython_integr.bins != npt:
-                        cython_reset = "number of points changed"
-                    elif cython_integr.size != data.size:
-                        cython_reset = "input image size changed"
-                    elif not nan_equal(cython_integr.empty, empty):
-                        cython_reset = f"empty value changed {cython_integr.empty}!={empty}"
-                    elif (mask is not None) and (not cython_integr.check_mask):
-                        cython_reset = f"mask but {method.algo_lower.upper()} was without mask"
-                    elif (mask is None) and (cython_integr.cmask is not None):
-                        cython_reset = f"no mask but { method.algo_lower.upper()} has mask"
-                    elif (mask is not None) and (cython_integr.mask_checksum != mask_crc):
-                        cython_reset = "mask changed"
-                    elif (radial_range is None) and (cython_integr.pos0_range is not None):
-                        cython_reset = f"radial_range was defined in { method.algo_lower.upper()}"
-                    elif (radial_range is not None) and (cython_integr.pos0_range != radial_range):
-                        cython_reset = "radial_range is defined but differs in %s" % method.algo_lower.upper()
-                    elif (azimuth_range is None) and (cython_integr.pos1_range is not None):
-                        cython_reset = f"azimuth_range not defined and {method.algo_lower.upper()} had azimuth_range defined"
-                    elif (azimuth_range is not None) and (cython_integr.pos1_range != azimuth_range):
-                        cython_reset = f"azimuth_range requested and {method.algo_lower.upper()}'s azimuth_range don't match"
-                if cython_reset:
-                    logger.info("AI.integrate1d_ng: Resetting Cython integrator because %s", cython_reset)
-                    split = method.split_lower
-                    if split == "pseudo":
-                        split = "full"
-                    try:
-                        cython_integr = self.setup_sparse_integrator(shape, npt, mask,
-                                                                     radial_range, azimuth_range,
-                                                                     mask_checksum=mask_crc,
-                                                                     unit=unit, split=split, algo=method.algo_lower,
-                                                                     empty=empty, scale=False)
-                    except MemoryError:  # sparse methods are hungry...
-                        logger.warning("MemoryError: falling back on forward implementation")
-                        cython_integr = None
-                        self.reset_engines()
-                        method = self.DEFAULT_METHOD_1D
-                    else:
-                        cython_engine.set_engine(cython_integr)
+            cython_integr = self._get_persistent_sparse_cython_integrator(
+                data=data, npt=npt, unit=unit, empty=empty,
+                mask=mask, mask_crc=mask_crc,
+                method=method,
+                unit0_range=radial_range, unit1_range=azimuth_range,
+                safe=safe,
+            )
+
             # This whole block uses CSR, Now we should treat all the various implementation: Cython, OpenCL and finally Python.
             if method.impl_lower == "cython":
                 # The integrator has already been initialized previously
-                integr = self.engines[method].engine
+                integr = cython_integr
                 intpl = integr.integrate_ng(data,
                                             variance=variance,
                                             error_model=error_model,
