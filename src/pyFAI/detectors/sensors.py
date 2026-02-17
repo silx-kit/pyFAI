@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2026"
+__date__ = "27/01/2026"
 __status__ = "stable"
 
 import os
@@ -46,6 +46,7 @@ import json
 import copy
 from math import exp
 from collections import namedtuple
+from typing import ClassVar
 from ..containers import dataclass, fields
 import numpy
 from ..resources import resource_filename
@@ -165,6 +166,8 @@ class SensorConfig:
     "class for configuration of a sensor"
     material: SensorMaterial|str
     thickness: float=None
+    
+    THICKNESS_TOLERANCE: ClassVar[float] = 1e-6
 
     def __repr__(self):
         return json.dumps(self.as_dict(), indent=4)
@@ -178,6 +181,19 @@ class SensorConfig:
         "helper function for the `detector` module"
         return self.__class__(self.material,  # expected to be immutable
                               self.thickness)
+
+    def __eq__(self, other):
+        """Check for equality, especially for the thickness within 1µm"""
+        if isinstance(other, self.__class__):
+            if (self.material == other.material):
+                if (self.thickness and 
+                    other.thickness and 
+                    numpy.isclose(self.thickness, other.thickness, atol=self.THICKNESS_TOLERANCE)):
+                    
+                        return True
+                else:
+                    return self.thickness == other.thickness
+        return False
 
     def as_dict(self):
         """Like asdict, but with some more features:

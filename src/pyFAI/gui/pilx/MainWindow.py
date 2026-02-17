@@ -277,6 +277,8 @@ class MainWindow(qt.QMainWindow):
 
         if mask_image is None:
             detector.mask = detector_mask
+        elif detector_mask is None: 
+            detector.mask = mask_image 
         else:
             detector.mask = numpy.logical_or(mask_image, detector_mask)
 

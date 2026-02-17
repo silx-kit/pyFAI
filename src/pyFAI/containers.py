@@ -715,7 +715,13 @@ class Integrate1dResult(IntegrateResult):
         Inspired by doi:10.1107/S1600576713029713
         Requires the azimuthal error propagation.
 
-        :param weighted: Weight the spottiness by the intensity of each ring.
+        As a rule of thumb:
+        - S < 0.05: Smooth powder pattern
+        – 0.05 < S < 0.15: Mild spottiness / texture
+        – S > 0.15 : Strongly spotty, likely with large grain size
+
+        :param weighted: Weight the spottiness by the intensity of each ring, 
+                         probably more correct but also larger values
         :return: a value that increases with the spottiness
         """
         if self.error_model != ErrorModel.AZIMUTHAL:

@@ -34,6 +34,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Performances-2D
    symmetrize
    multi-geometry
+   Spotty
    Goniometer/index
    Inpainting/Inpainting
    ThickDetector/index

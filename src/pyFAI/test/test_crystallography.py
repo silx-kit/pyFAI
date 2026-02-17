@@ -33,13 +33,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2025"
+__date__ = "09/01/2026"
 
 import unittest
 import numpy
 import logging
 from .utilstest import UtilsTest
-from ..crystallography import resolution
+from ..crystallography import resolution, Cell, ReflectionCondition
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +78,18 @@ class TestCrystallography(unittest.TestCase):
         self.assertTrue(isinstance(c.__repr__(), str))
         self.assertTrue(numpy.allclose(c.sigma(numpy.linspace(0.1,1,10)), ref))
         self.assertTrue(isinstance(c.fwhm(1), float))
+
+    def test_bug_2755(self):
+        "Missing default selection rule for C-type cells"
+        phase1 = Cell.monoclinic(3, 4, 5, 115, lattice_type='C')
+        res1 = len(phase1.calculate_dspacing(dmin=1))
+
+        phase2 = Cell.monoclinic(3, 4, 5, 115, lattice_type='P')
+        res0 = len(phase2.calculate_dspacing(dmin=1))
+        phase2.selection_rules.append(ReflectionCondition.group5_C2)
+        res2 = len(phase2.calculate_dspacing(dmin=1))
+        self.assertEqual(res1, res2)
+        self.assertGreater(res0, res2)
 
 
 def suite():

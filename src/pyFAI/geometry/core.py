@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2025"
+__date__ = "16/01/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -2748,6 +2748,9 @@ class Geometry:
                 sensor = ThinSensor(thickness=sensor_config.thickness, mu=mu)
             else:
                 sensor = ThickSensor(mu=mu)
+            if self.detector.sensor and sensor_config != self.detector.sensor:
+                logger.warning(f"Replacing sensor {self.detector.sensor} with {sensor_config}.")
+            self.detector.sensor = sensor_config
             self.parallax = Parallax(sensor)  # performs the reset
         else:
             self._parallax = None

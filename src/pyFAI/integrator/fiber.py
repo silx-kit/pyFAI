@@ -105,6 +105,25 @@ def get_deprecated_params_2d(**kwargs) -> dict:
 
 
 class FiberIntegrator(AzimuthalIntegrator):
+    """
+    This Integrator is made for Fiber / Grazing-Incidence experiments
+    It inherits the methods from AzimuthalIntegrator plus provides a new API with methods:
+        - integrate1d_grazing_incidence
+        - integrate2d_grazing_incidence
+        - integrate1d_exitangles
+        - integrate2d_exitangles
+        - integrate1d_polar
+        - integrate2d_polar
+
+    Example:
+    result_gi = fi.integrate2d_grazing_incidence(data=data,
+                                                incident_angle=0.12, #degrees
+                                                angle_unit="deg",
+                                                tilt_angle=0.001,
+                                                sample_orientation=6,
+                                                )
+
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
