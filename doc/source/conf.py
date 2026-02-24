@@ -73,6 +73,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'nbsphinx',
     'pydata_sphinx_theme',
+    'm2md'
 ]
 
 if sphinx.__version__ < "1.4":
@@ -82,7 +83,7 @@ if sphinx.__version__ < "1.4":
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
