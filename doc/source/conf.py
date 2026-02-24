@@ -73,7 +73,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'nbsphinx',
     'pydata_sphinx_theme',
-    'm2md'
+    'm2r2'
 ]
 
 if sphinx.__version__ < "1.4":
