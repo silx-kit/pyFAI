@@ -13,3 +13,4 @@ ipython_genutils
 pydata-sphinx-theme
 importlib_resources; python_version < '3.9'
 m2r2
+lxml_html_clean
