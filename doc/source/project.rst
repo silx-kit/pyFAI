@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 12/12/2025
+:Date: 25/02/2026
 :Keywords: Project management description
 :Target: developers
 
@@ -166,6 +166,7 @@ code and not a management indicator. <http://www.exampler.com/testing-com/writin
 
    coverage
 
+.. mdinclude:: AI_policy
 
 Continuous integration
 ----------------------
