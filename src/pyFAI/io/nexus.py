@@ -46,6 +46,7 @@ from ..containers import Integrate1dResult, ErrorModel
 from .. import version
 from .ponifile import PoniFile
 from ..method_registry import IntegrationMethod
+from ..units import hc
 logger = logging.getLogger(__name__)
 try:
     import h5py
@@ -843,13 +844,13 @@ def save_NXazint1d(filename, results,
         msg = f"Unsupported unit '{result.unit.name}'. Allowed units are: {list(allowed_units.keys())}"
         raise ValueError(msg)
 
-    if mode not in ("w","a"):
-        raise ValueError("mode must be 'w' or 'a'")
+    if mode not in ("w", "a"):
+        raise ValueError(f"Mode must be 'w' or 'a', not {mode!r}")
     
     if mode == "w" or (mode == "a" and not h5py.is_hdf5(filename)):
         ## Write/overwrite mode
         h5py.get_config().track_order = True
-        with Nexus(filename, mode=mode,pure=True) as nxs:
+        with Nexus(filename, mode=mode, pure=True) as nxs:
 
             entry_grp = nxs.new_entry(entry=entry, program_name="pyFAI",
                     title=None, force_time=None, force_name=True)
@@ -877,12 +878,12 @@ def save_NXazint1d(filename, results,
             elif wavelength is not None:
                 wavelength_value = float(wavelength)
             elif energy is not None:
-                wavelength_value = (1.2398 * 1e-9) / float(energy)  # convert keV to meters
+                wavelength_value = hc * 1e-10 / float(energy)  # convert keV to meters
             else:
                 raise ValueError("Wavelength or energy must be provided if not available in result.poni.wavelength")
             mono_grp["wavelength"] = float(wavelength_value * 1e10)
             mono_grp["wavelength"].attrs["units"] = "angstrom"
-            energy = (1.2398 * 1e-9) / wavelength_value
+            energy = (hc * 1e-10) / wavelength_value
             mono_grp.create_dataset("energy", data=energy)
             mono_grp["energy"].attrs["units"] = "keV"
             
