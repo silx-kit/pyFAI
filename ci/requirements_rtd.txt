@@ -12,3 +12,4 @@ docutils<0.20
 ipython_genutils
 pydata-sphinx-theme
 importlib_resources; python_version < '3.9'
+m2d2
