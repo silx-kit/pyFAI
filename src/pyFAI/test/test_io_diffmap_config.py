@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "24/02/2026"
 
 import unittest
 import json
@@ -189,7 +189,7 @@ class TestDiffmapConfig(unittest.TestCase):
 
     def test_diffmap_parse(self):
         fn = os.path.join(UtilsTest.tempdir, "test_diffmap_parse.json")
-        with open(fn, "w") as w:
+        with open(fn, "w", encoding="utf-8") as w:
             w.write(test_data)
         dm = DiffMap()
         opts, config = dm.parse(sysargv=["diffmap", "--config", fn], with_config=True)
@@ -210,7 +210,7 @@ class TestDiffmapConfig(unittest.TestCase):
 
     def test_diffmap_consistency(self):
         fn = os.path.join(UtilsTest.tempdir, "test_diffmap_parse.json")
-        with open(fn, "w") as w:
+        with open(fn, "w", encoding="utf-8") as w:
             w.write(test_data)
         dm = DiffMap()
         dm.set_config(self.inp)

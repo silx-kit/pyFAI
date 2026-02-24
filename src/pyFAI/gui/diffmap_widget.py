@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "24/02/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -498,7 +498,7 @@ class DiffMapWidget(qt.QWidget):
         if fname is None:
             fname = self.json_file
         config = self.get_diffmap_config()
-        with open(fname, "w") as fd:
+        with open(fname, "w", encoding="utf-8") as fd:
             fd.write(json.dumps(config.as_dict(), indent=2))
         return config
 

@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2025"
+__date__ = "24/02/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -535,7 +535,7 @@ class Goniometer(object):
         """
         dico = self.to_dict()
         try:
-            with open(filename, "w") as f:
+            with open(filename, "w", encoding="utf-8") as f:
                 f.write(json.dumps(dico, indent=2))
         except IOError:
             logger.error("IOError while writing to file %s", filename)
