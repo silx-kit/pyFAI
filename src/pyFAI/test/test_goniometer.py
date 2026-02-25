@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "24/02/2026"
 
 import os
 import math
@@ -180,7 +180,7 @@ class TestTranslation(unittest.TestCase):
         """
 
         fname = os.path.join(UtilsTest.tempdir, "extended.json")
-        with open(fname, "w") as of:
+        with open(fname, "w", encoding="utf-8") as of:
             of.write(jsons)
         gonio = Goniometer.sload(fname)
         self.assertTrue(isinstance(gonio.trans_function, ExtendedTransformation))

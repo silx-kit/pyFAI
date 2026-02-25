@@ -561,7 +561,7 @@ class WorkerConfig:
 
     def save(self, filename):
         """Dump the content of the dataclass as JSON file"""
-        with open(filename, "w") as w:
+        with open(filename, "w", encoding="utf-8") as w:
             w.write(json.dumps(self.as_dict(), indent=2))
 
     @classmethod
@@ -885,13 +885,13 @@ class WorkerFiberConfig(WorkerConfig):
     def save(self, filename, pop_azimuthal_params:bool=True):
         """Dump the content of the dataclass as JSON file"""
         config = self.as_dict()
-        
+
         # Serialize fiber units
         for key in ("unit_ip", "unit_oop"):
             if key in config:
                 unit = get_unit_fiber(**config[key])
                 config[key] = unit.get_config()
-        
+
         if pop_azimuthal_params:
             for key in ["nbpt_rad", "nbpt_azim",
                         "radial_range", "azimuth_range",
@@ -902,5 +902,5 @@ class WorkerFiberConfig(WorkerConfig):
                 if key in config:
                     config.pop(key)
 
-        with open(filename, "w") as w:
+        with open(filename, "w", encoding="utf-8") as w:
             w.write(json.dumps(config, indent=2))

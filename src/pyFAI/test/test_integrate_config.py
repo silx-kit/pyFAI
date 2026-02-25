@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/04/2025"
+__date__ = "24/02/2026"
 
 import os
 import json
@@ -140,7 +140,7 @@ class TestRegression(unittest.TestCase):
         expected_with_gpu = ("no", "lut", "opencl")
         config = {"ai": {"method": expected_without_gpu}}
         config_file = os.path.join(utilstest.UtilsTest.tempdir, "test_2132.json")
-        with open(config_file, "w") as fp:
+        with open(config_file, "w", encoding="utf-8") as fp:
             json.dump(config, fp)
 
         # without GPU option -g

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 #
-#    Copyright (C) 2016-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2016-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "08/10/2025"
+__date__ = "24/02/2026"
 __license__ = "MIT"
 __copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -615,7 +615,8 @@ class Bench(object):
         if filename is None:
             filename = f"benchmark-{time.strftime('%Y%m%d-%H%M%S')}.json"
         self.update_mp()
-        json.dump(self.results, open(filename, "w"), indent=4)
+        with open(filename, "w", encoding="utf-8") as wd:
+            json.dump(self.results, wd, indent=4)
         if self.fig is not None:
             self.fig.savefig(filename[:-4] + "svg")
 
@@ -772,7 +773,7 @@ class Bench(object):
         return size
 
     # Deprecated compatibility layer
-    get_size = deprecated(size.fget, reason="use property", since_version="2025.09")    
+    get_size = deprecated(size.fget, reason="use property", since_version="2025.09")
 
 
 def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
