@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "24/02/2026"
 
 import unittest
 import os
@@ -98,7 +98,7 @@ class TestMask(unittest.TestCase):
                         else:
                             data.append(line.strip())
                 ds["poni"] = os.path.join(cls.tmp_dir, os.path.basename(ds["poni"]))
-                with open(ds["poni"], "w") as f:
+                with open(ds["poni"], "w", encoding="utf-8") as f:
                     f.write(os.linesep.join(data))
 
     @classmethod

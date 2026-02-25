@@ -2,7 +2,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2015-2023 European Synchrotron Radiation Facility
+# Copyright (C) 2015-2026 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "13/05/2025"
+__date__ = "24/02/2026"
 __license__ = "MIT"
 
 import sys
@@ -515,7 +515,7 @@ else:
 if options.coverage:
     cov.stop()
     cov.save()
-    with open("coverage.rst", "w") as fn:
+    with open("coverage.rst", "w", encoding="utf-8") as fn:
         fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH))
     print(cov.report())
     print("")

@@ -34,7 +34,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "13/01/2025"
+__date__ = "24/02/2026"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -583,7 +583,7 @@ class Spline(object):
             lst.append(txt)
             txt = ""
         lst.append("")
-        with open(filename, "w") as fil:
+        with open(filename, "w", encoding="utf-8") as fil:
             fil.write("\n".join(lst))
 
     def tilt(self, center=(0.0, 0.0), tiltAngle=0.0, tiltPlanRot=0.0,
