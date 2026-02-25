@@ -7,10 +7,11 @@ cython >=0.29.31
 pygments[plugins]
 sphinxcontrib-programoutput
 silx >= 2
-nbsphinx
+#nbsphinx
 docutils<0.20
 ipython_genutils
 pydata-sphinx-theme
 importlib_resources; python_version < '3.9'
-m2r2
+#m2r2
 lxml_html_clean
+myst-nb

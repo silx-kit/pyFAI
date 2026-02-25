@@ -71,9 +71,10 @@ extensions = [
     'sphinx.ext.todo',
     'sphinxcontrib.programoutput',
     'sphinx.ext.mathjax',
-    'nbsphinx',
+#    'nbsphinx',
     'pydata_sphinx_theme',
-    'm2r2'
+    'myst_nb',
+    #'myst_parser'
 ]
 
 if sphinx.__version__ < "1.4":
@@ -83,8 +84,10 @@ if sphinx.__version__ < "1.4":
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = ['.rst', '.md']
-
+source_suffix = {".rst": "restructuredtext",
+                 ".md": "myst-nb",
+                 ".ipynb": "myst-nb",
+                }
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
@@ -309,6 +312,26 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 # texinfo_show_urls = 'footnote'
 
+## myst configuration
+myst_enable_extensions = [
+    "colon_fence",      # ::: for admonitions / directives
+    "deflist",          # Definition lists
+    "html_admonition",  # Use HTML admonition syntax
+    "html_image",       # Inline HTML <img> tags
+    #"linkify",          # Auto‑link URLs
+    "replacements",    # Smart quotes, dashes, etc.
+    "substitution",    # .. |sub| replace syntax
+    "tasklist",        # GitHub‑style task lists
+]
+# Enable MyST to parse inline LaTeX, if you need it
+myst_update_mathjax = False   # keep default MathJax handling
+nb_execution_mode = "off"
+
+## Nbsphix configuration:
+
+#nbsphinx_allow_errors = True          # Continue building even if a notebook errors
+#nbsphinx_execute = 'never'           # Execute notebooks on each build
+#nbsphinx_prompt_width = '0'           # Hide the >>> prompts
 
 def skip(app, what, name, obj, skip, options):
     if name == "__init__":

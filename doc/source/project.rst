@@ -164,9 +164,8 @@ code and not a management indicator. <http://www.exampler.com/testing-com/writin
 .. toctree::
    :maxdepth: 1
 
-   coverage
-
-.. mdinclude:: AI_policy
+   coverage.rst
+   AI_policy.md
 
 Continuous integration
 ----------------------

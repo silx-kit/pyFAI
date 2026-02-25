@@ -13,7 +13,7 @@ PyOpenGL
 PySide6; python_version < '3.14'
 pyqt6; python_version >= '3.14'
 hdf5plugin
-nbsphinx
+myst-nb
 pydata-sphinx-theme
 importlib_resources; python_version < '3.9'
 sphinxcontrib.programoutput
