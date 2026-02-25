@@ -27,21 +27,25 @@
 
 """Module for exporting pyFAI object in JSON"""
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/10/2022"
+__date__ = "25/02/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-
+import numpy
 from .. import units
 from json import JSONEncoder
 
 
-class UnitEncoder(JSONEncoder):
-    def default(self, unit):
-        if isinstance(unit, units.Unit):
-            return unit.name
-        JSONEncoder.default(self, unit)
+class PyFAIEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, units.Unit):
+            return obj.name
+        elif isinstance(obj, numpy.float32):
+            return float(obj)
+        JSONEncoder.default(self, obj)
+
+UnitEncoder = PyFAIEncoder
