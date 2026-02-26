@@ -208,7 +208,20 @@ class TestNexus(unittest.TestCase):
                 logger.warning("unchecked: %s vs %s", a, b)
         # clean up
         os.unlink(fname)
-
+        
+    @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
+    def test_NXazint1d(self):
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            img = fimg.data
+        ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
+        ref = ai.integrate1d(img, 1000, unit="q_nm^-1", error_model="poisson")
+        fname = os.path.join(self.tmpdir, "NXazint1d.h5")
+        io.nexus.save_NXazint1d(fname, ref)
+        # Check if it looks like a Nexus file ... one shoud implement a complete reader.
+        with io.nexus.Nexus(fname) as nxs:
+            self.assertEqual(len(nxs.get_entries(), 1)
+        # clean up
+        os.unlink(fname)
 
 class TestHDF5Writer(unittest.TestCase):
 
