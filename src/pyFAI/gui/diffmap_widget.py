@@ -500,7 +500,7 @@ class DiffMapWidget(qt.QWidget):
             fname = self.json_file
         config = self.get_diffmap_config()
         with open(fname, "w", encoding="utf-8") as fd:
-            fd.write(json.dumps(config.as_dict(), indent=2), cls=PyFAIEncoder)
+            fd.write(json.dumps(config.as_dict(), indent=2, cls=PyFAIEncoder))
         return config
 
     def restore(self, fname=None):
