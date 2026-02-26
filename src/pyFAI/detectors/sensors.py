@@ -37,18 +37,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2026"
+__date__ = "26/02/2026"
 __status__ = "stable"
 
 import os
 import logging
-import json
 import copy
 from math import exp
 from collections import namedtuple
 import numpy
 from typing import ClassVar
-from ..io._json import PyFAIEncoder
+from ..io._json import json_dumps
 from ..containers import dataclass, fields
 from ..resources import resource_filename
 from ..utils.stringutil import to_eng, from_eng
@@ -171,7 +170,7 @@ class SensorConfig:
     THICKNESS_TOLERANCE: ClassVar[float] = 1e-6
 
     def __repr__(self):
-        return json.dumps(self.as_dict(), indent=4, cls=PyFAIEncoder)
+        return json_dumps(self.as_dict(), indent=2)
 
     def __str__(self):
         name = self.material.name if isinstance(self.material, SensorMaterial) else self.material

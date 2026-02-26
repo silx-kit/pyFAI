@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2026"
+__date__ = "26/02/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -44,7 +44,6 @@ from urllib.parse import urlparse
 import logging
 import numpy
 import fabio
-import json
 from threading import Event
 import __main__ as main
 from .opencl import ocl
@@ -54,7 +53,7 @@ from .io import Nexus, get_isotime, h5py
 from .io.integration_config import WorkerConfig
 from .io.diffmap_config import DiffmapConfig, ListDataSet
 from .io.ponifile import PoniFile
-from .io._json import PyFAIEncoder
+from .io._json import json_dumps
 from .worker import Worker
 from .utils.decorators import deprecated, deprecated_warning
 from string import digits as DIGITS
@@ -517,7 +516,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         config = nxs.new_class(process_grp, "configuration", "NXnote")
         config["type"] = "text/json"
         worker_config = self.worker.get_config()
-        config["data"] = json.dumps(worker_config, indent=2, separators=(",\r\n", ": "), cls=PyFAIEncoder)
+        config["data"] = json_dumps(worker_config,
+                                   indent=2,
+                                   separators=(",\r\n", ": "))
 
         self.nxdata_grp = nxs.new_class(process_grp, "result", class_type="NXdata")
         entry_grp.attrs["default"] = posixpath.relpath(self.nxdata_grp.name, entry_grp.name)

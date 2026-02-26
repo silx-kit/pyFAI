@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -45,7 +45,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "26/02/2026"
 __status__ = "development"
 
 import threading
@@ -53,7 +53,6 @@ import os.path
 import logging
 import json
 import numpy
-
 
 from . import average
 from . import method_registry
@@ -65,6 +64,7 @@ from .distortion import Distortion
 from . import units
 from .io import ponifile, image as io_image
 from .io.integration_config import WorkerConfig, WorkerFiberConfig
+from .io._json import json_dumps
 from .engines.preproc import preproc as preproc_numpy
 from .utils.mathutil import binning as rebin
 from .utils.decorators import deprecated
@@ -551,8 +551,8 @@ class Worker(object):
 
     def get_json_config(self):
         """return configuration as a JSON string"""
-        return json.dumps(self.get_config(),
-                          indent=2)
+        return json_dumps(self.get_config(),
+                         indent=2)
 
     def set_json_config(self, json_file):
         if os.path.isfile(json_file):
@@ -747,7 +747,7 @@ class WorkerFiber(Worker):
         self.oop_range = oop_range
         self._npt_oop = npt_oop
         self._npt_ip = npt_ip
-        
+
         self.vertical_integration = vertical_integration
         self.do_integration_1d = integration_1d
         self.integrator_name = integrator_name
@@ -807,7 +807,7 @@ class WorkerFiber(Worker):
         else:
             integrator_name="integrate2d_grazing_incidence"
         self._processor = self.ai.__getattribute__(integrator_name)
-        
+
         # The actual method is always `integrate2d` (always 2dim)
         dim = 2
         if isinstance(self.method, (list, tuple)):
@@ -829,7 +829,7 @@ class WorkerFiber(Worker):
         else:
             logger.error(f"No method available for {dim}D integration on {self.method} with target {self.opencl_device}")
             self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
-        
+
         self.integrator_name = self._processor.__name__
         self.radial = None
         self.azimuthal = None

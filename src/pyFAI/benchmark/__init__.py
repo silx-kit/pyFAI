@@ -24,12 +24,11 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "25/02/2026"
+__date__ = "26/02/2026"
 __license__ = "MIT"
-__copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, France"
+__copyright__ = "2012-2026 European Synchrotron Radiation Facility, Grenoble, France"
 
 from collections import OrderedDict
-import json
 import sys
 import time
 import timeit
@@ -40,7 +39,7 @@ import fabio
 import os.path as op
 from math import ceil
 import numpy
-from ..io._json import PyFAIEncoder
+from ..io._json import json_dump
 from .. import load, detector_factory
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod, Method
@@ -616,7 +615,7 @@ class Bench(object):
             filename = f"benchmark-{time.strftime('%Y%m%d-%H%M%S')}.json"
         self.update_mp()
         with open(filename, "w", encoding="utf-8") as wd:
-            json.dump(self.results, wd, indent=4, cls=PyFAIEncoder)
+            json_dump(self.results, wd, indent=2)
         if self.fig is not None:
             self.fig.savefig(filename[:-4] + "svg")
 

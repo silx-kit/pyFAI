@@ -78,7 +78,7 @@ import copy
 from typing import ClassVar, Union
 import numpy
 from .ponifile import PoniFile
-from ._json import PyFAIEncoder
+from ._json import json_dumps
 from ..containers import PolarizationDescription, ErrorModel, dataclass, fields, asdict
 from .. import detectors
 from .. import method_registry
@@ -482,7 +482,7 @@ class WorkerConfig:
     ENFORCED: ClassVar[list] = ["polarization_description", "poni", "error_model", "unit"]
 
     def __repr__(self):
-        return json.dumps(self.as_dict(), indent=4, cls=PyFAIEncoder)
+        return json_dumps(self.as_dict(), indent=4)
 
     def as_dict(self):
         """Like asdict, but with some more features:
@@ -563,7 +563,7 @@ class WorkerConfig:
     def save(self, filename):
         """Dump the content of the dataclass as JSON file"""
         with open(filename, "w", encoding="utf-8") as w:
-            w.write(json.dumps(self.as_dict(), indent=2, cls=PyFAIEncoder))
+            w.write(json_dumps(self.as_dict(), indent=2))
 
     @classmethod
     def from_file(cls, filename: str):
@@ -904,4 +904,4 @@ class WorkerFiberConfig(WorkerConfig):
                     config.pop(key)
 
         with open(filename, "w", encoding="utf-8") as w:
-            w.write(json.dumps(config, indent=2, cls=PyFAIEncoder))
+            w.write(json_dumps(config, indent=2))

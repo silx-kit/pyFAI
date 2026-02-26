@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2026"
+__date__ = "26/02/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -49,7 +49,7 @@ from .matplotlib import pyplot, colors
 import threading
 from ..utils import int_, str_, float_, get_ui_file
 from ..units import to_unit
-from ..io._json import PyFAIEncoder
+from ..io._json import json_dumps
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
@@ -500,7 +500,7 @@ class DiffMapWidget(qt.QWidget):
             fname = self.json_file
         config = self.get_diffmap_config()
         with open(fname, "w", encoding="utf-8") as fd:
-            fd.write(json.dumps(config.as_dict(), indent=2), cls=PyFAIEncoder)
+            fd.write(json_dumps(config.as_dict(), indent=2))
         return config
 
     def restore(self, fname=None):
