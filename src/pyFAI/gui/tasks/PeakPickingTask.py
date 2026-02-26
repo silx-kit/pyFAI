@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "26/02/2026"
 
 import logging
 import numpy
@@ -1629,6 +1629,10 @@ class PeakPickingTask(AbstractCalibrationTask):
         elif geometrySourceIndex == FROM_FIT:
             geometryModel = self.model().fittedGeometry()
             extractor.setGeometryModel(geometryModel)
+            if not geometryModel.isValid():
+                # Fallback on peaksModel
+                peaksModel = self.model().peakSelectionModel()
+                extractor.setPeaksModel(peaksModel)
         else:
             raise RuntimeError()
 
