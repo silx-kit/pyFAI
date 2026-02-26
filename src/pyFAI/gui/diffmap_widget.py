@@ -2,7 +2,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2026"
+__date__ = "26/02/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -470,13 +470,17 @@ class DiffMapWidget(qt.QWidget):
         if config.fast_motor is not None:
             self.fastMotorName.setText(config.fast_motor.name or "")
             self.fastMotorPts.setText(str_(config.fast_motor.points))
-            self.fastMotorMinimum.setText(str(config.fast_motor.start))
-            self.fastMotorMaximum.setText(str(config.fast_motor.stop))
+            if config.fast_motor.start is not None:
+                self.fastMotorMinimum.setText(str(config.fast_motor.start))
+            if config.fast_motor.stop is not None:
+                self.fastMotorMaximum.setText(str(config.fast_motor.stop))
 
         if config.slow_motor is not None:
             self.slowMotorPts.setText(str_(config.slow_motor.points))
-            self.slowMotorMinimum.setText(str(config.slow_motor.start))
-            self.slowMotorMaximum.setText(str(config.slow_motor.stop))
+            if config.slow_motor.start is not None:
+                self.slowMotorMinimum.setText(str(config.slow_motor.start))
+            if config.slow_motor.stop is not None:
+                self.slowMotorMaximum.setText(str(config.slow_motor.stop))
             self.slowMotorName.setText(config.slow_motor.name or "")
 
         self.outputFile.setText(config.output_file)
