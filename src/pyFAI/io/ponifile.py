@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,16 +31,16 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2025"
+__date__ = "26/02/2026"
 __docformat__ = 'restructuredtext'
 
 import collections
 import time
-import json
 import pathlib
 import logging
 import numpy
 from typing import TextIO
+from ._json import json_dumps
 from .. import detectors
 from ..utils import decorators
 
@@ -94,7 +94,7 @@ class PoniFile(object):
             self.read_from_duck(data)
 
     def __repr__(self) -> str:
-        return json.dumps(self.as_dict(), indent=4)
+        return json_dumps(self.as_dict(), indent=4)
 
     def __eq__(self, other) -> bool:
         """Checks the equality of two ponifile instances"""
@@ -170,7 +170,7 @@ class PoniFile(object):
             _logger.error("PoniFile claim to be version 2.1 but contains no detector orientation !!!")
         if version >= 3 and "parallax" not in config:
             _logger.error("PoniFile claim to be version 3 but contains no information about parallax correction !!!")
-            print(json.dumps(config, indent=2))
+            # print(json_dumps(config, indent=2))
 
         self.API_VERSION = version
 
@@ -304,7 +304,7 @@ class PoniFile(object):
             detector_config = detector.get_config()
             if self.API_VERSION == 2:
                 detector_config.pop("orientation")
-            txt.append(f"Detector_config: {json.dumps(detector_config)}")
+            txt.append(f"Detector_config: {json_dumps(detector_config)}")
 
         txt += [f"Distance: {self._dist}",
                 f"Poni1: {self._poni1}",

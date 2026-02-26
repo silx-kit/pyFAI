@@ -111,13 +111,17 @@ class TestNexus(unittest.TestCase):
         cls.tmpdir = os.path.join(UtilsTest.tempdir, "io_nexus")
         if not os.path.isdir(cls.tmpdir):
             os.mkdir(cls.tmpdir)
-        # print(cls.tmpdir)
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            cls.img = fimg.data
+        cls.ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
 
     @classmethod
     def tearDownClass(cls)->None:
         super(TestNexus, cls).tearDownClass()
         # shutil.rmtree(cls.tmpdir)
         cls.tmpdir = None
+        cls.ai = None
+        cls.img = None
 
     def test_new_detector(self):
         if io.h5py is None:
@@ -133,9 +137,8 @@ class TestNexus(unittest.TestCase):
 
     @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
     def test_NXmonopd(self):
-        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
-            img = fimg.data
-        ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
+        ai = self.ai
+        img = self.img
         ref = ai.integrate1d(img, 1000, unit="2th_deg", error_model="poisson")
         fname = os.path.join(self.tmpdir, "NXmonopd.h5")
         io.nexus.save_NXmonpd(fname, ref, sample="AgBh", instrument="Dubble")
@@ -170,9 +173,8 @@ class TestNexus(unittest.TestCase):
 
     @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
     def test_NXcansas(self):
-        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
-            img = fimg.data
-        ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
+        ai = self.ai
+        img = self.img
         ref = ai.integrate1d(img, 1000, unit="q_nm^-1", error_model="poisson")
         fname = os.path.join(self.tmpdir, "NXcansas.h5")
         io.nexus.save_NXcansas(fname, ref, sample="AgBh", instrument="Dubble")
@@ -208,10 +210,22 @@ class TestNexus(unittest.TestCase):
                 logger.warning("unchecked: %s vs %s", a, b)
         # clean up
         os.unlink(fname)
+        
+    @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
+    def test_NXazint1d(self):
+        ai = self.ai
+        img = self.img
+        ref = ai.integrate1d(img, 1000, unit="2th_deg", error_model="poisson")
+        fname = os.path.join(self.tmpdir, "NXazint1d.h5")
+        io.nexus.save_NXazint1d(fname, ref)
+        # Check if it looks like a Nexus file ... one shoud implement a complete reader.
+        with io.nexus.Nexus(fname) as nxs:
+            self.assertEqual(len(nxs.get_entries()), 1)
+        # clean up
+        os.unlink(fname)
 
 
 class TestHDF5Writer(unittest.TestCase):
-
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.tmpdir = os.path.join(UtilsTest.tempdir, "io_HDF5Writer")

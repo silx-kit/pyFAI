@@ -49,6 +49,7 @@ from .matplotlib import pyplot, colors
 import threading
 from ..utils import int_, str_, float_, get_ui_file
 from ..units import to_unit
+from ..io._json import json_dumps
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
@@ -503,7 +504,7 @@ class DiffMapWidget(qt.QWidget):
             fname = self.json_file
         config = self.get_diffmap_config()
         with open(fname, "w", encoding="utf-8") as fd:
-            fd.write(json.dumps(config.as_dict(), indent=2))
+            fd.write(json_dumps(config.as_dict(), indent=2))
         return config
 
     def restore(self, fname=None):
