@@ -47,6 +47,7 @@ from .. import version
 from ._json import json_dumps
 from .ponifile import PoniFile
 from ..method_registry import IntegrationMethod
+from ..units import hc
 logger = logging.getLogger(__name__)
 try:
     import h5py
@@ -796,3 +797,194 @@ def save_NXcansas(filename, result,
             extra_grp = nxs.new_class(entry_grp, "extra", "NXnote")
             extra_grp.create_dataset("data", data=json_dumps(extra, indent=2, separators=(",\r\n", ": ")))
             extra_grp.create_dataset("format", data="text/json")
+
+
+def save_NXazint1d(filename, results,
+                 mode = "w",
+                 entry="entry",
+                 instrument="beamline",
+                 source_name="source",
+                 source_type="synchrotron",
+                 source_probe="x-ray",
+                 sample="sample",
+                 energy=None,
+                 wavelength=None,
+                 ):
+    """Save integrated data into a HDF5-file following
+    the Nexus azint1d convention. This function can handle
+    a single Integrate1dResult or a list of such instances 
+    (for batch processing).
+    NB: Only '2th_deg' and 'q_A^-1' units are supported in 
+    the nxazint1d format.
+
+    :param filename: name of the file to be written
+    :param results: instance of Integrate1dResult or list of such instances
+    :param mode: file mode, "w" for write, "a" for append (create if not existing)
+    :param entry: name of the entry
+    :param instrument: name/brand of the instrument
+    :param source_name: name/brand of the particle source
+    :param source_type: kind of source as a string
+    :param source_probe: Any of these values: 'neutron' | 'x-ray' | 'electron'
+    :param sample: sample name
+    :param energy: energy in keV (only relevant if result.poni.wavelength is not available)
+    :param wavelength: wavelength in meters (only relevant if result.poni.wavelength is not available)
+    """
+    if isinstance(results, Integrate1dResult):
+        results = [results]
+    # use the first result for metadata
+    result = results[0]
+
+    # validate the "results" before opening the file
+    if not isinstance(result, Integrate1dResult):
+        raise TypeError("results must be an instance of Integrate1dResult or a list of such instances")
+    # check that the radial units are allowed
+    allowed_units = {"2th_deg":"2theta",
+                      "q_A^-1":"q",
+                     }  
+    if result.unit.name not in allowed_units:
+        msg = f"Unsupported unit '{result.unit.name}'. Allowed units are: {list(allowed_units.keys())}"
+        raise ValueError(msg)
+
+    if mode not in ("w", "a"):
+        raise ValueError(f"Mode must be 'w' or 'a', not {mode!r}")
+    
+    if mode == "w" or (mode == "a" and not h5py.is_hdf5(filename)):
+        ## Write/overwrite mode
+        h5py.get_config().track_order = True
+        with Nexus(filename, mode=mode, pure=True) as nxs:
+
+            entry_grp = nxs.new_entry(entry=entry, program_name="pyFAI",
+                    title=None, force_time=None, force_name=True)
+            entry_grp["definition"] = "NXazint1d"
+            entry_grp.attrs["default"] = "data"
+            #entry_grp["definition"].attrs["version"] = "3.1"
+
+            entry_grp["solid_angle_applied"] = result.has_solidangle_correction
+            entry_grp["polarization_applied"] = result.polarization_factor is not None
+            entry_grp["normalization_applied"] = result.weighted_average
+            entry_grp["monitor_applied"] = result.normalization_factor != 1.0
+
+            # instrument
+            instrument_grp = nxs.new_instrument(entry_grp, "instrument")
+            instrument_grp["name"] = str(instrument)
+            # source
+            source_grp = nxs.new_class(instrument_grp, "source", "NXsource")
+            source_grp["type"] = str(source_type)
+            source_grp["name"] = str(source_name)
+            source_grp["probe"] = str(source_probe)
+            # monochromator
+            mono_grp = nxs.new_class(instrument_grp, "monochromator", "NXmonochromator")
+            if result.poni and  result.poni.wavelength:
+                wavelength_value = float(result.poni.wavelength) # in meters
+            elif wavelength is not None:
+                wavelength_value = float(wavelength)
+            elif energy is not None:
+                wavelength_value = hc * 1e-10 / float(energy)  # convert keV to meters
+            else:
+                raise ValueError("Wavelength or energy must be provided if not available in result.poni.wavelength")
+            mono_grp["wavelength"] = float(wavelength_value * 1e10)
+            mono_grp["wavelength"].attrs["units"] = "angstrom"
+            energy = (hc * 1e-10) / wavelength_value
+            mono_grp.create_dataset("energy", data=energy)
+            mono_grp["energy"].attrs["units"] = "keV"
+            
+            # process
+            _save_pyFAI(nxs, entry_grp, result)
+            
+            # data
+            # data_grp = nxs.new_class(entry_grp, "data", "NXdata")
+            data_grp = entry_grp.create_group("data",track_order=True)
+            data_grp.attrs["NX_class"] = "NXdata"
+            data_grp.attrs["signal"] = "I"
+            data_grp.attrs["axes"] = [".","radial_axis"]
+            data_grp.attrs["interpretation"] = "spectrum"
+
+            # Radial axis
+            radial = result.radial
+            radial_ds = data_grp.create_dataset("radial_axis", 
+                                                data=radial, 
+                                                shape=radial.shape, 
+                                                dtype=radial.dtype)
+            radial_ds.attrs["long_name"] = allowed_units[result.unit.name]
+            radial_ds.attrs["units"] = "degrees" if result.unit.name == "2th_deg" else "1/angstrom"
+
+            # Intensity
+            intensity = [result.intensity for result in results]
+            intensity_ds = data_grp.create_dataset("I", 
+                                                data=intensity,
+                                                chunks=(1,len(radial)),
+                                                shape=(len(intensity), len(radial)),
+                                                dtype=result.intensity.dtype,
+                                                maxshape=(None, len(radial)),
+                                                )
+            
+            intensity_ds.attrs["long_name"] = "intensity"
+            intensity_ds.attrs["units"] = "arbitrary units"
+
+            # Errors (if available)
+            if hasattr(result, "sem") and result.sem is not None:
+                sem = [result.sem for result in results]
+                errors_ds = data_grp.create_dataset("I_errors",
+                                                    data=sem,
+                                                    chunks=(1,len(radial)),
+                                                    shape=(len(sem), len(radial)),
+                                                    dtype=result.sem.dtype,
+                                                    maxshape=(None, len(radial)),
+                                                    )
+                errors_ds.attrs["long_name"] = "estimated errors on intensity"
+                errors_ds.attrs["units"] = "arbitrary units"
+
+            # Norm (if available)
+            if hasattr(result, "count"):
+                norm_ds = data_grp.create_dataset("norm", data=result.count)
+                norm_ds.attrs["long_name"] = "number of pixels contributing to the corresponding bin"
+                norm_ds.attrs["units"] = "arbitrary units"
+
+            # monitor ("I0" or "normalization_factor")
+            monitor = [result.normalization_factor for result in results]
+            # check if any of the normalization factors is different from 1.0
+            if any(m != 1.0 for m in monitor):
+                monitor_grp = nxs.new_class(entry_grp, "monitor", "NXmonitor")
+                monitor_grp.create_dataset("data", data=monitor,maxshape=(None,))
+
+            # sample
+            sample_grp = nxs.new_class(entry_grp, "sample", "NXsample")
+            sample_grp["name"] = sample
+    ## Append mode
+    else: # mode == "a" and file exists
+        with Nexus(filename, mode=mode,pure=True) as nxs:
+            entry_grps = nxs.get_class(nxs.h5, "NXentry")
+            entry_grp = None
+            for entry in entry_grps:
+                if "NXazint1d" in entry.get("definition")[()].decode():
+                    entry_grp = entry
+                    break
+            if entry_grp is None:
+                raise ValueError("No NXazint1d entry found in the file to append to.")
+
+             # data
+            data_grp = nxs.get_default_NXdata()
+            # Intensity
+            intensity = [result.intensity for result in results]
+            current_size = data_grp["I"].shape[0]
+            new_size = current_size + len(intensity)
+            data_grp["I"].resize((new_size, data_grp["I"].shape[1]))
+            data_grp["I"][current_size:new_size, :] = intensity
+            # Errors (if available)
+            if hasattr(result, "sem") and result.sem is not None:
+                sem = [result.sem for result in results]
+                data_grp["I_errors"].resize((new_size, data_grp["I_errors"].shape[1]))
+                data_grp["I_errors"][current_size:new_size, :] = sem
+
+            # monitor
+            monitor_grp = nxs.get_class(entry_grp, "NXmonitor")
+            # check if there is unambiguous monitor group
+            if len(monitor_grp) == 1:
+                monitor_grp = monitor_grp[0]
+                monitor = [result.normalization_factor for result in results]
+                current_size = monitor_grp["data"].shape[0]
+                new_size = current_size + len(monitor)
+                monitor_grp["data"].resize((new_size,))
+                monitor_grp["data"][current_size:new_size] = monitor
+            else:
+                print("Multiple NXmonitor groups found; cannot append monitor data.")
