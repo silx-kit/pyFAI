@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "26/02/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -44,6 +44,7 @@ import posixpath
 from ..utils.decorators import deprecated
 from ..containers import Integrate1dResult, ErrorModel
 from .. import version
+from ._json import json_dumps
 from .ponifile import PoniFile
 from ..method_registry import IntegrationMethod
 logger = logging.getLogger(__name__)
@@ -529,7 +530,7 @@ def _save_pyFAI(nexus, entry_grp, result):
     process["version"] = str(version)
     process["date"] = get_isotime()
     cfg_grp = nexus.new_class(process, "poni", "NXnote")
-    cfg_grp.create_dataset("data", data=json.dumps(result.poni.as_dict(), indent=2, separators=(",\r\n", ": ")))
+    cfg_grp.create_dataset("data", data=json_dumps(result.poni.as_dict(), indent=2, separators=(",\r\n", ": ")))
     cfg_grp.create_dataset("format", data="text/json")
     col_grp = nexus.new_class(process, "integrate", "NXcollection")
     pf = float(result.polarization_factor) if result.polarization_factor is not None else "None"
@@ -542,7 +543,7 @@ def _save_pyFAI(nexus, entry_grp, result):
     col_grp["has_dark_correction"] = result.has_dark_correction
     col_grp["has_flat_correction"] = result.has_flat_correction
     col_grp["has_solidangle_correction"] = result.has_solidangle_correction
-    col_grp["metadata"] = json.dumps(result.metadata)
+    col_grp["metadata"] = json_dumps(result.metadata)
     if result.percentile is not None:
         col_grp.create_dataset("percentile", data=result.percentile).attrs["doc"] = "used with median-filter like reduction"
     col_grp.create_dataset("method_called", data=result.method_called).attrs["doc"] = "name of the function called of AzimuthalIntegrator"
@@ -551,7 +552,7 @@ def _save_pyFAI(nexus, entry_grp, result):
     col_grp.create_dataset("weighted_average", data=result.weighted_average).attrs["doc"] = "use the weighted average (as in -ng engines) or the unweighted one (as in -legacy) ?"
 
     if result.method:
-        col_grp.create_dataset("integration_method", data=json.dumps(result.method.method._asdict() or {})).\
+        col_grp.create_dataset("integration_method", data=json_dumps(result.method.method._asdict() or {})).\
             attrs["doc"] = "dict with the type of splitting, the kind of algorithm and its implementation"
     return process
 
@@ -608,7 +609,7 @@ def save_NXmonpd(filename, result,
         detector_grp = nxs.new_class(instrument_grp, detector, "NXdetector")
         detector_grp["name"] = detector
         if result.poni:
-            detector_grp["config"] = json.dumps(result.poni.detector.get_config())
+            detector_grp["config"] = json_dumps(result.poni.detector.get_config())
         polar_angle_ds = detector_grp.create_dataset("polar_angle", data=result.radial)
         polar_angle_ds.attrs["axis"] = "1"
         polar_angle_ds.attrs["units"] = str(result.unit)
@@ -661,7 +662,7 @@ def save_NXmonpd(filename, result,
 
         if extra:
             extra_grp = nxs.new_class(entry_grp, "extra", "NXnote")
-            extra_grp.create_dataset("data", data=json.dumps(extra, indent=2, separators=(",\r\n", ": ")))
+            extra_grp.create_dataset("data", data=json_dumps(extra, indent=2, separators=(",\r\n", ": ")))
             extra_grp.create_dataset("format", data="text/json")
 
 
@@ -721,7 +722,7 @@ def save_NXcansas(filename, result,
         detector_grp.attrs["canSAS_class"] = "SASdetector"
         detector_grp["name"] = detector
         if result.poni:
-            detector_grp["config"] = json.dumps(result.poni.detector.get_config())
+            detector_grp["config"] = json_dumps(result.poni.detector.get_config())
             detector_grp.create_dataset("SDD", data=result.poni.dist).attrs["units"] = "m"
             detector_grp.create_dataset("x_position", data=-result.poni.poni2).attrs["units"] = "m"
             detector_grp.create_dataset("y_position", data=-result.poni.poni1).attrs["units"] = "m"
@@ -793,5 +794,5 @@ def save_NXcansas(filename, result,
 
         if extra:
             extra_grp = nxs.new_class(entry_grp, "extra", "NXnote")
-            extra_grp.create_dataset("data", data=json.dumps(extra, indent=2, separators=(",\r\n", ": ")))
+            extra_grp.create_dataset("data", data=json_dumps(extra, indent=2, separators=(",\r\n", ": ")))
             extra_grp.create_dataset("format", data="text/json")

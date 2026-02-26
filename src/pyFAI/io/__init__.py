@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2026"
+__date__ = "26/02/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -55,7 +55,7 @@ import threading
 from collections import OrderedDict
 import __main__ as main
 from .integration_config import WorkerConfig, WorkerFiberConfig
-from ._json import UnitEncoder
+from ._json import json_dumps
 from ..utils import StringTypes
 from ..utils.decorators import deprecated_args
 from .. import units
@@ -306,7 +306,7 @@ class HDF5Writer(Writer):
             if logger.isEnabledFor(logging.DEBUG):
                 fai_cfg.save("fai_cfg.debug.json")
                 with open("lima_cfg.debug.json", "w", encoding="utf-8") as w:
-                    w.write(json.dumps(self.lima_cfg, indent=4, cls=UnitEncoder))
+                    w.write(json_dumps(self.lima_cfg, indent=4))
 
             #self.fai_cfg.nbpt_rad = 1000 if self.fai_cfg.nbpt_rad is None else self.fai_cfg.nbpt_rad
 
@@ -329,7 +329,9 @@ class HDF5Writer(Writer):
             self.config_grp = self.nxs.new_class(self.process_grp, self.CONFIG, "NXnote")
             self.config_grp.attrs["desc"] = "PyFAI worker configuration"
             self.config_grp["type"] = "text/json"
-            self.config_grp["data"] = json.dumps(self.fai_cfg.as_dict(), indent=2, separators=(",\r\n", ": "))
+            self.config_grp["data"] = json_dumps(self.fai_cfg.as_dict(),
+                                                 indent=2,
+                                                 separators=(",\r\n", ": "))
 
             if type(fai_cfg) is WorkerConfig:
                 self._init_azimuthal()
@@ -757,7 +759,7 @@ class DefaultAiWriter(Writer):
 
         if metadata is not None:
             header_lst += ["", "Headers of the input frame:"]
-            header_lst += [i.strip() for i in json.dumps(metadata, indent=2, cls=UnitEncoder).split("\n")]
+            header_lst += [i.strip() for i in json_dumps(metadata, indent=2).split("\n")]
         header = "\n".join([f"{hdr} {i}" for i in header_lst])
 
         return header

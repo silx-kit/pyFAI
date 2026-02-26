@@ -31,13 +31,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "26/02/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import sys
 import os
-import json
 import posixpath
 from collections import OrderedDict
 import logging
@@ -45,7 +44,7 @@ import numpy
 import fabio
 from .. import version
 from ..units import to_unit
-from ._json import UnitEncoder
+from ._json import json_dumps
 from .nexus import Nexus, get_isotime, h5py
 logger = logging.getLogger(__name__)
 try:
@@ -138,7 +137,7 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
             config_grp["type"] = "text/json"
             parameters = OrderedDict([("geometry", ai.get_config()),
                                       ("peakfinder", extra)])
-            config_grp["data"] = json.dumps(parameters, indent=2, separators=(",\r\n", ": "), cls=UnitEncoder)
+            config_grp["data"] = json_dumps(parameters, indent=2, separators=(",\r\n", ": "))
 
             detector_grp = nexus.new_class(instrument, ai.detector.name.replace(" ", "_"), "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)
@@ -217,7 +216,7 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
         process = result.create_group("process_1")
         process.attrs["NX_class"] = "NXprocess"
         if extra:
-            process["metadata"] = json.dumps(extra, indent=2, cls=UnitEncoder)
+            process["metadata"] = json_dumps(extra, indent=2)
             process["metadata"].attrs["type"] = "text/json"
         process.create_dataset("command",
                                data=numpy.array(sys.argv, dtype=h5py.special_dtype(vlen=str)),

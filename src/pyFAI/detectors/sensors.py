@@ -37,18 +37,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2026"
+__date__ = "26/02/2026"
 __status__ = "stable"
 
 import os
 import logging
-import json
 import copy
 from math import exp
 from collections import namedtuple
-from typing import ClassVar
-from ..containers import dataclass, fields
 import numpy
+from typing import ClassVar
+from ..io._json import json_dumps
+from ..containers import dataclass, fields
 from ..resources import resource_filename
 from ..utils.stringutil import to_eng, from_eng
 
@@ -166,11 +166,11 @@ class SensorConfig:
     "class for configuration of a sensor"
     material: SensorMaterial|str
     thickness: float=None
-    
+
     THICKNESS_TOLERANCE: ClassVar[float] = 1e-6
 
     def __repr__(self):
-        return json.dumps(self.as_dict(), indent=4)
+        return json_dumps(self.as_dict(), indent=2)
 
     def __str__(self):
         name = self.material.name if isinstance(self.material, SensorMaterial) else self.material
@@ -186,10 +186,10 @@ class SensorConfig:
         """Check for equality, especially for the thickness within 1µm"""
         if isinstance(other, self.__class__):
             if (self.material == other.material):
-                if (self.thickness and 
-                    other.thickness and 
+                if (self.thickness and
+                    other.thickness and
                     numpy.isclose(self.thickness, other.thickness, atol=self.THICKNESS_TOLERANCE)):
-                    
+
                         return True
                 else:
                     return self.thickness == other.thickness
