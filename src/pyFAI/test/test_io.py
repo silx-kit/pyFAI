@@ -215,7 +215,7 @@ class TestNexus(unittest.TestCase):
     def test_NXazint1d(self):
         ai = self.ai
         img = self.img
-        ref = ai.integrate1d(img, 1000, unit="q_A^-1", error_model="poisson")
+        ref = ai.integrate1d(img, 1000, unit="2th_deg", error_model="poisson")
         fname = os.path.join(self.tmpdir, "NXazint1d.h5")
         io.nexus.save_NXazint1d(fname, ref)
         # Check if it looks like a Nexus file ... one shoud implement a complete reader.
