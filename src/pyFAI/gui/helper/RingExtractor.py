@@ -1,7 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2026 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/09/2025"
+__date__ = "26/02/2026"
 
 import logging
 import numpy
@@ -39,6 +39,7 @@ from ...geometry import Geometry
 from ..peak_picker import PeakPicker
 from . import model_transform
 from ... import units
+from ..dialog.MessageBox import message_box
 
 _logger = logging.getLogger(__name__)
 
@@ -268,17 +269,23 @@ class RingExtractorThread(qt.QThread):
         peaksModel = self.__peaksModel
         geometryModel = self.__geometryModel
 
-        if peaksModel is not None and geometryModel is not None:
-            raise ValueError("Computation has to be done from peaks or from geometry")
+        if geometryModel is not None:
+            if geometryModel.isValid():
+                peaks = None
+            else:
+                msg = "The fitted model is not valid. One cannot extract rings from it."\
+                "\n\nI will guess the geometry from the set of control-points which is not as precise."
+                message_box(None, "error", msg)
+                geometryModel = None
 
-        if peaksModel is not None:
+        if peaksModel is not None and geometryModel is None:
             peaks = model_transform.createPeaksArray(peaksModel)
             geometryModel = None
+        elif peaksModel is None and geometryModel is None:
+            raise ValueError("Computation has to be done either from peaks or from geometry")
+        elif peaksModel is not None and geometryModel is not None:
+            raise ValueError("Computation has to be done from peaks Xor from geometry")
 
-        elif geometryModel is not None:
-            peaks = None
-            if not geometryModel.isValid():
-                raise ValueError("The fitted model is not valid. Extraction cancelled.")
 
         result = self._extract(peaks=peaks, geometryModel=geometryModel)
         self.__newPeaksRaw = result
@@ -365,8 +372,8 @@ class RingExtractorThread(qt.QThread):
         tth_max += tth
         tth_min += tth
 
-        ttha = geoRef.get_ttha()
-        chia = geoRef.get_chia()
+        ttha = geoRef.ttha
+        chia = geoRef.chia
         if (ttha is None) or (ttha.shape != peakPicker.data.shape):
             ttha = geoRef.center_array(shape=peakPicker.data.shape, unit=units.TTH_RAD, scale=False)
         if (chia is None) or (chia.shape != peakPicker.data.shape):

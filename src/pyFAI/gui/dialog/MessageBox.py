@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "26/02/2026"
 
 import logging
 import sys
@@ -39,8 +39,8 @@ def exception(parent, title, exc_info, logger=None):
     """
     Display an exception as a MessageBox
 
-    :param str title: A context message (displayed a s a title)
     :param qt.QWidget parent: The parent widget
+    :param str title: A context message (displayed a s a title)
     :param Union[tuple,Exception] exc_info: An exception or the output of
         exc_info.
     :param object logger: Logger to record the error inside. If `None` a
@@ -64,11 +64,23 @@ def exception(parent, title, exc_info, logger=None):
     else:
         # There is no backtrace
         detailed = '{0}: {1}'.format(exc_info[0].__name__, exc_info[1])
+    txt = str(exc_info[1])
+    message_box(parent, title, txt, detailed)
 
+
+def message_box(parent, title:str="", text:str="", detailed:str=""):
+    """
+    Display a MessageBox (for the exception)
+
+    :param qt.QWidget parent: The parent widget
+    :param str title: A context message (displayed a s a title)
+    :param str text: the text for the message
+    :param str detailed
+    """
     msg = qt.QMessageBox(parent=parent)
     msg.setWindowTitle(title)
     msg.setIcon(qt.QMessageBox.Critical)
-    msg.setInformativeText("%s" % exc_info[1])
+    msg.setInformativeText(text)
     msg.setDetailedText(detailed)
 
     msg.raise_()
