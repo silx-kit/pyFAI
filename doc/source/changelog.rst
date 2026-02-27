@@ -21,12 +21,17 @@ Change-log of versions
 
 - [Bugs fixes]
   * Fix bug with the binning of Eiger detectors
-  * Several minor improvements in the GUI
+  * Several minor improvements in the user interface (GUI)
+  * Propagate azimuthal uncertainties when merging integrated results.
 
 - [Doc]
 
-  * New policy on the usage of LLM when contributing
-  * Start converting certain RST files to MarkDown
+  * New policy on the usage of LLM when contributing to pyFAI
+  * Start converting certain RST files to MarkDown (both formats are equally acceptable for documentation)
+
+- [Detector]
+
+  * Fit module position in detector based on diffraction rings (experimental)
 
 - Supports python 3.10-3.14, 3.14t is untested.
 - 200+ commits over 2 months
