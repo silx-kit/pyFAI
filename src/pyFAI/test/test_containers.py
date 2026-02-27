@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/12/2025"
+__date__ = "27/02/2026"
 
 import unittest
 import copy
@@ -265,6 +265,29 @@ class TestContainer(unittest.TestCase):
         self.assertFalse(numpy.allclose(g2d.std, a2d.std))
         self.assertFalse(numpy.allclose(g2d.sem, a2d.sem))
         self.assertFalse(numpy.allclose(g2d.sigma, a2d.sigma))
+
+        # azimuthal propagation:
+        method = ("no", "csr", "cython")
+
+        a1 = self.ai.integrate1d(self.img, 10, method=method, error_model="azimuthal")
+        noise = numpy.random.random(self.img.shape)
+        a2 = self.ai.integrate1d(noise, 10, method=method, error_model="azimuthal")
+        b = a1.union(a2)
+        c =  self.ai.integrate1d((self.img + noise), 10, method=method, error_model="azimuthal")
+        self.assertTrue(numpy.allclose(c.sum_signal, b.sum_signal))
+
+        self.assertTrue(numpy.allclose(c.sum_normalization, a1.sum_normalization))
+        self.assertTrue(numpy.allclose(c.sum_normalization2, a1.sum_normalization2))
+        self.assertTrue(numpy.allclose(b.sum_normalization, 2*a1.sum_normalization))
+        self.assertTrue(numpy.allclose(b.sum_normalization2, 2*a1.sum_normalization2))
+        self.assertTrue(numpy.allclose(c.count, a1.count))
+        self.assertTrue(numpy.allclose(c.radial, b.radial))
+        self.assertTrue(numpy.allclose(c.intensity, 2*b.intensity, rtol=0.1))
+        self.assertTrue(numpy.allclose(c.sum_variance, b.sum_variance, rtol=1))
+        self.assertTrue(numpy.allclose(c.std**2, 2*b.std**2, rtol=1))
+        # self.assertTrue(numpy.allclose(c.sem, b.sem, rtol=0.4))
+        # self.assertTrue(numpy.allclose(c.sigma, b.sigma, rtol=0.4))
+
 
 
 def suite():

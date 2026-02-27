@@ -30,7 +30,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/01/2026"
+__date__ = "27/02/2026"
 __status__ = "development"
 
 import math
@@ -344,13 +344,13 @@ class IntegrateResult(_CopyableTuple):
             if self.error_model == ErrorModel.AZIMUTHAL:
                 # Crossed term:
                 delta = (self._sum_signal * other._sum_normalization - other._sum_signal*self._sum_normalization)
-                if numpy.nansum(other._sum_normalization2) < numpy.nansum(self._sum_normalization2):
-                    tmp = other._sum_normalization2 / other._sum_normalization
-                else:
-                    tmp = self._sum_normalization2 / self._sum_normalization
-
-                res._sum_variance += tmp * delta**2 / (res._sum_normalization * self._sum_normalization * other._sum_normalization)
-
+                denom = res._sum_normalization * self._sum_normalization * other._sum_normalization
+                ratio_minor = numpy.where(other._sum_normalization2<self._sum_normalization2,
+                                          other._sum_normalization2 / other._sum_normalization,
+                                          self._sum_normalization2 / self._sum_normalization)
+                res._sum_variance += numpy.divide(ratio_minor*delta**2,
+                                                  denom,
+                                                  out=denom, where=denom!=0)  # prevent NaN
         return res.__recalculate_means__()
 
     @property
