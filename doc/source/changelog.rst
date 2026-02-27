@@ -11,7 +11,7 @@ Change-log of versions
 
   * Fix errors on numpy equations for fiber units
   * Unify the calculation of rotation matrix for grazing incidence
-  * Shorcut for calculation of q in the lab frame (both numpy and numexpr)
+  * Shortcut for calculation of q in the lab frame (both numpy and numexpr)
 
 - [IO]
 
