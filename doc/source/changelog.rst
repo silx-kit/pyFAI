@@ -1,16 +1,42 @@
 :Author: Jérôme Kieffer
-:Date: 19/12/2025
+:Date: 27/02/2026
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2026.xx
-----------------------------
+2026.02 27/02/2026
+------------------
 - [Fiber/GrazingIncidence]
+
   * Fix errors on numpy equations for fiber units
   * Unify the calculation of rotation matrix for grazing incidence
   * Shorcut for calculation of q in the lab frame (both numpy and numexpr)
+
+- [IO]
+
+  * UTF-8 encoding enforcement, fixes file saving issues on Windows systems with exotic locales
+  * Better handling of numpy types when serializing to JSON (saving of custom detectors)
+  * NeXus File Support: Added NXazint1d file writer for 1D integration results (Thanks Frederik)
+
+- [Bugs fixes]
+  * Fix bug with the binning of Eiger detectors
+  * Several minor improvements in the user interface (GUI)
+  * Propagate azimuthal uncertainties when merging integrated results.
+
+- [Doc]
+
+  * New policy on the usage of LLM when contributing to pyFAI
+  * Start converting certain RST files to MarkDown (both formats are equally acceptable for documentation)
+
+- [Detector]
+
+  * Fit module position in detector based on diffraction rings (experimental)
+
+- Supports python 3.10-3.14, 3.14t is untested.
+- 200+ commits over 2 months
+- Contributors for this release: Frederik H. Gjørup, Gudrun Lotze, Maciej Jankowski, Edgar Gutierrez-Fernandez, Thomas Vincent and Jérôme Kieffer
+
 
 2025.12.1 19/12/2025: bugfix
 ----------------------------
