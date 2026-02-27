@@ -42,12 +42,13 @@ __status__ = "stable"
 
 import os
 import logging
-import json
 import copy
 from math import exp
 from collections import namedtuple
-from ..containers import dataclass, fields
 import numpy
+from typing import ClassVar
+from ..io._json import json_dumps
+from ..containers import dataclass, fields
 from ..resources import resource_filename
 from ..utils.stringutil import to_eng, from_eng
 
@@ -166,8 +167,10 @@ class SensorConfig:
     material: SensorMaterial|str
     thickness: float=None
 
+    THICKNESS_TOLERANCE: ClassVar[float] = 1e-6
+
     def __repr__(self):
-        return json.dumps(self.as_dict(), indent=4)
+        return json_dumps(self.as_dict(), indent=2)
 
     def __str__(self):
         name = self.material.name if isinstance(self.material, SensorMaterial) else self.material
@@ -183,8 +186,11 @@ class SensorConfig:
         """Check for equality, especially for the thickness within 1µm"""
         if isinstance(other, SensorConfig):  # not self.__class__ as it could be a derived class
             if (self.material == other.material):
-                if self.thickness and other.thickness and abs(self.thickness - other.thickness)<1e-6:
-                    return True
+                if (self.thickness and
+                    other.thickness and
+                    numpy.isclose(self.thickness, other.thickness, atol=self.THICKNESS_TOLERANCE)):
+
+                        return True
                 else:
                     return self.thickness == other.thickness
         return False

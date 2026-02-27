@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2025"
+__date__ = "26/02/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -55,7 +55,7 @@ import threading
 from collections import OrderedDict
 import __main__ as main
 from .integration_config import WorkerConfig, WorkerFiberConfig
-from ._json import UnitEncoder
+from ._json import json_dumps
 from ..utils import StringTypes
 from ..utils.decorators import deprecated_args
 from .. import units
@@ -305,8 +305,8 @@ class HDF5Writer(Writer):
         with self._sem:
             if logger.isEnabledFor(logging.DEBUG):
                 fai_cfg.save("fai_cfg.debug.json")
-                with open("lima_cfg.debug.json", "w") as w:
-                    w.write(json.dumps(self.lima_cfg, indent=4, cls=UnitEncoder))
+                with open("lima_cfg.debug.json", "w", encoding="utf-8") as w:
+                    w.write(json_dumps(self.lima_cfg, indent=4))
 
             #self.fai_cfg.nbpt_rad = 1000 if self.fai_cfg.nbpt_rad is None else self.fai_cfg.nbpt_rad
 
@@ -329,7 +329,9 @@ class HDF5Writer(Writer):
             self.config_grp = self.nxs.new_class(self.process_grp, self.CONFIG, "NXnote")
             self.config_grp.attrs["desc"] = "PyFAI worker configuration"
             self.config_grp["type"] = "text/json"
-            self.config_grp["data"] = json.dumps(self.fai_cfg.as_dict(), indent=2, separators=(",\r\n", ": "))
+            self.config_grp["data"] = json_dumps(self.fai_cfg.as_dict(),
+                                                 indent=2,
+                                                 separators=(",\r\n", ": "))
 
             if type(fai_cfg) is WorkerConfig:
                 self._init_azimuthal()
@@ -404,14 +406,14 @@ class HDF5Writer(Writer):
         name += "2D" if self.fai_cfg.do_2D else "1D"
         name += " experiment"
         self.entry_grp["title"] = name
-        
+
     def _init_fiber(self):
         self.fai_cfg.npt_ip = 1000 if self.fai_cfg.npt_ip is None else self.fai_cfg.npt_ip
         self.fai_cfg.npt_oop = 1000 if self.fai_cfg.npt_oop is None else self.fai_cfg.npt_oop
-        
+
         ip = self.fai_cfg.unit_ip
         oop = self.fai_cfg.unit_oop
-        
+
         ip_name= ip.space
         oop_name = oop.space
         ip_unit = ip.unit_symbol
@@ -419,7 +421,7 @@ class HDF5Writer(Writer):
 
         if self.fai_cfg.do_2D:
             self.do2D = True
-        
+
         if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and self.fai_cfg.vertical_integration):
             self.outofplane_ds = self.nxdata_grp.require_dataset("out-of-plane", (self.fai_cfg.npt_oop,), numpy.float32)
             self.outofplane_ds.attrs.update({
@@ -471,7 +473,7 @@ class HDF5Writer(Writer):
                 axis_definition = [".", "out-of-plane"]
                 chunk = 1, self.fai_cfg.npt_oop
                 self.ndim = 2
-                
+
         utf8vlen_dtype = h5py.special_dtype(vlen=str)
         self.nxdata_grp.attrs["axes"] = numpy.array(axis_definition, dtype=utf8vlen_dtype)
 
@@ -757,7 +759,7 @@ class DefaultAiWriter(Writer):
 
         if metadata is not None:
             header_lst += ["", "Headers of the input frame:"]
-            header_lst += [i.strip() for i in json.dumps(metadata, indent=2, cls=UnitEncoder).split("\n")]
+            header_lst += [i.strip() for i in json_dumps(metadata, indent=2).split("\n")]
         header = "\n".join([f"{hdr} {i}" for i in header_lst])
 
         return header
@@ -797,7 +799,7 @@ class DefaultAiWriter(Writer):
         :param metadata: JSON serializable dictionary containing the metadata
         """
         dim1_unit = units.to_unit(dim1_unit)
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.write(self.make_headers(has_mask=has_mask, has_dark=has_dark,
                                       has_flat=has_flat,
                                       polarization_factor=polarization_factor,
@@ -1033,7 +1035,7 @@ class AsciiWriter(Writer):
     def write(self, data, index=0):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
-            with open(filename, "w") as f:
+            with open(filename, "w", encoding="utf-8") as f:
                 f.write("# Processing time: %s%s" % (get_isotime(), self.header))
                 numpy.savetxt(f, data)
 

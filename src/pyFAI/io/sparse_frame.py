@@ -31,13 +31,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "26/02/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 import sys
-import json
 import posixpath
 from collections import OrderedDict
 import logging
@@ -45,7 +44,7 @@ import numpy
 import fabio
 from .. import version
 from .nexus import Nexus, get_isotime, h5py
-from ._json import UnitEncoder
+from ._json import json_dumps
 logger = logging.getLogger(__name__)
 
 try:
@@ -198,7 +197,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
             config_grp["type"] = "text/json"
             parameters = OrderedDict([("geometry", ai.get_config()),
                                       ("sparsify", extra)])
-            config_grp["data"] = json.dumps(parameters, indent=2, separators=(",\r\n", ": "), cls=UnitEncoder)
+            config_grp["data"] = json_dumps(parameters, indent=2, separators=(",\r\n", ": "))
 
             detector_grp = nexus.new_class(instrument, ai.detector.name.replace(" ", "_"), "NXdetector")
             dist_ds = detector_grp.create_dataset("distance", data=ai.dist)

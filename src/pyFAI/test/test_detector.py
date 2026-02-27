@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "04/02/2026"
 
 import os
 import shutil
@@ -431,9 +431,19 @@ class TestDetector(unittest.TestCase):
         fs2 = sensors.SensorConfig.parse(str(fs))
         self.assertTrue(ts.material==ts2.material)
         self.assertTrue(fs2==fs)
-    
+
     def test_sensor3(self):
         self.assertAlmostEqual(sensors.BaFBr085I015_MATERIAL.absorbance(20, 1e-4), 0.6538, 3)
+
+    def test_bug_2781(self):
+        """When a detector enforces the pixel size and the provided size is a multiple of the
+        default size, this means the detector has been binned and should be parametrized as such
+        """
+        d = detector_factory("eiger2_cdte_9M", {"pixel1":150e-6, "pixel2":150e-6})
+        self.assertEqual(d.shape, tuple(i//2 for i in d.max_shape))
+        self.assertEqual(d.binning, (2,2))
+        self.assertEqual(d.pixel1, 150e-6)
+        self.assertEqual(d.pixel2, 150e-6)
 
 
 

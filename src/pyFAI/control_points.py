@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "24/02/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -84,7 +84,7 @@ class ControlPoints(object):
             else:
                 logger.error("Unable to handle such calibrant: %s", calibrant)
         if not self.calibrant.wavelength:
-            self.calibrant.wavelength = wavelength 
+            self.calibrant.wavelength = wavelength
 
     def __repr__(self):
         self.check()
@@ -225,7 +225,7 @@ class ControlPoints(object):
                 lstout.append("ring: %s" % ring)
                 for point in gpt.points:
                     lstout.append("point: x=%s y=%s" % (point[1], point[0]))
-            with open(filename, "w") as f:
+            with open(filename, "w", encoding="utf-8") as f:
                 f.write("\n".join(lstout))
 
     def load(self, filename):

@@ -2,7 +2,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "26/02/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -49,6 +49,7 @@ from .matplotlib import pyplot, colors
 import threading
 from ..utils import int_, str_, float_, get_ui_file
 from ..units import to_unit
+from ..io._json import json_dumps
 from .widgets.WorkerConfigurator import WorkerConfigurator
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet
@@ -470,13 +471,17 @@ class DiffMapWidget(qt.QWidget):
         if config.fast_motor is not None:
             self.fastMotorName.setText(config.fast_motor.name or "")
             self.fastMotorPts.setText(str_(config.fast_motor.points))
-            self.fastMotorMinimum.setText(str(config.fast_motor.start))
-            self.fastMotorMaximum.setText(str(config.fast_motor.stop))
+            if config.fast_motor.start is not None:
+                self.fastMotorMinimum.setText(str(config.fast_motor.start))
+            if config.fast_motor.stop is not None:
+                self.fastMotorMaximum.setText(str(config.fast_motor.stop))
 
         if config.slow_motor is not None:
             self.slowMotorPts.setText(str_(config.slow_motor.points))
-            self.slowMotorMinimum.setText(str(config.slow_motor.start))
-            self.slowMotorMaximum.setText(str(config.slow_motor.stop))
+            if config.slow_motor.start is not None:
+                self.slowMotorMinimum.setText(str(config.slow_motor.start))
+            if config.slow_motor.stop is not None:
+                self.slowMotorMaximum.setText(str(config.slow_motor.stop))
             self.slowMotorName.setText(config.slow_motor.name or "")
 
         self.outputFile.setText(config.output_file)
@@ -498,8 +503,8 @@ class DiffMapWidget(qt.QWidget):
         if fname is None:
             fname = self.json_file
         config = self.get_diffmap_config()
-        with open(fname, "w") as fd:
-            fd.write(json.dumps(config.as_dict(), indent=2))
+        with open(fname, "w", encoding="utf-8") as fd:
+            fd.write(json_dumps(config.as_dict(), indent=2))
         return config
 
     def restore(self, fname=None):

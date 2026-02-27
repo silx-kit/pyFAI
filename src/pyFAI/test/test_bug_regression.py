@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2026"
+__date__ = "24/02/2026"
 
 import sys
 import os
@@ -103,7 +103,7 @@ SplineFile: None
 Wavelength: 7e-11
 """
         self.ponifile = os.path.join(UtilsTest.tempdir, "bug170.poni")
-        with open(self.ponifile, "w") as poni:
+        with open(self.ponifile, "w", encoding="utf-8") as poni:
             poni.write(ponitxt)
         rng = UtilsTest.get_rng()
         self.data = rng.random((2300, 2300))

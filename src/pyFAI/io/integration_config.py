@@ -78,6 +78,7 @@ import copy
 from typing import ClassVar, Union
 import numpy
 from .ponifile import PoniFile
+from ._json import json_dumps
 from ..containers import PolarizationDescription, ErrorModel, dataclass, fields, asdict
 from .. import detectors
 from .. import method_registry
@@ -481,7 +482,7 @@ class WorkerConfig:
     ENFORCED: ClassVar[list] = ["polarization_description", "poni", "error_model", "unit"]
 
     def __repr__(self):
-        return json.dumps(self.as_dict(), indent=4)
+        return json_dumps(self.as_dict(), indent=4)
 
     def as_dict(self):
         """Like asdict, but with some more features:
@@ -561,8 +562,8 @@ class WorkerConfig:
 
     def save(self, filename):
         """Dump the content of the dataclass as JSON file"""
-        with open(filename, "w") as w:
-            w.write(json.dumps(self.as_dict(), indent=2))
+        with open(filename, "w", encoding="utf-8") as w:
+            w.write(json_dumps(self.as_dict(), indent=2))
 
     @classmethod
     def from_file(cls, filename: str):
@@ -885,13 +886,13 @@ class WorkerFiberConfig(WorkerConfig):
     def save(self, filename, pop_azimuthal_params:bool=True):
         """Dump the content of the dataclass as JSON file"""
         config = self.as_dict()
-        
+
         # Serialize fiber units
         for key in ("unit_ip", "unit_oop"):
             if key in config:
                 unit = get_unit_fiber(**config[key])
                 config[key] = unit.get_config()
-        
+
         if pop_azimuthal_params:
             for key in ["nbpt_rad", "nbpt_azim",
                         "radial_range", "azimuth_range",
@@ -902,5 +903,5 @@ class WorkerFiberConfig(WorkerConfig):
                 if key in config:
                     config.pop(key)
 
-        with open(filename, "w") as w:
-            w.write(json.dumps(config, indent=2))
+        with open(filename, "w", encoding="utf-8") as w:
+            w.write(json_dumps(config, indent=2))

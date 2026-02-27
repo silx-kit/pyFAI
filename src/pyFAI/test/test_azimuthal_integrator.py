@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/11/2025"
+__date__ = "24/02/2026"
 
 import unittest
 import os
@@ -92,7 +92,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
                     data.append(line.strip())
         cls.poniFile = os.path.join(tmp_dir, os.path.basename(poniFile))
 
-        with open(cls.poniFile, "w") as f:
+        with open(cls.poniFile, "w", encoding="utf-8") as f:
             f.write(os.linesep.join(data))
         cls.fit2d = numpy.loadtxt(cls.fit2dFile)
         cls.ai = AzimuthalIntegrator()

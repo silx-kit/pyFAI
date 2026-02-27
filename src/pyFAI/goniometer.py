@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2025"
+__date__ = "26/02/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -56,6 +56,7 @@ from .multi_geometry import MultiGeometry
 from .units import CONST_hc, CONST_q, CHI_RAD, TTH_RAD
 from .ext.mathutil import build_qmask
 from .utils.decorators import deprecated
+from .io._json import json_dumps
 logger = logging.getLogger(__name__)
 
 try:
@@ -535,8 +536,8 @@ class Goniometer(object):
         """
         dico = self.to_dict()
         try:
-            with open(filename, "w") as f:
-                f.write(json.dumps(dico, indent=2))
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(json_dumps(dico, indent=2))
         except IOError:
             logger.error("IOError while writing to file %s", filename)
 
