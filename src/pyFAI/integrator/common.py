@@ -233,6 +233,48 @@ class Integrator(Geometry):
                             integrated_unit=None, integrated_unit_range=None,
                             mode="normal",
     ):
+        """
+        Combines various masks into another one.
+
+        :param data: input array of data
+        :type data: ndarray
+        :param mask: input mask (if none, self.mask is used)
+        :type mask: ndarray
+        :param dummy: value of dead pixels
+        :type dummy: float
+        :param delta_dummy: precision of dummy pixels
+        :type delta_dummy: float
+        :param projected_unit: unit to use for projected_unit_range (e.g. radial unit for radial_range)
+        :type projected_unit: pyFAI.units.Unit
+        :param projected_unit_range: range in projected unit to mask out (e.g. radial range for radial mask)
+        :type projected_unit_range: (float, float)
+        :param integrated_unit: unit to use for integrated_unit_range (e.g. azimuthal unit for azimuth_range)
+        :type integrated_unit: pyFAI.units.Unit
+        :param mode: can be "normal" or "numpy" (inverted) or "where" applied to the mask
+        :type mode: str
+
+        :return: the new mask
+        :rtype: ndarray of bool
+
+        This method combine two masks (dynamic mask from *data &
+        dummy* and *mask*) to generate a new one with the 'or' binary
+        operation.  One can adjust the level, with the *dummy* and
+        the *delta_dummy* parameter, when you consider the *data*
+        values needs to be masked out.
+
+        This method can work in two different *mode*:
+
+            * "normal": False for valid pixels, True for bad pixels
+            * "numpy": True for valid pixels, false for others
+            * "where": does a numpy.where on the "numpy" output
+
+        This method tries to accommodate various types of masks (like
+        valid=0 & masked=-1, ...)
+
+        Note for the developer: we use a lot of numpy.logical_or in this method,
+        the out= argument allows to recycle buffers and save considerable time in
+        allocating temporary arrays.
+        """
         logical_or = numpy.logical_or
         shape = data.shape
         #       ^^^^   this is why data is mandatory !
