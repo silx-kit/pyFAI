@@ -323,11 +323,11 @@ class FiberIntegrator(AzimuthalIntegrator):
         if not use_2d_engine:
             if method.algo == "histogram" and method.pixel_splitting == "no":
                 if integrated_range:
-                    integrated_unit_array = self.center_array(shape, unit=integrated_unit, scale=False)
-                    mask = self._merge_integrated_unit_to_mask(
-                        unit_array=integrated_unit_array,
-                        unit_range=integrated_range,
+                    mask = self.create_mask_generic(
+                        data=data,
                         mask=mask,
+                        integrated_unit=integrated_unit,
+                        integrated_unit_range=integrated_range,
                     )
                 projected_unit_array = self.center_array(shape, unit=projected_unit, scale=False)
                 integr = method.class_funct_ng.function

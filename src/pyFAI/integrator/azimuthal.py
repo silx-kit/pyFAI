@@ -281,11 +281,11 @@ class AzimuthalIntegrator(Integrator):
               method.method[3] in ("python", "cython")):
             integr = method.class_funct_ng.function  # should be histogram[_engine].histogram1d_engine
             if azimuth_range:
-                azimuth_array = self.center_array(shape, unit=units.CHI_RAD, scale=False)
-                mask = self._merge_integrated_unit_to_mask(
-                    unit_array=azimuth_array,
-                    unit_range=azimuth_range,
+                mask = self.create_mask_generic(
+                    data=data,
                     mask=mask,
+                    integrated_unit=units.CHI_RAD,
+                    integrated_unit_range=azimuth_range,
                 )
             radial = self.center_array(shape, unit=unit, scale=False)
             intpl = integr(radial, npt, data,
