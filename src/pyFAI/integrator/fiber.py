@@ -40,6 +40,7 @@ from .azimuthal import AzimuthalIntegrator
 from ..containers import Integrate1dFiberResult, Integrate2dFiberResult
 from ..method_registry import IntegrationMethod
 from ..io import save_integrate_result
+from ..io.ponifile import PoniFile
 from ..units import parse_fiber_unit, ANGLE_UNITS, to_unit
 from ..utils.decorators import deprecated_warning
 logger = logging.getLogger(__name__)
@@ -201,11 +202,14 @@ class FiberIntegrator(AzimuthalIntegrator):
                         sample_orientation=None,
                         filename=None,
                         correctSolidAngle=True,
+                        variance=None, error_model=None,
                         mask=None, dummy=None, delta_dummy=None,
-                        polarization_factor=None, dark=None, flat=None,
+                        polarization_factor=None, dark=None, flat=None, absorption=None,
                         method=("no", "histogram", "cython"),
                         normalization_factor=1.0,
                         angle_unit="rad",
+                        metadata=None,
+                        use_2d_engine:bool=False,
                         **kwargs) -> Integrate1dFiberResult:
         """Calculate the integrated profile curve along a specific FiberUnit, additional input for sample_orientation
 
@@ -237,6 +241,10 @@ class FiberIntegrator(AzimuthalIntegrator):
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
+        method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
+        if method.dimension != 1:
+            raise RuntimeError("integration method is not 1D")
+        
         deprecated_params = get_deprecated_params_1d(**kwargs)
         npt_oop = deprecated_params.get('npt_oop', None) or npt_oop
         npt_ip = deprecated_params.get('npt_ip', None) or npt_ip
@@ -250,6 +258,18 @@ class FiberIntegrator(AzimuthalIntegrator):
         if invalid_keys:
             logger.warning(f"""Key parameters {invalid_keys} are wrong or deprecated.
                             Valid parameters: npt_ip, unit_ip, ip_range, npt_oop, unit_oop, oop_range""")
+
+        dummy, delta_dummy = self._normalize_dummies(dummy, delta_dummy, data)
+        empty = self._empty
+        shape = data.shape
+        mask, mask_crc, has_mask = self._normalize_mask(mask)
+        solidangle, solidangle_crc = self._normalize_solidangle(shape, correctSolidAngle, with_checksum=False)
+        polarization, polarization_crc = self._normalize_polarization(shape, polarization_factor, with_checksum=True)
+        dark, has_dark = self._normalize_dark(dark)
+        flat, has_flat = self._normalize_flat(flat)
+
+        error_model, variance = self._normalize_error_model_variance(data, method, dark, 
+                                                                  error_model, variance)
 
         unit_ip = unit_ip or 'qip_nm^-1'
         unit_oop = unit_oop or 'qoop_nm^-1'
@@ -279,71 +299,135 @@ class FiberIntegrator(AzimuthalIntegrator):
         if (isinstance(method, (tuple, list)) and method[0] != "no") or (isinstance(method, IntegrationMethod) and method.split != "no"):
             logger.warning(f"Method {method} is using a pixel-splitting scheme. GI integration should be use WITHOUT PIXEL-SPLITTING! The results could be wrong!")
 
-        if vertical_integration and npt_oop is None:
-            raise RuntimeError("npt_oop (out-of-plane bins) is needed to do the integration")
-        elif not vertical_integration and npt_ip is None:
-            raise RuntimeError("npt_ip (in-plane bins) is needed to do the integration")
-
-        npt_ip = npt_ip or 1000
-        npt_oop = npt_oop or 1000
-
-        res2d_fiber = self.integrate2d_fiber(data,
-                                  npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
-                                  npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
-                                  sample_orientation=sample_orientation,
-                                  filename=None,
-                                  correctSolidAngle=correctSolidAngle,
-                                  mask=mask, dummy=dummy, delta_dummy=delta_dummy,
-                                  polarization_factor=polarization_factor,
-                                  dark=dark, flat=flat, method=method,
-                                  normalization_factor=normalization_factor,
-                                  **kwargs)
-
         if vertical_integration:
-            output_unit = res2d_fiber.oop_unit
+            integrated_unit = unit_ip
+            integrated_bins = npt_ip
+            integrated_range = ip_range
+            projected_unit = unit_oop
+            projected_bins = npt_oop
+            projected_range = oop_range
             integration_axis = -1
-            integrated_vector = res2d_fiber.outofplane
         else:
-            output_unit = res2d_fiber.ip_unit
+            integrated_unit = unit_oop
+            integrated_bins = npt_oop
+            integrated_range = oop_range
+            projected_unit = unit_ip
+            projected_bins = npt_ip
+            projected_range = ip_range
             integration_axis = -2
-            integrated_vector = res2d_fiber.inplane
 
-        sum_signal = res2d_fiber.sum_signal.sum(axis=integration_axis)
-        count = res2d_fiber.count.sum(axis=integration_axis)
-        sum_normalization = res2d_fiber._sum_normalization.sum(axis=integration_axis)
-        mask_ = numpy.where(count == 0)
-        empty = dummy if dummy is not None else self._empty
-        if USE_NUMEXPR:
-            intensity = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)")
-        else:
-            intensity = numpy.where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)
-        intensity[mask_] = empty
+        if projected_bins is None:
+            raise RuntimeError(f" Needed the bins of the projected unit: {projected_unit}")
+        
+        result = None
+        if not use_2d_engine:
+            if method.algo == "histogram" and method.pixel_splitting == "no":
+                if integrated_range:
+                    integrated_unit_array = self.center_array(shape, unit=integrated_unit, scale=False)
+                    mask = self._merge_integrated_unit_to_mask(
+                        unit_array=integrated_unit_array,
+                        unit_range=integrated_range,
+                        mask=mask,
+                    )
+                projected_unit_array = self.center_array(shape, unit=projected_unit, scale=False)
+                integr = method.class_funct_ng.function
+                intpl = integr(projected_unit_array, 
+                            projected_bins, 
+                            data,
+                            dark=dark,
+                            dummy=dummy, delta_dummy=delta_dummy, empty=empty,
+                            variance=variance,
+                            flat=flat, solidangle=solidangle,
+                            polarization=polarization,
+                            absorption=absorption,
+                            normalization_factor=normalization_factor,
+                            weighted_average=method.weighted_average,
+                            mask=mask,
+                            radial_range=projected_range,
+                            error_model=error_model,
+                )
 
-        if res2d_fiber.sigma is not None:
-            sum_variance = res2d_fiber.sum_variance.sum(axis=integration_axis)
-            if USE_NUMEXPR:
-                sigma = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sqrt(sum_variance) / sum_normalization)")
+                if error_model.do_variance:
+                    result = Integrate1dFiberResult(
+                        integrated=intpl.position * integrated_unit.scale,
+                        intensity=intpl.intensity,
+                        sigma=intpl.sigma,
+                    )
+                    result._set_sum_variance(intpl.variance)
+                    result._set_std(intpl.std)
+                    result._set_sem(intpl.sem)
+                    result._set_sum_normalization2(intpl.norm_sq)
+                else:
+                    result = Integrate1dFiberResult(
+                        integrated=intpl.position * integrated_unit.scale,
+                        intensity=intpl.intensity,
+                        sigma=None,
+                    )
+                result._set_compute_engine(integr.__module__ + "." + integr.__name__)
+                result._set_unit(projected_unit)
+                result._set_sum_signal(intpl.signal)
+                result._set_sum_normalization(intpl.normalization)
+                result._set_count(intpl.count)
+        
+        if result is None:
+            # Not implemented yet for other engines (still going through 2d engine)
+            res2d_fiber = self.integrate2d_fiber(data,
+                                    npt_ip=npt_ip, unit_ip=unit_ip, ip_range=ip_range,
+                                    npt_oop=npt_oop, unit_oop=unit_oop, oop_range=oop_range,
+                                    sample_orientation=sample_orientation,
+                                    filename=None,
+                                    correctSolidAngle=correctSolidAngle,
+                                    mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                    polarization_factor=polarization_factor,
+                                    dark=dark, flat=flat, method=method,
+                                    normalization_factor=normalization_factor,
+                                    **kwargs)
+            if vertical_integration:
+                integrated_vector = res2d_fiber.outofplane
             else:
-                sigma = numpy.where(sum_normalization <= 0, 0.0, numpy.sqrt(sum_variance) / sum_normalization)
-            sigma[mask_] = empty
-        else:
-            sum_variance = None
-            sigma = None
+                integrated_vector = res2d_fiber.inplane
+            sum_signal = res2d_fiber.sum_signal.sum(axis=integration_axis)
+            count = res2d_fiber.count.sum(axis=integration_axis)
+            sum_normalization = res2d_fiber._sum_normalization.sum(axis=integration_axis)
+            mask_ = numpy.where(count == 0)
+            empty = dummy if dummy is not None else self._empty
+            if USE_NUMEXPR:
+                intensity = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)")
+            else:
+                intensity = numpy.where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)
+            intensity[mask_] = empty
 
-        result = Integrate1dFiberResult(integrated_vector, intensity, sigma)
-        result._set_vertical_integration(vertical_integration)
-        result._set_method_called("integrate_radial")
-        result._set_unit(output_unit)
-        result._set_sum_normalization(sum_normalization)
-        result._set_count(count)
-        result._set_sum_signal(sum_signal)
-        result._set_sum_variance(sum_variance)
-        result._set_has_dark_correction(dark is not None)
-        result._set_has_flat_correction(flat is not None)
+            if res2d_fiber.sigma is not None:
+                sum_variance = res2d_fiber.sum_variance.sum(axis=integration_axis)
+                if USE_NUMEXPR:
+                    sigma = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sqrt(sum_variance) / sum_normalization)")
+                else:
+                    sigma = numpy.where(sum_normalization <= 0, 0.0, numpy.sqrt(sum_variance) / sum_normalization)
+                sigma[mask_] = empty
+            else:
+                sum_variance = None
+                sigma = None
+            result = Integrate1dFiberResult(integrated_vector, intensity, sigma)
+            result._set_vertical_integration(vertical_integration)
+            result._set_unit(projected_unit)
+            result._set_sum_normalization(sum_normalization)
+            result._set_count(count)
+            result._set_sum_signal(sum_signal)
+            result._set_sum_variance(sum_variance)
+            result._set_compute_engine = res2d_fiber.compute_engine
+
+        result._set_method(method)
+        result._set_method_called("integrate1d_ng")
+        result._set_has_dark_correction(has_dark)
+        result._set_has_flat_correction(has_flat)
+        result._set_has_mask_applied(has_mask)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
-        result._set_method = res2d_fiber.method
-        result._set_compute_engine = res2d_fiber.compute_engine
+        result._set_metadata(metadata)
+        result._set_error_model(error_model)
+        result._set_poni(PoniFile(self))
+        result._set_has_solidangle_correction(correctSolidAngle)
+        result._set_weighted_average(method.weighted_average)
 
         if filename is not None:
             save_integrate_result(filename, result)
