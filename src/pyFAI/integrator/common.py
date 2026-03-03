@@ -287,6 +287,18 @@ class Integrator(Geometry):
         else:
             return data, None
 
+    def _merge_integrated_unit_to_mask(self, unit_array:numpy.ndarray, unit_range:tuple, mask:numpy.ndarray=None) -> numpy.ndarray:
+        """
+        Needed for integrate1d method, apply the integrated unit limit (e.g. azimuth unit) before histogramming, by merging it into the mask.
+        """
+        unit_min, unit_max = unit_range
+        unit_mask = numpy.logical_or(unit_array > unit_max, unit_array < unit_min)
+        if mask is None:
+            mask = unit_mask
+        else:
+            mask = numpy.logical_or(mask, unit_mask)
+        return mask
+
     def _normalize_method(self, method, dim, default):
         """
         :rtype: IntegrationMethod
