@@ -207,12 +207,16 @@ class Integrator(Geometry):
                 radial_unit = units.to_unit(unit[0])
             else:
                 radial_unit = units.to_unit(unit)
+        else:
+            radial_unit = None
         if azimuth_range is not None:
             if isinstance(unit, (tuple, list)) and len(unit) == 2:
                 azimuth_unit = units.to_unit(unit[1])
             else:
                 logger.info("no azimuthal unit provided in `create_mask`, defaulting to `chi_rad`")
                 azimuth_unit = units.CHI_RAD
+        else:
+            azimuth_unit = None
         return self.create_mask_generic(
             data=data,
             mask=mask,
