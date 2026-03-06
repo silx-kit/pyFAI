@@ -52,7 +52,7 @@ if host_machine.system() == 'windows'
   acceptable = ['msvc', 'clang-cl']
   warning_msg = '''
     -----------------------------------------------------------------
-    Detected %s compiler on Windows: %s
+    Detected @0@ compiler on Windows: @1@
     This project is primarily tested with Microsoft Visual C++.
     If you encounter problems, switch to MSVC or add the needed
     patches for your compiler.
@@ -60,11 +60,11 @@ if host_machine.system() == 'windows'
   '''
   # C compiler check
   if c_id not in acceptable
-    meson.warning(warning_msg % ('C', c_id))
+    meson.warning(warning_msg.format('C', c_id))
   endif
   # C++ compiler check
   if cpp_id not in acceptable
-    meson.warning(warning_msg % ('C++', cpp_id))
+    meson.warning(warning_msg.format('C++', cpp_id))
   endif
   # make it fatal:
   if c_id not in acceptable or cpp_id not in acceptable
