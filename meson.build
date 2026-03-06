@@ -44,11 +44,11 @@ endif
 py_dep = py.dependency()
 
 
-# Detect non‑MSVC compilers on Windows for both C and C++
+# Detect non-MSVC compilers on Windows for both C and C++
 if host_machine.system() == 'windows'
   c_id     = cc.get_id()
-  cpp_id   = cpp_comp.get_id()
-  # List of ids we accept as “MSVC‑compatible”
+  cpp_id   = cpp.get_id()
+  # List of ids we accept as “MSVC-compatible”
   acceptable = ['msvc', 'clang-cl']
   warning_msg = '''
     -----------------------------------------------------------------
@@ -68,7 +68,7 @@ if host_machine.system() == 'windows'
   endif
   # make it fatal:
   if c_id not in acceptable or cpp_id not in acceptable
-     meson.error('Unsupported compiler on Windows – aborting.')
+     meson.error('Unsupported compiler on Windows - aborting.')
   endif
 endif
 
