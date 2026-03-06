@@ -86,6 +86,14 @@ pyFAI-waxs = 'pyFAI.app.waxs:main'
 sparsify-Bragg = 'pyFAI.app.sparsify:main'
 peakfinder = 'pyFAI.app.peakfinder:main'
 
+# Duplicate windows application with a -cli version to be able to call the help. See #2815
+pyFAI-calib2-cli = 'pyFAI.app.calib2:main' ; sys_platform == "win32"
+pyFAI-drawmask-cli = 'pyFAI.app.drawmask:main' ; sys_platform == "win32"
+pyFAI-diffmap-cli = 'pyFAI.app.diff_map:main' ; sys_platform == "win32"
+pyFAI-integrate-cli = 'pyFAI.app.integrate:main' ; sys_platform == "win32"
+pyFAI-diffmap-view-cli = 'pyFAI.app.pilx:main' ; sys_platform == "win32"
+
+
 [project.gui-scripts]
 pyFAI-calib2 = 'pyFAI.app.calib2:main'
 pyFAI-drawmask = 'pyFAI.app.drawmask:main'
