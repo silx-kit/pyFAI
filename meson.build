@@ -43,6 +43,35 @@ endif
 # https://mesonbuild.com/Python-module.html
 py_dep = py.dependency()
 
+
+# Detect non‑MSVC compilers on Windows for both C and C++
+if host_machine.system() == 'windows'
+  c_id     = cc.get_id()
+  cpp_id   = cpp_comp.get_id()
+  # List of ids we accept as “MSVC‑compatible”
+  acceptable = ['msvc', 'clang-cl']
+  warning_msg = '''
+    -----------------------------------------------------------------
+    Detected %s compiler on Windows: %s
+    This project is primarily tested with Microsoft Visual C++.
+    If you encounter problems, switch to MSVC or add the needed
+    patches for your compiler.
+    -----------------------------------------------------------------
+  '''
+  # C compiler check
+  if c_id not in acceptable
+    meson.warning(warning_msg % ('C', c_id))
+  endif
+  # C++ compiler check
+  if cpp_id not in acceptable
+    meson.warning(warning_msg % ('C++', cpp_id))
+  endif
+  # make it fatal:
+  if c_id not in acceptable or cpp_id not in acceptable
+     meson.error('Unsupported compiler on Windows – aborting.')
+  endif
+endif
+
 py.install_sources([
     'version.py',
 ],
