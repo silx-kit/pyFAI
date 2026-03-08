@@ -68,21 +68,6 @@ To upgrade the C/C++-code in pyFAI, one needs in addition Cython:
    pip install -r requirements.txt --upgrade
    pip install . --upgrade
 
-Idiosyncrasy
-------------
-
-In order to be able to run and debug pyFAI-related application on windows' terminal (cmd.exe), each GUI application exists also with the -cli suffix:
-* pyFAI-calib2 -->  pyFAI-calib2-cli
-* pyFAI-integrate -->  pyFAI-integrate-cli
-* pyFAI-diffmap -->  pyFAI-diffmap-cli
-
-The only difference is that the '-cli' version does not discard the output like:
-.. code-block:: shell
-
-   pyFAI-integrate            # Runs the application in its windows, discarding any exception or stack-trace
-   pyFAI-integrate --help     # Does call the help but does not display it (Idiosyncrasy!)
-   pyFAI-integrate-cli --help # Displays the help then quit
-   pyFAI-integrate-cli        # Runs the application in its windows and displays the output in the opened terminal.
 
 Troubleshooting
 ---------------
