@@ -675,10 +675,10 @@ class DetectorSelectorDrop(qt.QWidget):
         model = self.currentDetectorClass()
         splineAvailable = model is not None and model.HAVE_TAPER
         self._splinePanel.setVisible(splineAvailable)
-        # _logger.info("in __modelChanged: %s %s",type(model), model)
+        _logger.info("in __modelChanged: %s %s, detector: %s", type(model), model, self.__detector)
         if model is None:
             self._resetSensor()
-        if isinstance(self.__detector, model):
+        elif isinstance(self.__detector, model):
             # more precise, contains sensor information
             self._resetSensor(detector=self.__detector)
         else:
