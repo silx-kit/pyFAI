@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "13/03/2026"
 
 import os
 import logging
@@ -676,6 +676,8 @@ class DetectorSelectorDrop(qt.QWidget):
         splineAvailable = model is not None and model.HAVE_TAPER
         self._splinePanel.setVisible(splineAvailable)
         # _logger.info("in __modelChanged: %s %s",type(model), model)
+        if model is None:
+            self._resetSensor()
         if isinstance(self.__detector, model):
             # more precise, contains sensor information
             self._resetSensor(detector=self.__detector)
