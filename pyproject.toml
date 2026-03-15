@@ -85,13 +85,14 @@ pyFAI-saxs = 'pyFAI.app.saxs:main'
 pyFAI-waxs = 'pyFAI.app.waxs:main'
 sparsify-Bragg = 'pyFAI.app.sparsify:main'
 peakfinder = 'pyFAI.app.peakfinder:main'
-
-[project.gui-scripts]
+# Windows application must NOT be in gui-script to be able to call for help. See #2815
+#[project.gui-scripts]
 pyFAI-calib2 = 'pyFAI.app.calib2:main'
 pyFAI-drawmask = 'pyFAI.app.drawmask:main'
 pyFAI-diffmap = 'pyFAI.app.diff_map:main'
 pyFAI-integrate = 'pyFAI.app.integrate:main'
 pyFAI-diffmap-view = 'pyFAI.app.pilx:main'
+
 
 [tool.cibuildwheel]
 # Skip 32-bit builds and PyPy

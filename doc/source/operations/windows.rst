@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 28/01/2025
+:Date: 06/03/2026
 :Keywords: Installation procedure
 :Target: System administrators under windows
 
@@ -67,6 +67,7 @@ To upgrade the C/C++-code in pyFAI, one needs in addition Cython:
 
    pip install -r requirements.txt --upgrade
    pip install . --upgrade
+
 
 Troubleshooting
 ---------------
