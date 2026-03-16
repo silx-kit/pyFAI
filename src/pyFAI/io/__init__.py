@@ -42,7 +42,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "05/03/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -218,13 +218,18 @@ class HDF5Writer(Writer):
         self.chunk = None
         self.shape = None
         self.ndim = None
-        self.do2D = None
         self._current_frame = None
         self._append_frames = append_frames
         self._mode = mode
 
     def __repr__(self):
         return f"HDF5 writer on file {self.filename}:{self.hpath} {'' if self.intensity_ds else 'un'}initialized"
+
+
+    @property
+    def do2D(self):
+        if self.shape:
+            return len(self.shape)>=3
 
     def _require_main_entry(self, mode):
         """
@@ -418,9 +423,6 @@ class HDF5Writer(Writer):
         oop_name = oop.space
         ip_unit = ip.unit_symbol
         oop_unit =oop.unit_symbol
-
-        if self.fai_cfg.do_2D:
-            self.do2D = True
 
         if self.fai_cfg.do_2D or (not self.fai_cfg.do_2D and self.fai_cfg.vertical_integration):
             self.outofplane_ds = self.nxdata_grp.require_dataset("out-of-plane", (self.fai_cfg.npt_oop,), numpy.float32)
@@ -659,22 +661,19 @@ class HDF5Writer(Writer):
 
     def _require_dataset(self, name, dtype):
         """Returns the dataset to store data/error ."""
-
+        kwargs = {  "shape": self.shape,
+                    "dtype": dtype,
+                    "chunks": self.chunk,
+                    "maxshape": (None,) + self.chunk[1:]
+        }
         if self.do2D:
             result = self.nxdata_grp.require_dataset(name,
-                                                     shape=self.shape,
-                                                     dtype=dtype,
-                                                     chunks=self.chunk,
-                                                     maxshape=(None,) + self.chunk[1:],
-                                                     **CMP)
+                                                    **kwargs,
+                                                    **CMP)
             result.attrs["interpretation"] = u"image"
         else:
             result = self.nxdata_grp.require_dataset(name,
-                                                     shape=self.shape,
-                                                     dtype=dtype,
-                                                     chunks=self.chunk,
-                                                     maxshape=(None,) + self.chunk[1:])
-
+                                                    **kwargs)
             result.attrs["interpretation"] = u"spectrum"
         return result
 
