@@ -40,8 +40,12 @@
 .ipynb_checkpoints
 
 
-#discard generated C-files
+# Discard generated C-files
 /pyFAI/ext/*.c
 /pyFAI/ext/*.cpp
 /benchmark*.json
 /benchmark*.svg
+
+# Discard other
+/sandbox
+/.ruff*
