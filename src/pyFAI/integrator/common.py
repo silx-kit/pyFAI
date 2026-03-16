@@ -200,6 +200,85 @@ class Integrator(Geometry):
         the out= argument allows to recycle buffers and save considerable time in
         allocating temporary arrays.
         """
+        if radial_range is not None:
+            if unit is None:
+                raise RuntimeError("unit is needed when building a mask based on radial_range")
+            elif isinstance(unit, (tuple, list)) and len(unit) == 2:
+                radial_unit = units.to_unit(unit[0])
+            else:
+                radial_unit = units.to_unit(unit)
+        else:
+            radial_unit = None
+        if azimuth_range is not None:
+            if isinstance(unit, (tuple, list)) and len(unit) == 2:
+                azimuth_unit = units.to_unit(unit[1])
+            else:
+                logger.info("no azimuthal unit provided in `create_mask`, defaulting to `chi_rad`")
+                azimuth_unit = units.CHI_RAD
+        else:
+            azimuth_unit = None
+        return self.create_mask_generic(
+            data=data,
+            mask=mask,
+            dummy=dummy,
+            delta_dummy=delta_dummy,
+            projected_unit=radial_unit,
+            projected_unit_range=radial_range,
+            integrated_unit=azimuth_unit,
+            integrated_unit_range=azimuth_range,
+            mode=mode,
+        )
+    
+    create_mask_azimuthal = create_mask
+
+    def create_mask_generic(self, data, mask=None,
+                            dummy=None, delta_dummy=None,
+                            projected_unit=None, projected_unit_range=None,
+                            integrated_unit=None, integrated_unit_range=None,
+                            mode="normal",
+    ):
+        """
+        Combines various masks into another one.
+
+        :param data: input array of data
+        :type data: ndarray
+        :param mask: input mask (if none, self.mask is used)
+        :type mask: ndarray
+        :param dummy: value of dead pixels
+        :type dummy: float
+        :param delta_dummy: precision of dummy pixels
+        :type delta_dummy: float
+        :param projected_unit: unit to use for projected_unit_range (e.g. radial unit for radial_range)
+        :type projected_unit: pyFAI.units.Unit
+        :param projected_unit_range: range in projected unit to mask out (e.g. radial range for radial mask)
+        :type projected_unit_range: (float, float)
+        :param integrated_unit: unit to use for integrated_unit_range (e.g. azimuthal unit for azimuth_range)
+        :type integrated_unit: pyFAI.units.Unit
+        :param mode: can be "normal" or "numpy" (inverted) or "where" applied to the mask
+        :type mode: str
+
+        :return: the new mask
+        :rtype: ndarray of bool
+
+        This method combine two masks (dynamic mask from *data &
+        dummy* and *mask*) to generate a new one with the 'or' binary
+        operation.  One can adjust the level, with the *dummy* and
+        the *delta_dummy* parameter, when you consider the *data*
+        values needs to be masked out.
+
+        This method can work in two different *mode*:
+
+            * "normal": False for valid pixels, True for bad pixels
+            * "numpy": True for valid pixels, false for others
+            * "where": does a numpy.where on the "numpy" output
+
+        This method tries to accommodate various types of masks (like
+        valid=0 & masked=-1, ...)
+
+        Note for the developer: we use a lot of numpy.logical_or in this method,
+        the out= argument allows to recycle buffers and save considerable time in
+        allocating temporary arrays.
+        """
         logical_or = numpy.logical_or
         shape = data.shape
         #       ^^^^   this is why data is mandatory !
@@ -230,25 +309,18 @@ class Integrator(Geometry):
             else:
                 logical_or(mask, abs(data - dummy) <= delta_dummy, out=mask)
 
-        if radial_range is not None:
-            if unit is None:
-                raise RuntimeError("unit is needed when building a mask based on radial_range")
-            elif isinstance(unit, (tuple, list)) and len(unit) == 2:
-                radial_unit = units.to_unit(unit[0])
-            else:
-                radial_unit = units.to_unit(unit)
-            rad = self.array_from_unit(shape, "center", radial_unit, scale=False)
-            logical_or(mask, rad < radial_range[0], out=mask)
-            logical_or(mask, rad > radial_range[1], out=mask)
-        if azimuth_range is not None:
-            if isinstance(unit, (tuple, list)) and len(unit) == 2:
-                azimuth_unit = units.to_unit(unit[1])
-            else:
-                logger.info("no azimuthal unit provided in `create_mask`, defaulting to `chi_rad`")
-                azimuth_unit = units.CHI_RAD
-            chi = self.array_from_unit(shape, "center", azimuth_unit, scale=False)
-            logical_or(mask, chi < azimuth_range[0], out=mask)
-            logical_or(mask, chi > azimuth_range[1], out=mask)
+        if projected_unit_range is not None:
+            if projected_unit is None:
+                raise RuntimeError("projected_unit is needed when building a mask based on projected_unit_range")
+            projected_unit_array = self.array_from_unit(shape, "center", projected_unit, scale=False)
+            logical_or(mask, projected_unit_array < projected_unit_range[0], out=mask)
+            logical_or(mask, projected_unit_array > projected_unit_range[1], out=mask)
+        if integrated_unit_range is not None:
+            if integrated_unit is None:
+                raise RuntimeError("integrated_unit is needed when building a mask based on integrated_unit_range")
+            integrated_unit_array = self.array_from_unit(shape, "center", integrated_unit, scale=False)
+            logical_or(mask, integrated_unit_array < integrated_unit_range[0], out=mask)
+            logical_or(mask, integrated_unit_array > integrated_unit_range[1], out=mask)
 
         # Prepare alternative representation for output:
         if mode == "numpy":
