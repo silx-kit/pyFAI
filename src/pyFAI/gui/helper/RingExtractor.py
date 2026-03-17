@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/02/2026"
+__date__ = "17/03/2026"
 
 import logging
 import numpy
@@ -45,8 +45,7 @@ _logger = logging.getLogger(__name__)
 
 
 class RingExtractorThread(qt.QThread):
-    """Job to process data and collect peaks according to a diffraction ring
-    modelization.
+    """Job to process data and collect peaks according to a diffraction ring model.
     """
 
     sigProcessLocationChanged = qt.Signal(object)
@@ -60,6 +59,7 @@ class RingExtractorThread(qt.QThread):
         self.__calibrant = None
         self.__detector = None
         self.__wavelength = None
+        self.__parallaxCorrection = None
         self.__geoRef = None
 
         self.__maxRings = None
@@ -133,7 +133,7 @@ class RingExtractorThread(qt.QThread):
         """Specify the amount of peak to extract per degree"""
         self.__pointPerDegree = pointPerDegree
 
-    def setExperimentSettings(self, experimentSettings, copy):
+    def setExperimentSettings(self, experimentSettings, copy=True):
         """
         Set the experiment data.
 
@@ -146,6 +146,7 @@ class RingExtractorThread(qt.QThread):
         calibrant = experimentSettings.calibrantModel().calibrant()
         detector = experimentSettings.detector()
         wavelength = experimentSettings.wavelength().value()
+        parallax = experimentSettings.parallaxCorrection().value()
 
         if copy:
             if image is not None:
@@ -160,6 +161,7 @@ class RingExtractorThread(qt.QThread):
             self.__calibrant.setWavelength_change2th(wavelength)
         self.__detector = detector
         self.__wavelength = wavelength
+        self.__parallaxCorrection = parallax
 
     def __initGeoRef(self):
         """
@@ -182,6 +184,18 @@ class RingExtractorThread(qt.QThread):
         #            defaults[key] = val
         return defaults
 
+    def __enableParallax(self, geoRef):
+        """Method that enables Parallax in georef if needed
+
+        :param geoRef: Instance of GeometryRefinement
+        :return: Instance of GeometryRefinement modified as needed
+        """
+        do_parallax = self.__parallaxCorrection
+        if self.__detector.sensor:
+            geoRef.enable_parallax(do_parallax)
+        return geoRef
+
+
     def __createGeoRefFromPeaks(self, peaks):
         """
         Contains the geometry refinement part specific to Calibration
@@ -200,9 +214,8 @@ class RingExtractorThread(qt.QThread):
             detector=self.__detector,
             calibrant=self.__calibrant,
             **defaults)
-        if self.__detector.sensor:
-            print("Enable parallax in __createGeoRefFromPeaks")
-            geoRef.enable_parallax()
+        self.__enableParallax(geoRef)
+
         geoRef.refine2(1000000, fix=fixed)
         score = geoRef.chi2()
         parameters = [getattr(geoRef, p) for p in PARAMETERS]
@@ -216,9 +229,7 @@ class RingExtractorThread(qt.QThread):
             detector=self.__detector,
             calibrant=self.__calibrant,
             **defaults)
-        if self.__detector.sensor:
-            print("Enable parallax in __createGeoRefFromPeaks")
-            geoRef.enable_parallax()
+        self.__enableParallax(geoRef)
         geoRef.guess_poni()
         geoRef.refine2(1000000, fix=fixed)
         score = geoRef.chi2()
@@ -247,9 +258,7 @@ class RingExtractorThread(qt.QThread):
             rot2=geometryModel.rotation2().value(),
             rot3=geometryModel.rotation3().value(),
             detector=self.__detector)
-        if self.__detector.sensor:
-            print("Enable parallax in __createGeoRefFromGeometry")
-            geoRef.enable_parallax()
+        geoRef = self.__enableParallax(geoRef)
         return geoRef
 
     def runProcess(self):
