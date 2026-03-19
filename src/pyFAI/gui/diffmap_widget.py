@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "19/03/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -66,11 +66,16 @@ class IntegrateDialog(qt.QDialog):
 
     def __init__(self, parent=None):
         qt.QDialog.__init__(self)
+        self.setWindowTitle("Integration configuration")
         self.widget = WorkerConfigurator(self)
-        # self.widget.set1dIntegrationOnly(True)
+
+
+        scroll = qt.QScrollArea(self)
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(self.widget)
 
         layout = qt.QVBoxLayout(self)
-        layout.addWidget(self.widget)
+        layout.addWidget(scroll)
         buttons = qt.QDialogButtonBox(self)
         buttons.setStandardButtons(qt.QDialogButtonBox.Cancel | qt.QDialogButtonBox.Ok)
         layout.addWidget(buttons)
