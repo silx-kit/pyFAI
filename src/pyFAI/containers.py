@@ -34,7 +34,7 @@ __date__ = "19/03/2026"
 __status__ = "development"
 
 import math
-import copy
+from copy import deepcopy
 import logging
 import warnings
 from typing import NamedTuple
@@ -144,13 +144,13 @@ class _CopyableTuple(tuple):
             memo = {}
         args = []
         for i in self:
-            cpy = copy.deepcopy(i, memo)
+            cpy = deepcopy(i, memo)
             memo[id(i)] = cpy
             args.append(cpy)
         other = self.__class__(*args)
         for attr in self.COPYABLE_ATTR:
             org = getattr(self, attr)
-            cpy = copy.deepcopy(org, memo)
+            cpy = deepcopy(org, memo)
             memo[id(org)] = cpy
             setattr(other, attr, cpy)
         return other
@@ -241,7 +241,7 @@ class IntegrateResult(_CopyableTuple):
         reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
-        res = copy.deepcopy(self)
+        res = deepcopy(self)
         res._sum_signal = self._sum_signal + other._sum_signal
         if self._sum_variance is None:
             res._sum_variance = other.sum_variance
@@ -260,7 +260,7 @@ class IntegrateResult(_CopyableTuple):
         reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot subtract `IntegrateResult` because of {reason}")
-        res = copy.deepcopy(self)
+        res = deepcopy(self)
         res._sum_signal = self._sum_signal - other.sum_signal
         if self._sum_variance is None:
             res._sum_variance = other.sum_variance
@@ -332,7 +332,7 @@ class IntegrateResult(_CopyableTuple):
         :param copy: leave the current object untouched if True, else mangle-it in place
         :return: IntegrateResult instance
         """
-        other = copy_module.deepcopy(self) if copy else self
+        other = deepcopy(self) if copy else self
         other.sum_normalization *= value/self.normalization_factor
         other.sum_normalization2 *= value**2/self.normalization_factor**2
         other._set_normalization_factor(value)
@@ -348,7 +348,7 @@ class IntegrateResult(_CopyableTuple):
         reason = reason or None if self.error_model == other.error_model else f"differing error models: {self.error_model.name}!={other.error_model.name}"
         if reason:
             raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
-        res = copy.deepcopy(self)
+        res = deepcopy(self)
         res._sum_signal = self._sum_signal + other._sum_signal
         res._sum_normalization = self._sum_normalization + other._sum_normalization
         res._count = self._count + other._count
