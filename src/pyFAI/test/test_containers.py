@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/02/2026"
+__date__ = "19/03/2026"
 
 import unittest
 import copy
@@ -74,6 +74,21 @@ class TestContainer(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.img = cls.ai = None
+
+    def test_recalculate_means(self):
+        "Ensure means remains the same after recalculation ..."
+        method = ("bbox", "csr", "cython")
+        res = self.ai.integrate1d(
+            self.img, 50, method=method, error_model="poisson"
+        )
+        ref = copy.deepcopy(res)
+        res.__recalculate_means__()
+
+        self.assertTrue(numpy.allclose(ref.radial, res.radial), "radial matches")
+        self.assertTrue(numpy.allclose(ref.intensity, res.intensity), "intensity matches")
+        self.assertTrue(numpy.allclose(ref.sem, res.sem), "sem matches")
+        self.assertTrue(numpy.allclose(ref.std, res.std), "std matches")
+
 
     def test_rebin1d(self):
         method = ("no", "histogram", "cython")
@@ -288,6 +303,16 @@ class TestContainer(unittest.TestCase):
         # self.assertTrue(numpy.allclose(c.sem, b.sem, rtol=0.4))
         # self.assertTrue(numpy.allclose(c.sigma, b.sigma, rtol=0.4))
 
+    def test_renormalize(self):
+        method = ("bbox", "histogram", "cython")
+        res1 = self.ai.integrate1d(
+            self.img, 50, method=method, error_model="poisson"
+        )
+        res2 = res1.renormalize(2)
+        self.assertTrue(numpy.allclose(res1[0], res2[0]), "radial matches")
+        self.assertTrue(numpy.allclose(res1[1], 2*res2[1]), "intensity matches")
+        self.assertTrue(numpy.allclose(res1[2], 2*res2[2]), "sem matches")
+        self.assertTrue(numpy.allclose(res1.std, 2*res2.std), "std matches")
 
 
 def suite():
