@@ -46,7 +46,7 @@ from numpy.typing import ArrayLike
 from .utils.dataclasses import dataclass, case_insensitive_dataclass  # noqa
 from .utils.decorators import deprecated_warning
 
-copy_module = copy
+from copy import deepcopy
 logger = logging.getLogger(__name__)
 
 
