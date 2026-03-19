@@ -334,8 +334,8 @@ class IntegrateResult(_CopyableTuple):
         :return: IntegrateResult instance
         """
         other = copy_module.deepcopy(self) if copy else self
-        other.sum_normalization[...] *= value/self.normalization_factor
-        other.sum_normalization2[...] *= value**2/self.normalization_factor**2
+        other.sum_normalization *= value/self.normalization_factor
+        other.sum_normalization2 *= value**2/self.normalization_factor**2
         other._set_normalization_factor(value)
         return other.__recalculate_means__()
 
