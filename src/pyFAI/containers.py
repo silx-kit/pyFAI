@@ -334,8 +334,8 @@ class IntegrateResult(_CopyableTuple):
         """
         other = deepcopy(self) if copy else self
         ratio = value/self.normalization_factor
-        other.sum_normalization *= ratio
-        other.sum_normalization2 *= ratio**2
+        other._sum_normalization *= ratio
+        other._sum_normalization2 *= ratio**2
         other._set_normalization_factor(value)
         return other.__recalculate_means__()
 
