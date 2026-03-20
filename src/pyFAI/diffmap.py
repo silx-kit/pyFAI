@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "19/03/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -743,7 +743,11 @@ If the number of files is too large, use double quotes like "*.edf" """
         here = os.path.dirname(os.path.abspath(self.nxs.filename))
         there = os.path.abspath(dataset.file.filename)
         name = f"images_{len(self.stored_input):04d}"
-        source_grp[name] = measurement_grp[name] = h5py.ExternalLink(os.path.relpath(there, here), dataset.name)
+        try:
+            relpath = os.path.relpath(there, here)
+        except ValueError:  # on windows, if files are on different drives
+            relpath = there
+        source_grp[name] = measurement_grp[name] = h5py.ExternalLink(relpath, dataset.name)
 
         if "signal" not in measurement_grp.attrs:
             measurement_grp.attrs["signal"] = name
