@@ -37,7 +37,7 @@ Histogram (direct) implementation
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/11/2025"
+__date__ = "18/03/2026"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -485,8 +485,8 @@ def fullSplit1D_engine(pos not None,
                           numpy.asarray(out_data[:, 1]) if error_model else None,
                           numpy.asarray(out_data[:, 2]),
                           numpy.asarray(out_data[:, 3]),
-                          std if error_model else None,
-                          sem if error_model else None,
+                          numpy.asarray(std) if error_model else None,
+                          numpy.asarray(sem) if error_model else None,
                           numpy.asarray(out_data[:, 4]) if error_model else None)
 
 fullSplit1D_ng = fullSplit1D_engine

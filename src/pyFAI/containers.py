@@ -30,21 +30,21 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/02/2026"
+__date__ = "19/03/2026"
 __status__ = "development"
 
 import math
-import copy
+from copy import deepcopy
 import logging
 import warnings
 from typing import NamedTuple
 from enum import IntEnum
 from dataclasses import fields, asdict  # noqa
 import numpy
+import numexpr
 from numpy.typing import ArrayLike
 from .utils.dataclasses import dataclass, case_insensitive_dataclass  # noqa
 from .utils.decorators import deprecated_warning
-
 
 logger = logging.getLogger(__name__)
 
@@ -144,13 +144,13 @@ class _CopyableTuple(tuple):
             memo = {}
         args = []
         for i in self:
-            cpy = copy.deepcopy(i, memo)
+            cpy = deepcopy(i, memo)
             memo[id(i)] = cpy
             args.append(cpy)
         other = self.__class__(*args)
         for attr in self.COPYABLE_ATTR:
             org = getattr(self, attr)
-            cpy = copy.deepcopy(org, memo)
+            cpy = deepcopy(org, memo)
             memo[id(org)] = cpy
             setattr(other, attr, cpy)
         return other
@@ -241,7 +241,7 @@ class IntegrateResult(_CopyableTuple):
         reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
-        res = copy.deepcopy(self)
+        res = deepcopy(self)
         res._sum_signal = self._sum_signal + other._sum_signal
         if self._sum_variance is None:
             res._sum_variance = other.sum_variance
@@ -260,7 +260,7 @@ class IntegrateResult(_CopyableTuple):
         reason = self.__are_compatible__(other)
         if reason:
             raise TypeError(f"Cannot subtract `IntegrateResult` because of {reason}")
-        res = copy.deepcopy(self)
+        res = deepcopy(self)
         res._sum_signal = self._sum_signal - other.sum_signal
         if self._sum_variance is None:
             res._sum_variance = other.sum_variance
@@ -303,23 +303,41 @@ class IntegrateResult(_CopyableTuple):
         return self.__recalculate_means__()
 
     def __recalculate_means__(self):
-        mask = (self.sum_normalization == 0.0)
-        nomask = numpy.logical_not(mask)
-        numpy.divide(self._sum_signal, self._sum_normalization,
-                        out=self.intensity, where=nomask)
-        self.intensity[mask] = self.dummy
-        if self.sum_variance is not None:
-            numpy.sqrt(self._sum_variance, out=self._sem)
-            numpy.divide(self._sem, self.sum_normalization,
-                         out=self._sem, where=nomask)
-            self._sem[mask] = self.dummy
-
-            self._std = numpy.divide(self._sum_variance, self._sum_normalization2,
-                                    out=self._sem, where=nomask)
-            self._std = numpy.sqrt(self._std, out=self._std)
-            self._std[mask] = self.dummy
+        formula_int = "where(sum_normalization == 0.0, dummy, sum_signal/sum_normalization)"
+        formula_std = "where(sum_normalization == 0.0, dummy, sqrt(sum_variance/sum_normalization2))"
+        formula_sem = "where(sum_normalization == 0.0, dummy, sqrt(sum_variance)/sum_normalization)"
+        matching = {"sum_signal": self._sum_signal,
+                    "sum_variance": self._sum_variance,
+                    "sum_normalization":self._sum_normalization,
+                    "sum_normalization2":self._sum_normalization2,
+                    "dummy": self.dummy,
+                    }
+        numexpr.evaluate(formula_int,
+                        local_dict=matching,
+                        out=self.intensity)
+        if self._sum_variance is not None:
+            numexpr.evaluate(formula_sem,
+                            local_dict=matching,
+                            out=self._sem)
+            numexpr.evaluate(formula_std,
+                            local_dict=matching,
+                            out=self._std)
             self.sigma[...] = self._sem
         return self
+
+    def renormalize(self, value:float, copy=True):
+        """Recalculate the diffraction pattern with a different normalization factor
+
+        :param value: new normalization factor
+        :param copy: leave the current object untouched if True, else mangle-it in place
+        :return: IntegrateResult instance
+        """
+        other = deepcopy(self) if copy else self
+        ratio = value/self.normalization_factor
+        other._sum_normalization *= ratio
+        other._sum_normalization2 *= ratio**2
+        other._set_normalization_factor(value)
+        return other.__recalculate_means__()
 
     def union(self, other):
         """Calculate the weighted average of two results in a new IntegrateResult
@@ -331,7 +349,7 @@ class IntegrateResult(_CopyableTuple):
         reason = reason or None if self.error_model == other.error_model else f"differing error models: {self.error_model.name}!={other.error_model.name}"
         if reason:
             raise TypeError(f"Cannot add `IntegrateResult` because of {reason}")
-        res = copy.deepcopy(self)
+        res = deepcopy(self)
         res._sum_signal = self._sum_signal + other._sum_signal
         res._sum_normalization = self._sum_normalization + other._sum_normalization
         res._count = self._count + other._count
