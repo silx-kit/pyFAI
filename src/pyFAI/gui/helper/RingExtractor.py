@@ -39,7 +39,6 @@ from ...geometry import Geometry
 from ..peak_picker import PeakPicker
 from . import model_transform
 from ... import units
-from ..dialog.MessageBox import message_box
 
 _logger = logging.getLogger(__name__)
 
