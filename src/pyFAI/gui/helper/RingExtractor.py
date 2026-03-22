@@ -39,7 +39,6 @@ from ...geometry import Geometry
 from ..peak_picker import PeakPicker
 from . import model_transform
 from ... import units
-from ..dialog.MessageBox import message_box
 
 _logger = logging.getLogger(__name__)
 
@@ -49,6 +48,7 @@ class RingExtractorThread(qt.QThread):
     """
 
     sigProcessLocationChanged = qt.Signal(object)
+    sigExtractionWarning = qt.Signal(str)
 
     def __init__(self, parent):
         """Constructor"""
@@ -284,7 +284,7 @@ class RingExtractorThread(qt.QThread):
             else:
                 msg = "The fitted model is not valid. One cannot extract rings from it."\
                 "\n\nI will guess the geometry from the set of control-points which is not as precise."
-                message_box(None, "error", msg)
+                self.sigExtractionWarning.emit(msg)
                 geometryModel = None
 
         if peaksModel is not None and geometryModel is None:

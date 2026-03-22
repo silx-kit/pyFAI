@@ -1682,11 +1682,15 @@ class PeakPickingTask(AbstractCalibrationTask):
         thread.started.connect(self.__extractionStarted)
         thread.finished.connect(functools.partial(self.__extractionFinishedSafe, thread))
         thread.finished.connect(thread.deleteLater)
+        thread.sigExtractionWarning.connect(self.__onExtractionWarning)
         thread.start()
         self.__extractionThread = thread
 
     def __autoExtractLocationChanged(self, mask):
         self.__plot.setProcessingLocation(mask)
+
+    def __onExtractionWarning(self, message):
+        MessageBox.message_box(self, "Warning", message)
 
     def __updateOptionToExtractAgain(self):
         self._moreRingToExtractTitle.setVisible(False)
