@@ -530,18 +530,7 @@ class FiberIntegrator(AzimuthalIntegrator):
         else:
             # Engine implementation, like AzimuthalIntegrator
             logger.warning(f"You are using engine implementation with method {method}. The method may not be available")
-            if method.pixel_splitting == "no" and method.algo == "histogram" and method.impl in ("python", "cython"):
-                mask = self.create_mask_generic(
-                    data=data,
-                    mask=mask,
-                    unit1=unit_ip,
-                    unit2=unit_oop,
-                    # These parameters can be skipped here:
-                    # unit1_range=ip_range,
-                    # unit2_range=oop_range,
-                    # dummy=dummy,
-                    # delta_dummy=delta_dummy,
-                )                
+            if method.pixel_splitting == "no" and method.algo == "histogram" and method.impl in ("python", "cython"):      
                 params_integrator = {
                     "raw" : data,
                     "dark" : dark,
@@ -559,12 +548,14 @@ class FiberIntegrator(AzimuthalIntegrator):
 
                 if method.dim == 1:
                     # The integrated limits are masked here
-                    mask = self.create_mask_generic(
-                        data=data,
-                        mask=mask,
-                        unit1=integrated_unit,
-                        unit1_range=integrated_range,
-                    )  
+                    if integrated_range:
+                        r0, r1 = integrated_range
+                        chi = self.center_array(shape, unit=integrated_unit, scale=False)
+                        integration_mask = numpy.logical_or(chi > r1, chi < r0)
+                        if mask is None:
+                            mask = integration_mask
+                        else:
+                            mask = numpy.logical_or(mask, integration_mask)
                     params_integrator.update({
                         "mask" : mask,
                         "radial" : self.center_array(shape, unit=projected_unit, scale=False),
@@ -573,10 +564,6 @@ class FiberIntegrator(AzimuthalIntegrator):
                     })
                 elif method.dim == 2:
                     # For 2d, there's no need to mask before the integration
-                    mask = self.create_mask_generic(
-                        data=data,
-                        mask=mask,
-                    )     
                     params_integrator.update({
                         "mask" : mask,
                         "radial" : self.center_array(shape, unit=unit_ip, scale=False),

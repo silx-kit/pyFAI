@@ -281,12 +281,13 @@ class AzimuthalIntegrator(Integrator):
               method.method[3] in ("python", "cython")):
             integr = method.class_funct_ng.function  # should be histogram[_engine].histogram1d_engine
             if azimuth_range:
-                mask = self.create_mask_generic(
-                    data=data,
-                    mask=mask,
-                    unit2=units.CHI_RAD,
-                    unit2_range=azimuth_range,
-                )
+                chi_min, chi_max = azimuth_range
+                chi = self.center_array(shape, unit=units.CHI_RAD, scale=False)
+                azim_mask = numpy.logical_or(chi > chi_max, chi < chi_min)
+                if mask is None:
+                    mask = azim_mask
+                else:
+                    mask = numpy.logical_or(mask, azim_mask)
             radial = self.center_array(shape, unit=unit, scale=False)
             intpl = integr(radial, npt, data,
                            dark=dark,
