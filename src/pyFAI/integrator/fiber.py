@@ -517,9 +517,9 @@ class FiberIntegrator(AzimuthalIntegrator):
                     sigma = None
 
                 if vertical_integration:
-                    projected_vector = res2d_fiber.radial
-                else:
                     projected_vector = res2d_fiber.azimuthal
+                else:
+                    projected_vector = res2d_fiber.radial
 
                 result_tuple = Integrate1dtpl(
                     projected_vector,
