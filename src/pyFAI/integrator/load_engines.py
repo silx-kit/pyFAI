@@ -351,3 +351,5 @@ PREFERED_METHODS_2D = IntegrationMethod.select_method(2, split="full", algo="his
                       IntegrationMethod.select_method(2, split="pseudo", algo="histogram") + \
                       IntegrationMethod.select_method(2, split="bbox", algo="histogram") + \
                       IntegrationMethod.select_method(2, split="no", algo="histogram")
+PREFERED_METHOD_1D_FIBER = IntegrationMethod.select_method(1, split="no", algo="histogram")[0]
+PREFERED_METHOD_2D_FIBER = IntegrationMethod.select_method(2, split="no", algo="histogram")[0]
