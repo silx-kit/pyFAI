@@ -28,7 +28,7 @@ Change-log of versions
 - 32 commits over 1 month
 - Contributors for this release:
 
-  *Tianyi Ma
+  * Tianyi Ma
   * Edgar Gutierrez-Fernandez
   * Thomas Vincent
   * Jérôme Kieffer
