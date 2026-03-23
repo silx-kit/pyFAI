@@ -496,21 +496,16 @@ class FiberIntegrator(AzimuthalIntegrator):
                 # Transform the 2d result into a 1d result
                 sum_signal = res2d_fiber.sum_signal.sum(axis=integration_axis)
                 count = res2d_fiber.count.sum(axis=integration_axis)
-                sum_normalization = res2d_fiber._sum_normalization.sum(axis=integration_axis)
+                sum_normalization = res2d_fiber.sum_normalization.sum(axis=integration_axis)
+                intensity = numpy.where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)
+
                 mask_ = numpy.where(count == 0)
                 empty = dummy if dummy is not None else self._empty
-                if USE_NUMEXPR:
-                    intensity = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)")
-                else:
-                    intensity = numpy.where(sum_normalization <= 0, 0.0, sum_signal / sum_normalization)
                 intensity[mask_] = empty
 
                 if res2d_fiber.sigma is not None:
                     sum_variance = res2d_fiber.sum_variance.sum(axis=integration_axis)
-                    if USE_NUMEXPR:
-                        sigma = numexpr.evaluate("where(sum_normalization <= 0, 0.0, sqrt(sum_variance) / sum_normalization)")
-                    else:
-                        sigma = numpy.where(sum_normalization <= 0, 0.0, numpy.sqrt(sum_variance) / sum_normalization)
+                    sigma = numpy.where(sum_normalization <= 0, 0.0, numpy.sqrt(sum_variance) / sum_normalization)
                     sigma[mask_] = empty
                 else:
                     sum_variance = None
@@ -520,7 +515,6 @@ class FiberIntegrator(AzimuthalIntegrator):
                     projected_vector = res2d_fiber.azimuthal
                 else:
                     projected_vector = res2d_fiber.radial
-
                 result_tuple = Integrate1dtpl(
                     projected_vector,
                     intensity,
@@ -529,8 +523,8 @@ class FiberIntegrator(AzimuthalIntegrator):
                     sum_variance,
                     sum_normalization,
                     count,
-                    None, #std,
-                    None, #sem,
+                    sigma, #std
+                    sigma, #sem
                     None, #histo_normalization2,
                 )
         else:
