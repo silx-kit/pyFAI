@@ -60,15 +60,15 @@ if host_machine.system() == 'windows'
   '''
   # C compiler check
   if c_id not in acceptable
-    meson.warning(warning_msg.format('C', c_id))
+    warning(warning_msg.format('C', c_id))
   endif
   # C++ compiler check
   if cpp_id not in acceptable
-    meson.warning(warning_msg.format('C++', cpp_id))
+    warning(warning_msg.format('C++', cpp_id))
   endif
   # make it fatal:
   if c_id not in acceptable or cpp_id not in acceptable
-     meson.error('Unsupported compiler on Windows - aborting.')
+    error('Unsupported compiler on Windows - aborting.')
   endif
 endif
 
