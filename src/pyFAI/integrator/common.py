@@ -222,10 +222,10 @@ class Integrator(Geometry):
             mask=mask,
             dummy=dummy,
             delta_dummy=delta_dummy,
-            projected_unit=radial_unit,
-            projected_unit_range=radial_range,
-            integrated_unit=azimuth_unit,
-            integrated_unit_range=azimuth_range,
+            unit1=radial_unit,
+            unit1_range=radial_range,
+            unit2=azimuth_unit,
+            unit2_range=azimuth_range,
             mode=mode,
         )
     
@@ -233,8 +233,8 @@ class Integrator(Geometry):
 
     def create_mask_generic(self, data, mask=None,
                             dummy=None, delta_dummy=None,
-                            projected_unit=None, projected_unit_range=None,
-                            integrated_unit=None, integrated_unit_range=None,
+                            unit1=None, unit1_range=None,
+                            unit2=None, unit2_range=None,
                             mode="normal",
     ):
         """
@@ -309,18 +309,18 @@ class Integrator(Geometry):
             else:
                 logical_or(mask, abs(data - dummy) <= delta_dummy, out=mask)
 
-        if projected_unit_range is not None:
-            if projected_unit is None:
+        if unit1_range is not None:
+            if unit1 is None:
                 raise RuntimeError("projected_unit is needed when building a mask based on projected_unit_range")
-            projected_unit_array = self.array_from_unit(shape, "center", projected_unit, scale=False)
-            logical_or(mask, projected_unit_array < projected_unit_range[0], out=mask)
-            logical_or(mask, projected_unit_array > projected_unit_range[1], out=mask)
-        if integrated_unit_range is not None:
-            if integrated_unit is None:
+            unit1_array = self.array_from_unit(shape, "center", unit1)
+            logical_or(mask, unit1_array < unit1_range[0], out=mask)
+            logical_or(mask, unit1_array > unit1_range[1], out=mask)
+        if unit2_range is not None:
+            if unit2 is None:
                 raise RuntimeError("integrated_unit is needed when building a mask based on integrated_unit_range")
-            integrated_unit_array = self.array_from_unit(shape, "center", integrated_unit, scale=False)
-            logical_or(mask, integrated_unit_array < integrated_unit_range[0], out=mask)
-            logical_or(mask, integrated_unit_array > integrated_unit_range[1], out=mask)
+            unit2_array = self.array_from_unit(shape, "center", unit2)
+            logical_or(mask, unit2_array < unit2_range[0], out=mask)
+            logical_or(mask, unit2_array > unit2_range[1], out=mask)
 
         # Prepare alternative representation for output:
         if mode == "numpy":
