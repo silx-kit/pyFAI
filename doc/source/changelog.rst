@@ -1,9 +1,37 @@
 :Author: Jérôme Kieffer
-:Date: 27/02/2026
+:Date: 23/03/2026
 :Keywords: changelog
 
 Change-log of versions
 ======================
+
+2026.03 23/03/2026
+------------------
+
+- New features:
+
+  * Implement renormalization of integration results (#2737)
+  * Put the workerConfiguration in a scroll-area (#2779)
+
+- Bug fixes:
+
+  * Result of 2d integration from pyFAI-integrate has wrong interpretation "spectrum" not "image" in Nexus (#2812)
+  * Prevent the usage of compilers other than MSVC on Windows
+  * Ensure application's help is available on Windows too
+  * Prevent GUI exception, related to detector definition (#2828)
+  * Implement parallax correction for ring extraction, when requested
+  * Fix regression in recalculate_means, switch math to `numepr`
+  * Fix relative path issue under Windows (#2823)
+  * Fix RingExtractor calling message_box from a QThread, violating Qt threading rules.
+
+- Supports python 3.10-3.14, 3.14t is untested.
+- 32 commits over 1 month
+- Contributors for this release:
+
+  * Tianyi Ma
+  * Edgar Gutierrez-Fernandez
+  * Thomas Vincent
+  * Jérôme Kieffer
 
 2026.02 27/02/2026
 ------------------
