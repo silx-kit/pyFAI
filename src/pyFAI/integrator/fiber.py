@@ -198,8 +198,8 @@ class FiberIntegrator(AzimuthalIntegrator):
             self._cache_parameters['sample_orientation'] = sample_orientation
 
     def integrate1d_fiber(self, data,
-                        npt_ip=None, unit_ip=None, ip_range=None,
-                        npt_oop=None, unit_oop=None, oop_range=None,
+                        npt_ip=None, unit_ip="qip_nm^-1", ip_range=None,
+                        npt_oop=None, unit_oop="qoop_nm^-1", oop_range=None,
                         vertical_integration = True,
                         incident_angle:float=None,
                         tilt_angle:float=None,
@@ -213,7 +213,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                         normalization_factor=1.0,
                         angle_unit="rad",
                         metadata=None,
-                        use_2d_engine:bool=False,
+                        use_2d_engine:bool=True,
                         use_missing_wedge:bool = False,
                         missing_wedge_percentile:float = None,
                         missing_wedge_threshold_bins:int = None,
@@ -288,8 +288,8 @@ class FiberIntegrator(AzimuthalIntegrator):
         return result_fiber
 
     def integrate2d_fiber(self, data,
-                          npt_ip=1000, unit_ip=None, ip_range=None,
-                          npt_oop=1000, unit_oop=None, oop_range=None,
+                          npt_ip=1000, unit_ip="qip_nm^-1", ip_range=None,
+                          npt_oop=1000, unit_oop="qoop_nm^-1", oop_range=None,
                           incident_angle:float=None,
                           tilt_angle:float=None,
                           sample_orientation:int=None,
@@ -301,7 +301,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                           method=("no", "histogram", "cython"),
                           normalization_factor=1.0,
                           angle_unit="rad",
-                          use_2d_engine:bool=False,
+                          use_2d_engine:bool=True,
                           use_missing_wedge:bool = False,
                           missing_wedge_percentile:float = None,
                           missing_wedge_threshold_bins:int = None,
@@ -380,8 +380,8 @@ class FiberIntegrator(AzimuthalIntegrator):
     def _integrate_fiber(self, 
                          data,
                          method, # Already normalized
-                         npt_ip=1000, unit_ip="qip_nm^-1", ip_range=None,
-                         npt_oop=1000, unit_oop="qoop_nm^-1", oop_range=None,
+                         npt_ip=None, unit_ip=None, ip_range=None,
+                         npt_oop=None, unit_oop=None, oop_range=None,
                          incident_angle:float=None,
                          tilt_angle:float=None,
                          sample_orientation:int=None,
@@ -459,6 +459,16 @@ class FiberIntegrator(AzimuthalIntegrator):
         result_tuple = None
         result_fiber = None
         if use_2d_engine:
+            # Here, radial is always in-plane, azimuthal is always out-of-plane
+            # For integration1d:
+            #   - If vertical_integration=True, we need explicit npt_oop, npt_ip could be default
+            #   - If vertical_integration=False, we need explicit npt_ip, npt_oop could be default
+            if method.dim == 1:
+                if vertical_integration:
+                    npt_ip = npt_ip or 1000
+                else:
+                    npt_oop = npt_oop or 1000
+
             res2d_fiber = self.integrate2d_ng(data, npt_rad=npt_ip, npt_azim=npt_oop,
                                     correctSolidAngle=correctSolidAngle,
                                     mask=mask, dummy=dummy, delta_dummy=delta_dummy,
