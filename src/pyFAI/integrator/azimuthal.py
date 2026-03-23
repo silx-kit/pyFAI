@@ -284,8 +284,8 @@ class AzimuthalIntegrator(Integrator):
                 mask = self.create_mask_generic(
                     data=data,
                     mask=mask,
-                    integrated_unit=units.CHI_RAD,
-                    integrated_unit_range=azimuth_range,
+                    unit2=units.CHI_RAD,
+                    unit2_range=azimuth_range,
                 )
             radial = self.center_array(shape, unit=unit, scale=False)
             intpl = integr(radial, npt, data,
