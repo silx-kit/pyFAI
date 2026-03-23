@@ -641,7 +641,7 @@ class FiberIntegrator(AzimuthalIntegrator):
             result_fiber._set_std(result_tuple.std)
             result_fiber._set_sem(result_tuple.sem)
             result_fiber._set_sum_normalization2(result_tuple.norm_sq)
-            result_fiber._set_compute_engine = f"{method.class_funct_ng.function.__module__}:{method.class_funct_ng.function.__name__}"
+            result_fiber._set_compute_engine(f"{method.class_funct_ng.function.__module__}:{method.class_funct_ng.function.__name__}")
             result_fiber._set_method(method)
             result_fiber._set_method_called(f"integrate{method.dim}d")
             result_fiber._set_has_dark_correction(has_dark)
