@@ -38,7 +38,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "24/03/2026"
 __status__ = "production"
 
 import os
@@ -579,8 +579,11 @@ class Calibrant:
             signals = numexpr.evaluate("intensities * exp(- (tth_rad-tth_peak)**2/(2*dtth2_peaks)) / sqrt( 2 * pi * dtth2_peaks)")
         else:
             signals = intensities * numpy.exp(- (tth_rad - tth_peak) ** 2 / (2.0 * dtth2_peaks)) / (numpy.sqrt(2 * pi * dtth2_peaks))
-        # print(f"dt={time.perf_counter()-t0}s")
-        signals /= signals.max()  # Normalization for most intense peak at 1.0
+
+        if signals.shape[0] == 0:  # No peak in range
+            signals = numpy.zeros((1,nbpt))
+        else:
+            signals /= signals.max()  # Normalization for most intense peak at 1.0
         signal = Imax * signals.sum(axis=0)
         signal += background
         result = Integrate1dResult(tth_user, signal)
