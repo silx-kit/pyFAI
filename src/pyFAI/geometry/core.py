@@ -2739,6 +2739,8 @@ class Geometry:
                 from ..detectors.sensors import SensorConfig
                 sensor_config = SensorConfig.from_dict({"material": sensor_material,
                                                  "thickness":sensor_thickness})
+            if self.wavelength is None:
+                raise RuntimeError("Cannot initialize the sensor without energy|wavelength !")
             try:
                 mu = sensor_config.material.mu(energy=self.energy, unit="m")
             except Exception as err:
