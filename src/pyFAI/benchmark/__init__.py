@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "26/02/2026"
+__date__ = "26/03/2026"
 __license__ = "MIT"
 __copyright__ = "2012-2026 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -240,7 +240,9 @@ class Bench(object):
         self.results = {"host": platform.node(),
                         "argv": sys.argv,
                         "cpu": self.get_cpu(),
-                        "gpu": self.get_gpu()}
+                        "gpu": self.get_gpu(),
+                        "env": self.get_env(),
+                        "version": self.get_version()}
         self.meth = []
         self.fig = None
         self.ax = None
@@ -305,6 +307,36 @@ class Bench(object):
             mem = 0
         return mem
 
+    def get_env(self):
+        """
+        Return environment variables related to OpenMP
+        """
+        return {key:str(value) 
+                for key, val in os.environ.items()
+                if key.startswith("OMP")}
+
+    def get_version(self):
+        """
+        Return versions of important dependencies
+        """
+        res = {"numpy": numpy.version.version, 
+               "fabio": fabio.version, 
+               "scipy": scipy.version.version, 
+               "pyFAI": pyFAI.version}
+        try:
+            import h5py
+        except: ImportError
+            res["h5py"] = None
+        else:
+            res["h5py"] = h5py.version.version
+        try:
+            import pyopencl
+        except: ImportError
+            res["pyopencl"] = None
+        else:
+            res["pyopencl"] = pyopencl.__version__
+        return res
+    
     def print_init(self, t):
         print(" * Initialization time: %.1f ms" % (1000.0 * t))
         self.update_mp()
