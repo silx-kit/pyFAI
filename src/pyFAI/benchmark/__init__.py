@@ -47,6 +47,7 @@ from ..utils import mathutil
 from ..utils.decorators import deprecated
 from ..test.utilstest import UtilsTest
 from ..opencl import pyopencl, ocl
+from .. import version as pyFAI_version
 try:
     from ..gui.matplotlib import pyplot, pylab
     from ..gui.utils import update_fig as _update_fig
@@ -312,7 +313,7 @@ class Bench(object):
         Return environment variables related to OpenMP
         """
         return {key:str(value) 
-                for key, val in os.environ.items()
+                for key, value in os.environ.items()
                 if key.startswith("OMP")}
 
     def get_version(self):
@@ -321,20 +322,28 @@ class Bench(object):
         """
         res = {"numpy": numpy.version.version, 
                "fabio": fabio.version, 
-               "scipy": scipy.version.version, 
-               "pyFAI": pyFAI.version}
+               "pyFAI": pyFAI_version}
+        try:
+            import scipy
+        except ImportError:
+            res["scipy"] = None
+        else:
+            res["scipy"] = scipy.version.version 
+
         try:
             import h5py
-        except: ImportError
+        except ImportError:
             res["h5py"] = None
         else:
             res["h5py"] = h5py.version.version
+        
         try:
             import pyopencl
-        except: ImportError
+        except ImportError:
             res["pyopencl"] = None
         else:
             res["pyopencl"] = pyopencl.__version__
+        
         return res
     
     def print_init(self, t):
