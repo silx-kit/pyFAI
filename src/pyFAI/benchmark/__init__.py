@@ -241,6 +241,7 @@ class Bench(object):
         self.results = {"host": platform.node(),
                         "argv": sys.argv,
                         "cpu": self.get_cpu(),
+                        "cpu_count": os.cpu_count(),
                         "gpu": self.get_gpu(),
                         "env": self.get_env(),
                         "version": self.get_version()}
