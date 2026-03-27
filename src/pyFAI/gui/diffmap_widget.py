@@ -528,8 +528,8 @@ class DiffMapWidget(qt.QWidget):
 
     def save_config(self):
         logger.info("DiffmapWidget.save_config()")
-        json_file = qt.QFileDialog.getSaveFileName(caption="Save configuration as json",
-                                                   directory=self.json_file,
+        json_file = qt.QFileDialog.getSaveFileName("Save configuration as json",
+                                                   self.json_file,
                                                    filter="Config (*.json)")
         if isinstance(json_file, tuple):
             # Compatibility with PyQt5
