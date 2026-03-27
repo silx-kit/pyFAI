@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/03/2026"
+__date__ = "27/03/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -528,8 +528,9 @@ class DiffMapWidget(qt.QWidget):
 
     def save_config(self):
         logger.info("DiffmapWidget.save_config()")
-        json_file = qt.QFileDialog.getSaveFileName(caption="Save configuration as json",
-                                                   directory=self.json_file,
+        json_file = qt.QFileDialog.getSaveFileName(self,
+                                                   "Save configuration as json",
+                                                   self.json_file,
                                                    filter="Config (*.json)")
         if isinstance(json_file, tuple):
             # Compatibility with PyQt5
