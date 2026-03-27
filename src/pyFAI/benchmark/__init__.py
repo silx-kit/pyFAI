@@ -24,7 +24,7 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "26/02/2026"
+__date__ = "26/03/2026"
 __license__ = "MIT"
 __copyright__ = "2012-2026 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -47,6 +47,7 @@ from ..utils import mathutil
 from ..utils.decorators import deprecated
 from ..test.utilstest import UtilsTest
 from ..opencl import pyopencl, ocl
+from .. import version as pyFAI_version
 try:
     from ..gui.matplotlib import pyplot, pylab
     from ..gui.utils import update_fig as _update_fig
@@ -240,7 +241,10 @@ class Bench(object):
         self.results = {"host": platform.node(),
                         "argv": sys.argv,
                         "cpu": self.get_cpu(),
-                        "gpu": self.get_gpu()}
+                        "cpu_count": os.cpu_count(),
+                        "gpu": self.get_gpu(),
+                        "env": self.get_env(),
+                        "version": self.get_version()}
         self.meth = []
         self.fig = None
         self.ax = None
@@ -305,6 +309,44 @@ class Bench(object):
             mem = 0
         return mem
 
+    def get_env(self):
+        """
+        Return environment variables related to OpenMP
+        """
+        return {key:str(value) 
+                for key, value in os.environ.items()
+                if key.startswith("OMP")}
+
+    def get_version(self):
+        """
+        Return versions of important dependencies
+        """
+        res = {"numpy": numpy.version.version, 
+               "fabio": fabio.version, 
+               "pyFAI": pyFAI_version}
+        try:
+            import scipy
+        except ImportError:
+            res["scipy"] = None
+        else:
+            res["scipy"] = scipy.version.version 
+
+        try:
+            import h5py
+        except ImportError:
+            res["h5py"] = None
+        else:
+            res["h5py"] = h5py.version.version
+        
+        try:
+            import pyopencl
+        except ImportError:
+            res["pyopencl"] = None
+        else:
+            res["pyopencl"] = pyopencl.__version__
+        
+        return res
+    
     def print_init(self, t):
         print(" * Initialization time: %.1f ms" % (1000.0 * t))
         self.update_mp()
