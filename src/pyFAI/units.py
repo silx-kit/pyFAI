@@ -50,7 +50,7 @@ import numpy
 import scipy.constants
 from scipy.spatial.transform import Rotation
 from .utils.decorators import deprecated
-
+from .containers import ImmutableDict
 logger = logging.getLogger(__name__)
 TWO_PI = 2 * PI
 
@@ -106,6 +106,7 @@ class Unit(object):
         unit_symbol:str|None=None,
         positive:bool=True,
         period:float|None=None,
+        extra_parameters:dict|ImmutableDict|None=None,
     ):
         """Constructor of a unit.
 
@@ -122,6 +123,7 @@ class Unit(object):
         :param str unit_symbol: symbol used to display values of this unit
         :param bool positive: this value can only be positive
         :param period: None or the periodicity of the unit (angles are periodic)
+        :param extra_parameters: extra parameters used in the formula
         """
         self.name = name
         # used to identify compatible spaces.
@@ -133,8 +135,13 @@ class Unit(object):
         self.delta = delta
         self._equation_np = equation
         self.formula = formula
+        self.extra_parameters = ImmutableDict(extra_parameters)
         if (numexpr is not None) and isinstance(formula, str):
             signature = [(key, numpy.float64) for key in "xyzλπ" if key in formula]
+            for key in self.extra_parameters:
+                if key not in formula:
+                    signature.append((key, numpy.float64))
+
             ne_formula = numexpr.NumExpr(formula, signature)
 
             def ne_equation(x, y, z=None, wavelength=None, ne_formula=ne_formula):
@@ -431,34 +438,41 @@ ANY_FIBER_UNITS = {}
 
 
 def register_radial_unit(
-    name,
-    scale=1,
-    label=None,
-    equation=None,
-    formula=None,
-    center=None,
-    corner=None,
-    delta=None,
-    short_name=None,
-    unit_symbol=None,
-    positive=True,
-    period=None,
+            name:str,
+            scale:float=1,
+            label:str|None=None,
+            equation:Callable|None=None,
+            formula:str|None=None,
+            center:Callable|None=None,
+            corner:Callable|None=None,
+            delta:Callable|None=None,
+            short_name:str|None=None,
+            unit_symbol:str|None=None,
+            positive:bool=True,
+            period:float|None=None,
+            extra_parameters:dict|ImmutableDict|None=None,
 ):
-    RADIAL_UNITS[name] = Unit(
-        name,
-        scale,
-        label,
-        equation,
-        formula,
-        center,
-        corner,
-        delta,
-        short_name,
-        unit_symbol,
-        positive,
-        period,
-    )
-    ANY_UNITS.update(RADIAL_UNITS)
+    """Register a new radial unit, if needed."""
+    if name in  ANY_UNITS:
+        unit = ANY_UNITS[name]
+    else:
+        unit = Unit(
+                name=name,
+                scale=scale,
+                label=label,
+                equation=equation,
+                formula=formula,
+                center=center,
+                corner=corner,
+                delta=delta,
+                short_name=short_name,
+                unit_symbol=unit_symbol,
+                positive=positive,
+                period=period,
+                extra_parameters=extra_parameters
+                )
+        RADIAL_UNITS[name] = ANY_UNITS[name] = unit
+    return unit
 
 
 def register_radial_fiber_unit(
@@ -501,34 +515,41 @@ def register_radial_fiber_unit(
 
 
 def register_azimuthal_unit(
-    name,
-    scale=1,
-    label=None,
-    equation=None,
-    formula=None,
-    center=None,
-    corner=None,
-    delta=None,
-    short_name=None,
-    unit_symbol=None,
-    positive=False,
-    period=None,
+            name:str,
+            scale:float=1,
+            label:str|None=None,
+            equation:Callable|None=None,
+            formula:str|None=None,
+            center:Callable|None=None,
+            corner:Callable|None=None,
+            delta:Callable|None=None,
+            short_name:str|None=None,
+            unit_symbol:str|None=None,
+            positive:bool=True,
+            period:float|None=None,
+            extra_parameters:dict|ImmutableDict|None=None,
 ):
-    AZIMUTHAL_UNITS[name] = Unit(
-        name,
-        scale,
-        label,
-        equation,
-        formula,
-        center,
-        corner,
-        delta,
-        short_name,
-        unit_symbol,
-        positive,
-        period,
-    )
-    ANY_UNITS.update(AZIMUTHAL_UNITS)
+    """Register a new azimuthal unit."""
+    if name in ANY_UNITS:
+        unit = ANY_UNITS[name]
+    else:
+        unit = Unit(
+                    name=name,
+                    scale=scale,
+                    label=label,
+                    equation=equation,
+                    formula=formula,
+                    center=center,
+                    corner=corner,
+                    delta=delta,
+                    short_name=short_name,
+                    unit_symbol=unit_symbol,
+                    positive=positive,
+                    period=period,
+                    extra_parameters=extra_parameters
+                    )
+        AZIMUTHAL_UNITS[name] = ANY_UNITS[name] = unit
+    return unit
 
 
 def register_azimuthal_fiber_unit(
