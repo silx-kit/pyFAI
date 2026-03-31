@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "31/03/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -124,9 +124,8 @@ class Unit(object):
         :param period: None or the periodicity of the unit (angles are periodic)
         """
         self.name = name
-        self.space = "_".join(
-            self.name.split("_")[:-1]
-        )  # used to identify compatible spaces.
+        # used to identify compatible spaces.
+        self.space = "_".join(self.name.split("_")[:-1])
         self.scale = scale
         self.label = label if label is not None else name
         self.corner = corner
@@ -285,7 +284,7 @@ class UnitFiber(Unit):
             signature = [
                 (key, numpy.float64) for key in "xyzλπηχ" if key in self.formula
             ]
-                        
+
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
             def ne_equation(
@@ -378,7 +377,7 @@ class UnitFiber(Unit):
             }
         )
         return fiberunit_config
-    
+
     as_dict = get_config
 
     def get_config_shared(self) -> dict:

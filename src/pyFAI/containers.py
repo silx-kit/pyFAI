@@ -94,11 +94,15 @@ class Integrate2dtpl(NamedTuple):
 
 class ImmutableDict(collections.abc.Mapping):
     """Implements a dict that cannot be modified"""
-    def __init__(self, dico:dict):
+    def __init__(self, dico:dict|None):
+        dico = dico or {}
         keys = list(dico.keys())
         keys.sort()
         nt = collections.namedtuple("nt", keys)
         self.__named_tuple = nt(**dico)
+
+    def __repr__(self):
+        return repr(self.__named_tuple._asdict())
 
     def __getitem__(self, key):
         return self.__named_tuple.__getattribute__(key)
