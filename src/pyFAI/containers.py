@@ -30,7 +30,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/03/2026"
+__date__ = "31/03/2026"
 __status__ = "development"
 
 import math
@@ -40,6 +40,7 @@ import warnings
 from typing import NamedTuple
 from enum import IntEnum
 from dataclasses import fields, asdict  # noqa
+import collections
 import numpy
 import numexpr
 from numpy.typing import ArrayLike
@@ -89,6 +90,24 @@ class Integrate2dtpl(NamedTuple):
     std: ArrayLike = None
     sem: ArrayLike = None
     norm_sq: ArrayLike = None
+
+
+class ImmutableDict(collections.abc.Mapping):
+    """Implements a dict that cannot be modified"""
+    def __init__(self, dico:dict):
+        keys = list(dico.keys())
+        keys.sort()
+        nt = collections.namedtuple("nt", keys)
+        self.__named_tuple = nt(**dico)
+
+    def __getitem__(self, key):
+        return self.__named_tuple.__getattribute__(key)
+
+    def __len__(self):
+        return len(self.__named_tuple)
+
+    def __iter__(self):
+        yield from self.__named_tuple._fields
 
 
 class ErrorModel(IntEnum):
