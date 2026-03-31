@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "31/03/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -68,8 +68,8 @@ CONST_hc = hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e7
 in Angstrom.KeV. It is approximately equal to:
 
 - pyFAI reference: 12.398419292004204
-- scipy v1.3.1:   12.398419739640717
-- scipy-1.4.0rc1: 12.398419843320026
+- scipy v1.3.1:    12.398419739640717
+- scipy v1.4.0:    12.398419843320026
 """
 
 CONST_q = scipy.constants.e
@@ -86,7 +86,7 @@ MAPS_SAMPLE_ORIENTATION = {
     8 : {"x" : "y", "y" : "(-x)"},
 }
 
-class Unit(object):
+class Unit:
     """Represents a unit.
 
     It has at least a name and a scale (in SI-unit)
@@ -149,7 +149,7 @@ class Unit(object):
             self._equation_ne = None
             self.equation = self._equation_np
         self.short_name = short_name
-        self.unit_symbol = unit_symbol
+        self.unit_symbol = (self.name.split("_")[1] if "_" in self.name else self.name) if unit_symbol is None else unit_symbol
         self.positive = positive
         self.period = period
 
@@ -182,7 +182,7 @@ class Unit(object):
 
     as_str = __repr__
 
-    # ensures hashability
+    # ensures hash-ability
     def __hash__(self):
         return self.name.__hash__()
 
@@ -212,6 +212,21 @@ class Unit(object):
 
 
 to_unit = Unit.parse
+
+class UnitNonLinear(Unit):
+    """Represents an unit which is ment to be used in a non-linear binning.
+    This is a temporary unit which is used to convert the unit to a linear unit after integration
+    """
+    def __init__(self, **kwargs):
+        linearize_formula = kwargs.pop("linearize_formula", None)
+        extra_parameters = kwargs.pop("extra_parameters", {})
+        lin_unit = kwargs.pop("linear_unit", None)
+
+        super().__init__(**kwargs)
+        self.linearize_formula = linearize_formula
+        self.extra_parameters = extra_parameters
+        self.linear_unit = lin_unit
+
 
 
 class UnitFiber(Unit):
@@ -285,7 +300,7 @@ class UnitFiber(Unit):
             signature = [
                 (key, numpy.float64) for key in "xyzλπηχ" if key in self.formula
             ]
-                        
+
             ne_formula = numexpr.NumExpr(self.formula, signature)
 
             def ne_equation(
@@ -378,7 +393,7 @@ class UnitFiber(Unit):
             }
         )
         return fiberunit_config
-    
+
     as_dict = get_config
 
     def get_config_shared(self) -> dict:
@@ -444,22 +459,26 @@ def register_radial_unit(
     unit_symbol=None,
     positive=True,
     period=None,
-):
-    RADIAL_UNITS[name] = Unit(
-        name,
-        scale,
-        label,
-        equation,
-        formula,
-        center,
-        corner,
-        delta,
-        short_name,
-        unit_symbol,
-        positive,
-        period,
+    klass=Unit,
+    **kwargs) -> Unit:
+    unit = klass(
+        name=name,
+        scale=scale,
+        label=label,
+        equation=equation,
+        formula=formula,
+        center=center,
+        corner=corner,
+        delta=delta,
+        short_name=short_name,
+        unit_symbol=unit_symbol,
+        positive=positive,
+        period=period,
+        **kwargs
     )
+    RADIAL_UNITS[name] = unit
     ANY_UNITS.update(RADIAL_UNITS)
+    return unit
 
 
 def register_radial_fiber_unit(
@@ -478,7 +497,7 @@ def register_radial_fiber_unit(
     unit_symbol=None,
     positive=True,
     period=None,
-):
+) -> UnitFiber:
     unitfiber = UnitFiber(
         name=name,
         scale=scale,
@@ -499,6 +518,7 @@ def register_radial_fiber_unit(
     RADIAL_UNITS[name] = unitfiber
     ANY_UNITS.update(RADIAL_UNITS)
     ANY_FIBER_UNITS[name] = unitfiber
+    return unitfiber
 
 
 def register_azimuthal_unit(
@@ -514,8 +534,8 @@ def register_azimuthal_unit(
     unit_symbol=None,
     positive=False,
     period=None,
-):
-    AZIMUTHAL_UNITS[name] = Unit(
+) -> Unit:
+    unit = Unit(
         name,
         scale,
         label,
@@ -529,7 +549,9 @@ def register_azimuthal_unit(
         positive,
         period,
     )
+    AZIMUTHAL_UNITS[name] = unit
     ANY_UNITS.update(AZIMUTHAL_UNITS)
+    return unit
 
 
 def register_azimuthal_fiber_unit(
@@ -548,7 +570,7 @@ def register_azimuthal_fiber_unit(
     unit_symbol=None,
     positive=False,
     period=None,
-):
+) -> UnitFiber:
     unitfiber = UnitFiber(
         name=name,
         scale=scale,
@@ -569,6 +591,7 @@ def register_azimuthal_fiber_unit(
     AZIMUTHAL_UNITS[name] = unitfiber
     ANY_UNITS.update(AZIMUTHAL_UNITS)
     ANY_FIBER_UNITS[name] = unitfiber
+    return unitfiber
 
 
 def eq_r(x, y, z=None, wavelength=None):
