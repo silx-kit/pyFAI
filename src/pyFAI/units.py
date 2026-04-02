@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2026"
+__date__ = "01/04/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -50,7 +50,7 @@ import numpy
 import scipy.constants
 from scipy.spatial.transform import Rotation
 from .utils.decorators import deprecated
-
+from .containers import ImmutableDict
 logger = logging.getLogger(__name__)
 TWO_PI = 2 * PI
 
@@ -106,6 +106,7 @@ class Unit:
         unit_symbol:str|None=None,
         positive:bool=True,
         period:float|None=None,
+        extra_parameters:dict|ImmutableDict|None=None,
     ):
         """Constructor of a unit.
 
@@ -122,11 +123,11 @@ class Unit:
         :param str unit_symbol: symbol used to display values of this unit
         :param bool positive: this value can only be positive
         :param period: None or the periodicity of the unit (angles are periodic)
+        :param extra_parameters: extra parameters used in the formula
         """
         self.name = name
-        self.space = "_".join(
-            self.name.split("_")[:-1]
-        )  # used to identify compatible spaces.
+        # used to identify compatible spaces.
+        self.space = "_".join(self.name.split("_")[:-1])
         self.scale = scale
         self.label = label if label is not None else name
         self.corner = corner
@@ -134,14 +135,20 @@ class Unit:
         self.delta = delta
         self._equation_np = equation
         self.formula = formula
+        self.extra_parameters = ImmutableDict(extra_parameters)
         if (numexpr is not None) and isinstance(formula, str):
-            signature = [(key, numpy.float64) for key in "xyzλπ" if key in formula]
+            res = numexpr.necompiler.getExprNames(formula, context={})
+            signature = [(key, numpy.float64) for key in res[0]]
             ne_formula = numexpr.NumExpr(formula, signature)
 
             def ne_equation(x, y, z=None, wavelength=None, ne_formula=ne_formula):
-                π = PI
-                λ = wavelength
-                ldict = locals()
+                ldict = {"π": PI,
+                         "λ": wavelength,
+                         "x": x,
+                         "y": y,
+                         "z": z,
+                        }
+                ldict.update(self.extra_parameters)
                 args = tuple(ldict[i] for i in ne_formula.input_names)
                 return ne_formula(*args)
             self.equation = self._equation_ne = ne_equation
@@ -447,37 +454,40 @@ ANY_FIBER_UNITS = {}
 
 
 def register_radial_unit(
-    name,
-    scale=1,
-    label=None,
-    equation=None,
-    formula=None,
-    center=None,
-    corner=None,
-    delta=None,
-    short_name=None,
-    unit_symbol=None,
-    positive=True,
-    period=None,
-    klass=Unit,
-    **kwargs) -> Unit:
-    unit = klass(
-        name=name,
-        scale=scale,
-        label=label,
-        equation=equation,
-        formula=formula,
-        center=center,
-        corner=corner,
-        delta=delta,
-        short_name=short_name,
-        unit_symbol=unit_symbol,
-        positive=positive,
-        period=period,
-        **kwargs
-    )
-    RADIAL_UNITS[name] = unit
-    ANY_UNITS.update(RADIAL_UNITS)
+            name:str,
+            scale:float=1,
+            label:str|None=None,
+            equation:Callable|None=None,
+            formula:str|None=None,
+            center:Callable|None=None,
+            corner:Callable|None=None,
+            delta:Callable|None=None,
+            short_name:str|None=None,
+            unit_symbol:str|None=None,
+            positive:bool=True,
+            period:float|None=None,
+            extra_parameters:dict|ImmutableDict|None=None,
+):
+    """Register a new radial unit, if needed."""
+    if name in  ANY_UNITS:
+        unit = ANY_UNITS[name]
+    else:
+        unit = Unit(
+                name=name,
+                scale=scale,
+                label=label,
+                equation=equation,
+                formula=formula,
+                center=center,
+                corner=corner,
+                delta=delta,
+                short_name=short_name,
+                unit_symbol=unit_symbol,
+                positive=positive,
+                period=period,
+                extra_parameters=extra_parameters
+                )
+        RADIAL_UNITS[name] = ANY_UNITS[name] = unit
     return unit
 
 
@@ -522,35 +532,40 @@ def register_radial_fiber_unit(
 
 
 def register_azimuthal_unit(
-    name,
-    scale=1,
-    label=None,
-    equation=None,
-    formula=None,
-    center=None,
-    corner=None,
-    delta=None,
-    short_name=None,
-    unit_symbol=None,
-    positive=False,
-    period=None,
-) -> Unit:
-    unit = Unit(
-        name,
-        scale,
-        label,
-        equation,
-        formula,
-        center,
-        corner,
-        delta,
-        short_name,
-        unit_symbol,
-        positive,
-        period,
-    )
-    AZIMUTHAL_UNITS[name] = unit
-    ANY_UNITS.update(AZIMUTHAL_UNITS)
+            name:str,
+            scale:float=1,
+            label:str|None=None,
+            equation:Callable|None=None,
+            formula:str|None=None,
+            center:Callable|None=None,
+            corner:Callable|None=None,
+            delta:Callable|None=None,
+            short_name:str|None=None,
+            unit_symbol:str|None=None,
+            positive:bool=False,
+            period:float|None=None,
+            extra_parameters:dict|ImmutableDict|None=None,
+):
+    """Register a new azimuthal unit."""
+    if name in ANY_UNITS:
+        unit = ANY_UNITS[name]
+    else:
+        unit = Unit(
+                    name=name,
+                    scale=scale,
+                    label=label,
+                    equation=equation,
+                    formula=formula,
+                    center=center,
+                    corner=corner,
+                    delta=delta,
+                    short_name=short_name,
+                    unit_symbol=unit_symbol,
+                    positive=positive,
+                    period=period,
+                    extra_parameters=extra_parameters
+                    )
+        AZIMUTHAL_UNITS[name] = ANY_UNITS[name] = unit
     return unit
 
 

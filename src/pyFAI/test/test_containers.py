@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/03/2026"
+__date__ = "31/03/2026"
 
 import unittest
 import copy
@@ -313,6 +313,19 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(numpy.allclose(res1[1], 2*res2[1]), "intensity matches")
         self.assertTrue(numpy.allclose(res1[2], 2*res2[2]), "sem matches")
         self.assertTrue(numpy.allclose(res1.std, 2*res2.std), "std matches")
+
+    def test_immutable_dict(self):
+        d = containers.ImmutableDict({"a": 1, "b": 2})
+        e = containers.ImmutableDict({"b": 2, "a": 1})
+        self.assertEqual(d, e)
+        self.assertEqual(d["a"], 1)
+        self.assertEqual(d["b"], 2)
+        for key in d:
+            self.assertTrue(key in ("a", "b"))
+        self.assertEqual(len(d), 2)
+        self.assertEqual(list(d.keys()), ["a", "b"])
+        self.assertEqual(list(e.values()), [1, 2])
+        self.assertEqual(list(d.items()), [("a", 1), ("b", 2)])
 
 
 def suite():
