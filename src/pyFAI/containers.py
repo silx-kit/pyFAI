@@ -30,7 +30,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/03/2026"
+__date__ = "02/04/2026"
 __status__ = "development"
 
 import math
@@ -40,6 +40,7 @@ import warnings
 from typing import NamedTuple
 from enum import IntEnum
 from dataclasses import fields, asdict  # noqa
+import collections
 import numpy
 import numexpr
 from numpy.typing import ArrayLike
@@ -89,6 +90,28 @@ class Integrate2dtpl(NamedTuple):
     std: ArrayLike = None
     sem: ArrayLike = None
     norm_sq: ArrayLike = None
+
+
+class ImmutableDict(collections.abc.Mapping):
+    """Implements a dict that cannot be modified"""
+    def __init__(self, dico:dict|None):
+        dico = dico or {}
+        keys = list(dico.keys())
+        keys.sort()
+        nt = collections.namedtuple("nt", keys)
+        self.__named_tuple = nt(**dico)
+
+    def __repr__(self):
+        return repr(self.__named_tuple._asdict())
+
+    def __getitem__(self, key):
+        return self.__named_tuple.__getattribute__(key)
+
+    def __len__(self):
+        return len(self.__named_tuple)
+
+    def __iter__(self):
+        yield from self.__named_tuple._fields
 
 
 class ErrorModel(IntEnum):
@@ -674,6 +697,25 @@ class IntegrateResult(_CopyableTuple):
     def _set_dummy(self, value):
         """Set the value for masked/invalid/empty bins"""
         self._dummy = value
+
+    def _post_integrate_log(self):
+        """Re-linearize the radial dimension of the result
+
+        :return: IntegrateResult with the same date but a linearized radial dimension
+        """
+        log_unit = self.unit
+        if "linear_unit" not in log_unit.extra_parameters:
+            raise RuntimeError("Cannot linearize the result, the unit is not a logarithmic unit")
+
+        lin_unit = log_unit.extra_parameters["linear_unit"]
+        ldict = {"radial": self.radial}
+        ldict.update(log_unit.extra_parameters)
+        radial_linear = numexpr.evaluate(log_unit.extra_parameters.get("linearize_formula"),
+                                        local_dict=ldict)
+        result = deepcopy(self)
+        result.radial[...] = radial_linear
+        result._set_unit(lin_unit)
+        return result
 
 
 class Integrate1dResult(IntegrateResult):

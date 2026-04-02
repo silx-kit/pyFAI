@@ -30,14 +30,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/11/2025"
+__date__ = "02/04/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import logging
 import threading
 import gc
-from math import pi
+from math import pi, log10
 import numpy
 from ..geometry import Geometry
 from .. import units
@@ -298,7 +298,7 @@ class Integrator(Geometry):
         method = IntegrationMethod.select_one_available(requested_method, dim=dim, default=default, degradable=True)
         logger.warning("Method requested '%s' not available. Method '%s' will be used", requested_method, method)
         return default
-    
+
     def _normalize_dummies(self, dummy:float=None, delta_dummy:float=None, data:numpy.ndarray=None) -> tuple:
         if dummy is None:
             dummy, delta_dummy = self.detector.get_dummies(data)
@@ -306,7 +306,7 @@ class Integrator(Geometry):
             dummy = numpy.float32(dummy)
             delta_dummy = None if delta_dummy is None else numpy.float32(delta_dummy)
         return dummy, delta_dummy
-    
+
     def _normalize_range(self, unit_range:tuple, unit:units.Unit):
         if unit_range:
             if numpy.isfinite(unit_range).all():
@@ -315,7 +315,7 @@ class Integrator(Geometry):
                 logger.warning(f"Semi-defined ranges are not supported for ={unit}")
                 unit_range = None
         return unit_range
-    
+
     def _normalize_azimuth_range(self, unit_range:tuple):
         if unit_range is not None:
             if numpy.isfinite(unit_range).all():
@@ -338,7 +338,7 @@ class Integrator(Geometry):
             mask = numpy.ascontiguousarray(mask)
             mask_crc = crc32(mask)
         return (mask, mask_crc, has_mask)
-    
+
     def _normalize_dark(self, dark:numpy.ndarray) -> tuple:
         if dark is None:
             dark = self.detector.darkcurrent
@@ -381,7 +381,7 @@ class Integrator(Geometry):
         else:
             polarization, polarization_crc = self.polarization(shape, polarization_factor, with_checksum=True)
         return (polarization, polarization_crc)
-    
+
     def _normalize_error_model_variance(self, data:numpy.ndarray, method, dark:numpy.ndarray=None, error_model:str=None, variance:numpy.ndarray=None):
         if error_model:
             error_model = ErrorModel.parse(error_model)
@@ -392,7 +392,7 @@ class Integrator(Geometry):
             if variance.size != data.size:
                 raise RuntimeError("Variance array shape does not match data shape")
             error_model = ErrorModel.VARIANCE
-            
+
         if not error_model:
             return (error_model, variance)
 
@@ -402,7 +402,7 @@ class Integrator(Geometry):
                 variance = numpy.maximum(data, 1.0).astype(numpy.float32)
             else:
                 variance = (numpy.maximum(data, 1.0) + numpy.maximum(dark, 0.0)).astype(numpy.float32)
-        
+
         return (error_model, variance)
 
     def _get_persistent_sparse_cython_integrator(self,
@@ -1828,6 +1828,49 @@ class Integrator(Geometry):
         writer = DefaultAiWriter(None, self)
         writer.save2D(filename, intensity, dim1, dim2, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
+
+
+    def _pre_integrate1d_log(self,
+                             pts_per_decade:int,
+                             radial_range:tuple|None=None,
+                             unit:str|units.Unit="q_nm^-1") -> dict:
+        """prepare the integration for 1d integration in log scale
+
+        :param pts_per_decade: the number of points per decade
+        :param radial_range: the radial range, mandatory parameter
+        :param unit: the unit of the radial range
+        :return: kwarg to be used with the integration function
+        """
+        lin_unit = units.to_unit(unit)
+        if radial_range is None:
+            q = self.array_from_unit(unit=unit)
+            q_min, q_max = float(q.min()), float(q.max())
+            radial_range = q_min, q_max
+        else:
+            q_min, q_max = radial_range
+
+        log_range = log10(q_max / q_min)
+        npt = int(pts_per_decade * log_range + 0.5)
+
+        unit_name = f"log10(q/{q_min}{lin_unit.name.split('_')[-1]})_None"
+        if unit_name in units.ANY_UNITS:
+            log_unit = units.ANY_UNITS[unit_name]
+        else:
+            log_unit = units.register_radial_unit(unit_name,
+                        scale=1.0,
+                        label=unit_name,
+                        formula = f"log10({units.formula_q}/(q_min/scale))",
+                        extra_parameters = {
+                            "q_min": q_min,
+                            "scale": lin_unit.scale,
+                            "linear_unit": lin_unit,
+                            "linearize_formula": "q_min * 10**(radial)"},
+                        )
+
+        kwargs = {"npt": npt,
+                  "radial_range": (0, log_range),
+                  "unit": log_unit}
+        return kwargs
 
 
 ################################################################################

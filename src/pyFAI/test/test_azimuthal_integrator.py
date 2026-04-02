@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2026"
+__date__ = "02/04/2026"
 
 import unittest
 import os
@@ -581,6 +581,18 @@ class TestSaxs(unittest.TestCase):
                                        scale=True)
             self.assertTrue(cm.output[0].startswith('WARNING:pyFAI.ext.sparse_builder:Sparse matrix is empty. Expect errors or non-sense results!'),
                             "Actually emits the expected warning")
+
+    def test_log_space(self):
+        ai = AzimuthalIntegrator(detector="Imxpad S10", wavelength=1e-10)
+        pre_integrate = ai._pre_integrate1d_log(10)
+        self.assertEqual(pre_integrate["npt"], 23, "23 bins for 10 points per decade in log space")
+        ir = ai.integrate1d(numpy.random.poisson(10, size=ai.detector.shape), **pre_integrate)
+        self.assertGreaterEqual(ir.radial.min(),0)
+        self.assertLessEqual(ir.radial.max(), pre_integrate["radial_range"][1], "max is not too large")
+
+        res = ir._post_integrate_log()
+        self.assertEqual(res.unit, units.to_unit("q_nm^-1"), "unit is q_nm^-1")
+        self.assertEqual(len(res.radial), pre_integrate["npt"], "correct number of points")
 
 
 class TestSetter(unittest.TestCase):
