@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/04/2026"
+__date__ = "02/04/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -219,21 +219,6 @@ class Unit:
 
 
 to_unit = Unit.parse
-
-class UnitNonLinear(Unit):
-    """Represents an unit which is ment to be used in a non-linear binning.
-    This is a temporary unit which is used to convert the unit to a linear unit after integration
-    """
-    def __init__(self, **kwargs):
-        linearize_formula = kwargs.pop("linearize_formula", None)
-        extra_parameters = kwargs.pop("extra_parameters", {})
-        lin_unit = kwargs.pop("linear_unit", None)
-
-        super().__init__(**kwargs)
-        self.linearize_formula = linearize_formula
-        self.extra_parameters = extra_parameters
-        self.linear_unit = lin_unit
-
 
 
 class UnitFiber(Unit):

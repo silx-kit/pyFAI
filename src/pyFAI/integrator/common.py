@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2026"
+__date__ = "02/04/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1832,7 +1832,7 @@ class Integrator(Geometry):
 
     def _pre_integrate1d_log(self,
                              pts_per_decade:int,
-                             radial_range:tuple,
+                             radial_range:tuple|None=None,
                              unit:str|units.Unit="q_nm^-1") -> dict:
         """prepare the integration for 1d integration in log scale
 
@@ -1842,26 +1842,33 @@ class Integrator(Geometry):
         :return: kwarg to be used with the integration function
         """
         lin_unit = units.to_unit(unit)
-        q_min, q_max = radial_range
-        q_min_unscaled = q_min / lin_unit.scale
-        npt = pts_per_decade * log10(q_max / q_min)
+        if radial_range is None:
+            q = self.array_from_unit(unit=unit)
+            q_min, q_max = float(q.min()), float(q.max())
+            radial_range = q_min, q_max
+        else:
+            q_min, q_max = radial_range
 
-        unit_name = f"log10(q/{q_min}{lin_unit.unit_symbol})_None"
+        log_range = log10(q_max / q_min)
+        npt = int(pts_per_decade * log_range + 0.5)
+
+        unit_name = f"log10(q/{q_min}{lin_unit.name.split('_')[-1]})_None"
         if unit_name in units.ANY_UNITS:
             log_unit = units.ANY_UNITS[unit_name]
         else:
             log_unit = units.register_radial_unit(unit_name,
                         scale=1.0,
                         label=unit_name,
-                        formula = f"log10({units.formula_q}/q_min)",
-                        klass=units.UnitNonLinear,
-                        linearize_formula="q_min*scale*10**(radial)",
-                        linear_unit=lin_unit,
-                        extra={"q_min": q_min_unscaled, "scale": lin_unit.scale},
+                        formula = f"log10({units.formula_q}/(q_min/scale))",
+                        extra_parameters = {
+                            "q_min": q_min,
+                            "scale": lin_unit.scale,
+                            "linear_unit": lin_unit,
+                            "linearize_formula": "q_min * 10**(radial)"},
                         )
 
         kwargs = {"npt": npt,
-                  "radial_range": radial_range,
+                  "radial_range": (0, log_range),
                   "unit": log_unit}
         return kwargs
 

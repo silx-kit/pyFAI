@@ -30,7 +30,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2026"
+__date__ = "02/04/2026"
 __status__ = "development"
 
 import math
@@ -697,6 +697,25 @@ class IntegrateResult(_CopyableTuple):
     def _set_dummy(self, value):
         """Set the value for masked/invalid/empty bins"""
         self._dummy = value
+
+    def _post_integrate_log(self):
+        """Re-linearize the radial dimension of the result
+
+        :return: IntegrateResult with the same date but a linearized radial dimension
+        """
+        log_unit = self.unit
+        if "linear_unit" not in log_unit.extra_parameters:
+            raise RuntimeError("Cannot linearize the result, the unit is not a logarithmic unit")
+
+        lin_unit = log_unit.extra_parameters["linear_unit"]
+        ldict = {"radial": self.radial}
+        ldict.update(log_unit.extra_parameters)
+        radial_linear = numexpr.evaluate(log_unit.extra_parameters.get("linearize_formula"),
+                                        local_dict=ldict)
+        result = deepcopy(self)
+        result.radial[...] = radial_linear
+        result._set_unit(lin_unit)
+        return result
 
 
 class Integrate1dResult(IntegrateResult):
