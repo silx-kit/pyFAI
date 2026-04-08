@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2025"
+__date__ = "08/04/2026"
 __status__ = "production"
 
 import os
@@ -326,9 +326,8 @@ def setup_model(model, options):
     args = options.args
 
     # The module must not import the GUI
-    from pyFAI.gui.utils import units
-    # TODO: This should be removed
-    import pyFAI.gui.cli_calibration
+    from ..gui.utils import units as gui_units
+    from ..gui.model.GeometryModel import GeometryModel
 
     # Settings
     settings = model.experimentSettingsModel()
@@ -347,20 +346,19 @@ def setup_model(model, options):
         if local_calibrant:
             settings.calibrantModel().setCalibrant(local_calibrant)
 
+    wavelength = None
     if options.wavelength:
-        value = units.convert(options.wavelength, units.Unit.ANGSTROM, units.Unit.METER_WL)
-        settings.wavelength().setValue(value)
+        wavelength = gui_units.convert(options.wavelength, gui_units.Unit.ANGSTROM, gui_units.Unit.METER_WL)
 
     if options.energy:
-        value = units.convert(options.energy, units.Unit.ENERGY, units.Unit.METER_WL)
-        settings.wavelength().setValue(value)
+        wavelength = gui_units.convert(options.energy, gui_units.Unit.ENERGY, gui_units.Unit.METER_WL)
 
     if options.polarization_factor:
         settings.polarizationFactor().setValue(options.polarization_factor)
 
     if options.detector_name:
         try:
-            detector = pyFAI.gui.cli_calibration.get_detector(options.detector_name)
+            detector = detectors.detector_factory(options.detector_name)
             if options.pixel:
                 logger.warning("Detector model already specified. Pixel size argument ignored.")
         except Exception as e:
@@ -389,30 +387,40 @@ def setup_model(model, options):
         settings.poniFile().setSynchronized(True)
 
         if os.path.exists(options.poni):
+            poniFile = PoniFile()
+            poniFile.read_from_file(options.poni)
+
+            geometryFromPoni = GeometryModel()
+            geometryFromPoni.distance().setValue(poniFile.dist)
+            geometryFromPoni.poni1().setValue(poniFile.poni1)
+            geometryFromPoni.poni2().setValue(poniFile.poni2)
+            geometryFromPoni.rotation1().setValue(poniFile.rot1)
+            geometryFromPoni.rotation2().setValue(poniFile.rot2)
+            geometryFromPoni.rotation3().setValue(poniFile.rot3)
+
             if detector is None:
-                poniFile = PoniFile()
-                poniFile.read_from_file(options.poni)
                 detector = poniFile.detector
-
-                from pyFAI.gui.model.GeometryModel import GeometryModel
-                geometryFromPoni = GeometryModel()
-                geometryFromPoni.distance().setValue(poniFile.dist)
-                geometryFromPoni.poni1().setValue(poniFile.poni1)
-                geometryFromPoni.poni2().setValue(poniFile.poni2)
-                geometryFromPoni.rotation1().setValue(poniFile.rot1)
-                geometryFromPoni.rotation2().setValue(poniFile.rot2)
-                geometryFromPoni.rotation3().setValue(poniFile.rot3)
-                geometryFromPoni.wavelength().setValue(poniFile.wavelength)
-
-                geometryHistory = model.geometryHistoryModel()
-                now = datetime.datetime.now()
-                geometryHistory.appendGeometry("Ponifile", now, geometryFromPoni, None)
             else:
-                logger.warning("Detector redefined in the command line. Detector from --poni argument ignored.")
+                logger.warning("Detector enforced in the command line. Detector from --poni argument ignored.")
+                poniFile.detector = detector
+
+            if wavelength is None:
+                wavelength = poniFile.wavelength
+            else:
+                logger.warning("Wavelength/Energy enforced in the command line. Wavelength from --poni argument ignored.")
+                poniFile._wavelength = wavelength
+            geometryFromPoni.wavelength().setValue(wavelength)
+
+            geometryHistory = model.geometryHistoryModel()
+            now = datetime.datetime.now()
+            geometryHistory.appendGeometry("Ponifile", now, geometryFromPoni, None)
+
+
         else:
             logger.warning("PONI file '%s' do not exists. --poni option ignored.", options.poni)
 
     settings.detectorModel().setDetector(detector)
+    settings.wavelength().setValue(wavelength)
 
     if options.mask:
         try:
