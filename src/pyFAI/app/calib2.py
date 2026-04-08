@@ -69,7 +69,7 @@ def configure_parser_arguments(parser):
                         dest="debug",
                         action="store_true",
                         default=False,
-                        help="switch to debug/verbose mode")
+                        help="Switch to debug/verbose mode")
     parser.add_argument('--debug',
                         dest="debug",
                         action="store_true",
@@ -85,59 +85,56 @@ def configure_parser_arguments(parser):
                         help="Calibrant name or file containing d-spacing of the reference sample (case sensitive)",
                         default=None)
     parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
-                        help="wavelength of the X-Ray beam in Angstrom.", default=None)
+                        help="Wavelength of the X-Ray beam in Angstrom.", default=None)
     parser.add_argument("-e", "--energy", dest="energy", type=float,
-                        help="energy of the X-Ray beam in keV (hc=%skeV.A)." % pyFAI_units.hc, default=None)
+                        help="Energy of the X-Ray beam in keV (hc=%skeV.A)." % pyFAI_units.hc, default=None)
     parser.add_argument("-P", "--polarization", dest="polarization_factor",
                         type=float, default=None,
-                        help="polarization factor, from -1 (vertical) to +1 (horizontal)," +
+                        help="Polarization factor, from -1 (vertical) to +1 (horizontal)," +
                         " default is None (no correction), synchrotrons are around 0.95")
     parser.add_argument("-D", "--detector", dest="detector_name",
                         help="Detector name (instead of pixel size+spline)", default=None)
     parser.add_argument("-m", "--mask", dest="mask",
-                        help="file containing the mask (for image reconstruction)", default=None)
+                        help="File containing the mask (for image reconstruction)", default=None)
     parser.add_argument("-p", "--pixel", dest="pixel",
-                        help="size of the pixel in micron", default=None)
+                        help="Size of the pixel in micron", default=None)
     parser.add_argument("-s", "--spline", dest="spline",
-                        help="spline file describing the detector distortion", default=None)
+                        help="Spline file describing the detector distortion", default=None)
 
     parser.add_argument("-n", "--pt", dest="npt",
-                        help="file with datapoints saved. Example: basename.npt", default=None)
+                        help="File with datapoints saved. Example: basename.npt", default=None)
 
-    # Not yet used
     parser.add_argument("-i", "--poni", dest="poni", metavar="FILE",
-                        help="file containing the diffraction parameter (poni-file) [not used].",
+                        help="File containing the diffraction parameter (poni-file)",
                         default=None)
     # Not yet used
     parser.add_argument("-b", "--background", dest="background",
                         help="Automatic background subtraction if no value are provided [not used]",
                         default=None)
-    # Not yet used
     parser.add_argument("-d", "--dark", dest="dark",
-                        help="list of comma separated dark images to average and subtract [not used]", default=None)
-    # Not yet used
+                        help="List of comma separated dark images to average and subtract", default=None)
     parser.add_argument("-f", "--flat", dest="flat",
-                        help="list of comma separated flat images to average and divide [not used]", default=None)
+                        help="List of comma separated flat images to average and divide", default=None)
     # Not yet used
     parser.add_argument("--filter", dest="filter",
-                        help="select the filter, either mean(default), max or median [not used]",
+                        help="Select the filter, either mean(default), max or median [not used]",
                         default=None)
 
     # Geometry
     parser.add_argument("-l", "--distance", dest="dist_mm", type=float,
-                        help="sample-detector distance in millimeter. Default: 100mm", default=None)
+                        help="Sample-Detector distance in millimeter. Default: 100mm", default=None)
     parser.add_argument("--dist", dest="dist", type=float,
-                        help="sample-detector distance in meter. Default: 0.1m", default=None)
+                        help="Sample-Detector distance in meter. Default: 0.1m", default=None)
     parser.add_argument("--poni1", dest="poni1", type=float,
-                        help="poni1 coordinate in meter. Default: center of detector", default=None)
+                        help="Poni1 coordinate in meter. Default: center of detector", default=None)
     parser.add_argument("--poni2", dest="poni2", type=float,
-                        help="poni2 coordinate in meter. Default: center of detector", default=None)
+                        help="Poni2 coordinate in meter. Default: center of detector", default=None)
     parser.add_argument("--rot1", dest="rot1", type=float,
-                        help="rot1 in radians. default: 0", default=None)
+                        help="Rot1 in radians. default: 0", default=None)
     parser.add_argument("--rot2", dest="rot2", type=float,
-                        help="rot2 in radians. default: 0", default=None)
+                        help="Rot2 in radians. default: 0", default=None)
     parser.add_argument("--rot3", dest="rot3", type=float,
-                        help="rot3 in radians. default: 0", default=None)
+                        help="Rot3 in radians. default: 0", default=None)
 
     # optimization ranges
     parser.add_argument("--dist-range", dest="dist_range", type=float, nargs=2,
@@ -157,33 +154,33 @@ def configure_parser_arguments(parser):
 
     # Constraints
     parser.add_argument("--fix-wavelength", dest="fix_wavelength",
-                        help="fix the wavelength parameter. Default: Activated", default=True, action="store_true")
+                        help="Fix the wavelength parameter. Default: Activated", default=True, action="store_true")
     parser.add_argument("--free-wavelength", dest="fix_wavelength",
-                        help="free the wavelength parameter. Default: Deactivated ", default=True, action="store_false")
+                        help="Free the wavelength parameter. Default: Deactivated ", default=True, action="store_false")
     parser.add_argument("--fix-dist", dest="fix_dist",
-                        help="fix the distance parameter", default=None, action="store_true")
+                        help="Fix the distance parameter", default=None, action="store_true")
     parser.add_argument("--free-dist", dest="fix_dist",
-                        help="free the distance parameter. Default: Activated", default=None, action="store_false")
+                        help="Free the distance parameter. Default: Activated", default=None, action="store_false")
     parser.add_argument("--fix-poni1", dest="fix_poni1",
-                        help="fix the poni1 parameter", default=None, action="store_true")
+                        help="Fix the poni1 parameter", default=None, action="store_true")
     parser.add_argument("--free-poni1", dest="fix_poni1",
-                        help="free the poni1 parameter. Default: Activated", default=None, action="store_false")
+                        help="Free the poni1 parameter. Default: Activated", default=None, action="store_false")
     parser.add_argument("--fix-poni2", dest="fix_poni2",
-                        help="fix the poni2 parameter", default=None, action="store_true")
+                        help="Fix the poni2 parameter", default=None, action="store_true")
     parser.add_argument("--free-poni2", dest="fix_poni2",
-                        help="free the poni2 parameter. Default: Activated", default=None, action="store_false")
+                        help="Free the poni2 parameter. Default: Activated", default=None, action="store_false")
     parser.add_argument("--fix-rot1", dest="fix_rot1",
-                        help="fix the rot1 parameter", default=None, action="store_true")
+                        help="Fix the rot1 parameter", default=None, action="store_true")
     parser.add_argument("--free-rot1", dest="fix_rot1",
-                        help="free the rot1 parameter. Default: Activated", default=None, action="store_false")
+                        help="Free the rot1 parameter. Default: Activated", default=None, action="store_false")
     parser.add_argument("--fix-rot2", dest="fix_rot2",
-                        help="fix the rot2 parameter", default=None, action="store_true")
+                        help="Fix the rot2 parameter", default=None, action="store_true")
     parser.add_argument("--free-rot2", dest="fix_rot2",
-                        help="free the rot2 parameter. Default: Activated", default=None, action="store_false")
+                        help="Free the rot2 parameter. Default: Activated", default=None, action="store_false")
     parser.add_argument("--fix-rot3", dest="fix_rot3",
-                        help="fix the rot3 parameter. Default: Activated", default=True, action="store_true")
+                        help="Fix the rot3 parameter. Default: Activated", default=True, action="store_true")
     parser.add_argument("--free-rot3", dest="fix_rot3",
-                        help="free the rot3 parameter", default=True, action="store_false")
+                        help="Free the rot3 parameter", default=True, action="store_false")
 
     parser.add_argument("--npt", dest="npt_1d",
                         help="Number of point in 1D integrated pattern, Default: 1024", type=int,
@@ -207,12 +204,12 @@ def configure_parser_arguments(parser):
                         help="Deactivated tilt refinement and set all rotation to 0", default=None, action="store_false")
     # Not yet used
     parser.add_argument("--saturation", dest="saturation",
-                        help="consider all pixel>max*(1-saturation) as saturated and "
+                        help="Consider all pixel>max*(1-saturation) as saturated and "
                         "reconstruct them, default: 0 (deactivated)",
                         default=0, type=float)
     # Not yet used
     parser.add_argument("--weighted", dest="weighted",
-                        help="weight fit by intensity, by default not.",
+                        help="Weight the fit by intensity of points, by default not.",
                         default=False, action="store_true")
     # Not yet used
     parser.add_argument("--unit", dest="unit",
@@ -220,11 +217,11 @@ def configure_parser_arguments(parser):
                         " q_A^-1, r_mm. Default: 2th_deg", type=str, default="2th_deg")
     # Not yet used
     parser.add_argument("--no-gui", dest="gui",
-                        help="force the program to run without a Graphical interface",
+                        help="Force the program to run without a Graphical interface",
                         default=True, action="store_false")
     # Not yet used
     parser.add_argument("--no-interactive", dest="interactive",
-                        help="force the program to run and exit without prompting"
+                        help="Force the program to run and exit without prompting"
                         " for refinements", default=True, action="store_false")
 
     # From Calibration
@@ -261,12 +258,11 @@ and wavelength. An 1D and 2D diffraction patterns are also produced.
 (.dat and .azim files)"""
 
 
-def parse_pixel_size(pixel_size):
+def parse_pixel_size(pixel_size) -> list:
     """Convert a comma separated string into pixel size
 
     :param str pixel_size: String containing pixel size in micron
-    :rtype: Tuple[float,float]
-    :returns: Returns floating point pixel size in meter
+    :returns: Returns floating point pixel size in meter as a tuple of two floats
     """
     sp = pixel_size.split(",")
     if len(sp) >= 2:
@@ -432,6 +428,29 @@ def setup_model(model, options):
                 image_model.setFilename(options.mask)
                 image_model.setValue(data)
                 image_model.setSynchronized(True)
+
+    if options.dark:
+        try:
+            data = image.read_image_data(options.dark)
+        except Exception as e:
+            displayExceptionBox("Error while loading the dark", e)
+        else:
+            with settings.dark().lockContext() as image_model:
+                image_model.setFilename(options.dark)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
+
+    if options.flat:
+        try:
+            data = image.read_image_data(options.flat)
+        except Exception as e:
+            displayExceptionBox("Error while loading the flat", e)
+        else:
+            with settings.flat().lockContext() as image_model:
+                image_model.setFilename(options.flat)
+                image_model.setValue(data)
+                image_model.setSynchronized(True)
+
     if len(args) == 0:
         pass
     elif len(args) == 1:
