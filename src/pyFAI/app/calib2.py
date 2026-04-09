@@ -209,7 +209,7 @@ def configure_parser_arguments(parser):
                         default=0, type=float)
     # Not yet used
     parser.add_argument("--weighted", dest="weighted",
-                        help="Weight the fit by intensity of points, by default not.",
+                        help="Use point intensity as weights for fitting. Default: off",
                         default=False, action="store_true")
     # Not yet used
     parser.add_argument("--unit", dest="unit",
@@ -246,7 +246,7 @@ decrease the value if arcs are mixed together.""", default=None)
                         default=False)
 
 description = """Calibrate the diffraction setup geometry based on
-Debye-Sherrer rings images without a priori knowledge of your setup.
+Debye-Scherrer rings images without a priori knowledge of your setup.
 You will need to provide a calibrant or a "d-spacing" file containing the
 spacing of Miller plans in Angstrom (in decreasing order).
 %s or search in the American Mineralogist database:
@@ -327,20 +327,9 @@ def setup_model(model, options):
 
     # Settings
     settings = model.experimentSettingsModel()
-    if options.spacing:
-        local_calibrant = None
-        try:
-            if options.spacing in calibrant.CALIBRANT_FACTORY:
-                local_calibrant = calibrant.CALIBRANT_FACTORY(options.spacing)
-            elif os.path.isfile(options.spacing):
-                local_calibrant = calibrant.Calibrant(options.spacing)
-            else:
-                logger.error("No such Calibrant / d-Spacing file: %s", options.spacing)
-        except Exception as e:
-            local_calibrant = None
-            displayExceptionBox("Error while loading the calibrant", e)
-        if local_calibrant:
-            settings.calibrantModel().setCalibrant(local_calibrant)
+
+    local_calibrant = options.spacing
+
 
     wavelength = None
     if options.wavelength:
@@ -383,8 +372,7 @@ def setup_model(model, options):
         settings.poniFile().setSynchronized(True)
 
         if os.path.exists(options.poni):
-            poniFile = PoniFile()
-            poniFile.read_from_file(options.poni)
+            poniFile = PoniFile(options.poni)
 
             geometryFromPoni = GeometryModel()
             geometryFromPoni.distance().setValue(poniFile.dist)
@@ -405,18 +393,36 @@ def setup_model(model, options):
             else:
                 logger.warning("Wavelength/Energy enforced in the command line. Wavelength from --poni argument ignored.")
                 poniFile._wavelength = wavelength
-            geometryFromPoni.wavelength().setValue(wavelength)
 
+            if local_calibrant is None:
+                local_calibrant = poniFile.extra.get("Calibrant")
+            else:
+                logger.warning("Calibrant enforced in the command line. Calibrant from --poni argument ignored.")
+                poniFile.extra["Calibrant"] = local_calibrant
+
+            geometryFromPoni.wavelength().setValue(wavelength)
             geometryHistory = model.geometryHistoryModel()
             now = datetime.datetime.now()
             geometryHistory.appendGeometry("Ponifile", now, geometryFromPoni, None)
-
-
         else:
             logger.warning("PONI file '%s' do not exists. --poni option ignored.", options.poni)
 
     settings.detectorModel().setDetector(detector)
     settings.wavelength().setValue(wavelength)
+    if local_calibrant:
+        try:
+            if local_calibrant in calibrant.CALIBRANT_FACTORY:
+                actual_calibrant = calibrant.CALIBRANT_FACTORY(local_calibrant)
+            elif os.path.isfile(local_calibrant):
+                actual_calibrant = calibrant.Calibrant(local_calibrant)
+            else:
+                logger.error("No such Calibrant / d-Spacing file: %s", local_calibrant)
+        except Exception as e:
+            actual_calibrant = None
+            displayExceptionBox("Error while loading the calibrant", e)
+        else:
+            settings.calibrantModel().setCalibrant(actual_calibrant)
+
 
     if options.mask:
         try:
