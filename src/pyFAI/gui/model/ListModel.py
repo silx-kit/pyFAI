@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/03/2025"
+__date__ = "09/04/2026"
 
 import functools
 
@@ -130,7 +130,7 @@ class ChangeListEvent(object):
 
 class ListModel(AbstractModel):
     """
-    List of `AbstractModel` managing signals when items are eadited, added and
+    List of `AbstractModel` managing signals when items are edited, added and
     removed.
 
     Atomic events for each add/remove of items. To manage it in a better way,
