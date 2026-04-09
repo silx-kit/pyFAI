@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/04/2026"
+__date__ = "09/04/2026"
 __status__ = "production"
 
 import os
@@ -398,7 +398,7 @@ def setup_model(model, options):
                 detector = poniFile.detector
             else:
                 logger.warning("Detector enforced in the command line. Detector from --poni argument ignored.")
-                poniFile.detector = detector
+                poniFile._detector = detector
 
             if wavelength is None:
                 wavelength = poniFile.wavelength
