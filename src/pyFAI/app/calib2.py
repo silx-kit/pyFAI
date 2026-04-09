@@ -217,12 +217,11 @@ def configure_parser_arguments(parser):
                         " q_A^-1, r_mm. Default: 2th_deg", type=str, default="2th_deg")
     # Not yet used
     parser.add_argument("--no-gui", dest="gui",
-                        help="Force the program to run without a Graphical interface",
+                        help="Run without a GUI",
                         default=True, action="store_false")
     # Not yet used
     parser.add_argument("--no-interactive", dest="interactive",
-                        help="Force the program to run and exit without prompting"
-                        " for refinements", default=True, action="store_false")
+                        help="Run and exit without prompting. Unused", default=True, action="store_false")
 
     # From Calibration
     # Not yet used
