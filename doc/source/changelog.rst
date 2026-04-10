@@ -1,9 +1,14 @@
 :Author: Jérôme Kieffer
-:Date: 23/03/2026
+:Date: 09/04/2026
 :Keywords: changelog
 
 Change-log of versions
 ======================
+
+2026.XX unrelaeased
+-------------------
+- New features:
+  * Calib2: improve "recalib" like calibration, without peak-picking but a known geometry in input (#2840)
 
 2026.03 23/03/2026
 ------------------
