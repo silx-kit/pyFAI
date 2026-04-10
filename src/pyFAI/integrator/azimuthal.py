@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/11/2025"
+__date__ = "30/03/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -138,7 +138,7 @@ class AzimuthalIntegrator(Integrator):
         dark, has_dark = self._normalize_dark(dark)
         flat, has_flat = self._normalize_flat(flat)
 
-        error_model, variance = self._normalize_error_model_variance(data, method, dark, 
+        error_model, variance = self._normalize_error_model_variance(data, method, dark,
                                                                      error_model, variance)
 
         # Prepare LUT if needed!
