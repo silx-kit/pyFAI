@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "09/04/2026"
 
 from .ListModel import ListModel
 from .GeometryModel import GeometryModel
@@ -100,3 +100,12 @@ class GeometryHistoryModel(ListModel):
         :param float rms: Root mean share of this geometry
         """
         self.append(StoredGeometry(self, label, time, geometry, rms))
+
+    def lastGeometryIsValid(self) -> bool:
+        """
+        :return: True if the last geometry is valid
+        """
+        if len(self) == 0:
+            return False
+        else:
+            return self[-1].geometry().isValid()

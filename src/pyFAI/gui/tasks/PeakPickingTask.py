@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/02/2026"
+__date__ = "09/04/2026"
 
 import logging
 import numpy
@@ -1063,7 +1063,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         action.triggered.connect(self.__cleanUpRings)
         self._extract.addAction(action)
 
-        self._extract.setEnabled(False)
+        self._extract.setEnabled(self.geometryIsValid())
         self._extract.setDefaultAction(moreAction)
 
         validator = validators.DoubleValidator(self)
@@ -1601,7 +1601,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             maxRings = None
             peaksModel = self.model().peakSelectionModel()
             ringNumbers = [p.ringNumber() for p in peaksModel]
-            maxRing = max(ringNumbers)
+            maxRing = max(ringNumbers) if ringNumbers else 0
             ringNumbers = list(range(maxRing + 1, maxRing + 1 + moreRings))
         elif existingRings:
             maxRings = None
@@ -1664,7 +1664,7 @@ class PeakPickingTask(AbstractCalibrationTask):
     def autoExtractSingleRing(self, ring):
         thread = self._createRingExtractor(ring=ring)
         thread.setUserData("ROLE", self.EXTRACT_SINGLE)
-        thread.setUserData("TEXT", "extract ring %d" % ring.ringNumber())
+        thread.setUserData("TEXT", f"extract ring {ring.ringNumber():d}")
         thread.setUserData("RING", ring)
         self.__startExtractThread(thread)
 
@@ -1672,7 +1672,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         value = self._moreRingToExtract.value()
         thread = self._createRingExtractor(moreRings=value)
         thread.setUserData("ROLE", self.EXTRACT_MORE)
-        thread.setUserData("TEXT", "extract %s more rings" % value)
+        thread.setUserData("TEXT", f"extract {value} more rings")
         self.__startExtractThread(thread)
 
     def __startExtractThread(self, thread):
@@ -1865,8 +1865,9 @@ class PeakPickingTask(AbstractCalibrationTask):
                                                        self.__plot)
 
     def __peakSelectionChanged(self):
+        """Switch on off the autoextract if no model or not enough peaks are selected"""
         peakCount = self.model().peakSelectionModel().peakCount()
-        if peakCount < 3:
+        if peakCount < 3 and not self.geometryIsValid():
             self._extract.setEnabled(False)
             self.setToolTip("Select manually more peaks to auto extract peaks")
         else:
@@ -1894,3 +1895,9 @@ class PeakPickingTask(AbstractCalibrationTask):
             self.__plot.resetZoom()
         else:
             self.__plot.removeImage("image")
+
+    def geometryIsValid(self):
+        """Check if the geometry is valid"""
+        context = CalibrationContext.instance()
+        calibrationModel = context.getCalibrationModel()
+        return calibrationModel.geometryHistoryModel().lastGeometryIsValid()

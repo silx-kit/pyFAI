@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "10/04/2026"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -52,7 +52,7 @@ except ImportError:
 _logger = logging.getLogger(__name__)
 
 
-class PoniFile(object):
+class PoniFile:
     """File with the information for the geometry of the experimental setup.
 
     There are several version which existed:
@@ -66,6 +66,7 @@ class PoniFile(object):
          and the sensor entry in the detector_config.
     """
     API_VERSION = 3  # valid version are 1, 2, 2.1, 3
+    ALLOWED_EXTRA = {"Calibrant", "Image"}  # extra information which is allowed to be stored in the poni file
 
     def __init__(self, data=None, **kwargs) -> None:
         self._detector = None
@@ -77,6 +78,7 @@ class PoniFile(object):
         self._rot3 = None
         self._wavelength = None
         self._parallax = None
+        self.extra = {}  # extra information, e.g. calibrant, filename ...
         if data is None:
             if kwargs:
                 data = kwargs
@@ -127,10 +129,16 @@ class PoniFile(object):
         data = collections.OrderedDict()
         with open(filename) as opened_file:
             for line in opened_file:
-                if line.startswith("#") or (":" not in line):
+                if ":" not in line:
                     continue
-                words = line.split(":", 1)
+                if line.startswith("#"):
+                    key, value = (i.strip() for i in line[1:].split(":",1))
+                    key = key.capitalize()
+                    if key in self.ALLOWED_EXTRA:
+                        self.extra[key] = value
+                    continue
 
+                words = line.split(":", 1)
                 key = words[0].strip().lower()
                 try:
                     value = words[1].strip()
@@ -217,7 +225,7 @@ class PoniFile(object):
             self._parallax = None
 
         if version > self.__class__.API_VERSION:
-            raise RuntimeError("PONI file version %s too recent. Please upgrade installation of pyFAI.", version)
+            raise RuntimeError(f"PONI file version {version} too recent. Please upgrade installation of pyFAI.")
 
         if "distance" in config:
             self._dist = float(config["distance"]) if config["distance"] is not None else None
@@ -283,7 +291,7 @@ class PoniFile(object):
         """Write this object to an open stream.
 
         :param fd: file descriptor (opened file)
-        :param comments: extra comments as a string or a list of strings
+        :param comments: extra comments as a string or a list of strings -> Deprecated, please use the ponifile.extra dict instead
         :return: None
         """
         detector = self.detector
@@ -317,7 +325,11 @@ class PoniFile(object):
             txt.append(f"Wavelength: {self._wavelength}")
         if self.API_VERSION >= 3:
             txt.append(f"Parallax: {bool(self._parallax)!a}")
+        if self.extra:
+            for key, value in self.extra.items():
+                txt.append(f"# {key}: {value}")
         if comments:
+            _logger.warning("PoniFile.write:`comments` kwarg is deprecated, use the `ponifile.extra` dict instead to feed comments")
             if isinstance(comments, str):
                 txt.append(f"# {comments}")
             elif isinstance(comments, bytes):

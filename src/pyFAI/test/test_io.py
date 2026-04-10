@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2026"
+__date__ = "09/04/2026"
 
 import unittest
 import os
@@ -90,6 +90,16 @@ class TestPoniFile(unittest.TestCase):
             content2 = fd.readlines()
         self.assertTrue("# lorem\n" in content2, 'Write comment as list')
         self.assertTrue("# ipsus\n" in content2, 'Write comment as list')
+
+    def test_extra(self):
+        poni = PoniFile(UtilsTest.getimage("Eiger4M_v2.poni"))
+        self.assertEqual(list(poni.extra.keys()), ["Calibrant", "Image"])
+        self.assertEqual(poni.extra["Calibrant"], "alpha_Al2O3")
+        dst = os.path.join(UtilsTest.tempdir, "test_extra.poni")
+        with open(dst, "w") as w:
+            poni.write(w)
+        poni2 = PoniFile(dst)
+        self.assertEqual(poni.extra, poni2.extra)
 
 
 class TestIsoTime(unittest.TestCase):
@@ -210,7 +220,7 @@ class TestNexus(unittest.TestCase):
                 logger.warning("unchecked: %s vs %s", a, b)
         # clean up
         os.unlink(fname)
-        
+
     @unittest.skipIf(h5py.version.version_tuple < (2, 9), "h5py too old")
     def test_NXazint1d(self):
         ai = self.ai
