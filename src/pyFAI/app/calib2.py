@@ -35,7 +35,7 @@ import os
 import sys
 import datetime
 from argparse import ArgumentParser
-
+from typing import Tuple
 import logging
 from .. import resources
 from .. import calibrant
@@ -257,7 +257,7 @@ and wavelength. An 1D and 2D diffraction patterns are also produced.
 (.dat and .azim files)"""
 
 
-def parse_pixel_size(pixel_size) -> list:
+def parse_pixel_size(pixel_size) -> Tuple[float, float] :
     """Convert a comma separated string into pixel size
 
     :param str pixel_size: String containing pixel size in micron
@@ -266,14 +266,14 @@ def parse_pixel_size(pixel_size) -> list:
     sp = pixel_size.split(",")
     if len(sp) >= 2:
         try:
-            result = [float(i) * 1e-6 for i in sp[:2]]
+            result = tuple(float(i) * 1e-6 for i in sp[:2])
         except Exception:
             logger.error("Error in reading pixel size_2")
             raise ValueError("Not a valid pixel size")
     elif len(sp) == 1:
         px = sp[0]
         try:
-            result = [float(px) * 1e-6, float(px) * 1e-6]
+            result = (float(px) * 1e-6, float(px) * 1e-6)
         except Exception:
             logger.error("Error in reading pixel size_1")
             raise ValueError("Not a valid pixel size")
