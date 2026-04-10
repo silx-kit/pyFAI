@@ -31,7 +31,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/04/2026"
+__date__ = "10/04/2026"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -66,7 +66,7 @@ class PoniFile:
          and the sensor entry in the detector_config.
     """
     API_VERSION = 3  # valid version are 1, 2, 2.1, 3
-    ALLOWED_EXTRA = {"calibrant", "image"}  # extra information which is allowed to be stored in the poni file
+    ALLOWED_EXTRA = {"Calibrant", "Image"}  # extra information which is allowed to be stored in the poni file
 
     def __init__(self, data=None, **kwargs) -> None:
         self._detector = None
@@ -133,11 +133,12 @@ class PoniFile:
                     continue
                 if line.startswith("#"):
                     key, value = (i.strip() for i in line[1:].split(":",1))
-                    if key.lower() in self.ALLOWED_EXTRA:
+                    key = key.capitalize()
+                    if key in self.ALLOWED_EXTRA:
                         self.extra[key] = value
                     continue
-                words = line.split(":", 1)
 
+                words = line.split(":", 1)
                 key = words[0].strip().lower()
                 try:
                     value = words[1].strip()
@@ -290,7 +291,7 @@ class PoniFile:
         """Write this object to an open stream.
 
         :param fd: file descriptor (opened file)
-        :param comments: extra comments as a string or a list of strings
+        :param comments: extra comments as a string or a list of strings -> Deprecated, please use the ponifile.extra dict instead
         :return: None
         """
         detector = self.detector
@@ -324,17 +325,17 @@ class PoniFile:
             txt.append(f"Wavelength: {self._wavelength}")
         if self.API_VERSION >= 3:
             txt.append(f"Parallax: {bool(self._parallax)!a}")
+        if self.extra:
+            for key, value in self.extra.items():
+                txt.append(f"# {key}: {value}")
         if comments:
+            _logger.warning("PoniFile.write:`comments` kwarg is deprecated, use the `ponifile.extra` dict instead to feed comments")
             if isinstance(comments, str):
                 txt.append(f"# {comments}")
             elif isinstance(comments, bytes):
                 txt.append(f"# {comments.decode()}")
             else:  # assume it is a list/tuple/set:
                 txt += [f"# {comment}" for comment in comments]
-        elif self.extra:
-            for key, value in self.extra.items():
-                txt.append(f"# {key}: {value}")
-
         txt.append("")
         fd.write("\n".join(txt))
 

@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "10/04/2026"
 
 import logging
 import numpy
@@ -1136,11 +1136,11 @@ class IntegrationTask(AbstractCalibrationTask):
 
         experimentSettingsModel = model.experimentSettingsModel()
         writer = self.__getPoni()
-        comments = [f"Calibrant: {experimentSettingsModel.calibrantModel().calibrant().name}",
-                    f"Image: {experimentSettingsModel.image().filename()}"]
+        writer.extra["Calibrant"] = experimentSettingsModel.calibrantModel().calibrant().name
+        writer.extra["Image"] = experimentSettingsModel.image().filename()
         try:
             with open(filename, "wt") as fd:
-                writer.write(fd, comments=comments)
+                writer.write(fd)
             with poniFile.lockContext():
                 poniFile.setValue(filename)
                 poniFile.setSynchronized(True)

@@ -28,7 +28,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/04/2026"
+__date__ = "10/04/2026"
 __status__ = "production"
 
 import os
@@ -399,6 +399,10 @@ def setup_model(model, options):
                 logger.warning("Calibrant enforced in the command line. Calibrant from --poni argument ignored.")
                 poniFile.extra["Calibrant"] = local_calibrant
 
+            if len(args) == 0 and poniFile.extra.get("Image"):
+                logger.warning("No input files specified. Using poni-file's calibration image.")
+                args = [poniFile.extra.get("Image")]
+
             geometryFromPoni.wavelength().setValue(wavelength)
             geometryHistory = model.geometryHistoryModel()
             now = datetime.datetime.now()
@@ -406,8 +410,10 @@ def setup_model(model, options):
         else:
             logger.warning("PONI file '%s' do not exists. --poni option ignored.", options.poni)
 
-    settings.detectorModel().setDetector(detector)
-    settings.wavelength().setValue(wavelength)
+    if detector:
+        settings.detectorModel().setDetector(detector)
+    if wavelength:
+        settings.wavelength().setValue(wavelength)
     if local_calibrant:
         try:
             if local_calibrant in calibrant.CALIBRANT_FACTORY:
