@@ -37,7 +37,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2026"
+__date__ = "02/04/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -68,8 +68,8 @@ CONST_hc = hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e7
 in Angstrom.KeV. It is approximately equal to:
 
 - pyFAI reference: 12.398419292004204
-- scipy v1.3.1:   12.398419739640717
-- scipy-1.4.0rc1: 12.398419843320026
+- scipy v1.3.1:    12.398419739640717
+- scipy v1.4.0:    12.398419843320026
 """
 
 CONST_q = scipy.constants.e
@@ -86,7 +86,7 @@ MAPS_SAMPLE_ORIENTATION = {
     8 : {"x" : "y", "y" : "(-x)"},
 }
 
-class Unit(object):
+class Unit:
     """Represents a unit.
 
     It has at least a name and a scale (in SI-unit)
@@ -137,17 +137,18 @@ class Unit(object):
         self.formula = formula
         self.extra_parameters = ImmutableDict(extra_parameters)
         if (numexpr is not None) and isinstance(formula, str):
-            signature = [(key, numpy.float64) for key in "xyzλπ" if key in formula]
-            for key in self.extra_parameters:
-                if key not in formula:
-                    signature.append((key, numpy.float64))
-
+            res = numexpr.necompiler.getExprNames(formula, context={})
+            signature = [(key, numpy.float64) for key in res[0]]
             ne_formula = numexpr.NumExpr(formula, signature)
 
             def ne_equation(x, y, z=None, wavelength=None, ne_formula=ne_formula):
-                π = PI
-                λ = wavelength
-                ldict = locals()
+                ldict = {"π": PI,
+                         "λ": wavelength,
+                         "x": x,
+                         "y": y,
+                         "z": z,
+                        }
+                ldict.update(self.extra_parameters)
                 args = tuple(ldict[i] for i in ne_formula.input_names)
                 return ne_formula(*args)
             self.equation = self._equation_ne = ne_equation
@@ -155,7 +156,7 @@ class Unit(object):
             self._equation_ne = None
             self.equation = self._equation_np
         self.short_name = short_name
-        self.unit_symbol = unit_symbol
+        self.unit_symbol = (self.name.split("_")[1] if "_" in self.name else self.name) if unit_symbol is None else unit_symbol
         self.positive = positive
         self.period = period
 
@@ -188,7 +189,7 @@ class Unit(object):
 
     as_str = __repr__
 
-    # ensures hashability
+    # ensures hash-ability
     def __hash__(self):
         return self.name.__hash__()
 
@@ -491,7 +492,7 @@ def register_radial_fiber_unit(
     unit_symbol=None,
     positive=True,
     period=None,
-):
+) -> UnitFiber:
     unitfiber = UnitFiber(
         name=name,
         scale=scale,
@@ -512,6 +513,7 @@ def register_radial_fiber_unit(
     RADIAL_UNITS[name] = unitfiber
     ANY_UNITS.update(RADIAL_UNITS)
     ANY_FIBER_UNITS[name] = unitfiber
+    return unitfiber
 
 
 def register_azimuthal_unit(
@@ -525,7 +527,7 @@ def register_azimuthal_unit(
             delta:Callable|None=None,
             short_name:str|None=None,
             unit_symbol:str|None=None,
-            positive:bool=True,
+            positive:bool=False,
             period:float|None=None,
             extra_parameters:dict|ImmutableDict|None=None,
 ):
@@ -568,7 +570,7 @@ def register_azimuthal_fiber_unit(
     unit_symbol=None,
     positive=False,
     period=None,
-):
+) -> UnitFiber:
     unitfiber = UnitFiber(
         name=name,
         scale=scale,
@@ -589,6 +591,7 @@ def register_azimuthal_fiber_unit(
     AZIMUTHAL_UNITS[name] = unitfiber
     ANY_UNITS.update(AZIMUTHAL_UNITS)
     ANY_FIBER_UNITS[name] = unitfiber
+    return unitfiber
 
 
 def eq_r(x, y, z=None, wavelength=None):
