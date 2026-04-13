@@ -173,7 +173,9 @@ class MultiGeometry(object):
 
         def _integrate(args):
             ai, data, monitor, var, mask, flat = args
-            res = ai.integrate1d_ng(data, npt=npt,
+            if correctSolidAngle:
+                monitor *= ai.detector.pixel1 * ai.detector.pixel2 / ai.dist ** 2
+            return ai.integrate1d_ng(data, npt=npt,
                                     correctSolidAngle=correctSolidAngle,
                                     variance=var, error_model=error_model,
                                     polarization_factor=polarization_factor,
@@ -181,17 +183,23 @@ class MultiGeometry(object):
                                     azimuth_range=self.azimuth_range,
                                     method=method, unit=self.radial_unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
-            if correctSolidAngle:
-                return res.renormalize(ai.detector.pixel1 * ai.pixel2 / ai.dist ** 2)
-            else:
-                return res
 
         if self.threadpool is None:
-            results = map(_integrate,
-                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+            results = list(map(_integrate,
+                                zip(self.ais,
+                                    lst_data,
+                                    normalization_factor,
+                                    lst_variance,
+                                    lst_mask,
+                                    lst_flat)))
         else:
             results = self.threadpool.map(_integrate,
-                                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+                                          zip(self.ais,
+                                                lst_data,
+                                                normalization_factor,
+                                                lst_variance,
+                                                lst_mask,
+                                                lst_flat))
 
         result = copy.deepcopy(results[0])
 
@@ -252,7 +260,10 @@ class MultiGeometry(object):
 
         def _integrate(args):
             ai, data, monitor, var, mask, flat = args
-            res = ai.integrate2d_ng(data,npt_rad=npt_rad, npt_azim=npt_azim,
+            if correctSolidAngle:
+                monitor *= ai.detector.pixel1 * ai.detector.pixel2 / ai.dist ** 2
+
+            return ai.integrate2d_ng(data,npt_rad=npt_rad, npt_azim=npt_azim,
                                     correctSolidAngle=correctSolidAngle,
                                     variance=var, error_model=error_model,
                                     polarization_factor=polarization_factor,
@@ -260,17 +271,23 @@ class MultiGeometry(object):
                                     azimuth_range=self.azimuth_range,
                                     method=method, unit=self.unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
-            if correctSolidAngle:
-                return res.renormalize(ai.detector.pixel1 * ai.detector.pixel2 / ai.dist ** 2)
-            else:
-                return res
 
         if self.threadpool is None:
-            results = map(_integrate,
-                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+            results = list(map(_integrate,
+                                zip(self.ais,
+                                    lst_data,
+                                    normalization_factor,
+                                    lst_variance,
+                                    lst_mask,
+                                    lst_flat)))
         else:
             results = self.threadpool.map(_integrate,
-                zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+                                zip(self.ais,
+                                    lst_data,
+                                    normalization_factor,
+                                    lst_variance,
+                                    lst_mask,
+                                    lst_flat))
 
         result = copy.deepcopy(results[0])
         for res in results[1:]:
