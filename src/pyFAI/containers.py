@@ -30,7 +30,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2026"
+__date__ = "13/04/2026"
 __status__ = "development"
 
 import math
@@ -325,6 +325,7 @@ class IntegrateResult(_CopyableTuple):
             self._sum_variance += other._sum_variance
         return self.__recalculate_means__()
 
+
     def __recalculate_means__(self):
         formula_int = "where(sum_normalization == 0.0, dummy, sum_signal/sum_normalization)"
         formula_std = "where(sum_normalization == 0.0, dummy, sqrt(sum_variance/sum_normalization2))"
@@ -358,7 +359,8 @@ class IntegrateResult(_CopyableTuple):
         other = deepcopy(self) if copy else self
         ratio = value/self.normalization_factor
         other._sum_normalization *= ratio
-        other._sum_normalization2 *= ratio**2
+        if other._sum_normalization2 is not None:
+            other._sum_normalization2 *= ratio**2
         other._set_normalization_factor(value)
         return other.__recalculate_means__()
 
@@ -790,8 +792,8 @@ class Integrate1dResult(IntegrateResult):
 
         As a rule of thumb:
         - S < 0.05: Smooth powder pattern
-        – 0.05 < S < 0.15: Mild spottiness / texture
-        – S > 0.15 : Strongly spotty, likely with large grain size
+        - 0.05 < S < 0.15: Mild spottiness / texture
+        - S > 0.15 : Strongly spotty, likely with large grain size
 
         :param weighted: Weight the spottiness by the intensity of each ring,
                          probably more correct but also larger values

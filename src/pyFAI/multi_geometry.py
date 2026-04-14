@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #    Copyright (C)      2016 Synchrotron SOLEIL - L'Orme des Merisiers Saint-Aubin
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,12 +31,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "13/04/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import collections.abc
 import gc
+import copy
 import logging
 from .integrator.azimuthal import AzimuthalIntegrator
 from .integrator.fiber import FiberIntegrator
@@ -73,12 +74,12 @@ class MultiGeometry(object):
                                set to False/0 to serialize
         """
         self._sem = threading.Semaphore()
-        self.abolute_solid_angle = None
+        self.absolute_solid_angle = None
         self.ais = [ai if isinstance(ai, AzimuthalIntegrator)
                     else AzimuthalIntegrator.sload(ai)
                     for ai in ais]
         self.wavelength = None
-        self.threadpool = ThreadPool(min(len(self.ais), threadpoolsize)) if threadpoolsize>0 else None
+        self.threadpool = ThreadPool(min(self.nb_geometry, threadpoolsize)) if threadpoolsize>0 else None
         if wavelength:
             self.set_wavelength(wavelength)
         if isinstance(unit, (tuple, list)) and len(unit) == 2:
@@ -90,7 +91,6 @@ class MultiGeometry(object):
         self.unit = (self.radial_unit, self.azimuth_unit)
         self.radial_range = radial_range
         self.azimuth_range = azimuth_range
-        self.abolute_solid_angle = None
         self.empty = empty
         if chi_disc == 0:
             for ai in self.ais:
@@ -107,7 +107,7 @@ class MultiGeometry(object):
 
     def __repr__(self, *args, **kwargs):
         return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \
-            (len(self.ais), self.radial_range, self.unit, self.azimuth_range)
+            (self.nb_geometry, self.radial_range, self.unit, self.azimuth_range)
 
     def _guess_radial_range(self):
         logger.info("Calculating the radial range of MultiGeometry...")
@@ -118,6 +118,10 @@ class MultiGeometry(object):
         logger.info("Calculating the azimuthal range of MultiGeometry...")
         azimuthal = numpy.concatenate([ai.array_from_unit(unit=self.azimuth_unit).reshape(-1) for ai in self.ais])
         return (azimuthal.min(), azimuthal.max())
+
+    @property
+    def nb_geometry(self):
+        return len(self.ais)
 
     def integrate1d(self, lst_data, npt=1800,
                     correctSolidAngle=True,
@@ -145,33 +149,32 @@ class MultiGeometry(object):
         :rtype: Integrate1dResult, dict
         """
         method = IntegrationMethod.select_one_available(method, dim=1)
-
+        nb_geometry = self.nb_geometry
         if len(lst_data) == 0:
             raise RuntimeError("List of images cannot be empty")
         if normalization_factor is None:
-            normalization_factor = [1.0] * len(self.ais)
+            normalization_factor = [1.0] * nb_geometry
         elif not isinstance(normalization_factor, collections.abc.Iterable):
-            normalization_factor = [normalization_factor] * len(self.ais)
+            normalization_factor = [normalization_factor] * nb_geometry
         if lst_variance is None:
-            lst_variance = [None] * len(self.ais)
+            lst_variance = [None] * nb_geometry
         if lst_mask is None:
-            lst_mask = [None] * len(self.ais)
+            lst_mask = [None] * nb_geometry
         elif isinstance(lst_mask, numpy.ndarray):
-            lst_mask = [lst_mask] * len(self.ais)
+            lst_mask = [lst_mask] * nb_geometry
         if lst_flat is None:
-            lst_flat = [None] * len(self.ais)
+            lst_flat = [None] * nb_geometry
         elif isinstance(lst_flat, numpy.ndarray):
-            lst_flat = [lst_flat] * len(self.ais)
-        signal = numpy.zeros(npt, dtype=numpy.float64)
-        normalization = numpy.zeros_like(signal)
-        count = numpy.zeros_like(signal)
-        variance = None
+            lst_flat = [lst_flat] * nb_geometry
         if self.radial_range is None:
             self.radial_range = self._guess_radial_range()
         if self.azimuth_range is None:
             self.azimuth_range = self._guess_azimuth_range()
+
         def _integrate(args):
             ai, data, monitor, var, mask, flat = args
+            if correctSolidAngle:
+                monitor *= ai.detector.pixel1 * ai.detector.pixel2 / ai.dist ** 2
             return ai.integrate1d_ng(data, npt=npt,
                                     correctSolidAngle=correctSolidAngle,
                                     variance=var, error_model=error_model,
@@ -180,41 +183,29 @@ class MultiGeometry(object):
                                     azimuth_range=self.azimuth_range,
                                     method=method, unit=self.radial_unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
+
         if self.threadpool is None:
-            results = map(_integrate,
-                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+            results = list(map(_integrate,
+                                zip(self.ais,
+                                    lst_data,
+                                    normalization_factor,
+                                    lst_variance,
+                                    lst_mask,
+                                    lst_flat)))
         else:
             results = self.threadpool.map(_integrate,
-                                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
-        for res, ai in zip(results, self.ais):
-            sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
-            count += res.count
-            normalization += res.sum_normalization * sac
-            signal += res.sum_signal
-            if res.sigma is not None:
-                if variance is None:
-                    variance = res.sum_variance.astype(dtype=numpy.float64)  # explicit copy
-                else:
-                    variance += res.sum_variance
+                                          zip(self.ais,
+                                                lst_data,
+                                                normalization_factor,
+                                                lst_variance,
+                                                lst_mask,
+                                                lst_flat))
 
-        tiny = numpy.finfo("float32").tiny
-        norm = numpy.maximum(normalization, tiny)
-        invalid = count <= 0.0
-        intensity = signal / norm
-        intensity[invalid] = self.empty
+        result = copy.deepcopy(results[0])
 
-        if variance is not None:
-            sigma = numpy.sqrt(variance) / norm
-            sigma[invalid] = self.empty
-            result = Integrate1dResult(res.radial, intensity, sigma)
-        else:
-            result = Integrate1dResult(res.radial, intensity)
-        result._set_compute_engine(res.compute_engine)
-        result._set_unit(self.radial_unit)
-        result._set_sum_signal(signal)
-        result._set_sum_normalization(normalization)
-        result._set_sum_variance(variance)
-        result._set_count(count)
+        for res in results[1:]:
+            result = result.union(res)
+        result._set_poni([ai.get_config() for ai in self.ais])
         return result
 
     def integrate2d(self, lst_data, npt_rad=1800, npt_azim=3600,
@@ -244,33 +235,34 @@ class MultiGeometry(object):
         """
         if len(lst_data) == 0:
             raise RuntimeError("List of images cannot be empty")
+        nb_geometry = self.nb_geometry
         if normalization_factor is None:
-            normalization_factor = [1.0] * len(self.ais)
+            normalization_factor = [1.0] * nb_geometry
         elif not isinstance(normalization_factor, collections.abc.Iterable):
-            normalization_factor = [normalization_factor] * len(self.ais)
+            normalization_factor = [normalization_factor] * self.nb_geometry
         if lst_variance is None:
-            lst_variance = [None] * len(self.ais)
+            lst_variance = [None] * nb_geometry
         if lst_mask is None:
-            lst_mask = [None] * len(self.ais)
+            lst_mask = [None] * nb_geometry
         elif isinstance(lst_mask, numpy.ndarray):
-            lst_mask = [lst_mask] * len(self.ais)
+            lst_mask = [lst_mask] * nb_geometry
         if lst_flat is None:
-            lst_flat = [None] * len(self.ais)
+            lst_flat = [None] * nb_geometry
         elif isinstance(lst_flat, numpy.ndarray):
-            lst_flat = [lst_flat] * len(self.ais)
+            lst_flat = [lst_flat] * nb_geometry
 
         method = IntegrationMethod.select_one_available(method, dim=2)
 
-        signal = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
-        count = numpy.zeros_like(signal)
-        normalization = numpy.zeros_like(signal)
-        variance = None
         if self.radial_range is None:
             self.radial_range = self._guess_radial_range()
         if self.azimuth_range is None:
             self.azimuth_range = self._guess_azimuth_range()
+
         def _integrate(args):
             ai, data, monitor, var, mask, flat = args
+            if correctSolidAngle:
+                monitor *= ai.detector.pixel1 * ai.detector.pixel2 / ai.dist ** 2
+
             return ai.integrate2d_ng(data,npt_rad=npt_rad, npt_azim=npt_azim,
                                     correctSolidAngle=correctSolidAngle,
                                     variance=var, error_model=error_model,
@@ -279,43 +271,28 @@ class MultiGeometry(object):
                                     azimuth_range=self.azimuth_range,
                                     method=method, unit=self.unit, safe=True,
                                     mask=mask, flat=flat, normalization_factor=monitor)
+
         if self.threadpool is None:
-            results = map(_integrate,
-                          zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
+            results = list(map(_integrate,
+                                zip(self.ais,
+                                    lst_data,
+                                    normalization_factor,
+                                    lst_variance,
+                                    lst_mask,
+                                    lst_flat)))
         else:
             results = self.threadpool.map(_integrate,
-                zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))
-        for res, ai in zip(results, self.ais):
-            sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
-            count += res.count
-            signal += res.sum_signal
-            normalization += res.sum_normalization * sac
-            if res.sigma is not None:
-                if variance is None:
-                    variance = res.sum_variance.astype(numpy.float64)  # explicit copy !
-                else:
-                    variance += res.sum_variance
+                                zip(self.ais,
+                                    lst_data,
+                                    normalization_factor,
+                                    lst_variance,
+                                    lst_mask,
+                                    lst_flat))
 
-        tiny = numpy.finfo("float32").tiny
-        norm = numpy.maximum(normalization, tiny)
-        invalid = count <= 0
-        intensity = signal / norm
-        intensity[invalid] = self.empty
-
-        if variance is not None:
-            sigma = numpy.sqrt(variance) / norm
-            sigma[invalid] = self.empty
-            result = Integrate2dResult(intensity, res.radial, res.azimuthal, sigma)
-        else:
-            result = Integrate2dResult(intensity, res.radial, res.azimuthal)
-        result._set_sum(signal)
-        result._set_compute_engine(res.compute_engine)
-        result._set_radial_unit(self.radial_unit)
-        result._set_azimuthal_unit(self.azimuth_unit)
-        result._set_sum_signal(signal)
-        result._set_sum_normalization(normalization)
-        result._set_sum_variance(variance)
-        result._set_count(count)
+        result = copy.deepcopy(results[0])
+        for res in results[1:]:
+            result = result.union(res)
+        result._set_poni([ai.get_config() for ai in self.ais])
         return result
 
     def set_wavelength(self, value):
@@ -369,7 +346,7 @@ class MultiGeometryFiber(object):
                                set to False/0 to serialize
         """
         self._sem = threading.Semaphore()
-        self.abolute_solid_angle = None
+        self.absolute_solid_angle = None
         self.fis = [fi if isinstance(fi, FiberIntegrator)
                     else FiberIntegrator.sload(fi)
                     for fi in fis]
@@ -403,7 +380,6 @@ class MultiGeometryFiber(object):
         self.unit = (self.ip_unit, self.oop_unit)
         self.ip_range = ip_range
         self.oop_range = oop_range
-        self.abolute_solid_angle = None
         self.empty = empty
         if chi_disc == 0:
             for fi in self.fis:
