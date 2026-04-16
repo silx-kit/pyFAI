@@ -30,7 +30,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/04/2026"
+__date__ = "14/04/2026"
 __status__ = "development"
 
 import math
@@ -950,21 +950,27 @@ class Integrate2dResult(IntegrateResult):
 
     def rebin1d(self) -> Integrate1dResult:
         """Function that rebins an Integrate2dResult into a Integrate1dResult
+        It keeps the number of radial bins unchanged but rebin the azimuthal bins into a single one.
 
         :return: Integrate1dResult
         """
         bins_rad = self.radial
         sum_signal = self.sum_signal.sum(axis=0)
         sum_normalization = self.sum_normalization.sum(axis=0)
-        intensity = sum_signal / sum_normalization
+        intensity = numpy.zeros(sum_signal.shape) + self.dummy
+        numpy.divide(sum_signal, sum_normalization, out=intensity, where=sum_normalization!=0)
         if self.sum_variance is not None:
             sum_variance = self.sum_variance.sum(axis=0)
-            sem = numpy.sqrt(sum_variance) / sum_normalization
+            sem = numpy.zeros(sum_variance.shape) + self.dummy
+            numpy.divide(numpy.sqrt(sum_variance), sum_normalization, out=sem, where=sum_normalization!=0)
             result = Integrate1dResult(bins_rad, intensity, sem)
-            result._set_sum_normalization2(self.sum_normalization2.sum(axis=0))
+            sum_normalization2 = self.sum_normalization2.sum(axis=0)
+            result._set_sum_normalization2(sum_normalization2)
             result._set_sum_variance(sum_variance)
-            result._set_std(numpy.sqrt(sum_variance / result.sum_normalization2))
-            result._set_std(sem)
+            std2 = numpy.zeros(sum_variance.shape) + self.dummy**2
+            numpy.divide(sum_variance, sum_normalization2, out=std2, where=sum_normalization2!=0)
+            result._set_std(numpy.sqrt(std2))
+            result._set_sem(sem)
         else:
             result = Integrate1dResult(bins_rad, intensity)
 
