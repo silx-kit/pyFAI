@@ -10,7 +10,7 @@ silx >= 2
 #nbsphinx
 docutils<0.20
 ipython_genutils
-pydata-sphinx-theme <0.17
+pydata-sphinx-theme <0.18
 importlib_resources; python_version < '3.9'
 #m2r2
 lxml_html_clean
