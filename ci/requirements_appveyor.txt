@@ -11,8 +11,7 @@ fabio
 scipy
 matplotlib
 numexpr != 2.8.6
-silx >= 2
+silx[full]
 psutil
 importlib_resources; python_version < '3.9'
-pyside6
 pyopengl
