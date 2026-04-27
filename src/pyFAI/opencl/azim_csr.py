@@ -8,11 +8,11 @@
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
 #  furnished to do so, subject to the following conditions:
 #  .
 #  The above copyright notice and this permission notice shall be included in
@@ -306,7 +306,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
             if self.force_workgroup_size:
                 self.workgroup_size[kernel_name] = (self.BLOCK_SIZE, self.BLOCK_SIZE)
             else:
-                print(kernel_name)
                 wg_max = self.kernels.max_workgroup_size(kernel_name)
                 wg_min = self.kernels.min_workgroup_size(kernel_name)
                 if kernel_name=="csr_medfilt":
