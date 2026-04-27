@@ -15,5 +15,5 @@ silx >= 2
 psutil
 importlib_resources; python_version < '3.9'
 pyside6
-qtawsome
+qtawesome
 pyopengl
