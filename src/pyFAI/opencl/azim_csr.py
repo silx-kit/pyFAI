@@ -1,18 +1,18 @@
-#i             -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
-#                 Project: Azimuthal integration
-#                          https://github.com/silx-kit/pyFAI
+#    Project: Azimuthal integration
+#             https://github.com/silx-kit/pyFAI
 #
-#                 Copyright (C) 2014-2026 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
-#                 Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-#                                         Giannis Ashiotis
+#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#                            Giannis Ashiotis
 #
-#               Permission is hereby granted, free of charge, to any person obtaining a copy
-#               of this software and associated documentation files (the "Software"), to deal
-#               in the Software without restriction, including without limitation the rights
-#               to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#               copies of the Software, and to permit persons to whom the Software is
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
 #  furnished to do so, subject to the following conditions:
 #  .
 #  The above copyright notice and this permission notice shall be included in
@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "25/04/2026"
+__date__ = "27/04/2026"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -293,15 +293,20 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         compile_options += f" -D NBINS={self.bins} -D NIMAGE={self.size}"
         OpenclProcessing.compile_kernels(self, kernels, compile_options.strip())
-        dico = self.kernels.__dict__
-        if "_kernels" in dico:  # Compatibility silx3
-            dico = dico["_kernels"]
-        for kernel_name in dico:
-            if kernel_name.startswith("_"):
-                continue
+        kernel_list = self.kernels.__dict__
+        if hasattr(self.kernels, "_kernels"):
+            # Compatibility silx3
+            kernel_list = list(self.kernels._kernels.keys())
+        else:
+            logger.warning("Please upgrade to silx v3+")
+            kernel_list = [i for i in self.kernels.__dict__
+                           if not i.startswith("_")]
+
+        for kernel_name in kernel_list:
             if self.force_workgroup_size:
                 self.workgroup_size[kernel_name] = (self.BLOCK_SIZE, self.BLOCK_SIZE)
             else:
+                print(kernel_name)
                 wg_max = self.kernels.max_workgroup_size(kernel_name)
                 wg_min = self.kernels.min_workgroup_size(kernel_name)
                 if kernel_name=="csr_medfilt":
