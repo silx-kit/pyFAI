@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
@@ -28,7 +28,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "07/10/2025"
+__date__ = "27/04/2026"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -293,9 +293,16 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         compile_options += f" -D NBINS={self.bins} -D NIMAGE={self.size}"
         OpenclProcessing.compile_kernels(self, kernels, compile_options.strip())
-        for kernel_name in self.kernels.__dict__:
-            if kernel_name.startswith("_"):
-                continue
+        kernel_list = self.kernels.__dict__
+        if hasattr(self.kernels, "_kernels"):
+            # Compatibility silx3
+            kernel_list = list(self.kernels._kernels.keys())
+        else:
+            logger.warning("Please upgrade to silx v3+")
+            kernel_list = [i for i in self.kernels.__dict__
+                           if not i.startswith("_")]
+
+        for kernel_name in kernel_list:
             if self.force_workgroup_size:
                 self.workgroup_size[kernel_name] = (self.BLOCK_SIZE, self.BLOCK_SIZE)
             else:
