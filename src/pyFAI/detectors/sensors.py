@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/01/2026"
+__date__ = "04/05/2026"
 __status__ = "stable"
 
 import os
@@ -168,6 +168,12 @@ class SensorConfig:
     thickness: float=None
 
     THICKNESS_TOLERANCE: ClassVar[float] = 1e-6
+
+    def __post_init__(self):
+        if isinstance(self.material, str):
+            self.material = ALL_MATERIALS.get(self.material, self.material)
+        if self.thickness is not None:
+            self.thickness = float(self.thickness)
 
     def __repr__(self):
         return json_dumps(self.as_dict(), indent=2)
