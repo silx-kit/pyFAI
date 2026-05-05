@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/05/2026"
+__date__ = "05/05/2026"
 __status__ = "stable"
 
 import os
@@ -165,7 +165,7 @@ ALL_MATERIALS["Se"] = Se_MATERIAL = SensorMaterial("Se", density=4.26)
 class SensorConfig:
     "class for configuration of a sensor"
     material: SensorMaterial|str
-    thickness: float=None
+    thickness: float|None=None
 
     THICKNESS_TOLERANCE: ClassVar[float] = 1e-6
 
