@@ -36,23 +36,23 @@ environment:
     matrix:
 
         # Python 3.10
-        - PYTHON_DIR: "C:\\Python\3.10"
+        - PYTHON_DIR: "C:\\Python\\3.10"
           PYTHON_ARCH: "64"
 
         # Python 3.11
-        - PYTHON_DIR: "C:\\Python\3.10"
+        - PYTHON_DIR: "C:\\Python\\3.11"
           PYTHON_ARCH: "64"
 
         # Python 3.12
-        - PYTHON_DIR: "C:\\Python312-x64"
+        - PYTHON_DIR: "C:\\Python\\3.12"
           PYTHON_ARCH: "64"
 
         # Python 3.13
-        - PYTHON_DIR: "C:\\Python313-x64"
+        - PYTHON_DIR: "C:\\Python\\3.13"
           PYTHON_ARCH: "64"
 
         # Python 3.14
-        - PYTHON_DIR: "C:\\Python314-x64"
+        - PYTHON_DIR: "C:\\Python\\3.14"
           PYTHON_ARCH: "64"
 
 
