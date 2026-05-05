@@ -2,10 +2,11 @@
 # Windows
 # https://ci.appveyor.com/project/ESRF/pyFAI
 
-version: 2026.3.{build}
+version: 2026.5.{build}
 #shallow_clone: true
 clone_depth: 1
 build: false
+
 build_cloud: WSCISOFT
 image: WSCISOFT
 
@@ -24,7 +25,7 @@ os:
 cache:
     - '%LOCALAPPDATA%\pip\Cache'
 
-image: Visual Studio 2019
+#image: Visual Studio 2019
 
 environment:
     global:
