@@ -35,12 +35,12 @@ environment:
 
     matrix:
 
-#         # Python 3.7
-#         - PYTHON_DIR: "C:\\Python37-x64"
-#           PYTHON_ARCH: "64"
-
         # Python 3.10
-        - PYTHON_DIR: "C:\\Python310-x64"
+        - PYTHON_DIR: "C:\\Python\3.10"
+          PYTHON_ARCH: "64"
+
+        # Python 3.11
+        - PYTHON_DIR: "C:\\Python\3.10"
           PYTHON_ARCH: "64"
 
         # Python 3.12
@@ -51,6 +51,11 @@ environment:
         - PYTHON_DIR: "C:\\Python313-x64"
           PYTHON_ARCH: "64"
 
+        # Python 3.14
+        - PYTHON_DIR: "C:\\Python314-x64"
+          PYTHON_ARCH: "64"
+
+
 init:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
@@ -59,7 +64,7 @@ install:
     - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
 
     # Activate visual studio compiler
-    - '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat"'
+    - '"C:\\MSVC\\2022\\VC\\Auxiliary\\Build\\vcvars64.bat"'
     - 'cl.exe'
 
     # Upgrade/install distribution modules
