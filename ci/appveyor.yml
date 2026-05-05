@@ -23,9 +23,7 @@ os:
     - Visual Studio 2022
 
 cache:
-    - '%LOCALAPPDATA%\pip\Cache'
-
-#image: Visual Studio 2019
+    - packages
 
 environment:
     global:
