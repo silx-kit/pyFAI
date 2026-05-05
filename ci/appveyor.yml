@@ -6,6 +6,8 @@ version: 2026.3.{build}
 #shallow_clone: true
 clone_depth: 1
 build: false
+build_cloud: WSCISOFT
+image: WSCISOFT
 
 notifications:
 - provider: Email
