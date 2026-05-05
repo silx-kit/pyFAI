@@ -30,6 +30,7 @@ environment:
         WIN_SDK_ROOT: "C:\\Program Files\\Microsoft SDKs\\Windows"
         VENV_BUILD_DIR: "venv_build"
         VENV_TEST_DIR: "venv_test"
+        TMPDIR: "F:\\TEMP"
 
     matrix:
 
@@ -92,6 +93,7 @@ build_script:
     - "python ci\\info_platform.py"
     - "pip list"
     - "dir"
+    - 'python -c "import tempfile; print(tempfile.gettempdir())"'
 
     # Build
     - "python run_tests.py -m"
