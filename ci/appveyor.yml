@@ -94,6 +94,7 @@ build_script:
     - "pip list"
     - "dir"
     - 'python -c "import tempfile; print(tempfile.gettempdir())"'
+    - 'python -c "import silx.resources; r=silx.resources.ExternalResources(\"py\",\"http://\");print(r.data_home)"'
 
     # Build
     - "python run_tests.py -m"
