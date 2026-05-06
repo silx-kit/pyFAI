@@ -91,7 +91,7 @@ build_script:
     
 
     # Print Python info
-    - "set TMPDIR=%cd%\TMP"
+    - "set TMPDIR=%cd%\\TMP"
     - "python ci\\info_platform.py"
     - "pip list"
     - "dir"
