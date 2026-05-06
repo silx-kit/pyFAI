@@ -30,7 +30,7 @@ environment:
         WIN_SDK_ROOT: "C:\\Program Files\\Microsoft SDKs\\Windows"
         VENV_BUILD_DIR: "venv_build"
         VENV_TEST_DIR: "venv_test"
-        TMPDIR: "F:\\TEMP"
+        #TMPDIR: "F:\\TEMP"
 
     matrix:
 
@@ -88,13 +88,15 @@ build_script:
     - "pip install silx"
     - "dir"
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
+    
 
     # Print Python info
+    - "set TMPDIR=%cd%\TMP"
     - "python ci\\info_platform.py"
     - "pip list"
     - "dir"
     - 'python -c "import tempfile; print(tempfile.gettempdir())"'
-    - 'python -c "import silx.resources; r=silx.resources.ExternalResources(\"py\",\"http://\");print(r.data_home)"'
+    - 'python -c "import silx.resources; r=silx.resources.ExternalResources(\"pyFAI\",\"http://www.silx.org/pub/pyFAI/testdata\");print(r.data_home)"'
 
     # Build
     - "python run_tests.py -m"
