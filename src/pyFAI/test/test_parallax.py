@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "04/05/2026"
 
 import unittest
 import numpy
@@ -56,6 +56,12 @@ class TestSensorMaterial(unittest.TestCase):
         self.assertTrue(numpy.allclose(CdTe_MATERIAL.mu(40), 112.905))
         self.assertTrue(numpy.allclose(CdTe_MATERIAL.mu_en(40), 56.36475))
 
+    def test_bug_2851(self):
+        """test bug #2851: SensorConfig.from_dict() initializes the SenorMaterial
+        while the default constructor does not"""
+        c1 = SensorConfig.from_dict({"material": "Si", "thickness": 0.00045})
+        c2 = SensorConfig("Si", 0.00045)
+        self.assertEqual(c1, c2)
 
 
 class TestParallax(unittest.TestCase):
