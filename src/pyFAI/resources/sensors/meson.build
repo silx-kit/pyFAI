@@ -7,6 +7,7 @@ py.install_sources(
      'Gd2O2S.abs',
      'BaFBr0.85I0.15.abs',
      'Se.abs',
+     'CZT.abs',
     ],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/resources/sensors'  # Folder relative to site-packages to install to
