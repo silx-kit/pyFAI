@@ -25,6 +25,8 @@ py.install_sources(
     'TiO2.D',
     'ZnO.D',
     'alpha_Al2O3.D',
+    'alpha_Al2O3_SRM676.D',
+    'alpha_Al2O3_SRM676a.D',
     'cristobaltite.D',
     'hydrocerussite.D',
     'mock.D',
