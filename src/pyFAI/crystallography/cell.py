@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2026"
+__date__ = "19/05/2026"
 __status__ = "production"
 
 import os
@@ -53,6 +53,13 @@ from .space_groups import ReflectionCondition
 from ..utils.decorators import deprecated
 
 logger = logging.getLogger(__name__)
+
+
+def _pretty_angle(alpha):
+    return f"{alpha:.0f}\N{DEGREE SIGN}" if alpha in (120, 90) else f"{alpha:.3f}\N{DEGREE SIGN}"
+
+def _pretty_length(a):
+    return f"{a:.5f}\N{Latin Capital Letter a with Ring Above}"
 
 
 class Cell:
@@ -122,8 +129,13 @@ class Cell:
 
     def __repr__(self, *args, **kwargs):
         return (
-            f"{self.types[self.type]} {self.lattice} cell a={self.a:.4f} b={self.b:.4f} c={self.c:.4f}\N{Latin Capital Letter a with Ring Above} "
-            f"\N{GREEK SMALL LETTER ALPHA}={self.alpha:.3f} \N{GREEK SMALL LETTER BETA}={self.beta:.3f} \N{GREEK SMALL LETTER GAMMA}={self.gamma:.3f}\N{DEGREE SIGN}"
+            f"{self.types[self.type]} {self.lattice} cell "
+            f"a={_pretty_length(self.a)} "
+            f"b={_pretty_length(self.b)} "
+            f"c={_pretty_length(self.c)} "
+            f"\N{GREEK SMALL LETTER ALPHA}={_pretty_angle(self.alpha)} "
+            f"\N{GREEK SMALL LETTER BETA}={_pretty_angle(self.beta)} "
+            f"\N{GREEK SMALL LETTER GAMMA}={_pretty_angle(self.gamma)}"
         )
 
     @classmethod
