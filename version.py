@@ -47,14 +47,22 @@ Thus 2.1.0a3 is hexversion 0x020100a3.
 __authors__ = ["Jérôme Kieffer", "V. Valls"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/04/2026"
+__date__ = "19/05/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 __all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion",
            "calc_hexversion", "citation"]
 
 
-from collections import namedtuple
+from typing import NamedTuple
+
+
+class _version_info(NamedTuple):
+    major: int
+    minor: int=0
+    micro: int=0
+    releaselevel: str="final"
+    serial: int=0
 
 
 RELEASE_LEVEL_VALUE = {"dev": 0,
@@ -63,15 +71,14 @@ RELEASE_LEVEL_VALUE = {"dev": 0,
                        "gamma": 12,
                        "rc": 13,
                        "final": 15}
+
 MAJOR = 2026
-MINOR = 4
+MINOR = 5
 MICRO = 0
-RELEV = "dev"  # <16
+RELEV = "BETA"  # <16
 SERIAL = 0  # <16
 
 date = __date__
-
-_version_info = namedtuple("version_info", ["major", "minor", "micro", "releaselevel", "serial"])
 version_info = _version_info(MAJOR, MINOR, MICRO, RELEV, SERIAL)
 
 strictversion = version = debianversion = "%d.%d.%d" % version_info[:3]

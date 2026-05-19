@@ -1,14 +1,32 @@
 :Author: Jérôme Kieffer
-:Date: 09/04/2026
+:Date: 19/05/2026
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2026.XX unrelaeased
+2026.05 19/05/2026
 -------------------
+
 - New features:
+
   * Calib2: improve "recalib" like calibration, without peak-picking but a known geometry in input (#2840)
+  * Sensor: new CZT (Cadmium-Zinc-Telluride) detector material
+  * Support for logarithmic/sqrt/non-linear units binning space with formula-based conversions
+  * Multigeometry integration results now support `union()`
+
+- Bug Fixes & Code Quality:
+
+  * New `ImmutableDict`` class for immutable dictionary representation
+  * Fixed `Integrate1dResult.rebin1d()`` to properly handle `dummy` values and normalization
+  * PoniFile Enhancements: calibrant and image metadata are now saved to ease Recalibration
+  * Sensor Configuration now properly initializes material strings
+  * Wavelength is checked in `enable_parallax()`
+  * Several typos and grammar improvements in documentation/tutorials
+  * Improved kernel OpenCL compilation for silx v3+ compatibility
+
+- Supports python 3.10-3.14, 3.14t is untested.
+- 62 commits over 2 month
 
 2026.03 23/03/2026
 ------------------
