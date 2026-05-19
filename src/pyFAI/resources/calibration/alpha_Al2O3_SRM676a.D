@@ -1,6 +1,6 @@
 # Calibrant: Corundum (alpha_Al2O3_SRM676a)
-# Cell: Rhombohedral hexagonal cell a=4.7591 b=4.7591 c=12.9918Å α=90.000 β=90.000 γ=120.000° (R)
-# Ref: https://www.cigs.unimo.it/CigsDownloads/labs/xrdp/manuali_letture/676a.pdf
+# Cell: Rhombohedral hexagonal cell a=4.7591 b=4.7591 c=12.9918Å α=90.000 β=90.000 γ=120.000° (R-3c, 167)
+# Ref: https://tsapps.nist.gov/srmext/certificates/676a.pdf
 
 # d_spacing  # (h k l)  mult intensity
   3.48011616 # (0 1 2)     6
