@@ -1,5 +1,5 @@
 # Calibrant: Corundum (alpha_Al2O3)
-# Cell: Hexagonal cell a=4.7570Å b=4.7570Å c=12.9877Å Å α=90° β=90° γ=120° (R-3c, 167)
+# Cell: Hexagonal cell a=4.7570Å b=4.7570Å c=12.9877Å α=90° β=90° γ=120° (R-3c, 167)
 # Ref: doi:10.1107/S0108767389012596
 
 # d_spacing  # (h k l)  mult intensity

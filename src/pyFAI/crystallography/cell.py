@@ -55,8 +55,11 @@ from ..utils.decorators import deprecated
 logger = logging.getLogger(__name__)
 
 
-def _pretty_angles(alpha):
+def _pretty_angle(alpha):
     return f"{alpha:.0f}\N{DEGREE SIGN}" if alpha in (120, 90) else f"{alpha:.3f}\N{DEGREE SIGN}"
+
+def _pretty_length(a):
+    return f"{a:.5f}\N{Latin Capital Letter a with Ring Above}"
 
 
 class Cell:
@@ -127,12 +130,12 @@ class Cell:
     def __repr__(self, *args, **kwargs):
         return (
             f"{self.types[self.type]} {self.lattice} cell "
-            f"a={self.a:.5f}\N{Latin Capital Letter a with Ring Above} "
-            f"b={self.b:.5f}\N{Latin Capital Letter a with Ring Above} "
-            f"c={self.c:.5f}\N{Latin Capital Letter a with Ring Above} "
-            f"\N{GREEK SMALL LETTER ALPHA}={_pretty_angles(self.alpha)}\N{DEGREE SIGN} "
-            f"\N{GREEK SMALL LETTER BETA}={_pretty_angles(self.beta)}\N{DEGREE SIGN} "
-            f"\N{GREEK SMALL LETTER GAMMA}={_pretty_angles(self.gamma)}\N{DEGREE SIGN}"
+            f"a={_pretty_length(self.a)} "
+            f"b={_pretty_length(self.b)} "
+            f"c={_pretty_length(self.c)} "
+            f"\N{GREEK SMALL LETTER ALPHA}={_pretty_angle(self.alpha)} "
+            f"\N{GREEK SMALL LETTER BETA}={_pretty_angle(self.beta)} "
+            f"\N{GREEK SMALL LETTER GAMMA}={_pretty_angle(self.gamma)}"
         )
 
     @classmethod
