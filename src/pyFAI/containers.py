@@ -336,16 +336,10 @@ class IntegrateResult(_CopyableTuple):
                     "sum_normalization2":self._sum_normalization2,
                     "dummy": self.dummy,
                     }
-        numexpr.evaluate(formula_int,
-                        local_dict=matching,
-                        out=self.intensity)
+        self.intensity[...] = numexpr.evaluate(formula_int, local_dict=matching)
         if self._sum_variance is not None:
-            numexpr.evaluate(formula_sem,
-                            local_dict=matching,
-                            out=self._sem)
-            numexpr.evaluate(formula_std,
-                            local_dict=matching,
-                            out=self._std)
+            self._sem[...] = numexpr.evaluate(formula_sem, local_dict=matching)
+            self._std[...] = numexpr.evaluate(formula_std, local_dict=matching)
             self.sigma[...] = self._sem
         return self
 
