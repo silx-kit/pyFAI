@@ -30,7 +30,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/04/2026"
+__date__ = "20/05/2026"
 __status__ = "development"
 
 import math
@@ -210,6 +210,10 @@ class IntegrateResult(_CopyableTuple):
         "_weighted_average",
         "_dummy",
     }
+    # Those expression are used to calculated mean, std and sem
+    EXPR_AVG = numexpr.NumExpr("where(sum_normalization == 0.0, dummy, sum_signal/sum_normalization)")
+    EXPR_STD = numexpr.NumExpr("where(sum_normalization2 == 0.0, dummy, sqrt(sum_variance/sum_normalization2))")
+    EXPR_SEM = numexpr.NumExpr("where(sum_normalization == 0.0, dummy, sqrt(sum_variance)/sum_normalization)")
 
     def __init__(self):
         self._sum_signal = None  # sum of signal
@@ -327,25 +331,21 @@ class IntegrateResult(_CopyableTuple):
 
 
     def __recalculate_means__(self):
-        formula_int = "where(sum_normalization == 0.0, dummy, sum_signal/sum_normalization)"
-        formula_std = "where(sum_normalization == 0.0, dummy, sqrt(sum_variance/sum_normalization2))"
-        formula_sem = "where(sum_normalization == 0.0, dummy, sqrt(sum_variance)/sum_normalization)"
+        """Recalculate the mean and standard deviation of the signal"""
         matching = {"sum_signal": self._sum_signal,
                     "sum_variance": self._sum_variance,
                     "sum_normalization":self._sum_normalization,
                     "sum_normalization2":self._sum_normalization2,
                     "dummy": self.dummy,
                     }
-        numexpr.evaluate(formula_int,
-                        local_dict=matching,
-                        out=self.intensity)
+        kwargs = {"casting":'same_kind', "ex_uses_vml":False}
+        self.EXPR_AVG(*(matching[key] for key in self.EXPR_AVG.input_names),
+                      **kwargs, out=self.intensity)
         if self._sum_variance is not None:
-            numexpr.evaluate(formula_sem,
-                            local_dict=matching,
-                            out=self._sem)
-            numexpr.evaluate(formula_std,
-                            local_dict=matching,
-                            out=self._std)
+            self.EXPR_SEM(*(matching[key] for key in self.EXPR_SEM.input_names),
+                          **kwargs, out=self._sem)
+            self.EXPR_STD(*(matching[key] for key in self.EXPR_STD.input_names),
+                          **kwargs, out=self._std)
             self.sigma[...] = self._sem
         return self
 
@@ -957,19 +957,31 @@ class Integrate2dResult(IntegrateResult):
         bins_rad = self.radial
         sum_signal = self.sum_signal.sum(axis=0)
         sum_normalization = self.sum_normalization.sum(axis=0)
-        intensity = numpy.zeros(sum_signal.shape) + self.dummy
-        numpy.divide(sum_signal, sum_normalization, out=intensity, where=sum_normalization!=0)
+        intensity = numpy.empty(sum_signal.shape, dtype=numpy.float32)
+
+        matching = {"sum_signal": sum_signal,
+                    "sum_normalization":sum_normalization,
+                    # "sum_normalization2":self._sum_normalization2,
+                    "dummy": self.dummy,
+                    }
+        kwargs = {"casting":'same_kind', "ex_uses_vml":False}
+        self.EXPR_AVG(*(matching[key] for key in self.EXPR_AVG.input_names),
+                      **kwargs, out=intensity)
+
         if self.sum_variance is not None:
-            sum_variance = self.sum_variance.sum(axis=0)
-            sem = numpy.zeros(sum_variance.shape) + self.dummy
-            numpy.divide(numpy.sqrt(sum_variance), sum_normalization, out=sem, where=sum_normalization!=0)
+            matching["sum_variance"] = sum_variance = self.sum_variance.sum(axis=0)
+            sem = numpy.zeros(sum_variance.shape, dtype=numpy.float32)
+            self.EXPR_SEM(*(matching[key] for key in self.EXPR_SEM.input_names),
+                          **kwargs, out=sem)
             result = Integrate1dResult(bins_rad, intensity, sem)
-            sum_normalization2 = self.sum_normalization2.sum(axis=0)
+            matching["sum_normalization2"] = sum_normalization2 = self.sum_normalization2.sum(axis=0)
             result._set_sum_normalization2(sum_normalization2)
             result._set_sum_variance(sum_variance)
-            std2 = numpy.zeros(sum_variance.shape) + self.dummy**2
-            numpy.divide(sum_variance, sum_normalization2, out=std2, where=sum_normalization2!=0)
-            result._set_std(numpy.sqrt(std2))
+
+            std = numpy.zeros(sum_variance.shape, dtype=numpy.float32)
+            self.EXPR_STD(*(matching[key] for key in self.EXPR_STD.input_names),
+                          **kwargs, out=std)
+            result._set_std(std)
             result._set_sem(sem)
         else:
             result = Integrate1dResult(bins_rad, intensity)
