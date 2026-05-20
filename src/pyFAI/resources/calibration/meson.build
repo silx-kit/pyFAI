@@ -26,7 +26,8 @@ py.install_sources(
     'ZnO.D',
     'alpha_Al2O3.D',
     'alpha_Al2O3_SRM676.D',
-    'alpha_Al2O3_SRM676a.D',
+    'alpha_Al2O3_SRM676a_2015.D',
+    'alpha_Al2O3_SRM676a_2008.D'
     'cristobaltite.D',
     'hydrocerussite.D',
     'mock.D',
