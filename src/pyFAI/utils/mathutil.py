@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "27/05/2026"
 __status__ = "production"
 
 import logging
@@ -1027,18 +1027,32 @@ def quality_of_fit(
     empty: float = numpy.nan,
     rings: list | None = None,
 ):
-    """Provide an indicator for the quality of fit of a given geometry for an image
+    """Quantitative assessment of geometry calibration quality by analyzing diffraction ring positions.
 
-    :param img: 2D image with a calibration image (containing rings)
+    This function evaluates how well the geometry parameters (detector position, distance, etc.)
+    match the actual diffraction data by comparing expected peak positions from a known calibrant
+    with observed peaks in the 2D integration of a calibration image.
+    It does not rely on control points.
+
+    **Algorithm Overview:**
+    1. Performs 2D azimuthal integration of the calibration image
+    2. For each calibrant ring and azimuthal sector, identifies the peak position
+    3. Calculates Full-Width at Half-Maximum (FWHM) of each peak
+    4. Computes the weighted deviation between theoretical and observed peak positions
+    5. Returns a reduced χ² value indicating fit quality
+
+    :param img: 2D image with a calibration image (typically a standard reference material)
     :param ai: azimuthal integrator object (instance of pyFAI.integrator.azimuthal.AzimuthalIntegrator)
     :param calibrant: calibration object, instance of pyFAI.calibrant.Calibrant
-    :param npt_rad: int with the number of radial bins
-    :param npt_azim: int with the number of azimuthal bins
-    :param unit: typically "2th_deg" or "q_nm^-1", the quality of fit should be largely independent from the space.
-    :param method: integration method
-    :param empty: value of the empty bins, discarded values
-    :param rings: list of rings to evaluate (0-based)
-    :return: QoF indicator, similar to reduced χ²,  the smaller, the better
+    :param npt_rad: int with the number of radial bins (default: 1000)
+    :param npt_azim: int with the number of azimuthal bins (default: 360)
+    :param unit: typically "2th_deg" or "q_nm^-1". Quality metric should be largely independent of unit choice.
+    :param method: integration method as tuple (splitting, algorithm, backend), e.g., ("full", "csr", "cython")
+    :param empty: value of the empty bins, discarded values (default: numpy.nan, ignored in calculations)
+    :param rings: Optional list of ring indices to evaluate (0-based indexing).
+                  If None, evaluates all calibrant rings (default: None)
+    :return: Quality of Fit indicator (float) - a reduced χ² statistic. Smaller values indicate better fit.
+            Typical threshold: < 0.31 for good geometry calibration
     """
 
     ai.empty = empty
