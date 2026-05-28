@@ -38,7 +38,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/03/2026"
+__date__ = "27/05/2026"
 __status__ = "production"
 
 import os
@@ -277,14 +277,14 @@ class Calibrant:
                     "A calibrant resource from pyFAI can't be overwritten)"
                 )
             filename = self._filename
-            config = CalibrantConfig() if self.config is None else self.config
-            if not config.name:
-                config.name = os.path.splitext(os.path.basename(filename))[0]
-            if not config.refections:
-                for i in self._dspacing + self._out_dspacing:
-                    config.refections.append(Reflection(i))
-            config.save(filename)
-            self.config = config
+        config = CalibrantConfig() if self.config is None else self.config
+        if not config.name:
+            config.name = os.path.splitext(os.path.basename(filename))[0]
+        if not config.reflections:
+            for i in self._dspacing + self._out_dspacing:
+                config.reflections.append(Reflection(i))
+        config.save(filename)
+        self.config = config
 
     save_dSpacing = deprecated(save_dspacing,
                             reason="PEP8",
