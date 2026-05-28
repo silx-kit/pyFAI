@@ -30,7 +30,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/05/2026"
+__date__ = "27/05/2026"
 __status__ = "development"
 
 import math
@@ -364,10 +364,11 @@ class IntegrateResult(_CopyableTuple):
         other._set_normalization_factor(value)
         return other.__recalculate_means__()
 
-    def union(self, other):
+    def union(self, other, recalculate_means:bool=True):
         """Calculate the weighted average of two results in a new IntegrateResult
 
         :param other: the same datatype as self
+        :param recalculate_means: if False, does not call `__recalculate_means__`, just accumulates signals, variances, ...
         :return: another instance of same datatype with the weighted average
         """
         reason = self.__are_compatible__(other, strict=False)
@@ -394,7 +395,10 @@ class IntegrateResult(_CopyableTuple):
                 res._sum_variance += numpy.divide(ratio_minor*delta**2,
                                                   denom,
                                                   out=denom, where=denom!=0)  # prevent NaN
-        return res.__recalculate_means__()
+        if recalculate_means:
+            return res.__recalculate_means__()
+        else:
+            return res
 
     @property
     def method(self):

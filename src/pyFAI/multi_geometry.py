@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/04/2026"
+__date__ = "27/05/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -202,9 +202,9 @@ class MultiGeometry(object):
                                                 lst_flat))
 
         result = copy.deepcopy(results[0])
-
         for res in results[1:]:
-            result = result.union(res)
+            result = result.union(res, recalculate_means=False)
+        result.__recalculate_means__()
         result._set_poni([ai.get_config() for ai in self.ais])
         return result
 
@@ -291,7 +291,8 @@ class MultiGeometry(object):
 
         result = copy.deepcopy(results[0])
         for res in results[1:]:
-            result = result.union(res)
+            result = result.union(res, recalculate_means=False)
+        result.__recalculate_means__()
         result._set_poni([ai.get_config() for ai in self.ais])
         return result
 
