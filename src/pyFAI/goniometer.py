@@ -680,6 +680,10 @@ class SingleGeometry(object):
         """
         if self.image is None:
             raise RuntimeError("To perform control point extraction, a data image must be provided: pyFAI.goniometer.SingleGeometry(image=...)")
+        
+        if not self.wavelength:
+            raise RuntimeError("To perform control point extraction, a wavelength must be provided either through the calibrant or through the geometry.")
+
         if self.massif is None:
             if self.detector:
                 mask = self.detector.dynamic_mask(self.image)
@@ -761,6 +765,8 @@ class SingleGeometry(object):
     @property
     def wavelength(self) -> float:
         """Get or set the wavelength, ensuring consistency between calibrant and geometry_refinement."""
+        if self.calibrant is None:
+            return self.geometry_refinement.wavelength
         if self.calibrant.wavelength != self.geometry_refinement.wavelength:
             raise RuntimeError("Wavelength inconsistency between calibrant and geometry_refinement")
         return self.geometry_refinement.wavelength

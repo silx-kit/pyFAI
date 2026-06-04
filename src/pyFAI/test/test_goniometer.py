@@ -194,12 +194,25 @@ class TestTranslation(unittest.TestCase):
     def test_extract_points_no_image(self):
       gonio = SingleGeometry(
           label="test_cps",
-          detector="Eiger4M",
+          detector="pilatus100k",
+          image=None,
           geometry=None,
           calibrant=None,
       )
-      with self.assertRaisesRegex(RuntimeError, "To perform control point extraction"):
-          gonio.extract_cp(max_rings=12)
+      with self.assertRaisesRegex(RuntimeError, "To perform control point extraction, a data image must be provided"):
+          gonio.extract_cp()
+          
+    def test_extract_points_no_wavelength(self):
+      gonio = SingleGeometry(
+          label="test_cps",
+          detector="pilatus100k",
+          image=numpy.zeros((195, 487)),
+          geometry=None,
+          calibrant=None,
+      )
+      with self.assertRaisesRegex(RuntimeError, "To perform control point extraction, a wavelength must be provided"):
+          gonio.extract_cp()
+          
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
