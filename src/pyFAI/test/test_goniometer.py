@@ -43,7 +43,7 @@ from .utilstest import UtilsTest
 import numpy
 from ..goniometer import GeometryTranslation, Goniometer, numexpr, \
                          ExtendedTransformation, GoniometerRefinement,\
-                         PoniParam
+                         PoniParam, SingleGeometry
 logger = logging.getLogger(__name__)
 
 
@@ -190,6 +190,16 @@ class TestTranslation(unittest.TestCase):
         self.assertAlmostEqual(param, gonio.trans_function.ParamNT(1, 2, 3, -4, 6, math.pi/2, 1.7712028347600038e-10))
         if os.path.exists(fname):
             os.unlink(fname)
+
+    def test_extract_points_no_image(self):
+      gonio = SingleGeometry(
+          label="test_cps",
+          detector="Eiger4M",
+          geometry=None,
+          calibrant=None,
+      )
+      with self.assertRaisesRegex(RuntimeError, "To perform control point extraction"):
+          gonio.extract_cp(max_rings=12)
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

@@ -678,6 +678,8 @@ class SingleGeometry(object):
         :param max_ring: extract at most N rings from the image
         :param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
         """
+        if self.image is None:
+            raise RuntimeError("To perform control point extraction, a data image must be provided: pyFAI.goniometer.SingleGeometry(image=...)")
         if self.massif is None:
             if self.detector:
                 mask = self.detector.dynamic_mask(self.image)
