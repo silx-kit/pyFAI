@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2017-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2026"
+__date__ = "05/06/2026"
 
 import os
 import math
@@ -192,27 +192,27 @@ class TestTranslation(unittest.TestCase):
             os.unlink(fname)
 
     def test_extract_points_no_image(self):
-      gonio = SingleGeometry(
+        gonio = SingleGeometry(
           label="test_cps",
           detector="pilatus100k",
           image=None,
           geometry=None,
           calibrant=None,
-      )
-      with self.assertRaisesRegex(RuntimeError, "To perform control point extraction, a data image must be provided"):
+        )
+        with self.assertRaisesRegex(RuntimeError, "To perform control point extraction, a data image must be provided"):
           gonio.extract_cp()
           
     def test_extract_points_no_wavelength(self):
-      gonio = SingleGeometry(
+        gonio = SingleGeometry(
           label="test_cps",
           detector="pilatus100k",
           image=numpy.zeros((195, 487)),
           geometry=None,
           calibrant=None,
-      )
-      with self.assertRaisesRegex(RuntimeError, "To perform control point extraction, a wavelength must be provided"):
+        )
+        with self.assertRaisesRegex(RuntimeError, "To perform control point extraction, a wavelength must be provided"):
           gonio.extract_cp()
-          
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
