@@ -379,7 +379,7 @@ class Distortion(object):
                                         lut[ml, nl, k].coef = val
                                         outMax[ml, nl] = k + 1
                                 idx += 1
-                        lut.shape = (self._shape_out[0] * self._shape_out[1]), self.max_size
+                        lut = lut.reshape(self._shape_out[0] * self._shape_out[1], self.max_size)
                         self.lut = lut
         return self.lut
 
@@ -439,13 +439,13 @@ class Distortion(object):
                         out[i] = big[indptr[i]:indptr[i + 1]].sum()
         try:
             if image.ndim == 2:
-                out.shape = self._shape_out
+                out = out.reshape(self._shape_out)
             else:
-                for ds in out:
+                for i, ds in enumerate(out):
                     if ds.ndim == 2:
-                        ds.shape = self._shape_out
+                        out[i] = ds.reshape(self._shape_out)
                     else:
-                        ds.shape = self._shape_out + ds.shape[2:]
+                        out[i] = ds.reshape(self._shape_out + ds.shape[2:])
 
         except ValueError as _err:
             logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
@@ -535,13 +535,13 @@ class Distortion(object):
                         out[i] = big[indptr[i]:indptr[i + 1]].sum()
             try:
                 if image.ndim == 2:
-                    out.shape = self._shape_out
+                    out = out.reshape(self._shape_out)
                 else:
-                    for ds in out:
+                    for i, ds in enumerate(out):
                         if ds.ndim == 2:
-                            ds.shape = self._shape_out
+                            out[i] = ds.reshape(self._shape_out)
                         else:
-                            ds.shape = self._shape_out + ds.shape[2:]
+                            out[i] = ds.reshape(self._shape_out + ds.shape[2:])
 
             except ValueError as _err:
                 logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)

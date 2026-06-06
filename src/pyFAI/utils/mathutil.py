@@ -422,7 +422,7 @@ def binning(
                 out += input_img[i :: binsize[0], j :: binsize[1]]
     else:
         temp = input_img.copy()
-        temp.shape = (outputSize[0], binsize[0], outputSize[1], binsize[1])
+        temp = temp.reshape(outputSize[0], binsize[0], outputSize[1], binsize[1])
         out = temp.sum(axis=3).sum(axis=1)
     if not norm:
         out /= binsize[0] * binsize[1]
@@ -715,7 +715,7 @@ def _compute_qth_percentile(sorted_list, q, axis, out):
         weights = numpy.array([(j - index), (index - i)], float)
         wshape = [1] * sorted_list.ndim
         wshape[axis] = 2
-        weights.shape = wshape
+        weights = weights.reshape(wshape)
         sumval = weights.sum()
 
     # Use add.reduce in both cases to coerce data type as well as

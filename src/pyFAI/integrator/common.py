@@ -1467,7 +1467,7 @@ class Integrator(Geometry):
                                                                              polarization_checksum=polarization_crc,
                                                                              normalization_factor=normalization_factor,
                                                                              safe=safe)
-                                intensity.shape = npt
+                                intensity = intensity.reshape(npt)
                                 intensity = intensity.T
                                 bins_rad = integr.bin_centers0  # this will be copied later
                                 bins_azim = integr.bin_centers1
@@ -1558,7 +1558,7 @@ class Integrator(Geometry):
                                                                              polarization_checksum=polarization_crc,
                                                                              safe=safe,
                                                                              normalization_factor=normalization_factor)
-                                intensity.shape = npt
+                                intensity = intensity.reshape(npt)
                                 intensity = intensity.T
                                 bins_rad = integr.bin_centers0  # this will be copied later
                                 bins_azim = integr.bin_centers1

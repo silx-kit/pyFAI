@@ -369,8 +369,8 @@ class Geometry:
 
             displacement = self._parallax.correct(self.sin_incidence(d1.ravel(), d2.ravel()), self.dist)
             delta1, delta2 = displacement * r0
-            delta1.shape = p1.shape
-            delta2.shape = p2.shape
+            delta1 = delta1.reshape(p1.shape)
+            delta2 = delta2.reshape(p2.shape)
             p1 += delta1
             p2 += delta2
         return delta1, delta2
@@ -411,8 +411,8 @@ class Geometry:
             length[length == 0] = 1.0  # avoid zero division error
             r0 /= length  # normalize array r0
             delta1, delta2 = displacement * r0
-            delta1.shape = p1.shape
-            delta2.shape = p2.shape
+            delta1 = delta1.reshape(p1.shape)
+            delta2 = delta2.reshape(p2.shape)
             p1 += delta1
             p2 += delta2
         return delta1, delta2
@@ -547,9 +547,9 @@ class Geometry:
             coord_det = numpy.vstack((p1, p2, p3))
             coord_sample = numpy.dot(self.rotation_matrix(param), coord_det)
             t1, t2, t3 = coord_sample
-            t1.shape = shape
-            t2.shape = shape
-            t3.shape = shape
+            t1 = t1.reshape(shape)
+            t2 = t2.reshape(shape)
+            t3 = t3.reshape(shape)
 
             # correct orientation:
             if self.detector.orientation in (1, 2):
@@ -828,7 +828,7 @@ class Geometry:
                 orientation=self.detector.orientation,
                 chi_discontinuity_at_pi=self.chiDiscAtPi,
             )
-            chi.shape = d1.shape
+            chi = chi.reshape(d1.shape)
         else:
             _, t1, t2 = self.calc_pos_zyx(
                 d0=None, d1=d1, d2=d2, corners=False, use_cython=True, do_parallax=True
@@ -1492,10 +1492,10 @@ class Geometry:
             B = corners[..., 1, :]
             C = corners[..., 2, :]
             D = corners[..., 3, :]
-            A.shape = -1, 3
-            B.shape = -1, 3
-            C.shape = -1, 3
-            D.shape = -1, 3
+            A = A.reshape(-1, 3)
+            B = B.reshape(-1, 3)
+            C = C.reshape(-1, 3)
+            D = D.reshape(-1, 3)
             orth = numpy.cross(C - A, D - B)
             # normalize the normal vector
             length = numpy.atleast_2d(numpy.sqrt((orth * orth).sum(axis=-1))).T
@@ -2450,7 +2450,7 @@ class Geometry:
 
         ttha = self.center_array(shape, unit=dim1_unit, scale=False)
         calcimage = numpy.interp(ttha.ravel(), tth, intensity)
-        calcimage.shape = shape
+        calcimage = calcimage.reshape(shape)
         if correctSolidAngle:
             calcimage *= self.solidAngleArray(shape)
         if polarization_factor is not None:

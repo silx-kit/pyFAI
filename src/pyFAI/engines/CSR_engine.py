@@ -144,7 +144,7 @@ class CSRIntegrator(object):
                        error_model=error_model,
                        apply_normalization=not weighted_average,
                        out=self.preprocessed)
-        prep.shape = numpy.prod(shape), 4
+        prep = prep.reshape(numpy.prod(shape), 4)
         flat_sig, flat_var, flat_nrm, flat_cnt = prep.T  # should create views!
         res = numpy.empty((numpy.prod(self.bins), 5), dtype=numpy.float32)
         res[:, 0] = self._csr.dot(flat_sig)  # Σ c·x
@@ -594,7 +594,7 @@ class CsrIntegrator2d(CSRIntegrator):
         trans = CSRIntegrator.integrate(self, signal, variance, error_model, dummy, delta_dummy,
                                         dark, flat, solidangle, polarization,
                                         absorption, normalization_factor, weighted_average=weighted_average)
-        trans.shape = self.bins + (-1,)
+        trans = trans.reshape(self.bins + (-1,))
 
         signal = trans[..., 0]
         variance = trans[..., 1]
