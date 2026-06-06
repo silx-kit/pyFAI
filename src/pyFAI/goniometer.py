@@ -46,6 +46,7 @@ from collections import OrderedDict, namedtuple
 from scipy.optimize import minimize
 from silx.image import marchingsquares
 from .massif import Massif
+from .blob_detection import BlobDetection
 from .control_points import ControlPoints
 from .detectors import detector_factory, Detector
 from .geometry import Geometry
@@ -669,6 +670,7 @@ class SingleGeometry(object):
             self.detector = self.geometry_refinement.detector
         self.pos_function = pos_function
         self.massif = None
+        self.blob = None
 
     def get_position(self):
         """This method  is in charge of calculating the motor position from metadata/label/..."""
@@ -690,7 +692,14 @@ class SingleGeometry(object):
                 self.massif = Massif(self.image, mask)
             return self.massif
         elif method == "blob":
-            raise NotImplementedError("Blob method is not implemented yet")
+            if self.blob is None:
+                if self.detector:
+                    mask = self.detector.dynamic_mask(self.image)
+                else:
+                    mask = None
+                self.blob = BlobDetection(self.image, mask)
+                self.blob.process()
+            return self.blob
         elif method == "watershed":
             raise NotImplementedError("Watershed method is not implemented yet")
     
