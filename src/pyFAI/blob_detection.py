@@ -734,7 +734,7 @@ class BlobDetection(object):
         :param kwarg: ignored parameters
         :return: list of peaks [y,x], [y,x], ...]
         """
-        if not self.keypoints:
+        if len(self.keypoints) == 0:
             raise RuntimeError("No keypoints yet: run BlobDetection.process before peak search")
         y = numpy.round(self.keypoints.y).astype(int)
         x = numpy.round(self.keypoints.x).astype(int)
