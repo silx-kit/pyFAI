@@ -441,11 +441,16 @@ class Distortion(object):
             if image.ndim == 2:
                 out = out.reshape(self._shape_out)
             else:
+                is_immutable = isinstance(out, (tuple, frozenset))
+                if is_immutable:
+                    out = list(out)
                 for i, ds in enumerate(out):
                     if ds.ndim == 2:
                         out[i] = ds.reshape(self._shape_out)
                     else:
                         out[i] = ds.reshape(self._shape_out + ds.shape[2:])
+                if is_immutable:
+                    out = type(out)(out)
 
         except ValueError as _err:
             logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
@@ -537,11 +542,16 @@ class Distortion(object):
                 if image.ndim == 2:
                     out = out.reshape(self._shape_out)
                 else:
+                    is_immutable = isinstance(out, (tuple, frozenset))
+                    if is_immutable:
+                        out = list(out)
                     for i, ds in enumerate(out):
                         if ds.ndim == 2:
                             out[i] = ds.reshape(self._shape_out)
                         else:
                             out[i] = ds.reshape(self._shape_out + ds.shape[2:])
+                    if is_immutable:
+                        out = type(out)(out)
 
             except ValueError as _err:
                 logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
