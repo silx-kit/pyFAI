@@ -690,13 +690,13 @@ class SingleGeometry(object):
                 self.massif = Massif(self.image, mask)
             return self.massif
     
-    def extract_cp(self, method="massif", max_rings=None, pts_per_deg=1.0, Imin=0):
+    def extract_cp(self, max_rings=None, pts_per_deg=1.0, Imin=0, method="massif"):
         """Performs an automatic keypoint extraction and update the geometry refinement part
 
-        :param method: method to use for keypoint extraction, default is "massif"
         :param max_ring: extract at most N rings from the image
         :param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
         :param Imin: minimum intensity for a pixel to be considered control point
+        :param method: method to use for keypoint extraction, default is "massif"
         """
         if self.image is None:
             raise RuntimeError("To perform control point extraction, a data image must be provided: pyFAI.goniometer.SingleGeometry(image=...)")
