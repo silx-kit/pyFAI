@@ -689,6 +689,10 @@ class SingleGeometry(object):
                     mask = None
                 self.massif = Massif(self.image, mask)
             return self.massif
+        elif method == "blob":
+            raise NotImplementedError("Blob method is not implemented yet")
+        elif method == "watershed":
+            raise NotImplementedError("Watershed method is not implemented yet")
     
     def extract_cp(self, max_rings=None, pts_per_deg=1.0, Imin=0, method="massif"):
         """Performs an automatic keypoint extraction and update the geometry refinement part
