@@ -603,6 +603,8 @@ class SingleGeometry(object):
     """This class represents a single geometry of a detector position on a
     goniometer arm
     """
+    
+    AVAILABLE_METHODS = ("massif", "blob", "watershed")
 
     def __init__(self, label, image=None, metadata=None, pos_function=None,
                  control_points=None, calibrant=None, detector=None, geometry=None):
@@ -671,7 +673,23 @@ class SingleGeometry(object):
     def get_position(self):
         """This method  is in charge of calculating the motor position from metadata/label/..."""
         return self.pos_function(self.metadata)
-
+    
+    def get_method(self, method):
+        """
+        Build the method for control point extraction.
+        """
+        if method not in self.AVAILABLE_METHODS:
+            return
+        
+        if method == "massif":
+            if self.massif is None:
+                if self.detector:
+                    mask = self.detector.dynamic_mask(self.image)
+                else:
+                    mask = None
+                self.massif = Massif(self.image, mask)
+            return self.massif
+    
     def extract_cp(self, method="massif", max_rings=None, pts_per_deg=1.0, Imin=0):
         """Performs an automatic keypoint extraction and update the geometry refinement part
 
@@ -686,12 +704,9 @@ class SingleGeometry(object):
         if not self.wavelength:
             raise RuntimeError("To perform control point extraction, a wavelength must be provided either through the calibrant or through the geometry.")
 
-        if self.massif is None:
-            if self.detector:
-                mask = self.detector.dynamic_mask(self.image)
-            else:
-                mask = None
-            self.massif = Massif(self.image, mask)
+        self.method = self.get_method(method)
+        if self.method is None:
+            raise ValueError(f"Method {method} not found, available methods are: {self.AVAILABLE_METHODS}")
 
         tth = numpy.array([i for i in self.calibrant.get_2th() if i is not None])
         tth = numpy.unique(tth)
@@ -748,7 +763,7 @@ class SingleGeometry(object):
                 logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); " +
                             "searching for %i pts out of %i with I>%.1f, dmin=%.1f",
                             i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min)
-                res = self.massif.peaks_from_area(mask2, Imin=Imin, keep=keep, dmin=dist_min, seed=seeds, ring=i)
+                res = self.method.peaks_from_area(mask2, Imin=Imin, keep=keep, dmin=dist_min, seed=seeds, ring=i)
                 cp.append(res, i)
         self.control_points = cp
         self.geometry_refinement.data = numpy.asarray(cp.getList(), dtype=numpy.float64)
