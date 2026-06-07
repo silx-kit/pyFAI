@@ -112,7 +112,7 @@ class TestMorphology(unittest.TestCase):
     def test_peak_search_before_process(self):
     def test_peak_search_before_process(self):
         bd = BlobDetection(self.img)
-        with self.assertRaisesRegex(RuntimeError, "No keypoints yet: run BlobDetection.process before peak search"):
+        with self.assertRaisesRegex(RuntimeError, r"No keypoints yet: run BlobDetection\.process before peak search"):
             bd.peaks_from_area(numpy.ones_like(self.img, dtype=bool))
 
 
