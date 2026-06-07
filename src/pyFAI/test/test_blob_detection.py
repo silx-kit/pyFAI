@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -109,7 +109,6 @@ class TestMorphology(unittest.TestCase):
         res_e = morphology.binary_erosion(res_d)
         self.assertTrue(numpy.allclose(self.img, res_e), "binary erosion")
 
-    def test_peak_search_before_process(self):
     def test_peak_search_before_process(self):
         bd = BlobDetection(self.img)
         with self.assertRaisesRegex(RuntimeError, r"No keypoints yet: run BlobDetection\.process before peak search"):
