@@ -106,8 +106,10 @@ class TestMorphology(unittest.TestCase):
         res_d = morphology.binary_dilation(self.img)
         self.assertTrue(numpy.allclose(ref_d, res_d), "binary dilation")
         res_e = morphology.binary_erosion(res_d)
+        res_e = morphology.binary_erosion(res_d)
         self.assertTrue(numpy.allclose(self.img, res_e), "binary erosion")
-        
+
+    def test_peak_search_before_process(self):
     def test_peak_search_before_process(self):
         bd = BlobDetection(self.img)
         with self.assertRaisesRegex(RuntimeError, "No keypoints yet: run BlobDetection.process before peak search"):
