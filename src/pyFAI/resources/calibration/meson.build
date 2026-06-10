@@ -32,6 +32,7 @@ py.install_sources(
     'hydrocerussite.D',
     'mock.D',
     'vanadinite.D',
+    'verneite.D',
     'lysozyme.D',
     'quartz.D',
     'diamond.D',
