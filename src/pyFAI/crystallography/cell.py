@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/05/2026"
+__date__ = "12/06/2026"
 __status__ = "production"
 
 import os
@@ -60,6 +60,47 @@ def _pretty_angle(alpha):
 
 def _pretty_length(a):
     return f"{a:.5f}\N{Latin Capital Letter a with Ring Above}"
+
+
+def _score(hkl):
+    """helper function to `canonical_hkl`"""
+    hkl = tuple(x for x in hkl)
+    first_nonzero_neg = False
+    for x in hkl:
+        if x != 0:
+            first_nonzero_neg = x < 0
+            break
+    n_neg = sum(1 for x in hkl if x < 0)
+    abs_hkl = tuple(abs(x) for x in hkl)
+    neg_hkl = tuple(-x for x in hkl)
+    not_sorted = int(abs_hkl != tuple(sorted(abs_hkl, reverse=True)))
+    return (int(first_nonzero_neg), n_neg, not_sorted, *neg_hkl)
+
+
+def canonical_hkl(equivalents: list):
+    """Return the most representative Miller index from a list of
+    symmetry-equivalent reflections, following crystallographic conventions.
+
+    Selection priority (first differing criterion wins):
+
+    1. First non-zero index is positive — standard Friedel convention that
+       avoids listing both (hkl) and (-h-k-l) as separate entries.
+    2. Fewest negative indices — prefer all-positive when the point-group
+       symmetry allows it.
+    3. Non-increasing absolute values |h| >= |k| >= |l| — the conventional
+       ordered representation used in most structure databases.
+    4. Lexicographic tiebreak on (h, k, l), largest values first.
+
+    :param equivalents: iterable of Miller instances or 3-tuples of integers,
+        as returned by the values of ``Cell.calculate_dspacing``.
+    :return: the canonical Miller index (same type as the input elements).
+    :raises ValueError: if *equivalents* is empty.
+    """
+
+    lst = list(equivalents)
+    if not lst:
+        raise ValueError("equivalents must not be empty")
+    return min(lst, key=_score)
 
 
 class Cell:
@@ -370,10 +411,9 @@ class Cell:
         dspacing = list(reflections.keys())
         dspacing.sort(reverse=True)
         for d in dspacing:
-            reflection = reflections[d]
-            config.reflections.append(Reflection(d, hkl=reflection[-1], multiplicity=len(reflection)))
+            family = reflections[d]
+            config.reflections.append(Reflection(d, hkl=canonical_hkl(family), multiplicity=len(reflections)))
         return config
-
 
     def save(self, name, long_name=None, doi=None, dmin=1.0, dest_dir=None):
         """Save information about the cell in a d-spacing file, usable as Calibrant
