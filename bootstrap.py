@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#i -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Bootstrap helps you to test scripts without installing them
 by patching your PYTHONPATH on the fly
@@ -76,14 +76,11 @@ def build_project(name, root_dir):
                 home = os.path.join(build, libdir, python_version, "site-packages")
             home = os.path.abspath(home)
 
-    cnt = 0
     tmp = []
     while not os.path.isdir(home):
-        cnt += 1
         home, last = os.path.split(home)
         tmp.append(last)
-    print(tmp)
-    for _ in range(cnt):
+    for _ in tmp:
         for n in os.listdir(home):
             if os.path.isdir(os.path.join(home, n)):
                 break
