@@ -77,11 +77,15 @@ def build_project(name, root_dir):
             home = os.path.abspath(home)
 
     cnt = 0
+    tmp = []
     while not os.path.isdir(home):
         cnt += 1
-        home = os.path.split(home)[0]
+        home, last = os.path.split(home)
+        tmp.append(last)
+    print(tmp)
     for _ in range(cnt):
         n = os.listdir(home)[0]
+        print(n)
         home = os.path.join(home, n)
 
     logger.warning("Building %s to %s", name, home)
