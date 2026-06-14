@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "12/06/2026"
 __status__ = "development"
 
 import logging
@@ -730,7 +730,7 @@ class Quad(object):
 
     def calc_area_vectorial(self):
         if self.area is None:
-            self.area = numpy.cross([self.C0 - self.A0, self.C1 - self.A1], [self.D0 - self.B0, self.D1 - self.B1]) / 2.0
+            self.area = numpy.cross([self.C0 - self.A0, self.C1 - self.A1, 0], [self.D0 - self.B0, self.D1 - self.B1, 0])[2] / 2.0
         return self.area
 
     calc_area = calc_area_vectorial

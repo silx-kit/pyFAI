@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2026"
+__date__ = "12/06/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -78,10 +78,12 @@ class MultiGeometry(object):
         self.ais = [ai if isinstance(ai, AzimuthalIntegrator)
                     else AzimuthalIntegrator.sload(ai)
                     for ai in ais]
-        self.wavelength = None
+        self._wavelength = None
+        self._empty = None
+
         self.threadpool = ThreadPool(min(self.nb_geometry, threadpoolsize)) if threadpoolsize>0 else None
         if wavelength:
-            self.set_wavelength(wavelength)
+            self.wavelength = wavelength
         if isinstance(unit, (tuple, list)) and len(unit) == 2:
             self.radial_unit = units.to_unit(unit[0])
             self.azimuth_unit = units.to_unit(unit[1])
@@ -296,13 +298,25 @@ class MultiGeometry(object):
         result._set_poni([ai.get_config() for ai in self.ais])
         return result
 
-    def set_wavelength(self, value):
-        """
-        Changes the wavelength of a group of azimuthal integrators
-        """
-        self.wavelength = float(value)
+    @property
+    def wavelength(self):
+        return self._wavelength
+    @wavelength.setter
+    def wavelength(self, value):
+        self._wavelength = float(value)
         for ai in self.ais:
-            ai.wavelength = self.wavelength
+            ai.wavelength = self._wavelength
+
+    set_wavelength = wavelength.fset
+
+    @property
+    def empty(self):
+        return self._empty
+    @empty.setter
+    def empty(self, value):
+        self._empty = value
+        for ai in self.ais:
+            ai.empty = self._empty
 
     def reset(self, collect_garbage=True):
         """Clean up all caches for all integrators, resets the thread-pool as well.
