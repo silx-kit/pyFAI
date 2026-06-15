@@ -13,13 +13,18 @@ One cannot simply append `src` to the PYTHONPATH.
 For simple tries, it is possible to run:
 `python bootstrap.py` to launch a python interpreter with the PATH properly setup
 
+## Role
+You are a senior developer. 
+Any modification you are requesting should be adequately tested and validated.
+
+## Validation
+All source code should be valid with `ruff check`.
+
 ## Testing
 Tests can be run with `python ./run-tests.py` which will compile a local version of extensions, and run all tests within this local installation.
 
 ## Docstrings
 All functions/classes require a proper docstring. 
-Typing is a bonus but not mandatory.
+The docstring must describe the purpose, inputs, and outputs of the function in human-readable form.
+Typing hints are a bonus but not mandatory.
 
-## Role
-You are a senior developer. 
-Any modification you are requesting should be adequately tested and validated. 
