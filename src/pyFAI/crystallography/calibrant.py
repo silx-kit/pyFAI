@@ -241,6 +241,8 @@ class Calibrant:
             logger.error("No such calibrant file: %s", path)
             return
         config = self.config = CalibrantConfig.from_dspacing(path)
+        if not config.reflections:
+            raise ValueError(f"Calibrant file '{path}' contains no valid reflections")
         self._dspacing = [ref.dspacing for ref in config.reflections]
         if self._wavelength:
             self._calc_2th()

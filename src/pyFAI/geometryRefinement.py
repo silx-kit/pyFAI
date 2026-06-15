@@ -424,15 +424,14 @@ class GeometryRefinement(AzimuthalIntegrator):
         if wavelength != self.calibrant.wavelength:
             self.calibrant.setWavelength_change2th(wavelength)
         ary = self.calibrant.get_2th()
-        if len(ary) < rings.max():
-            # complete turn ~ 2pi ~ 7: help the optimizer to find the right way
+        if rings.max() >= len(ary):
+            logger.warning(
+                "Ring %d exceeds available rings (%d) for this calibrant "
+                "at wavelength %s. Applying optimization penalty.",
+                rings.max(), len(ary) - 1, wavelength
+            )
             ary += [10.0 * (rings.max() - len(ary))] * (1 + rings.max() - len(ary))
         tth = numpy.array(ary, dtype=numpy.float64)
-        if rings.max() >= len(tth):
-            raise IndexError(
-                "Ring indices %s are not all available at this wavelength (%s)"
-                % (numpy.unique(rings), wavelength)
-            )
         return tth[rings]
 
     def calc_param7(self, param, free, const):
