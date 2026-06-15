@@ -412,7 +412,7 @@ class Cell:
         dspacing.sort(reverse=True)
         for d in dspacing:
             family = reflections[d]
-            config.reflections.append(Reflection(d, hkl=canonical_hkl(family), multiplicity=len(reflections)))
+            config.reflections.append(Reflection(d, hkl=canonical_hkl(family), multiplicity=len(family)))
         return config
 
     def save(self, name, long_name=None, doi=None, dmin=1.0, dest_dir=None):
