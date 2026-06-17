@@ -787,7 +787,8 @@ def integrate_shell(options, args):
     with logging_utils.prepost_emit_callback(default_logger,
                                              observer.hide_info,
                                              observer.show_info):
-        wc.monitor_name = options.monitor_key
+        if options.monitor_key is not None:
+            wc.monitor_name = options.monitor_key
         filenames = args
         output = options.output
         result = process(filenames, output, wc, observer, options.write_mode)
