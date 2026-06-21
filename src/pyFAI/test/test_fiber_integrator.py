@@ -581,7 +581,25 @@ class TestFiberIntegrator(unittest.TestCase):
                 array_numpy = self.fi.array_from_unit(unit=fiberunit)
                 
                 self.assertTrue(numpy.allclose(array_numexpr, array_numpy))
-                
+
+    def test_equivalence_using_engines1d(self):
+        params_gi = {
+            "data" : self.data,
+            "npt_ip" : 200,
+            "npt_oop" : 200,
+            "vertical_integration" : False,
+            "sample_orientation" : 6,
+        }
+        methods_test = [
+            ("no", "histogram", "python"),
+            ("no", "histogram", "cython"),
+        ]
+        for method in methods_test:
+            res_from_2d = self.fi.integrate_fiber(use_2d_engine=True, method=method, **params_gi)
+            res_engine = self.fi.integrate_fiber(use_2d_engine=False, method=method, **params_gi)
+            self.assertTrue(numpy.allclose(res_from_2d.intensity, res_engine.intensity))
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
