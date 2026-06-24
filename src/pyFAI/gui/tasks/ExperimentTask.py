@@ -290,7 +290,7 @@ class ExperimentTask(AbstractCalibrationTask):
                 msgbox.setWindowTitle("Calibrant error")
                 msgbox.setText(f"The selected calibrant could not be loaded:\n\n{error}\n\n"
                                "Please pick another calibrant.")
-                revert_button = msgbox.addButton("Revert", qt.QMessageBox.RejectRole)
+                revert_button = msgbox.addButton("Revert", qt.QMessageBox.RejectRole)  # noqa
                 remove_button = None
                 if is_user_added:
                     remove_button = msgbox.addButton(

@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "05/12/2025"
+__date__ = "24/06/2026"
 
 import logging
 import numpy
@@ -798,7 +798,8 @@ class GeometryTask(AbstractCalibrationTask):
                                       wavelength,
                                       peaks=peaks,
                                       method="massif")
-
+        if not calibration.isValid():
+            return None
         # Copy the default values
         self.__defaultConstraints.set(calibration.defaultGeometryConstraintsModel())
         return calibration
