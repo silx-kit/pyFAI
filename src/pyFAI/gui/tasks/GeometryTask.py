@@ -838,6 +838,22 @@ class GeometryTask(AbstractCalibrationTask):
             if calibration is None:
                 return
 
+
+# +            calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
+# +            if calibrant is None:
+# +                self.__showCalibrationInputError("No calibrant is available")
+# +                return
+# +
+# +            available_rings = [ring for ring in calibrant.get_2th() if ring is not None]
+# +            if len(peaks) > 0:
+# +                max_ring = int(peaks[:, 2].max())
+# +                if max_ring >= len(available_rings):
+# +                    self.__showCalibrationInputWarning(
+# +                        "Peak ring %d exceeds calibrant range (0-%d)"
+# +                        % (max_ring, len(available_rings) - 1)
+# +                    )
+
+
             # Constraints defined by the GUI
             constraints = self.model().geometryConstraintsModel().copy(self)
             constraints.fillDefault(calibration.defaultGeometryConstraintsModel())

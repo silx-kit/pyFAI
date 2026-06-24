@@ -240,7 +240,7 @@ class CalibrantConfig:
                         else:
                             reflection.intensity = value
         if not self.reflections:
-            raise ValueError(f"No valid reflections found in calibrant file '{self.filename}'")
+            raise ValueError(f"No valid reflections found in calibrant file '{filename}'")
         return self
 
     def save(self, filename: str = None):
