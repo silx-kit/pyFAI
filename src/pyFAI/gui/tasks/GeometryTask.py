@@ -994,28 +994,27 @@ class GeometryTask(AbstractCalibrationTask):
         now = datetime.datetime.now()
         geometryHistory.appendGeometry("Customed", now, geometry, state.getRms())
 
-+    def __showCalibrationError(self, title, message):
-+        qt.QMessageBox.critical(self, title, message)
-+
-+    def __showCalibrationInitError(self, extra=''):
-+        message = "It is not possible to initialize the geometry calibration."
-+        if extra:
-+            message += "<br><br>" + extra.replace("\n", "<br>")
-+        self.__showCalibrationError("Calibration initialization failed", message)
-+
-+    def __showCalibrationInputWarning(self, extra=''):
-+        message = "The selected peaks are not compatible with the current calibrant. Optimization will continue with penalty values."
-+        if extra:
-+            message += "<br><br>" + extra.replace("\n", "<br>")
-+        msgbox = qt.QMessageBox(qt.QMessageBox.Warning, "Calibration input warning", message, qt.QMessageBox.NoButton, self)
-+        qt.QTimer.singleShot(5000, msgbox.close)
-+        msgbox.exec_()
-+
-+    def __showCalibrationInputError(self, extra=''):
-+        message = "The selected peaks are not compatible with the current calibrant."
-+        if extra:
-+            message += "<br><br>" + extra.replace("\n", "<br>")
-+        self.__showCalibrationError("Calibration input error", message)
+    def __showCalibrationError(self, title, message):
+        qt.QMessageBox.critical(self, title, message)
+
+    def __showCalibrationInitError(self, extra=''):
+        message = "It is not possible to initialize the geometry calibration."
+        if extra:
+            message += "<br><br>" + extra.replace("\n", "<br>")
+        self.__showCalibrationError("Calibration initialization failed", message)
+
+    def __showCalibrationInputWarning(self, extra=''):
+        message = "The selected peaks are not compatible with the current calibrant."
+        if extra:
+            message += "<br><br>" + extra.replace("\n", "<br>")
+        msgbox = qt.QMessageBox(qt.QMessageBox.Warning, "Calibration input warning", message)
+        msgbox.exec_()
+
+    def __showCalibrationInputError(self, extra=''):
+        message = "The selected peaks are not compatible with the current calibrant."
+        if extra:
+            message += "<br><br>" + extra.replace("\n", "<br>")
+        self.__showCalibrationError("Calibration input error", message)
 
     def __showDialogCalibrationDiverge(self, extra:str=''):
         title = "Error while calibrating"
@@ -1033,7 +1032,8 @@ class GeometryTask(AbstractCalibrationTask):
             self.__calibrationState.reset()
             return
         if not calibration.isValid():
-            self.__showDialogCalibrationDiverge(str(calibration))
+            extra = calibration.getInitError() or str(calibration)
+            self.__showCalibrationInitError(extra)
             self.__calibrationState.reset()
             return
         geometry = self.model().fittedGeometry()
@@ -1046,6 +1046,7 @@ class GeometryTask(AbstractCalibrationTask):
 
         geoRef = calibration.getPyfaiGeometry()
         self.__plot.markerManager().updatePhysicalMarkerPixels(geoRef)
+
 
     def __geometryPickedFromHistory(self, index=None):
         item = self._geometryHistoryCombo.currentItem()
