@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/12/2025"
+__date__ = "24/06/2026"
 
 import logging
 import numpy
@@ -154,11 +154,13 @@ class RingCalibration:
         self.__peakPicker = None
         self.__geoRef = None
         self.__isValid = True
+        self.__initError = None
         try:
             self.__init(peaks, method)
-        except Exception:
+        except Exception as error:
             _logger.error("Error while initializing the calibration", exc_info=True)
             self.__isValid = False
+            self.__initError = str(error)
 
     def __repr__(self):
         return f"RingCalibration:\n  PeakPicker: {self.__peakPicker}\n  GeoRef: {self.__geoRef}"
@@ -524,3 +526,7 @@ class RingCalibration:
                 bounds[name] = minValue, maxValue
         self.__geoRef.setFixed(fixed)
         self.__geoRef.setBounds(bounds)
+
+    def getInitError(self):
+        """Returns the error message from initialization, or None if successful."""
+        return self.__initError
