@@ -994,15 +994,38 @@ class GeometryTask(AbstractCalibrationTask):
         now = datetime.datetime.now()
         geometryHistory.appendGeometry("Customed", now, geometry, state.getRms())
 
++    def __showCalibrationError(self, title, message):
++        qt.QMessageBox.critical(self, title, message)
++
++    def __showCalibrationInitError(self, extra=''):
++        message = "It is not possible to initialize the geometry calibration."
++        if extra:
++            message += "<br><br>" + extra.replace("\n", "<br>")
++        self.__showCalibrationError("Calibration initialization failed", message)
++
++    def __showCalibrationInputWarning(self, extra=''):
++        message = "The selected peaks are not compatible with the current calibrant. Optimization will continue with penalty values."
++        if extra:
++            message += "<br><br>" + extra.replace("\n", "<br>")
++        msgbox = qt.QMessageBox(qt.QMessageBox.Warning, "Calibration input warning", message, qt.QMessageBox.NoButton, self)
++        qt.QTimer.singleShot(5000, msgbox.close)
++        msgbox.exec_()
++
++    def __showCalibrationInputError(self, extra=''):
++        message = "The selected peaks are not compatible with the current calibrant."
++        if extra:
++            message += "<br><br>" + extra.replace("\n", "<br>")
++        self.__showCalibrationError("Calibration input error", message)
+
     def __showDialogCalibrationDiverge(self, extra:str=''):
         title = "Error while calibrating"
         message = ("It is not possible to calibrate/refine the geometry. " +
                    "The refinement <b>diverge</b>. " +
-                   "It may be due to a mistake on specified wavelength, or selected peaks. " +
-                   "<b>Check your input data</b>.")
+                   "This usually means the optimizer could not converge from the current initial geometry. " +
+                   "<b>Check your input data and constraints</b>")
         if extra:
             message += "<br><br>" + extra.replace("\n","<br>")
-        qt.QMessageBox.critical(self, title, message)
+        __showCalibrationError(title, message)
 
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
