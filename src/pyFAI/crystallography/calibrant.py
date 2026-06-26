@@ -38,7 +38,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2026"
+__date__ = "26/06/2026"
 __status__ = "production"
 
 import os
@@ -241,8 +241,6 @@ class Calibrant:
             logger.error("No such calibrant file: %s", path)
             return
         config = self.config = CalibrantConfig.from_dspacing(path)
-        if not config.reflections:
-            raise ValueError(f"Calibrant file '{path}' contains no valid reflections")
         self._dspacing = [ref.dspacing for ref in config.reflections]
         if self._wavelength:
             self._calc_2th()
