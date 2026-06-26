@@ -7,7 +7,7 @@ Change-log of versions
 
 2026.XX
 -------------------
-- Change of behavior of `Calibrant` which raises `ValueError` when a file exist but does not contain d-spacing info
+- Change of behavior of `Calibrant` which raises `ValueError` when a file exist but does not d-spacing info / `IOError` when absent
 
 2026.05 19/05/2026
 -------------------
