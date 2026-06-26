@@ -2400,9 +2400,9 @@ class Geometry:
         """
         reset most arrays that are cached: used when a parameter changes.
 
-        :param collect_garbage: set to False to prevent garbage collection, faster
-                                set to True  to ensure the cleaning up.
-                                By default, use the self.auto_gc attribute value
+        :param collect_garbage: set to False to prevent garbage collection: faster
+                                set to True to ensure an always cleans memory
+                                leave to None to use the self.aut_gc parameter
         """
         self.param = [
             self._dist,
@@ -2414,6 +2414,16 @@ class Geometry:
         ]
         self._transmission_normal = None
         self._cached_array = {}
+        self.collect_garbage(collect_garbage)
+
+    def collect_garbage(self, collect_garbage:bool|None=None):
+        """
+        Just run the garbage collector if requested.
+
+        :param collect_garbage: set to False to prevent garbage collection: faster
+                                set to True to ensure an always cleans memory
+                                leave to None to use the self.aut_gc parameter
+        """
         if collect_garbage is None:
             collect_garbage = self.auto_gc
         if collect_garbage:

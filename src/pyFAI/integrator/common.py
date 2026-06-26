@@ -30,13 +30,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2026"
+__date__ = "26/06/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import logging
 import threading
-import gc
 from math import pi, log10
 import numpy
 from ..geometry import Geometry
@@ -140,24 +139,27 @@ class Integrator(Geometry):
 
         self._empty = numpy.float32(0.0)
 
-    def reset(self, collect_garbage=True):
+    def reset(self, collect_garbage:bool|None=None):
         """Reset azimuthal integrator in addition to other arrays.
 
-        :param collect_garbage: set to False to prevent garbage collection, faster
+        :param collect_garbage: set to False to prevent garbage collection: faster
+                                set to True to ensure an always cleans memory
+                                leave to None to use the self.aut_gc parameter
         """
         Geometry.reset(self, collect_garbage=False)
         self.reset_engines(collect_garbage)
 
-    def reset_engines(self, collect_garbage=True):
+    def reset_engines(self, collect_garbage:bool|None=None):
         """Urgently free memory by deleting all regrid-engines
 
-        :param collect_garbage: set to False to prevent garbage collection, faster
+        :param collect_garbage: set to False to prevent garbage collection: faster
+                                set to True to ensure an always cleans memory
+                                leave to None to use the self.aut_gc parameter
         """
         with self._lock:
             for key in list(self.engines.keys()):  # explicit copy
                 self.engines.pop(key).reset()
-        if collect_garbage:
-            gc.collect()
+        self.collect_garbage(collect_garbage)
 
     def create_mask(self, data, mask=None,
                     dummy=None, delta_dummy=None,
