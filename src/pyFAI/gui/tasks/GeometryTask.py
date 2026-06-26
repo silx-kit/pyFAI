@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "24/06/2026"
+__date__ = "26/06/2026"
 
 import logging
 import numpy
@@ -1024,7 +1024,7 @@ class GeometryTask(AbstractCalibrationTask):
                    "<b>Check your input data and constraints</b>")
         if extra:
             message += "<br><br>" + extra.replace("\n","<br>")
-        __showCalibrationError(title, message)
+        self.__showCalibrationError(title, message)
 
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
