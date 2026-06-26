@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "26/06/2026"
 
 import unittest
 import itertools
@@ -142,7 +142,7 @@ class TestCalibrant(unittest.TestCase):
     def test_same2(self):
         c1 = get_calibrant("LaB6")
         c2 = get_calibrant("LaB6")
-        c1.wavelength = 1e-10 
+        c1.wavelength = 1e-10
         c2.wavelength = 1e-10
         self.assertEqual(c1, c2)
 
@@ -254,7 +254,6 @@ class TestCell(unittest.TestCase):
         self.assertEqual(len(calibrant.dspacing), 15)
 
     def test_hydrogen(self):
-        # self.skipTest("Not working")
         href = "DOI: 10.1126/science.239.4844.1131"
         h = Cell.hexagonal(2.6590, 4.3340)
         self.assertAlmostEqual(h.volume, 26.537, places=3, msg="Volume for H cell is correct")
@@ -262,6 +261,28 @@ class TestCell(unittest.TestCase):
         h.save("H", "Hydrogen", href, 1.0, UtilsTest.tempdir)
         calibrant = Calibrant.from_cell(h)
         self.assertEqual(len(calibrant.dSpacing), 14)
+
+    def test_empty(self):
+        "Check that opening an empty files raises a ValueError"
+        empty_file = os.path.join(UtilsTest.tempdir, "empty.d")
+        with open(empty_file, "w") as wd:
+            wd.write(" ")
+        c = Calibrant(empty_file)
+        try:
+            c.dspacing
+        except ValueError as err:
+            print("Was expected:", err)
+        else:
+            raise RuntimeError("Opening & reading an empty file should raise")
+        os.unlink(empty_file)
+        c = Calibrant(empty_file)
+        try:
+            c.dspacing
+        except (IOError, OSError) as err:
+            print("Was expected:", err)
+        else:
+            raise RuntimeError("Opening & reading an non-existing file should raise")
+
 
 class TestReflection(unittest.TestCase):
     """

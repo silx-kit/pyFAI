@@ -216,6 +216,9 @@ class _CalibrantItemView(qt.QAbstractItemView):
     def indexAt(self, point: qt.QPoint) -> qt.QModelIndex:
         return self.__ui.listView.indexAt(point)
 
+    def isIndexHidden(self, index: qt.QModelIndex) -> bool:
+        return False
+
     def setModel(self, model: qt.QStandardItemModel):
         self.__filter.setSourceModel(model)
         qt.QAbstractItemView.setModel(self, model)

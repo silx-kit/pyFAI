@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/11/2025"
+__date__ = "26/06/2026"
 __status__ = "development"
 
 import os
@@ -424,7 +424,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         if wavelength != self.calibrant.wavelength:
             self.calibrant.setWavelength_change2th(wavelength)
         ary = self.calibrant.get_2th()
-        if len(ary) < rings.max():
+        if rings.max() >= len(ary):
+            ## This part of the code smell strongly ...
+            logger.warning("Ugly hack ... I hope this part of the code is never used in production")
             # complete turn ~ 2pi ~ 7: help the optimizer to find the right way
             ary += [10.0 * (rings.max() - len(ary))] * (1 + rings.max() - len(ary))
         tth = numpy.array(ary, dtype=numpy.float64)

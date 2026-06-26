@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "05/12/2025"
+__date__ = "26/06/2026"
 
 import logging
 import numpy
@@ -798,7 +798,8 @@ class GeometryTask(AbstractCalibrationTask):
                                       wavelength,
                                       peaks=peaks,
                                       method="massif")
-
+        if not calibration.isValid():
+            return None
         # Copy the default values
         self.__defaultConstraints.set(calibration.defaultGeometryConstraintsModel())
         return calibration
@@ -836,6 +837,18 @@ class GeometryTask(AbstractCalibrationTask):
             calibration = self.__getCalibration()
             if calibration is None:
                 return
+
+            calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
+            if calibrant is None:
+                self.__showCalibrationInputError("No calibrant available")
+                return
+
+            available_rings = [ring for ring in calibrant.get_2th() if ring is not None]
+            if len(peaks) > 0:
+                max_ring = int(peaks[:, 2].max())
+                if max_ring >= len(available_rings):
+                    self.__showCalibrationInputWarning(
+                        f"Peak ring {max_ring+1} exceeds calibrant range (1-{len(available_rings)})")
 
             # Constraints defined by the GUI
             constraints = self.model().geometryConstraintsModel().copy(self)
@@ -880,68 +893,67 @@ class GeometryTask(AbstractCalibrationTask):
         self._fitButton.setWaiting(False)
 
     def __initGeometry(self):
-        self.__initGeometryFromPeaks(useFittedGeometry=True)
+        try:
+            self.__initGeometryFromPeaks(useFittedGeometry=True)
 
-        # Save this geometry into the history
-        calibration = self.__getCalibration()
-        geometry = self.model().fittedGeometry()
-        rms = None
-        if calibration is not None and calibration.isValid():
-            rms = calibration.getRms()
-        geometryHistory = self.model().geometryHistoryModel()
-        geometryHistory.appendGeometry("Init", datetime.datetime.now(), geometry, rms)
-
-        self.__unsetProcessing()
+            # Save this geometry into the history
+            calibration = self.__getCalibration()
+            geometry = self.model().fittedGeometry()
+            rms = None
+            if calibration is not None and calibration.isValid():
+                rms = calibration.getRms()
+            geometryHistory = self.model().geometryHistoryModel()
+            geometryHistory.appendGeometry("Init", datetime.datetime.now(), geometry, rms)
+        finally:
+            self.__unsetProcessing()
 
     def __resetGeometry(self):
-        calibration = self.__getCalibration()
-        if calibration is None:
-            self.__unsetProcessing()
-            return
-        self.__initGeometryFromPeaks()
-        # write result to the fitted geometry
-        geometry = self.model().fittedGeometry()
-        calibration.toGeometryModel(geometry)
-
-        # Save this geometry into the history
-        geometryHistory = self.model().geometryHistoryModel()
-        geometryHistory.appendGeometry("Reset", datetime.datetime.now(), geometry, calibration.getRms())
-
-        self.__unsetProcessing()
-
-    def __fitGeometry(self):
-        self.__fitting = True
-        self._fitButton.setWaiting(True)
-        calibration = self.__getCalibration()
-        if calibration is None:
-            self.__unsetProcessing()
-            self._fitButton.setWaiting(False)
-            return
-        if self.__peaksInvalidated:
-            self.__initGeometryFromPeaks(useFittedGeometry=True)
-        else:
-            calibration.fromGeometryModel(self.model().fittedGeometry(), resetResidual=False)
-
-        constraints = self.model().geometryConstraintsModel().copy(self)
-        constraints.fillDefault(self.__defaultConstraints)
-        calibration.fromGeometryConstraintsModel(constraints)
-        do_parallax = self.model().experimentSettingsModel().parallaxCorrection().value()
-
-        calibration.refine(parallax=do_parallax)
-        if calibration.isValid():
-            # write result to the fitted model
+        try:
+            calibration = self.__getCalibration()
+            self.__initGeometryFromPeaks()
+            # write result to the fitted geometry
             geometry = self.model().fittedGeometry()
             calibration.toGeometryModel(geometry)
 
             # Save this geometry into the history
             geometryHistory = self.model().geometryHistoryModel()
-            geometryHistory.appendGeometry("Fitted", datetime.datetime.now(), geometry, calibration.getRms())
-        else:
-            self.__showDialogCalibrationDiverge()
+            geometryHistory.appendGeometry("Reset", datetime.datetime.now(), geometry, calibration.getRms())
+        finally:
+            self.__unsetProcessing()
 
-        self._fitButton.setWaiting(False)
-        self.__fitting = False
-        self.__unsetProcessing()
+    def __fitGeometry(self):
+        self.__fitting = True
+        self._fitButton.setWaiting(True)
+        try:
+            calibration = self.__getCalibration()
+            if self.__peaksInvalidated:
+                self.__initGeometryFromPeaks(useFittedGeometry=True)
+            else:
+                calibration.fromGeometryModel(self.model().fittedGeometry(), resetResidual=False)
+
+            constraints = self.model().geometryConstraintsModel().copy(self)
+            constraints.fillDefault(self.__defaultConstraints)
+            calibration.fromGeometryConstraintsModel(constraints)
+            do_parallax = self.model().experimentSettingsModel().parallaxCorrection().value()
+
+            calibration.refine(parallax=do_parallax)
+            if calibration.isValid():
+                # write result to the fitted model
+                geometry = self.model().fittedGeometry()
+                calibration.toGeometryModel(geometry)
+
+                # Save this geometry into the history
+                geometryHistory = self.model().geometryHistoryModel()
+                geometryHistory.appendGeometry("Fitted", datetime.datetime.now(), geometry, calibration.getRms())
+            else:
+                extra = calibration.getInitError() or str(calibration)
+                self.__showDialogCalibrationDiverge(extra)
+        except (IndexError, ValueError) as err:
+            self.__showCalibrationInputError(str(err))
+        finally:
+            self._fitButton.setWaiting(False)
+            self.__fitting = False
+            self.__unsetProcessing()
 
     def __updateResidual(self):
         """
@@ -986,22 +998,44 @@ class GeometryTask(AbstractCalibrationTask):
                 return
 
         calibration = self.__getCalibration()
+        if calibration is None or not calibration.isValid():
+            return
         calibration.fromGeometryModel(geometry, resetResidual=True)
-
         state = self.__calibrationState
         state.update(calibration)
         now = datetime.datetime.now()
         geometryHistory.appendGeometry("Customed", now, geometry, state.getRms())
 
+    def __showCalibrationError(self, title, message):
+        qt.QMessageBox.critical(self, title, message)
+
+    def __showCalibrationInitError(self, extra=''):
+        message = "It is not possible to initialize the geometry calibration."
+        if extra:
+            message += "<br><br>" + extra.replace("\n", "<br>")
+        self.__showCalibrationError("Calibration initialization failed", message)
+
+    def __showCalibrationInputWarning(self, extra=''):
+        message = "The selected peaks are not compatible with the current calibrant."
+        if extra:
+            message += "<br><br>" + extra.replace("\n", "<br>")
+        qt.QMessageBox.warning(self, "Calibration input warning", message)
+
+    def __showCalibrationInputError(self, extra=''):
+        message = "The selected peaks are not compatible with the current calibrant."
+        if extra:
+            message += "<br><br>" + extra.replace("\n", "<br>")
+        self.__showCalibrationError("Calibration input error", message)
+
     def __showDialogCalibrationDiverge(self, extra:str=''):
         title = "Error while calibrating"
         message = ("It is not possible to calibrate/refine the geometry. " +
                    "The refinement <b>diverge</b>. " +
-                   "It may be due to a mistake on specified wavelength, or selected peaks. " +
-                   "<b>Check your input data</b>.")
+                   "This usually means the optimizer could not converge from the current initial geometry. " +
+                   "<b>Check your input data and constraints</b>")
         if extra:
             message += "<br><br>" + extra.replace("\n","<br>")
-        qt.QMessageBox.critical(self, title, message)
+        self.__showCalibrationError(title, message)
 
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
@@ -1009,7 +1043,8 @@ class GeometryTask(AbstractCalibrationTask):
             self.__calibrationState.reset()
             return
         if not calibration.isValid():
-            self.__showDialogCalibrationDiverge(str(calibration))
+            extra = calibration.getInitError() or str(calibration)
+            self.__showCalibrationInitError(extra)
             self.__calibrationState.reset()
             return
         geometry = self.model().fittedGeometry()
@@ -1022,6 +1057,7 @@ class GeometryTask(AbstractCalibrationTask):
 
         geoRef = calibration.getPyfaiGeometry()
         self.__plot.markerManager().updatePhysicalMarkerPixels(geoRef)
+
 
     def __geometryPickedFromHistory(self, index=None):
         item = self._geometryHistoryCombo.currentItem()
