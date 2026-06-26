@@ -265,8 +265,8 @@ class ExperimentTask(AbstractCalibrationTask):
         self._detectorParallax.setChecked(parallaxModel.value())
 
     def __calibrantChanged(self):
-        settings = self.model().experimentSettingsModel()
-        calibrant = settings.calibrantModel().calibrant()
+        calibrantModel = self.model().experimentSettingsModel().calibrantModel()
+        calibrant = calibrantModel.calibrant()
         if calibrant is not None:
             # Validate early: a calibrant listed in the dropdown may point to a
             # missing or empty file. Force the lazy load and reject the selection
@@ -300,7 +300,7 @@ class ExperimentTask(AbstractCalibrationTask):
                     self.__removeUserCalibrant(calibrant)
                 # Either way, revert the invalid selection; setCalibrant(None)
                 # re-enters this slot with calibrant=None (a harmless no-op).
-                settings.calibrantModel().setCalibrant(None)
+                calibrantModel.setCalibrant(None)
                 return
 
         self._calibrantPreview.setCalibrant(calibrant)
