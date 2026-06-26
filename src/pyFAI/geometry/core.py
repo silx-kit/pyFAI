@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2026"
+__date__ = "26/06/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -136,6 +136,7 @@ class Geometry:
         "_oversampling",
         "_correct_solid_angle_for_spline",
         "_transmission_normal",
+        "auto_gc"
     )
     PROMOTION = {
         "AzimuthalIntegrator": "pyFAI.integrator.azimuthal.AzimuthalIntegrator",
@@ -217,6 +218,7 @@ class Geometry:
         self._sem = threading.Semaphore()
         self._transmission_normal = None
         self._parallax = None
+        self.auto_gc = True    # set to False to avoid calling the garbage collector for each modification
 
         if detector:
             if isinstance(detector, utils.StringTypes):
@@ -234,6 +236,7 @@ class Geometry:
             self.detector._orientation = detectors.orientation.Orientation(
                 orientation or detector.ORIENTATION
             )
+
 
     def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="A"):
         """Nice representation of the class
@@ -2393,11 +2396,13 @@ class Geometry:
 
         return transmission_corr
 
-    def reset(self, collect_garbage=True):
+    def reset(self, collect_garbage:bool|None=None):
         """
         reset most arrays that are cached: used when a parameter changes.
 
-        :param collect_garbage: set to False to prevent garbage collection, faster
+        :param collect_garbage: set to False to prevent garbage collection: faster
+                                set to True to ensure an always cleans memory
+                                leave to None to use the self.aut_gc parameter
         """
         self.param = [
             self._dist,
@@ -2409,6 +2414,18 @@ class Geometry:
         ]
         self._transmission_normal = None
         self._cached_array = {}
+        self.collect_garbage(collect_garbage)
+
+    def collect_garbage(self, collect_garbage:bool|None=None):
+        """
+        Just run the garbage collector if requested.
+
+        :param collect_garbage: set to False to prevent garbage collection: faster
+                                set to True to ensure an always cleans memory
+                                leave to None to use the self.aut_gc parameter
+        """
+        if collect_garbage is None:
+            collect_garbage = self.auto_gc
         if collect_garbage:
             gc.collect()
 
