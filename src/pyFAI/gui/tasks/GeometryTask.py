@@ -910,9 +910,6 @@ class GeometryTask(AbstractCalibrationTask):
     def __resetGeometry(self):
         try:
             calibration = self.__getCalibration()
-            if calibration is None:
-                self.__unsetProcessing()
-                return
             self.__initGeometryFromPeaks()
             # write result to the fitted geometry
             geometry = self.model().fittedGeometry()
@@ -929,10 +926,6 @@ class GeometryTask(AbstractCalibrationTask):
         self._fitButton.setWaiting(True)
         try:
             calibration = self.__getCalibration()
-            if calibration is None:
-                self.__unsetProcessing()
-                self._fitButton.setWaiting(False)
-                return
             if self.__peaksInvalidated:
                 self.__initGeometryFromPeaks(useFittedGeometry=True)
             else:
@@ -1005,9 +998,9 @@ class GeometryTask(AbstractCalibrationTask):
                 return
 
         calibration = self.__getCalibration()
-        calibration.fromGeometryModel(geometry, resetResidual=True)
         if calibration is None or not calibration.isValid():
             return
+        calibration.fromGeometryModel(geometry, resetResidual=True)
         state = self.__calibrationState
         state.update(calibration)
         now = datetime.datetime.now()
@@ -1026,8 +1019,7 @@ class GeometryTask(AbstractCalibrationTask):
         message = "The selected peaks are not compatible with the current calibrant."
         if extra:
             message += "<br><br>" + extra.replace("\n", "<br>")
-        msgbox = qt.QMessageBox(qt.QMessageBox.Warning, "Calibration input warning", message)
-        msgbox.exec_()
+        qt.QMessageBox.warning(self, "Calibration input warning", message)
 
     def __showCalibrationInputError(self, extra=''):
         message = "The selected peaks are not compatible with the current calibrant."
