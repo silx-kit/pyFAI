@@ -238,8 +238,10 @@ class Calibrant:
 
         path = self._get_abs_path(self._filename)
         if not os.path.isfile(path):
-            logger.error("No such calibrant file: %s", path)
-            return
+            msg = f"No such calibrant file: {path}"
+            logger.error(msg)
+            raise IOError(msg)
+
         config = self.config = CalibrantConfig.from_dspacing(path)
         self._dspacing = [ref.dspacing for ref in config.reflections]
         if self._wavelength:
