@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "24/06/2026"
+__date__ = "26/06/2026"
 
 import numpy
 import logging
@@ -501,16 +501,13 @@ class ExperimentTask(AbstractCalibrationTask):
 
     def loadCalibrant(self):
         dialog = self.createCalibrantDialog("Load calibrant file")
-
-        result = (dialog).exec()
+        result = dialog.exec()
         if not result:
             return
 
         filename = dialog.selectedFiles()[0]
         try:
             calibrant = Calibrant(filename=filename)
-            if not calibrant.dspacing:
-                raise ValueError(f"No d-spacing found in calibrant file:\n{filename}")
         except Exception as e:
             _logger.error(e.args[0])
             _logger.debug("Backtrace", exc_info=True)
