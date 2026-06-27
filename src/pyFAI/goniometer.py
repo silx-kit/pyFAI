@@ -46,6 +46,7 @@ from collections import OrderedDict, namedtuple
 from scipy.optimize import minimize
 from silx.image import marchingsquares
 from .massif import Massif
+from .blob_detection import BlobDetection
 from .control_points import ControlPoints
 from .detectors import detector_factory, Detector
 from .geometry import Geometry
@@ -603,6 +604,8 @@ class SingleGeometry(object):
     """This class represents a single geometry of a detector position on a
     goniometer arm
     """
+    
+    AVAILABLE_METHODS = ("massif", "blob", "watershed")
 
     def __init__(self, label, image=None, metadata=None, pos_function=None,
                  control_points=None, calibrant=None, detector=None, geometry=None):
@@ -667,16 +670,46 @@ class SingleGeometry(object):
             self.detector = self.geometry_refinement.detector
         self.pos_function = pos_function
         self.massif = None
+        self.blob = None
 
     def get_position(self):
         """This method  is in charge of calculating the motor position from metadata/label/..."""
         return self.pos_function(self.metadata)
-
-    def extract_cp(self, max_rings=None, pts_per_deg=1.0, Imin=0):
+    
+    def get_method(self, method):
+        """
+        Build the method for control point extraction.
+        """
+        if method not in self.AVAILABLE_METHODS:
+            return
+        
+        if method == "massif":
+            if self.massif is None:
+                if self.detector:
+                    mask = self.detector.dynamic_mask(self.image)
+                else:
+                    mask = None
+                self.massif = Massif(self.image, mask)
+            return self.massif
+        elif method == "blob":
+            if self.blob is None:
+                if self.detector:
+                    mask = self.detector.dynamic_mask(self.image)
+                else:
+                    mask = None
+                self.blob = BlobDetection(self.image, mask)
+                self.blob.process()
+            return self.blob
+        elif method == "watershed":
+            raise NotImplementedError("Watershed method is not implemented yet")
+    
+    def extract_cp(self, max_rings=None, pts_per_deg=1.0, Imin=0, method="massif"):
         """Performs an automatic keypoint extraction and update the geometry refinement part
 
-        :param max_ring: extract at most N rings from the image
+        :param max_rings: extract at most N rings from the image
         :param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
+        :param Imin: minimum intensity for a pixel to be considered control point
+        :param method: method to use for keypoint extraction, default is "massif"
         """
         if self.image is None:
             raise RuntimeError("To perform control point extraction, a data image must be provided: pyFAI.goniometer.SingleGeometry(image=...)")
@@ -684,12 +717,9 @@ class SingleGeometry(object):
         if not self.wavelength:
             raise RuntimeError("To perform control point extraction, a wavelength must be provided either through the calibrant or through the geometry.")
 
-        if self.massif is None:
-            if self.detector:
-                mask = self.detector.dynamic_mask(self.image)
-            else:
-                mask = None
-            self.massif = Massif(self.image, mask)
+        self.method = self.get_method(method)
+        if self.method is None:
+            raise ValueError(f"Method {method} not found, available methods are: {self.AVAILABLE_METHODS}")
 
         tth = numpy.array([i for i in self.calibrant.get_2th() if i is not None])
         tth = numpy.unique(tth)
@@ -746,7 +776,7 @@ class SingleGeometry(object):
                 logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); " +
                             "searching for %i pts out of %i with I>%.1f, dmin=%.1f",
                             i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min)
-                res = self.massif.peaks_from_area(mask2, Imin=Imin, keep=keep, dmin=dist_min, seed=seeds, ring=i)
+                res = self.method.peaks_from_area(mask2, Imin=Imin, keep=keep, dmin=dist_min, seed=seeds, ring=i)
                 cp.append(res, i)
         self.control_points = cp
         self.geometry_refinement.data = numpy.asarray(cp.getList(), dtype=numpy.float64)
