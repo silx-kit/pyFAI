@@ -35,7 +35,7 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "06/10/2025"
+__date__ = "03/07/2026"
 __copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -915,6 +915,7 @@ def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
     """
     cdef:
         int i, j, idx, size
+        int oob = 0
         float coef, sum, error, t, y, value, cdummy, cdelta_dummy
         float32_t[::1] lout, lin
         bint do_dummy = dummy is not None
@@ -930,6 +931,10 @@ def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
     size = lin.size
+    # nota: no `with gil` block in the loop: acquiring the GIL serializes the
+    # threads and its exception machinery triggers -Wmaybe-uninitialized
+    # warnings in the generated C code. Out-of-bound accesses are counted
+    # (prange reduction) and logged once after the loop.
     for i in prange(LUT.shape[0], nogil=True, schedule="static"):
         sum = 0.0
         error = 0.0  # Implement Kahan summation
@@ -939,9 +944,8 @@ def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
             if coef <= 0:
                 continue
             if idx >= size:
-                with gil:
-                    logger.warning("Accessing %i >= %i !!!" % (idx, size))
-                    continue
+                oob += 1
+                continue
             value = lin[idx]
             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
                 continue
@@ -952,6 +956,8 @@ def correct_LUT_kahan(image, shape_out, lut_t[:, ::1] LUT not None,
         if do_dummy and (sum == 0.0):
             sum = cdummy
         lout[i] += sum  # this += is for Cython's reduction
+    if oob:
+        logger.warning("%i out-of-bound accesses (>= %i) were skipped !!!", oob, size)
     return out
 
 
@@ -970,6 +976,7 @@ def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
     """
     cdef:
         int i, j, idx, size
+        int oob = 0
         float value, cdummy, cdelta_dummy
         double sum, coef
         float32_t[::1] lout, lin
@@ -996,9 +1003,8 @@ def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
             if coef <= 0:
                 continue
             if idx >= size:
-                with gil:
-                    logger.warning("Accessing %i >= %i !!!" % (idx, size))
-                    continue
+                oob += 1
+                continue
             value = lin[idx]
             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
                 continue
@@ -1006,6 +1012,8 @@ def correct_LUT_double(image, shape_out, lut_t[:, ::1] LUT not None,
         if do_dummy and (sum == 0.0):
             sum = cdummy
         lout[i] += sum  # this += is for Cython's reduction
+    if oob:
+        logger.warning("%i out-of-bound accesses (>= %i) were skipped !!!", oob, size)
     return out
 
 
@@ -1050,6 +1058,7 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
     """
     cdef:
         int i, j, idx, size, bins
+        int oob = 0
         float coef, error, sum, y, t, value, cdummy, cdelta_dummy
         float32_t[::1] lout, lin, data
         int[::1] indices, indptr
@@ -1080,9 +1089,8 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
             if coef <= 0:
                 continue
             if idx >= size:
-                with gil:
-                    logger.warning("Accessing %i >= %i !!!" % (idx, size))
-                    continue
+                oob += 1
+                continue
             value = lin[idx]
             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
                 continue
@@ -1093,6 +1101,8 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
         if do_dummy and (sum == 0.0):
             sum = cdummy
         lout[i] += sum  # this += is for Cython's reduction
+    if oob:
+        logger.warning("%i out-of-bound accesses (>= %i) were skipped !!!", oob, size)
     return out
 
 
@@ -1111,6 +1121,7 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
     """
     cdef:
         int i, j, idx, size, bins
+        int oob = 0
         float value, cdummy, cdelta_dummy
         double coef, sum
         float32_t[::1] lout, lin, data
@@ -1141,9 +1152,8 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
             if coef <= 0.0:
                 continue
             if idx >= size:
-                with gil:
-                    logger.warning("Accessing %i >= %i !!!" % (idx, size))
-                    continue
+                oob += 1
+                continue
             value = lin[idx]
             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
                 continue
@@ -1151,6 +1161,8 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
         if do_dummy and (sum == 0.0):
             sum = cdummy
         lout[i] += sum  # this += is for Cython's reduction
+    if oob:
+        logger.warning("%i out-of-bound accesses (>= %i) were skipped !!!", oob, size)
     return out
 
 
@@ -1176,6 +1188,7 @@ def correct_LUT_preproc_double(image, shape_out,
 
     cdef:
         int i, j, idx, size, nchan
+        int oob = 0
         float value, cdummy, cdelta_dummy
         double sum_sig, sum_var, sum_norm, coef
         float32_t[::1]  lout, lerr
@@ -1212,9 +1225,8 @@ def correct_LUT_preproc_double(image, shape_out,
             if coef <= 0:
                 continue
             if idx >= size:
-                with gil:
-                    logger.warning("Accessing %i >= %i !!!" % (idx, size))
-                    continue
+                oob += 1
+                continue
             value = lin[idx, 0]
             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
                 continue
@@ -1249,6 +1261,8 @@ def correct_LUT_preproc_double(image, shape_out,
                 # Case signal only. No normalization to behave like FIT2D does
                 lout[i] += sum_sig
 
+    if oob:
+        logger.warning("%i out-of-bound accesses (>= %i) were skipped !!!", oob, size)
     if nchan == 3:
         return out, err, prop
     else:
@@ -1277,6 +1291,7 @@ def correct_CSR_preproc_double(image, shape_out,
 
     cdef:
         int i, j, idx, size, bins, nchan
+        int oob = 0
         float value, cdummy, cdelta_dummy
         double sum_sig, sum_var, sum_norm, coef
         float32_t[::1]  lout, lerr, data
@@ -1318,9 +1333,8 @@ def correct_CSR_preproc_double(image, shape_out,
             if coef <= 0.0:
                 continue
             if idx >= size:
-                with gil:
-                    logger.warning("Accessing %i >= %i !!!" % (idx, size))
-                    continue
+                oob += 1
+                continue
 
             value = lin[idx, 0]
             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
@@ -1356,6 +1370,8 @@ def correct_CSR_preproc_double(image, shape_out,
                 # Case signal only. No normalization to behave like FIT2D does
                 lout[i] += sum_sig
 
+    if oob:
+        logger.warning("%i out-of-bound accesses (>= %i) were skipped !!!", oob, size)
     if nchan == 3:
         return out, err, prop
     else:
@@ -1635,6 +1651,7 @@ class Distortion(object):
         """
         cdef:
             int i, j, idx, size
+            int oob = 0
             float coef
             lut_t[:, ::1] LUT
             float32_t[::1] lout, lin
@@ -1659,10 +1676,11 @@ class Distortion(object):
                 if coef <= 0:
                     continue
                 if idx >= size:
-                    with gil:
-                        logger.warning("Accessing %i >= %i !!!" % (idx, size))
-                        continue
+                    oob += 1
+                    continue
                 lout[i] += lin[idx] * coef
+        if oob:
+            logger.warning("%i out-of-bound accesses (>= %i) were skipped !!!", oob, size)
         return out[:img_shape[0], :img_shape[1]]
 
     def uncorrect(self, image):
