@@ -180,14 +180,14 @@ def convert_from_ImageD11(id11):
     # TODO: double check !!!
     if  (o11, o12, o21, o22) == (1, 0, 0, -1):
         orientation = 3
-    elif  (o11, o12, o21, o22) == (1, 0, 0, +1):
+    elif  (o11, o12, o21, o22) == (-1, 0, 0, +1):
         orientation = 1
-    elif (o11, o12, o21, o22) == (-1, 0, 0, -1):
+    elif (o11, o12, o21, o22) == (1, 0, 0, 1):
         orientation = 4
-    elif (o11, o12, o21, o22) == (-1, 0, 0, +1):
+    elif (o11, o12, o21, o22) == (-1, 0, 0, -1):
         orientation = 2
     else:
-        raise RuntimeError("rotated orientations are not supported")
+        raise RuntimeError("Transposed orientations are not supported")
 
     if id11.wavelength_unit:
         wl_scale = id11.wavelength_unit.scale
