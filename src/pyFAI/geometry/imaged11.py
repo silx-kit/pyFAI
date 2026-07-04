@@ -135,11 +135,11 @@ def convert_to_ImageD11(poni, distance_unit="µm", wavelength_unit="nm"):
     if orientation == 3:
         (o11, o12, o21, o22) = (1, 0, 0, -1)
     elif orientation == 1:
-        (o11, o12, o21, o22) = (1, 0, 0, +1)
+        (o11, o12, o21, o22) = (-1, 0, 0, 1)
     elif orientation == 4:
-        (o11, o12, o21, o22) = (-1, 0, 0, -1)
+        (o11, o12, o21, o22) = (1, 0, 0, 1)
     elif orientation == 2:
-        (o11, o12, o21, o22) = (-1, 0, 0, +1)
+        (o11, o12, o21, o22) = (-1, 0, 0, -1)
     else:
         raise ValueError("Invalid orientation")
     id11 = {"o11": o11, "o12": o12, "o21": o21, "o22": o22}
