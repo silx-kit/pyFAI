@@ -65,12 +65,14 @@ cdef inline bool cmp(float4_t a, float4_t b) noexcept nogil:
     return True if a.s0<b.s0 else False
 
 
-cdef inline void sort_float4(float4_t[::1] ary) noexcept nogil:
-    "Sort in place of an array of float4 along first element (s0)"
-    cdef:
-        int size
-    size = ary.shape[0]
-    sort(&ary[0], &ary[size-1]+1, &cmp)
+cdef inline void sort_float4(float4_t[::1] ary, index_t start, index_t stop) noexcept nogil:
+    """Sort in place the section [start:stop[ of an array of float4
+    along the first element (s0).
+
+    Takes explicit bounds rather than a memoryview slice: slicing generates
+    exception-propagation code, unwelcome inside a prange loop."""
+    if stop > start:
+        sort(&ary[start], &ary[stop-1]+1, &cmp)
 
 
 cdef class CsrIntegrator(object):
@@ -846,7 +848,7 @@ cdef class CsrIntegrator(object):
                 cnt = 0
                 cumsum = 0.0
 
-                sort_float4(work[start:stop])
+                sort_float4(work, start, stop)
 
                 for i in range(start, stop):
                     cumsum = cumsum + work[i].s3
