@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -40,7 +40,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2026"
+__date__ = "26/06/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -136,6 +136,7 @@ class Geometry:
         "_oversampling",
         "_correct_solid_angle_for_spline",
         "_transmission_normal",
+        "auto_gc"
     )
     PROMOTION = {
         "AzimuthalIntegrator": "pyFAI.integrator.azimuthal.AzimuthalIntegrator",
@@ -217,6 +218,7 @@ class Geometry:
         self._sem = threading.Semaphore()
         self._transmission_normal = None
         self._parallax = None
+        self.auto_gc = True    # set to False to avoid calling the garbage collector for each modification
 
         if detector:
             if isinstance(detector, utils.StringTypes):
@@ -234,6 +236,7 @@ class Geometry:
             self.detector._orientation = detectors.orientation.Orientation(
                 orientation or detector.ORIENTATION
             )
+
 
     def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="A"):
         """Nice representation of the class
@@ -369,8 +372,8 @@ class Geometry:
 
             displacement = self._parallax.correct(self.sin_incidence(d1.ravel(), d2.ravel()), self.dist)
             delta1, delta2 = displacement * r0
-            delta1.shape = p1.shape
-            delta2.shape = p2.shape
+            delta1 = delta1.reshape(p1.shape)
+            delta2 = delta2.reshape(p2.shape)
             p1 += delta1
             p2 += delta2
         return delta1, delta2
@@ -411,8 +414,8 @@ class Geometry:
             length[length == 0] = 1.0  # avoid zero division error
             r0 /= length  # normalize array r0
             delta1, delta2 = displacement * r0
-            delta1.shape = p1.shape
-            delta2.shape = p2.shape
+            delta1 = delta1.reshape(p1.shape)
+            delta2 = delta2.reshape(p2.shape)
             p1 += delta1
             p2 += delta2
         return delta1, delta2
@@ -547,9 +550,9 @@ class Geometry:
             coord_det = numpy.vstack((p1, p2, p3))
             coord_sample = numpy.dot(self.rotation_matrix(param), coord_det)
             t1, t2, t3 = coord_sample
-            t1.shape = shape
-            t2.shape = shape
-            t3.shape = shape
+            t1 = t1.reshape(shape)
+            t2 = t2.reshape(shape)
+            t3 = t3.reshape(shape)
 
             # correct orientation:
             if self.detector.orientation in (1, 2):
@@ -828,7 +831,7 @@ class Geometry:
                 orientation=self.detector.orientation,
                 chi_discontinuity_at_pi=self.chiDiscAtPi,
             )
-            chi.shape = d1.shape
+            chi = chi.reshape(d1.shape)
         else:
             _, t1, t2 = self.calc_pos_zyx(
                 d0=None, d1=d1, d2=d2, corners=False, use_cython=True, do_parallax=True
@@ -1492,10 +1495,10 @@ class Geometry:
             B = corners[..., 1, :]
             C = corners[..., 2, :]
             D = corners[..., 3, :]
-            A.shape = -1, 3
-            B.shape = -1, 3
-            C.shape = -1, 3
-            D.shape = -1, 3
+            A = A.reshape(-1, 3)
+            B = B.reshape(-1, 3)
+            C = C.reshape(-1, 3)
+            D = D.reshape(-1, 3)
             orth = numpy.cross(C - A, D - B)
             # normalize the normal vector
             length = numpy.atleast_2d(numpy.sqrt((orth * orth).sum(axis=-1))).T
@@ -2393,11 +2396,13 @@ class Geometry:
 
         return transmission_corr
 
-    def reset(self, collect_garbage=True):
+    def reset(self, collect_garbage:bool|None=None):
         """
         reset most arrays that are cached: used when a parameter changes.
 
-        :param collect_garbage: set to False to prevent garbage collection, faster
+        :param collect_garbage: set to False to prevent garbage collection: faster
+                                set to True to ensure an always cleans memory
+                                leave to None to use the self.aut_gc parameter
         """
         self.param = [
             self._dist,
@@ -2409,6 +2414,18 @@ class Geometry:
         ]
         self._transmission_normal = None
         self._cached_array = {}
+        self.collect_garbage(collect_garbage)
+
+    def collect_garbage(self, collect_garbage:bool|None=None):
+        """
+        Just run the garbage collector if requested.
+
+        :param collect_garbage: set to False to prevent garbage collection: faster
+                                set to True to ensure an always cleans memory
+                                leave to None to use the self.aut_gc parameter
+        """
+        if collect_garbage is None:
+            collect_garbage = self.auto_gc
         if collect_garbage:
             gc.collect()
 
@@ -2450,7 +2467,7 @@ class Geometry:
 
         ttha = self.center_array(shape, unit=dim1_unit, scale=False)
         calcimage = numpy.interp(ttha.ravel(), tth, intensity)
-        calcimage.shape = shape
+        calcimage = calcimage.reshape(shape)
         if correctSolidAngle:
             calcimage *= self.solidAngleArray(shape)
         if polarization_factor is not None:

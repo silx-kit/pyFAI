@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "07/10/2025"
+__date__ = "12/06/2026"
 __copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -355,7 +355,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         if events is None:
             events = []
         # now perform the calc_from_1d on the device and count the number of pixels
-        memset = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
+        memset = self.kernels.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
         events.append(EventDescription("memset counter", memset))
 
         # Prepare peak-picking
@@ -372,7 +372,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         wg = max(self.workgroup_size["find_intense"])
         wdim_data = int(self.size + wg - 1) // wg * wg,
         kw_proj["shared"] = pyopencl.LocalMemory(wg * 4)  # stores int
-        peak_search = self.program.find_intense(self.queue, wdim_data, (wg,), *list(kw_proj.values()))
+        peak_search = self.kernels.find_intense(self.queue, wdim_data, (wg,), *list(kw_proj.values()))
         events.append(EventDescription("find_intense", peak_search))
 
         # Return the number of peaks
@@ -450,7 +450,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         if events is None:
             events = []
         # reset the count of the number of pixels
-        memset = self.program.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
+        memset = self.kernels.memset_int(self.queue, (1,), (1,), self.cl_mem["counter"], numpy.int32(0), numpy.int32(1))
         events.append(EventDescription("memset counter", memset))
         # Prepare for picking peaks
         kw_proj = self.cl_kernel_args["peakfinder"]
@@ -489,7 +489,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         kw_proj["local_peaks"] = pyopencl.LocalMemory(4 * buffer_size)
         kw_proj["local_buffer"] = pyopencl.LocalMemory(8 * (wg0 + 2 * hw) * (wg1 + 2 * hw))
         kw_proj["half_patch"] = numpy.int32(hw)
-        peak_search = self.program.peakfinder(self.queue, wdim_data, (wg0, wg1), *list(kw_proj.values()))
+        peak_search = self.kernels.peakfinder(self.queue, wdim_data, (wg0, wg1), *list(kw_proj.values()))
 
         events.append(EventDescription("peakfinder", peak_search))
 
@@ -657,11 +657,11 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             dtype = data.dtype
             if dtype.kind == 'f':
                 dtype = numpy.float32
-                kernel = self.program.copy_intense
+                kernel = self.kernels.copy_intense
             elif dtype.kind in "iu":
                 if dtype.itemsize > 4:
                     dtype = numpy.dtype("uint32") if dtype.kind == "u" else numpy.dtype("int32")
-                kernel = self.program.__getattr__("copy_intense_" + dtype.name)
+                kernel = self.kernels.__getattr__("copy_intense_" + dtype.name)
             signal = numpy.empty(cnt_intense, dtype)
             if cnt_intense > 0:
                 # Call kernel to copy intensities
@@ -1082,7 +1082,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
             kw = self.cl_kernel_args["copy_intense"]
             size = int(count + self.BLOCK_SIZE - 1) // self.BLOCK_SIZE * self.BLOCK_SIZE
 
-            copy_intense = self.program.copy_intense(self.queue, (size,), (self.BLOCK_SIZE,),
+            copy_intense = self.kernels.copy_intense(self.queue, (size,), (self.BLOCK_SIZE,),
                                            *list(kw.values()))
 
             indexes = numpy.empty(count, dtype=numpy.int32)

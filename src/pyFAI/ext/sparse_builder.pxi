@@ -87,7 +87,7 @@ cdef cppclass Heap:
     int _packed_pos
     int _block_size
 
-    Heap(int block_size) noexcept nogil:
+    Heap(int block_size) nogil:
         this._block_size = block_size
         this._index_pos = 0
         this._coef_pos = 0
@@ -97,7 +97,7 @@ cdef cppclass Heap:
         this._current_pixel_block = NULL
         this._current_packed_block = NULL
 
-    __dealloc__() noexcept nogil:
+    __dealloc__() nogil:
         cdef:
             clist[int32_t *].iterator it_indexes
             clist[float32_t *].iterator it_coefs
@@ -190,7 +190,7 @@ cdef cppclass PixelElementaryBlock:
     int _max_size
     bool _allocated
 
-    PixelElementaryBlock(int size, Heap *heap) noexcept nogil:
+    PixelElementaryBlock(int size, Heap *heap) nogil:
         if heap == NULL:
             this._indexes = <int32_t *>libc.stdlib.malloc(size * sizeof(int32_t))
             this._coefs = <float32_t *>libc.stdlib.malloc(size * sizeof(float32_t))
@@ -202,7 +202,7 @@ cdef cppclass PixelElementaryBlock:
         this._size = 0
         this._max_size = size
 
-    __dealloc__() noexcept nogil:
+    __dealloc__() nogil:
         if this._allocated:
             libc.stdlib.free(this._indexes)
             libc.stdlib.free(this._coefs)
@@ -228,12 +228,12 @@ cdef cppclass PixelBlock:
     Heap *_heap
     PixelElementaryBlock* _current_block
 
-    PixelBlock(int block_size, Heap *heap) noexcept nogil:
+    PixelBlock(int block_size, Heap *heap) nogil:
         this._block_size = block_size
         this._heap = heap
         this._current_block = NULL
 
-    __dealloc__() noexcept nogil:
+    __dealloc__() nogil:
         cdef:
             PixelElementaryBlock* element
 #             int i = 0
@@ -308,13 +308,13 @@ cdef cppclass PixelBin:
     clist[pixel_t] _pixels
     PixelBlock *_pixels_in_block
 
-    PixelBin(int block_size, Heap *heap) noexcept nogil:
+    PixelBin(int block_size, Heap *heap) nogil:
         if block_size > 0:
             this._pixels_in_block = new PixelBlock(block_size, heap)
         else:
             this._pixels_in_block = NULL
 
-    __dealloc__() noexcept nogil:
+    __dealloc__() nogil:
         if this._pixels_in_block != NULL:
             del this._pixels_in_block
             this._pixels_in_block = NULL

@@ -243,5 +243,5 @@ def preproc(raw,
             lin = result.ravel()
             lin[...] = signal / normalization
             lin[mask] = cdummy
-            result.shape = shape
+            result = result.reshape(shape)
     return result

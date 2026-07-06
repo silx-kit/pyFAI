@@ -325,7 +325,7 @@ class ControlPoints(object):
         """
         lstout = []
         tth = self.calibrant.get_2th()
-        for gpt in self._groups:
+        for gpt in self._groups.values():
             if gpt.ring < len(tth):
                 tthi = tth[gpt.ring]
                 lstout += [[pt[0], pt[1], tthi] for pt in gpt.points]

@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "26/06/2026"
 
 import numpy
 import logging
@@ -265,8 +265,61 @@ class ExperimentTask(AbstractCalibrationTask):
         self._detectorParallax.setChecked(parallaxModel.value())
 
     def __calibrantChanged(self):
-        settings = self.model().experimentSettingsModel()
-        self._calibrantPreview.setCalibrant(settings.calibrantModel().calibrant())
+        calibrantModel = self.model().experimentSettingsModel().calibrantModel()
+        calibrant = calibrantModel.calibrant()
+        if calibrant is not None:
+            # Validate early: a calibrant listed in the dropdown may point to a
+            # missing or empty file. Force the lazy load and reject the selection
+            # with a dialog instead of letting it crash later (preview / fitting).
+            try:
+                dspacing = calibrant.dspacing
+                if not dspacing:
+                    raise ValueError("the calibrant file is missing or contains no d-spacing")
+            except Exception as error:
+                _logger.error("Selected calibrant could not be loaded: %s",
+                              calibrant.filename, exc_info=True)
+                # Ask the user whether to simply revert, or to also drop a
+                # user-added entry from the dropdown. "Remove" is offered only
+                # for user-added calibrants (a real filename, not a "pyfai:"
+                # resource), and we never delete the file on disk: a renamed or
+                # moved file cannot be deleted and would itself raise.
+                filename = calibrant.filename
+                is_user_added = (filename is not None and not filename.startswith("pyfai:"))
+                msgbox = qt.QMessageBox(self)
+                msgbox.setIcon(qt.QMessageBox.Critical)
+                msgbox.setWindowTitle("Calibrant error")
+                msgbox.setText(f"The selected calibrant could not be loaded:\n\n{error}\n\n"
+                               "Please pick another calibrant.")
+                revert_button = msgbox.addButton("Revert", qt.QMessageBox.RejectRole)  # noqa
+                remove_button = None
+                if is_user_added:
+                    remove_button = msgbox.addButton(
+                        "Remove from list", qt.QMessageBox.AcceptRole)
+                msgbox.exec_()
+                if remove_button is not None and msgbox.clickedButton() is remove_button:
+                    self.__removeUserCalibrant(calibrant)
+                # Either way, revert the invalid selection; setCalibrant(None)
+                # re-enters this slot with calibrant=None (a harmless no-op).
+                calibrantModel.setCalibrant(None)
+                return
+
+        self._calibrantPreview.setCalibrant(calibrant)
+
+    def __removeUserCalibrant(self, calibrant):
+        """Drop a user-added calibrant from the dropdown (in-memory only).
+
+        The file on disk is intentionally left untouched: in the typical
+        failure case the file was already renamed or moved, so deleting it
+        would raise. Only the dropdown entry and the recent list are updated.
+        """
+        filename = calibrant.filename
+        model = self._calibrant.model()
+        index = model.indexFromCalibrant(calibrant)
+        if index.isValid():
+            model.removeRow(index.row())
+        recent = self._calibrant.recentCalibrants()
+        recent = [item for item in recent if item != filename]
+        self._calibrant.setRecentCalibrants(recent)
 
     def __detectorModelUpdated(self):
         detector = self.model().experimentSettingsModel().detectorModel().detector()
@@ -448,8 +501,7 @@ class ExperimentTask(AbstractCalibrationTask):
 
     def loadCalibrant(self):
         dialog = self.createCalibrantDialog("Load calibrant file")
-
-        result = (dialog).exec()
+        result = dialog.exec()
         if not result:
             return
 
@@ -459,7 +511,7 @@ class ExperimentTask(AbstractCalibrationTask):
         except Exception as e:
             _logger.error(e.args[0])
             _logger.debug("Backtrace", exc_info=True)
-            # FIXME Display error dialog
+            qt.QMessageBox.critical(self, "Load calibrant", str(e.args[0]) if e.args else str(e))
             return
         except KeyboardInterrupt:
             raise
@@ -470,6 +522,6 @@ class ExperimentTask(AbstractCalibrationTask):
         except Exception as e:
             _logger.error(e.args[0])
             _logger.debug("Backtrace", exc_info=True)
-            # FIXME Display error dialog
+            qt.QMessageBox.critical(self, "Set calibrant", str(e.args[0]) if e.args else str(e))
         except KeyboardInterrupt:
             raise

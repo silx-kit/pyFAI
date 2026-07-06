@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/03/2026"
+__date__ = "12/06/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -268,7 +268,6 @@ class AzimuthalIntegrator(Integrator):
                                            intpl.intensity)
             result._set_compute_engine(integr.__module__ + "." + integr.__class__.__name__)
             result._set_unit(integr.unit)
-            result._set_dummy(self.empty)
             result._set_sum_signal(intpl.signal)
             result._set_sum_normalization(intpl.normalization)
             result._set_sum_normalization2(intpl.norm_sq)
@@ -445,6 +444,7 @@ class AzimuthalIntegrator(Integrator):
         else:
             raise RuntimeError(f"Fallback method ... should no more be used: {method}")
         result._set_method(method)
+        result._set_dummy(self.empty)
         result._set_has_dark_correction(has_dark)
         result._set_has_flat_correction(has_flat)
         result._set_has_mask_applied(has_mask)

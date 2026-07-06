@@ -349,8 +349,8 @@ class Xpad_flat(ImXPadS10):
             d2 = d2 + 0.5
         if bilinear and use_cython:
             p1, p2, _p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
-            p1.shape = d1.shape
-            p2.shape = d2.shape
+            p1 = p1.reshape(d1.shape)
+            p2 = p2.reshape(d2.shape)
         else:
             i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
             i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
@@ -564,9 +564,9 @@ class Cirpad(ImXPadS10):
             d2 = d2 + 0.5
         if False and use_cython:
             p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners, is_flat=False)
-            p1.shape = d1.shape
-            p2.shape = d2.shape
-            p3.shape = d2.shape
+            p1 = p1.reshape(d1.shape)
+            p2 = p2.reshape(d2.shape)
+            p3 = p3.reshape(d2.shape)
         else:  # TODO verifiedA verifier
             i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
             i2 = d2.astype(int).clip(0, corners.shape[1] - 1)

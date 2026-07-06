@@ -441,9 +441,9 @@ def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)
         output = center
     else:
         std = stack.std(axis=0)
-        std.shape = shape
+        std = std.reshape(shape)
         std = std[numpy.newaxis, ...]
-        center.shape = shape
+        center = center.reshape(shape)
         center = center[numpy.newaxis, ...]
         mask = ((abs(stack - center) / std) > cutoff)
         stack[numpy.where(mask)] = 0.0

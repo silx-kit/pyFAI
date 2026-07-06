@@ -1,9 +1,13 @@
 :Author: Jérôme Kieffer
-:Date: 19/05/2026
+:Date: 26/06/2026
 :Keywords: changelog
 
 Change-log of versions
 ======================
+
+2026.XX
+-------------------
+- Change of behavior of `Calibrant` which raises `ValueError` when a file exist but does not d-spacing info / `IOError` when absent
 
 2026.05 19/05/2026
 -------------------

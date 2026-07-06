@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2025"
+__date__ = "24/06/2026"
 __status__ = "development"
 __docformat__ = "restructuredtext"
 
@@ -239,6 +239,8 @@ class CalibrantConfig:
                                 reflection.intensity = 0.0
                         else:
                             reflection.intensity = value
+        if not self.reflections:
+            raise ValueError(f"No valid reflections found in calibrant file '{filename}'")
         return self
 
     def save(self, filename: str = None):

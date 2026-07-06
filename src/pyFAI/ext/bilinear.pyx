@@ -35,7 +35,7 @@ to bilinear interpolations.
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "09/03/2023"
+__date__ = "03/07/2026"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -62,6 +62,7 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
     """
     cdef:
         Py_ssize_t i, p1, p2, dim1, dim2, size = d1.size
+        Py_ssize_t neg1 = 0, neg2 = 0, over1 = 0, over2 = 0
         double delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2, v1, v2
         float32_t[::1] out1 = numpy.zeros(size, dtype=numpy.float32)
         float32_t[::1] out2 = numpy.zeros(size, dtype=numpy.float32)
@@ -72,6 +73,10 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
     dim2 = pos.shape[1]
     assert size == d2.size, "d2.size == size"
 
+    # nota: no `with gil` block in the loop: acquiring the GIL serializes the
+    # threads and the exception machinery it generates triggers
+    # -Wmaybe-uninitialized warnings in the C code. Errors are counted
+    # (prange reduction) and logged once after the loop.
     for i in prange(size, nogil=True, schedule="static"):
         v1 = d1[i]
         v2 = d2[i]
@@ -85,30 +90,26 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
         delta2 = v2 - f2
 
         if p1 < 0:
-            with gil:
-                logger.warning("Negative index along dim1: f1= %s", f1)
+            neg1 += 1
             p1 = 0
             f1 = 0.0
             delta1 = v1
 
         if p2 < 0:
-            with gil:
-                logger.warning("Negative index along dim2: f2= %s", f2)
+            neg2 += 1
             p2 = 0
             f2 = 0.0
             delta2 = v2
 
         if p1 >= dim1:
             if p1 > dim1:
-                with gil:
-                    logger.warning("Overflow on dim1: d1= %s, f1=%s, p1=%s, delta1=%s", v1, f1, p1, delta1)
+                over1 += 1
             p1 = dim1 - 1
             delta1 = v1 - p1
 
         if p2 >= dim2:
             if p2 > dim2:
-                with gil:
-                    logger.warning("Overflow on dim2: d2= %s, f2=%s, p2=%s, delta2=%s", v2, f2, p2, delta2)
+                over2 += 1
             p2 = dim2 - 1
             delta2 = v2 - p2
 
@@ -141,6 +142,14 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
                  + B2 * delta1 * (1.0 - delta2) \
                  + C2 * delta1 * delta2 \
                  + D2 * (1.0 - delta1) * delta2
+    if neg1:
+        logger.warning("Negative indexes along dim1: %s pixels clipped to 0", neg1)
+    if neg2:
+        logger.warning("Negative indexes along dim2: %s pixels clipped to 0", neg2)
+    if over1:
+        logger.warning("Overflow on dim1: %s pixels clipped to %s", over1, dim1 - 1)
+    if over2:
+        logger.warning("Overflow on dim2: %s pixels clipped to %s", over2, dim2 - 1)
     if is_flat:
         return numpy.asarray(out1), numpy.asarray(out2), None
     else:

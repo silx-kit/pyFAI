@@ -85,7 +85,7 @@ class TestIntegrateApp(unittest.TestCase):
         path = os.path.join(self.tempDir, filename)
         return os.path.exists(path)
 
-    def create_json(self, ponipath=None, nbpt_azim=1):
+    def create_json(self, ponipath=None, nbpt_azim=1, monitor_key=None):
         if ponipath is None:
             ponipath = UtilsTest.getimage("dummy.poni")
         data = {"poni": ponipath}
@@ -95,6 +95,8 @@ class TestIntegrateApp(unittest.TestCase):
         data["nbpt_azim"] = nbpt_azim
         data["do_2D"] = nbpt_azim > 1
         data["method"] = ("bbox", "histogram", "cython")
+        if monitor_key is not None:
+            data["monitor_name"] = monitor_key
         path = os.path.join(self.tempDir, "config.json")
         with open(path, 'w') as fp:
             json.dump(data, fp)
@@ -161,6 +163,16 @@ class TestIntegrateApp(unittest.TestCase):
         datapath = self.create_edf_file("data.edf", data, header={"my_mon": "0.5"})
         expected = numpy.array([[2.0, 33.9], [2.0, 52.0], [2., 0.]])
         options.json = self.create_json()
+        pyFAI.app.integrate.integrate_shell(options, [datapath])
+        result = numpy.loadtxt(self.get_path("data.dat"))
+        numpy.testing.assert_almost_equal(result, expected, decimal=1)
+
+    def test_integrate_monitor_from_json(self):
+        options = self.Options()
+        data = numpy.array([[0, 0], [0, 100], [0, 0]])
+        datapath = self.create_edf_file("data.edf", data, header={"my_mon": "0.5"})
+        expected = numpy.array([[2.0, 33.9], [2.0, 52.0], [2., 0.]])
+        options.json = self.create_json(monitor_key="my_mon")
         pyFAI.app.integrate.integrate_shell(options, [datapath])
         result = numpy.loadtxt(self.get_path("data.dat"))
         numpy.testing.assert_almost_equal(result, expected, decimal=1)

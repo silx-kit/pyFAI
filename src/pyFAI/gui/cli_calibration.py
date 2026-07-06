@@ -227,7 +227,7 @@ class AbstractCalibration(object):
         self.fig_integrate = self.ax_xrpd_1d = self.ax_xrpd_2d = None
         self.fig_chiplot = self.ax_chiplot = None
         self.fig_center = self.ax_center = None
-        self.integrator_method = ("full", "historgam", "cython")
+        self.integrator_method = ("full", "histogram", "cython")
         self.error_model = ""
 
     def __repr__(self):

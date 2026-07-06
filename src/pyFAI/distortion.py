@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "12/06/2026"
 __status__ = "development"
 
 import logging
@@ -379,7 +379,7 @@ class Distortion(object):
                                         lut[ml, nl, k].coef = val
                                         outMax[ml, nl] = k + 1
                                 idx += 1
-                        lut.shape = (self._shape_out[0] * self._shape_out[1]), self.max_size
+                        lut = lut.reshape(self._shape_out[0] * self._shape_out[1], self.max_size)
                         self.lut = lut
         return self.lut
 
@@ -439,13 +439,18 @@ class Distortion(object):
                         out[i] = big[indptr[i]:indptr[i + 1]].sum()
         try:
             if image.ndim == 2:
-                out.shape = self._shape_out
+                out = out.reshape(self._shape_out)
             else:
-                for ds in out:
+                is_immutable = isinstance(out, (tuple, frozenset))
+                if is_immutable:
+                    out = list(out)
+                for i, ds in enumerate(out):
                     if ds.ndim == 2:
-                        ds.shape = self._shape_out
+                        out[i] = ds.reshape(self._shape_out)
                     else:
-                        ds.shape = self._shape_out + ds.shape[2:]
+                        out[i] = ds.reshape(self._shape_out + ds.shape[2:])
+                if is_immutable:
+                    out = type(out)(out)
 
         except ValueError as _err:
             logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
@@ -535,13 +540,18 @@ class Distortion(object):
                         out[i] = big[indptr[i]:indptr[i + 1]].sum()
             try:
                 if image.ndim == 2:
-                    out.shape = self._shape_out
+                    out = out.reshape(self._shape_out)
                 else:
-                    for ds in out:
+                    is_immutable = isinstance(out, (tuple, frozenset))
+                    if is_immutable:
+                        out = list(out)
+                    for i, ds in enumerate(out):
                         if ds.ndim == 2:
-                            ds.shape = self._shape_out
+                            out[i] = ds.reshape(self._shape_out)
                         else:
-                            ds.shape = self._shape_out + ds.shape[2:]
+                            out[i] = ds.reshape(self._shape_out + ds.shape[2:])
+                    if is_immutable:
+                        out = type(out)(out)
 
             except ValueError as _err:
                 logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
@@ -720,7 +730,7 @@ class Quad(object):
 
     def calc_area_vectorial(self):
         if self.area is None:
-            self.area = numpy.cross([self.C0 - self.A0, self.C1 - self.A1], [self.D0 - self.B0, self.D1 - self.B1]) / 2.0
+            self.area = numpy.cross([self.C0 - self.A0, self.C1 - self.A1, 0], [self.D0 - self.B0, self.D1 - self.B1, 0])[2] / 2.0
         return self.area
 
     calc_area = calc_area_vectorial

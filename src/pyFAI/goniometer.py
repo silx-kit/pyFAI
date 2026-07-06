@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "12/06/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -678,6 +678,12 @@ class SingleGeometry(object):
         :param max_ring: extract at most N rings from the image
         :param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
         """
+        if self.image is None:
+            raise RuntimeError("To perform control point extraction, a data image must be provided: pyFAI.goniometer.SingleGeometry(image=...)")
+
+        if not self.wavelength:
+            raise RuntimeError("To perform control point extraction, a wavelength must be provided either through the calibrant or through the geometry.")
+
         if self.massif is None:
             if self.detector:
                 mask = self.detector.dynamic_mask(self.image)
@@ -759,6 +765,8 @@ class SingleGeometry(object):
     @property
     def wavelength(self) -> float:
         """Get or set the wavelength, ensuring consistency between calibrant and geometry_refinement."""
+        if self.calibrant is None:
+            return self.geometry_refinement.wavelength
         if self.calibrant.wavelength != self.geometry_refinement.wavelength:
             raise RuntimeError("Wavelength inconsistency between calibrant and geometry_refinement")
         return self.geometry_refinement.wavelength
@@ -922,6 +930,9 @@ class GoniometerRefinement(Goniometer):
             method = "Nelder-Mead"
             bounds = None
             logger.warning("No bounds for optimization method Nelder-Mead")
+            tol = options.pop("ftol", None)
+            if tol is not None:
+                options["fatol"] = tol
         else:
             bounds = self.bounds
         former_error = self.chi2()
@@ -971,6 +982,10 @@ class GoniometerRefinement(Goniometer):
             method = "Nelder-Mead"
             local_bounds = [(None, None) for i in self.param]
             logger.warning("No bounds for optimization method Nelder-Mead")
+            tol = options.pop("ftol", None)
+            if tol is not None:
+                options["fatol"] = tol
+
         else:
             if self.bounds:
                 local_bounds = self.bounds
