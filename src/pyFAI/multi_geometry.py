@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/06/2026"
+__date__ = "09/07/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -108,8 +108,7 @@ class MultiGeometry(object):
             self.threadpool.close()
 
     def __repr__(self, *args, **kwargs):
-        return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \
-            (self.nb_geometry, self.radial_range, self.unit, self.azimuth_range)
+        return f"MultiGeometry integrator with {self.nb_geometry} geometries on {self.radial_range} radial range ({self.radial_unit}) and {self.azimuth_range} azimuthal range ({self.azimuth_unit})"
 
     def _guess_radial_range(self):
         logger.info("Calculating the radial range of MultiGeometry...")
