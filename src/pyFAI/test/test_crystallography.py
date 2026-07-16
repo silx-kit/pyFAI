@@ -40,7 +40,7 @@ import numpy
 import logging
 from .utilstest import UtilsTest
 from ..crystallography import resolution, Cell, EquationOfState, ReflectionCondition
-from ..crystallography.eos import Vinet
+from ..crystallography.eos import BirchMurnaghan, Vinet
 
 logger = logging.getLogger(__name__)
 
@@ -209,12 +209,78 @@ class TestVinet(unittest.TestCase):
         self.assertAlmostEqual(self.eos.linear_ratio(pressure=p) * 4.0786, a, places=6)
 
 
+class TestBirchMurnaghan(unittest.TestCase):
+    """Birch-Murnaghan 3rd order with parameters of gold (K0=167 GPa, K0'=5.5)"""
+
+    def setUp(self):
+        self.eos = BirchMurnaghan(k0=167.0, k0p=5.5, v0=4.0786 ** 3)
+
+    def test_factory(self):
+        self.assertIn("Birch-Murnaghan", EquationOfState.names())
+        clone = EquationOfState.factory("birch_murnaghan", k0=167.0, k0p=5.5, v0=4.0786 ** 3)
+        self.assertEqual(self.eos, clone)
+        self.assertEqual(self.eos, EquationOfState.from_dict(self.eos.as_dict()))
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.eos.volume_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(self.eos.pressure(ratio=1.0), 0.0, places=10)
+
+    def test_second_order(self):
+        "With K0'=4 the model reduces to 2nd order: P = 3/2 K0 (eta^7 - eta^5)"
+        eos = BirchMurnaghan(k0=160.0)
+        self.assertEqual(eos.k0p, 4.0)
+        eta = 0.95 ** (-1.0 / 3.0)
+        self.assertAlmostEqual(eos.pressure(ratio=0.95),
+                               1.5 * 160.0 * (eta ** 7 - eta ** 5),
+                               places=10)
+
+    def test_linear_limit(self):
+        "At low pressure the compression is linear: V/V0 = 1 - P/K0"
+        p = 1e-3 * self.eos.k0
+        self.assertAlmostEqual(self.eos.volume_ratio(pressure=p), 1.0 - 1e-3, places=5)
+
+    def test_matches_vinet_at_low_pressure(self):
+        "BM3 and Vinet agree to first order for moderate compressions"
+        vinet = Vinet(k0=167.0, k0p=5.5)
+        for p in (0.5, 2.0, 5.0):
+            self.assertAlmostEqual(self.eos.volume_ratio(pressure=p),
+                                   vinet.volume_ratio(pressure=p),
+                                   places=4)
+
+    def test_roundtrip(self):
+        "P -> V/V0 -> P is the identity, including under extreme compression"
+        for p_ref in (0.1, 5.0, 50.0, 300.0):
+            ratio = self.eos.volume_ratio(pressure=p_ref)
+            self.assertLess(ratio, 1.0)
+            self.assertAlmostEqual(self.eos.pressure(ratio=ratio), p_ref, places=6)
+
+    def test_monotonic(self):
+        pressures = [0.0, 1.0, 10.0, 100.0, 1000.0]
+        ratios = [self.eos.volume_ratio(pressure=p) for p in pressures]
+        self.assertEqual(ratios, sorted(ratios, reverse=True))
+
+    def test_tension(self):
+        "Moderate tension expands the cell, beyond the spinodal there is no solution"
+        ratio = self.eos.volume_ratio(pressure=-5.0)
+        self.assertGreater(ratio, 1.0)
+        self.assertAlmostEqual(self.eos.pressure(ratio=ratio), -5.0, places=6)
+        self.assertRaises(ValueError, self.eos.volume_ratio, -self.eos.k0)
+
+    def test_truncation_turnover(self):
+        "With K0' < 4 the truncated model turns over under extreme compression"
+        soft = BirchMurnaghan(k0=167.0, k0p=3.0)
+        self.assertAlmostEqual(soft.pressure(ratio=soft.volume_ratio(pressure=50.0)),
+                               50.0, places=6)
+        self.assertRaises(ValueError, soft.volume_ratio, 3.0 * soft.k0)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestCrystallography))
     testsuite.addTest(loader(TestEquationOfState))
     testsuite.addTest(loader(TestVinet))
+    testsuite.addTest(loader(TestBirchMurnaghan))
     return testsuite
 
 

@@ -228,6 +228,44 @@ class EquationOfState(ABC):
             step *= 2.0
         raise ValueError(f"No pressure in ]{-P_MAX}, {P_MAX}[ GPa matches V/V0={ratio} at this temperature")
 
+    def _invert_ratio(self, pressure: float, temperature: float | None = None, step: float = 0.05) -> float:
+        """Numerically invert an *analytical* :meth:`pressure` into a V/V0 ratio.
+
+        Helper for models which override :meth:`pressure` with a closed form
+        (Vinet, Birch-Murnaghan, ...): do NOT call it from a class relying on
+        the generic :meth:`pressure`, it would recurse infinitely.
+
+        Walks x = (V/V0)^(1/3) away from 1 until the target pressure is
+        bracketed, then refines with Brent. The walk stops when the pressure
+        is no longer approached: outside of the monotonic domain of the model
+        (tension spinodal, turnover of a truncated model under extreme
+        compression) a ValueError is raised.
+
+        :param pressure: target pressure in GPa
+        :param temperature: temperature in K, forwarded to :meth:`pressure`
+        :param step: increment of x used to bracket the solution
+        :return: V/V0, dimensionless
+        """
+
+        def fun(x):
+            return self.pressure(ratio=x ** 3, temperature=temperature) - pressure
+
+        x, residual = 1.0, fun(1.0)
+        if residual == 0.0:
+            return 1.0
+        direction = -1.0 if residual < 0.0 else 1.0  # compression: x < 1
+        while True:
+            x_next = x + direction * step
+            if x_next <= 0.0:
+                raise ValueError(f"No volume matches a pressure of {pressure} GPa with {self!r}")
+            f_next = fun(x_next)
+            if f_next * residual <= 0.0:
+                lo, hi = sorted((x, x_next))
+                return brentq(fun, lo, hi) ** 3
+            if abs(f_next) >= abs(residual):
+                raise ValueError(f"Pressure {pressure} GPa is beyond the validity range of {self!r}")
+            x, residual = x_next, f_next
+
     def as_dict(self) -> dict:
         """Serialize the model to a dictionary of builtin types.
 
@@ -330,23 +368,70 @@ class Vinet(EquationOfState):
         :return: V/V0, dimensionless
         """
         pressure, temperature = self._reference_conditions(pressure, temperature)
-        if pressure == self.p0:
-            return 1.0
+        return self._invert_ratio(pressure, temperature)
 
-        def fun(x):
-            return self.pressure(ratio=x ** 3) - pressure
 
-        if pressure > self.p0:  # compression: x in ]0, 1[
-            return brentq(fun, 1e-3, 1.0) ** 3
-        # dilatation (tension): x > 1, only defined down to the spinodal
-        # where P(x) reaches its minimum and stops decreasing
-        x_hi = 1.0
-        residual = fun(x_hi)
-        while True:
-            x_next = x_hi + 0.05
-            f_next = fun(x_next)
-            if f_next <= 0.0:
-                return brentq(fun, x_hi, x_next) ** 3
-            if f_next >= residual:
-                raise ValueError(f"Pressure {pressure} GPa is beyond the spinodal (tension limit) of {self!r}")
-            x_hi, residual = x_next, f_next
+class BirchMurnaghan(EquationOfState):
+    """Birch-Murnaghan equation of state, third order, isothermal.
+
+    .. math::
+
+        P = P_0 + \\frac{3}{2} K_0 (\\eta^7 - \\eta^5)
+        \\left[1 + \\frac{3}{4}(K_0'-4)(\\eta^2-1)\\right]
+        \\qquad \\eta = (V_0/V)^{1/3}
+
+    The de-facto standard of the high-pressure community, based on a series
+    expansion of the Eulerian finite strain. With ``k0p = 4`` the third-order
+    term vanishes and this is the second-order (two parameters) model.
+    The pressure is analytical in V, the volume is obtained by numerical
+    inversion. Temperature is ignored.
+
+    Reference: F. Birch, Finite elastic strain of cubic crystals,
+    Phys. Rev. 71 (1947) 809-824. https://doi.org/10.1103/PhysRev.71.809
+
+    :param k0: isothermal bulk modulus at the reference conditions, in GPa
+    :param k0p: first pressure-derivative of the bulk modulus, dimensionless
+                (4 corresponds to the second-order truncation)
+    :param v0: unit-cell volume at the reference conditions, in A^3 (optional)
+    :param t0: reference temperature in K (298.15 K by default)
+    :param p0: reference pressure in GPa (0 by default, i.e. ambient)
+    """
+
+    name = "Birch-Murnaghan"
+
+    def __init__(self,
+                 k0: float,
+                 k0p: float = 4.0,
+                 v0: float | None = None,
+                 t0: float = T_REF,
+                 p0: float = P_REF):
+        super().__init__(v0=v0, t0=t0, p0=p0)
+        self.k0 = float(k0)
+        self.k0p = float(k0p)
+
+    def pressure(self,
+                 volume: float | None = None,
+                 temperature: float | None = None,
+                 ratio: float | None = None) -> float:
+        """Analytical Birch-Murnaghan pressure from the unit-cell volume.
+
+        :param volume: absolute unit-cell volume in A^3 (requires ``v0``)
+        :param temperature: ignored, the model is isothermal
+        :param ratio: relative volume V/V0, alternative to ``volume``
+        :return: pressure in GPa
+        """
+        eta2 = self._resolve_ratio(volume, ratio) ** (-2.0 / 3.0)  # (V0/V)^(2/3)
+        return self.p0 + 1.5 * self.k0 * (eta2 ** 3.5 - eta2 ** 2.5) \
+            * (1.0 + 0.75 * (self.k0p - 4.0) * (eta2 - 1.0))
+
+    def volume_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
+        """Calculate the relative unit-cell volume V/V0 at the given pressure.
+
+        Numerical inversion of the analytical :meth:`pressure`.
+
+        :param pressure: pressure in GPa (defaults to the reference pressure p0)
+        :param temperature: ignored, the model is isothermal
+        :return: V/V0, dimensionless
+        """
+        pressure, temperature = self._reference_conditions(pressure, temperature)
+        return self._invert_ratio(pressure, temperature)

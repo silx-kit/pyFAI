@@ -45,7 +45,7 @@ __status__ = "production"
 from .calibrant import Calibrant
 from .calibrant_factory import CALIBRANT_FACTORY
 from .cell import Cell
-from .eos import EquationOfState, Vinet
+from .eos import BirchMurnaghan, EquationOfState, Vinet
 from .space_groups import ReflectionCondition
 
-__all__ = [Calibrant, CALIBRANT_FACTORY, Cell, EquationOfState, ReflectionCondition, Vinet]
+__all__ = [BirchMurnaghan, Calibrant, CALIBRANT_FACTORY, Cell, EquationOfState, ReflectionCondition, Vinet]
