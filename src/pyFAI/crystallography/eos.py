@@ -699,6 +699,53 @@ class LatticeExpansion(EquationOfState):
         return self.linear_ratio(pressure, temperature) ** 3
 
 
+class VolumeExpansion(EquationOfState):
+    """Isobaric thermal expansion of the volume as a polynomial in (T-T0).
+
+    .. math::
+
+        V(T)/V_0 = 1 + c_1 (T-T_0) + c_2 (T-T_0)^2 + ...
+
+    This is the parametrization of JCPDS (version 4) files used by the
+    high-pressure community (Dioptas, GSECARS):
+    V0(T) = V0 [1 + alpha(T) (T-T0)] with alpha(T) = ALPHAT + DALPHAT (T-T0),
+    i.e. ``coefficients = [ALPHAT, DALPHAT]``.
+    Pressure is ignored: the model only holds at the reference pressure.
+
+    :param coefficients: polynomial coefficients [c1, c2, ...] of the
+                         relative volume in (T-T0), in K^-1, K^-2, ...
+    :param v0: unit-cell volume at the reference conditions, in A^3 (optional)
+    :param t0: reference temperature in K (298.15 K by default)
+    :param p0: reference pressure in GPa (0 by default, i.e. ambient)
+    """
+
+    name = "volume-expansion"
+
+    def __init__(self,
+                 coefficients: list,
+                 v0: float | None = None,
+                 t0: float = T_REF,
+                 p0: float = P_REF):
+        super().__init__(v0=v0, t0=t0, p0=p0)
+        self.coefficients = [float(c) for c in coefficients]
+
+    def volume_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
+        """Calculate the relative unit-cell volume V/V0 at the given temperature.
+
+        :param pressure: ignored, the model is isobaric
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :return: V/V0, dimensionless
+        """
+        pressure, temperature = self._reference_conditions(pressure, temperature)
+        delta = temperature - self.t0
+        ratio = 1.0
+        power = 1.0
+        for coef in self.coefficients:
+            power *= delta
+            ratio += coef * power
+        return ratio
+
+
 class PVT(EquationOfState):
     """Composite P-V-T equation of state, combining an isothermal compression
     model with an isobaric thermal expansion model.
@@ -725,6 +772,8 @@ class PVT(EquationOfState):
     :param dk0dt: temperature-derivative of the bulk modulus, in GPa/K
                   (usually negative, 0 by default). Requires the isothermal
                   model to expose a ``k0`` parameter.
+    :param dk0pdt: temperature-derivative of K0', in K^-1 (0 by default).
+                   Requires the isothermal model to expose a ``k0p`` parameter.
     :param v0: unit-cell volume at the reference conditions, in A^3 (optional)
     :param t0: reference temperature in K, taken from the thermal model by default
     :param p0: reference pressure in GPa, taken from the isothermal model by default
@@ -736,6 +785,7 @@ class PVT(EquationOfState):
                  isothermal: EquationOfState | dict,
                  thermal: EquationOfState | dict,
                  dk0dt: float = 0.0,
+                 dk0pdt: float = 0.0,
                  v0: float | None = None,
                  t0: float | None = None,
                  p0: float | None = None):
@@ -749,8 +799,11 @@ class PVT(EquationOfState):
         self.isothermal = isothermal
         self.thermal = thermal
         self.dk0dt = float(dk0dt)
+        self.dk0pdt = float(dk0pdt)
         if self.dk0dt and "k0" not in isothermal.as_dict():
             raise ValueError(f"`dk0dt` requires an isothermal model with a `k0` parameter, not {isothermal!r}")
+        if self.dk0pdt and "k0p" not in isothermal.as_dict():
+            raise ValueError(f"`dk0pdt` requires an isothermal model with a `k0p` parameter, not {isothermal!r}")
         if self.thermal.t0 != self.t0:
             logger.warning("Reference temperature of the thermal model (%s K) differs from the composite one (%s K)",
                            self.thermal.t0, self.t0)
@@ -760,13 +813,16 @@ class PVT(EquationOfState):
 
     def _isothermal_at(self, temperature: float) -> EquationOfState:
         """Return the compression model with its bulk modulus corrected at the given temperature"""
-        if self.dk0dt == 0.0 or temperature == self.t0:
+        if temperature == self.t0 or not (self.dk0dt or self.dk0pdt):
             return self.isothermal
         dico = self.isothermal.as_dict()
-        k0 = dico["k0"] + self.dk0dt * (temperature - self.t0)
-        if k0 <= 0.0:
-            raise ValueError(f"Bulk modulus K0(T) = {k0} GPa is not positive at {temperature} K with {self!r}")
-        dico["k0"] = k0
+        if self.dk0dt:
+            k0 = dico["k0"] + self.dk0dt * (temperature - self.t0)
+            if k0 <= 0.0:
+                raise ValueError(f"Bulk modulus K0(T) = {k0} GPa is not positive at {temperature} K with {self!r}")
+            dico["k0"] = k0
+        if self.dk0pdt:
+            dico["k0p"] = dico["k0p"] + self.dk0pdt * (temperature - self.t0)
         return EquationOfState.from_dict(dico)
 
     def volume_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
@@ -805,6 +861,7 @@ class PVT(EquationOfState):
                 "isothermal": self.isothermal.as_dict(),
                 "thermal": self.thermal.as_dict(),
                 "dk0dt": self.dk0dt,
+                "dk0pdt": self.dk0pdt,
                 "t0": self.t0,
                 "p0": self.p0}
         if self.v0 is not None:

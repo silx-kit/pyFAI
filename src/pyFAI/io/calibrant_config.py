@@ -37,8 +37,37 @@ __docformat__ = "restructuredtext"
 
 
 import os
+import re
+import logging
 from dataclasses import field
 from ..containers import Reflection, Miller, dataclass
+
+logger = logging.getLogger(__name__)
+
+
+def _parse_cell(text: str) -> dict:
+    """Extract the lattice name and the cell parameters from the textual
+    representation of a cell, e.g. as produced by ``str(Cell)``:
+    `Face centered cubic cell a=5.41165Å b=5.41165Å c=5.41165Å α=90° β=90° γ=90°`
+
+    :param text: cell description
+    :return: dict with keys among lattice, a, b, c, alpha, beta, gamma
+    """
+    result = {}
+    lower = text.lower()
+    for lattice in ("cubic", "tetragonal", "hexagonal", "rhombohedral",
+                    "orthorhombic", "monoclinic", "triclinic"):
+        if lattice in lower:
+            result["lattice"] = lattice
+            break
+    for name, symbol in (("a", "a"), ("b", "b"), ("c", "c"),
+                         ("alpha", "(?:\N{GREEK SMALL LETTER ALPHA}|alpha)"),
+                         ("beta", "(?:\N{GREEK SMALL LETTER BETA}|beta)"),
+                         ("gamma", "(?:\N{GREEK SMALL LETTER GAMMA}|gamma)")):
+        match = re.search(rf"\b{symbol}=([-+0-9.eE]+)", text)
+        if match:
+            result[name] = float(match.group(1))
+    return result
 
 
 @dataclass
@@ -50,6 +79,8 @@ class CalibrantConfig:
     space_group: str = ""
     reference: str = ""
     reflections: list = field(default_factory=list)
+    eos: object = None
+    "Optional EquationOfState describing the variation of the cell with pressure and temperature"
 
     def __str__(self):
         out = [
@@ -242,6 +273,190 @@ class CalibrantConfig:
         if not self.reflections:
             raise ValueError(f"No valid reflections found in calibrant file '{filename}'")
         return self
+
+    @classmethod
+    def from_JCPDS(cls, filename: str):
+        """Alternative constructor from a JCPDS file (version 4), the format
+        used by the high-pressure community (Dioptas, GSECARS, ...).
+
+        The compression parameters (K0, K0P, DK0DT, DK0PDT) and the thermal
+        expansion (ALPHAT, DALPHAT) are turned into an EquationOfState
+        instance stored in the ``eos`` attribute: a PVT composite when both
+        are present, the bare model otherwise.
+
+        :param filename: name of the jcpds-file
+        :return: CalibrantConfig instance
+        """
+        from ..crystallography.cell import Cell  # lazy loading to prevent cyclic imports
+        from ..crystallography.eos import BirchMurnaghan, PVT, VolumeExpansion
+
+        version = None
+        symmetry = None
+        comments = []
+        values = {}
+        reflections = []
+        with open(filename) as fd:
+            for line in fd:
+                if ":" not in line:
+                    continue
+                tag, value = line.split(":", 1)
+                tag = tag.strip().upper()
+                value = value.strip()
+                if tag == "VERSION":
+                    version = value
+                elif tag == "COMMENT":
+                    comments.append(value)
+                elif tag == "SYMMETRY":
+                    symmetry = value.upper()
+                elif tag == "DIHKL":
+                    words = value.replace(",", " ").split()
+                    if len(words) >= 5:
+                        reflections.append(Reflection(dspacing=float(words[0]),
+                                                      intensity=float(words[1]),
+                                                      hkl=Miller(int(words[2]), int(words[3]), int(words[4]))))
+                else:
+                    try:
+                        values[tag] = float(value)
+                    except ValueError:
+                        logger.warning("Unable to parse JCPDS line: %s", line.strip())
+        if version is None or int(float(version)) != 4:
+            raise ValueError(f"Only version-4 JCPDS files are supported, `{filename}` is version {version}")
+        if symmetry is None or "A" not in values:
+            raise ValueError(f"No symmetry or cell parameter found in JCPDS file `{filename}`")
+
+        a = values["A"]
+        if symmetry == "CUBIC":
+            cell = Cell.cubic(a)
+        elif symmetry == "TETRAGONAL":
+            cell = Cell.tetragonal(a, values["C"])
+        elif symmetry == "HEXAGONAL":
+            cell = Cell.hexagonal(a, values["C"])
+        elif symmetry in ("RHOMBOHEDRAL", "TRIGONAL"):
+            cell = Cell.rhombohedral(a, values["ALPHA"])
+        elif symmetry == "ORTHORHOMBIC":
+            cell = Cell.orthorhombic(a, values["B"], values["C"])
+        elif symmetry == "MONOCLINIC":
+            cell = Cell.monoclinic(a, values["B"], values["C"], values["BETA"])
+        else:
+            cell = Cell(a, values.get("B", a), values.get("C", a),
+                        values.get("ALPHA", 90.0), values.get("BETA", 90.0), values.get("GAMMA", 90.0))
+
+        isothermal = thermal = eos = None
+        if "K0" in values:
+            isothermal = BirchMurnaghan(k0=values["K0"], k0p=values.get("K0P", 4.0))
+        if values.get("ALPHAT"):
+            coefficients = [values["ALPHAT"]]
+            if values.get("DALPHAT"):
+                coefficients.append(values["DALPHAT"])
+            thermal = VolumeExpansion(coefficients)
+        if isothermal and thermal:
+            eos = PVT(isothermal, thermal,
+                      dk0dt=values.get("DK0DT", 0.0),
+                      dk0pdt=values.get("DK0PDT", 0.0),
+                      v0=cell.volume)
+        elif isothermal or thermal:
+            eos = isothermal or thermal
+            eos.v0 = cell.volume
+
+        return cls(name=os.path.splitext(os.path.basename(filename))[0],
+                   description=" ".join(comments),
+                   filename=filename,
+                   cell=str(cell),
+                   reflections=reflections,
+                   eos=eos)
+
+    def to_JCPDS(self) -> str:
+        """Serialize as a JCPDS file (version 4), the format used by the
+        high-pressure community (Dioptas, GSECARS, ...).
+
+        Requires a parseable ``cell`` description. The ``eos`` attribute, when
+        present, must map onto the JCPDS parametrization: a Birch-Murnaghan
+        compression and/or a polynomial volume expansion (possibly combined in
+        a PVT composite); other models raise a ValueError.
+
+        :return: content of the JCPDS file as a string
+        """
+        from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, PVT,
+                                           ThermalExpansion, VolumeExpansion)
+
+        lines = ["VERSION: 4"]
+        if self.description or self.name:
+            lines.append(f"COMMENT: {self.description or self.name}")
+
+        isothermal = thermal = None
+        dk0dt = dk0pdt = 0.0
+        if isinstance(self.eos, PVT):
+            isothermal, thermal = self.eos.isothermal, self.eos.thermal
+            dk0dt, dk0pdt = self.eos.dk0dt, self.eos.dk0pdt
+        elif isinstance(self.eos, (ThermalExpansion, LatticeExpansion, VolumeExpansion)):
+            thermal = self.eos
+        elif self.eos is not None:
+            isothermal = self.eos
+        if isothermal is not None:
+            if not isinstance(isothermal, BirchMurnaghan):
+                raise ValueError(f"JCPDS assumes a Birch-Murnaghan compression model, unable to export {isothermal!r}")
+            lines.append(f"K0: {isothermal.k0:.10g}")
+            lines.append(f"K0P: {isothermal.k0p:.10g}")
+            if dk0dt:
+                lines.append(f"DK0DT: {dk0dt:.10g}")
+            if dk0pdt:
+                lines.append(f"DK0PDT: {dk0pdt:.10g}")
+        if thermal is not None:
+            dalphat = 0.0
+            if isinstance(thermal, VolumeExpansion):
+                if len(thermal.coefficients) > 2:
+                    raise ValueError("JCPDS supports at most 2 volume-expansion coefficients")
+                alphat = thermal.coefficients[0]
+                if len(thermal.coefficients) > 1:
+                    dalphat = thermal.coefficients[1]
+            elif isinstance(thermal, ThermalExpansion) and not thermal.alpha1 and not thermal.alpha2:
+                logger.warning("Exponential thermal expansion approximated as linear in the JCPDS file")
+                alphat = thermal.alpha0
+            elif isinstance(thermal, LatticeExpansion) and len(thermal.coefficients) <= 2:
+                logger.warning("Lattice expansion converted to a volume expansion, truncated at 2nd order, in the JCPDS file")
+                coefficients = thermal.coefficients + [0.0]
+                alphat = 3.0 * coefficients[0]
+                dalphat = 3.0 * coefficients[1] + 3.0 * coefficients[0] ** 2
+            else:
+                raise ValueError(f"Unable to export thermal model {thermal!r} to JCPDS")
+            lines.append(f"ALPHAT: {alphat:.10g}")
+            if dalphat:
+                lines.append(f"DALPHAT: {dalphat:.10g}")
+
+        cell = _parse_cell(self.cell)
+        if "lattice" not in cell or "a" not in cell:
+            raise ValueError(f"Unable to parse the cell description `{self.cell}` for JCPDS export")
+        lattice = cell["lattice"]
+        lines.append(f"SYMMETRY: {lattice.upper()}")
+        lines.append(f"A: {cell['a']:.10g}")
+        if lattice in ("tetragonal", "hexagonal"):
+            keys = ("c",)
+        elif lattice == "rhombohedral":
+            keys = ("alpha",)
+        elif lattice == "orthorhombic":
+            keys = ("b", "c")
+        elif lattice == "monoclinic":
+            keys = ("b", "c", "beta")
+        elif lattice == "triclinic":
+            keys = ("b", "c", "alpha", "beta", "gamma")
+        else:  # cubic
+            keys = ()
+        for key in keys:
+            lines.append(f"{key.upper()}: {cell[key]:.10g}")
+
+        for reflection in self.reflections:
+            hkl = reflection.hkl if reflection.hkl else (0, 0, 0)
+            intensity = 100.0 if reflection.intensity is None else reflection.intensity
+            lines.append(f"DIHKL: {reflection.dspacing:.8f} {intensity:g} {hkl[0]} {hkl[1]} {hkl[2]}")
+        return os.linesep.join(lines)
+
+    def save_JCPDS(self, filename: str):
+        """Save the calibrant structure into a JCPDS (version 4) file.
+
+        :param filename: name of the output file
+        """
+        with open(filename, "w", encoding="utf-8") as fd:
+            fd.write(self.to_JCPDS())
 
     def save(self, filename: str = None):
         """Save the calibrant structure into a D-spaacing file

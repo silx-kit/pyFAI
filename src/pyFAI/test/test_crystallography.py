@@ -35,12 +35,15 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/07/2026"
 
+import os
 import unittest
 import numpy
 import logging
 from .utilstest import UtilsTest
 from ..crystallography import resolution, Cell, EquationOfState, ReflectionCondition
-from ..crystallography.eos import BirchMurnaghan, LatticeExpansion, Murnaghan, PVT, ThermalExpansion, Vinet
+from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, Murnaghan, PVT,
+                                   ThermalExpansion, Vinet, VolumeExpansion)
+from ..io.calibrant_config import CalibrantConfig
 
 logger = logging.getLogger(__name__)
 
@@ -475,10 +478,129 @@ class TestPVT(unittest.TestCase):
                                self.eos.volume_ratio(pressure=10.0, temperature=500.0),
                                places=12)
 
+    def test_dk0pdt(self):
+        "K0' is corrected linearly with temperature, like K0"
+        eos = PVT(self.isothermal, self.thermal, dk0pdt=1.0e-3)
+        t = 800.0
+        corrected = BirchMurnaghan(k0=167.0, k0p=5.5 + 1.0e-3 * (t - eos.t0))
+        self.assertAlmostEqual(eos.volume_ratio(pressure=20.0, temperature=t),
+                               self.thermal.volume_ratio(temperature=t) * corrected.volume_ratio(pressure=20.0),
+                               places=12)
+        self.assertRaises(ValueError, PVT, self.thermal, self.thermal, dk0pdt=1.0e-3)
+
     def test_dk0dt_validation(self):
         "dk0dt requires an isothermal model exposing k0, and K0(T) must stay positive"
         self.assertRaises(ValueError, PVT, self.thermal, self.thermal, dk0dt=-0.02)
         self.assertRaises(ValueError, self.eos.volume_ratio, 10.0, 9000.0)
+
+
+class TestVolumeExpansion(unittest.TestCase):
+    """Polynomial expansion of the volume, the JCPDS parametrization"""
+
+    def test_polynomial(self):
+        eos = VolumeExpansion([4.26e-5, 1.0e-9])
+        self.assertAlmostEqual(eos.volume_ratio(), 1.0, places=12)
+        dt = 200.0
+        self.assertAlmostEqual(eos.volume_ratio(temperature=eos.t0 + dt),
+                               1.0 + 4.26e-5 * dt + 1.0e-9 * dt * dt,
+                               places=12)
+
+    def test_thermometer(self):
+        eos = VolumeExpansion([4.26e-5])
+        ratio = eos.volume_ratio(temperature=800.0)
+        self.assertAlmostEqual(eos.temperature(ratio=ratio), 800.0, places=6)
+
+    def test_serialization(self):
+        self.assertIn("volume-expansion", EquationOfState.names())
+        eos = VolumeExpansion([4.26e-5, 1.0e-9])
+        self.assertEqual(eos, EquationOfState.from_dict(eos.as_dict()))
+
+
+AU_JCPDS = """VERSION: 4
+COMMENT: Gold
+K0: 166.65
+K0P: 5.4823
+DK0DT: -0.021
+SYMMETRY: CUBIC
+A: 4.07860
+ALPHAT: 4.26e-05
+DIHKL: 2.35480, 100.0, 1, 1, 1
+DIHKL: 2.03930, 52.0, 2, 0, 0
+"""
+
+
+class TestJCPDS(unittest.TestCase):
+    """Serialization/deserialization of JCPDS (version 4) files with EoS"""
+
+    def test_read(self):
+        "Parse a Dioptas-like gold file"
+        fname = os.path.join(UtilsTest.tempdir, "Au_ref.jcpds")
+        with open(fname, "w") as fd:
+            fd.write(AU_JCPDS)
+        config = CalibrantConfig.from_JCPDS(fname)
+        self.assertEqual(config.description, "Gold")
+        self.assertIn("cubic", config.cell)
+        self.assertEqual(len(config.reflections), 2)
+        self.assertAlmostEqual(config.reflections[0].dspacing, 2.3548, places=6)
+        self.assertEqual(config.reflections[0].hkl, (1, 1, 1))
+        self.assertAlmostEqual(config.reflections[1].intensity, 52.0, places=6)
+        eos = config.eos
+        self.assertIsInstance(eos, PVT)
+        self.assertAlmostEqual(eos.isothermal.k0, 166.65, places=6)
+        self.assertAlmostEqual(eos.dk0dt, -0.021, places=6)
+        self.assertAlmostEqual(eos.v0, 4.0786 ** 3, places=6)
+        # sanity check in gauge mode: compression at 10 GPa, 500 K
+        self.assertLess(eos.linear_ratio(pressure=10.0, temperature=298.15), 1.0)
+        self.assertGreater(eos.volume_ratio(temperature=500.0), 1.0)
+
+    def test_roundtrip(self):
+        "CalibrantConfig -> JCPDS -> CalibrantConfig preserves reflections, cell and EoS"
+        cell = Cell.cubic(4.0786, lattice_type="F")
+        config = cell.build_calibrant_config(dmin=1.0)
+        config.name = "Au"
+        config.description = "Gold"
+        config.eos = PVT(BirchMurnaghan(k0=166.65, k0p=5.4823),
+                         VolumeExpansion([4.26e-5, 1.0e-9]),
+                         dk0dt=-0.021,
+                         v0=cell.volume)
+        text = config.to_JCPDS()
+        self.assertIn("SYMMETRY: CUBIC", text)
+        self.assertIn("K0: 166.65", text)
+
+        fname = os.path.join(UtilsTest.tempdir, "Au_out.jcpds")
+        config.save_JCPDS(fname)
+        clone = CalibrantConfig.from_JCPDS(fname)
+
+        self.assertEqual(len(clone.reflections), len(config.reflections))
+        for ref, out in zip(config.reflections, clone.reflections):
+            self.assertAlmostEqual(ref.dspacing, out.dspacing, places=7)
+            self.assertEqual(ref.hkl, out.hkl)
+        self.assertIn("cubic", clone.cell)
+        self.assertEqual(clone.eos, config.eos)
+        self.assertAlmostEqual(clone.eos.linear_ratio(pressure=10.0, temperature=500.0),
+                               config.eos.linear_ratio(pressure=10.0, temperature=500.0),
+                               places=12)
+
+    def test_thermal_only(self):
+        "A calibrant with only a thermal model exports and reimports"
+        cell = Cell.diamond(5.431179)
+        config = cell.build_calibrant_config(dmin=1.5)
+        config.description = "Silicon"
+        config.eos = VolumeExpansion([7.8e-6])
+        fname = os.path.join(UtilsTest.tempdir, "Si_out.jcpds")
+        config.save_JCPDS(fname)
+        clone = CalibrantConfig.from_JCPDS(fname)
+        self.assertIsInstance(clone.eos, VolumeExpansion)
+        self.assertAlmostEqual(clone.eos.coefficients[0], 7.8e-6, places=12)
+        # the cell parameter is rounded to 5 decimal places in the cell description
+        self.assertAlmostEqual(clone.eos.v0, cell.volume, places=3)
+
+    def test_unsupported_model(self):
+        "A Vinet EoS cannot be mapped onto the JCPDS parametrization"
+        cell = Cell.cubic(4.0786, lattice_type="F")
+        config = cell.build_calibrant_config(dmin=1.0)
+        config.eos = Vinet(k0=167.0, k0p=6.0)
+        self.assertRaises(ValueError, config.to_JCPDS)
 
 
 def suite():
@@ -492,6 +614,8 @@ def suite():
     testsuite.addTest(loader(TestLatticeExpansion))
     testsuite.addTest(loader(TestMurnaghan))
     testsuite.addTest(loader(TestPVT))
+    testsuite.addTest(loader(TestVolumeExpansion))
+    testsuite.addTest(loader(TestJCPDS))
     return testsuite
 
 
