@@ -40,6 +40,7 @@ import numpy
 import logging
 from .utilstest import UtilsTest
 from ..crystallography import resolution, Cell, EquationOfState, ReflectionCondition
+from ..crystallography.eos import Vinet
 
 logger = logging.getLogger(__name__)
 
@@ -158,11 +159,62 @@ class TestEquationOfState(unittest.TestCase):
         self.assertIsInstance(repr(eos), str)
 
 
+class TestVinet(unittest.TestCase):
+    """Vinet EoS with parameters of gold: K0=167 GPa, K0'=6.0
+    (Heinz & Jeanloz, J. Appl. Phys. 55 (1984), a0=4.0786A)"""
+
+    def setUp(self):
+        self.eos = Vinet(k0=167.0, k0p=6.0, v0=4.0786 ** 3)
+
+    def test_factory(self):
+        self.assertIn("Vinet", EquationOfState.names())
+        clone = EquationOfState.factory("vinet", k0=167.0, k0p=6.0, v0=4.0786 ** 3)
+        self.assertEqual(self.eos, clone)
+        self.assertEqual(self.eos, EquationOfState.from_dict(self.eos.as_dict()))
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.eos.volume_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(self.eos.pressure(ratio=1.0), 0.0, places=10)
+
+    def test_linear_limit(self):
+        "At low pressure the compression is linear: V/V0 = 1 - P/K0"
+        p = 1e-3 * self.eos.k0
+        self.assertAlmostEqual(self.eos.volume_ratio(pressure=p), 1.0 - 1e-3, places=5)
+
+    def test_roundtrip(self):
+        "P -> V/V0 -> P is the identity, including under extreme compression"
+        for p_ref in (0.1, 5.0, 50.0, 300.0):
+            ratio = self.eos.volume_ratio(pressure=p_ref)
+            self.assertLess(ratio, 1.0)
+            self.assertAlmostEqual(self.eos.pressure(ratio=ratio), p_ref, places=6)
+
+    def test_monotonic(self):
+        pressures = [0.0, 1.0, 10.0, 100.0, 1000.0]
+        ratios = [self.eos.volume_ratio(pressure=p) for p in pressures]
+        self.assertEqual(ratios, sorted(ratios, reverse=True))
+
+    def test_tension(self):
+        "Moderate tension expands the cell, beyond the spinodal there is no solution"
+        self.assertGreater(self.eos.volume_ratio(pressure=-5.0), 1.0)
+        self.assertAlmostEqual(self.eos.pressure(ratio=self.eos.volume_ratio(pressure=-5.0)),
+                               -5.0, places=6)
+        self.assertRaises(ValueError, self.eos.volume_ratio, -self.eos.k0)
+
+    def test_gauge(self):
+        "Pressure gauge mode: measured lattice parameter of gold -> pressure"
+        a = 3.9500  # Angstrom
+        p = self.eos.pressure(volume=a ** 3)
+        self.assertGreater(p, 0.0)
+        # consistency: back to the lattice parameter
+        self.assertAlmostEqual(self.eos.linear_ratio(pressure=p) * 4.0786, a, places=6)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestCrystallography))
     testsuite.addTest(loader(TestEquationOfState))
+    testsuite.addTest(loader(TestVinet))
     return testsuite
 
 

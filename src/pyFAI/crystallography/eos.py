@@ -63,6 +63,7 @@ __status__ = "development"
 
 import logging
 from abc import ABC, abstractmethod
+from math import exp
 from scipy.optimize import brentq
 
 logger = logging.getLogger(__name__)
@@ -177,6 +178,21 @@ class EquationOfState(ABC):
         """
         return self.volume_ratio(pressure, temperature) ** (1.0 / 3.0)
 
+    def _resolve_ratio(self, volume: float | None = None, ratio: float | None = None) -> float:
+        """Turn either an absolute volume or a relative one into a V/V0 ratio
+
+        :param volume: absolute unit-cell volume in A^3 (requires ``v0``)
+        :param ratio: relative volume V/V0, alternative to ``volume``
+        :return: V/V0 as float
+        """
+        if ratio is None:
+            if volume is None:
+                raise ValueError("Provide either `volume` or `ratio`")
+            if self.v0 is None:
+                raise ValueError("The reference volume `v0` is undefined: provide `ratio` instead of `volume`")
+            ratio = volume / self.v0
+        return float(ratio)
+
     def pressure(self,
                  volume: float | None = None,
                  temperature: float | None = None,
@@ -193,13 +209,7 @@ class EquationOfState(ABC):
         :param ratio: relative volume V/V0, alternative to ``volume``
         :return: pressure in GPa
         """
-        if ratio is None:
-            if volume is None:
-                raise ValueError("Provide either `volume` or `ratio`")
-            if self.v0 is None:
-                raise ValueError("The reference volume `v0` is undefined: provide `ratio` instead of `volume`")
-            ratio = volume / self.v0
-        ratio = float(ratio)
+        ratio = self._resolve_ratio(volume, ratio)
 
         def fun(p):
             return self.volume_ratio(p, temperature) - ratio
@@ -257,3 +267,86 @@ class EquationOfState(ABC):
     def names(cls) -> list:
         """Return the names of all registered models"""
         return [klass.name for klass in cls._registry.values()]
+
+
+class Vinet(EquationOfState):
+    """Vinet (universal) equation of state, isothermal.
+
+    .. math::
+
+        P = P_0 + 3 K_0 \\frac{1-x}{x^2} \\exp\\left(\\frac{3}{2}(K_0'-1)(1-x)\\right)
+        \\qquad x = (V/V_0)^{1/3}
+
+    Derived from a universal interatomic potential, it behaves better than
+    the Birch-Murnaghan model under very high compression (V/V0 < 0.6, metals
+    in diamond anvil cells like Au, Pt, ...). The pressure is analytical in V,
+    the volume is obtained by numerical inversion. Temperature is ignored.
+
+    Reference: P. Vinet, J. Ferrante, J.H. Rose, J.R. Smith,
+    Compressibility of solids, J. Geophys. Res. 92 (1987) 9319-9325.
+    https://doi.org/10.1029/JB092iB09p09319
+
+    :param k0: isothermal bulk modulus at the reference conditions, in GPa
+    :param k0p: first pressure-derivative of the bulk modulus, dimensionless
+    :param v0: unit-cell volume at the reference conditions, in A^3 (optional)
+    :param t0: reference temperature in K (298.15 K by default)
+    :param p0: reference pressure in GPa (0 by default, i.e. ambient)
+    """
+
+    name = "Vinet"
+
+    def __init__(self,
+                 k0: float,
+                 k0p: float,
+                 v0: float | None = None,
+                 t0: float = T_REF,
+                 p0: float = P_REF):
+        super().__init__(v0=v0, t0=t0, p0=p0)
+        self.k0 = float(k0)
+        self.k0p = float(k0p)
+
+    def pressure(self,
+                 volume: float | None = None,
+                 temperature: float | None = None,
+                 ratio: float | None = None) -> float:
+        """Analytical Vinet pressure from the unit-cell volume.
+
+        :param volume: absolute unit-cell volume in A^3 (requires ``v0``)
+        :param temperature: ignored, the model is isothermal
+        :param ratio: relative volume V/V0, alternative to ``volume``
+        :return: pressure in GPa
+        """
+        x = self._resolve_ratio(volume, ratio) ** (1.0 / 3.0)
+        eta = 1.5 * (self.k0p - 1.0)
+        return self.p0 + 3.0 * self.k0 * (1.0 - x) / (x * x) * exp(eta * (1.0 - x))
+
+    def volume_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
+        """Calculate the relative unit-cell volume V/V0 at the given pressure.
+
+        Numerical inversion of the analytical :meth:`pressure`.
+
+        :param pressure: pressure in GPa (defaults to the reference pressure p0)
+        :param temperature: ignored, the model is isothermal
+        :return: V/V0, dimensionless
+        """
+        pressure, temperature = self._reference_conditions(pressure, temperature)
+        if pressure == self.p0:
+            return 1.0
+
+        def fun(x):
+            return self.pressure(ratio=x ** 3) - pressure
+
+        if pressure > self.p0:  # compression: x in ]0, 1[
+            return brentq(fun, 1e-3, 1.0) ** 3
+        # dilatation (tension): x > 1, only defined down to the spinodal
+        # where P(x) reaches its minimum and stops decreasing
+        x_hi = 1.0
+        residual = fun(x_hi)
+        while True:
+            x_next = x_hi + 0.05
+            f_next = fun(x_next)
+            if f_next <= 0.0:
+                return brentq(fun, x_hi, x_next) ** 3
+            if f_next >= residual:
+                raise ValueError(f"Pressure {pressure} GPa is beyond the spinodal (tension limit) of {self!r}")
+            x_hi, residual = x_next, f_next
