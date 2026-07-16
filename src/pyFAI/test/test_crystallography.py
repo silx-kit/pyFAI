@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,13 +33,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2026"
+__date__ = "16/07/2026"
 
 import unittest
 import numpy
 import logging
 from .utilstest import UtilsTest
-from ..crystallography import resolution, Cell, ReflectionCondition
+from ..crystallography import resolution, Cell, EquationOfState, ReflectionCondition
 
 logger = logging.getLogger(__name__)
 
@@ -92,10 +92,77 @@ class TestCrystallography(unittest.TestCase):
         self.assertGreater(res0, res2)
 
 
+class _MurnaghanForTest(EquationOfState):
+    """Minimalistic concrete model used to exercise the abstract class:
+    V(P) = V0 * (1 + k0p*(P-P0)/k0)^(-1/k0p), analytically invertible."""
+
+    name = "murnaghan-for-test"
+
+    def __init__(self, k0, k0p, v0=None, t0=298.15, p0=0.0):
+        super().__init__(v0=v0, t0=t0, p0=p0)
+        self.k0 = float(k0)
+        self.k0p = float(k0p)
+
+    def volume_ratio(self, pressure=None, temperature=None):
+        pressure, _temperature = self._reference_conditions(pressure, temperature)
+        return (1.0 + self.k0p * (pressure - self.p0) / self.k0) ** (-1.0 / self.k0p)
+
+
+class TestEquationOfState(unittest.TestCase):
+
+    def test_abstract(self):
+        self.assertRaises(TypeError, EquationOfState)
+
+    def test_factory(self):
+        self.assertIn("murnaghan-for-test", EquationOfState.names())
+        eos = EquationOfState.factory("Murnaghan_For Test", k0=160.0, k0p=4.0)
+        self.assertIsInstance(eos, _MurnaghanForTest)
+        self.assertRaises(KeyError, EquationOfState.factory, "not-a-model")
+
+    def test_reference_conditions(self):
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0)
+        self.assertAlmostEqual(eos.volume_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(eos.linear_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(eos.pressure(ratio=1.0), eos.p0, places=8)
+
+    def test_pressure_inversion(self):
+        "The generic numerical inversion matches the analytical Murnaghan inverse"
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0)
+        for p_ref in (0.5, 10.0, 100.0):
+            ratio = eos.volume_ratio(pressure=p_ref)
+            self.assertLess(ratio, 1.0)
+            self.assertAlmostEqual(eos.pressure(ratio=ratio), p_ref, places=6)
+        # dilatation: V > V0 corresponds to a negative pressure
+        self.assertLess(eos.pressure(ratio=1.01), 0.0)
+
+    def test_linear_ratio(self):
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0)
+        self.assertAlmostEqual(eos.linear_ratio(pressure=10.0),
+                               eos.volume_ratio(pressure=10.0) ** (1.0 / 3.0),
+                               places=12)
+
+    def test_volume(self):
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0, v0=100.0)
+        self.assertAlmostEqual(eos.volume(), 100.0, places=10)
+        self.assertAlmostEqual(eos.pressure(volume=eos.volume(pressure=5.0)), 5.0, places=6)
+        bare = _MurnaghanForTest(k0=160.0, k0p=4.0)
+        self.assertRaises(ValueError, bare.volume)
+        self.assertRaises(ValueError, bare.pressure, 90.0)
+
+    def test_serialization(self):
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0, v0=100.0)
+        dico = eos.as_dict()
+        self.assertEqual(dico["model"], "murnaghan-for-test")
+        clone = EquationOfState.from_dict(dico)
+        self.assertEqual(eos, clone)
+        self.assertIsInstance(repr(eos), str)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestCrystallography))
+    testsuite.addTest(loader(TestEquationOfState))
     return testsuite
 
 
