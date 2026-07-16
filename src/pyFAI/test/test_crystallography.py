@@ -40,7 +40,7 @@ import numpy
 import logging
 from .utilstest import UtilsTest
 from ..crystallography import resolution, Cell, EquationOfState, ReflectionCondition
-from ..crystallography.eos import BirchMurnaghan, Vinet
+from ..crystallography.eos import BirchMurnaghan, LatticeExpansion, ThermalExpansion, Vinet
 
 logger = logging.getLogger(__name__)
 
@@ -149,6 +149,11 @@ class TestEquationOfState(unittest.TestCase):
         bare = _MurnaghanForTest(k0=160.0, k0p=4.0)
         self.assertRaises(ValueError, bare.volume)
         self.assertRaises(ValueError, bare.pressure, 90.0)
+
+    def test_temperature_isothermal(self):
+        "An isothermal model cannot be used as a thermometer"
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0)
+        self.assertRaises(ValueError, eos.temperature, None, None, 0.99)
 
     def test_serialization(self):
         eos = _MurnaghanForTest(k0=160.0, k0p=4.0, v0=100.0)
@@ -274,6 +279,107 @@ class TestBirchMurnaghan(unittest.TestCase):
         self.assertRaises(ValueError, soft.volume_ratio, 3.0 * soft.k0)
 
 
+class TestThermalExpansion(unittest.TestCase):
+    """Fei-type thermal expansion with MgO-like parameters"""
+
+    def setUp(self):
+        self.eos = ThermalExpansion(alpha0=3.0e-5, alpha1=1.2e-8, alpha2=-0.5)
+
+    def test_factory(self):
+        self.assertIn("thermal-expansion", EquationOfState.names())
+        clone = EquationOfState.factory("Thermal Expansion",
+                                        alpha0=3.0e-5, alpha1=1.2e-8, alpha2=-0.5)
+        self.assertEqual(self.eos, clone)
+        self.assertEqual(self.eos, EquationOfState.from_dict(self.eos.as_dict()))
+
+    def test_alpha(self):
+        t = 400.0
+        self.assertAlmostEqual(self.eos.alpha(t),
+                               3.0e-5 + 1.2e-8 * t - 0.5 / t ** 2,
+                               places=12)
+
+    def test_constant_coefficient(self):
+        "With a constant coefficient the ratio is exactly exp(alpha0 * (T-T0))"
+        eos = ThermalExpansion(alpha0=3.5e-5)
+        self.assertAlmostEqual(eos.volume_ratio(temperature=eos.t0 + 100.0),
+                               numpy.exp(3.5e-3), places=12)
+        self.assertAlmostEqual(eos.volume_ratio(), 1.0, places=12)
+
+    def test_against_numerical_integration(self):
+        "The analytical integral of alpha_V matches scipy.integrate.quad"
+        from scipy.integrate import quad
+        for t in (100.0, 500.0, 1500.0):
+            expected = quad(self.eos.alpha, self.eos.t0, t)[0]
+            self.assertAlmostEqual(numpy.log(self.eos.volume_ratio(temperature=t)),
+                                   expected, places=10)
+
+    def test_expansion_and_contraction(self):
+        self.assertGreater(self.eos.volume_ratio(temperature=500.0), 1.0)
+        self.assertLess(self.eos.volume_ratio(temperature=100.0), 1.0)
+
+    def test_thermometer(self):
+        """Temperature inversion: V/V0 -> T is the inverse of T -> V/V0.
+        Only within the validity domain of the Fei model: alpha_V changes
+        sign at sqrt(-alpha2/alpha0) ~ 129 K, below which V(T) is not monotonic."""
+        for t_ref in (200.0, 350.0, 1500.0):
+            ratio = self.eos.volume_ratio(temperature=t_ref)
+            self.assertAlmostEqual(self.eos.temperature(ratio=ratio), t_ref, places=6)
+
+    def test_thermometer_ambiguous(self):
+        """Below ~129 K two temperatures share the same volume:
+        the solution closest to the reference temperature is returned"""
+        ratio = self.eos.volume_ratio(temperature=100.0)
+        t = self.eos.temperature(ratio=ratio)
+        self.assertAlmostEqual(self.eos.volume_ratio(temperature=t), ratio, places=10)
+        self.assertGreater(t, 129.0)
+
+    def test_thermometer_unreachable(self):
+        "A volume smaller than the minimum of V(T) matches no temperature"
+        self.assertRaises(ValueError, self.eos.temperature, None, None, 0.9)
+
+    def test_isobaric(self):
+        "The volume does not depend on pressure: no pressure can be inverted"
+        self.assertRaises(ValueError, self.eos.pressure, None, None, 0.99)
+
+
+class TestLatticeExpansion(unittest.TestCase):
+    """Polynomial expansion of the lattice parameter, silicon-like"""
+
+    def setUp(self):
+        self.eos = LatticeExpansion(coefficients=[2.581e-6, 1.0e-9])
+
+    def test_factory(self):
+        self.assertIn("lattice-expansion", EquationOfState.names())
+        clone = EquationOfState.factory("LatticeExpansion", coefficients=[2.581e-6, 1.0e-9])
+        self.assertEqual(self.eos, clone)
+        self.assertEqual(self.eos, EquationOfState.from_dict(self.eos.as_dict()))
+
+    def test_polynomial(self):
+        self.assertAlmostEqual(self.eos.linear_ratio(), 1.0, places=12)
+        dt = 100.0
+        self.assertAlmostEqual(self.eos.linear_ratio(temperature=self.eos.t0 + dt),
+                               1.0 + 2.581e-6 * dt + 1.0e-9 * dt * dt,
+                               places=12)
+
+    def test_volume_is_cube(self):
+        t = 500.0
+        self.assertAlmostEqual(self.eos.volume_ratio(temperature=t),
+                               self.eos.linear_ratio(temperature=t) ** 3,
+                               places=12)
+
+    def test_thermometer(self):
+        for t_ref in (100.0, 350.0, 900.0):
+            ratio = self.eos.volume_ratio(temperature=t_ref)
+            self.assertAlmostEqual(self.eos.temperature(ratio=ratio), t_ref, places=6)
+
+    def test_dspacing_scaling(self):
+        "d-spacings of a cubic calibrant scale by the linear ratio"
+        d0 = 3.13541554  # Si (111) at room temperature
+        d = d0 * self.eos.linear_ratio(temperature=473.15)
+        self.assertGreater(d, d0)
+        self.assertLess((d - d0) / d0, 1e-3)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -281,6 +387,8 @@ def suite():
     testsuite.addTest(loader(TestEquationOfState))
     testsuite.addTest(loader(TestVinet))
     testsuite.addTest(loader(TestBirchMurnaghan))
+    testsuite.addTest(loader(TestThermalExpansion))
+    testsuite.addTest(loader(TestLatticeExpansion))
     return testsuite
 
 

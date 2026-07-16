@@ -73,6 +73,9 @@ P_REF = 0.0
 T_REF = 298.15
 # Upper bound (GPa) when bracketing an inverted pressure
 P_MAX = 1e5
+# Bounds (K) when bracketing an inverted temperature
+T_MIN = 1.0
+T_MAX = 1e4
 
 
 def _normalize(name: str) -> str:
@@ -227,6 +230,64 @@ class EquationOfState(ABC):
                 return brentq(fun, lo, hi)
             step *= 2.0
         raise ValueError(f"No pressure in ]{-P_MAX}, {P_MAX}[ GPa matches V/V0={ratio} at this temperature")
+
+    def temperature(self,
+                    volume: float | None = None,
+                    pressure: float | None = None,
+                    ratio: float | None = None) -> float:
+        """Calculate the temperature from the unit-cell volume at a given pressure.
+
+        This is the inverse of :meth:`volume_ratio` at fixed pressure, solved
+        numerically: the *thermometer* mode, measure the cell volume of the
+        calibrant, obtain the temperature. Walks away from the reference
+        temperature until the target volume is bracketed: when the model is
+        not monotonic (outside of its validity domain), the solution closest
+        to t0 is returned. Raises a ValueError when the volume is never
+        reached, in particular for isothermal models where the volume does
+        not depend on the temperature.
+
+        :param volume: absolute unit-cell volume in A^3 (requires ``v0``)
+        :param pressure: pressure in GPa (defaults to the reference pressure p0)
+        :param ratio: relative volume V/V0, alternative to ``volume``
+        :return: temperature in K
+        """
+        ratio = self._resolve_ratio(volume, ratio)
+
+        def fun(t):
+            return self.volume_ratio(pressure, t) - ratio
+
+        residual = fun(self.t0)
+        if residual == 0.0:
+            return self.t0
+        step = 16.0
+        message = f"No temperature in [{T_MIN}, {T_MAX}] K matches V/V0={ratio} at this pressure with {self!r}"
+        # probe both sides of t0 for a bracket or at least a descent direction
+        t_up = min(self.t0 + step, T_MAX)
+        f_up = fun(t_up)
+        if f_up * residual <= 0.0:
+            return brentq(fun, self.t0, t_up)
+        t_dn = max(self.t0 - step, T_MIN)
+        f_dn = fun(t_dn)
+        if f_dn * residual <= 0.0:
+            return brentq(fun, t_dn, self.t0)
+        if abs(f_up) < abs(residual):
+            direction, t, f = 1.0, t_up, f_up
+        elif abs(f_dn) < abs(residual):
+            direction, t, f = -1.0, t_dn, f_dn
+        else:
+            raise ValueError(message)
+        while True:
+            t_next = t + direction * step
+            if not T_MIN <= t_next <= T_MAX:
+                raise ValueError(message)
+            f_next = fun(t_next)
+            if f_next * f <= 0.0:
+                lo, hi = sorted((t, t_next))
+                return brentq(fun, lo, hi)
+            if abs(f_next) >= abs(f):
+                # moving away from the target: extremum of a non-monotonic model passed
+                raise ValueError(message)
+            t, f = t_next, f_next
 
     def _invert_ratio(self, pressure: float, temperature: float | None = None, step: float = 0.05) -> float:
         """Numerically invert an *analytical* :meth:`pressure` into a V/V0 ratio.
@@ -435,3 +496,138 @@ class BirchMurnaghan(EquationOfState):
         """
         pressure, temperature = self._reference_conditions(pressure, temperature)
         return self._invert_ratio(pressure, temperature)
+
+
+class ThermalExpansion(EquationOfState):
+    """Isobaric thermal expansion with a polynomial expansion coefficient.
+
+    The volumetric thermal expansion coefficient follows Fei's parametrization
+
+    .. math::
+
+        \\alpha_V(T) = \\alpha_0 + \\alpha_1 T + \\alpha_2 T^{-2}
+
+    integrated exactly into
+
+    .. math::
+
+        V(T)/V_0 = \\exp\\left(\\int_{T_0}^{T} \\alpha_V(T')\\,dT'\\right)
+
+    With ``alpha1 = alpha2 = 0`` this is the constant-coefficient model
+    V/V0 = exp(alpha0 (T-T0)); with ``alpha2 = 0`` it is Berman's linear
+    model. ``alpha2`` is usually negative (the expansion vanishes at low
+    temperature) and the T^-2 term restricts the validity to temperatures
+    well above 0 K. Pressure is ignored: the model only holds at the
+    reference pressure.
+
+    Reference: Y. Fei, Thermal expansion, in Mineral Physics and
+    Crystallography: A Handbook of Physical Constants, AGU Reference Shelf 2
+    (1995) 29-44. https://doi.org/10.1029/RF002p0029
+
+    :param alpha0: constant term of the expansion coefficient, in K^-1
+    :param alpha1: linear term, in K^-2
+    :param alpha2: T^-2 term, in K
+    :param v0: unit-cell volume at the reference conditions, in A^3 (optional)
+    :param t0: reference temperature in K (298.15 K by default)
+    :param p0: reference pressure in GPa (0 by default, i.e. ambient)
+    """
+
+    name = "thermal-expansion"
+
+    def __init__(self,
+                 alpha0: float,
+                 alpha1: float = 0.0,
+                 alpha2: float = 0.0,
+                 v0: float | None = None,
+                 t0: float = T_REF,
+                 p0: float = P_REF):
+        super().__init__(v0=v0, t0=t0, p0=p0)
+        self.alpha0 = float(alpha0)
+        self.alpha1 = float(alpha1)
+        self.alpha2 = float(alpha2)
+
+    def alpha(self, temperature: float | None = None) -> float:
+        """Volumetric thermal expansion coefficient at the given temperature.
+
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :return: alpha_V in K^-1
+        """
+        _pressure, temperature = self._reference_conditions(None, temperature)
+        return self.alpha0 + self.alpha1 * temperature + self.alpha2 / (temperature * temperature)
+
+    def _integral(self, temperature: float) -> float:
+        """Antiderivative of alpha_V, evaluated at the given temperature"""
+        return self.alpha0 * temperature \
+            + 0.5 * self.alpha1 * temperature * temperature \
+            - self.alpha2 / temperature
+
+    def volume_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
+        """Calculate the relative unit-cell volume V/V0 at the given temperature.
+
+        :param pressure: ignored, the model is isobaric
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :return: V/V0, dimensionless
+        """
+        pressure, temperature = self._reference_conditions(pressure, temperature)
+        if temperature <= 0.0:
+            raise ValueError(f"Invalid temperature: {temperature} K")
+        return exp(self._integral(temperature) - self._integral(self.t0))
+
+
+class LatticeExpansion(EquationOfState):
+    """Isobaric thermal expansion of the lattice parameter as a polynomial.
+
+    .. math::
+
+        a(T)/a_0 = 1 + c_1 (T-T_0) + c_2 (T-T_0)^2 + ... \\qquad V/V_0 = (a/a_0)^3
+
+    This is the form in which reference lattice parameters of cubic
+    calibrants (Si, CeO2, LaB6, ...) are usually published, e.g. in chapter 4
+    of Powder Diffraction: Theory and Practice: the coefficients can be used
+    directly. It assumes an isotropic expansion, exact for cubic lattices.
+    Pressure is ignored: the model only holds at the reference pressure.
+
+    :param coefficients: polynomial coefficients [c1, c2, ...] of the
+                         relative lattice parameter in (T-T0), in K^-1, K^-2, ...
+    :param v0: unit-cell volume at the reference conditions, in A^3 (optional)
+    :param t0: reference temperature in K (298.15 K by default)
+    :param p0: reference pressure in GPa (0 by default, i.e. ambient)
+    """
+
+    name = "lattice-expansion"
+
+    def __init__(self,
+                 coefficients: list,
+                 v0: float | None = None,
+                 t0: float = T_REF,
+                 p0: float = P_REF):
+        super().__init__(v0=v0, t0=t0, p0=p0)
+        self.coefficients = [float(c) for c in coefficients]
+
+    def linear_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
+        """Calculate the relative lattice parameter a/a0 at the given temperature.
+
+        Overridden with the exact polynomial (rather than the cubic root of
+        the volume ratio).
+
+        :param pressure: ignored, the model is isobaric
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :return: a/a0 = d/d0, dimensionless
+        """
+        pressure, temperature = self._reference_conditions(pressure, temperature)
+        delta = temperature - self.t0
+        ratio = 1.0
+        power = 1.0
+        for coef in self.coefficients:
+            power *= delta
+            ratio += coef * power
+        return ratio
+
+    def volume_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
+        """Calculate the relative unit-cell volume V/V0 = (a/a0)^3 at the given temperature.
+
+        :param pressure: ignored, the model is isobaric
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :return: V/V0, dimensionless
+        """
+        return self.linear_ratio(pressure, temperature) ** 3
