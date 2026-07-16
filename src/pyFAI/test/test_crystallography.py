@@ -641,7 +641,7 @@ class TestCalibrantHeaders(unittest.TestCase):
                 self.assertEqual(ref.hkl, out.hkl, fname)
                 self.assertEqual(ref.multiplicity, out.multiplicity, fname)
                 self.assertEqual(ref.intensity, out.intensity, fname)
-        self.assertGreater(counter, 30, "the shipped calibrant files were found")
+        self.assertGreaterEqual(counter, 39, "the shipped calibrant files were found")
 
     def test_to_cell_flavors(self):
         "The various hand-crafted cell descriptions are interpreted correctly"
