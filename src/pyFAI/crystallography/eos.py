@@ -498,6 +498,72 @@ class BirchMurnaghan(EquationOfState):
         return self._invert_ratio(pressure, temperature)
 
 
+class Murnaghan(EquationOfState):
+    """Murnaghan equation of state, isothermal.
+
+    .. math::
+
+        P = P_0 + \\frac{K_0}{K_0'}\\left[(V_0/V)^{K_0'} - 1\\right]
+        \\qquad
+        V/V_0 = \\left[1 + \\frac{K_0'}{K_0}(P-P_0)\\right]^{-1/K_0'}
+
+    Assumes a bulk modulus linear in pressure. Both directions are
+    analytical, no numerical inversion is needed, but the model is only
+    accurate for moderate compressions (P below about K0/10, typically
+    10 GPa). Beyond, prefer Birch-Murnaghan or Vinet. Temperature is
+    ignored. Only defined above the tension limit P0 - K0/K0'.
+
+    Reference: F.D. Murnaghan, The compressibility of media under extreme
+    pressures, Proc. Natl. Acad. Sci. USA 30 (1944) 244-247.
+    https://doi.org/10.1073/pnas.30.9.244
+
+    :param k0: isothermal bulk modulus at the reference conditions, in GPa
+    :param k0p: first pressure-derivative of the bulk modulus, dimensionless
+    :param v0: unit-cell volume at the reference conditions, in A^3 (optional)
+    :param t0: reference temperature in K (298.15 K by default)
+    :param p0: reference pressure in GPa (0 by default, i.e. ambient)
+    """
+
+    name = "Murnaghan"
+
+    def __init__(self,
+                 k0: float,
+                 k0p: float,
+                 v0: float | None = None,
+                 t0: float = T_REF,
+                 p0: float = P_REF):
+        super().__init__(v0=v0, t0=t0, p0=p0)
+        self.k0 = float(k0)
+        self.k0p = float(k0p)
+
+    def pressure(self,
+                 volume: float | None = None,
+                 temperature: float | None = None,
+                 ratio: float | None = None) -> float:
+        """Analytical Murnaghan pressure from the unit-cell volume.
+
+        :param volume: absolute unit-cell volume in A^3 (requires ``v0``)
+        :param temperature: ignored, the model is isothermal
+        :param ratio: relative volume V/V0, alternative to ``volume``
+        :return: pressure in GPa
+        """
+        ratio = self._resolve_ratio(volume, ratio)
+        return self.p0 + self.k0 / self.k0p * (ratio ** (-self.k0p) - 1.0)
+
+    def volume_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
+        """Calculate the relative unit-cell volume V/V0 at the given pressure, analytically.
+
+        :param pressure: pressure in GPa (defaults to the reference pressure p0)
+        :param temperature: ignored, the model is isothermal
+        :return: V/V0, dimensionless
+        """
+        pressure, _temperature = self._reference_conditions(pressure, temperature)
+        base = 1.0 + self.k0p * (pressure - self.p0) / self.k0
+        if base <= 0.0:
+            raise ValueError(f"Pressure {pressure} GPa is beyond the tension limit P0 - K0/K0' of {self!r}")
+        return base ** (-1.0 / self.k0p)
+
+
 class ThermalExpansion(EquationOfState):
     """Isobaric thermal expansion with a polynomial expansion coefficient.
 
@@ -631,3 +697,116 @@ class LatticeExpansion(EquationOfState):
         :return: V/V0, dimensionless
         """
         return self.linear_ratio(pressure, temperature) ** 3
+
+
+class PVT(EquationOfState):
+    """Composite P-V-T equation of state, combining an isothermal compression
+    model with an isobaric thermal expansion model.
+
+    Follows the *isothermal* approach of EosFit (Angel et al., 2014): the
+    thermal expansion first turns the reference volume into V0(T), then the
+    compression is applied at that temperature with a bulk modulus corrected
+    linearly, K0(T) = K0 + dk0dt (T - T0):
+
+    .. math::
+
+        V(P,T) = V_0(T) \\cdot \\frac{V(P)}{V_0}\\Big|_{K_0(T)}
+
+    Both directions of use are supported at any temperature: pressure gauge
+    (delegated to the analytical inverse of the isothermal model) and
+    thermometer (generic numerical inversion).
+
+    :param isothermal: compression model, an EquationOfState instance
+                       (Birch-Murnaghan, Vinet, Murnaghan, ...) or its
+                       dictionary representation
+    :param thermal: expansion model, an EquationOfState instance
+                    (ThermalExpansion, LatticeExpansion, ...) or its
+                    dictionary representation
+    :param dk0dt: temperature-derivative of the bulk modulus, in GPa/K
+                  (usually negative, 0 by default). Requires the isothermal
+                  model to expose a ``k0`` parameter.
+    :param v0: unit-cell volume at the reference conditions, in A^3 (optional)
+    :param t0: reference temperature in K, taken from the thermal model by default
+    :param p0: reference pressure in GPa, taken from the isothermal model by default
+    """
+
+    name = "PVT"
+
+    def __init__(self,
+                 isothermal: EquationOfState | dict,
+                 thermal: EquationOfState | dict,
+                 dk0dt: float = 0.0,
+                 v0: float | None = None,
+                 t0: float | None = None,
+                 p0: float | None = None):
+        if isinstance(isothermal, dict):
+            isothermal = EquationOfState.from_dict(isothermal)
+        if isinstance(thermal, dict):
+            thermal = EquationOfState.from_dict(thermal)
+        super().__init__(v0=v0,
+                         t0=thermal.t0 if t0 is None else t0,
+                         p0=isothermal.p0 if p0 is None else p0)
+        self.isothermal = isothermal
+        self.thermal = thermal
+        self.dk0dt = float(dk0dt)
+        if self.dk0dt and "k0" not in isothermal.as_dict():
+            raise ValueError(f"`dk0dt` requires an isothermal model with a `k0` parameter, not {isothermal!r}")
+        if self.thermal.t0 != self.t0:
+            logger.warning("Reference temperature of the thermal model (%s K) differs from the composite one (%s K)",
+                           self.thermal.t0, self.t0)
+        if self.isothermal.p0 != self.p0:
+            logger.warning("Reference pressure of the isothermal model (%s GPa) differs from the composite one (%s GPa)",
+                           self.isothermal.p0, self.p0)
+
+    def _isothermal_at(self, temperature: float) -> EquationOfState:
+        """Return the compression model with its bulk modulus corrected at the given temperature"""
+        if self.dk0dt == 0.0 or temperature == self.t0:
+            return self.isothermal
+        dico = self.isothermal.as_dict()
+        k0 = dico["k0"] + self.dk0dt * (temperature - self.t0)
+        if k0 <= 0.0:
+            raise ValueError(f"Bulk modulus K0(T) = {k0} GPa is not positive at {temperature} K with {self!r}")
+        dico["k0"] = k0
+        return EquationOfState.from_dict(dico)
+
+    def volume_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
+        """Calculate the relative unit-cell volume V/V0 at the given conditions.
+
+        :param pressure: pressure in GPa (defaults to the reference pressure p0)
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :return: V/V0, dimensionless
+        """
+        pressure, temperature = self._reference_conditions(pressure, temperature)
+        expansion = self.thermal.volume_ratio(temperature=temperature)
+        compression = self._isothermal_at(temperature).volume_ratio(pressure=pressure)
+        return expansion * compression
+
+    def pressure(self,
+                 volume: float | None = None,
+                 temperature: float | None = None,
+                 ratio: float | None = None) -> float:
+        """Calculate the pressure from the unit-cell volume at a given temperature.
+
+        Delegated to the (usually analytical) inverse of the isothermal model,
+        once the thermal expansion is factored out.
+
+        :param volume: absolute unit-cell volume in A^3 (requires ``v0``)
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :param ratio: relative volume V/V0, alternative to ``volume``
+        :return: pressure in GPa
+        """
+        ratio = self._resolve_ratio(volume, ratio)
+        _pressure, temperature = self._reference_conditions(None, temperature)
+        compression = ratio / self.thermal.volume_ratio(temperature=temperature)
+        return self._isothermal_at(temperature).pressure(ratio=compression, temperature=temperature)
+
+    def as_dict(self) -> dict:
+        dico = {"model": self.name,
+                "isothermal": self.isothermal.as_dict(),
+                "thermal": self.thermal.as_dict(),
+                "dk0dt": self.dk0dt,
+                "t0": self.t0,
+                "p0": self.p0}
+        if self.v0 is not None:
+            dico["v0"] = self.v0
+        return dico

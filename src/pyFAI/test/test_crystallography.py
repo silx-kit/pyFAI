@@ -40,7 +40,7 @@ import numpy
 import logging
 from .utilstest import UtilsTest
 from ..crystallography import resolution, Cell, EquationOfState, ReflectionCondition
-from ..crystallography.eos import BirchMurnaghan, LatticeExpansion, ThermalExpansion, Vinet
+from ..crystallography.eos import BirchMurnaghan, LatticeExpansion, Murnaghan, PVT, ThermalExpansion, Vinet
 
 logger = logging.getLogger(__name__)
 
@@ -380,6 +380,107 @@ class TestLatticeExpansion(unittest.TestCase):
         self.assertLess((d - d0) / d0, 1e-3)
 
 
+class TestMurnaghan(unittest.TestCase):
+    """Murnaghan EoS, fully analytical in both directions"""
+
+    def setUp(self):
+        self.eos = Murnaghan(k0=167.0, k0p=5.5, v0=4.0786 ** 3)
+
+    def test_factory(self):
+        self.assertIn("Murnaghan", EquationOfState.names())
+        clone = EquationOfState.factory("murnaghan", k0=167.0, k0p=5.5, v0=4.0786 ** 3)
+        self.assertEqual(self.eos, clone)
+        self.assertEqual(self.eos, EquationOfState.from_dict(self.eos.as_dict()))
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.eos.volume_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(self.eos.pressure(ratio=1.0), 0.0, places=12)
+
+    def test_roundtrip(self):
+        "Both directions are analytical: the roundtrip is exact"
+        for p_ref in (0.1, 5.0, 50.0):
+            self.assertAlmostEqual(self.eos.pressure(ratio=self.eos.volume_ratio(pressure=p_ref)),
+                                   p_ref, places=10)
+
+    def test_generic_vs_analytic(self):
+        "The analytical inversions match the generic numerical ones of the parent class"
+        generic = _MurnaghanForTest(k0=167.0, k0p=5.5)
+        for p in (1.0, 10.0, 100.0):
+            self.assertAlmostEqual(self.eos.volume_ratio(pressure=p),
+                                   generic.volume_ratio(pressure=p), places=12)
+        self.assertAlmostEqual(self.eos.pressure(ratio=0.95),
+                               generic.pressure(ratio=0.95), places=6)
+
+    def test_matches_birch_murnaghan_at_low_pressure(self):
+        bm3 = BirchMurnaghan(k0=167.0, k0p=5.5)
+        for p in (0.5, 2.0):
+            self.assertAlmostEqual(self.eos.volume_ratio(pressure=p),
+                                   bm3.volume_ratio(pressure=p), places=4)
+
+    def test_tension_limit(self):
+        "The model is only defined above P0 - K0/K0'"
+        limit = -self.eos.k0 / self.eos.k0p
+        self.assertGreater(self.eos.volume_ratio(pressure=0.99 * limit), 1.0)
+        self.assertRaises(ValueError, self.eos.volume_ratio, 1.01 * limit)
+
+
+class TestPVT(unittest.TestCase):
+    """Composite P-V-T model, gold-like parameters"""
+
+    def setUp(self):
+        self.isothermal = BirchMurnaghan(k0=167.0, k0p=5.5)
+        self.thermal = ThermalExpansion(alpha0=4.2e-5)
+        self.eos = PVT(self.isothermal, self.thermal, dk0dt=-0.02, v0=4.0786 ** 3)
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.eos.volume_ratio(), 1.0, places=12)
+        self.assertEqual(self.eos.t0, self.thermal.t0)
+        self.assertEqual(self.eos.p0, self.isothermal.p0)
+
+    def test_reduces_to_submodels(self):
+        "At reference temperature only the compression acts, at reference pressure only the expansion"
+        self.assertAlmostEqual(self.eos.volume_ratio(pressure=10.0),
+                               self.isothermal.volume_ratio(pressure=10.0), places=12)
+        self.assertAlmostEqual(self.eos.volume_ratio(temperature=500.0),
+                               self.thermal.volume_ratio(temperature=500.0), places=12)
+
+    def test_composition(self):
+        "V(P,T) = V0(T)/V0 * compression with K0 corrected at T"
+        p, t = 10.0, 500.0
+        corrected = BirchMurnaghan(k0=167.0 - 0.02 * (t - self.eos.t0), k0p=5.5)
+        self.assertAlmostEqual(self.eos.volume_ratio(pressure=p, temperature=t),
+                               self.thermal.volume_ratio(temperature=t) * corrected.volume_ratio(pressure=p),
+                               places=12)
+
+    def test_gauge_at_temperature(self):
+        "Pressure gauge mode at any temperature"
+        for p_ref, t in ((5.0, 500.0), (25.0, 1200.0), (10.0, 150.0)):
+            ratio = self.eos.volume_ratio(pressure=p_ref, temperature=t)
+            self.assertAlmostEqual(self.eos.pressure(ratio=ratio, temperature=t), p_ref, places=8)
+
+    def test_thermometer_at_pressure(self):
+        "Thermometer mode at fixed pressure, generic numerical inversion"
+        ratio = self.eos.volume_ratio(pressure=5.0, temperature=700.0)
+        self.assertAlmostEqual(self.eos.temperature(ratio=ratio, pressure=5.0), 700.0, places=6)
+
+    def test_serialization(self):
+        "The nested representation is JSON-able and instantiable by the factory"
+        import json
+        dico = self.eos.as_dict()
+        self.assertEqual(dico["model"], "PVT")
+        self.assertEqual(dico, json.loads(json.dumps(dico)))
+        clone = EquationOfState.from_dict(dico)
+        self.assertEqual(self.eos, clone)
+        self.assertAlmostEqual(clone.volume_ratio(pressure=10.0, temperature=500.0),
+                               self.eos.volume_ratio(pressure=10.0, temperature=500.0),
+                               places=12)
+
+    def test_dk0dt_validation(self):
+        "dk0dt requires an isothermal model exposing k0, and K0(T) must stay positive"
+        self.assertRaises(ValueError, PVT, self.thermal, self.thermal, dk0dt=-0.02)
+        self.assertRaises(ValueError, self.eos.volume_ratio, 10.0, 9000.0)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -389,6 +490,8 @@ def suite():
     testsuite.addTest(loader(TestBirchMurnaghan))
     testsuite.addTest(loader(TestThermalExpansion))
     testsuite.addTest(loader(TestLatticeExpansion))
+    testsuite.addTest(loader(TestMurnaghan))
+    testsuite.addTest(loader(TestPVT))
     return testsuite
 
 
