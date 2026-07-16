@@ -44,6 +44,7 @@ from ..crystallography import resolution, Cell, EquationOfState, ReflectionCondi
 from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, Murnaghan, PVT,
                                    ThermalExpansion, Vinet, VolumeExpansion)
 from ..io.calibrant_config import CalibrantConfig
+from ..containers import Miller, Reflection
 
 logger = logging.getLogger(__name__)
 
@@ -603,6 +604,138 @@ class TestJCPDS(unittest.TestCase):
         self.assertRaises(ValueError, config.to_JCPDS)
 
 
+class TestCalibrantHeaders(unittest.TestCase):
+    """Parsing of the (heterogeneous, often hand-crafted) headers of .D files"""
+
+    @classmethod
+    def setUpClass(cls):
+        from ..utils import get_calibration_dir
+        cls.calibration_dir = get_calibration_dir()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.calibration_dir = None
+
+    def config(self, name):
+        return CalibrantConfig.from_dspacing(os.path.join(self.calibration_dir, name + ".D"))
+
+    def test_all_shipped_files_roundtrip(self):
+        "Every calibrant file shipped with pyFAI parses and survives a write/parse cycle unchanged"
+        counter = 0
+        for fname in sorted(os.listdir(self.calibration_dir)):
+            if not fname.endswith(".D"):
+                continue
+            counter += 1
+            config = CalibrantConfig.from_dspacing(os.path.join(self.calibration_dir, fname))
+            self.assertTrue(config.reflections, fname)
+
+            tmp = os.path.join(UtilsTest.tempdir, fname)
+            config.save(tmp)
+            clone = CalibrantConfig.from_dspacing(tmp)
+            for attribute in ("name", "description", "cell", "space_group", "reference"):
+                self.assertEqual(getattr(config, attribute), getattr(clone, attribute),
+                                 f"{attribute} of {fname}")
+            self.assertEqual(len(config.reflections), len(clone.reflections), fname)
+            for ref, out in zip(config.reflections, clone.reflections):
+                self.assertEqual(ref.dspacing, out.dspacing, fname)
+                self.assertEqual(ref.hkl, out.hkl, fname)
+                self.assertEqual(ref.multiplicity, out.multiplicity, fname)
+                self.assertEqual(ref.intensity, out.intensity, fname)
+        self.assertGreater(counter, 30, "the shipped calibrant files were found")
+
+    def test_to_cell_flavors(self):
+        "The various hand-crafted cell descriptions are interpreted correctly"
+        # unicode, centering word: `Face centered cubic cell a=5.411651Å ... α=90° ...`
+        cell = self.config("CeO2").to_cell()
+        self.assertEqual(cell.lattice, "cubic")
+        self.assertEqual(cell.type, "F")
+        self.assertAlmostEqual(cell.a, 5.411651, places=6)
+        # ASCII names, no unit: `Cubic cell a=4.0495 ... alpha=90.000 ... (Fm3m)`
+        cell = self.config("Al").to_cell()
+        self.assertEqual(cell.lattice, "cubic")
+        self.assertEqual(cell.type, "F", "centering recovered from the space group Fm3m")
+        self.assertAlmostEqual(cell.a, 4.0495, places=4)
+        # double lattice word: `Rhombohedral hexagonal cell ... (R-3c, 167)`
+        cell = self.config("alpha_Al2O3_SRM676a_2015").to_cell()
+        self.assertEqual(cell.lattice, "hexagonal")
+        self.assertEqual(cell.type, "R")
+        self.assertAlmostEqual(cell.c, 12.99231, places=5)
+        self.assertAlmostEqual(cell.gamma, 120.0, places=6)
+        # bare values: `14.2600  14.2600  14.2600   90.000   90.000   90.000 (Fm3)`
+        cell = self.config("C60").to_cell()
+        self.assertEqual(cell.lattice, "cubic")
+        self.assertAlmostEqual(cell.a, 14.26, places=4)
+        # bare values, hexagonal: `2.4560   2.4560   6.6960   90.000   90.000  120.000`
+        cell = self.config("graphite").to_cell()
+        self.assertEqual(cell.lattice, "hexagonal")
+        self.assertAlmostEqual(cell.c, 6.696, places=4)
+        # partial parameters: `Monoclinic cell a=29.59 b=6.15 c=3.98 beta=95.5 (P21/a)`
+        cell = self.config("PBBA").to_cell()
+        self.assertEqual(cell.lattice, "monoclinic")
+        self.assertAlmostEqual(cell.beta, 95.5, places=4)
+        self.assertAlmostEqual(cell.alpha, 90.0, places=6)
+        # pseudo-crystal with infinite parameters and free text yield None
+        self.assertIsNone(self.config("AgBh").to_cell())
+        self.assertIsNone(self.config("CrOx").to_cell())
+        self.assertIsNone(self.config("mock").to_cell())
+
+    def test_dspacing_consistency(self):
+        "The cell rebuilt from the header reproduces the tabulated d-spacings"
+        for name in ("CeO2", "LaB6", "Si"):
+            config = self.config(name)
+            cell = config.to_cell()
+            for reflection in config.reflections[:5]:
+                if reflection.hkl:
+                    self.assertAlmostEqual(cell.d(reflection.hkl) / reflection.dspacing, 1.0,
+                                           places=3, msg=f"{name} {reflection.hkl}")
+
+    def test_eos_roundtrip(self):
+        "The EoS survives a write/parse cycle of the .D file"
+        config = self.config("CeO2")
+        cell = config.to_cell()
+        config.eos = PVT(BirchMurnaghan(k0=220.0, k0p=4.4),
+                         VolumeExpansion([3.5e-5]),
+                         dk0dt=-0.02,
+                         v0=cell.volume)
+        tmp = os.path.join(UtilsTest.tempdir, "CeO2_eos.D")
+        config.save(tmp)
+        text = open(tmp).read()
+        self.assertIn("# EoS: {", text)
+        clone = CalibrantConfig.from_dspacing(tmp)
+        self.assertEqual(clone.eos, config.eos)
+        self.assertEqual(clone.cell, config.cell)
+        self.assertEqual(len(clone.reflections), len(config.reflections))
+
+    def test_intensity_without_multiplicity(self):
+        "Reflections with an intensity but no multiplicity (e.g. imported from JCPDS) round-trip"
+        config = CalibrantConfig(name="jcpds_like")
+        config.reflections = [Reflection(dspacing=2.3548, intensity=100.0, hkl=Miller(1, 1, 1)),
+                              Reflection(dspacing=2.0393, intensity=52.0, hkl=Miller(2, 0, 0))]
+        tmp = os.path.join(UtilsTest.tempdir, "jcpds_like.D")
+        config.save(tmp)
+        clone = CalibrantConfig.from_dspacing(tmp)
+        self.assertEqual(len(clone.reflections), 2)
+        self.assertEqual(clone.reflections[0].intensity, 100.0)
+        self.assertIsNone(clone.reflections[0].multiplicity)
+        self.assertEqual(clone.reflections[1].hkl, (2, 0, 0))
+        self.assertEqual(clone.reflections[1].intensity, 52.0)
+
+    def test_eos_corrupted(self):
+        "A hand-mangled EoS line does not prevent the calibrant from loading"
+        config = self.config("CeO2")
+        config.eos = BirchMurnaghan(k0=220.0, k0p=4.4)
+        tmp = os.path.join(UtilsTest.tempdir, "CeO2_bad_eos.D")
+        config.save(tmp)
+        with open(tmp) as fd:
+            text = fd.read()
+        with open(tmp, "w") as fd:
+            fd.write(text.replace('"model"', '"mangled'))
+        with self.assertLogs("pyFAI.io.calibrant_config", level="WARNING"):
+            clone = CalibrantConfig.from_dspacing(tmp)
+        self.assertIsNone(clone.eos)
+        self.assertEqual(len(clone.reflections), len(config.reflections))
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
@@ -616,6 +749,7 @@ def suite():
     testsuite.addTest(loader(TestPVT))
     testsuite.addTest(loader(TestVolumeExpansion))
     testsuite.addTest(loader(TestJCPDS))
+    testsuite.addTest(loader(TestCalibrantHeaders))
     return testsuite
 
 

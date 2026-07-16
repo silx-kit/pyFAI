@@ -38,35 +38,75 @@ __docformat__ = "restructuredtext"
 
 import os
 import re
+import json
 import logging
+from math import isfinite
 from dataclasses import field
 from ..containers import Reflection, Miller, dataclass
 
 logger = logging.getLogger(__name__)
 
+_CELL_LATTICES = ("cubic", "tetragonal", "hexagonal", "rhombohedral",
+                  "orthorhombic", "monoclinic", "triclinic")
+_CELL_CENTERINGS = {"primitive": "P",
+                    "body centered": "I",
+                    "face centered": "F",
+                    "a-end centered": "A",
+                    "b-end centered": "B",
+                    "c-end centered": "C"}
+
 
 def _parse_cell(text: str) -> dict:
-    """Extract the lattice name and the cell parameters from the textual
-    representation of a cell, e.g. as produced by ``str(Cell)``:
-    `Face centered cubic cell a=5.41165Å b=5.41165Å c=5.41165Å α=90° β=90° γ=90°`
+    """Extract lattice, centering and cell parameters from the textual
+    description of a cell found in the header of calibrant files.
+
+    Those files are often crafted by hand and thus heterogeneous; among the
+    flavors found in the wild:
+
+    - ``Cubic cell a=4.0495 b=4.0495 c=4.0495 alpha=90.000 ...``
+    - ``Face centered cubic cell a=5.411651Å b=5.411651Å ... α=90° ...``
+    - ``Rhombohedral hexagonal cell a=4.7570Å ...`` (R-centered, hexagonal setting)
+    - ``14.2600  14.2600  14.2600   90.000   90.000   90.000`` (bare values)
+    - ``Pseudocrystal a=inf b=inf c=58.380``
+    - free text (``Undefined Chromium oxide crystals ...``)
+
+    Free text yields an empty (or incomplete) dict, never an exception.
 
     :param text: cell description
-    :return: dict with keys among lattice, a, b, c, alpha, beta, gamma
+    :return: dict with keys among lattice, lattice_type, a, b, c, alpha, beta, gamma
     """
     result = {}
     lower = text.lower()
-    for lattice in ("cubic", "tetragonal", "hexagonal", "rhombohedral",
-                    "orthorhombic", "monoclinic", "triclinic"):
-        if lattice in lower:
-            result["lattice"] = lattice
+    found = [lattice for lattice in _CELL_LATTICES if lattice in lower]
+    if "rhombohedral" in found and ("hexagonal" in found or lower.count("rhombohedral") > 1):
+        # leading `Rhombohedral` describes the R-centering, not the lattice
+        result["lattice"] = "hexagonal" if "hexagonal" in found else "rhombohedral"
+        result["lattice_type"] = "R"
+    elif found:
+        result["lattice"] = found[0]
+    for word, symbol in _CELL_CENTERINGS.items():
+        if word in lower:
+            result["lattice_type"] = symbol
             break
     for name, symbol in (("a", "a"), ("b", "b"), ("c", "c"),
                          ("alpha", "(?:\N{GREEK SMALL LETTER ALPHA}|alpha)"),
                          ("beta", "(?:\N{GREEK SMALL LETTER BETA}|beta)"),
                          ("gamma", "(?:\N{GREEK SMALL LETTER GAMMA}|gamma)")):
-        match = re.search(rf"\b{symbol}=([-+0-9.eE]+)", text)
+        match = re.search(rf"\b{symbol}=([^\s°Å]+)", text)
         if match:
-            result[name] = float(match.group(1))
+            try:
+                result[name] = float(match.group(1))
+            except ValueError:
+                pass
+    if "a" not in result:
+        # bare values: `14.2600  14.2600  14.2600   90.000   90.000   90.000`
+        try:
+            values = [float(word) for word in text.split("(")[0].split()]
+        except ValueError:
+            pass
+        else:
+            if len(values) == 6:
+                result.update(zip(("a", "b", "c", "alpha", "beta", "gamma"), values))
     return result
 
 
@@ -86,12 +126,18 @@ class CalibrantConfig:
         out = [
             f"# Calibrant: {self.description or self.name}" + (f" ({self.name})" if self.description else ""),
             f"# Cell: {self.cell}" + (f" ({self.space_group})" if self.space_group else ""),
-            f"# Ref: {self.reference}",
+            f"# Ref: {self.reference}"]
+        if self.eos is not None:
+            out.append(f"# EoS: {json.dumps(self.eos.as_dict())}")
+        out += [
             "",
             "# d_spacing  # (h k l)  mult intensity"]
         for ref in self.reflections:
-            if ref.intensity is not None:
-                out.append(f"{ref.dspacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d} {ref.intensity}")
+            if ref.intensity is not None and ref.multiplicity:
+                out.append(f"{ref.dspacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d} {float(ref.intensity)}")
+            elif ref.intensity is not None:
+                # without multiplicity: the decimal point tells the intensity apart at parsing time
+                out.append(f"{ref.dspacing:12.8f} # {str(ref.hkl):10s} {float(ref.intensity)}")
             elif ref.multiplicity:
                 out.append(
                     f"{ref.dspacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d}"
@@ -199,6 +245,14 @@ class CalibrantConfig:
                 elif "Ref:" in line:
                     self.reference = line.split(":", 1)[1].strip()
                     continue
+                elif line.lower().startswith("eos:"):
+                    payload = line.split(":", 1)[1].strip()
+                    try:
+                        from ..crystallography.eos import EquationOfState  # lazy loading to prevent cyclic imports
+                        self.eos = EquationOfState.from_dict(json.loads(payload))
+                    except Exception as error:
+                        logger.warning("Unable to parse the EoS `%s` in `%s`: %s", payload, filename, error)
+                    continue
                 elif "Cell:" in line:
                     cell = line.split(":", 1)[1].strip()
                     if ("(" in cell) and (")" in cell):
@@ -259,6 +313,14 @@ class CalibrantConfig:
                             continue
                         elif mult.isdecimal():
                             reflection.multiplicity = int(mult)
+                        else:
+                            # not a multiplicity: an intensity (`100.0`) or a `weak` marker
+                            try:
+                                reflection.intensity = float(mult)
+                            except ValueError:
+                                if "weak" in mult.lower():
+                                    reflection.intensity = 0.0
+                            continue
                     if len(words) > end_miller + 2:
                         intensity = words[end_miller + 2]
                         if intensity.startswith("#"):
@@ -273,6 +335,62 @@ class CalibrantConfig:
         if not self.reflections:
             raise ValueError(f"No valid reflections found in calibrant file '{filename}'")
         return self
+
+    def to_cell(self):
+        """Attempt to rebuild a Cell object from the textual description in the header.
+
+        Calibrant files are often crafted by hand: cell descriptions are
+        heterogeneous, sometimes incomplete (missing parameters default to
+        90° angles, 120° gamma for hexagonal lattices, b=c=a) and sometimes
+        plain free text or pseudo-crystals with infinite cell parameters.
+        When the lattice is not spelled out, it is inferred from the
+        relations between the parameters; the centering is recovered from
+        the cell description or, failing that, from the first letter of the
+        space group.
+
+        :return: Cell instance, or None when the description cannot be interpreted
+        """
+        from ..crystallography.cell import Cell  # lazy loading to prevent cyclic imports
+        parsed = _parse_cell(self.cell)
+        if "a" not in parsed:
+            return None
+        a = parsed["a"]
+        b = parsed.get("b", a)
+        c = parsed.get("c", a)
+        lattice = parsed.get("lattice")
+        alpha = parsed.get("alpha", 90.0)
+        beta = parsed.get("beta", 90.0)
+        gamma = parsed.get("gamma", 120.0 if lattice == "hexagonal" else 90.0)
+        if not all(isfinite(value) for value in (a, b, c, alpha, beta, gamma)):
+            return None
+        if lattice is None:
+            if a == b == c:
+                if alpha == beta == gamma == 90.0:
+                    lattice = "cubic"
+                elif alpha == beta == gamma:
+                    lattice = "rhombohedral"
+                else:
+                    lattice = "triclinic"
+            elif a == b:
+                if alpha == beta == 90.0 and gamma == 120.0:
+                    lattice = "hexagonal"
+                elif alpha == beta == gamma == 90.0:
+                    lattice = "tetragonal"
+                else:
+                    lattice = "triclinic"
+            elif alpha == beta == gamma == 90.0:
+                lattice = "orthorhombic"
+            elif alpha == gamma == 90.0:
+                lattice = "monoclinic"
+            else:
+                lattice = "triclinic"
+        lattice_type = parsed.get("lattice_type")
+        if lattice_type is None and self.space_group:
+            initial = self.space_group.strip()[0].upper()
+            if initial in Cell.types:
+                lattice_type = initial
+        return Cell(a, b, c, alpha, beta, gamma,
+                    lattice=lattice, lattice_type=lattice_type or "P")
 
     @classmethod
     def from_JCPDS(cls, filename: str):
@@ -423,12 +541,12 @@ class CalibrantConfig:
             if dalphat:
                 lines.append(f"DALPHAT: {dalphat:.10g}")
 
-        cell = _parse_cell(self.cell)
-        if "lattice" not in cell or "a" not in cell:
-            raise ValueError(f"Unable to parse the cell description `{self.cell}` for JCPDS export")
-        lattice = cell["lattice"]
+        cell = self.to_cell()
+        if cell is None:
+            raise ValueError(f"Unable to interpret the cell description `{self.cell}` for JCPDS export")
+        lattice = cell.lattice
         lines.append(f"SYMMETRY: {lattice.upper()}")
-        lines.append(f"A: {cell['a']:.10g}")
+        lines.append(f"A: {cell.a:.10g}")
         if lattice in ("tetragonal", "hexagonal"):
             keys = ("c",)
         elif lattice == "rhombohedral":
@@ -442,7 +560,7 @@ class CalibrantConfig:
         else:  # cubic
             keys = ()
         for key in keys:
-            lines.append(f"{key.upper()}: {cell[key]:.10g}")
+            lines.append(f"{key.upper()}: {getattr(cell, key):.10g}")
 
         for reflection in self.reflections:
             hkl = reflection.hkl if reflection.hkl else (0, 0, 0)
