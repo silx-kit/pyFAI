@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2026"
+__date__ = "18/08/2026"
 
 import sys
 import os
@@ -45,6 +45,8 @@ import numpy
 import subprocess
 import copy
 import logging
+from io import StringIO
+from types import SimpleNamespace
 from math import pi
 from .utilstest import UtilsTest
 from ..utils import mathutil
@@ -55,6 +57,9 @@ from .. import detectors
 from .. import units
 from ..opencl import ocl
 from ..ext import splitPixel
+from ..detectors import detector_factory
+from ..io.ponifile import PoniFile
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -768,6 +773,33 @@ class TestBugRegression(unittest.TestCase):
             print(cm.output)
             self.assertEqual(len(cm.output), 1, "Warning when not good")
 
+    def test_bug_2904(self):
+        """sensor description is not JSON serializable"""
+        detector = detector_factory("RayonixMx225",
+                    {
+                    "pixel1": 73.242e-6,
+                    "pixel2": 73.242e-6,
+                    "orientation": 3,
+                    "sensor": {
+                        "material": "Gd2O2S",
+                        "thickness": 40e-6,
+                        },
+                    })
+
+        geometry = SimpleNamespace(
+            dist=0.1,
+            poni1=0.1,
+            poni2=0.1,
+            rot1=0.0,
+            rot2=0.0,
+            rot3=0.0,
+            wavelength=1e-10,
+            detector=detector,
+            parallax=False,
+        )
+        poni = PoniFile(geometry)
+        print(poni.detector)
+        poni.write(StringIO())
 
 
 class TestBug1703(unittest.TestCase):

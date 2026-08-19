@@ -1,13 +1,14 @@
 :Author: Jérôme Kieffer
-:Date: 26/06/2026
+:Date: 18/08/2026
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2026.XX
+2026.XX Unreleased
 -------------------
 - Change of behavior of `Calibrant` which raises `ValueError` when a file exist but does not d-spacing info / `IOError` when absent
+- Fix serialization issue with Rayonix detectors (regression introduced with parallax, #2904)
 
 2026.05 19/05/2026
 -------------------

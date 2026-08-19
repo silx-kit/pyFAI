@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "18/08/2026"
 __status__ = "production"
 
 import numpy
@@ -147,7 +147,7 @@ class _Rayonix(Detector):
         "pixel2": self._pixel2,
         "orientation": self.orientation or 3, }
         if getattr(self, "sensor", None) is not None:
-            config["sensor"] = self.sensor
+            config["sensor"] = self.sensor.as_dict()
         return config
 
 
