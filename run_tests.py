@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "24/02/2026"
+__date__ = "19/08/2026"
 __license__ = "MIT"
 
 import sys
@@ -374,8 +374,9 @@ else:
 epilog = """Environment variables:
 WITH_QT_TEST=False to disable graphical tests
 PYFAI_OPENCL=False to disable OpenCL tests.
-PYFAI_LOW_MEM: set to True to skip all tests >100Mb
+PYFAI_LOW_MEM=True to skip all tests >100Mb
 WITH_GL_TEST=False to disable tests using OpenGL
+QT_QPA_PLATFORM=offscreen to render all GUI tests offscreen
 """
 parser = ArgumentParser(description='Run the tests.',
                         epilog=epilog)
@@ -407,6 +408,9 @@ parser.add_argument("-v", "--verbose", default=0,
                          "including debug messages and test help strings.")
 parser.add_argument("--qt-binding", dest="qt_binding", default=None,
                     help="Force using a Qt binding, from 'PyQt5', 'PyQt6'or 'PySide6' (default)")
+parser.add_argument("--qt-screen", dest="qt_screen", default=None,
+                    help="Force using a Qt to render 'off'-screen or `on`-screen. use 'vnc' to debug")
+
 
 options = parser.parse_args()
 sys.argv = [sys.argv[0]]
@@ -438,6 +442,15 @@ if options.coverage:
     cov = coverage_class(include=[f"*/{PROJECT_NAME}/*"],
                          omit=omits)
     cov.start()
+
+if options.qt_screen:
+    env_qtplatform = os.environ.get("QT_QPA_PLATFORM")
+    if options.qt_screen.lower() == "on":
+        if env_qtplatform is None:
+            os.environ["QT_QPA_PLATFORM"] = "minimal"
+    else:
+        value = "offscreen" if options.qt_screen.lower() == "off" else options.qt_screen
+        os.environ["QT_QPA_PLATFORM"] = value
 
 if options.qt_binding:
     binding = options.qt_binding.lower()
