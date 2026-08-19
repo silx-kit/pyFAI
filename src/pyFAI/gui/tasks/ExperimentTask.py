@@ -25,7 +25,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "26/06/2026"
+__date__ = "19/08/2026"
 
 import numpy
 import logging
@@ -207,7 +207,7 @@ class ExperimentTask(AbstractCalibrationTask):
             warnings.append("A calibrant has to be specified")
         if wavelength is None:
             warnings.append("An energy has to be specified")
-        if image is not None and calibrantModel is not None:
+        if image is not None and detectorModel is not None:
             try:
                 detector = settings.detector()
                 binning = detector.guess_binning(image)
@@ -215,6 +215,14 @@ class ExperimentTask(AbstractCalibrationTask):
                     raise Exception("inconsistency")
             except Exception:
                 warnings.append("Inconsistency between sizes of image and detector")
+            # guess_binning mutates the detector shape even on failure, so on
+            # re-evaluation it can no longer detect the mismatch: check the
+            # actual mask stored in the model against the image instead.
+            mask = settings.mask().value()
+            if mask is not None and mask.shape != image.shape[:2]:
+                warnings.append(
+                    "Mask shape %s does not match image shape %s, "
+                    "check the detector selection" % (mask.shape, image.shape[:2]))
 
         self._globalWarnings = warnings
         self.updateNextStepStatus()

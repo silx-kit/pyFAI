@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "03/11/2025"
+__date__ = "19/08/2026"
 
 import logging
 from .AbstractModel import AbstractModel
@@ -125,6 +125,13 @@ class ExperimentSettingsModel(AbstractModel):
                 mask = detector.mask
             # Here mask can be None
             # For example if image do not feet the detector
+            if mask is not None and image is not None and mask.shape != image.shape[:2]:
+                # Never store a mask inconsistent with the image: it would
+                # break any downstream processing (e.g. peak picking)
+                _logger.warning("Mask of detector %s (shape %s) does not match the image shape %s: "
+                                "no mask is applied, check the detector selection",
+                                detector.name, mask.shape, image.shape[:2])
+                mask = None
 
         if mask is not None:
             mask = mask.copy()
