@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "19/08/2026"
 __status__ = "production"
 
 import sys
@@ -76,8 +76,13 @@ class Massif(object):
                 logger.error("Unable to understand this type of data %s: %s", data, error)
         self.log_info = True
         """If true, more information is displayed in the logger relative to picking."""
+        if mask is not None:
+            mask = numpy.asarray(mask)
+            if mask.shape != self.data.shape:
+                raise ValueError(f"Mask shape {mask.shape} does not match data shape {self.data.shape}: "
+                                 "check the detector definition")
         data_mask = numpy.logical_not(numpy.isfinite(self.data))
-        if (data_mask.any() is False):
+        if not data_mask.any():
             self.mask = mask
         else:
             if mask is None:
