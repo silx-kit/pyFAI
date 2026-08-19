@@ -47,6 +47,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__mask = ImageFromFilenameModel()
         self.__maskedImage = MaskedImageModel(None, self.__image, self.__mask)
         self.__isDetectorMask = True
+        self.__detectorShape = None
         self.__dark = ImageFromFilenameModel()
         self.__flat = ImageFromFilenameModel()
         self.__preprocessed_image = PreProcessedImageModel(
@@ -100,16 +101,25 @@ class ExperimentSettingsModel(AbstractModel):
         return ", ".join(res)
 
     def __detectorUpdated(self):
-        """Handle detector change: the mask is re-initialized.
+        """Handle detector change: the mask is re-initialized when the
+        detector size effectively changes.
 
-        Any previous mask (customized by the user or loaded from a file) is
-        discarded and replaced by the mask of the new detector, as masks from
-        different detectors are unrelated."""
-        if self.__mask.filename() is not None or not self.__isDetectorMask:
-            _logger.warning("Detector changed: the former mask is replaced by the mask of the new detector")
-        if self.__mask.filename() is not None:
-            self.__mask.setFilename(None)
-        self.__isDetectorMask = True
+        In this case any previous mask (customized by the user or loaded from
+        a file) is discarded and replaced by the mask of the new detector, as
+        masks of different geometries are unrelated. Selecting a detector of
+        the same size preserves a customized mask."""
+        detector = self.__detectorModel.detector()
+        shape = None if detector is None or detector.shape is None else tuple(detector.shape)
+        previousShape = self.__detectorShape
+        self.__detectorShape = shape
+        if previousShape is not None and shape is not None and shape != previousShape:
+            if self.__mask.filename() is not None or not self.__isDetectorMask:
+                _logger.warning("Detector shape changed from %s to %s: "
+                                "the former mask is replaced by the mask of the new detector",
+                                previousShape, shape)
+            if self.__mask.filename() is not None:
+                self.__mask.setFilename(None)
+            self.__isDetectorMask = True
         self.__updateDetectorMask()
 
     def __updateDetectorMask(self):
