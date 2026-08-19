@@ -85,7 +85,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__flat.filenameChanged.connect(self.wasChanged)
 
         self.__image.changed.connect(self.__updateDetectorMask)
-        self.__detectorModel.changed.connect(self.__updateDetectorMask)
+        self.__detectorModel.changed.connect(self.__detectorUpdated)
         self.__mask.changed.connect(self.__notAnymoreADetectorMask)
 
 
@@ -98,6 +98,19 @@ class ExperimentSettingsModel(AbstractModel):
                f"self.__jsonFile: {self.__jsonFile}",
                f"parallaxCorrection: {self.__parallaxCorrection.value()}"]
         return ", ".join(res)
+
+    def __detectorUpdated(self):
+        """Handle detector change: the mask is re-initialized.
+
+        Any previous mask (customized by the user or loaded from a file) is
+        discarded and replaced by the mask of the new detector, as masks from
+        different detectors are unrelated."""
+        if self.__mask.filename() is not None or not self.__isDetectorMask:
+            _logger.warning("Detector changed: the former mask is replaced by the mask of the new detector")
+        if self.__mask.filename() is not None:
+            self.__mask.setFilename(None)
+        self.__isDetectorMask = True
+        self.__updateDetectorMask()
 
     def __updateDetectorMask(self):
         if self.mask().filename() is not None:
