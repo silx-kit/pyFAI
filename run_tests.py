@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "19/08/2026"
+__date__ = "20/08/2026"
 __license__ = "MIT"
 
 import sys
@@ -43,6 +43,7 @@ import time
 import unittest
 import collections
 import tempfile
+import platform
 
 
 class StreamHandlerUnittestReady(logging.StreamHandler):
