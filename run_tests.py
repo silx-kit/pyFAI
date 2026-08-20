@@ -408,8 +408,8 @@ parser.add_argument("-v", "--verbose", default=0,
                          "including debug messages and test help strings.")
 parser.add_argument("--qt-binding", dest="qt_binding", default=None,
                     help="Force using a Qt binding, from 'PyQt5', 'PyQt6'or 'PySide6' (default)")
-parser.add_argument("--qt-screen", dest="qt_screen", default=None,
-                    help="Force using a Qt to render 'off'-screen or `on`-screen. use 'vnc' to debug")
+parser.add_argument("--qt-screen", dest="qt_screen", default="off", #None,
+                    help="Force using a Qt to render 'off'-screen (default) or `on`-screen. use 'vnc' to debug")
 
 
 options = parser.parse_args()
@@ -444,12 +444,19 @@ if options.coverage:
     cov.start()
 
 if options.qt_screen:
+    system = platform.system()
+    if system == "Windows":
+        off = on = "windows"
+    else:
+        on = "minimal"
+        off = "offscreen"
+
     env_qtplatform = os.environ.get("QT_QPA_PLATFORM")
     if options.qt_screen.lower() == "on":
         if env_qtplatform is None:
-            os.environ["QT_QPA_PLATFORM"] = "minimal"
+            os.environ["QT_QPA_PLATFORM"] = on 
     else:
-        value = "offscreen" if options.qt_screen.lower() == "off" else options.qt_screen
+        value = off if options.qt_screen.lower() == "off" else options.qt_screen
         os.environ["QT_QPA_PLATFORM"] = value
 
 if options.qt_binding:
