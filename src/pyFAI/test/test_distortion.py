@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
 import logging
 import unittest
@@ -110,12 +110,12 @@ class TestHalfCCD(unittest.TestCase):
         delta = (self.dis.lut["idx"] - self.ref.LUT["idx"])
         bad = 1.0 * self.dis.lut.size / (delta == 0).sum() - 1
         self.assertLess(bad, 1e-2,
-                        "same index position < 1%% error, got %s" % bad)
+                        f"same index position < 1% error, got {bad}")
         ref_pixel_size = self.ref.LUT["coef"].sum(axis=-1)
         obt_pixel_size = self.dis.lut["coef"].sum(axis=-1)
         delta = abs(ref_pixel_size - obt_pixel_size).max()
         self.assertLess(delta, 1e-3,
-                        "Same pixel size at 0.1%%, got %s" % delta)
+                        f"Same pixel size at 0.1%, got {delta}")
 
     def test_ref_vs_fit2d(self):
         """Compare reference spline correction vs fit2d's code
@@ -254,7 +254,7 @@ class TestImplementations(unittest.TestCase):
         self.dis.reset(prepare=False)
         cy = self.dis.calc_pos(True)
         delta = abs(ny - cy).max()
-        self.assertEqual(delta, 0, "calc_pos: equivalence of the cython and numpy model, max error=%s" % delta)
+        self.assertEqual(delta, 0, f"calc_pos: equivalence of the cython and numpy model, max error={delta}")
 
     def test_size(self):
         self.dis.reset(prepare=False)
@@ -262,7 +262,7 @@ class TestImplementations(unittest.TestCase):
         self.dis.reset(prepare=False)
         cy = self.dis.calc_size(True)
         delta = abs(ny - cy).sum()
-        self.assertEqual(delta, 0, "calc_size: equivalence of the cython and numpy model, summed error=%s" % delta)
+        self.assertEqual(delta, 0, f"calc_size: equivalence of the cython and numpy model, summed error={delta}")
 
     def test_lut(self):
         self.dis.reset(method="LUT", prepare=False)

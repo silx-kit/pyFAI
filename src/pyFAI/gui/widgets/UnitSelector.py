@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 
 from silx.gui import qt
 
@@ -72,7 +72,7 @@ class UnitSelector(qt.QComboBox):
                     label = name
                 else:
                     symbol = stringutil.latex_to_unicode(unit.unit_symbol)
-                    label = "%s (%s)" % (name, symbol)
+                    label = f"{name} ({symbol})"
             else:
                 label = stringutil.latex_to_unicode(unit.label)
             self.addItem(label, unit)

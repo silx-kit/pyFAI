@@ -27,7 +27,7 @@
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -129,7 +129,7 @@ class ProgressBar:
         bar_position = min(bar_position, self.bar_width)
 
         # line to display
-        line = '\r%15s [%s%s] % 3d%%  %s' % (self.title, self.progress_char * bar_position, ' ' * (self.bar_width - bar_position), percent, message)
+        line = f'\r{self.title!s:>15} [{self.progress_char * bar_position}{" " * (self.bar_width - bar_position)}] {percent: 3d}%  {message}'
 
         # trailing to mask the previous message
         line_size = len(line)

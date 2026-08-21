@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
 import contextlib
 import logging
@@ -93,7 +93,7 @@ class TestIntegrate1D(unittest.TestCase):
         for a in res:
             for b in res:
                 R = mathutil.rwp(res[a], res[b])
-                mesg = "testQ: %s vs %s measured R=%s<%s" % (a, b, R, self.Rmax)
+                mesg = f"testQ: {a} vs {b} measured R={R}<{self.Rmax}"
                 if R > self.Rmax:
                     logger.error(mesg)
                 else:
@@ -107,7 +107,7 @@ class TestIntegrate1D(unittest.TestCase):
         for a in res:
             for b in res:
                 R = mathutil.rwp(res[a], res[b])
-                mesg = "testR: %s vs %s measured R=%s<%s" % (a, b, R, self.Rmax)
+                mesg = f"testR: {a} vs {b} measured R={R}<{self.Rmax}"
                 if R > self.Rmax:
                     logger.error(mesg)
                 else:
@@ -121,7 +121,7 @@ class TestIntegrate1D(unittest.TestCase):
         for a in res:
             for b in res:
                 R = mathutil.rwp(res[a], res[b])
-                mesg = "test2th: %s vs %s measured R=%s<%s" % (a, b, R, self.Rmax)
+                mesg = f"test2th: {a} vs {b} measured R={R}<{self.Rmax}"
                 if R > self.Rmax:
                     logger.error(mesg)
                 else:
@@ -138,7 +138,7 @@ class TestIntegrate1D(unittest.TestCase):
             for m in methods:
                 if m.target is not None:
                     continue  # Skip OpenCL
-                logger.info("Processing %s" % m)
+                logger.info(f"Processing {m}")
                 res[m] = self.ai.integrate1d_ng(self.data, self.npt,
                                                  variance=self.data,
                                                  method=m,
@@ -224,7 +224,7 @@ class TestIntegrate2D(unittest.TestCase):
                 delta_pos_rad = abs(res[a][1] - res[b][1]).max()
                 delta_pos_azim = abs(res[a][2] - res[b][2]).max()
                 R = abs((res[a][0][mask] - res[b][0][mask]) / numpy.maximum(1, res[a][0][mask])).mean() * 100
-                mesg = "testQ 2D: %s vs %s measured delta rad=%s azim=%s R=%s<%s" % (a, b, delta_pos_rad, delta_pos_azim, R, self.Rmax)
+                mesg = f"testQ 2D: {a} vs {b} measured delta rad={delta_pos_rad} azim={delta_pos_azim} R={R}<{self.Rmax}"
                 if R > self.Rmax:
                     logger.error(mesg)
                 else:
@@ -244,7 +244,7 @@ class TestIntegrate2D(unittest.TestCase):
                 delta_pos_rad = abs(res[a][1] - res[b][1]).max()
                 delta_pos_azim = abs(res[a][2] - res[b][2]).max()
                 R = abs((res[a][0][mask] - res[b][0][mask]) / numpy.maximum(1, res[a][0][mask])).mean() * 100
-                mesg = "testR 2D: %s vs %s measured delta rad=%s azim=%s R=%s<%s" % (a, b, delta_pos_rad, delta_pos_azim, R, self.Rmax)
+                mesg = f"testR 2D: {a} vs {b} measured delta rad={delta_pos_rad} azim={delta_pos_azim} R={R}<{self.Rmax}"
                 if R > self.Rmax:
                     logger.error(mesg)
                 else:
@@ -266,7 +266,7 @@ class TestIntegrate2D(unittest.TestCase):
                 delta_pos_rad = abs(res[a][1] - res[b][1]).max()
                 delta_pos_azim = abs(res[a][2] - res[b][2]).max()
                 R = abs((res[a][0][mask] - res[b][0][mask]) / numpy.maximum(1, res[a][0][mask])).mean() * 100
-                mesg = "test2th 2D: %s vs %s measured delta rad=%s azim=%s R=%s<%s" % (a, b, delta_pos_rad, delta_pos_azim, R, self.Rmax)
+                mesg = f"test2th 2D: {a} vs {b} measured delta rad={delta_pos_rad} azim={delta_pos_azim} R={R}<{self.Rmax}"
                 if R > self.Rmax:
                     logger.error(mesg)
                 else:

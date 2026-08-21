@@ -32,7 +32,7 @@ __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "21/08/2026"
 
 import logging
 import platform as platform_module
@@ -76,7 +76,7 @@ class TestAddition(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        print("Maximum valid workgroup size %s on device %s" % (cls.max_valid_wg, cls.ctx.devices[0]))
+        print(f"Maximum valid workgroup size {cls.max_valid_wg} on device {cls.ctx.devices[0]}")
         cls.ctx = None
         cls.queue = None
 
@@ -112,7 +112,7 @@ class TestAddition(unittest.TestCase):
                 evt.wait()
             except Exception as error:
                 max_valid_wg = self.program.addition.get_work_group_info(pyopencl.kernel_work_group_info.WORK_GROUP_SIZE, self.ctx.devices[0])
-                msg = "Error %s on WG=%s: %s" % (error, wg, max_valid_wg)
+                msg = f"Error {error} on WG={wg}: {max_valid_wg}"
                 self.assertLess(max_valid_wg, wg, msg)
                 break
             else:
@@ -120,7 +120,7 @@ class TestAddition(unittest.TestCase):
                 good = numpy.allclose(res, self.data - 5)
                 if good and wg > self.max_valid_wg:
                     self.__class__.max_valid_wg = wg
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_measurement(self):
@@ -136,7 +136,7 @@ class TestAddition(unittest.TestCase):
                     logger.error(err)
                 else:
                     self.assertEqual(meas, device.max_work_group_size,
-                                     "Workgroup size for %s/%s: %s == %s" % (platform, device, meas, device.max_work_group_size))
+                                     f"Workgroup size for {platform}/{device}: {meas} == {device.max_work_group_size}")
 
 
 def suite():

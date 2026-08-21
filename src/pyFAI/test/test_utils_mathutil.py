@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
 import logging
 import os
@@ -135,7 +135,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
                 blurred2 = mathutil.gaussian_filter(self.flat, sigma, mode=mode, use_scipy=False)
                 delta = abs((blurred1 - blurred2) / (blurred1)).max()
                 logger.info("Error for gaussian blur sigma: %s with mode %s is %s", sigma, mode, delta)
-                self.assertTrue(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
+                self.assertTrue(delta < 6e-5, f"Gaussian blur sigma: {sigma}  in {mode} mode are the same, got {delta}")
 
     def test_expand2d(self):
         vect = numpy.arange(10.)

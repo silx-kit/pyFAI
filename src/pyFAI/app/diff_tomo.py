@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "21/08/2026"
 __satus__ = "Production"
 
 import glob
@@ -96,7 +96,7 @@ user interface.
         """
         epilog = """If the number of files is too large, use double quotes "*.edf" """
         usage = """diff_tomo [options] -p ponifile imagefiles*"""
-        version = "diff_tomo from pyFAI  version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
+        version = f"diff_tomo from pyFAI  version {PyFAI_VERSION}: {PyFAI_DATE}"
         parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
         parser.add_argument("-V", "--version", action='version', version=version)
         parser.add_argument("args", metavar="FILE", help="List of files to calibrate", nargs='+')

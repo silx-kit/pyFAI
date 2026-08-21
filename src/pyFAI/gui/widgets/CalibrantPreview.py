@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "12/09/2025"
+__date__ = "21/08/2026"
 
 import logging
 import os.path
@@ -114,13 +114,13 @@ class CalibrantPreview(qt.QFrame):
         toolTip = []
         for f in fileds:
             field_name, field_value, suffix = f
-            field = '<li style="white-space:pre"><b>%s</b>: %s</li>' % (field_name, field_value)
+            field = f'<li style="white-space:pre"><b>{field_name}</b>: {field_value}</li>'
             if suffix is not None:
-                field = "%s (%s)" % (field, suffix)
+                field = f"{field} ({suffix})"
             toolTip.append(field)
 
         toolTip = "\n".join(toolTip)
-        toolTip = '<html><ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">%s</ul></html>' % toolTip
+        toolTip = f'<html><ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">{toolTip}</ul></html>'
         self.setToolTip(toolTip)
 
     def __getPixmap(self, size=360):

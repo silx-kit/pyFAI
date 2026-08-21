@@ -27,7 +27,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import datetime
@@ -85,7 +85,7 @@ def configure_parser_arguments(parser):
     parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                         help="Wavelength of the X-Ray beam in Angstrom.", default=None)
     parser.add_argument("-e", "--energy", dest="energy", type=float,
-                        help="Energy of the X-Ray beam in keV (hc=%skeV.A)." % pyFAI_units.hc, default=None)
+                        help=f"Energy of the X-Ray beam in keV (hc={pyFAI_units.hc}keV.A).", default=None)
     parser.add_argument("-P", "--polarization", dest="polarization_factor",
                         type=float, default=None,
                         help="Polarization factor, from -1 (vertical) to +1 (horizontal)," +
@@ -242,12 +242,12 @@ decrease the value if arcs are mixed together.""", default=None)
                         help="Simplify some Qt feature, removed disappearing cursor bug (#1899) when playing over remote desktop",
                         default=False)
 
-description = """Calibrate the diffraction setup geometry based on
+description = f"""Calibrate the diffraction setup geometry based on
 Debye-Scherrer rings images without a priori knowledge of your setup.
 You will need to provide a calibrant or a "d-spacing" file containing the
 spacing of Miller plans in Angstrom (in decreasing order).
-%s or search in the American Mineralogist database:
-http://rruff.geo.arizona.edu/AMS/amcsd.php""" % str(calibrant.ALL_CALIBRANTS)
+{str(calibrant.ALL_CALIBRANTS)} or search in the American Mineralogist database:
+http://rruff.geo.arizona.edu/AMS/amcsd.php"""
 
 epilog = """The output of this program is a "PONI" file containing the
 detector description and the 6 refined parameters (distance, center, rotation)
@@ -289,7 +289,7 @@ def parse_options():
     """
     usage = "pyFAI-calib2 [options] input_image.edf"
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
-    version = "calibration from pyFAI  version %s: %s" % (pyFAI_version, pyFAI_date)
+    version = f"calibration from pyFAI  version {pyFAI_version}: {pyFAI_date}"
     parser.add_argument("-V", "--version", action='version', version=version)
     configure_parser_arguments(parser)
 

@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/02/2023"
+__date__ = "21/08/2026"
 
 from .AbstractModel import AbstractModel
 from .DataModel import DataModel
@@ -128,7 +128,7 @@ class GeometryModel(AbstractModel):
         values = [self.distance(), self.wavelength(), self.poni1(), self.poni2(),
                   self.rotation1(), self.rotation2(), self.rotation3()]
         values = [str(v.value()) for v in values]
-        return "GeometryModel(%s)" % ",".join(values)
+        return f"GeometryModel({','.join(values)})"
 
     def copy(self):
         other = self.__class__(self.parent())

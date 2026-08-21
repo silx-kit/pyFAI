@@ -114,7 +114,7 @@ def _findUnusedName(peakSelectionModel):
     """
     :rtype: str
     """
-    names = ["% 8s" % p.name() for p in peakSelectionModel]
+    names = [f"{p.name()!s:>8}" for p in peakSelectionModel]
     if len(names) > 0:
         names = sorted(names)
         bigger = names[-1].strip()

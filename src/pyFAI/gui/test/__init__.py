@@ -29,7 +29,7 @@
 
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "21/08/2026"
 
 import importlib
 import logging
@@ -49,7 +49,7 @@ class SkipGuiTest(unittest.TestCase):
         unittest.TestCase.__init__(self, methodName=methodName)
 
     def runTest(self):
-        self.skipTest("pyFAI.gui tests disabled (%s)" % self._reason)
+        self.skipTest(f"pyFAI.gui tests disabled ({self._reason})")
 
 
 def suite():

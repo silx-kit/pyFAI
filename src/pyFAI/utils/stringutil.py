@@ -27,7 +27,7 @@
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "21/08/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -60,7 +60,7 @@ class SafeFormatter(string.Formatter):
         except KeyboardInterrupt:
             raise
         except Exception:
-            return "{%s}" % field_name, field_name
+            return f"{{{field_name}}}", field_name
 
 
 _safe_formater = SafeFormatter()
@@ -115,7 +115,7 @@ def to_scientific_unicode(value, digits=3):
     :param int digits: Number of digits expected (`3` means `1.000`).
     """
     if math.isfinite(value):
-        value = ("%%0.%de" % digits) % value
+        value = f"{value:0.{digits}e}"
         value, power10 = value.split("e")
         power = ""
         for p in power10:
@@ -152,7 +152,7 @@ def to_bool(string):
         return True
     if lower in _FALSE_STRINGS:
         return False
-    raise ValueError("'%s' is not a valid boolean" % string)
+    raise ValueError(f"'{string}' is not a valid boolean")
 
 
 _ordinal_suffix = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
@@ -166,7 +166,7 @@ def to_ordinal(number):
     :param int number: A number referring to a position
     :rtype: str
     """
-    string = "%d" % number
+    string = f"{int(number)}"
     if len(string) >= 2 and string[-2] == "1":
         return string + "th"
     digit = ord(string[-1]) - ord("0")
@@ -188,7 +188,7 @@ def to_eng(value:float, fmt:str|None=None, space=""):
     else:
         value *= 10**(-3*key)
         if fmt:
-            ffmt = "{value:%s}{space}{pfix}"%fmt
+            ffmt = f"{{value:{fmt}}}{{space}}{{pfix}}"
             return ffmt.format(value=value, space=space, pfix=pfix, fmt=fmt)
         else:
             string = f"{value:f}"

@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "10/04/2026"
+__date__ = "21/08/2026"
 
 import logging
 
@@ -500,7 +500,7 @@ class IntegrationPlot(qt.QFrame):
                 ringId, angle = self.__getClosestAngle(angle)
 
                 if ringId is not None:
-                    message = "%s ring" % stringutil.to_ordinal(ringId + 1)
+                    message = f"{stringutil.to_ordinal(ringId + 1)} ring"
                     qt.QToolTip.showText(event.globalPos(), message)
                 else:
                     qt.QToolTip.hideText()
@@ -669,7 +669,7 @@ class IntegrationPlot(qt.QFrame):
         color = CalibrationContext.instance().getMarkerColor(ringId, mode="numpy")
         items = []
 
-        legend = "ring-%i" % (ringId,)
+        legend = f"ring-{ringId}"
 
         self.__plot1d.addXMarker(x=ringAngle, color=color, legend=legend)
         item = self.__plot1d._getMarker(legend)

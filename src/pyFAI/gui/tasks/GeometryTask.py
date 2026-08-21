@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "26/06/2026"
+__date__ = "21/08/2026"
 
 import datetime
 import logging
@@ -284,7 +284,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
                 ringId, angle = self.__getClosestAngle(angle)
 
                 if ringId is not None:
-                    message = "%s ring" % stringutil.to_ordinal(ringId + 1)
+                    message = f"{stringutil.to_ordinal(ringId + 1)} ring"
                     qt.QToolTip.showText(event.globalPos(), message)
                 else:
                     qt.QToolTip.hideText()
@@ -461,7 +461,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         items = []
         for lineId, line in enumerate(polyline):
             y, x = line[:, 0] + 0.5, line[:, 1] + 0.5
-            legend = "ring-%i-%i" % (ringId, lineId)
+            legend = f"ring-{ringId}-{lineId}"
             self.addCurve(
                 x=x,
                 y=y,
@@ -970,11 +970,11 @@ class GeometryTask(AbstractCalibrationTask):
                 else:
                     diff = stringutil.to_scientific_unicode(rms - previousRms, digits=2)
                     if rms < previousRms:
-                        diff = '<font color="green">%s</font>' % diff
+                        diff = f'<font color="green">{diff}</font>'
                     else:
-                        diff = '<font color="red">%s</font>' % diff
-                text = '%s (%s)' % (text, diff)
-            text = "%s %s" % (text, angleUnit.symbol)
+                        diff = f'<font color="red">{diff}</font>'
+                text = f'{text} ({diff})'
+            text = f"{text} {angleUnit.symbol}"
         else:
             text = ""
         self._currentResidual.setText(text)

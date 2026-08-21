@@ -24,7 +24,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "21/08/2026"
 
 from silx.gui import icons, qt
 
@@ -278,7 +278,7 @@ class FitParamView(qt.QObject):
         elif isinstance(displayedUnit, DataModel):
             pass
         else:
-            raise TypeError("Unsupported type %s" % type(displayedUnit))
+            raise TypeError(f"Unsupported type {type(displayedUnit)}")
         self.__units = internalUnit, displayedUnit
         self.__unit.setUnitModel(displayedUnit)
         self.__quantity.setDisplayedUnitModel(displayedUnit)

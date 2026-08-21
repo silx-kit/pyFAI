@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2025"
+__date__ = "21/08/2026"
 __satus__ = "production"
 
 import collections
@@ -504,7 +504,7 @@ class MultiFileWriter(io.Writer):
     def __init__(self, output_path, mode=HDF5Writer.MODE_ERROR):
         super().__init__()
         if mode in [HDF5Writer.MODE_OVERWRITE, HDF5Writer.MODE_APPEND]:
-            raise ValueError("Mode %s unsupported" % mode)
+            raise ValueError(f"Mode {mode} unsupported")
         self._writer = None
         self._output_path = output_path
         self._mode = mode

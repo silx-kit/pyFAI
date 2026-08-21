@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2026"
+__date__ = "21/08/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -410,8 +410,7 @@ class MultiGeometryFiber:
             self.threadpool.close()
 
     def __repr__(self, *args, **kwargs):
-        return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \
-            (len(self.fis), self.ip_range, self.unit, self.oop_range)
+        return f"MultiGeometry integrator with {len(self.fis)} geometries on {self.ip_range} radial range ({self.unit}) and {self.oop_range} azimuthal range (deg)"
 
     def _guess_inplane_range(self):
         logger.info("Calculating the in-plane range of MultiGeometry...")

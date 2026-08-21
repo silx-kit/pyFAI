@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/06/2026"
+__date__ = "21/08/2026"
 
 import collections
 import logging
@@ -319,7 +319,7 @@ class RingCalibration:
         if residual == inf:
             self.__isValid = False
 
-        print("Final residual: %s (after %s iterations)" % (residual, count))
+        print(f"Final residual: {residual} (after {count} iterations)")
 
         self.__geoRef.reset()
 

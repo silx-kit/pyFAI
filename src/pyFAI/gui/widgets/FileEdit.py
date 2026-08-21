@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 
 import logging
 
@@ -206,10 +206,10 @@ class FileEdit(qt.QLineEdit):
                     try:
                         data = pyFAI.io.image.read_image_data(filename)
                     except Exception as e:
-                        message = "Filename '%s' not supported.<br />%s" % (filename, str(e))
+                        message = f"Filename '{filename}' not supported.<br />{str(e)}"
                         title = "Loading image error"
                         errorInfo = title, message
-                        _logger.error("Error while loading %s" % filename)
+                        _logger.error(f"Error while loading {filename}")
                         _logger.debug("Backtrace", exc_info=True)
                         data = None
                 else:
@@ -229,7 +229,7 @@ class FileEdit(qt.QLineEdit):
                 except Exception as e:
                     if model.value() is not previous:
                         model.setValue(previous)
-                    message = "Filename '%s' not supported.<br />%s" % (filename, str(e))
+                    message = f"Filename '{filename}' not supported.<br />{str(e)}"
                     qt.QMessageBox.critical(self, "Unsupported filename", message)
             else:
                 raise RuntimeError()

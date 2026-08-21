@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "21/08/2026"
 __status__ = "development"
 
 import json
@@ -149,7 +149,7 @@ def _normalize_filenames(filenames):
     if isinstance(filenames, (str,)):
         # It's a single filename
         return [filenames]
-    raise TypeError("Unsupported type %s for a list of filenames" % type(filenames))
+    raise TypeError(f"Unsupported type {type(filenames)} for a list of filenames")
 
 
 def _reduce_images(filenames, method="mean"):
@@ -625,11 +625,11 @@ class Worker:
             method = method.fixed(dim=dim)
         elif isinstance(method, (list, tuple)):
             if len(method) != 3:
-                raise TypeError("Method size %s unsupported." % len(method))
+                raise TypeError(f"Method size {len(method)} unsupported.")
             split, algo, impl = method
             method = method_registry.Method(dim, split, algo, impl, target=None)
         else:
-            raise TypeError("Method type %s unsupported." % type(method))
+            raise TypeError(f"Method type {type(method)} unsupported.")
         return method
 
     __call__ = process

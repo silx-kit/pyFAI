@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "21/08/2026"
 __status__ = "development"
 
 import copy
@@ -424,7 +424,7 @@ class IntegrationMethod:
             string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation, self.target_name))
         else:
             string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation))
-        return "IntegrationMethod(%s)" % string
+        return f"IntegrationMethod({string})"
 
     def __hash__(self):
         """Make it independent from weighted"""

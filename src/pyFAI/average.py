@@ -28,7 +28,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import logging
@@ -430,7 +430,7 @@ def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)
                 logger.warning("Empty selection for quantil %s, would keep points from %s to %s", quantiles, lower, upper)
         center = sorted_[lower:upper].mean(axis=0)
     else:
-        raise RuntimeError("Cannot understand method: %s in average_dark" % center_method)
+        raise RuntimeError(f"Cannot understand method: {center_method} in average_dark")
     if cutoff is None or cutoff <= 0:
         output = center
     else:
@@ -472,11 +472,11 @@ def _normalize_image_stack(image_stack):
             elif isinstance(image, numpy.ndarray) and image.ndim == 2:
                 data = image
             else:
-                raise Exception("Unsupported image type '%s' in image_stack" % type(image))
+                raise Exception(f"Unsupported image type '{type(image)}' in image_stack")
             result.append(data)
         return result
 
-    raise Exception("Unsupported type '%s' for image_stack" % type(image_stack))
+    raise Exception(f"Unsupported type '{type(image_stack)}' for image_stack")
 
 
 class AverageWriter:
@@ -534,7 +534,7 @@ class MultiFilesAverageWriter(AverageWriter):
         if monitor_name is not None:
             self._global_header["monitor_name"] = monitor_name
 
-        pattern = "merged_file_%%0%ii" % len(str(len(merged_files)))
+        pattern = f"merged_file_%0{len(str(len(merged_files)))}i"
         for i, f in enumerate(merged_files):
             name = pattern % i
             self._global_header[name] = f.filename
@@ -750,7 +750,7 @@ class Average:
 
                 # Assume this is a numpy array like
                 if not isinstance(image, numpy.ndarray):
-                    raise RuntimeError("Not good type for input, got %s, expected numpy array" % type(image))
+                    raise RuntimeError(f"Not good type for input, got {type(image)}, expected numpy array")
                 fabio_image = fabio.numpyimage.NumpyImage(data=image)
 
             if self._observer:
@@ -961,7 +961,7 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None,
             fformat = fformat.lstrip(".")
         if output is None:
             prefix = common_prefix([i.filename for i in average.get_fabio_images()])
-            output = "filt%02i-%s.%s" % (average.get_counter_frames(), prefix, fformat)
+            output = f"filt{average.get_counter_frames():02d}-{prefix}.{fformat}"
             output = "{method_name}" + output
 
     if output is not None:

@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2025"
+__date__ = "21/08/2026"
 __status__ = "development"
 
 import json
@@ -223,7 +223,7 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
             filename = op.basename(data_info.source_filename)
         else:
             filename = data_info.source_filename
-        self._progressBar.setFormat("%s (%%p%%)..." % filename)
+        self._progressBar.setFormat(f"{filename} (%p%)...")
 
     def data_result(self, data_info, result):
         self.__resultReceived(result)

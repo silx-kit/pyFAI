@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 
 import logging
 
@@ -67,13 +67,13 @@ def _get_monitor_value_from_edf(image, monitor_key):
         mnemonic_values_key = base_key + "_mne"
         mnemonic_values = keys.get(mnemonic_values_key, None)
         if mnemonic_values is None:
-            raise MonitorNotFound("Monitor mnemonic key '%s' not found in the header" % (mnemonic_values_key))
+            raise MonitorNotFound(f"Monitor mnemonic key '{mnemonic_values_key}' not found in the header")
 
         mnemonic_values = mnemonic_values.split()
         pos_values_key = base_key + "_pos"
         pos_values = keys.get(pos_values_key)
         if pos_values is None:
-            raise MonitorNotFound("Monitor pos key '%s' not found in the header" % (pos_values_key))
+            raise MonitorNotFound(f"Monitor pos key '{pos_values_key}' not found in the header")
 
         pos_values = pos_values.split()
 
@@ -81,23 +81,23 @@ def _get_monitor_value_from_edf(image, monitor_key):
             index = mnemonic_values.index(mnemonic)
         except ValueError:
             _logger.debug("Exception", exc_info=1)
-            raise MonitorNotFound("Monitor mnemonic '%s' not found in the header key '%s'" % (mnemonic, mnemonic_values_key))
+            raise MonitorNotFound(f"Monitor mnemonic '{mnemonic}' not found in the header key '{mnemonic_values_key}'")
 
         if index >= len(pos_values):
-            raise MonitorNotFound("Monitor value '%s' not found in '%s'. Not enough values." % (pos_values_key))
+            raise MonitorNotFound(f"Monitor value {mnemonic} found in '{mnemonic_values_key}' at index {pos_values_key}. Not enough values!")
 
         monitor = pos_values[index]
 
     else:
         if monitor_key not in keys:
-            raise MonitorNotFound("Monitor key '%s' not found in the header" % (monitor_key))
+            raise MonitorNotFound(f"Monitor key '{monitor_key}' not found in the header")
         monitor = keys[monitor_key]
 
     try:
         monitor = float(monitor)
     except ValueError as _e:
         _logger.debug("Exception", exc_info=1)
-        raise MonitorNotFound("Monitor value '%s' is not valid" % (monitor))
+        raise MonitorNotFound(f"Monitor value '{monitor}' is not valid")
     return monitor
 
 
@@ -118,24 +118,24 @@ def _get_monitor_value_from_hdf5(image, monitor_key):
         header
     """
     if monitor_key not in image.hdf5:
-        raise MonitorNotFound("Monitor path '%s' not found" % (monitor_key))
+        raise MonitorNotFound(f"Monitor path '{monitor_key}' not found")
 
     monitor_dataset = image.hdf5[monitor_key]
     if not hasattr(monitor_dataset, "dtype"):
-        raise MonitorNotFound("Monitor path '%s' is not a dataset" % (monitor_key))
+        raise MonitorNotFound(f"Monitor path '{monitor_key}' is not a dataset")
 
     if monitor_dataset.dtype.kind not in "fiu":
-        raise MonitorNotFound("Monitor path '%s' does not contain a numerical value" % (monitor_key))
+        raise MonitorNotFound(f"Monitor path '{monitor_key}' does not contain a numerical value")
 
     if monitor_dataset.shape == tuple():
         # A constant monitor
         return monitor_dataset[()]
 
     if len(monitor_dataset.shape) != 1:
-        raise MonitorNotFound("Monitor path '%s' expect a vector of values" % (monitor_key))
+        raise MonitorNotFound(f"Monitor path '{monitor_key}' expect a vector of values")
 
     if image.currentframe >= monitor_dataset.size:
-        raise MonitorNotFound("Monitor path '%s' does not provide enough values" % (monitor_key))
+        raise MonitorNotFound(f"Monitor path '{monitor_key}' does not provide enough values")
 
     return monitor_dataset[image.currentframe]
 
@@ -165,4 +165,4 @@ def get_monitor_value(image, monitor_key):
         elif isinstance(image, (fabio.hdf5image.Hdf5Image, fabio.hdf5image.Hdf5Frame)):
             return _get_monitor_value_from_hdf5(image, monitor_key)
 
-    raise Exception("File format '%s' unsupported" % type(image))
+    raise Exception(f"File format '{type(image)}' unsupported")

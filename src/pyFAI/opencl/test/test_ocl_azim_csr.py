@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/12/2024"
+__date__ = "21/08/2026"
 
 import logging
 import unittest
@@ -76,7 +76,7 @@ class TestOclAzimCSR(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        logger.debug("Maximum valid workgroup size %s on device %s" % (cls.ctx.devices[0].max_work_group_size, cls.ctx.devices[0]))
+        logger.debug(f"Maximum valid workgroup size {cls.ctx.devices[0].max_work_group_size} on device {cls.ctx.devices[0]}")
         cls.ctx = None
         cls.queue = None
         cls.ai = None
@@ -128,7 +128,7 @@ class TestOclAzimCSR(unittest.TestCase):
             # print(res.normalization)
             err = abs(res.normalization - ref.sum_normalization)
             # print(err)
-            self.assertLess(err.max(), 5e-4, "normalization content is the same: %s<5e-5" % (err.max))
+            self.assertLess(err.max(), 5e-4, f"normalization content is the same: {err.max}<5e-5")
 
             # histogram of signal
             self.assertLess(abs(res.signal - ref.sum_signal).max(), 5e-5, "signal content is the same")

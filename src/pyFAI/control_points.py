@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2026"
+__date__ = "21/08/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -89,11 +89,11 @@ class ControlPoints:
 
     def __repr__(self):
         self.check()
-        lstout = ["ControlPoints instance containing %i group of point:" % len(self)]
+        lstout = [f"ControlPoints instance containing {len(self)} group of point:"]
         if self.calibrant:
             lstout.append(self.calibrant.__repr__())
         labels = self.get_labels()
-        lstout.append("Containing %s groups of points:" % len(labels))
+        lstout.append(f"Containing {len(labels)} groups of points:")
         for lbl in labels:
             lstout.append(str(self._groups[lbl]))
         return os.linesep.join(lstout)
@@ -209,9 +209,9 @@ class ControlPoints:
             lstout = ["# set of control point used by pyFAI to calibrate the geometry of a scattering experiment",
                       "#angles are in radians, wavelength in meter and positions in pixels"]
             if self.calibrant:
-                lstout.append("calibrant: %s" % self.calibrant)
+                lstout.append(f"calibrant: {self.calibrant}")
             if self.calibrant.wavelength is not None:
-                lstout.append("wavelength: %s" % self.calibrant.wavelength)
+                lstout.append(f"wavelength: {self.calibrant.wavelength}")
             lstout.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dspacing]))
             lst = self.get_labels()
             tth = self.calibrant.get_2th()
@@ -219,12 +219,12 @@ class ControlPoints:
                 gpt = self._groups[lbl]
                 ring = gpt.ring
                 lstout.append("")
-                lstout.append("New group of points: %i" % idx)
+                lstout.append(f"New group of points: {idx}")
                 if ring < len(tth):
-                    lstout.append("2theta: %s" % tth[ring])
-                lstout.append("ring: %s" % ring)
+                    lstout.append(f"2theta: {tth[ring]}")
+                lstout.append(f"ring: {ring}")
                 for point in gpt.points:
-                    lstout.append("point: x=%s y=%s" % (point[1], point[0]))
+                    lstout.append(f"point: x={point[1]} y={point[0]}")
             with open(filename, "w", encoding="utf-8") as f:
                 f.write("\n".join(lstout))
 
@@ -536,7 +536,7 @@ class PointGroup:
         return len(self.points)
 
     def __repr__(self):
-        return "#%2s ring %s: %s points" % (self.label, self.ring, len(self.points))
+        return f"#{self.label!s:>2} ring {self.ring}: {len(self.points)} points"
 
 
     @property

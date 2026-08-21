@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/08/2026"
+__date__ = "21/08/2026"
 
 import copy
 import logging
@@ -139,7 +139,7 @@ class TestBug211(unittest.TestCase):
         res = numpy.zeros(shape, dtype=dtype)
         rng = UtilsTest.get_rng()
         for i in range(5):
-            fn = os.path.join(UtilsTest.tempdir, "img_%i.edf" % i)
+            fn = os.path.join(UtilsTest.tempdir, f"img_{i}.edf")
             if i == 3:
                 data = numpy.zeros(shape, dtype=dtype)
             elif i == 4:
@@ -179,7 +179,7 @@ class TestBug211(unittest.TestCase):
             logger.error(os.linesep + (" ".join(command_line)))
             env = "Environment:"
             for k, v in self.env.items():
-                env += "%s    %s: %s" % (os.linesep, k, v)
+                env += f"{os.linesep}    {k}: {v}"
             logger.error(env)
             self.fail()
 
@@ -187,7 +187,7 @@ class TestBug211(unittest.TestCase):
             logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
             return
 
-        self.assertEqual(rc, 0, msg="pyFAI-average return code %i != 0" % rc)
+        self.assertEqual(rc, 0, msg=f"pyFAI-average return code {rc} != 0")
         with fabio.open(self.outfile) as fimg:
             self.assertTrue(numpy.allclose(fimg.data, self.res),
                         "pyFAI-average with quantiles gives good results")
@@ -231,13 +231,13 @@ class TestBugRegression(unittest.TestCase):
         dq = (abs(q1 - q2).max())
         _di = (abs(i1 - i2).max())
         # print(dq)
-        self.assertAlmostEqual(dq, 3.79, 2, "Q-scale difference should be around 3.8, got %s" % dq)
+        self.assertAlmostEqual(dq, 3.79, 2, f"Q-scale difference should be around 3.8, got {dq}")
 
     def test_bug_758(self):
         """check the stored "h*c" constant is almost 12.4"""
         hc = 12.398419292004204  # Old reference value from pyFAI
         hc = 12.398419739640717  # calculated from scipy 1.3
-        self.assertAlmostEqual(hc, units.hc, 6, "hc is correct, got %s" % units.hc)
+        self.assertAlmostEqual(hc, units.hc, 6, f"hc is correct, got {units.hc}")
 
     def test_import_all_modules(self):
         """Try to import every single module in the package

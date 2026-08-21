@@ -26,7 +26,7 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "07/10/2025"
+__date__ = "21/08/2026"
 __copyright__ = "2012-2024, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -309,12 +309,12 @@ class OCL_LUT_Integrator(OpenclProcessing):
         events = []
         if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-            events.append(EventDescription("copy %s" % dest, copy_image))
+            events.append(EventDescription(f"copy {dest}", copy_image))
         else:
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
             kernel = self.kernels.get_kernel(self.mapping[data.dtype.type])
             cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
-            events += [EventDescription("copy raw %s" % dest, copy_image), EventDescription("cast to float", cast_to_float)]
+            events += [EventDescription(f"copy raw {dest}", copy_image), EventDescription("cast to float", cast_to_float)]
         self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum

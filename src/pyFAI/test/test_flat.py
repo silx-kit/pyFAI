@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
 import logging
 import sys
@@ -102,8 +102,8 @@ class TestFlat1D(unittest.TestCase):
             # print(res.intensity)
             _, intensity = res
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", str(meth), intensity.min(), intensity.max(), intensity.mean(), intensity.std())
-            self.assertAlmostEqual(intensity.mean(), 1, 2, "Mean should be 1 in %s" % meth)
-            self.assertLess(intensity.max() - intensity.min(), eps, "deviation should be small with meth %s, got %s" % (meth, intensity.max() - intensity.min()))
+            self.assertAlmostEqual(intensity.mean(), 1, 2, f"Mean should be 1 in {meth}")
+            self.assertLess(intensity.max() - intensity.min(), eps, f"deviation should be small with meth {meth}, got {intensity.max() - intensity.min()}")
 
 
 class TestFlat2D(unittest.TestCase):
@@ -153,8 +153,8 @@ class TestFlat2D(unittest.TestCase):
         if ocl and UtilsTest.opencl:
             for device in ["cpu", "gpu", "acc"]:
                 if ocl.select_device(dtype=device):
-                    test2d["lut_ocl_%s" % device] = self.eps
-                    test2d["csr_ocl_%s" % device] = self.eps
+                    test2d[f"lut_ocl_{device}"] = self.eps
+                    test2d[f"csr_ocl_{device}"] = self.eps
 
         for meth in test2d:
             logger.info("About to test2d %s", meth)
@@ -165,8 +165,8 @@ class TestFlat2D(unittest.TestCase):
                 continue
             intensity = intensity[numpy.where(intensity > 0)]
             logger.info("2D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, intensity.min(), intensity.max(), intensity.mean(), intensity.std())
-            self.assertAlmostEqual(intensity.mean(), 1, 2, "Mean should be 1 in %s" % meth)
-            self.assertTrue(intensity.max() - intensity.min() < test2d[meth], "deviation should be small with meth %s, got %s" % (meth, intensity.max() - intensity.min()))
+            self.assertAlmostEqual(intensity.mean(), 1, 2, f"Mean should be 1 in {meth}")
+            self.assertTrue(intensity.max() - intensity.min() < test2d[meth], f"deviation should be small with meth {meth}, got {intensity.max() - intensity.min()}")
 
 
 def suite():

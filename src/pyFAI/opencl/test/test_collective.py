@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2024"
+__date__ = "21/08/2026"
 
 import logging
 import platform
@@ -120,7 +120,7 @@ class TestGroupFunction(unittest.TestCase):
                 ref = numpy.outer(self.data.reshape((-1, wg)).sum(axis=-1),numpy.ones(wg)).ravel()
                 good = numpy.allclose(res, ref)
                 logger.info("Wg: %s result: reduction OK %s", wg, good)
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_atomic(self):
@@ -145,7 +145,7 @@ class TestGroupFunction(unittest.TestCase):
                 ref = numpy.outer(self.data.reshape((-1, wg)).sum(axis=-1),numpy.ones(wg)).ravel()
                 good = numpy.allclose(res, ref)
                 logger.info("Wg: %s result: atomic good: %s", wg, good)
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_Hillis_Steele(self):
@@ -171,7 +171,7 @@ class TestGroupFunction(unittest.TestCase):
                 ref = numpy.array([numpy.cumsum(i) for i in self.data.reshape((-1, wg))])
                 good = numpy.allclose(res, ref)
                 logger.info("Wg: %s result: cumsum good: %s", wg, good)
-                self.assertTrue(good, "Cumsum calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"Cumsum calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_Blelloch(self):
@@ -200,7 +200,7 @@ class TestGroupFunction(unittest.TestCase):
                     print(ref)
                     print(res)
                 logger.info("Wg: %s result: cumsum good: %s", wg, good)
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_Blelloch_multipass(self):
@@ -230,7 +230,7 @@ class TestGroupFunction(unittest.TestCase):
                     print(ref)
                     print(res)
                 logger.info("Wg: %s result: cumsum good: %s", wg, good)
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
@@ -270,7 +270,7 @@ class TestGroupFunction(unittest.TestCase):
                     print(ref)
                     print(numpy.where(res.reshape(ref.shape)-ref))
 
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_sort4(self):
@@ -312,7 +312,7 @@ class TestGroupFunction(unittest.TestCase):
                     print(ref)
                     print(numpy.where(res.reshape(ref.shape)-ref))
 
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
 
 

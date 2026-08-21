@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 
 from .AbstractModel import AbstractModel
 from .DataModel import DataModel
@@ -47,9 +47,9 @@ class Fit2dGeometryModel(AbstractModel):
         self.__tiltPlan.changed.connect(self.wasChanged)
 
     def __repr__(self):
-        return "DirectBeamDist= %s mm\tCenter: x=%s, y=%s pix\tTilt=%s deg tiltPlanRotation= %s deg" % (
-                    self.__distance.value(), self.__centerX.value(), self.__centerY.value(),
-                    self.__tilt.value(), self.__tiltPlan.value())
+        return (f"DirectBeamDist= {self.__distance.value()} mm"
+                f"\tCenter: x={self.__centerX.value()}, y={self.__centerY.value()} pix"
+                f"\tTilt={self.__tilt.value()} deg tiltPlanRotation= {self.__tiltPlan.value()} deg")
 
     def __eq__(self, other):
         if not isinstance(other, Fit2dGeometryModel):

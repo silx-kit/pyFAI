@@ -24,7 +24,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "19/08/2026"
+__date__ = "21/08/2026"
 
 import logging
 
@@ -219,8 +219,8 @@ class ExperimentTask(AbstractCalibrationTask):
             mask = settings.mask().value()
             if mask is not None and mask.shape != image.shape[:2]:
                 warnings.append(
-                    "Mask shape %s does not match image shape %s, "
-                    "check the detector selection" % (mask.shape, image.shape[:2]))
+                    f"Mask shape {mask.shape} does not match image shape {image.shape[:2]}, "
+                    "check the detector selection")
 
         self._globalWarnings = warnings
         self.updateNextStepStatus()
@@ -231,9 +231,9 @@ class ExperimentTask(AbstractCalibrationTask):
         else:
             warning = ""
             for w in self._globalWarnings:
-                warning += "<li>%s</li>" % w
-            warning = "<ul>%s</ul>" % warning
-            warning = "<html>%s</html>" % warning
+                warning += f"<li>{w}</li>"
+            warning = f"<ul>{warning}</ul>"
+            warning = f"<html>{warning}</html>"
             return warning
 
     def __customDetector(self):
@@ -350,7 +350,7 @@ class ExperimentTask(AbstractCalibrationTask):
             text = " × ".join(text)
             self._detectorSize.setText(text)
             try:
-                text = ["%0.1f" % (s * 10 ** 6) for s in [detector.pixel1, detector.pixel2]]
+                text = [f"{s * 10 ** 6:0.1f}" for s in [detector.pixel1, detector.pixel2]]
                 text = " × ".join(text)
             except Exception as e:
                 # Is heterogeneous detectors have pixel size?

@@ -32,7 +32,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2026"
+__date__ = "21/08/2026"
 
 import logging
 import os
@@ -189,11 +189,11 @@ class TestDetector(unittest.TestCase):
             new_det = detector_factory(fname)
             for what in ("pixel1", "pixel2", "name", "max_shape", "shape", "binning"):
                 if "__len__" in dir(det.__getattribute__(what)):
-                    self.assertEqual(det.__getattribute__(what), new_det.__getattribute__(what), "%s is the same for %s" % (what, fname))
+                    self.assertEqual(det.__getattribute__(what), new_det.__getattribute__(what), f"{what} is the same for {fname}")
                 else:
-                    self.assertAlmostEqual(det.__getattribute__(what), new_det.__getattribute__(what), 4, "%s is the same for %s" % (what, fname))
+                    self.assertAlmostEqual(det.__getattribute__(what), new_det.__getattribute__(what), 4, f"{what} is the same for {fname}")
             if (det.mask is not None) or (new_det.mask is not None):
-                self.assertTrue(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
+                self.assertTrue(numpy.allclose(det.mask, new_det.mask), f"{det_name} mask is not the same")
 
             if det.shape[0] > 2000:
                 continue
@@ -218,7 +218,7 @@ class TestDetector(unittest.TestCase):
             self.assertLess(err2, 1e-6, f"{det_name} precision on pixel position 2 is better than 1µm, got {err1:e}")
             if not det.IS_FLAT:
                 err = abs(r[2] - o[2]).max()
-                self.assertTrue(err < 1e-6, "%s precision on pixel position 3 is better than 1µm, got %e" % (det_name, err))
+                self.assertTrue(err < 1e-6, f"{det_name} precision on pixel position 3 is better than 1µm, got {err:e}")
             self.assertEqual(det.CORNERS, new_det.CORNERS, "Number of pixel corner is consistent")
         # check Pilatus with displacement maps
         # check spline
@@ -264,8 +264,8 @@ class TestDetector(unittest.TestCase):
         d = detector_factory("Xpad S540 flat")
         cy = d.calc_cartesian_positions(use_cython=True)
         np = d.calc_cartesian_positions(use_cython=False)
-        self.assertTrue(numpy.allclose(cy[0], np[0]), "max_delta1=" % abs(cy[0] - np[0]).max())
-        self.assertTrue(numpy.allclose(cy[1], np[1]), "max_delta2=" % abs(cy[1] - np[1]).max())
+        self.assertTrue(numpy.allclose(cy[0], np[0]), f"max_delta1={abs(cy[0] - np[0]).max()}")
+        self.assertTrue(numpy.allclose(cy[1], np[1]), f"max_delta2={abs(cy[1] - np[1]).max()}")
 
     def test_non_flat(self):
         """

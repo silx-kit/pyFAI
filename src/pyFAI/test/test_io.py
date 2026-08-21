@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/04/2026"
+__date__ = "21/08/2026"
 
 import logging
 import os
@@ -268,7 +268,7 @@ class TestHDF5Writer(unittest.TestCase):
         t = time.perf_counter() - t0
         logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)", n, shape, nmbytes, t, nmbytes / t)
         statinfo = os.stat(h5file)
-        self.assertTrue(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
+        self.assertTrue(statinfo.st_size / 1e6 > nmbytes, f"file size ({statinfo.st_size}) is larger than dataset")
 
 
 class TestFabIOWriter(unittest.TestCase):

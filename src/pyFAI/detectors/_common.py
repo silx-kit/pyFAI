@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/08/2026"
+__date__ = "21/08/2026"
 __status__ = "stable"
 
 import copy
@@ -470,7 +470,7 @@ class Detector(metaclass=DetectorMeta):
                 self._pixel_corners[:,:, 3, 2] = p2[:-1, 1:]
 
             else:
-                raise RuntimeError("detector shape:%s while distortionarray: %s" % (self.max_shape, dx.shape))
+                raise RuntimeError(f"detector shape:{self.max_shape} while distortionarray: {dx.shape}")
             self.uniform_pixel = False
 
         else:
@@ -506,7 +506,7 @@ class Detector(metaclass=DetectorMeta):
                 self._pixel_corners[:,:, 2, 1] = p1[1:, 1:]
                 self._pixel_corners[:,:, 3, 1] = p1[:-1, 1:]
             else:
-                raise RuntimeError("detector shape:%s while distortion array: %s" % (self.max_shape, dy.shape))
+                raise RuntimeError(f"detector shape:{self.max_shape} while distortion array: {dy.shape}")
             self.uniform_pixel = False
         else:
             # Reset a regular grid, uniform_pixel is not necessary True due to x
@@ -981,8 +981,8 @@ class Detector(metaclass=DetectorMeta):
                 self._binning = 1, 1
                 return True
             else:
-                logger.warning("guess_binning is not implemented for %s detectors!\
-                 and image size %s is wrong, expected %s!" % (self.name, shape, self.shape))
+                logger.warning(f"guess_binning is not implemented for {self.name} detectors!\
+                 and image size {shape} is wrong, expected {self.shape}!")
                 return False
         elif self.max_shape:
             bin1 = self.max_shape[0] // shape[0]
@@ -1160,8 +1160,7 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
             if self.force_pixel and (err > EPSILON):
-                logger.warning("Enforcing pixel size 1 for a detector %s" %
-                               self.__class__.__name__)
+                logger.warning(f"Enforcing pixel size 1 for a detector {self.__class__.__name__}")
         self._pixel1 = value
 
     # deprecated compatibility layer
@@ -1197,8 +1196,7 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
             if self.force_pixel and (err > EPSILON):
-                logger.warning("Enforcing pixel size 2 for a detector %s" %
-                               self.__class__.__name__)
+                logger.warning(f"Enforcing pixel size 2 for a detector {self.__class__.__name__}")
         self._pixel2 = value
 
     # deprecated compatibility layer
@@ -1265,7 +1263,7 @@ class Detector(metaclass=DetectorMeta):
             self.flatfiles = files[0]
         else:
             self.flatfield = average.average_images(files, filter_=method, fformat=None, threshold=0)
-            self.flatfiles = "%s(%s)" % (method, ",".join(files))
+            self.flatfiles = f"{method}({','.join(files)})"
 
     @property
     def darkcurrent(self):
@@ -1312,7 +1310,7 @@ class Detector(metaclass=DetectorMeta):
             self.darkfiles = files[0]
         else:
             self.darkcurrent = average.average_images(files, filter_=method, fformat=None, threshold=0)
-            self.darkfiles = "%s(%s)" % (method, ",".join(files))
+            self.darkfiles = f"{method}({','.join(files)})"
 
     def __getnewargs_ex__(self):
         "Helper function for pickling detectors"
@@ -1431,7 +1429,7 @@ class NexusDetector(Detector):
         with io.Nexus(filename, "r") as nxs:
             det_grp = nxs.find_detector()
             if not det_grp:
-                raise RuntimeError("No detector definition in this file %s" % filename)
+                raise RuntimeError(f"No detector definition in this file {filename}")
             name = posixpath.split(det_grp.name)[-1]
             self.aliases = [name.replace("_", " "), det_grp.name]
             if "API_VERSION" in det_grp:

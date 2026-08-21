@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/11/2025"
+__date__ = "21/08/2026"
 
 import copy
 import logging
@@ -134,7 +134,7 @@ class TestGeometryRefinement(unittest.TestCase):
 
 #        ref = numpy.array([0.089652, 0.030970, 0.027668, -0.699407, 0.010067, 0.000001])
         ref = numpy.array([0.089750, 0.030897, 0.027172, -0.704730, 0.010649, 3.51e-06])
-        self.assertAlmostEqual(abs(numpy.array(r.param) - ref).max(), 0.0, 2, "ref=%s obt=%s delta=%s" % (list(ref), r.param, abs(numpy.array(r.param) - ref)))
+        self.assertAlmostEqual(abs(numpy.array(r.param) - ref).max(), 0.0, 2, f"ref={list(ref)} obt={r.param} delta={abs(numpy.array(r.param) - ref)}")
 
     def test_Spline(self):
         """tests geometric refinements with spline"""
@@ -210,7 +210,7 @@ class TestGeometryRefinement(unittest.TestCase):
         ref2 = numpy.array([0.1, 4.917310e-02, 4.722438e-02, 0, 0., 0.00000])
         for i, key in enumerate(("dist", "poni1", "poni2", "rot1", "rot2", "rot3")):
             self.assertAlmostEqual(ref2[i], r2.__getattribute__(key), 1,
-                                   "%s is %s, I expected %s%s%s" % (key, r2.__getattribute__(key), ref2[i], os.linesep, r2))
+                                   f"{key} is {r2.__getattribute__(key)}, I expected {ref2[i]}{os.linesep}{r2}")
 #        assert abs(numpy.array(r2.param) - ref2).max() < 1e-3
 
     def test_synthetic(self):
@@ -857,7 +857,7 @@ class TestGeometryRefinement(unittest.TestCase):
         print(r2)
         for key in ref:
             self.assertAlmostEqual(ref[key][0], r2.__getattribute__(key), delta=ref[key][1],
-                                   msg="%s is %s, I expected %s%s%s" % (key, r2.__getattribute__(key), ref[key], os.linesep, r2))
+                                   msg=f"{key} is {r2.__getattribute__(key)}, I expected {ref[key]}{os.linesep}{r2}")
 
         # test the copy
         self.assertEqual(r3.calibrant, r2.calibrant)
@@ -868,7 +868,7 @@ class TestGeometryRefinement(unittest.TestCase):
             self.assertEqual(r3.__getattribute__(k), r2.__getattribute__(k), k)
         for key in ref:
             self.assertAlmostEqual(r3.__getattribute__(key), r2.__getattribute__(key), delta=ref[key][1],
-                                   msg="%s is %s, I expected %s%s%s" % (key, r3.__getattribute__(key), ref[key], os.linesep, r3))
+                                   msg=f"{key} is {r3.__getattribute__(key)}, I expected {ref[key]}{os.linesep}{r3}")
 
         # test the deep-copy
         self.assertEqual(r4.calibrant, r2.calibrant)
@@ -881,7 +881,7 @@ class TestGeometryRefinement(unittest.TestCase):
 
         for key in ref:
             self.assertAlmostEqual(r4.__getattribute__(key), r2.__getattribute__(key), delta=ref[key][1],
-                                   msg="%s is %s, I expected %s%s%s" % (key, r4.__getattribute__(key), ref[key], os.linesep, r4))
+                                   msg=f"{key} is {r4.__getattribute__(key)}, I expected {ref[key]}{os.linesep}{r4}")
 
         # Mutation check, done last:
         r4.data[...] = 4

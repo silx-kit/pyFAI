@@ -33,7 +33,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "24/02/2026"
+__date__ = "21/08/2026"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import logging
@@ -95,18 +95,12 @@ class Spline:
             self.read(filename)
 
     def __repr__(self):
-        lst = ["Array size: x= %s - %s\ty= %s - %s" %
-               (self.xmin, self.xmax, self.ymin, self.ymax)]
-        lst.append("Pixel size = %s microns, Grid spacing = %s" %
-                   (self.pixelSize, self.grid))
-        lst.append("X-Displacement spline %i X_knots, %i Y_knots and %i coef: "
-                   "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.xSplineKnotsX),
-                                                                        len(self.xSplineKnotsY),
-                                                                        len(self.xSplineCoeff)))
-        lst.append("Y-Displacement spline %i X_knots, %i Y_knots and %i coef: "
-                   "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.ySplineKnotsX),
-                                                                        len(self.ySplineKnotsY),
-                                                                        len(self.ySplineCoeff)))
+        lst = [f"Array size: x= {self.xmin} - {self.xmax}\ty= {self.ymin} - {self.ymax}"]
+        lst.append(f"Pixel size = {self.pixelSize} microns, Grid spacing = {self.grid}")
+        lst.append(f"X-Displacement spline {len(self.xSplineKnotsX)} X_knots, {len(self.xSplineKnotsY)} Y_knots and {len(self.xSplineCoeff)} coef: "
+                   "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)")
+        lst.append(f"Y-Displacement spline {len(self.ySplineKnotsX)} X_knots, {len(self.ySplineKnotsY)} Y_knots and {len(self.ySplineCoeff)} coef: "
+                   "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)")
         return os.linesep.join(lst)
 
     def __copy__(self):
@@ -195,7 +189,7 @@ class Spline:
         :type filename: str
         """
         if not os.path.isfile(filename):
-            raise OSError("Spline File does not exist %s" % filename)
+            raise OSError(f"Spline File does not exist {filename}")
         self.filename = filename
         with open(filename) as opened_file:
             stringSpline = [i.rstrip() for i in opened_file]
@@ -246,7 +240,7 @@ class Spline:
                 indexLine += 1
         except Exception:
             logger.error("Error while reading file", exc_info=True)
-            raise OSError("Spline File parsing error: %s" % (filename))
+            raise OSError(f"Spline File parsing error: {filename}")
 
     def comparison(self, ref, verbose=False):
         """
@@ -327,10 +321,8 @@ class Spline:
                                                self.splineOrder],
                                               dx=0, dy=0).transpose()
             if timing:
-                logger.info("Timing for: X-Displacement spline evaluation: %.3f sec,"
-                            " Y-Displacement Spline evaluation:  %.3f sec." %
-                            ((intermediateTime - startTime),
-                             (time.perf_counter() - intermediateTime)))
+                logger.info(f"Timing for: X-Displacement spline evaluation: {intermediateTime - startTime:.3f} sec,"
+                            f" Y-Displacement Spline evaluation:  {time.perf_counter() - intermediateTime:.3f} sec.")
         return self.xDispArray, self.yDispArray
 
     def splineFuncX(self, x, y, list_of_points=False):
@@ -523,16 +515,16 @@ class Spline:
         lst = ["SPATIAL DISTORTION SPLINE INTERPOLATION COEFFICIENTS",
                "",
                "  VALID REGION",
-               "%14.7E%14.7E%14.7E%14.7E" % (self.xmin, self.ymin, self.xmax, self.ymax),
+               f"{self.xmin:14.7E}{self.ymin:14.7E}{self.xmax:14.7E}{self.ymax:14.7E}",
                "",
                "  GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE",
-               "%14.7E%14.7E%14.7E" % (self.grid, self.pixelSize[0], self.pixelSize[1]),
+               f"{self.grid:14.7E}{self.pixelSize[0]:14.7E}{self.pixelSize[1]:14.7E}",
                "",
                "  X-DISTORTION",
-               "%6i%6i" % (len(self.xSplineKnotsX), len(self.xSplineKnotsY))]
+               f"{len(self.xSplineKnotsX):6d}{len(self.xSplineKnotsY):6d}"]
         txt = ""
         for i, val in enumerate(self.xSplineKnotsX):
-            txt += "%14.7E" % val
+            txt += f"{val:14.7E}"
             if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
@@ -540,7 +532,7 @@ class Spline:
             lst.append(txt)
             txt = ""
         for i, val in enumerate(self.xSplineKnotsY):
-            txt += "%14.7E" % val
+            txt += f"{val:14.7E}"
             if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
@@ -548,7 +540,7 @@ class Spline:
             lst.append(txt)
             txt = ""
         for i, val in enumerate(self.xSplineCoeff):
-            txt += "%14.7E" % self.xSplineCoeff[i]
+            txt += f"{self.xSplineCoeff[i]:14.7E}"
             if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
@@ -556,10 +548,9 @@ class Spline:
             lst.append(txt)
             txt = ""
         lst.append("")
-        lst.append("  Y-DISTORTION\n%6i%6i" % (len(self.ySplineKnotsX),
-                                               len(self.ySplineKnotsY)))
+        lst.append(f"  Y-DISTORTION\n{len(self.ySplineKnotsX):6d}{len(self.ySplineKnotsY):6d}")
         for i, val in enumerate(self.ySplineKnotsX):
-            txt += "%14.7E" % val
+            txt += f"{val:14.7E}"
             if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
@@ -567,7 +558,7 @@ class Spline:
             lst.append(txt)
             txt = ""
         for i, val in enumerate(self.ySplineKnotsY):
-            txt += "%14.7E" % val
+            txt += f"{val:14.7E}"
             if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
@@ -575,7 +566,7 @@ class Spline:
             lst.append(txt)
             txt = ""
         for i, val in enumerate(self.ySplineCoeff):
-            txt += "%14.7E" % val
+            txt += f"{val:14.7E}"
             if i % 5 == 4:
                 lst.append(txt)
                 txt = ""

@@ -41,7 +41,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/05/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -278,17 +278,17 @@ class HDF5Writer(Writer):
         except TypeError:  # object already exists
             nb_entries = len(self.nxs.get_entries())
             entry_base = self.hpath or self._entry_template.split("_")[0]
-            entry_name = "%s_%04i" % (entry_base, nb_entries)
+            entry_name = f"{entry_base}_{nb_entries:04d}"
             if mode == self.MODE_OVERWRITE:
                 del self.nxs.h5[entry_name]
                 entry = self.nxs.new_entry(entry=entry_name, force_name=True,
                                            program_name="pyFAI", title=None)
             elif mode == self.MODE_ERROR:
-                raise OSError("Entry name %s::%s already exists" % (self.filename, entry_name))
+                raise OSError(f"Entry name {self.filename}::{entry_name} already exists")
             elif mode == self.MODE_APPEND:
                 while entry_name in self.nxs.h5:
                     nb_entries += 1
-                    entry_name = "%s_%04i" % (entry_base, nb_entries)
+                    entry_name = f"{entry_base}_{nb_entries:04d}"
                 entry = self.nxs.new_entry(entry=entry_name, force_name=True,
                                            program_name="pyFAI", title=None)
             else:
@@ -361,7 +361,7 @@ class HDF5Writer(Writer):
         self.radial_ds.attrs["unit"] = rad_unit
         self.radial_ds.attrs["interpretation"] = "scalar"
         self.radial_ds.attrs["name"] = rad_name
-        self.radial_ds.attrs["long_name"] = "Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
+        self.radial_ds.attrs["long_name"] = f"Diffraction radial direction {rad_name} ({rad_unit})"
 
         if self.fai_cfg.do_2D:
             self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg.nbpt_azim,), numpy.float32)
@@ -701,7 +701,7 @@ class HDF5Writer(Writer):
             measurement_grp = self.nxs.new_class(self.entry_grp, "measurement", "NXdata")
         here = os.path.dirname(os.path.abspath(self.nxs.filename))
         there = os.path.abspath(dataset.file.filename)
-        name = "images_%04i" % len(self.stored_input)
+        name = f"images_{len(self.stored_input):04d}"
         measurement_grp[name] = h5py.ExternalLink(os.path.relpath(there, here), dataset.name)
         if "signal" not in measurement_grp.attrs:
             measurement_grp.attrs["signal"] = name
@@ -951,7 +951,7 @@ class DefaultAiWriter(Writer):
                         normalization_factor=data.normalization_factor,
                         metadata=data.metadata)
         else:
-            raise Exception("Unsupported data type: %s" % type(data))
+            raise Exception(f"Unsupported data type: {type(data)}")
 
     def flush(self):
         pass
@@ -980,7 +980,7 @@ class AsciiWriter(Writer):
         self.start_index = 0
 
     def __repr__(self):
-        return "Ascii writer on file %s" % (self.filename)
+        return f"Ascii writer on file {self.filename}"
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
@@ -1041,7 +1041,7 @@ class AsciiWriter(Writer):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
             with open(filename, "w", encoding="utf-8") as f:
-                f.write("# Processing time: %s%s" % (get_isotime(), self.header))
+                f.write(f"# Processing time: {get_isotime()}{self.header}")
                 numpy.savetxt(f, data)
 
 

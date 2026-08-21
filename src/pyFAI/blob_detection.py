@@ -30,7 +30,7 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -216,9 +216,9 @@ class BlobDetection:
         self.already_blurred = []
 
     def __repr__(self):
-        lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
-        lststr.append("Sigmas: input=%.3f \t init=%.3f, dest=%.3f over %i blurs/octave" % (self.cur_sigma, self.init_sigma, self.dest_sigma, self.scale_per_octave))
-        lststr.append("found %s keypoint up to now, we are at reduction %s" % (len(self.keypoints), self.curr_reduction))
+        lststr = [f"Blob detection, shape={self.raw.shape}, processed={self.detection_started}."]
+        lststr.append(f"Sigmas: input={self.cur_sigma:.3f} \t init={self.init_sigma:.3f}, dest={self.dest_sigma:.3f} over {self.scale_per_octave} blurs/octave")
+        lststr.append(f"found {len(self.keypoints)} keypoint up to now, we are at reduction {self.curr_reduction}")
         return os.linesep.join(lststr)
 
     def _init_mask(self):
@@ -337,7 +337,7 @@ class BlobDetection:
                 kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
                 nb_kp = valid.sum()
                 self.ref_kp.append((kps, kpy, kpx))
-            print('After refinement : %i keypoints' % nb_kp)
+            print(f'After refinement : {nb_kp} keypoints')
         else:
             peak_val = self.dogs[kps, kpy, kpx]
             nb_kp = kpx.size

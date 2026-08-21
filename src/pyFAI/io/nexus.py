@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -75,7 +75,7 @@ def get_isotime(forceTime=None):
     gmtime = time.gmtime(forceTime)
     tz_h = localtime.tm_hour - gmtime.tm_hour
     tz_m = localtime.tm_min - gmtime.tm_min
-    return "%s%+03i:%02i" % (time.strftime("%Y-%m-%dT%H:%M:%S", localtime), tz_h, tz_m)
+    return f"{time.strftime('%Y-%m-%dT%H:%M:%S', localtime)}{tz_h:+03d}:{tz_m:02d}"
 
 
 def from_isotime(text, use_tz=False):
@@ -110,7 +110,7 @@ def is_hdf5(filename: str) -> bool:
     """
     signature = [137, 72, 68, 70, 13, 10, 26, 10]
     if not os.path.exists(filename):
-        raise OSError("No such file %s" % (filename))
+        raise OSError(f"No such file {filename}")
     with open(filename, "rb") as f:
         raw = f.read(8)
     sig = [int(i) for i in raw]
@@ -287,7 +287,7 @@ class Nexus:
         """
         if not force_name:
             nb_entries = len(self.get_entries())
-            entry = "%s_%04i" % (entry, nb_entries)
+            entry = f"{entry}_{nb_entries:04d}"
         entry_grp = self.h5
         for i in entry.split("/"):
             if i:

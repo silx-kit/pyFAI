@@ -36,7 +36,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -214,8 +214,8 @@ class Unit:
         #     rad_unit = tuple(to_unit(i) for i in obj)
         if rad_unit is None:
             logger.error(
-                "Unable to recognize this type unit '%s' of type %s. "
-                "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_]))
+                f"Unable to recognize this type unit '{obj}' of type {type(obj)}. "
+                f"Valid units are {', '.join([i for i in type_])}"
             )
         return rad_unit
 

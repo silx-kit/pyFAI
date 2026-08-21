@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import logging
@@ -187,9 +187,9 @@ class Calibrant:
             name = "undefined"
         name += " Calibrant "
         if len(self.dspacing):
-            name += "with %i reflections " % len(self._dspacing)
+            name += f"with {len(self._dspacing)} reflections "
         if self._wavelength:
-            name += "at wavelength %s" % self._wavelength
+            name += f"at wavelength {self._wavelength}"
         return name
 
     @property
@@ -487,7 +487,7 @@ class Calibrant:
             index = len(dspacing) - 1
         if index >= len(dspacing):
             raise IndexError(
-                "There are not than many (%s) rings indices in this calibrant" % (index)
+                f"There are not than many ({index}) rings indices in this calibrant"
             )
         return dspacing[index] * 2e-10
 

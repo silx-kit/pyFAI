@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2026"
+__date__ = "21/08/2026"
 
 import copy
 import gc
@@ -142,7 +142,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
-            fig.suptitle('Numpy Histogram vs Fit2D: Rwp=%.3f' % rwp)
+            fig.suptitle(f'Numpy Histogram vs Fit2D: Rwp={rwp:.3f}')
             sp = fig.add_subplot(111)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-b", label='fit2d')
             sp.plot(tth, intensity, "-r", label="numpy histogram")
@@ -150,7 +150,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.legend(handles, labels)
             fig.show()
             input("Press enter to quit")
-        self.assertLess(rwp, 11, "Rwp numpy/fit2d: %.3f" % rwp)
+        self.assertLess(rwp, 11, f"Rwp numpy/fit2d: {rwp:.3f}")
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_cython_vs_fit2d(self):
@@ -168,7 +168,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
-            fig.suptitle('Cython Histogram vs Fit2D: Rwp=%.3f' % rwp)
+            fig.suptitle(f'Cython Histogram vs Fit2D: Rwp={rwp:.3f}')
             sp = fig.add_subplot(111)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-b", label='fit2d')
             sp.plot(tth, intensity, "-r", label="cython")
@@ -176,7 +176,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.legend(handles, labels)
             fig.show()
             input("Press enter to quit")
-        self.assertLess(rwp, 11, "Rwp cython/fit2d: %.3f" % rwp)
+        self.assertLess(rwp, 11, f"Rwp cython/fit2d: {rwp:.3f}")
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
     def test_cythonSP_vs_fit2d(self):
@@ -202,7 +202,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
-            fig.suptitle('CythonSP Histogram vs Fit2D: Rwp=%.3f' % rwp)
+            fig.suptitle(f'CythonSP Histogram vs Fit2D: Rwp={rwp:.3f}')
             sp = fig.add_subplot(111)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-b", label='fit2d')
             sp.plot(tth, intensity, "-r", label="cython")
@@ -210,7 +210,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.legend(handles, labels)
             fig.show()
             input("Press enter to quit")
-        self.assertLess(rwp, 11, "Rwp cythonSP/fit2d: %.3f" % rwp)
+        self.assertLess(rwp, 11, f"Rwp cythonSP/fit2d: {rwp:.3f}")
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_cython_vs_numpy(self):
@@ -238,7 +238,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
             fig, sp = pylab.subplots()
-            fig.suptitle('Numpy Histogram vs Cython: Rwp=%.3f' % rwp)
+            fig.suptitle(f'Numpy Histogram vs Cython: Rwp={rwp:.3f}')
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-y", label='fit2d')
             sp.plot(tth_np, I_np, "-b", label='numpy')
             sp.plot(tth_cy, I_cy, "-r", label="cython")
@@ -248,7 +248,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.show()
             input("Press enter to quit")
 
-        self.assertLess(rwp, 3, "Rwp cython/numpy: %.3f" % rwp)
+        self.assertLess(rwp, 3, f"Rwp cython/numpy: {rwp:.3f}")
 
     def test_separate(self):
         "test separate with a mask. issue #209 regression test"
@@ -278,38 +278,38 @@ class TestAzimHalfFrelon(unittest.TestCase):
                 ocl = self.ai.medfilt1d_legacy(self.data, N, method="bbox_ocl_csr", **param)
             rwp = mathutil.rwp(ref, ocl)
             logger.info("test_medfilt1d legacy median Rwp = %.3f", rwp)
-            self.assertLess(rwp, 1, "Rwp medfilt1d Cython/OpenCL: %.3f" % rwp)
+            self.assertLess(rwp, 1, f"Rwp medfilt1d Cython/OpenCL: {rwp:.3f}")
 
             with logging_disabled(logging.WARNING):
                 ref = self.ai.medfilt1d_legacy(self.data, N, method="bbox_csr", percentile=(20, 80), **param)
                 ocl = self.ai.medfilt1d_legacy(self.data, N, method="bbox_ocl_csr", percentile=(20, 80), **param)
             rwp = mathutil.rwp(ref, ocl)
             logger.info("test_medfilt1d legacy trimmed-mean Rwp = %.3f", rwp)
-            self.assertLess(rwp, 3, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp)
+            self.assertLess(rwp, 3, f"Rwp trimmed-mean Cython/OpenCL: {rwp:.3f}")
 
         # new version"
         ref = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "cython"), **param)
         pyt = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "python"), **param)
         rwp_pyt = mathutil.rwp(ref, pyt)
         logger.info("test_medfilt1d ng median Rwp_python = %.3f", rwp_pyt)
-        self.assertLess(rwp_pyt, 0.1, "Rwp medfilt1d_ng Cython/Python: %.3f" % rwp_pyt)
+        self.assertLess(rwp_pyt, 0.1, f"Rwp medfilt1d_ng Cython/Python: {rwp_pyt:.3f}")
 
         if valid_opencl:
             ocl = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "opencl"), **param)
             rwp_ocl = mathutil.rwp(ref, ocl)
             logger.info("test_medfilt1d ng median Rwp_opencl = %.3f", rwp_ocl)
-            self.assertLess(rwp_ocl, 0.1, "Rwp medfilt1d_ng Cython/OpenCL: %.3f" % rwp_ocl)
+            self.assertLess(rwp_ocl, 0.1, f"Rwp medfilt1d_ng Cython/OpenCL: {rwp_ocl:.3f}")
 
         ref = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "cython"), percentile=(20, 80), **param)
         ref = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", "python"), percentile=(20, 80), **param)
         rwp_pyt = mathutil.rwp(ref, pyt)
         logger.info("test_medfilt1d ng trimmed-mean Rwp_python = %.3f", rwp_pyt)
-        self.assertLess(rwp_pyt, 2, "Rwp trimmed-mean Cython/Python: %.3f" % rwp_pyt)
+        self.assertLess(rwp_pyt, 2, f"Rwp trimmed-mean Cython/Python: {rwp_pyt:.3f}")
         if valid_opencl:
             ocl = self.ai.medfilt1d_ng(self.data, N, method=("no", "csr", 'opencl'), percentile=(20, 80), **param)
             rwp_ocl = mathutil.rwp(ref, ocl)
             logger.info("test_medfilt1d ng trimmed-mean Rwp_opencl = %.3f", rwp_ocl)
-            self.assertLess(rwp, 0.1, "Rwp trimmed-mean Cython/OpenCL: %.3f" % rwp_ocl)
+            self.assertLess(rwp, 0.1, f"Rwp trimmed-mean Cython/OpenCL: {rwp_ocl:.3f}")
         ref = ocl = pyt = rwp = rwp_ocl = rwp_pyt = None
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
@@ -524,7 +524,7 @@ class TestSaxs(unittest.TestCase):
             ref2d[method + "_10"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, normalization_factor=10, error_model="poisson")
             ratio_i = ref2d[method + "_1"].intensity.mean() / ref2d[method + "_10"].intensity.mean()
             # ratio_s = ref2d[method + "_1"].sigma.mean() / ref2d[method + "_10"].sigma.mean()
-            self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 2d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
+            self.assertAlmostEqual(ratio_i, 10.0, places=3, msg=f"test_normalization_factor 2d intensity Method: {method} ratio: {ratio_i} expected 10")
             # self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
             # ai.reset()
 
@@ -537,8 +537,8 @@ class TestSaxs(unittest.TestCase):
         mask = img < 0
         inp = ai.inpainting(img, mask)
         neg = (inp < 0).sum()
-        logger.debug("neg=%s" % neg)
-        self.assertTrue(neg == 0, "all negative pixels got inpainted actually all but %s" % neg)
+        logger.debug(f"neg={neg}")
+        self.assertTrue(neg == 0, f"all negative pixels got inpainted actually all but {neg}")
         self.assertTrue(mask.sum() > 0, "some pixel needed inpainting")
 
     def test_variance(self):
@@ -617,13 +617,13 @@ class TestSetter(unittest.TestCase):
     def test_flat(self):
         with logging_disabled(logging.WARNING):
             self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")
-            self.assertTrue(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
+            self.assertTrue(self.ai.flatfiles == f"mean({self.edf1},{self.edf2})", "flatfiles string is OK")
         self.assertTrue(abs(self.ai.flatfield - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Flat array is OK")
 
     def test_dark(self):
         with logging_disabled(logging.WARNING):
             self.ai.set_darkfiles((self.edf1, self.edf2), method="mean")
-            self.assertTrue(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
+            self.assertTrue(self.ai.darkfiles == f"mean({self.edf1},{self.edf2})", "darkfiles string is OK")
         self.assertTrue(abs(self.ai.darkcurrent - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Dark array is OK")
 
 

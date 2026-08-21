@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2026"
+__date__ = "21/08/2026"
 
 import logging
 import os
@@ -124,7 +124,7 @@ class TestMask(unittest.TestCase):
                 res = ai.integrate1d_ng(data, self.N, method=method, unit="2th_deg")
                 r = mathutil.rwp(ref, res)
                 logger.info(f"OpenCL {method} has R={r}  (vs cython) for dataset {ds}")
-                self.assertLess(r, 3, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
+                self.assertLess(r, 3, f"Rwp={r:.3f} for OpenCL histogram processing of {ds}")
 
     @unittest.skipIf(test_options.low_mem, "test using >500M")
     def test_OpenCL_sparse(self):
@@ -140,7 +140,7 @@ class TestMask(unittest.TestCase):
                 res = ai.integrate1d_ng(data, self.N, method=method, unit="2th_deg")
                 r = mathutil.rwp(ref, res)
                 logger.info(f"OpenCL {method} has R={r}  (vs cython) for dataset {ds}")
-                self.assertLess(r, 3, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
+                self.assertLess(r, 3, f"Rwp={r:.3f} for OpenCL histogram processing of {ds}")
 
     @unittest.skipIf(test_options.low_mem, "test using >200M")
     def test_OpenCL_sigma_clip(self):
@@ -163,7 +163,7 @@ class TestMask(unittest.TestCase):
                     # This is not really a precise test.
                     r = mathutil.rwp(ref, res)
                     logger.info("OpenCL sigma clipping has R= %.3f for dataset %s", r, ds)
-                    self.assertLess(r, 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
+                    self.assertLess(r, 3, f"Rwp={r:.3f} for OpenCL CSR processing of {ds}")
 
 
 @unittest.skipIf(test_options.opencl is False, "User request to skip OpenCL tests")

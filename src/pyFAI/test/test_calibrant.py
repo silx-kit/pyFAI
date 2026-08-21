@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2026"
+__date__ = "21/08/2026"
 
 import copy
 import itertools
@@ -61,7 +61,7 @@ class TestCalibrant(unittest.TestCase):
     def test_factory(self):
         # by default we provide 11 calibrants
         count = len(CALIBRANT_FACTORY)
-        self.assertTrue(count > 10, "at least 11 calibrants are available, got %s" % count)
+        self.assertTrue(count > 10, f"at least 11 calibrants are available, got {count}")
 
         self.assertTrue("LaB6" in CALIBRANT_FACTORY, "LaB6 is a calibrant")
 
@@ -108,8 +108,8 @@ class TestCalibrant(unittest.TestCase):
             img = calibrant.fake_calibration_image(ai)
 
             logger.info("%s min: %s max: %s ", det.name, img.min(), img.max())
-            self.assertTrue(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
-            self.assertTrue(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
+            self.assertTrue(img.shape == det.shape, f"Image ({det.name}) has the right size")
+            self.assertTrue(img.sum() > 0, f"Image ({det.name}) contains some data")
             sys.stderr.write(".")
 
     def test_get_peaks(self):
@@ -215,19 +215,19 @@ class TestCell(unittest.TestCase):
 
     def test_class(self):
         c = Cell()
-        self.assertAlmostEqual(c.volume, 1.0, msg="Volume of triclinic 1,1,1,90,90,90 == 1.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 1.0, msg=f"Volume of triclinic 1,1,1,90,90,90 == 1.0, got {c.volume}")
         c = Cell(1, 2, 3)
-        self.assertAlmostEqual(c.volume, 6.0, msg="Volume of triclinic 1,2,3,90,90,90 == 6.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 6.0, msg=f"Volume of triclinic 1,2,3,90,90,90 == 6.0, got {c.volume}")
         c = Cell(1, 2, 3, 90, 30, 90)
-        self.assertAlmostEqual(c.volume, 3.0, msg="Volume of triclinic 1,2,3,90,30,90 == 3.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 3.0, msg=f"Volume of triclinic 1,2,3,90,30,90 == 3.0, got {c.volume}")
 
     def test_classmethods(self):
         c = Cell.cubic(1)
-        self.assertAlmostEqual(c.volume, 1.0, msg="Volume of cubic 1 == 1.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 1.0, msg=f"Volume of cubic 1 == 1.0, got {c.volume}")
         c = Cell.tetragonal(2, 3)
-        self.assertAlmostEqual(c.volume, 12.0, msg="Volume of tetragonal 2,3 == 12.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 12.0, msg=f"Volume of tetragonal 2,3 == 12.0, got {c.volume}")
         c = Cell.orthorhombic(1, 2, 3)
-        self.assertAlmostEqual(c.volume, 6.0, msg="Volume of orthorhombic 1,2,3 == 6.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 6.0, msg=f"Volume of orthorhombic 1,2,3 == 6.0, got {c.volume}")
 
     def test_dspacing(self):
         c = Cell.cubic(1)
@@ -242,7 +242,7 @@ class TestCell(unittest.TestCase):
 
         self.assertEqual(cds, tds, msg="d-spacings are the same")
         for k in cds:
-            self.assertEqual(cd[k], td[k], msg="plans are the same for d=%s" % k)
+            self.assertEqual(cd[k], td[k], msg=f"plans are the same for d={k}")
 
     def test_helium(self):
         # self.skipTest("Not working")

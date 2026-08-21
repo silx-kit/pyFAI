@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/04/2026"
+__date__ = "21/08/2026"
 
 import functools
 
@@ -184,7 +184,7 @@ class ListModel(AbstractModel):
         for i, (curentItem, _callback) in enumerate(self.__items):
             if item is curentItem:
                 return i
-        raise IndexError("Item %s is not in list" % item)
+        raise IndexError(f"Item {item} is not in list")
 
     def clear(self):
         """Remove all the items from the list."""

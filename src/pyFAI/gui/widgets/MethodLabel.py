@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/03/2024"
+__date__ = "21/08/2026"
 
 import logging
 
@@ -123,7 +123,7 @@ class MethodLabel(qt.QLabel):
         else:
             if not self.__availability:
                     label = self.__methodToString(method, self.__labelTemplate)
-                    toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+                    toolTip = f"<html>{self.__methodToString(method, self._TOOLTIP_TEMPLATE)}</html>"
             else:
                 usedMethods = method_registry.IntegrationMethod.select_method(method=method)
                 if len(usedMethods) == 0:
@@ -131,7 +131,7 @@ class MethodLabel(qt.QLabel):
                     toolTip = self.__methodToString(method, self._TOOLTIP_TEMPLATE)
                     toolTip = ("No method fit. Integration could be compromised. "
                                "The following configuration is defined:"
-                               "%s</html>" % toolTip)
+                               f"{toolTip}</html>")
                 else:
                     usedMethod = usedMethods[0]
                     usedMethod = usedMethod.method
@@ -139,7 +139,7 @@ class MethodLabel(qt.QLabel):
 
                     if compare == "same":
                         label = self.__methodToString(method, self.__labelTemplate)
-                        toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+                        toolTip = f"<html>{self.__methodToString(method, self._TOOLTIP_TEMPLATE)}</html>"
                     else:
                         original = self.__methodToString(method, self.__labelTemplate)
                         label = self.__methodToString(usedMethod, self.__labelTemplate)
@@ -147,13 +147,13 @@ class MethodLabel(qt.QLabel):
 
                         if compare == "degraded":
                             label = "Degraded to: " + label
-                            toolTip = ("<html>The method %s is not available, at least, in this computer. "
+                            toolTip = (f"<html>The method {original} is not available, at least, in this computer. "
                                        "The following method will be used:"
-                                       "%s</html>" % (original, toolTip))
+                                       f"{toolTip}</html>")
                         elif compare == "specialized":
                             label = "Specialized with: " + label
-                            toolTip = ("<html>The generic selection %s will use the following method in this computer:"
-                                       "%s</html>" % (original, toolTip))
+                            toolTip = (f"<html>The generic selection {original} will use the following method in this computer:"
+                                       f"{toolTip}</html>")
                         else:
                             raise RuntimeError()
 

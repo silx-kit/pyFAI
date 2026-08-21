@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 
 import logging
 import time
@@ -134,7 +134,7 @@ class _CalibrantItemView(qt.QAbstractItemView):
         stream = qt.QDataStream(state, qt.QIODevice.ReadOnly)
         version = stream.readUInt32()
         if version != 0:
-            _logger.warning("Serial version mismatch. Found %d." % version)
+            _logger.warning(f"Serial version mismatch. Found {version}.")
             return False
 
         nb = stream.readUInt32()

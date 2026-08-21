@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import glob
@@ -171,8 +171,8 @@ def _get_data_path(filename):
         real_filename = os.path.join(resource, "resources", filename)
         if os.path.exists(real_filename):
             return real_filename
-    raise RuntimeError("Can not find the [%s] resource, "
-                       "something went wrong !!!" % (real_filename,))
+    raise RuntimeError(f"Can not find the [{real_filename}] resource, "
+                       "something went wrong !!!")
 
 
 def get_calibration_dir():

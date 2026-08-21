@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/02/2025"
+__date__ = "21/08/2026"
 
 from silx.gui import icons, qt
 
@@ -273,9 +273,9 @@ class IntegrationMethodWidget(qt.QWidget):
             else:
                 color = qt.Qt.red
                 if available1d:
-                    label = "%s (only 1D)" % label
+                    label = f"{label} (only 1D)"
                 elif available2d:
-                    label = "%s (only 2D)" % label
+                    label = f"{label} (only 2D)"
 
             item.setForeground(qt.QBrush(color))
             item.setText(label)

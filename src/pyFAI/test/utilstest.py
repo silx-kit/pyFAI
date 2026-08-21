@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
 import functools
 import getpass
@@ -331,10 +331,10 @@ def diff_img(ref, obt, comment=""):
         ax3 = fig.add_subplot(2, 2, 3)
         im_ref = ax1.imshow(ref)
         pyplot.colorbar(im_ref)
-        ax1.set_title("%s ref" % comment)
+        ax1.set_title(f"{comment} ref")
         im_obt = ax2.imshow(obt)
         pyplot.colorbar(im_obt)
-        ax2.set_title("%s obt" % comment)
+        ax2.set_title(f"{comment} obt")
         im_delta = ax3.imshow(delta)
         pyplot.colorbar(im_delta)
         ax3.set_title("delta")
@@ -358,8 +358,8 @@ def diff_crv(ref, obt, comment=""):
         fig = pyplot.figure()
         ax1 = fig.add_subplot(1, 2, 1)
         ax2 = fig.add_subplot(1, 2, 2)
-        _im_ref = ax1.plot(ref, label="%s ref" % comment)
-        _im_obt = ax1.plot(obt, label="%s obt" % comment)
+        _im_ref = ax1.plot(ref, label=f"{comment} ref")
+        _im_obt = ax1.plot(obt, label=f"{comment} obt")
         _im_delta = ax2.plot(delta, label="delta")
         fig.show()
         input()
@@ -445,8 +445,7 @@ class TestLogging(logging.Handler):
                 for record in self.records:
                     self.logger.handle(record)
                 raise RuntimeError(
-                    'Expected %d %s logging messages, got %d' % (
-                        expected_count, logging.getLevelName(level), count))
+                    f'Expected {expected_count} {logging.getLevelName(level)} logging messages, got {count}')
 
     def emit(self, record):
         """Override :meth:`logging.Handler.emit`"""

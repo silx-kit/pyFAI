@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/08/2026"
+__date__ = "21/08/2026"
 
 import functools
 import logging
@@ -1075,7 +1075,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             if i == 0:
                 i = 10
             action = qt.QAction(self)
-            action.setText("Select ring %d" % i)
+            action.setText(f"Select ring {i}")
 
             def selectRing(ringNumber):
                 self.__ringSelection.selectRing(ringNumber)
@@ -1460,7 +1460,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             peak.mergeCoords(peakModel)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
-        command.setText("add peak %s" % peakModel.name())
+        command.setText(f"add peak {peakModel.name()}")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
@@ -1545,7 +1545,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.model().peakSelectionModel().remove(peakModel)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
-        command.setText("remove peak %s" % peakModel.name())
+        command.setText(f"remove peak {peakModel.name()}")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
@@ -1556,7 +1556,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
         action = "enable" if value else "disable"
-        command.setText("%s ring %s" % (action, peakModel.name()))
+        command.setText(f"{action} ring {peakModel.name()}")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
@@ -1570,7 +1570,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             peakModel.setColor(color)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
-        command.setText("update ring number of %s" % peakModel.name())
+        command.setText(f"update ring number of {peakModel.name()}")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)

@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/12/2023"
+__date__ = "21/08/2026"
 
 import html
 import logging
@@ -140,7 +140,7 @@ class DetectorLabel(qt.QLabel):
             manufacturer = "Not specified"
             kind = "Nexus definition"
             if detector.filename:
-                kind = "%s (%s)" % (kind, detector.filename)
+                kind = f"{kind} ({detector.filename})"
 
             description = self._MANUFACTURER_TEMPLATE % html.escape("NeXus")
             description += self._MODEL_TEMPLATE % html.escape(model)

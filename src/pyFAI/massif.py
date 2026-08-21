@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/08/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import copy
@@ -206,7 +206,7 @@ class Massif:
                 continue
             if (region2[int(xopt[0] + 0.5), int(xopt[1] + 0.5)]) and xopt not in listpeaks:
                 if stdout:
-                    stdout.write("[ %4i, %4i ] --> [ %5.1f, %5.1f ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
+                    stdout.write(f"[ {int(j[0]):4d}, {int(j[1]):4d} ] --> [ {xopt[0]:5.1f}, {xopt[1]:5.1f} ] after {nbFailure:3d} iterations {os.linesep}")
                 listpeaks.append(xopt)
                 nbFailure = 0
             else:

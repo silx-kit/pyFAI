@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/09/2025"
+__date__ = "21/08/2026"
 
 import functools
 import logging
@@ -205,7 +205,7 @@ class MarkerManager:
         if marker is None:
             return None
 
-        action.setText("Remove marker '%s'" % marker.name())
+        action.setText(f"Remove marker '{marker.name()}'")
         action.triggered.connect(functools.partial(self.__removeMarker, marker))
         return action
 

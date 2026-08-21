@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -1384,7 +1384,7 @@ class Geometry:
             )
 
         if typ not in ("center", "corner", "delta"):
-            logger.warning("Unknown type of array %s, defaulting to 'center'" % typ)
+            logger.warning(f"Unknown type of array {typ}, defaulting to 'center'")
             typ = "center"
         if typ == "corner" and isinstance(unit, (tuple, list)) and len(unit) == 2:
             unit2 = tuple(to_unit(u) for u in unit)
@@ -2188,14 +2188,14 @@ class Geometry:
                 f"Tilt: {f2d.tilt:.3f} deg  TiltPlanRot: {f2d.tiltPlanRotation:.3f} deg",
                 "",
                 str(self.detector),
-                "   Detector has a mask: %s " % (self.detector.mask is not None),
+                f"   Detector has a mask: {self.detector.mask is not None} ",
                 f"   Detector has a dark current: {self.detector.darkcurrent is not None}",
                 f"   Detector has a flat field: {self.detector.flatfield is not None}",
                 "",
             ]
 
             if self._wavelength is not None:
-                res.append("Wavelength: %s m" % self._wavelength)
+                res.append(f"Wavelength: {self._wavelength} m")
         return res
 
     def setChiDiscAtZero(self):

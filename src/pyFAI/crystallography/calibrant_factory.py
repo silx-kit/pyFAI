@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import logging
@@ -110,7 +110,7 @@ class CalibrantFactory:
         return k in self.all
 
     def __repr__(self):
-        return "Calibrants available: %s" % (", ".join(list(self.all.keys())))
+        return f"Calibrants available: {', '.join(list(self.all.keys()))}"
 
     def __len__(self):
         return len(self.all)

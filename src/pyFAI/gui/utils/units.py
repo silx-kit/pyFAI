@@ -23,7 +23,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/01/2021"
+__date__ = "21/08/2026"
 
 import enum
 
@@ -136,6 +136,6 @@ def convert(value, inputUnit, outputUnit):
 
     converter = _converters.get((inputUnit, outputUnit), None)
     if converter is None:
-        raise TypeError("Impossible to convert from %s to %s" % (inputUnit.name, outputUnit.name))
+        raise TypeError(f"Impossible to convert from {inputUnit.name} to {outputUnit.name}")
 
     return converter(value)

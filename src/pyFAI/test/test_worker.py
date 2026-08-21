@@ -31,7 +31,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2025"
+__date__ = "21/08/2026"
 
 import logging
 import os.path
@@ -283,13 +283,13 @@ class TestWorker(unittest.TestCase):
         pww = PixelwiseWorker(dark=dark, flat=flat, dummy=-5, dtype="float64")
         res_np = pww.process(raw, normalization_factor=6.0)
         err = abs(res_np - signal / 6.0).max()
-        self.assertLess(err, precision, "Numpy calculation are OK: %s" % err)
+        self.assertLess(err, precision, f"Numpy calculation are OK: {err}")
 
         # Cython path
         worker_mdl.USE_CYTHON = True
         res_cy = pww.process(raw, normalization_factor=7.0)
         err = abs(res_cy - signal / 7.0).max()
-        self.assertLess(err, precision, "Cython calculation are OK: %s" % err)
+        self.assertLess(err, precision, f"Cython calculation are OK: {err}")
 
         # With Poissonian errors
         # Numpy path
@@ -299,16 +299,16 @@ class TestWorker(unittest.TestCase):
         delta_res = abs(res_np - ref / 2.0).max()
         delta_err = abs(err_np - numpy.sqrt(ref) / 2.0).max()
 
-        self.assertLess(delta_res, precision, "Numpy intensity calculation are OK: %s" % err)
-        self.assertLess(delta_err, precision, "Numpy error calculation are OK: %s" % err)
+        self.assertLess(delta_res, precision, f"Numpy intensity calculation are OK: {err}")
+        self.assertLess(delta_err, precision, f"Numpy error calculation are OK: {err}")
 
         # Cython path
         worker_mdl.USE_CYTHON = True
         res_cy, err_cy = pww.process(raw, variance=ref, normalization_factor=2.0)
         delta_res = abs(res_cy - ref / 2.0).max()
         delta_err = abs(err_cy - numpy.sqrt(ref) / 2.0).max()
-        self.assertLess(delta_res, precision, "Cython intensity calculation are OK: %s" % err)
-        self.assertLess(delta_err, precision, "Cython error calculation are OK: %s" % err)
+        self.assertLess(delta_res, precision, f"Cython intensity calculation are OK: {err}")
+        self.assertLess(delta_err, precision, f"Cython error calculation are OK: {err}")
 
     def test_sigma_clip(self):
         ai = AzimuthalIntegrator.sload({"detector": "Imxpad S10", "wavelength":1e-10})

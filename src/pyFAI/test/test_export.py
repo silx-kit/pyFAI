@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2025"
+__date__ = "21/08/2026"
 
 import logging
 import unittest
@@ -59,10 +59,10 @@ def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, 
             obtv = o.__getattribute__(key)
             try:
                 if round(abs(float(refv) - float(obtv))) != 0:
-                    res += "%s: %s != %s" % (key, refv, obtv)
+                    res += f"{key}: {refv} != {obtv}"
             except TypeError:
                 if refv != obtv:
-                    res += "%s: %s != %s" % (key, refv, obtv)
+                    res += f"{key}: {refv} != {obtv}"
     return res
 
 
@@ -89,9 +89,9 @@ class TestFIT2D(unittest.TestCase):
             refv = ref.__getattribute__(key)
             obtv = obt.__getattribute__(key)
             if refv is None:
-                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
+                self.assertEqual(refv, obtv, f"{key}: {refv} != {obtv}")
             else:
-                self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
+                self.assertAlmostEqual(refv, obtv, 4, f"{key}: {refv} != {obtv}")
 
     def test_export(self):
         res = testExport()
@@ -116,9 +116,9 @@ class TestFIT2D(unittest.TestCase):
             refv = ai.__getattribute__(key)
             obtv = ai2.__getattribute__(key)
             if refv is None:
-                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
+                self.assertEqual(refv, obtv, f"{key}: {refv} != {obtv}")
             else:
-                self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
+                self.assertAlmostEqual(refv, obtv, 4, f"{key}: {refv} != {obtv}")
 
         try:
             from ImageD11.transform import PixelLUT
@@ -151,9 +151,9 @@ class TestExport(unittest.TestCase):
             refv = ref.__getattribute__(key)
             obtv = obt.__getattribute__(key)
             if refv is None:
-                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
+                self.assertEqual(refv, obtv, f"{key}: {refv} != {obtv}")
             else:
-                self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
+                self.assertAlmostEqual(refv, obtv, 4, f"{key}: {refv} != {obtv}")
 
     def test_CXI(self):
         ref = AzimuthalIntegrator.sload(self.poniFile)
@@ -164,9 +164,9 @@ class TestExport(unittest.TestCase):
             refv = ref.__getattribute__(key)
             obtv = obt.__getattribute__(key)
             if refv is None:
-                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
+                self.assertEqual(refv, obtv, f"{key}: {refv} != {obtv}")
             else:
-                self.assertAlmostEqual(refv, obtv, 8, "%s: %s != %s" % (key, refv, obtv))
+                self.assertAlmostEqual(refv, obtv, 8, f"{key}: {refv} != {obtv}")
 
 
 def suite():

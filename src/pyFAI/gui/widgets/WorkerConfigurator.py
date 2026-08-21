@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import logging
@@ -706,7 +706,7 @@ class WorkerConfigurator(qt.QWidget):
         # FIXME extract the unit
         if unit.unit_symbol == "?":
             name = stringutil.latex_to_unicode(unit.short_name)
-            toolTip = "The unit for the quantity %s is not expressible." % name
+            toolTip = f"The unit for the quantity {name} is not expressible."
         else:
             toolTip = ""
         symbol = stringutil.latex_to_unicode(unit.unit_symbol)

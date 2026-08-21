@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import logging
@@ -453,7 +453,7 @@ class Pilatus(_Dectris):
     @property
     def splinefile(self):
         if self.x_offset_file and self.y_offset_file:
-            return "%s,%s" % (self.x_offset_file, self.y_offset_file)
+            return f"{self.x_offset_file},{self.y_offset_file}"
 
     @splinefile.setter
     @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")

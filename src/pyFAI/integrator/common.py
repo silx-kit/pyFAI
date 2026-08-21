@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2026"
+__date__ = "21/08/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -463,7 +463,7 @@ class Integrator(Geometry):
                 elif (unit0_range is None) and (cython_integr.pos0_range is not None):
                     cython_reset = f"range in unit0 was defined in { method.algo_lower.upper()}"
                 elif (unit0_range is not None) and (cython_integr.pos0_range != unit0_range):
-                    cython_reset = "range in unit0 is defined but differs in %s" % method.algo_lower.upper()
+                    cython_reset = f"range in unit0 is defined but differs in {method.algo_lower.upper()}"
                 elif (unit1_range is None) and (cython_integr.pos1_range is not None):
                     cython_reset = f"range in unit1 not defined and {method.algo_lower.upper()} had azimuth_range defined"
                 elif (unit1_range is not None) and (cython_integr.pos1_range != unit1_range):

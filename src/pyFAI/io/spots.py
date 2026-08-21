@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -87,7 +87,7 @@ def save_spots_nexus(filename, spots, beamline="beamline", ai=None, source=None,
     if len(spots) == 0:
         raise RuntimeError("No spot provided to save")
     spots_per_frame = numpy.array([len(s) for s in spots], dtype=numpy.int32)
-    with Nexus(filename, mode="w", creator="pyFAI_%s" % version) as nexus:
+    with Nexus(filename, mode="w", creator=f"pyFAI_{version}") as nexus:
 
         instrument = nexus.new_instrument(instrument_name=beamline)
         entry = instrument.parent

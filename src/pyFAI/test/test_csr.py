@@ -88,7 +88,7 @@ class TestCSR(utilstest.ParametricTestCase):
                     else:
                         skip = False
                 out_cyt_csr = csr.integrate_legacy(self.data)
-                cmt = "Testing ocl_csr with workgroup_size= %s" % (workgroup_size)
+                cmt = f"Testing ocl_csr with workgroup_size= {workgroup_size}"
                 logger.debug(cmt)
                 if skip:
                     for ref, cyth in zip(out_ref, out_cyt_csr):

@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/05/2025"
+__date__ = "21/08/2026"
 
 import json
 import logging
@@ -228,13 +228,13 @@ class CalibrationContext(ApplicationContext):
         colors = self.markerColorList()
         color = colors[index % len(colors)]
         if mode == "html":
-            return "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+            return f"#{color.red():02X}{color.green():02X}{color.blue():02X}"
         elif mode == "numpy":
             return numpy.array([color.redF(), color.greenF(), color.blueF()])
         elif mode == "qt":
             return color
         else:
-            raise ValueError("Mode '%s' not expected" % mode)
+            raise ValueError(f"Mode '{mode}' not expected")
 
     def getLabelColor(self):
         """Returns the Qt color used to display text label
@@ -293,7 +293,7 @@ class CalibrationContext(ApplicationContext):
     def getHtmlMarkerColor(self, index):
         colors = self.markerColorList()
         color = colors[index % len(colors)]
-        return "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+        return f"#{color.red():02X}{color.green():02X}{color.blue():02X}"
 
     def getRecentCalibrants(self) -> DataModel:
         return self.__recentCalibrants

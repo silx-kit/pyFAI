@@ -33,7 +33,7 @@ __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "21/08/2026"
 
 import logging
 import unittest
@@ -120,7 +120,7 @@ class TestOclHistogram(unittest.TestCase):
         err = abs((sig - ref).sum())
 
         epsilon = 1e-5 if precise else 4e-3
-        self.assertLess(err, epsilon, "normalization content is the same: %s<%s on device %s" % (err, epsilon, integrator.ctx.devices[0]))
+        self.assertLess(err, epsilon, f"normalization content is the same: {err}<{epsilon} on device {integrator.ctx.devices[0]}")
         self.assertLess(abs(gaussian_filter1d(sig - ref, 9)).max(), 1.5, "normalization, after smoothing is flat")
 
         # histogram of signal
@@ -188,12 +188,12 @@ class TestOclHistogram(unittest.TestCase):
         # histogram of normalization
         err = abs((res.normalization - ref.normalization).sum())
         allowed = lost * solidangle.max()
-        self.assertLessEqual(err, allowed, "normalization content is the same: %s<=%s" % (err, allowed))
+        self.assertLessEqual(err, allowed, f"normalization content is the same: {err}<={allowed}")
 
         # histogram of signal
         err = abs((res.signal - ref.signal).sum())
         allowed = lost * data.max()
-        self.assertLessEqual(err, allowed, "signal content is the same: %s<=%s " % (err, allowed))
+        self.assertLessEqual(err, allowed, f"signal content is the same: {err}<={allowed} ")
 
 
 def suite():
