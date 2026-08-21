@@ -32,7 +32,7 @@ Deprecated ... restore or delete !
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "23/04/2024"
+__date__ = "21/08/2026"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -189,7 +189,7 @@ class OCL_Hist_Pixelsplit:
         ]
 
         if self.size < self.BLOCK_SIZE:
-            raise RuntimeError("Fatal error in _allocate_buffers. size (%d) must be >= BLOCK_SIZE (%d)\n", self.size, self.BLOCK_SIZE)
+            raise RuntimeError(f"Fatal error in _allocate_buffers. size ({self.size}) must be >= BLOCK_SIZE ({self.BLOCK_SIZE})")
 
         self._cl_mem = allocate_cl_buffers(buffers, self.device, self._ctx)
 
@@ -355,8 +355,8 @@ class OCL_Hist_Pixelsplit:
             for e in self.events:
                 if "__len__" in dir(e) and len(e) >= 2:
                     et = 1e-6 * (e[1].profile.end - e[1].profile.start)
-                    print("%50s:\t%.3fms" % (e[0], et))
+                    print(f"{e[0]!s:>50}:\t{et:.3f}ms")
                     t += et
 
         print("_" * 80)
-        print("%50s:\t%.3fms" % ("Total execution time", t))
+        print(f"{'Total execution time':>50}:\t{t:.3f}ms")

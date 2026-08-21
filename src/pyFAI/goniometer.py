@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/06/2026"
+__date__ = "21/08/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -96,7 +96,7 @@ class BaseTransformation:
             self.pos_names = ("pos",)
         for key in self.param_names + self.pos_names:
             if key in self.variables:
-                raise RuntimeError("The keyword %s is already defined, please chose another variable name")
+                raise RuntimeError("The keyword `%s` is already defined, please chose another variable name", key)
             self.variables[key] = numpy.nan
         self.codes = {}
 
@@ -123,7 +123,7 @@ class BaseTransformation:
         return PoniParam(*res)
 
     def __repr__(self):
-        return "BaseTransformation with param: %s and pos: %s" % (self.param_names, self.pos_names)
+        return f"BaseTransformation with param: {self.param_names} and pos: {self.pos_names}"
 
     def to_dict(self):
         """Export the instance representation for serialization as a dictionary
@@ -241,13 +241,13 @@ class GeometryTransformation:
         return PoniParam(**res)
 
     def __repr__(self):
-        res = ["GeometryTransformation with param: %s and pos: %s" % (self.param_names, self.pos_names),
-               "    dist= %s" % self.dist_expr,
-               "    poni1= %s" % self.poni1_expr,
-               "    poni2= %s" % self.poni2_expr,
-               "    rot1= %s" % self.rot1_expr,
-               "    rot2= %s" % self.rot2_expr,
-               "    rot3= %s" % self.rot3_expr]
+        res = [f"GeometryTransformation with param: {self.param_names} and pos: {self.pos_names}",
+               f"    dist= {self.dist_expr}",
+               f"    poni1= {self.poni1_expr}",
+               f"    poni2= {self.poni2_expr}",
+               f"    rot1= {self.rot1_expr}",
+               f"    rot2= {self.rot2_expr}",
+               f"    rot3= {self.rot3_expr}"]
         return os.linesep.join(res)
 
     def to_dict(self):
@@ -334,7 +334,7 @@ class ExtendedTransformation:
             self.pos_names = ("pos",)
         for key in self.param_names + self.pos_names:
             if key in self.variables:
-                raise RuntimeError("The keyword %s is already defined, please chose another variable name")
+                raise RuntimeError("The keyword `%s` is already defined, please chose another variable name", key)
             self.variables[key] = numpy.nan
 
         self.codes = OrderedDict(((name, numexpr.NumExpr(expr)) for name, expr in self.expressions.items()))
@@ -366,9 +366,9 @@ class ExtendedTransformation:
         return self.ParamNT(**res)
 
     def __repr__(self):
-        res = ["%s with param: %s and pos: %s" % (self.__class__.__name__, self.param_names, self.pos_names), ]
+        res = [f"{self.__class__.__name__} with param: {self.param_names} and pos: {self.pos_names}", ]
         for name, expr in self.expressions.items():
-            res.append("    %s= %s" % (name, expr))
+            res.append(f"    {name}= {expr}")
         return os.linesep.join(res)
 
     def to_dict(self):
@@ -436,7 +436,7 @@ class Goniometer:
         self.nt_pos = namedtuple("GonioPos", pos_names) if pos_names else lambda *x: tuple(x)
 
     def __repr__(self):
-        return "Goniometer with param %s    %s with %s" % (self.nt_param(*self.param), os.linesep, self.detector)
+        return f"Goniometer with param {self.nt_param(*self.param)}    {os.linesep} with {self.detector}"
 
 
 
@@ -851,7 +851,7 @@ class GoniometerRefinement(Goniometer):
         name = self.__class__.__name__
         count = len(self.single_geometries)
         geometry_list = ", ".join(self.single_geometries.keys())
-        return "%s with %i geometries labeled: %s." % (name, count, geometry_list)
+        return f"{name} with {count} geometries labeled: {geometry_list}."
 
     def residu2(self, param):
         "Actually performs the calculation of the average of the error squared"
@@ -938,7 +938,7 @@ class GoniometerRefinement(Goniometer):
         else:
             bounds = self.bounds
         former_error = self.chi2()
-        print("Cost function before refinement: %s" % former_error)
+        print(f"Cost function before refinement: {former_error}")
         param = numpy.asarray(self.param, dtype=numpy.float64)
         print(param)
         res = minimize(self.residu2, param, method=method,
@@ -947,7 +947,7 @@ class GoniometerRefinement(Goniometer):
         print(res)
         newparam = res.x
         new_error = res.fun
-        print("Cost function after refinement: %s" % new_error)
+        print(f"Cost function after refinement: {new_error}")
         print(self.nt_param(*newparam))
 
         # print("Constrained Least square %s --> %s" % (former_error, new_error))
@@ -957,9 +957,9 @@ class GoniometerRefinement(Goniometer):
             i = abs(param - newparam).argmax()
             if "_fields" in dir(self.nt_param):
                 name = self.nt_param._fields[i]
-                print("maxdelta on: %s (%i) %s --> %s" % (name, i, self.param[i], newparam[i]))
+                print(f"maxdelta on: {name} ({i}) {self.param[i]} --> {newparam[i]}")
             else:
-                print("maxdelta on: %i %s --> %s" % (i, self.param[i], newparam[i]))
+                print(f"maxdelta on: {i} {self.param[i]} --> {newparam[i]}")
             self.param = newparam
             # update wavelength after successful optimization: not easy
             # if self.fit_wavelength:
