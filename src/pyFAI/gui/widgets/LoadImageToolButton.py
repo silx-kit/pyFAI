@@ -1,6 +1,6 @@
 # /*##########################################################################
 #
-# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2026 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "21/08/2026"
 
 import logging
 import os
@@ -77,9 +77,9 @@ class _LoadImageFromFileDialogAction(qt.QAction):
                     with fabio.open(filename) as image:
                         data = image.data
                 except Exception as e:
-                    message = "Filename '%s' not supported.<br />%s", (filename, str(e))
+                    message = f"Filename '{filename}' not supported.<br />{str(e)}"
                     qt.QMessageBox.critical(self, "Loading image error", message)
-                    _logger.error("Error while loading '%s'" % filename)
+                    _logger.error(f"Error while loading '{filename}'")
                     _logger.debug("Backtrace", exc_info=True)
                     return
             else:
