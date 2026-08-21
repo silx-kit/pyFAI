@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,18 +24,18 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 
 from silx.gui import qt
 
-from ..model.DataModel import DataModel
 from ...utils import stringutil
+from ..model.DataModel import DataModel
 
 
 class UnitSelector(qt.QComboBox):
 
     def __init__(self, parent=None):
-        super(UnitSelector, self).__init__(parent)
+        super().__init__(parent)
 
         self.__model = None
         self.setModel(DataModel())
@@ -73,7 +72,7 @@ class UnitSelector(qt.QComboBox):
                     label = name
                 else:
                     symbol = stringutil.latex_to_unicode(unit.unit_symbol)
-                    label = "%s (%s)" % (name, symbol)
+                    label = f"{name} ({symbol})"
             else:
                 label = stringutil.latex_to_unicode(unit.label)
             self.addItem(label, unit)

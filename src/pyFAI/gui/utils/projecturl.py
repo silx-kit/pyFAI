@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2023"
+__date__ = "21/08/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -59,7 +58,7 @@ def get_documentation_url(subpath):
 
     if version_info.releaselevel == "final":
         # Released version will point to a specific documentation
-        silx_doc_version = "%d.%d.%d" % (version_info.major, version_info.minor, version_info.micro)
+        silx_doc_version = f"{version_info.major}.{version_info.minor}.{version_info.micro}"
     else:
         # Dev versions will point to a single 'dev' documentation
         silx_doc_version = "dev"

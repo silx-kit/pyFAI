@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,21 +35,29 @@ __docformat__ = 'restructuredtext'
 
 import logging
 import warnings
-from math import pi, log
-import numpy
 from collections.abc import Iterable
-from .common import Integrator
+from math import log, pi
+
+import numpy
+
 # from ..geometry import Geometry
 from .. import units
-from ..utils import crc32
-from ..utils.mathutil import nan_equal, deg2rad, rad2rad
-from ..containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
+from ..containers import (
+    ErrorModel,
+    Integrate1dResult,
+    Integrate2dResult,
+    SeparateResult,
+)
+from ..engines import Engine
 from ..io import save_integrate_result
 from ..io.ponifile import PoniFile
 from ..method_registry import IntegrationMethod
+from ..utils import crc32
 from ..utils.decorators import deprecated
+from ..utils.mathutil import deg2rad, nan_equal, rad2rad
+from .common import Integrator
 from .load_engines import ocl_sort
-from ..engines import Engine
+
 logger = logging.getLogger(__name__)
 error = None
 

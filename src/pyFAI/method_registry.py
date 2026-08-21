@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,20 +33,20 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "21/08/2026"
 __status__ = "development"
 
-import inspect
 import copy
-from logging import getLogger
+import inspect
 from collections import OrderedDict, namedtuple
+from logging import getLogger
+
 logger = getLogger(__name__)
 ClassFunction = namedtuple("ClassFunction", ["klass", "function"])
 
 
-class _Nothing(object):
+class _Nothing:
     """Used to identify an unset attribute that we could nullify."""
-    pass
 
 
 class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
@@ -59,9 +58,7 @@ class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
         """
         if self.impl == "opencl":
             result = Method(self.dim, self.split, self.algo, "cython", None)
-        elif self.algo == "lut":
-            result = Method(self.dim, self.split, "histogram", self.impl, self.target)
-        elif self.algo == "csr":
+        elif self.algo == "lut" or self.algo == "csr":
             result = Method(self.dim, self.split, "histogram", self.impl, self.target)
         elif self.split == "full":
             result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
@@ -427,7 +424,7 @@ class IntegrationMethod:
             string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation, self.target_name))
         else:
             string = ", ".join((str(self.dimension) + "d int", self.pixel_splitting + " split", self.algorithm, self.implementation))
-        return "IntegrationMethod(%s)" % string
+        return f"IntegrationMethod({string})"
 
     def __hash__(self):
         """Make it independent from weighted"""

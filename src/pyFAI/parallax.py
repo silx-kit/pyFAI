@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,11 +34,12 @@ __docformat__ = 'restructuredtext'
 
 import logging
 import warnings
-import numpy
+from math import cos, exp, log, pi, sin, sqrt
+
 import numexpr
+import numpy
 import scipy.integrate
 import scipy.signal
-from math import sin, cos, pi, log, sqrt, exp
 
 logger = logging.getLogger(__name__)
 EPS = numpy.finfo("float64").eps

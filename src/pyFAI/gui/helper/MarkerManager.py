@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,25 +24,25 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "04/09/2025"
+__date__ = "21/08/2026"
 
-import logging
 import functools
-import numpy
+import logging
 
+import numpy
 from silx.gui import qt
 
-from ..model import MarkerModel
-from ..utils import unitutils
-from ..utils import eventutils
-from ..CalibrationContext import CalibrationContext
-from pyFAI.ext.invert_geometry import InvertGeometry
 import pyFAI.units
+from pyFAI.ext.invert_geometry import InvertGeometry
+
+from ..CalibrationContext import CalibrationContext
+from ..model import MarkerModel
+from ..utils import eventutils, unitutils
 
 _logger = logging.getLogger(__name__)
 
 
-class MarkerManager(object):
+class MarkerManager:
     """Synchronize the display of markers from MarkerModel to a plot."""
 
     _ITEM_TEMPLATE = "__markers__%s"
@@ -149,9 +148,7 @@ class MarkerManager(object):
         Returns the location of the marker in the plot axes
         """
         if self.__pixelBasedPlot:
-            if isinstance(marker, MarkerModel.PhysicalMarker):
-                return marker.pixelPosition()
-            elif isinstance(marker, MarkerModel.PixelMarker):
+            if isinstance(marker, MarkerModel.PhysicalMarker) or isinstance(marker, MarkerModel.PixelMarker):
                 return marker.pixelPosition()
             else:
                 _logger.debug("Unsupported marker %s", type(marker))
@@ -208,7 +205,7 @@ class MarkerManager(object):
         if marker is None:
             return None
 
-        action.setText("Remove marker '%s'" % marker.name())
+        action.setText(f"Remove marker '{marker.name()}'")
         action.triggered.connect(functools.partial(self.__removeMarker, marker))
         return action
 
@@ -222,7 +219,7 @@ class MarkerManager(object):
 
     def createMarkGeometryAction(self, parent, mousePos):
         maskGeometryAction = qt.QAction(parent)
-        maskGeometryAction.setText(u"Mark this χ/2θ coord")
+        maskGeometryAction.setText("Mark this χ/2θ coord")
         maskGeometryAction.triggered.connect(functools.partial(self.__createGeometryMarker, mousePos))
         maskGeometryAction.setEnabled(self.__geometry is not None)
         return maskGeometryAction
@@ -301,7 +298,7 @@ class MarkerManager(object):
     def __findUnusedMarkerName(self):
         template = "mark%d"
         markerNames = set([m.name() for m in self.__markerModel])
-        for i in range(0, 1000):
+        for i in range(1000):
             name = template % i
             if name not in markerNames:
                 return name

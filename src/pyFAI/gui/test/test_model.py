@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,14 +33,15 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/10/2020"
 
-import unittest
 import logging
-import numpy
+import unittest
 
+import numpy
 from silx.gui.utils import testutils
-from ..model.PeakModel import PeakModel
-from ..model.ListModel import ListModel
+
 from ..model.DataModel import DataModel
+from ..model.ListModel import ListModel
+from ..model.PeakModel import PeakModel
 
 _logger = logging.getLogger(__name__)
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -29,24 +28,23 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import logging
-import numpy
-import fabio
-import weakref
 import os
+import weakref
+
+import fabio
+import numpy
 from scipy import ndimage
 from scipy.interpolate import interp1d
-from scipy.optimize import fmin
-from scipy.optimize import fminbound
+from scipy.optimize import fmin, fminbound
 
-from .utils import stringutil
-from .utils import header_utils
 from .io.image import read_data
-
+from .utils import header_utils, stringutil
 from .version import calc_hexversion
+
 if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4, 0, "dev", 5)):
     # Short cut fabio.factory do not exists on older versions
     fabio.factory = fabio.fabioimage.FabioImage.factory
@@ -54,7 +52,7 @@ if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4,
 logger = logging.getLogger(__name__)
 
 
-class ImageReductionFilter(object):
+class ImageReductionFilter:
     """
     Generic filter applied in a set of images.
     """
@@ -65,7 +63,6 @@ class ImageReductionFilter(object):
 
         :param int max_images: Max images supported by the filter
         """
-        pass
 
     def add_image(self, image):
         """
@@ -164,7 +161,7 @@ class MeanAveraging(SumAveraging):
     name = "mean"
 
     def get_result(self):
-        result = super(MeanAveraging, self).get_result()
+        result = super().get_result()
         return result / numpy.float32(self._count)
 
 
@@ -216,7 +213,7 @@ class AverageDarkFilter(ImageStackFilter):
     """
 
     def __init__(self, filter_name, cut_off, quantiles):
-        super(AverageDarkFilter, self).__init__()
+        super().__init__()
         self._filter_name = filter_name
         self._cut_off = cut_off
         self._quantiles = quantiles
@@ -259,9 +256,7 @@ _AVERAGE_DARK_FILTERS = set(["min", "max", "sum", "mean", "std", "quantiles", "m
 
 def is_algorithm_name_exists(filter_name):
     """Return true if the name is a name of a filter algorithm"""
-    if filter_name in _FILTER_NAME_MAPPING:
-        return True
-    elif filter_name in _AVERAGE_DARK_FILTERS:
+    if filter_name in _FILTER_NAME_MAPPING or filter_name in _AVERAGE_DARK_FILTERS:
         return True
     return False
 
@@ -269,7 +264,6 @@ def is_algorithm_name_exists(filter_name):
 class AlgorithmCreationError(RuntimeError):
     """Exception returned if creation of an ImageReductionFilter is not
     possible"""
-    pass
 
 
 def create_algorithm(filter_name, cut_off=None, quantiles=None):
@@ -436,7 +430,7 @@ def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)
                 logger.warning("Empty selection for quantil %s, would keep points from %s to %s", quantiles, lower, upper)
         center = sorted_[lower:upper].mean(axis=0)
     else:
-        raise RuntimeError("Cannot understand method: %s in average_dark" % center_method)
+        raise RuntimeError(f"Cannot understand method: {center_method} in average_dark")
     if cutoff is None or cutoff <= 0:
         output = center
     else:
@@ -478,14 +472,14 @@ def _normalize_image_stack(image_stack):
             elif isinstance(image, numpy.ndarray) and image.ndim == 2:
                 data = image
             else:
-                raise Exception("Unsupported image type '%s' in image_stack" % type(image))
+                raise Exception(f"Unsupported image type '{type(image)}' in image_stack")
             result.append(data)
         return result
 
-    raise Exception("Unsupported type '%s' for image_stack" % type(image_stack))
+    raise Exception(f"Unsupported type '{type(image_stack)}' for image_stack")
 
 
-class AverageWriter():
+class AverageWriter:
     """Interface for using writer in `Average` process."""
 
     def write_header(self, merged_files, nb_frames, monitor_name):
@@ -540,7 +534,7 @@ class MultiFilesAverageWriter(AverageWriter):
         if monitor_name is not None:
             self._global_header["monitor_name"] = monitor_name
 
-        pattern = "merged_file_%%0%ii" % len(str(len(merged_files)))
+        pattern = f"merged_file_%0{len(str(len(merged_files)))}i"
         for i, f in enumerate(merged_files):
             name = pattern % i
             self._global_header[name] = f.filename
@@ -626,38 +620,31 @@ def common_prefix(string_list):
     return prefix
 
 
-class AverageObserver(object):
+class AverageObserver:
 
     def image_loaded(self, fabio_image, image_index, images_count):
         """Called when an input image is loaded"""
-        pass
 
     def process_started(self):
         """Called when the full processing is started"""
-        pass
 
     def algorithm_started(self, algorithm):
         """Called when an algorithm is started"""
-        pass
 
     def frame_processed(self, algorithm, frame_index, frames_count):
         """Called after providing a frame to an algorithm"""
-        pass
 
     def result_processing(self, algorithm):
         """Called before the result of an algorithm is computed"""
-        pass
 
     def algorithm_finished(self, algorithm):
         """Called when an algorithm is finished"""
-        pass
 
     def process_finished(self):
         """Called when the full process is finished"""
-        pass
 
 
-class Average(object):
+class Average:
     """Process images to generate an average using different algorithms."""
 
     def __init__(self):
@@ -763,7 +750,7 @@ class Average(object):
 
                 # Assume this is a numpy array like
                 if not isinstance(image, numpy.ndarray):
-                    raise RuntimeError("Not good type for input, got %s, expected numpy array" % type(image))
+                    raise RuntimeError(f"Not good type for input, got {type(image)}, expected numpy array")
                 fabio_image = fabio.numpyimage.NumpyImage(data=image)
 
             if self._observer:
@@ -974,7 +961,7 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None,
             fformat = fformat.lstrip(".")
         if output is None:
             prefix = common_prefix([i.filename for i in average.get_fabio_images()])
-            output = "filt%02i-%s.%s" % (average.get_counter_frames(), prefix, fformat)
+            output = f"filt{average.get_counter_frames():02d}-{prefix}.{fformat}"
             output = "{method_name}" + output
 
     if output is not None:

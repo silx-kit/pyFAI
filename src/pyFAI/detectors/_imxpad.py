@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,11 +37,13 @@ __date__ = "04/12/2025"
 __status__ = "production"
 
 import functools
-import numpy
-from ._common import SensorConfig, ModuleDetector
-from ..utils import mathutil
-
 import logging
+
+import numpy
+
+from ..utils import mathutil
+from ._common import ModuleDetector, SensorConfig
+
 logger = logging.getLogger(__name__)
 
 try:

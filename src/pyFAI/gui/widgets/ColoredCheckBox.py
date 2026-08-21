@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -40,7 +39,7 @@ class ColoredCheckBox(qt.QCheckBox):
     """
 
     def __init__(self, parent=None):
-        super(ColoredCheckBox, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.__color = None
 
     def paintEvent(self, event):

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,12 +37,12 @@ __status__ = "development"
 
 from silx.gui import qt
 from silx.gui.plot import PlotWidget
+from silx.gui.plot.actions.control import ResetZoomAction
+from silx.gui.plot.actions.io import SaveAction
+from silx.gui.plot.actions.mode import PanModeAction, ZoomModeAction
 from silx.gui.plot.items import Curve
 from silx.gui.plot.tools import PositionInfo
 from silx.gui.plot.tools.roi import RegionOfInterestManager
-from silx.gui.plot.actions.control import ResetZoomAction
-from silx.gui.plot.actions.io import SaveAction
-from silx.gui.plot.actions.mode import ZoomModeAction, PanModeAction
 
 from ..HorizontalRangeROI import HorizontalRangeROI
 from ..models import ROI_COLOR

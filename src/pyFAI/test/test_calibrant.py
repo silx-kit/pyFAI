@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,22 +31,25 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2026"
+__date__ = "21/08/2026"
 
-import unittest
+import copy
 import itertools
 import logging
-import sys
 import os
-import copy
-import numpy
+import sys
+import unittest
+
 import h5py
-from .utilstest import UtilsTest
-from ..calibrant import Calibrant, get_calibrant, Cell, CALIBRANT_FACTORY
+import numpy
+
+from ..calibrant import CALIBRANT_FACTORY, Calibrant, Cell, get_calibrant
+from ..crystallography.space_groups import ReflectionCondition
 from ..detectors import ALL_DETECTORS
 from ..integrator.azimuthal import AzimuthalIntegrator
-from ..crystallography.space_groups import ReflectionCondition
 from ..io.calibrant_config import CalibrantConfig
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,7 +61,7 @@ class TestCalibrant(unittest.TestCase):
     def test_factory(self):
         # by default we provide 11 calibrants
         count = len(CALIBRANT_FACTORY)
-        self.assertTrue(count > 10, "at least 11 calibrants are available, got %s" % count)
+        self.assertTrue(count > 10, f"at least 11 calibrants are available, got {count}")
 
         self.assertTrue("LaB6" in CALIBRANT_FACTORY, "LaB6 is a calibrant")
 
@@ -106,8 +108,8 @@ class TestCalibrant(unittest.TestCase):
             img = calibrant.fake_calibration_image(ai)
 
             logger.info("%s min: %s max: %s ", det.name, img.min(), img.max())
-            self.assertTrue(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
-            self.assertTrue(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
+            self.assertTrue(img.shape == det.shape, f"Image ({det.name}) has the right size")
+            self.assertTrue(img.sum() > 0, f"Image ({det.name}) contains some data")
             sys.stderr.write(".")
 
     def test_get_peaks(self):
@@ -190,7 +192,7 @@ class TestCalibrant(unittest.TestCase):
             # check for idempotence of the parser ...
             filename = Calibrant._get_abs_path(CALIBRANT_FACTORY.all[c])
             with open(filename) as fd:
-                ref = numpy.array([i.strip() for i in fd.readlines()])
+                ref = numpy.array([i.strip() for i in fd])
             cal = str(CalibrantConfig.from_dspacing(filename=filename))
             obt = numpy.array([i.strip() for i in cal.split(os.linesep)])
             res = ref != obt
@@ -213,19 +215,19 @@ class TestCell(unittest.TestCase):
 
     def test_class(self):
         c = Cell()
-        self.assertAlmostEqual(c.volume, 1.0, msg="Volume of triclinic 1,1,1,90,90,90 == 1.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 1.0, msg=f"Volume of triclinic 1,1,1,90,90,90 == 1.0, got {c.volume}")
         c = Cell(1, 2, 3)
-        self.assertAlmostEqual(c.volume, 6.0, msg="Volume of triclinic 1,2,3,90,90,90 == 6.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 6.0, msg=f"Volume of triclinic 1,2,3,90,90,90 == 6.0, got {c.volume}")
         c = Cell(1, 2, 3, 90, 30, 90)
-        self.assertAlmostEqual(c.volume, 3.0, msg="Volume of triclinic 1,2,3,90,30,90 == 3.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 3.0, msg=f"Volume of triclinic 1,2,3,90,30,90 == 3.0, got {c.volume}")
 
     def test_classmethods(self):
         c = Cell.cubic(1)
-        self.assertAlmostEqual(c.volume, 1.0, msg="Volume of cubic 1 == 1.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 1.0, msg=f"Volume of cubic 1 == 1.0, got {c.volume}")
         c = Cell.tetragonal(2, 3)
-        self.assertAlmostEqual(c.volume, 12.0, msg="Volume of tetragonal 2,3 == 12.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 12.0, msg=f"Volume of tetragonal 2,3 == 12.0, got {c.volume}")
         c = Cell.orthorhombic(1, 2, 3)
-        self.assertAlmostEqual(c.volume, 6.0, msg="Volume of orthorhombic 1,2,3 == 6.0, got %s" % c.volume)
+        self.assertAlmostEqual(c.volume, 6.0, msg=f"Volume of orthorhombic 1,2,3 == 6.0, got {c.volume}")
 
     def test_dspacing(self):
         c = Cell.cubic(1)
@@ -240,7 +242,7 @@ class TestCell(unittest.TestCase):
 
         self.assertEqual(cds, tds, msg="d-spacings are the same")
         for k in cds:
-            self.assertEqual(cd[k], td[k], msg="plans are the same for d=%s" % k)
+            self.assertEqual(cd[k], td[k], msg=f"plans are the same for d={k}")
 
     def test_helium(self):
         # self.skipTest("Not working")
@@ -278,7 +280,7 @@ class TestCell(unittest.TestCase):
         c = Calibrant(empty_file)
         try:
             c.dspacing
-        except (IOError, OSError) as err:
+        except OSError as err:
             print("Was expected:", err)
         else:
             raise RuntimeError("Opening & reading an non-existing file should raise")
@@ -378,7 +380,7 @@ class TestReflection(unittest.TestCase):
                         ref = reflections[good[0]][()]
                 if "validated" in method.__doc__.lower():
                     if not numpy.all(ref==table):
-                        print(name, "differ at hkl=", [(int(h), int(k), int(l)) for h,k,l in zip(*numpy.where(ref!=table))])  # noqa
+                        print(name, "differ at hkl=", [(int(h), int(k), int(l)) for h,k,l in zip(*numpy.where(ref!=table))])
                         raise AssertionError(f"Space group {name} did not validate against xrayutilities")
 
 def suite():

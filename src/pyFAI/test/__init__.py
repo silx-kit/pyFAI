@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,12 +34,14 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "24/02/2026"
 
 import unittest
-from . import utilstest
-from .utilstest import test_options
 
 # Issue https://github.com/silx-kit/fabio/pull/291
 # Relative to fabio 0.8
 import fabio
+
+from . import utilstest
+from .utilstest import test_options
+
 if fabio.hdf5image.Hdf5Image.close.__module__ != "fabio.hdf5image":
 
     def close(self):

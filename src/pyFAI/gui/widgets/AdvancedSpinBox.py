@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2019 European Synchrotron Radiation Facility
@@ -40,7 +39,7 @@ class AdvancedSpinBox(qt.QSpinBox):
     """
 
     def __init__(self, parent=None):
-        super(AdvancedSpinBox, self).__init__(parent)
+        super().__init__(parent)
         self.__mouseWheelEnabled = True
         self.installEventFilter(self)
 

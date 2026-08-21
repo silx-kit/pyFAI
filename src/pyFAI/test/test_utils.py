@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,22 +33,24 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "14/11/2025"
 
+import logging
 import os
 import unittest
-import logging
-from .utilstest import UtilsTest
+
 import numpy
-from .. import utils
-from ..version import calc_hexversion
-from ..method_registry import IntegrationMethod
-from ..detectors import detector_factory
+
 # to increase test coverage of missing files:
-from .. import directories
-from ..utils.grid import Kabsch
-from ..utils.stringutil import to_scientific_unicode
-from ..utils.multiprocessing import cpu_count
-from ..utils.mask_utils import search_gaps, build_gaps
+from .. import directories, utils
+from ..detectors import detector_factory
+from ..method_registry import IntegrationMethod
 from ..utils.dataclasses import case_insensitive_dataclass
+from ..utils.grid import Kabsch
+from ..utils.mask_utils import build_gaps, search_gaps
+from ..utils.multiprocessing import cpu_count
+from ..utils.stringutil import to_scientific_unicode
+from ..version import calc_hexversion
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 

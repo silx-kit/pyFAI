@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -44,11 +43,11 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "08/10/2025"
 __status__ = "production"
 
-from typing import List
-from .crystallography.cell import Cell
-from .crystallography.space_groups import ReflectionCondition
+
 from .crystallography.calibrant import Calibrant
 from .crystallography.calibrant_factory import CALIBRANT_FACTORY
+from .crystallography.cell import Cell
+from .crystallography.space_groups import ReflectionCondition
 
 __all__ = ["ALL_CALIBRANTS", "get_calibrant", "names",
             CALIBRANT_FACTORY, Calibrant, Cell, ReflectionCondition]
@@ -68,6 +67,6 @@ def get_calibrant(calibrant_name: str, wavelength: float = None) -> Calibrant:
     return cal
 
 
-def names() -> List[str]:
+def names() -> list[str]:
     """Returns the list of registered calibrant names."""
     return CALIBRANT_FACTORY.keys()

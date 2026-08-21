@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -81,8 +80,7 @@ class RoiRangeWidget(qt.QWidget):
         new_min = self.minValue
         current_max = self.maxValue
 
-        if new_min >= current_max:
-            new_min = current_max
+        new_min = min(current_max, new_min)
 
         self.updated.emit(new_min, current_max)
 
@@ -90,7 +88,6 @@ class RoiRangeWidget(qt.QWidget):
         current_min = self.minValue
         new_max = self.maxValue
 
-        if current_min >= new_max:
-            new_max = current_min
+        new_max = max(current_min, new_max)
 
         self.updated.emit(current_min, new_max)

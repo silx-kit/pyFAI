@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (c) 2017-2018 European Synchrotron Radiation Facility
@@ -27,13 +26,13 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 
-import functools
 import collections
+import functools
 
 
-class FilterBuilder(object):
+class FilterBuilder:
     """
     Helper to create extension filters for file dialog
     """
@@ -65,7 +64,7 @@ class FilterBuilder(object):
             otherExtensions = []
             for ext in extensions:
                 for subext in self.COMPRESSED_IMAGE_EXTENSIONS:
-                    otherExtensions.append("%s.%s" % (ext, subext))
+                    otherExtensions.append(f"{ext}.{subext}")
             extensions.extend(otherExtensions)
         self.addFileFormat(description, extensions)
 
@@ -86,13 +85,13 @@ class FilterBuilder(object):
         filters = []
         if self.__all and len(self.__formats):
             allExtensions = functools.reduce(lambda a, b: a + b, self.__formats.values())
-            allExtensions = ["*.%s" % ext for ext in allExtensions]
+            allExtensions = [f"*.{ext}" for ext in allExtensions]
             allExtensions = " ".join(allExtensions)
-            filters.append("All supported files (%s)" % allExtensions)
+            filters.append(f"All supported files ({allExtensions})")
         for description, extensions in self.__formats.items():
-            extensions = ["*.%s" % ext for ext in extensions]
+            extensions = [f"*.{ext}" for ext in extensions]
             extensions = " ".join(extensions)
-            filters.append("%s (%s)" % (description, extensions))
+            filters.append(f"{description} ({extensions})")
         if self.__any:
             filters.append("All files (*)")
         return filters

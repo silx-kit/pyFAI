@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (c) 2017-2024 European Synchrotron Radiation Facility
@@ -30,9 +29,7 @@ __license__ = "MIT"
 __date__ = "08/04/2024"
 
 import numpy
-
-from silx.gui import qt
-from silx.gui import colors
+from silx.gui import colors, qt
 
 
 def convertArrayToQImage(image):

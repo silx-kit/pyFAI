@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -23,22 +22,20 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/12/2023"
+__date__ = "21/08/2026"
 
+import html
 import logging
-from typing import Optional
 
 from silx.gui import qt
-import html
 
 import pyFAI.detectors
 from pyFAI.detectors import Detector
-from ..model.DetectorModel import DetectorModel
 
+from ..model.DetectorModel import DetectorModel
 
 _logger = logging.getLogger(__name__)
 
@@ -68,9 +65,9 @@ class DetectorLabel(qt.QLabel):
     _MODEL_TEMPLATE = "%s"
 
     def __init__(self, parent=None):
-        super(DetectorLabel, self).__init__(parent)
-        self.__model: Optional[DetectorModel] = None
-        self.__detector: Optional[Detector] = None
+        super().__init__(parent)
+        self.__model: DetectorModel | None = None
+        self.__detector: Detector | None = None
 
     def dragEnterEvent(self, event):
         if self.__model is not None:
@@ -91,7 +88,7 @@ class DetectorLabel(qt.QLabel):
         try:
             path = urls[0].toLocalFile()
             detector = pyFAI.detectors.detector_factory(path)
-        except IOError as e:
+        except OSError as e:
             _logger.error("Error while loading dropped URL %s", e, exc_info=True)
             qt.QMessageBox.critical(self, "Drop cancelled", str(e))
             return
@@ -123,7 +120,7 @@ class DetectorLabel(qt.QLabel):
             modelName = detectorClass.__name__
         return modelName
 
-    def detector(self) -> Optional[Detector]:
+    def detector(self) -> Detector | None:
         if self.__detector is not None:
             return self.__detector
         if self.__model is not None:
@@ -143,7 +140,7 @@ class DetectorLabel(qt.QLabel):
             manufacturer = "Not specified"
             kind = "Nexus definition"
             if detector.filename:
-                kind = "%s (%s)" % (kind, detector.filename)
+                kind = f"{kind} ({detector.filename})"
 
             description = self._MANUFACTURER_TEMPLATE % html.escape("NeXus")
             description += self._MODEL_TEMPLATE % html.escape(model)
@@ -199,10 +196,10 @@ class DetectorLabel(qt.QLabel):
     def __modelChanged(self):
         self.__updateDisplay()
 
-    def detectorModel(self) -> Optional[DetectorModel]:
+    def detectorModel(self) -> DetectorModel | None:
         return self.__model
 
-    def setDetector(self, detector: Optional[Detector]):
+    def setDetector(self, detector: Detector | None):
         self.__model = None
         self.__detector = detector
         self.__updateDisplay()

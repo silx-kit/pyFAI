@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -27,21 +26,25 @@
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "07/10/2025"
+__date__ = "21/08/2026"
 __copyright__ = "2012-2024, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
+
 import numpy
-from . import pyopencl
+
 from ..utils import calc_checksum
+from . import pyopencl
+
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
-from . import processing, OpenclProcessing
+from ..containers import ErrorModel, Integrate1dtpl, Integrate2dtpl
+from . import OpenclProcessing, processing
+
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
 
@@ -284,14 +287,14 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                             ("sem", self.cl_mem["sem"]),
                                                             ))
 
-        self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged")))
-        self.cl_kernel_args["memset_ng"] = OrderedDict(((i, self.cl_mem[i]) for i in ("averint", "sem", "merged8")))
-        self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["memset_out"] = OrderedDict((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged"))
+        self.cl_kernel_args["memset_ng"] = OrderedDict((i, self.cl_mem[i]) for i in ("averint", "sem", "merged8"))
+        self.cl_kernel_args["u8_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["s8_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["u16_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["s16_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["u32_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["s32_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
 
     def send_buffer(self, data, dest, checksum=None):
         """Send a numpy array to the device, including the cast on the device if possible
@@ -306,12 +309,12 @@ class OCL_LUT_Integrator(OpenclProcessing):
         events = []
         if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-            events.append(EventDescription("copy %s" % dest, copy_image))
+            events.append(EventDescription(f"copy {dest}", copy_image))
         else:
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
             kernel = self.kernels.get_kernel(self.mapping[data.dtype.type])
             cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
-            events += [EventDescription("copy raw %s" % dest, copy_image), EventDescription("cast to float", cast_to_float)]
+            events += [EventDescription(f"copy raw {dest}", copy_image), EventDescription("cast to float", cast_to_float)]
         self.profile_multi(events)
         if checksum is not None:
             self.on_device[dest] = checksum

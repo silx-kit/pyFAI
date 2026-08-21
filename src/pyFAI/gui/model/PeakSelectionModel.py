@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,6 +27,7 @@ __license__ = "MIT"
 __date__ = "16/10/2020"
 
 from silx.gui import qt
+
 from .AbstractModel import AbstractModel
 
 
@@ -40,7 +40,7 @@ class PeakSelectionModel(AbstractModel):
     """Emitted when the content of the elements changed."""
 
     def __init__(self, parent=None):
-        super(PeakSelectionModel, self).__init__(parent)
+        super().__init__(parent)
         self.__peaks = []
         self.__cacheStructureWasChanged = False
         self.__cacheContentWasChanged = False

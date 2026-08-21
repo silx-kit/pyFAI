@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,14 +37,13 @@ __status__ = "development"
 from silx.gui.plot import PlotWidget
 from silx.gui.plot.actions import PlotAction
 
-
 from ..HorizontalRangeROI import HorizontalRangeROI
 from ..models import ROI_COLOR
 
 
 class RoiModeAction(PlotAction):
     def __init__(self, plot: PlotWidget, parent=None):
-        super(RoiModeAction, self).__init__(
+        super().__init__(
             plot,
             icon=HorizontalRangeROI.ICON,
             text="ROI mode",

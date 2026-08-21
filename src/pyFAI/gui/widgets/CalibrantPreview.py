@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -25,13 +24,13 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "12/09/2025"
+__date__ = "21/08/2026"
 
 import logging
-import numpy
 import os.path
 from math import pi
 
+import numpy
 from silx.gui import qt
 from silx.gui.colors import Colormap
 
@@ -49,7 +48,7 @@ class CalibrantPreview(qt.QFrame):
     _PIXMAP_OFFSET = 2
 
     def __init__(self, parent=None):
-        super(CalibrantPreview, self).__init__(parent)
+        super().__init__(parent)
         self.__calibrant = None
         self.__waveLength = None
         self.__pixmap = None
@@ -99,10 +98,10 @@ class CalibrantPreview(qt.QFrame):
 
         fileds = []
         if name is not None:
-            fileds.append((u"Name", name, None))
-        fileds.append((u"Nb registered rays", calibrant.count_registered_dspacing(), None))
+            fileds.append(("Name", name, None))
+        fileds.append(("Nb registered rays", calibrant.count_registered_dspacing(), None))
         dSpacing = calibrant.dspacing
-        fileds.append((u"Nb visible rays", len(dSpacing), u"between 0 and 180°"))
+        fileds.append(("Nb visible rays", len(dSpacing), "between 0 and 180°"))
         if len(dSpacing) > 0:
             tth = calibrant.get_2th()
             ray = dSpacing[0]
@@ -115,13 +114,13 @@ class CalibrantPreview(qt.QFrame):
         toolTip = []
         for f in fileds:
             field_name, field_value, suffix = f
-            field = u'<li style="white-space:pre"><b>%s</b>: %s</li>' % (field_name, field_value)
+            field = f'<li style="white-space:pre"><b>{field_name}</b>: {field_value}</li>'
             if suffix is not None:
-                field = u"%s (%s)" % (field, suffix)
+                field = f"{field} ({suffix})"
             toolTip.append(field)
 
-        toolTip = u"\n".join(toolTip)
-        toolTip = u'<html><ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">%s</ul></html>' % toolTip
+        toolTip = "\n".join(toolTip)
+        toolTip = f'<html><ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0">{toolTip}</ul></html>'
         self.setToolTip(toolTip)
 
     def __getPixmap(self, size=360):
@@ -144,7 +143,7 @@ class CalibrantPreview(qt.QFrame):
         return self.__pixmap
 
     def paintEvent(self, event):
-        super(CalibrantPreview, self).paintEvent(event)
+        super().paintEvent(event)
         painter = qt.QPainter(self)
 
         # border

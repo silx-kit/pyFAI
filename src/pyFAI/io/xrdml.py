@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,9 +35,11 @@ __date__ = "11/01/2024"
 __docformat__ = 'restructuredtext'
 
 import os
-from xml.etree import  ElementTree as et
-from .nexus import get_isotime
+from xml.etree import ElementTree as et
+
 from .. import version as pyFAI_version
+from .nexus import get_isotime
+
 
 def save_xrdml(filename, result):
     """

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2026 European Synchrotron Radiation Facility
@@ -28,17 +27,17 @@ __license__ = "MIT"
 __date__ = "17/03/2026"
 
 import logging
-import numpy
 
+import numpy
 from silx.gui import qt
 from silx.image import marchingsquares
 
+from ... import units
 from ...containers import FixedParameters
-from ...geometryRefinement import GeometryRefinement
 from ...geometry import Geometry
+from ...geometryRefinement import GeometryRefinement
 from ..peak_picker import PeakPicker
 from . import model_transform
-from ... import units
 
 _logger = logging.getLogger(__name__)
 
@@ -52,7 +51,7 @@ class RingExtractorThread(qt.QThread):
 
     def __init__(self, parent):
         """Constructor"""
-        super(RingExtractorThread, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.__image = None
         self.__mask = None

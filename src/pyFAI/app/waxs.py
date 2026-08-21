@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,20 +32,25 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
+import logging
 import os
 import sys
 import time
 from argparse import ArgumentParser
-import logging
+
 import fabio
 from fabio.fabioutils import exists as fabio_exists
-from .. import date as pyFAI_date, version as pyFAI_version, units, utils
+
+from .. import date as pyFAI_date
+from .. import units, utils
+from .. import version as pyFAI_version
 from ..average import average_dark
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -60,7 +64,7 @@ hc = units.hc
 
 def main(args=None):
     usage = "pyFAI-waxs [options] -p ponifile file1.edf file2.edf ..."
-    version = "pyFAI-waxs version %s from %s" % (pyFAI_version, pyFAI_date)
+    version = f"pyFAI-waxs version {pyFAI_version} from {pyFAI_date}"
     description = "Azimuthal integration for powder diffraction."
     epilog = """pyFAI-waxs is the script of pyFAI that allows data reduction
     (azimuthal integration) for Wide Angle Scattering to produce X-Ray Powder
@@ -79,8 +83,8 @@ def main(args=None):
     parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                         help="wavelength of the X-Ray beam in Angstrom", default=None)
     parser.add_argument("-e", "--energy", dest="energy", type=float,
-                        help="energy of the X-Ray beam in keV (hc=%skeV.A)" %
-                        hc, default=None)
+                        help=f"energy of the X-Ray beam in keV (hc={hc}keV.A)",
+                        default=None)
     parser.add_argument("-u", "--dummy", dest="dummy",
                         type=float, default=None,
                         help="dummy value for dead pixels")
@@ -166,7 +170,7 @@ def main(args=None):
         # print(integrator)
         # print("Mask: %s\tMethods: %s / %s" % (integrator.maskfile, method1d, method2d))
         for afile in to_process:
-            sys.stdout.write("Integrating %s --> " % afile)
+            print(f"Integrating {afile} --> ", end="")
             outfile = os.path.splitext(afile)[0] + options.ext
             azimFile = os.path.splitext(afile)[0] + ".azim"
             t0 = time.perf_counter()
@@ -204,7 +208,7 @@ def main(args=None):
                     t3 = time.perf_counter()
                     print(f"{outfile}\t reading: {t1-t0:.3f}s\t 1D integration: {t2-t1:.3f}s,\t 2D integration {t3-t2:.3f}s.")
                 else:
-                    print(f"{outfile}\t reading: {t1-t0:.3f}s\t 1D integration: {t2 - t1:%.3f}s.")
+                    print(f"{outfile}\t reading: {t1-t0:.3f}s\t 1D integration: {t2-t1:.3f}s.")
 
 
 

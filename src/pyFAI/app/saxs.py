@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,19 +31,23 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
+import logging
 import os
 import sys
 import time
 from argparse import ArgumentParser
-import logging
+
 import fabio
 from fabio.fabioutils import exists as fabio_exists
-from .. import date as pyFAI_date, version as pyFAI_version, units, utils
-from ..method_registry import IntegrationMethod
+
+from .. import date as pyFAI_date
+from .. import units, utils
+from .. import version as pyFAI_version
 from ..integrator.azimuthal import AzimuthalIntegrator
+from ..method_registry import IntegrationMethod
 
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -59,7 +62,7 @@ hc = units.hc
 
 def main(args=None):
     usage = "pyFAI-saxs [options] -n 1000 -p ponifile file1.edf file2.edf ..."
-    version = "PyFAI-saxs version %s from %s " % (pyFAI_version, pyFAI_date)
+    version = f"PyFAI-saxs version {pyFAI_version} from {pyFAI_date} "
     description = """Azimuthal integration for SAXS users."""
     epilog = """pyFAI-saxs is the SAXS script of pyFAI that allows data
     reduction (azimuthal integration) for Small Angle Scattering with output
@@ -77,8 +80,8 @@ def main(args=None):
     parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                         help="wavelength of the X-Ray beam in Angstrom", default=None)
     parser.add_argument("-e", "--energy", dest="energy", type=float,
-                        help="energy of the X-Ray beam in keV (hc=%skeV.A)" %
-                        hc, default=None)
+                        help=f"energy of the X-Ray beam in keV (hc={hc}keV.A)",
+                        default=None)
     parser.add_argument("-u", "--dummy", dest="dummy",
                         type=float, default=None,
                         help="dummy value for dead pixels")
@@ -151,7 +154,7 @@ def main(args=None):
         # print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
 
         for afile in to_process:
-            sys.stdout.write("Integrating %s --> " % afile)
+            sys.stdout.write(f"Integrating {afile} --> ")
             outfile = os.path.splitext(afile)[0] + options.ext
             t0 = time.perf_counter()
             with fabio.open(afile) as fimg:

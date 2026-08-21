@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
@@ -27,20 +26,19 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "27/03/2023"
 
-import weakref
-import logging
 import functools
+import logging
 import os
+import weakref
 
 from silx.gui import qt
 
 from ..utils import stringutil
 
-
 _logger = logging.getLogger(__name__)
 
 
-class ApplicationContext(object):
+class ApplicationContext:
 
     __instance = None
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,20 +35,22 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "31/10/2025"
 __status__ = "production"
 
-import os
 import copy
-import threading
 import logging
 import operator
-import numpy
+import os
+import threading
+
 import fabio
-from ..control_points import ControlPoints
-from ..calibrant import CALIBRANT_FACTORY
+import numpy
+
 from ..blob_detection import BlobDetection
-from ..massif import Massif
+from ..calibrant import CALIBRANT_FACTORY
+from ..control_points import ControlPoints
 from ..detectors import Detector
 from ..ext.reconstruct import reconstruct
 from ..ext.watershed import InverseWatershed
+from ..massif import Massif
 from ..utils.callback import dangling_callback
 from .mpl_calib import MplCalibWidget
 
@@ -61,8 +62,8 @@ except ImportError:
     qt = None
 
 if qt is not None:
-    from .matplotlib import pylab
     from . import utils as gui_utils
+    from .matplotlib import pylab
 
 
 def preprocess_image(data, log=False, clip=0.001):
@@ -87,7 +88,7 @@ def preprocess_image(data, log=False, clip=0.001):
     return  data_disp, bounds
 
 
-class PeakPicker(object):
+class PeakPicker:
     """
     This class is in charge of peak picking, i.e. find bragg spots in the image
     Two methods can be used : massif or blob

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: python fast azimuthal integration project
 #             https://github.com/silx-kit/pyFAI
@@ -39,11 +38,14 @@ __copyright__ = "2012-2024 European Synchrotron Radiation Facility, Grenoble, Fr
 __date__ = "07/10/2025"
 __status__ = "stable"
 
-import os
 import logging
+import os
 import platform
+
 import numpy
+
 import pyFAI
+
 logger = logging.getLogger(__name__)
 
 if not pyFAI.use_opencl:
@@ -57,15 +59,27 @@ elif os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
 else:
     from silx.opencl import common
     ocl = common.ocl    # /!\ lasy loading of ocl at the silx level !!!
-    from silx.opencl.common import pyopencl, mf, release_cl_buffers, allocate_cl_buffers, \
-                                    measure_workgroup_size, kernel_workgroup_size # noqa: F401
+    from silx.opencl.common import (
+        allocate_cl_buffers,
+        kernel_workgroup_size,
+        measure_workgroup_size,  # noqa: F401
+        mf,
+        pyopencl,
+        release_cl_buffers,
+    )
 
     from .. import resources
     resources.silx_integration()
 
-    from silx.opencl import utils  # noqa: F401
-    from silx.opencl.utils import get_opencl_code, concatenate_cl_kernel, read_cl_file # noqa: F401
-    from silx.opencl import processing
+    from silx.opencl import (
+        processing,
+        utils,  # noqa: F401
+    )
+    from silx.opencl.utils import (  # noqa: F401
+        concatenate_cl_kernel,
+        get_opencl_code,
+        read_cl_file,
+    )
     OpenclProcessing = processing.OpenclProcessing
 
 

@@ -1,7 +1,6 @@
-# coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2025 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2026 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +24,16 @@
 
 __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "21/08/2026"
+
+import logging
+import os
 
 import fabio
-import os
-import logging
 from silx.gui import qt
-from ..model.ImageModel import ImageFilenameModel
-from ..model.ImageModel import ImageFromFilenameModel
+
 from ..ApplicationContext import ApplicationContext
+from ..model.ImageModel import ImageFilenameModel, ImageFromFilenameModel
 from ..utils.FilterBuilder import FilterBuilder
 
 _logger = logging.getLogger(__name__)
@@ -77,9 +77,9 @@ class _LoadImageFromFileDialogAction(qt.QAction):
                     with fabio.open(filename) as image:
                         data = image.data
                 except Exception as e:
-                    message = "Filename '%s' not supported.<br />%s", (filename, str(e))
+                    message = f"Filename '{filename}' not supported.<br />{str(e)}"
                     qt.QMessageBox.critical(self, "Loading image error", message)
-                    _logger.error("Error while loading '%s'" % filename)
+                    _logger.error(f"Error while loading '{filename}'")
                     _logger.debug("Backtrace", exc_info=True)
                     return
             else:
@@ -121,7 +121,7 @@ class LoadImageToolButton(qt.QToolButton):
     """
 
     def __init__(self, parent=None):
-        super(LoadImageToolButton, self).__init__(parent)
+        super().__init__(parent)
         self.__model = None
         self.__isEnabled = True
         self.__dialogTitle = "Select an image"

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -28,22 +27,21 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 
+import datetime
+import logging
 import os
 import sys
-import datetime
 from argparse import ArgumentParser
-from typing import Tuple
-import logging
-from .. import resources
-from .. import calibrant
-from .. import detectors
+
+from .. import calibrant, detectors, resources
+from .. import date as pyFAI_date
+from .. import units as pyFAI_units
+from .. import version as pyFAI_version
 from ..io import image
 from ..io.ponifile import PoniFile
-from .. import version as pyFAI_version, date as pyFAI_date
-from .. import units as pyFAI_units
 
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -87,7 +85,7 @@ def configure_parser_arguments(parser):
     parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                         help="Wavelength of the X-Ray beam in Angstrom.", default=None)
     parser.add_argument("-e", "--energy", dest="energy", type=float,
-                        help="Energy of the X-Ray beam in keV (hc=%skeV.A)." % pyFAI_units.hc, default=None)
+                        help=f"Energy of the X-Ray beam in keV (hc={pyFAI_units.hc}keV.A).", default=None)
     parser.add_argument("-P", "--polarization", dest="polarization_factor",
                         type=float, default=None,
                         help="Polarization factor, from -1 (vertical) to +1 (horizontal)," +
@@ -244,12 +242,12 @@ decrease the value if arcs are mixed together.""", default=None)
                         help="Simplify some Qt feature, removed disappearing cursor bug (#1899) when playing over remote desktop",
                         default=False)
 
-description = """Calibrate the diffraction setup geometry based on
+description = f"""Calibrate the diffraction setup geometry based on
 Debye-Scherrer rings images without a priori knowledge of your setup.
 You will need to provide a calibrant or a "d-spacing" file containing the
 spacing of Miller plans in Angstrom (in decreasing order).
-%s or search in the American Mineralogist database:
-http://rruff.geo.arizona.edu/AMS/amcsd.php""" % str(calibrant.ALL_CALIBRANTS)
+{str(calibrant.ALL_CALIBRANTS)} or search in the American Mineralogist database:
+http://rruff.geo.arizona.edu/AMS/amcsd.php"""
 
 epilog = """The output of this program is a "PONI" file containing the
 detector description and the 6 refined parameters (distance, center, rotation)
@@ -257,7 +255,7 @@ and wavelength. An 1D and 2D diffraction patterns are also produced.
 (.dat and .azim files)"""
 
 
-def parse_pixel_size(pixel_size) -> Tuple[float, float] :
+def parse_pixel_size(pixel_size) -> tuple[float, float] :
     """Convert a comma separated string into pixel size
 
     :param str pixel_size: String containing pixel size in micron
@@ -291,7 +289,7 @@ def parse_options():
     """
     usage = "pyFAI-calib2 [options] input_image.edf"
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
-    version = "calibration from pyFAI  version %s: %s" % (pyFAI_version, pyFAI_date)
+    version = f"calibration from pyFAI  version {pyFAI_version}: {pyFAI_date}"
     parser.add_argument("-V", "--version", action='version', version=version)
     configure_parser_arguments(parser)
 
@@ -321,8 +319,8 @@ def setup_model(model, options):
     args = options.args
 
     # The module must not import the GUI
-    from ..gui.utils import units as gui_units
     from ..gui.model.GeometryModel import GeometryModel
+    from ..gui.utils import units as gui_units
 
     # Settings
     settings = model.experimentSettingsModel()
@@ -610,8 +608,8 @@ def setup_model(model, options):
 
     if options.npt:
         try:
-            from pyFAI.gui.helper import model_transform
             from pyFAI.control_points import ControlPoints
+            from pyFAI.gui.helper import model_transform
             controlPoints = ControlPoints(filename=options.npt)
             peakSelectionModel = model.peakSelectionModel()
             model_transform.initPeaksFromControlPoints(peakSelectionModel, controlPoints)
@@ -625,10 +623,10 @@ def logUncaughtExceptions(exceptionClass, exception, stack):
         if stack is not None:
             # Mimic the syntax of the default Python exception
             message = (''.join(traceback.format_tb(stack)))
-            message = '{1}\nTraceback (most recent call last):\n{2}{0}: {1}'.format(exceptionClass.__name__, exception, message)
+            message = f'{exception}\nTraceback (most recent call last):\n{message}{exceptionClass.__name__}: {exception}'
         else:
             # There is no backtrace
-            message = '{0}: {1}'.format(exceptionClass.__name__, exception)
+            message = f'{exceptionClass.__name__}: {exception}'
         logger_uncaught.error(message)
     except Exception:
         # Make sure there is no problem at all in this function
@@ -656,8 +654,9 @@ def main():
 
     # Make sure matplotlib is loaded first by silx
     import silx.gui.utils.matplotlib
-    from ..gui.CalibrationWindow import CalibrationWindow
+
     from ..gui.CalibrationContext import CalibrationContext
+    from ..gui.CalibrationWindow import CalibrationWindow
 
     sys.excepthook = logUncaughtExceptions
     if options.qtargs is None:

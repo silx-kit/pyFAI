@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,23 +32,28 @@ separation on GPU.
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "07/10/2025"
+__date__ = "21/08/2026"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os
 import logging
+import os
 from collections import OrderedDict
+
 import numpy
+
 from . import ocl
+
 if ocl:
     import pyopencl.array
-    from . import processing, OpenclProcessing
+
+    from . import OpenclProcessing, processing
     EventDescription = processing.EventDescription
     BufferDescription = processing.BufferDescription
 else:
     raise ImportError("pyopencl is not installed or no device is available")
-from. import release_cl_buffers, kernel_workgroup_size, get_x87_volatile_option
+from . import get_x87_volatile_option, kernel_workgroup_size, release_cl_buffers
+
 logger = logging.getLogger(__name__)
 
 
@@ -223,7 +227,7 @@ class Separator(OpenclProcessing):
         if data.shape[1] != self.npt_width or data.shape[0] > self.npt_height:
             raise RuntimeError("data shape is wrong ...")
         if self.npt_height & (self.npt_height - 1):  # not a power of 2
-            raise RuntimeError("Bitonic sort works only for power of two, requested sort on %s element" % self.npt_height)
+            raise RuntimeError(f"Bitonic sort works only for power of two, requested sort on {self.npt_height} element")
         if dummy is None:
             dummy = self.DUMMY
         else:
@@ -251,7 +255,7 @@ class Separator(OpenclProcessing):
                 self.cl_mem["input_data"].set(data)
         ws = self.npt_height // 8
         if self.block_size < ws:
-            raise RuntimeError("Requested a workgoup size of %s, maximum is %s" % (ws, self.block_size))
+            raise RuntimeError(f"Requested a workgoup size of {ws}, maximum is {self.block_size}")
 
         kargs = self.cl_kernel_args["bsort_vertical"]
         local_mem = kargs["l_data"]
@@ -275,7 +279,7 @@ class Separator(OpenclProcessing):
         if data.shape != (self.npt_height, self.npt_width):
             raise RuntimeError("data shape does not match")
         if self.npt_width & (self.npt_width - 1):  # not a power of 2
-            raise RuntimeError("Bitonic sort works only for power of two, requested sort on %s element" % self.npt_width)
+            raise RuntimeError(f"Bitonic sort works only for power of two, requested sort on {self.npt_width} element")
         if dummy is None:
             dummy = self.DUMMY
         else:
@@ -298,7 +302,7 @@ class Separator(OpenclProcessing):
             self.cl_mem["input_data"].set(data)
         ws = self.npt_width // 8
         if self.block_size < ws:
-            raise RuntimeError("Requested a workgoup size of %s, maximum is %s" % (ws, self.block_size))
+            raise RuntimeError(f"Requested a workgoup size of {ws}, maximum is {self.block_size}")
         kargs = self.cl_kernel_args["bsort_horizontal"]
         local_mem = kargs["l_data"]
         if not local_mem or local_mem.size < ws * 32:

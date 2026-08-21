@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,13 +33,15 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
 import logging
 import time
-from .utilstest import UtilsTest
+import unittest
+
+import numpy
+
 from .. import spline
 from ..ext import _bispev
+from .utilstest import UtilsTest
 
 try:
     from scipy import interpolate as fitpack

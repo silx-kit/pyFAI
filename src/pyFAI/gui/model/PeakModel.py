@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,13 +27,14 @@ __license__ = "MIT"
 __date__ = "05/09/2023"
 
 import numpy
+
 from .AbstractModel import AbstractModel
 
 
 class PeakModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(PeakModel, self).__init__(parent)
+        super().__init__(parent)
         self.__name = None
         self.__color = None
         self.__coords = numpy.zeros((0, 2))

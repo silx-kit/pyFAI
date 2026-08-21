@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,15 +33,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
-import os
-import numpy
 import logging
-from ._common import Detector, Orientation, SensorConfig, _ensure_dict, ModuleDetector
+import os
+
+import numpy
+
+from ..utils.decorators import deprecated, deprecated_args
 from ..utils.mathutil import expand2d
-from ..utils.decorators import deprecated_args, deprecated
+from ._common import Detector, ModuleDetector, Orientation, SensorConfig, _ensure_dict
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -82,7 +84,7 @@ class _Dectris(ModuleDetector):
                  sensor:SensorConfig|None=None):
         super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
                         module_size=module_size, orientation=orientation, sensor=sensor)
-        
+
 
     def calc_mask(self):
         """
@@ -392,7 +394,7 @@ class Mythen(Detector):
 
     def calc_mask(self):
         "Mythen has no masks"
-        return None
+        return
 
 
 class Pilatus(_Dectris):
@@ -451,7 +453,7 @@ class Pilatus(_Dectris):
     @property
     def splinefile(self):
         if self.x_offset_file and self.y_offset_file:
-            return "%s,%s" % (self.x_offset_file, self.y_offset_file)
+            return f"{self.x_offset_file},{self.y_offset_file}"
 
     @splinefile.setter
     @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")

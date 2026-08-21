@@ -455,7 +455,7 @@ if options.qt_screen:
     env_qtplatform = os.environ.get("QT_QPA_PLATFORM")
     if options.qt_screen.lower() == "on":
         if env_qtplatform is None:
-            os.environ["QT_QPA_PLATFORM"] = on 
+            os.environ["QT_QPA_PLATFORM"] = on
     else:
         value = off if options.qt_screen.lower() == "off" else options.qt_screen
         os.environ["QT_QPA_PLATFORM"] = value

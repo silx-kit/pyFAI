@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -41,15 +40,16 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "13/01/2026"
 __status__ = "development"
 
-from math import sin, cos, pi
 from dataclasses import dataclass
+from math import cos, pi, sin
+
 import numpy
 from scipy import ndimage, optimize
+
 from ..control_points import ControlPoints
 from ..ext import _geometry
 from ..io.ponifile import PoniFile
 from ..third_party.classproperties import classproperty
-
 
 module_d = numpy.dtype(
     [
@@ -193,7 +193,7 @@ class MultiModule:
             raise RuntimeError("`detector` must provide an actual mask")
         self.detector = detector
         self.build_labels()
-        for l in range(1, self.nb_modules + 1):  # noqa: E741
+        for l in range(1, self.nb_modules + 1):
             self.modules[l] = SingleModule(detector, self.lmask, index=l, fixed=False)
         return self
 
@@ -206,7 +206,7 @@ class MultiModule:
         p1 /= self.detector.pixel1
         p2 /= self.detector.pixel2
 
-        for l in range(1, self.nb_modules + 1):  # noqa: E741
+        for l in range(1, self.nb_modules + 1):
             m = self.modules[l]
             mp1, mp2 = m.calc_displacement_map()
             p1[m.mask] = mp1[m.mask]
@@ -234,7 +234,7 @@ class MultiModuleRefinement(MultiModule):
         p2 = mcp.d1.copy()
         param_idx = 0
         center = 0.5 if center else 0
-        for l in range(1, self.nb_modules + 1):  # noqa: E741
+        for l in range(1, self.nb_modules + 1):
             m = self.modules[l]
             mask = mcp.module == l
             valid = mcp[mask]
@@ -257,7 +257,7 @@ class MultiModuleRefinement(MultiModule):
         else:
             print(filename, ":", self.calibrants.get(filename))
             modulated_cp = self.modulated_points[filename]
-            for l in range(1, self.nb_modules + 1):  # noqa: E741
+            for l in range(1, self.nb_modules + 1):
                 print(l, (modulated_cp.module == l).sum())
 
     def load_control_points(self, filename, poni=None, verbose=False):

@@ -1,5 +1,4 @@
 # !/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -40,8 +39,10 @@ __docformat__ = 'restructuredtext'
 
 import logging
 from collections import namedtuple
-import numpy
 from math import sqrt
+
+import numpy
+
 logger = logging.getLogger(__name__)
 
 Alignment = namedtuple("Alignment", "points RMSD rotation center_ref center_set matrix")

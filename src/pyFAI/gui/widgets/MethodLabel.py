@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2024 European Synchrotron Radiation Facility
@@ -25,10 +24,12 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/03/2024"
+__date__ = "21/08/2026"
 
 import logging
+
 from silx.gui import qt
+
 from ... import method_registry
 
 _logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ class MethodLabel(qt.QLabel):
     </ul>"""
 
     def __init__(self, parent=None):
-        super(MethodLabel, self).__init__(parent)
+        super().__init__(parent)
         self.__method = None
         self.__labelTemplate = "{split} / {algo} / {impl}"
         self.__availability = False
@@ -122,7 +123,7 @@ class MethodLabel(qt.QLabel):
         else:
             if not self.__availability:
                     label = self.__methodToString(method, self.__labelTemplate)
-                    toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+                    toolTip = f"<html>{self.__methodToString(method, self._TOOLTIP_TEMPLATE)}</html>"
             else:
                 usedMethods = method_registry.IntegrationMethod.select_method(method=method)
                 if len(usedMethods) == 0:
@@ -130,7 +131,7 @@ class MethodLabel(qt.QLabel):
                     toolTip = self.__methodToString(method, self._TOOLTIP_TEMPLATE)
                     toolTip = ("No method fit. Integration could be compromised. "
                                "The following configuration is defined:"
-                               "%s</html>" % toolTip)
+                               f"{toolTip}</html>")
                 else:
                     usedMethod = usedMethods[0]
                     usedMethod = usedMethod.method
@@ -138,7 +139,7 @@ class MethodLabel(qt.QLabel):
 
                     if compare == "same":
                         label = self.__methodToString(method, self.__labelTemplate)
-                        toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+                        toolTip = f"<html>{self.__methodToString(method, self._TOOLTIP_TEMPLATE)}</html>"
                     else:
                         original = self.__methodToString(method, self.__labelTemplate)
                         label = self.__methodToString(usedMethod, self.__labelTemplate)
@@ -146,13 +147,13 @@ class MethodLabel(qt.QLabel):
 
                         if compare == "degraded":
                             label = "Degraded to: " + label
-                            toolTip = ("<html>The method %s is not available, at least, in this computer. "
+                            toolTip = (f"<html>The method {original} is not available, at least, in this computer. "
                                        "The following method will be used:"
-                                       "%s</html>" % (original, toolTip))
+                                       f"{toolTip}</html>")
                         elif compare == "specialized":
                             label = "Specialized with: " + label
-                            toolTip = ("<html>The generic selection %s will use the following method in this computer:"
-                                       "%s</html>" % (original, toolTip))
+                            toolTip = (f"<html>The generic selection {original} will use the following method in this computer:"
+                                       f"{toolTip}</html>")
                         else:
                             raise RuntimeError()
 

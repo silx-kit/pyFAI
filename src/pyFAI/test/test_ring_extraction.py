@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -89,7 +88,7 @@ class TestCalibAttributes(RingExtractionTestBase):
 class TestExtractControlPoints(RingExtractionTestBase):
     def setUp(self):
         super().setUp()
-        self.mock_control_points = mock.patch((ring_extraction.__name__ + ".ControlPoints")).start()
+        self.mock_control_points = mock.patch(ring_extraction.__name__ + ".ControlPoints").start()
         self.mock_extract_peaks_in_one_ring = mock.patch.object(
             self.ring_extraction, "extract_list_of_peaks_in_one_ring"
         ).start()

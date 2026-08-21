@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,38 +35,38 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "06/01/2026"
 __status__ = "development"
 
-from typing import Tuple
-from string import digits
 import json
-import h5py
 import logging
 import os.path
 import posixpath
+from string import digits
+
+import h5py
 import numpy
 from silx.gui import qt
 from silx.gui.colors import Colormap
-from silx.image.marchingsquares import find_contours
 from silx.gui.plot.items.image import ImageBase
+from silx.image.marchingsquares import find_contours
 
+from ...io.diffmap_config import DiffmapConfig
+from ...io.integration_config import WorkerConfig
+from ...utils.mathutil import binning
 from .models import ImageIndices
 from .point import Point
 from .utils import (
     compute_radial_values,
+    get_axes_dataset,
+    get_axes_index,
     get_dataset,
     get_indices_from_values,
     get_mask_image,
     get_radial_dataset,
-    get_axes_dataset,
     get_signal_dataset,
-    get_axes_index
 )
 from .widgets.DiffractionImagePlotWidget import DiffractionImagePlotWidget
 from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
 from .widgets.TitleWidget import TitleWidget
-from ...io.integration_config import WorkerConfig
-from ...io.diffmap_config import DiffmapConfig
-from ...utils.mathutil import binning
 
 logger = logging.getLogger(__name__)
 
@@ -224,7 +223,7 @@ class MainWindow(qt.QMainWindow):
             legend="MAP_LOCATION",
         )
 
-    def getRoiRadialRange(self) -> Tuple[float | None, float | None]:
+    def getRoiRadialRange(self) -> tuple[float | None, float | None]:
         return self._integrated_plot_widget.roi.getRange()
 
     def displayPatternAtIndices(self,
@@ -277,8 +276,8 @@ class MainWindow(qt.QMainWindow):
 
         if mask_image is None:
             detector.mask = detector_mask
-        elif detector_mask is None: 
-            detector.mask = mask_image 
+        elif detector_mask is None:
+            detector.mask = mask_image
         else:
             detector.mask = numpy.logical_or(mask_image, detector_mask)
 

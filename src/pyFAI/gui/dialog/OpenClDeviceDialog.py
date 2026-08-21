@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -46,7 +45,7 @@ class OpenClDeviceDialog(qt.QDialog):
     """
 
     def __init__(self, parent=None):
-        super(OpenClDeviceDialog, self).__init__(parent)
+        super().__init__(parent)
         filename = get_ui_file("opencl-device-dialog.ui")
         qt.loadUi(filename, self)
 
@@ -135,9 +134,7 @@ class OpenClDeviceDialog(qt.QDialog):
 
         :param Union[str,Tuple[int,int]] device: A device.
         """
-        if device is None:
-            self._anyDeviceButton.setChecked(True)
-        elif device == "any":
+        if device is None or device == "any":
             self._anyDeviceButton.setChecked(True)
         elif device == "gpu":
             self._anyGpuButton.setChecked(True)

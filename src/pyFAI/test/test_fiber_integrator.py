@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,19 +34,19 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
 import logging
+import unittest
+
 import numpy
-from ..calibrant import get_calibrant
-from ..integrator.fiber import FiberIntegrator
-from ..integrator.azimuthal import AzimuthalIntegrator
-from ..detectors import detector_factory
-from ..units import get_unit_fiber
-from ..units import parse_fiber_unit
-from ..units import ANY_FIBER_UNITS
-from ..units import UnitFiber
-from ..test.utilstest import UtilsTest
+
 from .. import load
+from ..calibrant import get_calibrant
+from ..detectors import detector_factory
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..integrator.fiber import FiberIntegrator
+from ..test.utilstest import UtilsTest
+from ..units import ANY_FIBER_UNITS, UnitFiber, get_unit_fiber, parse_fiber_unit
+
 logger = logging.getLogger(__name__)
 
 
@@ -512,7 +511,7 @@ class TestFiberIntegrator(unittest.TestCase):
         }
         result_ref = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=npt_ip, npt_oop=npt_oop,
                                                               ip_range=ranges[1]["ip"], oop_range=ranges[1]["oop"],
-                                                              vertical_integration=ranges[1]["vertical_integration"], sample_orientation=int(1),
+                                                              vertical_integration=ranges[1]["vertical_integration"], sample_orientation=1,
                                                               method=("bbox", "csr", "cython"),
         )
 
@@ -546,7 +545,7 @@ class TestFiberIntegrator(unittest.TestCase):
 
         result_ref = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=npt_ip, npt_oop=npt_oop,
                                                               ip_range=ranges[1]["ip"], oop_range=ranges[1]["oop"],
-                                                              vertical_integration=ranges[1]["vertical_integration"], sample_orientation=int(1),
+                                                              vertical_integration=ranges[1]["vertical_integration"], sample_orientation=1,
                                                               method=("bbox", "csr", "cython"),
         )
 
@@ -577,11 +576,11 @@ class TestFiberIntegrator(unittest.TestCase):
                 fiberunit.equation = fiberunit._equation_np
                 fiberunit._update_ne_equation()
 
-                self.fi.reset()        
+                self.fi.reset()
                 array_numpy = self.fi.array_from_unit(unit=fiberunit)
-                
+
                 self.assertTrue(numpy.allclose(array_numexpr, array_numpy))
-                
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase

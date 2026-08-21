@@ -34,29 +34,33 @@ __date__ = "19/03/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import os
-import time
 import collections
 import glob
-import posixpath
-from argparse import ArgumentParser
-from urllib.parse import urlparse
 import logging
-import numpy
-import fabio
-from threading import Event
-import __main__ as main
-from .opencl import ocl
-from . import version as PyFAI_VERSION, date as PyFAI_DATE
-from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
-from .io import Nexus, get_isotime, h5py
-from .io.integration_config import WorkerConfig
-from .io.diffmap_config import DiffmapConfig, ListDataSet
-from .io.ponifile import PoniFile
-from .io._json import json_dumps
-from .worker import Worker
-from .utils.decorators import deprecated, deprecated_warning
+import os
+import posixpath
+import time
+from argparse import ArgumentParser
 from string import digits as DIGITS
+from threading import Event
+from urllib.parse import urlparse
+
+import fabio
+import numpy
+
+import __main__ as main
+
+from . import date as PyFAI_DATE
+from . import version as PyFAI_VERSION
+from .integrator.load_engines import PREFERED_METHODS_1D, PREFERED_METHODS_2D
+from .io import Nexus, get_isotime, h5py
+from .io._json import json_dumps
+from .io.diffmap_config import DiffmapConfig, ListDataSet
+from .io.integration_config import WorkerConfig
+from .io.ponifile import PoniFile
+from .opencl import ocl
+from .utils.decorators import deprecated, deprecated_warning
+from .worker import Worker
 
 logger = logging.getLogger(__name__)
 Position = collections.namedtuple('Position', 'index slow fast')

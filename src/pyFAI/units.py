@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,20 +36,23 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
 import copy
 import logging
 from collections.abc import Callable
-from math import pi as PI
 from functools import wraps
+from math import pi as PI
+
 import numpy
 import scipy.constants
 from scipy.spatial.transform import Rotation
-from .utils.decorators import deprecated
+
 from .containers import ImmutableDict
+from .utils.decorators import deprecated
+
 logger = logging.getLogger(__name__)
 TWO_PI = 2 * PI
 
@@ -212,8 +214,8 @@ class Unit:
         #     rad_unit = tuple(to_unit(i) for i in obj)
         if rad_unit is None:
             logger.error(
-                "Unable to recognize this type unit '%s' of type %s. "
-                "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_]))
+                f"Unable to recognize this type unit '{obj}' of type {type(obj)}. "
+                f"Valid units are {', '.join([i for i in type_])}"
             )
         return rad_unit
 

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -35,7 +34,7 @@ class DataModelAdaptor(AbstractModel):
     def __init__(self, parent=None, model=None):
         if model is None:
             raise ValueError("Model expected")
-        super(DataModelAdaptor, self).__init__(parent)
+        super().__init__(parent)
         self.__model = model
         if self.__model is not None:
             self.__model.changed.connect(self.__modelChanged)

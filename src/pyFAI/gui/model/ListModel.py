@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -25,15 +24,16 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/04/2026"
+__date__ = "21/08/2026"
 
 import functools
 
 from silx.gui import qt
+
 from .AbstractModel import AbstractModel
 
 
-class ChangeEvent(object):
+class ChangeEvent:
 
     def __init__(self, index, item, added=False, removed=False, updated=False):
         """
@@ -55,7 +55,7 @@ class ChangeEvent(object):
         self.updated = updated
 
 
-class ChangeListEvent(object):
+class ChangeListEvent:
     """A container of consecutive change events"""
 
     def __init__(self):
@@ -153,7 +153,7 @@ class ListModel(AbstractModel):
     """Emitted when the content of the elements changed."""
 
     def __init__(self, parent=None):
-        super(ListModel, self).__init__(parent)
+        super().__init__(parent)
         self.__cacheStructureEvent = None
         self.__cacheContentWasChanged = False
         self.__items = []
@@ -184,7 +184,7 @@ class ListModel(AbstractModel):
         for i, (curentItem, _callback) in enumerate(self.__items):
             if item is curentItem:
                 return i
-        raise IndexError("Item %s is not in list" % item)
+        raise IndexError(f"Item {item} is not in list")
 
     def clear(self):
         """Remove all the items from the list."""

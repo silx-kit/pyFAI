@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,16 +24,16 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 
 import logging
 
 from silx.gui import qt
 
-from ..model.DataModel import DataModel
-from ..model.ImageModel import ImageFromFilenameModel
-from ..model.ImageModel import ImageFilenameModel
 import pyFAI.io.image
+
+from ..model.DataModel import DataModel
+from ..model.ImageModel import ImageFilenameModel, ImageFromFilenameModel
 
 _logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ class FileEdit(qt.QLineEdit):
     but this signal is emitted."""
 
     def __init__(self, parent=None):
-        super(FileEdit, self).__init__(parent)
+        super().__init__(parent)
         self.__model = None
         self.__applyedWhenFocusOut = True
         self.__previousText = None
@@ -75,13 +74,11 @@ class FileEdit(qt.QLineEdit):
     def focusInEvent(self, event):
         self.__previousText = self.text()
         self.__wasModified = False
-        super(FileEdit, self).focusInEvent(event)
+        super().focusInEvent(event)
 
     def dragEnterEvent(self, event):
         if self.__model is not None:
-            if event.mimeData().hasFormat("text/uri-list"):
-                event.acceptProposedAction()
-            elif event.mimeData().hasFormat("application/x-silx-uri"):
+            if event.mimeData().hasFormat("text/uri-list") or event.mimeData().hasFormat("application/x-silx-uri"):
                 event.acceptProposedAction()
 
     def dropEvent(self, event):
@@ -123,7 +120,7 @@ class FileEdit(qt.QLineEdit):
             self.__cancelText()
             event.accept()
         else:
-            result = super(FileEdit, self).keyPressEvent(event)
+            result = super().keyPressEvent(event)
             if event.isAccepted():
                 self.__wasModified = True
             return result
@@ -209,10 +206,10 @@ class FileEdit(qt.QLineEdit):
                     try:
                         data = pyFAI.io.image.read_image_data(filename)
                     except Exception as e:
-                        message = "Filename '%s' not supported.<br />%s" % (filename, str(e))
+                        message = f"Filename '{filename}' not supported.<br />{str(e)}"
                         title = "Loading image error"
                         errorInfo = title, message
-                        _logger.error("Error while loading %s" % filename)
+                        _logger.error(f"Error while loading {filename}")
                         _logger.debug("Backtrace", exc_info=True)
                         data = None
                 else:
@@ -232,7 +229,7 @@ class FileEdit(qt.QLineEdit):
                 except Exception as e:
                     if model.value() is not previous:
                         model.setValue(previous)
-                    message = "Filename '%s' not supported.<br />%s" % (filename, str(e))
+                    message = f"Filename '{filename}' not supported.<br />{str(e)}"
                     qt.QMessageBox.critical(self, "Unsupported filename", message)
             else:
                 raise RuntimeError()

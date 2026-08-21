@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,29 +30,31 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2026"
+__date__ = "21/08/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import collections.abc
-import gc
 import copy
+import gc
 import logging
+import threading
+from multiprocessing.pool import ThreadPool
+
+import numpy
+
+from . import units
+from .containers import Integrate1dResult, Integrate2dResult
 from .integrator.azimuthal import AzimuthalIntegrator
 from .integrator.fiber import FiberIntegrator
-from .containers import Integrate1dResult
-from .containers import Integrate2dResult
-from . import units
-from .utils.multiprocessing import cpu_count
-from multiprocessing.pool import ThreadPool
-import threading
-import numpy
 from .method_registry import IntegrationMethod
+from .utils.multiprocessing import cpu_count
+
 logger = logging.getLogger(__name__)
 error = None
 
 
-class MultiGeometry(object):
+class MultiGeometry:
     """This is an Azimuthal integrator containing multiple geometries,
     for example when the detector is on a goniometer arm
     """
@@ -335,7 +336,7 @@ class MultiGeometry(object):
         if collect_garbage:
             gc.collect()
 
-class MultiGeometryFiber(object):
+class MultiGeometryFiber:
     """This is a Fiber integrator containing multiple geometries,
     for example when the detector is on a goniometer arm
     """
@@ -409,8 +410,7 @@ class MultiGeometryFiber(object):
             self.threadpool.close()
 
     def __repr__(self, *args, **kwargs):
-        return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \
-            (len(self.fis), self.ip_range, self.unit, self.oop_range)
+        return f"MultiGeometry integrator with {len(self.fis)} geometries on {self.ip_range} radial range ({self.unit}) and {self.oop_range} azimuthal range (deg)"
 
     def _guess_inplane_range(self):
         logger.info("Calculating the in-plane range of MultiGeometry...")

@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -28,12 +27,12 @@
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/10/2025"
+__date__ = "21/08/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import string
 import math
+import string
 
 PREFIXES = {-7: "y",
             -6: "z",
@@ -57,11 +56,11 @@ class SafeFormatter(string.Formatter):
 
     def get_field(self, field_name, args, kwargs):
         try:
-            return super(SafeFormatter, self).get_field(field_name, args, kwargs)
+            return super().get_field(field_name, args, kwargs)
         except KeyboardInterrupt:
             raise
         except Exception:
-            return "{%s}" % field_name, field_name
+            return f"{{{field_name}}}", field_name
 
 
 _safe_formater = SafeFormatter()
@@ -94,15 +93,15 @@ def latex_to_unicode(string):
     :param str string: A latex string to convert
     :rtype: str
     """
-    string = string.replace("$", u"")
-    string = string.replace("^{-2}", u"⁻²")
-    string = string.replace("^{-1}", u"⁻¹")
-    string = string.replace("^.", u"⋅")
-    string = string.replace("2\\theta", u"2θ")
-    string = string.replace("^{o}", u"°")
-    string = string.replace("\\AA", u"Å")
-    string = string.replace("log10", u"log₁₀")
-    string = string.replace("^{*2}", u"*²")
+    string = string.replace("$", "")
+    string = string.replace("^{-2}", "⁻²")
+    string = string.replace("^{-1}", "⁻¹")
+    string = string.replace("^.", "⋅")
+    string = string.replace("2\\theta", "2θ")
+    string = string.replace("^{o}", "°")
+    string = string.replace("\\AA", "Å")
+    string = string.replace("log10", "log₁₀")
+    string = string.replace("^{*2}", "*²")
     return string
 
 
@@ -116,24 +115,24 @@ def to_scientific_unicode(value, digits=3):
     :param int digits: Number of digits expected (`3` means `1.000`).
     """
     if math.isfinite(value):
-        value = ("%%0.%de" % digits) % value
+        value = f"{value:0.{digits}e}"
         value, power10 = value.split("e")
         power = ""
         for p in power10:
             if p == "-":
-                power += u"\u207B"
+                power += "\u207B"
             elif p == "+":
-                power += u"\u207A"
+                power += "\u207A"
             elif p == "1":
-                power += u"\u00B9"
+                power += "\u00B9"
             elif p == "2":
-                power += u"\u00B2"
+                power += "\u00B2"
             elif p == "3":
-                power += u"\u00B3"
+                power += "\u00B3"
             else:
                 v = ord(p) - ord("0")
                 power += chr(0x2070 + v)
-        value = value + u"\u00B710" + power
+        value = value + "\u00B710" + power
     else:
         value = str(value)
     return value
@@ -153,7 +152,7 @@ def to_bool(string):
         return True
     if lower in _FALSE_STRINGS:
         return False
-    raise ValueError("'%s' is not a valid boolean" % string)
+    raise ValueError(f"'{string}' is not a valid boolean")
 
 
 _ordinal_suffix = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
@@ -167,7 +166,7 @@ def to_ordinal(number):
     :param int number: A number referring to a position
     :rtype: str
     """
-    string = "%d" % number
+    string = f"{int(number)}"
     if len(string) >= 2 and string[-2] == "1":
         return string + "th"
     digit = ord(string[-1]) - ord("0")
@@ -189,7 +188,7 @@ def to_eng(value:float, fmt:str|None=None, space=""):
     else:
         value *= 10**(-3*key)
         if fmt:
-            ffmt = "{value:%s}{space}{pfix}"%fmt
+            ffmt = f"{{value:{fmt}}}{{space}}{{pfix}}"
             return ffmt.format(value=value, space=space, pfix=pfix, fmt=fmt)
         else:
             string = f"{value:f}"

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -29,10 +28,10 @@ __date__ = "07/06/2024"
 
 import functools
 
-from silx.gui import qt
-from silx.gui import icons
+from silx.gui import icons, qt
 
 import pyFAI.utils
+
 from .model import MarkerModel
 from .utils import projecturl
 
@@ -43,7 +42,7 @@ class MenuItem(qt.QListWidgetItem):
     IconMode = 1
 
     def __init__(self, parent):
-        super(MenuItem, self).__init__(parent)
+        super().__init__(parent)
         self.__text = None
         self.__icon = qt.QIcon()
         self.__warningIcon = None
@@ -67,7 +66,7 @@ class MenuItem(qt.QListWidgetItem):
         self.__updateItem()
 
     def __updateItem(self):
-        superSelf = super(MenuItem, self)
+        superSelf = super()
         if self.__mode == self.TextMode:
             superSelf.setText(self.__text)
             fontMetrics = qt.QFontMetrics(self.font())
@@ -136,7 +135,7 @@ class MenuItem(qt.QListWidgetItem):
 class CalibrationWindow(qt.QMainWindow):
 
     def __init__(self, context):
-        super(CalibrationWindow, self).__init__()
+        super().__init__()
         context.setParent(self)
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-main.ui"), self)
         self.__context = context
@@ -194,8 +193,7 @@ class CalibrationWindow(qt.QMainWindow):
             for row in range(self._list.count()):
                 item = self._list.item(row)
                 width = item.sizeHint().width()
-                if maxWidth < width:
-                    maxWidth = width
+                maxWidth = max(maxWidth, width)
         return qt.QSize(maxWidth, 10)
 
     def _setListMode(self, mode):
@@ -250,10 +248,10 @@ class CalibrationWindow(qt.QMainWindow):
 
     def createTasks(self):
         from pyFAI.gui.tasks.ExperimentTask import ExperimentTask
-        from pyFAI.gui.tasks.MaskTask import MaskTask
-        from pyFAI.gui.tasks.PeakPickingTask import PeakPickingTask
         from pyFAI.gui.tasks.GeometryTask import GeometryTask
         from pyFAI.gui.tasks.IntegrationTask import IntegrationTask
+        from pyFAI.gui.tasks.MaskTask import MaskTask
+        from pyFAI.gui.tasks.PeakPickingTask import PeakPickingTask
 
         tasks = [
             ExperimentTask(),

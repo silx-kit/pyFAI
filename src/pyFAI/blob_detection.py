@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,14 +30,16 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import logging
 import os
 from math import sqrt
-import logging
+
 import numpy
+
 from .ext.bilinear import Bilinear
 from .utils.mathutil import binning, is_far_from_group
 
@@ -164,7 +165,7 @@ def local_max(dogs, mask=None, n_5=True):
     return kpma == target
 
 
-class BlobDetection(object):
+class BlobDetection:
     """
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
@@ -215,9 +216,9 @@ class BlobDetection(object):
         self.already_blurred = []
 
     def __repr__(self):
-        lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
-        lststr.append("Sigmas: input=%.3f \t init=%.3f, dest=%.3f over %i blurs/octave" % (self.cur_sigma, self.init_sigma, self.dest_sigma, self.scale_per_octave))
-        lststr.append("found %s keypoint up to now, we are at reduction %s" % (len(self.keypoints), self.curr_reduction))
+        lststr = [f"Blob detection, shape={self.raw.shape}, processed={self.detection_started}."]
+        lststr.append(f"Sigmas: input={self.cur_sigma:.3f} \t init={self.init_sigma:.3f}, dest={self.dest_sigma:.3f} over {self.scale_per_octave} blurs/octave")
+        lststr.append(f"found {len(self.keypoints)} keypoint up to now, we are at reduction {self.curr_reduction}")
         return os.linesep.join(lststr)
 
     def _init_mask(self):
@@ -336,7 +337,7 @@ class BlobDetection(object):
                 kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
                 nb_kp = valid.sum()
                 self.ref_kp.append((kps, kpy, kpx))
-            print('After refinement : %i keypoints' % nb_kp)
+            print(f'After refinement : {nb_kp} keypoints')
         else:
             peak_val = self.dogs[kps, kpy, kpx]
             nb_kp = kpx.size
@@ -550,8 +551,7 @@ class BlobDetection(object):
             if s_patch % 2 == 0:
                 s_patch += 1
 
-            if s_patch < 3:
-                s_patch = 3
+            s_patch = max(s_patch, 3)
 
             if (x > s_patch / 2 and x < img.shape[1] - s_patch / 2 - 1 and y > s_patch / 2 and y < img.shape[0] - s_patch / 2):
 
@@ -602,7 +602,7 @@ class BlobDetection(object):
         return vals, vects
 
     def refinement(self):
-        from numpy import cos, sin, arctan2, pi
+        from numpy import arctan2, cos, pi, sin
         val, vect = self.direction()
 
         L = 0.114

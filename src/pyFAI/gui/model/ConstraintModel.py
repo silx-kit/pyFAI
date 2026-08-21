@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -33,7 +32,7 @@ from .AbstractModel import AbstractModel
 class ConstraintModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(ConstraintModel, self).__init__(parent)
+        super().__init__(parent)
         self.__fixed = None
         self.__range = None
 

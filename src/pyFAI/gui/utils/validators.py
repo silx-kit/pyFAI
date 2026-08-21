@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,6 +27,7 @@ __license__ = "MIT"
 __date__ = "16/10/2020"
 
 import logging
+
 from silx.gui import qt
 
 _logger = logging.getLogger(__name__)
@@ -82,7 +82,7 @@ class DoubleValidator(qt.QDoubleValidator):
                         inputText = inputText[pos - 1:] + inputText[pos:]
                         pos = pos - 1
 
-        return super(DoubleValidator, self).validate(inputText, pos)
+        return super().validate(inputText, pos)
 
     def fixup(self, inputText):
         """
@@ -123,7 +123,7 @@ class AdvancedDoubleValidator(DoubleValidator):
     """
 
     def __init__(self, parent=None):
-        super(AdvancedDoubleValidator, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.__allowEmpty = False
         self.__boundIncluded = True, True
 
@@ -158,7 +158,7 @@ class AdvancedDoubleValidator(DoubleValidator):
                 # python API is not the same as C++ one
                 return qt.QValidator.Acceptable, inputText, pos
 
-        acceptable, inputText, pos = super(AdvancedDoubleValidator, self).validate(inputText, pos)
+        acceptable, inputText, pos = super().validate(inputText, pos)
 
         if acceptable == qt.QValidator.Acceptable:
             # Check boundaries
@@ -181,7 +181,7 @@ class AdvancedDoubleValidator(DoubleValidator):
             if text.strip() == "":
                 return None, True
 
-        value, isValid = super(AdvancedDoubleValidator, self).toValue(text)
+        value, isValid = super().toValue(text)
 
         if isValid:
             # Check boundaries
@@ -204,7 +204,7 @@ class AdvancedDoubleValidator(DoubleValidator):
         if self.__allowEmpty:
             if value is None:
                 return ""
-        return super(AdvancedDoubleValidator, self).toText(value)
+        return super().toText(value)
 
 
 class IntegerAndEmptyValidator(qt.QIntValidator):
@@ -225,7 +225,7 @@ class IntegerAndEmptyValidator(qt.QIntValidator):
             # python API is not the same as C++ one
             return qt.QValidator.Acceptable, inputText, pos
 
-        return super(IntegerAndEmptyValidator, self).validate(inputText, pos)
+        return super().validate(inputText, pos)
 
     def toValue(self, text):
         """Convert the input string into an interpreted value

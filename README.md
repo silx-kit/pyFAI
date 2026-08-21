@@ -49,7 +49,7 @@ To install conda please see either [conda](https://conda.io/docs/install/quick.h
 ### From source code
 
 The current development version of pyFAI can be downloaded from [GitHub](https://github.com/silx-kit/pyFAI/archive/main.zip).
-The source code is currently distributed as a zip package. 
+The source code is currently distributed as a zip package.
 
 Download and unpack it:
 
@@ -124,7 +124,7 @@ pip install -r requirements.txt
 
 ## Ubuntu and Debian-like Linux distributions
 
-On Ubuntu or Debian, the required Python modules for pyFAI can be installed either via the Synaptic Package Manager (under System → Administration) or from the command line using apt-get: 
+On Ubuntu or Debian, the required Python modules for pyFAI can be installed either via the Synaptic Package Manager (under System → Administration) or from the command line using apt-get:
 
 ```sh
 sudo apt-get install pyfai
@@ -132,7 +132,7 @@ sudo apt-get install pyfai
 
 ## MacOSX
 
-On macOS, a recent version of [Python](https://www.python.org/downloads/) (≥3.10) must be installed before installing pyFAI. 
+On macOS, a recent version of [Python](https://www.python.org/downloads/) (≥3.10) must be installed before installing pyFAI.
 Apple provides only an outdated version of Python 2.7 which is deprecated.
 To build pyFAI from source, you will also need Xcode, which is available from the Mac App Store.
 The binary extensions will use only a single core due to the limitation of the compiler from Apple.

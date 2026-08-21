@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,40 +36,42 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
+import logging
+import math
 import os
 import sys
 import time
-import logging
-import math
-from math import pi
-import numpy
-from silx.image import marchingsquares
-from scipy.stats import linregress
-import fabio
-from fabio.fabioutils import exists as fabio_exists
 from argparse import ArgumentParser
+from math import pi
 from urllib.parse import urlparse
-from .matplotlib import pylab, matplotlib
-from .utils import update_fig
-from . import utils as gui_utils
-from ..detectors import detector_factory, Detector
-from ..geometryRefinement import GeometryRefinement
-from .peak_picker import PeakPicker
-from .. import units
-from .. import average
-from ..containers import FixedParameters
-from ..utils import expand_args, readFloatFromKeyboard, win32
-from ..utils.mathutil import measure_offset, round_fft
-from ..utils.decorators import deprecated
-from ..integrator.azimuthal import AzimuthalIntegrator
-from ..units import hc, TTH_RAD, CHI_RAD
-from .. import version as PyFAI_VERSION
+
+import fabio
+import numpy
+from fabio.fabioutils import exists as fabio_exists
+from scipy.stats import linregress
+from silx.image import marchingsquares
+
+from .. import average, units
 from .. import date as PyFAI_DATE
-from ..calibrant import Calibrant, CALIBRANT_FACTORY, get_calibrant
+from .. import version as PyFAI_VERSION
+from ..calibrant import CALIBRANT_FACTORY, Calibrant, get_calibrant
+from ..containers import FixedParameters
+from ..detectors import Detector, detector_factory
+from ..geometryRefinement import GeometryRefinement
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..units import CHI_RAD, TTH_RAD, hc
+from ..utils import expand_args, readFloatFromKeyboard, win32
+from ..utils.decorators import deprecated
+from ..utils.mathutil import measure_offset, round_fft
+from . import utils as gui_utils
+from .matplotlib import matplotlib, pylab
 from .mpl_calib_qt import QtMplCalibWidget
+from .peak_picker import PeakPicker
+from .utils import update_fig
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -102,7 +103,7 @@ def get_detector(detector, datafiles=None):
         try:
             res = detector_factory(detector)
         except RuntimeError:
-            raise RuntimeError("Not a valid detector: %s" % detector)
+            raise RuntimeError(f"Not a valid detector: {detector}")
     elif isinstance(detector, Detector):
         res = detector
     else:
@@ -114,7 +115,7 @@ def get_detector(detector, datafiles=None):
     return res
 
 
-class AbstractCalibration(object):
+class AbstractCalibration:
 
     """
     Everything that is common to Calibration and Recalibration
@@ -239,7 +240,7 @@ class AbstractCalibration(object):
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
-    def configure_parser(self, version="calibration from pyFAI  version %s: %s" % (PyFAI_VERSION, PyFAI_DATE),
+    def configure_parser(self, version=f"calibration from pyFAI  version {PyFAI_VERSION}: {PyFAI_DATE}",
                          usage="pyFAI-calib [options] input_image.edf",
                          description=None, epilog=None):
         """Common configuration for parsers
@@ -259,7 +260,7 @@ class AbstractCalibration(object):
         self.parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                                  help="wavelength of the X-Ray beam in Angstrom. Mandatory ", default=None)
         self.parser.add_argument("-e", "--energy", dest="energy", type=float,
-                                 help="energy of the X-Ray beam in keV (hc=%skeV.A)." % hc, default=None)
+                                 help=f"energy of the X-Ray beam in keV (hc={hc}keV.A).", default=None)
         self.parser.add_argument("-P", "--polarization", dest="polarization_factor",
                                  type=float, default=None,
                                  help="polarization factor, from -1 (vertical) to +1 (horizontal),"
@@ -512,7 +513,7 @@ class AbstractCalibration(object):
         if (self.detector.pixel1 is None) and (self.detector.splinefile is None):
             pixelSize = [15, 15]
             ans = input("Please enter the pixel size (in micron, comma separated X,Y "
-                        " i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
+                        f" i.e. {pixelSize[0]:.2e},{pixelSize[1]:.2e}) or a spline file: ").strip()
             if os.path.isfile(ans):
                 self.detector.splinefile = ans
             else:
@@ -644,9 +645,8 @@ class AbstractCalibration(object):
                 dist_min = len(seeds) / 2.0 / keep
                 # why 3.0, why not ?
 
-                logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "
-                            "searching for %i pts out of %i with I>%.1f, dmin=%.1f" %
-                            (i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min))
+                logger.info(f"Extracting datapoint for ring {i} (2theta = {numpy.degrees(tth[i]):.2f} deg); "
+                            f"searching for {keep} pts out of {size2} with I>{upper_limit:.1f}, dmin={dist_min:.1f}")
                 _res = self.peakPicker.peaks_from_area(mask=mask2, Imin=upper_limit, keep=keep, method=method, ring=i, dmin=dist_min, seed=seeds)
 
         if self.basename:
@@ -757,7 +757,7 @@ class AbstractCalibration(object):
             if req_help:
                 for what in self._HELP.keys():
                     if action.startswith(what):
-                        print("Help on %s" % what)
+                        print(f"Help on {what}")
                         print(self._HELP[what])
                         break
                 else:
@@ -769,9 +769,9 @@ class AbstractCalibration(object):
                 if (len(words) >= 2):
                     for param in words[1:]:
                         if param in self.PARAMETERS:
-                            print("Value of parameter %s: %s  %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                            print(f"Value of parameter {param}: {self.geoRef.__getattribute__(param)}  {self.UNITS[param]}")
                         else:
-                            print("No a parameter: %s" % param)
+                            print(f"No a parameter: {param}")
                 else:
                     print(self._HELP[action])
 
@@ -795,20 +795,20 @@ class AbstractCalibration(object):
                 if (len(words) >= 2):
                     for param in words[1:]:
                         if param in self.PARAMETERS:
-                            print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                            print(f"Value of parameter {param}: {self.geoRef.__getattribute__(param)} {self.UNITS[param]}")
                             self.fixed.add(param)
                         else:
-                            print("No a parameter: %s" % param)
+                            print(f"No a parameter: {param}")
                 else:
                     print(self._HELP[action])
             elif action == "free":  # free wavelength
                 if (len(words) >= 2):
                     for param in words[1:]:
                         if param in self.PARAMETERS:
-                            print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                            print(f"Value of parameter {param}: {self.geoRef.__getattribute__(param)} {self.UNITS[param]}")
                             self.fixed.discard(param)
                         else:
-                            print("No a parameter: %s" % param)
+                            print(f"No a parameter: {param}")
                 else:
                     print(self._HELP[action])
 
@@ -842,10 +842,9 @@ class AbstractCalibration(object):
                     param = words[1]
                     if len(words) == 2:
                         text = (f"Enter {param} in {self.UNITS[param]} "+
-                                "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " % (
-                                    param, self.geoRef.__getattribute__(f"{param}_min"),
-                                    param, self.geoRef.__getattribute__(param),
-                                    param, self.geoRef.__getattribute__(f"{param}_max")))
+                                f"(or {param}_min[{self.geoRef.__getattribute__(f'{param}_min'):.3f}] "
+                                f"{param}[{self.geoRef.__getattribute__(param):.3f}] "
+                                f"{param}_max[{self.geoRef.__getattribute__(f'{param}_max'):.3f}]):\t ")
                         values = {
                             1: [self.geoRef.__getattribute__(f"set_{param}")],
                             2: [self.geoRef.__getattribute__(f"set_{param}_min"),
@@ -860,7 +859,7 @@ class AbstractCalibration(object):
                         except ValueError:
                             logger.warning("invalid value")
                         else:
-                            self.geoRef.__getattribute__("set_%s" % param)(value)
+                            self.geoRef.__getattribute__(f"set_{param}")(value)
                     elif len(words) == 4:
                         try:
                             value_min = float(words[2])
@@ -887,33 +886,27 @@ class AbstractCalibration(object):
                     print(self._HELP[action])
             elif action == "bounds":
                 readFloatFromKeyboard("Enter Distance in meter "
-                                      "(or dist_min[%.3f] dist[%.3f] dist_max[%.3f]):\t " %
-                                      (self.geoRef.dist_min, self.geoRef.dist, self.geoRef.dist_max),
+                                      f"(or dist_min[{self.geoRef.dist_min:.3f}] dist[{self.geoRef.dist:.3f}] dist_max[{self.geoRef.dist_max:.3f}]):\t ",
                                       {1: [self.geoRef.dist.fset], 2: [self.geoRef.dist_min.fset, self.geoRef.dist_max.fset],
                                        3: [self.geoRef.dist_min.fset, self.geoRef.dist.fset, self.geoRef.dist_max.fset]})
                 readFloatFromKeyboard("Enter Poni1 in meter "
-                                      "(or poni1_min[%.3f] poni1[%.3f] poni1_max[%.3f]):\t " %
-                                      (self.geoRef.poni1_min, self.geoRef.poni1, self.geoRef.poni1_max),
+                                      f"(or poni1_min[{self.geoRef.poni1_min:.3f}] poni1[{self.geoRef.poni1:.3f}] poni1_max[{self.geoRef.poni1_max:.3f}]):\t ",
                                       {1: [self.geoRef.poni1.fset], 2: [self.geoRef.poni1_min.fset, self.geoRef.poni1_max.fset],
                                        3: [self.geoRef.poni1_min.fset, self.geoRef.poni1.fset, self.geoRef.poni1_max.fset]})
                 readFloatFromKeyboard("Enter Poni2 in meter "
-                                      "(or poni2_min[%.3f] poni2[%.3f] poni2_max[%.3f]):\t " %
-                                      (self.geoRef.poni2_min, self.geoRef.poni2, self.geoRef.poni2_max),
+                                      f"(or poni2_min[{self.geoRef.poni2_min:.3f}] poni2[{self.geoRef.poni2:.3f}] poni2_max[{self.geoRef.poni2_max:.3f}]):\t ",
                                       {1: [self.geoRef.poni2.fset], 2: [self.geoRef.poni2_min.fset, self.geoRef.poni2_max.fset],
                                        3: [self.geoRef.poni2_min.fset, self.geoRef.poni2.fset, self.geoRef.poni2_max.fset]})
                 readFloatFromKeyboard("Enter Rot1 in rad "
-                                      "(or rot1_min[%.3f] rot1[%.3f] rot1_max[%.3f]):\t " %
-                                      (self.geoRef.rot1_min, self.geoRef.rot1, self.geoRef.rot1_max),
+                                      f"(or rot1_min[{self.geoRef.rot1_min:.3f}] rot1[{self.geoRef.rot1:.3f}] rot1_max[{self.geoRef.rot1_max:.3f}]):\t ",
                                       {1: [self.geoRef.rot1.fset], 2: [self.geoRef.rot1_min.fset, self.geoRef.set_rot1_max],
                                        3: [self.geoRef.rot1_min.fset, self.geoRef.rot1.fset, self.geoRef.rot1_max.fset]})
                 readFloatFromKeyboard("Enter Rot2 in rad "
-                                      "(or rot2_min[%.3f] rot2[%.3f] rot2_max[%.3f]):\t " %
-                                      (self.geoRef.rot2_min, self.geoRef.rot2, self.geoRef.rot2_max),
+                                      f"(or rot2_min[{self.geoRef.rot2_min:.3f}] rot2[{self.geoRef.rot2:.3f}] rot2_max[{self.geoRef.rot2_max:.3f}]):\t ",
                                       {1: [self.geoRef.rot2.fset], 2: [self.geoRef.rot2_min.fset, self.geoRef.rot2_max.fset],
                                        3: [self.geoRef.rot2_min.fset, self.geoRef.rot2.fset, self.geoRef.rot2_max.fset]})
                 readFloatFromKeyboard("Enter Rot3 in rad "
-                                      "(or rot3_min[%.3f] rot3[%.3f] rot3_max[%.3f]):\t " %
-                                      (self.geoRef.rot3_min, self.geoRef.rot3, self.geoRef.rot3_max),
+                                      f"(or rot3_min[{self.geoRef.rot3_min:.3f}] rot3[{self.geoRef.rot3:.3f}] rot3_max[{self.geoRef.rot3_max:.3f}]):\t ",
                                       {1: [self.geoRef.rot3.fset], 2: [self.geoRef.rot3_min.fset, self.geoRef.rot3_max.fset],
                                        3: [self.geoRef.rot3_min.fset, self.geoRef.rot3.fset, self.geoRef.rot3_max.fset]})
             elif action == "done":
@@ -921,9 +914,7 @@ class AbstractCalibration(object):
                 return True
             elif action == "quit":
                 return True
-            elif action == "refine":
-                return False
-            elif action == "fit":
+            elif action == "refine" or action == "fit":
                 return False
             elif action == "validate":
                 self.validate_calibration()
@@ -971,7 +962,7 @@ class AbstractCalibration(object):
                     else:
                         logger.warning("Unrecognized argument for weight: %s", value)
                         continue
-                print("Weights: %s" % self.weighted)
+                print(f"Weights: {self.weighted}")
                 if (old != self.weighted):
                     if self.weighted:
                         self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
@@ -986,7 +977,7 @@ class AbstractCalibration(object):
                         if cs_param.lower() == param:
                             oldval = self.__getattribute__(cs_param)
                             t = type(oldval)
-                            print("constant %s was %s of type %s, setting to %s" % (cs_param, oldval, t, sval))
+                            print(f"constant {cs_param} was {oldval} of type {t}, setting to {sval}")
                             try:
                                 newval = t(sval)
                             except Exception as err:
@@ -995,7 +986,7 @@ class AbstractCalibration(object):
                             self.__setattr__(cs_param, newval)
                             break
                     else:
-                        print("No such parameter %s" % param)
+                        print(f"No such parameter {param}")
                 else:
                     print(self._HELP[action])
             elif action == "chiplot":
@@ -1060,7 +1051,7 @@ class AbstractCalibration(object):
             rings.sort()
         for ring in rings:
             ref_2th = numpy.rad2deg(self.calibrant.get_2th()[ring])
-            print("Fitting ring #%s (2th=%.3fdeg)" % (ring, ref_2th))
+            print(f"Fitting ring #{ring} (2th={ref_2th:.3f}deg)")
             d1 = []
             d2 = []
             for i in self.data:
@@ -1068,7 +1059,7 @@ class AbstractCalibration(object):
                     d1.append(i[0])
                     d2.append(i[1])
             if len(d1) < 5:
-                print(" Skip group of length %i" % len(d1))
+                print(f" Skip group of length {len(d1)}")
                 continue
             d1 = numpy.array(d1)
             d2 = numpy.array(d2)
@@ -1079,15 +1070,15 @@ class AbstractCalibration(object):
             amp = err4.std() * sqrt2
             phase = 0.0
             param = numpy.array([mean, amp, phase])
-            print(r" guessed err4 = %.3f + %.3f *sin($\chi$+ %.3f )" % (mean, amp, phase))
+            print(rf" guessed err4 = {mean:.3f} + {amp:.3f} *sin($\chi$+ {phase:.3f} )")
             res = leastsq(error, param, (chi, err4), jacob, col_deriv=True)
             popt = res[0]
-            str_res = r"%.3f + %.3f *sin($\chi$+ %.3f )" % tuple(popt)
+            str_res = rf"{popt[0]:.3f} + {popt[1]:.3f} *sin($\chi$+ {popt[2]:.3f} )"
             print(" fitted err4 = " + str_res)
             chi = numpy.rad2deg(chi)
             if self.ax_chiplot:
                 color = list(matplotlib.colors.cnames.keys())[ring]
-                self.ax_chiplot.plot(chi, err4, "o", color=color, label="ring #%i (%.3f$^o$)" % (ring, ref_2th))
+                self.ax_chiplot.plot(chi, err4, "o", color=color, label=f"ring #{ring} ({ref_2th:.3f}$^o$)")
                 chi2 = numpy.linspace(-180, 180, 360)
                 self.ax_chiplot.plot(chi2, model(numpy.deg2rad(chi2), *popt), color=color, label=str_res)
 
@@ -1307,7 +1298,7 @@ class AbstractCalibration(object):
 
         if how == "ring":
             inner_ring = min(set(i[2] for i in self.data))
-            print("inner ring: %s" % inner_ring)
+            print(f"inner ring: {inner_ring}")
             data = numpy.array([[i[0], i[1]] for i in self.data if i[2] == inner_ring])
             center = data.mean(axis=0)
             self.ai.poni1, self.ai.poni2 = data.mean(axis=0)
@@ -1553,20 +1544,20 @@ class Calibration(CliCalibration):
 
     def __repr__(self):
         return CliCalibration.__repr__(self) + \
-            "%sgaussian= %s" % (os.linesep, self.gaussianWidth)
+            f"{os.linesep}gaussian= {self.gaussianWidth}"
 
     def parse(self, args=None):
         """
         parse options from command line
         """
-        description = """Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
+        description = f"""Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
 without a priori knowledge of your setup.
 You will need to provide a calibrant or a "d-spacing" file containing the spacing of Miller plans in
 Angstrom (in decreasing order).
-%s
+{str(CALIBRANT_FACTORY)}
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
-The --calibrant option is mandatory !""" % str(CALIBRANT_FACTORY)
+The --calibrant option is mandatory !"""
 
         epilog = """The output of this program is a "PONI" file containing the detector description
 and the 6 refined parameters (distance, center, rotation) and wavelength.
@@ -1664,17 +1655,15 @@ decrease the value if arcs are mixed together.""", default=None)
                 except Exception as err:
                     logger.warning(err)
                 else:
-                    logger.warning("Overwriting wavelength from PONI file (%s) "
-                                   "with the one from command line (%s)" %
-                                   (old_wl, self.wavelength))
+                    logger.warning(f"Overwriting wavelength from PONI file ({old_wl}) "
+                                   f"with the one from command line ({self.wavelength})")
                 self.geoRef.wavelength = self.wavelength
             if self.detector:
                 gr_det = str(self.geoRef.detector)
                 nw_det = str(self.detector)
                 if gr_det != nw_det:
-                    logger.warning("Overwriting detector from PONI file: %s%s "
-                                   "with the one from command line %s%s" %
-                                   (os.linesep, gr_det, os.linesep, nw_det))
+                    logger.warning(f"Overwriting detector from PONI file: {os.linesep}{gr_det} "
+                                   f"with the one from command line {os.linesep}{nw_det}")
                     self.geoRef.detector = self.detector
 
         # Third attempt
@@ -1731,15 +1720,15 @@ class Recalibration(CliCalibration):
         """
         parse options from command line
         """
-        description = """Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
+        description = f"""Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
 with a priori knowledge of your setup (an input PONI-file).
 You will need to provide a calibrant or a "d-spacing" file containing the spacing of Miller plans in
 Angstrom (in decreasing order).
-%s
+{str(CALIBRANT_FACTORY)}
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
 The --calibrant option is mandatory !
-""" % str(CALIBRANT_FACTORY)
+"""
 
         epilog = """The main difference with pyFAI-calib is the way control-point hence Debye-Sherrer
 rings are extracted. While pyFAI-calib relies on the contiguity of a region of peaks
@@ -1812,7 +1801,7 @@ and a new option which lets you choose between the original `massif` algorithm a
         CliCalibration.refine(self, maxiter=maxiter, fixed=fixed)
 
 
-class MultiCalib(object):
+class MultiCalib:
 
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None):
         """
@@ -1874,8 +1863,8 @@ class MultiCalib(object):
         """
         if exe is None:
             exe = "MX-Calibrate"
-            usage = "%s -w 1.54 -c CeO2 file1.cbf file2.cbf ..." % exe
-            version = "%s from pyFAI version %s: %s" % (exe, PyFAI_VERSION, PyFAI_DATE)
+            usage = f"{exe} -w 1.54 -c CeO2 file1.cbf file2.cbf ..."
+            version = f"{exe} from pyFAI version {PyFAI_VERSION}: {PyFAI_DATE}"
             description = """
         Calibrate automatically a set of frames taken at various sample-detector distance.
         Return the linear regression of the fit in function of the sample-setector distance.
@@ -1911,7 +1900,7 @@ class MultiCalib(object):
         parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                             help="wavelength of the X-Ray beam in Angstrom", default=None)
         parser.add_argument("-e", "--energy", dest="energy", type=float,
-                            help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
+                            help=f"energy of the X-Ray beam in keV (hc={hc}keV.A)", default=None)
         parser.add_argument("-P", "--polarization", dest="polarization_factor",
                             type=float, default=0.0,
                             help="polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
@@ -2122,7 +2111,7 @@ class MultiCalib(object):
         if (self.detector.pixel1 is None) and (self.detector.splinefile is None):
             pixelSize = [15, 15]
             ans = input("Please enter the pixel size (in micron, comma separated X, Y "
-                        "i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
+                        f"i.e. {pixelSize[0]:.2e},{pixelSize[1]:.2e}) or a spline file: ").strip()
             if os.path.isfile(ans):
                 self.detector.splinefile = ans
             else:
@@ -2170,9 +2159,7 @@ class MultiCalib(object):
                 if dist is None:
                     digits = ""
                     for i in os.path.basename(fn):
-                        if i.isdigit() and not digits:
-                            digits += i
-                        elif i.isdigit():
+                        if i.isdigit() and not digits or i.isdigit():
                             digits += i
                         elif not i.isdigit() and digits:
                             break
@@ -2221,7 +2208,7 @@ class MultiCalib(object):
         centerX = dist.copy()
         centerY = dist.copy()
         idx = 0
-        print("")
+        print()
         print("Results of linear regression for distance in mm")
         for key, dico in self.results.items():
             print(key, dico["dist"])
@@ -2247,10 +2234,10 @@ class MultiCalib(object):
                           ("centerX", centerX), ("centerY", centerY)]:
             slope, intercept, r, _two, stderr = linregress(x, elt)
 
-            print("%s = %s * dist_mm + %s \t R= %s\t stderr= %s" % (name, slope, intercept, r, stderr))
+            print(f"{name} = {slope} * dist_mm + {intercept} \t R= {r}\t stderr= {stderr}")
 
 
-class CheckCalib(object):
+class CheckCalib:
 
     def __init__(self, poni=None, img=None, unit="2th_deg"):
         self.ponifile = poni
@@ -2295,7 +2282,7 @@ refinement process.
 
         :returns: True if the parsing succeed, else False
         """
-        version = "check_calib from pyFAI version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
+        version = f"check_calib from pyFAI version {PyFAI_VERSION}: {PyFAI_DATE}"
         parser = ArgumentParser(usage=usage,
                                 description=description)
         parser.add_argument("-V", "--version", action='version', version=version)
@@ -2313,7 +2300,7 @@ refinement process.
                             help="file containing the diffraction parameter (poni-file)",
                             default=None)
         parser.add_argument("-e", "--energy", dest="energy", type=float,
-                            help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
+                            help=f"energy of the X-Ray beam in keV (hc={hc}keV.A)", default=None)
         parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                             help="wavelength of the X-Ray beam in Angstrom", default=None)
 
@@ -2392,7 +2379,7 @@ refinement process.
         self.masked_resynth = self.resynth * smooth_mask
         self.masked_image = self.img * smooth_mask
         self.offset = measure_offset(self.masked_resynth, self.masked_image, withLog=0)
-        print("Measured offset: %s" % str(self.offset))
+        print(f"Measured offset: {str(self.offset)}")
         return self.offset
 
     def smooth_mask(self, hwhm=5):

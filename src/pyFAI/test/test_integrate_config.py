@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,12 +33,12 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "24/02/2026"
 
-import os
 import json
-import unittest
 import logging
-from ..io import integration_config, ponifile
+import os
+import unittest
 
+from ..io import integration_config, ponifile
 from . import utilstest
 
 logger = logging.getLogger(__name__)
@@ -168,8 +167,8 @@ class TestRegression(unittest.TestCase):
             self.assertEqual(str(wc), str(integration_config.WorkerConfig.from_dict(wc.as_dict())), f"Idempotent {fn}")
 
     def test_nested_dataclasses(self):
-        from ..containers import PolarizationDescription, ErrorModel
-        from ..units import to_unit, Unit
+        from ..containers import ErrorModel, PolarizationDescription
+        from ..units import Unit, to_unit
         # Polarization
         w = integration_config.WorkerConfig.from_dict({})
         w.polarization_factor = 1

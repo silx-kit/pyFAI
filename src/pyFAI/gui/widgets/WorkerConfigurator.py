@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,37 +32,36 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import logging
 import os.path
+
 import numpy
 from silx.gui import qt
-from ..dialog.MessageBox import exception
+
+from ... import method_registry
+from ...containers import ErrorModel, PolarizationDescription
+from ...integrator import load_engines
+from ...io import integration_config
+from ...io.ponifile import PoniFile
+from ...units import RADIAL_UNITS, Unit, UnitFiber, to_unit
+from ...utils import float_, get_ui_file, str_, stringutil
 from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
-from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..dialog.GeometryDialog import GeometryDialog
 from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
-from ...utils import float_, str_, get_ui_file
-from ...units import RADIAL_UNITS, to_unit, Unit, UnitFiber
-from ..model.GeometryModel import GeometryModel
+from ..dialog.MessageBox import exception
+from ..dialog.OpenClDeviceDialog import OpenClDeviceDialog
 from ..model.DataModel import DataModel
-from ..utils import units
-from ...utils import stringutil
-from ..utils import FilterBuilder
+from ..model.GeometryModel import GeometryModel
 from ..model.ImageModel import ImageFilenameModel
-from ..utils import validators
-from ...io.ponifile import PoniFile
-from ...io import integration_config
-from ... import method_registry
-from ...containers import PolarizationDescription, ErrorModel
-from ...integrator import load_engines
+from ..utils import FilterBuilder, units, validators
 
 logger = logging.getLogger(__name__)
 
 
-class _WorkerModel(object):
+class _WorkerModel:
 
     def __init__(self):
         self.maskFileModel = ImageFilenameModel()
@@ -159,7 +157,6 @@ class WorkerConfigurator(qt.QWidget):
         so_validator.setBottom(1)
         so_validator.setTop(8)
         self.sample_orientation.setValidator(so_validator)
-        #
 
         doubleOrEmptyValidator = validators.AdvancedDoubleValidator(self)
         doubleOrEmptyValidator.setAllowEmpty(True)
@@ -709,7 +706,7 @@ class WorkerConfigurator(qt.QWidget):
         # FIXME extract the unit
         if unit.unit_symbol == "?":
             name = stringutil.latex_to_unicode(unit.short_name)
-            toolTip = "The unit for the quantity %s is not expressible." % name
+            toolTip = f"The unit for the quantity {name} is not expressible."
         else:
             toolTip = ""
         symbol = stringutil.latex_to_unicode(unit.unit_symbol)

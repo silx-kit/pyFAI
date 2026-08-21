@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,23 +30,25 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import json
+import logging
 import os
+import posixpath
 import sys
 import time
-import logging
-import json
-import posixpath
-from ..utils.decorators import deprecated
-from ..containers import Integrate1dResult, ErrorModel
+
 from .. import version
-from ._json import json_dumps
-from .ponifile import PoniFile
+from ..containers import ErrorModel, Integrate1dResult
 from ..method_registry import IntegrationMethod
 from ..units import hc
+from ..utils.decorators import deprecated
+from ._json import json_dumps
+from .ponifile import PoniFile
+
 logger = logging.getLogger(__name__)
 try:
     import h5py
@@ -74,7 +75,7 @@ def get_isotime(forceTime=None):
     gmtime = time.gmtime(forceTime)
     tz_h = localtime.tm_hour - gmtime.tm_hour
     tz_m = localtime.tm_min - gmtime.tm_min
-    return "%s%+03i:%02i" % (time.strftime("%Y-%m-%dT%H:%M:%S", localtime), tz_h, tz_m)
+    return f"{time.strftime('%Y-%m-%dT%H:%M:%S', localtime)}{tz_h:+03d}:{tz_m:02d}"
 
 
 def from_isotime(text, use_tz=False):
@@ -109,7 +110,7 @@ def is_hdf5(filename: str) -> bool:
     """
     signature = [137, 72, 68, 70, 13, 10, 26, 10]
     if not os.path.exists(filename):
-        raise IOError("No such file %s" % (filename))
+        raise OSError(f"No such file {filename}")
     with open(filename, "rb") as f:
         raw = f.read(8)
     sig = [int(i) for i in raw]
@@ -286,7 +287,7 @@ class Nexus:
         """
         if not force_name:
             nb_entries = len(self.get_entries())
-            entry = "%s_%04i" % (entry, nb_entries)
+            entry = f"{entry}_{nb_entries:04d}"
         entry_grp = self.h5
         for i in entry.split("/"):
             if i:
@@ -338,7 +339,7 @@ class Nexus:
         from .. import version
         entry_grp = self.new_entry(entry)
         pyFAI_grp = self.new_class(entry_grp, subentry, "NXsubentry")
-        pyFAI_grp["definition_local"] = str("pyFAI")
+        pyFAI_grp["definition_local"] = "pyFAI"
         pyFAI_grp["definition_local"].attrs["version"] = str(version)
         det_grp = self.new_class(pyFAI_grp, name, "NXdetector")
         return det_grp
@@ -812,9 +813,9 @@ def save_NXazint1d(filename, results,
                  ):
     """Save integrated data into a HDF5-file following
     the Nexus azint1d convention. This function can handle
-    a single Integrate1dResult or a list of such instances 
+    a single Integrate1dResult or a list of such instances
     (for batch processing).
-    NB: Only '2th_deg' and 'q_A^-1' units are supported in 
+    NB: Only '2th_deg' and 'q_A^-1' units are supported in
     the nxazint1d format.
 
     :param filename: name of the file to be written
@@ -840,14 +841,14 @@ def save_NXazint1d(filename, results,
     # check that the radial units are allowed
     allowed_units = {"2th_deg":"2theta",
                       "q_A^-1":"q",
-                     }  
+                     }
     if result.unit.name not in allowed_units:
         msg = f"Unsupported unit '{result.unit.name}'. Allowed units are: {list(allowed_units.keys())}"
         raise ValueError(msg)
 
     if mode not in ("w", "a"):
         raise ValueError(f"Mode must be 'w' or 'a', not {mode!r}")
-    
+
     if mode == "w" or (mode == "a" and not h5py.is_hdf5(filename)):
         ## Write/overwrite mode
         h5py.get_config().track_order = True
@@ -887,10 +888,10 @@ def save_NXazint1d(filename, results,
             energy = (hc * 1e-10) / wavelength_value
             mono_grp.create_dataset("energy", data=energy)
             mono_grp["energy"].attrs["units"] = "keV"
-            
+
             # process
             _save_pyFAI(nxs, entry_grp, result)
-            
+
             # data
             # data_grp = nxs.new_class(entry_grp, "data", "NXdata")
             data_grp = entry_grp.create_group("data",track_order=True)
@@ -901,23 +902,23 @@ def save_NXazint1d(filename, results,
 
             # Radial axis
             radial = result.radial
-            radial_ds = data_grp.create_dataset("radial_axis", 
-                                                data=radial, 
-                                                shape=radial.shape, 
+            radial_ds = data_grp.create_dataset("radial_axis",
+                                                data=radial,
+                                                shape=radial.shape,
                                                 dtype=radial.dtype)
             radial_ds.attrs["long_name"] = allowed_units[result.unit.name]
             radial_ds.attrs["units"] = "degrees" if result.unit.name == "2th_deg" else "1/angstrom"
 
             # Intensity
             intensity = [result.intensity for result in results]
-            intensity_ds = data_grp.create_dataset("I", 
+            intensity_ds = data_grp.create_dataset("I",
                                                 data=intensity,
                                                 chunks=(1,len(radial)),
                                                 shape=(len(intensity), len(radial)),
                                                 dtype=result.intensity.dtype,
                                                 maxshape=(None, len(radial)),
                                                 )
-            
+
             intensity_ds.attrs["long_name"] = "intensity"
             intensity_ds.attrs["units"] = "arbitrary units"
 

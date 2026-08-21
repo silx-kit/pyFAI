@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,14 +32,16 @@ Deprecated ... restore or delete !
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "08/04/2024"
+__date__ = "21/08/2026"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os
 import logging
+import os
 import threading
+
 import numpy
+
 from . import ocl, pyopencl
 
 if pyopencl:
@@ -48,10 +49,11 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 from ..utils import crc32, get_cl_file
+
 logger = logging.getLogger(__name__)
 
 
-class OCLFullSplit1d(object):
+class OCLFullSplit1d:
 
     def __init__(self,
                  pos,
@@ -123,7 +125,7 @@ class OCLFullSplit1d(object):
         self.events = []
         self.workgroup_size = int(workgroup_size)
         if self.size < self.workgroup_size:
-            raise RuntimeError("Fatal error in workgroup size selection. Size (%d) must be >= workgroup size (%d)\n", self.size, self.workgroup_size)
+            raise RuntimeError(f"Fatal error in workgroup size selection. Size ({self.size}) must be >= workgroup size ({self.workgroup_size})")
         if (platformid is None) and (deviceid is None):
             platformid, deviceid = ocl.select_device(devicetype)
         elif platformid is None:
@@ -163,8 +165,7 @@ class OCLFullSplit1d(object):
         else:
             kernel_file = str(kernel_file)
         kernel_src = open(kernel_file).read()
-        compile_options = "-D BINS=%i -D POS_SIZE=%i -D SIZE=%i -D WORKGROUP_SIZE=%i -D EPS=%e" % \
-                          (self.bins, self.pos_size, self.size, self.workgroup_size, numpy.finfo(numpy.float32).eps)
+        compile_options = f"-D BINS={int(self.bins)} -D POS_SIZE={self.pos_size} -D SIZE={int(self.size)} -D WORKGROUP_SIZE={self.workgroup_size} -D EPS={numpy.finfo(numpy.float32).eps:e}"
         logger.info("Compiling file %s with options %s", kernel_file, compile_options)
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
@@ -183,7 +184,7 @@ class OCLFullSplit1d(object):
         ualloc += (4 * size_of_float)
         memory = self.device.memory
         if ualloc >= memory:
-            raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
+            raise MemoryError(f"Fatal error in _allocate_buffers. Not enough device memory for buffers ({ualloc} requested, {memory} available)")
 
         try:
             self._cl_mem["pos"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * self.pos_size)
@@ -221,7 +222,7 @@ class OCLFullSplit1d(object):
         ualloc += ((self.bins + 1) * size_of_int)  # idx_ptr
         memory = self.device.memory
         if ualloc >= memory:
-            raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
+            raise MemoryError(f"Fatal error in _allocate_buffers. Not enough device memory for buffers ({ualloc} requested, {memory} available)")
         try:
             self._cl_mem["outMax"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * self.bins)
             self._cl_mem["lutsize"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * 1)
@@ -247,7 +248,7 @@ class OCLFullSplit1d(object):
         ualloc += (self.lutsize * size_of_int)  # indices
         ualloc += (self.lutsize * size_of_float)  # data
         if ualloc >= memory:
-            raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
+            raise MemoryError(f"Fatal error in _allocate_buffers. Not enough device memory for buffers ({ualloc} requested, {memory} available)")
         try:
             self._cl_mem["indices"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_int * self.lutsize[0])
             self._cl_mem["data"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * self.lutsize[0])

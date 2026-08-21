@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -30,7 +29,6 @@ __date__ = "17/09/2024"
 from silx.gui import qt
 from silx.gui.colors import Colormap
 
-
 DEFAULT_COLORMAP = Colormap(name="inferno", normalization=Colormap.ARCSINH)
 
 
@@ -53,7 +51,7 @@ def getFreeColorRange(colormap):
     # search the bigger empty hue range
     current = (0, 0.0, 0.2)
     hues = filter(lambda x: x >= 0, set(hues))
-    hues = list(sorted(hues))
+    hues = sorted(hues)
     if len(hues) > 1:
         for i in range(len(hues)):
             h1 = hues[i]

@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,18 +37,18 @@ __date__ = "15/10/2025"
 __status__ = "stable"
 
 import inspect
-from ._common import Detector, NexusDetector
-from ._adsc import *      # noqa: F403
-from ._dectris import *   # noqa: F403
-from ._imxpad import *    # noqa: F403
-from ._rayonix import *   # noqa: F403
-from ._esrf import *      # noqa: F403
-from ._xspectrum import * # noqa: F403
-from ._psi import *       # noqa: F403
-from ._non_flat import *  # noqa: F403
-from ._others import *    # noqa: F403
-from ._hexagonal import * # noqa: F403
 
+from ._adsc import *
+from ._common import Detector, NexusDetector
+from ._dectris import *
+from ._esrf import *
+from ._hexagonal import *
+from ._imxpad import *
+from ._non_flat import *
+from ._others import *
+from ._psi import *
+from ._rayonix import *
+from ._xspectrum import *
 
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory

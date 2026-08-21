@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -39,7 +38,7 @@ class FilenameModel(DataModel):
         self.__isSynchronized = True
 
     def setValue(self, value):
-        super(FilenameModel, self).setValue(value)
+        super().setValue(value)
         self.__isSynchronized = False
 
     def hasFilename(self):

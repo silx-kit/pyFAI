@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -45,25 +44,27 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/10/2025"
 __status__ = "production"
 
-import os
-import sys
 import argparse
-import time
 import copy
-import signal
-from threading import Thread, Event
-from queue import Queue, Empty
 import gc
-from collections import OrderedDict, namedtuple
-import numexpr
-import logging
 import glob
+import logging
+import os
+import signal
+import sys
+import time
+from collections import OrderedDict, namedtuple
+from queue import Empty, Queue
+from threading import Event, Thread
+
 import fabio
-from .. import version, load
-from ..units import to_unit
-from ..opencl import ocl
-from ..utils.shell import ProgressBar
+import numexpr
+
+from .. import load, version
 from ..io.sparse_frame import save_sparse
+from ..opencl import ocl
+from ..units import to_unit
+from ..utils.shell import ProgressBar
 
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)

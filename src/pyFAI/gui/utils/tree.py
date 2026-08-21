@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -39,7 +38,8 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import logging
+
 from ...io.diffmap_config import DataSet, DataSetNT, ListDataSet  # noqa: F401
-from ...io.tree import TreeItem                                   # noqa: F401
+from ...io.tree import TreeItem  # noqa: F401
 
 logger = logging.getLogger(__name__)

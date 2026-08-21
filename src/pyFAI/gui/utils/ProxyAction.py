@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -41,7 +40,7 @@ class ProxyAction(qt.QAction):
     """
 
     def __init__(self, parent, source):
-        super(ProxyAction, self).__init__(parent)
+        super().__init__(parent)
         self.__source = source
         self.__source.changed.connect(self.__sourceChanged)
         self.toggled.connect(self.__actionToggled)
@@ -98,7 +97,7 @@ class CustomProxyAction(ProxyAction):
     def __init__(self, parent, source):
         self.__forcedText = None
         self.__forcedIconText = None
-        super(CustomProxyAction, self).__init__(parent, source)
+        super().__init__(parent, source)
 
     def forceText(self, text):
         """Override the text of the the source action.
@@ -109,11 +108,11 @@ class CustomProxyAction(ProxyAction):
         self.__forcedText = text
         if self.__forcedText is None:
             text = self.sourceAction().text()
-        super(CustomProxyAction, self).setText(text)
+        super().setText(text)
 
     def setText(self, text):
         if self.__forcedText is None:
-            super(CustomProxyAction, self).setText(text)
+            super().setText(text)
 
     def forceIconText(self, iconText):
         """Override the iconText of the the source action.
@@ -124,8 +123,8 @@ class CustomProxyAction(ProxyAction):
         self.__forcedIconText = iconText
         if self.__forcedIconText is None:
             iconText = self.sourceAction().iconText()
-        super(CustomProxyAction, self).setIconText(iconText)
+        super().setIconText(iconText)
 
     def setIconText(self, text):
         if self.__forcedIconText is None:
-            super(CustomProxyAction, self).setIconText(text)
+            super().setIconText(text)

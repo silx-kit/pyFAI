@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,29 +33,30 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2025"
+__date__ = "21/08/2026"
 
-import unittest
-import random
-import time
-import numpy
 import itertools
+import json
 import logging
 import os.path
-import json
-import fabio
+import random
+import time
+import unittest
 from math import pi
-from . import utilstest
-from ..io.ponifile import PoniFile
-from .. import geometry, load
-from ..integrator.azimuthal import AzimuthalIntegrator
-from .. import units
+
+import fabio
+import numpy
+
+from .. import geometry, load, units
 from ..detectors import detector_factory
-from ..third_party import transformations
-from .utilstest import UtilsTest
-from ..utils.mathutil import allclose_mod
 from ..geometry.crystfel import build_geometry, parse_crystfel_geom
 from ..geometry.fit2d import Fit2dGeometry
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..io.ponifile import PoniFile
+from ..third_party import transformations
+from ..utils.mathutil import allclose_mod
+from . import utilstest
+from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 
@@ -102,17 +102,17 @@ class TestSolidAngle(unittest.TestCase):
         delta_tth = abs(tth - tth_fit2d).max()
         delta_I = abs(I_nogood - I_fit2d).max()
         mean_I = abs(I_nogood - I_fit2d).mean()
-        self.assertLess(delta_tth, 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
-        self.assertGreater(delta_I, 100, 'Error on (wrong) I are large: %s >100' % delta_I)
-        self.assertGreater(mean_I, 2, 'Error on (wrong) I are large: %s >2' % mean_I)
+        self.assertLess(delta_tth, 1e-5, f'Error on 2th position: {delta_tth} <1e-5')
+        self.assertGreater(delta_I, 100, f'Error on (wrong) I are large: {delta_I} >100')
+        self.assertGreater(mean_I, 2, f'Error on (wrong) I are large: {mean_I} >2')
 
         tth, I_good = ai.integrate1d_ng(data, 1770, unit="2th_deg", radial_range=[0, 56], method=method, correctSolidAngle=3)
         delta_tth = abs(tth - tth_fit2d).max()
         delta_I = abs(I_good - I_fit2d).max()
         mean_I = abs(I_good - I_fit2d).mean()
-        self.assertLess(delta_tth, 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
-        self.assertLess(delta_I, 5, 'Error on (good) I are small: %s <5' % delta_I)
-        self.assertLess(mean_I, 0.05, 'Error on (good) I are small: %s <0.05' % mean_I)
+        self.assertLess(delta_tth, 1e-5, f'Error on 2th position: {delta_tth} <1e-5')
+        self.assertLess(delta_I, 5, f'Error on (good) I are small: {delta_I} <5')
+        self.assertLess(mean_I, 0.05, f'Error on (good) I are small: {mean_I} <0.05')
         ai.reset()
 
     def test_nonflat_center(self):
@@ -253,7 +253,7 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
         rd2 = self.geo.corner_array(self.shape, unit=units.RecD2_NM, scale=False)[:,:,:, 0]
         q = self.geo.corner_array(self.shape, unit=units.Q, use_cython=False, scale=False)[:,:,:, 0]
         delta = rd2 - (q / (2 * numpy.pi)) ** 2
-        self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2, delat=%s" % delta)
+        self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), f"corners rd2 = (q/2pi)**2, delat={delta}")
 
     def test_delta(self):
         drd2a = self.geo.deltaRd2(self.shape)
@@ -278,12 +278,12 @@ class TestFastPath(utilstest.ParametricTestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestFastPath, cls).setUpClass()
+        super().setUpClass()
         cls.calc_geometries()
 
     @classmethod
     def tearDownClass(cls):
-        super(TestFastPath, cls).tearDownClass()
+        super().tearDownClass()
         cls.matrices = None
         cls.geometries = None
         cls.quaternions = None
@@ -399,8 +399,8 @@ class TestFastPath(utilstest.ParametricTestCase):
                 cnt_delta_a = (delta[..., 1] > self.EPSILON_A).sum()
                 logger.debug("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta_r:%s",
                              space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / numpy.float64(t11 - t10), delta)
-                self.assertLess(delta_r, self.EPSILON_R, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
-                self.assertLess(cnt_delta_a, count_a, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
+                self.assertLess(delta_r, self.EPSILON_R, f"data={data}, space='{space}' delta_r: {delta_r}")
+                self.assertLess(cnt_delta_a, count_a, f"data:{data}, space: {space} cnt_delta_a: {cnt_delta_a}")
 
     def test_XYZ(self):
         """Test the calc_pos_zyx with full detectors"""
@@ -416,7 +416,7 @@ class TestFastPath(utilstest.ParametricTestCase):
                 delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
                 logger.debug("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
                              geometryParams["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
-                msg = "delta=%s<%s, geo= \n%s" % (delta, self.EPSILON, geo)
+                msg = f"delta={delta}<{self.EPSILON}, geo= \n{geo}"
                 self.assertTrue(numpy.all(delta.max() < self.EPSILON), msg)
                 logger.debug(msg)
 
@@ -436,7 +436,7 @@ class TestFastPath(utilstest.ParametricTestCase):
                 delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
                 logger.debug("TIMINGS\t meth: deltaChi %s python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
                              geometryParams["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
-                msg = "delta=%s<%s, geo= \n%s" % (delta, self.EPSILON, geo)
+                msg = f"delta={delta}<{self.EPSILON}, geo= \n{geo}"
                 self.assertTrue(numpy.all(delta.max() < self.EPSILON), msg)
                 logger.debug(msg)
 
@@ -449,8 +449,8 @@ class TestFastPath(utilstest.ParametricTestCase):
         self.assertEqual(len(geometries), len(matrices), "length is the same")
         for kwds, quat, mat in zip(geometries, quaternions, matrices):
             geo = geometry.Geometry(**kwds)
-            self.assertTrue(numpy.allclose(geo.rotation_matrix(), mat), "matrice are the same %s" % kwds)
-            self.assertTrue(numpy.allclose(geo.quaternion(), quat), "quaternions are the same %s" % kwds)
+            self.assertTrue(numpy.allclose(geo.rotation_matrix(), mat), f"matrice are the same {kwds}")
+            self.assertTrue(numpy.allclose(geo.quaternion(), quat), f"quaternions are the same {kwds}")
 
 
 class TestGeometry(utilstest.ParametricTestCase):
@@ -499,7 +499,7 @@ class TestGeometry(utilstest.ParametricTestCase):
                 delta = abs(oldret - newret).max()
                 logger.debug("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s",
                              func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
-                msg = "func: %s max delta=%.3f, geo:%s" % (func, delta, geo)
+                msg = f"func: {func} max delta={delta:.3f}, geo:{geo}"
                 self.assertAlmostEqual(delta, 0, 3, msg)
                 logger.debug(msg)
 
@@ -518,7 +518,7 @@ class TestGeometry(utilstest.ParametricTestCase):
                 delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
                 logger.debug("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s",
                              corners, t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
-                msg = "delta=%s, geo= \n%s" % (delta, geo)
+                msg = f"delta={delta}, geo= \n{geo}"
                 self.assertTrue(numpy.allclose(numpy.vstack(cy_res), numpy.vstack(py_res)), msg)
                 logger.debug(msg)
 
@@ -526,7 +526,7 @@ class TestGeometry(utilstest.ParametricTestCase):
         config = {"pixel1": 1, "pixel2": 2, "orientation":3}
         detector = detector_factory("adsc_q315", config)
         geom = geometry.Geometry(detector=detector)
-        ponifile = os.path.join(UtilsTest.tempdir, "%s.poni" % self.id())
+        ponifile = os.path.join(UtilsTest.tempdir, f"{self.id()}.poni")
         geom.save(ponifile)
         geom = geometry.Geometry()
         geom.load(ponifile)
@@ -577,29 +577,29 @@ class TestCalcFrom(unittest.TestCase):
         img1 = ai.calcfrom1d(prof_1d.radial, sig, dim1_unit="2th_deg",
                             mask=det.mask, dummy=-1)
         new_prof_1d = ai.integrate1d_ng(img1, 200, unit="2th_deg")
-        delta = abs((new_prof_1d.intensity - sig)).max()
-        self.assertLess(delta, 600, "calcfrom1d works delta=%s" % delta)
+        delta = abs(new_prof_1d.intensity - sig).max()
+        self.assertLess(delta, 600, f"calcfrom1d works delta={delta}")
         prof_2d = ai.integrate2d(img1, 400, 360, unit="2th_deg")
         img2 = ai.calcfrom2d(prof_2d.intensity, prof_2d.radial, prof_2d.azimuthal,
                              mask=det.mask,
                              dim1_unit="2th_deg", correctSolidAngle=True, dummy=-1)
         delta2 = img2 - img1
-        self.assertLess(abs(delta2.mean()), 2, "calcfrom2d works delta.mean=%s" % abs(delta2.mean()))
-        self.assertLess(delta2.std(), 100, "calcfrom2d works delta.std=%s" % delta2.std())
+        self.assertLess(abs(delta2.mean()), 2, f"calcfrom2d works delta.mean={abs(delta2.mean())}")
+        self.assertLess(delta2.std(), 100, f"calcfrom2d works delta.std={delta2.std()}")
 
 
 class TestBugRegression(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestBugRegression, cls).setUpClass()
+        super().setUpClass()
         detector = detector_factory("Imxpad S10")  # small detectors makes calculation faster
         cls.geo = geometry.Geometry(detector=detector)
         cls.geo.setFit2D(100, detector.shape[1] // 3, detector.shape[0] // 3, tilt=1)
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestBugRegression, cls).tearDownClass()
+        super().tearDownClass()
         cls.geo = None
 
     def test_bug747(self):
@@ -608,7 +608,7 @@ class TestBugRegression(unittest.TestCase):
         rc = self.geo.position_array(use_cython=True)
         rp = self.geo.position_array(use_cython=False)
         delta = abs(rp - rc).max()
-        self.assertLess(delta, 1e-5, "error on position is %s" % delta)
+        self.assertLess(delta, 1e-5, f"error on position is {delta}")
 
     def test_bug2024(self):
         """This bug is about delta chi being sometimes 2pi"""
@@ -634,7 +634,7 @@ class TestOrientation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestOrientation, cls).setUpClass()
+        super().setUpClass()
         cls.ai1 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":1},
                                            "wavelength":1e-10})
         cls.ai2 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":2},
@@ -646,7 +646,7 @@ class TestOrientation(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestOrientation, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
 
     def test_array_from_unit_tth_center(self):
@@ -773,7 +773,7 @@ class TestOrientation2(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestOrientation2, cls).setUpClass()
+        super().setUpClass()
         p = detector_factory("pilatus100k")
         c = p.get_pixel_corners()
         d1 = c[..., 1].max()
@@ -789,7 +789,7 @@ class TestOrientation2(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestOrientation2, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
 
     def test_positions(self):

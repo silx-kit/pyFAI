@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -27,9 +26,10 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "17/11/2022"
 
-from typing import Optional
-from ..model.GeometryModel import GeometryModel
+
 from silx.gui.widgets.ElidedLabel import ElidedLabel
+
+from ..model.GeometryModel import GeometryModel
 
 
 class GeometryLabel(ElidedLabel):
@@ -40,8 +40,8 @@ class GeometryLabel(ElidedLabel):
     """
 
     def __init__(self, parent=None):
-        super(GeometryLabel, self).__init__(parent)
-        self.__geometry: Optional[GeometryModel] = None
+        super().__init__(parent)
+        self.__geometry: GeometryModel | None = None
         self.__updateDisplay()
         self.setTextAsToolTip(False)
 
@@ -82,7 +82,7 @@ class GeometryLabel(ElidedLabel):
         self.setText(labelTemplate.format(**args))
         self.setToolTip(tipTemplate.format(**args))
 
-    def setGeometryModel(self, geometryModel: Optional[GeometryModel]):
+    def setGeometryModel(self, geometryModel: GeometryModel | None):
         """Set the geometry to display.
 
         :param ~pyFAI.gui.model.GeometryModel geometryModel: A geometry.
@@ -97,7 +97,7 @@ class GeometryLabel(ElidedLabel):
         if self.__geometry is not None:
             self.__geometry.changed.connect(self.__updateDisplay)
 
-    def geometryModel(self) -> Optional[GeometryModel]:
+    def geometryModel(self) -> GeometryModel | None:
         """Returns the geometry model
 
         :rtype: Union[None,~pyFAI.gui.model.GeometryModel]

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,9 +33,11 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/05/2022"
 
 import unittest
+
 import numpy
-from ..integrator.azimuthal import AzimuthalIntegrator
+
 from ..ext.invert_geometry import InvertGeometry
+from ..integrator.azimuthal import AzimuthalIntegrator
 
 
 class TestInvertGeometry(unittest.TestCase):

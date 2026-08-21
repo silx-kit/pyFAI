@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -39,12 +38,14 @@ __docformat__ = 'restructuredtext'
 
 
 import logging
+from collections import namedtuple
 from math import cos, sin
-from .fit2d import convert_to_Fit2d
-from ..units import to_unit, LENGTH_UNITS
+
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
-from collections import namedtuple
+from ..units import LENGTH_UNITS, to_unit
+from .fit2d import convert_to_Fit2d
+
 logger = logging.getLogger(__name__)
 
 

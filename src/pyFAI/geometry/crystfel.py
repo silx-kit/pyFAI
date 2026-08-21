@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -41,10 +40,13 @@ __date__ = "23/09/2025"
 __status__ = "production"
 
 import logging
+
 import numpy
+
+from .. import load
 from ..detectors import detector_factory
 from ..units import hc
-from .. import load
+
 logger = logging.getLogger(__name__)
 
 

@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,18 +34,20 @@ __date__ = "26/02/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import os
-import posixpath
 import copy
 import json
 import logging
+import os
+import posixpath
 from collections import namedtuple
-import numpy
+
 import h5py
+import numpy
+
 from ._json import json_dumps
-from .tree import TreeItem
-from .integration_config import dataclass, ClassVar, WorkerConfig, fields, asdict
+from .integration_config import ClassVar, WorkerConfig, asdict, dataclass, fields
 from .nexus import is_hdf5
+from .tree import TreeItem
 
 logger = logging.getLogger(__name__)
 

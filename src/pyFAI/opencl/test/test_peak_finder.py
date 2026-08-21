@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: PyFAI: diffraction signal analysis
 #             https://github.com/silx-kit/pyFAI
@@ -36,15 +35,17 @@ __copyright__ = "2020-2021 European Synchrotron Radiation Facility, Grenoble, Fr
 __date__ = "21/11/2025"
 
 import logging
+import unittest
+
+import fabio
 import numpy
 
-import unittest
-from .. import ocl
-import fabio
-from ...test.utilstest import UtilsTest
 from ...integrator.azimuthal import AzimuthalIntegrator
+from ...test.utilstest import UtilsTest
+from .. import ocl
+
 if ocl:
-    from ..peak_finder import OCL_SimplePeakFinder, OCL_PeakFinder, densify
+    from ..peak_finder import OCL_PeakFinder, OCL_SimplePeakFinder, densify
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +55,7 @@ class TestOclPeakFinder(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestOclPeakFinder, cls).setUpClass()
+        super().setUpClass()
         if ocl:
             if logger.getEffectiveLevel() <= logging.INFO:
                 cls.PROFILE = True
@@ -71,7 +72,7 @@ class TestOclPeakFinder(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestOclPeakFinder, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai = None
         cls.img = None
         cls.ref = None

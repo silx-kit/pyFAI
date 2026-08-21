@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -27,15 +26,18 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "08/10/2025"
 
-import numpy
-import time
 import functools
-import logging
 import html
+import logging
+import time
+
+import numpy
 from silx.gui import qt
 from silx.gui.plot3d.items import mesh
 from silx.gui.plot3d.SceneWindow import SceneWindow
+
 from ..utils.colorutils import DEFAULT_COLORMAP
+
 _logger = logging.getLogger(__name__)
 
 
@@ -44,7 +46,7 @@ class CreateSceneThread(qt.QThread):
     progressValue = qt.Signal(int)
 
     def __init__(self, parent=None):
-        super(CreateSceneThread, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.__detector = None
         self.__image = None
         self.__mask = None
@@ -207,7 +209,7 @@ class Detector3dDialog(qt.QDialog):
     """
 
     def __init__(self, parent=None):
-        super(Detector3dDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowTitle("Display sample stage")
         self.__plot = SceneWindow(self)
         self.__plot.setVisible(False)

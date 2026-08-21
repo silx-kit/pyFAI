@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,20 +32,24 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "21/08/2026"
 __satus__ = "Production"
 
+import logging
 import os
 import sys
-import numpy
 from argparse import ArgumentParser
+
 import fabio
+import numpy
 import silx.gui.plot
 from silx.gui import qt
-from ..version import version as pyFAI_version, date as pyFAI_date
+
 from .. import utils
 from ..gui.utils.colorutils import DEFAULT_COLORMAP
-import logging
+from ..version import date as pyFAI_date
+from ..version import version as pyFAI_version
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -89,7 +92,7 @@ class AbstractMaskImageWidget(qt.QMainWindow):
 
         mask = self.getSelectionMask()
         fabio.edfimage.edfimage(data=mask).write(self.__outputFile)
-        print("Mask-file saved into %s" % (self.__outputFile))
+        print(f"Mask-file saved into {self.__outputFile}")
         self.close()
 
 
@@ -141,11 +144,11 @@ def postProcessId21(processFile, mask):
 
     TODO: Remove it outside if it is possible. Ask them if it is still used.
     """
-    print("Selected %i datapoints on file %s" % (mask.sum(), processFile[0]))
+    print(f"Selected {int(mask.sum())} datapoints on file {processFile[0]}")
     for datafile in processFile:
         with fabio.open(datafile) as fimg:
             data = fimg.data[numpy.where(mask)]
-        print("On File: %s,\t mean= %s \t std= %s" % (datafile, data.mean(), data.std()))
+        print(f"On File: {datafile},\t mean= {data.mean()} \t std= {data.std()}")
 
 
 def main(args=None):
@@ -182,7 +185,7 @@ def main(args=None):
     outfile = os.path.splitext(processFile[0])[0] + "-mask.edf"
     window.setOutputFile(outfile)
 
-    print("Your mask-file will be saved into %s" % (outfile))
+    print(f"Your mask-file will be saved into {outfile}")
     result = app.exec()
 
     mask = window.getSelectionMask()

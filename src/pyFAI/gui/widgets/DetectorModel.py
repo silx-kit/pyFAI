@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -27,9 +26,9 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "16/10/2020"
 
+from ...utils.decorators import deprecated
 from .model.AllDetectorItemModel import AllDetectorItemModel
 from .model.DetectorFilterProxyModel import DetectorFilterProxyModel
-from ...utils.decorators import deprecated
 
 
 class AllDetectorModel(AllDetectorItemModel):

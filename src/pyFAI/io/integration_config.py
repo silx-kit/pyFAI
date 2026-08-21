@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -68,23 +67,25 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/02/2025"
 __docformat__ = 'restructuredtext'
-__all__ = [ "asdict", "fields", "WorkerConfig", "WorkerFiberConfig"]
+__all__ = ["WorkerConfig", "WorkerFiberConfig", "asdict", "fields"]
 
 
-import os
+import copy
 import json
 import logging
-import copy
-from typing import ClassVar, Union
+import os
+from typing import ClassVar
+
 import numpy
-from .ponifile import PoniFile
-from ._json import json_dumps
-from ..containers import PolarizationDescription, ErrorModel, dataclass, fields, asdict
-from .. import detectors
-from .. import method_registry
+
+from .. import detectors, method_registry
+from ..containers import ErrorModel, PolarizationDescription, asdict, dataclass, fields
 from ..integrator import load_engines as load_integrators
-from ..utils import decorators
 from ..units import Unit, UnitFiber, get_unit_fiber
+from ..utils import decorators
+from ._json import json_dumps
+from .ponifile import PoniFile
+
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
@@ -365,7 +366,7 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
     return config
 
 
-class ConfigurationReader(object):
+class ConfigurationReader:
     "This class should be deprecated now ..."
 
     def __init__(self, config):
@@ -461,8 +462,8 @@ class WorkerConfig:
     val_dummy: float = None
     delta_dummy: float = None
     correct_solid_angle: bool = True
-    dark_current: Union[str, list] = None
-    flat_field: Union[str, list] = None
+    dark_current: str | list = None
+    flat_field: str | list = None
     mask_file: str = None
     error_model: ErrorModel = ErrorModel.NO
     method: object = None
@@ -529,9 +530,7 @@ class WorkerConfig:
                 if key in cls.ENFORCED:
                     "Enforce a specific class type"
                     klass = field.type
-                    if value is None:
-                        to_init[key] = value
-                    elif isinstance(value, klass):
+                    if value is None or isinstance(value, klass):
                         to_init[key] = value
                     elif isinstance(value, dict):
                         to_init[key] = klass(**value)

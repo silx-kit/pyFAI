@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -28,13 +27,14 @@ __license__ = "MIT"
 __date__ = "19/08/2026"
 
 import logging
+
 from .AbstractModel import AbstractModel
-from .DetectorModel import DetectorModel
 from .CalibrantModel import CalibrantModel
 from .DataModel import DataModel
-from .MaskedImageModel import MaskedImageModel
-from .ImageModel import ImageFromFilenameModel
+from .DetectorModel import DetectorModel
 from .FilenameModel import FilenameModel
+from .ImageModel import ImageFromFilenameModel
+from .MaskedImageModel import MaskedImageModel
 from .PreProcessedImageModel import PreProcessedImageModel
 
 _logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ _logger = logging.getLogger(__name__)
 class ExperimentSettingsModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(ExperimentSettingsModel, self).__init__(parent)
+        super().__init__(parent)
         self.__image = ImageFromFilenameModel()
         self.__mask = ImageFromFilenameModel()
         self.__maskedImage = MaskedImageModel(None, self.__image, self.__mask)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,15 +33,17 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "04/05/2026"
 
-import unittest
-import numpy
 import logging
-from ..parallax import Beam, ThinSensor, BaseSensor, Parallax
-from ..detectors.sensors import Si_MATERIAL, CdTe_MATERIAL, SensorConfig
+import unittest
+
+import numpy
+
 from .. import load
-from ..io.ponifile import PoniFile
-from ..test.utilstest import UtilsTest
+from ..detectors.sensors import CdTe_MATERIAL, SensorConfig, Si_MATERIAL
 from ..ext.parallax_raytracing import Raytracing
+from ..io.ponifile import PoniFile
+from ..parallax import BaseSensor, Beam, Parallax, ThinSensor
+from ..test.utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 

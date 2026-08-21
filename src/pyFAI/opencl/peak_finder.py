@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Peak finder in a single 2D diffraction frame
 #             https://github.com/silx-kit/pyFAI
@@ -29,18 +28,28 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "12/06/2026"
+__date__ = "21/08/2026"
 __copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
-from collections import OrderedDict
 import math
+from collections import OrderedDict
+
 import numpy
-from ..containers import SparseFrame, ErrorModel
+
+from ..containers import ErrorModel, SparseFrame
 from ..utils.mathutil import EPS32
-from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl, OpenclProcessing
-from . import kernel_workgroup_size, dtype_converter
+from . import dtype_converter, kernel_workgroup_size
+from .azim_csr import (
+    BufferDescription,
+    EventDescription,
+    OCL_CSR_Integrator,
+    OpenclProcessing,
+    calc_checksum,
+    mf,
+    pyopencl,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -973,7 +982,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         if isinstance(data, pyopencl.array.Array):
             if (data.dtype == dest_type) and not force_cast:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], data.data)
-                events.append(EventDescription("copy D->D %s" % dest, copy_image))
+                events.append(EventDescription(f"copy D->D {dest}", copy_image))
             else:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
                 kernel_name = self.mapping[data.dtype.type]
@@ -987,7 +996,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
             # Assume it is a numpy array
             if ((data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize)) and not force_cast:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-                events.append(EventDescription("copy H->D %s" % dest, copy_image))
+                events.append(EventDescription(f"copy H->D {dest}", copy_image))
             else:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
                 kernel_name = self.mapping[data.dtype.type]

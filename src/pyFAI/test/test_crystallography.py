@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,11 +34,13 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "09/01/2026"
 
-import unittest
-import numpy
 import logging
+import unittest
+
+import numpy
+
+from ..crystallography import Cell, ReflectionCondition, resolution
 from .utilstest import UtilsTest
-from ..crystallography import resolution, Cell, ReflectionCondition
 
 logger = logging.getLogger(__name__)
 

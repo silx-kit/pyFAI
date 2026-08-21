@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,29 +31,28 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2025"
+__date__ = "21/08/2026"
 
-import unittest
 import logging
 import os.path
 import shutil
+import unittest
+
 import numpy
 
-from .. import units
+from .. import detector_factory, units
 from .. import worker as worker_mdl
-from ..worker import Worker, PixelwiseWorker
+from ..containers import Integrate1dResult, Integrate2dResult
 from ..integrator.azimuthal import AzimuthalIntegrator
-from ..containers import Integrate1dResult
-from ..containers import Integrate2dResult
 from ..io.integration_config import ConfigurationReader
 from ..io.ponifile import PoniFile
-from .. import detector_factory
+from ..worker import PixelwiseWorker, Worker
 from . import utilstest
 
 logger = logging.getLogger(__name__)
 
 
-class AzimuthalIntegratorMocked():
+class AzimuthalIntegratorMocked:
 
     def __init__(self, result=None):
         self._integrate1d_called = 0
@@ -82,7 +80,7 @@ class AzimuthalIntegratorMocked():
     integrate2d_ng = integrate2d_legacy = integrate2d
 
 
-class MockedAiWriter():
+class MockedAiWriter:
 
     def __init__(self, result=None):
         self._write_called = 0
@@ -101,12 +99,12 @@ class TestWorker(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestWorker, cls).setUpClass()
+        super().setUpClass()
         cls.rng = utilstest.UtilsTest.get_rng()
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestWorker, cls).tearDownClass()
+        super().tearDownClass()
         cls.rng = None
 
     def test_constructor_ai(self):
@@ -285,13 +283,13 @@ class TestWorker(unittest.TestCase):
         pww = PixelwiseWorker(dark=dark, flat=flat, dummy=-5, dtype="float64")
         res_np = pww.process(raw, normalization_factor=6.0)
         err = abs(res_np - signal / 6.0).max()
-        self.assertLess(err, precision, "Numpy calculation are OK: %s" % err)
+        self.assertLess(err, precision, f"Numpy calculation are OK: {err}")
 
         # Cython path
         worker_mdl.USE_CYTHON = True
         res_cy = pww.process(raw, normalization_factor=7.0)
         err = abs(res_cy - signal / 7.0).max()
-        self.assertLess(err, precision, "Cython calculation are OK: %s" % err)
+        self.assertLess(err, precision, f"Cython calculation are OK: {err}")
 
         # With Poissonian errors
         # Numpy path
@@ -301,16 +299,16 @@ class TestWorker(unittest.TestCase):
         delta_res = abs(res_np - ref / 2.0).max()
         delta_err = abs(err_np - numpy.sqrt(ref) / 2.0).max()
 
-        self.assertLess(delta_res, precision, "Numpy intensity calculation are OK: %s" % err)
-        self.assertLess(delta_err, precision, "Numpy error calculation are OK: %s" % err)
+        self.assertLess(delta_res, precision, f"Numpy intensity calculation are OK: {err}")
+        self.assertLess(delta_err, precision, f"Numpy error calculation are OK: {err}")
 
         # Cython path
         worker_mdl.USE_CYTHON = True
         res_cy, err_cy = pww.process(raw, variance=ref, normalization_factor=2.0)
         delta_res = abs(res_cy - ref / 2.0).max()
         delta_err = abs(err_cy - numpy.sqrt(ref) / 2.0).max()
-        self.assertLess(delta_res, precision, "Cython intensity calculation are OK: %s" % err)
-        self.assertLess(delta_err, precision, "Cython error calculation are OK: %s" % err)
+        self.assertLess(delta_res, precision, f"Cython intensity calculation are OK: {err}")
+        self.assertLess(delta_err, precision, f"Cython error calculation are OK: {err}")
 
     def test_sigma_clip(self):
         ai = AzimuthalIntegrator.sload({"detector": "Imxpad S10", "wavelength":1e-10})

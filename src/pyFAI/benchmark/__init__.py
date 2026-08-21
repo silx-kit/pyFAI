@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Copyright (C) 2016-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -24,32 +23,35 @@
 "Benchmark for Azimuthal integration of PyFAI"
 
 __author__ = "Jérôme Kieffer"
-__date__ = "26/03/2026"
+__date__ = "21/08/2026"
 __license__ = "MIT"
 __copyright__ = "2012-2026 European Synchrotron Radiation Facility, Grenoble, France"
 
-from collections import OrderedDict
+import os
+import os.path as op
+import platform
+import subprocess
 import sys
 import time
 import timeit
-import os
-import platform
-import subprocess
-import fabio
-import os.path as op
+from collections import OrderedDict
 from math import ceil
+
+import fabio
 import numpy
-from ..io._json import json_dump
-from .. import load, detector_factory
+
+from .. import detector_factory, load
+from .. import version as pyFAI_version
 from ..integrator.azimuthal import AzimuthalIntegrator
+from ..io._json import json_dump
 from ..method_registry import IntegrationMethod, Method
+from ..opencl import ocl, pyopencl
+from ..test.utilstest import UtilsTest
 from ..utils import mathutil
 from ..utils.decorators import deprecated
-from ..test.utilstest import UtilsTest
-from ..opencl import pyopencl, ocl
-from .. import version as pyFAI_version
+
 try:
-    from ..gui.matplotlib import pyplot, pylab
+    from ..gui.matplotlib import pylab, pyplot
     from ..gui.utils import update_fig as _update_fig
 
     def update_fig(*args, **kwargs):
@@ -92,7 +94,7 @@ PONIS = { i: UtilsTest.getimage(i) for i in ds_list}
 bench = None
 
 
-class BenchTest(object):
+class BenchTest:
     """Generic class for benchmarking with `timeit.Timer`"""
 
     def setup(self):
@@ -101,7 +103,6 @@ class BenchTest(object):
         The method do not have arguments. Everything must be set before, from
         the constructor for example.
         """
-        pass
 
     def stmt(self):
         """Statement.
@@ -109,7 +110,6 @@ class BenchTest(object):
         The method do not have arguments. Everything must be set before, from
         the constructor, loaded from the `setup` to a class attribute.
         """
-        pass
 
     def setup_and_stmt(self):
         """Execute the setup then the statement."""
@@ -118,7 +118,6 @@ class BenchTest(object):
 
     def clean(self):
         """Clean up stored data"""
-        pass
 
     def get_device(self):
         res = None
@@ -217,7 +216,7 @@ class BenchTestGpu(BenchTest):
         self.data = None
 
 
-class Bench(object):
+class Bench:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
@@ -313,7 +312,7 @@ class Bench(object):
         """
         Return environment variables related to OpenMP
         """
-        return {key:str(value) 
+        return {key:str(value)
                 for key, value in os.environ.items()
                 if key.startswith("OMP")}
 
@@ -321,15 +320,15 @@ class Bench(object):
         """
         Return versions of important dependencies
         """
-        res = {"numpy": numpy.version.version, 
-               "fabio": fabio.version, 
+        res = {"numpy": numpy.version.version,
+               "fabio": fabio.version,
                "pyFAI": pyFAI_version}
         try:
             import scipy
         except ImportError:
             res["scipy"] = None
         else:
-            res["scipy"] = scipy.version.version 
+            res["scipy"] = scipy.version.version
 
         try:
             import h5py
@@ -337,27 +336,26 @@ class Bench(object):
             res["h5py"] = None
         else:
             res["h5py"] = h5py.version.version
-        
+
         try:
             import pyopencl
         except ImportError:
             res["pyopencl"] = None
         else:
             res["pyopencl"] = pyopencl.__version__
-        
+
         return res
-    
+
     def print_init(self, t):
-        print(" * Initialization time: %.1f ms" % (1000.0 * t))
+        print(f" * Initialization time: {1000.0 * t:.1f} ms")
         self.update_mp()
 
     def print_init2(self, tinit, trep, loops):
-        print(" * Initialization time: %.1f ms, Repetition time: %.1f ms, executing %i loops" %
-              (1000.0 * tinit, 1000.0 * trep, loops))
+        print(f" * Initialization time: {1000.0 * tinit:.1f} ms, Repetition time: {1000.0 * trep:.1f} ms, executing {loops} loops")
         self.update_mp()
 
     def print_exec(self, t):
-        print(" * Execution time rep : %.1f ms" % (1000.0 * t))
+        print(f" * Execution time rep : {1000.0 * t:.1f} ms")
         self.update_mp()
 
     def print_sep(self):
@@ -405,7 +403,7 @@ class Bench(object):
                     device = cpu_name.pop() + "" + device
             else:
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
-            print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
+            print(f"Working on device: {devicetype} platform: {platform} device: {device}")
             # label = ("%s %s %s %s %s" % (function, devicetype, self.LABELS[method.method[1:4]], platform, device)).replace(" ", "_")
             label = f'{devicetype}:{platform}:{device} / {function}: ({method.split_lower},{method.algo_lower},{method.impl_lower})'
             method = IntegrationMethod.select_method(dim=1, split=method.split_lower,
@@ -414,7 +412,7 @@ class Bench(object):
             print(f"function: {function} \t method: {method}")
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
-            print("Working on processor: %s" % self.get_cpu())
+            print(f"Working on processor: {self.get_cpu()}")
             # label = function + " " + self.LABELS[method.method[1:4]]
             label = f'CPU / {function}: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
             memory_error = (MemoryError, RuntimeError)
@@ -429,7 +427,7 @@ class Bench(object):
             size = bench_test.data.size / 1.0e6
             if size > self.max_size:
                 continue
-            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(file_name), size, bench_test.N))
+            print(f"1D integration of {op.basename(file_name)} {size:.1f} Mpixel -> {bench_test.N} bins")
             try:
                 t0 = time.perf_counter()
                 res = bench_test.stmt()
@@ -455,9 +453,9 @@ class Bench(object):
                     if engine:
                         integrator = engine.engine
                         if method.algo_lower == "lut":
-                            print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
+                            print(f"lut: shape= {integrator.lut.shape} \t nbytes {integrator.lut_nbytes / 2 ** 20:.3f} MB ")
                         else:
-                            print("csr: size= %s \t nbytes %.3f MB " % (integrator.data.size, integrator.lut_nbytes / 2 ** 20))
+                            print(f"csr: size= {integrator.data.size} \t nbytes {integrator.lut_nbytes / 2 ** 20:.3f} MB ")
             bench_test.clean()
             self.update_mp()
             try:
@@ -472,7 +470,7 @@ class Bench(object):
             if check:
                 ref = self.get_ref(param)
                 R = mathutil.rwp(res, ref)
-                print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
+                print(f"{self.WARNING}Results are bad with R={R:.3f}{self.ENDC}" if R > self.LIMIT else f"{self.OKGREEN}Results are good with R={R:.3f}{self.ENDC}")
                 self.update_mp()
                 if R < self.LIMIT:
                     results[size] = tmin
@@ -525,7 +523,7 @@ class Bench(object):
             memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
 
         else:
-            print("Working on processor: %s" % self.get_cpu())
+            print(f"Working on processor: {self.get_cpu()}")
             # label = "2D_" + self.LABELS[method[1:4]]
             label = f'CPU / 2D: {method.split_lower}_{method.algo_lower}_{method.impl_lower}'
             memory_error = (MemoryError, RuntimeError)
@@ -541,7 +539,7 @@ class Bench(object):
             size = bench_test.data.size / 1.0e6
             if size > self.max_size:
                 continue
-            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(file_name), size, bench_test.N))
+            print(f"2D integration of {op.basename(file_name)} {size:.1f} Mpixel -> {bench_test.N} bins")
             try:
                 t0 = time.perf_counter()
                 _res = bench_test.stmt()
@@ -570,9 +568,9 @@ class Bench(object):
                         print(f"MemoryError: {error}")
                     else:
                         if "lut" in method:
-                            print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
+                            print(f"lut: shape= {integrator.lut.shape} \t nbytes {integrator.lut_nbytes / 2 ** 20:.3f} MB ")
                         else:
-                            print("csr: size= %s \t nbytes %.3f MB " % (integrator.data.size, integrator.lut_nbytes / 2 ** 20))
+                            print(f"csr: size= {integrator.data.size} \t nbytes {integrator.lut_nbytes / 2 ** 20:.3f} MB ")
 
             bench_test.ai.reset()
             bench_test.clean()
@@ -601,12 +599,12 @@ class Bench(object):
 
     def bench_gpu1d(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
         self.update_mp()
-        print("Working on %s, in " % devicetype + ("64 bits mode" if useFp64 else"32 bits mode") + "(%s.%s)" % (platformid, deviceid))
+        print(f"Working on {devicetype}, in " + ("64 bits mode" if useFp64 else"32 bits mode") + f"({platformid}.{deviceid})")
         if ocl is None or not ocl.select_device(devicetype):
             print("No pyopencl or no such device: skipping benchmark")
             return
         results = OrderedDict()
-        label = "Forward_OpenCL_%s_%s_bits" % (devicetype, ("64" if useFp64 else"32"))
+        label = f"Forward_OpenCL_{devicetype}_{'64' if useFp64 else '32'}_bits"
         first = True
         for param in ds_list:
             self.update_mp()
@@ -616,27 +614,27 @@ class Bench(object):
                 data = fimg.data
             size = data.size
             N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (op.basename(file_name), size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
+            print(f"1D integration of {op.basename(file_name)} {size / 1e6:.1f} Mpixel -> {N} bins ({'64 bits mode' if useFp64 else '32 bits mode'})")
 
             try:
                 t0 = time.perf_counter()
                 res = ai.xrpd_OpenCL(data, N, devicetype=devicetype, useFp64=useFp64, platformid=platformid, deviceid=deviceid)
                 t1 = time.perf_counter()
             except Exception as error:
-                print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
+                print(f"Failed to find an OpenCL GPU (useFp64:{useFp64}) {error}")
                 continue
             self.print_init(t1 - t0)
             self.update_mp()
             ref = ai.xrpd(data, N)
             R = mathutil.rwp(res, ref)
-            print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
+            print(f"{self.WARNING}Results are bad with R={R:.3f}{self.ENDC}" if R > self.LIMIT else f"{self.OKGREEN}Results are good with R={R:.3f}{self.ENDC}")
             test = BenchTestGpu(param, file_name, devicetype, useFp64, platformid, deviceid)
             t = timeit.Timer(test.stmt, test.setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             del t
             self.update_mp()
             self.print_exec(tmin)
-            print("")
+            print()
             if R < self.LIMIT:
                 size /= 1e6
                 tmin *= 1000.0
@@ -666,7 +664,7 @@ class Bench(object):
         print("Summary: execution time in milliseconds")
         print("Size/Meth\t" + "\t".join(self.meth))
         for i in self.size:
-            print("%7.2f\t\t" % i + "\t\t".join("%.2f" % (self.results[j].get(i, 0)) for j in self.meth))
+            print(f"{i:7.2f}\t\t" + "\t\t".join(f"{self.results[j].get(i, 0):.2f}" for j in self.meth))
 
     def init_curve(self):
         self.update_mp()

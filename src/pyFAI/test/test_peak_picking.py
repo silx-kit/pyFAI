@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,18 +31,21 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
-import unittest
-import os
-import numpy
-import sys
 import logging
+import os
 import shutil
-from .utilstest import UtilsTest
-from ..gui.peak_picker import PeakPicker
+import sys
+import unittest
+
+import numpy
+
 from ..calibrant import Calibrant
 from ..geometryRefinement import GeometryRefinement
+from ..gui.peak_picker import PeakPicker
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -116,13 +118,13 @@ class TestPeakPicking(unittest.TestCase):
                 logger.info("refinement finished after %s iteration", i)
                 break
             last = delta2
-        self.assertEqual(last < 1e-4, True, "residual error is less than 1e-4, got %s" % last)
-        self.assertAlmostEqual(gr.dist, 0.1, 2, "distance is OK, got %s, expected 0.1" % gr.dist)
-        self.assertAlmostEqual(gr.poni1, 3e-2, 2, "PONI1 is OK, got %s, expected 3e-2" % gr.poni1)
-        self.assertAlmostEqual(gr.poni2, 3e-2, 2, "PONI2 is OK, got %s, expected 3e-2" % gr.poni2)
-        self.assertAlmostEqual(gr.rot1, 0, 2, "rot1 is OK, got %s, expected 0" % gr.rot1)
-        self.assertAlmostEqual(gr.rot2, 0, 2, "rot2 is OK, got %s, expected 0" % gr.rot2)
-        self.assertAlmostEqual(gr.rot3, 0, 2, "rot3 is OK, got %s, expected 0" % gr.rot3)
+        self.assertEqual(last < 1e-4, True, f"residual error is less than 1e-4, got {last}")
+        self.assertAlmostEqual(gr.dist, 0.1, 2, f"distance is OK, got {gr.dist}, expected 0.1")
+        self.assertAlmostEqual(gr.poni1, 3e-2, 2, f"PONI1 is OK, got {gr.poni1}, expected 3e-2")
+        self.assertAlmostEqual(gr.poni2, 3e-2, 2, f"PONI2 is OK, got {gr.poni2}, expected 3e-2")
+        self.assertAlmostEqual(gr.rot1, 0, 2, f"rot1 is OK, got {gr.rot1}, expected 0")
+        self.assertAlmostEqual(gr.rot2, 0, 2, f"rot2 is OK, got {gr.rot2}, expected 0")
+        self.assertAlmostEqual(gr.rot3, 0, 2, f"rot3 is OK, got {gr.rot3}, expected 0")
 
 
 class TestMassif(unittest.TestCase):

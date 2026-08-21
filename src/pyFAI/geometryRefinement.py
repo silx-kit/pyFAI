@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,23 +30,24 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2026"
+__date__ = "21/08/2026"
 __status__ = "development"
 
-import os
 import copy
-import tempfile
-import subprocess
 import logging
-import numpy
 import math
+import os
+import subprocess
+import tempfile
 from math import pi
-from scipy.optimize import fmin, leastsq, fmin_slsqp
-from .integrator.azimuthal import AzimuthalIntegrator
-from .calibrant import Calibrant, CALIBRANT_FACTORY
-from .utils.ellipse import fit_ellipse
-from .utils.decorators import deprecated, deprecated_args
 
+import numpy
+from scipy.optimize import fmin, fmin_slsqp, leastsq
+
+from .calibrant import CALIBRANT_FACTORY, Calibrant
+from .integrator.azimuthal import AzimuthalIntegrator
+from .utils.decorators import deprecated, deprecated_args
+from .utils.ellipse import fit_ellipse
 
 logger = logging.getLogger(__name__)
 
@@ -432,8 +432,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         tth = numpy.array(ary, dtype=numpy.float64)
         if rings.max() >= len(tth):
             raise IndexError(
-                "Ring indices %s are not all available at this wavelength (%s)"
-                % (numpy.unique(rings), wavelength)
+                f"Ring indices {numpy.unique(rings)} are not all available at this wavelength ({wavelength})"
             )
         return tth[rings]
 
@@ -540,8 +539,8 @@ class GeometryRefinement(AzimuthalIntegrator):
                 const[name] = value
             else:
                 minmax = (
-                    getattr(self, "_%s_min" % name),
-                    getattr(self, "_%s_max" % name),
+                    getattr(self, f"_{name}_min"),
+                    getattr(self, f"_{name}_max"),
                 )
                 if name == "wavelength":
                     # enforces an upper limit to the wavelength depending on the number of rings.
@@ -725,7 +724,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             dtype=numpy.float64,
         )
         ref = self.residu2(param0, d1, d2, rings)
-        print("param0: %s %s" % (param0, ref))
+        print(f"param0: {param0} {ref}")
         if with_rot:
             popt, pcov = curve_fit(f_with_rot, x, y, param0[:-1])
             popt = numpy.concatenate((popt, [self.rot3]))
@@ -733,10 +732,10 @@ class GeometryRefinement(AzimuthalIntegrator):
             popt, pcov = curve_fit(f_no_rot, x, y, param0[:-3])
             popt = numpy.concatenate((popt, [self.rot1, self.rot2, self.rot3]))
         obt = self.residu2(popt, d1, d2, rings)
-        print("param1: %s %s" % (popt, obt))
+        print(f"param1: {popt} {obt}")
         print(pcov)
         err = numpy.sqrt(numpy.diag(pcov))
-        print("err: %s" % err)
+        print(f"err: {err}")
         if obt < ref:
             self.set_param(popt)
         error = {}
@@ -745,8 +744,8 @@ class GeometryRefinement(AzimuthalIntegrator):
             error[k] = v
             confidence[k] = 1.96 * v / numpy.sqrt(size)
 
-        print("Std dev  as sqrt of the diag of covariance:\n%s" % error)
-        print("Confidence as 1.95 sigma/sqrt(n):\n%s" % confidence)
+        print(f"Std dev  as sqrt of the diag of covariance:\n{error}")
+        print(f"Confidence as 1.95 sigma/sqrt(n):\n{confidence}")
         return error, confidence
 
     def confidence(self, with_rot=True):
@@ -815,12 +814,12 @@ class GeometryRefinement(AzimuthalIntegrator):
                 ) / (4.0 * deltai * deltaj)
         print(hessian)
         w, v = numpy.linalg.eigh(hessian)
-        print("eigen val: %s" % w)
-        print("eigen vec: %s" % v)
+        print(f"eigen val: {w}")
+        print(f"eigen vec: {v}")
         cov = numpy.linalg.inv(hessian)
         print(cov)
         err = numpy.sqrt(numpy.diag(cov))
-        print("err: %s" % err)
+        print(f"err: {err}")
         error = {}
         for k, v in zip(("dist", "poni1", "poni2", "rot1", "rot2", "rot3"), err):
             error[k] = v
@@ -828,8 +827,8 @@ class GeometryRefinement(AzimuthalIntegrator):
         for i, k in enumerate(("dist", "poni1", "poni2", "rot1", "rot2", "rot3")):
             if i < size:
                 confidence[k] = numpy.sqrt(ref / hessian[i, i])
-        print("std_dev as sqrt of the diag of inv hessian:\n%s" % error)
-        print("Convidence as sqrt of the error function /  hessian:\n%s" % confidence)
+        print(f"std_dev as sqrt of the diag of inv hessian:\n{error}")
+        print(f"Convidence as sqrt of the error function /  hessian:\n{confidence}")
         return error, confidence
 
     @deprecated
@@ -839,7 +838,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         tmpf = tempfile.NamedTemporaryFile()
         for line in self.data:
-            tmpf.write("%s %s %s %s" % (line[2], line[0], line[1], os.linesep))
+            tmpf.write(f"{line[2]} {line[0]} {line[1]} {os.linesep}")
         tmpf.flush()
         roca = subprocess.Popen(
             [
@@ -875,11 +874,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                 if word[0] == "rot3":
                     new_param[5] = float(word[1])
         print(
-            "Roca %s --> %s"
-            % (
-                self.chi2() / self.data.shape[0],
-                self.chi2(new_param) / self.data.shape[0],
-            )
+            f"Roca {self.chi2() / self.data.shape[0]} --> {self.chi2(new_param) / self.data.shape[0]}"
         )
         if self.chi2(tuple(new_param)) < self.chi2(tuple(self.param)):
             self.param = new_param

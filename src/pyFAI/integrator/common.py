@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -30,27 +29,40 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2026"
+__date__ = "21/08/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import logging
 import threading
-from math import pi, log10
+from math import log10, pi
+
 import numpy
-from ..geometry import Geometry
+
 from .. import units
-from ..utils import crc32
-from ..utils.mathutil import EPS32, deg2rad, nan_equal
-from ..utils.decorators import deprecated, deprecated_warning, deprecated_args
-from ..containers import Integrate1dResult, Integrate2dResult, ErrorModel
+from ..containers import ErrorModel, Integrate1dResult, Integrate2dResult
+from ..engines import Engine
+from ..geometry import Geometry
 from ..io import DefaultAiWriter, save_integrate_result
 from ..method_registry import IntegrationMethod
-from .load_engines import ocl_azim_csr, ocl_azim_lut, histogram, splitBBox, \
-                          splitPixel, splitBBoxCSR, splitBBoxLUT, splitPixelFullCSR, \
-                          splitPixelFullLUT, splitBBoxCSC, splitPixelFullCSC, \
-                          PREFERED_METHODS_1D, PREFERED_METHODS_2D
-from ..engines import Engine
+from ..utils import crc32
+from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
+from ..utils.mathutil import EPS32, deg2rad, nan_equal
+from .load_engines import (
+    PREFERED_METHODS_1D,
+    PREFERED_METHODS_2D,
+    histogram,
+    ocl_azim_csr,
+    ocl_azim_lut,
+    splitBBox,
+    splitBBoxCSC,
+    splitBBoxCSR,
+    splitBBoxLUT,
+    splitPixel,
+    splitPixelFullCSC,
+    splitPixelFullCSR,
+    splitPixelFullLUT,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -451,7 +463,7 @@ class Integrator(Geometry):
                 elif (unit0_range is None) and (cython_integr.pos0_range is not None):
                     cython_reset = f"range in unit0 was defined in { method.algo_lower.upper()}"
                 elif (unit0_range is not None) and (cython_integr.pos0_range != unit0_range):
-                    cython_reset = "range in unit0 is defined but differs in %s" % method.algo_lower.upper()
+                    cython_reset = f"range in unit0 is defined but differs in {method.algo_lower.upper()}"
                 elif (unit1_range is None) and (cython_integr.pos1_range is not None):
                     cython_reset = f"range in unit1 not defined and {method.algo_lower.upper()} had azimuth_range defined"
                 elif (unit1_range is not None) and (cython_integr.pos1_range != unit1_range):

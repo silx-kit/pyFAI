@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,13 +33,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import logging
 import math
-import numpy
 import time
+
+import numpy
 import scipy.ndimage
 from scipy.signal import peak_widths
 
@@ -303,8 +303,7 @@ def expand(
         k0 = k1 = int(math.ceil(float(sigma)))
     if k0 > s0 or k1 > s1:
         raise RuntimeError(
-            "Makes little sense to apply a kernel (%i,%i)larger than the image (%i,%i)"
-            % (k0, k1, s0, s1)
+            f"Makes little sense to apply a kernel ({k0},{k1})larger than the image ({s0},{s1})"
         )
     output = numpy.zeros((s0 + 2 * k0, s1 + 2 * k1), dtype=dtype) + float(cval)
     output[k0 : k0 + s0, k1 : k1 + s1] = input_img
@@ -357,7 +356,7 @@ def expand(
         pass
 
     else:
-        raise RuntimeError("Unknown expand mode: %s" % mode)
+        raise RuntimeError(f"Unknown expand mode: {mode}")
     return output
 
 
@@ -546,7 +545,7 @@ def measure_offset(
         numpy.zeros(shape), res - numpy.ones(shape) * (mean + std * SN * 0.9)
     )
     com2 = center_of_mass(new)
-    logs.append("MeasureOffset: fine result of the centered image: %s %s " % com2)
+    logs.append(f"MeasureOffset: fine result of the centered image: {com2[0]} {com2[1]} ")
     offset2 = (
         (com2[0] - shape[0] // 2) % shape[0],
         (com2[1] - shape[1] // 2) % shape[1],
@@ -559,8 +558,7 @@ def measure_offset(
         delta1 -= shape[1]
     if (abs(delta0) > 2) or (abs(delta1) > 2):
         logs.append(
-            "MeasureOffset: Raw offset is %s and refined is %s. Please investigate !"
-            % (offset1, offset2)
+            f"MeasureOffset: Raw offset is {offset1} and refined is {offset2}. Please investigate !"
         )
     listOffset = list(offset2)
     if listOffset[0] > shape[0] // 2:
@@ -569,9 +567,9 @@ def measure_offset(
         listOffset[1] -= shape[1]
     offset = tuple(listOffset)
     t2 = time.perf_counter()
-    logs.append("MeasureOffset: fine result: %s %s" % offset)
+    logs.append(f"MeasureOffset: fine result: {offset[0]} {offset[1]}")
     logs.append(
-        "MeasureOffset: execution time: %.3fs with %.3fs for FFTs" % (t2 - t0, t1 - t0)
+        f"MeasureOffset: execution time: {t2 - t0:.3f}s with {t1 - t0:.3f}s for FFTs"
     )
     if withLog:
         if withCorr:

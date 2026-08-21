@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2019 European Synchrotron Radiation Facility
@@ -30,9 +29,11 @@ __date__ = "16/10/2020"
 import logging
 
 from silx.gui import qt
+
 from pyFAI.utils import stringutil
-from .AdvancedComboBox import AdvancedComboBox
+
 from ..utils import units
+from .AdvancedComboBox import AdvancedComboBox
 
 _logger = logging.getLogger(__name__)
 
@@ -123,7 +124,7 @@ class _GeometryListModel(qt.QAbstractItemModel):
 class GeometryHistoryComboBox(AdvancedComboBox):
 
     def __init__(self, parent=None):
-        super(GeometryHistoryComboBox, self).__init__(parent)
+        super().__init__(parent)
         self.setDisplayedDataCallback(self.__displayedData)
         self.setUpdateCurrentIndexEnabled(False)
         self.__angleUnit = None

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,15 +31,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
+
+import logging
+import unittest
+from pickle import dumps, loads
 
 import numpy
-from pyFAI.integrator.azimuthal import AzimuthalIntegrator
+
 from pyFAI.detectors import detector_factory
-from pickle import dumps, loads
-import unittest
-import logging
+from pyFAI.integrator.azimuthal import AzimuthalIntegrator
+
 from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,7 +51,7 @@ class TestPickle(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestPickle, cls).setUpClass()
+        super().setUpClass()
         cls.ai = AzimuthalIntegrator(1.0, detector="Pilatus100k")
         cls.ai.wavelength = 1e-10
         cls.npt = 100
@@ -56,7 +59,7 @@ class TestPickle(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestPickle, cls).tearDownClass()
+        super().tearDownClass()
         cls.data = cls.ai = cls.npt = None
 
     def test_Detector_pickle(self):
@@ -83,11 +86,10 @@ class TestPickle(unittest.TestCase):
         for key in self.ai._cached_array.keys():
             if isinstance(self.ai._cached_array[key], numpy.ndarray):
                 self.assertEqual(abs(newai._cached_array[key] - self.ai._cached_array[key]).max(), 0,
-                                 "key %s is the same" % key)
+                                 f"key {key} is the same")
             else:
                 self.assertEqual(newai._cached_array[key], self.ai._cached_array[key],
-                                 "key %s is the same: %s %s" %
-                                 (key, newai._cached_array[key], self.ai._cached_array[key]))
+                                 f"key {key} is the same: {newai._cached_array[key]} {self.ai._cached_array[key]}")
         for first, second in zip(newai.integrate1d_ng(self.data, self.npt), spectra):
             self.assertEqual(abs(first - second).max(), 0, "Spectra are the same")
 

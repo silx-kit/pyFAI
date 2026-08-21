@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Simple histogram in Python + OpenCL
 #             https://github.com/silx-kit/pyFAI
@@ -34,19 +33,23 @@ __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 
 __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2025"
+__date__ = "21/08/2026"
 
 import logging
+import unittest
+
 import numpy
 
-import unittest
 from .. import ocl
+
 if ocl:
     import pyopencl.array
-from ...test.utilstest import UtilsTest
-from ...integrator.azimuthal import AzimuthalIntegrator
-from ...containers import ErrorModel
 from scipy.ndimage import gaussian_filter1d
+
+from ...containers import ErrorModel
+from ...integrator.azimuthal import AzimuthalIntegrator
+from ...test.utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,7 +59,7 @@ class TestOclHistogram(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestOclHistogram, cls).setUpClass()
+        super().setUpClass()
         if ocl:
             cls.ctx = ocl.create_context()
             if logger.getEffectiveLevel() <= logging.INFO:
@@ -78,7 +81,7 @@ class TestOclHistogram(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestOclHistogram, cls).tearDownClass()
+        super().tearDownClass()
         logger.info("We were using device %s", cls.ctx.devices[0])
         cls.ctx = None
         cls.queue = None
@@ -117,7 +120,7 @@ class TestOclHistogram(unittest.TestCase):
         err = abs((sig - ref).sum())
 
         epsilon = 1e-5 if precise else 4e-3
-        self.assertLess(err, epsilon, "normalization content is the same: %s<%s on device %s" % (err, epsilon, integrator.ctx.devices[0]))
+        self.assertLess(err, epsilon, f"normalization content is the same: {err}<{epsilon} on device {integrator.ctx.devices[0]}")
         self.assertLess(abs(gaussian_filter1d(sig - ref, 9)).max(), 1.5, "normalization, after smoothing is flat")
 
         # histogram of signal
@@ -132,8 +135,8 @@ class TestOclHistogram(unittest.TestCase):
         """
         tests the 2D histogram kernel
         """
-        from ..azim_hist import OCL_Histogram2d
         from ...engines.histogram_engine import histogram2d_engine
+        from ..azim_hist import OCL_Histogram2d
 
         data = numpy.ones(self.ai.detector.shape)
         tth = self.ai.center_array(unit="2th_deg")
@@ -185,12 +188,12 @@ class TestOclHistogram(unittest.TestCase):
         # histogram of normalization
         err = abs((res.normalization - ref.normalization).sum())
         allowed = lost * solidangle.max()
-        self.assertLessEqual(err, allowed, "normalization content is the same: %s<=%s" % (err, allowed))
+        self.assertLessEqual(err, allowed, f"normalization content is the same: {err}<={allowed}")
 
         # histogram of signal
         err = abs((res.signal - ref.signal).sum())
         allowed = lost * data.max()
-        self.assertLessEqual(err, allowed, "signal content is the same: %s<=%s " % (err, allowed))
+        self.assertLessEqual(err, allowed, f"signal content is the same: {err}<={allowed} ")
 
 
 def suite():

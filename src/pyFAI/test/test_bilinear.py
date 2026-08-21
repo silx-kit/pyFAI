@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,13 +31,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
-import unittest
-import numpy
 import logging
-from .utilstest import UtilsTest
+import unittest
+
+import numpy
+
 from ..ext import bilinear
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,12 +48,12 @@ class TestBilinear(unittest.TestCase):
     """basic maximum search test"""
     @classmethod
     def setUpClass(cls)->None:
-        super(TestBilinear, cls).setUpClass()
+        super().setUpClass()
         cls.N = 10000
         cls.rng = UtilsTest.get_rng()
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestBilinear, cls).tearDownClass()
+        super().tearDownClass()
         cls.rng = None
 
     def test_max_search_round(self):
@@ -66,7 +68,7 @@ class TestBilinear(unittest.TestCase):
 
         for _s in range(self.N):
             i, j = int(self.rng.uniform(0, 100)), int(self.rng.uniform(0, 100))
-            k, l = b.local_maxi((i, j))  # noqa: E741
+            k, l = b.local_maxi((i, j))
             if abs(k - 40) > 1e-4 or abs(l - 60) > 1e-4:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
             else:
@@ -86,7 +88,7 @@ class TestBilinear(unittest.TestCase):
         ok = 0
         for _s in range(self.N):
             i, j = int(self.rng.uniform(0,100)), int(self.rng.uniform(0,100))
-            k, l = b.local_maxi((i, j))  # noqa: E741
+            k, l = b.local_maxi((i, j))
             if abs(k - 40.5) > 0.5 or abs(l - 60.5) > 0.5:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
             else:
@@ -108,15 +110,15 @@ class TestConversion(unittest.TestCase):
         # print(y.dtype, x.dtype)
         pos = bilinear.convert_corner_2D_to_4D(3, numpy.ascontiguousarray(y), numpy.ascontiguousarray(x))
         y1, x1, z1 = bilinear.calc_cartesian_positions(y.ravel(), x.ravel(), pos)
-        self.assertTrue(numpy.allclose(y.ravel(), y1), "Maximum error on y is %s" % (abs(y.ravel() - y1).max()))
-        self.assertTrue(numpy.allclose(x.ravel(), x1), "Maximum error on x is %s" % (abs(x.ravel() - x1).max()))
+        self.assertTrue(numpy.allclose(y.ravel(), y1), f"Maximum error on y is {abs(y.ravel() - y1).max()}")
+        self.assertTrue(numpy.allclose(x.ravel(), x1), f"Maximum error on x is {abs(x.ravel() - x1).max()}")
         self.assertEqual(z1, None, "flat detector")
         x = x[:-1, :-1] + 0.5
         y = y[:-1, :-1] + 0.5
         y1, x1, z1 = bilinear.calc_cartesian_positions((y).ravel(), (x).ravel(), pos)
 
-        self.assertTrue(numpy.allclose(y.ravel(), y1), "Maximum error on y_center is %s" % (abs(y.ravel() - y1).max()))
-        self.assertTrue(numpy.allclose(x.ravel(), x1), "Maximum error on x_center is %s" % (abs(x.ravel() - x1).max()))
+        self.assertTrue(numpy.allclose(y.ravel(), y1), f"Maximum error on y_center is {abs(y.ravel() - y1).max()}")
+        self.assertTrue(numpy.allclose(x.ravel(), x1), f"Maximum error on x_center is {abs(x.ravel() - x1).max()}")
         self.assertEqual(z1, None, "flat detector")
 
 

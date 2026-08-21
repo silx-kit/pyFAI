@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2018 European Synchrotron Radiation Facility
@@ -27,6 +26,7 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 
 import numpy
+
 from .DataModel import DataModel
 
 
@@ -34,7 +34,7 @@ class MaskedImageModel(DataModel):
     """Image cleaned up by setting masked pixels to NaN"""
 
     def __init__(self, parent=None, image=None, mask=None):
-        super(MaskedImageModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.__image = image
         self.__mask = mask
         image.changed.connect(self.__invalidateValue)

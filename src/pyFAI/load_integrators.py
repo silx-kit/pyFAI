@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -39,7 +38,8 @@ __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 
-from .integrator.load_engines import *  # noqa: F403
+from .integrator.load_engines import *
 from .utils.decorators import deprecated_warning
+
 deprecated_warning("Module", "pyFAI.load_integrators", replacement="pyFAI.integrator.load_engines",
                    since_version="2024.10", only_once=False, skip_backtrace_count=1)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,11 +36,14 @@ __copyright__ = "2021-2025 European Synchrotron Radiation Facility, Grenoble, Fr
 __date__ = "04/11/2025"
 __status__ = "production"
 
-import numpy
 import logging
-from ._common import Detector, SensorConfig, ModuleDetector
-from ._dectris import _Dectris
+
+import numpy
+
 from ..utils import mathutil
+from ._common import Detector, ModuleDetector, SensorConfig
+from ._dectris import _Dectris
+
 logger = logging.getLogger(__name__)
 
 Si320 = SensorConfig.from_dict({"material": "Si", "thickness": 320e-6})

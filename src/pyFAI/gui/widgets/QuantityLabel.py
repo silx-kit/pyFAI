@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,17 +24,16 @@
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "03/01/2019"
+__date__ = "21/08/2026"
+
+import functools
+import logging
+import numbers
 
 import numpy
-import numbers
-import logging
-import functools
-
 from silx.gui import qt
 
 from ..utils import units
-
 
 _logger = logging.getLogger(__name__)
 
@@ -174,11 +172,11 @@ class QuantityLabel(qt.QLabel):
             return
 
         menu = qt.QMenu(self)
-        menu.addSection("Unit for %s" % currentUnit.dimensionality.fullname.lower())
+        menu.addSection(f"Unit for {currentUnit.dimensionality.fullname.lower()}")
 
         for unit in unitList:
             action = qt.QAction(menu)
-            text = "%s: %s" % (unit.fullname, unit.symbol)
+            text = f"{unit.fullname}: {unit.symbol}"
             if unit is currentUnit:
                 text += " (current)"
             action.setText(text)
@@ -200,7 +198,7 @@ class QuantityLabel(qt.QLabel):
             pos = self.mapToGlobal(pos)
             self.__popupUnitSelection(pos)
             return
-        super(QuantityLabel, self).mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
 
     def setUnitEditable(self, isUnitEditable):
         self.__isUnitEditable = isUnitEditable

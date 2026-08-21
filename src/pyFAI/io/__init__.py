@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -42,26 +41,35 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/05/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import json
 import logging
-import numpy
 import os
 import posixpath
 import threading
 from collections import OrderedDict
+
+import numpy
+
 import __main__ as main
-from .integration_config import WorkerConfig, WorkerFiberConfig
-from ._json import json_dumps
+
+from .. import containers, units, version
 from ..utils import StringTypes
 from ..utils.decorators import deprecated_args
-from .. import units
-from .. import version
-from .. import containers
-from .nexus import get_isotime, from_isotime, is_hdf5, Nexus, h5py, save_NXcansas, save_NXmonpd
+from ._json import json_dumps
+from .integration_config import WorkerConfig, WorkerFiberConfig
+from .nexus import (
+    Nexus,
+    from_isotime,
+    get_isotime,
+    h5py,
+    is_hdf5,
+    save_NXcansas,
+    save_NXmonpd,
+)
 
 logger = logging.getLogger(__name__)
 try:
@@ -88,7 +96,7 @@ __all__ = [get_isotime, from_isotime, is_hdf5, Nexus, h5py, save_NXcansas, save_
 CMP = {}
 
 
-class Writer(object):
+class Writer:
     """
     Abstract class for writers.
     """
@@ -137,13 +145,11 @@ class Writer(object):
         """
         To be implemented
         """
-        pass
 
     def write(self, data):
         """
         To be implemented
         """
-        pass
 
     def setJsonConfig(self, json_config=None):
         """
@@ -251,7 +257,7 @@ class HDF5Writer(Writer):
                 self.nxs = Nexus(self.filename, mode="w", creator="pyFAI")
             else:
                 self.nxs = Nexus(self.filename, mode="a", creator="pyFAI")
-        except IOError:  # typically a corrupted HDF5 file !
+        except OSError:  # typically a corrupted HDF5 file !
             if mode == self.MODE_DELETE:
                 logger.error("File can't be read. File %s deleted.", self.filename)
                 os.unlink(self.filename)
@@ -272,17 +278,17 @@ class HDF5Writer(Writer):
         except TypeError:  # object already exists
             nb_entries = len(self.nxs.get_entries())
             entry_base = self.hpath or self._entry_template.split("_")[0]
-            entry_name = "%s_%04i" % (entry_base, nb_entries)
+            entry_name = f"{entry_base}_{nb_entries:04d}"
             if mode == self.MODE_OVERWRITE:
                 del self.nxs.h5[entry_name]
                 entry = self.nxs.new_entry(entry=entry_name, force_name=True,
                                            program_name="pyFAI", title=None)
             elif mode == self.MODE_ERROR:
-                raise IOError("Entry name %s::%s already exists" % (self.filename, entry_name))
+                raise OSError(f"Entry name {self.filename}::{entry_name} already exists")
             elif mode == self.MODE_APPEND:
                 while entry_name in self.nxs.h5:
                     nb_entries += 1
-                    entry_name = "%s_%04i" % (entry_base, nb_entries)
+                    entry_name = f"{entry_base}_{nb_entries:04d}"
                 entry = self.nxs.new_entry(entry=entry_name, force_name=True,
                                            program_name="pyFAI", title=None)
             else:
@@ -320,7 +326,7 @@ class HDF5Writer(Writer):
             self.nxs.h5.attrs["default"] = self.entry_grp.name.strip("/")
 
             self.process_grp = self.nxs.new_class(self.entry_grp, "integrate", class_type="NXprocess")
-            self.process_grp["program"] = getattr(main, '__file__', u'pyFAI')
+            self.process_grp["program"] = getattr(main, '__file__', 'pyFAI')
             self.process_grp["version"] = version
             self.process_grp["date"] = get_isotime()
             self.process_grp["sequence_index"] = 1
@@ -355,7 +361,7 @@ class HDF5Writer(Writer):
         self.radial_ds.attrs["unit"] = rad_unit
         self.radial_ds.attrs["interpretation"] = "scalar"
         self.radial_ds.attrs["name"] = rad_name
-        self.radial_ds.attrs["long_name"] = "Diffraction radial direction %s (%s)" % (rad_name, rad_unit)
+        self.radial_ds.attrs["long_name"] = f"Diffraction radial direction {rad_name} ({rad_unit})"
 
         if self.fai_cfg.do_2D:
             self.azimuthal_ds = self.nxdata_grp.require_dataset("chi", (self.fai_cfg.nbpt_azim,), numpy.float32)
@@ -670,11 +676,11 @@ class HDF5Writer(Writer):
             result = self.nxdata_grp.require_dataset(name,
                                                     **kwargs,
                                                     **CMP)
-            result.attrs["interpretation"] = u"image"
+            result.attrs["interpretation"] = "image"
         else:
             result = self.nxdata_grp.require_dataset(name,
                                                     **kwargs)
-            result.attrs["interpretation"] = u"spectrum"
+            result.attrs["interpretation"] = "spectrum"
         return result
 
     def set_hdf5_input_dataset(self, dataset):
@@ -695,7 +701,7 @@ class HDF5Writer(Writer):
             measurement_grp = self.nxs.new_class(self.entry_grp, "measurement", "NXdata")
         here = os.path.dirname(os.path.abspath(self.nxs.filename))
         there = os.path.abspath(dataset.file.filename)
-        name = "images_%04i" % len(self.stored_input)
+        name = f"images_{len(self.stored_input):04d}"
         measurement_grp[name] = h5py.ExternalLink(os.path.relpath(there, here), dataset.name)
         if "signal" not in measurement_grp.attrs:
             measurement_grp.attrs["signal"] = name
@@ -709,7 +715,7 @@ class DefaultAiWriter(Writer):
         :param filename: name of the output file
         :param ai: integrator, should provide make_headers method.
         """
-        super(DefaultAiWriter, self).__init__(filename, engine)
+        super().__init__(filename, engine)
         self._filename = filename
         self._engine = engine
         self._already_written = False
@@ -809,7 +815,7 @@ class DefaultAiWriter(Writer):
             except UnicodeError:
                 f.write(f"\n# --> {filename.encode('utf8')}\n")
             if error is None:
-                f.write(f"#{str(dim1_unit):14s} {'I':14s}\n")
+                f.write(f"#{dim1_unit!s:14s} {'I':14s}\n")
                 f.write("\n".join([f"{t:14.6e}  {i:14.6e}" for t, i in zip(dim1, intensity)]))
             else:
                 f.write("#{str(dim1_unit):14s}  {'I':14s}  {'sigma':14s}\n")
@@ -903,7 +909,7 @@ class DefaultAiWriter(Writer):
                 except Exception:
                     logger.warning("Multi-frame format needed to save errors, saving as %s", img)
             img.write(filename)
-        except IOError:
+        except OSError:
             logger.error("IOError while writing %s", filename)
 
     def write(self, data):
@@ -945,7 +951,7 @@ class DefaultAiWriter(Writer):
                         normalization_factor=data.normalization_factor,
                         metadata=data.metadata)
         else:
-            raise Exception("Unsupported data type: %s" % type(data))
+            raise Exception(f"Unsupported data type: {type(data)}")
 
     def flush(self):
         pass
@@ -974,7 +980,7 @@ class AsciiWriter(Writer):
         self.start_index = 0
 
     def __repr__(self):
-        return "Ascii writer on file %s" % (self.filename)
+        return f"Ascii writer on file {self.filename}"
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
@@ -1011,9 +1017,9 @@ class AsciiWriter(Writer):
                 header_lst.append(f"Polarization factor: {self.fai_cfg['polarization_factor']}")
             header_lst.append("")
             if "error_model" in lower_keys:
-                header_lst.append(f"{str(self.fai_cfg['unit']):14s} {'I':14s} {'sigma':14s}")
+                header_lst.append(f"{self.fai_cfg['unit']!s:14s} {'I':14s} {'sigma':14s}")
             else:
-                header_lst.append(f"{str(self.fai_cfg['unit']):14s} {'I':14s}")
+                header_lst.append(f"{self.fai_cfg['unit']!s:14s} {'I':14s}")
             self.header = os.linesep.join([""] + ["# " + i for i in header_lst] + [""])
         self.prefix = lima_cfg.get("prefix", self.prefix)
         self.index_format = lima_cfg.get("index_format", self.index_format)
@@ -1035,7 +1041,7 @@ class AsciiWriter(Writer):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
             with open(filename, "w", encoding="utf-8") as f:
-                f.write("# Processing time: %s%s" % (get_isotime(), self.header))
+                f.write(f"# Processing time: {get_isotime()}{self.header}")
                 numpy.savetxt(f, data)
 
 

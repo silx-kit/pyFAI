@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,11 +37,13 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "18/08/2026"
 __status__ = "production"
 
-import numpy
-from ._common import Detector, SensorConfig
-from ..utils.decorators import deprecated
-
 import logging
+
+import numpy
+
+from ..utils.decorators import deprecated
+from ._common import Detector, SensorConfig
+
 logger = logging.getLogger(__name__)
 
 #Define sensors used in Rayonix detectors
@@ -602,7 +603,5 @@ class Mar555(Detector):
 
 
     # get_config inherited from Detector; no changes needed
-    
+
     # set_config inherited from Detector; no changes needed
-
-

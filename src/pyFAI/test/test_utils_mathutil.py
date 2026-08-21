@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,18 +31,20 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
-import unittest
-import numpy
-import os
 import logging
-from . import utilstest
+import os
+import unittest
+
 import fabio
-from .. import load
-from .. import calibrant
-from ..utils import mathutil
+import numpy
 import scipy.ndimage
+
+from .. import calibrant, load
+from ..utils import mathutil
+from . import utilstest
+
 logger = logging.getLogger(__name__)
 
 
@@ -82,7 +83,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestMathUtil, cls).setUpClass()
+        super().setUpClass()
         rng = utilstest.UtilsTest.get_rng()
         cls.unbinned = rng.random((64, 32))
         cls.dark = cls.unbinned.astype("float32")
@@ -92,7 +93,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
 
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestMathUtil, cls).tearDownClass()
+        super().tearDownClass()
         cls.dark = cls.flat = cls.raw = cls.tmp_file = None
 
     def test_round_fft(self):
@@ -134,7 +135,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
                 blurred2 = mathutil.gaussian_filter(self.flat, sigma, mode=mode, use_scipy=False)
                 delta = abs((blurred1 - blurred2) / (blurred1)).max()
                 logger.info("Error for gaussian blur sigma: %s with mode %s is %s", sigma, mode, delta)
-                self.assertTrue(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
+                self.assertTrue(delta < 6e-5, f"Gaussian blur sigma: {sigma}  in {mode} mode are the same, got {delta}")
 
     def test_expand2d(self):
         vect = numpy.arange(10.)

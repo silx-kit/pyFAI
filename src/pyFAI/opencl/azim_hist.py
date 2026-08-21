@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,23 +31,26 @@ Histogram (atomic-add) based integrator
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "07/10/2025"
+__date__ = "21/08/2026"
 __copyright__ = "2012-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
+
 import numpy
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
+
+from ..containers import ErrorModel, Integrate1dtpl, Integrate2dtpl
 from ..utils import calc_checksum
 from . import pyopencl
+
 if pyopencl is not None:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
 
-from . import kernel_workgroup_size
-from . import processing, OpenclProcessing
+from . import OpenclProcessing, kernel_workgroup_size, processing
+
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
 logger = logging.getLogger(__name__)
@@ -341,12 +343,12 @@ class OCL_Histogram1d(OpenclProcessing):
                                                                 ("histo_nrm2", self.cl_mem["histo_nrm2"]),
                                                                 ("histo_cnt", self.cl_mem["histo_cnt"]),
                                                                 ("bins", self.bins)))
-        self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["u8_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["s8_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["u16_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["s16_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["u32_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["s32_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
 
     def send_buffer(self, data, dest, checksum=None):
         """Send a numpy array to the device, including the cast on the device if possible
@@ -360,7 +362,7 @@ class OCL_Histogram1d(OpenclProcessing):
         if isinstance(data, pyopencl.array.Array):
             if (data.dtype == dest_type):
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], data.data)
-                events.append(EventDescription("copy D->D %s" % dest, copy_image))
+                events.append(EventDescription(f"copy D->D {dest}", copy_image))
             else:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
                 kernel_name = self.mapping[data.dtype.type]
@@ -372,7 +374,7 @@ class OCL_Histogram1d(OpenclProcessing):
             # Assume it is a numpy array
             if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-                events.append(EventDescription("copy H->D %s" % dest, copy_image))
+                events.append(EventDescription(f"copy H->D {dest}", copy_image))
             else:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
                 kernel_name = self.mapping[data.dtype.type]

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,16 +36,19 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import platform
-import numpy
 import logging
-from .utilstest import UtilsTest
-from ..integrator.azimuthal import AzimuthalIntegrator
+import platform
+import unittest
+
+import numpy
+
 from ..detectors import Detector
-from ..utils import mathutil
 from ..ext import splitBBox, splitPixel
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
+from ..utils import mathutil
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -104,7 +106,7 @@ class TestSplitPixel(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestSplitPixel, cls).setUpClass()
+        super().setUpClass()
         img = numpy.zeros((512, 512))
         for i in range(1, 6):
             img[i * 100, i * 100] = 1
@@ -122,7 +124,7 @@ class TestSplitPixel(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestSplitPixel, cls).tearDownClass()
+        super().tearDownClass()
         cls.results = None
 
     def test_new_gen_algoritms(self):
@@ -208,7 +210,7 @@ class TestSplitBBoxNg(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestSplitBBoxNg, cls).setUpClass()
+        super().setUpClass()
 
         #fix seed, decrease noise while testing:
         rng = UtilsTest.get_rng()
@@ -262,7 +264,7 @@ class TestSplitBBoxNg(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestSplitBBoxNg, cls).tearDownClass()
+        super().tearDownClass()
         cls.results = None
         cls.img = None
 

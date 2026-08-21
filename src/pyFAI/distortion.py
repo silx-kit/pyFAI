@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -28,34 +27,36 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/06/2026"
+__date__ = "21/08/2026"
 __status__ = "development"
 
 import logging
-import threading
 import os
-import numpy
+import threading
 from math import ceil, floor
+
+import numpy
+
 from . import detectors
 from .opencl import ocl
+
 if ocl:
-    from .opencl import azim_lut as ocl_azim_lut
     from .opencl import azim_csr as ocl_azim_csr
+    from .opencl import azim_lut as ocl_azim_lut
 else:
     ocl_azim_lut = ocl_azim_csr = None
 
 logger = logging.getLogger(__name__)
 try:
-    from .ext import _distortion
-    from .ext import sparse_utils
+    from .ext import _distortion, sparse_utils
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     logger.warning("Import _distortion cython implementation failed ... pure python version is terribly slow !!!")
     _distortion = None
 
 try:
-    from scipy.sparse import linalg, csr_matrix, identity
-except IOError:
+    from scipy.sparse import csr_matrix, identity, linalg
+except OSError:
     logger.warning("Scipy is missing ... uncorrection will be handled the old way")
     linalg = None
 else:
@@ -80,7 +81,7 @@ else:
     from .ext._distortion import resize_image_2D
 
 
-class Distortion(object):
+class Distortion:
     """
     This class applies a distortion correction on an image.
 
@@ -141,7 +142,7 @@ class Distortion(object):
             self.workgroup = None
 
     def __repr__(self):
-        return os.linesep.join(["Distortion correction %s on device %s for detector shape %s:" % (self.method, self.device, self._shape_out),
+        return os.linesep.join([f"Distortion correction {self.method} on device {self.device} for detector shape {self._shape_out}:",
                                 self.detector.__repr__()])
 
     def reset(self, method=None, device=None, workgroup=None, prepare=True):
@@ -356,7 +357,7 @@ class Distortion(object):
                                 try:
                                     quad.populate_box()
                                 except Exception as error:
-                                    print("error in quad.populate_box of pixel %i, %i: %s" % (i, j, error))
+                                    print(f"error in quad.populate_box of pixel {i}, {j}: {error}")
                                     print("calc_area_vectorial", quad.calc_area_vectorial())
                                     print(self.pos[i, j, 0,:], self.pos[i, j, 1,:], self.pos[i, j, 2,:], self.pos[i, j, 3,:])
                                     print(quad)
@@ -603,7 +604,7 @@ class Distortion(object):
         return out
 
 
-class Quad(object):
+class Quad:
     """
     Quad modelisation.
 
@@ -668,7 +669,7 @@ class Quad(object):
         self.area = None
 
     def __repr__(self):
-        return os.linesep.join(["offset %i,%i size %i, %i" % (self.offset0, self.offset1, self.box_size0, self.box_size1), "box: %s" % self.box[:self.box_size0,:self.box_size1]])
+        return os.linesep.join([f"offset {self.offset0},{self.offset1} size {self.box_size0}, {self.box_size1}", f"box: {self.box[:self.box_size0,:self.box_size1]}"])
 
     def init_slope(self):
         if self.pAB is None:

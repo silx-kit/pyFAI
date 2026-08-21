@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
@@ -24,22 +23,23 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "10/10/2024"
+__date__ = "21/08/2026"
+
+import collections.abc
 
 import numpy
-import collections.abc
 
 from pyFAI import units
 
 
 def tthToRad(
-    twoTheta: numpy.ndarray,
-    unit: units.Unit,
+    values: numpy.ndarray|list,
+    unit: units.Unit=units.TTH_DEG,
     wavelength: float = None,
     directDist: float = None,
 ):
     """
-    Convert a two theta angle from original `unit` to radian.
+    Convert a set of radial values from original `unit` to `2th_rad`.
 
     The `directDist` argument can be extracted from an azimuthal integrator the
     following way:
@@ -48,45 +48,44 @@ def tthToRad(
 
         directDist = ai.getFit2D()["directDist"]
 
+    :param values:
     :param unit: instance of pyFAI.units.Unit
     :param wavelength: wavelength in m
     :param directDist: distance from sample to beam-center on the detector in _mm_
     :param ai: instance of pyFAI.integrator.azimuthal.AzimuthalIntegrator
     """
-    if isinstance(twoTheta, numpy.ndarray):
-        pass
-    elif isinstance(twoTheta, collections.abc.Iterable):
-        twoTheta = numpy.array(twoTheta)
+    if isinstance(values, collections.abc.Iterable) and not isinstance(values, numpy.ndarray):
+        values = numpy.array(values)
 
     if unit == units.TTH_RAD:
-        return twoTheta
+        return values
     elif unit == units.TTH_DEG:
-        return numpy.deg2rad(twoTheta)
+        return numpy.deg2rad(values)
     elif unit == units.Q_A:
         if wavelength is None:
             raise AttributeError("wavelength has to be specified")
-        return numpy.arcsin((twoTheta * wavelength) / (4.0e-10 * numpy.pi)) * 2.0
+        return numpy.arcsin((values * wavelength) / (4.0e-10 * numpy.pi)) * 2.0
     elif unit == units.Q_NM:
         if wavelength is None:
             raise AttributeError("wavelength has to be specified")
-        return numpy.arcsin((twoTheta * wavelength) / (4.0e-9 * numpy.pi)) * 2.0
+        return numpy.arcsin((values * wavelength) / (4.0e-9 * numpy.pi)) * 2.0
     elif unit == units.R_MM:
         if directDist is None:
             raise AttributeError("directDist has to be specified")
         # GF: correct formula?
-        return numpy.arctan(twoTheta / directDist)
+        return numpy.arctan(values / directDist)
     elif unit == units.R_M:
         if directDist is None:
             raise AttributeError("directDist has to be specified")
         # GF: correct formula?
-        return numpy.arctan(twoTheta / (directDist * 0.001))
+        return numpy.arctan(values / (directDist * 0.001))
     else:
-        raise ValueError("Converting from 2th to unit %s is not supported", unit)
+        raise ValueError(f"Converting from 2th to unit {unit} is not supported")
 
 
 def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
     """
-    Convert a two theta angle to this `unit`.
+    Convert an array of two-theta angles in radians to this `unit`.
 
     The `directDist` argument can be extracted from an azimuthal integrator the
     following way:
@@ -100,9 +99,7 @@ def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
     :param directDist: distance from sample to beam-center on the detector in _mm_
     :param ai: instance of pyFAI.integrator.azimuthal.AzimuthalIntegrator
     """
-    if isinstance(twoTheta, numpy.ndarray):
-        pass
-    elif isinstance(twoTheta, collections.abc.Iterable):
+    if isinstance(twoTheta, collections.abc.Iterable) and not isinstance(twoTheta, numpy.ndarray):
         twoTheta = numpy.array(twoTheta)
 
     if unit.space == "2th":
@@ -123,4 +120,4 @@ def from2ThRad(twoTheta, unit, wavelength=None, directDist=None, ai=None):
         rec_d2_nm = (2e-9 / wavelength * numpy.sin(0.5 * twoTheta)) ** 2
         return rec_d2_nm * unit.scale
     else:
-        raise ValueError("Converting from 2th to unit %s is not supported", unit)
+        raise ValueError(f"Converting from 2th_rad to unit `{unit}` is not supported")

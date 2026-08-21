@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,11 +34,14 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/10/2025"
 __status__ = "development"
 
-from silx.gui import qt
 import argparse
 import logging
+
+from silx.gui import qt
+
+from .. import date as pyFAI_date
+from .. import version as pyFAI_version
 from ..gui.pilx.MainWindow import MainWindow
-from .. import version as pyFAI_version, date as pyFAI_date
 from ..io.nexus import Nexus
 
 logger = logging.getLogger(__name__)

@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,9 +34,11 @@ __date__ = "18/08/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-import numpy
-from .. import units
 from json import JSONEncoder, dump, dumps
+
+import numpy
+
+from .. import units
 
 
 class PyFAIEncoder(JSONEncoder):

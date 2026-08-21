@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -30,28 +29,31 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/08/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 
-import sys
-import os
 import copy
+import logging
+import os
+import sys
 import threading
 from math import ceil, sqrt
-import logging
-import numpy
+
 import fabio
-from scipy.ndimage import label, distance_transform_edt
+import numpy
+from scipy.ndimage import distance_transform_edt, label
 from silx.math import medfilt as median_filter
+
 from .ext.bilinear import Bilinear
-from .utils.mathutil import gaussian_filter, binning, unbinning, is_far_from_group
+from .utils.mathutil import binning, gaussian_filter, is_far_from_group, unbinning
+
 logger = logging.getLogger(__name__)
 
 if os.name != "nt":
     WindowsError = RuntimeError
 
 
-class Massif(object):
+class Massif:
     """
     A massif is defined as an area around a peak, it is used to find neighboring peaks
     """
@@ -204,7 +206,7 @@ class Massif(object):
                 continue
             if (region2[int(xopt[0] + 0.5), int(xopt[1] + 0.5)]) and xopt not in listpeaks:
                 if stdout:
-                    stdout.write("[ %4i, %4i ] --> [ %5.1f, %5.1f ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
+                    stdout.write(f"[ {int(j[0]):4d}, {int(j[1]):4d} ] --> [ {xopt[0]:5.1f}, {xopt[1]:5.1f} ] after {nbFailure:3d} iterations {os.linesep}")
                 listpeaks.append(xopt)
                 nbFailure = 0
             else:

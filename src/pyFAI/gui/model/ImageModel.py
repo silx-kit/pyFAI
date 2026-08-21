@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,11 +24,13 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/04/2024"
+__date__ = "21/08/2026"
 
 import logging
+
 import numpy
 from silx.gui import qt
+
 from .DataModel import DataModel
 
 _logger = logging.getLogger(__name__)
@@ -40,14 +41,14 @@ class ImageModel(DataModel):
         """Set the value of this image model."""
         if value is not None:
             if not isinstance(value, numpy.ndarray):
-                raise TypeError("A numpy array is expected, but %s was found." % value.__class__.__name__)
+                raise TypeError(f"A numpy array is expected, but {value.__class__.__name__} was found.")
             if len(value.shape) != 2:
-                raise TypeError("A 2d array is expected, but %s was found." % value.shape)
+                raise TypeError(f"A 2d array is expected, but {value.shape} was found.")
             if value.dtype.kind == "b":
                 _logger.warning('Converting boolean image to int8 to plot it.')
                 value = numpy.asarray(value, dtype=numpy.int8)
             if value.dtype.kind not in "uif":
-                raise TypeError("A numeric array is expected, but %s was found." % value.dtype.kind)
+                raise TypeError(f"A numeric array is expected, but {value.dtype.kind} was found.")
             previous = self.value()
             if previous is value:
                 # Filter same images
@@ -55,7 +56,7 @@ class ImageModel(DataModel):
             if previous is not None and numpy.array_equal(value, previous):
                 # Filter same images
                 return
-        super(ImageModel, self).setValue(value)
+        super().setValue(value)
 
 
 class ImageFilenameModel(DataModel):
@@ -103,14 +104,14 @@ class ImageFromFilenameModel(DataModel):
         """Set the value of this image model."""
         if value is not None:
             if not isinstance(value, numpy.ndarray):
-                raise TypeError("A numpy array is expected, but %s was found." % value.__class__.__name__)
+                raise TypeError(f"A numpy array is expected, but {value.__class__.__name__} was found.")
             if len(value.shape) != 2:
-                raise TypeError("A 2d array is expected, but %s was found." % value.shape)
+                raise TypeError(f"A 2d array is expected, but {value.shape} was found.")
             if value.dtype.kind == "b":
                 _logger.warning('Converting boolean image to int8 to plot it.')
                 value = numpy.asarray(value, dtype=numpy.int8)
             if value.dtype.kind not in "uif":
-                raise TypeError("A numeric array is expected, but %s was found." % value.dtype.kind)
+                raise TypeError(f"A numeric array is expected, but {value.dtype.kind} was found.")
             previous = self.value()
             if previous is value:
                 # Filter same images
@@ -118,7 +119,7 @@ class ImageFromFilenameModel(DataModel):
             if previous is not None and numpy.array_equal(value, previous):
                 # Filter same images
                 return
-        super(ImageFromFilenameModel, self).setValue(value)
+        super().setValue(value)
         self.__isSynchronized = False
 
     def hasFilename(self):

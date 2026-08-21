@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,13 +33,16 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
 import logging
+import unittest
+
 import fabio
-from .utilstest import UtilsTest
+import numpy
+
 from .. import load
 from ..opencl import ocl
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -50,7 +52,7 @@ class TestMedfilt(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestMedfilt, cls).setUpClass()
+        super().setUpClass()
         cls.method = ("full", "csr", "python")
         cls.img = fabio.open(UtilsTest.getimage("mock.tif")).data
         cls.ai = load({ "dist": 0.1,
@@ -65,7 +67,7 @@ class TestMedfilt(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestMedfilt, cls).tearDownClass()
+        super().tearDownClass()
         cls.method = cls.img =cls.ai =cls.npt =None
 
     def test_python(self):

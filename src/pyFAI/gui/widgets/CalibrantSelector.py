@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -23,7 +22,6 @@
 #
 # ###########################################################################*/
 
-from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
@@ -31,11 +29,12 @@ __date__ = "31/01/2025"
 
 import os.path
 
-from silx.gui import qt
-from silx.gui import icons
+from silx.gui import icons, qt
+
 import pyFAI.calibrant
-from ..model.CalibrantModel import CalibrantModel
+
 from ...utils.decorators import deprecated
+from ..model.CalibrantModel import CalibrantModel
 
 
 class CalibrantSelector(qt.QComboBox):
@@ -54,7 +53,7 @@ class CalibrantSelector(qt.QComboBox):
     sigLoadFileRequested = qt.Signal()
 
     def __init__(self, parent=None):
-        super(CalibrantSelector, self).__init__(parent)
+        super().__init__(parent)
         self.setStyleSheet("QComboBox {combobox-popup: 0;}")
 
         # feed the widget with default calibrants
