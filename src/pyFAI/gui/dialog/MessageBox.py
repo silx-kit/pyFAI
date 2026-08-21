@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -63,7 +62,7 @@ def exception(parent, title, exc_info, logger=None):
         detailed = '{1}\nTraceback (most recent call last):\n{2}{0}: {1}'.format(exc_info[0].__name__, exc_info[1], detailed)
     else:
         # There is no backtrace
-        detailed = '{0}: {1}'.format(exc_info[0].__name__, exc_info[1])
+        detailed = f'{exc_info[0].__name__}: {exc_info[1]}'
     txt = str(exc_info[1])
     message_box(parent, title, txt, detailed)
 

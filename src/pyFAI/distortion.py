@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,30 +31,32 @@ __date__ = "12/06/2026"
 __status__ = "development"
 
 import logging
-import threading
 import os
-import numpy
+import threading
 from math import ceil, floor
+
+import numpy
+
 from . import detectors
 from .opencl import ocl
+
 if ocl:
-    from .opencl import azim_lut as ocl_azim_lut
     from .opencl import azim_csr as ocl_azim_csr
+    from .opencl import azim_lut as ocl_azim_lut
 else:
     ocl_azim_lut = ocl_azim_csr = None
 
 logger = logging.getLogger(__name__)
 try:
-    from .ext import _distortion
-    from .ext import sparse_utils
+    from .ext import _distortion, sparse_utils
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     logger.warning("Import _distortion cython implementation failed ... pure python version is terribly slow !!!")
     _distortion = None
 
 try:
-    from scipy.sparse import linalg, csr_matrix, identity
-except IOError:
+    from scipy.sparse import csr_matrix, identity, linalg
+except OSError:
     logger.warning("Scipy is missing ... uncorrection will be handled the old way")
     linalg = None
 else:
@@ -80,7 +81,7 @@ else:
     from .ext._distortion import resize_image_2D
 
 
-class Distortion(object):
+class Distortion:
     """
     This class applies a distortion correction on an image.
 
@@ -603,7 +604,7 @@ class Distortion(object):
         return out
 
 
-class Quad(object):
+class Quad:
     """
     Quad modelisation.
 

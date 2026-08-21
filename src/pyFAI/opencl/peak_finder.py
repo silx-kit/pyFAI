@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Peak finder in a single 2D diffraction frame
 #             https://github.com/silx-kit/pyFAI
@@ -34,13 +33,23 @@ __copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
-from collections import OrderedDict
 import math
+from collections import OrderedDict
+
 import numpy
-from ..containers import SparseFrame, ErrorModel
+
+from ..containers import ErrorModel, SparseFrame
 from ..utils.mathutil import EPS32
-from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl, OpenclProcessing
-from . import kernel_workgroup_size, dtype_converter
+from . import dtype_converter, kernel_workgroup_size
+from .azim_csr import (
+    BufferDescription,
+    EventDescription,
+    OCL_CSR_Integrator,
+    OpenclProcessing,
+    calc_checksum,
+    mf,
+    pyopencl,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -27,11 +26,11 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "07/02/2025"
 
-from silx.gui import qt
-from silx.gui import icons
+from silx.gui import icons, qt
+
+import pyFAI.utils
 
 from ... import method_registry
-import pyFAI.utils
 
 
 class IntegrationMethodWidget(qt.QWidget):
@@ -78,7 +77,7 @@ class IntegrationMethodWidget(qt.QWidget):
     sigMethodChanged = qt.Signal()
 
     def __init__(self, parent=None):
-        super(IntegrationMethodWidget, self).__init__(parent)
+        super().__init__(parent)
         qt.loadUi(pyFAI.utils.get_ui_file("integration-method.ui"), self)
 
         self._implementationModel = self._createImplementationModel()
@@ -318,7 +317,7 @@ class IntegrationMethodWidget(qt.QWidget):
 class IntegrationMethodDialog(qt.QDialog):
 
     def __init__(self, parent=None):
-        super(IntegrationMethodDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowTitle("Method selection")
 
         self.__content = IntegrationMethodWidget(self)

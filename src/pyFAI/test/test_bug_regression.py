@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,27 +37,27 @@ __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "18/08/2026"
 
-import sys
-import os
-import unittest
-import numpy
-import subprocess
 import copy
 import logging
+import os
+import subprocess
+import sys
+import unittest
 from io import StringIO
-from types import SimpleNamespace
 from math import pi
-from .utilstest import UtilsTest
-from ..utils import mathutil
+from types import SimpleNamespace
+
 import fabio
-from .. import load
-from ..integrator.azimuthal import AzimuthalIntegrator
-from .. import detectors
-from .. import units
-from ..opencl import ocl
-from ..ext import splitPixel
+import numpy
+
+from .. import detectors, load, units
 from ..detectors import detector_factory
+from ..ext import splitPixel
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..io.ponifile import PoniFile
+from ..opencl import ocl
+from ..utils import mathutil
+from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 
@@ -573,8 +572,8 @@ class TestBugRegression(unittest.TestCase):
         pp = pyFAI.gui.peak_picker.PeakPicker(ary)
         self.assertNotEqual(id(pp), id(copy.deepcopy(pp)), "PeakPicker copy works and id differs")
 
-        from pyFAI.goniometer import SingleGeometry
         import pyFAI.calibrant
+        from pyFAI.goniometer import SingleGeometry
         lab6 = pyFAI.calibrant.get_calibrant("LaB6", 1e-10)
         cp.append([[1, 2], [3, 4]], 0)
         sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "Imxpad S10")

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,14 +33,22 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "24/02/2026"
 
-import unittest
 import json
-import os
-from dataclasses import fields
 import logging
-from ..io.diffmap_config import DiffmapConfig, ListDataSet, DataSet, CURRENT_VERSION, parse_bliss
+import os
+import unittest
+from dataclasses import fields
+
 from ..diffmap import DiffMap
+from ..io.diffmap_config import (
+    CURRENT_VERSION,
+    DataSet,
+    DiffmapConfig,
+    ListDataSet,
+    parse_bliss,
+)
 from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 

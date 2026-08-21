@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,16 +33,19 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import os
-import numpy
-import sys
 import logging
+import os
 import shutil
-from .utilstest import UtilsTest
-from ..gui.peak_picker import PeakPicker
+import sys
+import unittest
+
+import numpy
+
 from ..calibrant import Calibrant
 from ..geometryRefinement import GeometryRefinement
+from ..gui.peak_picker import PeakPicker
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 

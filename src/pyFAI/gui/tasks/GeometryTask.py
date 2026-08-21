@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2021 European Synchrotron Radiation Facility
@@ -27,34 +26,30 @@ __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
 __date__ = "26/06/2026"
 
-import logging
-import numpy
 import datetime
+import logging
 
-from silx.gui import qt
-from silx.gui import icons
+import numpy
 import silx.gui.plot
+from silx.gui import icons, qt
 from silx.image import marchingsquares
 
-from ... import utils as pyFAI_utils
-from ...utils import stringutil
-from .AbstractCalibrationTask import AbstractCalibrationTask
-from ..helper.RingCalibration import RingCalibration
-from ..helper.SynchronizeRawView import SynchronizeRawView
-from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
-from ..CalibrationContext import CalibrationContext
-from ..widgets.QuantityLabel import QuantityLabel
-from ..widgets.FitParamView import FitParamView
-from ..model.GeometryConstraintsModel import GeometryConstraintsModel
-from ..utils import units
-from ..helper.MarkerManager import MarkerManager
-from ..helper import ProcessingWidget
-from ..helper import model_transform
-from ..utils import unitutils
 from ... import units as core_units
+from ... import utils as pyFAI_utils
 from ...geometry import fit2d
 from ...io.ponifile import PoniFile
-
+from ...utils import stringutil
+from ..CalibrationContext import CalibrationContext
+from ..helper import ProcessingWidget, model_transform
+from ..helper.MarkerManager import MarkerManager
+from ..helper.RingCalibration import RingCalibration
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..helper.SynchronizeRawView import SynchronizeRawView
+from ..model.GeometryConstraintsModel import GeometryConstraintsModel
+from ..utils import units, unitutils
+from ..widgets.FitParamView import FitParamView
+from ..widgets.QuantityLabel import QuantityLabel
+from .AbstractCalibrationTask import AbstractCalibrationTask
 
 _logger = logging.getLogger(__name__)
 
@@ -68,22 +63,22 @@ class _StatusBar(qt.QStatusBar):
         scatteringUnitModel = CalibrationContext.instance().getScatteringVectorUnit()
 
         self.__position = QuantityLabel(self)
-        self.__position.setPrefix(u"<b>Pos</b>: ")
-        self.__position.setFormatter(u"{value[0]: >4.2F}×{value[1]:4.2F} px")
+        self.__position.setPrefix("<b>Pos</b>: ")
+        self.__position.setFormatter("{value[0]: >4.2F}×{value[1]:4.2F} px")
         # TODO: Could it be done using a custom layout? Instead of setElasticSize
         self.__position.setElasticSize(True)
         self.addWidget(self.__position)
 
         self.__pixel = QuantityLabel(self)
-        self.__pixel.setPrefix(u"<b>Pixel</b>: ")
-        self.__pixel.setFormatter(u"{value}")
-        self.__pixel.setFloatFormatter(u"{value: >4.3F}")
+        self.__pixel.setPrefix("<b>Pixel</b>: ")
+        self.__pixel.setFormatter("{value}")
+        self.__pixel.setFloatFormatter("{value: >4.3F}")
         self.__pixel.setElasticSize(True)
         self.addWidget(self.__pixel)
 
         self.__chi = QuantityLabel(self)
-        self.__chi.setPrefix(u"<b>χ</b>: ")
-        self.__chi.setFormatter(u"{value: >4.3F}")
+        self.__chi.setPrefix("<b>χ</b>: ")
+        self.__chi.setFormatter("{value: >4.3F}")
         self.__chi.setInternalUnit(units.Unit.RADIAN)
         self.__chi.setDisplayedUnit(units.Unit.RADIAN)
         self.__chi.setDisplayedUnitModel(angleUnitModel)
@@ -92,8 +87,8 @@ class _StatusBar(qt.QStatusBar):
         self.addWidget(self.__chi)
 
         self.__2theta = QuantityLabel(self)
-        self.__2theta.setPrefix(u"<b>2θ</b>: ")
-        self.__2theta.setFormatter(u"{value: >4.3F}")
+        self.__2theta.setPrefix("<b>2θ</b>: ")
+        self.__2theta.setFormatter("{value: >4.3F}")
         self.__2theta.setInternalUnit(units.Unit.RADIAN)
         self.__2theta.setDisplayedUnitModel(angleUnitModel)
         self.__2theta.setUnitEditable(True)
@@ -101,8 +96,8 @@ class _StatusBar(qt.QStatusBar):
         self.addWidget(self.__2theta)
 
         self.__q = QuantityLabel(self)
-        self.__q.setPrefix(u"<b>q</b>: ")
-        self.__q.setFormatter(u"{value: >4.3F}")
+        self.__q.setPrefix("<b>q</b>: ")
+        self.__q.setFormatter("{value: >4.3F}")
         self.__q.setInternalUnit(units.Unit.INV_ANGSTROM)
         self.__q.setDisplayedUnitModel(scatteringUnitModel)
         self.__q.setUnitEditable(True)

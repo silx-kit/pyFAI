@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -34,7 +33,7 @@ from .DataModel import DataModel
 class GeometryModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(GeometryModel, self).__init__(parent)
+        super().__init__(parent)
         self.__distance = DataModel()
         self.__wavelength = DataModel()
         self.__poni1 = DataModel()

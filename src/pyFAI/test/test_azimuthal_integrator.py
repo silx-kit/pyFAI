@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,23 +34,27 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "02/04/2026"
 
-import unittest
-import os
-import numpy
-import logging
-import time
 import copy
-import fabio
 import gc
-from .utilstest import UtilsTest
-from ..integrator.azimuthal import AzimuthalIntegrator
-from ..method_registry import IntegrationMethod
+import logging
+import os
+import time
+import unittest
+
+import fabio
+import numpy
+
+from pyFAI import units
+
 from ..containers import ErrorModel
 from ..detectors import Detector, detector_factory
-from pyFAI import units
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..method_registry import IntegrationMethod
+from ..opencl import pyopencl
 from ..utils import mathutil
 from ..utils.logging_utils import logging_disabled
-from ..opencl import pyopencl
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
@@ -62,7 +65,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Download files"""
-        super(TestAzimHalfFrelon, cls).setUpClass()
+        super().setUpClass()
 
         fit2dFile = 'fit2d.dat'
         halfFrelon = "LaB6_0020.edf"
@@ -106,7 +109,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove temporary files"""
-        super(TestAzimHalfFrelon, cls).tearDownClass()
+        super().tearDownClass()
         for fn in cls.tmpfiles.values():
             if os.path.exists(fn):
                 os.unlink(fn)
@@ -813,7 +816,7 @@ class TestFlexible2D(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestFlexible2D, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai = cls.img = None
 
     def test_flexible(self):

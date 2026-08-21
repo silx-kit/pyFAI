@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -30,13 +29,20 @@ __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __date__ = "08/10/2025"
 
-import sys
-import os
 import logging
+import os
+import sys
 
-from .version import __date__ as date
-from .version import version, version_info, hexversion, strictversion, citation, calc_hexversion
 from .utils import decorators
+from .version import __date__ as date
+from .version import (
+    calc_hexversion,
+    citation,
+    hexversion,
+    strictversion,
+    version,
+    version_info,
+)
 
 if "ps1" in dir(sys) and not bool(os.environ.get("PYFAI_NO_LOGGING")):
     logging.basicConfig()

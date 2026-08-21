@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,25 +32,28 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "19/08/2026"
 __status__ = "production"
 
-import sys
-import os
 import copy
+import logging
+import os
+import sys
 import threading
 from math import ceil, sqrt
-import logging
-import numpy
+
 import fabio
-from scipy.ndimage import label, distance_transform_edt
+import numpy
+from scipy.ndimage import distance_transform_edt, label
 from silx.math import medfilt as median_filter
+
 from .ext.bilinear import Bilinear
-from .utils.mathutil import gaussian_filter, binning, unbinning, is_far_from_group
+from .utils.mathutil import binning, gaussian_filter, is_far_from_group, unbinning
+
 logger = logging.getLogger(__name__)
 
 if os.name != "nt":
     WindowsError = RuntimeError
 
 
-class Massif(object):
+class Massif:
     """
     A massif is defined as an area around a peak, it is used to find neighboring peaks
     """

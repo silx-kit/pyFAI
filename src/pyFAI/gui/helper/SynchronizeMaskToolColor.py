@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
@@ -29,11 +28,13 @@ __license__ = "MIT"
 
 
 import weakref
-from ..CalibrationContext import CalibrationContext
+
 from silx.gui import colors
 
+from ..CalibrationContext import CalibrationContext
 
-class SynchronizeMaskToolColor(object):
+
+class SynchronizeMaskToolColor:
 
     def __init__(self, maskTool=None):
         self.__register()

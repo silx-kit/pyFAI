@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,16 +34,20 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/10/2025"
 __status__ = "production"
 
+import logging
 import os
 import sys
 import time
 from argparse import ArgumentParser
-import logging
+
 import fabio
 from fabio.fabioutils import exists as fabio_exists
-from .. import date as pyFAI_date, version as pyFAI_version, units, utils
-from ..method_registry import IntegrationMethod
+
+from .. import date as pyFAI_date
+from .. import units, utils
+from .. import version as pyFAI_version
 from ..integrator.azimuthal import AzimuthalIntegrator
+from ..method_registry import IntegrationMethod
 
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)

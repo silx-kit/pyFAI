@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # Written 2009-12-22 by Jérôme Kieffer
 # Copyright (C) 2009-2025  European Synchrotron Radiation Facility
@@ -37,12 +36,13 @@ __license__ = "MIT"
 __date__ = "24/02/2026"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
+import logging
 import os
 import time
+
 import numpy
-import logging
-import scipy.optimize
 import scipy.interpolate
+import scipy.optimize
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ except ImportError:
     from scipy import interpolate as fitpack
 
 
-class Spline(object):
+class Spline:
     """
     This class is a python representation of the spline file
 
@@ -195,7 +195,7 @@ class Spline(object):
         :type filename: str
         """
         if not os.path.isfile(filename):
-            raise IOError("Spline File does not exist %s" % filename)
+            raise OSError("Spline File does not exist %s" % filename)
         self.filename = filename
         with open(filename) as opened_file:
             stringSpline = [i.rstrip() for i in opened_file]
@@ -246,7 +246,7 @@ class Spline(object):
                 indexLine += 1
         except Exception:
             logger.error("Error while reading file", exc_info=True)
-            raise IOError("Spline File parsing error: %s" % (filename))
+            raise OSError("Spline File parsing error: %s" % (filename))
 
     def comparison(self, ref, verbose=False):
         """
@@ -609,7 +609,7 @@ class Spline(object):
                 self.zeros()
             else:
                 self.read(self.filename)
-        logger.info(u"center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm", center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize)
+        logger.info("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm", center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize)
         if timing:
             startTime = time.perf_counter()
         distance = 1.0e6 * distanceSampleDetector  # from meters to microns

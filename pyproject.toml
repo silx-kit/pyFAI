@@ -107,3 +107,52 @@ ignore_errors = true
 
 [tool.coverage.html]
 directory = "coverage_html_report"
+
+[tool.ruff]
+line-length = 127
+target-version = "py311"
+extend-exclude = [
+    "build",
+    "doc/source/tutorials",  # notebooks rely on IPython magics (%%cython, %pylab, ...)
+    "sandbox",               # playground scripts, excluded from releases (see .gitattributes)
+]
+
+[tool.ruff.lint]
+# Explicit rule list: only rules the code base actually complies with are
+# enforced, so `ruff check` stays green and meaningful in CI.
+select = [
+    "E4", "E7", "E9",        # pycodestyle errors (ruff defaults)
+    "F",                     # pyflakes
+    "UP028",                 # yield from
+    "UP031",                 # printf-style %-formatting
+    "UP036",                 # outdated python version blocks
+    "C4",                    # flake8-comprehensions (literals over calls)
+    "SIM102", "SIM103",      # collapsible if / needless bool
+    "SIM113",                # use enumerate
+    "SIM115",                # open() without context manager (deliberate cases carry noqa)
+    "SIM117",                # collapsible with
+    "SIM118", "SIM401",      # dict .keys() / .get() idioms
+    "PIE810",                # startswith called with a tuple
+    "LOG015",                # no call on the root logger
+    "G201", "G202",          # logger.exception over error(exc_info=True)
+    "EXE",                   # shebang and executable-bit consistency (see ignore)
+    "PLE",                   # pylint errors (format-string and raise misuse)
+    "TRY201", "TRY203",      # bare raise to re-raise
+    "RUF012",                # mutable class attributes need ClassVar
+    "RUF046", "RUF059",      # useless int() cast / unused unpacked variable
+]
+ignore = [
+    "EXE001",  # many library modules keep a historical shebang without exec bit
+]
+# Rules considered and deliberately NOT enabled:
+# - BLE001 (blind except): catching Exception is intentional in the format
+#   probing and best-effort decoding paths.
+# - TRY002/TRY003 (custom exception classes, message style): historical API,
+#   callers rely on the current exception types.
+# - N999 (module naming): GEimage, OXDimage, TiffIO... are public API names.
+# - S1xx (bandit): exec() in bootstrap.py and try/except/pass are deliberate.
+# - DTZ (naive datetimes): detector timestamps carry no timezone information.
+
+[tool.ruff.lint.per-file-ignores]
+# Re-exports forming the public API
+"src/fabio/__init__.py" = ["F401"]

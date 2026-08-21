@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -34,7 +33,7 @@ from .ConstraintModel import ConstraintModel
 class GeometryConstraintsModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(GeometryConstraintsModel, self).__init__(parent)
+        super().__init__(parent)
         self.__distance = ConstraintModel(self)
         self.__wavelength = ConstraintModel(self)
         self.__poni1 = ConstraintModel(self)

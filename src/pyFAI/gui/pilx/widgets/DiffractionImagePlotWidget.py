@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -39,9 +38,9 @@ __status__ = "development"
 import numpy
 from silx.gui.plot.items import ImageData
 
-from .ImagePlotWidget import ImagePlotWidget
-from ..models import ROI_COLOR, ImageIndices
 from ...utils.colorutils import DEFAULT_COLORMAP
+from ..models import ROI_COLOR, ImageIndices
+from .ImagePlotWidget import ImagePlotWidget
 
 _LEGEND = "IMAGE"
 

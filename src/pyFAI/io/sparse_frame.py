@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,16 +34,19 @@ __date__ = "26/02/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-import os
-import sys
-import posixpath
-from collections import OrderedDict
 import logging
-import numpy
+import os
+import posixpath
+import sys
+from collections import OrderedDict
+
 import fabio
+import numpy
+
 from .. import version
-from .nexus import Nexus, get_isotime, h5py
 from ._json import json_dumps
+from .nexus import Nexus, get_isotime, h5py
+
 logger = logging.getLogger(__name__)
 
 try:

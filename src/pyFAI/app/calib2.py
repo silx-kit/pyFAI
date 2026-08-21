@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,19 +30,18 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/04/2026"
 __status__ = "production"
 
+import datetime
+import logging
 import os
 import sys
-import datetime
 from argparse import ArgumentParser
-from typing import Tuple
-import logging
-from .. import resources
-from .. import calibrant
-from .. import detectors
+
+from .. import calibrant, detectors, resources
+from .. import date as pyFAI_date
+from .. import units as pyFAI_units
+from .. import version as pyFAI_version
 from ..io import image
 from ..io.ponifile import PoniFile
-from .. import version as pyFAI_version, date as pyFAI_date
-from .. import units as pyFAI_units
 
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -257,7 +255,7 @@ and wavelength. An 1D and 2D diffraction patterns are also produced.
 (.dat and .azim files)"""
 
 
-def parse_pixel_size(pixel_size) -> Tuple[float, float] :
+def parse_pixel_size(pixel_size) -> tuple[float, float] :
     """Convert a comma separated string into pixel size
 
     :param str pixel_size: String containing pixel size in micron
@@ -321,8 +319,8 @@ def setup_model(model, options):
     args = options.args
 
     # The module must not import the GUI
-    from ..gui.utils import units as gui_units
     from ..gui.model.GeometryModel import GeometryModel
+    from ..gui.utils import units as gui_units
 
     # Settings
     settings = model.experimentSettingsModel()
@@ -610,8 +608,8 @@ def setup_model(model, options):
 
     if options.npt:
         try:
-            from pyFAI.gui.helper import model_transform
             from pyFAI.control_points import ControlPoints
+            from pyFAI.gui.helper import model_transform
             controlPoints = ControlPoints(filename=options.npt)
             peakSelectionModel = model.peakSelectionModel()
             model_transform.initPeaksFromControlPoints(peakSelectionModel, controlPoints)
@@ -625,10 +623,10 @@ def logUncaughtExceptions(exceptionClass, exception, stack):
         if stack is not None:
             # Mimic the syntax of the default Python exception
             message = (''.join(traceback.format_tb(stack)))
-            message = '{1}\nTraceback (most recent call last):\n{2}{0}: {1}'.format(exceptionClass.__name__, exception, message)
+            message = f'{exception}\nTraceback (most recent call last):\n{message}{exceptionClass.__name__}: {exception}'
         else:
             # There is no backtrace
-            message = '{0}: {1}'.format(exceptionClass.__name__, exception)
+            message = f'{exceptionClass.__name__}: {exception}'
         logger_uncaught.error(message)
     except Exception:
         # Make sure there is no problem at all in this function
@@ -656,8 +654,9 @@ def main():
 
     # Make sure matplotlib is loaded first by silx
     import silx.gui.utils.matplotlib
-    from ..gui.CalibrationWindow import CalibrationWindow
+
     from ..gui.CalibrationContext import CalibrationContext
+    from ..gui.CalibrationWindow import CalibrationWindow
 
     sys.excepthook = logUncaughtExceptions
     if options.qtargs is None:

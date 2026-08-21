@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,14 +33,17 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
-import sys
 import logging
-from ..opencl import ocl
-from .utilstest import UtilsTest
+import sys
+import unittest
+
+import numpy
+
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
+from ..opencl import ocl
+from .utilstest import UtilsTest
+
 pyFAI = sys.modules["pyFAI"]
 logger = logging.getLogger(__name__)
 
@@ -50,7 +52,7 @@ class TestFlat1D(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestFlat1D, cls).setUpClass()
+        super().setUpClass()
         cls.rng = UtilsTest.get_rng()
         cls.shape = 640, 480
         cls.flat = 1.0 + cls.rng.random(cls.shape)
@@ -64,7 +66,7 @@ class TestFlat1D(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestFlat1D, cls).tearDownClass()
+        super().tearDownClass()
         cls.shape = None
         cls.flat = None
         cls.dark = None
@@ -108,7 +110,7 @@ class TestFlat2D(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestFlat2D, cls).setUpClass()
+        super().setUpClass()
         cls.rng = UtilsTest.get_rng()
         cls.shape = 640, 480
         cls.flat = 1 + cls.rng.random(cls.shape)
@@ -122,7 +124,7 @@ class TestFlat2D(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestFlat2D, cls).tearDownClass()
+        super().tearDownClass()
         cls.shape = None
         cls.flat = None
         cls.dark = None

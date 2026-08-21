@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Basic OpenCL test
 #             https://github.com/silx-kit/silx
@@ -36,12 +35,15 @@ __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "08/10/2025"
 
 import logging
-import numpy
 import platform as platform_module
 import unittest
-from .. import ocl, get_opencl_code
-from ...test.utilstest import UtilsTest
+
+import numpy
 from silx.opencl.common import _measure_workgroup_size
+
+from ...test.utilstest import UtilsTest
+from .. import get_opencl_code, ocl
+
 if ocl:
     import pyopencl.array
 
@@ -54,7 +56,7 @@ class TestAddition(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestAddition, cls).setUpClass()
+        super().setUpClass()
 
         if ocl:
             cls.ctx = ocl.create_context()
@@ -73,7 +75,7 @@ class TestAddition(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestAddition, cls).tearDownClass()
+        super().tearDownClass()
         print("Maximum valid workgroup size %s on device %s" % (cls.max_valid_wg, cls.ctx.devices[0]))
         cls.ctx = None
         cls.queue = None

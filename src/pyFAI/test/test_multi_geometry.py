@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,14 +33,17 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
 import logging
-import numpy
+import unittest
+
 import fabio
-from .utilstest import UtilsTest
+import numpy
+
+from ..detectors import Detector
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..multi_geometry import MultiGeometry
-from ..detectors import Detector
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 

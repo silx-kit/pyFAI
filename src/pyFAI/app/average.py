@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,13 +35,16 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/11/2025"
 __status__ = "production"
 
+import logging
 import os
 from argparse import ArgumentParser
-import logging
+
+from .. import average, utils
+from .. import date as pyFAI_date
+from .. import version as pyFAI_version
 from ..utils import logging_utils
-from .. import average
-from .. import version as pyFAI_version, date as pyFAI_date, utils
 from ..utils.shell import ProgressBar
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -259,7 +261,7 @@ def main(args=None):
     elif options.verbose is False:
         average.logger.setLevel(logging.ERROR)
     else:
-        average.logger.setLevel(logging.WARN)
+        average.logger.setLevel(logging.WARNING)
 
     # shell output
     if options.verbose is not False:

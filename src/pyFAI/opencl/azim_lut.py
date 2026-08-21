@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,15 +32,19 @@ __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
+
 import numpy
-from . import pyopencl
+
 from ..utils import calc_checksum
+from . import pyopencl
+
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
-from . import processing, OpenclProcessing
+from ..containers import ErrorModel, Integrate1dtpl, Integrate2dtpl
+from . import OpenclProcessing, processing
+
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
 
@@ -284,14 +287,14 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                             ("sem", self.cl_mem["sem"]),
                                                             ))
 
-        self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged")))
-        self.cl_kernel_args["memset_ng"] = OrderedDict(((i, self.cl_mem[i]) for i in ("averint", "sem", "merged8")))
-        self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["memset_out"] = OrderedDict((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged"))
+        self.cl_kernel_args["memset_ng"] = OrderedDict((i, self.cl_mem[i]) for i in ("averint", "sem", "merged8"))
+        self.cl_kernel_args["u8_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["s8_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["u16_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["s16_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["u32_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
+        self.cl_kernel_args["s32_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("image_raw", "image"))
 
     def send_buffer(self, data, dest, checksum=None):
         """Send a numpy array to the device, including the cast on the device if possible

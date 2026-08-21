@@ -31,12 +31,15 @@ __status__ = "development"
 
 import logging
 import warnings
+
 import numpy
 from scipy.sparse import csc_matrix
-from .preproc import preproc as preproc_np
-from ..utils.mathutil import interp_filter
+
+from ..containers import ErrorModel, Integrate1dtpl, Integrate2dtpl
 from ..utils import calc_checksum
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
+from ..utils.mathutil import interp_filter
+from .preproc import preproc as preproc_np
+
 logger = logging.getLogger(__name__)
 try:
     from ..ext.preproc import preproc as preproc_cy
@@ -47,7 +50,7 @@ else:
     preproc = preproc_cy
 
 
-class CSCIntegrator(object):
+class CSCIntegrator:
 
     def __init__(self,
                  input_size,

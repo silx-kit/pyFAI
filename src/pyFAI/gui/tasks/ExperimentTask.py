@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -27,25 +26,24 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
 __date__ = "19/08/2026"
 
-import numpy
 import logging
 
+import numpy
 import silx.gui.plot
-from silx.gui import qt
-from silx.gui import icons
+from silx.gui import icons, qt
 
+import pyFAI.detectors
 import pyFAI.utils
 from pyFAI.calibrant import Calibrant
-from .AbstractCalibrationTask import AbstractCalibrationTask
-import pyFAI.detectors
-from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
-from ..helper.SynchronizeRawView import SynchronizeRawView
+
 from ..CalibrationContext import CalibrationContext
-from ..utils import units
-from ..utils import validators
-from ..utils import FilterBuilder
+from ..dialog.DetectorSelectorDialog import DetectorSelectorDialog
 from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..helper.SynchronizeRawView import SynchronizeRawView
 from ..model import MarkerModel
+from ..utils import FilterBuilder, units, validators
+from .AbstractCalibrationTask import AbstractCalibrationTask
+
 _logger = logging.getLogger(__name__)
 
 
@@ -100,7 +98,7 @@ class ExperimentTask(AbstractCalibrationTask):
         super()._initGui()
 
     def aboutToClose(self):
-        super(ExperimentTask, self).aboutToClose()
+        super().aboutToClose()
         recentCalibrants = self._calibrant.recentCalibrants()
         CalibrationContext.instance().getRecentCalibrants().setValue(recentCalibrants)
 
@@ -349,11 +347,11 @@ class ExperimentTask(AbstractCalibrationTask):
         else:
             self._detectorLabel.setStyleSheet("QLabel { }")
             text = [str(s) for s in detector.max_shape]
-            text = u" × ".join(text)
+            text = " × ".join(text)
             self._detectorSize.setText(text)
             try:
                 text = ["%0.1f" % (s * 10 ** 6) for s in [detector.pixel1, detector.pixel2]]
-                text = u" × ".join(text)
+                text = " × ".join(text)
             except Exception as e:
                 # Is heterogeneous detectors have pixel size?
                 _logger.debug(e, exc_info=True)
@@ -453,7 +451,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__updateDetectorTemplate()
         if detector.guess_binning(image):
             text = [str(s) for s in binning]
-            text = u" × ".join(text)
+            text = " × ".join(text)
             self._binning.setText(text)
             self._binning.setVisible(True)
             self._binningLabel.setVisible(True)
@@ -469,7 +467,7 @@ class ExperimentTask(AbstractCalibrationTask):
         if image is not None:
             self.__plot.addImage(image, legend="image", z=-1, replace=False, copy=False)
             text = [str(s) for s in image.shape]
-            text = u" × ".join(text)
+            text = " × ".join(text)
             self._imageSize.setText(text)
         else:
             self.__plot.removeImage("image")

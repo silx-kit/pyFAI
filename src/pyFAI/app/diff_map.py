@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,9 +35,11 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "21/11/2025"
 __satus__ = "Production"
 
-import sys
 import logging
+import sys
+
 from ..diffmap import DiffMap
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -56,8 +57,9 @@ def main(args=None):
 
     if options.gui:
         from silx.gui import qt
-        from ..gui.diffmap_widget import DiffMapWidget
+
         from ..gui.ApplicationContext import ApplicationContext
+        from ..gui.diffmap_widget import DiffMapWidget
         settings = qt.QSettings(qt.QSettings.IniFormat,
                             qt.QSettings.UserScope,
                             "pyfai",

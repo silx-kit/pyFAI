@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,16 +33,18 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
-import os
 import logging
-from . import utilstest
+import os
+import unittest
+
 import fabio
-from .. import load
-from .. import calibrant
-from ..utils import mathutil
+import numpy
 import scipy.ndimage
+
+from .. import calibrant, load
+from ..utils import mathutil
+from . import utilstest
+
 logger = logging.getLogger(__name__)
 
 
@@ -82,7 +83,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestMathUtil, cls).setUpClass()
+        super().setUpClass()
         rng = utilstest.UtilsTest.get_rng()
         cls.unbinned = rng.random((64, 32))
         cls.dark = cls.unbinned.astype("float32")
@@ -92,7 +93,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
 
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestMathUtil, cls).tearDownClass()
+        super().tearDownClass()
         cls.dark = cls.flat = cls.raw = cls.tmp_file = None
 
     def test_round_fft(self):

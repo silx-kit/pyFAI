@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Copyright (C) 2012-2025 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -30,20 +29,22 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import os
-import sys
-import time
-import threading
-import unittest
-import logging
-import shutil
-import tempfile
-import getpass
 import functools
+import getpass
+import logging
+import os
+import shutil
 import struct
+import sys
+import tempfile
+import threading
+import time
+import unittest
 from pathlib import Path
+
 import numpy
 from silx.resources import ExternalResources
+
 from ..directories import testimages
 
 logger = logging.getLogger(__name__)
@@ -59,7 +60,7 @@ def copy(infile, outfile):
         shutil.copy(infile, outfile)
 
 
-class TestOptions(object):
+class TestOptions:
     """
     Class providing useful stuff for preparing tests.
     """
@@ -159,12 +160,7 @@ class TestOptions(object):
             self.WITH_QT_TEST = False
             self.WITH_QT_TEST_REASON = "DISPLAY env variable not set"
 
-        if parsed_options is not None and not parsed_options.opencl:
-            self.WITH_OPENCL_TEST = False
-            # That's an easy way to skip OpenCL tests
-            # It disable the use of OpenCL on the full silx project
-            os.environ['PYFAI_OPENCL'] = "False"
-        elif os.environ.get('PYFAI_OPENCL', 'True') == 'False':
+        if parsed_options is not None and not parsed_options.opencl or os.environ.get('PYFAI_OPENCL', 'True') == 'False':
             self.WITH_OPENCL_TEST = False
             # That's an easy way to skip OpenCL tests
             # It disable the use of OpenCL on the full silx project
@@ -177,9 +173,7 @@ class TestOptions(object):
             self.WITH_GL_TEST = False
             self.WITH_GL_TEST_REASON = "Skipped by WITH_GL_TEST env var"
 
-        if parsed_options is not None and parsed_options.low_mem:
-            self.TEST_LOW_MEM = True
-        elif os.environ.get('PYFAI_LOW_MEM', 'True') == 'False':
+        if parsed_options is not None and parsed_options.low_mem or os.environ.get('PYFAI_LOW_MEM', 'True') == 'False':
             self.TEST_LOW_MEM = True
 
         if struct.calcsize("P") == 4:
@@ -422,7 +416,7 @@ class TestLogging(logging.Handler):
             logging.NOTSET: notset
         }
 
-        super(TestLogging, self).__init__()
+        super().__init__()
 
     def __enter__(self):
         """Context (i.e., with) support"""

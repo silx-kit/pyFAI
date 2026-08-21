@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -40,10 +39,13 @@ __contact__ = "jerome.kieffer@esrf.fr"
 import gc
 import logging
 import threading
+
 import numpy
+
 from . import ocl
+
 if ocl is not None:
-    from . import pyopencl, allocate_cl_buffers, release_cl_buffers
+    from . import allocate_cl_buffers, pyopencl, release_cl_buffers
     mf = pyopencl.mem_flags
     from . import concatenate_cl_kernel
 from ..utils import crc32
@@ -51,7 +53,7 @@ from ..utils import crc32
 logger = logging.getLogger(__name__)
 
 
-class OCL_Hist_Pixelsplit(object):
+class OCL_Hist_Pixelsplit:
 
     def __init__(self, pos, bins, image_size, pos0_range=None, pos1_range=None, devicetype="all",
                  padded=False, block_size=32,
@@ -187,7 +189,7 @@ class OCL_Hist_Pixelsplit(object):
         ]
 
         if self.size < self.BLOCK_SIZE:
-            raise RuntimeError("Fatal error in _allocate_buffers. size (%d) must be >= BLOCK_SIZE (%d)\n", self.size, self.BLOCK_SIZE)  # noqa
+            raise RuntimeError("Fatal error in _allocate_buffers. size (%d) must be >= BLOCK_SIZE (%d)\n", self.size, self.BLOCK_SIZE)
 
         self._cl_mem = allocate_cl_buffers(buffers, self.device, self._ctx)
 

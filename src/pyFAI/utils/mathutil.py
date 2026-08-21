@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -39,8 +38,9 @@ __status__ = "production"
 
 import logging
 import math
-import numpy
 import time
+
+import numpy
 import scipy.ndimage
 from scipy.signal import peak_widths
 

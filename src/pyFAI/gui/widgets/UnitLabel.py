@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -39,7 +38,7 @@ class UnitLabel(qt.QLabel):
     """
 
     def __init__(self, parent):
-        super(UnitLabel, self).__init__(parent)
+        super().__init__(parent)
         self.__unit = None
         self.__model = None
         self.__isUnitEditable = False
@@ -58,7 +57,7 @@ class UnitLabel(qt.QLabel):
             self.setToolTip("No unit")
         else:
             self.setText(unit.symbol)
-            self.setToolTip(u"%s (%s)" % (unit.fullname, unit.symbol))
+            self.setToolTip("%s (%s)" % (unit.fullname, unit.symbol))
 
     def getUnit(self):
         """
@@ -106,7 +105,7 @@ class UnitLabel(qt.QLabel):
 
         for unit in unitList:
             action = qt.QAction(menu)
-            text = u"%s: %s" % (unit.fullname, unit.symbol)
+            text = "%s: %s" % (unit.fullname, unit.symbol)
             if unit is self.__unit:
                 text += " (current)"
             action.setText(text)
@@ -128,7 +127,7 @@ class UnitLabel(qt.QLabel):
             pos = self.mapToGlobal(pos)
             self.__popupUnitSelection(pos)
             return
-        super(UnitLabel, self).mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
 
     def setUnitEditable(self, isUnitEditable):
         self.__isUnitEditable = isUnitEditable

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -31,10 +30,10 @@ import logging
 
 from silx.gui import qt
 
-from ..model.DataModel import DataModel
-from ..model.ImageModel import ImageFromFilenameModel
-from ..model.ImageModel import ImageFilenameModel
 import pyFAI.io.image
+
+from ..model.DataModel import DataModel
+from ..model.ImageModel import ImageFilenameModel, ImageFromFilenameModel
 
 _logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ class FileEdit(qt.QLineEdit):
     but this signal is emitted."""
 
     def __init__(self, parent=None):
-        super(FileEdit, self).__init__(parent)
+        super().__init__(parent)
         self.__model = None
         self.__applyedWhenFocusOut = True
         self.__previousText = None
@@ -75,13 +74,11 @@ class FileEdit(qt.QLineEdit):
     def focusInEvent(self, event):
         self.__previousText = self.text()
         self.__wasModified = False
-        super(FileEdit, self).focusInEvent(event)
+        super().focusInEvent(event)
 
     def dragEnterEvent(self, event):
         if self.__model is not None:
-            if event.mimeData().hasFormat("text/uri-list"):
-                event.acceptProposedAction()
-            elif event.mimeData().hasFormat("application/x-silx-uri"):
+            if event.mimeData().hasFormat("text/uri-list") or event.mimeData().hasFormat("application/x-silx-uri"):
                 event.acceptProposedAction()
 
     def dropEvent(self, event):
@@ -123,7 +120,7 @@ class FileEdit(qt.QLineEdit):
             self.__cancelText()
             event.accept()
         else:
-            result = super(FileEdit, self).keyPressEvent(event)
+            result = super().keyPressEvent(event)
             if event.isAccepted():
                 self.__wasModified = True
             return result

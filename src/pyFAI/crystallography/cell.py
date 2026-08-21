@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -43,14 +42,16 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "12/06/2026"
 __status__ = "production"
 
-import os
-import logging
-import numpy
 import itertools
-from math import sin, cos, sqrt, pi, ceil
+import logging
+import os
+from math import ceil, cos, pi, sin, sqrt
+
+import numpy
+
 from ..io.calibrant_config import CalibrantConfig, Miller, Reflection
-from .space_groups import ReflectionCondition
 from ..utils.decorators import deprecated
+from .space_groups import ReflectionCondition
 
 logger = logging.getLogger(__name__)
 
@@ -285,7 +286,7 @@ class Cell:
         """
         self = cls.cubic(a, lattice_type="F")
         self.selection_rules.append(
-            lambda h, k, l: not (  # noqa: E741
+            lambda h, k, l: not (
                 (h % 2 == 0)
                 and (k % 2 == 0)
                 and (l % 2 == 0)
@@ -329,7 +330,7 @@ class Cell:
         :param hkl: 3-tuple of integers
         :return: the inter-planar distance in Angstrom
         """
-        h, k, l = hkl  # noqa: E741
+        h, k, l = hkl
         deg2rad = pi / 180.0
         if self.lattice in ["cubic", "tetragonal", "orthorhombic"]:
             invd2 = (h / self.a) ** 2 + (k / self.b) ** 2 + (l / self.c) ** 2

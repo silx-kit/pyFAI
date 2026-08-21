@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,17 +33,18 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/10/2020"
 
-import unittest
 import logging
-import numpy
+import unittest
 
+import numpy
 from silx.gui import qt
 from silx.gui.utils import testutils
-import pyFAI.resources
+
 import pyFAI.calibrant
 import pyFAI.detectors
-from pyFAI.gui.CalibrationWindow import CalibrationWindow
+import pyFAI.resources
 from pyFAI.gui.CalibrationContext import CalibrationContext
+from pyFAI.gui.CalibrationWindow import CalibrationWindow
 
 _logger = logging.getLogger(__name__)
 
@@ -53,13 +53,13 @@ class TestCalibration(testutils.TestCaseQt):
 
     @classmethod
     def setUpClass(cls):
-        super(TestCalibration, cls).setUpClass()
+        super().setUpClass()
         pyFAI.resources.silx_integration()
 
     def setUp(self):
         # FIXME: It would be good to remove this singleton
         CalibrationContext._releaseSingleton()
-        super(TestCalibration, self).setUp()
+        super().setUp()
 
     def create_context(self):
         settings = qt.QSettings()

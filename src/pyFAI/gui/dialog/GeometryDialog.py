@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,6 +27,7 @@ __license__ = "MIT"
 __date__ = "24/02/2023"
 
 from silx.gui import qt
+
 from ..model.GeometryModel import GeometryModel
 from ..widgets.GeometryTabs import GeometryTabs
 
@@ -37,7 +37,7 @@ class GeometryDialog(qt.QDialog):
     """
 
     def __init__(self, parent=None):
-        super(GeometryDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Sample stage geometry")
         self._geometryTabs = GeometryTabs(self)
         self._buttonBox = qt.QDialogButtonBox()

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -40,13 +39,16 @@ __docformat__ = 'restructuredtext'
 
 import logging
 from collections import OrderedDict
+
 import numpy
 
-from ..method_registry import IntegrationMethod
-from ..engines import CSR_engine as py_CSR_engine
 from ..engines import CSC_engine as py_CSC_engine
+from ..engines import CSR_engine as py_CSR_engine
+
 # Register numpy integrators which are fail-safe
 from ..engines import histogram_engine
+from ..method_registry import IntegrationMethod
+
 IntegrationMethod(1, "no", "histogram", "python", old_method="numpy",
                   class_funct_ng=(None, histogram_engine.histogram1d_engine))
 IntegrationMethod(2, "no", "histogram", "python", old_method="numpy",

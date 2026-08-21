@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,9 +27,10 @@ __license__ = "MIT"
 __date__ = "02/05/2022"
 
 import logging
+
 from silx.gui import qt
-from ..utils import validators
-from ..utils import units
+
+from ..utils import units, validators
 
 _logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class QuantityEdit(qt.QLineEdit):
     but this signal is emitted."""
 
     def __init__(self, parent=None):
-        super(QuantityEdit, self).__init__(parent)
+        super().__init__(parent)
         validator = validators.AdvancedDoubleValidator(self)
         validator.setAllowEmpty(True)
         self.setValidator(validator)
@@ -86,7 +86,7 @@ class QuantityEdit(qt.QLineEdit):
     def focusInEvent(self, event):
         self.__previousText = self.text()
         self.__wasModified = False
-        super(QuantityEdit, self).focusInEvent(event)
+        super().focusInEvent(event)
 
     def setModel(self, model):
         if self.__model is not None:
@@ -167,7 +167,7 @@ class QuantityEdit(qt.QLineEdit):
             self.__cancelText()
             event.accept()
         else:
-            result = super(QuantityEdit, self).keyPressEvent(event)
+            result = super().keyPressEvent(event)
             if event.isAccepted():
                 self.__wasModified = True
             return result

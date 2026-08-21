@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -27,13 +26,14 @@ __authors__ = ["V. Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
 __date__ = "21/11/2025"
 
-import fabio
-import os
 import logging
+import os
+
+import fabio
 from silx.gui import qt
-from ..model.ImageModel import ImageFilenameModel
-from ..model.ImageModel import ImageFromFilenameModel
+
 from ..ApplicationContext import ApplicationContext
+from ..model.ImageModel import ImageFilenameModel, ImageFromFilenameModel
 from ..utils.FilterBuilder import FilterBuilder
 
 _logger = logging.getLogger(__name__)
@@ -121,7 +121,7 @@ class LoadImageToolButton(qt.QToolButton):
     """
 
     def __init__(self, parent=None):
-        super(LoadImageToolButton, self).__init__(parent)
+        super().__init__(parent)
         self.__model = None
         self.__isEnabled = True
         self.__dialogTitle = "Select an image"

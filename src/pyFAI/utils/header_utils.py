@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,6 +35,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/10/2020"
 
 import logging
+
 import fabio
 
 _logger = logging.getLogger(__name__)
@@ -43,7 +43,6 @@ _logger = logging.getLogger(__name__)
 
 class MonitorNotFound(Exception):
     """Raised when monitor information in not found or is not valid."""
-    pass
 
 
 def _get_monitor_value_from_edf(image, monitor_key):
@@ -156,16 +155,12 @@ def get_monitor_value(image, monitor_key):
 
     if fabio.version_info[0:2] < (0, 9):
         # FIXME: Remove this dead code by upgrading the dependency to fabio>=0.9
-        if isinstance(image, fabio.edfimage.EdfImage):
-            return _get_monitor_value_from_edf(image, monitor_key)
-        elif isinstance(image, fabio.numpyimage.NumpyImage):
+        if isinstance(image, fabio.edfimage.EdfImage) or isinstance(image, fabio.numpyimage.NumpyImage):
             return _get_monitor_value_from_edf(image, monitor_key)
         elif isinstance(image, fabio.hdf5image.Hdf5Image):
             return _get_monitor_value_from_hdf5(image, monitor_key)
     else:
-        if isinstance(image, (fabio.edfimage.EdfImage, fabio.edfimage.EdfFrame)):
-            return _get_monitor_value_from_edf(image, monitor_key)
-        elif isinstance(image, fabio.numpyimage.NumpyImage):
+        if isinstance(image, (fabio.edfimage.EdfImage, fabio.edfimage.EdfFrame)) or isinstance(image, fabio.numpyimage.NumpyImage):
             return _get_monitor_value_from_edf(image, monitor_key)
         elif isinstance(image, (fabio.hdf5image.Hdf5Image, fabio.hdf5image.Hdf5Frame)):
             return _get_monitor_value_from_hdf5(image, monitor_key)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -39,21 +38,22 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/12/2025"
 __status__ = "development"
 
-import logging
 import json
+import logging
 import os.path as op
 import time
-from silx.gui import qt
-from silx.gui import icons
 
-from .widgets.WorkerConfigurator import WorkerConfigurator
-from ..io import integration_config
-from .utils import projecturl
-from ..utils import get_ui_file
-from ..app import integrate
+from silx.gui import icons, qt
+
 from .. import containers
-from .utils.eventutils import QtProxifier
+from ..app import integrate
+from ..io import integration_config
+from ..utils import get_ui_file
+from .utils import projecturl
 from .utils.colorutils import DEFAULT_COLORMAP
+from .utils.eventutils import QtProxifier
+from .widgets.WorkerConfigurator import WorkerConfigurator
+
 logger = logging.getLogger(__name__)
 
 
@@ -184,7 +184,7 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
                 scale=scale,
                 colormap=DEFAULT_COLORMAP,
                 resetzoom=False)
-            
+
         else:
             logger.error("Unsupported result type %s", type(result))
         if resetZoom:
@@ -196,7 +196,6 @@ class IntegrationProcess(qt.QDialog, integrate.IntegrationObserver):
 
         :param int data_count: Number of data to integrate
         """
-        pass
 
     def processing_started(self, data_count):
         """
@@ -356,7 +355,7 @@ class IntegrationDialog(qt.QWidget):
             logger.info("Dump to %s", filename)
             try:
                 to_save.save(filename)
-            except IOError as error:
+            except OSError as error:
                 logger.error("Error while saving config: %s", error)
             else:
                 logger.debug("Saved")

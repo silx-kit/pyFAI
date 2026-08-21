@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,15 +33,18 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import time
-import numpy
 import logging
+import time
+import unittest
+
+import numpy
 from numpy import cos
-from .utilstest import UtilsTest
+
 from ..ext.histogram import histogram, histogram2d, histogram2d_engine
 from ..ext.splitBBoxCSR import HistoBBox1d, HistoBBox2d
 from ..utils import mathutil
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 if logger.getEffectiveLevel() == logging.DEBUG:
@@ -55,7 +57,7 @@ class TestHistogram1d(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestHistogram1d, cls).setUpClass()
+        super().setUpClass()
 
         # CSR logger should stop complaining about deactivated
         csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
@@ -100,7 +102,7 @@ class TestHistogram1d(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestHistogram1d, cls).tearDownClass()
+        super().tearDownClass()
         cls.unweight_numpy = cls.bins_numpy = None
         cls.I_numpy = cls.weight_numpy = cls.bins_csr = None
         cls.data_sum = cls.size = cls.err_max_cnt = None
@@ -213,7 +215,7 @@ class TestHistogram2d(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestHistogram2d, cls).setUpClass()
+        super().setUpClass()
 
         # CSR logger should stop complaining about deactivated
         csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
@@ -280,7 +282,7 @@ class TestHistogram2d(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestHistogram2d, cls).tearDownClass()
+        super().tearDownClass()
         cls.I_numpy = cls.size = cls.err_max_cnt = None
         cls.epsilon = cls.tth_numpy = None
         cls.I_csr = cls.tth_csr = cls.chi_csr = cls.weight_csr = cls.unweight_csr = None

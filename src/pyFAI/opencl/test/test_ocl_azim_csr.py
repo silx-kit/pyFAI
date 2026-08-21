@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Simple histogram in Python + OpenCL
 #             https://github.com/silx-kit/pyFAI
@@ -36,16 +35,19 @@ __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, Fr
 __date__ = "06/12/2024"
 
 import logging
+import unittest
+
 import numpy
 
-import unittest
 from .. import ocl
+
 if ocl:
     import pyopencl.array
-from ...test.utilstest import UtilsTest
+from ...containers import ErrorModel
 from ...integrator.azimuthal import AzimuthalIntegrator
 from ...method_registry import IntegrationMethod
-from ...containers import ErrorModel
+from ...test.utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,7 +57,7 @@ class TestOclAzimCSR(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestOclAzimCSR, cls).setUpClass()
+        super().setUpClass()
         if ocl:
             cls.ctx = ocl.create_context()
             if logger.getEffectiveLevel() <= logging.INFO:
@@ -73,7 +75,7 @@ class TestOclAzimCSR(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestOclAzimCSR, cls).tearDownClass()
+        super().tearDownClass()
         logger.debug("Maximum valid workgroup size %s on device %s" % (cls.ctx.devices[0].max_work_group_size, cls.ctx.devices[0]))
         cls.ctx = None
         cls.queue = None
@@ -124,15 +126,15 @@ class TestOclAzimCSR(unittest.TestCase):
             # histogram of normalization
             # print(ref.sum_normalization)
             # print(res.normalization)
-            err = abs((res.normalization - ref.sum_normalization))
+            err = abs(res.normalization - ref.sum_normalization)
             # print(err)
             self.assertLess(err.max(), 5e-4, "normalization content is the same: %s<5e-5" % (err.max))
 
             # histogram of signal
-            self.assertLess(abs((res.signal - ref.sum_signal)).max(), 5e-5, "signal content is the same")
+            self.assertLess(abs(res.signal - ref.sum_signal).max(), 5e-5, "signal content is the same")
 
             # histogram of variance
-            self.assertLess(abs((res.variance - ref.sum_variance)).max(), 5e-5, "signal content is the same")
+            self.assertLess(abs(res.variance - ref.sum_variance).max(), 5e-5, "signal content is the same")
 
             # Intensities are not that different:
             delta = ref.intensity - res.intensity

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,27 +33,30 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "24/02/2026"
 
-import unittest
+import logging
 import os
+import platform
+import shutil
 import time
+import unittest
+
 import fabio
 import numpy
-import logging
-import shutil
-import platform
-
 
 from .. import ocl
+
 if ocl is not None:
-    from .. import pyopencl, read_cl_file
     import pyopencl.array
     from pyopencl.elementwise import ElementwiseKernel
 
+    from .. import pyopencl, read_cl_file
+
 from ... import load
-from ...test  import utilstest
 from ...method_registry import IntegrationMethod
+from ...test import utilstest
 from ...test.utilstest import test_options
 from ...utils import mathutil
+
 logger = logging.getLogger(__name__)
 EPS32 = numpy.finfo("float32").eps
 EPS64 = numpy.finfo("float64").eps
@@ -103,7 +105,7 @@ class TestMask(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestMask, cls).tearDownClass()
+        super().tearDownClass()
         shutil.rmtree(cls.tmp_dir)
         cls.tmp_dir = cls.N = cls.datasets = None
 
@@ -173,7 +175,7 @@ class TestSort(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestSort, cls).setUpClass()
+        super().setUpClass()
         cls.N = 1024
         cls.ws = cls.N // 8
 
@@ -201,7 +203,7 @@ class TestSort(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestSort, cls).tearDownClass()
+        super().tearDownClass()
         cls.h_data = None
         cls.queue = None
         cls.ctx = None
@@ -318,7 +320,7 @@ class TestKahan(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestKahan, cls).setUpClass()
+        super().setUpClass()
 
         cls.ctx = ocl.create_context()
         cls.queue = pyopencl.CommandQueue(cls.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)

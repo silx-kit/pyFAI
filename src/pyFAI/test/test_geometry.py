@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,27 +35,28 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "14/11/2025"
 
-import unittest
-import random
-import time
-import numpy
 import itertools
+import json
 import logging
 import os.path
-import json
-import fabio
+import random
+import time
+import unittest
 from math import pi
-from . import utilstest
-from ..io.ponifile import PoniFile
-from .. import geometry, load
-from ..integrator.azimuthal import AzimuthalIntegrator
-from .. import units
+
+import fabio
+import numpy
+
+from .. import geometry, load, units
 from ..detectors import detector_factory
-from ..third_party import transformations
-from .utilstest import UtilsTest
-from ..utils.mathutil import allclose_mod
 from ..geometry.crystfel import build_geometry, parse_crystfel_geom
 from ..geometry.fit2d import Fit2dGeometry
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..io.ponifile import PoniFile
+from ..third_party import transformations
+from ..utils.mathutil import allclose_mod
+from . import utilstest
+from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 
@@ -278,12 +278,12 @@ class TestFastPath(utilstest.ParametricTestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestFastPath, cls).setUpClass()
+        super().setUpClass()
         cls.calc_geometries()
 
     @classmethod
     def tearDownClass(cls):
-        super(TestFastPath, cls).tearDownClass()
+        super().tearDownClass()
         cls.matrices = None
         cls.geometries = None
         cls.quaternions = None
@@ -577,7 +577,7 @@ class TestCalcFrom(unittest.TestCase):
         img1 = ai.calcfrom1d(prof_1d.radial, sig, dim1_unit="2th_deg",
                             mask=det.mask, dummy=-1)
         new_prof_1d = ai.integrate1d_ng(img1, 200, unit="2th_deg")
-        delta = abs((new_prof_1d.intensity - sig)).max()
+        delta = abs(new_prof_1d.intensity - sig).max()
         self.assertLess(delta, 600, "calcfrom1d works delta=%s" % delta)
         prof_2d = ai.integrate2d(img1, 400, 360, unit="2th_deg")
         img2 = ai.calcfrom2d(prof_2d.intensity, prof_2d.radial, prof_2d.azimuthal,
@@ -592,14 +592,14 @@ class TestBugRegression(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestBugRegression, cls).setUpClass()
+        super().setUpClass()
         detector = detector_factory("Imxpad S10")  # small detectors makes calculation faster
         cls.geo = geometry.Geometry(detector=detector)
         cls.geo.setFit2D(100, detector.shape[1] // 3, detector.shape[0] // 3, tilt=1)
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestBugRegression, cls).tearDownClass()
+        super().tearDownClass()
         cls.geo = None
 
     def test_bug747(self):
@@ -634,7 +634,7 @@ class TestOrientation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestOrientation, cls).setUpClass()
+        super().setUpClass()
         cls.ai1 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":1},
                                            "wavelength":1e-10})
         cls.ai2 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":2},
@@ -646,7 +646,7 @@ class TestOrientation(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestOrientation, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
 
     def test_array_from_unit_tth_center(self):
@@ -773,7 +773,7 @@ class TestOrientation2(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestOrientation2, cls).setUpClass()
+        super().setUpClass()
         p = detector_factory("pilatus100k")
         c = p.get_pixel_corners()
         d1 = c[..., 1].max()
@@ -789,7 +789,7 @@ class TestOrientation2(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestOrientation2, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
 
     def test_positions(self):

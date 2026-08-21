@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,27 +35,26 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "19/08/2026"
 __status__ = "stable"
 
+import copy
+import inspect
+import json
 import logging
-import numpy
 import os
 import posixpath
 import threading
-import json
-from typing import Dict, Any, Union
-import inspect
-import copy
 import types
+from typing import Any
 
+import numpy
+
+from .. import average, io, spline, utils
+from ..utils import crc32
+from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
+from ..utils.mathutil import binning as rebin
+from ..utils.mathutil import expand2d
+from ..utils.stringutil import to_eng
 from .orientation import Orientation
 from .sensors import SensorConfig
-from .. import io
-from .. import spline
-from .. import utils
-from .. import average
-from ..utils import crc32
-from ..utils.mathutil import expand2d, binning as rebin
-from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
-from ..utils.stringutil import to_eng
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +94,7 @@ class DetectorMeta(type):
                     cls.registry[alias.lower().replace(" ", "_")] = cls
                     cls.registry[alias.lower().replace(" ", "")] = cls
 
-        super(DetectorMeta, cls).__init__(name, bases, dct)
+        super().__init__(name, bases, dct)
 
 
 class Detector(metaclass=DetectorMeta):
@@ -128,7 +126,7 @@ class Detector(metaclass=DetectorMeta):
     _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners", "sensor")
 
     @classmethod
-    def factory(cls, name: str, config: Union[None, str, Dict[str, Any]]=None):
+    def factory(cls, name: str, config: None | str | dict[str, Any]=None):
         """
         Create a pyFAI detector from a name.
 
@@ -627,7 +625,7 @@ class Detector(metaclass=DetectorMeta):
             elif kw == "pixelY":
                 self.pixel1 = val * 1e-6
             elif kw.lower() == "splinefile":
-                self.splinefile = kwarg[kw]
+                self.splinefile = val
 
     def _calc_pixel_index_from_orientation(self, center=True):
         """Calculate the pixel index when considering the different orientations"""
@@ -1023,7 +1021,7 @@ class Detector(metaclass=DetectorMeta):
         :rtype: numpy ndarray of int8 or None
         """
 #        logger.debug("Detector.calc_mask is not implemented for generic detectors")
-        return None
+        return
 
     def get_dummies(self, img):
         """Calculate the actual dummy value from dtype of the img

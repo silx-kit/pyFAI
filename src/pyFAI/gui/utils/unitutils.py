@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
@@ -26,8 +25,9 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "10/10/2024"
 
-import numpy
 import collections.abc
+
+import numpy
 
 from pyFAI import units
 

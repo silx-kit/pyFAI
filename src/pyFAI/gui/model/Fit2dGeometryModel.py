@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2019 European Synchrotron Radiation Facility
@@ -34,7 +33,7 @@ from .DataModel import DataModel
 class Fit2dGeometryModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(Fit2dGeometryModel, self).__init__(parent)
+        super().__init__(parent)
         self.__distance = DataModel()
         self.__centerX = DataModel()
         self.__centerY = DataModel()

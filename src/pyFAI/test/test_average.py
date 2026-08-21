@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,14 +34,16 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "21/05/2024"
 
-import unittest
-import numpy
-import os
 import ast
 import logging
+import os
+import unittest
+
 import fabio
-from .utilstest import UtilsTest
+import numpy
+
 from .. import average
+from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class TestAverage(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestAverage, cls).setUpClass()
+        super().setUpClass()
         cls.rng = UtilsTest.get_rng()
         cls.unbinned = cls.rng.random((64, 32))
         cls.dark = cls.unbinned.astype("float32")

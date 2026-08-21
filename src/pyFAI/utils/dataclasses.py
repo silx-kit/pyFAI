@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,11 +34,10 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 
-import sys
 import logging
+import sys
 import typing
 from dataclasses import dataclass as _dataclass
-
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,20 +33,21 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "26/06/2026"
 __status__ = "development"
 
-import os
 import copy
-import tempfile
-import subprocess
 import logging
-import numpy
 import math
+import os
+import subprocess
+import tempfile
 from math import pi
-from scipy.optimize import fmin, leastsq, fmin_slsqp
-from .integrator.azimuthal import AzimuthalIntegrator
-from .calibrant import Calibrant, CALIBRANT_FACTORY
-from .utils.ellipse import fit_ellipse
-from .utils.decorators import deprecated, deprecated_args
 
+import numpy
+from scipy.optimize import fmin, fmin_slsqp, leastsq
+
+from .calibrant import CALIBRANT_FACTORY, Calibrant
+from .integrator.azimuthal import AzimuthalIntegrator
+from .utils.decorators import deprecated, deprecated_args
+from .utils.ellipse import fit_ellipse
 
 logger = logging.getLogger(__name__)
 

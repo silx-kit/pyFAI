@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -40,10 +39,13 @@ __date__ = "04/12/2025"
 __status__ = "production"
 
 
-import numpy
 import logging
-from ._common import Detector, _ensure_dict, SensorConfig
+
+import numpy
+
 from ..utils import mathutil
+from ._common import Detector, SensorConfig, _ensure_dict
+
 logger = logging.getLogger(__name__)
 try:
     from ..ext import bilinear

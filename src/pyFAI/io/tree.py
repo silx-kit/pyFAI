@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,8 +34,8 @@ __date__ = "04/04/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import os
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ try:
 except ImportError:
     logger.error("pyFAI.ext._tree did not import")
 
-    class TreeItem(object):
+    class TreeItem:
         """
         Node of a tree ... Needs synchronization with Cython code
         Deprecated !
@@ -95,9 +94,7 @@ except ImportError:
 
         @property
         def name(self):
-            if not self.parent:
-                return self.label or ""
-            elif self.order == 1:
+            if not self.parent or self.order == 1:
                 return self.label or ""
             elif self.order == 4:
                 return os.path.join(self.parent.name, self.label)

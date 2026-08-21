@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,18 +32,20 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "27/05/2026"
 __status__ = "development"
 
-import math
-from copy import deepcopy
-import logging
-import warnings
-from typing import NamedTuple
-from enum import IntEnum
-from dataclasses import fields, asdict  # noqa
 import collections
-import numpy
+import logging
+import math
+import warnings
+from copy import deepcopy
+from dataclasses import asdict, fields  # noqa
+from enum import IntEnum
+from typing import NamedTuple
+
 import numexpr
+import numpy
 from numpy.typing import ArrayLike
-from .utils.dataclasses import dataclass, case_insensitive_dataclass  # noqa
+
+from .utils.dataclasses import case_insensitive_dataclass, dataclass  # noqa
 from .utils.decorators import deprecated_warning
 
 logger = logging.getLogger(__name__)
@@ -750,7 +751,7 @@ class Integrate1dResult(IntegrateResult):
         return IntegrateResult.__new__(Integrate1dResult, t)
 
     def __init__(self, radial, intensity, sigma=None):
-        super(Integrate1dResult, self).__init__()
+        super().__init__()
 
     @property
     def radial(self):
@@ -841,7 +842,7 @@ class Integrate2dResult(IntegrateResult):
         return IntegrateResult.__new__(Integrate2dResult, t)
 
     def __init__(self, intensity, radial, azimuthal, sigma=None):
-        super(Integrate2dResult, self).__init__()
+        super().__init__()
         self._radial_unit = None
         self._azimuthal_unit = None
 
@@ -1607,7 +1608,7 @@ class Integrate1dFiberResult(IntegrateResult):
         return IntegrateResult.__new__(Integrate1dFiberResult, t)
 
     def __init__(self, integrated, intensity, sigma=None):
-        super(Integrate1dFiberResult, self).__init__()
+        super().__init__()
         self._vertical_integration = None
 
     @property
@@ -1679,7 +1680,7 @@ class Integrate2dFiberResult(IntegrateResult):
         return IntegrateResult.__new__(Integrate2dFiberResult, t)
 
     def __init__(self, intensity, inplane, outofplane, sigma=None):
-        super(Integrate2dFiberResult, self).__init__()
+        super().__init__()
         self._oop_unit = None
         self._ip_unit = None
 
@@ -1788,9 +1789,9 @@ class Integrate2dFiberResult(IntegrateResult):
 class Miller(NamedTuple):
     """This represents the Miller index of a family of lattice plans"""
 
-    h: int  # noqa: E741
-    k: int  # noqa: E741
-    l: int  # noqa: E741
+    h: int
+    k: int
+    l: int
 
     def __repr__(self):
         return f"Miller({self.h}, {self.k}, {self.l})"

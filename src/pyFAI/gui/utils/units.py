@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
@@ -26,8 +25,10 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "08/01/2021"
 
-import numpy
 import enum
+
+import numpy
+
 from pyFAI import units
 
 
@@ -50,27 +51,27 @@ class Dimensionality(enum.Enum):
 
 class Unit(enum.Enum):
 
-    DEGREE = ("Degree", u"deg", Dimensionality.ANGLE, 1),
+    DEGREE = ("Degree", "deg", Dimensionality.ANGLE, 1),
 
-    RADIAN = ("Radian", u"rad", Dimensionality.ANGLE, 1),
+    RADIAN = ("Radian", "rad", Dimensionality.ANGLE, 1),
 
-    METER = ("Meter", u"m", Dimensionality.LENGTH, 1),
+    METER = ("Meter", "m", Dimensionality.LENGTH, 1),
 
-    CENTIMETER = ("Centimeter", u"cm", Dimensionality.LENGTH, 1),
+    CENTIMETER = ("Centimeter", "cm", Dimensionality.LENGTH, 1),
 
-    MILLIMETER = ("Millimeter", u"mm", Dimensionality.LENGTH, 1),
+    MILLIMETER = ("Millimeter", "mm", Dimensionality.LENGTH, 1),
 
-    ANGSTROM = (u"Ångström", u"Å", Dimensionality.WAVELENGTH, 1),
+    ANGSTROM = ("Ångström", "Å", Dimensionality.WAVELENGTH, 1),
 
-    METER_WL = ("Meter", u"m", Dimensionality.WAVELENGTH, 1),
+    METER_WL = ("Meter", "m", Dimensionality.WAVELENGTH, 1),
 
-    ENERGY = ("Energy", u"keV", Dimensionality.WAVELENGTH, -1),
+    ENERGY = ("Energy", "keV", Dimensionality.WAVELENGTH, -1),
 
-    PIXEL = ("Pixel", u"px", Dimensionality.PIXEL, 1),
+    PIXEL = ("Pixel", "px", Dimensionality.PIXEL, 1),
 
-    INV_ANGSTROM = (u"Inverse Ångström", u"Å⁻¹", Dimensionality.SCATTERING_VECTOR, 1),
+    INV_ANGSTROM = ("Inverse Ångström", "Å⁻¹", Dimensionality.SCATTERING_VECTOR, 1),
 
-    INV_NANOMETER = (u"Inverse nanometer", u"nm⁻¹", Dimensionality.SCATTERING_VECTOR, 1),
+    INV_NANOMETER = ("Inverse nanometer", "nm⁻¹", Dimensionality.SCATTERING_VECTOR, 1),
 
     @property
     def fullname(self):

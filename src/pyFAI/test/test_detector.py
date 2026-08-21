@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,21 +34,21 @@ __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "04/02/2026"
 
+import logging
 import os
 import shutil
-import unittest
-import numpy
 import time
-import logging
-from .. import detectors
-from ..detectors import detector_factory, ALL_DETECTORS, Detector, sensors
+import unittest
+
+import numpy
+
+from .. import detectors, io
 from ..calibrant import CALIBRANT_FACTORY as calibrant_factory
+from ..detectors import ALL_DETECTORS, Detector, detector_factory, sensors
+from ..detectors._xspectrum import _Lambda
 from ..geometryRefinement import GeometryRefinement
-from .. import io
 from ..utils.mathutil import expand2d
 from .utilstest import UtilsTest
-
-from ..detectors._xspectrum import _Lambda
 
 logger = logging.getLogger(__name__)
 
@@ -322,8 +321,9 @@ class TestDetector(unittest.TestCase):
         self.assertTrue(pattern_geometry is not None)
 
     def test_displacements(self):
-        from ..detectors import Detector
         import copy
+
+        from ..detectors import Detector
         detector = Detector(pixel1=90e-6, pixel2=110e-6, splineFile=None, max_shape=(110, 90))
         ref = detector.get_pixel_corners()
         detector.reset_pixel_corners()
@@ -450,7 +450,7 @@ class TestDetector(unittest.TestCase):
 class TestOrientation(unittest.TestCase):
     @classmethod
     def setUpClass(cls)->None:
-        super(TestOrientation, cls).setUpClass()
+        super().setUpClass()
         cls.orient1 = detector_factory("Pilatus100k", config={"orientation":1})
         cls.orient2 = detector_factory("Pilatus100k", config={"orientation":2})
         cls.orient3 = detector_factory("Pilatus100k", config={"orientation":3})
@@ -458,7 +458,7 @@ class TestOrientation(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestOrientation, cls).tearDownClass()
+        super().tearDownClass()
         cls.orient1 = None
         cls.orient2 = None
         cls.orient3 = None

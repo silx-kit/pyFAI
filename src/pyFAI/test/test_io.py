@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,21 +33,24 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "09/04/2026"
 
-import unittest
-import os
-import shutil
-import numpy
-import time
-import sys
 import logging
+import os
 import pathlib
-from .utilstest import UtilsTest
-from .. import io
-from ..io.ponifile import PoniFile
-from ..io import spots
-import h5py
+import shutil
+import sys
+import time
+import unittest
+
 import fabio
+import h5py
+import numpy
+
+from .. import io
 from ..integrator import azimuthal as azimuthalIntegrator
+from ..io import spots
+from ..io.ponifile import PoniFile
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 
@@ -56,13 +58,13 @@ pyFAI = sys.modules["pyFAI"]
 class TestPoniFile(unittest.TestCase):
     @classmethod
     def setUpClass(cls)->None:
-        super(TestPoniFile, cls).setUpClass()
+        super().setUpClass()
         cls.ponifile = UtilsTest.getimage("Pilatus1M.poni")
 
 
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestPoniFile, cls).tearDownClass()
+        super().tearDownClass()
         cls.ponifile = None
 
     def test_filename(self):
@@ -117,7 +119,7 @@ class TestNexus(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestNexus, cls).setUpClass()
+        super().setUpClass()
         cls.tmpdir = os.path.join(UtilsTest.tempdir, "io_nexus")
         if not os.path.isdir(cls.tmpdir):
             os.mkdir(cls.tmpdir)
@@ -127,7 +129,7 @@ class TestNexus(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestNexus, cls).tearDownClass()
+        super().tearDownClass()
         # shutil.rmtree(cls.tmpdir)
         cls.tmpdir = None
         cls.ai = None
@@ -342,14 +344,14 @@ class TestXrdmlWriter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestXrdmlWriter, cls).setUpClass()
+        super().setUpClass()
         with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
             cls.img = fimg.data
         cls.ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
         cls.result = cls.ai.integrate1d(cls.img, 200, method=("no", "histogram", "cython"), unit="2th_deg")
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestXrdmlWriter, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai = cls.img = cls.result=None
 
     def test_xrdml(self):

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -30,10 +29,11 @@ __date__ = "09/04/2026"
 import functools
 
 from silx.gui import qt
+
 from .AbstractModel import AbstractModel
 
 
-class ChangeEvent(object):
+class ChangeEvent:
 
     def __init__(self, index, item, added=False, removed=False, updated=False):
         """
@@ -55,7 +55,7 @@ class ChangeEvent(object):
         self.updated = updated
 
 
-class ChangeListEvent(object):
+class ChangeListEvent:
     """A container of consecutive change events"""
 
     def __init__(self):
@@ -153,7 +153,7 @@ class ListModel(AbstractModel):
     """Emitted when the content of the elements changed."""
 
     def __init__(self, parent=None):
-        super(ListModel, self).__init__(parent)
+        super().__init__(parent)
         self.__cacheStructureEvent = None
         self.__cacheContentWasChanged = False
         self.__items = []

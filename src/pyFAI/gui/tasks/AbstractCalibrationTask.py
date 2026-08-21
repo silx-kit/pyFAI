@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,8 +27,9 @@ __license__ = "MIT"
 __date__ = "06/05/2022"
 
 import logging
-from silx.gui import qt
-from silx.gui import icons
+
+from silx.gui import icons, qt
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,7 +44,7 @@ class AbstractCalibrationTask(qt.QWidget):
     warningUpdated = qt.Signal()
 
     def __init__(self):
-        super(AbstractCalibrationTask, self).__init__()
+        super().__init__()
         self._initGui()
         self.__model = None
         self.installEventFilter(self)
@@ -104,7 +104,7 @@ class AbstractCalibrationTask(qt.QWidget):
             self._nextStep.setVisible(isVisible)
 
     def eventFilter(self, widget, event):
-        result = super(AbstractCalibrationTask, self).eventFilter(widget, event)
+        result = super().eventFilter(widget, event)
         if event.type() == qt.QEvent.Show:
             self.widgetShow.emit()
         elif event.type() == qt.QEvent.Hide:

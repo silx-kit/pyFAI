@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -41,20 +40,21 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "26/06/2026"
 __status__ = "production"
 
-import os
 import logging
-import numpy
-from typing import Optional, List
-from collections.abc import Iterable
-from math import sin, asin, pi
+import os
 import threading
-from ..utils import get_calibration_dir
-from ..utils.decorators import deprecated
+from collections.abc import Iterable
+from math import asin, pi, sin
+
+import numpy
+
 from .. import units
-from .resolution import _ResolutionFunction, Caglioti, Constant
 from ..containers import Integrate1dResult, Reflection
 from ..io.calibrant_config import CalibrantConfig
 from ..units import CONST_hc
+from ..utils import get_calibration_dir
+from ..utils.decorators import deprecated
+from .resolution import Caglioti, Constant, _ResolutionFunction
 
 logger = logging.getLogger(__name__)
 try:
@@ -90,9 +90,9 @@ class Calibrant:
 
     def __init__(
         self,
-        filename: Optional[str] = None,
-        dspacing: Optional[List[float]] = None,
-        wavelength: Optional[float] = None,
+        filename: str | None = None,
+        dspacing: list[float] | None = None,
+        wavelength: float | None = None,
         config: CalibrantConfig|None = None,
         **kwargs):
 
@@ -182,8 +182,7 @@ class Calibrant:
     def __repr__(self) -> str:
         if self._filename:
             name = self._filename
-            if name.startswith("pyfai:"):
-                name = name[6:]
+            name = name.removeprefix("pyfai:")
         else:
             name = "undefined"
         name += " Calibrant "
@@ -232,7 +231,7 @@ class Calibrant:
             return os.path.join(basedir, f"{name}.D")
         return os.path.abspath(filename)
 
-    def _load_file(self, filename: Optional[str] = None):
+    def _load_file(self, filename: str | None = None):
         if filename:
             self._filename = filename
 
@@ -240,7 +239,7 @@ class Calibrant:
         if not os.path.isfile(path):
             msg = f"No such calibrant file: {path}"
             logger.error(msg)
-            raise IOError(msg)
+            raise OSError(msg)
 
         config = self.config = CalibrantConfig.from_dspacing(path)
         self._dspacing = [ref.dspacing for ref in config.reflections]
@@ -265,7 +264,7 @@ class Calibrant:
                                            replacement="count_registered_dspacing",
                                            since_version="2025.07")
 
-    def save_dspacing(self, filename: Optional[str] = None):
+    def save_dspacing(self, filename: str | None = None):
         """
         Save the d-spacing into a file.
 
@@ -294,12 +293,12 @@ class Calibrant:
                             since_version="2025.07")  # PEP8
 
     @property
-    def dspacing(self) -> List[float]:
+    def dspacing(self) -> list[float]:
         self._initialize()
         return self._dspacing
 
     @dspacing.setter
-    def dspacing(self, lst: List[float]):
+    def dspacing(self, lst: list[float]):
         self._dspacing = list(lst)
         self._out_dspacing = []
         if self._filename is None:
@@ -332,7 +331,7 @@ class Calibrant:
                 self._2th.sort()
                 self._calc_dSpacing()
 
-    def setWavelength_change2th(self, value: Optional[float] = None):
+    def setWavelength_change2th(self, value: float | None = None):
         """
         Set a new wavelength.
         """
@@ -346,7 +345,7 @@ class Calibrant:
                     )
                 self._calc_2th()
 
-    def setWavelength_changeDs(self, value: Optional[float] = None):
+    def setWavelength_changeDs(self, value: float | None = None):
         """
         Set a new wavelength and only update the dSpacing list.
 
@@ -363,14 +362,14 @@ class Calibrant:
                 self._calc_dSpacing()
 
     @property
-    def wavelength(self) -> Optional[float]:
+    def wavelength(self) -> float | None:
         """
         Returns the used wavelength.
         """
         return self._wavelength
 
     @wavelength.setter
-    def wavelength(self, value: Optional[float] = None):
+    def wavelength(self, value: float | None = None):
         """
         Set a new wavelength .
         """
@@ -447,7 +446,7 @@ class Calibrant:
                                 reason="PEP8",
                                 since_version="2025.07")
 
-    def get_2th(self) -> List[float]:
+    def get_2th(self) -> list[float]:
         """Returns the 2theta positions for all peaks (cached)"""
         if not self._2th:
             self._initialize()
@@ -458,7 +457,7 @@ class Calibrant:
                     self._calc_2th()
         return self._2th
 
-    def get_2th_index(self, angle: float, delta: Optional[float] = None) -> int:
+    def get_2th_index(self, angle: float, delta: float | None = None) -> int:
         """Returns the index in the 2theta angle index.
 
         :param angle: expected angle in radians
@@ -474,7 +473,7 @@ class Calibrant:
                 return i
         return None
 
-    def get_max_wavelength(self, index: Optional[int] = None):
+    def get_max_wavelength(self, index: int | None = None):
         """Calculate the maximum wavelength assuming the ring at index is visible.
 
         Bragg's law says: $\\lambda = 2d sin(\\theta)$

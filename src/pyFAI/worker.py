@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -48,26 +47,26 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "26/02/2026"
 __status__ = "development"
 
-import threading
-import os.path
-import logging
 import json
+import logging
+import os.path
+import threading
+
 import numpy
 
-from . import average
-from . import method_registry
+from . import average, method_registry, units
+from .containers import ErrorModel
+from .distortion import Distortion
+from .engines.preproc import preproc as preproc_numpy
 from .integrator.azimuthal import AzimuthalIntegrator
 from .integrator.fiber import FiberIntegrator
-from .containers import ErrorModel
-from .method_registry import IntegrationMethod, Method
-from .distortion import Distortion
-from . import units
-from .io import ponifile, image as io_image
-from .io.integration_config import WorkerConfig, WorkerFiberConfig
+from .io import image as io_image
+from .io import ponifile
 from .io._json import json_dumps
-from .engines.preproc import preproc as preproc_numpy
-from .utils.mathutil import binning as rebin
+from .io.integration_config import WorkerConfig, WorkerFiberConfig
+from .method_registry import IntegrationMethod, Method
 from .utils.decorators import deprecated
+from .utils.mathutil import binning as rebin
 
 logger = logging.getLogger(__name__)
 try:
@@ -170,7 +169,7 @@ def _reduce_images(filenames, method="mean"):
         return average.average_images(filenames, filter_=method, fformat=None, threshold=0)
 
 
-class Worker(object):
+class Worker:
 
     def __init__(self, azimuthalIntegrator=None,
                  shapeIn=None, shapeOut=(360, 500),
@@ -1105,7 +1104,7 @@ class WorkerFiber(Worker):
             raise_exception(reason)
         return reason
 
-class PixelwiseWorker(object):
+class PixelwiseWorker:
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """
@@ -1195,7 +1194,7 @@ class PixelwiseWorker(object):
     __call__ = process
 
 
-class DistortionWorker(object):
+class DistortionWorker:
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """

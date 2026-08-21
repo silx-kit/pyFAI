@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2019 European Synchrotron Radiation Facility
@@ -90,7 +89,7 @@ class AdvancedComboBox(qt.QComboBox):
     def setModel(self, model):
         if not self.__updateDefaultIndexUpdate:
             self.__updateModelConnection(False)
-        super(AdvancedComboBox, self).setModel(model)
+        super().setModel(model)
         if not self.__updateDefaultIndexUpdate:
             self.__updateModelConnection(True)
             self.__modelWasEmpty = model.rowCount() == 0

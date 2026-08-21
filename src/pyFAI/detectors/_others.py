@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,7 +37,9 @@ __date__ = "04/11/2025"
 __status__ = "production"
 
 import logging
+
 from ._common import Detector
+
 logger = logging.getLogger(__name__)
 
 

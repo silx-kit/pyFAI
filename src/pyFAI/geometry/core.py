@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -45,29 +44,29 @@ __status__ = "production"
 __docformat__ = "restructuredtext"
 
 import copy
-import logging
-from math import pi
-from numpy import arccos, arctan2, sin, cos, sqrt
-import numpy
-import os
-from pathlib import Path
-import threading
-import json
 import gc
+import json
+import logging
+import os
+import threading
 from collections import OrderedDict
+from math import pi
+from pathlib import Path
+
+import numpy
+from numpy import arccos, arctan2, cos, sin, sqrt
+
+from .. import detectors, units, utils
 from ..containers import PolarizationArray, PolarizationDescription
-from .fit2d import convert_to_Fit2d, convert_from_Fit2d
-from .imaged11 import convert_from_ImageD11, convert_to_ImageD11
-from .. import detectors
-from .. import units
-from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
-from ..utils import crc32, ParallaxNotImplemented
-from ..utils.mathutil import deg2rad, expand2d
-from .. import utils
 from ..io import integration_config
 from ..io.ponifile import PoniFile
-from ..units import CONST_hc, to_unit, UnitFiber, CHI_RAD, TTH_RAD
 from ..parallax import Parallax, ThickSensor, ThinSensor
+from ..units import CHI_RAD, TTH_RAD, CONST_hc, UnitFiber, to_unit
+from ..utils import ParallaxNotImplemented, crc32
+from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
+from ..utils.mathutil import deg2rad, expand2d
+from .fit2d import convert_from_Fit2d, convert_to_Fit2d
+from .imaged11 import convert_from_ImageD11, convert_to_ImageD11
 
 TWO_PI = 2.0 * pi
 
@@ -613,10 +612,10 @@ class Geometry:
         """
         if not self.wavelength:
             raise RuntimeError(
-                (
+
                     "Scattering vector q cannot be calculated"
                     " without knowing wavelength !!!"
-                )
+
             )
 
         if (_geometry is not None) and (path == "cython") and (self._parallax is None):
@@ -1659,7 +1658,7 @@ class Geometry:
         try:
             with open(filename, "a") as f:
                 poni.write(f)
-        except IOError as error:
+        except OSError as error:
             logger.error(f"IOError: while writing to file `{filename}`: {error}")
 
     write = save
@@ -2296,7 +2295,7 @@ class Geometry:
         shape = self.get_shape(shape)
         if shape is None:
             raise RuntimeError(
-                ("You should provide a shape if the geometry is not yet initialized")
+                "You should provide a shape if the geometry is not yet initialized"
             )
         if factor is None:
             if with_checksum:
@@ -2376,10 +2375,10 @@ class Geometry:
 
             if shape is None:
                 raise RuntimeError(
-                    (
+
                         "You should provide a shape if the"
                         " geometry is not yet initialized"
-                    )
+
                 )
 
         with self._sem:

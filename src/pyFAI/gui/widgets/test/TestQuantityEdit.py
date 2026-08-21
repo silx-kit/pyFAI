@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,13 +33,15 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/10/2020"
 
-import unittest
 import logging
+import unittest
 
 from silx.gui.utils import testutils
-from ..QuantityEdit import QuantityEdit
-from pyFAI.gui.utils import units
+
 from pyFAI.gui.model.DataModel import DataModel
+from pyFAI.gui.utils import units
+
+from ..QuantityEdit import QuantityEdit
 
 logger = logging.getLogger(__name__)
 

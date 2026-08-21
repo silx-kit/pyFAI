@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,13 +33,17 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import numpy
-from pyFAI.integrator.azimuthal import AzimuthalIntegrator
-from pyFAI.detectors import detector_factory
-from pickle import dumps, loads
-import unittest
 import logging
+import unittest
+from pickle import dumps, loads
+
+import numpy
+
+from pyFAI.detectors import detector_factory
+from pyFAI.integrator.azimuthal import AzimuthalIntegrator
+
 from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,7 +51,7 @@ class TestPickle(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestPickle, cls).setUpClass()
+        super().setUpClass()
         cls.ai = AzimuthalIntegrator(1.0, detector="Pilatus100k")
         cls.ai.wavelength = 1e-10
         cls.npt = 100
@@ -56,7 +59,7 @@ class TestPickle(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestPickle, cls).tearDownClass()
+        super().tearDownClass()
         cls.data = cls.ai = cls.npt = None
 
     def test_Detector_pickle(self):

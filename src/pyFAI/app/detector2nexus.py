@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,13 +34,17 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/10/2025"
 __status__ = "development"
 
+import logging
 import sys
 from argparse import ArgumentParser
-import numpy
+
 import fabio
-from .. import version as pyFAI_version, date as pyFAI_date
+import numpy
+
+from .. import date as pyFAI_date
+from .. import version as pyFAI_version
 from ..detectors import detector_factory
-import logging
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)

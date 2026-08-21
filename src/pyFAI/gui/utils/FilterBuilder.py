@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (c) 2017-2018 European Synchrotron Radiation Facility
@@ -29,11 +28,11 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "16/10/2020"
 
-import functools
 import collections
+import functools
 
 
-class FilterBuilder(object):
+class FilterBuilder:
     """
     Helper to create extension filters for file dialog
     """

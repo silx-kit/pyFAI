@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,72 +33,73 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "09/07/2025"
 
+import logging
 import sys
 import unittest
-import logging
 
-from .utilstest import UtilsTest
-
-from . import test_average
-from . import test_dummy
-from . import test_histogram
-from . import test_geometry_refinement
-from . import test_azimuthal_integrator
-from . import test_peak_picking
-from . import test_geometry
-from . import test_mask
-from . import test_method_registry
-from . import test_export
-from . import test_saxs
-from . import test_integrate
-from . import test_bilinear
-from . import test_distortion
-from . import test_flat
-from . import test_utils
-from . import test_detector
-from . import test_convolution
-from . import test_sparse
-from . import test_csr
-from . import test_blob_detection
-from . import test_io
-from . import test_io_image
-from . import test_calibrant
-from . import test_polarization
-from . import test_split_pixel
-from . import test_bispev
-from . import test_bug_regression
-from . import test_watershed
-from . import test_multi_geometry
-from . import test_worker
-from . import test_utils_shell
-from . import test_utils_stringutil
-from . import test_utils_mathutil
-from . import test_utils_header
-from . import test_utils_ellipse
-from . import test_preproc
-from . import test_bayes
-from . import test_scripts
-from . import test_spline
-from . import test_sparse_builder
-from . import test_goniometer
-from . import test_integrate_app
-from . import test_integrate_config
-from . import test_pyfai_api
-from ..opencl import test as test_opencl
 from ..gui import test as test_gui
-from . import test_invert_geometry
-from . import test_massif
-from . import test_rectangle
-from . import test_parallax
-from . import test_error_model
-from . import test_units
-from . import test_uncertainties
-from . import test_ring_extraction
-from . import test_fiber_integrator
-from . import test_medfilt_engine
-from . import test_containers
-from . import test_io_diffmap_config
-from . import test_crystallography
+from ..opencl import test as test_opencl
+from . import (
+    test_average,
+    test_azimuthal_integrator,
+    test_bayes,
+    test_bilinear,
+    test_bispev,
+    test_blob_detection,
+    test_bug_regression,
+    test_calibrant,
+    test_containers,
+    test_convolution,
+    test_crystallography,
+    test_csr,
+    test_detector,
+    test_distortion,
+    test_dummy,
+    test_error_model,
+    test_export,
+    test_fiber_integrator,
+    test_flat,
+    test_geometry,
+    test_geometry_refinement,
+    test_goniometer,
+    test_histogram,
+    test_integrate,
+    test_integrate_app,
+    test_integrate_config,
+    test_invert_geometry,
+    test_io,
+    test_io_diffmap_config,
+    test_io_image,
+    test_mask,
+    test_massif,
+    test_medfilt_engine,
+    test_method_registry,
+    test_multi_geometry,
+    test_parallax,
+    test_peak_picking,
+    test_polarization,
+    test_preproc,
+    test_pyfai_api,
+    test_rectangle,
+    test_ring_extraction,
+    test_saxs,
+    test_scripts,
+    test_sparse,
+    test_sparse_builder,
+    test_spline,
+    test_split_pixel,
+    test_uncertainties,
+    test_units,
+    test_utils,
+    test_utils_ellipse,
+    test_utils_header,
+    test_utils_mathutil,
+    test_utils_shell,
+    test_utils_stringutil,
+    test_watershed,
+    test_worker,
+)
+from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 

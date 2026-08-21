@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,10 +36,12 @@ __date__ = "08/04/2024"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os
 import logging
+import os
 import threading
+
 import numpy
+
 from . import ocl, pyopencl
 
 if pyopencl:
@@ -48,10 +49,11 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 from ..utils import crc32, get_cl_file
+
 logger = logging.getLogger(__name__)
 
 
-class OCLFullSplit1d(object):
+class OCLFullSplit1d:
 
     def __init__(self,
                  pos,

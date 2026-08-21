@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,8 +36,10 @@ __status__ = "development"
 
 
 import os.path
+
 import fabio
 import silx.io
+
 
 def read_data(image_path):
     """
@@ -61,7 +62,7 @@ def read_data(image_path):
         with fabio.open(image_path) as image:
             data = image.data
     else:
-        raise IOError(f"Data from path '{image_path}' is not supported or missing")
+        raise OSError(f"Data from path '{image_path}' is not supported or missing")
     return data
 
 

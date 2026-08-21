@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,12 +36,16 @@ __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
+
 import numpy
+
 from . import pyopencl
+
 if pyopencl is None:
     raise ImportError("pyopencl is not installed")
-from . import mf, processing, OpenclProcessing, dtype_converter
 from ..containers import ErrorModel
+from . import OpenclProcessing, dtype_converter, mf, processing
+
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
 logger = logging.getLogger(__name__)

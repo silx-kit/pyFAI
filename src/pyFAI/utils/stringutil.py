@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,8 +31,8 @@ __date__ = "03/10/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import string
 import math
+import string
 
 PREFIXES = {-7: "y",
             -6: "z",
@@ -57,7 +56,7 @@ class SafeFormatter(string.Formatter):
 
     def get_field(self, field_name, args, kwargs):
         try:
-            return super(SafeFormatter, self).get_field(field_name, args, kwargs)
+            return super().get_field(field_name, args, kwargs)
         except KeyboardInterrupt:
             raise
         except Exception:
@@ -94,15 +93,15 @@ def latex_to_unicode(string):
     :param str string: A latex string to convert
     :rtype: str
     """
-    string = string.replace("$", u"")
-    string = string.replace("^{-2}", u"⁻²")
-    string = string.replace("^{-1}", u"⁻¹")
-    string = string.replace("^.", u"⋅")
-    string = string.replace("2\\theta", u"2θ")
-    string = string.replace("^{o}", u"°")
-    string = string.replace("\\AA", u"Å")
-    string = string.replace("log10", u"log₁₀")
-    string = string.replace("^{*2}", u"*²")
+    string = string.replace("$", "")
+    string = string.replace("^{-2}", "⁻²")
+    string = string.replace("^{-1}", "⁻¹")
+    string = string.replace("^.", "⋅")
+    string = string.replace("2\\theta", "2θ")
+    string = string.replace("^{o}", "°")
+    string = string.replace("\\AA", "Å")
+    string = string.replace("log10", "log₁₀")
+    string = string.replace("^{*2}", "*²")
     return string
 
 
@@ -121,19 +120,19 @@ def to_scientific_unicode(value, digits=3):
         power = ""
         for p in power10:
             if p == "-":
-                power += u"\u207B"
+                power += "\u207B"
             elif p == "+":
-                power += u"\u207A"
+                power += "\u207A"
             elif p == "1":
-                power += u"\u00B9"
+                power += "\u00B9"
             elif p == "2":
-                power += u"\u00B2"
+                power += "\u00B2"
             elif p == "3":
-                power += u"\u00B3"
+                power += "\u00B3"
             else:
                 v = ord(p) - ord("0")
                 power += chr(0x2070 + v)
-        value = value + u"\u00B710" + power
+        value = value + "\u00B710" + power
     else:
         value = str(value)
     return value

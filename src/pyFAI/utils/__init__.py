@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,21 +36,24 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/10/2025"
 __status__ = "production"
 
-import logging
-import sys
-import os
 import glob
+import logging
+import os
+import sys
 import threading
+
 import fabio
 
 from ..version import calc_hexversion
+
 if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2)):
     from fabio.nexus import exists
 else:
     from os.path import exists
 
-from ..containers import FixedParameters  # noqa:F401
 from .. import resources
+from ..containers import FixedParameters  # noqa:F401
+
 logger = logging.getLogger(__name__)
 try:
     from ..directories import data_dir
@@ -169,9 +171,8 @@ def _get_data_path(filename):
         real_filename = os.path.join(resource, "resources", filename)
         if os.path.exists(real_filename):
             return real_filename
-    else:
-        raise RuntimeError("Can not find the [%s] resource, "
-                           "something went wrong !!!" % (real_filename,))
+    raise RuntimeError("Can not find the [%s] resource, "
+                       "something went wrong !!!" % (real_filename,))
 
 
 def get_calibration_dir():
@@ -211,7 +212,7 @@ def get_ui_file(filename):
     return _get_data_path(os.path.join("gui", filename))
 
 
-class lazy_property(object):
+class lazy_property:
     '''
     meant to be used for lazy evaluation of an object attribute.
     property should represent non-mutable data, as it replaces itself.
@@ -268,4 +269,3 @@ def fully_qualified_name(obj):
 
 class ParallaxNotImplemented(Exception):
     """Raised when parallax calculation is requested but not available in the fast-path."""
-    pass

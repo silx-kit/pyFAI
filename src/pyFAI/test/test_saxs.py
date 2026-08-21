@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,13 +33,16 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
 import logging
+import unittest
+
 import fabio
-from .utilstest import UtilsTest
-from ..integrator.azimuthal import AzimuthalIntegrator
+
 from ..detectors import Pilatus1M
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..utils import mathutil
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 if logger.getEffectiveLevel() <= logging.INFO:

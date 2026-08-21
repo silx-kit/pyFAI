@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,12 +33,15 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
 import logging
+import unittest
+
+import numpy
+from scipy import interpolate
+
 from ..utils import bayes
 from .utilstest import UtilsTest
-from scipy import interpolate
+
 logger = logging.getLogger(__name__)
 
 

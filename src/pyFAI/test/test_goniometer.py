@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,15 +34,24 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "05/06/2026"
 
-import os
-import math
-import unittest
 import logging
-from .utilstest import UtilsTest
+import math
+import os
+import unittest
+
 import numpy
-from ..goniometer import GeometryTranslation, Goniometer, numexpr, \
-                         ExtendedTransformation, GoniometerRefinement,\
-                         PoniParam, SingleGeometry
+
+from ..goniometer import (
+    ExtendedTransformation,
+    GeometryTranslation,
+    Goniometer,
+    GoniometerRefinement,
+    PoniParam,
+    SingleGeometry,
+    numexpr,
+)
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -201,7 +209,7 @@ class TestTranslation(unittest.TestCase):
         )
         with self.assertRaisesRegex(RuntimeError, "To perform control point extraction, a data image must be provided"):
           gonio.extract_cp()
-          
+
     def test_extract_points_no_wavelength(self):
         gonio = SingleGeometry(
           label="test_cps",

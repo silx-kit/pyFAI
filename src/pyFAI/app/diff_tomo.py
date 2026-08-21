@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,13 +35,16 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "08/10/2025"
 __satus__ = "Production"
 
-import os
 import glob
+import logging
+import os
 from argparse import ArgumentParser
 from urllib.parse import urlparse
-import logging
-from .. import version as PyFAI_VERSION, date as PyFAI_DATE
+
+from .. import date as PyFAI_DATE
+from .. import version as PyFAI_VERSION
 from ..diffmap import DiffMap
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)

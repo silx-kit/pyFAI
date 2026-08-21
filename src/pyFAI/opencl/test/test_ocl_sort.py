@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,12 +31,15 @@ __date__ = "08/10/2025"
 __copyright__ = "2015-2021, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import unittest
-import numpy
 import logging
+import unittest
 import warnings
+
+import numpy
+
 from ...test.utilstest import UtilsTest
 from .. import ocl
+
 if ocl:
     from .. import sort as ocl_sort
 
@@ -95,7 +97,7 @@ class TestOclSort(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestOclSort, cls).tearDownClass()
+        super().tearDownClass()
         cls.shape = cls.ary = cls.sorted_vert = cls.sorted_hor = cls.vector_vert = cls.sorted_hor = None
 
     @staticmethod

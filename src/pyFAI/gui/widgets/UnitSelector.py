@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -29,14 +28,14 @@ __date__ = "16/10/2020"
 
 from silx.gui import qt
 
-from ..model.DataModel import DataModel
 from ...utils import stringutil
+from ..model.DataModel import DataModel
 
 
 class UnitSelector(qt.QComboBox):
 
     def __init__(self, parent=None):
-        super(UnitSelector, self).__init__(parent)
+        super().__init__(parent)
 
         self.__model = None
         self.setModel(DataModel())

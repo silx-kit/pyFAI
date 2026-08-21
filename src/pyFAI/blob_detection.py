@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,10 +34,12 @@ __date__ = "06/10/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import logging
 import os
 from math import sqrt
-import logging
+
 import numpy
+
 from .ext.bilinear import Bilinear
 from .utils.mathutil import binning, is_far_from_group
 
@@ -164,7 +165,7 @@ def local_max(dogs, mask=None, n_5=True):
     return kpma == target
 
 
-class BlobDetection(object):
+class BlobDetection:
     """
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
@@ -550,8 +551,7 @@ class BlobDetection(object):
             if s_patch % 2 == 0:
                 s_patch += 1
 
-            if s_patch < 3:
-                s_patch = 3
+            s_patch = max(s_patch, 3)
 
             if (x > s_patch / 2 and x < img.shape[1] - s_patch / 2 - 1 and y > s_patch / 2 and y < img.shape[0] - s_patch / 2):
 
@@ -602,7 +602,7 @@ class BlobDetection(object):
         return vals, vects
 
     def refinement(self):
-        from numpy import cos, sin, arctan2, pi
+        from numpy import arctan2, cos, pi, sin
         val, vect = self.direction()
 
         L = 0.114

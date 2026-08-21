@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Copyright (C) 2016-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -28,28 +27,31 @@ __date__ = "26/03/2026"
 __license__ = "MIT"
 __copyright__ = "2012-2026 European Synchrotron Radiation Facility, Grenoble, France"
 
-from collections import OrderedDict
+import os
+import os.path as op
+import platform
+import subprocess
 import sys
 import time
 import timeit
-import os
-import platform
-import subprocess
-import fabio
-import os.path as op
+from collections import OrderedDict
 from math import ceil
+
+import fabio
 import numpy
-from ..io._json import json_dump
-from .. import load, detector_factory
+
+from .. import detector_factory, load
+from .. import version as pyFAI_version
 from ..integrator.azimuthal import AzimuthalIntegrator
+from ..io._json import json_dump
 from ..method_registry import IntegrationMethod, Method
+from ..opencl import ocl, pyopencl
+from ..test.utilstest import UtilsTest
 from ..utils import mathutil
 from ..utils.decorators import deprecated
-from ..test.utilstest import UtilsTest
-from ..opencl import pyopencl, ocl
-from .. import version as pyFAI_version
+
 try:
-    from ..gui.matplotlib import pyplot, pylab
+    from ..gui.matplotlib import pylab, pyplot
     from ..gui.utils import update_fig as _update_fig
 
     def update_fig(*args, **kwargs):
@@ -92,7 +94,7 @@ PONIS = { i: UtilsTest.getimage(i) for i in ds_list}
 bench = None
 
 
-class BenchTest(object):
+class BenchTest:
     """Generic class for benchmarking with `timeit.Timer`"""
 
     def setup(self):
@@ -101,7 +103,6 @@ class BenchTest(object):
         The method do not have arguments. Everything must be set before, from
         the constructor for example.
         """
-        pass
 
     def stmt(self):
         """Statement.
@@ -109,7 +110,6 @@ class BenchTest(object):
         The method do not have arguments. Everything must be set before, from
         the constructor, loaded from the `setup` to a class attribute.
         """
-        pass
 
     def setup_and_stmt(self):
         """Execute the setup then the statement."""
@@ -118,7 +118,6 @@ class BenchTest(object):
 
     def clean(self):
         """Clean up stored data"""
-        pass
 
     def get_device(self):
         res = None
@@ -217,7 +216,7 @@ class BenchTestGpu(BenchTest):
         self.data = None
 
 
-class Bench(object):
+class Bench:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
@@ -313,7 +312,7 @@ class Bench(object):
         """
         Return environment variables related to OpenMP
         """
-        return {key:str(value) 
+        return {key:str(value)
                 for key, value in os.environ.items()
                 if key.startswith("OMP")}
 
@@ -321,15 +320,15 @@ class Bench(object):
         """
         Return versions of important dependencies
         """
-        res = {"numpy": numpy.version.version, 
-               "fabio": fabio.version, 
+        res = {"numpy": numpy.version.version,
+               "fabio": fabio.version,
                "pyFAI": pyFAI_version}
         try:
             import scipy
         except ImportError:
             res["scipy"] = None
         else:
-            res["scipy"] = scipy.version.version 
+            res["scipy"] = scipy.version.version
 
         try:
             import h5py
@@ -337,16 +336,16 @@ class Bench(object):
             res["h5py"] = None
         else:
             res["h5py"] = h5py.version.version
-        
+
         try:
             import pyopencl
         except ImportError:
             res["pyopencl"] = None
         else:
             res["pyopencl"] = pyopencl.__version__
-        
+
         return res
-    
+
     def print_init(self, t):
         print(" * Initialization time: %.1f ms" % (1000.0 * t))
         self.update_mp()
@@ -636,7 +635,7 @@ class Bench(object):
             del t
             self.update_mp()
             self.print_exec(tmin)
-            print("")
+            print()
             if R < self.LIMIT:
                 size /= 1e6
                 tmin *= 1000.0

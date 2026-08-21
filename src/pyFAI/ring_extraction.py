@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -44,15 +43,14 @@ __status__ = "development"
 import logging
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Optional
 
 import numpy
 from silx.image import marchingsquares
 
+from . import units
 from .control_points import ControlPoints
 from .goniometer import SingleGeometry
 from .massif import Massif
-from . import units
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +58,7 @@ logger = logging.getLogger(__name__)
 class RingExtraction:
     """Class to perform extraction of control points from a calibration image."""
 
-    def __init__(self, single_geometry: SingleGeometry, massif: Optional[Massif] = None):
+    def __init__(self, single_geometry: SingleGeometry, massif: Massif | None = None):
         """
         Parameters
         ----------
@@ -89,7 +87,7 @@ class RingExtraction:
         self.two_theta_values = self._get_unique_two_theta_values_in_image()
 
     def extract_control_points(
-        self, max_number_of_rings: Optional[int] = None, points_per_degree: float = 1
+        self, max_number_of_rings: int | None = None, points_per_degree: float = 1
     ) -> ControlPoints:
         """
         Primary method of RingExtraction class. Runs extract_control_points_in_one_ring for all
@@ -132,7 +130,7 @@ class RingExtraction:
 
     def extract_list_of_peaks_in_one_ring(
         self, ring_index: int, points_per_degree: float = 1.0
-    ) -> Optional[list[tuple[float, float]]]:
+    ) -> list[tuple[float, float]] | None:
         """
         Using massif.peaks_from_area, get all pixel coordinates inside a mask of pixels around a
         diffraction ring above a certain intensity, provided the desired number of points to keep,

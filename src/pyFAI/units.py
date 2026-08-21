@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -44,13 +43,16 @@ __docformat__ = "restructuredtext"
 import copy
 import logging
 from collections.abc import Callable
-from math import pi as PI
 from functools import wraps
+from math import pi as PI
+
 import numpy
 import scipy.constants
 from scipy.spatial.transform import Rotation
-from .utils.decorators import deprecated
+
 from .containers import ImmutableDict
+from .utils.decorators import deprecated
+
 logger = logging.getLogger(__name__)
 TWO_PI = 2 * PI
 

@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,14 +34,16 @@ __date__ = "10/04/2026"
 __docformat__ = 'restructuredtext'
 
 import collections
-import time
-import pathlib
 import logging
-import numpy
+import pathlib
+import time
 from typing import TextIO
-from ._json import json_dumps
+
+import numpy
+
 from .. import detectors
 from ..utils import decorators
+from ._json import json_dumps
 
 try:
     from ..gui.model.GeometryModel import GeometryModel

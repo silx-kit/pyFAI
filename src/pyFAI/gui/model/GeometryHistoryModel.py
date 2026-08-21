@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -27,9 +26,9 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "09/04/2026"
 
-from .ListModel import ListModel
-from .GeometryModel import GeometryModel
 from .AbstractModel import AbstractModel
+from .GeometryModel import GeometryModel
+from .ListModel import ListModel
 
 
 class StoredGeometry(AbstractModel):
@@ -42,7 +41,7 @@ class StoredGeometry(AbstractModel):
     """
 
     def __init__(self, parent, label, time, geometry, rms):
-        super(StoredGeometry, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         # Store this values in a compact format
         d = geometry.distance().value()
         w = geometry.wavelength().value()

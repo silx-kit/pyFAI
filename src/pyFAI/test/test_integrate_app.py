@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -28,15 +27,17 @@
 
 import json
 import os
-import fabio
-import unittest
-import numpy
 import shutil
+import unittest
+
+import fabio
 import h5py
+import numpy
 
 import pyFAI.app.integrate
-from .utilstest import UtilsTest
 from pyFAI.io import integration_config
+
+from .utilstest import UtilsTest
 
 
 class TestIntegrateApp(unittest.TestCase):
@@ -49,7 +50,7 @@ class TestIntegrateApp(unittest.TestCase):
         shutil.rmtree(self.tempDir)
         self.tempDir = None
 
-    class Options(object):
+    class Options:
 
         def __init__(self):
             self.version = None
@@ -347,7 +348,7 @@ class TestIntegrateApp(unittest.TestCase):
 class _ResultObserver(pyFAI.app.integrate.IntegrationObserver):
 
     def __init__(self):
-        super(_ResultObserver, self).__init__()
+        super().__init__()
         self.result = []
 
     def data_result(self, data_id, result):

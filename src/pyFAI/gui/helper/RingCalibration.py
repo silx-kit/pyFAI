@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -27,16 +26,17 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "26/06/2026"
 
-import logging
-import numpy
 import collections
+import logging
+
+import numpy
 
 from ... import units
+from ...containers import FixedParameters
 from ...geometryRefinement import GeometryRefinement
 from ..model.GeometryConstraintsModel import GeometryConstraintsModel
 from ..peak_picker import PeakPicker
 from ..utils import timeutils
-from ...containers import FixedParameters
 
 _logger = logging.getLogger(__name__)
 inf = numpy.inf
@@ -70,7 +70,7 @@ class GeometryRefinementContext:
 
     def __setattr__(self, name, value):
         if "__" in name:
-            return super(GeometryRefinementContext, self).__setattr__(name, value)
+            return super().__setattr__(name, value)
         return object.__setattr__(self.__geoRef, name, value)
 
     def bounds(self):

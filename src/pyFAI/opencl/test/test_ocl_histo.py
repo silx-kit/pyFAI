@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Simple histogram in Python + OpenCL
 #             https://github.com/silx-kit/pyFAI
@@ -37,16 +36,20 @@ __copyright__ = "2019-2021 European Synchrotron Radiation Facility, Grenoble, Fr
 __date__ = "04/09/2025"
 
 import logging
+import unittest
+
 import numpy
 
-import unittest
 from .. import ocl
+
 if ocl:
     import pyopencl.array
-from ...test.utilstest import UtilsTest
-from ...integrator.azimuthal import AzimuthalIntegrator
-from ...containers import ErrorModel
 from scipy.ndimage import gaussian_filter1d
+
+from ...containers import ErrorModel
+from ...integrator.azimuthal import AzimuthalIntegrator
+from ...test.utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,7 +59,7 @@ class TestOclHistogram(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestOclHistogram, cls).setUpClass()
+        super().setUpClass()
         if ocl:
             cls.ctx = ocl.create_context()
             if logger.getEffectiveLevel() <= logging.INFO:
@@ -78,7 +81,7 @@ class TestOclHistogram(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestOclHistogram, cls).tearDownClass()
+        super().tearDownClass()
         logger.info("We were using device %s", cls.ctx.devices[0])
         cls.ctx = None
         cls.queue = None
@@ -132,8 +135,8 @@ class TestOclHistogram(unittest.TestCase):
         """
         tests the 2D histogram kernel
         """
-        from ..azim_hist import OCL_Histogram2d
         from ...engines.histogram_engine import histogram2d_engine
+        from ..azim_hist import OCL_Histogram2d
 
         data = numpy.ones(self.ai.detector.shape)
         tth = self.ai.center_array(unit="2th_deg")

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,18 +33,21 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
 import contextlib
+import logging
 import os
 import unittest
-import numpy.testing
+
 import fabio
-import logging
-from .utilstest import UtilsTest
-from ..integrator.azimuthal import AzimuthalIntegrator
+import numpy.testing
+
 from ..containers import Integrate1dResult, Integrate2dResult
-from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
-from ..utils import mathutil
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..io import DefaultAiWriter
 from ..method_registry import IntegrationMethod
+from ..utils import mathutil
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 

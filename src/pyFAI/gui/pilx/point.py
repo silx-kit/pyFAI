@@ -1,10 +1,11 @@
 import h5py
+
 from .models import ImageIndices
 from .utils import (
+    get_axes_index,
     get_dataset_name,
     get_radial_dataset,
     get_signal_dataset,
-    get_axes_index
 )
 
 

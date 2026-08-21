@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (c) 2017-2018 European Synchrotron Radiation Facility
@@ -35,7 +34,7 @@ import time
 _logger = logging.getLogger(__name__)
 
 
-class Timer(object):
+class Timer:
     """Kind of context manager to call a code while the amount of seconds is
     not finished.
 

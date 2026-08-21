@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,8 +33,10 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "30/10/2024"
 
 import unittest
+
 from silx.utils.testutils import ParametricTestCase
-from ..method_registry import Method, IntegrationMethod
+
+from ..method_registry import IntegrationMethod, Method
 
 
 class TestMethod(ParametricTestCase):

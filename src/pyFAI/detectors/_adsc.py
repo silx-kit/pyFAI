@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -40,9 +39,10 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "30/10/2025"
 __status__ = "production"
 
+import logging
+
 from ._common import Detector
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -200,4 +200,3 @@ class HF_9M(_ADSC):
     aliases = ["HF-9.4M"]
     PIXEL_SIZE = (150e-6, 150e-6)
     force_pixel = True
-

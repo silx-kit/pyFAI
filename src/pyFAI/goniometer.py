@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,25 +37,28 @@ __date__ = "12/06/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import os
-import logging
 import json
-import numpy
+import logging
+import os
 from collections import OrderedDict, namedtuple
+
+import numpy
 from scipy.optimize import minimize
 from silx.image import marchingsquares
-from .massif import Massif
+
 from .control_points import ControlPoints
-from .detectors import detector_factory, Detector
+from .detectors import Detector, detector_factory
+from .ext.mathutil import build_qmask
 from .geometry import Geometry
 from .geometryRefinement import GeometryRefinement
 from .integrator.azimuthal import AzimuthalIntegrator
-from .utils import StringTypes
-from .multi_geometry import MultiGeometry
-from .units import CONST_hc, CONST_q, CHI_RAD, TTH_RAD
-from .ext.mathutil import build_qmask
-from .utils.decorators import deprecated
 from .io._json import json_dumps
+from .massif import Massif
+from .multi_geometry import MultiGeometry
+from .units import CHI_RAD, TTH_RAD, CONST_hc, CONST_q
+from .utils import StringTypes
+from .utils.decorators import deprecated
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -69,7 +71,7 @@ except ImportError:
 PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"])
 
 
-class BaseTransformation(object):
+class BaseTransformation:
     """This class, once instantiated, behaves like a function (via the __call__
     method). It is responsible for taking any input geometry and translate it
     into a set of parameters compatible with pyFAI, i.e. a tuple with:
@@ -129,7 +131,7 @@ class BaseTransformation(object):
         raise RuntimeError("BaseTransformation is not serializable")
 
 
-class GeometryTransformation(object):
+class GeometryTransformation:
     """This class, once instantiated, behaves like a function (via the __call__
     method). It is responsible for taking any input geometry and translate it
     into a set of parameters compatible with pyFAI, i.e. a tuple with:
@@ -272,7 +274,7 @@ class GeometryTransformation(object):
         return res
 
 
-class ExtendedTransformation(object):
+class ExtendedTransformation:
     """This class behaves like GeometryTransformation and extends transformation
     to the wavelength parameter.
 
@@ -392,7 +394,7 @@ class ExtendedTransformation(object):
 GeometryTranslation = GeometryTransformation
 
 
-class Goniometer(object):
+class Goniometer:
     """This class represents the goniometer model. Unlike this name suggests,
     it may include translation in addition to rotations
     """
@@ -538,7 +540,7 @@ class Goniometer(object):
         try:
             with open(filename, "w", encoding="utf-8") as f:
                 f.write(json_dumps(dico, indent=2))
-        except IOError:
+        except OSError:
             logger.error("IOError while writing to file %s", filename)
 
     write = save
@@ -599,7 +601,7 @@ class Goniometer(object):
         return gonio
 
 
-class SingleGeometry(object):
+class SingleGeometry:
     """This class represents a single geometry of a detector position on a
     goniometer arm
     """

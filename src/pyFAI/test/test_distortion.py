@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,15 +33,16 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
-import fabio
 import logging
+import unittest
+
+import fabio
+import numpy
+
+from .. import detectors, distortion
+from ..ext import _distortion, sparse_utils
 from .utilstest import UtilsTest
-from .. import detectors
-from .. import distortion
-from ..ext import _distortion
-from ..ext import sparse_utils
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +54,7 @@ class TestHalfCCD(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestHalfCCD, cls).setUpClass()
+        super().setUpClass()
         """Download files"""
         cls.fit2dFile = UtilsTest.getimage(cls.fit2d_cor)
         cls.halfFrelon = UtilsTest.getimage(cls.halfFrelon)
@@ -75,7 +75,7 @@ class TestHalfCCD(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestHalfCCD, cls).tearDownClass()
+        super().tearDownClass()
         cls.larger = cls.fit2dFile = cls.halfFrelon = cls.splineFile = None
         cls.preproc = cls.det = cls.dis = cls.fit2d = cls.raw = cls.ref = None
 
@@ -234,7 +234,7 @@ class TestImplementations(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestImplementations, cls).setUpClass()
+        super().setUpClass()
         """Download files"""
         cls.halfFrelon = UtilsTest.getimage(cls._halfFrelon)
         cls.splineFile = UtilsTest.getimage(cls._splineFile)
@@ -245,7 +245,7 @@ class TestImplementations(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestImplementations, cls).tearDownClass()
+        super().tearDownClass()
         cls.fit2dFile = cls.halfFrelon = cls.splineFile = cls.det = cls.dis = cls.fit2d = cls.raw = None
 
     def test_calc_pos(self):

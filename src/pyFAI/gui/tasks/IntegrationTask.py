@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -28,37 +27,35 @@ __license__ = "MIT"
 __date__ = "10/04/2026"
 
 import logging
+
 import numpy
-
-from silx.gui import qt
-import silx.gui.plot
 import silx.gui.icons
+import silx.gui.plot
 import silx.io
+from silx.gui import qt
 
+import pyFAI.geometry
 import pyFAI.utils
-from .AbstractCalibrationTask import AbstractCalibrationTask
+from pyFAI import method_registry
+from pyFAI.ext.invert_geometry import InvertGeometry
 from pyFAI.integrator.azimuthal import AzimuthalIntegrator
-from ..utils import unitutils
+from pyFAI.io import integration_config, ponifile
+
+from ... import units as core_units
+from ...utils import stringutil
+from ..CalibrationContext import CalibrationContext
+from ..dialog import MessageBox
+from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
+from ..helper import ProcessingWidget
+from ..helper.MarkerManager import MarkerManager
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
 from ..model.DataModel import DataModel
+from ..utils import FilterBuilder, imageutils, units, unitutils, validators
+
 # from ..model.GeometryModel import GeometryModel
 # from ..model.Fit2dGeometryModel import Fit2dGeometryModel
 from ..widgets.QuantityLabel import QuantityLabel
-from ..CalibrationContext import CalibrationContext
-from ... import units as core_units
-from ..utils import units
-from ..utils import validators
-from ..helper.MarkerManager import MarkerManager
-from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
-from ..helper import ProcessingWidget
-from pyFAI.ext.invert_geometry import InvertGeometry
-from ..utils import FilterBuilder
-from ..utils import imageutils
-from ...utils import stringutil
-from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
-from pyFAI import method_registry
-from ..dialog import MessageBox
-from pyFAI.io import ponifile, integration_config
-import pyFAI.geometry
+from .AbstractCalibrationTask import AbstractCalibrationTask
 
 _logger = logging.getLogger(__name__)
 
@@ -96,12 +93,12 @@ class EnablableDataModel(DataModel):
         self.unlockSignals()
 
     def setValue(self, value):
-        super(EnablableDataModel, self).setValue(value)
+        super().setValue(value)
         if self.__isEnabled:
             self.__model.setValue(value)
 
 
-class IntegrationProcess(object):
+class IntegrationProcess:
 
     def __init__(self, model, altGeometry=None):
         self.__isValid = self._init(model, altGeometry)
@@ -354,15 +351,15 @@ class _StatusBar(qt.QStatusBar):
         scatteringUnitModel = CalibrationContext.instance().getScatteringVectorUnit()
 
         self.__position = QuantityLabel(self)
-        self.__position.setPrefix(u"<b>Pos</b>: ")
-        self.__position.setFormatter(u"{value[0]: >4.2F}×{value[1]:4.2F} px")
+        self.__position.setPrefix("<b>Pos</b>: ")
+        self.__position.setFormatter("{value[0]: >4.2F}×{value[1]:4.2F} px")
         # TODO: Could it be done using a custom layout? Instead of setElasticSize
         self.__position.setElasticSize(True)
         self.addWidget(self.__position)
 
         self.__chi = QuantityLabel(self)
-        self.__chi.setPrefix(u"<b>χ</b>: ")
-        self.__chi.setFormatter(u"{value: >4.3F}")
+        self.__chi.setPrefix("<b>χ</b>: ")
+        self.__chi.setFormatter("{value: >4.3F}")
         self.__chi.setInternalUnit(units.Unit.RADIAN)
         self.__chi.setDisplayedUnit(units.Unit.RADIAN)
         self.__chi.setDisplayedUnitModel(angleUnitModel)
@@ -371,8 +368,8 @@ class _StatusBar(qt.QStatusBar):
         self.addWidget(self.__chi)
 
         self.__2theta = QuantityLabel(self)
-        self.__2theta.setPrefix(u"<b>2θ</b>: ")
-        self.__2theta.setFormatter(u"{value: >4.3F}")
+        self.__2theta.setPrefix("<b>2θ</b>: ")
+        self.__2theta.setFormatter("{value: >4.3F}")
         self.__2theta.setInternalUnit(units.Unit.RADIAN)
         self.__2theta.setDisplayedUnitModel(angleUnitModel)
         self.__2theta.setUnitEditable(True)
@@ -380,8 +377,8 @@ class _StatusBar(qt.QStatusBar):
         self.addWidget(self.__2theta)
 
         self.__q = QuantityLabel(self)
-        self.__q.setPrefix(u"<b>q</b>: ")
-        self.__q.setFormatter(u"{value: >4.3F}")
+        self.__q.setPrefix("<b>q</b>: ")
+        self.__q.setFormatter("{value: >4.3F}")
         self.__q.setInternalUnit(units.Unit.INV_ANGSTROM)
         self.__q.setDisplayedUnitModel(scatteringUnitModel)
         self.__q.setUnitEditable(True)
@@ -429,7 +426,7 @@ class _StatusBar(qt.QStatusBar):
 class IntegrationPlot(qt.QFrame):
 
     def __init__(self, parent=None):
-        super(IntegrationPlot, self).__init__(parent)
+        super().__init__(parent)
 
         self.__plot1d, self.__plot2d = self.__createPlots(self)
         self.__statusBar = _StatusBar(self)

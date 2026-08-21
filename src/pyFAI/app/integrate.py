@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,21 +35,26 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "05/12/2025"
 __satus__ = "production"
 
-import sys
-import time
-import numpy
-import os.path
 import collections
 import contextlib
-from argparse import ArgumentParser
 import logging
+import os.path
+import sys
+import time
+from argparse import ArgumentParser
+
 import fabio
-from .. import utils, io, version as pyFAI_version, date as pyFAI_date
+import numpy
+
+from .. import date as pyFAI_date
+from .. import io, utils
+from .. import version as pyFAI_version
 from ..io import DefaultAiWriter, HDF5Writer
 from ..io.integration_config import WorkerConfig, WorkerFiberConfig
+from ..utils import header_utils, logging_utils
 from ..utils.shell import ProgressBar
-from ..utils import logging_utils, header_utils
 from ..worker import Worker, WorkerFiber
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -62,6 +66,7 @@ except ImportError:
 
 def integrate_gui(options, args):
     from silx.gui import qt
+
     from ..gui.IntegrationDialog import IntegrationDialog, IntegrationProcess
 
     app = qt.QApplication([])
@@ -191,7 +196,7 @@ def get_monitor_value(image, monitor_key):
         return 1.0
 
 
-class IntegrationObserver(object):
+class IntegrationObserver:
     """Interface providing access to the to the processing of the `process`
     function."""
 
@@ -211,7 +216,6 @@ class IntegrationObserver(object):
 
         :param int data_count: Number of data to integrate
         """
-        pass
 
     def processing_started(self, data_count):
         """
@@ -219,7 +223,6 @@ class IntegrationObserver(object):
 
         :param int data_count: Number of data to integrate
         """
-        pass
 
     def processing_data(self, data_info, approximate_count=None):
         """
@@ -230,7 +233,6 @@ class IntegrationObserver(object):
         :param int approximate_count: If set, the amount of total data to
             process have changed
         """
-        pass
 
     def data_result(self, data_info, result):
         """
@@ -240,7 +242,6 @@ class IntegrationObserver(object):
             to integrate
         :param object result: Result of the integration.
         """
-        pass
 
     def processing_interrupted(self, reason=None):
         """Called before `processing_finished` if the processing was
@@ -248,15 +249,12 @@ class IntegrationObserver(object):
 
         :param [str,Exception,None] error: A reason of the interruption.
         """
-        pass
 
     def processing_succeeded(self):
         """Called before `processing_finished` if the processing succeeded."""
-        pass
 
     def processing_finished(self):
         """Called when the full processing is finished (interrupted or not)."""
-        pass
 
 
 class ShellIntegrationObserver(IntegrationObserver):
@@ -265,7 +263,7 @@ class ShellIntegrationObserver(IntegrationObserver):
     """
 
     def __init__(self):
-        super(ShellIntegrationObserver, self).__init__()
+        super().__init__()
         self._progress_bar = None
         self.__previous_sigint_callback = None
 
@@ -320,7 +318,7 @@ class ShellIntegrationObserver(IntegrationObserver):
 DataInfo = collections.namedtuple("DataInfo", "source source_id frame_id fabio_image data_id data header source_filename")
 
 
-class DataSource(object):
+class DataSource:
     """Source of data to integrate."""
 
     def __init__(self, statistics):
@@ -504,7 +502,7 @@ class MultiFileWriter(io.Writer):
     """Broadcast writing to different files for each frames"""
 
     def __init__(self, output_path, mode=HDF5Writer.MODE_ERROR):
-        super(MultiFileWriter, self).__init__()
+        super().__init__()
         if mode in [HDF5Writer.MODE_OVERWRITE, HDF5Writer.MODE_APPEND]:
             raise ValueError("Mode %s unsupported" % mode)
         self._writer = None
@@ -555,7 +553,7 @@ class MultiFileWriter(io.Writer):
         pass
 
 
-class Statistics(object):
+class Statistics:
     """Instrument the application to collect statistics."""
 
     def __init__(self):
@@ -682,9 +680,7 @@ def process(input_data, output, config, observer, write_mode=HDF5Writer.MODE_ERR
                         logger.warning("File %s do not exists. File ignored.", item)
                 else:
                     logger.warning("File %s do not exists. File ignored.", item)
-        elif isinstance(item, fabio.fabioimage.FabioImage):
-            source.append(item)
-        elif isinstance(item, numpy.ndarray):
+        elif isinstance(item, fabio.fabioimage.FabioImage) or isinstance(item, numpy.ndarray):
             source.append(item)
         else:
             logger.warning("Type %s unsopported. Data ignored.", item)
@@ -717,7 +713,7 @@ def process(input_data, output, config, observer, write_mode=HDF5Writer.MODE_ERR
 
     try:
         writer.init(fai_cfg=config)
-    except IOError as e:
+    except OSError as e:
         logger.error("Error while creating the writer: " + str(e.args[0]))
         logger.error("Processing cancelled")
         logger.info("To write HDF5, convenient options can be provided to decide what to do.")

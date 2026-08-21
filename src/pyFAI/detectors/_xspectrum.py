@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,9 +36,12 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "04/11/2025"
 __status__ = "production"
 
-import numpy
 import logging
-from ._common import SensorConfig, ModuleDetector
+
+import numpy
+
+from ._common import ModuleDetector, SensorConfig
+
 logger = logging.getLogger(__name__)
 
 

@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,24 +35,26 @@ __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import collections.abc
-import gc
 import copy
+import gc
 import logging
+import threading
+from multiprocessing.pool import ThreadPool
+
+import numpy
+
+from . import units
+from .containers import Integrate1dResult, Integrate2dResult
 from .integrator.azimuthal import AzimuthalIntegrator
 from .integrator.fiber import FiberIntegrator
-from .containers import Integrate1dResult
-from .containers import Integrate2dResult
-from . import units
-from .utils.multiprocessing import cpu_count
-from multiprocessing.pool import ThreadPool
-import threading
-import numpy
 from .method_registry import IntegrationMethod
+from .utils.multiprocessing import cpu_count
+
 logger = logging.getLogger(__name__)
 error = None
 
 
-class MultiGeometry(object):
+class MultiGeometry:
     """This is an Azimuthal integrator containing multiple geometries,
     for example when the detector is on a goniometer arm
     """
@@ -335,7 +336,7 @@ class MultiGeometry(object):
         if collect_garbage:
             gc.collect()
 
-class MultiGeometryFiber(object):
+class MultiGeometryFiber:
     """This is a Fiber integrator containing multiple geometries,
     for example when the detector is on a goniometer arm
     """

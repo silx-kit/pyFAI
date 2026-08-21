@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
@@ -27,22 +26,19 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "13/05/2025"
 
-import logging
-import numpy
 import json
+import logging
 import os.path
 
+import numpy
+import silx.resources
 from silx.gui import qt
 from silx.gui.dialog.ColormapDialog import ColormapDialog
-import silx.resources
 
+from .ApplicationContext import ApplicationContext
 from .model.CalibrationModel import CalibrationModel
 from .model.DataModel import DataModel
-from .utils import eventutils
-from .utils import units
-from .utils import colorutils
-from .ApplicationContext import ApplicationContext
-
+from .utils import colorutils, eventutils, units
 
 _logger = logging.getLogger(__name__)
 
@@ -66,7 +62,7 @@ class CalibrationContext(ApplicationContext):
         return CalibrationContext.__instance
 
     def __init__(self, settings=None):
-        super(CalibrationContext, self).__init__(settings=settings)
+        super().__init__(settings=settings)
         if (CalibrationContext.__instance is not None):
             raise RuntimeError("CalibrationContext instance was already defined")
         self.__defaultColormapDialog = None
@@ -169,7 +165,7 @@ class CalibrationContext(ApplicationContext):
         settings.setValue("recent-calibrations", self.__recentCalibrants.value())
 
         # Synchronize the file storage
-        super(CalibrationContext, self).saveSettings()
+        super().saveSettings()
 
     def getCalibrationModel(self):
         if self.__calibrationModel is None:

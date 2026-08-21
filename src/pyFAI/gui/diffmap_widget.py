@@ -26,6 +26,7 @@
 
 """Module with GUI for diffraction mapping experiments"""
 from __future__ import annotations
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
@@ -34,29 +35,29 @@ __date__ = "27/03/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import os
-import time
 import json
-
 import logging
-import numpy
-import fabio
-from fabio.fabioutils import exists as fabio_exists
-from silx.gui import qt
-from silx.gui import icons
-
-from .matplotlib import pyplot, colors
+import os
 import threading
-from ..utils import int_, str_, float_, get_ui_file
-from ..units import to_unit
-from ..io._json import json_dumps
-from .widgets.WorkerConfigurator import WorkerConfigurator
+import time
+
+import fabio
+import numpy
+from fabio.fabioutils import exists as fabio_exists
+from silx.gui import icons, qt
+
 from ..diffmap import DiffMap
-from .utils.tree import ListDataSet, DataSet
-from .dialog import MessageBox
-from ..io.integration_config import WorkerConfig
+from ..io._json import json_dumps
 from ..io.diffmap_config import DiffmapConfig, MotorRange
+from ..io.integration_config import WorkerConfig
+from ..units import to_unit
+from ..utils import float_, get_ui_file, int_, str_
+from .dialog import MessageBox
+from .matplotlib import colors, pyplot
 from .pilx import MainWindow as pilx_main
+from .utils.tree import DataSet, ListDataSet
+from .widgets.WorkerConfigurator import WorkerConfigurator
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.getLogger("pyFAI").level)
 lognorm = colors.LogNorm()

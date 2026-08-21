@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,19 +36,24 @@ __date__ = "07/10/2025"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os
 import logging
+import os
 from collections import OrderedDict
+
 import numpy
+
 from . import ocl
+
 if ocl:
     import pyopencl.array
-    from . import processing, OpenclProcessing
+
+    from . import OpenclProcessing, processing
     EventDescription = processing.EventDescription
     BufferDescription = processing.BufferDescription
 else:
     raise ImportError("pyopencl is not installed or no device is available")
-from. import release_cl_buffers, kernel_workgroup_size, get_x87_volatile_option
+from . import get_x87_volatile_option, kernel_workgroup_size, release_cl_buffers
+
 logger = logging.getLogger(__name__)
 
 

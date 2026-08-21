@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,8 +27,10 @@ __license__ = "MIT"
 __date__ = "09/04/2024"
 
 import logging
+
 import numpy
 from silx.gui import qt
+
 from .DataModel import DataModel
 
 _logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ class ImageModel(DataModel):
             if previous is not None and numpy.array_equal(value, previous):
                 # Filter same images
                 return
-        super(ImageModel, self).setValue(value)
+        super().setValue(value)
 
 
 class ImageFilenameModel(DataModel):
@@ -118,7 +119,7 @@ class ImageFromFilenameModel(DataModel):
             if previous is not None and numpy.array_equal(value, previous):
                 # Filter same images
                 return
-        super(ImageFromFilenameModel, self).setValue(value)
+        super().setValue(value)
         self.__isSynchronized = False
 
     def hasFilename(self):

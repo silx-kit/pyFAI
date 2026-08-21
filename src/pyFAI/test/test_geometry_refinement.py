@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,15 +33,17 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "27/11/2025"
 
-import unittest
-import os
-import numpy
-import random
-import logging
 import copy
+import logging
+import os
+import random
+import unittest
+
+import numpy
+
+from .. import calibrant, geometryRefinement
 from .utilstest import UtilsTest
-from .. import geometryRefinement
-from .. import calibrant
+
 GeometryRefinement = geometryRefinement.GeometryRefinement
 logger = logging.getLogger(__file__)
 
@@ -854,7 +855,7 @@ class TestGeometryRefinement(unittest.TestCase):
                "rot1": (0.07, 1e-4),
                "wavelength": (1e-10, 1e-10)}
         print(r2)
-        for key in ref.keys():
+        for key in ref:
             self.assertAlmostEqual(ref[key][0], r2.__getattribute__(key), delta=ref[key][1],
                                    msg="%s is %s, I expected %s%s%s" % (key, r2.__getattribute__(key), ref[key], os.linesep, r2))
 
@@ -865,7 +866,7 @@ class TestGeometryRefinement(unittest.TestCase):
         r3.refine2(10000000, fix=[])
         for k in r2._IMMUTABLE_ATTRS:
             self.assertEqual(r3.__getattribute__(k), r2.__getattribute__(k), k)
-        for key in ref.keys():
+        for key in ref:
             self.assertAlmostEqual(r3.__getattribute__(key), r2.__getattribute__(key), delta=ref[key][1],
                                    msg="%s is %s, I expected %s%s%s" % (key, r3.__getattribute__(key), ref[key], os.linesep, r3))
 
@@ -878,7 +879,7 @@ class TestGeometryRefinement(unittest.TestCase):
             self.assertEqual(r4.__getattribute__(k), r2.__getattribute__(k), k)
 
 
-        for key in ref.keys():
+        for key in ref:
             self.assertAlmostEqual(r4.__getattribute__(key), r2.__getattribute__(key), delta=ref[key][1],
                                    msg="%s is %s, I expected %s%s%s" % (key, r4.__getattribute__(key), ref[key], os.linesep, r4))
 

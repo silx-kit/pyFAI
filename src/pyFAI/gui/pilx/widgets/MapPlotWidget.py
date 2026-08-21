@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,26 +35,25 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "31/01/2025"
 __status__ = "development"
 
-from typing import Optional
-import numpy
 import os.path
+
 import h5py
+import numpy
 import silx.io
-from silx.io.url import DataUrl
-from silx.gui.plot.items import Scatter
 from silx.gui import qt
+from silx.gui.plot.items import Scatter
+from silx.io.url import DataUrl
 
 from ..models import ImageIndices
-
-from .ImagePlotWidget import ImagePlotWidget
-from .MapPlotContextMenu import MapPlotContextMenu
-from .OpenAxisDatasetAction import OpenAxisDatasetAction
-from .ClearPointsAction import ClearPointsAction
 from ..utils import (
     get_dataset,
     get_dataset_name,
     guess_axis_path,
 )
+from .ClearPointsAction import ClearPointsAction
+from .ImagePlotWidget import ImagePlotWidget
+from .MapPlotContextMenu import MapPlotContextMenu
+from .OpenAxisDatasetAction import OpenAxisDatasetAction
 
 _LEGEND = "MAP"
 
@@ -165,10 +163,10 @@ class MapPlotWidget(ImagePlotWidget):
 
     def setScatterData(self,
                        image: numpy.ndarray,
-                       x: Optional[numpy.ndarray]=None,
-                       y: Optional[numpy.ndarray]=None,
-                       xlabel: Optional[str]="X",
-                       ylabel: Optional[str]="Y"):
+                       x: numpy.ndarray | None=None,
+                       y: numpy.ndarray | None=None,
+                       xlabel: str | None="X",
+                       ylabel: str | None="Y"):
         self.setGraphXLabel(xlabel)
         self.setGraphYLabel(ylabel)
 

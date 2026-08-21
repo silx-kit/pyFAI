@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -40,37 +39,39 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/11/2025"
 __status__ = "production"
 
+import logging
+import math
 import os
 import sys
 import time
-import logging
-import math
-from math import pi
-import numpy
-from silx.image import marchingsquares
-from scipy.stats import linregress
-import fabio
-from fabio.fabioutils import exists as fabio_exists
 from argparse import ArgumentParser
+from math import pi
 from urllib.parse import urlparse
-from .matplotlib import pylab, matplotlib
-from .utils import update_fig
-from . import utils as gui_utils
-from ..detectors import detector_factory, Detector
-from ..geometryRefinement import GeometryRefinement
-from .peak_picker import PeakPicker
-from .. import units
-from .. import average
-from ..containers import FixedParameters
-from ..utils import expand_args, readFloatFromKeyboard, win32
-from ..utils.mathutil import measure_offset, round_fft
-from ..utils.decorators import deprecated
-from ..integrator.azimuthal import AzimuthalIntegrator
-from ..units import hc, TTH_RAD, CHI_RAD
-from .. import version as PyFAI_VERSION
+
+import fabio
+import numpy
+from fabio.fabioutils import exists as fabio_exists
+from scipy.stats import linregress
+from silx.image import marchingsquares
+
+from .. import average, units
 from .. import date as PyFAI_DATE
-from ..calibrant import Calibrant, CALIBRANT_FACTORY, get_calibrant
+from .. import version as PyFAI_VERSION
+from ..calibrant import CALIBRANT_FACTORY, Calibrant, get_calibrant
+from ..containers import FixedParameters
+from ..detectors import Detector, detector_factory
+from ..geometryRefinement import GeometryRefinement
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..units import CHI_RAD, TTH_RAD, hc
+from ..utils import expand_args, readFloatFromKeyboard, win32
+from ..utils.decorators import deprecated
+from ..utils.mathutil import measure_offset, round_fft
+from . import utils as gui_utils
+from .matplotlib import matplotlib, pylab
 from .mpl_calib_qt import QtMplCalibWidget
+from .peak_picker import PeakPicker
+from .utils import update_fig
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -114,7 +115,7 @@ def get_detector(detector, datafiles=None):
     return res
 
 
-class AbstractCalibration(object):
+class AbstractCalibration:
 
     """
     Everything that is common to Calibration and Recalibration
@@ -921,9 +922,7 @@ class AbstractCalibration(object):
                 return True
             elif action == "quit":
                 return True
-            elif action == "refine":
-                return False
-            elif action == "fit":
+            elif action == "refine" or action == "fit":
                 return False
             elif action == "validate":
                 self.validate_calibration()
@@ -1812,7 +1811,7 @@ and a new option which lets you choose between the original `massif` algorithm a
         CliCalibration.refine(self, maxiter=maxiter, fixed=fixed)
 
 
-class MultiCalib(object):
+class MultiCalib:
 
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None):
         """
@@ -2170,9 +2169,7 @@ class MultiCalib(object):
                 if dist is None:
                     digits = ""
                     for i in os.path.basename(fn):
-                        if i.isdigit() and not digits:
-                            digits += i
-                        elif i.isdigit():
+                        if i.isdigit() and not digits or i.isdigit():
                             digits += i
                         elif not i.isdigit() and digits:
                             break
@@ -2221,7 +2218,7 @@ class MultiCalib(object):
         centerX = dist.copy()
         centerY = dist.copy()
         idx = 0
-        print("")
+        print()
         print("Results of linear regression for distance in mm")
         for key, dico in self.results.items():
             print(key, dico["dist"])
@@ -2250,7 +2247,7 @@ class MultiCalib(object):
             print("%s = %s * dist_mm + %s \t R= %s\t stderr= %s" % (name, slope, intercept, r, stderr))
 
 
-class CheckCalib(object):
+class CheckCalib:
 
     def __init__(self, poni=None, img=None, unit="2th_deg"):
         self.ponifile = poni

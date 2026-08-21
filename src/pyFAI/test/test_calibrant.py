@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,20 +33,23 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "26/06/2026"
 
-import unittest
+import copy
 import itertools
 import logging
-import sys
 import os
-import copy
-import numpy
+import sys
+import unittest
+
 import h5py
-from .utilstest import UtilsTest
-from ..calibrant import Calibrant, get_calibrant, Cell, CALIBRANT_FACTORY
+import numpy
+
+from ..calibrant import CALIBRANT_FACTORY, Calibrant, Cell, get_calibrant
+from ..crystallography.space_groups import ReflectionCondition
 from ..detectors import ALL_DETECTORS
 from ..integrator.azimuthal import AzimuthalIntegrator
-from ..crystallography.space_groups import ReflectionCondition
 from ..io.calibrant_config import CalibrantConfig
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -190,7 +192,7 @@ class TestCalibrant(unittest.TestCase):
             # check for idempotence of the parser ...
             filename = Calibrant._get_abs_path(CALIBRANT_FACTORY.all[c])
             with open(filename) as fd:
-                ref = numpy.array([i.strip() for i in fd.readlines()])
+                ref = numpy.array([i.strip() for i in fd])
             cal = str(CalibrantConfig.from_dspacing(filename=filename))
             obt = numpy.array([i.strip() for i in cal.split(os.linesep)])
             res = ref != obt
@@ -278,7 +280,7 @@ class TestCell(unittest.TestCase):
         c = Calibrant(empty_file)
         try:
             c.dspacing
-        except (IOError, OSError) as err:
+        except OSError as err:
             print("Was expected:", err)
         else:
             raise RuntimeError("Opening & reading an non-existing file should raise")
@@ -378,7 +380,7 @@ class TestReflection(unittest.TestCase):
                         ref = reflections[good[0]][()]
                 if "validated" in method.__doc__.lower():
                     if not numpy.all(ref==table):
-                        print(name, "differ at hkl=", [(int(h), int(k), int(l)) for h,k,l in zip(*numpy.where(ref!=table))])  # noqa
+                        print(name, "differ at hkl=", [(int(h), int(k), int(l)) for h,k,l in zip(*numpy.where(ref!=table))])
                         raise AssertionError(f"Space group {name} did not validate against xrayutilities")
 
 def suite():

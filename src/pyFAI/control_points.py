@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -40,21 +39,23 @@ __date__ = "24/02/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
+import array
+import copy
+import logging
 import os
-
 import threading
 from collections import OrderedDict
-import logging
-import copy
+
 import numpy
-import array
+
+from .calibrant import Calibrant, get_calibrant
+from .calibrant import names as calibrant_names
 from .utils.decorators import deprecated
-from .calibrant import Calibrant, get_calibrant, names as calibrant_names
 
 logger = logging.getLogger(__name__)
 
 
-class ControlPoints(object):
+class ControlPoints:
     """
     This class contains a set of control points with (optionally) their
     ring number hence d-spacing and diffraction  2Theta angle...
@@ -103,7 +104,6 @@ class ControlPoints(object):
     def check(self):
         """check internal consistency of the class, disabled for now
         """
-        pass
 
     def reset(self):
         """remove all stored values and resets them to default
@@ -457,7 +457,7 @@ class ControlPoints(object):
         new._groups = copy.deepcopy(self._groups, memo=memo)
         return new
 
-class PointGroup(object):
+class PointGroup:
     """
     Class contains a group of points ...
     They all belong to the same Debye-Scherrer ring
