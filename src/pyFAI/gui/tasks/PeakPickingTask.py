@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/04/2026"
+__date__ = "19/08/2026"
 
 import logging
 import numpy
@@ -1357,27 +1357,46 @@ class PeakPickingTask(AbstractCalibrationTask):
         pass
 
     def __createMassif(self, reconstruct=False):
-        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+        """Create the Massif used to pick peaks around a click.
+
+        :return: a Massif instance, or None if there is no image or if the
+            computation failed (e.g. mask and image shapes mismatch when the
+            wrong detector was selected)
+        """
         experimentSettings = self.model().experimentSettingsModel()
         image = experimentSettings.image().value()
         mask = experimentSettings.mask().value()
         if image is None:
             return None
-        massif = pyFAI.massif.Massif(image, mask)
-        massif.get_labeled_massif(reconstruct=reconstruct)
-        qt.QApplication.restoreOverrideCursor()
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+        try:
+            massif = pyFAI.massif.Massif(image, mask)
+            massif.get_labeled_massif(reconstruct=reconstruct)
+        except Exception as e:
+            if mask is not None and mask.shape != image.shape[:2]:
+                title = ("Error while preparing peak picking: the mask shape "
+                         f"{mask.shape} does not match the image shape {image.shape[:2]}. "
+                         "Check the detector selected in the experiment settings.")
+            else:
+                title = "Error while preparing peak picking"
+            MessageBox.exception(self, title, e, _logger)
+            return None
+        finally:
+            qt.QApplication.restoreOverrideCursor()
         return massif
 
     def __getMassif(self):
         if self.__ringSelectionMode.isChecked():
             if self.__massifReconstructed is None:
                 self.__massifReconstructed = self.__createMassif(reconstruct=True)
-            self.__massifReconstructed.log_info = False
+            if self.__massifReconstructed is not None:
+                self.__massifReconstructed.log_info = False
             return self.__massifReconstructed
         elif self.__arcSelectionMode.isChecked() or self.__peakSelectionMode.isChecked():
             if self.__massif is None:
                 self.__massif = self.__createMassif()
-            self.__massif.log_info = False
+            if self.__massif is not None:
+                self.__massif.log_info = False
             return self.__massif
         else:
             raise RuntimeError("No selection mode defined")
@@ -1390,7 +1409,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         massif = self.__getMassif()
         if massif is None:
             # Nothing to pick
-            return
+            return []
         points = massif.find_peaks([y, x], stdout=None)
         if len(points) == 0:
             # toleration

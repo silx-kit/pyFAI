@@ -798,7 +798,7 @@ class TestBugRegression(unittest.TestCase):
             parallax=False,
         )
         poni = PoniFile(geometry)
-        print(poni.detector)
+        # print(poni.detector)
         poni.write(StringIO())
 
 

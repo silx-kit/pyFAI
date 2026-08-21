@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2026"
+__date__ = "19/08/2026"
 __status__ = "stable"
 
 import logging
@@ -995,7 +995,10 @@ class Detector(metaclass=DetectorMeta):
                 return False
             res = self.max_shape[0] % shape[0] + self.max_shape[1] % shape[1]
             if res != 0:
+                # do not mutate the detector on failure: it would hide the
+                # inconsistency from any subsequent check
                 logger.warning("Impossible binning: max_shape is %s, requested shape %s", self.max_shape, shape)
+                return False
 
             old_binning = self._binning
             self._binning = (bin1, bin2)
@@ -1004,7 +1007,7 @@ class Detector(metaclass=DetectorMeta):
             self._pixel2 *= (1.0 * bin2 / old_binning[1])
             self._mask = False
             self._mask_crc = None
-            return res == 0
+            return True
         else:
             logger.debug("guess_binning for generic detectors !")
             self._binning = 1, 1
@@ -1050,7 +1053,10 @@ class Detector(metaclass=DetectorMeta):
         :return: the mask with valid pixel to 0
         :rtype: numpy ndarray of int8 or None
         """
-        if not self.guess_binning(img):
+        if not self.guess_binning(img) and self.shape is None:
+            # shape-less generic detector: adapt to the image.
+            # Detectors with a defined shape are kept untouched, the static
+            # mask is returned and the caller has to deal with the mismatch.
             self.shape = img.shape
 
         static_mask = self.mask

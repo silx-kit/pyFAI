@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 18/08/2026
+:Date: 19/08/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -9,6 +9,9 @@ Change-log of versions
 -------------------
 - Change of behavior of `Calibrant` which raises `ValueError` when a file exist but does not d-spacing info / `IOError` when absent
 - Fix serialization issue with Rayonix detectors (regression introduced with parallax, #2904)
+- Fix hang when changing detector (size) after a first calibration or inconsistent detector shape (#2890)
+- Test are by default without GUI output, much cleaner now.
+- Supports python 3.10-3.14, 3.14t is untested.
 
 2026.05 19/05/2026
 -------------------
