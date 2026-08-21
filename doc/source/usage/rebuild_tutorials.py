@@ -67,4 +67,3 @@ if __name__ == "__main__":
     print("Failed:\n"+"\n".join(failed))
     print("*"*50)
     print(f"Runtime: {timedelta(seconds=time.perf_counter()-t0)}")
-
