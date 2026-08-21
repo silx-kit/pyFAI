@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2025"
+__date__ = "21/08/2026"
 __status__ = "production"
 
 import logging
@@ -134,7 +134,7 @@ def parse_writer(input_images, options, algorithms):
         prefix = "{common_prefix}"
         suffix = ""
         if options.cutoff:
-            suffix += "_cutoff_{cutoff}_std" % options.cutoff
+            suffix += f"_cutoff_{options.cutoff}_std"
         suffix += "_{image_count}_files.{file_format}"
         template = prefix + "{method_name}" + suffix
 
@@ -175,7 +175,7 @@ class ShellAverageObserver(average.AverageObserver):
 
     def frame_processed(self, algorithm, frame_index, frames_count):
         if self.__bar is None:
-            title = "Process %s" % algorithm.name
+            title = f"Process {algorithm.name}"
             self.__frames_count = frames_count + 1
             self.__bar = ProgressBar(title, self.__frames_count, self.__size)
         self.__bar.update(frame_index, "Feeding frames")
@@ -186,7 +186,7 @@ class ShellAverageObserver(average.AverageObserver):
     def algorithm_finished(self, algorithm):
         self.__bar.clear()
         self.__bar = None
-        print("%s reduction finished" % algorithm.name.capitalize())
+        print(f"{algorithm.name.capitalize()} reduction finished")
 
     def process_finished(self):
         pass
@@ -206,7 +206,7 @@ def main(args=None):
     :param args: list of arguments, i.e sys.argv[1:]
     """
     usage = "pyFAI-average [options] [options] -o output.edf file1.edf file2.edf ..."
-    version = "pyFAI-average version %s from %s" % (pyFAI_version, pyFAI_date)
+    version = f"pyFAI-average version {pyFAI_version} from {pyFAI_date}"
     description = """
     This tool can be used to average out a set of dark current images using
     mean or median filter (along the image stack). One can also reject outliers
