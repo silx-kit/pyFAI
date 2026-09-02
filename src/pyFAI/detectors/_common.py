@@ -388,7 +388,7 @@ class Detector(metaclass=DetectorMeta):
         if "max_shape" in config:
             self.max_shape = config.get("max_shape")
         self._orientation = Orientation(config.get("orientation", 0))
-        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+        self.sensor = SensorConfig.from_dict(config["sensor"]) if "sensor" in config else None
         return self
 
     def get_config(self):
@@ -1404,6 +1404,8 @@ class NexusDetector(Detector):
             self._orientation = Orientation(orientation)
         if sensor:
             "overwrite the sensor if provided in input"
+            if isinstance(sensor, dict):
+                sensor = SensorConfig.from_dict(sensor)
             self.sensor = sensor
 
     def __repr__(self):
@@ -1557,7 +1559,7 @@ class NexusDetector(Detector):
                          config)
 
         self._orientation = Orientation(config.get("orientation", 0))
-        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+        self.sensor = SensorConfig.from_dict(config["sensor"]) if "sensor" in config else None
 
         return self
 
