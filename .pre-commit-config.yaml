@@ -15,7 +15,7 @@ repos:
     # relies on rules and fixes introduced in that series. `rev` is an exact
     # pin, so bump it rather than lowering it.
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.5
+    rev: v0.16.6
     hooks:
     # Run the linter.
     -   id: ruff-check
