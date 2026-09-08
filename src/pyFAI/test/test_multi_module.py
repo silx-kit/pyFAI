@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2026"
+__date__ = "08/09/2026"
 
 import logging
 import os
@@ -43,7 +43,9 @@ from scipy import optimize
 
 from .. import detector_factory
 from ..detectors import Detector
-from ..detectors.multi_module import ModuleParam, MultiModule, MultiModuleRefinement
+from ..detectors.multi_module import (ModuleParam, MultiModule,
+                                      MultiModuleRefinement, PoniParam)
+from ..io.ponifile import PoniFile
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
@@ -223,11 +225,99 @@ class TestUncertainties(unittest.TestCase):
         self.assertRaises(RuntimeError, self.mm.calc_uncertainties, result)
 
 
+class TestParameterVector(unittest.TestCase):
+    """Tests for the handling of the parameter vector: init_param / set_param / names"""
+
+    @classmethod
+    def setUpClass(cls):
+        detector = Detector(pixel1=1e-4, pixel2=1e-4, max_shape=(21, 21))
+        mask = numpy.zeros((21, 21), dtype=numpy.int8)
+        mask[10,:] = 1
+        mask[:, 10] = 1
+        detector.mask = mask
+        cls.detector = detector
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.detector = None
+
+    def build(self):
+        mm = MultiModuleRefinement.from_detector(self.detector)
+        mm.modules[2].fixed = True
+        return mm
+
+    def test_roundtrip(self):
+        """set_param followed by init_param returns the very same vector"""
+        mm = self.build()
+        self.assertEqual(mm.nb_param, ModuleParam.nb_param * 3,
+                         "3 free modules, no registered geometry")
+        self.assertTrue(numpy.array_equal(mm.init_param(), numpy.zeros(mm.nb_param)),
+                        "the initial displacement is null")
+        rng = numpy.random.default_rng(24)
+        param = rng.normal(size=mm.nb_param)
+        self.assertTrue(numpy.array_equal(mm.set_param(param), param), "set_param echoes back")
+        self.assertTrue(numpy.array_equal(mm.init_param(), param),
+                        "init_param reads the state back")
+        self.assertTrue(numpy.array_equal(mm.param, param), "the vector is kept in `param`")
+        # the fixed module did not receive anything
+        self.assertEqual(mm.modules[2].param.get(), (0.0, 0.0, 0.0), "fixed module untouched")
+
+    def test_names(self):
+        """One name per parameter, the fixed module being skipped"""
+        mm = self.build()
+        names = mm.param_names
+        self.assertEqual(len(names), mm.nb_param, "one name per parameter")
+        self.assertEqual(names[0], "module1.d0", f"unexpected first name: {names[0]}")
+        self.assertFalse([n for n in names if n.startswith("module2.")],
+                         "the fixed module has no parameter")
+
+    def test_wrong_size(self):
+        """A vector of the wrong size is rejected"""
+        mm = self.build()
+        self.assertRaises(ValueError, mm.set_param, numpy.zeros(mm.nb_param + 1))
+        self.assertRaises(ValueError, mm.set_param, numpy.zeros(mm.nb_param - 1))
+
+    def test_poni_roundtrip(self):
+        """The poni-parameters are stored back into the PoniFile of every geometry"""
+        mm = self.build()
+        key = "fake.npt"
+        mm.ponis[key] = PoniFile({"poni_version": 2.1, "dist": 0.1,
+                                  "poni1": 0.01, "poni2": 0.02,
+                                  "rot1": 0.0, "rot2": 0.0, "rot3": 0.0,
+                                  "detector": "Detector",
+                                  "detector_config": {"pixel1": 1e-4, "pixel2": 1e-4}})
+        mm.calibrants[key] = None  # only the number of geometries matters here
+        self.assertEqual(mm.nb_param, ModuleParam.nb_param * 3 + PoniParam.nb_param,
+                         "3 free modules and one geometry")
+        param = numpy.arange(mm.nb_param, dtype=numpy.float64)
+        mm.set_param(param)
+        self.assertTrue(numpy.array_equal(mm.init_param(), param),
+                        "the poni-parameters are read back from the PoniFile")
+        poni = mm.ponis[key]
+        self.assertAlmostEqual(poni.dist, param[-5], msg="dist updated")
+        self.assertAlmostEqual(poni.poni1, param[-4], msg="poni1 updated")
+        self.assertAlmostEqual(poni.rot2, param[-1], msg="rot2 updated")
+        self.assertEqual(mm.param_names[-5], f"{key}.dist", "name of the poni-parameter")
+
+    def test_to_detector_uses_the_state(self):
+        """to_detector() without argument uses the parameters stored by set_param"""
+        mm = self.build()
+        rng = numpy.random.default_rng(25)
+        param = rng.normal(scale=0.3, size=mm.nb_param)
+        mm.set_param(param)
+        from_state = mm.to_detector()
+        from_vector = mm.to_detector(param)
+        self.assertTrue(numpy.array_equal(from_state.get_pixel_corners(),
+                                          from_vector.get_pixel_corners()),
+                        "both ways provide the same detector")
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestMultiModule))
     testsuite.addTest(loader(TestUncertainties))
+    testsuite.addTest(loader(TestParameterVector))
     return testsuite
 
 

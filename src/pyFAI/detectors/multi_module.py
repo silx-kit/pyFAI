@@ -298,7 +298,8 @@ class MultiModuleRefinement(MultiModule):
         self.modulated_points = {}  # key: npt filename, value record array with coordinates, ring & module
         self.calibrants = {}  # contains the different calibrant objects for each control-point file
         self._q_theo = {}
-        self.ponis = {}  # relative to control-point files #Unused ?
+        self.ponis = {}  # geometry of every control-point file, updated by `set_param`
+        self.param = None  # current parameter vector, updated by `set_param` and `refine`
 
     def calc_cp_positions(self, param=None, key=None, center=True):
         """Calculate the physical position for control points of a given registered calibrant"""
@@ -342,13 +343,21 @@ class MultiModuleRefinement(MultiModule):
     def load_control_points(self, filename, poni=None, verbose=False):
         """
         :param filename: file with control points
-        :param poni: file with the (uncorrected) detector position
+        :param poni: file with the (uncorrected) detector position. When missing, an empty
+                     `PoniFile` is registered so that every set of control points always
+                     comes with exactly one geometry: the size of the parameter vector is
+                     therefore unambiguous. Its parameters start at 0 and have to be
+                     refined, which is unlikely to converge from such a starting point.
         :param verbose: set to True to print out the number of control points per module
         """
         cp = ControlPoints(filename)
         self.calibrants[filename] = cp.calibrant
         if poni:
             self.ponis[filename] = PoniFile(poni)
+        else:
+            logger.warning("No poni-file provided for %s: the geometry starts from scratch",
+                           filename)
+            self.ponis[filename] = PoniFile()
         # build modulated list of control points
         d0 = []
         d1 = []
@@ -378,9 +387,15 @@ class MultiModuleRefinement(MultiModule):
             }
 
     def residu(self, param=None):
-        """Calculate the delta_q value between the expected ring position and the actual one"""
+        """Calculate the delta_q value between the expected ring position and the actual one
+
+        :param param: parameter vector, defaults to the current state of the refinement
+        :return: vector with the deviation in q (nm^-1) for every control point
+        """
         if not self._q_theo:
             self.init_q_theo()
+        if param is None:
+            param = self.init_param()
         module_param = param[
             : ModuleParam.nb_param * sum(not m.fixed for m in self.modules.values())
         ]
@@ -415,12 +430,21 @@ class MultiModuleRefinement(MultiModule):
 
     @property
     def nb_param(self):
-        """Number of parameters for the refinement"""
+        """Number of parameters for the refinement
+
+        This is 3 values per free module plus 5 per registered geometry. `load_control_points`
+        guarantees one geometry per set of control points, hence `self.ponis`,
+        `self.calibrants` and `self.modulated_points` always share the same keys.
+        """
         free = sum(not m.fixed for m in self.modules.values())
-        return free * ModuleParam.nb_param + PoniParam.nb_param * len(self.calibrants)
+        return free * ModuleParam.nb_param + PoniParam.nb_param * len(self.ponis)
 
     def init_param(self):
-        """Generate the numpy array with all parameters"""
+        """Generate the numpy array with all parameters
+
+        The values are read from the current state of the refinement: the displacement
+        stored in each free module and the geometry of every registered poni.
+        """
         param = numpy.zeros(self.nb_param)
         idx = 0
         for m in self.modules.values():
@@ -431,17 +455,62 @@ class MultiModuleRefinement(MultiModule):
             idx += ModuleParam.nb_param
         for p in self.ponis.values():
             for i, n in enumerate(PoniParam.__dataclass_fields__, start=idx):
-                param[i] = p.__getattribute__(n)
+                value = p.__getattribute__(n)
+                # an empty PoniFile has all its parameters set to None
+                param[i] = 0.0 if value is None else value
             idx += PoniParam.nb_param
         return param
 
-    def print_param(self, param, sigma=None):
-        """Display the parameter vector, module per module and geometry per geometry
+    def set_param(self, param):
+        """Store a parameter vector as the current state of the refinement
+
+        The displacement of every free module is copied into its `ModuleParam` and the
+        geometry of every image into its `PoniFile`, so that `init_param` reads the very
+        same vector back and so that `to_detector`, `residu`, `cost` or `print_param` use
+        it without any argument.
 
         :param param: vector with all the parameters, as provided by `init_param`
+        :return: the parameter vector actually stored
+        """
+        param = numpy.ascontiguousarray(param, dtype=numpy.float64)
+        if param.size != self.nb_param:
+            raise ValueError(f"`param` should provide {self.nb_param} values, got {param.size}")
+        idx = 0
+        for m in self.modules.values():
+            if m.fixed:
+                continue
+            m.param.set(param[idx: idx + ModuleParam.nb_param])
+            idx += ModuleParam.nb_param
+        for key, poni in self.ponis.items():
+            # a PoniFile is not mutable: derive a new one from the refined values
+            nb = PoniParam.nb_param
+            values = dict(zip(PoniParam.__dataclass_fields__, param[idx: idx + nb]))
+            self.ponis[key] = poni.with_params(**values)
+            idx += nb
+        self.param = param
+        return param
+
+    @property
+    def param_names(self):
+        """Name of every parameter, in the same order as the vector of `init_param`"""
+        names = []
+        for module_id, module in self.modules.items():
+            if module.fixed:
+                continue
+            names += [f"module{module_id}.{n}" for n in ModuleParam.__dataclass_fields__]
+        for key in self.ponis:
+            names += [f"{key}.{n}" for n in PoniParam.__dataclass_fields__]
+        return names
+
+    def print_param(self, param=None, sigma=None):
+        """Display the parameter vector, module per module and geometry per geometry
+
+        :param param: vector with all the parameters, as provided by `init_param`.
+                      Defaults to the current state of the refinement.
         :param sigma: optional vector with the standard deviation of every parameter, as
                       provided by `calc_uncertainties`. Displayed after a ± sign.
         """
+        param = self.init_param() if param is None else param
         idx = 0
         for i, m in self.modules.items():
             if m.fixed:
@@ -461,11 +530,28 @@ class MultiModuleRefinement(MultiModule):
             print(res)
             idx += PoniParam.nb_param
 
-    def cost(self, param):
+    def cost(self, param=None):
+        """Sum of the squared residuals, i.e. the cost function which is minimized
+
+        :param param: parameter vector, defaults to the current state of the refinement
+        """
         delta = self.residu(param)
         return numpy.dot(delta, delta)
 
-    def refine(self, param, method="SLSQP", **kwargs):
+    def chi2(self, param=None):
+        """Average of the squared deviation in q, per control point
+
+        Unlike `cost`, this value does not depend on the number of control points, hence
+        it can be compared between datasets. This is the quantity `refine` uses to decide
+        whether a refinement is an improvement or not.
+
+        :param param: parameter vector, defaults to the current state of the refinement
+        :return: cost function divided by the number of control points
+        """
+        delta = self.residu(param)
+        return numpy.dot(delta, delta) / max(delta.size, 1)
+
+    def refine(self, param=None, method="SLSQP", **kwargs):
         """Refine the position of the modules and the geometry of every image
 
         Two families of optimizers are available:
@@ -479,17 +565,43 @@ class MultiModuleRefinement(MultiModule):
         * scalar minimizers from `scipy.optimize.minimize` ("SLSQP", "simplex", ...) only
           see the cost function, i.e. the sum of the squared residuals.
 
-        :param param: vector with the initial guess of the parameters, see `init_param`
+        Like `GeometryRefinement.refine3`, the chi² is evaluated before and after the
+        optimization and the result is stored with `set_param` **only if it is an
+        improvement**: a refinement can therefore not degrade the current state.
+
+        :param param: vector with the initial guess of the parameters, see `init_param`.
+                      Defaults to the current state of the refinement.
         :param method: name of the optimizer, "simplex" is an alias for "Nelder-Mead"
         :param kwargs: any extra keyword argument, passed to the scipy optimizer
-        :return: the OptimizeResult object from scipy. Nota: `result.fun` contains the
-                 vector of residuals with least-squares optimizers and the value of the
-                 cost function with the other ones.
+        :return: the OptimizeResult object from scipy, with 3 extra keys: `chi2_before`
+                 and `chi2_after`, the average squared deviation per control point, and
+                 `applied`, whether the result was stored as the new state.
+                 Nota: `result.fun` contains the vector of residuals with least-squares
+                 optimizers and the value of the cost function with the other ones.
         """
+        param = self.init_param() if param is None else param
+        chi2_before = self.chi2(param)
         method = "Nelder-Mead" if method.lower() == "simplex" else method
         if method.lower() in self.LEAST_SQUARES:
-            return optimize.least_squares(self.residu, param, method=method.lower(), **kwargs)
-        return optimize.minimize(self.cost, param, method=method, **kwargs)
+            result = optimize.least_squares(self.residu, param, method=method.lower(), **kwargs)
+        else:
+            result = optimize.minimize(self.cost, param, method=method, **kwargs)
+        chi2_after = self.chi2(result.x)
+        result.chi2_before = chi2_before
+        result.chi2_after = chi2_after
+        result.applied = chi2_after < chi2_before
+        if result.applied:
+            names = self.param_names
+            idx = numpy.argmax(abs(numpy.asarray(result.x) - param))
+            logger.info("Least square %s --> %s", chi2_before, chi2_after)
+            logger.info("maxdelta on %s: %s --> %s", names[idx], param[idx], result.x[idx])
+            self.set_param(result.x)
+        elif chi2_after > chi2_before:
+            logger.warning("Refinement rejected: chi² would degrade from %s to %s",
+                           chi2_before, chi2_after)
+        else:
+            logger.info("Refinement did not improve chi² (%s): already converged", chi2_before)
+        return result
 
     def calc_uncertainties(self, result):
         """Estimate the standard deviation of the refined parameters
