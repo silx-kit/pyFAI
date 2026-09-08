@@ -34,6 +34,7 @@ py.install_sources(
     'test_massif.py',
     'test_method_registry.py',
     'test_multi_geometry.py',
+    'test_multi_module.py',
     'test_orientation.py',
     'test_parallax.py',
     'test_peak_picking.py',

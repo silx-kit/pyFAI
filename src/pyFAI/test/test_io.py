@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2026"
+__date__ = "08/09/2026"
 
 import logging
 import os
@@ -53,6 +53,46 @@ from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
+
+
+class TestPoniFileCopyWith(unittest.TestCase):
+    """A PoniFile is immutable: `with_*` derives a new object from an existing one"""
+
+    def build(self):
+        return PoniFile({"poni_version": 2.1, "dist": 0.1,
+                         "poni1": 0.01, "poni2": 0.02,
+                         "rot1": 0.0, "rot2": 0.0, "rot3": 0.0,
+                         "wavelength": 1e-10,
+                         "detector": "Detector",
+                         "detector_config": {"pixel1": 1e-4, "pixel2": 1e-4,
+                                             "orientation": 3}})
+
+    def test_with_params(self):
+        """Several parameters at once, the original object being left untouched"""
+        poni = self.build()
+        new = poni.with_params(dist=0.5, rot1=1e-3)
+        self.assertIsNot(new, poni, "a new object is returned")
+        self.assertEqual(new.dist, 0.5, "dist is replaced")
+        self.assertEqual(new.rot1, 1e-3, "rot1 is replaced")
+        self.assertEqual(new.poni1, poni.poni1, "the other parameters are kept")
+        self.assertEqual(poni.dist, 0.1, "the original object is unchanged")
+        self.assertIs(new.detector, poni.detector, "the detector is shared")
+
+    def test_with_single(self):
+        """One method per geometry parameter"""
+        poni = self.build()
+        for name, value in (("dist", 0.42), ("poni1", 0.11), ("poni2", 0.12),
+                            ("rot1", 0.01), ("rot2", 0.02), ("rot3", 0.03),
+                            ("wavelength", 2e-10)):
+            new = getattr(poni, f"with_{name}")(value)
+            self.assertEqual(getattr(new, name), value, f"{name} is replaced")
+            self.assertNotEqual(getattr(poni, name), value, f"{name} unchanged in the original")
+
+    def test_unknown_param(self):
+        """A keyword which is not a geometry parameter is refused"""
+        poni = self.build()
+        self.assertRaises(KeyError, poni.with_params, detector="Pilatus1M")
+        self.assertRaises(KeyError, poni.with_params, dist=0.5, unknown=1)
 
 
 class TestPoniFile(unittest.TestCase):
@@ -384,6 +424,7 @@ def suite():
     testsuite.addTest(loader(TestSpotWriter))
     testsuite.addTest(loader(TestXrdmlWriter))
     testsuite.addTest(loader(TestPoniFile))
+    testsuite.addTest(loader(TestPoniFileCopyWith))
     return testsuite
 
 

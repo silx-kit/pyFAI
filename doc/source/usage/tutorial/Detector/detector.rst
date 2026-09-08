@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 10/03/2020
+:Date: 04/09/2026
 :Keywords: Tutorials
 :Target: Advanced users tutorials for dealing with geometry distortion of detectors
 
@@ -19,4 +19,5 @@ The subsequent ones are about measuring this distortion, often based on the imag
    CCD_Calibration/CCD_calibration
    Pilatus_Calibration/Pilatus_ID15
    Pilatus_Calibration/Pilatus900kw-ID06
-   Eiger_Calibration/Eiger2-ID11
+   Eiger_Calibration/Eiger2-ID11_grid
+   Ring_Calibration/Eiger2-ID11_powder

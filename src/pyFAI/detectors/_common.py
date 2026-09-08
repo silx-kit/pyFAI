@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/09/2026"
+__date__ = "04/09/2026"
 __status__ = "stable"
 
 import copy
@@ -1384,7 +1384,11 @@ class Detector(metaclass=DetectorMeta):
             self._sensor = None
         elif isinstance(sensor, SensorConfig):
             if sensor not in self.SENSORS:
-                logger.warning("Sensor %s not in allowed SENSORS: [%s].", sensor,
+                if self.SENSORS:
+                    logger.warning("Sensor %s not in allowed SENSORS: [%s].", sensor,
+                               "|".join(str(i) for i in self.SENSORS))
+                else:
+                    logger.info("Sensor %s not in allowed SENSORS: [%s].", sensor,
                                "|".join(str(i) for i in self.SENSORS))
             self._sensor = sensor
         else:

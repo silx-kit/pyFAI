@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 01/12/2016
+:Date: 08/09/2026
 :Keywords: generic description of the calibration procedure
 :Target: General audience
 
@@ -69,47 +69,12 @@ Peak-picking
 ------------
 
 Once started, *pyFAI-calib* will ask you to select rings.
-The Peak-picking consists in the identification of peaks and groups of peaks
-belonging to same ring.
-It can be performed by 4 methods described hereafter.
+The peak-picking consists in the identification of peaks and groups of peaks
+belonging to the same ring.
 
-Massif detection
-................
-
-This method consists in making the difference of the original image and a blurred
-image. Then look for a large contiguous region of positives values, corresponding
-to a single group of peak.
-The blurring parameter can be adjusted using the *"-g"* option in pyFAI-calib.
-
-Blob detection
-..............
-
-The approach is based on difference of gaussians (DoGs) as described in the
-blob_detection_ article of wikipedia.
-
-.. _blob_detection: http://en.wikipedia.org/wiki/Blob_detection
-
-It consists in blurring the image by convolution with a 2D gaussian kernel and making
-differences between two successive blurs (called Difference Of Gaussian or DoGs).
-In theses DoGs, keypoints are defined as the maxima in the 3D space (y,x,size of
-the gaussian). After their localization, keypoints are refined by Savitzky Golay
-algorithm or by an interpolation at the second order which is equivalent but uses
-less points. At this step, if the estimation of the maximum is too far from the maximum,
-the keypoint will be considered as a fake maximum and removed.
-
-Steepest ascent
-...............
-
-This is very naive implementation which looks for the nearest local maximum.
-Subsequently a sub-pixel optimization is performed based on a second order expansion
-using the local gradient and hessian.
-
-Monte-Carlo sampling
-....................
-
-Series of peaks can be extracted using the Steepest Ascent on randomly selected seeds.
-This method can be biased towards an already known geometry by starting from
-points which are supposed to be on the ring.
+Three algorithms are available to perform this extraction: massif detection, blob
+detection and inverse watershed. They are described, together with the sub-pixel
+refinement they rely on, in :ref:`control_points`.
 
 Refinement of the parameters
 ----------------------------

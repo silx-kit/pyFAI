@@ -75,6 +75,7 @@ from . import (
     test_medfilt_engine,
     test_method_registry,
     test_multi_geometry,
+    test_multi_module,
     test_orientation,
     test_parallax,
     test_peak_picking,
@@ -142,6 +143,7 @@ def suite():
     testsuite.addTest(test_bug_regression.suite())
     testsuite.addTest(test_watershed.suite())
     testsuite.addTest(test_multi_geometry.suite())
+    testsuite.addTest(test_multi_module.suite())
     testsuite.addTest(test_worker.suite())
     testsuite.addTest(test_utils_shell.suite())
     testsuite.addTest(test_utils_stringutil.suite())
