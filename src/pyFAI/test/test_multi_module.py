@@ -42,6 +42,8 @@ import numpy
 from scipy import optimize
 
 from .. import detector_factory
+from ..calibrant import get_calibrant
+from ..control_points import ControlPoints
 from ..detectors import Detector
 from ..detectors.multi_module import (ModuleParam, MultiModule,
                                       MultiModuleRefinement, PoniParam)
@@ -276,6 +278,35 @@ class TestParameterVector(unittest.TestCase):
         mm = self.build()
         self.assertRaises(ValueError, mm.set_param, numpy.zeros(mm.nb_param + 1))
         self.assertRaises(ValueError, mm.set_param, numpy.zeros(mm.nb_param - 1))
+
+    def test_missing_poni(self):
+        """A set of control points without poni-file still registers one geometry
+
+        This keeps the size of the parameter vector unambiguous: 3 values per free module
+        plus 5 per set of control points, whether its geometry is known or not.
+        """
+        calibrant = get_calibrant("LaB6")
+        calibrant.wavelength = 1e-10
+        cp = ControlPoints(calibrant=calibrant)
+        cp.append([(2.0, 3.0), (4.0, 5.0), (6.0, 7.0)], ring=0)
+        cp.append([(13.0, 14.0), (15.0, 16.0)], ring=1)
+        filename = os.path.join(UtilsTest.tempdir, "multi_module.npt")
+        cp.save(filename)
+
+        mm = self.build()
+        mm.load_control_points(filename)  # no poni-file on purpose
+        self.assertEqual(list(mm.ponis), list(mm.calibrants),
+                         "one geometry per set of control points")
+        self.assertEqual(mm.nb_param, ModuleParam.nb_param * 3 + PoniParam.nb_param,
+                         "3 free modules and one geometry")
+        param = mm.init_param()
+        self.assertEqual(param.size, mm.nb_param, "the vector has the announced size")
+        self.assertTrue(numpy.array_equal(param[-PoniParam.nb_param:], numpy.zeros(5)),
+                        "an empty geometry starts at 0")
+        target = numpy.arange(mm.nb_param, dtype=numpy.float64)
+        mm.set_param(target)
+        self.assertTrue(numpy.array_equal(mm.init_param(), target),
+                        "the empty geometry can be assigned and read back")
 
     def test_poni_roundtrip(self):
         """The poni-parameters are stored back into the PoniFile of every geometry"""
