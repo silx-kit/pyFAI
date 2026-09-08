@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "08/09/2026"
 
 import logging
 import unittest
@@ -96,6 +96,50 @@ class TestBilinear(unittest.TestCase):
                 ok += 1
         logger.info("Success rate: %.1f", 100.0 * ok / self.N)
         self.assertEqual(ok, self.N, "Maximum is always found")
+
+
+    def test_subpixel_quadratic(self):
+        """The second order Taylor expansion is exact on a quadratic surface
+
+        The sub-pixel position of the maximum should be found at the precision of the
+        float32 storage, even when the quadratic form has a cross-term.
+        """
+        shape = (25, 25)
+        pos1, pos2 = numpy.ogrid[:shape[0], :shape[1]]
+        for _s in range(100):
+            center = 12 + self.rng.uniform(-0.4, 0.4, 2)
+            # negative definite quadratic form: a>0, b>0 and a*b > c**2
+            a, b = self.rng.uniform(0.02, 0.1, 2)
+            c = self.rng.uniform(-0.02, 0.02)
+            d1 = pos1 - center[0]
+            d2 = pos2 - center[1]
+            data = (1.0 - a * d1 * d1 - b * d2 * d2 - 2.0 * c * d1 * d2).astype(numpy.float32)
+            p0, p1 = bilinear.Bilinear(data).local_maxi((12, 12))
+            err = numpy.sqrt((p0 - center[0]) ** 2 + (p1 - center[1]) ** 2)
+            self.assertLess(err, 1e-4, f"quadratic maximum {center} found at ({p0}, {p1})")
+
+    def test_subpixel_gaussian(self):
+        """Sub-pixel refinement of a 2D Gaussian sitting at a known position"""
+        shape = (25, 25)
+        pos1, pos2 = numpy.ogrid[:shape[0], :shape[1]]
+        # sigma along both axes, rotation of the Gaussian, tolerance in pixel
+        for sigma1, sigma2, angle, tol in ((2.0, 2.0, 0.0, 0.06),
+                                           (3.0, 1.5, 30.0, 0.30),
+                                           (3.0, 1.5, 60.0, 0.30)):
+            cos_a = numpy.cos(numpy.deg2rad(angle))
+            sin_a = numpy.sin(numpy.deg2rad(angle))
+            for _s in range(100):
+                center = 12 + self.rng.uniform(-0.5, 0.5, 2)
+                d1 = pos1 - center[0]
+                d2 = pos2 - center[1]
+                u = cos_a * d1 + sin_a * d2
+                v = -sin_a * d1 + cos_a * d2
+                data = numpy.exp(-0.5 * ((u / sigma1) ** 2 + (v / sigma2) ** 2)).astype(numpy.float32)
+                idx = numpy.unravel_index(numpy.argmax(data), shape)
+                p0, p1 = bilinear.Bilinear(data).local_maxi((int(idx[0]), int(idx[1])))
+                err = numpy.sqrt((p0 - center[0]) ** 2 + (p1 - center[1]) ** 2)
+                self.assertLess(err, tol, f"Gaussian ({sigma1}, {sigma2}, {angle}°) centered "
+                                          f"on {center} found at ({p0}, {p1})")
 
 
 class TestConversion(unittest.TestCase):
