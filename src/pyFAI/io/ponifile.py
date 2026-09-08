@@ -30,10 +30,11 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "08/09/2026"
 __docformat__ = 'restructuredtext'
 
 import collections
+import copy
 import logging
 import pathlib
 import time
@@ -421,6 +422,92 @@ class PoniFile:
     @property
     def parallax(self) -> bool:
         return self._parallax
+
+    # Copy-with API: a PoniFile is immutable, a modified geometry is a new object
+
+    GEOMETRY_PARAMS: ClassVar[tuple] = ("dist", "poni1", "poni2",
+                                        "rot1", "rot2", "rot3", "wavelength")
+    "Names of the parameters which `with_params` accepts"
+
+    def with_params(self, **kwargs) -> "PoniFile":
+        """Build a new PoniFile from this one, with some parameters replaced
+
+        A PoniFile is intentionally not mutable: rather than modifying a geometry in
+        place, one derives a new geometry from it::
+
+            refined = poni.with_params(dist=0.5, rot1=1e-3)
+
+        The detector is shared with the original object, not copied.
+
+        :param kwargs: any of dist, poni1, poni2, rot1, rot2, rot3, wavelength
+        :return: a new PoniFile instance
+        :raise KeyError: when a keyword does not name a geometry parameter
+        """
+        for key in kwargs:
+            if key not in self.GEOMETRY_PARAMS:
+                raise KeyError(f"`{key}` is not a geometry parameter, expected one of: "
+                               f"{', '.join(self.GEOMETRY_PARAMS)}")
+        new = copy.copy(self)
+        new.extra = dict(self.extra)
+        for key, value in kwargs.items():
+            setattr(new, f"_{key}", None if value is None else float(value))
+        return new
+
+    def with_dist(self, dist: float) -> "PoniFile":
+        """Build a new PoniFile with another sample-detector distance
+
+        :param dist: the new distance, in meter
+        :return: a new PoniFile instance
+        """
+        return self.with_params(dist=dist)
+
+    def with_poni1(self, poni1: float) -> "PoniFile":
+        """Build a new PoniFile with another PONI coordinate along the slow dimension
+
+        :param poni1: the new coordinate, in meter
+        :return: a new PoniFile instance
+        """
+        return self.with_params(poni1=poni1)
+
+    def with_poni2(self, poni2: float) -> "PoniFile":
+        """Build a new PoniFile with another PONI coordinate along the fast dimension
+
+        :param poni2: the new coordinate, in meter
+        :return: a new PoniFile instance
+        """
+        return self.with_params(poni2=poni2)
+
+    def with_rot1(self, rot1: float) -> "PoniFile":
+        """Build a new PoniFile with another first rotation
+
+        :param rot1: the new rotation, in radian
+        :return: a new PoniFile instance
+        """
+        return self.with_params(rot1=rot1)
+
+    def with_rot2(self, rot2: float) -> "PoniFile":
+        """Build a new PoniFile with another second rotation
+
+        :param rot2: the new rotation, in radian
+        :return: a new PoniFile instance
+        """
+        return self.with_params(rot2=rot2)
+
+    def with_rot3(self, rot3: float) -> "PoniFile":
+        """Build a new PoniFile with another third rotation
+
+        :param rot3: the new rotation, in radian
+        :return: a new PoniFile instance
+        """
+        return self.with_params(rot3=rot3)
+
+    def with_wavelength(self, wavelength: float) -> "PoniFile":
+        """Build a new PoniFile with another wavelength
+
+        :param wavelength: the new wavelength, in meter
+        :return: a new PoniFile instance
+        """
+        return self.with_params(wavelength=wavelength)
 
     # Deprecated stuff:
 
