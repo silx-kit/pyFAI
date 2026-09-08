@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2026"
+__date__ = "08/09/2026"
 __status__ = "development"
 
 import copy
@@ -328,10 +328,16 @@ class MultiModuleRefinement(MultiModule):
         if filename not in self.modulated_points:
             print(f"No control-point file named {filename}. Did you load it ?")
         else:
-            print(filename, ":", self.calibrants.get(filename))
+            print(f"`{filename}`: {self.calibrants.get(filename)}")
             modulated_cp = self.modulated_points[filename]
+            w1 = len("Module")
+            w2 = len("Points")
+            print("+"+"-"*w1+"+"+"-"*w2+"+")
+            print("|Module|Points|")
+            print("+"+"-"*w1+"+"+"-"*w2+"+")
             for module_id in range(1, self.nb_modules + 1):
-                print(module_id, (modulated_cp.module == module_id).sum())
+                print(f"|{module_id:6d}|{(modulated_cp.module == module_id).sum():6d}|")
+            print("+"+"-"*w1+"+"+"-"*w2+"+")
 
     def load_control_points(self, filename, poni=None, verbose=False):
         """
