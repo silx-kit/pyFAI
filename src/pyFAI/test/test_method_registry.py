@@ -124,16 +124,17 @@ class TestMethod(ParametricTestCase):
 
     def test_degraded(self):
         "The degradation path ends on a method which degrades to itself"
-        expected = [Method(1, "full", "csr", "cython", None),
-                    Method(1, "full", "histogram", "cython", None),
-                    Method(1, "pseudo", "histogram", "cython", None),
-                    Method(1, "bbox", "histogram", "cython", None),
-                    Method(1, "no", "histogram", "cython", None),
-                    Method(1, "no", "histogram", "python", None)]
-        method = Method(1, "full", "csr", "opencl", (0, 0))
+        expected = [Method(2, "full", "csr", "cython", None),
+                    Method(2, "full", "histogram", "cython", None),
+                    Method(2, "pseudo", "histogram", "cython", None),
+                    Method(2, "bbox", "histogram", "cython", None),
+                    Method(2, "no", "histogram", "cython", None),
+                    Method(2, "no", "histogram", "python", None)]
+        method = Method(2, "full", "csr", "opencl", (0, 0))
         for step in expected:
+            former = method
             method = method.degraded()
-            self.assertEqual(method, step)
+            self.assertEqual(method, step, f"{former}.degraded() => {method} != {step}")
         self.assertEqual(method.degraded(), method, "fail-safe method is a fixed point")
 
     def test_parse_any(self):

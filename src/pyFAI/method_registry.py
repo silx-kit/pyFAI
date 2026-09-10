@@ -234,6 +234,8 @@ class Method(_Method):
         if self.impl == "opencl":
             return self.with_impl("cython").with_target(None)
         elif self.algo in ("lut", "csr", "csc"):
+            return self.with_algo("histo")
+        elif self.split == "full":
             return self.with_split("pseudo")
         elif self.split == "pseudo":
             return self.with_split("bbox")
