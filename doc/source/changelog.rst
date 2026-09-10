@@ -22,9 +22,15 @@ Change-log of versions
   * New `auto_gc` option, which disables the garbage collector around the resets of the geometry (#2894 Thanks for Wilson for spotting it)
   * Better performances for the MultiGeometry integration (#2865)
   * New and updated calibrants: Verneite, the two references of `alpha_Al2O3_SRM676a` (2008 and 2015 lattice parameters, #2856) and `CeO2`, recalculated with many more reflections (#2899).
-
+  * `pyFAI.method_registry.Method` is now a typed `NamedTuple` which validates and normalizes its content at construction time:
+    case, aliases (`histo`, `nosplit`, `numpy`, `ocl`) and mutable (hence unhashable) OpenCL targets are handled once for all.
+    `None` is now the canonical wildcard; the former spellings `"*"`, `"any"`, `"all"` and `0` are still accepted as input.
+    It gains one copy-with method per field, like `PoniFile`: `with_dim`, `with_split`, `with_algo`, `with_impl` and `with_target`,
+    as well as a `Method.parse_any` constructor which accepts about any description of a method (#2757)
 - Bug fixes:
 
+  * `DiffMap.use_gpu` used to assign the implementation to the dimensionality of the method, which silently built
+    an inconsistent method and left the implementation unchanged
   * Sub-pixel refinement of the peak position (`Bilinear.local_maxi`, used by the `massif` and `watershed` peak-pickers): the calibrations become more accurate.
   * Change of behavior of `Calibrant` which raises `ValueError` when a file exist but does not d-spacing info / `IOError` when absent
   * Fix serialization issue with Rayonix detectors (regression introduced with parallax, #2904)

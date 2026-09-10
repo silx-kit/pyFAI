@@ -617,7 +617,7 @@ class Worker:
         "Set the integration method"
         dim = 2 if self.do_2D() else 1
         if method is None:
-            method = method_registry.Method(dim, "*", "*", "*", target=None)
+            method = method_registry.Method(dim, None, None, None, target=None)
         elif isinstance(method, method_registry.Method):
             method = method.fixed(dim=dim)
         elif isinstance(method, (str,)):

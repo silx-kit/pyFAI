@@ -33,10 +33,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "10/09/2026"
 __status__ = "development"
 
-from typing import ClassVar
+from typing import ClassVar, NamedTuple
 import copy
 import inspect
 from collections import OrderedDict, namedtuple
@@ -50,31 +50,200 @@ class _Nothing:
     """Used to identify an unset attribute that we could nullify."""
 
 
-class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
+class _Method(NamedTuple):
+    """Storage for :class:`Method`, which holds the logic.
+
+    This intermediate class is needed because `typing.NamedTuple` forbids the
+    overriding of `__new__`, `_make` and `_replace` in the class body.
+    """
+    dim: int | None = None
+    split: str | None = None
+    algo: str | None = None
+    impl: str | None = None
+    target: tuple | str | None = None
+
+
+class Method(_Method):
+    """Identify an integration method.
+
+    The same class describes two kinds of objects:
+
+    * a *concrete* method, i.e. the identity of one registered integrator. Such
+      a method is used as key in the registry of :class:`IntegrationMethod`.
+    * a *pattern*, i.e. a request where some fields are left unspecified, used
+      to search the registry.
+
+    `None` is the wildcard, it means *any*. On input, the legacy spellings
+    ``"*"``, ``"any"``, ``"all"`` and ``""`` are accepted and normalized to
+    `None`. Values are lower-cased and validated at construction time, hence
+    an instance is always in canonical form and can safely be hashed or
+    compared::
+
+        >>> Method(1, "FULL", "histo", "OpenCL", [0, 1])
+        Method(dim=1, split='full', algo='histogram', impl='opencl', target=(0, 1))
+        >>> Method(2, "*", None, "cython")
+        Method(dim=2, split=None, algo=None, impl='cython', target=None)
+
+    :param dim: dimensionality of the integrator: 1, 2 or None (any)
+    :param split: pixel splitting scheme, see :attr:`AVAILABLE_SPLITS`
+    :param algo: algorithm used, see :attr:`AVAILABLE_ALGOS`
+    :param impl: implementation, see :attr:`AVAILABLE_IMPLS`
+    :param target: OpenCL device, either a 2-tuple of indices, or a device
+                   type like "cpu"/"gpu", or None (any)
+    """
+    __slots__ = ()
+
+    AVAILABLE_DIMS = (1, 2)
+    AVAILABLE_SPLITS = ("no", "bbox", "pseudo", "full")
+    AVAILABLE_ALGOS = ("histogram", "lut", "csr", "csc")
+    AVAILABLE_IMPLS = ("python", "cython", "opencl")
+    #: Accepted spellings for the wildcard, all normalized to `None`
+    WILDCARDS = frozenset((None, "", "*", "any", "all"))
+    #: Deprecated or shortened spellings, normalized to the canonical value
+    ALIASES = {"histo": "histogram",
+               "nosplit": "no",
+               "numpy": "python",
+               "ocl": "opencl",
+               }
+
+    def __new__(cls, dim=None, split=None, algo=None, impl=None, target=None):
+        return super().__new__(cls,
+                               cls._parse_dim(dim),
+                               cls._parse_field("split", split, cls.AVAILABLE_SPLITS),
+                               cls._parse_field("algo", algo, cls.AVAILABLE_ALGOS),
+                               cls._parse_field("impl", impl, cls.AVAILABLE_IMPLS),
+                               cls._parse_target(target))
+
+    @classmethod
+    def _make(cls, iterable):
+        """Build a Method from an iterable.
+
+        Overridden because the inherited implementation bypasses `__new__`:
+        without this, `_replace()` would silently build non-validated (and
+        possibly unhashable) instances.
+        """
+        return cls(*iterable)
+
+    @classmethod
+    def _normalize(cls, value):
+        "Lower-case, strip and resolve aliases. Wildcards return None."
+        if value is None:
+            return None
+        value = str(value).strip().lower()
+        if value in cls.WILDCARDS:
+            return None
+        return cls.ALIASES.get(value, value)
+
+    @classmethod
+    def _parse_field(cls, name, value, available):
+        "Validate one of the split/algo/impl fields"
+        value = cls._normalize(value)
+        if value is not None and value not in available:
+            raise ValueError(f"Unsupported {name} `{value}`: expected one of "
+                             f"{', '.join(available)} or None (any)")
+        return value
+
+    @classmethod
+    def _parse_dim(cls, dim):
+        "Validate the dimensionality: 1, 2 or None (any)"
+        if isinstance(dim, str) or dim is None:
+            normalized = cls._normalize(dim)
+            if normalized is None:
+                return None
+            try:
+                dim = int(normalized)
+            except ValueError:
+                raise ValueError(f"Unsupported dim `{dim}`: expected 1, 2 or None (any)") from None
+        dim = int(dim)
+        if dim == 0:  # historical spelling for "any"
+            return None
+        if dim not in cls.AVAILABLE_DIMS:
+            raise ValueError(f"Unsupported dim `{dim}`: expected 1, 2 or None (any)")
+        return dim
+
+    @classmethod
+    def _parse_target(cls, target):
+        "Validate the target: a hashable device descriptor or None (any)"
+        if target is None:
+            return None
+        if isinstance(target, str):
+            return cls._normalize(target)
+        if isinstance(target, (list, tuple)):
+            return tuple(target) or None
+        return target
+
+    @property
+    def is_concrete(self):
+        """True if this method identifies a single integrator, i.e. holds no
+        wildcard. `target` is not considered since most methods have none.
+
+        :rtype: bool
+        """
+        return None not in (self.dim, self.split, self.algo, self.impl)
+
+    def with_dim(self, dim):
+        """Return the same method with the dimensionality set to `dim`.
+
+        :param dim: 1, 2 or None (any)
+        :rtype: Method
+        """
+        return Method(dim, self.split, self.algo, self.impl, self.target)
+
+    def with_split(self, split):
+        """Return the same method with the pixel splitting set to `split`.
+
+        :param split: see :attr:`AVAILABLE_SPLITS`, or None (any)
+        :rtype: Method
+        """
+        return Method(self.dim, split, self.algo, self.impl, self.target)
+
+    def with_algo(self, algo):
+        """Return the same method with the algorithm set to `algo`.
+
+        :param algo: see :attr:`AVAILABLE_ALGOS`, or None (any)
+        :rtype: Method
+        """
+        return Method(self.dim, self.split, algo, self.impl, self.target)
+
+    def with_impl(self, impl):
+        """Return the same method with the implementation set to `impl`.
+
+        :param impl: see :attr:`AVAILABLE_IMPLS`, or None (any)
+        :rtype: Method
+        """
+        return Method(self.dim, self.split, self.algo, impl, self.target)
+
+    def with_target(self, target):
+        """Return the same method with the OpenCL device set to `target`.
+
+        :param target: 2-tuple of indices, device type, or None (any)
+        :rtype: Method
+        """
+        return Method(self.dim, self.split, self.algo, self.impl, target)
 
     def degraded(self):
         """Returns a degraded version of this method.
 
-        :rtype: Method"
+        Degradation is performed one step at a time, from the most demanding
+        to the most portable implementation. A method which cannot be degraded
+        any further returns itself, which ends the loop in
+        :meth:`IntegrationMethod.select_method`.
+
+        :rtype: Method
         """
         if self.impl == "opencl":
-            result = Method(self.dim, self.split, self.algo, "cython", None)
-        elif self.algo == "lut" or self.algo == "csr":
-            result = Method(self.dim, self.split, "histogram", self.impl, self.target)
-        elif self.split == "full":
-            result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
-#         elif self.split == "full":
-#             result = Method(self.dim, "pseudo", self.algo, self.impl, self.target)
+            return self.with_impl("cython").with_target(None)
+        elif self.algo in ("lut", "csr", "csc"):
+            return self.with_split("pseudo")
         elif self.split == "pseudo":
-            result = Method(self.dim, "bbox", self.algo, self.impl, self.target)
+            return self.with_split("bbox")
         elif self.split == "bbox":
-            result = Method(self.dim, "no", self.algo, self.impl, self.target)
+            return self.with_split("no")
         elif self.impl == "cython":
-            result = Method(self.dim, self.split, self.algo, "python", None)
+            return self.with_impl("python").with_target(None)
         else:
             # Totally fail safe ?
-            result = Method(self.dim, "no", "histogram", "python", None)
-        return result
+            return Method(self.dim, "no", "histogram", "python", None)
 
     def fixed(self, dim=_Nothing, split=_Nothing, algo=_Nothing, impl=_Nothing, target=_Nothing):
         """
@@ -83,17 +252,11 @@ class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
 
         :rtype: Method
         """
-        if dim is _Nothing:
-            dim = self.dim
-        if split is _Nothing:
-            split = self.split
-        if algo is _Nothing:
-            algo = self.algo
-        if impl is _Nothing:
-            impl = self.impl
-        if target is _Nothing:
-            target = self.target
-        return Method(dim, split, algo, impl, target)
+        return Method(self.dim if dim is _Nothing else dim,
+                      self.split if split is _Nothing else split,
+                      self.algo if algo is _Nothing else algo,
+                      self.impl if impl is _Nothing else impl,
+                      self.target if target is _Nothing else target)
 
     @staticmethod
     def parsed(string):
@@ -101,11 +264,11 @@ class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
 
         :param str string: A string identifying a method. Like "python", "ocl",
             "ocl_gpu", "ocl_0,0"
-        :rtype: Method"
+        :rtype: Method
         """
-        algo = "*"
-        impl = "*"
-        split = "*"
+        algo = None
+        impl = None
+        split = None
         string = string.lower()
 
         if "lut" in string:
@@ -146,14 +309,61 @@ class Method(namedtuple("_", ["dim", "split", "algo", "impl", "target"])):
 
         return Method(None, split, algo, impl, target)
 
+    @classmethod
+    def parse_any(cls, value, dim=None, target=None):
+        """Build a Method from about anything: this is the single entry point
+        used to normalize a method coming from a configuration file, the
+        command line or the graphical interface.
+
+        Accepted inputs are `None`, a string like "csr_ocl", a sequence of 3
+        (split, algo, impl) to 5 (dim, split, algo, impl, target) elements, a
+        dict, a :class:`Method` or an :class:`IntegrationMethod`.
+
+        :param value: the method to normalize
+        :param dim: dimensionality to enforce, None to keep the one of `value`
+        :param target: OpenCL device to enforce, None to keep the one of `value`
+        :raise TypeError: if the input cannot be interpreted as a method
+        :rtype: Method
+        """
+        if value is None:
+            method = cls()
+        elif isinstance(value, cls):
+            method = value
+        elif isinstance(value, IntegrationMethod):
+            method = value.method
+        elif isinstance(value, str):
+            method = cls.parsed(value)
+        elif isinstance(value, dict):
+            method = cls(dim=value.get("dim"),
+                         split=value.get("split", value.get("pixel_splitting")),
+                         algo=value.get("algo", value.get("algorithm")),
+                         impl=value.get("impl", value.get("implementation")),
+                         target=value.get("target"))
+        elif isinstance(value, (list, tuple)):
+            if len(value) == 3:
+                method = cls(None, *value)
+            elif 3 < len(value) <= 5:
+                method = cls(*value)
+            else:
+                raise TypeError(f"Method size {len(value)} is unsupported, method={value}.")
+        else:
+            raise TypeError(f"Method type {type(value)} unsupported, method={value}.")
+
+        if dim is not None:
+            method = method.with_dim(dim)
+        if target is not None:
+            method = method.with_target(target)
+        return method
+
 
 class IntegrationMethod:
     "Keeps track of all integration methods"
     _registry: ClassVar[OrderedDict] = OrderedDict()
 
-    AVAILABLE_SPLITS = ("no", "bbox", "pseudo", "full")
-    AVAILABLE_ALGOS = ("histogram", "lut", "csr", "csc")
-    AVAILABLE_IMPLS = ("python", "cython", "opencl")
+    # Kept as aliases: those are defined by, and validated in, Method
+    AVAILABLE_SPLITS = Method.AVAILABLE_SPLITS
+    AVAILABLE_ALGOS = Method.AVAILABLE_ALGOS
+    AVAILABLE_IMPLS = Method.AVAILABLE_IMPLS
 
     @classmethod
     def list_available(cls):
@@ -189,10 +399,7 @@ class IntegrationMethod:
                 split, algo, impl, target = method
             else:
                 _dim, split, algo, impl, target = method
-            algo = algo.lower()
-            if algo.startswith("histo"):
-                algo = "histogram"
-            method = Method(dim, split.lower(), algo, impl.lower(), target)
+            method = Method(dim, split, algo, impl, target)
         methods = cls.select_method(method=method, degradable=degradable)
         if len(methods) == 0:
             return default
@@ -218,8 +425,8 @@ class IntegrationMethod:
                                      target, target_type,
                                      degradable=degradable)
 
-        any_values = {"any", "all", "*"}
-        if dim in any_values:
+        if isinstance(dim, str) and dim.strip().lower() in Method.WILDCARDS:
+            # Explicit request for every dimensionality
             methods = []
             for d in [1, 2]:
                 methods += cls.select_method(dim=d,
@@ -228,32 +435,30 @@ class IntegrationMethod:
                                              degradable=degradable, method=method)
             return methods
 
-        dim = int(dim) if dim else 0
-        algo = algo.lower() if algo is not None else "*"
-        impl = impl.lower() if impl is not None else "*"
-        split = split.lower() if split is not None else "*"
-        target_type = target_type.lower() if target_type else "*"
-        if target_type in any_values:
-            target_type = "*"
-        if isinstance(target, list):
-            target = tuple(target)
-        method_nt = Method(dim, split, algo, impl, target)
-        if method_nt in cls._registry:
+        try:
+            # Method validates and normalizes every field, None being the wildcard
+            method_nt = Method(dim, split, algo, impl, target)
+        except ValueError as err:
+            logger.warning("No method matches the request: %s", err)
+            return []
+        target_type = Method._normalize(target_type)
+
+        if method_nt.is_concrete and method_nt in cls._registry:
             return [cls._registry[method_nt]]
         # Validate on pixel splitting, implementation and algorithm
-        if dim:
-            candidates = [i for i in cls._registry if i[0] == dim]
+        if method_nt.dim is not None:
+            candidates = [i for i in cls._registry if i.dim == method_nt.dim]
         else:
             candidates = cls._registry.keys()
-        if split != "*":
-            candidates = [i for i in candidates if i[1] == split]
-        if algo != "*":
-            candidates = [i for i in candidates if i[2] == algo]
-        if impl != "*":
-            candidates = [i for i in candidates if i[3] == impl]
-        if target:
-            candidates = [i for i in candidates if i[4] == target]
-        if target_type != "*":
+        if method_nt.split is not None:
+            candidates = [i for i in candidates if i.split == method_nt.split]
+        if method_nt.algo is not None:
+            candidates = [i for i in candidates if i.algo == method_nt.algo]
+        if method_nt.impl is not None:
+            candidates = [i for i in candidates if i.impl == method_nt.impl]
+        if method_nt.target is not None:
+            candidates = [i for i in candidates if i.target == method_nt.target]
+        if target_type is not None:
             candidates = [i for i in candidates
                           if cls._registry[i].target_type == target_type]
 
@@ -311,16 +516,15 @@ class IntegrationMethod:
         :return: True if such integrator exists
         """
         if method_nt is None:
-            algo = algo.lower() if algo is not None else ""
-            impl = impl.lower() if impl is not None else ""
-            split = split.lower() if split is not None else ""
-            if impl == "opencl":
+            if str(impl).strip().lower() == "opencl":
                 # indexes start at 0 hence ...
                 target = (0, 0)
             else:
                 target = None
-            method_nt = Method(dim, split, algo, impl, target)
-
+            try:
+                method_nt = Method(dim, split, algo, impl, target)
+            except ValueError:
+                return False
         return method_nt in cls._registry
 
     @classmethod
@@ -450,13 +654,13 @@ class IntegrationMethod:
         return manage_variance
 
     def _register(self):
-        """basic checks before registering the method"""
-        if self.split_lower not in self.AVAILABLE_SPLITS:
-            raise RuntimeError("Unknown splitting scheme")
-        if self.algo_lower not in self.AVAILABLE_ALGOS:
-            raise RuntimeError("Unknown algorithm")
-        if self.impl_lower not in self.AVAILABLE_IMPLS:
-            raise RuntimeError("Unknown implementation")
+        """basic checks before registering the method
+
+        The split/algo/impl values are already validated by Method itself, only
+        the completeness of the description is checked here.
+        """
+        if not self.method.is_concrete:
+            raise RuntimeError(f"Cannot register the under-specified method {self.method}")
         self.__class__._registry[self.method] = self
 
     @property

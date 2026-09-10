@@ -100,7 +100,7 @@ class TestIntegrationConfigV1(unittest.TestCase):
         config = {"do_OpenCL": True}
         config = integration_config.normalize(config)
         self.assertNotIn("do_OpenCL", config)
-        self.assertEqual(config["method"], ('*', 'csr', 'opencl'))
+        self.assertEqual(config["method"], (None, 'csr', 'opencl'))
 
 
 class TestIntegrationConfigV2(unittest.TestCase):
@@ -112,7 +112,7 @@ class TestIntegrationConfigV2(unittest.TestCase):
             "method": "csrocl_1,1"}
         config = integration_config.normalize(config)
         self.assertNotIn("do_OpenCL", config)
-        self.assertEqual(config["method"], ('*', 'csr', 'opencl'))
+        self.assertEqual(config["method"], (None, 'csr', 'opencl'))
         self.assertEqual(config["opencl_device"], (1, 1))
 
     def test_opencl_cpu_device(self):
@@ -122,7 +122,7 @@ class TestIntegrationConfigV2(unittest.TestCase):
             "method": "lutocl_cpu"}
         config = integration_config.normalize(config)
         self.assertNotIn("do_OpenCL", config)
-        self.assertEqual(config["method"], ('*', 'lut', 'opencl'))
+        self.assertEqual(config["method"], (None, 'lut', 'opencl'))
         self.assertEqual(config["opencl_device"], "cpu")
 
 

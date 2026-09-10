@@ -600,6 +600,10 @@ class TestBugRegression(unittest.TestCase):
         d = DiffMap()
         d.use_gpu # used to raise AttributeError
         d.use_gpu = True # used to raise AttributeError
+        d.use_gpu = False
+        self.assertFalse(d.use_gpu, "the implementation is actually switched")
+        self.assertEqual(d.worker._method.method.dim, 1,
+                         "the implementation is not assigned to the dimensionality")
 
     def test_bug_2151(self):
         """Some detector fail to integrate in 2D, the CSC matrix produced by cython has wrong shape.

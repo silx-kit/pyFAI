@@ -801,7 +801,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         if not self.worker:
             return
         method_name = "opencl" if value else "cython"
-        method = self.worker._method.method.fixed(method_name)
+        # NOTE: `fixed(method_name)` used to assign the implementation to the
+        # dimensionality, which silently produced an inconsistent method.
+        method = self.worker._method.method.with_impl(method_name)
         self.worker.set_method(method)
 
     # deprecated compatibility layer
