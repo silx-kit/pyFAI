@@ -32,7 +32,7 @@ Some are defined in the associated header file .pxd
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/11/2025"
+__date__ = "10/09/2026"
 __status__ = "stable"
 __license__ = "MIT"
 
