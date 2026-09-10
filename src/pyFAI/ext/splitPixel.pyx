@@ -268,7 +268,8 @@ def fullSplit1D_engine(pos not None,
                        bint weighted_average=True,
                        bint allow_pos0_neg=True,
                        position_t pos1_period=twopi,
-                       bint chiDiscAtPi=True
+                       bint chiDiscAtPi=True,
+                       int orientation=0
                        ):
     """
     Calculates histogram of pos weighted by weights
@@ -410,7 +411,7 @@ def fullSplit1D_engine(pos not None,
 
             # Play with coordinates ...
             v8[:, :] = cpos[idx, :, :]
-            area_pixel = _recenter(v8, pos1_period, chiDiscAtPi) # this area is only approximate
+            area_pixel = _recenter(v8, pos1_period, chiDiscAtPi, orientation) # this area is only approximate
             a0 = get_bin_number(v8[0, 0], pos0_min, dpos)
             a1 = v8[0, 1]
             b0 = get_bin_number(v8[1, 0], pos0_min, dpos)
@@ -815,6 +816,7 @@ def pseudoSplit2D_engine(pos not None,
                          absorption=None,
                          bint allow_pos0_neg=0,
                          bint chiDiscAtPi=1,
+                         int orientation=0,
                          float empty=0.0,
                          double normalization_factor=1.0,
                          bint weighted_average=True,
@@ -843,6 +845,7 @@ def pseudoSplit2D_engine(pos not None,
     :param absorption: array with absorption correction
     :param allow_pos0_neg: set to true to allow negative radial values.
     :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+    :param orientation: unused here, accepted to share the signature of `fullSplit2D_engine`: this scheme clips the azimuthal range instead of recentering the corners
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
     :param bool weighted_average: set to False to use an unweigted mean (similar to legacy) instead of the weigted average.
@@ -1177,6 +1180,7 @@ def fullSplit2D_engine(pos not None,
                          bint allow_pos0_neg=0,
                          position_t pos1_period=twopi,
                          bint chiDiscAtPi=1,
+                         int orientation=0,
                          float empty=0.0,
                          double normalization_factor=1.0,
                          bint weighted_average=True,
@@ -1336,7 +1340,7 @@ def fullSplit2D_engine(pos not None,
 
             # Play with coordinates ...
             v8[:, :] = cpos[idx, :, :]
-            area = _recenter(v8, pos1_period, chiDiscAtPi)
+            area = _recenter(v8, pos1_period, chiDiscAtPi, orientation)
             a0 = v8[0, 0]
             a1 = v8[0, 1]
             b0 = v8[1, 0]

@@ -428,6 +428,7 @@ class AzimuthalIntegrator(Integrator):
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
+                               orientation=int(self.detector.orientation),
                                error_model=error_model)
             else:
                 raise RuntimeError("Should not arrive here")
@@ -901,6 +902,7 @@ class AzimuthalIntegrator(Integrator):
                                    polarization=polarization,
                                    normalization_factor=normalization_factor,
                                    chiDiscAtPi=self.chiDiscAtPi,
+                                   orientation=int(self.detector.orientation),
                                    empty=empty,
                                    variance=variance,
                                    error_model=error_model,

@@ -145,7 +145,8 @@ class FullSplitIntegrator:
                  mask_checksum=None,
                  bint allow_pos0_neg=False,
                  bint chiDiscAtPi=True,
-                 position_t pos1_period=twopi):
+                 position_t pos1_period=twopi,
+                 int orientation=0):
         """Constructor of the class:
 
         :param pos: 3D or 4D array with the coordinates of each pixel point
@@ -157,6 +158,8 @@ class FullSplitIntegrator:
         :param allow_pos0_neg: enforce the q<0 is usually not possible
         :param chiDiscAtPi: tell if azimuthal discontinuity is at 0 (0° when False) or π (180° when True)
         :param pos1_period: periodicity of dim1, 2π, or 0 to non-periodic dimension
+        :param orientation: orientation of the detector, needed to know in which order the
+            corners of a pixel are travelled, see `recenter`
         If pos1_period: clip_pos1 is enforced.
         """
 
@@ -173,6 +176,7 @@ class FullSplitIntegrator:
             self.bins = bins or 1
         self.allow_pos0_neg = allow_pos0_neg
         self.chiDiscAtPi = chiDiscAtPi
+        self.orientation = orientation
         self.pos1_period = pos1_period
 
         if mask is None:
@@ -214,6 +218,7 @@ class FullSplitIntegrator:
             position_t min0, max0, min1, max1, pos1_period=self.pos1_period
             Py_ssize_t bins=self.bins, idx = 0, bin = 0, bin0 = 0, bin0_max = 0, bin0_min = 0, size = 0
             bint check_pos1=self.pos1_range is not None, check_mask = False, chiDiscAtPi=self.chiDiscAtPi
+            int orientation = self.orientation
             SparseBuilder builder = SparseBuilder(bins, block_size=32, heap_size=(size+1023)&~(1023))
 
         pos0_min = self.pos0_min
@@ -235,7 +240,7 @@ class FullSplitIntegrator:
                     continue
                 # Play with coordinates ...
                 v8[:, :] = cpos[idx, :, :]
-                area_pixel = - _recenter(v8, pos1_period, chiDiscAtPi) / delta
+                area_pixel = - _recenter(v8, pos1_period, chiDiscAtPi, orientation) / delta
                 a0 = get_bin_number(v8[0, 0], pos0_min, delta)
                 a1 = v8[0, 1]
                 b0 = get_bin_number(v8[1, 0], pos0_min, delta)
@@ -293,6 +298,7 @@ class FullSplitIntegrator:
             position_t[:, ::1] v8 = numpy.empty((4,2), dtype=position_d)
             mask_t[:] cmask = self.cmask
             bint check_mask = False, chiDiscAtPi = self.chiDiscAtPi
+            int orientation = self.orientation
             position_t min0 = 0.0, max0 = 0.0, min1 = 0.0, max1 = 0.0, inv_area = 0.0
             position_t pos0_min = 0.0, pos1_min = 0.0, pos1_max = 0.0, pos0_maxin = 0.0, pos1_maxin = 0.0
             position_t a0 = 0.0, a1 = 0.0, b0 = 0.0, b1 = 0.0, c0 = 0.0, c1 = 0.0, d0 = 0.0, d1 = 0.0
@@ -324,7 +330,7 @@ class FullSplitIntegrator:
 
                 # Play with coordinates ...
                 v8[:, :] = cpos[idx, :, :]
-                area = _recenter(v8, pos1_period, chiDiscAtPi) # this is an imprecise measurement of the surface of the pixels
+                area = _recenter(v8, pos1_period, chiDiscAtPi, orientation) # this is an imprecise measurement of the surface of the pixels
                 a0 = v8[0, 0]
                 a1 = v8[0, 1]
                 b0 = v8[1, 0]

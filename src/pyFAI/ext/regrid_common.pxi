@@ -384,10 +384,28 @@ cdef inline position_t _recenter_helper(position_t azim,
         return azim
 
 
+cdef inline position_t _corner_sign(int orientation) noexcept nogil:
+    """Sign to apply to the algebraic area of a pixel to make it orientation-independent
+
+    The 4 corners of a pixel are always stored in the same order, but a detector
+    `orientation` which mirrors a single axis (2: top-left, 4: bottom-right) reverses the
+    way this contour is travelled, hence the sign of its algebraic area. Orientations 1 and
+    3 either keep the axes or mirror both of them, which preserves the sign.
+
+    :param orientation: orientation of the detector, 0 (unspecified) to 4
+    :return: -1.0 for the orientations which mirror a single axis, +1.0 otherwise
+    """
+    if orientation == 2 or orientation == 4:
+        return -1.0
+    else:
+        return 1.0
+
+
 cdef inline position_t _recenter(position_t[:, ::1] pixel,
                                  position_t pos1_period=twopi,
-                                 bint chiDiscAtPi=1) noexcept nogil:
-    cdef position_t a0, a1, b0, b1, c0, c1, d0, d1, center1, area, hi
+                                 bint chiDiscAtPi=1,
+                                 int orientation=0) noexcept nogil:
+    cdef position_t a0, a1, b0, b1, c0, c1, d0, d1, center1, area, hi, sign
     a0 = pixel[0, 0]
     a1 = pixel[0, 1]
     b0 = pixel[1, 0]
@@ -396,7 +414,8 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel,
     c1 = pixel[2, 1]
     d0 = pixel[3, 0]
     d1 = pixel[3, 1]
-    area = area4p(a0, a1, b0, b1, c0, c1, d0, d1) # check if the quad is crossed
+    sign = _corner_sign(orientation)
+    area = sign * area4p(a0, a1, b0, b1, c0, c1, d0, d1) # check if the quad is crossed
     if pos1_period>0.0 and area>0:
         # area are expected to be negative except for pixel on the boundary
         a1 = _recenter_helper(a1, pos1_period, chiDiscAtPi)
@@ -414,12 +433,13 @@ cdef inline position_t _recenter(position_t[:, ::1] pixel,
         pixel[1, 1] = b1
         pixel[2, 1] = c1
         pixel[3, 1] = d1
-        area = area4p(a0, a1, b0, b1, c0, c1, d0, d1)
+        area = sign * area4p(a0, a1, b0, b1, c0, c1, d0, d1)
     return area
 
 def recenter(position_t[:, ::1] pixel,
              position_t pos1_period=twopi,
-             bint chiDiscAtPi=True):
+             bint chiDiscAtPi=True,
+             int orientation=0):
     """This function checks the pixel to be on the azimuthal discontinuity
     via the sign of its algebraic area and recenters the corner coordinates in a
     consistent manner to have all azimuthal coordinate in
@@ -428,9 +448,12 @@ def recenter(position_t[:, ::1] pixel,
 
     :param pixel: 4x2 array with radius, azimuth for the 4 corners. MODIFIED IN PLACE !!!
     :param chiDiscAtPi: set to 0 to indicate the range goes from 0-2π instead of the default -π:π
-    :return: signed area (approximate & negative)
+    :param orientation: orientation of the detector: the orientations which mirror a single
+        axis (2 and 4) reverse the way the corners of a pixel are travelled, hence the sign
+        of the algebraic area on which the detection of the discontinuity relies.
+    :return: signed area (approximate & negative), sign-corrected for the orientation
     """
-    return _recenter(pixel, pos1_period, chiDiscAtPi)
+    return _recenter(pixel, pos1_period, chiDiscAtPi, orientation)
 
 
 cdef inline any_t _clip(any_t value, any_t min_val, any_t max_val) noexcept nogil:

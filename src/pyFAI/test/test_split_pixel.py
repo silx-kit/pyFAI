@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "10/09/2026"
 
 import logging
 import platform
@@ -343,12 +343,54 @@ class TestSplitBBoxNg(unittest.TestCase):
 #         self.assertEqual(abs(int_legacy - int_ng).max(), 0, "intensity is the same")
 
 
+    def test_orientation(self):
+        """The sign of the area must not depend on the orientation of the detector
+
+        Orientations 2 and 4 mirror a single axis, hence they reverse the way the corners of
+        a pixel are travelled and the sign of its algebraic area, on which the detection of
+        the azimuthal discontinuity relies.
+        """
+        for orientation in (1, 2, 3, 4):
+            detector = Detector(1e-3, 1e-3, max_shape=(5, 5), orientation=orientation)
+            ai = AzimuthalIntegrator(1, 2.2e-3, 2.8e-3, detector=detector)
+            pos = ai.array_from_unit(typ="corner", unit="r_mm", scale=True).astype(splitPixel.position_d)
+            area = []
+            for i0 in range(pos.shape[0]):
+                for i1 in range(pos.shape[1]):
+                    area.append(splitPixel.recenter(pos[i0, i1], chiDiscAtPi=1,
+                                                    orientation=orientation))
+            self.assertLessEqual(max(area), 0,
+                                 f"all areas are negative with orientation {orientation}")
+
+
+class TestOrientationSplitting(unittest.TestCase):
+    """The result of the integration must not depend on the orientation of the detector"""
+
+    def test_full_split_2d(self):
+        """Non-regression test: with orientations 2 and 4, the pixels used to be spread over
+        a wide azimuthal band, since they were all considered as straddling the discontinuity.
+        """
+        shape = (128, 128)
+        image = numpy.ones(shape, dtype=numpy.float32)
+        for method in (("full", "histogram", "cython"), ("full", "csr", "cython"),
+                       ("full", "lut", "cython"), ("full", "csc", "cython")):
+            filled = []
+            for orientation in (1, 2, 3, 4):
+                detector = Detector(1e-4, 1e-4, max_shape=shape, orientation=orientation)
+                ai = AzimuthalIntegrator(0.1, 6e-3, 7e-3, detector=detector, wavelength=1e-10)
+                res = ai.integrate2d(image, 100, 90, method=method, unit="q_nm^-1")
+                filled.append(int((numpy.nan_to_num(res.intensity) > 0).sum()))
+            self.assertEqual(len(set(filled)), 1,
+                             f"{method}: the number of filled bins depends on the orientation: {filled}")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestSplitPixel))
     testsuite.addTest(loader(TestSplitBBoxNg))
     testsuite.addTest(loader(TestRecenter))
+    testsuite.addTest(loader(TestOrientationSplitting))
     return testsuite
 
 

@@ -77,7 +77,8 @@ class FullSplitCSC_1d(CscIntegrator, FullSplitIntegrator):
                  allow_pos0_neg=False,
                  unit="undefined",
                  empty=None,
-                 bint chiDiscAtPi=True):
+                 bint chiDiscAtPi=True,
+                 int orientation=0):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins, 100 by default
@@ -91,7 +92,8 @@ class FullSplitCSC_1d(CscIntegrator, FullSplitIntegrator):
         """
         self.unit = unit
         self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (tuple, list)) else  str(unit).split("_")[0]
-        FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi)
+        FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi,
+                                     orientation=orientation)
 
         self.delta = (self.pos0_max - self.pos0_min) / (<position_t> (self.bins))
         self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
@@ -146,7 +148,8 @@ class FullSplitCSC_2d(CscIntegrator, FullSplitIntegrator):
                  unit="undefined",
                  empty=None,
                  bint chiDiscAtPi=True,
-                 position_t pos1_period=twopi):
+                 position_t pos1_period=twopi,
+                 int orientation=0):
         """
         :param pos: 3D or 4D array with the coordinates of each pixel point
         :param bins: number of output bins (tth=100, chi=36 by default)
@@ -161,7 +164,7 @@ class FullSplitCSC_2d(CscIntegrator, FullSplitIntegrator):
             If pos1_period: clip_pos1 is enforced, the azimuthal range is set to [-π π] (or [0 2π] depending on chiDiscAtPi)
         """
         FullSplitIntegrator.__init__(self, pos, bins, pos0_range, pos1_range, mask, mask_checksum, allow_pos0_neg, chiDiscAtPi,
-                                     pos1_period=pos1_period)
+                                     pos1_period=pos1_period, orientation=orientation)
         self.unit = unit
         self.space = tuple(str(u).split("_")[0] for u in unit) if isinstance(unit, (list, tuple)) else  str(unit).split("_")[0]
         self.bin_centers = None
