@@ -1530,7 +1530,7 @@ LENGTH_UNITS = {
     "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)", positive=False),
     "micron": Unit("micron", scale=1e6, label=r"length $l$ ($\mu m$)", positive=False),
     "nm": Unit("nm", scale=1e9, label=r"length $l$ ($nm$)", positive=False),
-    "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)", unit_symbol="\N{Angstrom Sign}", positive=False),
+    "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)", unit_symbol="\N{LATIN CAPITAL LETTER A WITH RING ABOVE}", positive=False),
 }
 LENGTH_UNITS["µm"] = LENGTH_UNITS["micron"]
 
