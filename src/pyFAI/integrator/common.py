@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2026"
+__date__ = "10/09/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -604,6 +604,7 @@ class Integrator(Geometry):
                                                     empty=empty,
                                                     chiDiscAtPi=self.chiDiscAtPi,
                                                     pos1_period=unit1.period if unit1.period else 0.0,
+                                                    orientation=int(self.detector.orientation),
                                                     )
                 else:
                     return splitPixelFullLUT.HistoLUT1dFullSplit(pos,
@@ -614,6 +615,7 @@ class Integrator(Geometry):
                                                                  mask_checksum=mask_checksum,
                                                                  allow_pos0_neg=not unit0.positive,
                                                                  unit=unit,
+                                                                 orientation=int(self.detector.orientation),
                                                                  empty=empty)
             else:
                 if int2d:
@@ -651,6 +653,7 @@ class Integrator(Geometry):
                                                              empty=empty,
                                                              chiDiscAtPi=self.chiDiscAtPi,
                                                              pos1_period=unit1.period if unit1.period else 0.0,
+                                                             orientation=int(self.detector.orientation),
                                                              )
                 else:
                     return splitPixelFullCSR.FullSplitCSR_1d(pos,
@@ -661,6 +664,7 @@ class Integrator(Geometry):
                                                              mask_checksum=mask_checksum,
                                                              allow_pos0_neg=not unit0.positive,
                                                              unit=unit,
+                                                             orientation=int(self.detector.orientation),
                                                              empty=empty)
             else:
                 if int2d:
@@ -697,7 +701,8 @@ class Integrator(Geometry):
                                                              unit=unit,
                                                              empty=empty,
                                                              chiDiscAtPi=self.chiDiscAtPi,
-                                                             pos1_period=unit1.period if unit1.period else 0.0
+                                                             pos1_period=unit1.period if unit1.period else 0.0,
+                                                             orientation=int(self.detector.orientation),
                                                              )
                 else:
                     return splitPixelFullCSC.FullSplitCSC_1d(pos,
@@ -708,6 +713,7 @@ class Integrator(Geometry):
                                                              mask_checksum=mask_checksum,
                                                              allow_pos0_neg=not unit0.positive,
                                                              unit=unit,
+                                                             orientation=int(self.detector.orientation),
                                                              empty=empty)
             else:
                 if int2d:
