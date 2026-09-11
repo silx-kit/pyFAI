@@ -422,27 +422,11 @@ class ConfigurationReader:
         method = self._config.pop("method", default)
         target = self._config.pop("opencl_device", None)
 
-        if isinstance(target, list):
-            # Patch list to tuple
-            target = tuple(target)
-
         if method is None:
             lngm = load_integrators.PREFERED_METHODS_2D[0] if dim == 2 else load_integrators.PREFERED_METHODS_1D[0]
             method = lngm.method
-        elif isinstance(method, (str,)):
-            method = method_registry.Method.parsed(method)
-            method = method.fixed(dim=dim, target=target)
-        elif isinstance(method, (list, tuple)):
-            if len(method) == 3:
-                split, algo, impl = method
-                method = method_registry.Method(dim, split, algo, impl, target)
-            elif 3 < len(method) <= 5:
-                method = method_registry.Method(*method)
-            else:
-                raise TypeError(f"Method size {len(method)} is unsupported, method={method}.")
-        else:
-            raise TypeError(f"Method type {type(method)} unsupported, method={method}.")
-        return method
+        # `do_2D` and `opencl_device` take precedence over what the method holds
+        return method_registry.Method.parse_any(method, dim=dim, target=target)
 
 
 @dataclass
@@ -464,7 +448,7 @@ class WorkerConfig:
     flat_field: str | list = None
     mask_file: str = None
     error_model: ErrorModel = ErrorModel.NO
-    method: object = None
+    method: method_registry.Method = None
     opencl_device: list = None
     azimuth_range: list = None
     radial_range: list = None
@@ -480,6 +464,43 @@ class WorkerConfig:
                                 'do_dummy', "do_radial_range", 'do_azimuthal_range', 'do_solid_angle']
     ENFORCED: ClassVar[list] = ["polarization_description", "poni", "error_model", "unit"]
 
+    def __post_init__(self):
+        """The fields are assigned in declaration order, hence `opencl_device` did
+        not exist yet when `method` was validated: reconcile them now.
+        """
+        if self.method is not None and self.method.target is not None:
+            if self.opencl_device is None:
+                self.opencl_device = self.method.target
+            self.method = self.method.with_target(None)
+
+    def __setattr__(self, key, value):
+        """Enforce the type of `method`, which has to stay immutable (#2757).
+
+        Instances are usually built from a de-serialized JSON dictionary, where
+        the method is a plain (mutable, unhashable) list.
+        """
+        if key == "method" and value is not None:
+            value = self._enforce_method(value)
+        super().__setattr__(key, value)
+
+    def _enforce_method(self, value):
+        """Normalize about any description of a method into a `Method`.
+
+        The dimensionality is derived from `nbpt_azim` and the OpenCL device is
+        stored in `opencl_device`: both are left unset in the method itself, so
+        that there is a single source of truth for them.
+
+        :param value: string, sequence, Method or IntegrationMethod
+        :rtype: pyFAI.method_registry.Method
+        """
+        if not hasattr(self, "opencl_device"):
+            # The dataclass is still being built and the field does not exist
+            # yet: __post_init__ performs the reconciliation in that case.
+            return method_registry.Method.parse_any(value).with_dim(None)
+        method, device = method_registry.normalize_method(value, self.opencl_device)
+        super().__setattr__("opencl_device", device)
+        return method
+
     def __repr__(self):
         return json_dumps(self.as_dict(), indent=4)
 
@@ -493,7 +514,10 @@ class WorkerConfig:
         for field in fields(self):
             key = field.name
             value = getattr(self, key)
-            if key in self.ENFORCED:
+            if key == "method" and value is not None:
+                # `dim` and `target` live in `nbpt_azim` and `opencl_device`
+                dico[key] = (value.split, value.algo, value.impl)
+            elif key in self.ENFORCED:
                 if "as_dict" in dir(value):  # ponifile
                     dico[key] = value.as_dict()
                 elif "as_str" in dir(value):

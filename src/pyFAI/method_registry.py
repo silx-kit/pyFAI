@@ -100,11 +100,11 @@ class Method(_Method):
     #: Accepted spellings for the wildcard, all normalized to `None`
     WILDCARDS = frozenset((None, "", "*", "any", "all"))
     #: Deprecated or shortened spellings, normalized to the canonical value
-    ALIASES = {"histo": "histogram",
-               "nosplit": "no",
-               "numpy": "python",
-               "ocl": "opencl",
-               }
+    ALIASES: ClassVar[dict] = {"histo": "histogram",
+                               "nosplit": "no",
+                               "numpy": "python",
+                               "ocl": "opencl",
+                               }
 
     def __new__(cls, dim=None, split=None, algo=None, impl=None, target=None):
         return super().__new__(cls,
@@ -356,6 +356,33 @@ class Method(_Method):
         if target is not None:
             method = method.with_target(target)
         return method
+
+
+def normalize_method(value, device=None):
+    """Split about any description of a method into a canonical `Method` and
+    the OpenCL device it may carry.
+
+    `Worker` and `WorkerConfig` both describe the dimensionality and the OpenCL
+    device in dedicated attributes (`nbpt_azim` and `opencl_device`); keeping a
+    copy of them inside the method itself is what allows the two to drift apart.
+    This function strips them, so that there is a single source of truth (#2757).
+
+    :param value: string, sequence, dict, Method or IntegrationMethod
+    :param device: the device already known, which takes precedence over the
+                   one carried by `value`
+    :return: 2-tuple (Method without dim nor target, device)
+    """
+    method = Method.parse_any(value).with_dim(None)
+    target = method.target
+    method = method.with_target(None)
+    if target is None:
+        return method, device
+    if device is None:
+        return method, target
+    known = tuple(device) if isinstance(device, list) else device
+    if known != target:
+        logger.warning("The target %s of the method is discarded, the device is %s", target, device)
+    return method, device
 
 
 class IntegrationMethod:

@@ -837,6 +837,38 @@ class TestBugRegression(unittest.TestCase):
             content = fd.read()
         self.assertIn("CdTe", content, "the sensor is saved in the poni file")
 
+    def test_bug_2757(self):
+        """`WorkerConfig.method` has to stay immutable.
+
+        Instances are usually built from a de-serialized JSON dictionary, where
+        the method is a plain list: it was stored as such, hence mutable and
+        not even hashable, which broke the lookup in the registry.
+        """
+        from ..io.integration_config import WorkerConfig
+        from ..method_registry import Method
+
+        wc = WorkerConfig(nbpt_rad=100, method=["full", "csr", "cython"])
+        self.assertIsInstance(wc.method, Method, "a list is converted")
+        self.assertEqual(hash(wc.method), hash(Method(None, "full", "csr", "cython")),
+                         "hashable, hence usable as key in the registry")
+        with self.assertRaises(AttributeError):
+            wc.method.algo = "lut"  # used to be a plain, mutable list
+
+        # assignment after the construction goes through the same path
+        wc.method = "csr_ocl"
+        self.assertEqual(wc.method, Method(None, None, "csr", "opencl"))
+
+        # the OpenCL device belongs to `opencl_device`, not to the method
+        wc = WorkerConfig(nbpt_rad=100, method=Method(1, "full", "csr", "opencl", (0, 1)))
+        self.assertIsNone(wc.method.target, "the target is moved out of the method")
+        self.assertEqual(wc.opencl_device, (0, 1), "and stored in its own field")
+
+        # round-trip through a JSON-like dictionary
+        dico = wc.as_dict()
+        self.assertEqual(dico["method"], ("full", "csr", "opencl"),
+                         "the serialized format is unchanged")
+        self.assertEqual(WorkerConfig.from_dict(dico).method, wc.method)
+
 class TestBug1703(unittest.TestCase):
     """
     Check the normalization affect properly the propagated errors/intensity
