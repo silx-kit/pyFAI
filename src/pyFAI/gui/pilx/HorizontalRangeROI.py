@@ -34,16 +34,19 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "18/06/2025"
 __status__ = "development"
 
+from silx.gui import qt
 from silx.gui.plot.items.roi import HorizontalRangeROI as SilxHorizontalRangeROI
 
 
 class HorizontalRangeROI(SilxHorizontalRangeROI):
-    """A HorizontalRangeROI that calls a custom signal each time the range changes"""
+    """A range ROI that emits sigRangeCommitted on setRange and on commit."""
+
+    sigRangeCommitted = qt.Signal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.sigEditingFinished.connect(self.sigRegionChanged)
+        self.sigEditingFinished.connect(self.sigRangeCommitted)
 
     def setRange(self, vmin: float, vmax: float):
         super().setRange(vmin, vmax)
-        self.sigRegionChanged.emit()
+        self.sigRangeCommitted.emit()
