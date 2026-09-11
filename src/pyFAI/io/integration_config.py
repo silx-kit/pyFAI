@@ -481,7 +481,11 @@ class WorkerConfig:
         """
         if key == "method" and value is not None:
             value = self._enforce_method(value)
-        super().__setattr__(key, value)
+        # NOTE: `object.__setattr__`, not `super()`: the dataclass is built with
+        # `slots=True`, which recreates the class and invalidates the `__class__`
+        # cell the zero-argument `super()` relies on. CPython only fixed this in
+        # 3.14, so any earlier version raises TypeError here.
+        object.__setattr__(self, key, value)
 
     def _enforce_method(self, value):
         """Normalize about any description of a method into a `Method`.
@@ -498,7 +502,7 @@ class WorkerConfig:
             # yet: __post_init__ performs the reconciliation in that case.
             return method_registry.Method.parse_any(value).with_dim(None)
         method, device = method_registry.normalize_method(value, self.opencl_device)
-        super().__setattr__("opencl_device", device)
+        object.__setattr__(self, "opencl_device", device)
         return method
 
     def __repr__(self):
