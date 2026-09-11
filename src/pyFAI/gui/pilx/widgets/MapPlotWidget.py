@@ -75,6 +75,7 @@ class MapPlotWidget(ImagePlotWidget):
         self._scatter_item = scatter_item
         self._scatter_item.setVisualization(scatter_item.Visualization.REGULAR_GRID)
         self._first_plot = True
+        self._map_shape = None
 
         self._build_context_menu()
 
@@ -119,6 +120,21 @@ class MapPlotWidget(ImagePlotWidget):
         y_data: numpy.ndarray = self._scatter_item.getYData(copy=False)
 
         return (x_data[index], y_data[index])
+
+    def getMapPointCoordinates(
+        self, indices: ImageIndices
+    ) -> tuple[float, float] | None:
+        """Return this plot's coordinates for a map point."""
+        if self._map_shape is None:
+            return None
+        rows, cols = self._map_shape
+        if not (0 <= indices.row < rows and 0 <= indices.col < cols):
+            return None
+
+        index = indices.row * cols + indices.col
+        x_data = self._scatter_item.getXData(copy=False)
+        y_data = self._scatter_item.getYData(copy=False)
+        return x_data[index], y_data[index]
 
     def setAxes(self, Xname, Xvalues, Yname, Yvalues):
         """Changes the label (name) and numerical values for axis of the map"""
@@ -172,6 +188,7 @@ class MapPlotWidget(ImagePlotWidget):
 
         z = image.flatten()
         rows, cols = image.shape[:2]
+        self._map_shape = rows, cols
         if (x is not None)  and (y is not None):
             if x.size != cols:
                 raise RuntimeError(f"size of x({x.size}) does not march the number of columns of the image ({cols})")

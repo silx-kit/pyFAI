@@ -85,6 +85,7 @@ class MainWindow(qt.QMainWindow):
         self._unfixed_indices = None
         self._fixed_indices = set()
         self._background_point = None
+        self._map_plot_widgets = []
         self.worker_config = None
         self._map_ptr = None  # Map of input-frame indices
 
@@ -98,7 +99,10 @@ class MainWindow(qt.QMainWindow):
         )
         self._image_plot_widget.setKeepDataAspectRatio(True)
 
-        self._map_plot_widget = MapPlotWidget(self)
+        self._map_tab_widget = qt.QTabWidget(self)
+        self._map_tab_widget.setTabsClosable(True)
+        self._map_tab_widget.tabCloseRequested.connect(self.removeMapTab)
+        self._map_plot_widget = self.addMapTab("2θ ROI", closable=False)
         self._map_plot_widget.setDefaultColormap(
             Colormap("viridis", normalization="log")
         )
@@ -107,7 +111,7 @@ class MainWindow(qt.QMainWindow):
 
         self._central_widget = qt.QWidget()
         right_splitter = qt.QSplitter(qt.Qt.Orientation.Vertical, self)
-        right_splitter.addWidget(self._map_plot_widget)
+        right_splitter.addWidget(self._map_tab_widget)
         right_splitter.addWidget(self._integrated_plot_widget)
         right_splitter.setChildrenCollapsible(False)
         right_splitter.setHandleWidth(6)
@@ -132,13 +136,86 @@ class MainWindow(qt.QMainWindow):
     def _connect_signals(self) -> None:
         """Connect plot interactions to the window actions."""
         self._image_plot_widget.plotClicked.connect(self.onMouseClickOnImage)
-        self._map_plot_widget.clearPointsSignal.connect(self.clearPoints)
-        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
-        self._map_plot_widget.pinContextEntrySelected.connect(self.fixMapPoint)
-        self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
-        self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
         self._integrated_plot_widget.roi.sigRegionChanged.connect(self.onRoiEdition)
         self._integrated_plot_widget.roi.sigRegionChanged.connect(self.drawContoursOnImage)
+
+    def addMapTab(
+        self,
+        title: str,
+        image: numpy.ndarray | None = None,
+        x: numpy.ndarray | None = None,
+        y: numpy.ndarray | None = None,
+        xlabel: str = "X",
+        ylabel: str = "Y",
+        closable: bool = True,
+    ) -> MapPlotWidget:
+        map_plot_widget = MapPlotWidget(self._map_tab_widget)
+        map_plot_widget.setDefaultColormap(Colormap("viridis"))
+        map_plot_widget.clearPointsSignal.connect(self.clearPoints)
+        map_plot_widget.plotClicked.connect(self.selectMapPoint)
+        map_plot_widget.pinContextEntrySelected.connect(self.fixMapPoint)
+        map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
+        self.sigFileChanged.connect(map_plot_widget.onFileChange)
+        if self._file_name is not None:
+            map_plot_widget.onFileChange(self._file_name)
+        if image is not None:
+            map_plot_widget.setScatterData(image, x, y, xlabel, ylabel)
+
+        index = self._map_tab_widget.addTab(map_plot_widget, title)
+        self._map_plot_widgets.append(map_plot_widget)
+        self._map_tab_widget.setCurrentIndex(index)
+        if not closable:
+            tab_bar = self._map_tab_widget.tabBar()
+            tab_bar.setTabButton(
+                index, qt.QTabBar.ButtonPosition.LeftSide, None
+            )
+            tab_bar.setTabButton(
+                index, qt.QTabBar.ButtonPosition.RightSide, None
+            )
+
+        if image is not None:
+            if self._unfixed_indices is not None:
+                self.setMapMarker(
+                    self._unfixed_indices,
+                    color=self.getCurveColor(legend="INTEGRATE"),
+                    symbol="o",
+                    legend="MAP_LOCATION",
+                )
+            for indices in self._fixed_indices:
+                legend = f"INTEGRATE_{indices.row}_{indices.col}"
+                self.setMapMarker(
+                    indices,
+                    color=self.getCurveColor(legend=legend),
+                    symbol="d",
+                    legend=f"MAP_LOCATION_{indices.row}_{indices.col}",
+                )
+            if self._background_point is not None:
+                self.setMapMarker(
+                    self._background_point.indices,
+                    color="black",
+                    symbol="x",
+                    legend="BG_LOCATION",
+                )
+
+        return map_plot_widget
+
+    def removeMapTab(self, index: int):
+        if index == 0:
+            return
+        map_plot_widget = self._map_tab_widget.widget(index)
+        self._map_tab_widget.removeTab(index)
+        self._map_plot_widgets.remove(map_plot_widget)
+        map_plot_widget.deleteLater()
+
+    def setMapMarker(self, indices: ImageIndices, **kwargs):
+        for map_plot_widget in self._map_plot_widgets:
+            coordinates = map_plot_widget.getMapPointCoordinates(indices)
+            if coordinates is not None:
+                map_plot_widget.addMarker(*coordinates, **kwargs)
+
+    def removeMapMarker(self, legend: str):
+        for map_plot_widget in self._map_plot_widgets:
+            map_plot_widget.removeMarker(legend=legend)
 
     def initData(self,
                  file_name: str,
@@ -232,9 +309,8 @@ class MainWindow(qt.QMainWindow):
         self._unfixed_indices = initial_indices
         self.displayPatternAtIndices(initial_indices, legend="INTEGRATE")
         self.displayImageAtIndices(initial_indices)
-        self._map_plot_widget.addMarker(
-            0,
-            0,
+        self.setMapMarker(
+            initial_indices,
             color=self.getCurveColor(legend="INTEGRATE"),
             symbol="o",
             legend="MAP_LOCATION",
@@ -348,7 +424,10 @@ class MainWindow(qt.QMainWindow):
         self._image_plot_widget.setImageData(image_base.getValueData(), title)
 
     def selectMapPoint(self, x: float, y: float):
-        indices = self._map_plot_widget.getImageIndices(x, y)
+        map_plot_widget = self.sender()
+        if not isinstance(map_plot_widget, MapPlotWidget):
+            map_plot_widget = self._map_plot_widget
+        indices = map_plot_widget.getImageIndices(x, y)
         if indices is None:
             return
 
@@ -359,16 +438,18 @@ class MainWindow(qt.QMainWindow):
 
         self.displayPatternAtIndices(indices, legend="INTEGRATE")
         self.displayImageAtIndices(indices)
-        pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
-        self._map_plot_widget.addMarker(
-            *pixel_center_coords,
+        self.setMapMarker(
+            indices,
             color=self.getCurveColor(legend="INTEGRATE"),
             symbol="o",
             legend="MAP_LOCATION",
         )
 
     def fixMapPoint(self, x: float, y: float):
-        indices = self._map_plot_widget.getImageIndices(x, y)
+        map_plot_widget = self.sender()
+        if not isinstance(map_plot_widget, MapPlotWidget):
+            map_plot_widget = self._map_plot_widget
+        indices = map_plot_widget.getImageIndices(x, y)
 
         if indices is None:
             return
@@ -376,7 +457,7 @@ class MainWindow(qt.QMainWindow):
         if indices == self._unfixed_indices:
             self._unfixed_point = None
             self._integrated_plot_widget.removeCurve(legend="INTEGRATE")
-            self._map_plot_widget.removeMarker(legend="MAP_LOCATION")
+            self.removeMapMarker(legend="MAP_LOCATION")
 
         # Unfix is the fixing point is already fixed
         if indices in self._fixed_indices:
@@ -394,9 +475,8 @@ class MainWindow(qt.QMainWindow):
             used_color = self._integrated_plot_widget.getCurve(legend=legend).getColor()
 
             self.displayImageAtIndices(indices)
-            pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
-            self._map_plot_widget.addMarker(
-                *pixel_center_coords,
+            self.setMapMarker(
+                indices,
                 color=used_color,
                 symbol="d",
                 legend=f"MAP_LOCATION_{indices.row}_{indices.col}",
@@ -407,9 +487,7 @@ class MainWindow(qt.QMainWindow):
         self._integrated_plot_widget.removeCurve(
             legend=f"INTEGRATE_{indices.row}_{indices.col}"
         )
-        self._map_plot_widget.removeMarker(
-            legend=f"MAP_LOCATION_{indices.row}_{indices.col}"
-        )
+        self.removeMapMarker(legend=f"MAP_LOCATION_{indices.row}_{indices.col}")
 
     def onRoiEdition(self):
         v_min, v_max = self.getRoiRadialRange()
@@ -491,7 +569,10 @@ class MainWindow(qt.QMainWindow):
         return color
 
     def setNewBackgroundCurve(self, x: float, y: float):
-        new_indices = self._map_plot_widget.getImageIndices(x, y)
+        map_plot_widget = self.sender()
+        if not isinstance(map_plot_widget, MapPlotWidget):
+            map_plot_widget = self._map_plot_widget
+        new_indices = map_plot_widget.getImageIndices(x, y)
         if new_indices is None or self._file_name is None:
             return
 
@@ -505,13 +586,15 @@ class MainWindow(qt.QMainWindow):
             self._background_point
             and self._background_point.indices == new_background_point.indices
         ):
-            self._map_plot_widget.removeMarker(legend="BG_LOCATION")
+            self.removeMapMarker(legend="BG_LOCATION")
             self._background_point = None
         else:
             self._background_point = new_background_point
-            pixel_center_coords = self._map_plot_widget.findCenterOfNearestPixel(x, y)
-            self._map_plot_widget.addMarker(
-                *pixel_center_coords, color="black", symbol="x", legend="BG_LOCATION"
+            self.setMapMarker(
+                new_indices,
+                color="black",
+                symbol="x",
+                legend="BG_LOCATION",
             )
 
         # Refresh displayed curves
