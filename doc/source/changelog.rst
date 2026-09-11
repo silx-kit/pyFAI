@@ -11,7 +11,7 @@ Change-log of versions
 - New features:
 
   * Detector `orientation` is now a pure re-indexing of the pixels.
-    For orientation != 3, `tth`, `q` and `r` are unchanged. `chi` and the fiber/grazing-incidence units could (WIP). 
+    For orientation != 3, `tth`, `q` and `r` are unchanged. `chi` and the fiber/grazing-incidence units could (WIP).
   * New `pyFAI.geometry.utils` with `convert_orientation`, to re-express a geometry in another detector orientation,
     and `detector_corner`, which reads the real corners of the detector from its pixel corners.
   * Conversion to and from the ImageD11 parameter-file now takes the orientation of the detector into account (#2896)
