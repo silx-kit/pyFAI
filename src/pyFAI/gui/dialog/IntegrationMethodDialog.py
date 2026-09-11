@@ -221,7 +221,7 @@ class IntegrationMethodWidget(qt.QWidget):
             self.setTupleMethod((split, algo, impl))
 
     def setTupleMethod(self, method):
-        split, algo, impl = method
+        split, algo, impl = ("*" if i is None else i for i in method)
         self.__selectCode(split, self._splittingModel, self._splitView)
         self.__selectCode(impl, self._implementationModel, self._implView)
         self.__selectCode(algo, self._algoModel, self._algoView)
@@ -239,7 +239,7 @@ class IntegrationMethodWidget(qt.QWidget):
         algo = index.data(self.CodeRole)
         index = self._splitView.selectedIndexes()[0]
         split = index.data(self.CodeRole)
-        return method_registry.Method(666, split, algo, impl, None)
+        return method_registry.Method(None, split, algo, impl, None)
 
     def __updateFeedback(self):
         self.__updateItems()

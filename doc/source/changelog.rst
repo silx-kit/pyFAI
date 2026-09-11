@@ -11,7 +11,7 @@ Change-log of versions
 - New features:
 
   * Detector `orientation` is now a pure re-indexing of the pixels.
-    For orientation != 3, `chi` and the fiber/grazing-incidence units change; `tth`, `q` and `r` are unchanged.
+    For orientation != 3, `tth`, `q` and `r` are unchanged. `chi` and the fiber/grazing-incidence units could (WIP).
   * New `pyFAI.geometry.utils` with `convert_orientation`, to re-express a geometry in another detector orientation,
     and `detector_corner`, which reads the real corners of the detector from its pixel corners.
   * Conversion to and from the ImageD11 parameter-file now takes the orientation of the detector into account (#2896)
@@ -22,9 +22,20 @@ Change-log of versions
   * New `auto_gc` option, which disables the garbage collector around the resets of the geometry (#2894 Thanks for Wilson for spotting it)
   * Better performances for the MultiGeometry integration (#2865)
   * New and updated calibrants: Verneite, the two references of `alpha_Al2O3_SRM676a` (2008 and 2015 lattice parameters, #2856) and `CeO2`, recalculated with many more reflections (#2899).
-
+  * `pyFAI.method_registry.Method` is now a typed `NamedTuple` which validates and normalizes its content at construction time:
+    `None` is now the canonical wildcard; the former spellings `"*"`, `"any"`, `"all"` and `0` are still accepted as input.
+    It gains one copy-with method per field, like `PoniFile`: `with_dim`, `with_split`, `with_algo`, `with_impl` and `with_target`,
+    as well as a `Method.parse_any` constructor which accepts about any description of a method (#2757)
 - Bug fixes:
 
+  * `DiffMap.use_gpu` used to assign the implementation to the dimensionality of the method, which silently built
+    an inconsistent method and left the implementation unchanged
+  * `WorkerConfig.method` is now enforced to be an immutable `Method`, whatever it is built from: a de-serialized
+    JSON configuration provides a plain list, which used to be stored as is, hence mutable and unhashable (#2757).
+    The dimensionality and the OpenCL device are no longer duplicated in it: they are read from `nbpt_azim`
+    and `opencl_device`, which remain the single source of truth. The serialized format is unchanged.
+  * `Worker.method` gets the same treatment and is now a `Method` as well, whichever constructor is used;
+    `Worker.set_method` stores its result and rebuilds the processor, so that it takes effect immediately.
   * Sub-pixel refinement of the peak position (`Bilinear.local_maxi`, used by the `massif` and `watershed` peak-pickers): the calibrations become more accurate.
   * Change of behavior of `Calibrant` which raises `ValueError` when a file exist but does not d-spacing info / `IOError` when absent
   * Fix serialization issue with Rayonix detectors (regression introduced with parallax, #2904)
@@ -54,7 +65,7 @@ Change-log of versions
 
 - Addition of a AGENTS.md to drive agentic development: it states that an agent/LLM is never responsible for an error;
   the owner of the account committing is the culprit for not reviewing properly the code.
-- 212 commits over 4 month
+- 215 commits over 4 month
 - Supports python 3.10-3.15
 
 2026.05 19/05/2026

@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2026"
+__date__ = "10/09/2026"
 __status__ = "development"
 
 import json
@@ -200,8 +200,8 @@ class Worker:
             method = IntegrationMethod.parse(method)
         else:
             logger.error(f"Unable to parse method {method}")
-        self.method = (method.split, method.algorithm, method.implementation)
-        self.opencl_device = method.target
+        self.opencl_device = None
+        self.method = method  # the setter extracts the OpenCL device
         self._method = None
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
@@ -264,28 +264,48 @@ class Worker:
                 integrator_name = integrator_name.replace("1d", "2d")
         self._processor = self.ai.__getattribute__(integrator_name)
 
-        if isinstance(self.method, (list, tuple)):
-            if isinstance(self.method, Method):
-                methods = IntegrationMethod.select_method(dim=dim, split=self.method[1], algo=self.method[2], impl=self.method[3],
-                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else self.method[4],
-                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else self.method[4],
-                                      degradable=True)
-            else:
-                methods = IntegrationMethod.select_method(dim=dim, split=self.method[0], algo=self.method[1], impl=self.method[2],
-                                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None,
-                                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else None,
-                                                      degradable=True)
-            self._method = methods[0]
-        elif isinstance(self.method, str) or self.method is None:
-            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
-        elif isinstance(self.method, IntegrationMethod):
-            self._method = self.method
-        else:
-            logger.error(f"No method available for {dim}D integration on {self.method} with target {self.opencl_device}")
-            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
+        self._method = self._select_method(dim)
         self.integrator_name = self._processor.__name__
         self.radial = None
         self.azimuthal = None
+
+    @property
+    def method(self):
+        """The requested integration method, as an immutable `Method` (#2757).
+
+        It describes only the algorithm: the dimensionality is deduced from
+        `nbpt_azim` and the OpenCL device is held by `opencl_device`. The
+        `IntegrationMethod` which is actually used is resolved from it by
+        :meth:`update_processor` and exposed as `_method`.
+        """
+        return self.__method
+
+    @method.setter
+    def method(self, value):
+        if value is None:
+            self.__method = None
+        else:
+            self.__method, self.opencl_device = method_registry.normalize_method(value, self.opencl_device)
+
+    def _select_method(self, dim):
+        """Select the best available integrator matching the requested method,
+        degrading it when needed.
+
+        :param int dim: dimensionality of the integration
+        :rtype: IntegrationMethod
+        """
+        method = self.method
+        if method is None:
+            return IntegrationMethod.select_one_available(method=None, dim=dim)
+        target = self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None
+        target_type = self.opencl_device if isinstance(self.opencl_device, str) else None
+        methods = IntegrationMethod.select_method(dim=dim, split=method.split, algo=method.algo,
+                                                  impl=method.impl, target=target,
+                                                  target_type=target_type, degradable=True)
+        if methods:
+            return methods[0]
+        logger.error(f"No method available for {dim}D integration on {method} with target {self.opencl_device}")
+        return IntegrationMethod.select_one_available(method=method, dim=dim)
 
     @property
     def nbpt_azim(self):
@@ -614,23 +634,16 @@ class Worker:
 
 
     def set_method(self, method="csr"):
-        "Set the integration method"
-        dim = 2 if self.do_2D() else 1
-        if method is None:
-            method = method_registry.Method(dim, "*", "*", "*", target=None)
-        elif isinstance(method, method_registry.Method):
-            method = method.fixed(dim=dim)
-        elif isinstance(method, (str,)):
-            method = method_registry.Method.parsed(method)
-            method = method.fixed(dim=dim)
-        elif isinstance(method, (list, tuple)):
-            if len(method) != 3:
-                raise TypeError(f"Method size {len(method)} unsupported.")
-            split, algo, impl = method
-            method = method_registry.Method(dim, split, algo, impl, target=None)
-        else:
-            raise TypeError(f"Method type {type(method)} unsupported.")
-        return method
+        """Set the integration method and rebuild the processor accordingly.
+
+        :param method: string, sequence, Method or IntegrationMethod. `None`
+                       stands for "any method".
+        :rtype: pyFAI.method_registry.Method
+        """
+        # `None` means "no preference" here, unlike the `method` attribute
+        self.method = method_registry.Method() if method is None else method
+        self.update_processor()
+        return self.method
 
     __call__ = process
 
@@ -729,8 +742,8 @@ class WorkerFiber(Worker):
             method = IntegrationMethod.parse(method)
         else:
             logger.error(f"Unable to parse method {method}")
-        self.method = (method.split, method.algorithm, method.implementation)
-        self.opencl_device = method.target
+        self.opencl_device = None
+        self.method = method  # the setter extracts the OpenCL device
         self._method = None
         self.use_missing_wedge = use_missing_wedge
 
@@ -809,25 +822,7 @@ class WorkerFiber(Worker):
 
         # The actual method is always `integrate2d` (always 2dim)
         dim = 2
-        if isinstance(self.method, (list, tuple)):
-            if isinstance(self.method, Method):
-                methods = IntegrationMethod.select_method(dim=dim, split=self.method[1], algo=self.method[2], impl=self.method[3],
-                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else self.method[4],
-                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else self.method[4],
-                                      degradable=True)
-            else:
-                methods = IntegrationMethod.select_method(dim=dim, split=self.method[0], algo=self.method[1], impl=self.method[2],
-                                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None,
-                                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else None,
-                                                      degradable=True)
-            self._method = methods[0]
-        elif isinstance(self.method, str) or self.method is None:
-            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
-        elif isinstance(self.method, IntegrationMethod):
-            self._method = self.method
-        else:
-            logger.error(f"No method available for {dim}D integration on {self.method} with target {self.opencl_device}")
-            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
+        self._method = self._select_method(dim)
 
         self.integrator_name = self._processor.__name__
         self.radial = None
