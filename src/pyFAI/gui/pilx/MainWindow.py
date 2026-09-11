@@ -86,6 +86,8 @@ class MainWindow(qt.QMainWindow):
         self._fixed_indices = set()
         self._background_point = None
         self._map_plot_widgets = []
+        self._rgb_map_plot_widget = None
+        self._rgb_map_channel = "R"
         self.worker_config = None
         self._map_ptr = None  # Map of input-frame indices
 
@@ -136,8 +138,13 @@ class MainWindow(qt.QMainWindow):
     def _connect_signals(self) -> None:
         """Connect plot interactions to the window actions."""
         self._image_plot_widget.plotClicked.connect(self.onMouseClickOnImage)
-        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.onRoiEdition)
-        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.drawContoursOnImage)
+        self._integrated_plot_widget.roi.sigRangeCommitted.connect(self.onRoiEdition)
+        self._integrated_plot_widget.roi.sigRangeCommitted.connect(self.drawContoursOnImage)
+        self._integrated_plot_widget.rgbRoiChanged.connect(self.displayRgbMap)
+        self._integrated_plot_widget.rgbRoiChanged.connect(self.drawContoursOnImage)
+        self._integrated_plot_widget.roiModeChanged.connect(self.roiModeChanged)
+        self._integrated_plot_widget.activeRoiChanged.connect(self.drawContoursOnImage)
+        self._integrated_plot_widget.rgbChannelChanged.connect(self.setRgbMapChannel)
 
     def addMapTab(
         self,
@@ -205,6 +212,8 @@ class MainWindow(qt.QMainWindow):
         map_plot_widget = self._map_tab_widget.widget(index)
         self._map_tab_widget.removeTab(index)
         self._map_plot_widgets.remove(map_plot_widget)
+        if map_plot_widget is self._rgb_map_plot_widget:
+            self._rgb_map_plot_widget = None
         map_plot_widget.deleteLater()
 
     def setMapMarker(self, indices: ImageIndices, **kwargs):
@@ -224,6 +233,8 @@ class MainWindow(qt.QMainWindow):
                  ):
 
         self._file_name = os.path.abspath(file_name)
+        while self._map_tab_widget.count() > 1:
+            self.removeMapTab(1)
         self._dataset_paths = {}
         self._nxprocess_path = nxprocess_path
 
@@ -496,8 +507,22 @@ class MainWindow(qt.QMainWindow):
 
         self.displayAverageMap(v_min, v_max)
 
+    def roiModeChanged(self, mode):
+        if mode == "rgb":
+            self.displayRgbMap()
+            if self._rgb_map_plot_widget is not None:
+                self._map_tab_widget.setCurrentWidget(self._rgb_map_plot_widget)
+        else:
+            self._map_tab_widget.setCurrentWidget(self._map_plot_widget)
+        self.drawContoursOnImage()
+
+    def setRgbMapChannel(self, channel):
+        self._rgb_map_channel = channel
+        if self._rgb_map_plot_widget is not None:
+            self._rgb_map_plot_widget.setRgbChannel(channel)
+
     def drawContoursOnImage(self):
-        v_min, v_max = self.getRoiRadialRange()
+        v_min, v_max = self._integrated_plot_widget.activeRoi().getRange()
         if v_min is None or v_max is None:
             return
         self._image_plot_widget.clearCurves()
@@ -520,6 +545,76 @@ class MainWindow(qt.QMainWindow):
                 contour,
                 legend=f"max_contour_{i}",
             )
+
+    def displayRgbMap(self):
+        if self._file_name is None:
+            return
+        ranges = [
+            self._integrated_plot_widget.rgb_rois[channel].getRange()
+            for channel in "RGB"
+        ]
+        if any(v_min is None or v_max is None for v_min, v_max in ranges):
+            return
+
+        maps = []
+        with h5py.File(self._file_name, "r") as h5file:
+            nxdata = h5file[self._nxprocess_path + "/result"]
+            radial = get_radial_dataset(
+                nxdata, size=self.worker_config.nbpt_rad
+            )[()]
+            full_map = get_signal_dataset(nxdata, default="intensity")
+            axes_index = get_axes_index(full_map)
+
+            for v_min, v_max in ranges:
+                i_min, i_max = get_indices_from_values(v_min, v_max, radial)
+                i_min = max(0, i_min)
+                i_max = min(len(radial), i_max)
+                if i_min >= i_max:
+                    return
+                if axes_index.radial == 2:
+                    map_data = full_map[:, :, i_min:i_max].mean(axis=2)
+                else:
+                    map_data = full_map[i_min:i_max, :, :].mean(axis=0)
+                maps.append(numpy.asarray(map_data, dtype=float))
+
+            fast = get_axes_dataset(nxdata, dim=axes_index.fast, default="fast")
+            slow = get_axes_dataset(nxdata, dim=axes_index.slow, default="slow")
+            fast_name = fast.attrs.get("long_name", "X")
+            fast_values = fast[()]
+            slow_name = slow.attrs.get("long_name", "Y")
+            slow_values = slow[()]
+
+        rgb = numpy.stack(maps, axis=2)
+
+        title = "2θ RGB"
+        created = self._rgb_map_plot_widget is None
+        if created:
+            self._rgb_map_plot_widget = self.addMapTab(title)
+        self._rgb_map_plot_widget.setRgbData(
+            rgb, fast_values, slow_values, fast_name, slow_name
+        )
+        self._rgb_map_plot_widget.setRgbChannel(self._rgb_map_channel)
+        if created and self._unfixed_indices is not None:
+            coordinates = self._rgb_map_plot_widget.getMapPointCoordinates(
+                self._unfixed_indices
+            )
+            if coordinates is not None:
+                self._rgb_map_plot_widget.addMarker(
+                    *coordinates,
+                    color=self.getCurveColor(legend="INTEGRATE"),
+                    symbol="o",
+                    legend="MAP_LOCATION",
+                )
+        if created and self._background_point is not None:
+            coordinates = self._rgb_map_plot_widget.getMapPointCoordinates(
+                self._background_point.indices
+            )
+            if coordinates is not None:
+                self._rgb_map_plot_widget.addMarker(
+                    *coordinates, color="black", symbol="x", legend="BG_LOCATION"
+                )
+        index = self._map_tab_widget.indexOf(self._rgb_map_plot_widget)
+        self._map_tab_widget.setTabText(index, title)
 
     def displayAverageMap(self, v_min: float, v_max: float):
         if self._file_name is None:
@@ -549,7 +644,7 @@ class MainWindow(qt.QMainWindow):
         if indices is None:
             return
         radial_value = self._radial_matrix[indices.row, indices.col]
-        self._integrated_plot_widget.roi.setRange(
+        self._integrated_plot_widget.setActiveRoiRange(
             radial_value - self._delta_radial_over_2,
             radial_value + self._delta_radial_over_2,
         )

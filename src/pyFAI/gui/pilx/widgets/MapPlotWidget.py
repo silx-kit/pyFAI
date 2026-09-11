@@ -41,6 +41,9 @@ import h5py
 import numpy
 import silx.io
 from silx.gui import qt
+from silx.gui.colors import Colormap
+from silx.gui.dialog.ColormapDialog import ColormapDialog
+from silx.gui.plot.actions.control import ColormapAction
 from silx.gui.plot.items import Scatter
 from silx.io.url import DataUrl
 
@@ -56,6 +59,52 @@ from .MapPlotContextMenu import MapPlotContextMenu
 from .OpenAxisDatasetAction import OpenAxisDatasetAction
 
 _LEGEND = "MAP"
+_RGB_LEGEND = "RGB_MAP"
+
+
+class MapColormapDialog(ColormapDialog):
+    def __init__(self, parent=None):
+        self._colormap_name_locked = False
+        super().__init__(parent)
+
+    def setColormapNameLocked(self, locked):
+        self._colormap_name_locked = bool(locked)
+        colormap = self.getColormap()
+        editable = colormap is not None and colormap.isEditable()
+        self._comboBoxColormap.setEnabled(editable and not locked)
+
+    def _applyColormap(self):
+        super()._applyColormap()
+        if self._colormap_name_locked:
+            self._comboBoxColormap.setEnabled(False)
+
+
+class MapColormapAction(ColormapAction):
+    """Use the standard colormap dialog to scale the active RGB channel."""
+
+    @staticmethod
+    def _createDialog(parent):
+        dialog = MapColormapDialog(parent=parent)
+        dialog.setModal(False)
+        return dialog
+
+    def _updateColormap(self):
+        if self._dialog is None:
+            return
+        plot = self.plot
+        if plot._rgb_raw_data is None:
+            self._dialog.setColormapNameLocked(False)
+            super()._updateColormap()
+            return
+
+        channel = plot._rgb_channel
+        index = "RGB".index(channel)
+        channel_name = {"R": "Red", "G": "Green", "B": "Blue"}[channel]
+        self._dialog.setWindowTitle(f"{channel_name} channel scaling")
+        self._dialog.setColormap(plot._rgb_colormaps[channel])
+        plot._rgb_dialog_data = plot._rgb_raw_data[:, :, index]
+        self._dialog.setData(plot._rgb_dialog_data)
+        self._dialog.setColormapNameLocked(True)
 
 
 class MapPlotWidget(ImagePlotWidget):
@@ -63,6 +112,19 @@ class MapPlotWidget(ImagePlotWidget):
 
     def __init__(self, parent=None, backend=None):
         super().__init__(parent, backend)
+        self._rgb_raw_data = None
+        self._rgb_dialog_data = None
+        self._rgb_data = None
+        self._rgb_colormaps = {}
+        self._rgb_channel = "R"
+        previous_colormap_action = self._toolbar.colormap_action
+        self._toolbar.colormap_action = MapColormapAction(self, self._toolbar)
+        self._toolbar.insertAction(
+            previous_colormap_action, self._toolbar.colormap_action
+        )
+        self._toolbar.removeAction(previous_colormap_action)
+        previous_colormap_action.deleteLater()
+
         self.axis_dataset_action = self._initAxisDatasetAction()
         self.clear_points_action = self._initclearPointsAction()
         self._toolbar.addAction(self.axis_dataset_action)
@@ -99,11 +161,13 @@ class MapPlotWidget(ImagePlotWidget):
         return action
 
     def _dataConverter(self, x, y):
-        value_data = self._scatter_item.getValueData(copy=False)
         index = self.getScatterIndex(x, y)
         if index is None:
             return
-
+        if self._rgb_raw_data is not None:
+            row, col = numpy.unravel_index(index, self._map_shape)
+            return tuple(self._rgb_raw_data[row, col])
+        value_data = self._scatter_item.getValueData(copy=False)
         return value_data[index]
 
     def findCenterOfNearestPixel(
@@ -216,6 +280,86 @@ class MapPlotWidget(ImagePlotWidget):
                 x2 = self._scatter_item.getXData(copy=False)
                 y2 = self._scatter_item.getYData(copy=False)
             self._scatter_item.setData(x2, y2, z)
+
+    def setRgbData(
+        self,
+        image: numpy.ndarray,
+        x: numpy.ndarray | None = None,
+        y: numpy.ndarray | None = None,
+        xlabel: str = "X",
+        ylabel: str = "Y",
+    ):
+        """Display an RGB image while retaining the scatter grid for picking."""
+        if image.ndim != 3 or image.shape[2] != 3:
+            raise ValueError("RGB source maps must have shape (rows, columns, 3)")
+        rows, cols = image.shape[:2]
+        if x is None:
+            x = numpy.arange(cols, dtype=float)
+        if y is None:
+            y = numpy.arange(rows, dtype=float)
+        x = numpy.asarray(x)
+        y = numpy.asarray(y)
+        if x.size != cols or y.size != rows:
+            raise RuntimeError("RGB map dimensions do not match its map axes")
+
+        self._rgb_raw_data = numpy.asarray(image, dtype=float)
+        if not self._rgb_colormaps:
+            for channel, name in zip("RGB", ("red", "green", "blue")):
+                colormap = Colormap(
+                    name=name,
+                    normalization=Colormap.LINEAR,
+                    autoscaleMode=Colormap.PERCENTILE,
+                )
+                colormap.setAutoscalePercentiles((1.0, 99.0))
+                colormap.sigChanged.connect(self._updateRgbImage)
+                self._rgb_colormaps[channel] = colormap
+
+        self.setScatterData(
+            numpy.zeros((rows, cols), dtype=float), x, y, xlabel, ylabel
+        )
+        self._scatter_item.setAlpha(0.0)
+        dx = (x[-1] - x[0]) / (x.size - 1) if x.size > 1 else 1.0
+        dy = (y[-1] - y[0]) / (y.size - 1) if y.size > 1 else 1.0
+        self.addImage(
+            numpy.zeros((rows, cols, 3), dtype=numpy.uint8),
+            legend=_RGB_LEGEND,
+            origin=(x[0] - 0.5 * dx, y[0] - 0.5 * dy),
+            scale=(dx, dy),
+            resetzoom=False,
+        )
+        self._updateRgbImage()
+        self._colorBarWidget.hide()
+        self.axis_dataset_action.setEnabled(False)
+        self._toolbar.colormap_action.setText("RGB channel scaling")
+        channel_name = {"R": "red", "G": "green", "B": "blue"}[
+            self._rgb_channel
+        ]
+        self._toolbar.colormap_action.setToolTip(
+            f"Scale the {channel_name} channel"
+        )
+        self._toolbar.colormap_action._updateColormap()
+
+    def setRgbChannel(self, channel):
+        if channel not in "RGB":
+            raise ValueError(f"Unsupported RGB channel: {channel}")
+        self._rgb_channel = channel
+        channel_name = {"R": "red", "G": "green", "B": "blue"}[channel]
+        self._toolbar.colormap_action.setToolTip(f"Scale the {channel_name} channel")
+        self._toolbar.colormap_action._updateColormap()
+
+    def _updateRgbImage(self):
+        if self._rgb_raw_data is None:
+            return
+        rgb = numpy.empty(self._rgb_raw_data.shape, dtype=numpy.uint8)
+        for index, channel in enumerate("RGB"):
+            rgba = self._rgb_colormaps[channel].applyToData(
+                self._rgb_raw_data[:, :, index]
+            )
+            rgb[:, :, index] = rgba[:, :, index]
+        self._rgb_data = rgb
+        image = self.getImage(_RGB_LEGEND)
+        if image is not None:
+            image.setData(rgb)
 
     def getImageIndices(self, x_data: float, y_data: float) -> ImageIndices | None:
         pixels = self.dataToPixel(x_data, y_data)
