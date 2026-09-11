@@ -95,9 +95,8 @@ class TestMethod(ParametricTestCase):
                        {"split": "bidon"},
                        {"algo": "bidon"},
                        {"impl": "bidon"}):
-            with self.subTest(**kwargs):
-                with self.assertRaises(ValueError):
-                    Method(**kwargs)
+            with self.subTest(**kwargs), self.assertRaises(ValueError):
+                Method(**kwargs)
 
     def test_normalization_is_not_bypassed(self):
         "_replace() and _make() must not build invalid instances (see #2757)"
