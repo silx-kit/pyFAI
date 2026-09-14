@@ -270,8 +270,8 @@ class Worker:
         self.azimuthal = None
 
     @property
-    def method(self):
-        """The requested integration method, as an immutable `Method` (#2757).
+    def method(self) -> Method:
+        """The requested integration method.
 
         It describes only the algorithm: the dimensionality is deduced from
         `nbpt_azim` and the OpenCL device is held by `opencl_device`. The
