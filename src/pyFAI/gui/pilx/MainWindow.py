@@ -543,6 +543,10 @@ class MainWindow(qt.QMainWindow):
             )
 
     def displayRgbMap(self):
+        title = "2θ RGB"
+        created = self._rgb_map_plot_widget is None
+        if created:
+            self._rgb_map_plot_widget = self.addMapTab(title)
         if self._file_name is None:
             return
         ranges = [
@@ -582,10 +586,6 @@ class MainWindow(qt.QMainWindow):
 
         rgb = numpy.stack(maps, axis=2)
 
-        title = "2θ RGB"
-        created = self._rgb_map_plot_widget is None
-        if created:
-            self._rgb_map_plot_widget = self.addMapTab(title)
         self._rgb_map_plot_widget.setRgbData(
             rgb, fast_values, slow_values, fast_name, slow_name
         )
