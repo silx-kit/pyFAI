@@ -3,7 +3,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,10 +33,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/09/2026"
+__date__ = "14/09/2026"
 __status__ = "development"
 
-from typing import ClassVar, NamedTuple
+from typing import ClassVar, NamedTuple, Sequence
 import copy
 import inspect
 from collections import OrderedDict, namedtuple
