@@ -268,7 +268,8 @@ class MainWindow(qt.QMainWindow):
                 self.worker_config = WorkerConfig.from_dict(pyFAI_config_as_dict, inplace=True)
 
             radial_dset = get_radial_dataset(nxdata, size=self.worker_config.nbpt_rad)
-            delta_radial = (radial_dset[-1] - radial_dset[0]) / len(radial_dset)
+            radial_values = radial_dset[()]
+            delta_radial = (radial_values[-1] - radial_values[0]) / len(radial_values)
 
             if "offset" in nxprocess:
                 self._offset = nxprocess["offset"][()]
@@ -310,7 +311,29 @@ class MainWindow(qt.QMainWindow):
         self._radial_matrix = compute_radial_values(self.worker_config)
         self._delta_radial_over_2 = delta_radial / 2
 
+        radial_minimum = float(radial_values[0])
+        radial_span = float(radial_values[-1]) - radial_minimum
+        roi_minimum = radial_minimum + 0.45 * radial_span
+        roi_maximum = radial_minimum + 0.55 * radial_span
+        pattern = self._integrated_plot_widget
+        blocked = pattern.roi.blockSignals(True)
+        pattern.roi.setRange(roi_minimum, roi_maximum)
+        pattern.roi.blockSignals(blocked)
+        for channel, (minimum, maximum) in zip(
+            "RGB", ((0.35, 0.40), (0.45, 0.50), (0.55, 0.60))
+        ):
+            roi = pattern.rgb_rois[channel]
+            blocked = roi.blockSignals(True)
+            roi.setRange(
+                radial_minimum + minimum * radial_span,
+                radial_minimum + maximum * radial_span,
+            )
+            roi.blockSignals(blocked)
+        pattern._rgb_rois_initialized = True
+        pattern.updateRoiRangeWidget()
+
         self._map_plot_widget.setScatterData(map_data, fast_values, slow_values, fast_label, slow_label)
+        self.displayAverageMap(roi_minimum, roi_maximum)
         # BUG: selectMapPoint(0, 0) does not work at first render cause the picking fails
         initial_indices = ImageIndices(0, 0)
         self._unfixed_indices = initial_indices
@@ -621,6 +644,10 @@ class MainWindow(qt.QMainWindow):
             nxdata = nxprocess["result"]
             radial = get_radial_dataset(nxdata, size=self.worker_config.nbpt_rad)[()]
             i_min, i_max = get_indices_from_values(v_min, v_max, radial)
+            i_min = max(0, i_min)
+            i_max = min(len(radial), i_max)
+            if i_min >= i_max:
+                return
             full_map = get_signal_dataset(nxdata, default="intensity")
             axes_index = get_axes_index(full_map)
             if axes_index.radial == 2:
