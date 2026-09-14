@@ -66,7 +66,6 @@ from .utils import (
 from .widgets.DiffractionImagePlotWidget import DiffractionImagePlotWidget
 from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
-from .widgets.TitleWidget import TitleWidget
 
 logger = logging.getLogger(__name__)
 
@@ -114,8 +113,6 @@ class MainWindow(qt.QMainWindow):
             self.setRgbMapChannel
         )
 
-        self._title_widget = TitleWidget(self)
-
         self._central_widget = qt.QWidget()
         right_splitter = qt.QSplitter(qt.Qt.Orientation.Vertical, self)
         right_splitter.addWidget(self._map_tab_widget)
@@ -136,7 +133,6 @@ class MainWindow(qt.QMainWindow):
         layout = qt.QVBoxLayout(self._central_widget)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self._title_widget)
         layout.addWidget(plot_splitter, 1)
         self._central_widget.setLayout(layout)
         self.setCentralWidget(self._central_widget)
@@ -314,7 +310,6 @@ class MainWindow(qt.QMainWindow):
         self._radial_matrix = compute_radial_values(self.worker_config)
         self._delta_radial_over_2 = delta_radial / 2
 
-        self._title_widget.setText(os.path.basename(file_name))
         self._map_plot_widget.setScatterData(map_data, fast_values, slow_values, fast_label, slow_label)
         # BUG: selectMapPoint(0, 0) does not work at first render cause the picking fails
         initial_indices = ImageIndices(0, 0)

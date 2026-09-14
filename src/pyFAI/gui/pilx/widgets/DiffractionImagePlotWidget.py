@@ -133,6 +133,9 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
                 self._reset_zoom_when_shown = True
             self._first_plot = False
         self.setGraphTitle(title)
+        backend = self.getBackend()
+        if hasattr(backend, "ax"):
+            backend.ax.title.set_fontsize(11)
 
     def showEvent(self, event):
         super().showEvent(event)

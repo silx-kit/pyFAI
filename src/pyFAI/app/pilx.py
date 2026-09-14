@@ -36,6 +36,7 @@ __status__ = "development"
 
 import argparse
 import logging
+import signal
 
 import silx
 from silx.gui import qt
@@ -122,7 +123,18 @@ def main(args=None):
                     nxprocess_path=nxprocess_path,
                     )
     window.show()
-    return app.exec()
+
+    def close_on_sigint(_signum, _frame):
+        window.close()
+
+    previous_sigint_handler = signal.signal(signal.SIGINT, close_on_sigint)
+    interrupt_timer = qt.QTimer(app)
+    interrupt_timer.timeout.connect(lambda: None)
+    interrupt_timer.start(200)
+    try:
+        return app.exec()
+    finally:
+        signal.signal(signal.SIGINT, previous_sigint_handler)
 
 if __name__ == "__main__":
     main()
