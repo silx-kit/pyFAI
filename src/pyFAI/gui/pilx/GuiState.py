@@ -164,6 +164,7 @@ class GuiStateManager(qt.QObject):
                     channel: [float(value) for value in roi.getRange()]
                     for channel, roi in pattern.rgb_rois.items()
                 },
+                "rgb_rois_initialized": pattern._rgb_rois_initialized,
                 "active_rgb_channel": pattern._active_rgb_channel,
                 "y_scale": "signed_sqrt" if pattern._sqrt_mode else pattern.getYAxis().getScale(),
                 "observed_lines": pattern._observed_lines.isChecked(),
@@ -294,7 +295,8 @@ class GuiStateManager(qt.QObject):
             pattern.roi.setRange(*roi_range)
             pattern.roi.blockSignals(blocked)
             pattern.updateRoiRangeWidget()
-        for channel, roi_range in pattern_state.get("rgb_rois", {}).items():
+        rgb_ranges = pattern_state.get("rgb_rois", {})
+        for channel, roi_range in rgb_ranges.items():
             if channel not in pattern.rgb_rois:
                 continue
             roi_range = self._clampRange(roi_range, radial)
@@ -302,7 +304,13 @@ class GuiStateManager(qt.QObject):
             blocked = roi.blockSignals(True)
             roi.setRange(*roi_range)
             roi.blockSignals(blocked)
-        pattern._rgb_rois_initialized = True
+        rgb_initialized = pattern_state.get("rgb_rois_initialized")
+        if rgb_initialized is None:
+            rgb_initialized = len(rgb_ranges) == len(pattern.rgb_rois) and all(
+                roi.getRange()[1] > roi.getRange()[0]
+                for roi in pattern.rgb_rois.values()
+            )
+        pattern._rgb_rois_initialized = bool(rgb_initialized)
 
         background_state = state.get("background", {})
         fit_bounds = background_state.get("fit_bounds")
@@ -464,6 +472,7 @@ class GuiStateManager(qt.QObject):
                 qt.QByteArray.fromBase64(dialog_geometry.encode("ascii"))
             )
         background.setVisible(bool(background_state.get("dialog_visible", False)))
+        window.drawContoursOnImage()
         pattern._updateObservedStyle()
         self._last_path = path
 
