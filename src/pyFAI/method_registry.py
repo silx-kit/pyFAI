@@ -341,7 +341,7 @@ class Method(_Method):
                          algo=value.get("algo", value.get("algorithm")),
                          impl=value.get("impl", value.get("implementation")),
                          target=value.get("target"))
-        elif isinstance(value, (list, tuple)):
+        elif isinstance(value, Sequence):
             if len(value) == 3:
                 method = cls(None, *value)
             elif 3 < len(value) <= 5:
