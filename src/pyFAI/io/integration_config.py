@@ -474,11 +474,7 @@ class WorkerConfig:
             self.method = self.method.with_target(None)
 
     def __setattr__(self, key, value):
-        """Enforce the type of `method`, which has to stay immutable (#2757).
-
-        Instances are usually built from a de-serialized JSON dictionary, where
-        the method is a plain (mutable, unhashable) list.
-        """
+        """Enforce type of `method` to be immutable"""
         if key == "method" and value is not None:
             value = self._enforce_method(value)
         # NOTE: `object.__setattr__`, not `super()`: the dataclass is built with
