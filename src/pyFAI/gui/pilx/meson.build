@@ -3,6 +3,7 @@ subdir('widgets')
 py.install_sources(
  ['__init__.py',
   'HorizontalRangeROI.py',
+  'GuiState.py',
   'MainWindow.py',
   'background.py',
   'models.py',

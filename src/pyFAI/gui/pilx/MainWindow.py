@@ -52,6 +52,7 @@ from ...io.diffmap_config import DiffmapConfig
 from ...io.integration_config import WorkerConfig
 from ...utils.mathutil import binning
 from .background import arpls
+from .GuiState import GuiStateManager
 from .models import ImageIndices
 from .point import Point
 from .utils import (
@@ -78,6 +79,8 @@ class MainWindow(qt.QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self._file_name: str | None = None
+        self._dataset_path: str | None = None
+        self._nxprocess_path: str | None = None
         self._unfixed_indices = None
         self._fixed_indices = set()
         self._background_point = None
@@ -100,6 +103,11 @@ class MainWindow(qt.QMainWindow):
         self._map_tab_widget = qt.QTabWidget(self)
         self._map_tab_widget.setTabsClosable(True)
         self._map_tab_widget.tabCloseRequested.connect(self.removeMapTab)
+        self._gui_state = GuiStateManager(self)
+        self._map_tab_widget.setCornerWidget(
+            self._gui_state.createButton(self._map_tab_widget),
+            qt.Qt.Corner.TopRightCorner,
+        )
         self._map_plot_widget = self.addMapTab("2θ ROI", closable=False)
         self._map_plot_widget.setDefaultColormap(
             Colormap("viridis", normalization="log")
@@ -137,26 +145,26 @@ class MainWindow(qt.QMainWindow):
         )
 
         self._central_widget = qt.QWidget()
-        right_splitter = qt.QSplitter(qt.Qt.Orientation.Vertical, self)
-        right_splitter.addWidget(self._map_tab_widget)
-        right_splitter.addWidget(self._integrated_plot_widget)
-        right_splitter.setChildrenCollapsible(False)
-        right_splitter.setHandleWidth(6)
-        right_splitter.setStretchFactor(0, 1)
-        right_splitter.setStretchFactor(1, 1)
+        self._right_splitter = qt.QSplitter(qt.Qt.Orientation.Vertical, self)
+        self._right_splitter.addWidget(self._map_tab_widget)
+        self._right_splitter.addWidget(self._integrated_plot_widget)
+        self._right_splitter.setChildrenCollapsible(False)
+        self._right_splitter.setHandleWidth(6)
+        self._right_splitter.setStretchFactor(0, 1)
+        self._right_splitter.setStretchFactor(1, 1)
 
-        plot_splitter = qt.QSplitter(qt.Qt.Orientation.Horizontal, self)
-        plot_splitter.addWidget(self._image_plot_widget)
-        plot_splitter.addWidget(right_splitter)
-        plot_splitter.setChildrenCollapsible(False)
-        plot_splitter.setHandleWidth(6)
-        plot_splitter.setStretchFactor(0, 1)
-        plot_splitter.setStretchFactor(1, 1)
+        self._plot_splitter = qt.QSplitter(qt.Qt.Orientation.Horizontal, self)
+        self._plot_splitter.addWidget(self._image_plot_widget)
+        self._plot_splitter.addWidget(self._right_splitter)
+        self._plot_splitter.setChildrenCollapsible(False)
+        self._plot_splitter.setHandleWidth(6)
+        self._plot_splitter.setStretchFactor(0, 1)
+        self._plot_splitter.setStretchFactor(1, 1)
 
         layout = qt.QVBoxLayout(self._central_widget)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(plot_splitter, 1)
+        layout.addWidget(self._plot_splitter, 1)
         self._central_widget.setLayout(layout)
         self.setCentralWidget(self._central_widget)
 
@@ -252,6 +260,7 @@ class MainWindow(qt.QMainWindow):
                  ):
 
         self._file_name = os.path.abspath(file_name)
+        self._dataset_path = dataset_path
         while self._map_tab_widget.count() > 1:
             self.removeMapTab(1)
         self._dataset_paths = {}
@@ -864,3 +873,7 @@ class MainWindow(qt.QMainWindow):
         status_bar = self.statusBar()
         if status_bar:
             status_bar.showMessage(error_msg)
+
+    def closeEvent(self, event):
+        self._gui_state.autosave()
+        super().closeEvent(event)
