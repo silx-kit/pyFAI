@@ -43,7 +43,7 @@ from silx.gui.plot.items import ImageData
 from silx.gui.utils import blockSignals
 
 from ...utils.colorutils import DEFAULT_COLORMAP
-from ..models import ROI_COLOR, ImageIndices
+from ..models import ImageIndices
 from .ImagePlotWidget import ImagePlotWidget
 
 _LEGEND = "IMAGE"
@@ -217,15 +217,26 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
         return ImageIndices(row=row_indices_array[0], col=col_indices_array[0])
 
     def addContour(
-        self, contour: numpy.ndarray, legend: str, linestyle: str | None=None
+        self,
+        contour: numpy.ndarray,
+        legend: str,
+        color: str | qt.QColor,
+        linestyle: str | None = None,
     ) -> None:
-        """Draw a detector-space ``contour`` with the given legend and style."""
+        """Draw a detector-space contour in the active ROI color.
+
+        :param contour: Detector pixel coordinates of the contour.
+        :param legend: Plot-item legend.
+        :param color: Active ROI color.
+        :param linestyle: Optional line style.
+        :return: None.
+        """
         self.addCurve(
             contour[:, 1],
             contour[:, 0],
             legend=legend,
             linestyle=linestyle,
-            color=ROI_COLOR,
+            color=color,
             resetzoom=False,
             selectable=False,
         )
