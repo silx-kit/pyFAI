@@ -232,7 +232,7 @@ class Method(_Method):
         :rtype: Method
         """
         if self.impl == "opencl":
-            return self.with_impl("cython").with_target(None)
+            return self.replace(impl="cython", target=None)
         elif self.algo in ("lut", "csr", "csc"):
             return self.with_algo("histo")
         elif self.split == "full":
