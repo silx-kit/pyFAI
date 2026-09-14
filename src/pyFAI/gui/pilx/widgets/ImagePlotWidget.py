@@ -57,7 +57,8 @@ class ImageToolbar(qt.QToolBar):
         self.addAction(PanModeAction(plot, self))
         self.addAction(ZoomModeAction(plot, self))
         self.display_separator = self.addSeparator()
-        self.addAction(ColormapAction(plot, self))
+        self.colormap_action = ColormapAction(plot, self)
+        self.addAction(self.colormap_action)
         self.addAction(KeepAspectRatioAction(plot, self))
 
 

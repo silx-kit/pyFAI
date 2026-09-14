@@ -51,6 +51,10 @@ from .RoiRangeWidget import RoiRangeWidget
 
 
 class IntegratedPatternPlotWidget(PlotWidget):
+    rgbRoiChanged = qt.Signal()
+    roiModeChanged = qt.Signal(str)
+    activeRoiChanged = qt.Signal()
+    rgbChannelChanged = qt.Signal(str)
 
     def __init__(self, parent=None, backend=None):
         super().__init__(parent, backend)
@@ -58,11 +62,30 @@ class IntegratedPatternPlotWidget(PlotWidget):
 
         self._roi_manager = RegionOfInterestManager(parent=self)
         self.roi = self._initRoi()
-        self._roi_manager.addRoi(self.roi)
+        self._roi_manager.addRoi(self.roi, useManagerColor=False)
+        self.rgb_rois = {}
+        for channel, color in (
+            ("R", "#ff0000"),
+            ("G", "#00a000"),
+            ("B", "#0060ff"),
+        ):
+            roi = HorizontalRangeROI()
+            self._roi_manager.addRoi(roi)
+            roi.setColor(color)
+            for marker in roi.getItems():
+                marker.setColor(color)
+            roi.setEditable(False)
+            roi.setVisible(False)
+            roi.sigRegionChanged.connect(self.updateRoiRangeWidget)
+            roi.sigRangeCommitted.connect(self.rgbRoiChanged.emit)
+            self.rgb_rois[channel] = roi
+        self._roi_mode = "single"
+        self._active_rgb_channel = "R"
+        self._rgb_rois_initialized = False
 
         self._roi_range = RoiRangeWidget(self)
         # Interconnect the ROI and the ROI range widget
-        self._roi_range.updated.connect(self.roi.setRange)
+        self._roi_range.updated.connect(self.setActiveRoiRange)
         self.roi.sigRegionChanged.connect(self.updateRoiRangeWidget)
 
         self._toolbar = self._initToolbar()
@@ -89,10 +112,46 @@ class IntegratedPatternPlotWidget(PlotWidget):
         toolbar.addSeparator()
         toolbar.addAction(PanModeAction(self, toolbar))
         toolbar.addAction(ZoomModeAction(self, toolbar))
-        roiAction = RoiModeAction(self, toolbar)
-        toolbar.addAction(roiAction)
+        self._roi_action = RoiModeAction(self, self.roi, toolbar)
+        roi_menu = qt.QMenu(toolbar)
+        mode_group = qt.QActionGroup(roi_menu)
+        mode_group.setExclusive(True)
+        self._single_roi_action = roi_menu.addAction("Single channel")
+        self._single_roi_action.setCheckable(True)
+        self._single_roi_action.setChecked(True)
+        self._single_roi_action.triggered.connect(
+            lambda checked=False: self.setRoiMode("single") if checked else None
+        )
+        mode_group.addAction(self._single_roi_action)
+        self._rgb_roi_action = roi_menu.addAction("RGB")
+        self._rgb_roi_action.setCheckable(True)
+        self._rgb_roi_action.triggered.connect(
+            lambda checked=False: self.setRoiMode("rgb") if checked else None
+        )
+        mode_group.addAction(self._rgb_roi_action)
+        roi_menu.addSeparator()
+        channel_group = qt.QActionGroup(roi_menu)
+        channel_group.setExclusive(True)
+        self._rgb_channel_actions = {}
+        for channel, text in (("R", "Red"), ("G", "Green"), ("B", "Blue")):
+            action = roi_menu.addAction(text)
+            action.setCheckable(True)
+            action.setEnabled(False)
+            action.setChecked(channel == "R")
+            action.triggered.connect(
+                lambda checked=False, selected=channel: (
+                    self.setActiveRgbChannel(selected) if checked else None
+                )
+            )
+            channel_group.addAction(action)
+            self._rgb_channel_actions[channel] = action
+        self._roi_action.setMenu(roi_menu)
+        toolbar.addAction(self._roi_action)
+        roi_button = toolbar.widgetForAction(self._roi_action)
+        if isinstance(roi_button, qt.QToolButton):
+            roi_button.setPopupMode(qt.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         # Start in ROI mode
-        roiAction._actionTriggered()
+        self._roi_action.trigger()
 
         toolbar.addSeparator()
         toolbar.addAction(SaveAction(self, toolbar))
@@ -144,11 +203,59 @@ class IntegratedPatternPlotWidget(PlotWidget):
         v_min, v_max = signal_data["xdata"]
         if v_max < v_min:
             v_min, v_max = v_max, v_min
-        self.roi.setRange(v_min, v_max)
+        self.activeRoi().setRange(v_min, v_max)
+
+    def activeRoi(self):
+        if self._roi_mode == "rgb":
+            return self.rgb_rois[self._active_rgb_channel]
+        return self.roi
+
+    def setActiveRoiRange(self, v_min, v_max):
+        self.activeRoi().setRange(v_min, v_max)
+
+    def setRoiMode(self, mode):
+        if mode not in {"single", "rgb"}:
+            raise ValueError(f"Unsupported ROI mode: {mode}")
+        if mode == "rgb" and not self._rgb_rois_initialized:
+            v_min, v_max = self.roi.getRange()
+            if v_min is not None and v_max is not None and v_max > v_min:
+                for roi in self.rgb_rois.values():
+                    blocked = roi.blockSignals(True)
+                    roi.setRange(v_min, v_max)
+                    roi.blockSignals(blocked)
+                self._rgb_rois_initialized = True
+        self._roi_mode = mode
+        rgb = mode == "rgb"
+        self._single_roi_action.setChecked(not rgb)
+        self._rgb_roi_action.setChecked(rgb)
+        for action in self._rgb_channel_actions.values():
+            action.setEnabled(rgb)
+        rois = list(self.rgb_rois.values()) if rgb else [self.roi]
+        self._roi_action.setRois(rois, self.activeRoi())
+        self.updateRoiRangeWidget()
+        self.roiModeChanged.emit(mode)
+
+    def setActiveRgbChannel(self, channel):
+        if channel not in self.rgb_rois:
+            raise ValueError(f"Unsupported RGB channel: {channel}")
+        self._active_rgb_channel = channel
+        self._rgb_channel_actions[channel].setChecked(True)
+        if self._roi_mode == "rgb":
+            self._roi_action.setRois(list(self.rgb_rois.values()), self.activeRoi())
+            self.updateRoiRangeWidget()
+            self.activeRoiChanged.emit()
+            self.rgbChannelChanged.emit(channel)
 
     def updateRoiRangeWidget(self):
-        v_min, v_max = self.roi.getRange()
+        roi = self.activeRoi()
+        if self.sender() is not None and self.sender() is not roi:
+            return
+        v_min, v_max = roi.getRange()
         if v_min is None or v_max is None:
             return
 
+        title = "ROI bounds"
+        if self._roi_mode == "rgb":
+            title = f"ROI bounds ({self._active_rgb_channel})"
+        self._roi_range.setTitle(title)
         self._roi_range.setRange(v_min, v_max)

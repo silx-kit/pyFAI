@@ -42,7 +42,7 @@ from silx.gui.plot.backends.BackendMatplotlib import BackendMatplotlibQt
 from silx.gui.plot.items import ImageData
 
 from ...utils.colorutils import DEFAULT_COLORMAP
-from ..models import ROI_COLOR, ImageIndices
+from ..models import ImageIndices
 from .ImagePlotWidget import ImagePlotWidget
 
 _LEGEND = "IMAGE"
@@ -157,14 +157,14 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
         return ImageIndices(row=row_indices_array[0], col=col_indices_array[0])
 
     def addContour(
-        self, contour: numpy.ndarray, legend: str, linestyle: str | None=None
+        self, contour: numpy.ndarray, legend: str, color, linestyle: str | None=None
     ):
         self.addCurve(
             contour[:, 1],
             contour[:, 0],
             legend=legend,
             linestyle=linestyle,
-            color=ROI_COLOR,
+            color=color,
             resetzoom=False,
             selectable=False,
         )
