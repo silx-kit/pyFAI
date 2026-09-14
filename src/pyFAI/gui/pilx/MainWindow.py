@@ -339,6 +339,7 @@ class MainWindow(qt.QMainWindow):
         self._unfixed_indices = initial_indices
         self.displayPatternAtIndices(initial_indices, legend="INTEGRATE")
         self.displayImageAtIndices(initial_indices)
+        self.drawContoursOnImage()
         self.setMapMarker(
             initial_indices,
             color=self.getCurveColor(legend="INTEGRATE"),
@@ -541,21 +542,25 @@ class MainWindow(qt.QMainWindow):
             self._rgb_map_plot_widget.setRgbChannel(channel)
 
     def drawContoursOnImage(self):
-        v_min, v_max = self._integrated_plot_widget.activeRoi().getRange()
+        roi = self._integrated_plot_widget.activeRoi()
+        v_min, v_max = roi.getRange()
         if v_min is None or v_max is None:
             return
+        color = roi.getColor()
         self._image_plot_widget.clearCurves()
 
         min_contours = find_contours(self._radial_matrix, v_min)
         for i, contour in enumerate(min_contours):
-            self._image_plot_widget.addContour(contour, legend=f"min_contour_{i}")
+            self._image_plot_widget.addContour(
+                contour, legend=f"min_contour_{i}", color=color
+            )
 
         center_contours = find_contours(
             self._radial_matrix, v_min + (v_max - v_min) / 2
         )
         for i, contour in enumerate(center_contours):
             self._image_plot_widget.addContour(
-                contour, legend=f"center_contour_{i}", linestyle=":"
+                contour, legend=f"center_contour_{i}", color=color, linestyle=":"
             )
 
         max_contours = find_contours(self._radial_matrix, v_max)
@@ -563,6 +568,7 @@ class MainWindow(qt.QMainWindow):
             self._image_plot_widget.addContour(
                 contour,
                 legend=f"max_contour_{i}",
+                color=color,
             )
 
     def displayRgbMap(self):
