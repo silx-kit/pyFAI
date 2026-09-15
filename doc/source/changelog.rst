@@ -5,7 +5,7 @@
 Change-log of versions
 ======================
 
-2026.09 09/09/2026
+2026.09 15/09/2026
 -------------------
 
 - New features:
@@ -26,6 +26,7 @@ Change-log of versions
     `None` is now the canonical wildcard; the former spellings `"*"`, `"any"`, `"all"` and `0` are still accepted as input.
     It gains one copy-with method per field, like `PoniFile`: `with_dim`, `with_split`, `with_algo`, `with_impl` and `with_target`,
     as well as a `Method.parse_any` constructor which accepts about any description of a method (#2757)
+
 - Bug fixes:
 
   * `DiffMap.use_gpu` used to assign the implementation to the dimensionality of the method, which silently built
