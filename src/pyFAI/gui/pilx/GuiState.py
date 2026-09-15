@@ -282,6 +282,9 @@ class GuiStateManager(qt.QObject):
         window._background_dialog.subtract.setChecked(False)
         window._background_dialog.subtract.blockSignals(blocked)
         window._subtract_background = False
+        image_plot = window._image_plot_widget
+        image_plot._first_plot = False
+        image_plot._reset_zoom_when_shown = False
         window.initData(file_name, dataset_path, nxprocess_path)
 
         pattern_state = state.get("pattern", {})
