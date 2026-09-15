@@ -44,6 +44,7 @@ from silx.gui.plot.actions.control import (
     ResetZoomAction,
 )
 from silx.gui.plot.actions.io import SaveAction
+from silx.gui.plot.actions.mode import PanModeAction, ZoomModeAction
 from silx.gui.plot.ColorBar import ColorBarWidget
 from silx.gui.plot.tools import PositionInfo
 
@@ -52,6 +53,10 @@ class ImageToolbar(qt.QToolBar):
     def __init__(self, plot):
         super().__init__(plot)
         self.addAction(ResetZoomAction(plot, self))
+        self.addSeparator()
+        self.addAction(PanModeAction(plot, self))
+        self.addAction(ZoomModeAction(plot, self))
+        self.display_separator = self.addSeparator()
         self.addAction(ColormapAction(plot, self))
         self.addAction(KeepAspectRatioAction(plot, self))
 

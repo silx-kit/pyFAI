@@ -37,6 +37,7 @@ __status__ = "development"
 import argparse
 import logging
 
+import silx
 from silx.gui import qt
 
 from .. import date as pyFAI_date
@@ -114,6 +115,7 @@ def main(args=None):
     data_path = options.data_path if options.data_path is not None else data_path
 
     app = qt.QApplication([])
+    silx.config._MPL_TIGHT_LAYOUT = True
     window = MainWindow()
     window.initData(file_name=options.filename,
                     dataset_path=data_path,

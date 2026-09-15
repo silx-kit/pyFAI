@@ -186,10 +186,9 @@ class MapPlotWidget(ImagePlotWidget):
             y2 = numpy.outer(y, numpy.ones(cols)).ravel()
 
             self._scatter_item.setData(x2, y2, z)
-            if cols>1 and rows>1:
-                dx = 0.5 * ((x[1:] - x[:-1]).mean()) / cols
-                dy = 0.5 * ((y[1:] - y[:-1]).mean()) / rows
-                self.setDataMargins(dx, dx, dy, dy)
+            dx = 0.5 / (cols - 1) if cols > 1 else 0.0
+            dy = 0.5 / (rows - 1) if rows > 1 else 0.0
+            self.setDataMargins(dx, dx, dy, dy)
             self.resetZoom()
             self._first_plot = False
         else:

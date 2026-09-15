@@ -36,6 +36,9 @@ __date__ = "06/01/2026"
 __status__ = "development"
 
 import numpy
+from silx.gui import qt
+from silx.gui.plot.actions import PlotAction
+from silx.gui.plot.backends.BackendMatplotlib import BackendMatplotlibQt
 from silx.gui.plot.items import ImageData
 
 from ...utils.colorutils import DEFAULT_COLORMAP
@@ -45,15 +48,71 @@ from .ImagePlotWidget import ImagePlotWidget
 _LEGEND = "IMAGE"
 
 
+class DetectorMatplotlibBackend(BackendMatplotlibQt):
+    def setLimits(self, xmin, xmax, ymin, ymax, y2min=None, y2max=None):
+        # PlotWidget has already enforced aspect using the actual plot area.
+        # The silx backend repeats it using the full canvas, which can expand
+        # the limits on every pan event when the two rectangles differ.
+        keep_aspect = self.isKeepDataAspectRatio()
+        self.setKeepDataAspectRatio(False)
+        try:
+            super().setLimits(xmin, xmax, ymin, ymax, y2min, y2max)
+        finally:
+            self.setKeepDataAspectRatio(keep_aspect)
+
+
+class DetectorRoiModeAction(PlotAction):
+    def __init__(self, plot, parent=None):
+        super().__init__(
+            plot,
+            icon="shape-circle",
+            text="2θ ROI mode",
+            tooltip="Select the 2θ ROI from the detector image",
+            triggered=self._actionTriggered,
+            checkable=True,
+            parent=parent,
+        )
+        self.plot.sigInteractiveModeChanged.connect(self._modeChanged)
+        self._modeChanged(None)
+
+    def _modeChanged(self, source):
+        old = self.blockSignals(True)
+        self.setChecked(self.plot.getInteractiveMode()["mode"] == "select")
+        self.blockSignals(old)
+
+    def _actionTriggered(self, checked=False):
+        if checked:
+            self.plot.setInteractiveMode("select", source=self)
+        else:
+            self.plot.resetInteractiveMode()
+
+
 class DiffractionImagePlotWidget(ImagePlotWidget):
 
     def __init__(self, parent=None, backend=None):
+        if backend is None or backend in ("matplotlib", "mpl"):
+            backend = DetectorMatplotlibBackend
         super().__init__(parent, backend)
+        self.setAxesMargins(left=0.10, top=0.16, right=0.03, bottom=0.10)
+        self._roi_mode_action = DetectorRoiModeAction(self, self._toolbar)
+        self._toolbar.insertAction(
+            self._toolbar.display_separator, self._roi_mode_action
+        )
+        self._roi_mode_action.trigger()
         image_item = self.addImage([[]], legend=_LEGEND, colormap=DEFAULT_COLORMAP)
         if not isinstance(image_item, ImageData):
             raise RuntimeError("addImage should return a ImageData instance")
         self._image_item = image_item
         self._first_plot = True
+        self._reset_zoom_when_shown = False
+
+    def emitMouseClickSignal(self, signal_data):
+        if (
+            self.getInteractiveMode()["mode"] != "select"
+            or signal_data.get("button") != "left"
+        ):
+            return
+        super().emitMouseClickSignal(signal_data)
 
     def _dataConverter(self, x, y):
         image = self._image_item.getData(copy=False)
@@ -68,9 +127,21 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
                      title: str=""):
         self._image_item.setData(image)
         if self._first_plot:
-            self.resetZoom()
+            if self.isVisible():
+                qt.QTimer.singleShot(0, self.resetZoom)
+            else:
+                self._reset_zoom_when_shown = True
             self._first_plot = False
         self.setGraphTitle(title)
+        backend = self.getBackend()
+        if hasattr(backend, "ax"):
+            backend.ax.title.set_fontsize(11)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self._reset_zoom_when_shown:
+            self._reset_zoom_when_shown = False
+            qt.QTimer.singleShot(0, self.resetZoom)
 
     def getImageIndices(self, x_data: float, y_data: float) -> ImageIndices | None:
         tmp = self.dataToPixel(x_data, y_data)
