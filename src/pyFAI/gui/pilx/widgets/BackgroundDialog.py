@@ -40,7 +40,7 @@ class BackgroundDialog(qt.QDialog):
         super().__init__(parent)
         self.setWindowTitle("Histogram background")
 
-        self.fit_range = RoiRangeWidget(self, title="2θ fit bounds")
+        self.fit_range = RoiRangeWidget(self, title="")
         self.fit_range.updated.connect(fit_roi.setRange)
         fit_roi.sigRegionChanged.connect(
             lambda: self.fit_range.setRange(*fit_roi.getRange())
@@ -72,7 +72,8 @@ class BackgroundDialog(qt.QDialog):
         smoothness.addWidget(self.smoothness)
 
         layout = qt.QFormLayout(self)
-        layout.addRow(self.fit_range)
+        layout.setLabelAlignment(qt.Qt.AlignmentFlag.AlignLeft)
+        layout.addRow("2θ fit bounds", self.fit_range)
         layout.addRow("Smoothness", smoothness)
         layout.addRow(self.subtract)
         self.resize(self.sizeHint())
