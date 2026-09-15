@@ -139,7 +139,7 @@ class TestWorker(unittest.TestCase):
         self.assertEqual(ai_args["unit"], worker.unit)
         self.assertEqual(ai_args["dummy"], worker.dummy)
         self.assertEqual(ai_args["delta_dummy"], worker.delta_dummy)
-        self.assertTrue(worker.method in str(ai_args["method"]).lower())
+        self.assertIn(worker.method.algo, str(ai_args["method"]).lower())
         self.assertEqual(ai_args["polarization_factor"], worker.polarization_factor)
         self.assertEqual(ai_args["safe"], True)
         self.assertEqual(ai_args["data"], data)
@@ -174,7 +174,7 @@ class TestWorker(unittest.TestCase):
         self.assertEqual(ai_args["unit"], worker.unit)
         self.assertEqual(ai_args["dummy"], worker.dummy)
         self.assertEqual(ai_args["delta_dummy"], worker.delta_dummy)
-        self.assertTrue(worker.method in str(ai_args["method"]).lower())
+        self.assertIn(worker.method.algo, str(ai_args["method"]).lower())
         self.assertEqual(ai_args["polarization_factor"], worker.polarization_factor)
         self.assertEqual(ai_args["safe"], True)
         self.assertEqual(ai_args["data"], data)
@@ -338,6 +338,35 @@ class TestWorker(unittest.TestCase):
                                         "wavelength":1e-10})
         w = Worker(ai)
         self.assertEqual(w.shape, ai.detector.shape, "detector shape matches")
+
+    def test_method_is_immutable(self):
+        """`Worker.method` is always an immutable Method, whatever it is set
+        from, and holds neither the dimensionality nor the device (#2757).
+        """
+        from ..method_registry import Method
+        worker = Worker(shapeOut=(1, 100))
+        self.assertIsInstance(worker.method, Method)
+
+        worker.method = ["full", "csr", "cython"]
+        self.assertEqual(worker.method, Method(None, "full", "csr", "cython"))
+        with self.assertRaises(AttributeError):
+            worker.method.algo = "lut"  # used to be a plain, mutable list
+
+        # the device is moved to the dedicated attribute
+        worker.method = Method(2, "no", "lut", "opencl", (0, 1))
+        self.assertIsNone(worker.method.dim, "the dimensionality comes from nbpt_azim")
+        self.assertIsNone(worker.method.target, "the device comes from opencl_device")
+        self.assertEqual(worker.opencl_device, (0, 1))
+
+    def test_set_method(self):
+        """`set_method` persists its result and rebuilds the processor."""
+        worker = Worker(shapeOut=(1, 100))
+        previous = worker._method
+        returned = worker.set_method(("no", "histogram", "python"))
+        self.assertEqual(returned, worker.method, "the stored method is returned")
+        self.assertEqual(worker._method.method.algo, "histogram",
+                         "the selected integrator is updated")
+        self.assertIsNot(worker._method, previous)
 
 class TestWorkerConfig(unittest.TestCase):
 
