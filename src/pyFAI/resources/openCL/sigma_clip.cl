@@ -173,7 +173,7 @@ static float2 mean_and_deviation(uint local_id,
 
 static inline float8 clip8(float8 input, float2 mean_std,
                            float sigma_lo, float sigma_hi,
-                           local int* discarded)
+                           volatile local int* discarded)
 {
     union
     {

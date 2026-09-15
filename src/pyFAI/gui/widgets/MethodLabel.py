@@ -40,6 +40,7 @@ class MethodLabel(qt.QLabel):
     """Readonly line display"""
 
     _HUMAN_READABLE: ClassVar[dict] = {
+        None: "Any",
         "*": "Any",
         "any": "Any",
         "all": "Any",

@@ -638,24 +638,10 @@ class WorkerConfigurator(qt.QWidget):
 
         dim = 2 if wc.do_2D else 1
         method = wc.method
-        target = wc.opencl_device
-        if isinstance(target, list):
-            target = tuple(target)
-
         if method is None:
             lngm = load_engines.PREFERED_METHODS_2D[0] if dim == 2 else load_engines.PREFERED_METHODS_1D[0]
             method = lngm.method
-        elif isinstance(method, (str,)):
-            method = method_registry.Method.parsed(method)
-            method = method.fixed(dim=dim, target=target)
-        elif isinstance(method, (list, tuple)):
-            if len(method) == 3:
-                split, algo, impl = method
-                method = method_registry.Method(dim, split, algo, impl, target)
-            elif 3 < len(method) <= 5:
-                method = method_registry.Method(*method)
-            else:
-                raise TypeError(f"Method size {len(method)} is unsupported, method={method}.")
+        method = method_registry.Method.parse_any(method, dim=dim, target=wc.opencl_device)
 
         self.__setMethod(method)
         self.__setOpenclDevice(method.target)
