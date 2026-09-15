@@ -196,11 +196,11 @@ class IntegrationProcess:
 
         ai.enable_parallax(self.__parallaxCorrection)
         # FIXME Add error model
-        method = method_registry.Method(0, self.__method.split, self.__method.algo, self.__method.impl, None)
+        method = method_registry.Method(None, self.__method.split, self.__method.algo, self.__method.impl, None)
         method1d = method.fixed(dim=1)
         methods = method_registry.IntegrationMethod.select_method(method=method1d)
         if len(methods) == 0:
-            method1d = method_registry.Method(1, method1d.split, "*", "*", None)
+            method1d = method_registry.Method(1, method1d.split, None, None, None)
             _logger.warning("Downgrade 1D integration method to %s", method1d)
         else:
             method1d = methods[0].method
@@ -208,7 +208,7 @@ class IntegrationProcess:
         method2d = method.fixed(dim=2)
         methods = method_registry.IntegrationMethod.select_method(method=method2d)
         if len(methods) == 0:
-            method2d = method_registry.Method(2, method2d.split, "*", "*", None)
+            method2d = method_registry.Method(2, method2d.split, None, None, None)
             _logger.warning("Downgrade 2D integration method to %s", method2d)
         else:
             method2d = methods[0].method
@@ -929,7 +929,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self.__integrationUpToDate = True
         self.__integrationResetZoomPolicy = None
-        method = method_registry.Method(666, "full", "histogram", "cython", None)
+        method = method_registry.Method(None, "full", "histogram", "cython", None)
         self.__setMethod(method)
 
         positiveValidator = validators.IntegerAndEmptyValidator(self)
