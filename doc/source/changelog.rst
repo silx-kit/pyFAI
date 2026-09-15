@@ -1,9 +1,23 @@
 :Author: Jérôme Kieffer
-:Date: 09/09/2026
+:Date: 15/09/2026
 :Keywords: changelog
 
 Change-log of versions
 ======================
+
+202X.YY
+-------------------
+
+- New features:
+
+- Bug fixes:
+
+- Documentation:
+
+- Code quality:
+
+- zzz commits over z month
+- Supports python 3.11-3.15
 
 2026.09 15/09/2026
 -------------------
