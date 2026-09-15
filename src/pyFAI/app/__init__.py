@@ -32,5 +32,54 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2020, European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2020"
+__date__ = "11/09/2026"
 __status__ = "production"
+
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
+
+
+def configure_console_output(encoding="utf-8", errors="backslashreplace"):
+    r"""Make stdout and stderr able to print the unicode used by pyFAI.
+
+    The representation of a geometry contains characters such as
+    ``\N{GREEK SMALL LETTER LAMDA}``, ``\N{INFINITY}`` or
+    ``\N{SUPERSCRIPT MINUS}``, which no Windows code page can encode. An
+    interactive console is not affected, since Python writes to it through
+    ``WriteConsoleW`` (PEP 528), but as soon as the output is redirected to a
+    pipe or a file, Python falls back on the locale codec (cp1252) and
+    ``print`` raises a `UnicodeEncodeError`.
+
+    This is a no-op where the locale is already UTF-8, and Python 3.15 makes the
+    UTF-8 mode the default (PEP 686), which will make this call useless.
+
+    Only applications are expected to call this: re-encoding the streams of a
+    process is not the business of a library.
+
+    Note: this docstring is raw on purpose. The ``\N{...}`` above then stay
+    literal instead of being expanded at compile time, which keeps `help()`
+    printable on the very consoles this function works around.
+
+    :param encoding: codec to write with, None to keep the current one
+    :param errors: how to handle characters missing from the codec. The default
+        degrades them to ``\uXXXX`` escapes instead of raising
+    """
+    for stream in (sys.stdout, sys.stderr):
+        # `None` under pythonw.exe, StringIO when captured by a test runner
+        if not hasattr(stream, "reconfigure"):
+            continue
+        try:
+            stream.reconfigure(encoding=encoding, errors=errors)
+        except (OSError, ValueError):
+            # The codec may be refused: at least stop raising on such characters
+            try:
+                stream.reconfigure(errors=errors)
+            except (OSError, ValueError):
+                logger.debug("Unable to reconfigure %s", stream, exc_info=True)
+
+
+# Applied on import: every `pyFAI.app.*` module is a command line application
+# and some of them are used as a library entry point, without going through main
+configure_console_output()
