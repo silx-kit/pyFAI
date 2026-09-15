@@ -127,17 +127,14 @@ def main(args=None):
         # Close the window so its closeEvent shutdown hooks run.
         window.close()
 
-    previous_sigint_handler = signal.signal(signal.SIGINT, sigintHandler)
+    signal.signal(signal.SIGINT, sigintHandler)
+    
     # Like silx view (silx/app/view/main.py, b744569), wake Python periodically
     # so it can handle SIGINT while Qt runs.
     interrupt_timer = qt.QTimer()
     interrupt_timer.start(500)
     interrupt_timer.timeout.connect(lambda: None)
-    try:
-        result = app.exec()
-    finally:
-        signal.signal(signal.SIGINT, previous_sigint_handler)
-
+    result = app.exec()
     app.deleteLater()
     return result
 
