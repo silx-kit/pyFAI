@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/09/2026"
+__date__ = "15/09/2026"
 __status__ = "development"
 
 from typing import ClassVar, NamedTuple, Sequence
@@ -232,7 +232,7 @@ class Method(_Method):
         :rtype: Method
         """
         if self.impl == "opencl":
-            return self.replace(impl="cython", target=None)
+            return self._replace(impl="cython", target=None)
         elif self.algo in ("lut", "csr", "csc"):
             return self.with_algo("histo")
         elif self.split == "full":
