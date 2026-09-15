@@ -36,6 +36,7 @@ __status__ = "development"
 
 import argparse
 import logging
+import signal
 
 from silx.gui import qt
 
@@ -120,7 +121,21 @@ def main(args=None):
                     nxprocess_path=nxprocess_path,
                     )
     window.show()
-    return app.exec()
+
+    def sigintHandler(*args):
+        # Close the window so its closeEvent shutdown hooks run.
+        window.close()
+
+    signal.signal(signal.SIGINT, sigintHandler)
+
+    # Like silx view, wake Python periodically so it can handle SIGINT while Qt runs.
+    # (https://github.com/silx-kit/silx/blob/b744569fdce1d84525f031c1ee81eaf38d2f649b/src/silx/app/view/main.py#L148)
+    interrupt_timer = qt.QTimer()
+    interrupt_timer.start(500)
+    interrupt_timer.timeout.connect(lambda: None)
+    result = app.exec()
+    app.deleteLater()
+    return result
 
 if __name__ == "__main__":
     main()
