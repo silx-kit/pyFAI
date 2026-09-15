@@ -94,8 +94,8 @@ class TestPickle(unittest.TestCase):
             self.assertEqual(abs(first - second).max(), 0, "Spectra are the same")
 
     def test_Calibrant(self):
-        from pyFAI import calibrant
-        calibrant = calibrant.CalibrantFactory()('AgBh')
+        from pyFAI.calibrant import get_calibrant
+        calibrant = get_calibrant('AgBh')
         self.assertTrue(dumps(calibrant))
         self.assertTrue(loads(dumps(calibrant)))
 

@@ -62,6 +62,7 @@ requires = [
 gui = [ "PySide6", "qtawesome" ]
 opencl = [ "pyopencl" ]
 all = ["PySide6", "pyopencl", "hdf5plugin", "qtawesome"]
+test = [ "pytest", "pytest-xdist" ]
 
 [project.urls]
 homepage = 'http://www.silx.org'
@@ -93,6 +94,22 @@ pyFAI-diffmap = 'pyFAI.app.diff_map:main'
 pyFAI-integrate = 'pyFAI.app.integrate:main'
 pyFAI-diffmap-view = 'pyFAI.app.pilx:main'
 
+
+[tool.pytest.ini_options]
+# The test-suite is written with unittest; pytest collects it as-is:
+#     python bootstrap.py -m pytest --pyargs pyFAI
+# runs it in parallel (needs pytest-xdist, see the `test` extra).
+#
+# `-n auto --dist loadscope`: one worker process per physical core, whole
+#   TestCase classes being kept together so that the expensive setUpClass runs
+#   once per class. Set PYTEST_XDIST_AUTO_NUM_WORKERS to pick the number of
+#   workers, e.g. when the machine is shared or CPU-partitioned.
+# `-p no:logging`: the logging plugin of pytest installs a handler on the root
+#   logger, which breaks pyFAI.utils.logging_utils.set_prepost_emit_callback
+#   (used by pyFAI-integrate and exercised by test_integrate_app).
+addopts = "-p no:logging -n auto --dist loadscope"
+# Never collect the sources: the tests must run against the compiled copy.
+norecursedirs = ["src", "build_py3*", "doc", "package", "ci"]
 
 [tool.cibuildwheel]
 # Skip 32-bit builds and PyPy
