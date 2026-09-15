@@ -1,5 +1,6 @@
 py.install_sources(
  ['__init__.py',
+'BackgroundDialog.py',
 'DiffractionImagePlotWidget.py',
 'ImagePlotWidget.py',
 'IntegratedPatternPlotWidget.py',

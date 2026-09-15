@@ -56,6 +56,7 @@ class IntegratedPatternPlotWidget(PlotWidget):
     roiModeChanged = qt.Signal(str)
     activeRoiChanged = qt.Signal()
     rgbChannelChanged = qt.Signal(str)
+    backgroundRequested = qt.Signal()
 
     def __init__(self, parent=None, backend=None):
         self._sqrt_mode = False
@@ -94,6 +95,15 @@ class IntegratedPatternPlotWidget(PlotWidget):
         # Interconnect the ROI and the ROI range widget
         self._roi_range.updated.connect(self.setActiveRoiRange)
         self.roi.sigRegionChanged.connect(self.updateRoiRangeWidget)
+
+        self.background_fit_roi = HorizontalRangeROI()
+        self.background_fit_roi.setEditable(True)
+        self._roi_manager.addRoi(self.background_fit_roi)
+        # RegionOfInterestManager replaces the ROI color when adding it.
+        self.background_fit_roi.setColor("#8000ff")
+        # silx has no public option for hiding only the centre handle.
+        self.background_fit_roi._markerCen.setVisible(False)
+        self.setBackgroundFitVisible(False)
 
         self._toolbar = self._initToolbar()
         self.addToolBar(self._toolbar)
@@ -230,6 +240,13 @@ class IntegratedPatternPlotWidget(PlotWidget):
 
         toolbar.addSeparator()
         toolbar.addAction(SaveAction(self, toolbar))
+        toolbar.addSeparator()
+        background_action = qt.QAction(
+            icons.getQIcon("math-substract"), "Background", toolbar
+        )
+        background_action.setToolTip("Configure histogram background subtraction")
+        background_action.triggered.connect(self.backgroundRequested)
+        toolbar.addAction(background_action)
         return toolbar
 
     def _updateObservedStyle(self, *args):
@@ -366,6 +383,10 @@ class IntegratedPatternPlotWidget(PlotWidget):
             title = f"ROI bounds ({self._active_rgb_channel})"
         self._roi_range.setTitle(title)
         self._roi_range.setRange(v_min, v_max)
+
+    def setBackgroundFitVisible(self, visible):
+        self.background_fit_roi.setVisible(visible)
+        self.background_fit_roi._markerCen.setVisible(False)
 
     def setYAxisScale(self, scale):
         axis = self.getYAxis()

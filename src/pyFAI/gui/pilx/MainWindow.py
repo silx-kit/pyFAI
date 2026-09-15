@@ -51,6 +51,7 @@ from silx.image.marchingsquares import find_contours
 from ...io.diffmap_config import DiffmapConfig
 from ...io.integration_config import WorkerConfig
 from ...utils.mathutil import binning
+from .background import arpls
 from .models import ImageIndices
 from .point import Point
 from .utils import (
@@ -63,6 +64,7 @@ from .utils import (
     get_radial_dataset,
     get_signal_dataset,
 )
+from .widgets.BackgroundDialog import BackgroundDialog
 from .widgets.DiffractionImagePlotWidget import DiffractionImagePlotWidget
 from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
@@ -79,6 +81,9 @@ class MainWindow(qt.QMainWindow):
         self._unfixed_indices = None
         self._fixed_indices = set()
         self._background_point = None
+        self._subtract_background = False
+        self._background_baseline = None
+        self._background_radial_values = None
         self._map_plot_widgets = []
         self._rgb_map_plot_widget = None
         self._rgb_map_channel = "R"
@@ -101,6 +106,9 @@ class MainWindow(qt.QMainWindow):
         )
 
         self._integrated_plot_widget = IntegratedPatternPlotWidget(self)
+        self._background_dialog = BackgroundDialog(
+            self._integrated_plot_widget.background_fit_roi, self
+        )
         self._integrated_plot_widget.roi.sigRangeCommitted.connect(self.onRoiEdition)
         self._integrated_plot_widget.roi.sigRangeCommitted.connect(self.drawContoursOnImage)
         self._integrated_plot_widget.rgbRoiChanged.connect(self.displayRgbMap)
@@ -111,6 +119,21 @@ class MainWindow(qt.QMainWindow):
         )
         self._integrated_plot_widget.rgbChannelChanged.connect(
             self.setRgbMapChannel
+        )
+        self._background_dialog.subtractionChanged.connect(
+            self.setBackgroundSubtraction
+        )
+        self._background_dialog.smoothnessChanged.connect(
+            self.setBackgroundSmoothness
+        )
+        self._background_dialog.visibilityChanged.connect(
+            self._integrated_plot_widget.setBackgroundFitVisible
+        )
+        self._integrated_plot_widget.backgroundRequested.connect(
+            self._background_dialog.show
+        )
+        self._integrated_plot_widget.background_fit_roi.sigRangeCommitted.connect(
+            self.setBackgroundFitRange
         )
 
         self._central_widget = qt.QWidget()
@@ -310,9 +333,21 @@ class MainWindow(qt.QMainWindow):
 
         self._radial_matrix = compute_radial_values(self.worker_config)
         self._delta_radial_over_2 = delta_radial / 2
-
+        self._background_radial_values = radial_values
+        self._background_baseline = None
+        fit_roi = self._integrated_plot_widget.background_fit_roi
         radial_minimum = float(radial_values[0])
         radial_span = float(radial_values[-1]) - radial_minimum
+        fit_minimum = radial_minimum + 0.05 * radial_span
+        fit_maximum = radial_minimum + 0.95 * radial_span
+        blocked = fit_roi.blockSignals(True)
+        fit_roi.setRange(fit_minimum, fit_maximum)
+        fit_roi.blockSignals(blocked)
+        self._background_dialog.fit_range.setRange(fit_minimum, fit_maximum)
+        start = numpy.searchsorted(radial_values, fit_minimum, side="left")
+        stop = numpy.searchsorted(radial_values, fit_maximum, side="right")
+        self._background_dialog.setFitPointCount(stop - start)
+
         roi_minimum = radial_minimum + 0.45 * radial_span
         roi_maximum = radial_minimum + 0.55 * radial_span
         pattern = self._integrated_plot_widget
@@ -364,9 +399,27 @@ class MainWindow(qt.QMainWindow):
             curve = point.get_curve() - self._background_point.get_curve()
         else:
             curve = point.get_curve()
+        if self._subtract_background:
+            lower, upper = self._integrated_plot_widget.background_fit_roi.getRange()
+            start = numpy.searchsorted(point._radial_curve, lower, side="left")
+            stop = numpy.searchsorted(point._radial_curve, upper, side="right")
+            if stop - start >= 3:
+                smoothness = (
+                    None
+                    if self._background_dialog.automatic.isChecked()
+                    else self._background_dialog.smoothness.value()
+                )
+                curve = curve[start:stop] - arpls(
+                    curve[start:stop], smoothness=smoothness
+                )
+                radial_curve = point._radial_curve[start:stop]
+            else:
+                radial_curve = point._radial_curve
+        else:
+            radial_curve = point._radial_curve
 
         self._integrated_plot_widget.addDataCurve(
-            x=point._radial_curve,
+            x=radial_curve,
             y=curve,
             legend=legend,
             selectable=False,
@@ -520,6 +573,68 @@ class MainWindow(qt.QMainWindow):
         )
         self.removeMapMarker(legend=f"MAP_LOCATION_{indices.row}_{indices.col}")
 
+    def setBackgroundSubtraction(self, enabled):
+        self._subtract_background = enabled
+        if self._unfixed_indices is not None:
+            self.displayPatternAtIndices(self._unfixed_indices, legend="INTEGRATE")
+        for indices in self._fixed_indices:
+            self.displayPatternAtIndices(
+                indices, legend=f"INTEGRATE_{indices.row}_{indices.col}"
+            )
+        self.onRoiEdition()
+        if self._rgb_map_plot_widget is not None:
+            self.displayRgbMap()
+
+    def setBackgroundFitRange(self):
+        radial = self._background_radial_values
+        if radial is None:
+            return
+        roi = self._integrated_plot_widget.background_fit_roi
+        lower, upper = roi.getRange()
+        lower = max(float(radial[0]), min(float(radial[-1]), lower))
+        upper = max(lower, min(float(radial[-1]), upper))
+        if (lower, upper) != roi.getRange():
+            roi.setRange(lower, upper)
+            return
+        self._background_baseline = None
+        start = numpy.searchsorted(radial, lower, side="left")
+        stop = numpy.searchsorted(radial, upper, side="right")
+        self._background_dialog.setFitPointCount(stop - start)
+        if self._subtract_background:
+            self.setBackgroundSubtraction(True)
+
+    def setBackgroundSmoothness(self):
+        self._background_baseline = None
+        if self._subtract_background:
+            self.setBackgroundSubtraction(True)
+
+    def _backgroundMap(self, full_map, axes_index, radial):
+        lower, upper = self._integrated_plot_widget.background_fit_roi.getRange()
+        start = numpy.searchsorted(radial, lower, side="left")
+        stop = numpy.searchsorted(radial, upper, side="right")
+        key = (self._file_name, self._nxprocess_path, full_map.shape, start, stop)
+        if stop - start < 3:
+            return None, start, stop
+        if self._background_baseline is None or self._background_baseline[0] != key:
+            selection = [slice(None)] * full_map.ndim
+            selection[axes_index.radial] = slice(start, stop)
+            data = numpy.asarray(full_map[tuple(selection)], dtype=float)
+            moved = numpy.moveaxis(data, axes_index.radial, -1)
+            histograms = moved.reshape(-1, moved.shape[-1])
+            smoothness = (
+                None
+                if self._background_dialog.automatic.isChecked()
+                else self._background_dialog.smoothness.value()
+            )
+            baselines = numpy.array(
+                [arpls(hist, smoothness=smoothness) for hist in histograms]
+            )
+            background = numpy.moveaxis(
+                baselines.reshape(moved.shape), -1, axes_index.radial
+            )
+            self._background_baseline = (key, background)
+        return self._background_baseline[1], start, stop
+
     def onRoiEdition(self):
         v_min, v_max = self.getRoiRadialRange()
         if v_min is None or v_max is None:
@@ -593,6 +708,11 @@ class MainWindow(qt.QMainWindow):
             )[()]
             full_map = get_signal_dataset(nxdata, default="intensity")
             axes_index = get_axes_index(full_map)
+            background = None
+            if self._subtract_background:
+                background, background_start, background_stop = self._backgroundMap(
+                    full_map, axes_index, radial
+                )
 
             for v_min, v_max in ranges:
                 i_min, i_max = get_indices_from_values(v_min, v_max, radial)
@@ -604,6 +724,18 @@ class MainWindow(qt.QMainWindow):
                     map_data = full_map[:, :, i_min:i_max].mean(axis=2)
                 else:
                     map_data = full_map[i_min:i_max, :, :].mean(axis=0)
+                if (
+                    background is not None
+                    and background_start <= i_min < i_max <= background_stop
+                ):
+                    if axes_index.radial == 2:
+                        map_data = map_data - background[
+                            :, :, i_min - background_start:i_max - background_start
+                        ].mean(axis=2)
+                    else:
+                        map_data = map_data - background[
+                            i_min - background_start:i_max - background_start, :, :
+                        ].mean(axis=0)
                 maps.append(numpy.asarray(map_data, dtype=float))
 
             fast = get_axes_dataset(nxdata, dim=axes_index.fast, default="fast")
@@ -652,6 +784,8 @@ class MainWindow(qt.QMainWindow):
             i_min, i_max = get_indices_from_values(v_min, v_max, radial)
             i_min = max(0, i_min)
             i_max = min(len(radial), i_max)
+            # An unset or sub-bin ROI can select no samples. Keep the current
+            # map rather than replacing it with the mean of an empty slice.
             if i_min >= i_max:
                 return
             full_map = get_signal_dataset(nxdata, default="intensity")
@@ -660,6 +794,19 @@ class MainWindow(qt.QMainWindow):
                 map_data = full_map[:,:, i_min:i_max].mean(axis=2)
             else:
                 map_data = full_map[i_min:i_max, :, : ].mean(axis=0)
+            if self._subtract_background:
+                background, background_start, background_stop = self._backgroundMap(
+                    full_map, axes_index, radial
+                )
+                if background_start <= i_min < i_max <= background_stop:
+                    if axes_index.radial == 2:
+                        map_data = map_data - background[
+                            :, :, i_min - background_start:i_max - background_start
+                        ].mean(axis=2)
+                    else:
+                        map_data = map_data - background[
+                            i_min - background_start:i_max - background_start, :, :
+                        ].mean(axis=0)
             fast = get_axes_dataset(nxdata, dim=axes_index.fast, default="fast")
             slow = get_axes_dataset(nxdata, dim=axes_index.slow, default="slow")
             fast_name = fast.attrs.get("long_name", "X")

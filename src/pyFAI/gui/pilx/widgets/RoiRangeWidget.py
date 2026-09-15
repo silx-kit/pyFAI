@@ -59,6 +59,7 @@ class RoiRangeWidget(qt.QWidget):
 
         self._title_label = qt.QLabel(title, self)
         self._title_label.setStyleSheet("font-weight: bold;")
+        self._title_label.setVisible(bool(title))
         layout.addWidget(self._title_label)
         layout.addLayout(min_layout)
         layout.addLayout(max_layout)
@@ -78,6 +79,7 @@ class RoiRangeWidget(qt.QWidget):
 
     def setTitle(self, title: str):
         self._title_label.setText(title)
+        self._title_label.setVisible(bool(title))
 
     def _onMinEdition(self):
         new_min = self.minValue

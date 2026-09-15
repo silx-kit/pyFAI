@@ -4,6 +4,7 @@ py.install_sources(
  ['__init__.py',
   'HorizontalRangeROI.py',
   'MainWindow.py',
+  'background.py',
   'models.py',
   'point.py',
   'utils.py',
