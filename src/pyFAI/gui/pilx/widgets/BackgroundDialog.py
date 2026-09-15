@@ -41,6 +41,7 @@ class BackgroundDialog(qt.QDialog):
         self.setWindowTitle("Histogram background")
 
         self.fit_range = RoiRangeWidget(self, title="")
+        self.fit_range.layout().setContentsMargins(0, 0, 0, 0)
         self.fit_range.updated.connect(fit_roi.setRange)
         fit_roi.sigRegionChanged.connect(
             lambda: self.fit_range.setRange(*fit_roi.getRange())
