@@ -35,18 +35,45 @@ __date__ = "18/06/2025"
 __status__ = "development"
 
 from silx.gui import qt
+from silx.gui.plot import items
 from silx.gui.plot.items.roi import HorizontalRangeROI as SilxHorizontalRangeROI
 
 
 class HorizontalRangeROI(SilxHorizontalRangeROI):
-    """A range ROI that emits sigRangeCommitted on setRange and on commit."""
+    """A range ROI with committed changes and Ctrl-drag symmetry."""
 
     sigRangeCommitted = qt.Signal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._drag_center = None
+        for marker in (self._markerMin, self._markerMax):
+            marker.sigDragStarted.connect(self._rememberDragCenter)
+            marker.sigDragFinished.connect(self._clearDragCenter)
         self.sigEditingFinished.connect(self.sigRangeCommitted)
 
     def setRange(self, vmin: float, vmax: float):
         super().setRange(vmin, vmax)
         self.sigRangeCommitted.emit()
+
+    def _rememberDragCenter(self):
+        self._drag_center = self.getCenter()
+
+    def _clearDragCenter(self):
+        self._drag_center = None
+
+    def _minPositionChanged(self, event):
+        symmetric = qt.QApplication.keyboardModifiers() & qt.Qt.KeyboardModifier.ControlModifier
+        if event is items.ItemChangedType.POSITION and symmetric and self._drag_center is not None:
+            minimum = min(self.sender().getXPosition(), self._drag_center)
+            self._updatePos(minimum, 2 * self._drag_center - minimum, force=True)
+        else:
+            super()._minPositionChanged(event)
+
+    def _maxPositionChanged(self, event):
+        symmetric = qt.QApplication.keyboardModifiers() & qt.Qt.KeyboardModifier.ControlModifier
+        if event is items.ItemChangedType.POSITION and symmetric and self._drag_center is not None:
+            maximum = max(self.sender().getXPosition(), self._drag_center)
+            self._updatePos(2 * self._drag_center - maximum, maximum, force=True)
+        else:
+            super()._maxPositionChanged(event)
