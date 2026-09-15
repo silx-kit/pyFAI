@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/08/2026"
+__date__ = "15/09/2026"
 
 import copy
 import itertools
@@ -345,8 +345,8 @@ class TestFastPath(utilstest.ParametricTestCase):
                        [ 0.95602792, 0.03295684, 0.23053058, 0.1782698 ]
                        ]
 
+        random.seed(0)
         for _ in range(number_of_geometries):
-            random.seed(0)
             geo = {"dist": 0.01 + random.random(),
                    "poni1": random.random() - 0.5,
                    "poni2": random.random() - 0.5,
