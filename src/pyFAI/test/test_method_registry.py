@@ -35,7 +35,7 @@ __date__ = "15/09/2026"
 import unittest
 
 from silx.utils.testutils import ParametricTestCase
-from ..integrator import load_engines  # noqa
+from ..integrator import load_engines  # noqa: F401 load some integrators ...
 from ..method_registry import IntegrationMethod, Method
 
 
