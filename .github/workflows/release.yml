@@ -88,12 +88,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             cibw_archs: "auto64"
-#          - os: ubuntu-20.04
-#            cibw_archs: "aarch64"
-#           - os: ubuntu-20.04
-#             cibw_archs: "ppc64le"
           - os: windows-2022
             cibw_archs: "auto64"
           - os: macos-15-intel
