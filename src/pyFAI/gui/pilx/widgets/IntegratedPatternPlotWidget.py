@@ -35,7 +35,8 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "22/03/2024"
 __status__ = "development"
 
-from silx.gui import qt
+import numpy
+from silx.gui import icons, qt
 from silx.gui.plot import PlotWidget
 from silx.gui.plot.actions.control import ResetZoomAction
 from silx.gui.plot.actions.io import SaveAction
@@ -57,7 +58,13 @@ class IntegratedPatternPlotWidget(PlotWidget):
     rgbChannelChanged = qt.Signal(str)
 
     def __init__(self, parent=None, backend=None):
+        self._sqrt_mode = False
+        self._curve_y_data = {}
+        self._data_y_label = ""
+        self._observed_marker_size = 4.5
+        self._observed_marker_edge_width = 0.8
         super().__init__(parent, backend)
+        self.setDataMargins(0.02, 0.02, 0.02, 0.02)
         self.sigPlotSignal.connect(self.onRectDraw)
 
         self._roi_manager = RegionOfInterestManager(parent=self)
@@ -98,6 +105,29 @@ class IntegratedPatternPlotWidget(PlotWidget):
     def __iter__(self):
         yield from self.getAllCurves(just_legend=True)
 
+    def addDataCurve(self, x, y, legend, **kwargs):
+        y = numpy.asarray(y)
+        self._curve_y_data[legend] = numpy.array(y, copy=True)
+        if self._sqrt_mode:
+            y = numpy.sign(y) * numpy.sqrt(numpy.abs(y))
+        if legend == "INTEGRATE":
+            kwargs["linestyle"] = "-" if self._observed_lines.isChecked() else " "
+            kwargs["symbol"] = "o" if self._observed_circles.isChecked() else ""
+        curve = self.addCurve(x, y, legend=legend, **kwargs)
+        if legend == "INTEGRATE":
+            curve.setSymbolSize(self._observed_marker_size)
+            curve.setVisible(
+                self._observed_lines.isChecked()
+                or self._observed_circles.isChecked()
+            )
+            self._styleObservedCircles()
+        return curve
+
+    def setDataYLabel(self, label):
+        self._data_y_label = label
+        if self._sqrt_mode:
+            label = f"asqrt({label})"
+        self.setGraphYLabel(label)
 
     def _initRoi(self):
         roi = HorizontalRangeROI()
@@ -112,6 +142,51 @@ class IntegratedPatternPlotWidget(PlotWidget):
         toolbar.addSeparator()
         toolbar.addAction(PanModeAction(self, toolbar))
         toolbar.addAction(ZoomModeAction(self, toolbar))
+        self._y_scale_button = qt.QToolButton(toolbar)
+        self._y_scale_button.setPopupMode(qt.QToolButton.ToolButtonPopupMode.InstantPopup)
+        y_scale_menu = qt.QMenu(self._y_scale_button)
+        self._y_scale_actions = {}
+        y_scale_group = qt.QActionGroup(self._y_scale_button)
+        y_scale_group.setExclusive(True)
+        for scale, text, icon in (
+            ("linear", "Linear Y-axis", "yscale-linear"),
+            ("log", "Logarithmic Y-axis", "yscale-log"),
+            ("asinh", "Arcsinh Y-axis", "yscale-asinh"),
+            ("signed_sqrt", "Square-root Y-axis", "math-amplitude"),
+        ):
+            action = qt.QAction(icons.getQIcon(icon), text, y_scale_group)
+            action.setCheckable(True)
+            action.triggered.connect(
+                lambda checked=False, selected_scale=scale: self.setYAxisScale(
+                    selected_scale
+                )
+            )
+            y_scale_group.addAction(action)
+            y_scale_menu.addAction(action)
+            self._y_scale_actions[scale] = action
+        self._y_scale_button.setMenu(y_scale_menu)
+        self._y_scale_actions["linear"].setChecked(True)
+        self._y_scale_button.setIcon(icons.getQIcon("yscale-linear"))
+        self._y_scale_button.setToolTip("Y-axis scale is linear")
+        toolbar.addWidget(self._y_scale_button)
+
+        observed_button = qt.QToolButton(toolbar)
+        observed_button.setIcon(icons.getQIcon("plot-toggle-points"))
+        observed_button.setToolTip("Observed data display")
+        observed_button.setPopupMode(
+            qt.QToolButton.ToolButtonPopupMode.InstantPopup
+        )
+        observed_menu = qt.QMenu(observed_button)
+        self._observed_lines = observed_menu.addAction("Lines")
+        self._observed_lines.setCheckable(True)
+        self._observed_lines.setChecked(True)
+        self._observed_lines.triggered.connect(self._updateObservedStyle)
+        self._observed_circles = observed_menu.addAction("Circles")
+        self._observed_circles.setCheckable(True)
+        self._observed_circles.triggered.connect(self._updateObservedStyle)
+        observed_button.setMenu(observed_menu)
+        toolbar.addWidget(observed_button)
+
         self._roi_action = RoiModeAction(self, self.roi, toolbar)
         roi_menu = qt.QMenu(toolbar)
         mode_group = qt.QActionGroup(roi_menu)
@@ -156,6 +231,38 @@ class IntegratedPatternPlotWidget(PlotWidget):
         toolbar.addSeparator()
         toolbar.addAction(SaveAction(self, toolbar))
         return toolbar
+
+    def _updateObservedStyle(self, *args):
+        curve = self.getCurve("INTEGRATE")
+        if curve is None:
+            return
+        curve.setLineStyle("-" if self._observed_lines.isChecked() else " ")
+        curve.setSymbol("o" if self._observed_circles.isChecked() else "")
+        curve.setSymbolSize(self._observed_marker_size)
+        curve.setVisible(
+            self._observed_lines.isChecked()
+            or self._observed_circles.isChecked()
+        )
+        self._styleObservedCircles()
+
+    def _styleObservedCircles(self):
+        if not self._observed_circles.isChecked():
+            return
+        curve = self.getCurve("INTEGRATE")
+        if curve is None:
+            return
+        self.replot()
+        renderer = curve._backendRenderer
+        backend = self.getBackend()
+        if renderer is None or not hasattr(renderer, "get_children"):
+            return
+        for artist in renderer.get_children():
+            if hasattr(artist, "set_markerfacecolor"):
+                artist.set_markerfacecolor("white")
+                artist.set_markeredgecolor(curve.getColor())
+                artist.set_markeredgewidth(self._observed_marker_edge_width)
+        if hasattr(backend, "fig"):
+            backend.fig.canvas.draw_idle()
 
     def _initStatusBar(self):
         converters = (
@@ -259,3 +366,47 @@ class IntegratedPatternPlotWidget(PlotWidget):
             title = f"ROI bounds ({self._active_rgb_channel})"
         self._roi_range.setTitle(title)
         self._roi_range.setRange(v_min, v_max)
+
+    def setYAxisScale(self, scale):
+        axis = self.getYAxis()
+        backend = self.getBackend()
+        if scale == "signed_sqrt":
+            if axis.getScale() != "linear":
+                axis.setScale("linear")
+            self._sqrt_mode = True
+            icon = "math-amplitude"
+            tooltip = "Y data is transformed with signed square root"
+        else:
+            self._sqrt_mode = False
+            if axis.getScale() == scale:
+                backend.setYAxisScale(scale)
+            else:
+                axis.setScale(scale)
+            icon = f"yscale-{scale}"
+            tooltip = f"Y-axis scale is {scale}"
+
+        for curve in self.getAllCurves():
+            y = self._curve_y_data.get(curve.getName())
+            if y is None:
+                continue
+            if self._sqrt_mode:
+                y = numpy.sign(y) * numpy.sqrt(numpy.abs(y))
+            curve.setData(
+                curve.getXData(copy=False),
+                y,
+                xerror=curve.getXErrorData(copy=False),
+                yerror=curve.getYErrorData(copy=False),
+                baseline=curve.getBaseline(copy=False),
+                copy=False,
+            )
+
+        label = self._data_y_label
+        if self._sqrt_mode:
+            label = f"asqrt({label})"
+        self.setGraphYLabel(label)
+
+        self._y_scale_actions[scale].setChecked(True)
+        self._y_scale_button.setIcon(icons.getQIcon(icon))
+        self._y_scale_button.setToolTip(tooltip)
+        self.resetZoom()
+        self._styleObservedCircles()
