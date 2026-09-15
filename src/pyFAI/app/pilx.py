@@ -124,14 +124,18 @@ def main(args=None):
     previous_sigint_handler = signal.signal(
         signal.SIGINT, lambda _signum, _frame: window.close()
     )
-    interrupt_timer = qt.QTimer(app)
+    # Like silx view (silx/app/view/main.py, b744569), wake Python periodically
+    # so it can handle SIGINT while Qt runs. Close the window rather than quit
+    # QApplication so its closeEvent shutdown hooks run.
+    interrupt_timer = qt.QTimer()
+    interrupt_timer.start(500)
     interrupt_timer.timeout.connect(lambda: None)
-    interrupt_timer.start(200)
     try:
         result = app.exec()
     finally:
         signal.signal(signal.SIGINT, previous_sigint_handler)
 
+    app.deleteLater()
     return result
 
 if __name__ == "__main__":
