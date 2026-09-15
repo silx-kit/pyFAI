@@ -80,7 +80,9 @@ def guess_file_type(filename, default="diffmap"):
 
 def main(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("filename")
+    parser.add_argument("filename", nargs="?", help="HDF5/NeXus file to open")
+    parser.add_argument("--json", dest="json_path", metavar="STATE.json",
+                        help="load a saved GUI state, including its HDF5/NeXus source")
     parser.add_argument("-d", "--data", dest="data_path",
                         help="inner path to the dataset with the Raw Data, by default '/entry_0000/measurement/images_0001'",
                         default=None, type=str)
@@ -94,6 +96,13 @@ def main(args=None):
     parser.add_argument("-v", "--verbose", help="increase verbosity",
                         action='count', default=0)
     options = parser.parse_args(args)
+    if options.json_path is None and options.filename is None:
+        parser.error("provide an HDF5 filename or --json STATE.json")
+    if options.json_path is not None:
+        if options.filename is not None:
+            parser.error("filename and --json cannot be used together")
+        if options.data_path is not None or options.nxprocess_path is not None or options.reader != "auto":
+            parser.error("--data, --nxprocess, and --reader apply only to an HDF5 filename")
     if options.verbose == 0:
         logging.basicConfig(level=logging.WARNING)
     elif options.verbose == 1:
@@ -101,26 +110,33 @@ def main(args=None):
     elif options.verbose >= 2:
         logging.basicConfig(level=logging.DEBUG)
 
-    reader = options.reader.lower()
-    if reader == "auto":
-        reader = guess_file_type(options.filename)
-    if reader == "bm29":
-        data_path = "/entry_0000/1_mesh/sources/images_0000"
-        nxprocess_path = "/entry_0000/1_mesh"
-    elif reader == "diffmap":
-        data_path = "/entry_0000/measurement/images_0001"
-        nxprocess_path = "/entry_0000/pyFAI"
+    if options.json_path is None:
+        reader = options.reader.lower()
+        if reader == "auto":
+            reader = guess_file_type(options.filename)
+        if reader == "bm29":
+            data_path = "/entry_0000/1_mesh/sources/images_0000"
+            nxprocess_path = "/entry_0000/1_mesh"
+        elif reader == "diffmap":
+            data_path = "/entry_0000/measurement/images_0001"
+            nxprocess_path = "/entry_0000/pyFAI"
 
-    nxprocess_path = options.nxprocess_path if options.nxprocess_path is not None else nxprocess_path
-    data_path = options.data_path if options.data_path is not None else data_path
+        nxprocess_path = options.nxprocess_path if options.nxprocess_path is not None else nxprocess_path
+        data_path = options.data_path if options.data_path is not None else data_path
 
     app = qt.QApplication([])
     silx.config._MPL_TIGHT_LAYOUT = True
     window = MainWindow()
-    window.initData(file_name=options.filename,
-                    dataset_path=data_path,
-                    nxprocess_path=nxprocess_path,
-                    )
+    if options.json_path is not None:
+        try:
+            window._gui_state.load(options.json_path)
+        except Exception as error:
+            parser.error(f"cannot load GUI state {options.json_path}: {error}")
+    else:
+        window.initData(file_name=options.filename,
+                        dataset_path=data_path,
+                        nxprocess_path=nxprocess_path,
+                        )
     window.show()
     return app.exec()
 
