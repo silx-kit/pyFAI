@@ -121,12 +121,15 @@ def main(args=None):
                     nxprocess_path=nxprocess_path,
                     )
     window.show()
-    previous_sigint_handler = signal.signal(
-        signal.SIGINT, lambda _signum, _frame: window.close()
-    )
+
+    def sigintHandler(*args):
+        """Handler for the SIGINT signal."""
+        # Close the window so its closeEvent shutdown hooks run.
+        window.close()
+
+    previous_sigint_handler = signal.signal(signal.SIGINT, sigintHandler)
     # Like silx view (silx/app/view/main.py, b744569), wake Python periodically
-    # so it can handle SIGINT while Qt runs. Close the window rather than quit
-    # QApplication so its closeEvent shutdown hooks run.
+    # so it can handle SIGINT while Qt runs.
     interrupt_timer = qt.QTimer()
     interrupt_timer.start(500)
     interrupt_timer.timeout.connect(lambda: None)
