@@ -128,7 +128,7 @@ def main(args=None):
         window.close()
 
     signal.signal(signal.SIGINT, sigintHandler)
-    
+
     # Like silx view (silx/app/view/main.py, b744569), wake Python periodically
     # so it can handle SIGINT while Qt runs.
     interrupt_timer = qt.QTimer()
