@@ -2,7 +2,7 @@ wheel
 meson-python
 ninja
 numpy >= 1.10
-cython >=0.29.31
+cython >=3
 fabio
 scipy
 matplotlib
@@ -18,3 +18,7 @@ myst-nb
 pydata-sphinx-theme
 importlib_resources; python_version < '3.9'
 sphinxcontrib.programoutput
+coverage
+pytest
+pytest-cov 
+pytest-xdist
