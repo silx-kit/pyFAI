@@ -62,7 +62,7 @@ requires = [
 gui = [ "PySide6", "qtawesome" ]
 opencl = [ "pyopencl" ]
 all = ["PySide6", "pyopencl", "hdf5plugin", "qtawesome"]
-test = [ "pytest", "pytest-xdist" ]
+test = [ "pytest", "pytest-xdist", "pytest-cov" ]
 
 [project.urls]
 homepage = 'http://www.silx.org'

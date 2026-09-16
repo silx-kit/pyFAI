@@ -25,22 +25,27 @@ python run_tests.py -o pyFAI.test.test_bug_regression
 # Run tests with coverage
 python run_tests.py --coverage
 
-# Same test-suite, but in parallel: ~4x faster than run_tests.py.
-# The suite is written with unittest, pytest just collects and distributes it.
+# Same test-suite, but in parallel: ~4x faster than run_tests.py. Same options,
+# same test names; -n sets the number of workers (default: one per CPU).
 # Requires the `test` extra: pip install pytest pytest-xdist
+python run_pytest.py
+python run_pytest.py -n 8
+python run_pytest.py -o pyFAI.test.test_crystallography
+python run_pytest.py pyFAI.test.test_crystallography.TestCrystallography.test_caglioti
+
+# Time and memory of every test, written to profile.json (forces a serial run)
+python run_pytest.py -m
+
+# Coverage: terminal summary + coverage.rst, the table of doc/source/coverage.rst
+# (needs pytest-cov; the modules of the test-suite are left out of the report)
+python run_pytest.py -c
+
+# Arguments after `--` reach pytest untouched
+python run_pytest.py -- -k distortion --durations=10
+
+# Straight to pytest, when the options of run_pytest.py are not needed
 python bootstrap.py -m pytest --pyargs pyFAI
-
-# Number of worker processes (the default is one per physical core)
 PYTEST_XDIST_AUTO_NUM_WORKERS=8 python bootstrap.py -m pytest --pyargs pyFAI
-
-# Profile the suite: time and memory of every test (see src/pyFAI/test/profiler.py)
-python bootstrap.py -m pytest --pyargs pyFAI -n 0 -p pyFAI.test.profiler \
-    --profile-out=profile.json --profile-top=30
-
-# Run a single module / class / method, serially (-n 0 switches the workers off)
-python bootstrap.py -m pytest --pyargs pyFAI.test.test_crystallography -n 0
-python bootstrap.py -m pytest -n 0 --pyargs \
-    pyFAI.test.test_crystallography::TestCrystallography::test_caglioti
 
 # Build with meson/ninja directly (after initial setup)
 # The build directory is named build_py3xx, one per Python version (build_py313,
@@ -54,6 +59,11 @@ pre-commit run ruff-check --all-files
 `bootstrap.py` is the standard dev entry point: it recompiles Cython when needed and sets
 `PYTHONPATH` so the local tree takes precedence. Never `import pyFAI` directly from the
 source tree without it.
+
+`run_pytest.py` is to pytest what `run_tests.py` is to unittest: it rebuilds the project,
+translates the dotted unittest test names into the `module::Class::method` form pytest
+expects, and turns the options into the environment variables the workers read. The two
+runners must stay green together.
 
 The pytest options live in `[tool.pytest.ini_options]` of `pyproject.toml`; the
 `-p no:logging` in there is required, as the logging plugin of pytest installs a second

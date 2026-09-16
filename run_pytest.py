@@ -58,7 +58,11 @@ import logging
 import os
 import platform
 import sys
+import tempfile
+import time
 from argparse import ArgumentParser
+from pathlib import Path
+from xml.etree import ElementTree
 
 logging.basicConfig()
 logger = logging.getLogger("run_pytest")
@@ -151,6 +155,78 @@ def parse_command_line(argv):
     return options
 
 
+def package_relative(filename, package_dir):
+    """Path of a source file, relative to the directory of the package
+
+    Coverage names the file `.../site-packages/pyFAI/utils/mathutil.py`, the
+    report expects `utils/mathutil.py`.
+
+    :param filename: file name as written in the XML report
+    :param package_dir: directory of the package
+    :return: the elided name, or None for a file outside of the package
+    """
+    path = os.path.abspath(filename)
+    if path.startswith(package_dir + os.sep):
+        return os.path.relpath(path, package_dir)
+    # coverage may report a path relative to another root: elide up to the
+    # last directory named after the project
+    _head, sep, tail = path.rpartition(os.sep + PROJECT_NAME + os.sep)
+    return tail if sep else None
+
+
+def is_test_module(name):
+    """The test-suite is not part of what the coverage of the library measures
+
+    Covers the `test` sub-packages, the `test_*.py` modules and the conftest of
+    the package.
+
+    :param name: file name, relative to the package directory
+    """
+    parts = Path(name).parts
+    return ("test" in parts
+            or parts[-1].startswith("test_")
+            or parts[-1] == "conftest.py")
+
+
+def coverage_rst(xml_file, package_dir, version):
+    """Build the coverage report which goes to `doc/source/coverage.rst`
+
+    One row per module of the package, the modules of the test-suite left out,
+    and the file names elided up to the package directory.
+
+    :param xml_file: XML report written by coverage.py
+    :param package_dir: directory of the package
+    :param version: version of the project, quoted in the header
+    :return: the report, as a string
+    """
+    title = f"Test coverage report for {PROJECT_NAME}"
+    res = [title,
+           "=" * len(title),
+           "",
+           f"Measured on *{PROJECT_NAME}* version {version}, {time.strftime('%d/%m/%Y')}",
+           "",
+           ".. csv-table:: Test suite coverage",
+           '   :header: "Name", "Stmts", "Exec", "Cover"',
+           "   :widths: 35, 8, 8, 8",
+           ""]
+    total_stmts = total_exec = 0
+    for class_ in ElementTree.parse(xml_file).iterfind(".//class"):
+        name = package_relative(class_.get("filename"), package_dir)
+        if name is None or is_test_module(name):
+            continue
+        hits = [int(line.get("hits")) for line in class_.iterfind("lines/line")]
+        stmts, executed = len(hits), sum(hits)
+        cover = 100.0 * executed / stmts if stmts else 0.0
+        res.append(f'   "{name}", "{stmts}", "{executed}", "{cover:.1f} %"')
+        total_stmts += stmts
+        total_exec += executed
+    cover = 100.0 * total_exec / total_stmts if total_stmts else 0.0
+    res += ["",
+            f'   "{PROJECT_NAME} total", "{total_stmts}", "{total_exec}", "{cover:.1f} %"',
+            ""]
+    return os.linesep.join(res)
+
+
 def setup_environment(options):
     """Pass the options down to the workers through the environment.
 
@@ -226,8 +302,12 @@ def to_pytest_id(name):
     raise ValueError(f"'{name}' does not start with an importable module")
 
 
-def build_pytest_args(options):
-    """Build the command line handed over to pytest"""
+def build_pytest_args(options, coverage_xml=None):
+    """Build the command line handed over to pytest
+
+    :param options: parsed command line
+    :param coverage_xml: file the XML coverage report is written to
+    """
     args = ["--pyargs"]
 
     if options.test_name:
@@ -259,8 +339,7 @@ def build_pytest_args(options):
                              "coverage.py alone does not see the xdist workers")
         args += [f"--cov={PROJECT_NAME}",
                  "--cov-report=term",
-                 "--cov-report=html:coverage_html_report",
-                 "--cov-report=xml:coverage.xml"]
+                 f"--cov-report=xml:{coverage_xml}"]
 
     if options.memprofile:
         args += ["-p", f"{PROJECT_NAME}.test.profiler", "--profile-out=profile.json"]
@@ -295,9 +374,23 @@ def main():
     logger.warning("Test %s %s from %s", PROJECT_NAME,
                    getattr(module, "version", ""), module.__path__[0])
 
-    args = build_pytest_args(options)
+    coverage_xml = None
+    if options.coverage:
+        handle, coverage_xml = tempfile.mkstemp(suffix=".xml", prefix="coverage_")
+        os.close(handle)
+
+    args = build_pytest_args(options, coverage_xml)
     logger.info("pytest %s", " ".join(args))
     exit_status = pytest.main(args)
+
+    if options.coverage:
+        report = coverage_rst(coverage_xml, module.__path__[0],
+                              getattr(module, "version", ""))
+        with open("coverage.rst", "w", encoding="utf-8") as rst:
+            rst.write(report)
+        os.remove(coverage_xml)
+        print(f"Coverage report written to coverage.rst: "
+              f"{report.splitlines()[-1].strip()}")
 
     if not exit_status:
         from pyFAI.test.utilstest import UtilsTest
