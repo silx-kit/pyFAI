@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2026"
+__date__ = "17/09/2026"
 
 import logging
 import unittest
@@ -542,6 +542,23 @@ class TestIrregularPixels(unittest.TestCase):
                                        excess1, self.PLACES, "far corner, slow")
                 self.assertAlmostEqual(far[1] - detector.shape[1] * detector.pixel2,
                                        excess2, self.PLACES, "far corner, fast")
+
+    def test_imxpad_full_grid_paths_agree_for_every_orientation(self):
+        """Implicit and explicit pixel grids must describe the same geometry."""
+        parameters = {"dist": 0.04, "poni1": 0.037, "poni2": 0.031,
+                      "rot1": 0.07, "rot2": 0.08, "rot3": 0.0}
+        for name in self.IRREGULAR:
+            for orientation in (1, 2, 3, 4):
+                with self.subTest(detector=name, orientation=orientation):
+                    detector = self.build_detector(name, orientation)
+                    geom = geometry.Geometry(detector=detector, wavelength=1e-10,
+                                             **parameters)
+                    beam, slow, fast = geom.calc_pos_zyx(corners=False)
+                    expected = numpy.arctan2(numpy.sqrt(slow ** 2 + fast ** 2), beam)
+                    actual = geom.center_array(unit="2th_rad")
+                    delta = abs(actual - expected).max()
+                    self.assertLess(delta, 1e-6,
+                                    f"orientation {orientation}: positions differ by {delta} rad")
 
     def test_corner_is_the_vertex_at_the_matching_index(self):
         """The pixel and the vertex both have to follow the mirrored axes, so
