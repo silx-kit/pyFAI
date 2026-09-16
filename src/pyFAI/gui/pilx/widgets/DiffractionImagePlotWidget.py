@@ -40,6 +40,7 @@ from silx.gui import qt
 from silx.gui.plot.actions import PlotAction
 from silx.gui.plot.backends.BackendMatplotlib import BackendMatplotlibQt
 from silx.gui.plot.items import ImageData
+from silx.gui.utils import blockSignals
 
 from ...utils.colorutils import DEFAULT_COLORMAP
 from ..models import ROI_COLOR, ImageIndices
@@ -76,9 +77,8 @@ class DetectorRoiModeAction(PlotAction):
         self._modeChanged(None)
 
     def _modeChanged(self, source):
-        old = self.blockSignals(True)
-        self.setChecked(self.plot.getInteractiveMode()["mode"] == "select")
-        self.blockSignals(old)
+        with blockSignals(self):
+            self.setChecked(self.plot.getInteractiveMode()["mode"] == "select")
 
     def _actionTriggered(self, checked=False):
         if checked:
