@@ -57,6 +57,7 @@ class ImageToolbar(qt.QToolBar):
         self.addAction(PanModeAction(plot, self))
         self.addAction(ZoomModeAction(plot, self))
         self._display_separator = self.addSeparator()
+        # MapPlotWidget replaces this action to scale individual RGB channels.
         self.colormap_action = ColormapAction(plot, self)
         self.addAction(self.colormap_action)
         self.addAction(KeepAspectRatioAction(plot, self))

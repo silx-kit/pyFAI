@@ -34,6 +34,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/09/2026"
 __status__ = "development"
 
+from silx.gui import qt
 from silx.gui.plot import PlotWidget
 from silx.gui.plot.actions import PlotAction
 
@@ -41,7 +42,19 @@ from ..HorizontalRangeROI import HorizontalRangeROI
 
 
 class RoiModeAction(PlotAction):
-    def __init__(self, plot: PlotWidget, roi: HorizontalRangeROI, parent=None):
+    def __init__(
+        self,
+        plot: PlotWidget,
+        roi: HorizontalRangeROI,
+        parent: qt.QObject | None = None,
+    ) -> None:
+        """Create the action for ``plot`` with an initial editable ``roi``.
+
+        :param plot: Plot containing the ROIs.
+        :param roi: Initially active range ROI.
+        :param parent: Optional Qt owner of the action.
+        :return: None.
+        """
         self.roi = roi
         self.rois = [roi]
         super().__init__(
@@ -58,7 +71,8 @@ class RoiModeAction(PlotAction):
         # Init the state
         self._modeChanged(None)
 
-    def _modeChanged(self, source):
+    def _modeChanged(self, source: object | None) -> None:
+        """Show the configured ROIs only while rectangle selection is active."""
         modeDict = self.plot.getInteractiveMode()
         active = modeDict["mode"] == "select-draw"
         old = self.blockSignals(True)
@@ -67,7 +81,15 @@ class RoiModeAction(PlotAction):
         for roi in self.rois:
             roi.setVisible(active)
 
-    def setRois(self, rois, active_roi):
+    def setRois(
+        self, rois: list[HorizontalRangeROI], active_roi: HorizontalRangeROI
+    ) -> None:
+        """Show ``rois`` in ROI mode, but make only ``active_roi`` editable.
+
+        :param rois: Ranges to display in the current ROI mode.
+        :param active_roi: Range controlled by drawing and editing.
+        :return: None.
+        """
         for roi in self.rois:
             roi.setVisible(False)
             roi.setEditable(False)
@@ -82,7 +104,8 @@ class RoiModeAction(PlotAction):
                 "select-draw", shape="rectangle", color=self.roi.getColor().name()
             )
 
-    def _actionTriggered(self, checked=False):
+    def _actionTriggered(self, checked: bool = False) -> None:
+        """Draw new ranges in the active ROI color while the action is on."""
         plot = self.plot
         if plot is not None:
             if checked:

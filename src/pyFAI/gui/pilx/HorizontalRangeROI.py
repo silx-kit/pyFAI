@@ -45,8 +45,15 @@ class HorizontalRangeROI(SilxHorizontalRangeROI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Handle drags commit on release; programmatic setRange commits below.
         self.sigEditingFinished.connect(self.sigRangeCommitted)
 
-    def setRange(self, vmin: float, vmax: float):
+    def setRange(self, vmin: float, vmax: float) -> None:
+        """Set both bounds and announce a committed programmatic change.
+
+        :param vmin: Lower 2θ bound.
+        :param vmax: Upper 2θ bound.
+        :return: None.
+        """
         super().setRange(vmin, vmax)
         self.sigRangeCommitted.emit()

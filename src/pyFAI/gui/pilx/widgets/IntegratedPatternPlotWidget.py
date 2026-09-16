@@ -203,17 +203,33 @@ class IntegratedPatternPlotWidget(PlotWidget):
         v_min, v_max = signal_data["xdata"]
         if v_max < v_min:
             v_min, v_max = v_max, v_min
+        # A drawn rectangle edits the selected RGB channel in RGB mode.
         self.activeRoi().setRange(v_min, v_max)
 
-    def activeRoi(self):
+    def activeRoi(self) -> HorizontalRangeROI:
+        """Return the single-channel ROI or the selected RGB channel ROI."""
         if self._roi_mode == "rgb":
             return self.rgb_rois[self._active_rgb_channel]
         return self.roi
 
-    def setActiveRoiRange(self, v_min, v_max):
+    def setActiveRoiRange(self, v_min: float, v_max: float) -> None:
+        """Set the selected ROI's 2θ bounds.
+
+        :param v_min: Lower 2θ bound.
+        :param v_max: Upper 2θ bound.
+        :return: None.
+        """
         self.activeRoi().setRange(v_min, v_max)
 
-    def setRoiMode(self, mode):
+    def setRoiMode(self, mode: str) -> None:
+        """Switch between single-channel and RGB ROI editing.
+
+        On the first switch to RGB, uninitialized channel ROIs inherit the
+        single-channel bounds. Only the selected channel is editable.
+
+        :param mode: ``"single"`` or ``"rgb"``.
+        :return: None.
+        """
         if mode not in {"single", "rgb"}:
             raise ValueError(f"Unsupported ROI mode: {mode}")
         if mode == "rgb" and not self._rgb_rois_initialized:
@@ -235,7 +251,12 @@ class IntegratedPatternPlotWidget(PlotWidget):
         self.updateRoiRangeWidget()
         self.roiModeChanged.emit(mode)
 
-    def setActiveRgbChannel(self, channel):
+    def setActiveRgbChannel(self, channel: str) -> None:
+        """Choose the editable RGB ROI and its channel-scaling control.
+
+        :param channel: One of ``"R"``, ``"G"``, or ``"B"``.
+        :return: None.
+        """
         if channel not in self.rgb_rois:
             raise ValueError(f"Unsupported RGB channel: {channel}")
         self._active_rgb_channel = channel
@@ -248,6 +269,8 @@ class IntegratedPatternPlotWidget(PlotWidget):
 
     def updateRoiRangeWidget(self):
         roi = self.activeRoi()
+        # Ignore updates from hidden/inactive ROIs so their bounds do not
+        # replace the values shown for the selected channel.
         if self.sender() is not None and self.sender() is not roi:
             return
         v_min, v_max = roi.getRange()

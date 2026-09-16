@@ -41,7 +41,15 @@ from silx.gui.widgets.FloatEdit import FloatEdit
 class RoiRangeWidget(qt.QWidget):
     updated = qt.Signal(float, float)
 
-    def __init__(self, parent=None, title="ROI bounds"):
+    def __init__(
+        self, parent: qt.QWidget | None = None, title: str = "ROI bounds"
+    ) -> None:
+        """Create editable ROI bounds with a mode-dependent ``title``.
+
+        :param parent: Optional Qt parent widget.
+        :param title: Label shown beside the bounds fields.
+        :return: None.
+        """
         super().__init__(parent)
         layout = qt.QHBoxLayout()
 
@@ -76,7 +84,12 @@ class RoiRangeWidget(qt.QWidget):
         self._min_edit.setValue(new_min)
         self._max_edit.setValue(new_max)
 
-    def setTitle(self, title: str):
+    def setTitle(self, title: str) -> None:
+        """Update the bounds label for the selected ROI or RGB channel.
+
+        :param title: Label to display.
+        :return: None.
+        """
         self._title_label.setText(title)
 
     def _onMinEdition(self):

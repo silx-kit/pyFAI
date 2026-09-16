@@ -40,6 +40,7 @@ import logging
 import os.path
 import posixpath
 from string import digits
+from typing import Any
 
 import h5py
 import numpy
@@ -156,6 +157,17 @@ class MainWindow(qt.QMainWindow):
         ylabel: str = "Y",
         closable: bool = True,
     ) -> MapPlotWidget:
+        """Add a map tab and connect it to the shared point-selection actions.
+
+        :param title: Tab label.
+        :param image: Optional map data to display immediately.
+        :param x: Optional map X-axis values.
+        :param y: Optional map Y-axis values.
+        :param xlabel: X-axis label.
+        :param ylabel: Y-axis label.
+        :param closable: Whether the user can close this tab.
+        :return: The new map plot widget.
+        """
         map_plot_widget = MapPlotWidget(self._map_tab_widget)
         map_plot_widget.setDefaultColormap(Colormap("viridis"))
         map_plot_widget.clearPointsSignal.connect(self.clearPoints)
@@ -206,7 +218,12 @@ class MainWindow(qt.QMainWindow):
 
         return map_plot_widget
 
-    def removeMapTab(self, index: int):
+    def removeMapTab(self, index: int) -> None:
+        """Close the tab at ``index``, except for the permanent ROI map tab.
+
+        :param index: Tab position to remove.
+        :return: None.
+        """
         if index == 0:
             return
         map_plot_widget = self._map_tab_widget.widget(index)
@@ -216,13 +233,24 @@ class MainWindow(qt.QMainWindow):
             self._rgb_map_plot_widget = None
         map_plot_widget.deleteLater()
 
-    def setMapMarker(self, indices: ImageIndices, **kwargs):
+    def setMapMarker(self, indices: ImageIndices, **kwargs: Any) -> None:
+        """Place a point marker at ``indices`` in every populated map tab.
+
+        :param indices: Map row and column of the point.
+        :param kwargs: Marker style and legend passed to silx ``addMarker``.
+        :return: None.
+        """
         for map_plot_widget in self._map_plot_widgets:
             coordinates = map_plot_widget.getMapPointCoordinates(indices)
             if coordinates is not None:
                 map_plot_widget.addMarker(*coordinates, **kwargs)
 
-    def removeMapMarker(self, legend: str):
+    def removeMapMarker(self, legend: str) -> None:
+        """Remove a named point marker from every map tab.
+
+        :param legend: Marker legend to remove.
+        :return: None.
+        """
         for map_plot_widget in self._map_plot_widgets:
             map_plot_widget.removeMarker(legend=legend)
 
@@ -531,7 +559,12 @@ class MainWindow(qt.QMainWindow):
 
         self.displayAverageMap(v_min, v_max)
 
-    def roiModeChanged(self, mode):
+    def roiModeChanged(self, mode: str) -> None:
+        """Show the map tab for the selected single-channel or RGB ROI mode.
+
+        :param mode: ``"single"`` or ``"rgb"``.
+        :return: None.
+        """
         if mode == "rgb":
             self.displayRgbMap()
             if self._rgb_map_plot_widget is not None:
@@ -540,12 +573,18 @@ class MainWindow(qt.QMainWindow):
             self._map_tab_widget.setCurrentWidget(self._map_plot_widget)
         self.drawContoursOnImage()
 
-    def setRgbMapChannel(self, channel):
+    def setRgbMapChannel(self, channel: str) -> None:
+        """Select which RGB channel the map scaling control edits.
+
+        :param channel: One of ``"R"``, ``"G"``, or ``"B"``.
+        :return: None.
+        """
         self._rgb_map_channel = channel
         if self._rgb_map_plot_widget is not None:
             self._rgb_map_plot_widget.setRgbChannel(channel)
 
     def drawContoursOnImage(self):
+        """Draw only the selected ROI's 2θ contours in its own color."""
         roi = self._integrated_plot_widget.activeRoi()
         v_min, v_max = roi.getRange()
         if v_min is None or v_max is None:
@@ -575,7 +614,14 @@ class MainWindow(qt.QMainWindow):
                 color=color,
             )
 
-    def displayRgbMap(self):
+    def displayRgbMap(self) -> None:
+        """Average each RGB 2θ range and update the composite map tab.
+
+        The tab is created immediately; data is added once a file and three
+        valid ROI ranges are available.
+
+        :return: None.
+        """
         title = "2θ RGB"
         created = self._rgb_map_plot_widget is None
         if created:

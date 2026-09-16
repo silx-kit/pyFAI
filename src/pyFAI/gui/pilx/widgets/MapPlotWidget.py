@@ -63,17 +63,26 @@ _RGB_LEGEND = "RGB_MAP"
 
 
 class MapColormapDialog(ColormapDialog):
-    def __init__(self, parent=None):
+    """Scale an RGB channel without allowing its hue to change."""
+
+    def __init__(self, parent: qt.QWidget | None = None) -> None:
+        """Create the dialog with an optional Qt parent."""
         self._colormap_name_locked = False
         super().__init__(parent)
 
-    def setColormapNameLocked(self, locked):
+    def setColormapNameLocked(self, locked: bool) -> None:
+        """Disable colormap-name editing when scaling a fixed RGB channel.
+
+        :param locked: Whether to keep the channel's red, green, or blue hue.
+        :return: None.
+        """
         self._colormap_name_locked = bool(locked)
         colormap = self.getColormap()
         editable = colormap is not None and colormap.isEditable()
         self._comboBoxColormap.setEnabled(editable and not locked)
 
-    def _applyColormap(self):
+    def _applyColormap(self) -> None:
+        """Restore the name lock after silx updates the dialog controls."""
         super()._applyColormap()
         if self._colormap_name_locked:
             self._comboBoxColormap.setEnabled(False)
@@ -83,12 +92,14 @@ class MapColormapAction(ColormapAction):
     """Use the standard colormap dialog to scale the active RGB channel."""
 
     @staticmethod
-    def _createDialog(parent):
+    def _createDialog(parent: qt.QWidget | None) -> MapColormapDialog:
+        """Create a non-modal dialog for map-channel scaling."""
         dialog = MapColormapDialog(parent=parent)
         dialog.setModal(False)
         return dialog
 
-    def _updateColormap(self):
+    def _updateColormap(self) -> None:
+        """Show ordinary map colors or the active RGB channel's scaling."""
         if self._dialog is None:
             return
         plot = self.plot
@@ -165,6 +176,7 @@ class MapPlotWidget(ImagePlotWidget):
         if index is None:
             return
         if self._rgb_raw_data is not None:
+            # Report the three source intensities, not their display-scaled RGB.
             row, col = numpy.unravel_index(index, self._map_shape)
             return tuple(self._rgb_raw_data[row, col])
         value_data = self._scatter_item.getValueData(copy=False)
@@ -188,7 +200,11 @@ class MapPlotWidget(ImagePlotWidget):
     def getMapPointCoordinates(
         self, indices: ImageIndices
     ) -> tuple[float, float] | None:
-        """Return this plot's coordinates for a map point."""
+        """Return plot coordinates of a map point, if this tab contains it.
+
+        :param indices: Map row and column.
+        :return: X/Y coordinates, or None if the map is absent or out of bounds.
+        """
         if self._map_shape is None:
             return None
         rows, cols = self._map_shape
@@ -288,8 +304,19 @@ class MapPlotWidget(ImagePlotWidget):
         y: numpy.ndarray | None = None,
         xlabel: str = "X",
         ylabel: str = "Y",
-    ):
-        """Display an RGB image while retaining the scatter grid for picking."""
+    ) -> None:
+        """Display three ROI maps as RGB while retaining point picking.
+
+        A transparent scatter keeps the map grid available for point selection;
+        each channel's raw values have independent display scaling.
+
+        :param image: Source maps with shape ``(rows, columns, 3)``.
+        :param x: Optional map X-axis values.
+        :param y: Optional map Y-axis values.
+        :param xlabel: X-axis label.
+        :param ylabel: Y-axis label.
+        :return: None.
+        """
         if image.ndim != 3 or image.shape[2] != 3:
             raise ValueError("RGB source maps must have shape (rows, columns, 3)")
         rows, cols = image.shape[:2]
