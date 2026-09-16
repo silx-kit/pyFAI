@@ -2,21 +2,24 @@
 import os
 import sys
 import logging
-import bootstrap
 from sphinx.cmd.build import main
+from bootstrap import PROJECT_DIR, PROJECT_NAME, build_project
+
 logger = logging.getLogger(__name__)
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_NAME = bootstrap.get_project_name(PROJECT_DIR)
 logger.info("Project name: %s", PROJECT_NAME)
-LIBPATH = bootstrap.build_project(PROJECT_NAME, PROJECT_DIR)
+LIBPATH = build_project(PROJECT_NAME, PROJECT_DIR)
+
 if __name__ == '__main__':
     sys.path.insert(0, LIBPATH)
-    dest_dir = os.path.join(PROJECT_DIR, "build", "sphinx")
-    if not os.path.isdir(dest_dir):
-        os.makedirs(dest_dir)
+    dirname = LIBPATH
+    while not os.path.split(dirname)[-1].startswith("build"):
+        dirname = os.path.split(dirname)[0]
+    print(dirname)
+    dest_dir = os.path.join(dirname, "sphinx")
+    os.makedirs(dest_dir, exist_ok=True)
 
     argv = ["-b", "html",
             os.path.join(PROJECT_DIR,"doc","source"),
             dest_dir ]
-    print(argv)
+    print("sphinx " + " ".join(argv))
     sys.exit(main(argv))
