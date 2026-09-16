@@ -138,7 +138,7 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
         self.setAxesMargins(left=0.10, top=0.16, right=0.03, bottom=0.10)
         self._roi_mode_action = DetectorRoiModeAction(self, self._toolbar)
         self._toolbar.insertAction(
-            self._toolbar.display_separator, self._roi_mode_action
+            self._toolbar._display_separator, self._roi_mode_action
         )
         self._roi_mode_action.trigger()
         image_item = self.addImage([[]], legend=_LEGEND, colormap=DEFAULT_COLORMAP)
