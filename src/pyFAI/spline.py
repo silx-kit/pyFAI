@@ -33,7 +33,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "25/08/2026"
+__date__ = "17/09/2026"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import logging
@@ -342,6 +342,8 @@ class Spline:
             elif abs(x[:, 1:] - x[:, :-1] - numpy.zeros((x.shape[0], x.shape[1] - 1))).max() < 1e-6:
                 x = x[:, 0]
                 y = y[0]
+        grid_x_unordered = None
+        grid_y_unordered = None
         if list_of_points and x.ndim == 1 and len(x) == len(y):
             size = len(x)
             if size > 1:
@@ -353,6 +355,17 @@ class Spline:
                 y_unordered = numpy.zeros(size, dtype=numpy.int32)
                 x_unordered[x_order] = numpy.arange(size)
                 y_unordered[y_order] = numpy.arange(size)
+        elif x.ndim == 1 and y.ndim == 1:
+            if x.size > 1 and numpy.any(x[1:] < x[:-1]):
+                x_order = x.argsort()
+                x = x[x_order]
+                grid_x_unordered = numpy.empty_like(x_order)
+                grid_x_unordered[x_order] = numpy.arange(x.size)
+            if y.size > 1 and numpy.any(y[1:] < y[:-1]):
+                y_order = y.argsort()
+                y = y[y_order]
+                grid_y_unordered = numpy.empty_like(y_order)
+                grid_y_unordered[y_order] = numpy.arange(y.size)
         x_disp_array = fitpack.bisplev(x, y,
                                        [self.xSplineKnotsX,
                                         self.xSplineKnotsY,
@@ -366,7 +379,12 @@ class Spline:
             else:
                 return numpy.array([x_disp_array])
         else:
-            return x_disp_array.T
+            x_disp_array = x_disp_array.T
+            if grid_y_unordered is not None:
+                x_disp_array = x_disp_array[grid_y_unordered]
+            if grid_x_unordered is not None:
+                x_disp_array = x_disp_array[:, grid_x_unordered]
+            return x_disp_array
 
     def splineFuncY(self, x, y, list_of_points=False):
         """
@@ -389,6 +407,8 @@ class Spline:
                 x = x[:, 0]
                 y = y[0]
 
+        grid_x_unordered = None
+        grid_y_unordered = None
         if list_of_points and x.ndim == 1 and len(x) == len(y):
             size = len(x)
             if size > 1:
@@ -400,6 +420,17 @@ class Spline:
                 y_unordered = numpy.zeros(size, dtype=numpy.int32)
                 x_unordered[x_order] = numpy.arange(size)
                 y_unordered[y_order] = numpy.arange(size)
+        elif x.ndim == 1 and y.ndim == 1:
+            if x.size > 1 and numpy.any(x[1:] < x[:-1]):
+                x_order = x.argsort()
+                x = x[x_order]
+                grid_x_unordered = numpy.empty_like(x_order)
+                grid_x_unordered[x_order] = numpy.arange(x.size)
+            if y.size > 1 and numpy.any(y[1:] < y[:-1]):
+                y_order = y.argsort()
+                y = y[y_order]
+                grid_y_unordered = numpy.empty_like(y_order)
+                grid_y_unordered[y_order] = numpy.arange(y.size)
 
         y_disp_array = fitpack.bisplev(x, y,
                                        [self.ySplineKnotsX,
@@ -414,7 +445,12 @@ class Spline:
             else:
                 return numpy.array([y_disp_array])
         else:
-            return y_disp_array.T
+            y_disp_array = y_disp_array.T
+            if grid_y_unordered is not None:
+                y_disp_array = y_disp_array[grid_y_unordered]
+            if grid_x_unordered is not None:
+                y_disp_array = y_disp_array[:, grid_x_unordered]
+            return y_disp_array
 
     def array2spline(self, smoothing=1000, timing=False):
         """
