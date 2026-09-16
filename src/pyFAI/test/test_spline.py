@@ -31,12 +31,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2026"
+__date__ = "17/09/2026"
 
 import logging
 import unittest
 
+import numpy
+
 import pyFAI.spline
+from pyFAI.detectors import detector_factory
 
 from . import utilstest
 
@@ -44,6 +47,45 @@ logger = logging.getLogger(__name__)
 
 
 class TestSpline(utilstest.ParametricTestCase):
+
+    def test_grid_axis_order(self):
+        """Spline grids preserve the order of independently sorted axes."""
+        spline_file = utilstest.UtilsTest.getimage("frelon.spline")
+        spline = pyFAI.spline.Spline(spline_file)
+        x = numpy.array([100.5, 400.5, 800.5])
+        y = numpy.array([200.5, 500.5, 900.5, 1200.5])
+
+        for method_name in ("splineFuncX", "splineFuncY"):
+            method = getattr(spline, method_name)
+            reference = method(x, y)
+            for reverse_x, reverse_y in ((True, False), (False, True), (True, True)):
+                with self.subTest(method=method_name, reverse_x=reverse_x, reverse_y=reverse_y):
+                    actual = method(x[::-1] if reverse_x else x,
+                                    y[::-1] if reverse_y else y)
+                    expected = reference[::-1] if reverse_y else reference
+                    expected = expected[:, ::-1] if reverse_x else expected
+                    numpy.testing.assert_array_equal(actual, expected)
+
+    def test_frelon_orientation(self):
+        """FReLoN orientations only mirror the spline-corrected pixel grid."""
+        spline_file = utilstest.UtilsTest.getimage("frelon.spline")
+
+        def build(orientation):
+            return detector_factory("Frelon", {"splineFile": spline_file,
+                                                "orientation": orientation})
+
+        reference1, reference2, _ = build(3).calc_cartesian_positions()
+        for orientation, (flip1, flip2) in ((1, (True, True)),
+                                             (2, (True, False)),
+                                             (4, (False, True))):
+            with self.subTest(orientation=orientation):
+                position1, position2, _ = build(orientation).calc_cartesian_positions()
+                expected1 = reference1[::-1] if flip1 else reference1
+                expected1 = expected1[:, ::-1] if flip2 else expected1
+                expected2 = reference2[::-1] if flip1 else reference2
+                expected2 = expected2[:, ::-1] if flip2 else expected2
+                numpy.testing.assert_array_equal(position1, expected1)
+                numpy.testing.assert_array_equal(position2, expected2)
 
     def test_tilt_coverage(self):
         """
