@@ -32,9 +32,10 @@ __author__ = "Edgar Gutiérrez Fernández"
 __contact__ = "edgar.gutierrez-fernandez@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "16/09/2026"
 
 import logging
+import re
 import unittest
 
 import numpy
@@ -564,10 +565,34 @@ class TestFiberIntegrator(unittest.TestCase):
             diff = numpy.abs(intensity - result_ref.intensity)
             self.assertGreater(diff.max(), 6e-2)
 
+
+class _EquivalenceNumpyNumexpr:
+    """Check that the numexpr and the numpy formula of one fiber unit agree.
+
+    This is a mixin, not a TestCase: one concrete class is derived from it per
+    fiber unit, see EQUIVALENCE_TESTS below. They are separate classes so that
+    `pytest -n auto --dist loadscope` spreads the units over the workers: a
+    single test covering all of them is a block no worker can split.
+    """
+
+    unit_name = None
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.fi = FiberIntegrator(dist=0.1, poni1=0.02, poni2=0.02, wavelength=1e-10,
+                                 detector=detector_factory("Pilatus100k"))
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.fi = None
+
     def test_equivalence_numpy_numexpr(self):
-        for unit_name in ANY_FIBER_UNITS:
-            for so in range(1,9):
-                fiberunit = parse_fiber_unit(unit=unit_name, sample_orientation=so, incident_angle=0.2, tilt_angle=0.5)
+        for so in range(1, 9):
+            with self.subTest(sample_orientation=so):
+                fiberunit = parse_fiber_unit(unit=self.unit_name, sample_orientation=so,
+                                             incident_angle=0.2, tilt_angle=0.5)
                 self.fi.reset()
                 array_numexpr = self.fi.array_from_unit(unit=fiberunit)
 
@@ -579,12 +604,28 @@ class TestFiberIntegrator(unittest.TestCase):
                 self.fi.reset()
                 array_numpy = self.fi.array_from_unit(unit=fiberunit)
 
-                self.assertTrue(numpy.allclose(array_numexpr, array_numpy))
+                self.assertTrue(numpy.allclose(array_numexpr, array_numpy),
+                                f"numexpr and numpy agree for {self.unit_name}, "
+                                f"sample_orientation={so}")
+
+
+EQUIVALENCE_TESTS = {}
+"""One TestCase class per fiber unit, named TestEquivalence_<unit>"""
+
+for _unit_name in ANY_FIBER_UNITS:
+    _cls_name = "TestEquivalence_" + re.sub(r"\W", "_", _unit_name)
+    EQUIVALENCE_TESTS[_cls_name] = type(_cls_name,
+                                        (_EquivalenceNumpyNumexpr, unittest.TestCase),
+                                        {"unit_name": _unit_name})
+globals().update(EQUIVALENCE_TESTS)
+
 
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestFiberIntegrator))
+    for _case in EQUIVALENCE_TESTS.values():
+        testsuite.addTest(loader(_case))
     return testsuite
 
 
