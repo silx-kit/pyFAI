@@ -32,7 +32,7 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2026"
+__date__ = "16/09/2026"
 __status__ = "development"
 
 import numpy
@@ -50,7 +50,27 @@ _LEGEND = "IMAGE"
 
 
 class DetectorMatplotlibBackend(BackendMatplotlibQt):
-    def setLimits(self, xmin, xmax, ymin, ymax, y2min=None, y2max=None):
+    """Avoid a second aspect-ratio adjustment for the detector image."""
+
+    def setLimits(
+        self,
+        xmin: float,
+        xmax: float,
+        ymin: float,
+        ymax: float,
+        y2min: float | None = None,
+        y2max: float | None = None,
+    ) -> None:
+        """Apply axis limits without repeating PlotWidget's aspect adjustment.
+
+        :param xmin: Lower X-axis limit.
+        :param xmax: Upper X-axis limit.
+        :param ymin: Lower left Y-axis limit.
+        :param ymax: Upper left Y-axis limit.
+        :param y2min: Optional lower right Y-axis limit.
+        :param y2max: Optional upper right Y-axis limit.
+        :return: None.
+        """
         # PlotWidget has already enforced aspect using the actual plot area.
         # The silx backend repeats it using the full canvas, which can expand
         # the limits on every pan event when the two rectangles differ.
@@ -63,7 +83,17 @@ class DetectorMatplotlibBackend(BackendMatplotlibQt):
 
 
 class DetectorRoiModeAction(PlotAction):
-    def __init__(self, plot, parent=None):
+    """Switch the detector plot into its 2θ ROI selection mode."""
+
+    def __init__(
+        self, plot: ImagePlotWidget, parent: qt.QObject | None = None
+    ) -> None:
+        """Create the detector ROI selection action.
+
+        :param plot: Detector image plot controlled by the action.
+        :param parent: Optional Qt owner of the action.
+        :return: None.
+        """
         super().__init__(
             plot,
             icon="shape-circle",
@@ -76,11 +106,21 @@ class DetectorRoiModeAction(PlotAction):
         self.plot.sigInteractiveModeChanged.connect(self._modeChanged)
         self._modeChanged(None)
 
-    def _modeChanged(self, source):
+    def _modeChanged(self, source: object | None) -> None:
+        """Match the action check state to the plot's interactive mode.
+
+        :param source: Origin of the mode change, unused here.
+        :return: None.
+        """
         with blockSignals(self):
             self.setChecked(self.plot.getInteractiveMode()["mode"] == "select")
 
-    def _actionTriggered(self, checked=False):
+    def _actionTriggered(self, checked: bool = False) -> None:
+        """Enter detector selection mode when checked, or restore the default.
+
+        :param checked: Whether the action was activated.
+        :return: None.
+        """
         if checked:
             self.plot.setInteractiveMode("select", source=self)
         else:
@@ -88,8 +128,10 @@ class DetectorRoiModeAction(PlotAction):
 
 
 class DiffractionImagePlotWidget(ImagePlotWidget):
+    """Display a detector image and its selected 2θ ROI."""
 
-    def __init__(self, parent=None, backend=None):
+    def __init__(self, parent: qt.QWidget | None = None, backend=None) -> None:
+        """Create the plot with an optional parent and silx backend."""
         if backend is None or backend in ("matplotlib", "mpl"):
             backend = DetectorMatplotlibBackend
         super().__init__(parent, backend)
@@ -106,7 +148,18 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
         self._first_plot = True
         self._reset_zoom_when_shown = False
 
-    def emitMouseClickSignal(self, signal_data):
+    def emitMouseClickSignal(self, signal_data: dict) -> None:
+        """Use only left clicks in ROI mode to select a detector 2θ value.
+
+        ``ImagePlotWidget`` emits ``plotClicked`` for every mouse click, and
+        ``MainWindow`` responds by moving the histogram ROI to the 2θ value
+        at that detector pixel. Without this filter, a right-click to open the
+        context menu or a click with a navigation tool active could also move
+        the ROI and refresh its map. Forward only clicks meant to select an ROI.
+
+        :param signal_data: silx plot event mapping.
+        :return: None.
+        """
         if (
             self.getInteractiveMode()["mode"] != "select"
             or signal_data.get("button") != "left"
@@ -124,7 +177,8 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
 
     def setImageData(self,
                      image: numpy.ndarray,
-                     title: str=""):
+                     title: str="") -> None:
+        """Display ``image`` with ``title`` and reset zoom on its first display."""
         self._image_item.setData(image)
         if self._first_plot:
             if self.isVisible():
@@ -137,13 +191,19 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
         if hasattr(backend, "ax"):
             backend.ax.title.set_fontsize(11)
 
-    def showEvent(self, event):
+    def showEvent(self, event: qt.QShowEvent) -> None:
+        """Finish the deferred first-image zoom when the plot becomes visible.
+
+        :param event: Qt show event passed to the base widget.
+        :return: None.
+        """
         super().showEvent(event)
         if self._reset_zoom_when_shown:
             self._reset_zoom_when_shown = False
             qt.QTimer.singleShot(0, self.resetZoom)
 
     def getImageIndices(self, x_data: float, y_data: float) -> ImageIndices | None:
+        """Return the detector pixel at data coordinates, or None if outside."""
         tmp = self.dataToPixel(x_data, y_data)
         if tmp:
             pixel_x, pixel_y = tmp
@@ -158,7 +218,8 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
 
     def addContour(
         self, contour: numpy.ndarray, legend: str, linestyle: str | None=None
-    ):
+    ) -> None:
+        """Draw a detector-space ``contour`` with the given legend and style."""
         self.addCurve(
             contour[:, 1],
             contour[:, 0],
