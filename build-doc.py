@@ -22,4 +22,7 @@ if __name__ == '__main__':
             os.path.join(PROJECT_DIR,"doc","source"),
             dest_dir ]
     print("sphinx " + " ".join(argv))
-    sys.exit(main(argv))
+    rc = main(argv)
+    if not rc:
+        print(f"chromium file://{dest_dir}/index.html")
+    sys.exit(rc)
