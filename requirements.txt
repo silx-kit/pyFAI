@@ -16,5 +16,4 @@ qtawesome
 hdf5plugin
 myst-nb
 pydata-sphinx-theme
-importlib_resources; python_version < '3.9'
 sphinxcontrib.programoutput

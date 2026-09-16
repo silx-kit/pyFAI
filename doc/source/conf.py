@@ -314,8 +314,10 @@ texinfo_documents = [
 
 ## myst configuration
 myst_enable_extensions = [
+    "amsmath",          # $$...$$ and LaTeX environments like \begin{align}
     "colon_fence",      # ::: for admonitions / directives
     "deflist",          # Definition lists
+    "dollarmath",       # $...$ and $$...$$ maths, as in Jupyter
     "html_admonition",  # Use HTML admonition syntax
     "html_image",       # Inline HTML <img> tags
     #"linkify",          # Auto‑link URLs
@@ -323,9 +325,13 @@ myst_enable_extensions = [
     "substitution",    # .. |sub| replace syntax
     "tasklist",        # GitHub‑style task lists
 ]
-# Enable MyST to parse inline LaTeX, if you need it
-myst_update_mathjax = False   # keep default MathJax handling
+# Let MyST configure MathJax so that only the maths it produced gets typeset
+myst_update_mathjax = True
 nb_execution_mode = "off"
+# text/markdown outputs (IPython.display.Markdown) are parsed as strict CommonMark
+# by default, which knows neither tables nor $maths$: use the MyST parser configured
+# above instead.
+nb_render_markdown_format = "myst"
 
 ## Nbsphix configuration:
 
