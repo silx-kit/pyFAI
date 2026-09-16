@@ -75,8 +75,21 @@ class MainWindow(qt.QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
-        self._file_name: str | None = None
+        self._init_state()
+        self._init_ui()
+        self._connect_signals()
 
+    def _init_state(self) -> None:
+        """Initialize the window state before creating its widgets."""
+        self._file_name: str | None = None
+        self._unfixed_indices = None
+        self._fixed_indices = set()
+        self._background_point = None
+        self.worker_config = None
+        self._map_ptr = None  # Map of input-frame indices
+
+    def _init_ui(self) -> None:
+        """Create and arrange the viewer widgets."""
         self.setWindowTitle("PyFAI-diffmap viewer")
 
         self._image_plot_widget = DiffractionImagePlotWidget(self)
@@ -84,22 +97,13 @@ class MainWindow(qt.QMainWindow):
             Colormap("gray", normalization="log")
         )
         self._image_plot_widget.setKeepDataAspectRatio(True)
-        self._image_plot_widget.plotClicked.connect(self.onMouseClickOnImage)
 
         self._map_plot_widget = MapPlotWidget(self)
-        self._map_plot_widget.clearPointsSignal.connect(self.clearPoints)
         self._map_plot_widget.setDefaultColormap(
             Colormap("viridis", normalization="log")
         )
-        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
-        self._map_plot_widget.pinContextEntrySelected.connect(self.fixMapPoint)
-        self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
-
-        self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
 
         self._integrated_plot_widget = IntegratedPatternPlotWidget(self)
-        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.onRoiEdition)
-        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.drawContoursOnImage)
 
         self._central_widget = qt.QWidget()
         right_splitter = qt.QSplitter(qt.Qt.Orientation.Vertical, self)
@@ -125,13 +129,16 @@ class MainWindow(qt.QMainWindow):
         self._central_widget.setLayout(layout)
         self.setCentralWidget(self._central_widget)
 
-        self._unfixed_indices = None
-        self._fixed_indices = set()
-        self._background_point = None
-        self.worker_config = None
-
-        # declaration of instance variables
-        self._map_ptr = None # This is the map of the indices of input frame
+    def _connect_signals(self) -> None:
+        """Connect plot interactions to the window actions."""
+        self._image_plot_widget.plotClicked.connect(self.onMouseClickOnImage)
+        self._map_plot_widget.clearPointsSignal.connect(self.clearPoints)
+        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
+        self._map_plot_widget.pinContextEntrySelected.connect(self.fixMapPoint)
+        self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
+        self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
+        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.onRoiEdition)
+        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.drawContoursOnImage)
 
     def initData(self,
                  file_name: str,
