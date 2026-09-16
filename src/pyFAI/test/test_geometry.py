@@ -37,7 +37,6 @@ __date__ = "15/09/2026"
 
 import copy
 import itertools
-import json
 import logging
 import os.path
 import random
@@ -1241,11 +1240,21 @@ class TestCrystFEL(unittest.TestCase):
             geom = UtilsTest.getimage(i)
             dico = parse_crystfel_geom(geom)
             if ref is not None:
-                ai = build_geometry(dico)
-                poni_res = PoniFile(ai)
-                poni_ref = PoniFile(ref)
-                self.assertEqual(json.dumps(poni_res.as_dict()),
-                                 json.dumps(poni_ref.as_dict()), f"geometry matches for {i}")
+                # float32 is what the detector stores anyway and halves the memory
+                # needed by the largest geometries; it costs ~1e-8 relative on the
+                # position of the PONI, i.e. 10000x less than a pixel.
+                ai = build_geometry(dico, dtype=numpy.float32)
+                poni_res = PoniFile(ai).as_dict()
+                poni_ref = PoniFile(ref).as_dict()
+                self.assertEqual(set(poni_res), set(poni_ref), f"same keys for {i}")
+                for key, expected in poni_ref.items():
+                    obtained = poni_res[key]
+                    if isinstance(expected, float):
+                        self.assertAlmostEqual(obtained, expected,
+                                               delta=1e-6 * abs(expected) + 1e-12,
+                                               msg=f"{key} matches for {i}")
+                    else:
+                        self.assertEqual(obtained, expected, f"{key} matches for {i}")
 
 
 def suite():
