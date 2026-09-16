@@ -303,6 +303,13 @@ class MapPlotWidget(ImagePlotWidget):
             raise RuntimeError("RGB map dimensions do not match its map axes")
 
         self._rgb_raw_data = numpy.asarray(image, dtype=float)
+        self._initRgbColormaps()
+        self._setRgbPlotLayers(x, y, xlabel, ylabel)
+        self._updateRgbImage()
+        self._configureRgbControls()
+
+    def _initRgbColormaps(self) -> None:
+        """Create the three independently scaled channel colormaps once."""
         if not self._rgb_colormaps:
             for channel, name in zip("RGB", ("red", "green", "blue")):
                 colormap = Colormap(
@@ -314,6 +321,11 @@ class MapPlotWidget(ImagePlotWidget):
                 colormap.sigChanged.connect(self._updateRgbImage)
                 self._rgb_colormaps[channel] = colormap
 
+    def _setRgbPlotLayers(
+        self, x: numpy.ndarray, y: numpy.ndarray, xlabel: str, ylabel: str
+    ) -> None:
+        """Overlay the RGB image on a transparent, pickable scatter grid."""
+        rows, cols = self._rgb_raw_data.shape[:2]
         self.setScatterData(
             numpy.zeros((rows, cols), dtype=float), x, y, xlabel, ylabel
         )
@@ -327,7 +339,9 @@ class MapPlotWidget(ImagePlotWidget):
             scale=(dx, dy),
             resetzoom=False,
         )
-        self._updateRgbImage()
+
+    def _configureRgbControls(self) -> None:
+        """Show channel scaling while hiding scalar-map-only controls."""
         self._colorBarWidget.hide()
         self.axis_dataset_action.setEnabled(False)
         self._toolbar.colormap_action.setText("RGB channel scaling")
@@ -339,7 +353,12 @@ class MapPlotWidget(ImagePlotWidget):
         )
         self._toolbar.colormap_action._updateColormap()
 
-    def setRgbChannel(self, channel):
+    def setRgbChannel(self, channel: str) -> None:
+        """Select the channel shown in the map's scaling dialog.
+
+        :param channel: One of ``"R"``, ``"G"``, or ``"B"``.
+        :return: None.
+        """
         if channel not in "RGB":
             raise ValueError(f"Unsupported RGB channel: {channel}")
         self._rgb_channel = channel
@@ -347,7 +366,8 @@ class MapPlotWidget(ImagePlotWidget):
         self._toolbar.colormap_action.setToolTip(f"Scale the {channel_name} channel")
         self._toolbar.colormap_action._updateColormap()
 
-    def _updateRgbImage(self):
+    def _updateRgbImage(self) -> None:
+        """Rebuild the displayed RGB image from the channel colormaps."""
         if self._rgb_raw_data is None:
             return
         rgb = numpy.empty(self._rgb_raw_data.shape, dtype=numpy.uint8)
