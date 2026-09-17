@@ -29,7 +29,7 @@ Same job as `run_tests.py`, same options, but the suite is collected by pytest
 and spread over several worker processes by pytest-xdist, which divides the
 wall-clock time by about four:
 
-    python run_pytest.py                     # whole suite, one worker per CPU
+    python run_pytest.py                     # whole suite, one worker per core
     python run_pytest.py -n 8                # ... on 8 workers
     python run_pytest.py -o -x               # without OpenCL, without the GUI
     python run_pytest.py pyFAI.test.test_csr # one module,
@@ -71,6 +71,29 @@ logger.setLevel(logging.WARNING)
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 from bootstrap import get_project_name, build_project  # noqa: E402
 PROJECT_NAME = get_project_name(PROJECT_DIR)
+
+
+THREADS_PER_CORE = 2
+"""Threads left to each worker, i.e. the number of hyperthreads per core"""
+
+
+def available_cores():
+    """Number of CPUs this process is allowed to run on
+
+    Not `os.cpu_count()`: on a shared or partitioned machine, the affinity mask
+    is the only one of the two which tells the truth.
+
+    :return: size of the affinity mask, or the number of CPUs of the machine
+    """
+    try:
+        return len(os.sched_getaffinity(0))
+    except Exception:  # not available on macos nor windows
+        return os.cpu_count()
+
+
+def default_workers():
+    """One worker per physical core, each keeping THREADS_PER_CORE threads"""
+    return max(available_cores() // THREADS_PER_CORE, 1)
 
 
 def build_parser():
@@ -131,8 +154,8 @@ Arguments after `--` are passed to pytest as-is, for instance:
     parser.add_argument("-n", "--workers", dest="workers", type=int, default=0,
                         metavar="N",
                         help="Number of worker processes. 0 (default) uses one worker "
-                             f"per CPU, i.e. {os.cpu_count()} here; 1 runs the whole "
-                             "suite in a single worker.")
+                             f"per physical core, i.e. {default_workers()} here; "
+                             "1 runs the whole suite in a single worker.")
     return parser
 
 
@@ -323,7 +346,18 @@ def build_pytest_args(options, coverage_xml=None):
                        options.workers)
         workers = 0
     else:
-        workers = options.workers if options.workers else os.cpu_count()
+        # Keep the libraries from spawning one thread per CPU in every worker:
+        # the workers inherit this environment, and oversubscribing slows the
+        # suite down (it even crashed a worker of test_multi_geometry).
+        if available_cores() > 1:
+            for key in ("OMP_NUM_THREADS",
+                        "NUMEXPR_NUM_THREADS",
+                        "OPENBLAS_NUM_THREADS",
+                        "MKL_NUM_THREADS",
+                        "VECLIB_MAXIMUM_THREADS",
+                        "NUMBA_NUM_THREADS"):
+                os.environ.setdefault(key, str(THREADS_PER_CORE))
+        workers = options.workers or default_workers()
     args += ["-n", str(workers)]
 
     if options.verbose == 1:

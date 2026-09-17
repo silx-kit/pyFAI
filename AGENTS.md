@@ -26,7 +26,7 @@ python run_tests.py -o pyFAI.test.test_bug_regression
 python run_tests.py --coverage
 
 # Same test-suite, but in parallel: ~4x faster than run_tests.py. Same options,
-# same test names; -n sets the number of workers (default: one per CPU).
+# same test names; -n sets the number of workers (default: one per physical core).
 # Requires the `test` extra: pip install pytest pytest-xdist
 python run_pytest.py
 python run_pytest.py -n 8
