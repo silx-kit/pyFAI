@@ -100,13 +100,23 @@ PyFAI comes with a test suite to ensure all core functionalities are working as 
 
 .. code-block:: shell
 
-    python3 run_tests.py
+    python3 run_pytest.py
 
-There are few specific options to run_tests.py:
+This runs the tests in parallel, one worker process per physical core, which takes about
+four times less than ``python3 run_tests.py``, the sequential `unittest` runner. Both run
+the same tests and accept the same options:
 
+* ``-n``: Number of worker processes (default: one per physical core, ``run_pytest.py`` only)
 * ``-x``: Disable all tests relative to the GUI (faster)
 * ``-o``: Disable all tests relative to OpenCL (faster)
-* ``-c``: Estimates the test-coverage for the project, requires the ``coverage`` package.
+* ``-l``: Skip the tests using a lot of memory
+* ``-c``: Estimates the test-coverage for the project, requires the ``pytest-cov`` package
+  (``coverage`` for ``run_tests.py``) and writes ``coverage.rst``
+* ``-m``: Reports the time and the memory used by each test, into ``profile.json``
+  (``profile.log`` for ``run_tests.py``)
+
+``run_pytest.py`` needs the ``pytest`` and ``pytest-xdist`` packages, both listed in
+``requirements.txt``. Anything after ``--`` on its command line is passed to `pytest`.
 
 
 **Nota:** to run the test, an internet connection is needed as 160 MB of test images need to be download.
