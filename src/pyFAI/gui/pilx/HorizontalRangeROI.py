@@ -31,19 +31,29 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/06/2025"
+__date__ = "16/09/2026"
 __status__ = "development"
 
+from silx.gui import qt
 from silx.gui.plot.items.roi import HorizontalRangeROI as SilxHorizontalRangeROI
 
 
 class HorizontalRangeROI(SilxHorizontalRangeROI):
-    """A HorizontalRangeROI that calls a custom signal each time the range changes"""
+    """A range ROI that emits sigRangeCommitted on setRange and on commit."""
+
+    sigRangeCommitted = qt.Signal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.sigEditingFinished.connect(self.sigRegionChanged)
+        # Handle drags commit on release; programmatic setRange commits below.
+        self.sigEditingFinished.connect(self.sigRangeCommitted)
 
-    def setRange(self, vmin: float, vmax: float):
+    def setRange(self, vmin: float, vmax: float) -> None:
+        """Set both bounds and announce a committed programmatic change.
+
+        :param vmin: Lower 2θ bound.
+        :param vmax: Upper 2θ bound.
+        :return: None.
+        """
         super().setRange(vmin, vmax)
-        self.sigRegionChanged.emit()
+        self.sigRangeCommitted.emit()

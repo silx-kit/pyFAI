@@ -31,18 +31,32 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2024"
+__date__ = "16/09/2026"
 __status__ = "development"
 
+from silx.gui import qt
 from silx.gui.plot import PlotWidget
 from silx.gui.plot.actions import PlotAction
 
 from ..HorizontalRangeROI import HorizontalRangeROI
-from ..models import ROI_COLOR
 
 
 class RoiModeAction(PlotAction):
-    def __init__(self, plot: PlotWidget, parent=None):
+    def __init__(
+        self,
+        plot: PlotWidget,
+        roi: HorizontalRangeROI,
+        parent: qt.QObject | None = None,
+    ) -> None:
+        """Create the action for ``plot`` with an initial editable ``roi``.
+
+        :param plot: Plot containing the ROIs.
+        :param roi: Initially active range ROI.
+        :param parent: Optional Qt owner of the action.
+        :return: None.
+        """
+        self.roi = roi
+        self.rois = [roi]
         super().__init__(
             plot,
             icon=HorizontalRangeROI.ICON,
@@ -57,13 +71,46 @@ class RoiModeAction(PlotAction):
         # Init the state
         self._modeChanged(None)
 
-    def _modeChanged(self, source):
+    def _modeChanged(self, source: object | None) -> None:
+        """Show the configured ROIs only while rectangle selection is active."""
         modeDict = self.plot.getInteractiveMode()
+        active = modeDict["mode"] == "select-draw"
         old = self.blockSignals(True)
-        self.setChecked(modeDict["mode"] == "select-draw")
+        self.setChecked(active)
         self.blockSignals(old)
+        for roi in self.rois:
+            roi.setVisible(active)
 
-    def _actionTriggered(self, checked=False):
+    def setRois(
+        self, rois: list[HorizontalRangeROI], active_roi: HorizontalRangeROI
+    ) -> None:
+        """Show ``rois`` in ROI mode, but make only ``active_roi`` editable.
+
+        :param rois: Ranges to display in the current ROI mode.
+        :param active_roi: Range controlled by drawing and editing.
+        :return: None.
+        """
+        for roi in self.rois:
+            roi.setVisible(False)
+            roi.setEditable(False)
+        self.rois = list(rois)
+        self.roi = active_roi
+        active = self.isChecked()
+        for roi in self.rois:
+            roi.setVisible(active)
+            roi.setEditable(roi is active_roi)
+        if active and self.plot is not None:
+            self.plot.setInteractiveMode(
+                "select-draw", shape="rectangle", color=self.roi.getColor().name()
+            )
+
+    def _actionTriggered(self, checked: bool = False) -> None:
+        """Draw new ranges in the active ROI color while the action is on."""
         plot = self.plot
         if plot is not None:
-            plot.setInteractiveMode("select-draw", shape="rectangle", color=ROI_COLOR)
+            if checked:
+                plot.setInteractiveMode(
+                    "select-draw", shape="rectangle", color=self.roi.getColor().name()
+                )
+            else:
+                plot.resetInteractiveMode()
