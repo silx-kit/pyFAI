@@ -50,7 +50,11 @@ _LEGEND = "IMAGE"
 
 
 class DetectorMatplotlibBackend(BackendMatplotlibQt):
-    """Avoid a second aspect-ratio adjustment for the detector image."""
+    """Avoid a second aspect-ratio adjustment for the detector image.
+
+    See silx issue https://github.com/silx-kit/silx/issues/4723. 
+    Once it's fixed we can remove this custom subclass.
+    """
 
     def setLimits(
         self,
