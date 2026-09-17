@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2026"
+__date__ = "16/09/2026"
 
 import functools
 import getpass
@@ -173,7 +173,9 @@ class TestOptions:
             self.WITH_GL_TEST = False
             self.WITH_GL_TEST_REASON = "Skipped by WITH_GL_TEST env var"
 
-        if parsed_options is not None and parsed_options.low_mem or os.environ.get('PYFAI_LOW_MEM', 'True') == 'False':
+        if parsed_options is not None and parsed_options.low_mem:
+            self.TEST_LOW_MEM = True
+        elif os.environ.get('PYFAI_LOW_MEM', 'False').lower() in ("1", "true", "on"):
             self.TEST_LOW_MEM = True
 
         if struct.calcsize("P") == 4:

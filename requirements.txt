@@ -2,7 +2,7 @@ wheel
 meson-python
 ninja
 numpy >= 1.10
-cython >=0.29.31
+cython >=3
 fabio
 scipy
 matplotlib
@@ -17,3 +17,7 @@ hdf5plugin
 myst-nb
 pydata-sphinx-theme
 sphinxcontrib.programoutput
+coverage
+pytest
+pytest-cov 
+pytest-xdist
