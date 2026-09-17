@@ -19,5 +19,5 @@ pydata-sphinx-theme
 sphinxcontrib.programoutput
 coverage
 pytest
-pytest-cov 
+pytest-cov
 pytest-xdist
