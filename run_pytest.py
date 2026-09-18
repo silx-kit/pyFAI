@@ -72,7 +72,7 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 from bootstrap import get_project_name, build_project  # noqa: E402
 PROJECT_NAME = get_project_name(PROJECT_DIR)
 
-def thread_per_core():
+def threads_per_core():
     """return the number of hyperthreads per core"""
     archi = platform.machine()
     smt = 1
@@ -85,8 +85,8 @@ def thread_per_core():
     else:
         logger.warning("Unknown CPU architecture %s, Unable to guess SMT level.", archi)
     return smt
-    
-THREADS_PER_CORE = thread_per_core()
+
+THREADS_PER_CORE = threads_per_core()
 
 
 def available_cores():
@@ -103,7 +103,7 @@ def available_cores():
         return os.cpu_count()
 
 
-def default_workers(THREADS_PER_CORE):
+def default_workers(THREADS_PER_CORE=THREADS_PER_CORE):
     """One worker per physical core, each keeping THREADS_PER_CORE threads"""
     return max(available_cores() // THREADS_PER_CORE, 1)
 
@@ -367,6 +367,8 @@ def build_pytest_args(options, coverage_xml=None):
         # suite down (it even crashed a worker of test_multi_geometry).
         if options.threads:
             THREADS_PER_CORE = options.threads
+        else:
+            THREADS_PER_CORE = threads_per_core()
         if available_cores() > THREADS_PER_CORE:
             for key in ("OMP_NUM_THREADS",
                         "NUMEXPR_NUM_THREADS",
@@ -375,7 +377,7 @@ def build_pytest_args(options, coverage_xml=None):
                         "VECLIB_MAXIMUM_THREADS",
                         "NUMBA_NUM_THREADS"):
                 os.environ.setdefault(key, str(THREADS_PER_CORE))
-        workers = options.workers or default_workers()
+        workers = options.workers or default_workers(THREADS_PER_CORE)
     args += ["-n", str(workers)]
 
     if options.verbose == 1:
