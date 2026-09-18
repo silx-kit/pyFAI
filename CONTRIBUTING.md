@@ -13,7 +13,7 @@ discouraged as we are few and may be unavailable (holidays, ...).
 3. Create a virtual environment `python3 -m venv ~/.py3`
 4. Activate your environment `source ~/.py3/bin/activate`
 5. Install the dependencies `pip install --upgrade -r requirements.txt --only-binary :all:`
-6. Build and test `python run_tests.py`
+6. Build and test `python run_pytest.py`
 
 This should take a few minutes and ensures everything is ready for developping within pyFAI.
 Later-on no recompilation will be needed unless you modify cython code.
@@ -38,10 +38,20 @@ Note: it is forbidden to import pyFAI from the sources, to avoid bugs as many fi
 
 ## Test locally your code
 
-The test suite of pyFAI can simply be triggered by running `./run_tests.py` which
-takes care of re-building what is needed.
+The test suite of pyFAI can simply be triggered by running `./run_pytest.py` which
+takes care of re-building what is needed, then runs the tests in parallel with `pytest`
+and `pytest-xdist`: one worker process per physical core, which divides the duration of
+the suite by about four. `-n` sets the number of workers explicitly.
+
 This helper script has many options about coverage, selecting tests, debugging mode ...
-use `./run_tests.py -h` to visualize them all.
+use `./run_pytest.py -h` to visualize them all. Tests are named as in `unittest`, so
+`./run_pytest.py pyFAI.test.test_csr.TestCSR.test_2d_splitbbox` runs a single test, and
+anything after `--` goes to `pytest` untouched.
+
+`./run_tests.py` runs the very same tests sequentially with `unittest`. Both runners have
+to stay green: `run_tests.py` builds its suite from the `suite()` functions maintained by
+hand in `pyFAI/test/test_all.py`, while `pytest` discovers every `test_*.py` of the
+package, so a module forgotten in `test_all.py` is run by `pytest` only.
 
 # Few common rules to make common development simpler:
 * Code formatting is generally PEP8, except for the GUI section where the CamelCase is used (due to inheritance of Qt classes).

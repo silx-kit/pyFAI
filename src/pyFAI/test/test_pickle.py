@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2026"
+__date__ = "15/09/2026"
 
 import logging
 import unittest
@@ -94,8 +94,8 @@ class TestPickle(unittest.TestCase):
             self.assertEqual(abs(first - second).max(), 0, "Spectra are the same")
 
     def test_Calibrant(self):
-        from pyFAI import calibrant
-        calibrant = calibrant.CalibrantFactory()('AgBh')
+        from pyFAI.calibrant import get_calibrant
+        calibrant = get_calibrant('AgBh')
         self.assertTrue(dumps(calibrant))
         self.assertTrue(loads(dumps(calibrant)))
 

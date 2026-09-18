@@ -21,6 +21,7 @@ py.install_sources(
     'azimuthalIntegrator.py',
     'blob_detection.py',
     'calibrant.py',
+    'conftest.py',
     'containers.py',
     'control_points.py',
     'diffmap.py',
