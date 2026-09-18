@@ -72,9 +72,21 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 from bootstrap import get_project_name, build_project  # noqa: E402
 PROJECT_NAME = get_project_name(PROJECT_DIR)
 
-
-THREADS_PER_CORE = 2
-"""Threads left to each worker, i.e. the number of hyperthreads per core"""
+def thread_per_core():
+    """return the number of hyperthreads per core"""
+    archi = platform.machine()
+    smt = 1
+    if "ppc" in archi:
+        smt = 4
+    elif "arm" in archi:
+        smt = 1
+    elif "x86" in archi:
+        smt = 2
+    else:
+        logger.warning("Unknown CPU architecture %s, Unable to guess SMT level.", archi)
+    return smt
+    
+THREADS_PER_CORE = thread_per_core()
 
 
 def available_cores():
@@ -91,7 +103,7 @@ def available_cores():
         return os.cpu_count()
 
 
-def default_workers():
+def default_workers(THREADS_PER_CORE):
     """One worker per physical core, each keeping THREADS_PER_CORE threads"""
     return max(available_cores() // THREADS_PER_CORE, 1)
 
@@ -154,8 +166,12 @@ Arguments after `--` are passed to pytest as-is, for instance:
     parser.add_argument("-n", "--workers", dest="workers", type=int, default=0,
                         metavar="N",
                         help="Number of worker processes. 0 (default) uses one worker "
-                             f"per physical core, i.e. {default_workers()} here; "
+                             f"per physical core, i.e. {default_workers(THREADS_PER_CORE)} here; "
                              "1 runs the whole suite in a single worker.")
+    parser.add_argument("-t", "--threads", dest="threads", type=int, default=None,
+                        metavar="N",
+                        help="Number of threads per worker process. Default guesses the SMT level"
+                             f", i.e. {THREADS_PER_CORE} here.")
     return parser
 
 
@@ -349,7 +365,9 @@ def build_pytest_args(options, coverage_xml=None):
         # Keep the libraries from spawning one thread per CPU in every worker:
         # the workers inherit this environment, and oversubscribing slows the
         # suite down (it even crashed a worker of test_multi_geometry).
-        if available_cores() > 1:
+        if options.threads:
+            THREADS_PER_CORE = options.threads
+        if available_cores() > THREADS_PER_CORE:
             for key in ("OMP_NUM_THREADS",
                         "NUMEXPR_NUM_THREADS",
                         "OPENBLAS_NUM_THREADS",
