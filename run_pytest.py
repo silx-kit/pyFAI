@@ -85,7 +85,7 @@ def thread_per_core():
     else:
         logger.warning("Unknown CPU architecture %s, Unable to guess SMT level.", archi)
     return smt
-    
+
 THREADS_PER_CORE = thread_per_core()
 
 
