@@ -103,7 +103,7 @@ def available_cores():
         return os.cpu_count()
 
 
-def default_workers(THREADS_PER_CORE=THREADS_PER_CORE):
+def default_workers(THREADS_PER_CORE):
     """One worker per physical core, each keeping THREADS_PER_CORE threads"""
     return max(available_cores() // THREADS_PER_CORE, 1)
 
