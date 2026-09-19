@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/08/2026"
+__date__ = "19/09/2026"
 
 import logging
 import unittest
@@ -44,8 +44,8 @@ from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 
 
-def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, pixelY=60):
-
+def _test_export(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, pixelY=60):
+    "helper function"
     a1 = AzimuthalIntegrator()
     a2 = AzimuthalIntegrator()
     a3 = AzimuthalIntegrator()
@@ -94,13 +94,13 @@ class TestFIT2D(unittest.TestCase):
                 self.assertAlmostEqual(refv, obtv, 4, f"{key}: {refv} != {obtv}")
 
     def test_export(self):
-        res = testExport()
+        res = _test_export()
         self.assertFalse(res, res)
-        res = testExport(tilt=20)
+        res = _test_export(tilt=20)
         self.assertFalse(res, res)
-        res = testExport(tilt=20, tpr=80)
+        res = _test_export(tilt=20, tpr=80)
         self.assertFalse(res, res)
-        res = testExport(tilt=20, tpr=580)
+        res = _test_export(tilt=20, tpr=580)
         self.assertFalse(res, res)
 
     def test_ImageD11(self):
