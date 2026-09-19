@@ -46,4 +46,4 @@ jobs:
         env |grep ICD
         python3 -c "import pyopencl; print(pyopencl.get_platforms())"
         python3 -c "import silx.opencl; print(silx.opencl.ocl)"
-        python run_tests.py
+        python run_pytest.py
