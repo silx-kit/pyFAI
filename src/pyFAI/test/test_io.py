@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2026"
+__date__ = "20/09/2026"
 
 import logging
 import os
@@ -410,7 +410,7 @@ class TestXrdmlWriter(unittest.TestCase):
         from xml.etree import ElementTree as et
         with open(tmpfile, "rb") as f:
             xml = et.fromstring(f.read())
-        self.assertTrue(bool(xml))
+        self.assertGreater(len(xml), 0)
 
 
 
