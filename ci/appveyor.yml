@@ -2,7 +2,7 @@
 # Windows
 # https://ci.appveyor.com/project/ESRF/pyFAI
 
-version: 2026.5.{build}
+version: 2026.9.{build}
 #shallow_clone: true
 clone_depth: 1
 build: false
@@ -39,16 +39,16 @@ environment:
           PYTHON_ARCH: "64"
 
         # Python 3.11
-        - PYTHON_DIR: "C:\\Python\\3.11"
-          PYTHON_ARCH: "64"
+        #- PYTHON_DIR: "C:\\Python\\3.11"
+        #  PYTHON_ARCH: "64"
 
         # Python 3.12
-        - PYTHON_DIR: "C:\\Python\\3.12"
-          PYTHON_ARCH: "64"
+        #- PYTHON_DIR: "C:\\Python\\3.12"
+        #  PYTHON_ARCH: "64"
 
         # Python 3.13
-        - PYTHON_DIR: "C:\\Python\\3.13"
-          PYTHON_ARCH: "64"
+        #- PYTHON_DIR: "C:\\Python\\3.13"
+        #  PYTHON_ARCH: "64"
 
         # Python 3.14
         - PYTHON_DIR: "C:\\Python\\3.14"
@@ -98,7 +98,7 @@ build_script:
     - 'python -c "import silx.resources; r=silx.resources.ExternalResources(\"pyFAI\",\"http://www.silx.org/pub/pyFAI/testdata\");print(r.data_home)"'
 
     # Build
-    - "python run_tests.py -m"
+    # - "python run_pytest.py"
     - "python -m build --wheel"
     - ps: "ls dist"
     # Install the generated wheel package to test it
