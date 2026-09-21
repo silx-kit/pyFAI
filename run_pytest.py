@@ -50,7 +50,7 @@ the --coverage option.
 """
 
 __authors__ = ["Jérôme Kieffer"]
-__date__ = "16/09/2026"
+__date__ = "19/09/2026"
 __license__ = "MIT"
 
 import importlib
@@ -341,6 +341,49 @@ def to_pytest_id(name):
     raise ValueError(f"'{name}' does not start with an importable module")
 
 
+def set_numexpr_threads(threads):
+    """Keep numexpr between 2 threads and what its version supports
+
+    With a single thread, numexpr evaluates a compiled expression inline in the
+    calling thread and re-uses the buffers of the expression object. pyFAI
+    shares such objects (`containers.EXPR_AVG` & co) and evaluates them from the
+    thread-pool of `MultiGeometry`, which then corrupts the heap: the process
+    dies with a segmentation fault, a `double free` or a silent hang.
+    numexpr falls back on OMP_NUM_THREADS when NUMEXPR_NUM_THREADS is unset, so
+    the floor has to be applied here and not left to the loop above.
+
+    :param threads: number of threads asked for the other libraries
+    """
+    floor = 2
+    try:
+        current = int(os.environ["NUMEXPR_NUM_THREADS"])
+    except (KeyError, ValueError):
+        current = None
+
+    if current is not None:
+        # An explicit setting is honoured, but never below the floor
+        if current < floor:
+            logger.warning("Raising NUMEXPR_NUM_THREADS from %s to %s: numexpr "
+                           "corrupts the heap when a shared compiled expression "
+                           "is evaluated from several threads", current, floor)
+            os.environ["NUMEXPR_NUM_THREADS"] = str(floor)
+        return
+
+    # Nothing was set, so numexpr sized itself when it was imported:
+    # get_num_threads() is the ceiling this version considers sensible (16 in
+    # practice, whatever the number of cores, but it changes from one release to
+    # the next). Going above it buys nothing and numexpr scales badly there.
+    value = max(threads, floor)
+    try:
+        import numexpr
+        ceiling = numexpr.get_num_threads()
+    except Exception as err:  # numexpr missing or broken: keep our own value
+        logger.debug("Cannot read the thread ceiling of numexpr: %s", err)
+    else:
+        value = min(value, max(ceiling, floor))
+    os.environ["NUMEXPR_NUM_THREADS"] = str(value)
+
+
 def build_pytest_args(options, coverage_xml=None):
     """Build the command line handed over to pytest
 
@@ -369,9 +412,11 @@ def build_pytest_args(options, coverage_xml=None):
             THREADS_PER_CORE = options.threads
         else:
             THREADS_PER_CORE = threads_per_core()
+        # Before the loop below: numexpr falls back on OMP_NUM_THREADS, so its
+        # ceiling has to be read while the environment is still untouched.
+        set_numexpr_threads(THREADS_PER_CORE)
         if available_cores() > THREADS_PER_CORE:
             for key in ("OMP_NUM_THREADS",
-                        "NUMEXPR_NUM_THREADS",
                         "OPENBLAS_NUM_THREADS",
                         "MKL_NUM_THREADS",
                         "VECLIB_MAXIMUM_THREADS",
