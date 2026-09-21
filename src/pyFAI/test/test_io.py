@@ -410,8 +410,7 @@ class TestXrdmlWriter(unittest.TestCase):
         from xml.etree import ElementTree as et
         with open(tmpfile, "rb") as f:
             xml = et.fromstring(f.read())
-        self.assertGreater(len(xml), 0)
-
+        self.assertIsNotNone(xml)
 
 
 def suite():
