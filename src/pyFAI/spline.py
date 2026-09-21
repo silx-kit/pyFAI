@@ -33,7 +33,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "25/08/2026"
+__date__ = "20/09/2026"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import logging
@@ -434,7 +434,7 @@ class Spline:
         if timing:
             startTime = time.perf_counter()
 
-        xRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(
+        xRectBivariateSpline = scipy.interpolate.RectBivariateSpline(
             numpy.arange(self.xmax + 1.0),
             numpy.arange(self.ymax + 1.0),
             self.xDispArray.transpose(),
@@ -443,7 +443,7 @@ class Spline:
         if timing:
             intermediateTime = time.perf_counter()
 
-        yRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(
+        yRectBivariateSpline = scipy.interpolate.RectBivariateSpline(
             numpy.arange(self.xmax + 1.0),
             numpy.arange(self.ymax + 1.0),
             self.yDispArray.transpose(),
