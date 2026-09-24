@@ -41,7 +41,7 @@ from typing import ClassVar
 import numpy
 from ..crystallography import Cell, ReflectionCondition, resolution
 from .utilstest import UtilsTest
-from ..crystallography import resolution, Cell, EquationOfState, ReflectionCondition
+from ..crystallography import EquationOfState
 from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, Murnaghan, PVT,
                                    ThermalExpansion, Vinet, VolumeExpansion)
 from ..io.calibrant_config import CalibrantConfig
