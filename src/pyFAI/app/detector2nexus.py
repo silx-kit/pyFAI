@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,16 +31,20 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "21/08/2026"
 __status__ = "development"
 
+import logging
 import sys
 from argparse import ArgumentParser
-import numpy
+
 import fabio
-from .. import version as pyFAI_version, date as pyFAI_date
+import numpy
+
+from .. import date as pyFAI_date
+from .. import version as pyFAI_version
 from ..detectors import detector_factory
-import logging
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -53,7 +56,7 @@ except ImportError:
 
 def main(args=None):
     usage = "detector2nexus [options] [options] -o nxs.h5"
-    version = "detector2nexus version %s from %s" % (pyFAI_version, pyFAI_date)
+    version = f"detector2nexus version {pyFAI_version} from {pyFAI_date}"
     description = """
     Convert a complex detector definition (multiple modules, possibly in 3D)
     into a single NeXus detector definition together with the mask (and much more in the future)

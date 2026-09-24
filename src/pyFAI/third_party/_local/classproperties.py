@@ -27,7 +27,7 @@ __version__ = '0.2.0'
 import sys
 
 
-class classproperty(object):
+class classproperty:
   def __init__(self, func):
     self.func = func
 

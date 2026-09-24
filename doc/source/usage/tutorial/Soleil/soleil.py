@@ -70,9 +70,8 @@ DatasetPath = Union[DatasetPathContains,
 
 def _v_attrs(attribute: Text, value: Text, _name: Text, obj) -> Dataset:
     """extract all the images and accumulate them in the acc variable"""
-    if isinstance(obj, Dataset):
-        if attribute in obj.attrs and obj.attrs[attribute] == value:
-            return obj
+    if isinstance(obj, Dataset) and attribute in obj.attrs and obj.attrs[attribute] == value:
+        return obj
 
 
 def _v_item(key: Text, name: Text, obj: Dataset) -> Dataset:

@@ -1,13 +1,87 @@
 :Author: Jérôme Kieffer
-:Date: 26/06/2026
+:Date: 15/09/2026
 :Keywords: changelog
 
 Change-log of versions
 ======================
 
-2026.XX
+202X.YY
 -------------------
-- Change of behavior of `Calibrant` which raises `ValueError` when a file exist but does not d-spacing info / `IOError` when absent
+
+- New features:
+
+- Bug fixes:
+
+- Documentation:
+
+- Code quality:
+
+- zzz commits over z month
+- Supports python 3.11-3.15
+
+2026.09 15/09/2026
+-------------------
+
+- New features:
+
+  * Detector `orientation` is now a pure re-indexing of the pixels.
+    For orientation != 3, `tth`, `q` and `r` are unchanged. `chi` and the fiber/grazing-incidence units could (WIP).
+  * New `pyFAI.geometry.utils` with `convert_orientation`, to re-express a geometry in another detector orientation,
+    and `detector_corner`, which reads the real corners of the detector from its pixel corners.
+  * Conversion to and from the ImageD11 parameter-file now takes the orientation of the detector into account (#2896)
+  * New `pyFAI.detectors.multi_module`: refinement of the position of the individual modules of a detector from powder rings
+    recorded at several beam-center positions, following the method developed at ID11 (doi:10.3390/cryst12020255).
+  * `NexusDetector` now handles the sensor configuration, the spline-based and other non-regular detectors (#2915)
+  * `PoniFile`, which is intentionally immutable, gains a copy-with API: `poni.with_params(dist=..., rot1=...)` and one `with_<parameter>` method per geometry parameter
+  * New `auto_gc` option, which disables the garbage collector around the resets of the geometry (#2894 Thanks for Wilson for spotting it)
+  * Better performances for the MultiGeometry integration (#2865)
+  * New and updated calibrants: Verneite, the two references of `alpha_Al2O3_SRM676a` (2008 and 2015 lattice parameters, #2856) and `CeO2`, recalculated with many more reflections (#2899).
+  * `pyFAI.method_registry.Method` is now a typed `NamedTuple` which validates and normalizes its content at construction time:
+    `None` is now the canonical wildcard; the former spellings `"*"`, `"any"`, `"all"` and `0` are still accepted as input.
+    It gains one copy-with method per field, like `PoniFile`: `with_dim`, `with_split`, `with_algo`, `with_impl` and `with_target`,
+    as well as a `Method.parse_any` constructor which accepts about any description of a method (#2757)
+
+- Bug fixes:
+
+  * `DiffMap.use_gpu` used to assign the implementation to the dimensionality of the method, which silently built
+    an inconsistent method and left the implementation unchanged
+  * `WorkerConfig.method` is now enforced to be an immutable `Method`, whatever it is built from: a de-serialized
+    JSON configuration provides a plain list, which used to be stored as is, hence mutable and unhashable (#2757).
+    The dimensionality and the OpenCL device are no longer duplicated in it: they are read from `nbpt_azim`
+    and `opencl_device`, which remain the single source of truth. The serialized format is unchanged.
+  * `Worker.method` gets the same treatment and is now a `Method` as well, whichever constructor is used;
+    `Worker.set_method` stores its result and rebuilds the processor, so that it takes effect immediately.
+  * Sub-pixel refinement of the peak position (`Bilinear.local_maxi`, used by the `massif` and `watershed` peak-pickers): the calibrations become more accurate.
+  * Change of behavior of `Calibrant` which raises `ValueError` when a file exist but does not d-spacing info / `IOError` when absent
+  * Fix serialization issue with Rayonix detectors (regression introduced with parallax, #2904)
+  * Fix hang when changing detector (size) after a first calibration or inconsistent detector shape (#2890)
+  * Fix `from pyFAI import *` and submodules: `__all__` contained objects instead of their names
+  * The `empty` value is now propagated to every integrator and registered in the results in `MultiGeometry`
+  * Fix the multiplicity of the reflections and the selection of the canonical `hkl` equivalent (#2883)
+  * `pyFAI-integrate --no-gui` no longer loses the `monitor_name` set in the JSON configuration (#2892, thanks to Jordi Aguilar)
+  * `BlobDetection`: fix a `RuntimeError` raised on some images (#2876)
+  * Goniometer: more explicit traceback (#2871) and fix of the iteration over the control points (#2869)
+  * Compatibility with numpy 2.5, where setting the shape of an ndarray is deprecated (#2872) and `numpy.cross` changed behavior; fix a casting issue with numexpr (#2860)
+  * `bootstrap.py` no longer mistakes a file for the build directory (#2886)
+
+- Documentation:
+
+  * New tutorial on modular detector calibration based on Debye-Scherrer rings (ID11's method)
+  * New tutorial on the calibration of an eccentric goniometer
+  * New chapter on the extraction of the control points, describing the three peak-picking algorithms and the sub-pixel refinement they share
+  * New tools to rebuild all tutorials, and all notebooks have been re-executed
+  * Deprecation warnings removed from the tutorials, in particular `scipy.spatial.distance_matrix` replaced by `scipy.spatial.distance.cdist` (#2910)
+
+- Code quality:
+
+  * Large Ruff clean-up over `src/`, `ruff check` enforced in pre-commit (>=0.16)
+  * Tests are by default without GUI display on Linux & MacOS, much cleaner now
+  * Cython compilation warnings removed
+
+- Addition of a AGENTS.md to drive agentic development: it states that an agent/LLM is never responsible for an error;
+  the owner of the account committing is the culprit for not reviewing properly the code.
+- 215 commits over 4 month
+- Supports python 3.10-3.15
 
 2026.05 19/05/2026
 -------------------
@@ -409,7 +483,7 @@ Change-log of versions
     + GPU implementation tutorial
 - Facts and figures:
     + 400+ commits, 100 PR
-    +with the contribution of:
+    + with the contribution of:
         - Clemens Prescher,
         - Elena Pascal,
         - Jérôme Kieffer,

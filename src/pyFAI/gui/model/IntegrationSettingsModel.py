@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,9 +24,10 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "24/08/2026"
 
 from pyFAI import units
+
 from .AbstractModel import AbstractModel
 from .DataModel import DataModel
 
@@ -35,7 +35,7 @@ from .DataModel import DataModel
 class IntegrationSettingsModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(IntegrationSettingsModel, self).__init__(parent)
+        super().__init__(parent)
         self.__radialUnit = DataModel()
         self.__radialUnit.setValue(units.TTH_RAD)
         self.__radialUnit.changed.connect(self.wasChanged)
@@ -45,9 +45,7 @@ class IntegrationSettingsModel(AbstractModel):
         self.__nPointsAzimuthal.changed.connect(self.wasChanged)
 
     def isValid(self):
-        if self.__radialUnit.value() is None:
-            return False
-        return True
+        return self.__radialUnit.value() is not None
 
     def radialUnit(self):
         return self.__radialUnit

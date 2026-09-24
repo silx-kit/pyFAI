@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,11 +33,14 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
 import logging
-from .utilstest import UtilsTest
+import unittest
+
+import numpy
+
 from ..massif import Massif
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,7 +48,7 @@ class TestMassif(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestMassif, cls).setUpClass()
+        super().setUpClass()
         cls.shape = (100, 100)
         cls.image = UtilsTest.get_rng().poisson(10, cls.shape)
         cls.mask = numpy.zeros(cls.shape, dtype=numpy.int8)
@@ -55,7 +57,7 @@ class TestMassif(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestMassif, cls).tearDownClass()
+        super().tearDownClass()
         cls.shape = cls.image = cls.mask = None
 
     def test_nomask(self):

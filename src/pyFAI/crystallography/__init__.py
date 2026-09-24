@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2025-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2025-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -39,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "24/09/2025"
 __status__ = "production"
 
 from .calibrant import Calibrant
@@ -49,6 +48,8 @@ from .eos import (BirchMurnaghan, EquationOfState, LatticeExpansion, Murnaghan,
                   PVT, ThermalExpansion, Vinet, VolumeExpansion)
 from .space_groups import ReflectionCondition
 
-__all__ = [BirchMurnaghan, Calibrant, CALIBRANT_FACTORY, Cell, EquationOfState,
-           LatticeExpansion, Murnaghan, PVT, ReflectionCondition, ThermalExpansion,
-           Vinet, VolumeExpansion]
+
+__all__ = ["Calibrant", "CALIBRANT_FACTORY", "Cell", "ReflectionCondition",
+          "BirchMurnaghan", "LatticeExpansion", "Murnaghan", "PVT",
+          "ReflectionCondition", "ThermalExpansion",
+           "Vinet", "VolumeExpansion"]

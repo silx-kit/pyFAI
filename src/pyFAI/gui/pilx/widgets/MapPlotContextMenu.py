@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,10 +35,10 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "17/04/2024"
 __status__ = "development"
 
-from silx.gui import qt
-from silx.gui.plot.actions.control import ZoomBackAction
+from silx.gui import icons, qt
 from silx.gui.plot.actions import PlotAction
-from silx.gui import icons
+from silx.gui.plot.actions.control import ZoomBackAction
+
 
 class MapPlotContextMenu(qt.QMenu):
     def __init__(self, plot=None, pos=None):

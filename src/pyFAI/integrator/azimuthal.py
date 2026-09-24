@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -30,27 +29,35 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/06/2026"
+__date__ = "10/09/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import logging
 import warnings
-from math import pi, log
-import numpy
 from collections.abc import Iterable
-from .common import Integrator
+from math import log, pi
+
+import numpy
+
 # from ..geometry import Geometry
 from .. import units
-from ..utils import crc32
-from ..utils.mathutil import nan_equal, deg2rad, rad2rad
-from ..containers import Integrate1dResult, Integrate2dResult, SeparateResult, ErrorModel
+from ..containers import (
+    ErrorModel,
+    Integrate1dResult,
+    Integrate2dResult,
+    SeparateResult,
+)
+from ..engines import Engine
 from ..io import save_integrate_result
 from ..io.ponifile import PoniFile
 from ..method_registry import IntegrationMethod
+from ..utils import crc32
 from ..utils.decorators import deprecated
+from ..utils.mathutil import deg2rad, nan_equal, rad2rad
+from .common import Integrator
 from .load_engines import ocl_sort
-from ..engines import Engine
+
 logger = logging.getLogger(__name__)
 error = None
 
@@ -421,6 +428,7 @@ class AzimuthalIntegrator(Integrator):
                                mask=mask,
                                pos0_range=radial_range,
                                pos1_range=azimuth_range,
+                               orientation=int(self.detector.orientation),
                                error_model=error_model)
             else:
                 raise RuntimeError("Should not arrive here")
@@ -894,6 +902,7 @@ class AzimuthalIntegrator(Integrator):
                                    polarization=polarization,
                                    normalization_factor=normalization_factor,
                                    chiDiscAtPi=self.chiDiscAtPi,
+                                   orientation=int(self.detector.orientation),
                                    empty=empty,
                                    variance=variance,
                                    error_model=error_model,
@@ -1135,7 +1144,7 @@ class AzimuthalIntegrator(Integrator):
         method = self._normalize_method(method, dim=2, default=self.DEFAULT_METHOD_2D)
         if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
-            npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
+            npt_azim = 1 << round(log(npt_azim, 2))  # power of two above
             if npt_azim != old:
                 logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s",
                                old, npt_azim)
@@ -1360,9 +1369,9 @@ class AzimuthalIntegrator(Integrator):
             solidangle = None
 
         if polarization_factor is None:
-            polarization = polarization_crc = None
+            polarization = _polarization_crc = None
         else:
-            polarization, polarization_crc = self.polarization(data.shape, polarization_factor, with_checksum=True)
+            polarization, _polarization_crc = self.polarization(data.shape, polarization_factor, with_checksum=True)
 
         if (method.algo_lower == "csr"):
             "This is the only method implemented for now ..."
@@ -1596,7 +1605,7 @@ class AzimuthalIntegrator(Integrator):
 
         if (method.impl_lower == "opencl") and npt_azim and (npt_azim > 1):
             old = npt_azim
-            npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
+            npt_azim = 1 << round(log(npt_azim, 2))  # power of two above
             if npt_azim != old:
                 logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s",
                                old, npt_azim)
@@ -1837,9 +1846,9 @@ class AzimuthalIntegrator(Integrator):
             solidangle = None
 
         if polarization_factor is None:
-            polarization = polarization_crc = None
+            polarization = _polarization_crc = None
         else:
-            polarization, polarization_crc = self.polarization(data.shape, polarization_factor, with_checksum=True)
+            polarization, _polarization_crc = self.polarization(data.shape, polarization_factor, with_checksum=True)
 
         if (method.algo_lower == "csr"):
             "This is the only method implemented for now ..."

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Basic OpenCL test
 #             https://github.com/silx-kit/silx
@@ -33,17 +32,21 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2024"
+__date__ = "21/08/2026"
 
 import logging
-import numpy
 import platform
 import unittest
+
+import numpy
+
 from .. import ocl
+
 if ocl:
     import pyopencl.array
-from ...test.utilstest import UtilsTest
 from silx.opencl.utils import get_opencl_code
+
+from ...test.utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +57,7 @@ class TestGroupFunction(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestGroupFunction, cls).setUpClass()
+        super().setUpClass()
 
         if ocl:
             cls.ctx = ocl.create_context()
@@ -73,7 +76,7 @@ class TestGroupFunction(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestGroupFunction, cls).tearDownClass()
+        super().tearDownClass()
         # print("Maximum valid workgroup size %s on device %s" % (cls.max_valid_wg, cls.ctx.devices[0]))
         cls.ctx = None
         cls.queue = None
@@ -100,7 +103,7 @@ class TestGroupFunction(unittest.TestCase):
         tests the sum_int_reduction function
         """
         # rec_workgroup = self.program.test_sum_int_reduction.get_work_group_info(pyopencl.kernel_work_group_info.WORK_GROUP_SIZE, self.ctx.devices[0])
-        maxi = int(round(numpy.log2(min(self.shape,self.max_valid_wg))))+1
+        maxi = round(numpy.log2(min(self.shape,self.max_valid_wg)))+1
         for i in range(maxi):
             wg = 1 << i
             try:
@@ -117,7 +120,7 @@ class TestGroupFunction(unittest.TestCase):
                 ref = numpy.outer(self.data.reshape((-1, wg)).sum(axis=-1),numpy.ones(wg)).ravel()
                 good = numpy.allclose(res, ref)
                 logger.info("Wg: %s result: reduction OK %s", wg, good)
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_atomic(self):
@@ -125,7 +128,7 @@ class TestGroupFunction(unittest.TestCase):
         tests the sum_int_atomic function
         """
 
-        maxi = int(round(numpy.log2(min(self.shape, self.max_valid_wg))))+1
+        maxi = round(numpy.log2(min(self.shape, self.max_valid_wg)))+1
         for i in range(maxi):
             wg = 1 << i
             try:
@@ -142,7 +145,7 @@ class TestGroupFunction(unittest.TestCase):
                 ref = numpy.outer(self.data.reshape((-1, wg)).sum(axis=-1),numpy.ones(wg)).ravel()
                 good = numpy.allclose(res, ref)
                 logger.info("Wg: %s result: atomic good: %s", wg, good)
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_Hillis_Steele(self):
@@ -151,8 +154,8 @@ class TestGroupFunction(unittest.TestCase):
         """
         data_d = pyopencl.array.to_device(self.queue, self.data.astype("float32"))
         scan_d = pyopencl.array.empty_like(data_d)
-        maxi = int(round(numpy.log2(min(self.shape, self.max_valid_wg))))+1
-        for i in range(0, maxi):
+        maxi = round(numpy.log2(min(self.shape, self.max_valid_wg)))+1
+        for i in range(maxi):
             wg = 1 << i
             try:
                 evt = self.program.test_cumsum(self.queue, (self.shape,), (wg,),
@@ -168,7 +171,7 @@ class TestGroupFunction(unittest.TestCase):
                 ref = numpy.array([numpy.cumsum(i) for i in self.data.reshape((-1, wg))])
                 good = numpy.allclose(res, ref)
                 logger.info("Wg: %s result: cumsum good: %s", wg, good)
-                self.assertTrue(good, "Cumsum calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"Cumsum calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_Blelloch(self):
@@ -177,7 +180,7 @@ class TestGroupFunction(unittest.TestCase):
         """
         data_d = pyopencl.array.to_device(self.queue, self.data.astype("float32"))
         scan_d = pyopencl.array.empty_like(data_d)
-        maxi = int(round(numpy.log2(min(self.shape/2, self.max_valid_wg))))+1
+        maxi = round(numpy.log2(min(self.shape/2, self.max_valid_wg)))+1
         for i in range(maxi):
             wg = 1 << i
             try:
@@ -197,7 +200,7 @@ class TestGroupFunction(unittest.TestCase):
                     print(ref)
                     print(res)
                 logger.info("Wg: %s result: cumsum good: %s", wg, good)
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_Blelloch_multipass(self):
@@ -206,7 +209,7 @@ class TestGroupFunction(unittest.TestCase):
         """
         data_d = pyopencl.array.to_device(self.queue, self.data.astype("float32"))
         scan_d = pyopencl.array.empty_like(data_d)
-        maxi = int(round(numpy.log2(min(self.shape/2, self.max_valid_wg))))+1
+        maxi = round(numpy.log2(min(self.shape/2, self.max_valid_wg)))+1
         for i in range(maxi):
             wg = 1 << i
             try:
@@ -227,7 +230,7 @@ class TestGroupFunction(unittest.TestCase):
                     print(ref)
                     print(res)
                 logger.info("Wg: %s result: cumsum good: %s", wg, good)
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
@@ -239,7 +242,7 @@ class TestGroupFunction(unittest.TestCase):
         numpy.random.shuffle(data)
         data_d = pyopencl.array.to_device(self.queue, data)
 
-        maxi = int(round(numpy.log2(self.shape)))+1
+        maxi = round(numpy.log2(self.shape))+1
         for i in range(5,maxi):
             wg = 1 << i
 
@@ -267,7 +270,7 @@ class TestGroupFunction(unittest.TestCase):
                     print(ref)
                     print(numpy.where(res.reshape(ref.shape)-ref))
 
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_sort4(self):
@@ -279,7 +282,7 @@ class TestGroupFunction(unittest.TestCase):
         numpy.random.shuffle(data)
         data_d = pyopencl.array.to_device(self.queue, data)
 
-        maxi = int(round(numpy.log2(self.shape)))+1
+        maxi = round(numpy.log2(self.shape))+1
         for i in range(5,maxi):
             wg = 1 << i
 
@@ -309,7 +312,7 @@ class TestGroupFunction(unittest.TestCase):
                     print(ref)
                     print(numpy.where(res.reshape(ref.shape)-ref))
 
-                self.assertTrue(good, "calculation is correct for WG=%s" % wg)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
 
 
 

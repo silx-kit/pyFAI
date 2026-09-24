@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,20 +36,23 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2026"
+__date__ = "24/08/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
 import copy
 import logging
 from collections.abc import Callable
-from math import pi as PI
 from functools import wraps
+from math import pi as PI
+
 import numpy
 import scipy.constants
 from scipy.spatial.transform import Rotation
-from .utils.decorators import deprecated
+
 from .containers import ImmutableDict
+from .utils.decorators import deprecated
+
 logger = logging.getLogger(__name__)
 TWO_PI = 2 * PI
 
@@ -168,9 +170,8 @@ class Unit:
             return False
         for name in dir(self):
             attr = self.__getattribute__(name)
-            if not callable(attr):
-                if attr!=other.__getattribute__(name):
-                    return False
+            if not callable(attr) and attr!=other.__getattribute__(name):
+                return False
         return True
 
     def get(self, key):
@@ -212,8 +213,8 @@ class Unit:
         #     rad_unit = tuple(to_unit(i) for i in obj)
         if rad_unit is None:
             logger.error(
-                "Unable to recognize this type unit '%s' of type %s. "
-                "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_]))
+                f"Unable to recognize this type unit '{obj}' of type {type(obj)}. "
+                f"Valid units are {', '.join(list(type_))}"
             )
         return rad_unit
 
@@ -776,7 +777,7 @@ def eq_exit_angle_horz(
     :param wavelength: in meter
     :return: horizontal exit angle in radians
     """
-    x_rot, y_rot, z_rot = rotate_cartesian(x=x, y=y, z=z, incident_angle=incident_angle, tilt_angle=tilt_angle)
+    x_rot, _y_rot, z_rot = rotate_cartesian(x=x, y=y, z=z, incident_angle=incident_angle, tilt_angle=tilt_angle)
     return _eq_scattering_angle_horizontal(x=x_rot, z=z_rot)
 
 
@@ -890,8 +891,8 @@ def eq_qbeam(
     """
     (
         qsample_beam,
-        qsample_horz,
-        qsample_vert,
+        _qsample_horz,
+        _qsample_vert,
     ) = q_sample(
         x=x,y=y,z=z,
         wavelength=wavelength,
@@ -924,9 +925,9 @@ def eq_qhorz(
     :return: component of the scattering vector along the horizontal direction in inverse nm
     """
     (
-        qsample_beam,
+        _qsample_beam,
         qsample_horz,
-        qsample_vert,
+        _qsample_vert,
     ) = q_sample(
         x=x,y=y,z=z,
         wavelength=wavelength,
@@ -959,8 +960,8 @@ def eq_qvert(
     :return: component of the scattering vector along the vertical direction in inverse nm
     """
     (
-        qsample_beam,
-        qsample_horz,
+        _qsample_beam,
+        _qsample_horz,
         qsample_vert,
     ) = q_sample(
         x=x,y=y,z=z,
@@ -1529,7 +1530,7 @@ LENGTH_UNITS = {
     "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)", positive=False),
     "micron": Unit("micron", scale=1e6, label=r"length $l$ ($\mu m$)", positive=False),
     "nm": Unit("nm", scale=1e9, label=r"length $l$ ($nm$)", positive=False),
-    "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)", unit_symbol="\N{Angstrom Sign}", positive=False),
+    "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)", unit_symbol="\N{LATIN CAPITAL LETTER A WITH RING ABOVE}", positive=False),
 }
 LENGTH_UNITS["µm"] = LENGTH_UNITS["micron"]
 

@@ -44,4 +44,3 @@ Finally, we present how parallax actually affects (perfect) data and how the cor
    Parallax_model
    synthetic_parallax
    Parallax_simple
-

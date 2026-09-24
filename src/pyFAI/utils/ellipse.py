@@ -1,5 +1,4 @@
 # !/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,10 +37,11 @@ __date__ = "26/02/2021"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-from typing import NamedTuple
-import numpy
 import logging
-from math import sqrt, atan2, pi
+from math import atan2, pi, sqrt
+from typing import NamedTuple
+
+import numpy
 
 _logger = logging.getLogger(__name__)
 

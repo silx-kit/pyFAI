@@ -7,7 +7,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -35,13 +35,14 @@ Distortion correction are correction are applied by look-up table (or CSR)
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "03/07/2026"
+__date__ = "20/09/2026"
 __copyright__ = "2011-2021, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 include "regrid_common.pxi"
 import cython
 import numpy
+import numpy.rec
 from cython cimport view
 from cython.parallel import prange
 from cpython.ref cimport PyObject, Py_XDECREF
@@ -328,9 +329,9 @@ def calc_LUT(float32_t[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_si
     # Hack to prevent memory leak !!!
     cdef float64_t[:, ::1] tmp_ary = numpy.empty(shape=(shape0 * shape1, size), dtype=numpy.float64)
     memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], tmp_ary.nbytes)
-    return numpy.core.records.array(numpy.asarray(tmp_ary).view(dtype=lut_d),
-                                    shape=(shape0 * shape1, size), dtype=lut_d,
-                                    copy=True)
+    return numpy.rec.array(numpy.asarray(tmp_ary).view(dtype=lut_d),
+                           shape=(shape0 * shape1, size), dtype=lut_d,
+                           copy=True)
 
 
 def calc_CSR(float32_t[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,

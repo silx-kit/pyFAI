@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,17 +31,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "16/09/2026"
 
-import unittest
-import numpy
-import fabio
 import logging
+import unittest
+
+import fabio
+import numpy
+
+from .. import detectors, distortion
+from ..ext import _distortion, sparse_utils
 from .utilstest import UtilsTest
-from .. import detectors
-from .. import distortion
-from ..ext import _distortion
-from ..ext import sparse_utils
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +54,7 @@ class TestHalfCCD(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestHalfCCD, cls).setUpClass()
+        super().setUpClass()
         """Download files"""
         cls.fit2dFile = UtilsTest.getimage(cls.fit2d_cor)
         cls.halfFrelon = UtilsTest.getimage(cls.halfFrelon)
@@ -66,18 +66,43 @@ class TestHalfCCD(unittest.TestCase):
         with fabio.open(cls.halfFrelon) as fimg:
             cls.raw = fimg.data
         cls.dis = distortion.Distortion(cls.det, method="LUT")
-        cls.larger = numpy.zeros(cls.det.shape)
-        cls.larger[:-1,:] = cls.raw
-        cls.preproc = numpy.zeros(cls.raw.shape + (3,))
+        # float32 is what Distortion.correct casts the image to anyway
+        cls.preproc = numpy.zeros(cls.raw.shape + (3,), dtype=numpy.float32)
         cls.preproc[:,:, 0] = cls.raw
         cls.preproc[:,:, 1] = cls.raw  # assume poissonian noise
         cls.preproc[:,:, 2] = 1
+        # Denominator of the relative error, shared by every comparison to fit2d
+        cls.fit2d_null = cls.fit2d == 0
+        cls.fit2d_denom = numpy.where(cls.fit2d_null, 1, cls.fit2d)
 
     @classmethod
     def tearDownClass(cls):
-        super(TestHalfCCD, cls).tearDownClass()
-        cls.larger = cls.fit2dFile = cls.halfFrelon = cls.splineFile = None
+        super().tearDownClass()
+        cls.fit2dFile = cls.halfFrelon = cls.splineFile = None
         cls.preproc = cls.det = cls.dis = cls.fit2d = cls.raw = cls.ref = None
+        cls.fit2d_null = cls.fit2d_denom = None
+
+    def assertMatchesFit2d(self, cor, msg=""):
+        """Check a corrected image against the one computed by fit2d
+
+        :param cor: corrected image, cropped to the shape of the fit2d reference
+        :param msg: extra context added to the failure message
+        """
+        delta = abs(cor - self.fit2d)
+        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
+        ratio = numpy.where(self.fit2d_null, 0, delta / self.fit2d_denom)
+        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
+        self.assertGreater(good_points_ratio, 0.99,
+                           f"99% of all points have a relative error below 1/1000 {msg}")
+
+    def assertErrorPropagated(self, signal, error, propagated):
+        """Check the arrays returned when correcting a preprocessed image"""
+        self.assertTrue(numpy.all(signal >= error), "signal is greater then error")
+        self.assertTrue(numpy.all(error >= 0), "error is positive")
+        self.assertTrue(numpy.any(error > 0), "error is not null")
+        self.assertTrue(numpy.all(propagated >= 0), "propagated array is positive")
+        self.assertTrue(numpy.any(propagated > 0), "propagated array is not null")
 
     @unittest.skipIf(UtilsTest.low_mem, "skipping test using >100M")
     def test_pos_lut(self):
@@ -110,12 +135,12 @@ class TestHalfCCD(unittest.TestCase):
         delta = (self.dis.lut["idx"] - self.ref.LUT["idx"])
         bad = 1.0 * self.dis.lut.size / (delta == 0).sum() - 1
         self.assertLess(bad, 1e-2,
-                        "same index position < 1%% error, got %s" % bad)
+                        f"same index position < 1% error, got {bad}")
         ref_pixel_size = self.ref.LUT["coef"].sum(axis=-1)
         obt_pixel_size = self.dis.lut["coef"].sum(axis=-1)
         delta = abs(ref_pixel_size - obt_pixel_size).max()
         self.assertLess(delta, 1e-3,
-                        "Same pixel size at 0.1%%, got %s" % delta)
+                        f"Same pixel size at 0.1%, got {delta}")
 
     def test_ref_vs_fit2d(self):
         """Compare reference spline correction vs fit2d's code
@@ -129,16 +154,7 @@ class TestHalfCCD(unittest.TestCase):
             logger.warning("TestHalfCCD.test_ref_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
             return
         cor = self.ref.correct(self.raw)
-        delta = abs(cor - self.fit2d)
-        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
-        mask = numpy.where(self.fit2d == 0)
-        denom = self.fit2d.copy()
-        denom[mask] = 1
-        ratio = delta / denom
-        ratio[mask] = 0
-        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
-        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        self.assertMatchesFit2d(cor)
 
     def test_lut_vs_fit2d(self):
         """Compare reference spline correction vs fit2d's code
@@ -153,35 +169,13 @@ class TestHalfCCD(unittest.TestCase):
             logger.warning("TestHalfCCD.test_ref_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
             return
         cor = self.dis.correct(self.raw)[:-1,:]
-        delta = abs(cor - self.fit2d)
-        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
-        mask = numpy.where(self.fit2d == 0)
-        denom = self.fit2d.copy()
-        denom[mask] = 1
-        ratio = delta / denom
-        ratio[mask] = 0
-        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
-        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        self.assertMatchesFit2d(cor)
 
         a, b, c = self.dis.correct(self.preproc)
         cor = c[:-1,:, 0]
         # error = b[:-1,:]
-        delta = abs(cor - self.fit2d)
-        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
-        mask = numpy.where(self.fit2d == 0)
-        denom = self.fit2d.copy()
-        denom[mask] = 1
-        ratio = delta / denom
-        ratio[mask] = 0
-        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
-        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
-        self.assertTrue(numpy.all(a >= b), "signal is greater then error")
-        self.assertTrue(numpy.all(b >= 0), "error is positive")
-        self.assertTrue(numpy.any(b > 0), "error is not null")
-        self.assertTrue(numpy.all(c >= 0), "propagated array is positive")
-        self.assertTrue(numpy.any(c > 0), "propagated array is not null")
+        self.assertMatchesFit2d(cor)
+        self.assertErrorPropagated(a, b, c)
 
     def test_csr_vs_fit2d(self):
         """Compare reference spline correction vs fit2d's code
@@ -195,36 +189,14 @@ class TestHalfCCD(unittest.TestCase):
             logger.warning("TestHalfCCD.test_ref_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
             return
         cor = self.dis.correct(self.raw)[:-1,:]
-        delta = abs(cor - self.fit2d)
-        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
-        mask = numpy.where(self.fit2d == 0)
-        denom = self.fit2d.copy()
-        denom[mask] = 1
-        ratio = delta / denom
-        ratio[mask] = 0
-        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
-        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        self.assertMatchesFit2d(cor)
 
         # Now test with error propagation
         a, b, c = self.dis.correct(self.preproc)
         cor = c[:-1,:, 0]
         # error = b[:-1,:]
-        delta = abs(cor - self.fit2d)
-        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
-        mask = numpy.where(self.fit2d == 0)
-        denom = self.fit2d.copy()
-        denom[mask] = 1
-        ratio = delta / denom
-        ratio[mask] = 0
-        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
-        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
-        self.assertTrue(numpy.all(a >= b), "signal is greater then error")
-        self.assertTrue(numpy.all(b >= 0), "error is positive")
-        self.assertTrue(numpy.any(b > 0), "error is not null")
-        self.assertTrue(numpy.all(c >= 0), "propagated array is positive")
-        self.assertTrue(numpy.any(c > 0), "propagated array is not null")
+        self.assertMatchesFit2d(cor)
+        self.assertErrorPropagated(a, b, c)
 
 
 class TestImplementations(unittest.TestCase):
@@ -234,7 +206,7 @@ class TestImplementations(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestImplementations, cls).setUpClass()
+        super().setUpClass()
         """Download files"""
         cls.halfFrelon = UtilsTest.getimage(cls._halfFrelon)
         cls.splineFile = UtilsTest.getimage(cls._splineFile)
@@ -245,7 +217,7 @@ class TestImplementations(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestImplementations, cls).tearDownClass()
+        super().tearDownClass()
         cls.fit2dFile = cls.halfFrelon = cls.splineFile = cls.det = cls.dis = cls.fit2d = cls.raw = None
 
     def test_calc_pos(self):
@@ -254,7 +226,7 @@ class TestImplementations(unittest.TestCase):
         self.dis.reset(prepare=False)
         cy = self.dis.calc_pos(True)
         delta = abs(ny - cy).max()
-        self.assertEqual(delta, 0, "calc_pos: equivalence of the cython and numpy model, max error=%s" % delta)
+        self.assertEqual(delta, 0, f"calc_pos: equivalence of the cython and numpy model, max error={delta}")
 
     def test_size(self):
         self.dis.reset(prepare=False)
@@ -262,7 +234,7 @@ class TestImplementations(unittest.TestCase):
         self.dis.reset(prepare=False)
         cy = self.dis.calc_size(True)
         delta = abs(ny - cy).sum()
-        self.assertEqual(delta, 0, "calc_size: equivalence of the cython and numpy model, summed error=%s" % delta)
+        self.assertEqual(delta, 0, f"calc_size: equivalence of the cython and numpy model, summed error={delta}")
 
     def test_lut(self):
         self.dis.reset(method="LUT", prepare=False)

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,10 +27,11 @@ __license__ = "MIT"
 __date__ = "16/10/2020"
 
 import weakref
+
 from silx.gui import qt
 
 
-class SynchronizeRawView(object):
+class SynchronizeRawView:
     """Synchronize the raw view of plots altogether.
 
     The active plot of each tasks synchronizing a model containing information

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,11 +34,15 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/10/2025"
 __status__ = "development"
 
-from silx.gui import qt
 import argparse
 import logging
+import signal
+
+from silx.gui import qt
+
+from .. import date as pyFAI_date
+from .. import version as pyFAI_version
 from ..gui.pilx.MainWindow import MainWindow
-from .. import version as pyFAI_version, date as pyFAI_date
 from ..io.nexus import Nexus
 
 logger = logging.getLogger(__name__)
@@ -118,7 +121,21 @@ def main(args=None):
                     nxprocess_path=nxprocess_path,
                     )
     window.show()
-    return app.exec()
+
+    def sigintHandler(*args):
+        # Close the window so its closeEvent shutdown hooks run.
+        window.close()
+
+    signal.signal(signal.SIGINT, sigintHandler)
+
+    # Like silx view, wake Python periodically so it can handle SIGINT while Qt runs.
+    # https://github.com/silx-kit/silx/blob/b744569fdce1d84525f031c1ee81eaf38d2f649b/src/silx/app/view/main.py#L148
+    interrupt_timer = qt.QTimer()
+    interrupt_timer.start(500)
+    interrupt_timer.timeout.connect(lambda: None)
+    result = app.exec()
+    app.deleteLater()
+    return result
 
 if __name__ == "__main__":
     main()

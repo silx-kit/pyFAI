@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,29 +31,29 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2025"
+__date__ = "17/09/2026"
 
-import unittest
 import logging
 import os.path
 import shutil
+import unittest
+from unittest import mock
+
 import numpy
 
-from .. import units
+from .. import detector_factory, units
 from .. import worker as worker_mdl
-from ..worker import Worker, PixelwiseWorker
+from ..containers import Integrate1dResult, Integrate2dResult
 from ..integrator.azimuthal import AzimuthalIntegrator
-from ..containers import Integrate1dResult
-from ..containers import Integrate2dResult
 from ..io.integration_config import ConfigurationReader
 from ..io.ponifile import PoniFile
-from .. import detector_factory
+from ..worker import PixelwiseWorker, Worker
 from . import utilstest
 
 logger = logging.getLogger(__name__)
 
 
-class AzimuthalIntegratorMocked():
+class AzimuthalIntegratorMocked:
 
     def __init__(self, result=None):
         self._integrate1d_called = 0
@@ -82,7 +81,7 @@ class AzimuthalIntegratorMocked():
     integrate2d_ng = integrate2d_legacy = integrate2d
 
 
-class MockedAiWriter():
+class MockedAiWriter:
 
     def __init__(self, result=None):
         self._write_called = 0
@@ -101,12 +100,12 @@ class TestWorker(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestWorker, cls).setUpClass()
+        super().setUpClass()
         cls.rng = utilstest.UtilsTest.get_rng()
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestWorker, cls).tearDownClass()
+        super().tearDownClass()
         cls.rng = None
 
     def test_constructor_ai(self):
@@ -117,6 +116,13 @@ class TestWorker(unittest.TestCase):
     def test_constructor(self):
         w = Worker()
         self.assertIsNotNone(w)
+
+    def test_warmup_without_input_shape(self):
+        worker = Worker()
+        self.assertIsNone(worker.shape)
+        with mock.patch.object(worker, "_warmup") as warmup:
+            worker.warmup(sync=True)
+        warmup.assert_not_called()
 
     def test_process_1d(self):
         ai_result = Integrate1dResult(numpy.array([0, 1]), numpy.array([2, 3]))
@@ -141,7 +147,7 @@ class TestWorker(unittest.TestCase):
         self.assertEqual(ai_args["unit"], worker.unit)
         self.assertEqual(ai_args["dummy"], worker.dummy)
         self.assertEqual(ai_args["delta_dummy"], worker.delta_dummy)
-        self.assertTrue(worker.method in str(ai_args["method"]).lower())
+        self.assertIn(worker.method.algo, str(ai_args["method"]).lower())
         self.assertEqual(ai_args["polarization_factor"], worker.polarization_factor)
         self.assertEqual(ai_args["safe"], True)
         self.assertEqual(ai_args["data"], data)
@@ -176,7 +182,7 @@ class TestWorker(unittest.TestCase):
         self.assertEqual(ai_args["unit"], worker.unit)
         self.assertEqual(ai_args["dummy"], worker.dummy)
         self.assertEqual(ai_args["delta_dummy"], worker.delta_dummy)
-        self.assertTrue(worker.method in str(ai_args["method"]).lower())
+        self.assertIn(worker.method.algo, str(ai_args["method"]).lower())
         self.assertEqual(ai_args["polarization_factor"], worker.polarization_factor)
         self.assertEqual(ai_args["safe"], True)
         self.assertEqual(ai_args["data"], data)
@@ -285,13 +291,13 @@ class TestWorker(unittest.TestCase):
         pww = PixelwiseWorker(dark=dark, flat=flat, dummy=-5, dtype="float64")
         res_np = pww.process(raw, normalization_factor=6.0)
         err = abs(res_np - signal / 6.0).max()
-        self.assertLess(err, precision, "Numpy calculation are OK: %s" % err)
+        self.assertLess(err, precision, f"Numpy calculation are OK: {err}")
 
         # Cython path
         worker_mdl.USE_CYTHON = True
         res_cy = pww.process(raw, normalization_factor=7.0)
         err = abs(res_cy - signal / 7.0).max()
-        self.assertLess(err, precision, "Cython calculation are OK: %s" % err)
+        self.assertLess(err, precision, f"Cython calculation are OK: {err}")
 
         # With Poissonian errors
         # Numpy path
@@ -301,16 +307,16 @@ class TestWorker(unittest.TestCase):
         delta_res = abs(res_np - ref / 2.0).max()
         delta_err = abs(err_np - numpy.sqrt(ref) / 2.0).max()
 
-        self.assertLess(delta_res, precision, "Numpy intensity calculation are OK: %s" % err)
-        self.assertLess(delta_err, precision, "Numpy error calculation are OK: %s" % err)
+        self.assertLess(delta_res, precision, f"Numpy intensity calculation are OK: {err}")
+        self.assertLess(delta_err, precision, f"Numpy error calculation are OK: {err}")
 
         # Cython path
         worker_mdl.USE_CYTHON = True
         res_cy, err_cy = pww.process(raw, variance=ref, normalization_factor=2.0)
         delta_res = abs(res_cy - ref / 2.0).max()
         delta_err = abs(err_cy - numpy.sqrt(ref) / 2.0).max()
-        self.assertLess(delta_res, precision, "Cython intensity calculation are OK: %s" % err)
-        self.assertLess(delta_err, precision, "Cython error calculation are OK: %s" % err)
+        self.assertLess(delta_res, precision, f"Cython intensity calculation are OK: {err}")
+        self.assertLess(delta_err, precision, f"Cython error calculation are OK: {err}")
 
     def test_sigma_clip(self):
         ai = AzimuthalIntegrator.sload({"detector": "Imxpad S10", "wavelength":1e-10})
@@ -340,6 +346,35 @@ class TestWorker(unittest.TestCase):
                                         "wavelength":1e-10})
         w = Worker(ai)
         self.assertEqual(w.shape, ai.detector.shape, "detector shape matches")
+
+    def test_method_is_immutable(self):
+        """`Worker.method` is always an immutable Method, whatever it is set
+        from, and holds neither the dimensionality nor the device (#2757).
+        """
+        from ..method_registry import Method
+        worker = Worker(shapeOut=(1, 100))
+        self.assertIsInstance(worker.method, Method)
+
+        worker.method = ["full", "csr", "cython"]
+        self.assertEqual(worker.method, Method(None, "full", "csr", "cython"))
+        with self.assertRaises(AttributeError):
+            worker.method.algo = "lut"  # used to be a plain, mutable list
+
+        # the device is moved to the dedicated attribute
+        worker.method = Method(2, "no", "lut", "opencl", (0, 1))
+        self.assertIsNone(worker.method.dim, "the dimensionality comes from nbpt_azim")
+        self.assertIsNone(worker.method.target, "the device comes from opencl_device")
+        self.assertEqual(worker.opencl_device, (0, 1))
+
+    def test_set_method(self):
+        """`set_method` persists its result and rebuilds the processor."""
+        worker = Worker(shapeOut=(1, 100))
+        previous = worker._method
+        returned = worker.set_method(("no", "histogram", "python"))
+        self.assertEqual(returned, worker.method, "the stored method is returned")
+        self.assertEqual(worker._method.method.algo, "histogram",
+                         "the selected integrator is updated")
+        self.assertIsNot(worker._method, previous)
 
 class TestWorkerConfig(unittest.TestCase):
 

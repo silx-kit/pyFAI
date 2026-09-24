@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,14 +32,17 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "24/08/2026"
 __status__ = "production"
 
 
-import numpy
 import logging
 from math import sqrt
+
+import numpy
+
 from ._common import Detector
+
 logger = logging.getLogger(__name__)
 
 
@@ -109,7 +111,7 @@ class HexDetector(Detector):
 class Pixirad1(HexDetector):
     MAX_SHAPE = (476, 512)  # max size of the detector
     MANUFACTURER = "Pixirad"
-    aliases = ["Pixirad-1"]
+    aliases = ("Pixirad-1",)
     def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
         super().__init__(pitch=pitch, pixel1=pixel1, pixel2=pixel2,
                              max_shape=max_shape, orientation=orientation)
@@ -118,7 +120,7 @@ class Pixirad1(HexDetector):
 class Pixirad2(HexDetector):
     MAX_SHAPE = (476, 1024)  # max size of the detector
     MANUFACTURER = "Pixirad"
-    aliases = ["Pixirad-2"]
+    aliases = ("Pixirad-2",)
     def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
         super().__init__(pitch=pitch, pixel1=pixel1, pixel2=pixel2,
                              max_shape=max_shape, orientation=orientation)
@@ -127,7 +129,7 @@ class Pixirad2(HexDetector):
 class Pixirad4(HexDetector):
     MAX_SHAPE = (476, 2048)  # max size of the detector
     MANUFACTURER = "Pixirad"
-    aliases = ["Pixirad-4"]
+    aliases = ("Pixirad-4",)
     def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
         super().__init__(pitch=pitch, pixel1=pixel1, pixel2=pixel2,
                              max_shape=max_shape, orientation=orientation)
@@ -136,7 +138,7 @@ class Pixirad4(HexDetector):
 class Pixirad8(HexDetector):
     MAX_SHAPE = (476, 4096)  # max size of the detector
     MANUFACTURER = "Pixirad"
-    aliases = ["Pixirad-8"]
+    aliases = ("Pixirad-8",)
     def __init__(self, pitch=60e-6, pixel1=None, pixel2=None, max_shape=None, orientation=0):
         super().__init__(pitch=pitch, pixel1=pixel1, pixel2=pixel2,
                              max_shape=max_shape, orientation=orientation)

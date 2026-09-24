@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,19 +24,19 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 
-import time
 import logging
-from typing import List
+import time
 
 from silx.gui import qt
+
 from pyFAI.calibrant import Calibrant
+
+from ...utils import get_ui_file
 from ..model.CalibrantModel import CalibrantModel
 from .model.CalibrantFilterProxyModel import CalibrantFilterProxyModel
 from .model.CalibrantItemModel import CalibrantItemModel
-from ...utils import get_ui_file
-
 
 _logger = logging.getLogger(__name__)
 
@@ -50,7 +49,7 @@ class _CalibrantItemView(qt.QAbstractItemView):
     sigLoadFileRequested = qt.Signal()
 
     def __init__(self, parent=None):
-        super(_CalibrantItemView, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         filename = get_ui_file("calibrant-selector2.ui")
         layout = qt.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -88,11 +87,11 @@ class _CalibrantItemView(qt.QAbstractItemView):
         self.__dropTime = time.time()
         self.__ui.listView.setFocus()
 
-    def setRecentCalibrants(self, calibrants: List[str]):
+    def setRecentCalibrants(self, calibrants: list[str]):
         self.__lastUsed = calibrants
         self._syncLastUsed()
 
-    def recentCalibrants(self) -> List[str]:
+    def recentCalibrants(self) -> list[str]:
         return self.__lastUsed
 
     def touchCalibrant(self, calibrant):
@@ -135,7 +134,7 @@ class _CalibrantItemView(qt.QAbstractItemView):
         stream = qt.QDataStream(state, qt.QIODevice.ReadOnly)
         version = stream.readUInt32()
         if version != 0:
-            _logger.warning("Serial version mismatch. Found %d." % version)
+            _logger.warning(f"Serial version mismatch. Found {version}.")
             return False
 
         nb = stream.readUInt32()
@@ -253,7 +252,7 @@ class CalibrantSelector2(qt.QComboBox):
     sigLoadFileRequested = qt.Signal()
 
     def __init__(self, parent=None):
-        super(CalibrantSelector2, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         model = CalibrantItemModel(self)
         self.setModel(model)
         self.setCurrentIndex(-1)
@@ -303,7 +302,7 @@ class CalibrantSelector2(qt.QComboBox):
     def recentCalibrants(self):
         return self.view().recentCalibrants()
 
-    def setRecentCalibrants(self, recentCalibrants: List[str]):
+    def setRecentCalibrants(self, recentCalibrants: list[str]):
         return self.view().setRecentCalibrants(recentCalibrants)
 
     def restoreState(self, state: qt.QByteArray) -> bool:

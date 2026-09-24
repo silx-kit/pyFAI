@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,14 +35,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "24/08/2026"
 __status__ = "production"
 
 
-import numpy
 import logging
-from ._common import Detector, _ensure_dict, SensorConfig
+
+import numpy
+
 from ..utils import mathutil
+from ._common import Detector, SensorConfig, _ensure_dict
+
 logger = logging.getLogger(__name__)
 try:
     from ..ext import bilinear
@@ -289,7 +291,7 @@ class Rapid(CylindricalDetector):
     This is why z<0 (or p3<0)
     """
     MANUFACTURER = "Rigaku"
-    aliases = ["RapidII"]
+    aliases = ("RapidII",)
     MAX_SHAPE = (2560, 4700)
 
     def __init__(self, pixel1=0.1e-3, pixel2=0.1e-3, radius=0.12726, orientation=0):

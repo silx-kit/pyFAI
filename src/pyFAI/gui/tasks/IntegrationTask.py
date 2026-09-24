@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -25,40 +24,38 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "10/04/2026"
+__date__ = "24/08/2026"
 
 import logging
+
 import numpy
-
-from silx.gui import qt
-import silx.gui.plot
 import silx.gui.icons
+import silx.gui.plot
 import silx.io
+from silx.gui import qt
 
+import pyFAI.geometry
 import pyFAI.utils
-from .AbstractCalibrationTask import AbstractCalibrationTask
+from pyFAI import method_registry
+from pyFAI.ext.invert_geometry import InvertGeometry
 from pyFAI.integrator.azimuthal import AzimuthalIntegrator
-from ..utils import unitutils
+from pyFAI.io import integration_config, ponifile
+
+from ... import units as core_units
+from ...utils import stringutil
+from ..CalibrationContext import CalibrationContext
+from ..dialog import MessageBox
+from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
+from ..helper import ProcessingWidget
+from ..helper.MarkerManager import MarkerManager
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
 from ..model.DataModel import DataModel
+from ..utils import FilterBuilder, imageutils, units, unitutils, validators
+
 # from ..model.GeometryModel import GeometryModel
 # from ..model.Fit2dGeometryModel import Fit2dGeometryModel
 from ..widgets.QuantityLabel import QuantityLabel
-from ..CalibrationContext import CalibrationContext
-from ... import units as core_units
-from ..utils import units
-from ..utils import validators
-from ..helper.MarkerManager import MarkerManager
-from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
-from ..helper import ProcessingWidget
-from pyFAI.ext.invert_geometry import InvertGeometry
-from ..utils import FilterBuilder
-from ..utils import imageutils
-from ...utils import stringutil
-from ..dialog.IntegrationMethodDialog import IntegrationMethodDialog
-from pyFAI import method_registry
-from ..dialog import MessageBox
-from pyFAI.io import ponifile, integration_config
-import pyFAI.geometry
+from .AbstractCalibrationTask import AbstractCalibrationTask
 
 _logger = logging.getLogger(__name__)
 
@@ -96,12 +93,12 @@ class EnablableDataModel(DataModel):
         self.unlockSignals()
 
     def setValue(self, value):
-        super(EnablableDataModel, self).setValue(value)
+        super().setValue(value)
         if self.__isEnabled:
             self.__model.setValue(value)
 
 
-class IntegrationProcess(object):
+class IntegrationProcess:
 
     def __init__(self, model, altGeometry=None):
         self.__isValid = self._init(model, altGeometry)
@@ -199,11 +196,11 @@ class IntegrationProcess(object):
 
         ai.enable_parallax(self.__parallaxCorrection)
         # FIXME Add error model
-        method = method_registry.Method(0, self.__method.split, self.__method.algo, self.__method.impl, None)
+        method = method_registry.Method(None, self.__method.split, self.__method.algo, self.__method.impl, None)
         method1d = method.fixed(dim=1)
         methods = method_registry.IntegrationMethod.select_method(method=method1d)
         if len(methods) == 0:
-            method1d = method_registry.Method(1, method1d.split, "*", "*", None)
+            method1d = method_registry.Method(1, method1d.split, None, None, None)
             _logger.warning("Downgrade 1D integration method to %s", method1d)
         else:
             method1d = methods[0].method
@@ -211,7 +208,7 @@ class IntegrationProcess(object):
         method2d = method.fixed(dim=2)
         methods = method_registry.IntegrationMethod.select_method(method=method2d)
         if len(methods) == 0:
-            method2d = method_registry.Method(2, method2d.split, "*", "*", None)
+            method2d = method_registry.Method(2, method2d.split, None, None, None)
             _logger.warning("Downgrade 2D integration method to %s", method2d)
         else:
             method2d = methods[0].method
@@ -354,15 +351,15 @@ class _StatusBar(qt.QStatusBar):
         scatteringUnitModel = CalibrationContext.instance().getScatteringVectorUnit()
 
         self.__position = QuantityLabel(self)
-        self.__position.setPrefix(u"<b>Pos</b>: ")
-        self.__position.setFormatter(u"{value[0]: >4.2F}×{value[1]:4.2F} px")
+        self.__position.setPrefix("<b>Pos</b>: ")
+        self.__position.setFormatter("{value[0]: >4.2F}×{value[1]:4.2F} px")
         # TODO: Could it be done using a custom layout? Instead of setElasticSize
         self.__position.setElasticSize(True)
         self.addWidget(self.__position)
 
         self.__chi = QuantityLabel(self)
-        self.__chi.setPrefix(u"<b>χ</b>: ")
-        self.__chi.setFormatter(u"{value: >4.3F}")
+        self.__chi.setPrefix("<b>χ</b>: ")
+        self.__chi.setFormatter("{value: >4.3F}")
         self.__chi.setInternalUnit(units.Unit.RADIAN)
         self.__chi.setDisplayedUnit(units.Unit.RADIAN)
         self.__chi.setDisplayedUnitModel(angleUnitModel)
@@ -371,8 +368,8 @@ class _StatusBar(qt.QStatusBar):
         self.addWidget(self.__chi)
 
         self.__2theta = QuantityLabel(self)
-        self.__2theta.setPrefix(u"<b>2θ</b>: ")
-        self.__2theta.setFormatter(u"{value: >4.3F}")
+        self.__2theta.setPrefix("<b>2θ</b>: ")
+        self.__2theta.setFormatter("{value: >4.3F}")
         self.__2theta.setInternalUnit(units.Unit.RADIAN)
         self.__2theta.setDisplayedUnitModel(angleUnitModel)
         self.__2theta.setUnitEditable(True)
@@ -380,8 +377,8 @@ class _StatusBar(qt.QStatusBar):
         self.addWidget(self.__2theta)
 
         self.__q = QuantityLabel(self)
-        self.__q.setPrefix(u"<b>q</b>: ")
-        self.__q.setFormatter(u"{value: >4.3F}")
+        self.__q.setPrefix("<b>q</b>: ")
+        self.__q.setFormatter("{value: >4.3F}")
         self.__q.setInternalUnit(units.Unit.INV_ANGSTROM)
         self.__q.setDisplayedUnitModel(scatteringUnitModel)
         self.__q.setUnitEditable(True)
@@ -429,7 +426,7 @@ class _StatusBar(qt.QStatusBar):
 class IntegrationPlot(qt.QFrame):
 
     def __init__(self, parent=None):
-        super(IntegrationPlot, self).__init__(parent)
+        super().__init__(parent)
 
         self.__plot1d, self.__plot2d = self.__createPlots(self)
         self.__statusBar = _StatusBar(self)
@@ -494,22 +491,21 @@ class IntegrationPlot(qt.QFrame):
             self.__mouseLeave()
             return True
 
-        if event.type() == qt.QEvent.ToolTip:
-            if self.__availableRings is not None:
-                pos = widget.mapFromGlobal(event.globalPos())
-                coord = widget.pixelToData(pos.x(), pos.y())
+        if event.type() == qt.QEvent.ToolTip and self.__availableRings is not None:
+            pos = widget.mapFromGlobal(event.globalPos())
+            coord = widget.pixelToData(pos.x(), pos.y())
 
-                angle = coord[0]
-                ringId, angle = self.__getClosestAngle(angle)
+            angle = coord[0]
+            ringId, angle = self.__getClosestAngle(angle)
 
-                if ringId is not None:
-                    message = "%s ring" % stringutil.to_ordinal(ringId + 1)
-                    qt.QToolTip.showText(event.globalPos(), message)
-                else:
-                    qt.QToolTip.hideText()
-                    event.ignore()
+            if ringId is not None:
+                message = f"{stringutil.to_ordinal(ringId + 1)} ring"
+                qt.QToolTip.showText(event.globalPos(), message)
+            else:
+                qt.QToolTip.hideText()
+                event.ignore()
 
-                return True
+            return True
 
         return False
 
@@ -651,7 +647,7 @@ class IntegrationPlot(qt.QFrame):
         else:
             step = int(len(angles) / 50)
 
-        self.__displayedAngles = set([])
+        self.__displayedAngles = set()
 
         for items in self.__ringItems.values():
             for item in items:
@@ -672,7 +668,7 @@ class IntegrationPlot(qt.QFrame):
         color = CalibrationContext.instance().getMarkerColor(ringId, mode="numpy")
         items = []
 
-        legend = "ring-%i" % (ringId,)
+        legend = f"ring-{ringId}"
 
         self.__plot1d.addXMarker(x=ringAngle, color=color, legend=legend)
         item = self.__plot1d._getMarker(legend)
@@ -933,7 +929,7 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self.__integrationUpToDate = True
         self.__integrationResetZoomPolicy = None
-        method = method_registry.Method(666, "full", "histogram", "cython", None)
+        method = method_registry.Method(None, "full", "histogram", "cython", None)
         self.__setMethod(method)
 
         positiveValidator = validators.IntegerAndEmptyValidator(self)

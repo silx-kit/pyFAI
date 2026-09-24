@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,22 +30,28 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2026"
+__date__ = "18/08/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-import numpy
-from .. import units
 from json import JSONEncoder, dump, dumps
+
+import numpy
+
+from .. import units
 
 
 class PyFAIEncoder(JSONEncoder):
     def default(self, obj):
+        # deferred import: sensors.py imports this module for its __repr__
+        from ..detectors.sensors import SensorConfig
         if isinstance(obj, units.Unit):
             return obj.name
         elif isinstance(obj, numpy.generic):
             return obj.item()
-        JSONEncoder.default(self, obj)
+        elif isinstance(obj, SensorConfig):
+            return obj.as_dict()
+        return JSONEncoder.default(self, obj)
 
 UnitEncoder = PyFAIEncoder
 

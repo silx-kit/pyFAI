@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2019 European Synchrotron Radiation Facility
@@ -25,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "24/08/2026"
 
 import logging
 
@@ -74,9 +73,8 @@ class AdvancedComboBox(qt.QComboBox):
             return
         self.__updateDefaultIndexUpdate = enable
         self.__updateModelConnection(not enable)
-        if enable:
-            if self.model() is not None:
-                self.__modelWasEmpty = self.model().rowCount() == 0
+        if enable and self.model() is not None:
+            self.__modelWasEmpty = self.model().rowCount() == 0
 
     def __updateModelConnection(self, connect):
         model = self.model()
@@ -90,7 +88,7 @@ class AdvancedComboBox(qt.QComboBox):
     def setModel(self, model):
         if not self.__updateDefaultIndexUpdate:
             self.__updateModelConnection(False)
-        super(AdvancedComboBox, self).setModel(model)
+        super().setModel(model)
         if not self.__updateDefaultIndexUpdate:
             self.__updateModelConnection(True)
             self.__modelWasEmpty = model.rowCount() == 0
@@ -105,11 +103,10 @@ class AdvancedComboBox(qt.QComboBox):
         """
         Called when currentIndex is updated.
         """
-        if not self.__updateDefaultIndexUpdate:
+        if not self.__updateDefaultIndexUpdate and self.__modelWasEmpty:
             # Kind of hack to avoid a hard coded behaviour
-            if self.__modelWasEmpty:
-                self.__modelWasEmpty = False
-                self.setCurrentIndex(-1)
+            self.__modelWasEmpty = False
+            self.setCurrentIndex(-1)
 
     def paintEvent(self, event):
         """

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -30,21 +29,23 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2026"
+__date__ = "25/08/2026"
 __status__ = "development"
 
-import math
-from copy import deepcopy
-import logging
-import warnings
-from typing import NamedTuple
-from enum import IntEnum
-from dataclasses import fields, asdict  # noqa
 import collections
-import numpy
+import logging
+import math
+import warnings
+from copy import deepcopy
+from dataclasses import asdict, fields  # noqa
+from enum import IntEnum
+from typing import ClassVar, NamedTuple
+
 import numexpr
+import numpy
 from numpy.typing import ArrayLike
-from .utils.dataclasses import dataclass, case_insensitive_dataclass  # noqa
+
+from .utils.dataclasses import case_insensitive_dataclass, dataclass  # noqa
 from .utils.decorators import deprecated_warning
 
 logger = logging.getLogger(__name__)
@@ -152,7 +153,7 @@ class ErrorModel(IntEnum):
 class _CopyableTuple(tuple):
     "Abstract class that can be copied using the copy module"
 
-    COPYABLE_ATTR = set()  # list of copyable attributes
+    COPYABLE_ATTR: ClassVar[set] = set()  # list of copyable attributes
 
     def __copy__(self):
         "Helper function for copy.copy()"
@@ -184,7 +185,7 @@ class IntegrateResult(_CopyableTuple):
     Class defining shared information between Integrate1dResult and Integrate2dResult.
     """
 
-    COPYABLE_ATTR = {
+    COPYABLE_ATTR: ClassVar[set] = {
         "_sum_signal",
         "_sum_variance",
         "_sum_normalization",
@@ -750,7 +751,7 @@ class Integrate1dResult(IntegrateResult):
         return IntegrateResult.__new__(Integrate1dResult, t)
 
     def __init__(self, radial, intensity, sigma=None):
-        super(Integrate1dResult, self).__init__()
+        super().__init__()
 
     @property
     def radial(self):
@@ -841,7 +842,7 @@ class Integrate2dResult(IntegrateResult):
         return IntegrateResult.__new__(Integrate2dResult, t)
 
     def __init__(self, intensity, radial, azimuthal, sigma=None):
-        super(Integrate2dResult, self).__init__()
+        super().__init__()
         self._radial_unit = None
         self._azimuthal_unit = None
 
@@ -1018,7 +1019,7 @@ class SeparateResult(_CopyableTuple):
     * Shadow areas (signal < amorphous)
     """
 
-    COPYABLE_ATTR = {
+    COPYABLE_ATTR: ClassVar[set] = {
         "_radial",
         "_intensity",
         "_sigma",
@@ -1349,7 +1350,7 @@ class SeparateResult(_CopyableTuple):
 class SparseFrame(_CopyableTuple):
     """Result of the sparsification of a diffraction frame"""
 
-    COPYABLE_ATTR = {
+    COPYABLE_ATTR: ClassVar[set] = {
         "_shape",
         "_dtype",
         "_mask",
@@ -1607,7 +1608,7 @@ class Integrate1dFiberResult(IntegrateResult):
         return IntegrateResult.__new__(Integrate1dFiberResult, t)
 
     def __init__(self, integrated, intensity, sigma=None):
-        super(Integrate1dFiberResult, self).__init__()
+        super().__init__()
         self._vertical_integration = None
 
     @property
@@ -1679,7 +1680,7 @@ class Integrate2dFiberResult(IntegrateResult):
         return IntegrateResult.__new__(Integrate2dFiberResult, t)
 
     def __init__(self, intensity, inplane, outofplane, sigma=None):
-        super(Integrate2dFiberResult, self).__init__()
+        super().__init__()
         self._oop_unit = None
         self._ip_unit = None
 
@@ -1788,9 +1789,9 @@ class Integrate2dFiberResult(IntegrateResult):
 class Miller(NamedTuple):
     """This represents the Miller index of a family of lattice plans"""
 
-    h: int  # noqa: E741
-    k: int  # noqa: E741
-    l: int  # noqa: E741
+    h: int
+    k: int
+    l: int  # noqa: E741 (third Miller index)
 
     def __repr__(self):
         return f"Miller({self.h}, {self.k}, {self.l})"
@@ -1833,7 +1834,7 @@ class Reflection:
 
     dspacing: float = None
     intensity: float = None
-    hkl: tuple = tuple()  # or better Miller namedtuple
+    hkl: tuple = ()  # or better Miller namedtuple
     multiplicity: int = None
 
     @property

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,20 +27,20 @@ __license__ = "MIT"
 __date__ = "16/10/2020"
 
 from .AbstractModel import AbstractModel
-from .PlotViewModel import PlotViewModel
 from .ExperimentSettingsModel import ExperimentSettingsModel
-from .PeakSelectionModel import PeakSelectionModel
-from .GeometryModel import GeometryModel
 from .GeometryConstraintsModel import GeometryConstraintsModel
+from .GeometryHistoryModel import GeometryHistoryModel
+from .GeometryModel import GeometryModel
 from .IntegrationSettingsModel import IntegrationSettingsModel
 from .MarkerModel import MarkerModel
-from .GeometryHistoryModel import GeometryHistoryModel
+from .PeakSelectionModel import PeakSelectionModel
+from .PlotViewModel import PlotViewModel
 
 
 class CalibrationModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(CalibrationModel, self).__init__(parent)
+        super().__init__(parent)
         self.__experimentSettingsModel = ExperimentSettingsModel(self)
         self.__peakSelectionModel = PeakSelectionModel(self)
         self.__fittedGeometry = GeometryModel(self)

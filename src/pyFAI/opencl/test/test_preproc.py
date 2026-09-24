@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: pyFAI
 #             https://github.com/silx-kit/pyFAI
@@ -36,9 +35,12 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "08/10/2025"
 
 import logging
-import numpy
 import unittest
+
+import numpy
+
 from .. import ocl
+
 if ocl:
     pass
 from ...test.utilstest import UtilsTest

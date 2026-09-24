@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -30,28 +29,31 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "24/08/2026"
 __status__ = "production"
 
-import sys
-import os
 import copy
+import logging
+import os
+import sys
 import threading
 from math import ceil, sqrt
-import logging
-import numpy
+
 import fabio
-from scipy.ndimage import label, distance_transform_edt
+import numpy
+from scipy.ndimage import distance_transform_edt, label
 from silx.math import medfilt as median_filter
+
 from .ext.bilinear import Bilinear
-from .utils.mathutil import gaussian_filter, binning, unbinning, is_far_from_group
+from .utils.mathutil import binning, gaussian_filter, is_far_from_group, unbinning
+
 logger = logging.getLogger(__name__)
 
 if os.name != "nt":
     WindowsError = RuntimeError
 
 
-class Massif(object):
+class Massif:
     """
     A massif is defined as an area around a peak, it is used to find neighboring peaks
     """
@@ -76,8 +78,13 @@ class Massif(object):
                 logger.error("Unable to understand this type of data %s: %s", data, error)
         self.log_info = True
         """If true, more information is displayed in the logger relative to picking."""
+        if mask is not None:
+            mask = numpy.asarray(mask)
+            if mask.shape != self.data.shape:
+                raise ValueError(f"Mask shape {mask.shape} does not match data shape {self.data.shape}: "
+                                 "check the detector definition")
         data_mask = numpy.logical_not(numpy.isfinite(self.data))
-        if (data_mask.any() is False):
+        if not data_mask.any():
             self.mask = mask
         else:
             if mask is None:
@@ -184,7 +191,7 @@ class Massif(object):
         region2 = region * (cleaned_data > mean)
         idx = numpy.vstack(numpy.where(region2)).T
         numpy.random.shuffle(idx)
-        nmax = min(nmax, int(ceil(sqrt(idx.shape[0]))))
+        nmax = min(nmax, ceil(sqrt(idx.shape[0])))
         if massif_contour is not None:
             try:
                 massif_contour(region)
@@ -199,7 +206,7 @@ class Massif(object):
                 continue
             if (region2[int(xopt[0] + 0.5), int(xopt[1] + 0.5)]) and xopt not in listpeaks:
                 if stdout:
-                    stdout.write("[ %4i, %4i ] --> [ %5.1f, %5.1f ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
+                    stdout.write(f"[ {int(j[0]):4d}, {int(j[1]):4d} ] --> [ {xopt[0]:5.1f}, {xopt[1]:5.1f} ] after {nbFailure:3d} iterations {os.linesep}")
                 listpeaks.append(xopt)
                 nbFailure = 0
             else:
@@ -242,11 +249,10 @@ class Massif(object):
             if out is not None:
 
                 logger.debug(msg, idx[1], idx[0], out[1], out[0])
-                p0, p1 = int(round(out[0])), int(round(out[1]))
-                if mask[p0, p1]:
-                    if (self.data[p0, p1] > Imin) and is_far_from_group(out, res, dmin2):
-                        res.append(out)
-                        cnt = 0
+                p0, p1 = round(out[0]), round(out[1])
+                if mask[p0, p1] and (self.data[p0, p1] > Imin) and is_far_from_group(out, res, dmin2):
+                    res.append(out)
+                    cnt = 0
             if len(res) >= keep or cnt > keep:
                 break
             else:

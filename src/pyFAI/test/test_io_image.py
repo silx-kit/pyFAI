@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,13 +33,13 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "16/10/2020"
 
-import unittest
 import logging
 import os.path
 import shutil
-import numpy
-import h5py
+import unittest
 
+import h5py
+import numpy
 from silx.io.url import DataUrl
 
 from ..io import image as image_mdl

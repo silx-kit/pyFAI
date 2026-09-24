@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2024 European Synchrotron Radiation Facility
@@ -56,33 +55,22 @@ of this modules to ensure access across different distribution schemes:
 
 __authors__ = ["V.A. Sole", "Thomas Vincent"]
 __license__ = "MIT"
-__date__ = "07/03/2024"
+__date__ = "24/08/2026"
 
 
+import atexit
+import importlib.resources as importlib_resources
+import logging
 import os
 import sys
-import logging
+from contextlib import ExitStack
 
 logger = logging.getLogger(__name__)
 
-# importlib_resources is useful when this package is stored in a zip
-# When importlib.resources is not available, the resources dir defaults to the
-# directory containing this module.
-if sys.version_info >= (3,9):
-    import importlib.resources as importlib_resources
-else:
-    try:
-        import  importlib_resources
-    except ImportError:
-        logger.info("Unable to import importlib_resources")
-        logger.debug("Backtrace", exc_info=True)
-        importlib_resources = None
-
-if importlib_resources is not None:
-        import atexit
-        from contextlib import ExitStack
-        file_manager = ExitStack()
-        atexit.register(file_manager.close)
+# importlib.resources is used to access resources even when this package is
+# stored in a zip file.
+file_manager = ExitStack()
+atexit.register(file_manager.close)
 
 
 # For packaging purpose, patch this variable to use an alternative directory
@@ -125,9 +113,6 @@ def resource_filename(resource):
 
     if _RESOURCES_DIR is not None:  # if set, use this directory
         return os.path.join(_RESOURCES_DIR, *resource.split('/'))
-    elif importlib_resources is None:  # Fallback if pkg_resources is not available
-        return os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                            *resource.split('/'))
     else:  # Preferred way to get resources as it supports zipfile package
         ref = importlib_resources.files(__name__) / resource
         path = file_manager.enter_context(importlib_resources.as_file(ref))

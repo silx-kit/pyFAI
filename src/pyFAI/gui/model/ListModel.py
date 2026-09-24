@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -25,15 +24,16 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/04/2026"
+__date__ = "21/08/2026"
 
 import functools
 
 from silx.gui import qt
+
 from .AbstractModel import AbstractModel
 
 
-class ChangeEvent(object):
+class ChangeEvent:
 
     def __init__(self, index, item, added=False, removed=False, updated=False):
         """
@@ -55,7 +55,7 @@ class ChangeEvent(object):
         self.updated = updated
 
 
-class ChangeListEvent(object):
+class ChangeListEvent:
     """A container of consecutive change events"""
 
     def __init__(self):
@@ -88,8 +88,7 @@ class ChangeListEvent(object):
 
         :rtype: Iterator[ChangeEvent]
         """
-        for event in self.__events:
-            yield event
+        yield from self.__events
 
     def __getitem__(self, key):
         """
@@ -143,7 +142,7 @@ class ListModel(AbstractModel):
     if qt.BINDING in ["PyQt5", "PySide2"]:
         changed = qt.Signal([], [ChangeListEvent])
     else:
-        changed = qt.Signal(tuple(), (ChangeListEvent,))
+        changed = qt.Signal((), (ChangeListEvent,))
     """Emitted at the end of a structural change."""
 
     structureChanged = qt.Signal()
@@ -153,7 +152,7 @@ class ListModel(AbstractModel):
     """Emitted when the content of the elements changed."""
 
     def __init__(self, parent=None):
-        super(ListModel, self).__init__(parent)
+        super().__init__(parent)
         self.__cacheStructureEvent = None
         self.__cacheContentWasChanged = False
         self.__items = []
@@ -184,7 +183,7 @@ class ListModel(AbstractModel):
         for i, (curentItem, _callback) in enumerate(self.__items):
             if item is curentItem:
                 return i
-        raise IndexError("Item %s is not in list" % item)
+        raise IndexError(f"Item {item} is not in list")
 
     def clear(self):
         """Remove all the items from the list."""

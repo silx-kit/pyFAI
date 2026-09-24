@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -25,21 +24,22 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "13/03/2026"
+__date__ = "25/08/2026"
 
-import os
 import logging
+import os
 import textwrap
+
 from silx.gui import qt
-from ...utils import get_ui_file
+
 from ... import detectors
+from ...detectors.sensors import SensorConfig
+from ...utils import get_ui_file
+from ..ApplicationContext import ApplicationContext
+from ..model.DataModel import DataModel
+from ..utils import FilterBuilder, block_signals, validators
 from ..widgets.model.AllDetectorItemModel import AllDetectorItemModel
 from ..widgets.model.DetectorFilterProxyModel import DetectorFilterProxyModel
-from ..model.DataModel import DataModel
-from ..utils import validators, block_signals
-from ..ApplicationContext import ApplicationContext
-from ..utils import FilterBuilder
-from ...detectors.sensors import SensorConfig
 
 _logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class DetectorSelectorDrop(qt.QWidget):
     _CustomDetectorRole = qt.Qt.UserRole
 
     def __init__(self, parent=None):
-        super(DetectorSelectorDrop, self).__init__(parent)
+        super().__init__(parent)
         qt.loadUi(get_ui_file("detector-selection-drop.ui"), self)
 
         self.__dialogState = None
@@ -486,7 +486,7 @@ class DetectorSelectorDrop(qt.QWidget):
             raise RuntimeError("field should be FILE, MANUAL or eventually None")
 
     def __createManufacturerModel(self):
-        manufacturers = set([])
+        manufacturers = set()
         for detector in detectors.ALL_DETECTORS.values():
             manufacturer = detector.MANUFACTURER
             if isinstance(manufacturer, list):
@@ -499,7 +499,7 @@ class DetectorSelectorDrop(qt.QWidget):
 
         hasOther = None in manufacturers
         manufacturers.remove(None)
-        manufacturers = sorted(list(manufacturers))
+        manufacturers = sorted(manufacturers)
 
         model = qt.QStandardItemModel()
 
@@ -718,7 +718,7 @@ class DetectorSelectorDrop(qt.QWidget):
 
 class DetectorSelectorDialog(qt.QDialog):
     def __init__(self, parent=None):
-        super(DetectorSelectorDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowTitle("Detector selection")
 
         self.__content = DetectorSelectorDrop(self)

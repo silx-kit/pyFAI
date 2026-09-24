@@ -1,10 +1,9 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -28,34 +27,36 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/06/2026"
+__date__ = "20/09/2026"
 __status__ = "development"
 
 import logging
-import threading
 import os
-import numpy
+import threading
 from math import ceil, floor
+
+import numpy
+
 from . import detectors
 from .opencl import ocl
+
 if ocl:
-    from .opencl import azim_lut as ocl_azim_lut
     from .opencl import azim_csr as ocl_azim_csr
+    from .opencl import azim_lut as ocl_azim_lut
 else:
     ocl_azim_lut = ocl_azim_csr = None
 
 logger = logging.getLogger(__name__)
 try:
-    from .ext import _distortion
-    from .ext import sparse_utils
+    from .ext import _distortion, sparse_utils
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     logger.warning("Import _distortion cython implementation failed ... pure python version is terribly slow !!!")
     _distortion = None
 
 try:
-    from scipy.sparse import linalg, csr_matrix, identity
-except IOError:
+    from scipy.sparse import csr_matrix, identity, linalg
+except OSError:
     logger.warning("Scipy is missing ... uncorrection will be handled the old way")
     linalg = None
 else:
@@ -80,7 +81,7 @@ else:
     from .ext._distortion import resize_image_2D
 
 
-class Distortion(object):
+class Distortion:
     """
     This class applies a distortion correction on an image.
 
@@ -141,7 +142,7 @@ class Distortion(object):
             self.workgroup = None
 
     def __repr__(self):
-        return os.linesep.join(["Distortion correction %s on device %s for detector shape %s:" % (self.method, self.device, self._shape_out),
+        return os.linesep.join([f"Distortion correction {self.method} on device {self.device} for detector shape {self._shape_out}:",
                                 self.detector.__repr__()])
 
     def reset(self, method=None, device=None, workgroup=None, prepare=True):
@@ -206,15 +207,13 @@ class Distortion(object):
                         self.pos = self.detector.get_pixel_corners()[..., 1:] / pixel_size
                         if self._shape_out is None:
                             # if defined, it is probably because resize=False
-                            corner_pos = self.pos.view()
-                            corner_pos.shape = -1, 2
+                            corner_pos = self.pos.reshape(-1, 2)
                             pos1_min, pos2_min = corner_pos.min(axis=0)
                             pos1_max, pos2_max = corner_pos.max(axis=0)
-                            self._shape_out = (int(ceil(pos1_max - pos1_min)),
-                                               int(ceil(pos2_max - pos2_min)))
+                            self._shape_out = (ceil(pos1_max - pos1_min),
+                                               ceil(pos2_max - pos2_min))
                             self.offset1, self.offset2 = pos1_min, pos2_min
-                        pixel_delta = self.pos.view()
-                        pixel_delta.shape = -1, 4, 2
+                        pixel_delta = self.pos.reshape(-1, 4, 2)
                         self.delta1, self.delta2 = ((numpy.ceil(pixel_delta.max(axis=1)) - numpy.floor(pixel_delta.min(axis=1))).max(axis=0)).astype(int)
         return self.pos
 
@@ -356,7 +355,7 @@ class Distortion(object):
                                 try:
                                     quad.populate_box()
                                 except Exception as error:
-                                    print("error in quad.populate_box of pixel %i, %i: %s" % (i, j, error))
+                                    print(f"error in quad.populate_box of pixel {i}, {j}: {error}")
                                     print("calc_area_vectorial", quad.calc_area_vectorial())
                                     print(self.pos[i, j, 0,:], self.pos[i, j, 1,:], self.pos[i, j, 2,:], self.pos[i, j, 3,:])
                                     print(quad)
@@ -453,7 +452,7 @@ class Distortion(object):
                     out = type(out)(out)
 
         except ValueError as _err:
-            logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
+            logger.exception("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
             raise
         return out
 
@@ -486,9 +485,8 @@ class Distortion(object):
         """
         if image.ndim != 2:
             raise RuntimeError("image should be 2D")
-        if variance is not None:
-            if variance.shape != image.shape:
-                raise RuntimeError("variance and image shape do not match")
+        if variance is not None and variance.shape != image.shape:
+            raise RuntimeError("variance and image shape do not match")
 
         if image.shape != self.shape_in:
             logger.warning("The image shape %s is not the same as the detector %s", image.shape, self.shape_in)
@@ -554,7 +552,7 @@ class Distortion(object):
                         out = type(out)(out)
 
             except ValueError as _err:
-                logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
+                logger.exception("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
                 raise
         return out
 
@@ -603,7 +601,7 @@ class Distortion(object):
         return out
 
 
-class Quad(object):
+class Quad:
     """
     Quad modelisation.
 
@@ -651,10 +649,10 @@ class Quad(object):
         self.C1 = C1
         self.D0 = D0
         self.D1 = D1
-        self.offset0 = int(floor(min(self.A0, self.B0, self.C0, self.D0)))
-        self.offset1 = int(floor(min(self.A1, self.B1, self.C1, self.D1)))
-        self.box_size0 = int(ceil(max(self.A0, self.B0, self.C0, self.D0))) - self.offset0
-        self.box_size1 = int(ceil(max(self.A1, self.B1, self.C1, self.D1))) - self.offset1
+        self.offset0 = floor(min(self.A0, self.B0, self.C0, self.D0))
+        self.offset1 = floor(min(self.A1, self.B1, self.C1, self.D1))
+        self.box_size0 = ceil(max(self.A0, self.B0, self.C0, self.D0)) - self.offset0
+        self.box_size1 = ceil(max(self.A1, self.B1, self.C1, self.D1)) - self.offset1
         self.A0 -= self.offset0
         self.A1 -= self.offset1
         self.B0 -= self.offset0
@@ -668,7 +666,7 @@ class Quad(object):
         self.area = None
 
     def __repr__(self):
-        return os.linesep.join(["offset %i,%i size %i, %i" % (self.offset0, self.offset1, self.box_size0, self.box_size1), "box: %s" % self.box[:self.box_size0,:self.box_size1]])
+        return os.linesep.join([f"offset {self.offset0},{self.offset1} size {self.box_size0}, {self.box_size1}", f"box: {self.box[:self.box_size0,:self.box_size1]}"])
 
     def init_slope(self):
         if self.pAB is None:
@@ -783,7 +781,7 @@ class Quad(object):
                         if dA > AA:
                             dA = AA
                             AA = -1
-                        self.box[int(floor(start)), h] += sign * dA
+                        self.box[floor(start), h] += sign * dA
                         AA -= dA
                         h += 1
             else:
@@ -798,11 +796,11 @@ class Quad(object):
                             if dA > AA:
                                 dA = AA
                                 AA = -1
-                            self.box[int(floor(P)) - 1, h] += sign * dA
+                            self.box[floor(P) - 1, h] += sign * dA
                             AA -= dA
                             h += 1
                 # subsection P1->Pn
-                for i in range(int(floor(P)), int(floor(stop))):
+                for i in range(floor(P), floor(stop)):
                     A = calc_area(i, i + 1)
                     if A != 0:
                         AA = abs(A)
@@ -831,7 +829,7 @@ class Quad(object):
                             if dA > AA:
                                 dA = AA
                                 AA = -1
-                            self.box[int(floor(P)), h] += sign * dA
+                            self.box[floor(P), h] += sign * dA
                             AA -= dA
                             h += 1
         elif start > stop:  # negative contribution. Nota is start=stop: no contribution
@@ -847,7 +845,7 @@ class Quad(object):
                         if dA > AA:
                             dA = AA
                             AA = -1
-                        self.box[int(floor(start)), h] += sign * dA
+                        self.box[floor(start), h] += sign * dA
                         AA -= dA
                         h += 1
             else:
@@ -863,11 +861,11 @@ class Quad(object):
                             if dA > AA:
                                 dA = AA
                                 AA = -1
-                            self.box[int(floor(P)), h] += sign * dA
+                            self.box[floor(P), h] += sign * dA
                             AA -= dA
                             h += 1
                 # subsection P1->Pn
-                for i in range(int(start), int(ceil(stop)), -1):
+                for i in range(int(start), ceil(stop), -1):
                     A = calc_area(i, i - 1)
                     if A != 0:
                         AA = abs(A)
@@ -895,6 +893,6 @@ class Quad(object):
                             if dA > AA:
                                 dA = AA
                                 AA = -1
-                            self.box[int(floor(stop)), h] += sign * dA
+                            self.box[floor(stop), h] += sign * dA
                             AA -= dA
                             h += 1

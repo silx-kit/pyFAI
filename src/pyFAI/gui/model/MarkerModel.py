@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -30,7 +29,7 @@ __date__ = "07/06/2024"
 from .AbstractModel import AbstractModel
 
 
-class Marker(object):
+class Marker:
     """Abstract marker"""
 
     def __init__(self, name):
@@ -44,7 +43,7 @@ class PixelMarker(Marker):
     """Mark a pixel at a specific location of an image"""
 
     def __init__(self, name, x, y):
-        super(PixelMarker, self).__init__(name)
+        super().__init__(name)
         self.__pixel = x, y
 
     def pixelPosition(self):
@@ -55,7 +54,7 @@ class PhysicalMarker(Marker):
     """Mark a point at a specific location of chi/tth"""
 
     def __init__(self, name, chi, tth):
-        super(PhysicalMarker, self).__init__(name)
+        super().__init__(name)
         self.__physic = chi, tth
         self.__pixel = None
 

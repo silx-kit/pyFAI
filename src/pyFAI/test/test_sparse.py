@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,16 +33,19 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
 import logging
-from .utilstest import UtilsTest
+import unittest
+
+import fabio
+import numpy
+
 from .. import load
 from ..detectors import detector_factory
-from ..integrator.azimuthal import AzimuthalIntegrator
 from ..ext import sparse_utils
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..utils.mathutil import rwp
-import fabio
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,7 +58,7 @@ class TestSparseIntegrate1d(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestSparseIntegrate1d, cls).setUpClass()
+        super().setUpClass()
         cls.N = 1000
         cls.unit = "r_mm"
         cls.ai = load(UtilsTest.getimage("Pilatus1M.poni"))
@@ -66,7 +68,7 @@ class TestSparseIntegrate1d(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestSparseIntegrate1d, cls).tearDownClass()
+        super().tearDownClass()
         cls.N = None
         cls.unit = None
         cls.ai = None
@@ -130,7 +132,7 @@ class TestSparseIntegrate2d(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestSparseIntegrate2d, cls).setUpClass()
+        super().setUpClass()
         cls.N = 500
         cls.unit = "r_mm"
         cls.ai = load(UtilsTest.getimage("Pilatus1M.poni"))
@@ -139,7 +141,7 @@ class TestSparseIntegrate2d(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestSparseIntegrate2d, cls).tearDownClass()
+        super().tearDownClass()
         cls.N = None
         cls.unit = None
         cls.ai = None

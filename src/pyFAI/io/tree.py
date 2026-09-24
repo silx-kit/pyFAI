@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,12 +30,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2025"
+__date__ = "21/08/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import os
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ try:
 except ImportError:
     logger.error("pyFAI.ext._tree did not import")
 
-    class TreeItem(object):
+    class TreeItem:
         """
         Node of a tree ... Needs synchronization with Cython code
         Deprecated !
@@ -84,9 +83,9 @@ except ImportError:
 
         def __repr__(self):
             if self.parent:
-                return "TreeItem %s->%s with children: " % (self.parent.label, self.label) + ", ".join([i.label for i in self.children])
+                return f"TreeItem {self.parent.label}->{self.label} with children: " + ", ".join([i.label for i in self.children])
             else:
-                return "TreeItem %s with children: " % (self.label) + ", ".join([i.label for i in self.children])
+                return f"TreeItem {self.label} with children: " + ", ".join([i.label for i in self.children])
 
         def sort(self):
             for child in self.children:
@@ -95,14 +94,12 @@ except ImportError:
 
         @property
         def name(self):
-            if not self.parent:
-                return self.label or ""
-            elif self.order == 1:
+            if not self.parent or self.order == 1:
                 return self.label or ""
             elif self.order == 4:
                 return os.path.join(self.parent.name, self.label)
             else:
-                return "%s-%s" % (self.parent.name, self.label)
+                return f"{self.parent.name}-{self.label}"
 
         def next(self):
             if self.parent is None:

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,12 +33,15 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "24/08/2026"
 __status__ = "production"
 
-import numpy
 import logging
-from ._common import SensorConfig, ModuleDetector
+
+import numpy
+
+from ._common import ModuleDetector, SensorConfig
+
 logger = logging.getLogger(__name__)
 
 
@@ -89,7 +91,7 @@ class Lambda60k(_Lambda):
     LAMBDA 60k detector
     """
     MAX_SHAPE = (256, 256)
-    aliases = ["Lambda 60k"]
+    aliases = ("Lambda 60k",)
 
 
 class Lambda250k(_Lambda):
@@ -97,7 +99,7 @@ class Lambda250k(_Lambda):
     LAMBDA 250k detector
     """
     MAX_SHAPE = (516, 516)
-    aliases = ["Lambda 250k"]
+    aliases = ("Lambda 250k",)
 
 
 class Lambda750k(_Lambda):
@@ -105,7 +107,7 @@ class Lambda750k(_Lambda):
     LAMBDA 750k detector
     """
     MAX_SHAPE = (516, 1556)
-    aliases = ["Lambda 750k"]
+    aliases = ("Lambda 750k",)
 
 
 class Lambda2M(_Lambda):
@@ -113,7 +115,7 @@ class Lambda2M(_Lambda):
     LAMBDA 2M detector
     """
     MAX_SHAPE = (1556, 1556)
-    aliases = ["Lambda 2M"]
+    aliases = ("Lambda 2M",)
 
 
 class Lambda7M5(_Lambda):
@@ -121,7 +123,7 @@ class Lambda7M5(_Lambda):
     LAMBDA 7.5M detector
     """
     MAX_SHAPE = (2596, 2596)
-    aliases = ["Lambda 7.5M"]
+    aliases = ("Lambda 7.5M",)
 
 
 class Lambda10M(_Lambda):
@@ -129,14 +131,14 @@ class Lambda10M(_Lambda):
     LAMBDA 10M detector
     """
     MAX_SHAPE = (2596, 4676)
-    aliases = ["Lambda 10M"]
+    aliases = ("Lambda 10M",)
 
 class Lambda9M(_Lambda):
     """
     LAMBDA 9M detector
     """
     MAX_SHAPE = (3868, 3227)
-    aliases = ["Lambda 9M"]
+    aliases = ("Lambda 9M",)
 
     def calc_mask(self):
         """

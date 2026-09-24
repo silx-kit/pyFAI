@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -30,24 +29,19 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/11/2025"
+__date__ = "24/08/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 
-import sys
 import logging
 import typing
 from dataclasses import dataclass as _dataclass
 
-
 logger = logging.getLogger(__name__)
 
 # User defined dataclasses
-if sys.version_info >= (3, 10):
-    dataclass = _dataclass(slots=True)
-else:
-    dataclass = _dataclass
+dataclass = _dataclass(slots=True)
 
 
 class CaseInsensitiveMeta(type):

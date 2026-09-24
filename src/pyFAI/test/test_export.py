@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,19 +31,21 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2025"
+__date__ = "19/09/2026"
 
-import unittest
 import logging
+import unittest
+
 import numpy
-from .utilstest import UtilsTest
+
 from ..integrator.azimuthal import AzimuthalIntegrator
+from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 
 
-def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, pixelY=60):
-
+def _test_export(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, pixelY=60):
+    "helper function"
     a1 = AzimuthalIntegrator()
     a2 = AzimuthalIntegrator()
     a3 = AzimuthalIntegrator()
@@ -58,10 +59,10 @@ def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, 
             obtv = o.__getattribute__(key)
             try:
                 if round(abs(float(refv) - float(obtv))) != 0:
-                    res += "%s: %s != %s" % (key, refv, obtv)
+                    res += f"{key}: {refv} != {obtv}"
             except TypeError:
                 if refv != obtv:
-                    res += "%s: %s != %s" % (key, refv, obtv)
+                    res += f"{key}: {refv} != {obtv}"
     return res
 
 
@@ -88,18 +89,18 @@ class TestFIT2D(unittest.TestCase):
             refv = ref.__getattribute__(key)
             obtv = obt.__getattribute__(key)
             if refv is None:
-                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
+                self.assertEqual(refv, obtv, f"{key}: {refv} != {obtv}")
             else:
-                self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
+                self.assertAlmostEqual(refv, obtv, 4, f"{key}: {refv} != {obtv}")
 
     def test_export(self):
-        res = testExport()
+        res = _test_export()
         self.assertFalse(res, res)
-        res = testExport(tilt=20)
+        res = _test_export(tilt=20)
         self.assertFalse(res, res)
-        res = testExport(tilt=20, tpr=80)
+        res = _test_export(tilt=20, tpr=80)
         self.assertFalse(res, res)
-        res = testExport(tilt=20, tpr=580)
+        res = _test_export(tilt=20, tpr=580)
         self.assertFalse(res, res)
 
     def test_ImageD11(self):
@@ -115,9 +116,9 @@ class TestFIT2D(unittest.TestCase):
             refv = ai.__getattribute__(key)
             obtv = ai2.__getattribute__(key)
             if refv is None:
-                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
+                self.assertEqual(refv, obtv, f"{key}: {refv} != {obtv}")
             else:
-                self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
+                self.assertAlmostEqual(refv, obtv, 4, f"{key}: {refv} != {obtv}")
 
         try:
             from ImageD11.transform import PixelLUT
@@ -132,7 +133,12 @@ class TestFIT2D(unittest.TestCase):
                 unittest.skip(f"ImageD11 does not recognize is parameter set: {param}")
             else:
                 self.assertTrue(numpy.allclose(id11.tth, ai.center_array(unit="2th_deg"), atol=3e-2), "2theta array matches")
-                self.assertLess(numpy.median(abs((270-id11.eta)%360-180 - ai.center_array(unit="chi_deg"))), 0.5, "chi array roughly matches")
+                # chi of pyFAI is 90 - eta of ImageD11: the azimuth is measured
+                # from a different axis and in the opposite direction, since the
+                # horizontal axis is inverted between the two conventions.
+                # The difference is wrapped into [-180, 180] before comparing.
+                delta = (90 - id11.eta - ai.center_array(unit="chi_deg") + 180) % 360 - 180
+                self.assertLess(numpy.median(abs(delta)), 0.5, "chi array roughly matches")
 
 
 class TestExport(unittest.TestCase):
@@ -150,9 +156,9 @@ class TestExport(unittest.TestCase):
             refv = ref.__getattribute__(key)
             obtv = obt.__getattribute__(key)
             if refv is None:
-                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
+                self.assertEqual(refv, obtv, f"{key}: {refv} != {obtv}")
             else:
-                self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
+                self.assertAlmostEqual(refv, obtv, 4, f"{key}: {refv} != {obtv}")
 
     def test_CXI(self):
         ref = AzimuthalIntegrator.sload(self.poniFile)
@@ -163,9 +169,9 @@ class TestExport(unittest.TestCase):
             refv = ref.__getattribute__(key)
             obtv = obt.__getattribute__(key)
             if refv is None:
-                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
+                self.assertEqual(refv, obtv, f"{key}: {refv} != {obtv}")
             else:
-                self.assertAlmostEqual(refv, obtv, 8, "%s: %s != %s" % (key, refv, obtv))
+                self.assertAlmostEqual(refv, obtv, 8, f"{key}: {refv} != {obtv}")
 
 
 def suite():

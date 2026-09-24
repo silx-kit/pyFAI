@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,11 +33,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "25/08/2026"
 __status__ = "production"
 
+from typing import ClassVar
 import logging
+
 from ._common import Detector
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,7 +53,7 @@ class Fairchild(Detector):
     force_pixel = True
     PIXEL_SIZE = (15e-6, 15e-6)
     uniform_pixel = True
-    aliases = ["Fairchild", "Condor", "Fairchild Condor 486:90"]
+    aliases = ("Fairchild", "Condor", "Fairchild Condor 486:90")
     MAX_SHAPE = (4096, 4096)
 
 
@@ -59,12 +61,12 @@ class Titan(Detector):
     """
     Titan CCD detector from Agilent. Mask not handled
     """
-    MANUFACTURER = ["Agilent", "Oxford Diffraction"]
+    MANUFACTURER: ClassVar[list] = ["Agilent", "Oxford Diffraction"]
 
     force_pixel = True
     PIXEL_SIZE = (60e-6, 60e-6)
     MAX_SHAPE = (2048, 2048)
-    aliases = ["Titan 2k x 2k", "Titan 2k x 2k", "OXD Titan", "Agilent Titan"]
+    aliases = ("Titan 2k x 2k", "Titan 2k x 2k", "OXD Titan", "Agilent Titan")
     uniform_pixel = True
 
 
@@ -74,7 +76,7 @@ class Dexela2923(Detector):
     """
     force_pixel = True
     PIXEL_SIZE = (75e-6, 75e-6)
-    aliases = ["Dexela 2923"]
+    aliases = ("Dexela 2923",)
     MAX_SHAPE = (3888, 3072)
 
 
@@ -86,7 +88,7 @@ class Basler(Detector):
     MANUFACTURER = "Basler"
     force_pixel = True
     PIXEL_SIZE = (3.75e-6, 3.75e-6)
-    aliases = ["aca1300"]
+    aliases = ("aca1300",)
     MAX_SHAPE = (966, 1296)
 
 
@@ -97,7 +99,7 @@ class Perkin(Detector):
     """
     MANUFACTURER = "Perkin Elmer"
 
-    aliases = ["Perkin detector", "Perkin Elmer"]
+    aliases = ("Perkin detector", "Perkin Elmer")
     force_pixel = True
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 200e-6
     PIXEL_SIZE = (DEFAULT_PIXEL1, DEFAULT_PIXEL2)
@@ -122,7 +124,7 @@ class Pixium(Detector):
     """
     MANUFACTURER = "Thales Electronics"
 
-    aliases = ["Pixium 4700", "Pixium 4700 detector", "Thales Electronics"]
+    aliases = ("Pixium 4700", "Pixium 4700 detector", "Thales Electronics")
     force_pixel = True
     PIXEL_SIZE = (308e-6, 308e-6)
     MAX_SHAPE = (1910, 2480)
@@ -133,8 +135,8 @@ class Pixium(Detector):
         """
         super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
-            self._binning = (int(round(pixel1 / self.DEFAULT_PIXEL1)),
-                             int(round(pixel2 / self.DEFAULT_PIXEL2)))
+            self._binning = (round(pixel1 / self.DEFAULT_PIXEL1),
+                             round(pixel2 / self.DEFAULT_PIXEL2))
             self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
 
 
@@ -144,7 +146,7 @@ class Apex2(Detector):
     Actually a derivative from the Fairchild detector with higher binning
     """
     MANUFACTURER = "Bruker"
-    aliases = ["ApexII", "Bruker"]
+    aliases = ("ApexII", "Bruker")
     force_pixel = True
     PIXEL_SIZE = (120e-6, 120e-6)
     MAX_SHAPE = (1024, 1024)
@@ -154,15 +156,15 @@ class Apex2(Detector):
         """
         super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, orientation=orientation)
         if (pixel1 != self.PIXEL_SIZE[0]) or (pixel2 != self.PIXEL_SIZE[1]):
-            self._binning = (int(round(pixel1 / self.PIXEL_SIZE[0])),
-                             int(round(pixel2 / self.PIXEL_SIZE[1])))
+            self._binning = (round(pixel1 / self.PIXEL_SIZE[0]),
+                             round(pixel2 / self.PIXEL_SIZE[1]))
             self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
 
 
 class RaspberryPi5M(Detector):
     """5 Mpix detector from Raspberry Pi
     """
-    aliases = ["Picam v1"]
+    aliases = ("Picam v1",)
     force_pixel = True
     PIXEL_SIZE = (1.4e-6, 1.4e-6)
     MAX_SHAPE = (1944, 2592)
@@ -171,7 +173,7 @@ class RaspberryPi5M(Detector):
 class RaspberryPi8M(Detector):
     """8 Mpix detector from Raspberry Pi
     """
-    aliases = ["Picam v2"]
+    aliases = ("Picam v2",)
     force_pixel = True
     PIXEL_SIZE = (1.12e-6, 1.12e-6)
     MAX_SHAPE = (2464, 3280)
@@ -180,7 +182,7 @@ class RaspberryPi8M(Detector):
 class RaspberryPi12M(Detector):
     """8 Mpix detector from Raspberry Pi
     """
-    aliases = ["Picam HQ"]
+    aliases = ("Picam HQ",)
     force_pixel = True
     PIXEL_SIZE = (1.55e-6, 1.55e-6)
     MAX_SHAPE = (3040, 4056)

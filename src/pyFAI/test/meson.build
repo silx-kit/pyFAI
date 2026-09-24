@@ -1,5 +1,6 @@
 py.install_sources(
    ['__init__.py',
+    'profiler.py',
     'test_all.py',
     'test_average.py',
     'test_azimuthal_integrator.py',
@@ -34,6 +35,8 @@ py.install_sources(
     'test_massif.py',
     'test_method_registry.py',
     'test_multi_geometry.py',
+    'test_multi_module.py',
+    'test_orientation.py',
     'test_parallax.py',
     'test_peak_picking.py',
     'test_pickle.py',

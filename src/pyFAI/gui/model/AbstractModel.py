@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,6 +27,7 @@ __license__ = "MIT"
 __date__ = "16/10/2020"
 
 import contextlib
+
 from silx.gui import qt
 
 

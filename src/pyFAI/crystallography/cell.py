@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,22 +34,25 @@ https://geoweb.princeton.edu/archival/duffy/xtalgeometry.pdf
 """
 
 from __future__ import annotations
+from typing import ClassVar
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/06/2026"
+__date__ = "25/08/2026"
 __status__ = "production"
 
-import os
-import logging
-import numpy
 import itertools
-from math import sin, cos, sqrt, pi, ceil
+import logging
+import os
+from math import ceil, cos, pi, sin, sqrt
+
+import numpy
+
 from ..io.calibrant_config import CalibrantConfig, Miller, Reflection
-from .space_groups import ReflectionCondition
 from ..utils.decorators import deprecated
+from .space_groups import ReflectionCondition
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +112,7 @@ class Cell:
     http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
     """
 
-    lattices = [
+    lattices = (
         "cubic",
         "tetragonal",
         "hexagonal",
@@ -118,8 +120,8 @@ class Cell:
         "orthorhombic",
         "monoclinic",
         "triclinic",
-    ]
-    types = {
+    )
+    types: ClassVar[dict] = {
         "P": "Primitive",
         "I": "Body centered",
         "F": "Face centered",
@@ -372,9 +374,9 @@ class Cell:
         :return: dict d-spacing as string, list of tuple with Miller indices
                 preceded with the numerical value
         """
-        hmax = int(ceil(self.a / dmin))
-        kmax = int(ceil(self.b / dmin))
-        lmax = int(ceil(self.c / dmin))
+        hmax = ceil(self.a / dmin)
+        kmax = ceil(self.b / dmin)
+        lmax = ceil(self.c / dmin)
         res = {}
         for hkl in itertools.product(
             range(-hmax, hmax + 1), range(-kmax, kmax + 1), range(-lmax, lmax + 1)

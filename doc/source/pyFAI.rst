@@ -106,6 +106,7 @@ Calibration
    :maxdepth: 4
 
    calibration
+   control_points
 
 
 PyFAI executables

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,7 +34,9 @@ __date__ = "27/03/2025"
 __status__ = "development"
 
 import warnings
+
 import numpy
+
 from ..containers import ErrorModel
 
 

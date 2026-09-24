@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "24/08/2026"
 
 from .AbstractModel import AbstractModel
 
@@ -33,7 +32,7 @@ from .AbstractModel import AbstractModel
 class ConstraintModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(ConstraintModel, self).__init__(parent)
+        super().__init__(parent)
         self.__fixed = None
         self.__range = None
 
@@ -89,14 +88,13 @@ class ConstraintModel(AbstractModel):
             self.setRangeConstraint(*other.range())
         else:
             otherRange = other.range()
-            if otherRange is not None:
-                if self.__range[0] is None or self.__range[1] is None:
-                    newRange = list(self.__range)
-                    if newRange[0] is None:
-                        newRange[0] = otherRange[0]
-                    if newRange[1] is None:
-                        newRange[1] = otherRange[1]
-                    self.setRangeConstraint(*newRange)
+            if otherRange is not None and (self.__range[0] is None or self.__range[1] is None):
+                newRange = list(self.__range)
+                if newRange[0] is None:
+                    newRange[0] = otherRange[0]
+                if newRange[1] is None:
+                    newRange[1] = otherRange[1]
+                self.setRangeConstraint(*newRange)
         self.unlockSignals()
 
     def __str__(self):

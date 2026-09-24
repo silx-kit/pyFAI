@@ -1,7 +1,6 @@
-# coding: utf-8
 # /*##########################################################################
 #
-# Copyright (C) 2016-2024 European Synchrotron Radiation Facility
+# Copyright (C) 2016-2026 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +24,13 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "19/03/2024"
+__date__ = "25/08/2026"
 
+from typing import ClassVar
 import logging
+
 from silx.gui import qt
+
 from ... import method_registry
 
 _logger = logging.getLogger(__name__)
@@ -37,7 +39,8 @@ _logger = logging.getLogger(__name__)
 class MethodLabel(qt.QLabel):
     """Readonly line display"""
 
-    _HUMAN_READABLE = {
+    _HUMAN_READABLE: ClassVar[dict] = {
+        None: "Any",
         "*": "Any",
         "any": "Any",
         "all": "Any",
@@ -61,7 +64,7 @@ class MethodLabel(qt.QLabel):
     </ul>"""
 
     def __init__(self, parent=None):
-        super(MethodLabel, self).__init__(parent)
+        super().__init__(parent)
         self.__method = None
         self.__labelTemplate = "{split} / {algo} / {impl}"
         self.__availability = False
@@ -93,7 +96,7 @@ class MethodLabel(qt.QLabel):
     def __compare(self, method, methodReference):
         if method == methodReference:
             return "same"
-        any_set = set(["*", "any", "all", None])
+        any_set = {"*", "any", "all", None}
         if method.split != methodReference.split and methodReference.split not in any_set:
             return "degraded"
         if method.impl != methodReference.impl and methodReference.impl not in any_set:
@@ -122,7 +125,7 @@ class MethodLabel(qt.QLabel):
         else:
             if not self.__availability:
                     label = self.__methodToString(method, self.__labelTemplate)
-                    toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+                    toolTip = f"<html>{self.__methodToString(method, self._TOOLTIP_TEMPLATE)}</html>"
             else:
                 usedMethods = method_registry.IntegrationMethod.select_method(method=method)
                 if len(usedMethods) == 0:
@@ -130,7 +133,7 @@ class MethodLabel(qt.QLabel):
                     toolTip = self.__methodToString(method, self._TOOLTIP_TEMPLATE)
                     toolTip = ("No method fit. Integration could be compromised. "
                                "The following configuration is defined:"
-                               "%s</html>" % toolTip)
+                               f"{toolTip}</html>")
                 else:
                     usedMethod = usedMethods[0]
                     usedMethod = usedMethod.method
@@ -138,7 +141,7 @@ class MethodLabel(qt.QLabel):
 
                     if compare == "same":
                         label = self.__methodToString(method, self.__labelTemplate)
-                        toolTip = "<html>%s</html>" % self.__methodToString(method, self._TOOLTIP_TEMPLATE)
+                        toolTip = f"<html>{self.__methodToString(method, self._TOOLTIP_TEMPLATE)}</html>"
                     else:
                         original = self.__methodToString(method, self.__labelTemplate)
                         label = self.__methodToString(usedMethod, self.__labelTemplate)
@@ -146,13 +149,13 @@ class MethodLabel(qt.QLabel):
 
                         if compare == "degraded":
                             label = "Degraded to: " + label
-                            toolTip = ("<html>The method %s is not available, at least, in this computer. "
+                            toolTip = (f"<html>The method {original} is not available, at least, in this computer. "
                                        "The following method will be used:"
-                                       "%s</html>" % (original, toolTip))
+                                       f"{toolTip}</html>")
                         elif compare == "specialized":
                             label = "Specialized with: " + label
-                            toolTip = ("<html>The generic selection %s will use the following method in this computer:"
-                                       "%s</html>" % (original, toolTip))
+                            toolTip = (f"<html>The generic selection {original} will use the following method in this computer:"
+                                       f"{toolTip}</html>")
                         else:
                             raise RuntimeError()
 
@@ -167,15 +170,15 @@ class MethodLabel(qt.QLabel):
                                                                   algo=algo,
                                                                   impl=impl,
                                                                   degradable=False)
-        dimensions = set([m.dimension for m in methods])
+        dimensions = {m.dimension for m in methods}
 
-        if dimensions == set([1, 2]):
+        if dimensions == {1, 2}:
             availability = "1D and 2D"
-        elif dimensions == set([1]):
+        elif dimensions == {1}:
             availability = "Only 1D"
-        elif dimensions == set([2]):
+        elif dimensions == {2}:
             availability = "Only 2D"
-        elif dimensions == set([]):
+        elif dimensions == set():
             availability = "Not available"
         else:
             _logger.error("Unexpected dimensions %s", dimensions)

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/02/2023"
+__date__ = "24/08/2026"
 
 from .AbstractModel import AbstractModel
 from .DataModel import DataModel
@@ -34,7 +33,7 @@ from .DataModel import DataModel
 class GeometryModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(GeometryModel, self).__init__(parent)
+        super().__init__(parent)
         self.__distance = DataModel()
         self.__wavelength = DataModel()
         self.__poni1 = DataModel()
@@ -66,9 +65,7 @@ class GeometryModel(AbstractModel):
             return False
         if self.__rotation2.value() != other.rotation2().value():
             return False
-        if self.__rotation3.value() != other.rotation3().value():
-            return False
-        return True
+        return self.__rotation3.value() == other.rotation3().value()
 
     def isValid(self, checkWaveLength=True):
         """Check if all the model have a meaning.
@@ -78,9 +75,8 @@ class GeometryModel(AbstractModel):
         """
         if not self.__distance.isValid():
             return False
-        if checkWaveLength:
-            if not self.__wavelength.isValid():
-                return False
+        if checkWaveLength and not self.__wavelength.isValid():
+            return False
         if not self.__poni1.isValid():
             return False
         if not self.__poni2.isValid():
@@ -89,9 +85,7 @@ class GeometryModel(AbstractModel):
             return False
         if not self.__rotation2.isValid():
             return False
-        if not self.__rotation3.isValid():
-            return False
-        return True
+        return self.__rotation3.isValid()
 
     def distance(self):
         return self.__distance
@@ -129,7 +123,7 @@ class GeometryModel(AbstractModel):
         values = [self.distance(), self.wavelength(), self.poni1(), self.poni2(),
                   self.rotation1(), self.rotation2(), self.rotation3()]
         values = [str(v.value()) for v in values]
-        return "GeometryModel(%s)" % ",".join(values)
+        return f"GeometryModel({','.join(values)})"
 
     def copy(self):
         other = self.__class__(self.parent())

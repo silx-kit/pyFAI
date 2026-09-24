@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,22 +33,29 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2025"
+__date__ = "25/08/2026"
 __status__ = "stable"
 
-import inspect
-from ._common import Detector, NexusDetector
-from ._adsc import *      # noqa: F403
-from ._dectris import *   # noqa: F403
-from ._imxpad import *    # noqa: F403
-from ._rayonix import *   # noqa: F403
-from ._esrf import *      # noqa: F403
-from ._xspectrum import * # noqa: F403
-from ._psi import *       # noqa: F403
-from ._non_flat import *  # noqa: F403
-from ._others import *    # noqa: F403
-from ._hexagonal import * # noqa: F403
+# The star-imports below are the public API aggregation mechanism: every
+# detector class must be reachable as `pyFAI.detectors.<Name>` and `__all__` is
+# built dynamically at the end of this module by introspecting the ~300 classes
+# they bring in. Listing them explicitly would have to be maintained by hand
+# for every new detector.
+# ruff: noqa: F403
 
+import inspect
+
+from ._adsc import *
+from ._common import Detector, NexusDetector
+from ._dectris import *
+from ._esrf import *
+from ._hexagonal import *
+from ._imxpad import *
+from ._non_flat import *
+from ._others import *
+from ._psi import *
+from ._rayonix import *
+from ._xspectrum import *
 
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
@@ -57,4 +63,4 @@ load = NexusDetector.sload
 
 # Expose all the classes, else it is not part of the documentation
 _detector_class_names = [i[0] for i in locals().items() if inspect.isclass(i[1]) and issubclass(i[1], Detector)]
-__all__ = _detector_class_names + ["ALL_DETECTORS", "detector_factory", "load"]
+__all__ = _detector_class_names + ["ALL_DETECTORS", "detector_factory", "load"]  # noqa: PLE0605

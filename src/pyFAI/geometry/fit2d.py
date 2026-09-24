@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,13 +36,15 @@ __date__ = "15/11/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import logging
 import os
 import typing
-import logging
-from ..utils.dataclasses import case_insensitive_dataclass
-from math import pi, cos, sin, sqrt, acos, asin
+from math import acos, asin, cos, pi, sin, sqrt
+
 from ..detectors import Detector
 from ..io.ponifile import PoniFile
+from ..utils.dataclasses import case_insensitive_dataclass
+
 logger = logging.getLogger(__name__)
 
 def degrees(rad:float) -> float:

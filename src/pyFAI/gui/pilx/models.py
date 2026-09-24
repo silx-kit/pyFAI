@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,7 +35,6 @@ __date__ = "12/03/2024"
 __status__ = "development"
 
 from collections import namedtuple
-
 
 ROI_COLOR = "orange"
 

@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -42,6 +41,7 @@ __date__ = "18/12/2023"
 __status__ = "stable"
 
 from enum import IntEnum
+
 
 class Orientation(IntEnum):
     """Names come from the position of the origin when looking at the sample from behind the camera.

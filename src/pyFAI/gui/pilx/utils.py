@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,17 +36,20 @@ __date__ = "18/06/2025"
 __status__ = "development"
 
 
-from collections import namedtuple
 import logging
-from typing import Iterable
 import os.path
+from collections import namedtuple
+from collections.abc import Iterable
+
 import h5py
 import numpy
 from silx.io import get_data
 from silx.io.url import DataUrl
+
 from ...integrator.azimuthal import AzimuthalIntegrator
 from ...io.integration_config import WorkerConfig
 from ...utils.mathutil import binning
+
 logger = logging.getLogger(__name__)
 
 

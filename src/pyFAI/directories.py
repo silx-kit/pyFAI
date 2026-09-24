@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -47,8 +46,9 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "09/07/2025"
 __status__ = "development"
 
-import os
 import logging
+import os
+
 logger = logging.getLogger(__name__)
 
 PYFAI_DATA = "/usr/share/pyFAI"

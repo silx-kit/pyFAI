@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -33,14 +32,20 @@ to the used backend.
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "08/10/2025"
+__date__ = "25/08/2026"
 
-import sys
+# The import order in this module is load-order critical (see the docstring):
+# `_check_matplotlib` must be evaluated before matplotlib is imported, and the
+# backend has to be selected before pulling in pylab/pyplot.
+# ruff: noqa: E402
+
 import logging
+import sys
+
 _logger = logging.getLogger(__name__)
 _check_matplotlib = 'matplotlib' in sys.modules
-from silx.gui import qt   # noqa: E402
-import matplotlib         # noqa: E402
+import matplotlib
+from silx.gui import qt
 
 
 def _configure(backend, backend_qt4=None, check=False):
@@ -59,17 +64,19 @@ def _configure(backend, backend_qt4=None, check=False):
 
 if qt.BINDING in ('PySide', 'PyQt4'):
     _configure('Qt4Agg', qt.BINDING, check=_check_matplotlib)
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # noqa
+    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 
 elif qt.BINDING in ('PyQt6', 'PySide6', 'PyQt5', 'PySide2'):
     _configure('QtAgg', check=_check_matplotlib)
     from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg  # noqa
 
-from matplotlib import pyplot  # noqa: E402
-from matplotlib import pylab   # noqa: E402
-from matplotlib import colors  # noqa: E402
+from matplotlib import (
+    colors,
+    pylab,
+    pyplot,
+)
 
 #differs from the silx one (no normalization)
 DEFAULT_MPL_COLORMAP = colors.Colormap(name="inferno")
 
-__all__ = [DEFAULT_MPL_COLORMAP, colors, pylab, pyplot, matplotlib, qt]
+__all__ = ["DEFAULT_MPL_COLORMAP", "colors", "pylab", "pyplot", "matplotlib", "qt"]

@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,9 +37,10 @@ __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
 import numpy
-from pylab import subplots
 from matplotlib import lines
 from matplotlib.colors import SymLogNorm
+from pylab import subplots
+
 from pyFAI.containers import Integrate2dFiberResult
 
 
@@ -191,4 +191,4 @@ def plot2d(result, calibrant=None, label=None, ax=None):
                 ax.add_line(line)
     return ax
 
-__all__ = [plot2d, plot1d, display]
+__all__ = ["plot2d", "plot1d", "display"]

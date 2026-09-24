@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,12 +36,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2025"
+__date__ = "24/08/2026"
 __status__ = "production"
+
+import logging
 
 from ._common import Detector
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +65,7 @@ class ADSC_Q315(_ADSC):
     Question: how are the gaps handled ?
     """
     MAX_SHAPE = (6144, 6144)
-    aliases = ["Quantum 315"]
+    aliases = ("Quantum 315",)
     force_pixel = True
     PIXEL_SIZE = (51e-6, 51e-6)
 
@@ -80,7 +80,7 @@ class ADSC_Q210(_ADSC):
     Question: how are the gaps handled ?
     """
     MAX_SHAPE = (4096, 4096)
-    aliases = ["Quantum 210"]
+    aliases = ("Quantum 210",)
     force_pixel = True
     PIXEL_SIZE = (51e-6, 51e-6)
 
@@ -95,7 +95,7 @@ class ADSC_Q270(_ADSC):
     Question: how are the gaps handled ?
     """
     MAX_SHAPE = (4168, 4168)
-    aliases = ["Quantum 270"]
+    aliases = ("Quantum 270",)
     force_pixel = True
     PIXEL_SIZE = (51e-6, 51e-6)
 
@@ -110,7 +110,7 @@ class ADSC_Q4(_ADSC):
     Question: how are the gaps handled ?
     """
     MAX_SHAPE = (2304, 2304)
-    aliases = ["Quantum 4"]
+    aliases = ("Quantum 4",)
     force_pixel = True
     PIXEL_SIZE = (51e-6, 51e-6)
 
@@ -125,7 +125,7 @@ class HF_130K(_ADSC):
     """
     force_pixel = True
     MAX_SHAPE = (256, 512)
-    aliases = ["HF-130k"]
+    aliases = ("HF-130k",)
     PIXEL_SIZE = (150e-6, 150e-6)
 
 
@@ -139,7 +139,7 @@ class HF_262k(_ADSC):
     Nota: gaps between modules is not known/described
     """
     MAX_SHAPE = (512, 512)
-    aliases = ["HF-262k"]
+    aliases = ("HF-262k",)
     PIXEL_SIZE = (150e-6, 150e-6)
     force_pixel = True
 
@@ -154,7 +154,7 @@ class HF_1M(_ADSC):
     Nota: gaps between modules is not known/described
     """
     MAX_SHAPE = (1024, 1024)
-    aliases = ["HF-1M"]
+    aliases = ("HF-1M",)
     PIXEL_SIZE = (150e-6, 150e-6)
     force_pixel = True
 
@@ -169,7 +169,7 @@ class HF_2M(_ADSC):
     Nota: gaps between modules is not known/described
     """
     MAX_SHAPE = (1536, 1536)
-    aliases = ["HF-2.4M"]
+    aliases = ("HF-2.4M",)
     PIXEL_SIZE = (150e-6, 150e-6)
     force_pixel = True
 
@@ -182,7 +182,7 @@ class HF_4M(_ADSC):
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-4m/
     """
     MAX_SHAPE = (2048, 2048)
-    aliases = ["HF-4M"]
+    aliases = ("HF-4M",)
     PIXEL_SIZE = (150e-6, 150e-6)
     force_pixel = True
 
@@ -197,7 +197,6 @@ class HF_9M(_ADSC):
     """
     force_pixel = True
     MAX_SHAPE = (3072, 3072)
-    aliases = ["HF-9.4M"]
+    aliases = ("HF-9.4M",)
     PIXEL_SIZE = (150e-6, 150e-6)
     force_pixel = True
-

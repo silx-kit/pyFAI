@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2023 European Synchrotron Radiation Facility
@@ -28,12 +27,13 @@ __license__ = "MIT"
 __date__ = "03/02/2023"
 
 from silx.gui import qt
-from ...utils import get_ui_file
+
 from ...geometry import fit2d
-from ..utils import units
+from ...utils import get_ui_file
 from ..model.DataModel import DataModel
-from ..model.GeometryModel import GeometryModel
 from ..model.Fit2dGeometryModel import Fit2dGeometryModel
+from ..model.GeometryModel import GeometryModel
+from ..utils import units
 
 
 class GeometryTabs(qt.QWidget):
@@ -46,7 +46,7 @@ class GeometryTabs(qt.QWidget):
     """
 
     def __init__(self, parent=None):
-        super(GeometryTabs, self).__init__(parent)
+        super().__init__(parent)
         filename = get_ui_file("geometry-tabs.ui")
         qt.loadUi(filename, self)
 
@@ -192,7 +192,6 @@ class GeometryTabs(qt.QWidget):
 
         if geometry is None:
             error = "No geometry to compute pyFAI geometry."
-            pass
         elif self.__detector is None:
             error = "No detector defined. It is needed to compute the pyFAI geometry."
         elif not geometry.isValid():
@@ -242,7 +241,6 @@ class GeometryTabs(qt.QWidget):
 
         if geometry is None:
             error = "No geometry to compute Fit2D geometry."
-            pass
         elif self.__detector is None:
             error = "No detector defined. It is needed to compute the Fit2D geometry."
         elif not geometry.isValid(checkWaveLength=False):

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2014-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Aurore Deschildre
 #                            Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
@@ -31,14 +30,16 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "20/09/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
+import logging
 import os
 from math import sqrt
-import logging
+
 import numpy
+
 from .ext.bilinear import Bilinear
 from .utils.mathutil import binning, is_far_from_group
 
@@ -48,7 +49,7 @@ try:
     from .ext._convolution import gaussian_filter
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
-    from scipy.ndimage.filters import gaussian_filter
+    from scipy.ndimage import gaussian_filter
 try:
     from .ext import _blob
 except ImportError:
@@ -164,7 +165,7 @@ def local_max(dogs, mask=None, n_5=True):
     return kpma == target
 
 
-class BlobDetection(object):
+class BlobDetection:
     """
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
@@ -215,9 +216,9 @@ class BlobDetection(object):
         self.already_blurred = []
 
     def __repr__(self):
-        lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
-        lststr.append("Sigmas: input=%.3f \t init=%.3f, dest=%.3f over %i blurs/octave" % (self.cur_sigma, self.init_sigma, self.dest_sigma, self.scale_per_octave))
-        lststr.append("found %s keypoint up to now, we are at reduction %s" % (len(self.keypoints), self.curr_reduction))
+        lststr = [f"Blob detection, shape={self.raw.shape}, processed={self.detection_started}."]
+        lststr.append(f"Sigmas: input={self.cur_sigma:.3f} \t init={self.init_sigma:.3f}, dest={self.dest_sigma:.3f} over {self.scale_per_octave} blurs/octave")
+        lststr.append(f"found {len(self.keypoints)} keypoint up to now, we are at reduction {self.curr_reduction}")
         return os.linesep.join(lststr)
 
     def _init_mask(self):
@@ -240,7 +241,7 @@ class BlobDetection(object):
             self.raw[to_mask] = 0
 
             # initial grow of 4*sigma_dest ... subsequent re-grow of half
-            grow = int(round(4.0 * self.dest_sigma))
+            grow = round(4.0 * self.dest_sigma)
             if not pyFAI_morphology:
                 my, mx = numpy.ogrid[-grow:grow + 1, -grow:grow + 1]
                 grow = (mx * mx + my * my) <= grow * grow
@@ -299,7 +300,6 @@ class BlobDetection(object):
         self.dogs = numpy.zeros(dog_shape, dtype=numpy.float32)
 
         idx = 0
-        i = 0
         for _sigma_abs, sigma_rel in self.sigmas:
             # if self.already_blurred != [] and i < 3:
             #    sigma_rel = 0
@@ -312,7 +312,6 @@ class BlobDetection(object):
                 self.dogs[idx] = previous - new_blur
                 previous = new_blur
                 idx += 1
-            i += 1
 
         if self.dogs[0].shape == self.raw.shape:
             self.dogs_init = self.dogs
@@ -336,7 +335,7 @@ class BlobDetection(object):
                 kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
                 nb_kp = valid.sum()
                 self.ref_kp.append((kps, kpy, kpx))
-            print('After refinement : %i keypoints' % nb_kp)
+            print(f'After refinement : {nb_kp} keypoints')
         else:
             peak_val = self.dogs[kps, kpy, kpx]
             nb_kp = kpx.size
@@ -550,8 +549,7 @@ class BlobDetection(object):
             if s_patch % 2 == 0:
                 s_patch += 1
 
-            if s_patch < 3:
-                s_patch = 3
+            s_patch = max(s_patch, 3)
 
             if (x > s_patch / 2 and x < img.shape[1] - s_patch / 2 - 1 and y > s_patch / 2 and y < img.shape[0] - s_patch / 2):
 
@@ -590,19 +588,19 @@ class BlobDetection(object):
                 pylab.annotate("",
                                xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]),
                                xytext=(x, y),
-                               arrowprops=dict(facecolor='red', shrink=0.05))
+                               arrowprops={"facecolor": 'red', "shrink": 0.05})
 
                 pylab.annotate("",
                                xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]),
                                xytext=(x, y),
-                               arrowprops=dict(facecolor='red', shrink=0.05))
+                               arrowprops={"facecolor": 'red', "shrink": 0.05})
                 pylab.plot(x, y, 'og')
                 vals.append(val)
                 vects.append(vect)
         return vals, vects
 
     def refinement(self):
-        from numpy import cos, sin, arctan2, pi
+        from numpy import arctan2, cos, pi, sin
         val, vect = self.direction()
 
         L = 0.114
@@ -808,4 +806,4 @@ class BlobDetection(object):
 
         for i in range(self.keypoints.x.size):
             pylab.annotate("", xy=(nghx[i], nghy[i]),
-                           xytext=(self.keypoints.x[i], self.keypoints.y[i]), arrowprops=dict(facecolor='red', shrink=0.05),)
+                           xytext=(self.keypoints.x[i], self.keypoints.y[i]), arrowprops={"facecolor": 'red', "shrink": 0.05},)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -38,10 +37,10 @@ __date__ = "17/11/2025"
 __status__ = "production"
 
 
-from .. import matplotlib
 from silx.gui import qt
 from silx.gui.utils import blockSignals as block_signals  # noqa
 
+from .. import matplotlib
 
 main_loop = False
 
@@ -61,7 +60,7 @@ def update_fig(fig=None):
                 qt.QCoreApplication.processEvents()
 
 
-class Event(object):
+class Event:
     "Dummy class for dummy things"
     def __init__(self, width, height):
         self.width = width

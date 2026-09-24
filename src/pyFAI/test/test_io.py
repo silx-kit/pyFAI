@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,37 +31,80 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/04/2026"
+__date__ = "20/09/2026"
 
-import unittest
-import os
-import shutil
-import numpy
-import time
-import sys
 import logging
+import os
 import pathlib
-from .utilstest import UtilsTest
-from .. import io
-from ..io.ponifile import PoniFile
-from ..io import spots
-import h5py
+import shutil
+import sys
+import time
+import unittest
+
 import fabio
+import h5py
+import numpy
+
+from .. import io
 from ..integrator import azimuthal as azimuthalIntegrator
+from ..io import spots
+from ..io.ponifile import PoniFile
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
+
+
+class TestPoniFileCopyWith(unittest.TestCase):
+    """A PoniFile is immutable: `with_*` derives a new object from an existing one"""
+
+    def build(self):
+        return PoniFile({"poni_version": 2.1, "dist": 0.1,
+                         "poni1": 0.01, "poni2": 0.02,
+                         "rot1": 0.0, "rot2": 0.0, "rot3": 0.0,
+                         "wavelength": 1e-10,
+                         "detector": "Detector",
+                         "detector_config": {"pixel1": 1e-4, "pixel2": 1e-4,
+                                             "orientation": 3}})
+
+    def test_with_params(self):
+        """Several parameters at once, the original object being left untouched"""
+        poni = self.build()
+        new = poni.with_params(dist=0.5, rot1=1e-3)
+        self.assertIsNot(new, poni, "a new object is returned")
+        self.assertEqual(new.dist, 0.5, "dist is replaced")
+        self.assertEqual(new.rot1, 1e-3, "rot1 is replaced")
+        self.assertEqual(new.poni1, poni.poni1, "the other parameters are kept")
+        self.assertEqual(poni.dist, 0.1, "the original object is unchanged")
+        self.assertIs(new.detector, poni.detector, "the detector is shared")
+
+    def test_with_single(self):
+        """One method per geometry parameter"""
+        poni = self.build()
+        for name, value in (("dist", 0.42), ("poni1", 0.11), ("poni2", 0.12),
+                            ("rot1", 0.01), ("rot2", 0.02), ("rot3", 0.03),
+                            ("wavelength", 2e-10)):
+            new = getattr(poni, f"with_{name}")(value)
+            self.assertEqual(getattr(new, name), value, f"{name} is replaced")
+            self.assertNotEqual(getattr(poni, name), value, f"{name} unchanged in the original")
+
+    def test_unknown_param(self):
+        """A keyword which is not a geometry parameter is refused"""
+        poni = self.build()
+        self.assertRaises(KeyError, poni.with_params, detector="Pilatus1M")
+        self.assertRaises(KeyError, poni.with_params, dist=0.5, unknown=1)
 
 
 class TestPoniFile(unittest.TestCase):
     @classmethod
     def setUpClass(cls)->None:
-        super(TestPoniFile, cls).setUpClass()
+        super().setUpClass()
         cls.ponifile = UtilsTest.getimage("Pilatus1M.poni")
 
 
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestPoniFile, cls).tearDownClass()
+        super().tearDownClass()
         cls.ponifile = None
 
     def test_filename(self):
@@ -117,7 +159,7 @@ class TestNexus(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestNexus, cls).setUpClass()
+        super().setUpClass()
         cls.tmpdir = os.path.join(UtilsTest.tempdir, "io_nexus")
         if not os.path.isdir(cls.tmpdir):
             os.mkdir(cls.tmpdir)
@@ -127,7 +169,7 @@ class TestNexus(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestNexus, cls).tearDownClass()
+        super().tearDownClass()
         # shutil.rmtree(cls.tmpdir)
         cls.tmpdir = None
         cls.ai = None
@@ -266,7 +308,7 @@ class TestHDF5Writer(unittest.TestCase):
         t = time.perf_counter() - t0
         logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)", n, shape, nmbytes, t, nmbytes / t)
         statinfo = os.stat(h5file)
-        self.assertTrue(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
+        self.assertTrue(statinfo.st_size / 1e6 > nmbytes, f"file size ({statinfo.st_size}) is larger than dataset")
 
 
 class TestFabIOWriter(unittest.TestCase):
@@ -342,14 +384,14 @@ class TestXrdmlWriter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestXrdmlWriter, cls).setUpClass()
+        super().setUpClass()
         with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
             cls.img = fimg.data
         cls.ai = pyFAI.load(UtilsTest.getimage("Pilatus1M.poni"))
         cls.result = cls.ai.integrate1d(cls.img, 200, method=("no", "histogram", "cython"), unit="2th_deg")
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestXrdmlWriter, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai = cls.img = cls.result=None
 
     def test_xrdml(self):
@@ -368,8 +410,7 @@ class TestXrdmlWriter(unittest.TestCase):
         from xml.etree import ElementTree as et
         with open(tmpfile, "rb") as f:
             xml = et.fromstring(f.read())
-        self.assertTrue(bool(xml))
-
+        self.assertIsNotNone(xml)
 
 
 def suite():
@@ -382,6 +423,7 @@ def suite():
     testsuite.addTest(loader(TestSpotWriter))
     testsuite.addTest(loader(TestXrdmlWriter))
     testsuite.addTest(loader(TestPoniFile))
+    testsuite.addTest(loader(TestPoniFileCopyWith))
     return testsuite
 
 

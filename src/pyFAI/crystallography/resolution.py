@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -44,10 +43,11 @@ __status__ = "production"
 
 
 from collections.abc import Iterable
-from ..containers import dataclass
-from ..units import Unit, to_unit, TTH_DEG
+
 import numpy
 
+from ..containers import dataclass
+from ..units import TTH_DEG, Unit, to_unit
 
 LN2 = numpy.log(2.0)
 

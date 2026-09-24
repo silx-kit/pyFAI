@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,14 +34,16 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import logging
+
+import fabio
 import numpy
 
 from . import detectors
-import fabio
+
 logger = logging.getLogger(__name__)
 
 
-class Grid(object):
+class Grid:
     """
     This class handles a regular grid in front of a detector to calibrate the
     geometrical distortion of the detector

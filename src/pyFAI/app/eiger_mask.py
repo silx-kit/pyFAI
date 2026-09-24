@@ -36,12 +36,16 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/10/2025"
 __satus__ = "development"
 
+import logging
 import os
 import sys
 from argparse import ArgumentParser
-import logging
+
 import fabio
-from .. import version as pyFAI_version, date as pyFAI_date
+
+from .. import date as pyFAI_date
+from .. import version as pyFAI_version
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)

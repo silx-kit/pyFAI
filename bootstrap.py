@@ -49,9 +49,10 @@ def build_project(name, root_dir):
     if sys.platform == "win32":
         libdir = "Lib"
 
-    build = os.path.join(root_dir, "build")
+    build_dir = f"build_py{sys.version_info[0]}{sys.version_info[1]}"
+    build = os.path.join(root_dir, build_dir)
     if not(os.path.isdir(build) and os.path.isdir(os.path.join(build, name))):
-        p = subprocess.Popen(["meson", "setup", "build"],
+        p = subprocess.Popen(["meson", "setup", build_dir],
                          shell=False, cwd=root_dir, env=os.environ)
         p.wait()
     p = subprocess.Popen(["meson", "configure", "--prefix", "/"] + extra,

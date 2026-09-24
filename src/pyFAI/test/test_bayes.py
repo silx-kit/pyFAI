@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,14 +31,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
-import unittest
-import numpy
 import logging
+import unittest
+
+import numpy
+from scipy import interpolate
+
 from ..utils import bayes
 from .utilstest import UtilsTest
-from scipy import interpolate
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,9 +79,9 @@ class TestBayes(unittest.TestCase):
         self.assertAlmostEqual(f(-2), -4, msg="llk -2")
         self.assertAlmostEqual(f(-3), -9, msg="llk -1")
         self.assertAlmostEqual(f(-4), -16, msg="llk -2")
-        self.assertAlmostEqual(f(1), -0.836596197557, msg="llk 1: %s" % (f(1)))
+        self.assertAlmostEqual(f(1), -0.836596197557, msg=f"llk 1: {f(1)}")
         self.assertAlmostEqual(f(0.01), -1e-4, msg="llk 1e-2")
-        self.assertAlmostEqual(f(8), -4.62302437387, msg="llk 8: %s" % f(8))
+        self.assertAlmostEqual(f(8), -4.62302437387, msg=f"llk 8: {f(8)}")
 
     def test_background1d(self):
         mean = self.noise.mean()

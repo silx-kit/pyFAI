@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,9 +24,10 @@
 
 __authors__ = ["V. Valls", "J. Kieffer"]
 __license__ = "MIT"
-__date__ = "24/02/2023"
+__date__ = "24/08/2026"
 
 from silx.gui import qt
+
 from ..model.GeometryModel import GeometryModel
 from ..widgets.GeometryTabs import GeometryTabs
 
@@ -37,7 +37,7 @@ class GeometryDialog(qt.QDialog):
     """
 
     def __init__(self, parent=None):
-        super(GeometryDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Sample stage geometry")
         self._geometryTabs = GeometryTabs(self)
         self._buttonBox = qt.QDialogButtonBox()
@@ -94,9 +94,9 @@ class GeometryDialog(qt.QDialog):
         haveChanges = self._geometryTabs.isDirty()
         existing = [qt.QDialogButtonBox.Ok, qt.QDialogButtonBox.Cancel, qt.QDialogButtonBox.Reset, qt.QDialogButtonBox.Close]
         if haveChanges:
-            available = set([qt.QDialogButtonBox.Ok, qt.QDialogButtonBox.Cancel, qt.QDialogButtonBox.Reset])
+            available = {qt.QDialogButtonBox.Ok, qt.QDialogButtonBox.Cancel, qt.QDialogButtonBox.Reset}
         else:
-            available = set([qt.QDialogButtonBox.Close])
+            available = {qt.QDialogButtonBox.Close}
         for buttonType in existing:
             button = self._buttonBox.button(buttonType)
             isVisible = buttonType in available

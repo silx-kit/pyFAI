@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,8 +34,9 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "06/06/2024"
 __status__ = "development"
 
-from silx.gui import qt
 import silx.gui.icons
+from silx.gui import qt
+
 
 class ClearPointsAction(qt.QAction):
     clearPoints = qt.Signal()

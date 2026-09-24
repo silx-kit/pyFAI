@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,29 +33,30 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/11/2025"
+__date__ = "17/09/2026"
 
-import unittest
-import random
-import time
-import numpy
+import copy
 import itertools
 import logging
 import os.path
-import json
-import fabio
+import random
+import time
+import unittest
 from math import pi
-from . import utilstest
-from ..io.ponifile import PoniFile
-from .. import geometry, load
-from ..integrator.azimuthal import AzimuthalIntegrator
-from .. import units
+
+import fabio
+import numpy
+
+from .. import geometry, load, units
 from ..detectors import detector_factory
-from ..third_party import transformations
-from .utilstest import UtilsTest
-from ..utils.mathutil import allclose_mod
 from ..geometry.crystfel import build_geometry, parse_crystfel_geom
 from ..geometry.fit2d import Fit2dGeometry
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..io.ponifile import PoniFile
+from ..third_party import transformations
+from ..utils.mathutil import allclose_mod
+from . import utilstest
+from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 
@@ -102,17 +102,17 @@ class TestSolidAngle(unittest.TestCase):
         delta_tth = abs(tth - tth_fit2d).max()
         delta_I = abs(I_nogood - I_fit2d).max()
         mean_I = abs(I_nogood - I_fit2d).mean()
-        self.assertLess(delta_tth, 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
-        self.assertGreater(delta_I, 100, 'Error on (wrong) I are large: %s >100' % delta_I)
-        self.assertGreater(mean_I, 2, 'Error on (wrong) I are large: %s >2' % mean_I)
+        self.assertLess(delta_tth, 1e-5, f'Error on 2th position: {delta_tth} <1e-5')
+        self.assertGreater(delta_I, 100, f'Error on (wrong) I are large: {delta_I} >100')
+        self.assertGreater(mean_I, 2, f'Error on (wrong) I are large: {mean_I} >2')
 
         tth, I_good = ai.integrate1d_ng(data, 1770, unit="2th_deg", radial_range=[0, 56], method=method, correctSolidAngle=3)
         delta_tth = abs(tth - tth_fit2d).max()
         delta_I = abs(I_good - I_fit2d).max()
         mean_I = abs(I_good - I_fit2d).mean()
-        self.assertLess(delta_tth, 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
-        self.assertLess(delta_I, 5, 'Error on (good) I are small: %s <5' % delta_I)
-        self.assertLess(mean_I, 0.05, 'Error on (good) I are small: %s <0.05' % mean_I)
+        self.assertLess(delta_tth, 1e-5, f'Error on 2th position: {delta_tth} <1e-5')
+        self.assertLess(delta_I, 5, f'Error on (good) I are small: {delta_I} <5')
+        self.assertLess(mean_I, 0.05, f'Error on (good) I are small: {mean_I} <0.05')
         ai.reset()
 
     def test_nonflat_center(self):
@@ -253,7 +253,7 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
         rd2 = self.geo.corner_array(self.shape, unit=units.RecD2_NM, scale=False)[:,:,:, 0]
         q = self.geo.corner_array(self.shape, unit=units.Q, use_cython=False, scale=False)[:,:,:, 0]
         delta = rd2 - (q / (2 * numpy.pi)) ** 2
-        self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2, delat=%s" % delta)
+        self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), f"corners rd2 = (q/2pi)**2, delat={delta}")
 
     def test_delta(self):
         drd2a = self.geo.deltaRd2(self.shape)
@@ -278,12 +278,12 @@ class TestFastPath(utilstest.ParametricTestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestFastPath, cls).setUpClass()
+        super().setUpClass()
         cls.calc_geometries()
 
     @classmethod
     def tearDownClass(cls):
-        super(TestFastPath, cls).tearDownClass()
+        super().tearDownClass()
         cls.matrices = None
         cls.geometries = None
         cls.quaternions = None
@@ -299,7 +299,9 @@ class TestFastPath(utilstest.ParametricTestCase):
 
     @classmethod
     def calc_geometries(cls):
-        detectors = ("Pilatus100k", "ImXPadS10")
+        pilatus_like = detector_factory("Detector", {'pixel1': 0.003784, 'pixel2': 0.003784, "max_shape":(9, 22)})  # ~Pilatus100k binned 22x22
+        imxpad_like = detector_factory("Detector", {"pixel1": 1.3e-3, "pixel2": 1.3e-3, "max_shape":(8, 12)})  # same as ImXPadS10 binned 10x10
+        detectors = (pilatus_like, imxpad_like)
         number_of_geometries = 2
 
         # Here is a set of pathological cases ...
@@ -307,26 +309,38 @@ class TestFastPath(utilstest.ParametricTestCase):
             # Provides atol = 1.08e-5
             {"dist": 0.037759112584709535, "poni1": 0.005490358659182459, "poni2": 0.06625690275821605,
              "rot1": 0.20918568578536278, "rot2": 0.42161920581114365, "rot3": 0.38784171093239983,
-             "wavelength": 1e-10, 'detector': 'Pilatus100k', "orientation":3},
+             "wavelength": 1e-10, "orientation":3,
+             'detector': pilatus_like
+             },
             # Provides atol = 2.8e-5
             {'dist': 0.48459003559204783, 'poni2':-0.15784154756282065, 'poni1': 0.02783657100374448,
              'rot3':-0.2901541134116695, 'rot1':-0.3927992588689394, 'rot2': 0.148115949280184,
-             "wavelength": 1e-10, 'detector': 'Pilatus100k', "orientation":3},
+             "wavelength": 1e-10, "orientation":3,
+             'detector': pilatus_like
+             },
             # Provides atol = 3.67761e-05
             {'poni1':-0.22055143279015976, 'poni2':-0.11124668733292842, 'rot1':-0.18105235367380956,
              'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257,
-             'detector': 'Pilatus100k', 'dist': 0.7350926443000882, "orientation":3},
+             'dist': 0.7350926443000882, "orientation":3,
+             'detector': pilatus_like
+             },
             # Provides atol = 4.94719e-05
             {'poni2': 0.1010652698401574, 'rot3':-0.30578860159890153, 'rot1': 0.46240992613529186,
-             'wavelength': 1e-10, 'detector': 'Pilatus300k', 'rot2':-0.027476969196682077,
-             'dist': 0.04711960678381288, 'poni1': 0.012745759325719641, "orientation":3},
+             'rot2':-0.027476969196682077, 'wavelength': 1e-10,
+             'dist': 0.04711960678381288, 'poni1': 0.012745759325719641, "orientation": 3,
+             'detector': pilatus_like
+             },
             # atol=2pi
             {'poni1': 0.07803878450256929, 'poni2': 0.2601779472529494, 'rot1':-0.33177239820033455,
              'wavelength': 1e-10, 'rot3': 0.2928945825578625, 'rot2': 0.2762729953307118,
-             'detector': 'Pilatus100k', 'dist': 0.43544642285972124, "orientation":3},
+             'dist': 0.43544642285972124, "orientation":3,
+             'detector': pilatus_like
+             },
             {'wavelength': 1e-10, 'dist': 0.13655542730645986, 'rot1':-0.16145635108891077,
              'poni1': 0.16271587645146157, 'rot2':-0.443426307059295, 'rot3': 0.40517456402269536,
-             'poni2': 0.05248001026597382, 'detector': 'Pilatus100k', "orientation":3}
+             'poni2': 0.05248001026597382, "orientation":3,
+             'detector': pilatus_like
+             }
         ]
 
         matrices = [[[ 0.84465919, -0.29127499, -0.44912107], [ 0.34507215, 0.93768707, 0.04084325], [ 0.4092384 , -0.1894778 , 0.89253689]],
@@ -344,8 +358,8 @@ class TestFastPath(utilstest.ParametricTestCase):
                        [ 0.95602792, 0.03295684, 0.23053058, 0.1782698 ]
                        ]
 
+        random.seed(0)
         for _ in range(number_of_geometries):
-            random.seed(0)
             geo = {"dist": 0.01 + random.random(),
                    "poni1": random.random() - 0.5,
                    "poni2": random.random() - 0.5,
@@ -379,10 +393,11 @@ class TestFastPath(utilstest.ParametricTestCase):
         """Test pyFAI.geometry.corner_array with full detectors
         """
         geometries = self.get_geometries()
-        count_a = 17
-        dunits = dict((u.split("_")[0], v) for u, v in units.RADIAL_UNITS.items())
-        params = itertools.product(geometries, dunits.values())
-        for data, space in params:
+        count_a = 1
+        # actual = 0
+        dunits = {u.split("_")[0]: v for u, v in units.RADIAL_UNITS.items()}
+        dunits = {u:v for u,v in dunits.items() if u in ("q","2th","r")}  # those are the only ones implemented in Cython !
+        for data, space in itertools.product(geometries, dunits.values()):
             with self.subTest(data=data, space=space):
                 geo = geometry.Geometry(**data)
                 t00 = time.perf_counter()
@@ -398,9 +413,11 @@ class TestFastPath(utilstest.ParametricTestCase):
                 # issue with numerical stability of azimuthal position due to arctan(y,x)
                 cnt_delta_a = (delta[..., 1] > self.EPSILON_A).sum()
                 logger.debug("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta_r:%s",
-                             space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / numpy.float64(t11 - t10), delta)
-                self.assertLess(delta_r, self.EPSILON_R, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
-                self.assertLess(cnt_delta_a, count_a, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
+                             space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / numpy.float64(t11 - t10), delta_r)
+                self.assertLess(delta_r, self.EPSILON_R, f"data={data}, space='{space}' delta_r: {delta_r}")
+                self.assertLess(cnt_delta_a, count_a, f"data:{data}, space: {space} cnt_delta_a: {cnt_delta_a}")
+                # actual = max(actual, cnt_delta_a)
+        # print(actual)
 
     def test_XYZ(self):
         """Test the calc_pos_zyx with full detectors"""
@@ -416,7 +433,7 @@ class TestFastPath(utilstest.ParametricTestCase):
                 delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
                 logger.debug("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
                              geometryParams["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
-                msg = "delta=%s<%s, geo= \n%s" % (delta, self.EPSILON, geo)
+                msg = f"delta={delta}<{self.EPSILON}, geo= \n{geo}"
                 self.assertTrue(numpy.all(delta.max() < self.EPSILON), msg)
                 logger.debug(msg)
 
@@ -436,7 +453,7 @@ class TestFastPath(utilstest.ParametricTestCase):
                 delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
                 logger.debug("TIMINGS\t meth: deltaChi %s python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
                              geometryParams["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
-                msg = "delta=%s<%s, geo= \n%s" % (delta, self.EPSILON, geo)
+                msg = f"delta={delta}<{self.EPSILON}, geo= \n{geo}"
                 self.assertTrue(numpy.all(delta.max() < self.EPSILON), msg)
                 logger.debug(msg)
 
@@ -449,8 +466,8 @@ class TestFastPath(utilstest.ParametricTestCase):
         self.assertEqual(len(geometries), len(matrices), "length is the same")
         for kwds, quat, mat in zip(geometries, quaternions, matrices):
             geo = geometry.Geometry(**kwds)
-            self.assertTrue(numpy.allclose(geo.rotation_matrix(), mat), "matrice are the same %s" % kwds)
-            self.assertTrue(numpy.allclose(geo.quaternion(), quat), "quaternions are the same %s" % kwds)
+            self.assertTrue(numpy.allclose(geo.rotation_matrix(), mat), f"matrice are the same {kwds}")
+            self.assertTrue(numpy.allclose(geo.quaternion(), quat), f"quaternions are the same {kwds}")
 
 
 class TestGeometry(utilstest.ParametricTestCase):
@@ -499,7 +516,7 @@ class TestGeometry(utilstest.ParametricTestCase):
                 delta = abs(oldret - newret).max()
                 logger.debug("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s",
                              func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
-                msg = "func: %s max delta=%.3f, geo:%s" % (func, delta, geo)
+                msg = f"func: {func} max delta={delta:.3f}, geo:{geo}"
                 self.assertAlmostEqual(delta, 0, 3, msg)
                 logger.debug(msg)
 
@@ -518,7 +535,7 @@ class TestGeometry(utilstest.ParametricTestCase):
                 delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
                 logger.debug("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s",
                              corners, t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
-                msg = "delta=%s, geo= \n%s" % (delta, geo)
+                msg = f"delta={delta}, geo= \n{geo}"
                 self.assertTrue(numpy.allclose(numpy.vstack(cy_res), numpy.vstack(py_res)), msg)
                 logger.debug(msg)
 
@@ -526,7 +543,7 @@ class TestGeometry(utilstest.ParametricTestCase):
         config = {"pixel1": 1, "pixel2": 2, "orientation":3}
         detector = detector_factory("adsc_q315", config)
         geom = geometry.Geometry(detector=detector)
-        ponifile = os.path.join(UtilsTest.tempdir, "%s.poni" % self.id())
+        ponifile = os.path.join(UtilsTest.tempdir, f"{self.id()}.poni")
         geom.save(ponifile)
         geom = geometry.Geometry()
         geom.load(ponifile)
@@ -577,29 +594,29 @@ class TestCalcFrom(unittest.TestCase):
         img1 = ai.calcfrom1d(prof_1d.radial, sig, dim1_unit="2th_deg",
                             mask=det.mask, dummy=-1)
         new_prof_1d = ai.integrate1d_ng(img1, 200, unit="2th_deg")
-        delta = abs((new_prof_1d.intensity - sig)).max()
-        self.assertLess(delta, 600, "calcfrom1d works delta=%s" % delta)
+        delta = abs(new_prof_1d.intensity - sig).max()
+        self.assertLess(delta, 600, f"calcfrom1d works delta={delta}")
         prof_2d = ai.integrate2d(img1, 400, 360, unit="2th_deg")
         img2 = ai.calcfrom2d(prof_2d.intensity, prof_2d.radial, prof_2d.azimuthal,
                              mask=det.mask,
                              dim1_unit="2th_deg", correctSolidAngle=True, dummy=-1)
         delta2 = img2 - img1
-        self.assertLess(abs(delta2.mean()), 2, "calcfrom2d works delta.mean=%s" % abs(delta2.mean()))
-        self.assertLess(delta2.std(), 100, "calcfrom2d works delta.std=%s" % delta2.std())
+        self.assertLess(abs(delta2.mean()), 2, f"calcfrom2d works delta.mean={abs(delta2.mean())}")
+        self.assertLess(delta2.std(), 100, f"calcfrom2d works delta.std={delta2.std()}")
 
 
 class TestBugRegression(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestBugRegression, cls).setUpClass()
+        super().setUpClass()
         detector = detector_factory("Imxpad S10")  # small detectors makes calculation faster
         cls.geo = geometry.Geometry(detector=detector)
         cls.geo.setFit2D(100, detector.shape[1] // 3, detector.shape[0] // 3, tilt=1)
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestBugRegression, cls).tearDownClass()
+        super().tearDownClass()
         cls.geo = None
 
     def test_bug747(self):
@@ -608,7 +625,7 @@ class TestBugRegression(unittest.TestCase):
         rc = self.geo.position_array(use_cython=True)
         rp = self.geo.position_array(use_cython=False)
         delta = abs(rp - rc).max()
-        self.assertLess(delta, 1e-5, "error on position is %s" % delta)
+        self.assertLess(delta, 1e-5, f"error on position is {delta}")
 
     def test_bug2024(self):
         """This bug is about delta chi being sometimes 2pi"""
@@ -619,6 +636,21 @@ class TestBugRegression(unittest.TestCase):
         delta_array = self.geo.delta_array(unit="chi_rad")
         self.assertLess(delta_array.max(), numpy.pi, "delta_array is less than pi")
         self.assertTrue(numpy.allclose(delta_array, deltaChi, atol=7e-6), "delta_array matches deltaChi")
+
+    def test_equality(self):
+        """`__eq__` used to compare an `orientation` attribute which `Geometry`
+        does not have: the AttributeError was silenced by a bare `except` and
+        every comparison returned False, even between identical geometries."""
+        kwargs = {"dist": 0.1, "poni1": 0.005, "poni2": 0.005,
+                  "detector": "Imxpad S10", "wavelength": 1e-10}
+        geo1 = geometry.Geometry(**kwargs)
+        self.assertEqual(geo1, geometry.Geometry(**kwargs), "identical geometries are equal")
+        self.assertEqual(geo1, copy.deepcopy(geo1), "deepcopy equals the original")
+        self.assertNotEqual(geo1, geometry.Geometry(**dict(kwargs, dist=0.2)),
+                            "geometries with a different distance differ")
+        self.assertNotEqual(geo1, geometry.Geometry(**dict(kwargs, detector="Pilatus100k")),
+                            "geometries with a different detector differ")
+        self.assertNotEqual(geo1, "not a geometry", "comparison with another type is False")
 
     def test_bug2679(self):
         ai = load({"dist":0.1, "rot1":0.1, "detector":"Pilatus100k"})
@@ -634,7 +666,7 @@ class TestOrientation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestOrientation, cls).setUpClass()
+        super().setUpClass()
         cls.ai1 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":1},
                                            "wavelength":1e-10})
         cls.ai2 = geometry.Geometry.sload({"detector":"pilatus100k", "detector_config":{"orientation":2},
@@ -646,7 +678,7 @@ class TestOrientation(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestOrientation, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
 
     def test_array_from_unit_tth_center(self):
@@ -666,23 +698,23 @@ class TestOrientation(unittest.TestCase):
         self.assertTrue(numpy.allclose(r2, r4[-1::-1, -1::-1]), "orientation 2,4 inversion match tth")
 
     def test_array_from_unit_chi_center(self):
-        r1 = self.ai1.array_from_unit(unit="chi_deg")
-        r2 = self.ai2.array_from_unit(unit="chi_deg")
-        r3 = self.ai3.array_from_unit(unit="chi_deg")
-        r4 = self.ai4.array_from_unit(unit="chi_deg")
+        r1 = self.ai1.array_from_unit(unit="chi_rad")
+        r2 = self.ai2.array_from_unit(unit="chi_rad")
+        r3 = self.ai3.array_from_unit(unit="chi_rad")
+        r4 = self.ai4.array_from_unit(unit="chi_rad")
 
         self.assertFalse(numpy.allclose(r1, r2), "orientation 1,2 differ chi")
         self.assertFalse(numpy.allclose(r1, r3), "orientation 1,3 differ chi")
         self.assertFalse(numpy.allclose(r1, r4), "orientation 1,4 differ chi")
 
-        self.assertTrue(-180 < r1.min() < -179, "Orientation 1 lower range matches")
-        self.assertTrue(-91 < r1.max() < -90, "Orientation 1 upperrange matches")
-        self.assertTrue(-90 < r2.min() < -89, "Orientation 2 lower range matches")
-        self.assertTrue(-1 < r2.max() < 0, "Orientation 2 upperrange matches")
-        self.assertTrue(0 < r3.min() < 1, "Orientation 3 lower range matches")
-        self.assertTrue(89 < r3.max() < 90, "Orientation 3 upperrange matches")
-        self.assertTrue(90 < r4.min() < 91, "Orientation 4 lower range matches")
-        self.assertTrue(179 < r4.max() < 180, "Orientation 4 upperrange matches")
+        # All 4 geometries share the same PONI, so the orientation is a pure
+        # re-indexing of the pixels: chi is flipped exactly like tth and the set
+        # of azimuthal values is preserved. Compared modulo 2pi.
+        self.assertTrue(allclose_mod(r1, numpy.fliplr(r2), atol=1e-5), "orientation 1,2 flipped match chi")
+        self.assertTrue(allclose_mod(r1, numpy.flipud(r4), atol=1e-5), "orientation 1,4 flipped match chi")
+        self.assertTrue(allclose_mod(r2, numpy.flipud(r3), atol=1e-5), "orientation 2,3 flipped match chi")
+        self.assertTrue(allclose_mod(r1, r3[-1::-1, -1::-1], atol=1e-5), "orientation 1,3 inversion match chi")
+        self.assertTrue(allclose_mod(r2, r4[-1::-1, -1::-1], atol=1e-5), "orientation 2,4 inversion match chi")
 
     def test_array_from_unit_tth_corner(self):
         r1 = self.ai1.array_from_unit(unit="2th_rad", typ="corner")
@@ -730,13 +762,15 @@ class TestOrientation(unittest.TestCase):
         self.assertFalse(numpy.allclose(z2, z4), "orientation 2,4 differ")
         self.assertFalse(numpy.allclose(z3, z4), "orientation 3,4 differ")
 
-        # Check that the transformation is OK. This is with complex number thus dense & complicated !
-        self.assertTrue(numpy.allclose(z1, -numpy.fliplr(z2.conj())), "orientation 1,2 flipped")
-        self.assertTrue(numpy.allclose(z1, -z3[-1::-1, -1::-1]), "orientation 1,3 inversed")
-        self.assertTrue(numpy.allclose(z1, numpy.flipud(z4.conj())), "orientation 1,4 flipped")
-        self.assertTrue(numpy.allclose(z2, numpy.flipud(z3.conj())), "orientation 2,3 flipped")
-        self.assertTrue(numpy.allclose(z2, -z4[-1::-1, -1::-1]), "orientation 2,4 inversion")
-        self.assertTrue(numpy.allclose(z3, -numpy.fliplr(z4.conj())), "orientation 3,4 flipped")
+        # Check that the transformation is OK. Since the orientation only
+        # re-indexes the pixels (same PONI here), z = tth*exp(i*chi) is simply
+        # flipped: no conjugation nor sign change is involved.
+        self.assertTrue(numpy.allclose(z1, numpy.fliplr(z2)), "orientation 1,2 flipped")
+        self.assertTrue(numpy.allclose(z1, z3[-1::-1, -1::-1]), "orientation 1,3 inversed")
+        self.assertTrue(numpy.allclose(z1, numpy.flipud(z4)), "orientation 1,4 flipped")
+        self.assertTrue(numpy.allclose(z2, numpy.flipud(z3)), "orientation 2,3 flipped")
+        self.assertTrue(numpy.allclose(z2, z4[-1::-1, -1::-1]), "orientation 2,4 inversion")
+        self.assertTrue(numpy.allclose(z3, numpy.fliplr(z4)), "orientation 3,4 flipped")
 
     def test_chi(self):
         epsilon = 6e-3
@@ -773,7 +807,7 @@ class TestOrientation2(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestOrientation2, cls).setUpClass()
+        super().setUpClass()
         p = detector_factory("pilatus100k")
         c = p.get_pixel_corners()
         d1 = c[..., 1].max()
@@ -789,7 +823,7 @@ class TestOrientation2(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestOrientation2, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai1 = cls.ai2 = cls.ai3 = cls.ai3 = None
 
     def test_positions(self):
@@ -819,48 +853,60 @@ class TestOrientation2(unittest.TestCase):
         self.assertTrue(numpy.allclose(r3, r4, atol=1e-8))
 
     def test_center_chi_center(self):
-        r1 = self.ai1.array_from_unit(unit="chi_rad", typ="center") / numpy.pi
-        r2 = self.ai2.array_from_unit(unit="chi_rad", typ="center") / numpy.pi
-        r3 = self.ai3.array_from_unit(unit="chi_rad", typ="center") / numpy.pi
-        r4 = self.ai4.array_from_unit(unit="chi_rad", typ="center") / numpy.pi
-        self.assertTrue(numpy.allclose(r1[:, 200:], r2[:, 200:], atol=1e-8))
-        self.assertTrue(numpy.allclose(r1[:, 200:], r3[:, 200:], atol=1e-8))
-        self.assertTrue(numpy.allclose(r1[:, 200:], r4[:, 200:], atol=1e-8))
-        self.assertTrue(numpy.allclose(r2[:, 200:], r3[:, 200:], atol=1e-8))
-        self.assertTrue(numpy.allclose(r2[:, 200:], r4[:, 200:], atol=1e-8))
-        self.assertTrue(numpy.allclose(r3[:, 200:], r4[:, 200:], atol=1e-8))
+        """The 4 geometries describe the SAME experiment (the PONI is mirrored
+        along with the orientation), but the frame attached to the detector
+        changes handedness, so chi is mirrored accordingly:
+        orientation 2 negates the slow axis, 4 the fast one, 1 both.
+        Restricted to [:, 200:] to stay away from the chi discontinuity."""
+        r1 = self.ai1.array_from_unit(unit="chi_rad", typ="center")[:, 200:]
+        r2 = self.ai2.array_from_unit(unit="chi_rad", typ="center")[:, 200:]
+        r3 = self.ai3.array_from_unit(unit="chi_rad", typ="center")[:, 200:]
+        r4 = self.ai4.array_from_unit(unit="chi_rad", typ="center")[:, 200:]
+        pi = numpy.pi
+        self.assertTrue(allclose_mod(r1, pi - r2, atol=1e-4), "chi1 == pi - chi2")
+        self.assertTrue(allclose_mod(r1, r3 + pi, atol=1e-4), "chi1 == chi3 + pi")
+        self.assertTrue(allclose_mod(r1, -r4, atol=1e-4), "chi1 == -chi4")
+        self.assertTrue(allclose_mod(r2, -r3, atol=1e-4), "chi2 == -chi3")
+        self.assertTrue(allclose_mod(r2, r4 + pi, atol=1e-4), "chi2 == chi4 + pi")
+        self.assertTrue(allclose_mod(r3, pi - r4, atol=1e-4), "chi3 == pi - chi4")
 
     def test_center_tth_center(self):
         r1 = self.ai1.array_from_unit(unit="2th_deg", typ="corner")
         r2 = self.ai2.array_from_unit(unit="2th_deg", typ="corner")
         r3 = self.ai3.array_from_unit(unit="2th_deg", typ="corner")
         r4 = self.ai4.array_from_unit(unit="2th_deg", typ="corner")
-        tth1 = r1[..., 0].mean(axis=-1)
-        chi1 = r1[..., 1].mean(axis=-1)
-        tth2 = r2[..., 0].mean(axis=-1)
-        chi2 = r2[..., 1].mean(axis=-1)
-        tth3 = r3[..., 0].mean(axis=-1)
-        chi3 = r3[..., 1].mean(axis=-1)
-        tth4 = r4[..., 0].mean(axis=-1)
-        chi4 = r4[..., 1].mean(axis=-1)
+        tths = {}
+        chis = {}
+        for idx, r in ((1, r1), (2, r2), (3, r3), (4, r4)):
+            # Nota: in a corner array the radial part uses the requested unit
+            # (here degrees) while the azimuthal part is always in radian.
+            tth, chi = r[..., 0], r[..., 1]
+            tths[idx] = tth.mean(axis=-1)
+            # average the corners as complex numbers: a plain mean of the
+            # azimuthal angles is meaningless across the +/-pi discontinuity
+            z = (tth * numpy.cos(chi) + 1j * tth * numpy.sin(chi)).mean(axis=-1)
+            chis[idx] = numpy.angle(z)
 
         res = []
-        tths = [tth1, tth2, tth3, tth4]
         thres = 0.1
-        for idx, a1 in enumerate(tths):
-            for a2 in tths[:idx]:
-                res.append(numpy.allclose(a1, a2, atol=thres))
-        # print(res)
+        for idx in (1, 2, 3, 4):
+            for jdx in range(1, idx):
+                res.append(numpy.allclose(tths[idx], tths[jdx], atol=thres))
         self.assertTrue(numpy.all(res), "2th is OK")
 
-        res = []
-        tths = [chi1, chi2, chi3, chi4]
-        thres = 0.1
-        for idx, a1 in enumerate(tths):
-            for a2 in tths[:idx]:
-                res.append(numpy.allclose(a1[:, 200:], a2[:, 200:], atol=thres))
-        # print(res)
-        self.assertTrue(numpy.all(res), "2th is OK")
+        # chi: same experiment but frames of opposite handedness, so the
+        # azimuthal angle is mirrored rather than identical, see
+        # test_center_chi_center. In radian, hence the tighter threshold.
+        pi = numpy.pi
+        relations = [(1, pi - chis[2], "chi1 == pi - chi2"),
+                     (1, chis[3] + pi, "chi1 == chi3 + pi"),
+                     (1, -chis[4], "chi1 == -chi4"),
+                     (2, -chis[3], "chi2 == -chi3"),
+                     (2, chis[4] + pi, "chi2 == chi4 + pi"),
+                     (3, pi - chis[4], "chi3 == pi - chi4")]
+        for ref, expected, msg in relations:
+            self.assertTrue(allclose_mod(chis[ref][:, 200:], expected[:, 200:],
+                                         atol=2e-3), msg)
 
 
 class TestCrystFEL(unittest.TestCase):
@@ -1211,11 +1257,21 @@ class TestCrystFEL(unittest.TestCase):
             geom = UtilsTest.getimage(i)
             dico = parse_crystfel_geom(geom)
             if ref is not None:
-                ai = build_geometry(dico)
-                poni_res = PoniFile(ai)
-                poni_ref = PoniFile(ref)
-                self.assertEqual(json.dumps(poni_res.as_dict()),
-                                 json.dumps(poni_ref.as_dict()), f"geometry matches for {i}")
+                # float32 is what the detector stores anyway and halves the memory
+                # needed by the largest geometries; it costs ~1e-8 relative on the
+                # position of the PONI, i.e. 10000x less than a pixel.
+                ai = build_geometry(dico, dtype=numpy.float32)
+                poni_res = PoniFile(ai).as_dict()
+                poni_ref = PoniFile(ref).as_dict()
+                self.assertEqual(set(poni_res), set(poni_ref), f"same keys for {i}")
+                for key, expected in poni_ref.items():
+                    obtained = poni_res[key]
+                    if isinstance(expected, float):
+                        self.assertAlmostEqual(obtained, expected,
+                                               delta=1e-6 * abs(expected) + 1e-12,
+                                               msg=f"{key} matches for {i}")
+                    else:
+                        self.assertEqual(obtained, expected, f"{key} matches for {i}")
 
 
 def suite():

@@ -1,16 +1,18 @@
 # ensure %matplotlib widget
 import numpy
-from ..mpl_calib import MplCalibWidget
 from matplotlib import pyplot
+
 from ..cli_calibration import AbstractCalibration, FixedParameters
+from ..mpl_calib import MplCalibWidget
+
 try:
-    from IPython.display import display
     import ipywidgets as widgets
+    from IPython.display import display
 except (ImportError, ModuleNotFoundError):
     try:
         # for compatibility with older Python
-        from IPython.core.display import display
         import ipywidgets as widgets
+        from IPython.core.display import display
     except (ImportError, ModuleNotFoundError):
         from ...utils.callback import dangling_callback as display
 
@@ -55,9 +57,8 @@ class JupyCalibWidget(MplCalibWidget):
                 pyplot.pause(0.01)
 
     def maximize(self, update=True):
-        if self.fig:
-            if update:
-                self.update()
+        if self.fig and update:
+            self.update()
 
     def get_ring_value(self):
         "Return the value of the ring widget"

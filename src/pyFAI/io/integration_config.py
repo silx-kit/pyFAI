@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -66,25 +65,27 @@ All those data-classes are serializable to JSON.
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2025"
+__date__ = "24/08/2026"
 __docformat__ = 'restructuredtext'
-__all__ = [ "asdict", "fields", "WorkerConfig", "WorkerFiberConfig"]
+__all__ = ["WorkerConfig", "WorkerFiberConfig", "asdict", "fields"]
 
 
-import os
+import copy
 import json
 import logging
-import copy
-from typing import ClassVar, Union
+import os
+from typing import ClassVar
+
 import numpy
-from .ponifile import PoniFile
-from ._json import json_dumps
-from ..containers import PolarizationDescription, ErrorModel, dataclass, fields, asdict
-from .. import detectors
-from .. import method_registry
+
+from .. import detectors, method_registry
+from ..containers import ErrorModel, PolarizationDescription, asdict, dataclass, fields
 from ..integrator import load_engines as load_integrators
-from ..utils import decorators
 from ..units import Unit, UnitFiber, get_unit_fiber
+from ..utils import decorators
+from ._json import json_dumps
+from .ponifile import PoniFile
+
 _logger = logging.getLogger(__name__)
 CURRENT_VERSION = 5
 
@@ -104,12 +105,11 @@ def _normalize_v1_darkflat_files(config, key):
         # Already a list, it's fine
         return
 
-    if isinstance(filenames, (str,)):
-        if "," in filenames:
-            # Create a list from a coma separated string list
-            filenames = filenames.split(",")
-            filenames = [f.strip() for f in filenames]
-            config[key] = filenames
+    if isinstance(filenames, (str,)) and "," in filenames:
+        # Create a list from a coma separated string list
+        filenames = filenames.split(",")
+        filenames = [f.strip() for f in filenames]
+        config[key] = filenames
 
 
 def _patch_v1_to_v2(config):
@@ -197,9 +197,8 @@ def _patch_v1_to_v2(config):
     method = config.get("method", None)
     use_opencl = config.pop("do_OpenCL", False)
 
-    if use_opencl is not None and method is not None:
-        if use_opencl:
-            _logger.warning("Both 'method' and 'do_OpenCL' are defined. 'do_OpenCL' is ignored.")
+    if use_opencl is not None and method is not None and use_opencl:
+        _logger.warning("Both 'method' and 'do_OpenCL' are defined. 'do_OpenCL' is ignored.")
 
     if method is None:
         if use_opencl:
@@ -365,7 +364,7 @@ def normalize(config, inplace=False, do_raise=False, target_version=CURRENT_VERS
     return config
 
 
-class ConfigurationReader(object):
+class ConfigurationReader:
     "This class should be deprecated now ..."
 
     def __init__(self, config):
@@ -423,27 +422,11 @@ class ConfigurationReader(object):
         method = self._config.pop("method", default)
         target = self._config.pop("opencl_device", None)
 
-        if isinstance(target, list):
-            # Patch list to tuple
-            target = tuple(target)
-
         if method is None:
             lngm = load_integrators.PREFERED_METHODS_2D[0] if dim == 2 else load_integrators.PREFERED_METHODS_1D[0]
             method = lngm.method
-        elif isinstance(method, (str,)):
-            method = method_registry.Method.parsed(method)
-            method = method.fixed(dim=dim, target=target)
-        elif isinstance(method, (list, tuple)):
-            if len(method) == 3:
-                split, algo, impl = method
-                method = method_registry.Method(dim, split, algo, impl, target)
-            elif 3 < len(method) <= 5:
-                method = method_registry.Method(*method)
-            else:
-                raise TypeError(f"Method size {len(method)} is unsupported, method={method}.")
-        else:
-            raise TypeError(f"Method type {type(method)} unsupported, method={method}.")
-        return method
+        # `do_2D` and `opencl_device` take precedence over what the method holds
+        return method_registry.Method.parse_any(method, dim=dim, target=target)
 
 
 @dataclass
@@ -461,11 +444,11 @@ class WorkerConfig:
     val_dummy: float = None
     delta_dummy: float = None
     correct_solid_angle: bool = True
-    dark_current: Union[str, list] = None
-    flat_field: Union[str, list] = None
+    dark_current: str | list = None
+    flat_field: str | list = None
     mask_file: str = None
     error_model: ErrorModel = ErrorModel.NO
-    method: object = None
+    method: method_registry.Method = None
     opencl_device: list = None
     azimuth_range: list = None
     radial_range: list = None
@@ -481,6 +464,43 @@ class WorkerConfig:
                                 'do_dummy', "do_radial_range", 'do_azimuthal_range', 'do_solid_angle']
     ENFORCED: ClassVar[list] = ["polarization_description", "poni", "error_model", "unit"]
 
+    def __post_init__(self):
+        """The fields are assigned in declaration order, hence `opencl_device` did
+        not exist yet when `method` was validated: reconcile them now.
+        """
+        if self.method is not None and self.method.target is not None:
+            if self.opencl_device is None:
+                self.opencl_device = self.method.target
+            self.method = self.method.with_target(None)
+
+    def __setattr__(self, key, value):
+        """Enforce type of `method` to be immutable"""
+        if key == "method" and value is not None:
+            value = self._enforce_method(value)
+        # NOTE: `object.__setattr__`, not `super()`: the dataclass is built with
+        # `slots=True`, which recreates the class and invalidates the `__class__`
+        # cell the zero-argument `super()` relies on. CPython only fixed this in
+        # 3.14, so any earlier version raises TypeError here.
+        object.__setattr__(self, key, value)
+
+    def _enforce_method(self, value):
+        """Normalize about any description of a method into a `Method`.
+
+        The dimensionality is derived from `nbpt_azim` and the OpenCL device is
+        stored in `opencl_device`: both are left unset in the method itself, so
+        that there is a single source of truth for them.
+
+        :param value: string, sequence, Method or IntegrationMethod
+        :rtype: pyFAI.method_registry.Method
+        """
+        if not hasattr(self, "opencl_device"):
+            # The dataclass is still being built and the field does not exist
+            # yet: __post_init__ performs the reconciliation in that case.
+            return method_registry.Method.parse_any(value).with_dim(None)
+        method, device = method_registry.normalize_method(value, self.opencl_device)
+        object.__setattr__(self, "opencl_device", device)
+        return method
+
     def __repr__(self):
         return json_dumps(self.as_dict(), indent=4)
 
@@ -494,7 +514,10 @@ class WorkerConfig:
         for field in fields(self):
             key = field.name
             value = getattr(self, key)
-            if key in self.ENFORCED:
+            if key == "method" and value is not None:
+                # `dim` and `target` live in `nbpt_azim` and `opencl_device`
+                dico[key] = (value.split, value.algo, value.impl)
+            elif key in self.ENFORCED:
                 if "as_dict" in dir(value):  # ponifile
                     dico[key] = value.as_dict()
                 elif "as_str" in dir(value):
@@ -529,9 +552,7 @@ class WorkerConfig:
                 if key in cls.ENFORCED:
                     "Enforce a specific class type"
                     klass = field.type
-                    if value is None:
-                        to_init[key] = value
-                    elif isinstance(value, klass):
+                    if value is None or isinstance(value, klass):
                         to_init[key] = value
                     elif isinstance(value, dict):
                         to_init[key] = klass(**value)
@@ -696,9 +717,7 @@ class WorkerConfig:
     def do_polarization(self):
         if self.polarization_description is None:
             return False
-        else:
-            return True
-        if "__len__" in dir(self.polarization_factor):
+        elif "__len__" in dir(self.polarization_factor):
             return bool(self.polarization_factor)
         else:
             return True

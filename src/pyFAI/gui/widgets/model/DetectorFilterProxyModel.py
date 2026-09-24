@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,13 +27,14 @@ __license__ = "MIT"
 __date__ = "16/10/2020"
 
 from silx.gui import qt
+
 from .AllDetectorItemModel import AllDetectorItemModel
 
 
 class DetectorFilterProxyModel(qt.QSortFilterProxyModel):
 
     def __init__(self, parent):
-        super(DetectorFilterProxyModel, self).__init__(parent)
+        super().__init__(parent)
         self.__manufacturerFilter = None
 
     def setManufacturerFilter(self, manufacturer):

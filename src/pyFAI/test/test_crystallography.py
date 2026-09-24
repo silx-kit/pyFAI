@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,12 +32,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2026"
+__date__ = "10/09/2026"
 
+import logging
 import os
 import unittest
+from typing import ClassVar
 import numpy
-import logging
+from ..crystallography import Cell, ReflectionCondition, resolution
 from .utilstest import UtilsTest
 from ..crystallography import resolution, Cell, EquationOfState, ReflectionCondition
 from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, Murnaghan, PVT,
@@ -734,6 +735,56 @@ class TestCalibrantHeaders(unittest.TestCase):
             clone = CalibrantConfig.from_dspacing(tmp)
         self.assertIsNone(clone.eos)
         self.assertEqual(len(clone.reflections), len(config.reflections))
+class TestLatticeCentring(unittest.TestCase):
+    """Selection rules of the centred Bravais lattices, see issue #2794"""
+
+    # nodes of the conventional cell for each centring
+    NODES: ClassVar[dict] = {"P": [(0, 0, 0)],
+             "A": [(0, 0, 0), (0, 0.5, 0.5)],
+             "B": [(0, 0, 0), (0.5, 0, 0.5)],
+             "C": [(0, 0, 0), (0.5, 0.5, 0)],
+             "I": [(0, 0, 0), (0.5, 0.5, 0.5)],
+             "F": [(0, 0, 0), (0.5, 0.5, 0), (0.5, 0, 0.5), (0, 0.5, 0.5)]}
+
+    def structure_factor(self, lattice_type, hkl):
+        """Modulus of the structure factor of the lattice alone, the reference the
+        selection rules have to agree with. Nota: the rhombohedral centring is left out,
+        as two settings (obverse and reverse) are in use."""
+        h, k, l = hkl  # noqa: E741
+        amplitude = sum(numpy.exp(2j * numpy.pi * (h * x + k * y + l * z))
+                        for x, y, z in self.NODES[lattice_type])
+        return abs(amplitude)
+
+    def test_selection_rules(self):
+        """Every rule must allow exactly the reflections with a non-zero structure factor"""
+        for lattice_type in self.NODES:
+            rule = getattr(ReflectionCondition, f"type_{lattice_type}")
+            for h in range(-3, 4):
+                for k in range(-3, 4):
+                    for l in range(-3, 4):  # noqa: E741
+                        if h == k == l == 0:
+                            continue
+                        expected = self.structure_factor(lattice_type, (h, k, l)) > 1e-10
+                        self.assertEqual(rule(h, k, l), expected,
+                                         f"lattice {lattice_type}, reflection {h}{k}{l}")
+
+    def test_C_centred_orthorhombic(self):
+        """Non-regression for #2794: 010 and 011 are extinct, 001 is not
+
+        The C centring adds a node in the *ab* plane, so it does not halve the period along
+        *c*: the (001) planes stay `c` apart and the 001 reflection is allowed, while the
+        (010) planes get an extra plane half-way and 010 is extinct.
+        """
+        cell = Cell.orthorhombic(3.0, 4.0, 5.0, lattice_type="C")
+        self.assertEqual(cell.type, "C", "the lattice type is taken into account")
+        reflections = cell.calculate_dspacing(2.0)
+        found = {(m.h, m.k, m.l) for millers in reflections.values() for m in millers}
+        for hkl in ((0, 1, 0), (0, 1, 1), (1, 0, 0), (1, 0, 1)):
+            self.assertNotIn(hkl, found, f"{hkl} is extinct in a C-centred lattice")
+        for hkl in ((0, 0, 1), (1, 1, 0), (1, 1, 1), (0, 2, 0)):
+            self.assertIn(hkl, found, f"{hkl} is allowed in a C-centred lattice")
+        self.assertEqual(len(reflections), 5,
+                         "5 reflections with d > 2 A: 001, 002, 110, 111 and 020")
 
 
 def suite():
@@ -750,6 +801,7 @@ def suite():
     testsuite.addTest(loader(TestVolumeExpansion))
     testsuite.addTest(loader(TestJCPDS))
     testsuite.addTest(loader(TestCalibrantHeaders))
+    testsuite.addTest(loader(TestLatticeCentring))
     return testsuite
 
 

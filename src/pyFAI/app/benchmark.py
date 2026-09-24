@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,9 +34,13 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "07/10/2025"
 __status__ = "development"
 
-from argparse import ArgumentParser
 import logging
-from .. import benchmark, version as pyFAI_version, logger as pyFAI_logger
+from argparse import ArgumentParser
+
+from .. import benchmark
+from .. import logger as pyFAI_logger
+from .. import version as pyFAI_version
+
 try:
     logging.basicConfig(level=logging.WARNING, force=True)
 except ValueError:

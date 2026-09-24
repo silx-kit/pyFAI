@@ -10,7 +10,7 @@
 /*.egg
 /*.egg-info
 /dist
-/build
+/build*
 /eggs
 /develop-eggs
 /.installed.cfg
@@ -38,6 +38,8 @@
 
 # Notebook
 .ipynb_checkpoints
+*.ipynb.stderr
+*.ipynb.stdout
 
 
 # Discard generated C-files

@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,20 +30,23 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "21/08/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-import os
-import sys
-import posixpath
-from collections import OrderedDict
 import logging
-import numpy
+import os
+import posixpath
+import sys
+from collections import OrderedDict
+
 import fabio
+import numpy
+
 from .. import version
-from .nexus import Nexus, get_isotime, h5py
 from ._json import json_dumps
+from .nexus import Nexus, get_isotime, h5py
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -95,7 +97,7 @@ def save_sparse(filename, frames, beamline="beamline", ai=None, source=None, ext
     """
     if len(frames) == 0:
         raise RuntimeError("No frame provided to save")
-    with Nexus(filename, mode="w", creator="pyFAI_%s" % version, start_time=start_time) as nexus:
+    with Nexus(filename, mode="w", creator=f"pyFAI_{version}", start_time=start_time) as nexus:
         instrument = nexus.new_instrument(instrument_name=beamline)
         entry = instrument.parent
         sparse_grp = nexus.new_class(entry, "sparse_frames", class_type="NXdata")

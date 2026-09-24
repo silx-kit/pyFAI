@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,21 +32,22 @@ __author__ = "Edgar Gutiérrez Fernández"
 __contact__ = "edgar.gutierrez-fernandez@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "16/09/2026"
 
-import unittest
 import logging
+import re
+import unittest
+
 import numpy
-from ..calibrant import get_calibrant
-from ..integrator.fiber import FiberIntegrator
-from ..integrator.azimuthal import AzimuthalIntegrator
-from ..detectors import detector_factory
-from ..units import get_unit_fiber
-from ..units import parse_fiber_unit
-from ..units import ANY_FIBER_UNITS
-from ..units import UnitFiber
-from ..test.utilstest import UtilsTest
+
 from .. import load
+from ..calibrant import get_calibrant
+from ..detectors import detector_factory
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..integrator.fiber import FiberIntegrator
+from ..test.utilstest import UtilsTest
+from ..units import ANY_FIBER_UNITS, UnitFiber, get_unit_fiber, parse_fiber_unit
+
 logger = logging.getLogger(__name__)
 
 
@@ -512,7 +512,7 @@ class TestFiberIntegrator(unittest.TestCase):
         }
         result_ref = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=npt_ip, npt_oop=npt_oop,
                                                               ip_range=ranges[1]["ip"], oop_range=ranges[1]["oop"],
-                                                              vertical_integration=ranges[1]["vertical_integration"], sample_orientation=int(1),
+                                                              vertical_integration=ranges[1]["vertical_integration"], sample_orientation=1,
                                                               method=("bbox", "csr", "cython"),
         )
 
@@ -546,7 +546,7 @@ class TestFiberIntegrator(unittest.TestCase):
 
         result_ref = self.fi.integrate1d_grazing_incidence(data=self.data, npt_ip=npt_ip, npt_oop=npt_oop,
                                                               ip_range=ranges[1]["ip"], oop_range=ranges[1]["oop"],
-                                                              vertical_integration=ranges[1]["vertical_integration"], sample_orientation=int(1),
+                                                              vertical_integration=ranges[1]["vertical_integration"], sample_orientation=1,
                                                               method=("bbox", "csr", "cython"),
         )
 
@@ -565,10 +565,34 @@ class TestFiberIntegrator(unittest.TestCase):
             diff = numpy.abs(intensity - result_ref.intensity)
             self.assertGreater(diff.max(), 6e-2)
 
+
+class _EquivalenceNumpyNumexpr:
+    """Check that the numexpr and the numpy formula of one fiber unit agree.
+
+    This is a mixin, not a TestCase: one concrete class is derived from it per
+    fiber unit, see EQUIVALENCE_TESTS below. They are separate classes so that
+    `pytest -n auto --dist loadscope` spreads the units over the workers: a
+    single test covering all of them is a block no worker can split.
+    """
+
+    unit_name = None
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.fi = FiberIntegrator(dist=0.1, poni1=0.02, poni2=0.02, wavelength=1e-10,
+                                 detector=detector_factory("Pilatus100k"))
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.fi = None
+
     def test_equivalence_numpy_numexpr(self):
-        for unit_name in ANY_FIBER_UNITS.keys():
-            for so in range(1,9):
-                fiberunit = parse_fiber_unit(unit=unit_name, sample_orientation=so, incident_angle=0.2, tilt_angle=0.5)
+        for so in range(1, 9):
+            with self.subTest(sample_orientation=so):
+                fiberunit = parse_fiber_unit(unit=self.unit_name, sample_orientation=so,
+                                             incident_angle=0.2, tilt_angle=0.5)
                 self.fi.reset()
                 array_numexpr = self.fi.array_from_unit(unit=fiberunit)
 
@@ -577,15 +601,31 @@ class TestFiberIntegrator(unittest.TestCase):
                 fiberunit.equation = fiberunit._equation_np
                 fiberunit._update_ne_equation()
 
-                self.fi.reset()        
+                self.fi.reset()
                 array_numpy = self.fi.array_from_unit(unit=fiberunit)
-                
-                self.assertTrue(numpy.allclose(array_numexpr, array_numpy))
-                
+
+                self.assertTrue(numpy.allclose(array_numexpr, array_numpy),
+                                f"numexpr and numpy agree for {self.unit_name}, "
+                                f"sample_orientation={so}")
+
+
+EQUIVALENCE_TESTS = {}
+"""One TestCase class per fiber unit, named TestEquivalence_<unit>"""
+
+for _unit_name in ANY_FIBER_UNITS:
+    _cls_name = "TestEquivalence_" + re.sub(r"\W", "_", _unit_name)
+    EQUIVALENCE_TESTS[_cls_name] = type(_cls_name,
+                                        (_EquivalenceNumpyNumexpr, unittest.TestCase),
+                                        {"unit_name": _unit_name})
+globals().update(EQUIVALENCE_TESTS)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestFiberIntegrator))
+    for _case in EQUIVALENCE_TESTS.values():
+        testsuite.addTest(loader(_case))
     return testsuite
 
 

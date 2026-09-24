@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,13 +31,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "08/09/2026"
 
-import unittest
-import numpy
 import logging
-from .utilstest import UtilsTest
+import unittest
+
+import numpy
+
 from ..ext import bilinear
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,12 +48,12 @@ class TestBilinear(unittest.TestCase):
     """basic maximum search test"""
     @classmethod
     def setUpClass(cls)->None:
-        super(TestBilinear, cls).setUpClass()
+        super().setUpClass()
         cls.N = 10000
         cls.rng = UtilsTest.get_rng()
     @classmethod
     def tearDownClass(cls)->None:
-        super(TestBilinear, cls).tearDownClass()
+        super().tearDownClass()
         cls.rng = None
 
     def test_max_search_round(self):
@@ -66,11 +68,11 @@ class TestBilinear(unittest.TestCase):
 
         for _s in range(self.N):
             i, j = int(self.rng.uniform(0, 100)), int(self.rng.uniform(0, 100))
-            k, l = b.local_maxi((i, j))  # noqa: E741
-            if abs(k - 40) > 1e-4 or abs(l - 60) > 1e-4:
-                logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
+            p0, p1 = b.local_maxi((i, j))
+            if abs(p0 - 40) > 1e-4 or abs(p1 - 60) > 1e-4:
+                logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, p0, p1)
             else:
-                logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
+                logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, p0, p1)
                 ok += 1
         logger.info("Success rate: %.1f", 100.0 * ok / self.N)
         self.assertEqual(ok, self.N, "Maximum is always found")
@@ -86,14 +88,58 @@ class TestBilinear(unittest.TestCase):
         ok = 0
         for _s in range(self.N):
             i, j = int(self.rng.uniform(0,100)), int(self.rng.uniform(0,100))
-            k, l = b.local_maxi((i, j))  # noqa: E741
-            if abs(k - 40.5) > 0.5 or abs(l - 60.5) > 0.5:
-                logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
+            p0, p1 = b.local_maxi((i, j))
+            if abs(p0 - 40.5) > 0.5 or abs(p1 - 60.5) > 0.5:
+                logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, p0, p1)
             else:
-                logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
+                logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, p0, p1)
                 ok += 1
         logger.info("Success rate: %.1f", 100.0 * ok / self.N)
         self.assertEqual(ok, self.N, "Maximum is always found")
+
+
+    def test_subpixel_quadratic(self):
+        """The second order Taylor expansion is exact on a quadratic surface
+
+        The sub-pixel position of the maximum should be found at the precision of the
+        float32 storage, even when the quadratic form has a cross-term.
+        """
+        shape = (25, 25)
+        pos1, pos2 = numpy.ogrid[:shape[0], :shape[1]]
+        for _s in range(100):
+            center = 12 + self.rng.uniform(-0.4, 0.4, 2)
+            # negative definite quadratic form: a>0, b>0 and a*b > c**2
+            a, b = self.rng.uniform(0.02, 0.1, 2)
+            c = self.rng.uniform(-0.02, 0.02)
+            d1 = pos1 - center[0]
+            d2 = pos2 - center[1]
+            data = (1.0 - a * d1 * d1 - b * d2 * d2 - 2.0 * c * d1 * d2).astype(numpy.float32)
+            p0, p1 = bilinear.Bilinear(data).local_maxi((12, 12))
+            err = numpy.sqrt((p0 - center[0]) ** 2 + (p1 - center[1]) ** 2)
+            self.assertLess(err, 1e-4, f"quadratic maximum {center} found at ({p0}, {p1})")
+
+    def test_subpixel_gaussian(self):
+        """Sub-pixel refinement of a 2D Gaussian sitting at a known position"""
+        shape = (25, 25)
+        pos1, pos2 = numpy.ogrid[:shape[0], :shape[1]]
+        # sigma along both axes, rotation of the Gaussian, tolerance in pixel
+        for sigma1, sigma2, angle, tol in ((2.0, 2.0, 0.0, 0.06),
+                                           (3.0, 1.5, 30.0, 0.30),
+                                           (3.0, 1.5, 60.0, 0.30)):
+            cos_a = numpy.cos(numpy.deg2rad(angle))
+            sin_a = numpy.sin(numpy.deg2rad(angle))
+            for _s in range(100):
+                center = 12 + self.rng.uniform(-0.5, 0.5, 2)
+                d1 = pos1 - center[0]
+                d2 = pos2 - center[1]
+                u = cos_a * d1 + sin_a * d2
+                v = -sin_a * d1 + cos_a * d2
+                data = numpy.exp(-0.5 * ((u / sigma1) ** 2 + (v / sigma2) ** 2)).astype(numpy.float32)
+                idx = numpy.unravel_index(numpy.argmax(data), shape)
+                p0, p1 = bilinear.Bilinear(data).local_maxi((int(idx[0]), int(idx[1])))
+                err = numpy.sqrt((p0 - center[0]) ** 2 + (p1 - center[1]) ** 2)
+                self.assertLess(err, tol, f"Gaussian ({sigma1}, {sigma2}, {angle}°) centered "
+                                          f"on {center} found at ({p0}, {p1})")
 
 
 class TestConversion(unittest.TestCase):
@@ -108,15 +154,15 @@ class TestConversion(unittest.TestCase):
         # print(y.dtype, x.dtype)
         pos = bilinear.convert_corner_2D_to_4D(3, numpy.ascontiguousarray(y), numpy.ascontiguousarray(x))
         y1, x1, z1 = bilinear.calc_cartesian_positions(y.ravel(), x.ravel(), pos)
-        self.assertTrue(numpy.allclose(y.ravel(), y1), "Maximum error on y is %s" % (abs(y.ravel() - y1).max()))
-        self.assertTrue(numpy.allclose(x.ravel(), x1), "Maximum error on x is %s" % (abs(x.ravel() - x1).max()))
+        self.assertTrue(numpy.allclose(y.ravel(), y1), f"Maximum error on y is {abs(y.ravel() - y1).max()}")
+        self.assertTrue(numpy.allclose(x.ravel(), x1), f"Maximum error on x is {abs(x.ravel() - x1).max()}")
         self.assertEqual(z1, None, "flat detector")
         x = x[:-1, :-1] + 0.5
         y = y[:-1, :-1] + 0.5
         y1, x1, z1 = bilinear.calc_cartesian_positions((y).ravel(), (x).ravel(), pos)
 
-        self.assertTrue(numpy.allclose(y.ravel(), y1), "Maximum error on y_center is %s" % (abs(y.ravel() - y1).max()))
-        self.assertTrue(numpy.allclose(x.ravel(), x1), "Maximum error on x_center is %s" % (abs(x.ravel() - x1).max()))
+        self.assertTrue(numpy.allclose(y.ravel(), y1), f"Maximum error on y_center is {abs(y.ravel() - y1).max()}")
+        self.assertTrue(numpy.allclose(x.ravel(), x1), f"Maximum error on x_center is {abs(x.ravel() - x1).max()}")
         self.assertEqual(z1, None, "flat detector")
 
 

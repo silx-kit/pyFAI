@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -41,8 +40,9 @@ __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 from . import load_engines
+
 # from .common import Integrator
 # from .azimuthal import AzimuthalIntegrator
 # from .fiber import FiberIntegrator
 
-__all__ = [load_engines]
+__all__ = ["load_engines"]

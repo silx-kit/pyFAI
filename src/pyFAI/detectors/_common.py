@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,30 +32,29 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2026"
+__date__ = "04/09/2026"
 __status__ = "stable"
 
+import copy
+import inspect
+import json
 import logging
-import numpy
 import os
 import posixpath
 import threading
-import json
-from typing import Dict, Any, Union
-import inspect
-import copy
 import types
+from typing import Any, ClassVar
 
+import numpy
+
+from .. import average, io, spline, utils
+from ..utils import crc32
+from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
+from ..utils.mathutil import binning as rebin
+from ..utils.mathutil import expand2d
+from ..utils.stringutil import to_eng
 from .orientation import Orientation
 from .sensors import SensorConfig
-from .. import io
-from .. import spline
-from .. import utils
-from .. import average
-from ..utils import crc32
-from ..utils.mathutil import expand2d, binning as rebin
-from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
-from ..utils.stringutil import to_eng
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +94,7 @@ class DetectorMeta(type):
                     cls.registry[alias.lower().replace(" ", "_")] = cls
                     cls.registry[alias.lower().replace(" ", "")] = cls
 
-        super(DetectorMeta, cls).__init__(name, bases, dct)
+        super().__init__(name, bases, dct)
 
 
 class Detector(metaclass=DetectorMeta):
@@ -106,8 +104,8 @@ class Detector(metaclass=DetectorMeta):
     MANUFACTURER = None
     CORNERS = 4
     force_pixel = False  # Used to specify pixel size should be defined by the class itself.
-    aliases = []  # list of alternative names
-    registry = {}  # list of  detectors ...
+    aliases = ()  # list of alternative names
+    registry: ClassVar[dict] = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
     IS_CONTIGUOUS = True  # No gaps: all pixels are adjacent, speeds-up calculation
@@ -128,7 +126,7 @@ class Detector(metaclass=DetectorMeta):
     _MUTABLE_ATTRS = ('_mask', '_flatfield', "_darkcurrent", "_pixel_corners", "sensor")
 
     @classmethod
-    def factory(cls, name: str, config: Union[None, str, Dict[str, Any]]=None):
+    def factory(cls, name: str, config: None | str | dict[str, Any]=None):
         """
         Create a pyFAI detector from a name.
 
@@ -191,8 +189,8 @@ class Detector(metaclass=DetectorMeta):
             try:
                 detector = detectorClass(**kwargs)
             except Exception as err:  # IGNORE:W0703:
-                logger.error(f"Unable to configure detector {name} with config: {config}\n{type(err).__name__}: {err}")
-                raise err
+                logger.exception(f"Unable to configure detector {name} with config: {config}\n{type(err).__name__}: {err}")
+                raise
             if binning:
                 detector.binning = binning
         else:
@@ -221,7 +219,7 @@ class Detector(metaclass=DetectorMeta):
         self._pixel1 = None
         self._pixel2 = None
         self._pixel_corners = None
-        self.sensor = None
+        self._sensor = None
 
         if max_shape is None:
             self.max_shape = tuple(self.MAX_SHAPE) if "MAX_SHAPE" in dir(self.__class__) else None
@@ -281,17 +279,10 @@ class Detector(metaclass=DetectorMeta):
             raise RuntimeError("Unsupported orientation: " + orientation.__doc__)
         self._orientation = orientation
 
-        if isinstance(sensor, dict):
-            sensor = SensorConfig.from_dict(sensor)
-
-        if isinstance(sensor, SensorConfig):
-            if sensor not in self.SENSORS:
-                logger.warning("Sensor %s not in allowed SENSORS: [%s].", sensor, "|".join(str(i) for i in self.SENSORS))
-            self.sensor = sensor
-        elif sensor is None:
+        if sensor is None:
             logger.info("No sensor configuration provided; using default behaviour.")
         else:
-            logger.error("Sensor is of unexpected type: %s", type(sensor))
+            self.sensor = sensor  # the property validates and converts
 
 
     def __repr__(self):
@@ -390,7 +381,9 @@ class Detector(metaclass=DetectorMeta):
         if "max_shape" in config:
             self.max_shape = config.get("max_shape")
         self._orientation = Orientation(config.get("orientation", 0))
-        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+        # the property converts the serialized dict, `SensorConfig(dict)` would
+        # store it as the `material` field instead
+        self.sensor = config.get("sensor")
         return self
 
     def get_config(self):
@@ -472,7 +465,7 @@ class Detector(metaclass=DetectorMeta):
                 self._pixel_corners[:,:, 3, 2] = p2[:-1, 1:]
 
             else:
-                raise RuntimeError("detector shape:%s while distortionarray: %s" % (self.max_shape, dx.shape))
+                raise RuntimeError(f"detector shape:{self.max_shape} while distortionarray: {dx.shape}")
             self.uniform_pixel = False
 
         else:
@@ -508,7 +501,7 @@ class Detector(metaclass=DetectorMeta):
                 self._pixel_corners[:,:, 2, 1] = p1[1:, 1:]
                 self._pixel_corners[:,:, 3, 1] = p1[:-1, 1:]
             else:
-                raise RuntimeError("detector shape:%s while distortion array: %s" % (self.max_shape, dy.shape))
+                raise RuntimeError(f"detector shape:{self.max_shape} while distortion array: {dy.shape}")
             self.uniform_pixel = False
         else:
             # Reset a regular grid, uniform_pixel is not necessary True due to x
@@ -533,9 +526,9 @@ class Detector(metaclass=DetectorMeta):
         :type bin_size: (int, int)
         """
         if "__len__" in dir(bin_size) and len(bin_size) >= 2:
-            bin_size = int(round(float(bin_size[0]))), int(round(float(bin_size[1])))
+            bin_size = round(float(bin_size[0])), round(float(bin_size[1]))
         else:
-            b = int(round(float(bin_size)))
+            b = round(float(bin_size))
             bin_size = (b, b)
         if bin_size != self._binning:
             ratioX = bin_size[1] / self._binning[1]
@@ -627,7 +620,7 @@ class Detector(metaclass=DetectorMeta):
             elif kw == "pixelY":
                 self.pixel1 = val * 1e-6
             elif kw.lower() == "splinefile":
-                self.splinefile = kwarg[kw]
+                self.splinefile = val
 
     def _calc_pixel_index_from_orientation(self, center=True):
         """Calculate the pixel index when considering the different orientations"""
@@ -712,12 +705,11 @@ class Detector(metaclass=DetectorMeta):
                     self.shape = d1.shape
                 else:  # corner
                     self.shape = tuple(i - 1 for i in d1.shape)
-        elif "ndim" in dir(d2):
-            if d2.ndim == 2:
-                if center:
-                    self.shape = d2.shape
-                else:  # corner
-                    self.shape = tuple(i - 1 for i in d2.shape)
+        elif "ndim" in dir(d2) and d2.ndim == 2:
+            if center:
+                self.shape = d2.shape
+            else:  # corner
+                self.shape = tuple(i - 1 for i in d2.shape)
 
         if center:
             # avoid += It modifies in place then segfaults
@@ -983,8 +975,8 @@ class Detector(metaclass=DetectorMeta):
                 self._binning = 1, 1
                 return True
             else:
-                logger.warning("guess_binning is not implemented for %s detectors!\
-                 and image size %s is wrong, expected %s!" % (self.name, shape, self.shape))
+                logger.warning(f"guess_binning is not implemented for {self.name} detectors!\
+                 and image size {shape} is wrong, expected {self.shape}!")
                 return False
         elif self.max_shape:
             bin1 = self.max_shape[0] // shape[0]
@@ -995,7 +987,10 @@ class Detector(metaclass=DetectorMeta):
                 return False
             res = self.max_shape[0] % shape[0] + self.max_shape[1] % shape[1]
             if res != 0:
+                # do not mutate the detector on failure: it would hide the
+                # inconsistency from any subsequent check
                 logger.warning("Impossible binning: max_shape is %s, requested shape %s", self.max_shape, shape)
+                return False
 
             old_binning = self._binning
             self._binning = (bin1, bin2)
@@ -1004,7 +999,7 @@ class Detector(metaclass=DetectorMeta):
             self._pixel2 *= (1.0 * bin2 / old_binning[1])
             self._mask = False
             self._mask_crc = None
-            return res == 0
+            return True
         else:
             logger.debug("guess_binning for generic detectors !")
             self._binning = 1, 1
@@ -1020,7 +1015,7 @@ class Detector(metaclass=DetectorMeta):
         :rtype: numpy ndarray of int8 or None
         """
 #        logger.debug("Detector.calc_mask is not implemented for generic detectors")
-        return None
+        return
 
     def get_dummies(self, img):
         """Calculate the actual dummy value from dtype of the img
@@ -1050,7 +1045,10 @@ class Detector(metaclass=DetectorMeta):
         :return: the mask with valid pixel to 0
         :rtype: numpy ndarray of int8 or None
         """
-        if not self.guess_binning(img):
+        if not self.guess_binning(img) and self.shape is None:
+            # shape-less generic detector: adapt to the image.
+            # Detectors with a defined shape are kept untouched, the static
+            # mask is returned and the caller has to deal with the mismatch.
             self.shape = img.shape
 
         static_mask = self.mask
@@ -1156,8 +1154,7 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
             if self.force_pixel and (err > EPSILON):
-                logger.warning("Enforcing pixel size 1 for a detector %s" %
-                               self.__class__.__name__)
+                logger.warning(f"Enforcing pixel size 1 for a detector {self.__class__.__name__}")
         self._pixel1 = value
 
     # deprecated compatibility layer
@@ -1193,8 +1190,7 @@ class Detector(metaclass=DetectorMeta):
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
             if self.force_pixel and (err > EPSILON):
-                logger.warning("Enforcing pixel size 2 for a detector %s" %
-                               self.__class__.__name__)
+                logger.warning(f"Enforcing pixel size 2 for a detector {self.__class__.__name__}")
         self._pixel2 = value
 
     # deprecated compatibility layer
@@ -1261,7 +1257,7 @@ class Detector(metaclass=DetectorMeta):
             self.flatfiles = files[0]
         else:
             self.flatfield = average.average_images(files, filter_=method, fformat=None, threshold=0)
-            self.flatfiles = "%s(%s)" % (method, ",".join(files))
+            self.flatfiles = f"{method}({','.join(files)})"
 
     @property
     def darkcurrent(self):
@@ -1308,7 +1304,7 @@ class Detector(metaclass=DetectorMeta):
             self.darkfiles = files[0]
         else:
             self.darkcurrent = average.average_images(files, filter_=method, fformat=None, threshold=0)
-            self.darkfiles = "%s(%s)" % (method, ",".join(files))
+            self.darkfiles = f"{method}({','.join(files)})"
 
     def __getnewargs_ex__(self):
         "Helper function for pickling detectors"
@@ -1357,10 +1353,47 @@ class Detector(metaclass=DetectorMeta):
     def delta_dummy(self, value=None):
         self._delta_dummy = value
 
-    #TODO: I see that filename and orientation are properties, sensor not. Should sensor follow the style?
     @property
     def orientation(self):
         return self._orientation
+
+    @property
+    def sensor(self):
+        """Configuration of the sensor: material and thickness, or None"""
+        return self._sensor
+
+    @sensor.setter
+    def sensor(self, sensor):
+        """Set the sensor configuration, converting a dict on the way.
+
+        The conversion has to happen here rather than in the constructor: a
+        detector is also configured from a serialized description, where the
+        sensor is a plain dict, and `get_config` later expects to find a
+        `SensorConfig` back.
+
+        An unexpected type is logged and discarded rather than raising, which
+        keeps a bad entry in a configuration file from making a detector
+        unusable.
+
+        :param sensor: SensorConfig, dict as produced by `SensorConfig.as_dict`,
+            or None to clear the configuration
+        """
+        if isinstance(sensor, dict):
+            sensor = SensorConfig.from_dict(sensor)
+        if sensor is None:
+            self._sensor = None
+        elif isinstance(sensor, SensorConfig):
+            if sensor not in self.SENSORS:
+                if self.SENSORS:
+                    logger.warning("Sensor %s not in allowed SENSORS: [%s].", sensor,
+                               "|".join(str(i) for i in self.SENSORS))
+                else:
+                    logger.info("Sensor %s not in allowed SENSORS: [%s].", sensor,
+                               "|".join(str(i) for i in self.SENSORS))
+            self._sensor = sensor
+        else:
+            logger.error("Sensor is of unexpected type: %s, discarded", type(sensor))
+            self._sensor = None
 
     @property
     def origin(self):
@@ -1396,6 +1429,7 @@ class NexusDetector(Detector):
         super().__init__(orientation=orientation, sensor = sensor)
         self.uniform_pixel = True
         self._filename = None
+        self._h5path = None
         if filename is not None:
             self.load(filename)
         if orientation:
@@ -1427,7 +1461,8 @@ class NexusDetector(Detector):
         with io.Nexus(filename, "r") as nxs:
             det_grp = nxs.find_detector()
             if not det_grp:
-                raise RuntimeError("No detector definition in this file %s" % filename)
+                raise RuntimeError(f"No detector definition in this file {filename}")
+            self._h5path = det_grp.name
             name = posixpath.split(det_grp.name)[-1]
             self.aliases = [name.replace("_", " "), det_grp.name]
             if "API_VERSION" in det_grp:
@@ -1556,7 +1591,9 @@ class NexusDetector(Detector):
                          config)
 
         self._orientation = Orientation(config.get("orientation", 0))
-        self.sensor = SensorConfig(config["sensor"]) if "sensor" in config else None
+        # the property converts the serialized dict, `SensorConfig(dict)` would
+        # store it as the `material` field instead
+        self.sensor = config.get("sensor")
 
         return self
 
@@ -1600,9 +1637,9 @@ def _ensure_dict(dico_or_str:str|dict)-> dict:
     else:
         try:
             config = json.loads(dico_or_str)
-        except Exception as err:  # IGNORE:W0703:
-            logger.error(f"Unable to parse config `{config}` as JSON.\n{type(err).__name__}: {err}")
-            raise err
+        except Exception:  # IGNORE:W0703:
+            logger.exception(f"Unable to parse config `{dico_or_str}` as JSON dict.")
+            raise
     return config
 
 

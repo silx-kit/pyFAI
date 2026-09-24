@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,7 +34,9 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "21/01/2021"
 
 import unittest
+
 import numpy
+
 from pyFAI.utils import ellipse as ellipse_mdl
 
 

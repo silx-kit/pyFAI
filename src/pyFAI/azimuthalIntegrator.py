@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -41,5 +40,6 @@ __docformat__ = 'restructuredtext'
 
 from .integrator.azimuthal import AzimuthalIntegrator, logger  # noqa: F401
 from .utils.decorators import deprecated_warning
+
 deprecated_warning("Module", "pyFAI.azimuthalIntegrator", replacement="pyFAI.integrator.azimuthal",
                    since_version="2024.10", only_once=False, skip_backtrace_count=1)

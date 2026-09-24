@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -27,25 +26,25 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "16/10/2020"
 
-from typing import Optional
-from .AbstractModel import AbstractModel
+
 from ...calibrant import Calibrant
+from .AbstractModel import AbstractModel
 
 
 class CalibrantModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(CalibrantModel, self).__init__(parent)
-        self.__calibrant: Optional[Calibrant] = None
+        super().__init__(parent)
+        self.__calibrant: Calibrant | None = None
 
     def isValid(self) -> bool:
         return self.__calibrant is not None
 
-    def setCalibrant(self, calibrant: Optional[Calibrant]):
+    def setCalibrant(self, calibrant: Calibrant | None):
         if self.__calibrant is calibrant:
             return
         self.__calibrant = calibrant
         self.wasChanged()
 
-    def calibrant(self) -> Optional[Calibrant]:
+    def calibrant(self) -> Calibrant | None:
         return self.__calibrant

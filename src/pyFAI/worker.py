@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -45,29 +44,29 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2026"
+__date__ = "17/09/2026"
 __status__ = "development"
 
-import threading
-import os.path
-import logging
 import json
+import logging
+import os.path
+import threading
+
 import numpy
 
-from . import average
-from . import method_registry
+from . import average, method_registry, units
+from .containers import ErrorModel
+from .distortion import Distortion
+from .engines.preproc import preproc as preproc_numpy
 from .integrator.azimuthal import AzimuthalIntegrator
 from .integrator.fiber import FiberIntegrator
-from .containers import ErrorModel
-from .method_registry import IntegrationMethod, Method
-from .distortion import Distortion
-from . import units
-from .io import ponifile, image as io_image
-from .io.integration_config import WorkerConfig, WorkerFiberConfig
+from .io import image as io_image
+from .io import ponifile
 from .io._json import json_dumps
-from .engines.preproc import preproc as preproc_numpy
-from .utils.mathutil import binning as rebin
+from .io.integration_config import WorkerConfig, WorkerFiberConfig
+from .method_registry import IntegrationMethod, Method
 from .utils.decorators import deprecated
+from .utils.mathutil import binning as rebin
 
 logger = logging.getLogger(__name__)
 try:
@@ -150,7 +149,7 @@ def _normalize_filenames(filenames):
     if isinstance(filenames, (str,)):
         # It's a single filename
         return [filenames]
-    raise TypeError("Unsupported type %s for a list of filenames" % type(filenames))
+    raise TypeError(f"Unsupported type {type(filenames)} for a list of filenames")
 
 
 def _reduce_images(filenames, method="mean"):
@@ -170,7 +169,7 @@ def _reduce_images(filenames, method="mean"):
         return average.average_images(filenames, filter_=method, fformat=None, threshold=0)
 
 
-class Worker(object):
+class Worker:
 
     def __init__(self, azimuthalIntegrator=None,
                  shapeIn=None, shapeOut=(360, 500),
@@ -201,8 +200,8 @@ class Worker(object):
             method = IntegrationMethod.parse(method)
         else:
             logger.error(f"Unable to parse method {method}")
-        self.method = (method.split, method.algorithm, method.implementation)
-        self.opencl_device = method.target
+        self.opencl_device = None
+        self.method = method  # the setter extracts the OpenCL device
         self._method = None
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
@@ -265,28 +264,48 @@ class Worker(object):
                 integrator_name = integrator_name.replace("1d", "2d")
         self._processor = self.ai.__getattribute__(integrator_name)
 
-        if isinstance(self.method, (list, tuple)):
-            if isinstance(self.method, Method):
-                methods = IntegrationMethod.select_method(dim=dim, split=self.method[1], algo=self.method[2], impl=self.method[3],
-                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else self.method[4],
-                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else self.method[4],
-                                      degradable=True)
-            else:
-                methods = IntegrationMethod.select_method(dim=dim, split=self.method[0], algo=self.method[1], impl=self.method[2],
-                                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None,
-                                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else None,
-                                                      degradable=True)
-            self._method = methods[0]
-        elif isinstance(self.method, str) or self.method is None:
-            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
-        elif isinstance(self.method, IntegrationMethod):
-            self._method = self.method
-        else:
-            logger.error(f"No method available for {dim}D integration on {self.method} with target {self.opencl_device}")
-            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
+        self._method = self._select_method(dim)
         self.integrator_name = self._processor.__name__
         self.radial = None
         self.azimuthal = None
+
+    @property
+    def method(self) -> Method:
+        """The requested integration method.
+
+        It describes only the algorithm: the dimensionality is deduced from
+        `nbpt_azim` and the OpenCL device is held by `opencl_device`. The
+        `IntegrationMethod` which is actually used is resolved from it by
+        :meth:`update_processor` and exposed as `_method`.
+        """
+        return self.__method
+
+    @method.setter
+    def method(self, value):
+        if value is None:
+            self.__method = None
+        else:
+            self.__method, self.opencl_device = method_registry.normalize_method(value, self.opencl_device)
+
+    def _select_method(self, dim):
+        """Select the best available integrator matching the requested method,
+        degrading it when needed.
+
+        :param int dim: dimensionality of the integration
+        :rtype: IntegrationMethod
+        """
+        method = self.method
+        if method is None:
+            return IntegrationMethod.select_one_available(method=None, dim=dim)
+        target = self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None
+        target_type = self.opencl_device if isinstance(self.opencl_device, str) else None
+        methods = IntegrationMethod.select_method(dim=dim, split=method.split, algo=method.algo,
+                                                  impl=method.impl, target=target,
+                                                  target_type=target_type, degradable=True)
+        if methods:
+            return methods[0]
+        logger.error(f"No method available for {dim}D integration on {method} with target {self.opencl_device}")
+        return IntegrationMethod.select_one_available(method=method, dim=dim)
 
     @property
     def nbpt_azim(self):
@@ -392,8 +411,8 @@ class Worker(object):
                     "method:",
                     str(kwarg.get("method"))
                     ]
-            logger.error("\n".join(err2))
-            raise err
+            logger.exception("\n".join(err2))
+            raise
         else:
             if self.radial is None:
                 self.radial = integrated_result.radial
@@ -593,6 +612,9 @@ class Worker(object):
         :param sync: wait for processing to be finished
 
         """
+        if self.shape is None:
+            logger.info("Skip warm-up because the input image shape is undefined")
+            return
         t = threading.Thread(target=self._warmup, name="_warmup")
         t.start()
         if sync:
@@ -615,23 +637,16 @@ class Worker(object):
 
 
     def set_method(self, method="csr"):
-        "Set the integration method"
-        dim = 2 if self.do_2D() else 1
-        if method is None:
-            method = method_registry.Method(dim, "*", "*", "*", target=None)
-        elif isinstance(method, method_registry.Method):
-            method = method.fixed(dim=dim)
-        elif isinstance(method, (str,)):
-            method = method_registry.Method.parsed(method)
-            method = method.fixed(dim=dim)
-        elif isinstance(method, (list, tuple)):
-            if len(method) != 3:
-                raise TypeError("Method size %s unsupported." % len(method))
-            split, algo, impl = method
-            method = method_registry.Method(dim, split, algo, impl, target=None)
-        else:
-            raise TypeError("Method type %s unsupported." % type(method))
-        return method
+        """Set the integration method and rebuild the processor accordingly.
+
+        :param method: string, sequence, Method or IntegrationMethod. `None`
+                       stands for "any method".
+        :rtype: pyFAI.method_registry.Method
+        """
+        # `None` means "no preference" here, unlike the `method` attribute
+        self.method = method_registry.Method() if method is None else method
+        self.update_processor()
+        return self.method
 
     __call__ = process
 
@@ -730,8 +745,8 @@ class WorkerFiber(Worker):
             method = IntegrationMethod.parse(method)
         else:
             logger.error(f"Unable to parse method {method}")
-        self.method = (method.split, method.algorithm, method.implementation)
-        self.opencl_device = method.target
+        self.opencl_device = None
+        self.method = method  # the setter extracts the OpenCL device
         self._method = None
         self.use_missing_wedge = use_missing_wedge
 
@@ -810,25 +825,7 @@ class WorkerFiber(Worker):
 
         # The actual method is always `integrate2d` (always 2dim)
         dim = 2
-        if isinstance(self.method, (list, tuple)):
-            if isinstance(self.method, Method):
-                methods = IntegrationMethod.select_method(dim=dim, split=self.method[1], algo=self.method[2], impl=self.method[3],
-                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else self.method[4],
-                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else self.method[4],
-                                      degradable=True)
-            else:
-                methods = IntegrationMethod.select_method(dim=dim, split=self.method[0], algo=self.method[1], impl=self.method[2],
-                                                      target=self.opencl_device if isinstance(self.opencl_device, (tuple, list)) else None,
-                                                      target_type=self.opencl_device if isinstance(self.opencl_device, str) else None,
-                                                      degradable=True)
-            self._method = methods[0]
-        elif isinstance(self.method, str) or self.method is None:
-            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
-        elif isinstance(self.method, IntegrationMethod):
-            self._method = self.method
-        else:
-            logger.error(f"No method available for {dim}D integration on {self.method} with target {self.opencl_device}")
-            self._method = IntegrationMethod.select_one_available(method=self.method, dim=dim)
+        self._method = self._select_method(dim)
 
         self.integrator_name = self._processor.__name__
         self.radial = None
@@ -1053,8 +1050,8 @@ class WorkerFiber(Worker):
                     "method:",
                     str(kwarg.get("method"))
                     ]
-            logger.error("\n".join(err2))
-            raise err
+            logger.exception("\n".join(err2))
+            raise
 
         if writer is not None:
             writer.write(integrated_result)
@@ -1105,7 +1102,7 @@ class WorkerFiber(Worker):
             raise_exception(reason)
         return reason
 
-class PixelwiseWorker(object):
+class PixelwiseWorker:
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """
@@ -1195,7 +1192,7 @@ class PixelwiseWorker(object):
     __call__ = process
 
 
-class DistortionWorker(object):
+class DistortionWorker:
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """

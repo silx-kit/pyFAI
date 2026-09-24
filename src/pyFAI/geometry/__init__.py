@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -46,4 +45,5 @@ __date__ = "23/09/2025"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-from .core import Geometry as Geometry, logger as logger
+from .core import Geometry as Geometry
+from .core import logger as logger

@@ -42,17 +42,20 @@ def check_interactive(notebook):
 
 
 def run_notebook(fn):
-    print(f"Rerun notebook {fn}\t", end="")
+    print(f"|{fn:100s} | ", end="")
     sys.stdout.flush()
     t1 = time.perf_counter()
     proc = subprocess.run([sys.executable, "-m", "nbconvert", "--to", "notebook", "--execute", "--inplace",
                            fn], capture_output=True)
     if proc.returncode != 0:
-        print(f"t={timedelta(seconds=time.perf_counter()-t1)} FAILED")
-        print(proc.stdout)
+        print(f"{str(timedelta(seconds=time.perf_counter()-t1))[:-3]:20s} | {'FAILED':10s} |")
+        with open(fn+".stdout", "wb") as stdout:
+            stdout.write(proc.stdout)
+        with open(fn+".stderr", "wb") as stderr:
+            stderr.write(proc.stderr)
         return True
     else:
-            print(f"t={timedelta(seconds=time.perf_counter()-t1)}")
+        print(f"{str(timedelta(seconds=time.perf_counter()-t1))[:-3]:20s} | {'':10s} |")
 
 
 if __name__ == "__main__":
@@ -62,9 +65,11 @@ if __name__ == "__main__":
     print("*"*50)
     interactive = {n:check_interactive(n) for n in get_ipynb(root)}
     print("Interactive:\n"+"\n".join(i for i in interactive if interactive[i] is True))
-    print("*"*50)
+    print("_"*139)
+    print(f"|{'Path to non interactive notebook':100s} | {'Timing':20s} | {'Error ?':10s} |")
+    print("_"*139)
     failed = [ fn for fn in interactive if not interactive[fn] and run_notebook(fn)]
+    print("_"*139)
     print("Failed:\n"+"\n".join(failed))
     print("*"*50)
-    print(f"Runtime: {timedelta(seconds=time.perf_counter()-t0)}")
-
+    print(f"Runtime: {timedelta(seconds=round(time.perf_counter()-t0))}s")

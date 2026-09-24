@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -28,22 +27,27 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "27/04/2026"
+__date__ = "25/08/2026"
 __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import math
+from typing import ClassVar
 import logging
+import math
 from collections import OrderedDict
+
 import numpy
-from . import pyopencl, dtype_converter
+
 from ..utils import calc_checksum
+from . import dtype_converter, pyopencl
+
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
-from . import processing, OpenclProcessing
+from ..containers import ErrorModel, Integrate1dtpl, Integrate2dtpl
+from . import OpenclProcessing, processing
+
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
 
@@ -58,7 +62,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     """
     BLOCK_SIZE = 32
     # Intel CPU driver claims preferred workgroup is 128 !
-    buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
+    buffers = (BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 1, numpy.int64, mf.READ_WRITE),
@@ -72,8 +76,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
 
-               ]
-    kernel_files = ["silx:opencl/doubleword.cl",
+               )
+    kernel_files = ("silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_azim_CSR.cl",
@@ -81,8 +85,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     "pyfai:openCL/collective/scan.cl",
                     "pyfai:openCL/collective/comb_sort.cl",
                     "pyfai:openCL/medfilt.cl"
-                    ]
-    mapping = {numpy.int8: "s8_to_float",
+                    )
+    mapping: ClassVar[dict] = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
                numpy.int16: "s16_to_float",
                numpy.uint16: "u16_to_float",
@@ -282,7 +286,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         """
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or self.kernel_files[-1]
-        kernels = self.kernel_files[:-1] + [kernel_file]
+        kernels = [*self.kernel_files[:-1], kernel_file]
 
         try:
             compile_options = self.get_compiler_options(x87_volatile=True, apple_gpu=True)
@@ -423,14 +427,14 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("shared_int", pyopencl.LocalMemory(128)),
                                                               ("shared_float", pyopencl.LocalMemory(128)),
                                                              ))
-        self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged")))
-        self.cl_kernel_args["memset_ng"] = OrderedDict(((i, self.cl_mem[i]) for i in ("averint", "std", "merged8")))
-        self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
-        self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
-        self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
-        self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
-        self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
-        self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("tmp", "image")))
+        self.cl_kernel_args["memset_out"] = OrderedDict((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged"))
+        self.cl_kernel_args["memset_ng"] = OrderedDict((i, self.cl_mem[i]) for i in ("averint", "std", "merged8"))
+        self.cl_kernel_args["u8_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("tmp", "image"))
+        self.cl_kernel_args["s8_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("tmp", "image"))
+        self.cl_kernel_args["u16_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("tmp", "image"))
+        self.cl_kernel_args["s16_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("tmp", "image"))
+        self.cl_kernel_args["u32_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("tmp", "image"))
+        self.cl_kernel_args["s32_to_float"] = OrderedDict((i, self.cl_mem[i]) for i in ("tmp", "image"))
 
     def send_buffer(self, data, dest, checksum=None, workgroup_size=None, convert=True):
         """Send a numpy array to the device, including the type conversion on the device if possible

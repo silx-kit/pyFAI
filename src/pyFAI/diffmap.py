@@ -34,29 +34,33 @@ __date__ = "19/03/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import os
-import time
 import collections
 import glob
-import posixpath
-from argparse import ArgumentParser
-from urllib.parse import urlparse
 import logging
-import numpy
-import fabio
-from threading import Event
-import __main__ as main
-from .opencl import ocl
-from . import version as PyFAI_VERSION, date as PyFAI_DATE
-from .integrator.load_engines import  PREFERED_METHODS_2D, PREFERED_METHODS_1D
-from .io import Nexus, get_isotime, h5py
-from .io.integration_config import WorkerConfig
-from .io.diffmap_config import DiffmapConfig, ListDataSet
-from .io.ponifile import PoniFile
-from .io._json import json_dumps
-from .worker import Worker
-from .utils.decorators import deprecated, deprecated_warning
+import os
+import posixpath
+import time
+from argparse import ArgumentParser
 from string import digits as DIGITS
+from threading import Event
+from urllib.parse import urlparse
+
+import fabio
+import numpy
+
+import __main__ as main
+
+from . import date as PyFAI_DATE
+from . import version as PyFAI_VERSION
+from .integrator.load_engines import PREFERED_METHODS_1D, PREFERED_METHODS_2D
+from .io import Nexus, get_isotime, h5py
+from .io._json import json_dumps
+from .io.diffmap_config import DiffmapConfig, ListDataSet
+from .io.integration_config import WorkerConfig
+from .io.ponifile import PoniFile
+from .opencl import ocl
+from .utils.decorators import deprecated, deprecated_warning
+from .worker import Worker
 
 logger = logging.getLogger(__name__)
 Position = collections.namedtuple('Position', 'index slow fast')
@@ -497,12 +501,12 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.mask:
             process_grp["maskfile"] = self.mask
         if self.flat:
-            process_grp["flatfiles"] = numpy.array([i for i in self.flat], dtype=dtype)
+            process_grp["flatfiles"] = numpy.array(list(self.flat), dtype=dtype)
         if self.dark:
-            process_grp["darkfiles"] = numpy.array([i for i in self.dark], dtype=dtype)
+            process_grp["darkfiles"] = numpy.array(list(self.dark), dtype=dtype)
         if isinstance(self.poni, str) and os.path.exists(self.poni):
             process_grp["PONIfile"] = self.poni
-        process_grp["inputfiles"] = numpy.array([i for i in self.inputfiles], dtype=dtype)
+        process_grp["inputfiles"] = numpy.array(list(self.inputfiles), dtype=dtype)
 
         process_grp["dim0"] = self.nbpt_slow
         process_grp["dim0"].attrs["axis"] = self.slow_motor_name
@@ -797,7 +801,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         if not self.worker:
             return
         method_name = "opencl" if value else "cython"
-        method = self.worker._method.method.fixed(method_name)
+        # NOTE: `fixed(method_name)` used to assign the implementation to the
+        # dimensionality, which silently produced an inconsistent method.
+        method = self.worker._method.method.with_impl(method_name)
         self.worker.set_method(method)
 
     # deprecated compatibility layer

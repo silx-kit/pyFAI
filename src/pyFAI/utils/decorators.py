@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,15 +33,16 @@ __date__ = "13/10/2025"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
+import functools
+import inspect
+import logging
 import sys
 import time
-import functools
-import logging
 import traceback
-import inspect
-from typing import Callable
-from ..version import calc_hexversion,  hexversion as pyFAI_hexversion
+from collections.abc import Callable
 
+from ..version import calc_hexversion
+from ..version import hexversion as pyFAI_hexversion
 
 timelog = logging.getLogger("pyFAI.timeit")
 depreclog = logging.getLogger("pyFAI.DEPRECATION")

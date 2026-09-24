@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -28,20 +27,21 @@
 
 """tests for Jon's geometry changes
 """
-import sys
-import platform
-import unittest
-import numpy
 import logging
+import platform
+import sys
+import unittest
+
+import numpy
+
+from .. import opencl
+from ..containers import ErrorModel, Integrate2dtpl
+from ..engines.CSR_engine import CsrIntegrator1d, CsrIntegrator2d
+from ..ext import splitBBox, splitBBoxCSR
+from ..method_registry import IntegrationMethod
 from . import utilstest
 from .utilstest import UtilsTest
-from .. import opencl
-from ..containers import Integrate2dtpl
-from ..ext import splitBBox
-from ..ext import splitBBoxCSR
-from ..engines.CSR_engine import CsrIntegrator2d, CsrIntegrator1d
-from ..method_registry import IntegrationMethod
-from ..containers import ErrorModel
+
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
 logger = logging.getLogger(__name__)
@@ -88,7 +88,7 @@ class TestCSR(utilstest.ParametricTestCase):
                     else:
                         skip = False
                 out_cyt_csr = csr.integrate_legacy(self.data)
-                cmt = "Testing ocl_csr with workgroup_size= %s" % (workgroup_size)
+                cmt = f"Testing ocl_csr with workgroup_size= {workgroup_size}"
                 logger.debug(cmt)
                 if skip:
                     for ref, cyth in zip(out_ref, out_cyt_csr):

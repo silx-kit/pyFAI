@@ -35,7 +35,7 @@ to bilinear interpolations.
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "03/07/2026"
+__date__ = "08/09/2026"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 

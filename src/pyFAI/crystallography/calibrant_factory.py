@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,13 +36,15 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2025"
+__date__ = "25/08/2026"
 __status__ = "production"
 
-import os
 import logging
+import os
+
 from ..utils import get_calibration_dir
 from .calibrant import Calibrant
+
 logger = logging.getLogger(__name__)
 
 
@@ -73,21 +74,17 @@ class CalibrantFactory:
             self.all = {}
         else:
             if basedir is None:
-                self.all = dict(
-                    [
-                        (os.path.splitext(i)[0], f"pyfai:{os.path.splitext(i)[0]}")
+                self.all = {
+                    os.path.splitext(i)[0]: f"pyfai:{os.path.splitext(i)[0]}"
                         for i in os.listdir(self.directory)
                         if i.endswith(".D")
-                    ]
-                )
+                }
             else:
-                self.all = dict(
-                    [
-                        (os.path.splitext(i)[0], os.path.join(self.directory, i))
+                self.all = {
+                    os.path.splitext(i)[0]: os.path.join(self.directory, i)
                         for i in os.listdir(self.directory)
                         if i.endswith(".D")
-                    ]
-                )
+                }
 
     def __call__(self, calibrant_name:str) -> Calibrant:
         """Returns a new instance of a calibrant by it's name.
@@ -109,7 +106,7 @@ class CalibrantFactory:
         return k in self.all
 
     def __repr__(self):
-        return "Calibrants available: %s" % (", ".join(list(self.all.keys())))
+        return f"Calibrants available: {', '.join(list(self.all.keys()))}"
 
     def __len__(self):
         return len(self.all)

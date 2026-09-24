@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,13 +33,15 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "06/10/2025"
 
-import unittest
 import logging
+import unittest
 
 from silx.gui.utils import testutils
-from pyFAI.test.utilstest import UtilsTest
-from ..dialog.DetectorSelectorDialog import DetectorSelectorDrop
+
 from pyFAI import detectors
+from pyFAI.test.utilstest import UtilsTest
+
+from ..dialog.DetectorSelectorDialog import DetectorSelectorDrop
 
 logger = logging.getLogger(__name__)
 

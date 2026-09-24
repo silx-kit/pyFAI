@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,15 +33,17 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/12/2025"
+__date__ = "24/08/2026"
 __status__ = "production"
 
 import functools
-import numpy
-from ._common import SensorConfig, ModuleDetector
-from ..utils import mathutil
-
 import logging
+
+import numpy
+
+from ..utils import mathutil
+from ._common import ModuleDetector, SensorConfig
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -63,9 +64,9 @@ class ImXPadS10(ModuleDetector):
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_SIZE_RELATIVE = 2.5
     force_pixel = True
-    aliases = ["Imxpad S10"]
+    aliases = ("Imxpad S10",)
     uniform_pixel = False
-    SENSORS = tuple()
+    SENSORS = ()
 
     @classmethod
     def _calc_pixels_size(cls, length, module_size, pixel_size):
@@ -230,7 +231,7 @@ class ImXPadS70(ImXPadS10):
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_SIZE_RELATIVE = 2.5
     force_pixel = True
-    aliases = ["Imxpad S70"]
+    aliases = ("Imxpad S70",)
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
@@ -247,7 +248,7 @@ class ImXPadS70V(ImXPadS10):
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_SIZE_RELATIVE = 2.5
     force_pixel = True
-    aliases = ["Imxpad S70 V"]
+    aliases = ("Imxpad S70 V",)
     PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
 
@@ -260,7 +261,7 @@ class ImXPadS140(ImXPadS10):
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
     force_pixel = True
-    aliases = ["Imxpad S140"]
+    aliases = ("Imxpad S140",)
 
 
 class Xpad_flat(ImXPadS10):
@@ -273,7 +274,7 @@ class Xpad_flat(ImXPadS10):
     force_pixel = True
     MAX_SHAPE = (960, 560)
     uniform_pixel = False
-    aliases = ["Xpad S540 flat", "d5"]
+    aliases = ("Xpad S540 flat", "d5")
     MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
@@ -336,12 +337,11 @@ class Xpad_flat(ImXPadS10):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if self.shape:
-            if (d1 is None) or (d2 is None):
-                r1, r2 = self._calc_pixel_index_from_orientation(center)
-                delta = 0 if center else 1
-                d1 = mathutil.expand2d(r1, self.shape[1] + delta, False)
-                d2 = mathutil.expand2d(r2, self.shape[0] + delta, True)
+        if self.shape and ((d1 is None) or (d2 is None)):
+            r1, r2 = self._calc_pixel_index_from_orientation(center)
+            delta = 0 if center else 1
+            d1 = mathutil.expand2d(r1, self.shape[1] + delta, False)
+            d2 = mathutil.expand2d(r2, self.shape[0] + delta, True)
         corners = self.get_pixel_corners()
         if center:
             # note += would make an increment in place which is bad (segfault !)
@@ -438,12 +438,12 @@ class Cirpad(ImXPadS10):
     IS_CONTIGUOUS = False
     force_pixel = True
     uniform_pixel = False
-    aliases = ["CirPAD", "XCirpad"]
+    aliases = ("CirPAD", "XCirpad")
     MEDIUM_MODULE_SIZE = (560, 120)
     MODULE_SIZE = (80, 120)  # number of pixels per module (y, x)
     PIXEL_SIZE = (130e-6, 130e-6)
     DIFFERENT_PIXEL_SIZE = 2.5
-    ROT = [0, 0, -6.74]
+    ROT = (0, 0, -6.74)
 
     # static functions used in order to define the Cirpad
     @staticmethod
@@ -501,9 +501,9 @@ class Cirpad(ImXPadS10):
         nmd = self._rotation(corners, rot)
         # Size in mm of the chip in the Y direction (including 10px gap)
         size_Y = ((560.0 + 3 * 6 + 20) * 0.13 / 1000)
-        for i in range(1, int(round(numpy.abs(rot[2]) / 6.74))):
+        for i in range(1, round(numpy.abs(rot[2]) / 6.74)):
             deltaX = deltaX + numpy.sin(numpy.deg2rad(-rot[2] - 6.74 * (i)))
-        for i in range(int(round(numpy.abs(rot[2]) / 6.74))):
+        for i in range(round(numpy.abs(rot[2]) / 6.74)):
             deltaY = deltaY + numpy.cos(numpy.deg2rad(-rot[2] - 6.74 * (i + 1)))
         return self._translation(nmd, [size_Y * deltaX, size_Y * deltaY, 0])
 

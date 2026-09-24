@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: PyFAI: diffraction signal analysis
 #             https://github.com/silx-kit/pyFAI
@@ -33,18 +32,20 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2020-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "20/09/2026"
 
 import logging
+import unittest
+
+import fabio
 import numpy
 
-import unittest
-from .. import ocl
-import fabio
-from ...test.utilstest import UtilsTest
 from ...integrator.azimuthal import AzimuthalIntegrator
+from ...test.utilstest import UtilsTest
+from .. import ocl
+
 if ocl:
-    from ..peak_finder import OCL_SimplePeakFinder, OCL_PeakFinder, densify
+    from ..peak_finder import OCL_PeakFinder, OCL_SimplePeakFinder, densify
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +55,7 @@ class TestOclPeakFinder(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestOclPeakFinder, cls).setUpClass()
+        super().setUpClass()
         if ocl:
             if logger.getEffectiveLevel() <= logging.INFO:
                 cls.PROFILE = True
@@ -71,7 +72,7 @@ class TestOclPeakFinder(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestOclPeakFinder, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai = None
         cls.img = None
         cls.ref = None
@@ -84,7 +85,7 @@ class TestOclPeakFinder(unittest.TestCase):
         msk = self.img < 0
         pf = OCL_SimplePeakFinder(mask=msk)
         res = pf(self.img, window=11)
-        s1 = set((i["x"], i["y"]) for i in self.ref)
+        s1 = {(i["x"], i["y"]) for i in self.ref}
         s2 = set(zip(res.x, res.y))
         self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")
         self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
@@ -102,7 +103,7 @@ class TestOclPeakFinder(unittest.TestCase):
         distance = self.ai._cached_array["r_center"]
         pf = OCL_PeakFinder(lut, self.img.size, unit=unit, radius=distance, bin_centers=bin_centers, mask=msk)
         res = pf(self.img, error_model="poisson", dummy=-1)
-        s1 = set((i["x"], i["y"]) for i in self.ref)
+        s1 = {(i["x"], i["y"]) for i in self.ref}
         s2 = set(zip(res.x, res.y))
         self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")
         self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
@@ -128,7 +129,7 @@ class TestOclPeakFinder(unittest.TestCase):
         pf = OCL_PeakFinder(lut, self.img.size, unit=unit, radius=distance, bin_centers=bin_centers, mask=msk,
                             block_size=1)
         res = pf(self.img, error_model="poisson", dummy=-1)
-        s1 = set((i["x"], i["y"]) for i in self.ref)
+        s1 = {(i["x"], i["y"]) for i in self.ref}
         s2 = set(zip(res.x, res.y))
         self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")
         self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
@@ -152,7 +153,7 @@ class TestOclPeakFinder(unittest.TestCase):
         distance = self.ai._cached_array["r_center"]
         pf = OCL_PeakFinder(lut, self.img.size, unit=unit, radius=distance, bin_centers=bin_centers, mask=msk)
         res = pf(self.img, error_model="poisson", dummy=-1, cutoff_clip=0)
-        s1 = set((i["x"], i["y"]) for i in self.ref)
+        s1 = {(i["x"], i["y"]) for i in self.ref}
         s2 = set(zip(res.x, res.y))
         self.assertGreater(len(s2), len(s1), "Many more peaks with default settings")
         self.assertFalse(bool(s1.difference(s1.intersection(s2))), "All peaks found")
@@ -185,8 +186,8 @@ class TestOclPeakFinder(unittest.TestCase):
 
         s1 = numpy.vstack((self.ref["x"], self.ref["y"])).T
         s2 = numpy.vstack((res["pos1"], res["pos0"])).T
-        from scipy.spatial import distance_matrix
-        dm = distance_matrix(s1, s2)
+        from scipy.spatial import distance
+        dm = distance.cdist(s1, s2)
         self.assertLess(len(res), np, "Many more peaks with default settings")
         self.assertLess(numpy.median(dm.min(axis=1)), 1, "Most peaks are found")
 

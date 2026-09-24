@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,18 +36,20 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "25/08/2026"
 __status__ = "development"
 
-import logging
-import threading
 import contextlib
 import gc
 import inspect
+import logging
+import threading
 from collections import namedtuple
-import numpy
+
 import matplotlib
-from matplotlib import pyplot, colors
+import numpy
+from matplotlib import colors, pyplot
+
 from ..utils.callback import dangling_callback
 
 logger = logging.getLogger(__name__)
@@ -188,25 +189,24 @@ class MplCalibWidget:
         else:
             norm = colors.Normalize(show_min, show_max)
             txt = 'Linear colour scale (skipping lowest/highest per mille)'
-        with self.mplw:
-            with pyplot.ioff():
-                self.background = self.ax.imshow(img, norm=norm,
-                                                 cmap="inferno",
-                                                 origin="lower",
-                                                 interpolation="nearest")
-                s1, s2 = self.shape = img.shape
-                mask = numpy.zeros(self.shape + (4,), "uint8")
-                self.overlay = self.ax.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
-                self.foreground = self.ax.imshow(img, norm=norm,
-                                                 origin="lower",
-                                                 interpolation="nearest", alpha=0)
-                pyplot.colorbar(self.background, cax=self.axc)  # , label=txt)
-                self.axc.yaxis.set_label_position('left')
-                self.axc.set_ylabel(txt)
-                s1 -= 1
-                s2 -= 1
-                self.ax.set_xlim(0, s2)
-                self.ax.set_ylim(0, s1)
+        with self.mplw, pyplot.ioff():
+            self.background = self.ax.imshow(img, norm=norm,
+                                             cmap="inferno",
+                                             origin="lower",
+                                             interpolation="nearest")
+            s1, s2 = self.shape = img.shape
+            mask = numpy.zeros(self.shape + (4,), "uint8")
+            self.overlay = self.ax.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
+            self.foreground = self.ax.imshow(img, norm=norm,
+                                             origin="lower",
+                                             interpolation="nearest", alpha=0)
+            pyplot.colorbar(self.background, cax=self.axc)  # , label=txt)
+            self.axc.yaxis.set_label_position('left')
+            self.axc.set_ylabel(txt)
+            s1 -= 1
+            s2 -= 1
+            self.ax.set_xlim(0, s2)
+            self.ax.set_ylim(0, s1)
 
         if update:
             if init:
@@ -266,9 +266,9 @@ class MplCalibWidget:
                 self.ax.set_xlim(xlim)
                 self.ax.set_ylim(ylim)
             except MemoryError:
-                logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
+                logger.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
             except ValueError:
-                logging.error("No contour-plot to display !")
+                logger.error("No contour-plot to display !")
         if update:
             self.update()
 
@@ -310,7 +310,7 @@ class MplCalibWidget:
                 pt0y, pt0x = points[0]
                 annotate = self.ax.annotate(label, xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
                                                     weight="bold", size="large", color="black",
-                                                    arrowprops=dict(facecolor='white', edgecolor='white'))
+                                                    arrowprops={"facecolor": 'white', "edgecolor": 'white'})
                 npl = numpy.array(points)
                 plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False, label=label)
                 self.points[label] = GroupOfPoints(annotate, plot)

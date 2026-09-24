@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,14 +33,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2021-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "25/08/2026"
 __status__ = "production"
 
-import numpy
 import logging
-from ._common import Detector, SensorConfig, ModuleDetector
-from ._dectris import _Dectris
+
+import numpy
+
 from ..utils import mathutil
+from ._common import Detector, ModuleDetector, SensorConfig
+from ._dectris import _Dectris
+
 logger = logging.getLogger(__name__)
 
 Si320 = SensorConfig.from_dict({"material": "Si", "thickness": 320e-6})
@@ -59,7 +61,7 @@ class Jungfrau(ModuleDetector):
     PIXEL_SIZE = (75e-6, 75e-6)
     BORDER_SIZE_RELATIVE = 2.0
     force_pixel = True
-    aliases = ["Jungfrau 500k"]
+    aliases = ("Jungfrau 500k",)
     uniform_pixel = False
     SENSORS=(Si320, Si450)
 
@@ -205,7 +207,7 @@ class Jungfrau4M(_Dectris):
     MODULE_GAP = (36, 8)
     PIXEL_SIZE = (75e-6, 75e-6)
     force_pixel = True
-    aliases = ["Jungfrau 4M"]
+    aliases = ("Jungfrau 4M",)
     uniform_pixel = True
     SENSORS=(Si320, Si450)
 
@@ -226,7 +228,7 @@ class Jungfrau1M(Jungfrau4M):
     MODULE_GAP = (36, 8)
     PIXEL_SIZE = (75e-6, 75e-6)
     force_pixel = True
-    aliases = ["Jungfrau 1M"]
+    aliases = ("Jungfrau 1M",)
     uniform_pixel = True
 
 
@@ -242,9 +244,9 @@ class Jungfrau8M(Jungfrau):
     MAX_SHAPE = (3333, 3212)  # max size of the detector
     PIXEL_SIZE = (75e-6, 75e-6)
     force_pixel = True
-    aliases = ["Jungfrau 8M"]
+    aliases = ("Jungfrau 8M",)
     uniform_pixel = True
-    module_positions = [[1, 607], [1, 866], [1, 1124], [1, 1382],
+    module_positions = ([1, 607], [1, 866], [1, 1124], [1, 1382],
                         [69, 1646], [69, 1905], [69, 2163], [69, 2421],
                         [259, 607], [259, 866], [259, 1124],[259, 1382],
                         [328, 1646],[328, 1905], [328, 2163],[328, 2421],
@@ -282,7 +284,7 @@ class Jungfrau8M(Jungfrau):
                         [2750, 538], [2750, 797], [2750, 1055], [2750, 1313],
                         [2819, 1577], [2819, 1836], [2819, 2094], [2819, 2352],
                         [3009, 538], [3009, 538+259], [3009, 1055], [3009, 1313],
-                        [3078, 1577], [3078, 1836], [3078, 2094], [3078, 2352]]
+                        [3078, 1577], [3078, 1836], [3078, 2094], [3078, 2352])
 
     def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
         super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape, module_size=module_size, orientation=orientation, sensor=sensor)
@@ -300,7 +302,7 @@ class Jungfrau_16M_cor(Jungfrau):
     MODULE_SIZE = ((512 + 2), 1024 + 6)  # number of pixels per module (y, x)
     MAX_SHAPE = ((512 + 2) * 32, 1024 + 6)  # max size of the detector
     force_pixel = True
-    aliases = ["Jungfrau 16M cor"]
+    aliases = ("Jungfrau 16M cor",)
 
     @staticmethod
     def load_geom(geom_fname):
@@ -327,7 +329,7 @@ class Jungfrau_16M_cor(Jungfrau):
                 else:
                     val = [val]
                 key = m.group('par')
-                if key.startswith("min_") or key.startswith("max_"):
+                if key.startswith(("min_", "max_")):
                     mod_data[key] = int(val[0])
                 elif key.startswith("corner"):
                     mod_data[key] = float(val[0])

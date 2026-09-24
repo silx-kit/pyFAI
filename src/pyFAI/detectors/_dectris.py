@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,15 +33,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "25/08/2026"
 __status__ = "production"
 
-import os
-import numpy
 import logging
-from ._common import Detector, Orientation, SensorConfig, _ensure_dict, ModuleDetector
+import os
+
+import numpy
+
+from ..utils.decorators import deprecated, deprecated_args
 from ..utils.mathutil import expand2d
-from ..utils.decorators import deprecated_args, deprecated
+from ._common import Detector, ModuleDetector, Orientation, SensorConfig, _ensure_dict
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -71,7 +73,7 @@ class _Dectris(ModuleDetector):
     DUMMY = -2
     DELTA_DUMMY = 1.5
     ORIENTATION = 3 # should be 2, Personal communication from Dectris: origin top-left looking from the sample to the detector, thus flip-rl
-    SENSORS = tuple()
+    SENSORS = ()
 
     def __init__(self,
                  pixel1:float=75e-6,
@@ -82,7 +84,7 @@ class _Dectris(ModuleDetector):
                  sensor:SensorConfig|None=None):
         super().__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape,
                         module_size=module_size, orientation=orientation, sensor=sensor)
-        
+
 
     def calc_mask(self):
         """
@@ -201,7 +203,7 @@ class Eiger500k(Eiger):
     Eiger 500k detector
     """
     MAX_SHAPE = (514, 1030)
-    aliases = ["Eiger 500k"]
+    aliases = ("Eiger 500k",)
 
 
 class Eiger1M(Eiger):
@@ -209,7 +211,7 @@ class Eiger1M(Eiger):
     Eiger 1M detector
     """
     MAX_SHAPE = (1065, 1030)
-    aliases = ["Eiger 1M"]
+    aliases = ("Eiger 1M",)
 
 
 class Eiger4M(Eiger):
@@ -217,7 +219,7 @@ class Eiger4M(Eiger):
     Eiger 4M detector
     """
     MAX_SHAPE = (2167, 2070)
-    aliases = ["Eiger 4M"]
+    aliases = ("Eiger 4M",)
 
 
 class Eiger9M(Eiger):
@@ -225,7 +227,7 @@ class Eiger9M(Eiger):
     Eiger 9M detector
     """
     MAX_SHAPE = (3269, 3110)
-    aliases = ["Eiger 9M"]
+    aliases = ("Eiger 9M",)
 
 
 class Eiger16M(Eiger):
@@ -233,7 +235,7 @@ class Eiger16M(Eiger):
     Eiger 16M detector
     """
     MAX_SHAPE = (4371, 4150)
-    aliases = ["Eiger 16M"]
+    aliases = ("Eiger 16M",)
 
 
 class Eiger2(Eiger):
@@ -246,7 +248,7 @@ class Eiger2_250k(Eiger2):
     Eiger2 250k detector
     """
     MAX_SHAPE = (512, 512)
-    aliases = ["Eiger2 250k"]
+    aliases = ("Eiger2 250k",)
 
 
 class Eiger2_500k(Eiger2):
@@ -254,7 +256,7 @@ class Eiger2_500k(Eiger2):
     Eiger2 500k detector
     """
     MAX_SHAPE = (512, 1028)
-    aliases = ["Eiger2 500k"]
+    aliases = ("Eiger2 500k",)
 
 
 class Eiger2_1M(Eiger2):
@@ -262,7 +264,7 @@ class Eiger2_1M(Eiger2):
     Eiger2 1M detector
     """
     MAX_SHAPE = (1062, 1028)
-    aliases = ["Eiger2 1M"]
+    aliases = ("Eiger2 1M",)
 
 
 class Eiger2_1MW(Eiger2):
@@ -270,7 +272,7 @@ class Eiger2_1MW(Eiger2):
     Eiger2 1M-Wide detector
     """
     MAX_SHAPE = (512, 2068)
-    aliases = ["Eiger2 1M-W"]
+    aliases = ("Eiger2 1M-W",)
 
 
 class Eiger2_2MW(Eiger2):
@@ -278,7 +280,7 @@ class Eiger2_2MW(Eiger2):
     Eiger2 2M-Wide detector
     """
     MAX_SHAPE = (512, 4148)
-    aliases = ["Eiger2 2M-W"]
+    aliases = ("Eiger2 2M-W",)
 
 
 class Eiger2_4M(Eiger2):
@@ -286,7 +288,7 @@ class Eiger2_4M(Eiger2):
     Eiger2 4M detector
     """
     MAX_SHAPE = (2162, 2068)
-    aliases = ["Eiger2 4M"]
+    aliases = ("Eiger2 4M",)
 
 
 class Eiger2_9M(Eiger2):
@@ -294,7 +296,7 @@ class Eiger2_9M(Eiger2):
     Eiger2 9M detector
     """
     MAX_SHAPE = (3262, 3108)
-    aliases = ["Eiger2 9M"]
+    aliases = ("Eiger2 9M",)
 
 
 class Eiger2_16M(Eiger2):
@@ -302,7 +304,7 @@ class Eiger2_16M(Eiger2):
     Eiger2 16M detector
     """
     MAX_SHAPE = (4362, 4148)
-    aliases = ["Eiger2 16M"]
+    aliases = ("Eiger2 16M",)
 
 
 class Eiger2CdTe(Eiger2):
@@ -330,7 +332,7 @@ class Eiger2CdTe_500k(Eiger2CdTe):
     Eiger2 CdTe 500k detector
     """
     MAX_SHAPE = (512, 1028)
-    aliases = ["Eiger2 CdTe 500k"]
+    aliases = ("Eiger2 CdTe 500k",)
 
 
 class Eiger2CdTe_1M(Eiger2CdTe):
@@ -338,7 +340,7 @@ class Eiger2CdTe_1M(Eiger2CdTe):
     Eiger2 CdTe 1M detector
     """
     MAX_SHAPE = (1062, 1028)
-    aliases = ["Eiger2 CdTe 1M"]
+    aliases = ("Eiger2 CdTe 1M",)
 
 
 class Eiger2CdTe_1MW(Eiger2CdTe):
@@ -346,7 +348,7 @@ class Eiger2CdTe_1MW(Eiger2CdTe):
     Eiger2 CdTe 1M-Wide detector
     """
     MAX_SHAPE = (512, 2068)
-    aliases = ["Eiger2 CdTe 1M-W"]
+    aliases = ("Eiger2 CdTe 1M-W",)
 
 
 class Eiger2CdTe_2MW(Eiger2CdTe):
@@ -354,7 +356,7 @@ class Eiger2CdTe_2MW(Eiger2CdTe):
     Eiger2 CdTe 2M-Wide detector
     """
     MAX_SHAPE = (512, 4148)
-    aliases = ["Eiger2 CdTe 2M-W"]
+    aliases = ("Eiger2 CdTe 2M-W",)
 
 
 class Eiger2CdTe_4M(Eiger2CdTe):
@@ -362,7 +364,7 @@ class Eiger2CdTe_4M(Eiger2CdTe):
     Eiger2 CdTe 4M detector
     """
     MAX_SHAPE = (2162, 2068)
-    aliases = ["Eiger2 CdTe 4M"]
+    aliases = ("Eiger2 CdTe 4M",)
 
 
 class Eiger2CdTe_9M(Eiger2CdTe):
@@ -370,7 +372,7 @@ class Eiger2CdTe_9M(Eiger2CdTe):
     Eiger2 CdTe 9M detector
     """
     MAX_SHAPE = (3262, 3108)
-    aliases = ["Eiger2 CdTe 9M"]
+    aliases = ("Eiger2 CdTe 9M",)
 
 
 class Eiger2CdTe_16M(Eiger2CdTe):
@@ -378,13 +380,13 @@ class Eiger2CdTe_16M(Eiger2CdTe):
     Eiger2 CdTe 16M detector
     """
     MAX_SHAPE = (4362, 4148)
-    aliases = ["Eiger2 CdTe 16M"]
+    aliases = ("Eiger2 CdTe 16M",)
 
 
 class Mythen(Detector):
     "Mythen strip detector from Dectris"
     MANUFACTURER = "Dectris"
-    aliases = ["Mythen 1280"]
+    aliases = ("Mythen 1280",)
     force_pixel = True
     MAX_SHAPE = (1, 1280)
     SENSORS = (Si320, Si450, Si1000)
@@ -392,7 +394,7 @@ class Mythen(Detector):
 
     def calc_mask(self):
         "Mythen has no masks"
-        return None
+        return
 
 
 class Pilatus(_Dectris):
@@ -439,7 +441,7 @@ class Pilatus(_Dectris):
                     self.offset2 = fimgx.data
                 self.uniform_pixel = False
             else:
-                logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
+                logger.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
                 self.offset1 = None
                 self.offset2 = None
                 self.uniform_pixel = True
@@ -451,7 +453,7 @@ class Pilatus(_Dectris):
     @property
     def splinefile(self):
         if self.x_offset_file and self.y_offset_file:
-            return "%s,%s" % (self.x_offset_file, self.y_offset_file)
+            return f"{self.x_offset_file},{self.y_offset_file}"
 
     @splinefile.setter
     @deprecated_args({"splinefile":"splineFile"}, since_version="2025.10")
@@ -474,7 +476,7 @@ class Pilatus(_Dectris):
                 with fabio.open(self.x_offset_file) as fimgx:
                     self.offset2 = fimgx.data
             else:
-                logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
+                logger.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
                 self.offset1 = None
                 self.offset2 = None
 
@@ -588,7 +590,7 @@ class Pilatus100k(Pilatus):
     Pilatus 100k detector
     """
     MAX_SHAPE = (195, 487)
-    aliases = ["Pilatus 100k"]
+    aliases = ("Pilatus 100k",)
 
 
 class Pilatus200k(Pilatus):
@@ -596,7 +598,7 @@ class Pilatus200k(Pilatus):
     Pilatus 200k detector
     """
     MAX_SHAPE = (407, 487)
-    aliases = ["Pilatus 200k"]
+    aliases = ("Pilatus 200k",)
 
 
 class Pilatus300k(Pilatus):
@@ -604,7 +606,7 @@ class Pilatus300k(Pilatus):
     Pilatus 300k detector
     """
     MAX_SHAPE = (619, 487)
-    aliases = ["Pilatus 300k"]
+    aliases = ("Pilatus 300k",)
 
 
 class Pilatus300kw(Pilatus):
@@ -612,7 +614,7 @@ class Pilatus300kw(Pilatus):
     Pilatus 300k-wide detector
     """
     MAX_SHAPE = (195, 1475)
-    aliases = ["Pilatus 300kw"]
+    aliases = ("Pilatus 300kw",)
 
 
 class Pilatus900k(Pilatus):
@@ -623,7 +625,7 @@ class Pilatus900k(Pilatus):
     This is different from the "Pilatus CdTe 900kw" available at ESRF ID06-LVP which is 1x9 modules
     """
     MAX_SHAPE = (619, 1475)
-    aliases = ["Pilatus 900k"]
+    aliases = ("Pilatus 900k",)
 
 
 class Pilatus1M(Pilatus):
@@ -631,7 +633,7 @@ class Pilatus1M(Pilatus):
     Pilatus 1M detector
     """
     MAX_SHAPE = (1043, 981)
-    aliases = ["Pilatus 1M"]
+    aliases = ("Pilatus 1M",)
 
 
 class Pilatus2M(Pilatus):
@@ -640,7 +642,7 @@ class Pilatus2M(Pilatus):
     """
 
     MAX_SHAPE = 1679, 1475
-    aliases = ["Pilatus 2M"]
+    aliases = ("Pilatus 2M",)
 
 
 class Pilatus6M(Pilatus):
@@ -648,7 +650,7 @@ class Pilatus6M(Pilatus):
     Pilatus 6M detector
     """
     MAX_SHAPE = (2527, 2463)
-    aliases = ["Pilatus 6M"]
+    aliases = ("Pilatus 6M",)
 
 
 class PilatusCdTe(Pilatus):
@@ -675,7 +677,7 @@ class PilatusCdTe300k(PilatusCdTe):
     Pilatus CdTe 300k detector
     """
     MAX_SHAPE = (619, 487)
-    aliases = ["Pilatus CdTe 300k", "Pilatus 300k CdTe", "Pilatus300k CdTe", "Pilatus300kCdTe"]
+    aliases = ("Pilatus CdTe 300k", "Pilatus 300k CdTe", "Pilatus300k CdTe", "Pilatus300kCdTe")
 
 
 class PilatusCdTe300kw(PilatusCdTe):
@@ -683,7 +685,7 @@ class PilatusCdTe300kw(PilatusCdTe):
     Pilatus CdTe 300k-wide detector
     """
     MAX_SHAPE = (195, 1475)
-    aliases = ["Pilatus CdTe 300kw", "Pilatus 300kw CdTe", "Pilatus300kw CdTe", "Pilatus300kwCdTe"]
+    aliases = ("Pilatus CdTe 300kw", "Pilatus 300kw CdTe", "Pilatus300kw CdTe", "Pilatus300kwCdTe")
 
 
 class PilatusCdTe900kw(PilatusCdTe):
@@ -694,7 +696,7 @@ class PilatusCdTe900kw(PilatusCdTe):
     This differs from the "Pilatus 900k" detector, assembly of 3x3 modules, available at NSLS-II 12-ID.
     """
     MAX_SHAPE = (195, 4439)
-    aliases = ["Pilatus CdTe 900kw", "Pilatus 900kw CdTe", "Pilatus900kw CdTe", "Pilatus900kwCdTe"]
+    aliases = ("Pilatus CdTe 900kw", "Pilatus 900kw CdTe", "Pilatus900kw CdTe", "Pilatus900kwCdTe")
 
 
 class PilatusCdTe1M(PilatusCdTe):
@@ -702,7 +704,7 @@ class PilatusCdTe1M(PilatusCdTe):
     Pilatus CdTe 1M detector
     """
     MAX_SHAPE = (1043, 981)
-    aliases = ["Pilatus CdTe 1M", "Pilatus 1M CdTe", "Pilatus1M CdTe", "Pilatus1MCdTe"]
+    aliases = ("Pilatus CdTe 1M", "Pilatus 1M CdTe", "Pilatus1M CdTe", "Pilatus1MCdTe")
 
 
 class PilatusCdTe2M(PilatusCdTe):
@@ -710,7 +712,7 @@ class PilatusCdTe2M(PilatusCdTe):
     Pilatus CdTe 2M detector
     """
     MAX_SHAPE = 1679, 1475
-    aliases = ["Pilatus CdTe 2M", "Pilatus 2M CdTe", "Pilatus2M CdTe", "Pilatus2MCdTe"]
+    aliases = ("Pilatus CdTe 2M", "Pilatus 2M CdTe", "Pilatus2M CdTe", "Pilatus2MCdTe")
 
 
 class Pilatus4(_Dectris):
@@ -737,27 +739,27 @@ class Pilatus4(_Dectris):
 
 class Pilatus4_1M(Pilatus4):
     MAX_SHAPE = 1080, 1033
-    aliases = ["Pilatus4 1M"]
+    aliases = ("Pilatus4 1M",)
 
 
 class Pilatus4_2M(Pilatus4):
     MAX_SHAPE = 1630, 1553
-    aliases = ["Pilatus4 2M"]
+    aliases = ("Pilatus4 2M",)
 
 
 class Pilatus4_4M(Pilatus4):
     MAX_SHAPE = 2180, 2073
-    aliases = ["Pilatus4 4M"]
+    aliases = ("Pilatus4 4M",)
 
 
 class Pilatus4_260k(Pilatus4):
     MAX_SHAPE = 530, 513
-    aliases = ["Pilatus4 260k"]
+    aliases = ("Pilatus4 260k",)
 
 
 class Pilatus4_260kw(Pilatus4):
     MAX_SHAPE = 255, 1033
-    aliases = ["Pilatus4 260kw"]
+    aliases = ("Pilatus4 260kw",)
 
 
 class Pilatus4_CdTe(Pilatus4):
@@ -782,24 +784,24 @@ class Pilatus4_CdTe(Pilatus4):
 
 class Pilatus4_CdTe_1M(Pilatus4_CdTe):
     MAX_SHAPE = 1080, 1033
-    aliases = ["Pilatus4 1M CdTe"]
+    aliases = ("Pilatus4 1M CdTe",)
 
 
 class Pilatus4_CdTe_2M(Pilatus4_CdTe):
     MAX_SHAPE = 1630, 1553
-    aliases = ["Pilatus4 2M CdTe"]
+    aliases = ("Pilatus4 2M CdTe",)
 
 
 class Pilatus4_CdTe_4M(Pilatus4_CdTe):
     MAX_SHAPE = 2180, 2073
-    aliases = ["Pilatus4 4M CdTe"]
+    aliases = ("Pilatus4 4M CdTe",)
 
 
 class Pilatus4_CdTe_260k(Pilatus4_CdTe):
     MAX_SHAPE = 530, 513
-    aliases = ["Pilatus4 260k CdTe"]
+    aliases = ("Pilatus4 260k CdTe",)
 
 
 class Pilatus4_CdTe_260kw(Pilatus4_CdTe):
     MAX_SHAPE = 255, 1033
-    aliases = ["Pilatus4 260kw CdTe"]
+    aliases = ("Pilatus4 260kw CdTe",)

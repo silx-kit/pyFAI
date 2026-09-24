@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,25 +35,30 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2026"
+__date__ = "02/09/2026"
 
-import sys
-import os
-import unittest
-import numpy
-import subprocess
 import copy
 import logging
+import os
+import subprocess
+import sys
+import unittest
+from io import StringIO
 from math import pi
-from .utilstest import UtilsTest
-from ..utils import mathutil
+from types import SimpleNamespace
+
 import fabio
-from .. import load
-from ..integrator.azimuthal import AzimuthalIntegrator
-from .. import detectors
-from .. import units
-from ..opencl import ocl
+import numpy
+
+from .. import detectors, load, units
+from ..detectors import detector_factory
 from ..ext import splitPixel
+from ..integrator.azimuthal import AzimuthalIntegrator
+from ..io.ponifile import PoniFile
+from ..opencl import ocl
+from ..utils import mathutil
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -135,7 +139,7 @@ class TestBug211(unittest.TestCase):
         res = numpy.zeros(shape, dtype=dtype)
         rng = UtilsTest.get_rng()
         for i in range(5):
-            fn = os.path.join(UtilsTest.tempdir, "img_%i.edf" % i)
+            fn = os.path.join(UtilsTest.tempdir, f"img_{i}.edf")
             if i == 3:
                 data = numpy.zeros(shape, dtype=dtype)
             elif i == 4:
@@ -175,7 +179,7 @@ class TestBug211(unittest.TestCase):
             logger.error(os.linesep + (" ".join(command_line)))
             env = "Environment:"
             for k, v in self.env.items():
-                env += "%s    %s: %s" % (os.linesep, k, v)
+                env += f"{os.linesep}    {k}: {v}"
             logger.error(env)
             self.fail()
 
@@ -183,7 +187,7 @@ class TestBug211(unittest.TestCase):
             logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
             return
 
-        self.assertEqual(rc, 0, msg="pyFAI-average return code %i != 0" % rc)
+        self.assertEqual(rc, 0, msg=f"pyFAI-average return code {rc} != 0")
         with fabio.open(self.outfile) as fimg:
             self.assertTrue(numpy.allclose(fimg.data, self.res),
                         "pyFAI-average with quantiles gives good results")
@@ -227,13 +231,13 @@ class TestBugRegression(unittest.TestCase):
         dq = (abs(q1 - q2).max())
         _di = (abs(i1 - i2).max())
         # print(dq)
-        self.assertAlmostEqual(dq, 3.79, 2, "Q-scale difference should be around 3.8, got %s" % dq)
+        self.assertAlmostEqual(dq, 3.79, 2, f"Q-scale difference should be around 3.8, got {dq}")
 
     def test_bug_758(self):
         """check the stored "h*c" constant is almost 12.4"""
         hc = 12.398419292004204  # Old reference value from pyFAI
         hc = 12.398419739640717  # calculated from scipy 1.3
-        self.assertAlmostEqual(hc, units.hc, 6, "hc is correct, got %s" % units.hc)
+        self.assertAlmostEqual(hc, units.hc, 6, f"hc is correct, got {units.hc}")
 
     def test_import_all_modules(self):
         """Try to import every single module in the package
@@ -249,14 +253,12 @@ class TestBugRegression(unittest.TestCase):
                 # Always skip test modules
                 logger.warning("Skip test module %s", path)
                 return True
-            if not UtilsTest.WITH_OPENCL_TEST:
-                if "opencl" in elements:
-                    logger.warning("Skip %s. OpenCL tests disabled", path)
-                    return True
-            if not UtilsTest.WITH_QT_TEST:
-                if "gui" in elements:
-                    logger.warning("Skip %s. Qt tests disabled", path)
-                    return True
+            if not UtilsTest.WITH_OPENCL_TEST and "opencl" in elements:
+                logger.warning("Skip %s. OpenCL tests disabled", path)
+                return True
+            if not UtilsTest.WITH_QT_TEST and "gui" in elements:
+                logger.warning("Skip %s. Qt tests disabled", path)
+                return True
             return False
 
         for root, dirs, files in os.walk(pyFAI_root, topdown=True):
@@ -289,10 +291,10 @@ class TestBugRegression(unittest.TestCase):
                         logger.info("Expected failure importing %s from %s with error: %s",
                                     fqn, path, err)
                     else:
-                        logger.error("Failed importing %s from %s with error: %s%s: %s",
+                        logger.exception("Failed importing %s from %s with error: %s%s: %s",
                                      fqn, path, os.linesep,
                                      err.__class__.__name__, err)
-                        raise err
+                        raise
 
     def test_bug_816(self):
         "Ensure the chi-disontinuity is properly set"
@@ -499,12 +501,10 @@ class TestBugRegression(unittest.TestCase):
                        ("full", "lut", "cython"),
                        ("full", "csr", "cython"),
                        ]:
-            idx = 0
-            for start in range(-90, 90, sector_size):
+            for idx, start in enumerate(range(-90, 90, sector_size)):
                 end = start + sector_size
                 res = ai.integrate1d(img, npt, method=method, azimuth_range=[start, end])
                 out[idx] = res.intensity
-                idx += 1
             # print(out)
             std = out.std(axis=0)
             self.assertGreater(std.min(), 0, f"output are not all the same with {method}")
@@ -568,8 +568,8 @@ class TestBugRegression(unittest.TestCase):
         pp = pyFAI.gui.peak_picker.PeakPicker(ary)
         self.assertNotEqual(id(pp), id(copy.deepcopy(pp)), "PeakPicker copy works and id differs")
 
-        from pyFAI.goniometer import SingleGeometry
         import pyFAI.calibrant
+        from pyFAI.goniometer import SingleGeometry
         lab6 = pyFAI.calibrant.get_calibrant("LaB6", 1e-10)
         cp.append([[1, 2], [3, 4]], 0)
         sg = SingleGeometry("frame", ary, "frame", lambda x:x, cp, lab6, "Imxpad S10")
@@ -600,6 +600,10 @@ class TestBugRegression(unittest.TestCase):
         d = DiffMap()
         d.use_gpu # used to raise AttributeError
         d.use_gpu = True # used to raise AttributeError
+        d.use_gpu = False
+        self.assertFalse(d.use_gpu, "the implementation is actually switched")
+        self.assertEqual(d.worker._method.method.dim, 1,
+                         "the implementation is not assigned to the dimensionality")
 
     def test_bug_2151(self):
         """Some detector fail to integrate in 2D, the CSC matrix produced by cython has wrong shape.
@@ -768,7 +772,102 @@ class TestBugRegression(unittest.TestCase):
             print(cm.output)
             self.assertEqual(len(cm.output), 1, "Warning when not good")
 
+    def test_bug_2904(self):
+        """sensor description is not JSON serializable"""
+        detector = detector_factory("RayonixMx225",
+                    {
+                    "pixel1": 73.242e-6,
+                    "pixel2": 73.242e-6,
+                    "orientation": 3,
+                    "sensor": {
+                        "material": "Gd2O2S",
+                        "thickness": 40e-6,
+                        },
+                    })
 
+        geometry = SimpleNamespace(
+            dist=0.1,
+            poni1=0.1,
+            poni2=0.1,
+            rot1=0.0,
+            rot2=0.0,
+            rot3=0.0,
+            wavelength=1e-10,
+            detector=detector,
+            parallax=False,
+        )
+        poni = PoniFile(geometry)
+        # print(poni.detector)
+        poni.write(StringIO())
+
+    def test_bug_2915(self):
+        """Saving a poni file used to fail with `'dict' object has no attribute
+        'as_dict'` when the detector came from a file and a sensor was added on
+        top of it, which is what pyFAI-calib2 does.
+
+        `PoniFile` rebuilds the detector from `detector_config`, where the
+        sensor is a serialized dict; `NexusDetector` then kept that dict as is,
+        so the next call to `get_config()` blew up while writing the file.
+        """
+        from ..detectors import sensors
+        from ..io import ponifile
+        filename = UtilsTest.getimage("WOS.h5")
+        detector = detectors.NexusDetector(filename=filename)
+        sensor = sensors.SensorConfig.from_dict({"material": "CdTe",
+                                                 "thickness": 1000e-6})
+        detector.sensor = sensor
+        config = detector.get_config()
+        self.assertIsInstance(config["sensor"], dict, "the sensor is serialized")
+
+        # the dict pyFAI-calib2 builds before writing the file
+        dico = {"dist": 0.1, "poni1": 0.1, "poni2": 0.1,
+                "rot1": 0.0, "rot2": 0.0, "rot3": 0.0,
+                "wavelength": 1e-10,
+                "detector": detector.__class__.__name__,
+                "detector_config": config}
+        poni = ponifile.PoniFile(dico)
+        self.assertIsInstance(poni.detector.sensor, sensors.SensorConfig,
+                              "the rebuilt detector holds a SensorConfig")
+        self.assertEqual(poni.detector.sensor, sensor, "sensor preserved")
+
+        destination = os.path.join(UtilsTest.tempdir, "bug_2915.poni")
+        with open(destination, "w") as fd:
+            poni.write(fd)  # used to raise AttributeError
+        with open(destination) as fd:
+            content = fd.read()
+        self.assertIn("CdTe", content, "the sensor is saved in the poni file")
+
+    def test_bug_2757(self):
+        """`WorkerConfig.method` has to stay immutable.
+
+        Instances are usually built from a de-serialized JSON dictionary, where
+        the method is a plain list: it was stored as such, hence mutable and
+        not even hashable, which broke the lookup in the registry.
+        """
+        from ..io.integration_config import WorkerConfig
+        from ..method_registry import Method
+
+        wc = WorkerConfig(nbpt_rad=100, method=["full", "csr", "cython"])
+        self.assertIsInstance(wc.method, Method, "a list is converted")
+        self.assertEqual(hash(wc.method), hash(Method(None, "full", "csr", "cython")),
+                         "hashable, hence usable as key in the registry")
+        with self.assertRaises(AttributeError):
+            wc.method.algo = "lut"  # used to be a plain, mutable list
+
+        # assignment after the construction goes through the same path
+        wc.method = "csr_ocl"
+        self.assertEqual(wc.method, Method(None, None, "csr", "opencl"))
+
+        # the OpenCL device belongs to `opencl_device`, not to the method
+        wc = WorkerConfig(nbpt_rad=100, method=Method(1, "full", "csr", "opencl", (0, 1)))
+        self.assertIsNone(wc.method.target, "the target is moved out of the method")
+        self.assertEqual(wc.opencl_device, (0, 1), "and stored in its own field")
+
+        # round-trip through a JSON-like dictionary
+        dico = wc.as_dict()
+        self.assertEqual(dico["method"], ("full", "csr", "opencl"),
+                         "the serialized format is unchanged")
+        self.assertEqual(WorkerConfig.from_dict(dico).method, wc.method)
 
 class TestBug1703(unittest.TestCase):
     """

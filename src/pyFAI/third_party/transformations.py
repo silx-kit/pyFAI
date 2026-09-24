@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
@@ -27,6 +26,6 @@ __license__ = "MIT"
 __date__ = "07/10/2025"
 
 try:
-    from transformations import *  # noqa:F403
+    from transformations import *
 except (ImportError, ModuleNotFoundError):
-    from ._local.transformations import *  # noqa:F403
+    from ._local.transformations import *

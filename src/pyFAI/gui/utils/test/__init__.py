@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2018  European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,6 +23,7 @@ __license__ = "MIT"
 __date__ = "30/10/2018"
 
 import unittest
+
 from . import test_validators
 
 

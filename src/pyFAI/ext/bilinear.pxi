@@ -179,9 +179,9 @@ cdef class Bilinear:
             a12 = self.data[current0    , current1 + 1]
             a20 = self.data[current0 + 1, current1 - 1]
             a21 = self.data[current0 + 1, current1    ]
-            a22 = self.data[current0 + 1, current1 - 1]
-            d00 = a12 - 2.0 * a11 + a10
-            d11 = a21 - 2.0 * a11 + a01
+            a22 = self.data[current0 + 1, current1 + 1]
+            d00 = a21 - 2.0 * a11 + a01  # second derivative along dim0
+            d11 = a12 - 2.0 * a11 + a10  # second derivative along dim1
             d01 = (a00 - a02 - a20 + a22) / 4.0
             denom = 2.0 * (d00 * d11 - d01 * d01)
             if abs(denom) < 1e-10:

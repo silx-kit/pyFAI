@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
 #
@@ -29,6 +28,6 @@ __date__ = "13/01/2026"
 # Source can be found at https://github.com/dpep/py_classproperties or https://pypi.org/project/classproperties/
 
 try:
-    from classproperties import  *  # noqa:F403
+    from classproperties import *
 except (ImportError, ModuleNotFoundError):
-    from ._local.classproperties import *  # noqa:F403
+    from ._local.classproperties import *

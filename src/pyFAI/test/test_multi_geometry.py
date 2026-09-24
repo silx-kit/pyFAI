@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,16 +31,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
-import unittest
 import logging
-import numpy
+import unittest
+
 import fabio
-from .utilstest import UtilsTest
+import numpy
+
+from ..detectors import Detector
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..multi_geometry import MultiGeometry
-from ..detectors import Detector
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -98,10 +100,10 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
         delta = (abs(I_obt * 1e-6 - I_ref).max())
-        self.assertTrue(delta < 9e-5, "Intensity is the same delta=%s" % delta)
+        self.assertTrue(delta < 9e-5, f"Intensity is the same delta={delta}")
 
         delta = (abs(sigma_obt * 1e-6 - sigma_ref).max())
-        self.assertTrue(delta < 9e-5, "Standard deviation is the same delta=%s" % delta)
+        self.assertTrue(delta < 9e-5, f"Standard deviation is the same delta={delta}")
 
     def test_integrate1d_withpol(self):
         tth_ref, I_ref = self.ai.integrate1d_ng(self.data, radial_range=self.range,
@@ -112,7 +114,7 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
         delta = (abs(I_obt * 1e-6 - I_ref).max())
-        self.assertTrue(delta < 9e-5, "Intensity is the same delta=%s" % delta)
+        self.assertTrue(delta < 9e-5, f"Intensity is the same delta={delta}")
 
     def test_integrate2d(self):
         ref = self.ai.integrate2d_ng(self.data, self.N, 360, radial_range=self.range, azimuth_range=(-180, 180), unit="2th_deg",
@@ -134,9 +136,9 @@ class TestMultiGeometry(unittest.TestCase):
                            "of intensity: %s, count: %s cum: %s",
                            delta.max(), delta_norm.max(), delta_sum.max())
 
-        self.assertTrue(delta_norm.max() < 0.001, "pixel normalization is the same delta=%s" % delta_norm.max())
-        self.assertTrue(delta_sum.max() < 0.04, "pixel sum is the same delta=%s" % delta_sum.max())
-        self.assertTrue(delta.max() < 0.007, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
+        self.assertTrue(delta_norm.max() < 0.001, f"pixel normalization is the same delta={delta_norm.max()}")
+        self.assertTrue(delta_sum.max() < 0.04, f"pixel sum is the same delta={delta_sum.max()}")
+        self.assertTrue(delta.max() < 0.007, f"pixel intensity is the same (for populated pixels) delta={delta.max()}")
 
     def test_range_azimuth(self):
         azim_min_ref = self.ai.array_from_unit(shape=self.data.shape, unit=self.mg.azimuth_unit).min()

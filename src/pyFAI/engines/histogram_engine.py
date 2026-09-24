@@ -31,10 +31,13 @@ __status__ = "development"
 
 import logging
 from math import pi
+
 import numpy
+
+from ..containers import ErrorModel, Integrate1dtpl, Integrate2dtpl
 from ..utils.mathutil import EPS32
 from .preproc import preproc as preproc_np
-from ..containers import Integrate1dtpl, Integrate2dtpl, ErrorModel
+
 logger = logging.getLogger(__name__)
 try:
     from ..ext.preproc import preproc as preproc_cy

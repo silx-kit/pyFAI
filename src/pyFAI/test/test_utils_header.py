@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,15 +33,18 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
 import logging
-import shutil
 import os
+import shutil
+import unittest
+
 import fabio
 import h5py
-from .utilstest import UtilsTest
+import numpy
+
 from ..utils import header_utils
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -111,7 +113,7 @@ class TestHdf5Monitor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestHdf5Monitor, cls).setUpClass()
+        super().setUpClass()
         cls.tempDir = os.path.join(UtilsTest.tempdir, cls.__name__)
         os.makedirs(cls.tempDir)
         cls.file = os.path.join(cls.tempDir, "file.h5")
@@ -128,7 +130,7 @@ class TestHdf5Monitor(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestHdf5Monitor, cls).tearDownClass()
+        super().tearDownClass()
         shutil.rmtree(cls.tempDir)
         cls.tempDir = None
 

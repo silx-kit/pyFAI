@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (c) 2017-2018 European Synchrotron Radiation Facility
@@ -31,10 +30,10 @@ __license__ = "MIT"
 import numpy
 
 from pyFAI.control_points import ControlPoints
-from pyFAI.gui.model.CalibrationModel import CalibrationModel
-from pyFAI.gui.model.PeakSelectionModel import PeakSelectionModel
-from pyFAI.gui.model.PeakModel import PeakModel
 from pyFAI.gui.CalibrationContext import CalibrationContext
+from pyFAI.gui.model.CalibrationModel import CalibrationModel
+from pyFAI.gui.model.PeakModel import PeakModel
+from pyFAI.gui.model.PeakSelectionModel import PeakSelectionModel
 
 
 def createControlPoints(model):
@@ -115,9 +114,9 @@ def _findUnusedName(peakSelectionModel):
     """
     :rtype: str
     """
-    names = ["% 8s" % p.name() for p in peakSelectionModel]
+    names = [f"{p.name()!s:>8}" for p in peakSelectionModel]
     if len(names) > 0:
-        names = list(sorted(names))
+        names = sorted(names)
         bigger = names[-1].strip()
         number = 0
         for c in bigger:

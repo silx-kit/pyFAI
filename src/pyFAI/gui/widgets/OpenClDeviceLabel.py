@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -40,7 +39,7 @@ class OpenClDeviceLabel(qt.QLabel):
     """
 
     def __init__(self, parent=None):
-        super(OpenClDeviceLabel, self).__init__(parent)
+        super().__init__(parent)
         self.__device = None
         self.__updateDisplay()
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,13 +33,15 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "20/12/2024"
 
-import unittest
 import logging
+import unittest
+
+from silx.gui.utils import testutils
+
+from pyFAI.io import integration_config
+from pyFAI.test.utilstest import UtilsTest
 
 from ...gui.widgets.WorkerConfigurator import WorkerConfigurator
-from silx.gui.utils import testutils
-from pyFAI.test.utilstest import UtilsTest
-from pyFAI.io import integration_config
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class TestIntegrationDialog(testutils.TestCaseQt):
 
     @classmethod
     def setUpClass(cls):
-        super(TestIntegrationDialog, cls).setUpClass()
+        super().setUpClass()
         config = {"poni": UtilsTest.getimage("Pilatus1M.poni")}
         integration_config.normalize(config, inplace=True)
         cls.base_config = config

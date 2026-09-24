@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -25,20 +24,21 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "07/02/2025"
+__date__ = "25/08/2026"
 
-from silx.gui import qt
-from silx.gui import icons
+from typing import ClassVar
+from silx.gui import icons, qt
+
+import pyFAI.utils
 
 from ... import method_registry
-import pyFAI.utils
 
 
 class IntegrationMethodWidget(qt.QWidget):
     """Label displaying a specific OpenCL device.
     """
 
-    _HUMAN_READABLE = {
+    _HUMAN_READABLE: ClassVar[dict] = {
         "no": "No splitting",
         "bbox": "Bounding box",
         "pseudo": "Pseudo split",
@@ -52,14 +52,14 @@ class IntegrationMethodWidget(qt.QWidget):
         "opencl": "OpenCL",
     }
 
-    _IMAGE_DOC = {
+    _IMAGE_DOC: ClassVar[dict] = {
         "no": "pyfai:gui/images/pixelsplitting-no",
         "bbox": "pyfai:gui/images/pixelsplitting-bbox",
         "pseudo": "pyfai:gui/images/pixelsplitting-pseudo",
         "full": "pyfai:gui/images/pixelsplitting-full",
     }
 
-    _DESCRIPTION_DOC = {
+    _DESCRIPTION_DOC: ClassVar[dict] = {
         "no": "No pixel splitting. Each pixel contributes to a single bin of the result. No bin correlation but more noise",
         "bbox": "Split the bounding box corresponding to the pixel in the integrated geometry. The smoothest splitting, blurs a bit the signal",
         "pseudo": "Scale down the bounding box to the pixel area, before splitting. Good cost/precision compromise, similar to FIT2D",
@@ -78,7 +78,7 @@ class IntegrationMethodWidget(qt.QWidget):
     sigMethodChanged = qt.Signal()
 
     def __init__(self, parent=None):
-        super(IntegrationMethodWidget, self).__init__(parent)
+        super().__init__(parent)
         qt.loadUi(pyFAI.utils.get_ui_file("integration-method.ui"), self)
 
         self._implementationModel = self._createImplementationModel()
@@ -221,7 +221,7 @@ class IntegrationMethodWidget(qt.QWidget):
             self.setTupleMethod((split, algo, impl))
 
     def setTupleMethod(self, method):
-        split, algo, impl = method
+        split, algo, impl = ("*" if i is None else i for i in method)
         self.__selectCode(split, self._splittingModel, self._splitView)
         self.__selectCode(impl, self._implementationModel, self._implView)
         self.__selectCode(algo, self._algoModel, self._algoView)
@@ -239,7 +239,7 @@ class IntegrationMethodWidget(qt.QWidget):
         algo = index.data(self.CodeRole)
         index = self._splitView.selectedIndexes()[0]
         split = index.data(self.CodeRole)
-        return method_registry.Method(666, split, algo, impl, None)
+        return method_registry.Method(None, split, algo, impl, None)
 
     def __updateFeedback(self):
         self.__updateItems()
@@ -274,9 +274,9 @@ class IntegrationMethodWidget(qt.QWidget):
             else:
                 color = qt.Qt.red
                 if available1d:
-                    label = "%s (only 1D)" % label
+                    label = f"{label} (only 1D)"
                 elif available2d:
-                    label = "%s (only 2D)" % label
+                    label = f"{label} (only 2D)"
 
             item.setForeground(qt.QBrush(color))
             item.setText(label)
@@ -318,7 +318,7 @@ class IntegrationMethodWidget(qt.QWidget):
 class IntegrationMethodDialog(qt.QDialog):
 
     def __init__(self, parent=None):
-        super(IntegrationMethodDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowTitle("Method selection")
 
         self.__content = IntegrationMethodWidget(self)

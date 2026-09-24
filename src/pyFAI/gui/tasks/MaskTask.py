@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2021 European Synchrotron Radiation Facility
@@ -25,23 +24,24 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/05/2025"
+__date__ = "24/08/2026"
 
 import logging
 import os.path
 
-from silx.gui import qt
-import silx.gui.plot
 import silx.gui.icons
+import silx.gui.plot
+from silx.gui import qt
 from silx.gui.plot.tools import PositionInfo
 
 import pyFAI.utils
-from .AbstractCalibrationTask import AbstractCalibrationTask
+
 from ..CalibrationContext import CalibrationContext
-from ..helper.SynchronizeRawView import SynchronizeRawView
 from ..helper.MarkerManager import MarkerManager
 from ..helper.SynchronizeMaskToolColor import SynchronizeMaskToolColor
 from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..helper.SynchronizeRawView import SynchronizeRawView
+from .AbstractCalibrationTask import AbstractCalibrationTask
 
 _logger = logging.getLogger(__name__)
 
@@ -66,12 +66,11 @@ class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
         self.sigUserMaskChanged.emit()
 
     def __extractDirectory(self, filename):
-        if filename is not None and filename != "":
-            if os.path.exists(filename):
-                if os.path.isdir(filename):
-                    return filename
-                else:
-                    return os.path.dirname(filename)
+        if filename is not None and filename != "" and os.path.exists(filename):
+            if os.path.isdir(filename):
+                return filename
+            else:
+                return os.path.dirname(filename)
         return None
 
     @property
@@ -122,7 +121,7 @@ class _MaskToolsWidget(silx.gui.plot.MaskToolsWidget.MaskToolsWidget):
 
     def setSelectionMask(self, mask, copy=True):
         self.sigMaskChanged.disconnect(self.__emitUserMaskChanged)
-        result = super(_MaskToolsWidget, self).setSelectionMask(mask, copy=copy)
+        result = super().setSelectionMask(mask, copy=copy)
         self.sigMaskChanged.connect(self.__emitUserMaskChanged)
         return result
 

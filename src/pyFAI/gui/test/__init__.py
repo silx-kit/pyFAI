@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -30,13 +29,13 @@
 
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "21/08/2026"
 
-import sys
-import os
-import unittest
-import logging
 import importlib
+import logging
+import os
+import sys
+import unittest
 
 from pyFAI.test.utilstest import test_options
 
@@ -50,7 +49,7 @@ class SkipGuiTest(unittest.TestCase):
         unittest.TestCase.__init__(self, methodName=methodName)
 
     def runTest(self):
-        self.skipTest("pyFAI.gui tests disabled (%s)" % self._reason)
+        self.skipTest(f"pyFAI.gui tests disabled ({self._reason})")
 
 
 def suite():
@@ -69,18 +68,19 @@ def suite():
         return test_suite
 
     if importlib.util.find_spec("silx.gui.qt") is None:
-        #
         reason = "No Qt binding found"
         _logger.warning(f"pyFAI.gui tests disabled ({reason})")
         test_suite.addTest(SkipGuiTest(reason=reason))
         return test_suite
 
-    from . import test_model
-    from . import test_integrate_widget
-    from . import test_calibration
-    from . import test_detector_dialog
     from ..utils import test as test_utils
     from ..widgets import test as test_widgets
+    from . import (
+        test_calibration,
+        test_detector_dialog,
+        test_integrate_widget,
+        test_model,
+    )
 
     test_suite = unittest.TestSuite()
     test_suite.addTest(test_model.suite())

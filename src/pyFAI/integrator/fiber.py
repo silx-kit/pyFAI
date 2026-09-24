@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,13 +34,16 @@ __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import logging
+
 import numpy
-from .azimuthal import AzimuthalIntegrator
+
 from ..containers import Integrate1dFiberResult, Integrate2dFiberResult
-from ..method_registry import IntegrationMethod
 from ..io import save_integrate_result
-from ..units import parse_fiber_unit, ANGLE_UNITS, to_unit
+from ..method_registry import IntegrationMethod
+from ..units import ANGLE_UNITS, parse_fiber_unit, to_unit
 from ..utils.decorators import deprecated_warning
+from .azimuthal import AzimuthalIntegrator
+
 logger = logging.getLogger(__name__)
 try:
     import numexpr

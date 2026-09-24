@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,14 +33,22 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "24/02/2026"
 
-import unittest
 import json
-import os
-from dataclasses import fields
 import logging
-from ..io.diffmap_config import DiffmapConfig, ListDataSet, DataSet, CURRENT_VERSION, parse_bliss
+import os
+import unittest
+from dataclasses import fields
+
 from ..diffmap import DiffMap
+from ..io.diffmap_config import (
+    CURRENT_VERSION,
+    DataSet,
+    DiffmapConfig,
+    ListDataSet,
+    parse_bliss,
+)
 from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -192,7 +199,7 @@ class TestDiffmapConfig(unittest.TestCase):
         with open(fn, "w", encoding="utf-8") as w:
             w.write(test_data)
         dm = DiffMap()
-        opts, config = dm.parse(sysargv=["diffmap", "--config", fn], with_config=True)
+        _opts, config = dm.parse(sysargv=["diffmap", "--config", fn], with_config=True)
         parsed = DiffmapConfig.from_dict(self.inp)
         for field in fields(DiffmapConfig):
             value = config.__getattribute__(field.name)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,7 +35,9 @@ __date__ = "07/10/2025"
 __satus__ = "development"
 
 import logging
+
 from ..gui.cli_calibration import Recalibration
+
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)

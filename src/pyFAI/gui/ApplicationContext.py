@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
@@ -25,22 +24,21 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/03/2023"
+__date__ = "24/08/2026"
 
-import weakref
-import logging
 import functools
+import logging
 import os
+import weakref
 
 from silx.gui import qt
 
 from ..utils import stringutil
 
-
 _logger = logging.getLogger(__name__)
 
 
-class ApplicationContext(object):
+class ApplicationContext:
 
     __instance = None
 
@@ -155,13 +153,12 @@ class ApplicationContext(object):
         dialog.finished.connect(functools.partial(self.__saveDialogState, dialog))
         self.__configureDialog(dialog)
 
-        if previousFile is not None:
-            if os.path.exists(previousFile):
-                if os.path.isdir(previousFile):
-                    directory = previousFile
-                else:
-                    directory = os.path.dirname(previousFile)
-                dialog.setDirectory(directory)
+        if previousFile is not None and os.path.exists(previousFile):
+            if os.path.isdir(previousFile):
+                directory = previousFile
+            else:
+                directory = os.path.dirname(previousFile)
+            dialog.setDirectory(directory)
 
         return dialog
 

@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -37,20 +36,22 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2026"
+__date__ = "03/09/2026"
 __status__ = "stable"
 
-import os
-import logging
 import copy
-from math import exp
+import logging
+import os
 from collections import namedtuple
-import numpy
+from math import exp
 from typing import ClassVar
-from ..io._json import json_dumps
+
+import numpy
+
 from ..containers import dataclass, fields
+from ..io._json import json_dumps
 from ..resources import resource_filename
-from ..utils.stringutil import to_eng, from_eng
+from ..utils.stringutil import from_eng, to_eng
 
 EnergyRange = namedtuple("EnergyRange", ["min", "max"])
 logger = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class SensorMaterial:
     is able to produce the linear absorption coefficient for it as function
     of the considered energy.
     """
-    SCALES = {"cm":1,
+    SCALES: ClassVar[dict] = {"cm":1,
               "mm":0.1,
               "m":100,
               "µm":1e-4,
@@ -81,6 +82,23 @@ class SensorMaterial:
 
     def __str__(self):
         return f"{self.name}-{self.__class__.__name__}"
+
+    def __eq__(self, other):
+        """Two materials are the same when they share the name and the density.
+
+        Without this, comparison falls back on identity: a detector carrying a
+        sensor compared unequal to its own `copy.deepcopy`, since the copy holds
+        an equivalent but distinct material. `_data` is not compared, being
+        derived from the name.
+        """
+        # not self.__class__ as it could be a derived class
+        if not isinstance(other, SensorMaterial):
+            return NotImplemented
+        return self.name == other.name and self.rho == other.rho
+
+    def __hash__(self):
+        """Consistent with `__eq__`, so a material remains usable as a key"""
+        return hash((self.name, self.rho))
 
     def init(self):
         """Read the sensor data and split them in chunks"""
@@ -104,16 +122,14 @@ class SensorMaterial:
                     block = [" ".join(line.split()[-3:])]
                 else:
                     block.append(line.strip())
-            else:
-                end_block(block)
+            end_block(block)
 
     def _find_range(self, energy):
         """Helper method to find the right block"""
         for descr in self._data:
             if energy>=descr.min and energy<descr.max:
                 return descr
-        else:
-            raise RuntimeError(f"Energy {energy} outside of tabulated range for {self}")
+        raise RuntimeError(f"Energy {energy} outside of tabulated range for {self}")
 
     def _scale(self, unit:str):
         """Helper function that return the scale multiplier"""
@@ -190,15 +206,14 @@ class SensorConfig:
 
     def __eq__(self, other):
         """Check for equality, especially for the thickness within 1µm"""
-        if isinstance(other, SensorConfig):  # not self.__class__ as it could be a derived class
-            if (self.material == other.material):
-                if (self.thickness and
-                    other.thickness and
-                    numpy.isclose(self.thickness, other.thickness, atol=self.THICKNESS_TOLERANCE)):
-
-                        return True
-                else:
-                    return self.thickness == other.thickness
+        # not self.__class__ as it could be a derived class
+        if isinstance(other, SensorConfig) and self.material == other.material:
+            if (self.thickness and
+                other.thickness and
+                numpy.isclose(self.thickness, other.thickness, atol=self.THICKNESS_TOLERANCE)):
+                return True
+            else:
+                return self.thickness == other.thickness
         return False
 
     def as_dict(self):

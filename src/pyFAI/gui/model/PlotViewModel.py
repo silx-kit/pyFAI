@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,9 +24,10 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "24/08/2026"
 
 import numpy
+
 from .DataModel import DataModel
 
 
@@ -73,7 +73,7 @@ class PlotViewModel(DataModel):
         isYaxisInverted = plot.getYAxis().isInverted()
         isKeepAspectRatio = plot.isKeepDataAspectRatio()
         interactionMode = plot.getInteractiveMode()["mode"]
-        if interactionMode not in set(['pan', 'zoom']):
+        if interactionMode not in {'pan', 'zoom'}:
             interactionMode = 'pan'
         plotConfig = isYaxisInverted, isKeepAspectRatio, interactionMode
         value = dataCoordAtPixelCoordZero, pixelSize, plotConfig

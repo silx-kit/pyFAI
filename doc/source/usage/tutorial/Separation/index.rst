@@ -32,7 +32,6 @@ Finally, there is a way to retrieve all pixels which were masked out by the sigm
    :maxdepth: 1
 
    Separate
-   Wilson
    Laue
    Peakfinder8
    sigma_clip_mask

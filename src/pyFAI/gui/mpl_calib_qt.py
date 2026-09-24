@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -41,7 +40,9 @@ __date__ = "08/10/2025"
 __status__ = "development"
 
 import logging
+
 from .mpl_calib import MplCalibWidget
+
 logger = logging.getLogger(__name__)
 try:
     from silx.gui import qt
@@ -50,8 +51,8 @@ except ImportError:
     qt = None
 
 if qt is not None:
-    from .utils import update_fig, maximize_fig
     from .matplotlib import pyplot
+    from .utils import maximize_fig, update_fig
 
 
 class QtMplCalibWidget(MplCalibWidget):

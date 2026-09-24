@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,11 +33,14 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import fabio
 import logging
-from .utilstest import UtilsTest
+import unittest
+
+import fabio
+
 from ..ext import watershed
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 

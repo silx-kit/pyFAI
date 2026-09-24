@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -28,12 +27,12 @@
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "21/08/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
-import sys
 import codecs
+import sys
 
 
 class ProgressBar:
@@ -79,9 +78,9 @@ class ProgressBar:
             try:
                 import datetime
                 if str(datetime.datetime.now())[5:10] == "02-14":
-                    self.progress_char = u'\u2665'
+                    self.progress_char = '\u2665'
                 else:
-                    self.progress_char = u'\u25A0'
+                    self.progress_char = '\u25A0'
                 _byte = codecs.encode(self.progress_char, encoding)
             except (ValueError, TypeError, LookupError):
                 # In case the char is not supported by the encoding,
@@ -127,17 +126,15 @@ class ProgressBar:
             coef = (1.0 * value) / self.max_value
         percent = round(coef * 100)
         bar_position = int(coef * self.bar_width)
-        if bar_position > self.bar_width:
-            bar_position = self.bar_width
+        bar_position = min(bar_position, self.bar_width)
 
         # line to display
-        line = '\r%15s [%s%s] % 3d%%  %s' % (self.title, self.progress_char * bar_position, ' ' * (self.bar_width - bar_position), percent, message)
+        line = f'\r{self.title!s:>15} [{self.progress_char * bar_position}{" " * (self.bar_width - bar_position)}] {percent: 3d}%  {message}'
 
         # trailing to mask the previous message
         line_size = len(line)
         clean_size = self.last_size - line_size
-        if clean_size < 0:
-            clean_size = 0
+        clean_size = max(clean_size, 0)
         self.last_size = line_size
 
         sys.stdout.write(line + " " * clean_size + "\r")

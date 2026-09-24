@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,14 +33,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2025"
+__date__ = "24/08/2026"
 __status__ = "production"
 
 
-import numpy
 import logging
-from ._common import Detector, SensorConfig, ModuleDetector
+
+import numpy
+
 from ..utils.decorators import deprecated_args
+from ._common import Detector, ModuleDetector, SensorConfig
+
 logger = logging.getLogger(__name__)
 
 #Define sensor used in Maxipix detectors
@@ -113,7 +115,7 @@ class Maxipix(ModuleDetector):
     MAX_SHAPE = (256, 256)
     force_pixel = True
     PIXEL_SIZE = (55e-6, 55e-6)
-    aliases = ["Maxipix 1x1", "Maxipix1x1"]
+    aliases = ("Maxipix 1x1", "Maxipix1x1")
     SENSORS = (Si500,)
 
     def __init__(self, pixel1=55e-6, pixel2=55e-6, max_shape=None, module_size=None, orientation=0, sensor:SensorConfig|None=None):
@@ -139,14 +141,14 @@ class Maxipix(ModuleDetector):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
-    
+
 
 class Maxipix2x2(Maxipix):
     """
     Maxipix 2x2 detector
     """
     MAX_SHAPE = (516, 516)
-    aliases = ["Maxipix 2x2"]
+    aliases = ("Maxipix 2x2",)
 
 
 class Maxipix5x1(Maxipix):
@@ -154,4 +156,4 @@ class Maxipix5x1(Maxipix):
     Maxipix 5x1 detector
     """
     MAX_SHAPE = (256, 1296)
-    aliases = ["Maxipix 5x1"]
+    aliases = ("Maxipix 5x1",)

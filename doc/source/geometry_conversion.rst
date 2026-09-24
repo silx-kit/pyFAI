@@ -1,5 +1,5 @@
 :Author: Carsten Detlefs
-:Date: 16/04/2019
+:Date: 28/08/2026
 :Keywords: geometry conversion from/to pyFAI
 :Target: developers
 
@@ -464,7 +464,7 @@ Detector :math:`D`-matrix
 The pixel size is the same in both notations, :math:`y_{\mathrm{size}} =
 \mathrm{pxsize}_H` and :math:`z_{\mathrm{size}} = \mathrm{pxsize}_V`.
 
-As ``pyFAI`` does not allow for detector flipping, :math:`o_{11}=1`,
+For a detector in its native orientation (3), :math:`o_{11}=1`,
 :math:`o_{22}=-1` (because the sign of the horizontal axis is inverted
 between ``ImageD11`` and ``pyFAI``) and :math:`o_{12}=o_{21}=0`. For the
 detector setup described above, with :math:`d_V` increasing to the top
@@ -481,6 +481,101 @@ becomes
        0 & 0 \\ -\mathrm{pxsize}_H & 0 \\ 0 & \mathrm{pxsize}_V
      \end{bmatrix}.
      \label{eq-dmatrixImageD11}\end{aligned}
+
+Detector orientation
+--------------------
+
+Since version 2023.12, ``pyFAI`` describes the position of the origin of
+the image with the *orientation* of the detector, an integer from 1 to 4
+following the EXIF nomenclature, 3 being the native one. ``ImageD11``
+stores the very same information in the flip matrix :math:`O`, so the
+two are in direct correspondence: mirroring an axis changes the sign of
+the corresponding diagonal term, on top of the :math:`o_{22}=-1` which
+the two axis conventions already require.
+
+============  ==============  ==============  ==============
+orientation   mirrored axis   :math:`o_{11}`  :math:`o_{22}`
+============  ==============  ==============  ==============
+1             slow and fast   :math:`-1`      :math:`+1`
+2             slow            :math:`-1`      :math:`-1`
+3 (native)    none            :math:`+1`      :math:`-1`
+4             fast            :math:`+1`      :math:`+1`
+============  ==============  ==============  ==============
+
+There is however a subtlety. ``pyFAI`` mirrors the pixel *index*, i.e.
+about the center of the detector, while ``ImageD11`` mirrors the
+*coordinate* through :math:`O`, i.e. about the beam center. The beam
+center of a mirrored axis therefore has to be re-expressed, using the
+number of pixels :math:`n_V` and :math:`n_H` of the detector:
+
+.. math::
+
+   \begin{aligned}
+     z_{\mathrm{center}} & \rightarrow n_V - 1 - z_{\mathrm{center}}
+     & \textrm{if the slow axis is mirrored}
+     \\
+     y_{\mathrm{center}} & \rightarrow n_H - 1 - y_{\mathrm{center}}
+     & \textrm{if the fast axis is mirrored}\end{aligned}
+
+The transposed orientations 5 to 8, which would need the off-diagonal
+terms of :math:`O`, are not supported by ``pyFAI``.
+
+Both formulas above are expressed in pixels, which is the natural unit of
+:math:`z_{\mathrm{center}}` and :math:`y_{\mathrm{center}}` and is also
+the only one ``ImageD11`` can represent, its geometry assuming a single
+pixel size. The same mirroring expressed in ``pyFAI``'s own parameters,
+which is what :func:`pyFAI.geometry.utils.convert_orientation` does, has
+to be written in meter instead, because :math:`\mathit{poni}_1` and
+:math:`\mathit{poni}_2` are distances measured from the corner of pixel
+(0, 0):
+
+.. math::
+
+   \begin{aligned}
+     \mathit{poni}_1 & \rightarrow A_1 + P_1 - \mathit{poni}_1,
+     \quad \mathit{rot}_2 \rightarrow -\mathit{rot}_2
+     & \textrm{if the slow axis is mirrored}
+     \\
+     \mathit{poni}_2 & \rightarrow A_2 + P_2 - \mathit{poni}_2,
+     \quad \mathit{rot}_1 \rightarrow -\mathit{rot}_1
+     & \textrm{if the fast axis is mirrored}\end{aligned}
+
+where :math:`A` is the corner of pixel (0, 0) --- the point the PONI is
+measured from --- and :math:`P` the corner the mirror maps it onto.
+Neither can be assumed. :math:`P` is *not* the number of pixels times
+their size as soon as the pixels differ in size, since modular detectors
+have wider pixels along the module borders: ``Xpad_flat`` reaches 25 mm
+beyond the naive product along its slow axis. And :math:`A` is not at the
+origin on a spline-corrected detector, where the corner of pixel (0, 0)
+is displaced like any other point of the sensor.
+
+Both are read from the array of pixel corners by
+:func:`pyFAI.geometry.utils.detector_corner`. Which vertex of which pixel
+to read follows the mirrored axes, using the vertex numbering of
+``get_pixel_corners`` --- A at (i, j), B at (i+1, j), C at (i+1, j+1) and
+D at (i, j+1):
+
+=================  ==============  ========
+mirrored axis      pixel           vertex
+=================  ==============  ========
+none               (0, 0)          A
+slow               (-1, 0)         B
+fast               (0, -1)         D
+slow and fast      (-1, -1)        C
+=================  ==============  ========
+
+A specific vertex has to be picked, rather than an extremum over the
+pixel or over the whole array: the pixels of a spline-corrected detector
+are distorted quadrilaterals, so nothing guarantees that the vertex which
+bounds the sensor is also the extreme one along a given axis. On the
+reference FReLoN spline the two differ by up to 6 µm.
+
+Mirroring puts the origin of the frame exactly on the vertex used. On a
+spline-corrected detector --- the only kind whose corner of pixel (0, 0)
+does not sit at the origin --- converting to another orientation and back
+therefore does not restore the PONI exactly. That small difference is
+legitimate: the mirrored detector is not the same object, and only its
+own corner is at the origin of its own frame.
 
 Coordinates
 -----------
@@ -732,13 +827,15 @@ conversion from ``pyFAI`` to ``ImageD11``
      \left(
      \mathrm{poni}_2 - L \tan(\theta_1)
      \right)
+     - \frac{1}{2}
      \\
      z_{\mathrm{center}}
      & =
      \frac{1}{\mathrm{pxsize}_V}
      \left(
      \mathrm{poni}_1 + L \frac{\tan(\theta_2)}{\cos(\theta_1)}
-     \right),\end{aligned}
+     \right)
+     - \frac{1}{2},\end{aligned}
 
 and for the conversion from ``ImageD11`` to ``pyFAI``
 
@@ -751,11 +848,37 @@ and for the conversion from ``ImageD11`` to ``pyFAI``
      \\
      \mathrm{poni}_1
      & =
-     -\Delta \sin(\theta_y) + \mathrm{pxsize}_V z_{\mathrm{center}}
+     -\Delta \sin(\theta_y)
+     + \mathrm{pxsize}_V \left(z_{\mathrm{center}} + \frac{1}{2}\right)
      \\
      \mathrm{poni}_2
      & =
-     -\Delta \cos(\theta_y) \sin(\theta_z) + \mathrm{pxsize}_H y_{\mathrm{center}}.\end{aligned}
+     -\Delta \cos(\theta_y) \sin(\theta_z)
+     + \mathrm{pxsize}_H \left(y_{\mathrm{center}} + \frac{1}{2}\right).\end{aligned}
+
+The half pixel in the two pairs of equations above comes from the pixel
+coordinate convention: in ``pyFAI`` a pixel spans :math:`[n, n+1[` so
+its center sits at :math:`n+1/2`, while ``ImageD11`` counts the beam
+center from the center of the first pixel. On top of that, the center of
+a mirrored axis has to be re-expressed as described in the section on
+the detector orientation, the orientation being read back from the flip
+matrix :math:`O` when converting towards ``pyFAI``.
+
+Azimuthal angle
+---------------
+
+The two programs do not measure the azimuth from the same axis, nor in
+the same direction, since the horizontal transverse axis is inverted:
+
+.. math::
+
+   \begin{aligned}
+     \chi_{\mathtt{pyFAI}} & = 90^{\circ} - \eta_{\mathtt{ImageD11}}\end{aligned}
+
+Both implementations, and this correspondence, are checked in
+``pyFAI.test.test_orientation`` for the four orientations: the positions
+in the laboratory frame agree down to the numerical noise, far below the
+half pixel which is the meaningful scale here.
 
 .. [1]
    May his noodly appendages forever touch you!

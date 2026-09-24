@@ -37,7 +37,7 @@ coordinates.
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "07/01/2025"
+__date__ = "28/08/2026"
 __copyright__ = "2011-2020, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -77,10 +77,11 @@ cdef inline double f_t1(double p1, double p2, double p3,
     :param p3: distance sample - PONI
     :param sinRot1,sinRot2,sinRot3: sine of the angles
     :param cosRot1,cosRot2,cosRot3: cosine of the angles
-    :param orientation: value 1-4
+    :param orientation: unused. The orientation is fully handled at the detector
+        level, which remaps the pixel index onto the physical position; applying
+        it again here would flip the geometry a second time.
     """
-    cdef double orient = -1.0 if (orientation==1 or orientation==2) else 1.0
-    return orient*(p1 * cosRot2 * cosRot3 +
+    return (p1 * cosRot2 * cosRot3 +
             p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) -
             p3 * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3))
 
@@ -97,10 +98,11 @@ cdef inline double f_t2(double p1, double p2, double p3,
     :param p3: distance sample - PONI
     :param sinRot1,sinRot2,sinRot3: sine of the angles
     :param cosRot1,cosRot2,cosRot3: cosine of the angles
-    :param orientation: value 1-4
+    :param orientation: unused. The orientation is fully handled at the detector
+        level, which remaps the pixel index onto the physical position; applying
+        it again here would flip the geometry a second time.
     """
-    cdef double orient = -1.0 if (orientation==1 or orientation==4) else 1.0
-    return orient*(p1 * cosRot2 * sinRot3 +
+    return (p1 * cosRot2 * sinRot3 +
             p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) -
             p3 * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3))
 

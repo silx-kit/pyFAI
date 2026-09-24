@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: pyFAI
 #             https://github.com/silx-kit/silx
@@ -27,6 +26,7 @@ __license__ = "MIT"
 __date__ = "30/10/2024"
 
 import unittest
+
 from ...test.utilstest import UtilsTest
 
 
@@ -34,15 +34,17 @@ def suite():
     testSuite = unittest.TestSuite()
 
     if UtilsTest.opencl:
-        from . import test_addition
-        from . import test_preproc
-        from . import test_ocl_histo
-        from . import test_ocl_azim_csr
-        from . import test_ocl_azim_lut
-        from . import test_peak_finder
-        from . import test_ocl_sort
-        from . import test_openCL
-        from . import test_collective
+        from . import (
+            test_addition,
+            test_collective,
+            test_ocl_azim_csr,
+            test_ocl_azim_lut,
+            test_ocl_histo,
+            test_ocl_sort,
+            test_openCL,
+            test_peak_finder,
+            test_preproc,
+        )
         testSuite.addTests(test_addition.suite())
         testSuite.addTests(test_preproc.suite())
         testSuite.addTests(test_openCL.suite())

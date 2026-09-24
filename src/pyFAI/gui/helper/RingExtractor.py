@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2026 European Synchrotron Radiation Facility
@@ -25,20 +24,20 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/03/2026"
+__date__ = "25/08/2026"
 
 import logging
-import numpy
 
+import numpy
 from silx.gui import qt
 from silx.image import marchingsquares
 
+from ... import units
 from ...containers import FixedParameters
-from ...geometryRefinement import GeometryRefinement
 from ...geometry import Geometry
+from ...geometryRefinement import GeometryRefinement
 from ..peak_picker import PeakPicker
 from . import model_transform
-from ... import units
 
 _logger = logging.getLogger(__name__)
 
@@ -52,7 +51,7 @@ class RingExtractorThread(qt.QThread):
 
     def __init__(self, parent):
         """Constructor"""
-        super(RingExtractorThread, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.__image = None
         self.__mask = None
@@ -88,7 +87,7 @@ class RingExtractorThread(qt.QThread):
         try:
             result = self.runProcess()
         except Exception as e:
-            _logger.error("Backtrace", exc_info=True)
+            _logger.exception("Backtrace")
             self.__error = str(e)
             self.__isAborted = True
         else:
@@ -395,9 +394,8 @@ class RingExtractorThread(qt.QThread):
         ms = marchingsquares.MarchingSquaresMergeImpl(ttha, self.__mask, use_minmax_cache=True)
 
         for i in range(tth.size):
-            if ringNumbers is not None:
-                if i not in ringNumbers:
-                    continue
+            if ringNumbers is not None and i not in ringNumbers:
+                continue
             if rings >= maxRings:
                 break
             mask = numpy.logical_and(ttha >= tth_min[i], ttha < tth_max[i])
@@ -418,7 +416,7 @@ class RingExtractorThread(qt.QThread):
                 # Coords in points are y, x
                 points = ms.find_pixels(tth[i])
 
-                seeds = set((i[0], i[1]) for i in points if mask2[i[0], i[1]])
+                seeds = {(i[0], i[1]) for i in points if mask2[i[0], i[1]]}
                 # Max number of points: 360 points for a full circle
                 azimuthal = chia[points[:, 0].clip(0, peakPicker.data.shape[0]), points[:, 1].clip(0, peakPicker.data.shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -32,16 +31,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "20/09/2026"
 
-import unittest
-import numpy
 import logging
+import unittest
+
 import fabio
-from .utilstest import UtilsTest
-from ..ext import _convolution
+import numpy
 import scipy.ndimage
 import scipy.signal
+
+from ..ext import _convolution
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -69,18 +71,18 @@ class TestConvolution(unittest.TestCase):
 
     def test_horizontal_convolution(self):
         gauss = self.gauss.astype(numpy.float32)
-        ref = scipy.ndimage.filters.convolve1d(self.lena, self.gauss, axis=-1)
+        ref = scipy.ndimage.convolve1d(self.lena, self.gauss, axis=-1)
         obt = _convolution.horizontal_convolution(self.lena, gauss)
         self.assertTrue(numpy.allclose(ref, obt), "horizontal filtered images are the same")
 
     def test_vertical_convolution(self):
         gauss = self.gauss.astype(numpy.float32)
-        ref = scipy.ndimage.filters.convolve1d(self.lena, self.gauss, axis=0)
+        ref = scipy.ndimage.convolve1d(self.lena, self.gauss, axis=0)
         obt = _convolution.vertical_convolution(self.lena, gauss)
         self.assertTrue(numpy.allclose(ref, obt), "vertical filtered images are the same")
 
     def test_gaussian_filter(self):
-        ref = scipy.ndimage.filters.gaussian_filter(self.lena, self.sigma)
+        ref = scipy.ndimage.gaussian_filter(self.lena, self.sigma)
         obt = _convolution.gaussian_filter(self.lena, self.sigma)
         self.assertTrue(numpy.allclose(ref, obt), "gaussian filtered images are the same")
 

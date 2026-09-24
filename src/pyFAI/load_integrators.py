@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,12 +33,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "25/08/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 
+# Deprecation shim: re-export everything from the new location
 from .integrator.load_engines import *  # noqa: F403
 from .utils.decorators import deprecated_warning
+
 deprecated_warning("Module", "pyFAI.load_integrators", replacement="pyFAI.integrator.load_engines",
                    since_version="2024.10", only_once=False, skip_backtrace_count=1)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,12 +31,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "24/08/2026"
 
-import unittest
 import logging
+import unittest
+
 import pyFAI.spline
+
 from . import utilstest
+
 logger = logging.getLogger(__name__)
 
 
@@ -74,7 +76,7 @@ class TestSpline(utilstest.ParametricTestCase):
         "Test the half_ccd back and forth"
         spline_file = utilstest.UtilsTest.getimage("halfccd.spline")
         spline = pyFAI.spline.Spline(spline_file)
-        logger.debug("xmin %s, xmax %s, ymin %s, ymax",
+        logger.debug("xmin %s, xmax %s, ymin %s, ymax %s",
                      spline.xmin, spline.xmax, spline.ymin, spline.ymax)
         spline.spline2array()
         logger.debug("delta_x: %s", spline.xDispArray.shape)

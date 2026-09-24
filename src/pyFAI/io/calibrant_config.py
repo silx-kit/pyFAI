@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -42,7 +41,8 @@ import json
 import logging
 from math import isfinite
 from dataclasses import field
-from ..containers import Reflection, Miller, dataclass
+
+from ..containers import Miller, Reflection, dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -140,10 +140,10 @@ class CalibrantConfig:
                 out.append(f"{ref.dspacing:12.8f} # {str(ref.hkl):10s} {float(ref.intensity)}")
             elif ref.multiplicity:
                 out.append(
-                    f"{ref.dspacing:12.8f} # {str(ref.hkl):10s} {ref.multiplicity:2d}"
+                    f"{ref.dspacing:12.8f} # {ref.hkl!s:10s} {ref.multiplicity:2d}"
                 )
             elif ref.hkl:
-                out.append(f"{ref.dspacing:12.8f} # {str(ref.hkl):10s}")
+                out.append(f"{ref.dspacing:12.8f} # {ref.hkl!s:10s}")
             else:
                 out.append(f"{ref.dspacing:12.8f}")
         return os.linesep.join(out)

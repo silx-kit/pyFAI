@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -36,11 +35,14 @@ __license__ = "MIT"
 __copyright__ = "2024-2024 European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
 import logging
-from .utilstest import UtilsTest
+import unittest
+
+import numpy
+
 from .. import load
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,7 +50,7 @@ class TestUncertainties(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super(TestUncertainties, cls).setUpClass()
+        super().setUpClass()
         cls.ai = load({"detector": "Pilatus 100k",
                        "dist": 0.1,
                        "poni1": 0.01,
@@ -60,7 +62,7 @@ class TestUncertainties(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        super(TestUncertainties, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai = cls.img = cls.npt = None
 
     def _test(self, split="no", error_model="poisson",

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,18 +34,21 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "10/09/2026"
 
-import unittest
-import platform
-import numpy
 import logging
-from .utilstest import UtilsTest
-from ..integrator.azimuthal import AzimuthalIntegrator
+import platform
+import unittest
+
+import numpy
+
 from ..detectors import Detector
-from ..utils import mathutil
 from ..ext import splitBBox, splitPixel
+from ..integrator.azimuthal import AzimuthalIntegrator
 from ..method_registry import IntegrationMethod
+from ..utils import mathutil
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -104,7 +106,7 @@ class TestSplitPixel(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestSplitPixel, cls).setUpClass()
+        super().setUpClass()
         img = numpy.zeros((512, 512))
         for i in range(1, 6):
             img[i * 100, i * 100] = 1
@@ -122,7 +124,7 @@ class TestSplitPixel(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestSplitPixel, cls).tearDownClass()
+        super().tearDownClass()
         cls.results = None
 
     def test_new_gen_algoritms(self):
@@ -208,7 +210,7 @@ class TestSplitBBoxNg(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestSplitBBoxNg, cls).setUpClass()
+        super().setUpClass()
 
         #fix seed, decrease noise while testing:
         rng = UtilsTest.get_rng()
@@ -262,7 +264,7 @@ class TestSplitBBoxNg(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestSplitBBoxNg, cls).tearDownClass()
+        super().tearDownClass()
         cls.results = None
         cls.img = None
 
@@ -341,12 +343,77 @@ class TestSplitBBoxNg(unittest.TestCase):
 #         self.assertEqual(abs(int_legacy - int_ng).max(), 0, "intensity is the same")
 
 
+    def test_orientation(self):
+        """The sign of the area must not depend on the orientation of the detector
+
+        Orientations 2 and 4 mirror a single axis, hence they reverse the way the corners of
+        a pixel are travelled and the sign of its algebraic area, on which the detection of
+        the azimuthal discontinuity relies.
+        """
+        for orientation in (1, 2, 3, 4):
+            detector = Detector(1e-3, 1e-3, max_shape=(5, 5), orientation=orientation)
+            ai = AzimuthalIntegrator(1, 2.2e-3, 2.8e-3, detector=detector)
+            pos = ai.array_from_unit(typ="corner", unit="r_mm", scale=True).astype(splitPixel.position_d)
+            area = []
+            for i0 in range(pos.shape[0]):
+                for i1 in range(pos.shape[1]):
+                    area.append(splitPixel.recenter(pos[i0, i1], chiDiscAtPi=1,
+                                                    orientation=orientation))
+            self.assertLessEqual(max(area), 0,
+                                 f"all areas are negative with orientation {orientation}")
+
+
+class TestOrientationSplitting(unittest.TestCase):
+    """The full pixel splitting must not depend on the orientation of the detector"""
+
+    def test_full_split_2d(self):
+        """Non-regression test on the detection of the azimuthal discontinuity
+
+        This detection relies on the sign of the algebraic area of the pixel, which is
+        reversed by the orientations mirroring a single axis (2 and 4). Those orientations
+        used to have all their pixels considered as straddling the discontinuity, hence
+        spread over a wide azimuthal band.
+
+        Nota: every orientation is compared with *itself*, with and without the flag,
+        rather than with the other orientations, because a residual asymmetry remains
+        between the orientations which preserve the order of the corners (1 and 3) and
+        those which reverse it (2 and 4). On a perfectly centred geometry — 128x128 pixels
+        of 100 µm, 10 cm away, PONI in the middle of the detector, 90 azimuthal bins — the
+        number of filled bins is 7244 for the orientations 1 and 3 against 7176 for 2 and 4.
+        Those 68 bins are of the order of the 64 pixels which really straddle the
+        discontinuity in that geometry: `_recenter_helper` shifts their azimuth by one
+        period when it is negative, which places them on one side or the other, and this
+        treatment is not symmetric under the mirroring of the azimuth. The pixels away from
+        the discontinuity, which are the overwhelming majority, are unaffected.
+        """
+        shape = (64, 64)
+        image = numpy.ones(shape, dtype=numpy.float32)
+        for orientation in (1, 2, 3, 4):
+            detector = Detector(1e-4, 1e-4, max_shape=shape, orientation=orientation)
+            ai = AzimuthalIntegrator(0.1, 3e-3, 3.5e-3, detector=detector, wavelength=1e-10)
+            pos = ai.array_from_unit(shape, "corner", "q_nm^-1", scale=False)
+            filled = {}
+            for flag in (0, orientation):
+                res = splitPixel.fullSplit2D_engine(pos=pos, weights=image, bins=(50, 60),
+                                                    orientation=flag)
+                signal = numpy.nan_to_num(numpy.asarray(res.signal))
+                filled[flag] = int((signal > 0).sum())
+            if orientation in (1, 3):
+                self.assertEqual(filled[0], filled[orientation],
+                                 f"orientation {orientation} keeps the order of the corners")
+            else:
+                self.assertLess(filled[orientation], filled[0],
+                                f"orientation {orientation}: the pixels used to be spread over "
+                                "a wider azimuthal band")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestSplitPixel))
     testsuite.addTest(loader(TestSplitBBoxNg))
     testsuite.addTest(loader(TestRecenter))
+    testsuite.addTest(loader(TestOrientationSplitting))
     return testsuite
 
 

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,35 +24,33 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/04/2026"
+__date__ = "25/08/2026"
 
-import logging
-import numpy
 import functools
+import logging
 import os
 
-from silx.gui import qt
-from silx.gui import icons
-from silx.gui import colors
+import numpy
 import silx.gui.plot
-from silx.gui.plot.tools import PositionInfo
+from silx.gui import colors, icons, qt
 from silx.gui.plot.items.shape import Shape
-import pyFAI.utils
-import pyFAI.massif
+from silx.gui.plot.tools import PositionInfo
+
 import pyFAI.control_points
-from .AbstractCalibrationTask import AbstractCalibrationTask
-from ..helper.RingExtractor import RingExtractorThread
-from ..helper.SynchronizeRawView import SynchronizeRawView
-from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
+import pyFAI.massif
+import pyFAI.utils
+
 from ..CalibrationContext import CalibrationContext
-from ..helper.MarkerManager import MarkerManager
-from ..helper import ProcessingWidget
-from ..utils import FilterBuilder
-from ..utils import validators
-from ..helper import model_transform
-from ..widgets.ColoredCheckBox import ColoredCheckBox
-from ..widgets.AdvancedSpinBox import AdvancedSpinBox
 from ..dialog import MessageBox
+from ..helper import ProcessingWidget, model_transform
+from ..helper.MarkerManager import MarkerManager
+from ..helper.RingExtractor import RingExtractorThread
+from ..helper.SynchronizePlotBackground import SynchronizePlotBackground
+from ..helper.SynchronizeRawView import SynchronizeRawView
+from ..utils import FilterBuilder, validators
+from ..widgets.AdvancedSpinBox import AdvancedSpinBox
+from ..widgets.ColoredCheckBox import ColoredCheckBox
+from .AbstractCalibrationTask import AbstractCalibrationTask
 
 _logger = logging.getLogger(__name__)
 
@@ -61,7 +58,7 @@ _logger = logging.getLogger(__name__)
 class _PeakSelectionUndoCommand(qt.QUndoCommand):
 
     def __init__(self, parent, model, oldState, newState):
-        super(_PeakSelectionUndoCommand, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.__peakPickingModel = model
         self.__oldState = list(oldState)
         self.__newState = list(newState)
@@ -90,7 +87,7 @@ class _PeakSelectionUndoCommand(qt.QUndoCommand):
 class _PeakSelectionTableView(qt.QTableView):
 
     def __init__(self, parent):
-        super(_PeakSelectionTableView, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         ringDelegate = _SpinBoxItemDelegate(self)
         palette = qt.QPalette(self.palette())
@@ -132,7 +129,7 @@ class _PeakSelectionTableView(qt.QTableView):
                 selectionModel.clear()
                 event.accept()
                 return
-        return super(_PeakSelectionTableView, self).mousePressEvent(event)
+        return super().mousePressEvent(event)
 
     def setModel(self, model):
         if self.model() is not None:
@@ -141,7 +138,7 @@ class _PeakSelectionTableView(qt.QTableView):
             m.rowsRemoved.disconnect(self.__onRowRemoved)
             m.modelReset.disconnect(self.__openPersistantViewOnModelReset)
 
-        super(_PeakSelectionTableView, self).setModel(model)
+        super().setModel(model)
 
         if self.model() is not None:
             m = self.model()
@@ -223,7 +220,7 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
     def __init__(self, parent, peakSelectionModel):
         if not isinstance(parent, PeakPickingTask):
             raise RuntimeError(f"Parent widget is not `pyFAI.gui.tasks.PeakPickingTask.PeakPickingTask` instance, got {type(parent)}")
-        super(_PeakSelectionTableModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.__peakSelectionModel = peakSelectionModel
         peakSelectionModel.structureChanged.connect(self.__invalidateModel)
         peakSelectionModel.contentChanged.connect(self.__invalidateContentModel)
@@ -257,16 +254,14 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
         if orientation != qt.Qt.Horizontal:
             return None
         if role != qt.Qt.DisplayRole:
-            return super(_PeakSelectionTableModel, self).headerData(section, orientation, role)
+            return super().headerData(section, orientation, role)
         if section == self.ColumnName:
             return "Name"
         elif section == self.ColumnPeaksCount:
             return "Peaks"
         elif section == self.ColumnRingNumber:
             return "Ring number"
-        elif section == self.ColumnEnabled:
-            return ""
-        elif section == self.ColumnControl:
+        elif section == self.ColumnEnabled or section == self.ColumnControl:
             return ""
         return None
 
@@ -312,10 +307,9 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
                     isChecked = False
                 self.requestChangeEnable.emit(peakModel, isChecked)
                 return True
-        elif role == qt.Qt.EditRole:
-            if column == self.ColumnRingNumber:
-                self.requestRingChange.emit(peakModel, value)
-                return True
+        elif role == qt.Qt.EditRole and column == self.ColumnRingNumber:
+            self.requestRingChange.emit(peakModel, value)
+            return True
         return False
 
     def removeRows(self, row, count, parent=qt.QModelIndex()):
@@ -349,7 +343,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
     """Emitted when a mouse interaction requesteing to brush peaks on shape."""
 
     def __init__(self, parent):
-        super(_PeakPickingPlot, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setKeepDataAspectRatio(True)
         self.setAxesDisplayed(False)
 
@@ -395,13 +389,10 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.__mode = mode
 
         if mode == self.PEAK_SELECTION_MODE:
-            super(_PeakPickingPlot, self).setInteractiveMode('zoom')
-        elif mode == self.ERASOR_MODE:
+            super().setInteractiveMode('zoom')
+        elif mode == self.ERASOR_MODE or mode == self.BRUSH_MODE:
             color = "black"
-            super(_PeakPickingPlot, self).setInteractiveMode('draw', shape='rectangle', source=self, color=color)
-        elif mode == self.BRUSH_MODE:
-            color = "black"
-            super(_PeakPickingPlot, self).setInteractiveMode('draw', shape='rectangle', source=self, color=color)
+            super().setInteractiveMode('draw', shape='rectangle', source=self, color=color)
         else:
             raise RuntimeError(f"Wrong mode, got {mode} not recognized")
 
@@ -448,7 +439,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
                 event.ignore()
 
             return True
-        return super(_PeakPickingPlot, self).event(event)
+        return super().event(event)
 
     def __onPlotEvent(self, event):
         if self.__mode == self.PEAK_SELECTION_MODE:
@@ -628,7 +619,7 @@ class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
 
     def createEditor(self, parent, option, index):
         if not index.isValid():
-            return super(_SpinBoxItemDelegate, self).createEditor(parent, option, index)
+            return super().createEditor(parent, option, index)
 
         editor = AdvancedSpinBox(parent=parent)
         if self.__palette is not None:
@@ -720,7 +711,7 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
 
     def createEditor(self, parent, option, index):
         if not index.isValid():
-            return super(_PeakToolItemDelegate, self).createEditor(parent, option, index)
+            return super().createEditor(parent, option, index)
 
         editor = qt.QToolBar(parent=parent)
         editor.setIconSize(qt.QSize(20, 20))
@@ -934,15 +925,14 @@ class _RingSelectionBehaviour(qt.QObject):
             index = indexes[0]
             peak = model.peakObject(index)
 
-        if not self.__newRingOption.isChecked():
+        if not self.__newRingOption.isChecked() and peak is not None:
             # It has to be updated
-            if peak is not None:
-                self.__spinnerRing.valueChanged.disconnect(self.__spinerRingChanged)
-                try:
-                    ringNumber = peak.ringNumber()
-                    self.__spinnerRing.setValue(ringNumber)
-                finally:
-                    self.__spinnerRing.valueChanged.connect(self.__spinerRingChanged)
+            self.__spinnerRing.valueChanged.disconnect(self.__spinerRingChanged)
+            try:
+                ringNumber = peak.ringNumber()
+                self.__spinnerRing.setValue(ringNumber)
+            finally:
+                self.__spinnerRing.valueChanged.connect(self.__spinerRingChanged)
 
     def __spinerRingChanged(self):
         """Called when the spinner displaying the selected ring changes."""
@@ -1083,7 +1073,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             if i == 0:
                 i = 10
             action = qt.QAction(self)
-            action.setText("Select ring %d" % i)
+            action.setText(f"Select ring {i}")
 
             def selectRing(ringNumber):
                 self.__ringSelection.selectRing(ringNumber)
@@ -1114,13 +1104,13 @@ class PeakPickingTask(AbstractCalibrationTask):
 
     def __onPlotModeChanged(self, owner):
         # TODO: This condition should not be reached like that
-        if owner is not self.__plot:
+        if (owner is not self.__plot and
+                not self.__arcSelectionMode.isChecked() and
+                not self.__ringSelectionMode.isChecked() and
+                not self.__peakSelectionMode.isChecked()):
             # Here a default plot tool is triggered
             # Set back the default tool
-            if (not self.__arcSelectionMode.isChecked() and
-                    not self.__ringSelectionMode.isChecked() and
-                    not self.__peakSelectionMode.isChecked()):
-                self.__arcSelectionMode.trigger()
+            self.__arcSelectionMode.trigger()
 
     def __createSavePeakDialog(self):
         dialog = CalibrationContext.instance().createFileDialog(self)
@@ -1357,27 +1347,46 @@ class PeakPickingTask(AbstractCalibrationTask):
         pass
 
     def __createMassif(self, reconstruct=False):
-        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+        """Create the Massif used to pick peaks around a click.
+
+        :return: a Massif instance, or None if there is no image or if the
+            computation failed (e.g. mask and image shapes mismatch when the
+            wrong detector was selected)
+        """
         experimentSettings = self.model().experimentSettingsModel()
         image = experimentSettings.image().value()
         mask = experimentSettings.mask().value()
         if image is None:
             return None
-        massif = pyFAI.massif.Massif(image, mask)
-        massif.get_labeled_massif(reconstruct=reconstruct)
-        qt.QApplication.restoreOverrideCursor()
+        qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
+        try:
+            massif = pyFAI.massif.Massif(image, mask)
+            massif.get_labeled_massif(reconstruct=reconstruct)
+        except Exception as e:
+            if mask is not None and mask.shape != image.shape[:2]:
+                title = ("Error while preparing peak picking: the mask shape "
+                         f"{mask.shape} does not match the image shape {image.shape[:2]}. "
+                         "Check the detector selected in the experiment settings.")
+            else:
+                title = "Error while preparing peak picking"
+            MessageBox.exception(self, title, e, _logger)
+            return None
+        finally:
+            qt.QApplication.restoreOverrideCursor()
         return massif
 
     def __getMassif(self):
         if self.__ringSelectionMode.isChecked():
             if self.__massifReconstructed is None:
                 self.__massifReconstructed = self.__createMassif(reconstruct=True)
-            self.__massifReconstructed.log_info = False
+            if self.__massifReconstructed is not None:
+                self.__massifReconstructed.log_info = False
             return self.__massifReconstructed
         elif self.__arcSelectionMode.isChecked() or self.__peakSelectionMode.isChecked():
             if self.__massif is None:
                 self.__massif = self.__createMassif()
-            self.__massif.log_info = False
+            if self.__massif is not None:
+                self.__massif.log_info = False
             return self.__massif
         else:
             raise RuntimeError("No selection mode defined")
@@ -1390,7 +1399,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         massif = self.__getMassif()
         if massif is None:
             # Nothing to pick
-            return
+            return []
         points = massif.find_peaks([y, x], stdout=None)
         if len(points) == 0:
             # toleration
@@ -1398,12 +1407,10 @@ class PeakPickingTask(AbstractCalibrationTask):
 
             # clamp min to avoid negative values
             ymin = y - toleration
-            if ymin < 0:
-                ymin = 0
+            ymin = max(ymin, 0)
             ymax = y + toleration + 1
             xmin = x - toleration
-            if xmin < 0:
-                xmin = 0
+            xmin = max(xmin, 0)
             xmax = x + toleration + 1
 
             data = image[ymin:ymax, xmin:xmax]
@@ -1451,7 +1458,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             peak.mergeCoords(peakModel)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, peakSelectionModel, oldState, newState)
-        command.setText("add peak %s" % peakModel.name())
+        command.setText(f"add peak {peakModel.name()}")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
@@ -1536,7 +1543,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.model().peakSelectionModel().remove(peakModel)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
-        command.setText("remove peak %s" % peakModel.name())
+        command.setText(f"remove peak {peakModel.name()}")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
@@ -1547,7 +1554,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
         action = "enable" if value else "disable"
-        command.setText("%s ring %s" % (action, peakModel.name()))
+        command.setText(f"{action} ring {peakModel.name()}")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
@@ -1561,7 +1568,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             peakModel.setColor(color)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
-        command.setText("update ring number of %s" % peakModel.name())
+        command.setText(f"update ring number of {peakModel.name()}")
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
@@ -1747,7 +1754,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         role = thread.userData("ROLE")
         if role == self.EXTRACT_ALL:
             # Remove everything and recreate everything
-            disabledRings = set([p.ringNumber() for p in peakSelectionModel if not p.isEnabled()])
+            disabledRings = {p.ringNumber() for p in peakSelectionModel if not p.isEnabled()}
             peakSelectionModel.clear()
             for ringNumber in sorted(newPeaks.keys()):
                 coords = newPeaks[ringNumber]
@@ -1758,7 +1765,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         elif role == self.EXTRACT_EXISTING:
             # Remove everything and recreate everything with the same name/color...
             ringNumbers = sorted(newPeaks.keys())
-            disabledRings = set([p.ringNumber() for p in peakSelectionModel if not p.isEnabled()])
+            disabledRings = {p.ringNumber() for p in peakSelectionModel if not p.isEnabled()}
             peaks = [peakSelectionModel.peakFromRingNumber(n) for n in ringNumbers]
             peakSelectionModel.clear()
             for prevousRing in peaks:

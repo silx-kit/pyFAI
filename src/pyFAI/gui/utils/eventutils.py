@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (c) 2017-2018 European Synchrotron Radiation Facility
@@ -29,11 +28,11 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "16/10/2020"
 
-from silx.gui import qt
-from silx.gui.utils import concurrent
-
 import logging
 import types
+
+from silx.gui import qt
+from silx.gui.utils import concurrent
 
 _logger = logging.getLogger(__name__)
 

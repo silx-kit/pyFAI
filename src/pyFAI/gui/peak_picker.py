@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,23 +32,25 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/10/2025"
+__date__ = "25/08/2026"
 __status__ = "production"
 
-import os
 import copy
-import threading
 import logging
 import operator
-import numpy
+import os
+import threading
+
 import fabio
-from ..control_points import ControlPoints
-from ..calibrant import CALIBRANT_FACTORY
+import numpy
+
 from ..blob_detection import BlobDetection
-from ..massif import Massif
+from ..calibrant import CALIBRANT_FACTORY
+from ..control_points import ControlPoints
 from ..detectors import Detector
 from ..ext.reconstruct import reconstruct
 from ..ext.watershed import InverseWatershed
+from ..massif import Massif
 from ..utils.callback import dangling_callback
 from .mpl_calib import MplCalibWidget
 
@@ -61,8 +62,8 @@ except ImportError:
     qt = None
 
 if qt is not None:
-    from .matplotlib import pylab
     from . import utils as gui_utils
+    from .matplotlib import pylab
 
 
 def preprocess_image(data, log=False, clip=0.001):
@@ -81,27 +82,27 @@ def preprocess_image(data, log=False, clip=0.001):
     # skip lowest and highest per mille of image values via vmin/vmax
     sorted_list = data_disp.flatten()  # explicit copy
     sorted_list.sort()
-    show_min = sorted_list[int(round(clip * (sorted_list.size - 1)))]
-    show_max = sorted_list[int(round((1.0 - clip) * (sorted_list.size - 1)))]
+    show_min = sorted_list[round(clip * (sorted_list.size - 1))]
+    show_max = sorted_list[round((1.0 - clip) * (sorted_list.size - 1))]
     bounds = (show_min, show_max)
     return  data_disp, bounds
 
 
-class PeakPicker(object):
+class PeakPicker:
     """
     This class is in charge of peak picking, i.e. find bragg spots in the image
     Two methods can be used : massif or blob
     """
 
-    VALID_METHODS = ["massif", "blob", "watershed"]
+    VALID_METHODS = ("massif", "blob", "watershed")
 
-    help = ["Please select rings on the diffraction image. In parenthesis, some modified shortcuts for single button mouse (Apple):",
+    help = ("Please select rings on the diffraction image. In parenthesis, some modified shortcuts for single button mouse (Apple):",
             " * Right-click (click+n):         try an auto find for a ring",
             " * Right-click + Ctrl (click+b):  create new group with one point",
             " * Right-click + Shift (click+v): add one point to current group",
             " * Right-click + m (click+m):     find more points for current group",
             " * Center-click or (click+d):     erase current group",
-            " * Center-click + 1 or (click+1): erase closest point from current group"]
+            " * Center-click + 1 or (click+1): erase closest point from current group")
 
     def __init__(self, data, reconst=False, mask=None,
                  pointfile=None, calibrant=None, wavelength=None, detector=None,
@@ -270,9 +271,8 @@ class PeakPicker(object):
         """
 
         if self.widget is None:
-            if widget_klass:
-                if not issubclass(widget_klass, MplCalibWidget):
-                    raise RuntimeError("widget_klass does not derive from MplCalibWidget")
+            if widget_klass and not issubclass(widget_klass, MplCalibWidget):
+                raise RuntimeError("widget_klass does not derive from MplCalibWidget")
             self.widget = widget_klass(new_grp_cb=self.onclick_new_grp,
                                        append_single_cb=self.onclick_append_1_point,
                                        single_point_cb=self.onclick_single_point,
@@ -447,7 +447,7 @@ class PeakPicker(object):
         :param callback:
         :return: list of control points
         """
-        logging.info(os.linesep.join(self.help))
+        logger.info(os.linesep.join(self.help))
         if callback:
             self.point_filename = filename
             # self.cb_refine = callback
@@ -483,7 +483,7 @@ class PeakPicker(object):
         :param data: 2darray with the 2theta values in radians...
         """
         if self.widget is None:
-            logging.warning("No diffraction image available => not showing the contour")
+            logger.warning("No diffraction image available => not showing the contour")
         else:
             tth_max = data.max()
             tth_min = data.min()
@@ -504,7 +504,7 @@ class PeakPicker(object):
         """
 
         if self.widget is None:
-            logging.error("No diffraction image available => not showing the contour")
+            logger.error("No diffraction image available => not showing the contour")
         else:
             self.widget.shadow(data)
 

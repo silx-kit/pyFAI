@@ -38,8 +38,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Goniometer/index.rst
    Inpainting/Inpainting.ipynb
    ThickDetector/index
-   Variance/Variance.ipynb
-   Variance/Unweighted.ipynb
+   Variaance/index.rst
    Separation/index.rst
    Parallelization/index
    integrate2d.ipynb

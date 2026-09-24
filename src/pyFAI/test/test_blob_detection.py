@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -34,15 +33,17 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
 import logging
-from ..detectors import detector_factory
-from ..integrator.azimuthal import AzimuthalIntegrator
-from ..blob_detection import BlobDetection, local_max
-from ..ext import _blob
-from ..ext import morphology
+import unittest
+
+import numpy
 from scipy import ndimage
+
+from ..blob_detection import BlobDetection, local_max
+from ..detectors import detector_factory
+from ..ext import _blob, morphology
+from ..integrator.azimuthal import AzimuthalIntegrator
+
 logger = logging.getLogger(__name__)
 
 def image_test_rings():

@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,9 +24,10 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "24/08/2026"
 
 from silx.gui import qt
+
 import pyFAI.detectors
 
 
@@ -58,9 +58,8 @@ class AllDetectorItemModel(qt.QStandardItemModel):
                     modelName = detectorClass.aliases[index]
                     result.append((modelName, m, detectorClass))
             else:
-                if hasattr(detectorClass, "aliases"):
-                    if len(detectorClass.aliases) > 0:
-                        modelName = detectorClass.aliases[0]
+                if hasattr(detectorClass, "aliases") and len(detectorClass.aliases) > 0:
+                    modelName = detectorClass.aliases[0]
                 if modelName is None:
                     modelName = detectorClass.__name__
                 result.append((modelName, manufacturer, detectorClass))

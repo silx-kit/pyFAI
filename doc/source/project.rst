@@ -123,7 +123,7 @@ To test the installed version of pyFAI:
 
 .. code-block:: shell
 
-    python run_test.py
+    python run_pytest.py --installed
 
 or from python:
 
@@ -149,10 +149,25 @@ To test the development version (built but not yet installed):
 
 .. code-block:: shell
 
-    python run_tests.py
+    python run_pytest.py
 
+This script rebuilds what is needed, then runs the test-suite in parallel with `pytest`
+and `pytest-xdist`, using one worker process per physical core. The ``-n`` option sets
+the number of workers, and ``--`` passes the remaining arguments to `pytest`:
 
-PyFAI comes with 84 test-suites (583 tests in total) representing a coverage of 58%.
+.. code-block:: shell
+
+    python run_pytest.py -n 8
+    python run_pytest.py pyFAI.test.test_csr.TestCSR.test_2d_splitbbox
+    python run_pytest.py -- -k distortion --durations=10
+
+The same tests are run sequentially by `unittest` with ``python run_tests.py``, which
+takes about four times longer. Both runners are expected to pass, and they do not collect
+the tests the same way: ``run_pytest.py`` discovers every ``test_*.py`` of the package,
+while ``run_tests.py`` builds its suite from the ``suite()`` functions of
+``pyFAI/test/test_all.py``.
+
+PyFAI comes with 77 test-suites (699 tests in total) representing a coverage of about 59%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
 Test may not pass on computer featuring less than 2GB of memory or 32 bit architectures.

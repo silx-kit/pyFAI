@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2019-2025 European Synchrotron Radiation Facility
@@ -25,25 +24,23 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "21/08/2026"
 
-from silx.gui import icons
-from silx.gui import qt
+from silx.gui import icons, qt
+
 from ...utils import get_ui_file
-from ..utils import units
-from ..widgets.UnitLabel import UnitLabel
-from ..widgets.QuantityEdit import QuantityEdit
-from ..model.DataModel import DataModel
-from ..utils import eventutils
-from ..utils import validators
-from ..utils.units import Unit
 from ..CalibrationContext import CalibrationContext
+from ..model.DataModel import DataModel
+from ..utils import eventutils, units, validators
+from ..utils.units import Unit
+from ..widgets.QuantityEdit import QuantityEdit
+from ..widgets.UnitLabel import UnitLabel
 
 
 class ConstraintsPopup(qt.QFrame):
 
     def __init__(self, parent=None):
-        super(ConstraintsPopup, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         qt.loadUi(get_ui_file("constraint-drop.ui"), self)
         validator = validators.AdvancedDoubleValidator(self)
         validator.setAllowEmpty(True)
@@ -98,11 +95,11 @@ class ConstraintsPopup(qt.QFrame):
         # TODO Not the best way to do it
         # It would be better to swap the widgets
         if internalUnit.direction != displayedUnit.value().direction:
-            self._leftSign.setText(u"≥")
-            self._rightSign.setText(u"≥")
+            self._leftSign.setText("≥")
+            self._rightSign.setText("≥")
         else:
-            self._leftSign.setText(u"≤")
-            self._rightSign.setText(u"≤")
+            self._leftSign.setText("≤")
+            self._rightSign.setText("≤")
 
         self._minEdit.setModelUnit(internalUnit)
         self._minEdit.setDisplayedUnitModel(displayedUnit)
@@ -281,7 +278,7 @@ class FitParamView(qt.QObject):
         elif isinstance(displayedUnit, DataModel):
             pass
         else:
-            raise TypeError("Unsupported type %s" % type(displayedUnit))
+            raise TypeError(f"Unsupported type {type(displayedUnit)}")
         self.__units = internalUnit, displayedUnit
         self.__unit.setUnitModel(displayedUnit)
         self.__quantity.setDisplayedUnitModel(displayedUnit)

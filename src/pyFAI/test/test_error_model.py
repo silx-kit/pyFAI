@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -35,14 +34,17 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import sys
 import logging
+import sys
+import unittest
+
 import numpy
-from ..utils.mathutil import cormap
+
 from ..detectors import Detector
 from ..integrator.azimuthal import AzimuthalIntegrator
+from ..utils.mathutil import cormap
 from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -50,7 +52,7 @@ class TestErrorModel(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestErrorModel, cls).setUpClass()
+        super().setUpClass()
         # synthetic dataset
         #fix seed, decrease noise while testing:
         rng = UtilsTest.get_rng()
@@ -95,7 +97,7 @@ class TestErrorModel(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestErrorModel, cls).tearDownClass()
+        super().tearDownClass()
         cls.ai = cls.npt = cls.kwargs = None
 
     def test(self):

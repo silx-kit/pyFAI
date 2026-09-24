@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
 #
@@ -29,10 +28,11 @@ __license__ = "MIT"
 
 
 import weakref
+
 from ..CalibrationContext import CalibrationContext
 
 
-class SynchronizePlotBackground(object):
+class SynchronizePlotBackground:
 
     def __init__(self, plot=None):
         self.__registerBackgroundColor()

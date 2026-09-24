@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Simple histogram in Python + OpenCL
 #             https://github.com/silx-kit/pyFAI
@@ -33,18 +32,21 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2019 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/01/2021"
+__date__ = "21/08/2026"
 
 import logging
+import unittest
+
 import numpy
 
-import unittest
 from .. import ocl
+
 if ocl:
     import pyopencl.array
-from ...test.utilstest import UtilsTest
 from ...integrator.azimuthal import AzimuthalIntegrator
 from ...method_registry import IntegrationMethod
+from ...test.utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +56,7 @@ class TestOclAzimLUT(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestOclAzimLUT, cls).setUpClass()
+        super().setUpClass()
         if ocl:
             cls.ctx = ocl.create_context()
             if logger.getEffectiveLevel() <= logging.INFO:
@@ -72,8 +74,8 @@ class TestOclAzimLUT(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestOclAzimLUT, cls).tearDownClass()
-        logger.debug("Maximum valid workgroup size %s on device %s" % (cls.ctx.devices[0].max_work_group_size, cls.ctx.devices[0]))
+        super().tearDownClass()
+        logger.debug(f"Maximum valid workgroup size {cls.ctx.devices[0].max_work_group_size} on device {cls.ctx.devices[0]}")
         cls.ctx = None
         cls.queue = None
         cls.ai = None
@@ -122,7 +124,7 @@ class TestOclAzimLUT(unittest.TestCase):
             ref = self.ai._integrate1d_ng(solidangle, npt, unit=unit, method=method).sum_signal
             sig = res.normalization
             err = abs((sig - ref).max())
-            self.assertLess(err, 5e-5, "normalization content is the same: %s<5e-5" % (err))
+            self.assertLess(err, 5e-5, f"normalization content is the same: {err}<5e-5")
 
             # histogram of signal
             ref = self.ai._integrate1d_ng(data, npt, unit=unit, method=method).sum_signal

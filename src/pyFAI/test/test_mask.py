@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,15 +31,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "21/08/2026"
 
-import unittest
-import numpy
 import logging
+import unittest
+
 import fabio
-from .utilstest import UtilsTest
-from .. import load, detectors
+import numpy
+
+from .. import detectors, load
 from ..integrator.azimuthal import AzimuthalIntegrator
+from .utilstest import UtilsTest
+
 logger = logging.getLogger(__name__)
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
@@ -95,9 +97,9 @@ class TestMask(unittest.TestCase):
             pylab.show()
             input()
 
-        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
-        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+        self.assertAlmostEqual(res1, -10., 1, msg=f"Without mask the bad pixels are around -10 (got {res1:.4f})")
+        self.assertAlmostEqual(res2, 0, 1, msg=f"With mask the bad pixels are actually Nan (got {res2:.4f})")
+        self.assertAlmostEqual(res3, -20., 4, msg=f"Without mask but dummy=-20 the dummy pixels are actually at -20 (got {res3: .4f})")
 
     def test_mask_splitBBox(self):
         """
@@ -125,9 +127,9 @@ class TestMask(unittest.TestCase):
             pylab.show()
             input()
 
-        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
-        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+        self.assertAlmostEqual(res1, -10., 1, msg=f"Without mask the bad pixels are around -10 (got {res1:.4f})")
+        self.assertAlmostEqual(res2, 0, 1, msg=f"With mask the bad pixels are actually Nan (got {res2:.4f})")
+        self.assertAlmostEqual(res3, -20., 4, msg=f"Without mask but dummy=-20 the dummy pixels are actually at -20 (got {res3: .4f})")
 
     def test_mask_splitfull(self):
         """
@@ -158,9 +160,9 @@ class TestMask(unittest.TestCase):
         #     pylab.show()
         #     input()
 
-        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
-        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+        self.assertAlmostEqual(res1, -10., 1, msg=f"Without mask the bad pixels are around -10 (got {res1:.4f})")
+        self.assertAlmostEqual(res2, 0, 1, msg=f"With mask the bad pixels are actually Nan (got {res2:.4f})")
+        self.assertAlmostEqual(res3, -20., 4, msg=f"Without mask but dummy=-20 the dummy pixels are actually at -20 (got {res3: .4f})")
 
     def test_mask_LUT(self):
         """
@@ -189,9 +191,9 @@ class TestMask(unittest.TestCase):
         #     pylab.show()
         #     input()
 
-        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
-        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+        self.assertAlmostEqual(res1, -10., 1, msg=f"Without mask the bad pixels are around -10 (got {res1:.4f})")
+        self.assertAlmostEqual(res2, 0, 1, msg=f"With mask the bad pixels are actually Nan (got {res2:.4f})")
+        self.assertAlmostEqual(res3, -20., 4, msg=f"Without mask but dummy=-20 the dummy pixels are actually at -20 (got {res3: .4f})")
 
     def test_mask_CSR(self):
         """
@@ -218,9 +220,9 @@ class TestMask(unittest.TestCase):
         #     pylab.show()
         #     input()
 
-        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
-        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+        self.assertAlmostEqual(res1, -10., 1, msg=f"Without mask the bad pixels are around -10 (got {res1:.4f})")
+        self.assertAlmostEqual(res2, 0, 1, msg=f"With mask the bad pixels are actually Nan (got {res2:.4f})")
+        self.assertAlmostEqual(res3, -20., 4, msg=f"Without mask but dummy=-20 the dummy pixels are actually at -20 (got {res3: .4f})")
 
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_mask_LUT_OCL(self):
@@ -249,9 +251,9 @@ class TestMask(unittest.TestCase):
         #     pylab.show()
         #     input()
 
-        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
-        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+        self.assertAlmostEqual(res1, -10., 1, msg=f"Without mask the bad pixels are around -10 (got {res1:.4f})")
+        self.assertAlmostEqual(res2, 0, 1, msg=f"With mask the bad pixels are actually around 0 (got {res2:.4f})")
+        self.assertAlmostEqual(res3, -20., 4, msg=f"Without mask but dummy=-20 the dummy pixels are actually at -20 (got {res3: .4f})")
 
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_mask_CSR_OCL(self):
@@ -281,9 +283,9 @@ class TestMask(unittest.TestCase):
         #     pylab.show()
         #     input()
 
-        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
-        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+        self.assertAlmostEqual(res1, -10., 1, msg=f"Without mask the bad pixels are around -10 (got {res1:.4f})")
+        self.assertAlmostEqual(res2, 0, 1, msg=f"With mask the bad pixels are actually around 0 (got {res2:.4f})")
+        self.assertAlmostEqual(res3, -20., 4, msg=f"Without mask but dummy=-20 the dummy pixels are actually at -20 (got {res3: .4f})")
 
 
 class TestMaskBeamstop(unittest.TestCase):
@@ -322,18 +324,18 @@ class TestMaskBeamstop(unittest.TestCase):
         With a mask with and without limits
         """
         tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="splitBBox")
-        self.assertAlmostEqual(tth[0], 3.7, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
+        self.assertAlmostEqual(tth[0], 3.7, 1, msg=f"tth range starts at 3.7 (got {tth[0]:.4f})")
         tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="splitBBox", radial_range=[1, 10])
-        self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
+        self.assertAlmostEqual(tth[0], 1.0, 1, msg=f"tth range should start at 1.0 (got {tth[0]:.4f})")
 
     def test_mask_LUT(self):
         """
         With a mask with and without limits
         """
         tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT")
-        self.assertAlmostEqual(tth[0], 3.7, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
+        self.assertAlmostEqual(tth[0], 3.7, 1, msg=f"tth range starts at 3.7 (got {tth[0]:.4f})")
         tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT", radial_range=[1, 10])
-        self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
+        self.assertAlmostEqual(tth[0], 1.0, 1, msg=f"tth range should start at 1.0 (got {tth[0]:.4f})")
 
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_mask_LUT_OCL(self):
@@ -341,18 +343,18 @@ class TestMaskBeamstop(unittest.TestCase):
         With a mask with and without limits
         """
         tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl")
-        self.assertTrue(tth[0] > 3.5, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
+        self.assertTrue(tth[0] > 3.5, msg=f"tth range starts at 3.7 (got {tth[0]:.4f})")
         tth, _ = self.ai.integrate1d_ng(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
-        self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
+        self.assertAlmostEqual(tth[0], 1.0, 1, msg=f"tth range should start at 1.0 (got {tth[0]:.4f})")
 
     def test_nomask_LUT(self):
         """
         without mask, tth value should start at 0
         """
         tth, _ = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method="lut")
-        self.assertAlmostEqual(tth[0], 0.0, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
+        self.assertAlmostEqual(tth[0], 0.0, 1, msg=f"tth range starts at 3.7 (got {tth[0]:.4f})")
         tth, _ = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method="lut", radial_range=[1, 10])
-        self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
+        self.assertAlmostEqual(tth[0], 1.0, 1, msg=f"tth range should start at 1.0 (got {tth[0]:.4f})")
 
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_nomask_LUT_OCL(self):
@@ -360,9 +362,9 @@ class TestMaskBeamstop(unittest.TestCase):
         without mask, tth value should start at 0
         """
         tth, _ = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method="lut_ocl")
-        self.assertAlmostEqual(tth[0], 0.0, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
+        self.assertAlmostEqual(tth[0], 0.0, 1, msg=f"tth range starts at 3.7 (got {tth[0]:.4f})")
         tth, _ = self.ai.integrate1d_ng(self.data, 1000, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
-        self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
+        self.assertAlmostEqual(tth[0], 1.0, 1, msg=f"tth range should start at 1.0 (got {tth[0]:.4f})")
 
 
 def suite():

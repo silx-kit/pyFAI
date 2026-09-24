@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,18 +30,21 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2026"
+__date__ = "08/09/2026"
 __docformat__ = 'restructuredtext'
 
 import collections
-import time
-import pathlib
+import copy
 import logging
+import pathlib
+import time
+from typing import ClassVar, TextIO
+
 import numpy
-from typing import TextIO
-from ._json import json_dumps
+
 from .. import detectors
 from ..utils import decorators
+from ._json import json_dumps
 
 try:
     from ..gui.model.GeometryModel import GeometryModel
@@ -66,7 +68,7 @@ class PoniFile:
          and the sensor entry in the detector_config.
     """
     API_VERSION = 3  # valid version are 1, 2, 2.1, 3
-    ALLOWED_EXTRA = {"Calibrant", "Image"}  # extra information which is allowed to be stored in the poni file
+    ALLOWED_EXTRA: ClassVar[set] = {"Calibrant", "Image"}  # extra information which is allowed to be stored in the poni file
 
     def __init__(self, data=None, **kwargs) -> None:
         self._detector = None
@@ -102,17 +104,15 @@ class PoniFile:
         """Checks the equality of two ponifile instances"""
         if not isinstance(other, self.__class__):
             return False
-        if ((self._detector != other._detector) or
-            (self._dist != other._dist) or
-            (self._poni1 != other._poni1) or
-            (self._poni2 != other._poni2) or
-            (self._rot1 != other._rot1) or
-            (self._rot2 != other._rot2) or
-            (self._rot3 != other._rot3) or
-            (self._wavelength != other._wavelength) or
-            (self._parallax != other._parallax)):
-            return False
-        return True
+        return ((self._detector == other._detector) and
+                (self._dist == other._dist) and
+                (self._poni1 == other._poni1) and
+                (self._poni2 == other._poni2) and
+                (self._rot1 == other._rot1) and
+                (self._rot2 == other._rot2) and
+                (self._rot3 == other._rot3) and
+                (self._wavelength == other._wavelength) and
+                (self._parallax == other._parallax))
 
     def make_headers(self, type_:str="list"):
         "Generate a header for files, as list or dict or str"
@@ -204,9 +204,8 @@ class PoniFile:
                     if "pixelsize2" in config:
                         self._detector.pixel2 = float(config["pixelsize2"])
 
-            if "splinefile" in config:
-                if config["splinefile"].lower() != "none":
-                    self._detector.splinefile = config["splinefile"]
+            if "splinefile" in config and config["splinefile"].lower() != "none":
+                self._detector.splinefile = config["splinefile"]
 
         elif version >=2:
                 detector_name = config["detector"]
@@ -423,6 +422,92 @@ class PoniFile:
     @property
     def parallax(self) -> bool:
         return self._parallax
+
+    # Copy-with API: a PoniFile is immutable, a modified geometry is a new object
+
+    GEOMETRY_PARAMS: ClassVar[tuple] = ("dist", "poni1", "poni2",
+                                        "rot1", "rot2", "rot3", "wavelength")
+    "Names of the parameters which `with_params` accepts"
+
+    def with_params(self, **kwargs) -> "PoniFile":
+        """Build a new PoniFile from this one, with some parameters replaced
+
+        A PoniFile is intentionally not mutable: rather than modifying a geometry in
+        place, one derives a new geometry from it::
+
+            refined = poni.with_params(dist=0.5, rot1=1e-3)
+
+        The detector is shared with the original object, not copied.
+
+        :param kwargs: any of dist, poni1, poni2, rot1, rot2, rot3, wavelength
+        :return: a new PoniFile instance
+        :raise KeyError: when a keyword does not name a geometry parameter
+        """
+        for key in kwargs:
+            if key not in self.GEOMETRY_PARAMS:
+                raise KeyError(f"`{key}` is not a geometry parameter, expected one of: "
+                               f"{', '.join(self.GEOMETRY_PARAMS)}")
+        new = copy.copy(self)
+        new.extra = dict(self.extra)
+        for key, value in kwargs.items():
+            setattr(new, f"_{key}", None if value is None else float(value))
+        return new
+
+    def with_dist(self, dist: float) -> "PoniFile":
+        """Build a new PoniFile with another sample-detector distance
+
+        :param dist: the new distance, in meter
+        :return: a new PoniFile instance
+        """
+        return self.with_params(dist=dist)
+
+    def with_poni1(self, poni1: float) -> "PoniFile":
+        """Build a new PoniFile with another PONI coordinate along the slow dimension
+
+        :param poni1: the new coordinate, in meter
+        :return: a new PoniFile instance
+        """
+        return self.with_params(poni1=poni1)
+
+    def with_poni2(self, poni2: float) -> "PoniFile":
+        """Build a new PoniFile with another PONI coordinate along the fast dimension
+
+        :param poni2: the new coordinate, in meter
+        :return: a new PoniFile instance
+        """
+        return self.with_params(poni2=poni2)
+
+    def with_rot1(self, rot1: float) -> "PoniFile":
+        """Build a new PoniFile with another first rotation
+
+        :param rot1: the new rotation, in radian
+        :return: a new PoniFile instance
+        """
+        return self.with_params(rot1=rot1)
+
+    def with_rot2(self, rot2: float) -> "PoniFile":
+        """Build a new PoniFile with another second rotation
+
+        :param rot2: the new rotation, in radian
+        :return: a new PoniFile instance
+        """
+        return self.with_params(rot2=rot2)
+
+    def with_rot3(self, rot3: float) -> "PoniFile":
+        """Build a new PoniFile with another third rotation
+
+        :param rot3: the new rotation, in radian
+        :return: a new PoniFile instance
+        """
+        return self.with_params(rot3=rot3)
+
+    def with_wavelength(self, wavelength: float) -> "PoniFile":
+        """Build a new PoniFile with another wavelength
+
+        :param wavelength: the new wavelength, in meter
+        :return: a new PoniFile instance
+        """
+        return self.with_params(wavelength=wavelength)
 
     # Deprecated stuff:
 

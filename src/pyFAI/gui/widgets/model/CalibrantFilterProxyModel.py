@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,14 +27,16 @@ __license__ = "MIT"
 __date__ = "25/06/2023"
 
 from silx.gui import qt
+
 from pyFAI.calibrant import Calibrant
+
 from .CalibrantItemModel import CalibrantItemModel
 
 
 class CalibrantFilterProxyModel(qt.QSortFilterProxyModel):
 
     def __init__(self, parent):
-        super(CalibrantFilterProxyModel, self).__init__(parent)
+        super().__init__(parent)
         self.__displayUser: bool = True
         self.__displayResource: bool = True
         self.__filenames = None

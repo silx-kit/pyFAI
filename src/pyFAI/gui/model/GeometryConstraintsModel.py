@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -25,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "24/08/2026"
 
 from .AbstractModel import AbstractModel
 from .ConstraintModel import ConstraintModel
@@ -34,7 +33,7 @@ from .ConstraintModel import ConstraintModel
 class GeometryConstraintsModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(GeometryConstraintsModel, self).__init__(parent)
+        super().__init__(parent)
         self.__distance = ConstraintModel(self)
         self.__wavelength = ConstraintModel(self)
         self.__poni1 = ConstraintModel(self)
@@ -64,9 +63,7 @@ class GeometryConstraintsModel(AbstractModel):
             return False
         if not self.__rotation2.isValid():
             return False
-        if not self.__rotation3.isValid():
-            return False
-        return True
+        return self.__rotation3.isValid()
 
     def distance(self):
         return self.__distance

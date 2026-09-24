@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -30,8 +29,7 @@ __date__ = "16/10/2020"
 import logging
 import weakref
 
-from silx.gui import qt
-from silx.gui import icons
+from silx.gui import icons, qt
 
 _logger = logging.getLogger(__name__)
 

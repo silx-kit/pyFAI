@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Peak finder in a single 2D diffraction frame
 #             https://github.com/silx-kit/pyFAI
@@ -29,25 +28,36 @@
 
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "12/06/2026"
+__date__ = "25/08/2026"
 __copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
+from typing import ClassVar
 import logging
-from collections import OrderedDict
 import math
+from collections import OrderedDict
+
 import numpy
-from ..containers import SparseFrame, ErrorModel
+
+from ..containers import ErrorModel, SparseFrame
 from ..utils.mathutil import EPS32
-from .azim_csr import OCL_CSR_Integrator, BufferDescription, EventDescription, mf, calc_checksum, pyopencl, OpenclProcessing
-from . import kernel_workgroup_size, dtype_converter
+from . import dtype_converter, kernel_workgroup_size
+from .azim_csr import (
+    BufferDescription,
+    EventDescription,
+    OCL_CSR_Integrator,
+    OpenclProcessing,
+    calc_checksum,
+    mf,
+    pyopencl,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class OCL_PeakFinder(OCL_CSR_Integrator):
     BLOCK_SIZE = 1024  # unlike in OCL_CSR_Integrator, here we need larger blocks
-    buffers = [BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
+    buffers = (BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 1, numpy.int64, mf.READ_WRITE),
@@ -63,14 +73,14 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                BufferDescription("position", 1, numpy.int32, mf.READ_WRITE),
                BufferDescription("descriptor", 4, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("radius2d", 1, numpy.float32, mf.READ_ONLY),
-               ]
-    kernel_files = ["silx:opencl/doubleword.cl",
+               )
+    kernel_files = ("silx:opencl/doubleword.cl",
                     "pyfai:openCL/preprocess.cl",
                     "pyfai:openCL/memset.cl",
                     "pyfai:openCL/ocl_azim_CSR.cl",
                     "pyfai:openCL/sparsify.cl",
                     "pyfai:openCL/peakfinder.cl",
-                    ]
+                    )
 
     def __init__(self, lut, image_size, checksum=None,
                  empty=None, unit=None, bin_centers=None,
@@ -146,7 +156,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
             # one float8, i.e. 32 bytes per thread of storage is needed
             device = self.ctx.devices[0]
             # platform = device.platform.name.lower()
-            block_size = 1 << int(math.floor(math.log((device.local_mem_size - 40) / 32.0, 2.0)))
+            block_size = 1 << math.floor(math.log((device.local_mem_size - 40) / 32.0, 2.0))
             self.force_workgroup_size = False
         else:
             self.force_workgroup_size = True
@@ -484,7 +494,7 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
         # allocate local memory: we store 4 bytes but at most 1 pixel out of 4 can be a peak
 
         hw = patch_size // 2  # Half width of the patch
-        buffer_size = int(math.ceil(wg * 4 / ((1 + hw) * min(wg0, 1 + hw))))
+        buffer_size = math.ceil(wg * 4 / ((1 + hw) * min(wg0, 1 + hw)))
         kw_proj["local_highidx"] = pyopencl.LocalMemory(1 * buffer_size)
         kw_proj["local_peaks"] = pyopencl.LocalMemory(4 * buffer_size)
         kw_proj["local_buffer"] = pyopencl.LocalMemory(8 * (wg0 + 2 * hw) * (wg1 + 2 * hw))
@@ -788,15 +798,15 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
 class OCL_SimplePeakFinder(OpenclProcessing):
     BLOCK_SIZE = 1024  # works with 32x32 patches (1024 threads)
 
-    kernel_files = ["pyfai:openCL/simple_peak_picker.cl"]
-    buffers = [BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
+    kernel_files = ("pyfai:openCL/simple_peak_picker.cl",)
+    buffers = (BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
                BufferDescription("output", 1, numpy.int32, mf.READ_WRITE),
                BufferDescription("peak_intensity", 1, numpy.float32, mf.WRITE_ONLY)
-               ]
+               )
 
-    mapping = {numpy.int8: "s8_to_float",
+    mapping: ClassVar[dict] = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
                numpy.int16: "s16_to_float",
                numpy.uint16: "u16_to_float",
@@ -908,7 +918,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         """
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or self.kernel_files[-1]
-        kernels = self.kernel_files[:-1] + [kernel_file]
+        kernels = [*self.kernel_files[:-1], kernel_file]
 
         try:
             compile_options = self.get_compiler_options(x87_volatile=True, apple_gpu=True)
@@ -973,7 +983,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
         if isinstance(data, pyopencl.array.Array):
             if (data.dtype == dest_type) and not force_cast:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], data.data)
-                events.append(EventDescription("copy D->D %s" % dest, copy_image))
+                events.append(EventDescription(f"copy D->D {dest}", copy_image))
             else:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
                 kernel_name = self.mapping[data.dtype.type]
@@ -987,7 +997,7 @@ class OCL_SimplePeakFinder(OpenclProcessing):
             # Assume it is a numpy array
             if ((data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize)) and not force_cast:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-                events.append(EventDescription("copy H->D %s" % dest, copy_image))
+                events.append(EventDescription(f"copy H->D {dest}", copy_image))
             else:
                 copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
                 kernel_name = self.mapping[data.dtype.type]

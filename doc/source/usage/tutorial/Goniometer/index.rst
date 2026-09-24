@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 11/04/2021
+:Date: 03/09/2026
 :Keywords: Tutorials
 :Target: Advanced users tutorials using jupyter notebooks for Goniometer
 
@@ -18,3 +18,4 @@ Advanced tutorials on goniometer calibration in pyFAI.
    Rotation-XPADS540/D2AM-15
    Fit_wavelength/fit_energy
    MX-calibrate/MX-calibrate
+   Eccentric-goniometer/Calibrate_eccentric

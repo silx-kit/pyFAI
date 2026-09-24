@@ -32,10 +32,11 @@ __status__ = "development"
 
 import logging
 from threading import Semaphore
+
 logger = logging.getLogger(__name__)
 
 
-class Engine(object):
+class Engine:
     """This class defines a regrid-engine with its locking mechanism"""
 
     def __init__(self, engine=None):

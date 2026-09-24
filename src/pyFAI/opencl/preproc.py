@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -31,18 +30,23 @@ OpenCL implementation of the preproc module
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "21/11/2025"
+__date__ = "25/08/2026"
 __copyright__ = "2015-2025, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
+from typing import ClassVar
 import logging
 from collections import OrderedDict
+
 import numpy
+
 from . import pyopencl
+
 if pyopencl is None:
     raise ImportError("pyopencl is not installed")
-from . import mf, processing, OpenclProcessing, dtype_converter
 from ..containers import ErrorModel
+from . import OpenclProcessing, dtype_converter, mf, processing
+
 EventDescription = processing.EventDescription
 BufferDescription = processing.BufferDescription
 logger = logging.getLogger(__name__)
@@ -50,7 +54,7 @@ logger = logging.getLogger(__name__)
 
 class OCL_Preproc(OpenclProcessing):
     """OpenCL class for pre-processing ... mainly for demonstration"""
-    buffers = [BufferDescription("output", 4, numpy.float32, mf.READ_WRITE),
+    buffers = (BufferDescription("output", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("image_raw", 8, numpy.uint8, mf.READ_WRITE),
                BufferDescription("temp", 4, numpy.uint8, mf.READ_WRITE),
@@ -62,9 +66,9 @@ class OCL_Preproc(OpenclProcessing):
                BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
-               ]
-    kernel_files = ["pyfai:openCL/preprocess.cl"]
-    mapping = {numpy.int8: "s8_to_float",
+               )
+    kernel_files = ("pyfai:openCL/preprocess.cl",)
+    mapping: ClassVar[dict] = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
                numpy.int16: "s16_to_float",
                numpy.uint16: "u16_to_float",
@@ -412,12 +416,12 @@ class OCL_Preproc(OpenclProcessing):
                     self.send_buffer(dark, "dark")
             else:
                 do_dark = numpy.int8(0)
-            if (variance is not None) and self.on_host.get("calc_variance"):
-                if id(variance) != id(self.on_device.get("variance")):
-                    self.send_buffer(variance, "variance")
-            if (dark_variance is not None) and self.on_host.get("calc_variance"):
-                if id(dark_variance) != id(self.on_device.get("dark_variance")):
-                    self.send_buffer(dark_variance, "dark_variance")
+            if ((variance is not None) and self.on_host.get("calc_variance") and
+                    id(variance) != id(self.on_device.get("variance"))):
+                self.send_buffer(variance, "variance")
+            if ((dark_variance is not None) and self.on_host.get("calc_variance") and
+                    id(dark_variance) != id(self.on_device.get("dark_variance"))):
+                self.send_buffer(dark_variance, "dark_variance")
 
             if error_model is None:
                 error_model = self.on_host.get("error_model")

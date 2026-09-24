@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2025 European Synchrotron Radiation Facility
@@ -25,18 +24,19 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "26/06/2026"
+__date__ = "25/08/2026"
 
-import logging
-import numpy
 import collections
+import logging
+
+import numpy
 
 from ... import units
+from ...containers import FixedParameters
 from ...geometryRefinement import GeometryRefinement
 from ..model.GeometryConstraintsModel import GeometryConstraintsModel
 from ..peak_picker import PeakPicker
 from ..utils import timeutils
-from ...containers import FixedParameters
 
 _logger = logging.getLogger(__name__)
 inf = numpy.inf
@@ -49,7 +49,7 @@ class GeometryRefinementContext:
     constraints. It make the context difficult to manage and to trust.
     """
 
-    PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
+    PARAMETERS = ("dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength")
 
     def __init__(self, *args, **kwargs):
         _logger.debug("GeometryRefinementContext.__init__")
@@ -70,7 +70,7 @@ class GeometryRefinementContext:
 
     def __setattr__(self, name, value):
         if "__" in name:
-            return super(GeometryRefinementContext, self).__setattr__(name, value)
+            return super().__setattr__(name, value)
         return object.__setattr__(self.__geoRef, name, value)
 
     def bounds(self):
@@ -128,7 +128,7 @@ class GeometryRefinementContext:
         try:
             deltaS = self.__geoRef.refine3(maxiter, self.__fixed)
         except Exception:
-            _logger.error("Error while refining the geometry", exc_info=True)
+            _logger.exception("Error while refining the geometry")
             return inf
         else:
             return deltaS
@@ -158,7 +158,7 @@ class RingCalibration:
         try:
             self.__init(peaks, method)
         except Exception as error:
-            _logger.error("Error while initializing the calibration", exc_info=True)
+            _logger.exception("Error while initializing the calibration")
             self.__isValid = False
             self.__initError = str(error)
 
@@ -319,7 +319,7 @@ class RingCalibration:
         if residual == inf:
             self.__isValid = False
 
-        print("Final residual: %s (after %s iterations)" % (residual, count))
+        print(f"Final residual: {residual} (after {count} iterations)")
 
         self.__geoRef.reset()
 

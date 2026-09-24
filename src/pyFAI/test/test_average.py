@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,16 +32,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/05/2024"
+__date__ = "21/08/2026"
 
-import unittest
-import numpy
-import os
 import ast
 import logging
+import os
+import unittest
+
 import fabio
-from .utilstest import UtilsTest
+import numpy
+
 from .. import average
+from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class TestAverage(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls)->None:
-        super(TestAverage, cls).setUpClass()
+        super().setUpClass()
         cls.rng = UtilsTest.get_rng()
         cls.unbinned = cls.rng.random((64, 32))
         cls.dark = cls.unbinned.astype("float32")
@@ -110,7 +111,7 @@ class TestAverage(unittest.TestCase):
 
     def test_output_file(self):
         if fabio.hexversion < 262147:
-            self.skipTest("The version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now" % fabio.version)
+            self.skipTest(f"The version of the FabIO library is too old: {fabio.version}, please upgrade to 0.4+. Skipping test for now")
         file_name = average.average_images([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
         with fabio.open(file_name) as fimg:
             result = fimg.data

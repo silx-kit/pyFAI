@@ -4,7 +4,8 @@ py.install_sources(
    'cxi.py',
    'fit2d.py',
    'imaged11.py',
-   'crystfel.py',],
+   'crystfel.py',
+   'utils.py',],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/geometry'  # Folder relative to site-packages to install to
 )

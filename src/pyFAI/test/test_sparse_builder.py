@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -33,12 +32,15 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/10/2025"
 
-import unittest
-import numpy
+import collections
 import logging
+import unittest
+
+import numpy
+
 from ..ext import sparse_builder
 from . import utilstest
-import collections
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,8 +61,7 @@ class TestSparseBuilder(utilstest.ParametricTestCase):
         builders["pack"] = sparse_builder.SparseBuilder(nbin, mode="pack", heap_size=512)
         builders["pack_small_heap"] = sparse_builder.SparseBuilder(nbin, mode="pack", heap_size=3)
 
-        for builder_name, builder in builders.items():
-            yield builder_name, builder
+        yield from builders.items()
 
     def subtest_each_builders(self, nbin):
         for builder_name, builder in self.each_builders(nbin):

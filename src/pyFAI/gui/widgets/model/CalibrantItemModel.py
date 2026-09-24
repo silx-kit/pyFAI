@@ -1,4 +1,3 @@
-# coding: utf-8
 # /*##########################################################################
 #
 # Copyright (C) 2016-2018 European Synchrotron Radiation Facility
@@ -28,8 +27,9 @@ __license__ = "MIT"
 __date__ = "25/06/2023"
 
 import os.path
-from silx.gui import qt
-from silx.gui import icons
+
+from silx.gui import icons, qt
+
 import pyFAI.calibrant
 from pyFAI.calibrant import Calibrant
 

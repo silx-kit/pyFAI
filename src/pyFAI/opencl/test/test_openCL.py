@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -32,29 +31,32 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/02/2026"
+__date__ = "21/08/2026"
 
-import unittest
+import logging
 import os
+import platform
+import shutil
 import time
+import unittest
+
 import fabio
 import numpy
-import logging
-import shutil
-import platform
-
 
 from .. import ocl
+
 if ocl is not None:
-    from .. import pyopencl, read_cl_file
     import pyopencl.array
     from pyopencl.elementwise import ElementwiseKernel
 
+    from .. import pyopencl, read_cl_file
+
 from ... import load
-from ...test  import utilstest
 from ...method_registry import IntegrationMethod
+from ...test import utilstest
 from ...test.utilstest import test_options
 from ...utils import mathutil
+
 logger = logging.getLogger(__name__)
 EPS32 = numpy.finfo("float32").eps
 EPS64 = numpy.finfo("float64").eps
@@ -103,7 +105,7 @@ class TestMask(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestMask, cls).tearDownClass()
+        super().tearDownClass()
         shutil.rmtree(cls.tmp_dir)
         cls.tmp_dir = cls.N = cls.datasets = None
 
@@ -122,7 +124,7 @@ class TestMask(unittest.TestCase):
                 res = ai.integrate1d_ng(data, self.N, method=method, unit="2th_deg")
                 r = mathutil.rwp(ref, res)
                 logger.info(f"OpenCL {method} has R={r}  (vs cython) for dataset {ds}")
-                self.assertLess(r, 3, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
+                self.assertLess(r, 3, f"Rwp={r:.3f} for OpenCL histogram processing of {ds}")
 
     @unittest.skipIf(test_options.low_mem, "test using >500M")
     def test_OpenCL_sparse(self):
@@ -138,7 +140,7 @@ class TestMask(unittest.TestCase):
                 res = ai.integrate1d_ng(data, self.N, method=method, unit="2th_deg")
                 r = mathutil.rwp(ref, res)
                 logger.info(f"OpenCL {method} has R={r}  (vs cython) for dataset {ds}")
-                self.assertLess(r, 3, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
+                self.assertLess(r, 3, f"Rwp={r:.3f} for OpenCL histogram processing of {ds}")
 
     @unittest.skipIf(test_options.low_mem, "test using >200M")
     def test_OpenCL_sigma_clip(self):
@@ -161,7 +163,7 @@ class TestMask(unittest.TestCase):
                     # This is not really a precise test.
                     r = mathutil.rwp(ref, res)
                     logger.info("OpenCL sigma clipping has R= %.3f for dataset %s", r, ds)
-                    self.assertLess(r, 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
+                    self.assertLess(r, 3, f"Rwp={r:.3f} for OpenCL CSR processing of {ds}")
 
 
 @unittest.skipIf(test_options.opencl is False, "User request to skip OpenCL tests")
@@ -173,7 +175,7 @@ class TestSort(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestSort, cls).setUpClass()
+        super().setUpClass()
         cls.N = 1024
         cls.ws = cls.N // 8
 
@@ -201,7 +203,7 @@ class TestSort(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestSort, cls).tearDownClass()
+        super().tearDownClass()
         cls.h_data = None
         cls.queue = None
         cls.ctx = None
@@ -318,7 +320,7 @@ class TestKahan(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestKahan, cls).setUpClass()
+        super().setUpClass()
 
         cls.ctx = ocl.create_context()
         cls.queue = pyopencl.CommandQueue(cls.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)

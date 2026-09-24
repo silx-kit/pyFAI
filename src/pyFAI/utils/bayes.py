@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -39,11 +38,11 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import numpy
-from scipy.interpolate import UnivariateSpline, RectBivariateSpline
 from scipy import optimize
+from scipy.interpolate import RectBivariateSpline, UnivariateSpline
 
 
-class BayesianBackground(object):
+class BayesianBackground:
     """This class estimates the background of a powder diffraction pattern
 
     http://journals.iucr.org/j/issues/2001/03/00/he0278/he0278.pdf
