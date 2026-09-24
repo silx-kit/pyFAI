@@ -68,6 +68,7 @@ def main(args=None):
         # initialization of the singleton
         context = ApplicationContext(settings)
         app = qt.QApplication([])
+        app.setDesktopFileName("diff_map")
         window = DiffMapWidget()
         window.set_config(config)
         # window.restore()
