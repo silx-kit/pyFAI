@@ -32,7 +32,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2026"
+__date__ = "16/09/2026"
 __status__ = "development"
 
 import json
@@ -66,7 +66,6 @@ from .utils import (
 from .widgets.DiffractionImagePlotWidget import DiffractionImagePlotWidget
 from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
-from .widgets.TitleWidget import TitleWidget
 
 logger = logging.getLogger(__name__)
 
@@ -76,8 +75,21 @@ class MainWindow(qt.QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
-        self._file_name: str | None = None
+        self._init_state()
+        self._init_ui()
+        self._connect_signals()
 
+    def _init_state(self) -> None:
+        """Initialize the window state before creating its widgets."""
+        self._file_name: str | None = None
+        self._unfixed_indices = None
+        self._fixed_indices = set()
+        self._background_point = None
+        self.worker_config = None
+        self._map_ptr = None  # Map of input-frame indices
+
+    def _init_ui(self) -> None:
+        """Create and arrange the viewer widgets."""
         self.setWindowTitle("PyFAI-diffmap viewer")
 
         self._image_plot_widget = DiffractionImagePlotWidget(self)
@@ -85,42 +97,48 @@ class MainWindow(qt.QMainWindow):
             Colormap("gray", normalization="log")
         )
         self._image_plot_widget.setKeepDataAspectRatio(True)
-        self._image_plot_widget.plotClicked.connect(self.onMouseClickOnImage)
 
         self._map_plot_widget = MapPlotWidget(self)
-        self._map_plot_widget.clearPointsSignal.connect(self.clearPoints)
         self._map_plot_widget.setDefaultColormap(
             Colormap("viridis", normalization="log")
         )
-        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
-        self._map_plot_widget.pinContextEntrySelected.connect(self.fixMapPoint)
-        self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
-
-        self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
 
         self._integrated_plot_widget = IntegratedPatternPlotWidget(self)
-        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.onRoiEdition)
-        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.drawContoursOnImage)
-
-        self._title_widget = TitleWidget(self)
 
         self._central_widget = qt.QWidget()
-        layout = qt.QGridLayout(self._central_widget)
+        right_splitter = qt.QSplitter(qt.Qt.Orientation.Vertical, self)
+        right_splitter.addWidget(self._map_plot_widget)
+        right_splitter.addWidget(self._integrated_plot_widget)
+        right_splitter.setChildrenCollapsible(False)
+        right_splitter.setHandleWidth(6)
+        right_splitter.setStretchFactor(0, 1)
+        right_splitter.setStretchFactor(1, 1)
+
+        plot_splitter = qt.QSplitter(qt.Qt.Orientation.Horizontal, self)
+        plot_splitter.addWidget(self._image_plot_widget)
+        plot_splitter.addWidget(right_splitter)
+        plot_splitter.setChildrenCollapsible(False)
+        plot_splitter.setHandleWidth(6)
+        plot_splitter.setStretchFactor(0, 1)
+        plot_splitter.setStretchFactor(1, 1)
+
+        layout = qt.QVBoxLayout(self._central_widget)
         layout.setSpacing(0)
-        layout.addWidget(self._title_widget, 0, 0, 1, 2)
-        layout.addWidget(self._image_plot_widget, 1, 0, 2, 1)
-        layout.addWidget(self._map_plot_widget, 1, 1)
-        layout.addWidget(self._integrated_plot_widget, 2, 1)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(plot_splitter, 1)
         self._central_widget.setLayout(layout)
         self.setCentralWidget(self._central_widget)
 
-        self._unfixed_indices = None
-        self._fixed_indices = set()
-        self._background_point = None
-        self.worker_config = None
-
-        # declaration of instance variables
-        self._map_ptr = None # This is the map of the indices of input frame
+    def _connect_signals(self) -> None:
+        """Connect plot interactions to the window actions."""
+        self._image_plot_widget.plotClicked.connect(self.onMouseClickOnImage)
+        self._map_plot_widget.clearPointsSignal.connect(self.clearPoints)
+        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
+        self._map_plot_widget.pinContextEntrySelected.connect(self.fixMapPoint)
+        self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
+        self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
+        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.onRoiEdition)
+        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.drawContoursOnImage)
 
     def initData(self,
                  file_name: str,
@@ -208,7 +226,6 @@ class MainWindow(qt.QMainWindow):
         self._radial_matrix = compute_radial_values(self.worker_config)
         self._delta_radial_over_2 = delta_radial / 2
 
-        self._title_widget.setText(os.path.basename(file_name))
         self._map_plot_widget.setScatterData(map_data, fast_values, slow_values, fast_label, slow_label)
         # BUG: selectMapPoint(0, 0) does not work at first render cause the picking fails
         initial_indices = ImageIndices(0, 0)
