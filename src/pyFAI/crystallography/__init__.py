@@ -52,4 +52,4 @@ from .space_groups import ReflectionCondition
 __all__ = ["Calibrant", "CALIBRANT_FACTORY", "Cell", "ReflectionCondition",
           "BirchMurnaghan", "LatticeExpansion", "Murnaghan", "PVT",
           "ReflectionCondition", "ThermalExpansion",
-           "Vinet", "VolumeExpansion"]
+           "Vinet", "VolumeExpansion", "EquationOfState"]
