@@ -700,7 +700,8 @@ class TestCalibrantHeaders(unittest.TestCase):
                          v0=cell.volume)
         tmp = os.path.join(UtilsTest.tempdir, "CeO2_eos.D")
         config.save(tmp)
-        text = open(tmp).read()
+        with open(tmp) as fd:
+            text = fd.read()
         self.assertIn("# EoS: {", text)
         clone = CalibrantConfig.from_dspacing(tmp)
         self.assertEqual(clone.eos, config.eos)
