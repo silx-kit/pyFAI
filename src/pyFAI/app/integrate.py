@@ -70,6 +70,7 @@ def integrate_gui(options, args):
     from ..gui.IntegrationDialog import IntegrationDialog, IntegrationProcess
 
     app = qt.QApplication([])
+    app.setDesktopFileName("pyFAI-integrate")
 
     from ..gui.ApplicationContext import ApplicationContext
     settings = qt.QSettings(qt.QSettings.IniFormat,
