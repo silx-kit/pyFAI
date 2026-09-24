@@ -62,6 +62,7 @@ __date__ = "16/07/2026"
 __status__ = "development"
 
 import logging
+from typing import ClassVar
 from abc import ABC, abstractmethod
 from math import exp
 from scipy.optimize import brentq
@@ -111,7 +112,7 @@ class EquationOfState(ABC):
     name = None
     "Unique, human readable identifier of the model, defined by each subclass"
 
-    _registry = {}
+    _registry: ClassVar[dict[str, EquationOfState]] = {}  # class variable
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
