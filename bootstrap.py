@@ -32,7 +32,7 @@ def get_project_name(root_dir):
     :return: The name of the project stored in root_dir
     """
     print(f"Getting project name in {root_dir}")
-    
+
     with open(os.path.join(root_dir, "pyproject.toml")) as f:
         pyproject = tomli.loads(f.read())
     return pyproject.get("project", {}).get("name")
