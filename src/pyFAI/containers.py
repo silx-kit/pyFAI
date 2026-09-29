@@ -29,7 +29,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "29/09/2026"
 __status__ = "development"
 
 import collections
@@ -50,6 +50,19 @@ from .utils.decorators import deprecated_warning
 
 logger = logging.getLogger(__name__)
 
+
+def _to_center(edges: numpy.array) -> numpy.array:
+    """Convert an array of bin edges to their centers"""
+    return 0.5 * (edges[:-1] + edges[1:])
+
+def _to_edges(center: numpy.array) -> numpy.array:
+    """Convert an array of bin center to their edges, assuming a certain regularity"""
+    edges = numpy.zeros(len(center) + 1)
+    edges[1:-1] = _to_center(center)
+    delta = center[1:] - center[:-1]
+    edges[0] = edges[1] - delta[0]
+    edges[-1] = edges[-2] + delta[-1]
+    return edges
 
 # Few named tuples
 class PolarizationArray(NamedTuple):
@@ -241,6 +254,9 @@ class IntegrateResult(_CopyableTuple):
         self._sem = None  # standard error of the mean (error for the mean)
         self._poni = None  # Contains the geometry which was used for the integration
         self._weighted_average = None  # Should be True for weighted average and False for unweighted (legacy)
+        self._radial_range = None
+        self._azimut_range = None
+
 
     def __are_compatible__(self, other, strict:bool=True) -> None | str:
         """Ensure two objects are compatible to make some basic maths together.
@@ -709,6 +725,8 @@ class IntegrateResult(_CopyableTuple):
         """Re-linearize the radial dimension of the result
 
         :return: IntegrateResult with the same date but a linearized radial dimension
+
+        TODO: check the ranges are propagated accordingly !
         """
         log_unit = self.unit
         if "linear_unit" not in log_unit.extra_parameters:
@@ -723,6 +741,20 @@ class IntegrateResult(_CopyableTuple):
         result.radial[...] = radial_linear
         result._set_unit(lin_unit)
         return result
+
+    @property
+    def radial_range(self):
+        return self._radial_range
+
+    def _set_radial_range(self, radial_range:tuple):
+        self._radial_range = radial_range
+
+    @property
+    def azimut_range(self):
+        return self._azimut_range
+
+    def _set_azimuth_range(self, azimuth_range:tuple):
+        self._azimut_range = azimuth_range
 
 
 class Integrate1dResult(IntegrateResult):
@@ -953,15 +985,45 @@ class Integrate2dResult(IntegrateResult):
         self._azimuthal_unit = unit
 
 
-    def rebin1d(self) -> Integrate1dResult:
+    def rebin1d(self, *,
+                radial_range:tuple=None,
+                azimuth_range:tuple=None) -> Integrate1dResult:
         """Function that rebins an Integrate2dResult into a Integrate1dResult
-        It keeps the number of radial bins unchanged but rebin the azimuthal bins into a single one.
 
+        It keeps the radial bin-size unchanged but their number can vary and rebin the azimuthal bins into a single one.
+
+        :param radial_range: 2-tuple with the new minimum and maximum range in radial. Bin size remains unchanged
+        :param azimuth_range: 2-tuple with the new minimum and maximum range. Bins are collapsed along this dimension
         :return: Integrate1dResult
         """
-        bins_rad = self.radial
-        sum_signal = self.sum_signal.sum(axis=0)
-        sum_normalization = self.sum_normalization.sum(axis=0)
+        azimuth_bins = slice(None)
+        radial_bins = slice(None)
+        new_radial_range = None
+        new_azimuth_range = None
+        if azimuth_range is not None:
+            if self._azimuth_range:
+                edges = numpy.linspace(*self._azimuth_range, len(self.azimuthal) + 1)
+            else:  # assume close to regular binning
+                edges = _to_edges(self.azimuthal)
+
+            first_bin = numpy.where(edges>=min(azimuth_range))[0][0]
+            last_bin = numpy.where(edges<max(azimuth_range))[0][-1]
+            azimuth_bins = slice(first_bin, last_bin + 1)
+            new_radial_range = (edges[first_bin], edges[last_bin + 1])
+
+        if radial_range is not None:
+            if self._radial_range:
+                edges = numpy.linspace(*self._radial_range, len(self.radial) + 1)
+            else:  # assume close to regular binning
+                edges = _to_edges(self.radial)
+            first_bin = numpy.where(edges>=min(radial_range))[0][0]
+            last_bin = numpy.where(edges<max(radial_range))[0][-1]
+            radial_bins = slice(first_bin, last_bin + 1)
+            new_azimuth_range = (edges[first_bin], edges[last_bin + 1])
+
+        bins_rad = self.radial[radial_bins]
+        sum_signal = self.sum_signal[azimuth_bins, radial_bins].sum(axis=0)
+        sum_normalization = self.sum_normalization[azimuth_bins, radial_bins].sum(axis=0)
         intensity = numpy.empty(sum_signal.shape, dtype=numpy.float32)
 
         matching = {"sum_signal": sum_signal,
@@ -974,12 +1036,12 @@ class Integrate2dResult(IntegrateResult):
                       **kwargs, out=intensity)
 
         if self.sum_variance is not None:
-            matching["sum_variance"] = sum_variance = self.sum_variance.sum(axis=0)
+            matching["sum_variance"] = sum_variance = self.sum_variance[azimuth_bins, radial_bins].sum(axis=0)
             sem = numpy.zeros(sum_variance.shape, dtype=numpy.float32)
             self.EXPR_SEM(*(matching[key] for key in self.EXPR_SEM.input_names),
                           **kwargs, out=sem)
             result = Integrate1dResult(bins_rad, intensity, sem)
-            matching["sum_normalization2"] = sum_normalization2 = self.sum_normalization2.sum(axis=0)
+            matching["sum_normalization2"] = sum_normalization2 = self.sum_normalization2[azimuth_bins, radial_bins].sum(axis=0)
             result._set_sum_normalization2(sum_normalization2)
             result._set_sum_variance(sum_variance)
 
@@ -1007,6 +1069,8 @@ class Integrate2dResult(IntegrateResult):
         result._set_polarization_factor(self.polarization_factor)
         result._set_normalization_factor(self.normalization_factor)
         result._set_metadata(self.metadata)
+        result._set_radial_range(new_radial_range)
+        result._set_azimuth_range(new_azimuth_range)
         return result
 
 
