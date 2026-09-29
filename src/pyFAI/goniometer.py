@@ -563,16 +563,10 @@ class Goniometer:
             detector = Detector.factory(dico["detector"], dico.get("detector_config", None))
         return detector
 
+
     @classmethod
-    def sload(cls, filename):
-        """Class method for instantiating a Goniometer object from a JSON file
-
-        :param filename: name of the JSON file
-        :return: Goniometer object
-        """
-
-        with open(filename) as f:
-            dico = json.load(f)
+    def sload_from_dict(cls, dico: dict) -> "Goniometer":
+        
         if "trans_function" not in dico:
             raise RuntimeError("No translation function defined in JSON file")
         file_version = dico["content"]
@@ -597,6 +591,20 @@ class Goniometer:
                     detector=detector,
                     wavelength=dico.get("wavelength"))
         return gonio
+
+
+    @classmethod
+    def sload(cls, filename: str) -> "Goniometer":
+        """Class method for instantiating a Goniometer object from a JSON file
+
+        :param filename: name of the JSON file
+        :return: Goniometer object
+        """
+
+        with open(filename) as f:
+            dico = json.load(f)
+
+        return cls.sload_from_dict(dico)
 
 
 class SingleGeometry:
