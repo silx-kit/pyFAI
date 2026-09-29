@@ -74,13 +74,15 @@ PROJECT_NAME = get_project_name(PROJECT_DIR)
 
 def threads_per_core():
     """return the number of hyperthreads per core"""
-    archi = platform.machine()
+    archi = platform.machine().lower()
     smt = 1
     if "ppc" in archi:
         smt = 4
     elif "arm" in archi:
         smt = 1
     elif "x86" in archi:
+        smt = 2
+    elif "amd64" in archi:
         smt = 2
     else:
         logger.warning("Unknown CPU architecture %s, Unable to guess SMT level.", archi)

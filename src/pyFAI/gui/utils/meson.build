@@ -11,6 +11,7 @@ py.install_sources(
     'timeutils.py',
     'tree.py',
     'units.py',
+    'testutils.py',
     'unitutils.py',
     'validators.py'],
   pure: false,   # Will be installed next to binaries

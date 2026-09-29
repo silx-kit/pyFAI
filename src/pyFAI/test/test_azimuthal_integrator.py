@@ -40,6 +40,7 @@ import logging
 import os
 import time
 import unittest
+from typing import ClassVar
 
 import fabio
 import numpy
@@ -312,30 +313,134 @@ class TestAzimHalfFrelon(unittest.TestCase):
             self.assertLess(rwp, 0.1, f"Rwp trimmed-mean Cython/OpenCL: {rwp_ocl:.3f}")
         ref = ocl = pyt = rwp = rwp_ocl = rwp_pyt = None
 
+    RADIAL_KWARGS: ClassVar[dict] = {"npt": 360, "npt_rad": 10,
+                                     "radial_range": (3.6, 3.9),
+                                     "radial_unit": "2th_deg"}
+    """Arguments of integrate_radial shared by test_radial and its diagnostic"""
+
+    RADIAL_INTENSITY = (120, 10000)
+    """Bounds the intensity of integrate_radial has to stay within"""
+
+    def radial_report(self, result, method):
+        """Describe a failed integrate_radial, to tell why it went wrong
+
+        The OpenCL variant of this test fails now and then on the CI, with an
+        intensity which is not merely out of tolerance but negative. It could
+        never be reproduced on a developer machine, so the report is built here,
+        where the failure happens.
+
+        :param result: the Integrate1dResult which did not pass the checks
+        :param method: integration method used to compute it
+        :return: a multi-line string, to be appended to the failure message
+        """
+        lines = ["", f"Diagnostic of the failure (method={method}):"]
+
+        def collect(title, function):
+            "Run one step of the report, a broken step must not hide the failure"
+            try:
+                lines.extend(function())
+            except Exception as error:  # noqa: BLE001 - diagnostic must not raise
+                lines.append(f"  {title}: unavailable ({type(error).__name__}: {error})")
+
+        intensity = numpy.asarray(result[1])
+
+        def describe_result():
+            low, _high = self.RADIAL_INTENSITY
+            bad = numpy.where(~(intensity > low))[0]
+            out = [f"  intensity: min={intensity.min():.5g} max={intensity.max():.5g} "
+                   f"mean={intensity.mean():.5g}",
+                   f"  bins out of tolerance: {bad.size}/{intensity.size}, "
+                   f"of which {int((intensity < 0).sum())} are negative",
+                   f"  first ones: {[(int(i), float(intensity[i])) for i in bad[:8]]}"]
+            return out
+        collect("result", describe_result)
+
+        def describe_device():
+            out = []
+            for key, engine in self.ai.engines.items():
+                implementation = getattr(engine, "engine", None)
+                context = getattr(implementation, "ctx", None)
+                if context is None:
+                    continue
+                device = context.devices[0]
+                out.append(f"  engine {key}: {device.platform.name.strip()} / "
+                           f"{device.name.strip()}")
+                out.append(f"    OpenCL {device.version.strip()}, "
+                           f"{device.max_compute_units} compute units, "
+                           f"max workgroup {device.max_work_group_size}")
+                # only the integration kernels matter here, and their workgroup
+                # size is what the tree-reduction depends on
+                workgroups = {name: size
+                              for name, size in implementation.workgroup_size.items()
+                              if name.startswith("csr_")}
+                out.append(f"    BLOCK_SIZE={implementation.BLOCK_SIZE}, "
+                           f"workgroups={workgroups}")
+            return out or ["  no OpenCL engine cached on the integrator"]
+        collect("device", describe_device)
+
+        def compare_with_cython():
+            "The same integration on the CPU, to tell a wrong result from a wrong test"
+            reference = self.ai.integrate_radial(self.data, method=("full", "CSR", "cython"),
+                                                 **self.RADIAL_KWARGS)
+            expected = numpy.asarray(reference[1])
+            delta = abs(intensity - expected)
+            worst = int(numpy.argmax(delta))
+            return [f"  cython reference: min={expected.min():.5g} max={expected.max():.5g}",
+                    f"  largest deviation: {delta.max():.5g} at bin {worst} "
+                    f"(got {intensity[worst]:.5g}, expected {expected[worst]:.5g})"]
+        collect("cython reference", compare_with_cython)
+
+        def describe_bins():
+            "Sums the 2D integration produced, which integrate_radial reduces"
+            res2d = self.ai.integrate2d_ng(self.data,
+                                           self.RADIAL_KWARGS["npt_rad"],
+                                           self.RADIAL_KWARGS["npt"],
+                                           radial_range=self.RADIAL_KWARGS["radial_range"],
+                                           unit=self.RADIAL_KWARGS["radial_unit"],
+                                           method=method)
+            signal = res2d.sum_signal.sum(axis=-1)
+            norm = res2d._sum_normalization.sum(axis=-1)
+            count = res2d.count.sum(axis=-1)
+            out = [f"  normalization: min={norm.min():.5g} median={numpy.median(norm):.5g}, "
+                   f"{int((norm <= 0).sum())} bins <= 0",
+                   f"  empty bins (count == 0): {int((count == 0).sum())}"]
+            for i in numpy.where(~(intensity > self.RADIAL_INTENSITY[0]))[0][:4]:
+                out.append(f"    bin {int(i)}: count={count[i]:.4g} norm={norm[i]:.6g} "
+                           f"signal={signal[i]:.6g}")
+            return out
+        collect("bins", describe_bins)
+
+        return "\n".join(lines)
+
+    def assertRadialResult(self, result, method, chi_min, chi_max):
+        """Check one result of integrate_radial, reporting what went wrong
+
+        :param result: the Integrate1dResult to check
+        :param method: integration method used, quoted in the report
+        :param chi_min: the azimuthal angle has to start below this value
+        :param chi_max: ... and to end above this one
+        """
+        low, high = self.RADIAL_INTENSITY
+        checks = ((result[0].min() < chi_min, f"chi min at {chi_min}"),
+                  (result[0].max() > chi_max, f"chi max at {chi_max}"),
+                  (result[1].min() > low, "intensity min in ok"),
+                  (result[1].max() < high, "intensity max in ok"))
+        failed = [message for passed, message in checks if not passed]
+        if failed:
+            self.fail("; ".join(failed) + self.radial_report(result, method))
+
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_radial(self):
         "Non regression for #1602"
-        res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
-                                       radial_range=(3.6, 3.9), radial_unit="2th_deg")
-        self.assertLess(res[0].min(), -179, "chi min at -180")
-        self.assertGreater(res[0].max(), 179, "chi max at +180")
-        self.assertGreater(res[1].min(), 120, "intensity min in ok")
-        self.assertLess(res[1].max(), 10000, "intensity max in ok")
+        res = self.ai.integrate_radial(self.data, **self.RADIAL_KWARGS)
+        self.assertRadialResult(res, "default", -179, 179)
 
-        res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
-                                       radial_range=(3.6, 3.9), radial_unit="2th_deg", unit="chi_rad")
-        self.assertLess(res[0].min(), -3, "chi min at -3rad")
-        self.assertGreater(res[0].max(), 0, "chi max at +3rad")
-        self.assertGreater(res[1].min(), 120, "intensity min in ok")
-        self.assertLess(res[1].max(), 10000, "intensity max in ok")
+        res = self.ai.integrate_radial(self.data, unit="chi_rad", **self.RADIAL_KWARGS)
+        self.assertRadialResult(res, "default, chi_rad", -3, 0)
 
-        res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
-                                       radial_range=(3.6, 3.9), radial_unit="2th_deg",
-                                       method=("full", "CSR", "opencl"))
-        self.assertLess(res[0].min(), -179, "chi min at -180")
-        self.assertGreater(res[0].max(), 179, "chi max at +180")
-        self.assertGreater(res[1].min(), 120, "intensity min in ok")
-        self.assertLess(res[1].max(), 10000, "intensity max in ok")
+        method = ("full", "CSR", "opencl")
+        res = self.ai.integrate_radial(self.data, method=method, **self.RADIAL_KWARGS)
+        self.assertRadialResult(res, method, -179, 179)
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_separate2(self):
