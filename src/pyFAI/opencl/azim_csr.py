@@ -243,6 +243,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
         For azimuthal integration, especially the 2D variant, the
         smallest possible is the size of a warp/wavefront.
 
+        The value has to be a power of two: the tree-reduction of the kernels
+        halves the number of active threads at every round, and would drop the
+        odd element of a round otherwise.
+
         The method can be overwritten by derived classes to select larger workgoup
 
         :param block_size: Input workgroup size (block is the cuda name)
