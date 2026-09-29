@@ -566,7 +566,7 @@ class Goniometer:
 
     @classmethod
     def sload_from_dict(cls, dico: dict) -> "Goniometer":
-        
+
         if "trans_function" not in dico:
             raise RuntimeError("No translation function defined in JSON file")
         file_version = dico["content"]
