@@ -31,12 +31,13 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2026"
+__date__ = "17/09/2026"
 
 import logging
 import os.path
 import shutil
 import unittest
+from unittest import mock
 
 import numpy
 
@@ -115,6 +116,13 @@ class TestWorker(unittest.TestCase):
     def test_constructor(self):
         w = Worker()
         self.assertIsNotNone(w)
+
+    def test_warmup_without_input_shape(self):
+        worker = Worker()
+        self.assertIsNone(worker.shape)
+        with mock.patch.object(worker, "_warmup") as warmup:
+            worker.warmup(sync=True)
+        warmup.assert_not_called()
 
     def test_process_1d(self):
         ai_result = Integrate1dResult(numpy.array([0, 1]), numpy.array([2, 3]))

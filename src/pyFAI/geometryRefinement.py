@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "19/09/2026"
 __status__ = "development"
 
 import copy
@@ -331,7 +331,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                         rot3=rot3,
                         fixed=fixed,
                     )
-        if not worked:
+        if not worked and nbpt:
             poni1 = smallRing_in_m[0].sum() / nbpt
             poni2 = smallRing_in_m[1].sum() / nbpt
             self.update_values(poni1=poni1, poni2=poni2, fixed=fixed)

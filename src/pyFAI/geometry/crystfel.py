@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "15/09/2026"
 __status__ = "production"
 
 import logging
@@ -145,15 +145,19 @@ def coord(string):
     return res
 
 
-def build_geometry(config):
+def build_geometry(config, dtype=numpy.float64):
     """Build a detector from the parsed config
 
     :param config: dict as parsed by parse_crystfel_geom
+    :param dtype: floating point type used for the intermediate position arrays.
+        The corners are stored as float32 by the detector in any case, so
+        `numpy.float32` halves the memory needed to build large detectors,
+        at the cost of the precision of the intermediate calculation.
     :return: Detector instance
     """
     detector = build_detector(config)
-    x = numpy.zeros(detector.shape)
-    y = numpy.zeros(detector.shape)
+    x = numpy.zeros(detector.shape, dtype=dtype)
+    y = numpy.zeros(detector.shape, dtype=dtype)
     mask = numpy.ones(detector.shape, numpy.int8)
 
     for name, module in config.items():
@@ -198,7 +202,7 @@ def build_geometry(config):
     y -= ymin
 
     # crystfel uses the module/pixel corner, so no half pixel shift
-    pos = numpy.zeros(detector.shape + (4, 3))
+    pos = numpy.zeros(detector.shape + (4, 3), dtype=dtype)
     pos[:,:, 0, 1] = (y - 0.0) * detector.pixel1
     pos[:,:, 0, 2] = (x - 0.0) * detector.pixel2
     pos[:,:, 1, 1] = (y + 1.0) * detector.pixel1

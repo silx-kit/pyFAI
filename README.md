@@ -67,8 +67,12 @@ pip install -r requirements.txt
 Build and test it:
 
 ```sh
-python run_tests.py
+python run_pytest.py
 ```
+
+This builds the Cython extensions and runs the test-suite in parallel, one worker per
+physical core (`run_tests.py` does the same sequentially, and takes about four times
+longer).
 
 For its tests, pyFAI downloads test images from the internet. Depending on your network connection and your local network configuration, you may have to set up a proxy configuration like this (not needed at ESRF):
 

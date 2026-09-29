@@ -31,7 +31,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2025"
+__date__ = "15/09/2026"
 
 import logging
 import sys
@@ -79,6 +79,7 @@ from . import (
     test_orientation,
     test_parallax,
     test_peak_picking,
+    test_pickle,
     test_polarization,
     test_preproc,
     test_pyfai_api,
@@ -116,6 +117,7 @@ def suite():
     testsuite.addTest(test_geometry_refinement.suite())
     testsuite.addTest(test_azimuthal_integrator.suite())
     testsuite.addTest(test_peak_picking.suite())
+    testsuite.addTest(test_pickle.suite())
     testsuite.addTest(test_geometry.suite())
     testsuite.addTest(test_orientation.suite())
     testsuite.addTest(test_mask.suite())

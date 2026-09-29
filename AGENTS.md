@@ -25,6 +25,28 @@ python run_tests.py -o pyFAI.test.test_bug_regression
 # Run tests with coverage
 python run_tests.py --coverage
 
+# Same test-suite, but in parallel: ~4x faster than run_tests.py. Same options,
+# same test names; -n sets the number of workers (default: one per physical core).
+# Requires the `test` extra: pip install pytest pytest-xdist
+python run_pytest.py
+python run_pytest.py -n 8
+python run_pytest.py -o pyFAI.test.test_crystallography
+python run_pytest.py pyFAI.test.test_crystallography.TestCrystallography.test_caglioti
+
+# Time and memory of every test, written to profile.json (forces a serial run)
+python run_pytest.py -m
+
+# Coverage: terminal summary + coverage.rst, the table of doc/source/coverage.rst
+# (needs pytest-cov; the modules of the test-suite are left out of the report)
+python run_pytest.py -c
+
+# Arguments after `--` reach pytest untouched
+python run_pytest.py -- -k distortion --durations=10
+
+# Straight to pytest, when the options of run_pytest.py are not needed
+python bootstrap.py -m pytest --pyargs pyFAI
+PYTEST_XDIST_AUTO_NUM_WORKERS=8 python bootstrap.py -m pytest --pyargs pyFAI
+
 # Build with meson/ninja directly (after initial setup)
 # The build directory is named build_py3xx, one per Python version (build_py313,
 # build_py314, ...), so several interpreters can be used side by side.
@@ -37,6 +59,26 @@ pre-commit run ruff-check --all-files
 `bootstrap.py` is the standard dev entry point: it recompiles Cython when needed and sets
 `PYTHONPATH` so the local tree takes precedence. Never `import pyFAI` directly from the
 source tree without it.
+
+`run_pytest.py` is to pytest what `run_tests.py` is to unittest: it rebuilds the project,
+translates the dotted unittest test names into the `module::Class::method` form pytest
+expects, and turns the options into the environment variables the workers read. The two
+runners must stay green together.
+
+The pytest options live in `[tool.pytest.ini_options]` of `pyproject.toml`; the
+`-p no:logging` in there is required, as the logging plugin of pytest installs a second
+handler on the root logger and `pyFAI.utils.logging_utils.set_prepost_emit_callback`
+(used by `pyFAI-integrate`) refuses to patch a logger which has more than one.
+`src/pyFAI/conftest.py` does what `run_tests.py` does around the suite: it reads the
+`WITH_QT_TEST`/`PYFAI_OPENCL`/… environment variables, pre-fetches the test images from
+the controller process (concurrent workers would race on the cache) and skips collecting
+`opencl/test` or `gui/test` when the corresponding option is off — those modules fail at
+*import* time when pyopencl or Qt is missing, which `unittest` never notices because
+`suite()` imports them lazily.
+
+Both runners must stay green: `run_tests.py` builds its suite from the hand-maintained
+`suite()` functions of `test_all.py`, while pytest collects every `test_*.py` it finds. A
+module missing from `test_all.py` is simply never run by `run_tests.py`.
 
 `run_tests.py` rebuilds *and reinstalls* into `build_py3xx/lib/.../site-packages`, which is
 the copy the tests import: a source file which is not reinstalled is simply not tested. If

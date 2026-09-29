@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "20/09/2026"
 __status__ = "production"
 
 from typing import ClassVar
@@ -79,7 +79,7 @@ try:
     from ..ext._convolution import gaussian_filter
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
-    from scipy.ndimage.filters import gaussian_filter
+    from scipy.ndimage import gaussian_filter
 
 try:
     from ..ext import morphology

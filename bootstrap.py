@@ -31,8 +31,9 @@ def get_project_name(root_dir):
     :param str root_dir: Directory where to run the command.
     :return: The name of the project stored in root_dir
     """
-    logger.debug("Getting project name in %s", root_dir)
-    with open("pyproject.toml") as f:
+    print(f"Getting project name in {root_dir}")
+
+    with open(os.path.join(root_dir, "pyproject.toml")) as f:
         pyproject = tomli.loads(f.read())
     return pyproject.get("project", {}).get("name")
 

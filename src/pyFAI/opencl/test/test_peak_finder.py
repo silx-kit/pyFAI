@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2020-2021 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2025"
+__date__ = "20/09/2026"
 
 import logging
 import unittest
@@ -186,8 +186,8 @@ class TestOclPeakFinder(unittest.TestCase):
 
         s1 = numpy.vstack((self.ref["x"], self.ref["y"])).T
         s2 = numpy.vstack((res["pos1"], res["pos0"])).T
-        from scipy.spatial import distance_matrix
-        dm = distance_matrix(s1, s2)
+        from scipy.spatial import distance
+        dm = distance.cdist(s1, s2)
         self.assertLess(len(res), np, "Many more peaks with default settings")
         self.assertLess(numpy.median(dm.min(axis=1)), 1, "Most peaks are found")
 
