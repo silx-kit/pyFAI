@@ -283,6 +283,8 @@ class IntegrateResult(_CopyableTuple):
         "_poni",
         "_weighted_average",
         "_dummy",
+        "_radial_range",
+        "_azimuth_range",
     }
     # Those expression are used to calculated mean, std and sem
     EXPR_AVG = numexpr.NumExpr("where(sum_normalization == 0.0, dummy, sum_signal/sum_normalization)")

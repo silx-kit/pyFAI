@@ -103,6 +103,28 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(numpy.allclose(res1d[1], ref1d[1]), "intensity matches")
         self.assertTrue(numpy.allclose(res1d[2], ref1d[2]), "sem matches")
 
+    def test_copy(self):
+        "Every attribute survives copy and deepcopy, the ranges included"
+        kwargs = {"method": ("no", "histogram", "cython"),
+                  "error_model": "poisson",
+                  "radial_range": (0.0, 10.0),
+                  "azimuth_range": (-90.0, 90.0)}
+        for res in (self.ai.integrate1d(self.img, 50, **kwargs),
+                    self.ai.integrate2d(self.img, 50, 36, **kwargs)):
+            name = type(res).__name__
+            # an attribute missing from COPYABLE_ATTR is silently dropped by copy
+            self.assertEqual(set(vars(res)) - set(res.COPYABLE_ATTR), set(),
+                             f"{name}: every attribute is declared in COPYABLE_ATTR")
+            self.assertIsNotNone(res.radial_range, f"{name}: radial_range was recorded")
+            self.assertIsNotNone(res.azimuth_range, f"{name}: azimuth_range was recorded")
+            for copied in (copy.copy(res), copy.deepcopy(res)):
+                self.assertEqual(copied.radial_range, res.radial_range,
+                                 f"{name}: radial_range is copied")
+                self.assertEqual(copied.azimuth_range, res.azimuth_range,
+                                 f"{name}: azimuth_range is copied")
+                self.assertTrue(numpy.allclose(copied.sum_signal, res.sum_signal),
+                                f"{name}: sum_signal is copied")
+
     def test_symmetrize(self):
         res2d = self.ai.integrate2d(
             self.img,
