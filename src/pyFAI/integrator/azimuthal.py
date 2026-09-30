@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2026"
+__date__ = "30/09/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -464,8 +464,8 @@ class AzimuthalIntegrator(Integrator):
         result._set_poni(PoniFile(self))
         result._set_has_solidangle_correction(correctSolidAngle)
         result._set_weighted_average(method.weighted_average)
-        result._set_radial_range(radial_range)
-        result._set_azimuth_range(azimuth_range)
+        result._set_radial_range(radial_range, unit)
+        result._set_azimuth_range(azimuth_range, units.CHI_DEG)
 
         if filename is not None:
             save_integrate_result(filename, result)
@@ -549,8 +549,11 @@ class AzimuthalIntegrator(Integrator):
         result._set_normalization_factor(normalization_factor)
         result._set_method = res.method
         result._set_compute_engine = res.compute_engine
-        result._set_radial_range(radial_range)
-        result._set_azimuth_range(azimuth_range)
+        # both ranges are already scaled by integrate2d_ng; the azimuthal one, which
+        # is the axis of this result, still has to follow `azimuth_unit`
+        result._set_radial_range(res.radial_range)
+        result._set_azimuth_range(None if res.azimuth_range is None else
+                                  tuple(i * azim_scale for i in res.azimuth_range))
         return result
 
 
@@ -1091,8 +1094,8 @@ class AzimuthalIntegrator(Integrator):
             result._set_sum_variance(var2d)
             result._set_std(std)
             result._set_sem(sem)
-        result._set_radial_range(radial_range)
-        result._set_azimuth_range(azimuth_range)
+        result._set_radial_range(radial_range, radial_unit)
+        result._set_azimuth_range(azimuth_range, azimuth_unit)
         if filename is not None:
             save_integrate_result(filename, result)
         return result
@@ -1546,8 +1549,8 @@ class AzimuthalIntegrator(Integrator):
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         result._set_error_model(error_model)
-        result._set_radial_range(radial_range)
-        result._set_azimuth_range(azimuth_range)
+        result._set_radial_range(radial_range, unit)
+        result._set_azimuth_range(azimuth_range, units.CHI_DEG)
 
         return result
 
@@ -2020,8 +2023,8 @@ class AzimuthalIntegrator(Integrator):
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         result._set_error_model(error_model)
-        result._set_radial_range(radial_range)
-        result._set_azimuth_range(azimuth_range)
+        result._set_radial_range(radial_range, unit)
+        result._set_azimuth_range(azimuth_range, units.CHI_DEG)
 
         return result
 
