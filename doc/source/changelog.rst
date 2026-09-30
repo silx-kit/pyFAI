@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 27/09/2026
+:Date: 30/09/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -11,6 +11,7 @@ Change-log of versions
 - New features:
 
   * `MultiModule.display()` draws the modules of a detector and the displacement of the corners highlighted (#2956)
+  * `Integrate2dResult.rebin1d()` gains `radial_range` and `azimuth_range`, to extract the pattern of an azimuthal sector out of a single 2D integration (#2961)
 
 - Bug fixes:
 
