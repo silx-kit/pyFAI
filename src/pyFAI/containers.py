@@ -29,7 +29,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2026"
+__date__ = "30/09/2026"
 __status__ = "development"
 
 import collections
@@ -56,13 +56,73 @@ def _to_center(edges: numpy.array) -> numpy.array:
     return 0.5 * (edges[:-1] + edges[1:])
 
 def _to_edges(center: numpy.array) -> numpy.array:
-    """Convert an array of bin center to their edges, assuming a certain regularity"""
+    """Convert an array of bin center to their edges, assuming a certain regularity
+
+    Use `_check_regular_binning` beforehand to validate this assumption.
+    """
     edges = numpy.zeros(len(center) + 1)
     edges[1:-1] = _to_center(center)
     delta = center[1:] - center[:-1]
     edges[0] = edges[1] - delta[0]
     edges[-1] = edges[-2] + delta[-1]
     return edges
+
+def _check_regular_binning(centers: numpy.array, name: str, rtol: float=1e-3) -> bool:
+    """Warn when the bins of an axis do not all share the same size.
+
+    Both ways of recovering the boundaries of the bins, from the stored range or
+    from the position of their centers, assume a regular binning: the result is
+    only an approximation when this is not the case.
+
+    :param centers: position of the center of every bin
+    :param name: name of the axis, used in the warning message
+    :param rtol: relative tolerance on the bin size
+    :return: True when the binning is regular
+    """
+    delta = centers[1:] - centers[:-1]
+    if delta.size == 0 or numpy.allclose(delta, delta[0], rtol=rtol):
+        return True
+    logger.warning("The %s axis is not regularly binned (bin size from %s to %s): "
+                   "the position of the bin boundaries is only an approximation.",
+                   name, delta.min(), delta.max())
+    return False
+
+
+def _scale_range(value_range: tuple, unit=None) -> tuple:
+    """Convert a range from the internal representation of pyFAI to a public unit
+
+    :param value_range: 2-tuple with the lower and upper bound, or None
+    :param unit: unit of the axis. None (the default) leaves the range untouched,
+                 which is what is needed when it is already in the public unit.
+    :return: 2-tuple of float, or None
+    """
+    if value_range is None:
+        return None
+    scale = getattr(unit, "scale", 1.0)
+    return tuple(float(i) * scale for i in value_range)
+
+
+def _select_bins(centers: numpy.array, edges: numpy.array, requested: tuple, name: str) -> tuple:
+    """Select the bins of an axis which lie inside the requested range.
+
+    The selection is performed on the *center* of the bins, which is half a bin
+    away from any boundary: this makes it immune to the rounding errors which
+    plague a comparison of the bin edges with the requested limits.
+
+    :param centers: position of the center of every bin
+    :param edges: position of the len(centers)+1 boundaries of those bins
+    :param requested: 2-tuple with the requested minimum and maximum
+    :param name: name of the parameter, used in the error message
+    :return: 2-tuple with the slice of the selected bins and the range they actually cover
+    """
+    inside = numpy.where(numpy.logical_and(centers >= min(requested),
+                                           centers <= max(requested)))[0]
+    if len(inside) == 0:
+        raise ValueError(f"{name}={requested} does not contain any bin of the result")
+    first_bin = inside[0]
+    last_bin = inside[-1]
+    return slice(first_bin, last_bin + 1), (edges[first_bin], edges[last_bin + 1])
+
 
 # Few named tuples
 class PolarizationArray(NamedTuple):
@@ -254,8 +314,8 @@ class IntegrateResult(_CopyableTuple):
         self._sem = None  # standard error of the mean (error for the mean)
         self._poni = None  # Contains the geometry which was used for the integration
         self._weighted_average = None  # Should be True for weighted average and False for unweighted (legacy)
-        self._radial_range = None
-        self._azimut_range = None
+        self._radial_range = None  # stored in the public unit of the radial axis
+        self._azimuth_range = None  # stored in the public unit of the azimuthal axis
 
 
     def __are_compatible__(self, other, strict:bool=True) -> None | str:
@@ -744,17 +804,42 @@ class IntegrateResult(_CopyableTuple):
 
     @property
     def radial_range(self):
+        """Range covered by the radial axis, in the same unit as the `radial` array
+
+        :rtype: 2-tuple of float, or None when the whole range was integrated
+        """
         return self._radial_range
 
-    def _set_radial_range(self, radial_range:tuple):
-        self._radial_range = radial_range
+    def _set_radial_range(self, radial_range:tuple, unit=None):
+        """Store the range covered by the radial axis.
+
+        :param radial_range: 2-tuple with the lower and upper bound, or None
+        :param unit: radial unit. When provided, `radial_range` is expected in the
+                     internal representation of pyFAI and gets scaled to this unit,
+                     so that the stored range always matches the `radial` array.
+        """
+        self._radial_range = _scale_range(radial_range, unit)
 
     @property
-    def azimut_range(self):
-        return self._azimut_range
+    def azimuth_range(self):
+        """Range covered by the azimuthal axis, in the same unit as the `azimuthal` array
 
-    def _set_azimuth_range(self, azimuth_range:tuple):
-        self._azimut_range = azimuth_range
+        Degrees for a 1D result, which has no azimuthal axis of its own.
+
+        :rtype: 2-tuple of float, or None when the whole range was integrated
+        """
+        return self._azimuth_range
+
+    def _set_azimuth_range(self, azimuth_range:tuple, unit=None):
+        """Store the range covered by the azimuthal axis.
+
+        :param azimuth_range: 2-tuple with the lower and upper bound, or None
+        :param unit: azimuthal unit. When provided, `azimuth_range` is expected in
+                     the internal representation of pyFAI (radians) and gets scaled
+                     to this unit, so that the stored range always matches the
+                     `azimuthal` array.
+        """
+        self._azimuth_range = _scale_range(azimuth_range, unit)
 
 
 class Integrate1dResult(IntegrateResult):
@@ -992,6 +1077,11 @@ class Integrate2dResult(IntegrateResult):
 
         It keeps the radial bin-size unchanged but their number can vary and rebin the azimuthal bins into a single one.
 
+        Both ranges are expressed in the unit of the matching axis of the result,
+        i.e. the one of the `radial` and `azimuthal` arrays. Only whole bins are
+        selected: the range actually covered is available as the `radial_range`
+        and `azimuth_range` of the returned object.
+
         :param radial_range: 2-tuple with the new minimum and maximum range in radial. Bin size remains unchanged
         :param azimuth_range: 2-tuple with the new minimum and maximum range. Bins are collapsed along this dimension
         :return: Integrate1dResult
@@ -1001,25 +1091,22 @@ class Integrate2dResult(IntegrateResult):
         new_radial_range = None
         new_azimuth_range = None
         if azimuth_range is not None:
+            _check_regular_binning(self.azimuthal, "azimuthal")
             if self._azimuth_range:
                 edges = numpy.linspace(*self._azimuth_range, len(self.azimuthal) + 1)
             else:  # assume close to regular binning
                 edges = _to_edges(self.azimuthal)
-
-            first_bin = numpy.where(edges>=min(azimuth_range))[0][0]
-            last_bin = numpy.where(edges<max(azimuth_range))[0][-1]
-            azimuth_bins = slice(first_bin, last_bin + 1)
-            new_radial_range = (edges[first_bin], edges[last_bin + 1])
+            azimuth_bins, new_azimuth_range = _select_bins(self.azimuthal, edges,
+                                                           azimuth_range, "azimuth_range")
 
         if radial_range is not None:
+            _check_regular_binning(self.radial, "radial")
             if self._radial_range:
                 edges = numpy.linspace(*self._radial_range, len(self.radial) + 1)
             else:  # assume close to regular binning
                 edges = _to_edges(self.radial)
-            first_bin = numpy.where(edges>=min(radial_range))[0][0]
-            last_bin = numpy.where(edges<max(radial_range))[0][-1]
-            radial_bins = slice(first_bin, last_bin + 1)
-            new_azimuth_range = (edges[first_bin], edges[last_bin + 1])
+            radial_bins, new_radial_range = _select_bins(self.radial, edges,
+                                                         radial_range, "radial_range")
 
         bins_rad = self.radial[radial_bins]
         sum_signal = self.sum_signal[azimuth_bins, radial_bins].sum(axis=0)
@@ -1061,7 +1148,7 @@ class Integrate2dResult(IntegrateResult):
         result._set_method(self.method)
         result._set_unit(self.radial_unit)
         # result._set_azimuthal_unit(self.azimuth_unit)
-        result._set_count(self.count.sum(axis=0))
+        result._set_count(self.count[azimuth_bins, radial_bins].sum(axis=0))
         # result._set_sum(sum_)
         result._set_has_dark_correction(self.has_dark_correction)
         result._set_has_flat_correction(self.has_flat_correction)
