@@ -31,8 +31,8 @@ Simple test for collective functions
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
-__copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2026"
+__copyright__ = "2013-2026 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "20/09/2026"
 
 import logging
 import platform
@@ -92,10 +92,24 @@ class TestGroupFunction(unittest.TestCase):
         self.program = pyopencl.Program(self.ctx, get_opencl_code("pyfai:openCL/collective/reduction.cl")+
                                         get_opencl_code("pyfai:openCL/collective/scan.cl")+
                                         get_opencl_code("pyfai:openCL/collective/comb_sort.cl")).build()
+        self.test_sum_int_reduction = self.program.test_sum_int_reduction
+        self.test_sum_int_atomic = self.program.test_sum_int_atomic
+        self.test_cumsum = self.program.test_cumsum
+        self.test_sum_int_reduction = self.program.test_sum_int_reduction
+        self.test_blelloch_multi = self.program.test_blelloch_multi
+        self.test_combsort_float = self.program.test_combsort_float
+        self.test_combsort_float4 = self.program.test_combsort_float4
 
     def tearDown(self):
         self.img = self.data = None
         self.data_d = self.sum_d = self.program = None
+        self.test_sum_int_reduction = None
+        self.test_sum_int_atomic = None
+        self.test_cumsum = None
+        self.test_sum_int_reduction = None
+        self.test_blelloch_multi = None
+        self.test_combsort_float = None
+        self.test_combsort_float4 = None
 
     @unittest.skipUnless(ocl, "pyopencl is missing")
     def test_reduction(self):
@@ -107,7 +121,7 @@ class TestGroupFunction(unittest.TestCase):
         for i in range(maxi):
             wg = 1 << i
             try:
-                evt = self.program.test_sum_int_reduction(self.queue, (self.shape,), (wg,),
+                evt = self.test_sum_int_reduction(self.queue, (self.shape,), (wg,),
                                                           self.data_d.data,
                                                           self.sum_d.data,
                                                           pyopencl.LocalMemory(4*wg))
@@ -132,7 +146,7 @@ class TestGroupFunction(unittest.TestCase):
         for i in range(maxi):
             wg = 1 << i
             try:
-                evt = self.program.test_sum_int_atomic(self.queue, (self.shape,), (wg,),
+                evt = self.test_sum_int_atomic(self.queue, (self.shape,), (wg,),
                                                           self.data_d.data,
                                                           self.sum_d.data,
                                                           pyopencl.LocalMemory(4*wg))
@@ -158,7 +172,7 @@ class TestGroupFunction(unittest.TestCase):
         for i in range(maxi):
             wg = 1 << i
             try:
-                evt = self.program.test_cumsum(self.queue, (self.shape,), (wg,),
+                evt = self.test_cumsum(self.queue, (self.shape,), (wg,),
                                                           data_d.data,
                                                           scan_d.data,
                                                           pyopencl.LocalMemory(2*4*wg))
@@ -184,7 +198,7 @@ class TestGroupFunction(unittest.TestCase):
         for i in range(maxi):
             wg = 1 << i
             try:
-                evt = self.program.test_blelloch_scan(self.queue, (self.shape//2,), (wg,),
+                evt = self.test_blelloch_scan(self.queue, (self.shape//2,), (wg,),
                                                           data_d.data,
                                                           scan_d.data,
                                                           pyopencl.LocalMemory(2*4*wg))
@@ -213,7 +227,7 @@ class TestGroupFunction(unittest.TestCase):
         for i in range(maxi):
             wg = 1 << i
             try:
-                evt = self.program.test_blelloch_multi(self.queue, (wg,), (wg,),
+                evt = self.test_blelloch_multi(self.queue, (wg,), (wg,),
                                                        data_d.data,
                                                        scan_d.data,
                                                        numpy.int32(self.shape),
@@ -252,7 +266,7 @@ class TestGroupFunction(unittest.TestCase):
             data_d = pyopencl.array.to_device(self.queue, data)
             # print(ref.shape, (ref.shape[0],min(wg, self.max_valid_wg)), (1, min(wg, self.max_valid_wg)), positions)
             try:
-                evt = self.program.test_combsort_float(self.queue, (min(wg, self.max_valid_wg), ref.shape[0]), (min(wg, self.max_valid_wg), 1),
+                evt = self.test_combsort_float(self.queue, (min(wg, self.max_valid_wg), ref.shape[0]), (min(wg, self.max_valid_wg), 1),
                                                        data_d.data,
                                                        positions_d.data,
                                                        pyopencl.LocalMemory(4*min(wg, self.max_valid_wg)))
@@ -292,7 +306,7 @@ class TestGroupFunction(unittest.TestCase):
             data_d = pyopencl.array.to_device(self.queue, data)
             # print(ref.shape, (ref.shape[0],min(wg, self.max_valid_wg)), (1, min(wg, self.max_valid_wg)), positions)
             try:
-                evt = self.program.test_combsort_float4(self.queue, (min(wg, self.max_valid_wg), ref.shape[0]), (min(wg, self.max_valid_wg),1),
+                evt = self.test_combsort_float4(self.queue, (min(wg, self.max_valid_wg), ref.shape[0]), (min(wg, self.max_valid_wg),1),
                                                        data_d.data,
                                                        positions_d.data,
                                                        pyopencl.LocalMemory(4*min(wg, self.max_valid_wg)))

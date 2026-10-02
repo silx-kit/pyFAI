@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "20/09/2026"
 
 import copy
 import gc
@@ -557,7 +557,8 @@ class TestSaxs(unittest.TestCase):
     def test_empty(self):
         """Non regression about #1760"""
         ai = AzimuthalIntegrator(detector="Imxpad S10", wavelength=1e-10)
-        img = numpy.empty(ai.detector.shape)
+        rng = UtilsTest.get_rng()
+        img = rng.poisson(100, size=ai.detector.shape)
         ref = ai.empty
         target = -42
         self.assertNotEqual(ref, target, "buggy test !")
