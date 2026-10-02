@@ -40,6 +40,7 @@ __docformat__ = 'restructuredtext'
 import json
 import logging
 import os
+from pathlib import Path
 from collections import OrderedDict, namedtuple
 
 import numpy
@@ -594,15 +595,28 @@ class Goniometer:
 
 
     @classmethod
-    def sload(cls, filename: str) -> "Goniometer":
-        """Class method for instantiating a Goniometer object from a JSON file
+    def sload(cls, anything: str|dict|Path) -> "Goniometer":
+        """Alternative constructor, instantiating a Goniometer object, if possible.
 
-        :param filename: name of the JSON file
+        :param anything: can be a dict with the config, a string or the name of the JSON file
         :return: Goniometer object
         """
-
-        with open(filename) as f:
-            dico = json.load(f)
+        dico = None
+        if isinstance(anything, dict):
+            dico = anything
+        elif isinstance(anything, (str, Path)):
+            try:
+                if os.path.exists(anything):
+                    with open(anything) as f:
+                        dico = json.load(f)
+                else:
+                    dico = json.loads(anything)
+            except Exception as err:
+                logger.info(f"Unable to parse `{anything}` as JSON file: {type(err)},")
+        if dico is None:
+            msg = f"Unable to initialize goniometer from {anything}"
+            logger.error(msg)
+            raise ValueError(msg)
 
         return cls.sload_from_dict(dico)
 
