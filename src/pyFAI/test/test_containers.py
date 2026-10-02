@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/04/2026"
+__date__ = "30/09/2026"
 
 import copy
 import logging
@@ -102,6 +102,28 @@ class TestContainer(unittest.TestCase):
         self.assertTrue(numpy.allclose(res1d[0], ref1d[0]), "radial matches")
         self.assertTrue(numpy.allclose(res1d[1], ref1d[1]), "intensity matches")
         self.assertTrue(numpy.allclose(res1d[2], ref1d[2]), "sem matches")
+
+    def test_copy(self):
+        "Every attribute survives copy and deepcopy, the ranges included"
+        kwargs = {"method": ("no", "histogram", "cython"),
+                  "error_model": "poisson",
+                  "radial_range": (0.0, 10.0),
+                  "azimuth_range": (-90.0, 90.0)}
+        for res in (self.ai.integrate1d(self.img, 50, **kwargs),
+                    self.ai.integrate2d(self.img, 50, 36, **kwargs)):
+            name = type(res).__name__
+            # an attribute missing from COPYABLE_ATTR is silently dropped by copy
+            self.assertEqual(set(vars(res)) - set(res.COPYABLE_ATTR), set(),
+                             f"{name}: every attribute is declared in COPYABLE_ATTR")
+            self.assertIsNotNone(res.radial_range, f"{name}: radial_range was recorded")
+            self.assertIsNotNone(res.azimuth_range, f"{name}: azimuth_range was recorded")
+            for copied in (copy.copy(res), copy.deepcopy(res)):
+                self.assertEqual(copied.radial_range, res.radial_range,
+                                 f"{name}: radial_range is copied")
+                self.assertEqual(copied.azimuth_range, res.azimuth_range,
+                                 f"{name}: azimuth_range is copied")
+                self.assertTrue(numpy.allclose(copied.sum_signal, res.sum_signal),
+                                f"{name}: sum_signal is copied")
 
     def test_symmetrize(self):
         res2d = self.ai.integrate2d(
@@ -329,10 +351,271 @@ class TestContainer(unittest.TestCase):
         self.assertEqual(list(d.items()), [("a", 1), ("b", 2)])
 
 
+class TestRebin1dSector(unittest.TestCase):
+    """Validate `Integrate2dResult.rebin1d` on an azimuthally modulated image.
+
+    The synthetic image holds a few Debye-Scherrer rings whose intensity is
+    modulated by cos²(χ). Re-binning a fine 2D integration over an azimuthal
+    sector has to match, bin per bin, the 1D integration performed on this very
+    same sector.
+
+    All integrations are performed with explicit `radial_range`/`azimuth_range`
+    and a pixel-splitting-free method, so that the bin boundaries of the 2D
+    integration fall exactly on the requested sector limits: the comparison is
+    then expected to be exact, not approximate.
+    """
+
+    NPT_RAD = 500
+    NPT_AZIM = 360
+    RADIAL_RANGE = (0.0, 8.0)
+    AZIMUTH_RANGE = (-180.0, 180.0)
+    UNIT = "2th_deg"
+    METHOD = ("no", "histogram", "cython")
+    RINGS = (2.0, 4.0, 6.0)
+    BACKGROUND = 10.0
+
+    @classmethod
+    def setUpClass(cls):
+        cls.ai = pyFAI_load(
+            {
+                "poni_version": 2.1,
+                "detector": "Detector",
+                "detector_config": {
+                    "pixel1": 1e-4,
+                    "pixel2": 1e-4,
+                    "max_shape": [200, 200],
+                    "orientation": 3,
+                },
+                "dist": 0.1,
+                # slightly off the geometrical center of the detector, on purpose:
+                # a PONI centered, or shifted by a whole number of pixels, puts thousands of
+                # pixels exactly on the ±45°/±135° diagonals, i.e. exactly on a bin boundary,
+                # where the 1D and the 2D integration are free to disagree by one bin.
+                "poni1": 0.010321,
+                "poni2": 0.009717,
+                "rot1": 0.0,
+                "rot2": 0.0,
+                "rot3": 0.0,
+                "wavelength": 1e-10,
+            }
+        )
+        tth = cls.ai.array_from_unit(unit=cls.UNIT, typ="center", scale=True)
+        chi = numpy.rad2deg(cls.ai.center_array(unit="chi_rad", scale=False))
+        rings = numpy.zeros(tth.shape, dtype=numpy.float64)
+        for position in cls.RINGS:
+            rings += 1000.0 * numpy.exp(-0.5 * ((tth - position) / 0.1) ** 2)
+        # cos² modulation of the rings, on top of a flat background
+        cls.img = rings * numpy.cos(numpy.deg2rad(chi)) ** 2 + cls.BACKGROUND
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.ai = cls.img = None
+
+    def integrate2d(self, **kwargs):
+        """Fine 2D integration used as the input of rebin1d"""
+        kwargs.setdefault("radial_range", self.RADIAL_RANGE)
+        kwargs.setdefault("azimuth_range", self.AZIMUTH_RANGE)
+        return self.ai.integrate2d(self.img, self.NPT_RAD, self.NPT_AZIM,
+                                   method=self.METHOD, unit=self.UNIT,
+                                   error_model="poisson", **kwargs)
+
+    def integrate1d(self, **kwargs):
+        """Reference 1D integration, sharing the radial binning of integrate2d"""
+        kwargs.setdefault("radial_range", self.RADIAL_RANGE)
+        return self.ai.integrate1d(self.img, self.NPT_RAD,
+                                   method=self.METHOD, unit=self.UNIT,
+                                   error_model="poisson", **kwargs)
+
+    def assertSameCurve(self, obtained, expected, radial_slice=slice(None), msg=""):
+        """Compare a rebinned result with a reference 1D integration"""
+        for name in ("radial", "sum_signal", "sum_normalization", "count",
+                     "sum_variance", "intensity", "sem", "std"):
+            ref = getattr(expected, name)[radial_slice]
+            obt = getattr(obtained, name)
+            self.assertEqual(obt.shape, ref.shape, f"{msg}: shape of {name}")
+            self.assertTrue(numpy.allclose(obt, ref, rtol=1e-5, atol=1e-6, equal_nan=True),
+                            f"{msg}: {name} differs by "
+                            f"{abs(numpy.nan_to_num(obt) - numpy.nan_to_num(ref)).max()}")
+
+    def test_azimuthal_sector(self):
+        "rebin1d over a sector matches integrate1d restricted to that sector"
+        res2d = self.integrate2d()
+        for sector in ((30.0, 60.0), (-90.0, -30.0), (0.0, 180.0), (-45.0, 45.0)):
+            res1d = res2d.rebin1d(azimuth_range=sector)
+            ref1d = self.integrate1d(azimuth_range=sector)
+            self.assertSameCurve(res1d, ref1d, msg=f"sector {sector}")
+
+    def test_azimuthal_sector_is_a_subset(self):
+        "The rebinned sectors sum back to the full azimuthal range"
+        res2d = self.integrate2d()
+        total = res2d.rebin1d()
+        parts = [res2d.rebin1d(azimuth_range=sector)
+                 for sector in ((-180.0, -60.0), (-60.0, 60.0), (60.0, 180.0))]
+        self.assertTrue(numpy.allclose(sum(p.sum_signal for p in parts), total.sum_signal),
+                        "signal is conserved")
+        self.assertTrue(numpy.allclose(sum(p.count for p in parts), total.count),
+                        "count is conserved")
+
+    def test_radial_range(self):
+        "rebin1d with a radial_range crops the curve, keeping the bin size"
+        res2d = self.integrate2d()
+        ref1d = self.integrate1d()
+        # 8 degrees over 500 bins: 0.016 deg per bin, (2, 6) falls on bin edges
+        res1d = res2d.rebin1d(radial_range=(2.0, 6.0))
+        self.assertEqual(res1d.radial.size, 250, "number of radial bins")
+        self.assertSameCurve(res1d, ref1d, slice(125, 375), msg="radial crop")
+
+    def test_radial_and_azimuthal_range(self):
+        "Both ranges can be combined"
+        sector = (30.0, 60.0)
+        res2d = self.integrate2d()
+        res1d = res2d.rebin1d(radial_range=(2.0, 6.0), azimuth_range=sector)
+        ref1d = self.integrate1d(azimuth_range=sector)
+        self.assertSameCurve(res1d, ref1d, slice(125, 375), msg="both ranges")
+
+    def test_implicit_ranges(self):
+        "rebin1d works as well when integrate2d was called without any range"
+        res2d = self.ai.integrate2d(self.img, self.NPT_RAD, self.NPT_AZIM,
+                                    method=self.METHOD, unit=self.UNIT,
+                                    error_model="poisson")
+        # The bin edges are no more aligned on round values: rebuild the ones
+        # actually used by the 2D integration to build the reference.
+        azim_edges = containers._to_edges(res2d.azimuthal)
+        radial_edges = containers._to_edges(res2d.radial)
+        first, last = 210, 240
+        sector = (azim_edges[first], azim_edges[last])
+        res1d = res2d.rebin1d(azimuth_range=sector)
+        ref1d = self.ai.integrate1d(self.img, self.NPT_RAD, method=self.METHOD,
+                                    unit=self.UNIT, error_model="poisson",
+                                    radial_range=(radial_edges[0], radial_edges[-1]),
+                                    azimuth_range=sector)
+        self.assertEqual(res1d.radial.size, self.NPT_RAD, "all radial bins are kept")
+        self.assertTrue(numpy.allclose(res1d.count, ref1d.count), "count matches")
+        self.assertTrue(numpy.allclose(res1d.sum_signal, ref1d.sum_signal, rtol=1e-5),
+                        "signal matches")
+
+    def mean_peak_intensity(self, res1d):
+        """Weighted average intensity around the ring at 4°, background subtracted.
+
+        The ring at 4° lies well inside the detector, so it is fully covered
+        whatever the azimuthal sector: the radial weighting is the same for all
+        sectors and the ratio of two sectors is the ratio of their modulation.
+        """
+        window = numpy.logical_and(res1d.radial > 3.5, res1d.radial < 4.5)
+        signal = res1d.sum_signal[window].sum()
+        normalization = res1d.sum_normalization[window].sum()
+        return signal / normalization - self.BACKGROUND
+
+    def test_azimuthal_modulation(self):
+        "The cos² modulation is recovered sector per sector"
+        res2d = self.integrate2d()
+        reference = self.mean_peak_intensity(res2d.rebin1d())
+        half_width = 15.0
+        for center in (0.0, 30.0, 60.0, 90.0, 150.0):
+            sector = (center - half_width, center + half_width)
+            res1d = res2d.rebin1d(azimuth_range=sector)
+            # analytical average of cos²(χ) over the sector, the mean over the
+            # whole azimuthal range being 1/2
+            low, high = (numpy.deg2rad(i) for i in sector)
+            expected = 1.0 + (numpy.sin(2 * high) - numpy.sin(2 * low)) / (2 * (high - low))
+            obtained = self.mean_peak_intensity(res1d) / reference
+            self.assertAlmostEqual(obtained, expected, delta=0.03,
+                                   msg=f"cos² modulation at χ={center}°")
+
+    def test_other_engines(self):
+        "The agreement holds for every pixel-splitting-free engine"
+        sector = (30.0, 60.0)
+        for algo in ("histogram", "csr", "csc", "lut"):
+            method = ("no", algo, "cython")
+            res2d = self.ai.integrate2d(self.img, self.NPT_RAD, self.NPT_AZIM,
+                                        method=method, unit=self.UNIT,
+                                        error_model="poisson",
+                                        radial_range=self.RADIAL_RANGE,
+                                        azimuth_range=self.AZIMUTH_RANGE)
+            ref1d = self.ai.integrate1d(self.img, self.NPT_RAD, method=method,
+                                        unit=self.UNIT, error_model="poisson",
+                                        radial_range=self.RADIAL_RANGE,
+                                        azimuth_range=sector)
+            res1d = res2d.rebin1d(azimuth_range=sector)
+            self.assertSameCurve(res1d, ref1d, msg=f"engine {algo}")
+
+    def test_ranges_are_stored_in_the_public_unit(self):
+        "radial_range/azimuth_range match the unit of the position arrays"
+        sector = (30.0, 60.0)
+        res2d = self.integrate2d()
+        self.assertEqual(res2d.radial_range, self.RADIAL_RANGE, "radial_range of integrate2d")
+        self.assertTrue(numpy.allclose(res2d.azimuth_range, self.AZIMUTH_RANGE),
+                        f"azimuth_range of integrate2d: {res2d.azimuth_range}")
+        for axis, stored in (("radial", res2d.radial_range),
+                             ("azimuthal", res2d.azimuth_range)):
+            edges = containers._to_edges(getattr(res2d, axis))
+            self.assertTrue(numpy.allclose(stored, (edges[0], edges[-1]), atol=1e-5),
+                            f"the {axis} range {stored} frames the axis {(edges[0], edges[-1])}")
+
+        ref1d = self.integrate1d(azimuth_range=sector)
+        self.assertEqual(ref1d.radial_range, self.RADIAL_RANGE, "radial_range of integrate1d")
+        self.assertTrue(numpy.allclose(ref1d.azimuth_range, sector),
+                        f"azimuth_range of integrate1d: {ref1d.azimuth_range}")
+
+        # the ranges are the boundaries of the bins which were actually kept
+        res1d = res2d.rebin1d(radial_range=(2.0, 6.0), azimuth_range=sector)
+        self.assertTrue(numpy.allclose(res1d.radial_range, (2.0, 6.0)),
+                        f"radial_range of rebin1d: {res1d.radial_range}")
+        self.assertTrue(numpy.allclose(res1d.azimuth_range, sector),
+                        f"azimuth_range of rebin1d: {res1d.azimuth_range}")
+        # ... hence consistent with the position array they describe
+        delta = 0.5 * (self.RADIAL_RANGE[1] - self.RADIAL_RANGE[0]) / self.NPT_RAD
+        self.assertAlmostEqual(res1d.radial[0] - delta, res1d.radial_range[0],
+                               delta=1e-5, msg="lower bound of the radial axis")
+        self.assertAlmostEqual(res1d.radial[-1] + delta, res1d.radial_range[1],
+                               delta=1e-5, msg="upper bound of the radial axis")
+
+    def test_ranges_in_radian(self):
+        "The scaling follows the requested unit, radians included"
+        # with an azimuthal unit in radians, azimuth_range is expected in radians too
+        res2d = self.ai.integrate2d(self.img, self.NPT_RAD, self.NPT_AZIM,
+                                    method=self.METHOD, unit=("2th_rad", "chi_rad"),
+                                    radial_range=(0.0, 0.1),
+                                    azimuth_range=(-numpy.pi, numpy.pi))
+        self.assertTrue(numpy.allclose(res2d.radial_range, (0.0, 0.1)),
+                        f"radial_range in radians: {res2d.radial_range}")
+        # the azimuthal axis is in radians: so is the range, which frames it exactly
+        edges = containers._to_edges(res2d.azimuthal)
+        self.assertTrue(numpy.allclose(res2d.azimuth_range, (edges[0], edges[-1]), atol=1e-9),
+                        f"azimuth_range {res2d.azimuth_range} frames {(edges[0], edges[-1])}")
+        # rebin1d then expects its sector in radians as well
+        sector = (edges[100], edges[130])
+        res1d = res2d.rebin1d(azimuth_range=sector)
+        self.assertEqual(res1d.count.size, self.NPT_RAD, "all radial bins are kept")
+        self.assertTrue(numpy.allclose(res1d.azimuth_range, sector, atol=1e-9),
+                        f"azimuth_range of rebin1d: {res1d.azimuth_range}")
+        self.assertTrue(numpy.allclose(res1d.count,
+                                       res2d.count[100:130].sum(axis=0)),
+                        "exactly the 30 bins of the sector were kept")
+
+    def test_irregular_binning_warning(self):
+        "A non uniform binning is signaled, since the bin boundaries are then guessed"
+        self.assertTrue(containers._check_regular_binning(numpy.arange(10.0), "test"),
+                        "a regular axis is accepted silently")
+        res2d = copy.deepcopy(self.ai.integrate2d(self.img, self.NPT_RAD, self.NPT_AZIM,
+                                                  method=self.METHOD, unit=self.UNIT))
+        # the position arrays are plain writable arrays: distort the radial one
+        res2d.radial[:] = numpy.sqrt(res2d.radial)
+        with TestLogging(logger="pyFAI.containers", warning=1):
+            res2d.rebin1d(radial_range=(1.0, 2.0))
+
+    def test_empty_sector(self):
+        "An azimuthal range holding no bin is rejected"
+        res2d = self.integrate2d()
+        with self.assertRaises(ValueError):
+            res2d.rebin1d(azimuth_range=(30.0, 30.0))
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestContainer))
+    testsuite.addTest(loader(TestRebin1dSector))
     return testsuite
 
 
