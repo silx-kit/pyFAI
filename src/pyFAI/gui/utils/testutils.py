@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2026"
+__date__ = "02/10/2026"
 
 import gc
 import logging
@@ -66,15 +66,15 @@ class TestCaseQt(testutils.TestCaseQt):
         # C++ widgets back to Qt, and it must not happen in the middle of a
         # later processEvents().
         gc.collect()
-        for widget in self.qapp.allWidgets():
-            if widget in self._widgets_before:
-                continue
-            try:
-                if widget.parent() is None:
-                    # children are deleted along with their parent
-                    widget.deleteLater()
-            except RuntimeError:  # already gone on the C++ side
-                logger.debug("Widget already destroyed", exc_info=True)
+        if self._widgets_before is not None:
+            for widget in self.qapp.allWidgets():
+                if widget not in self._widgets_before:
+                    try:
+                        if widget.parent() is None:
+                            # children are deleted along with their parent
+                            widget.deleteLater()
+                    except RuntimeError:  # already gone on the C++ side
+                        logger.debug("Widget already destroyed", exc_info=True)
         self._widgets_before = None
         self.qapp.processEvents()
         super().tearDown()
