@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2026"
+__date__ = "28/09/2026"
 
 import logging
 import os
@@ -343,12 +343,238 @@ class TestParameterVector(unittest.TestCase):
                         "both ways provide the same detector")
 
 
+class TestDisplay(unittest.TestCase):
+    """Tests for the matplotlib representation of the modules and of their displacement"""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            import matplotlib
+        except ImportError:
+            raise unittest.SkipTest("matplotlib is not installed")
+        # a non-interactive backend, since the figures are never shown
+        matplotlib.use("Agg", force=False)
+        cls.pixel = 1e-4
+        cls.shape = (21, 21)
+        detector = Detector(pixel1=cls.pixel, pixel2=cls.pixel, max_shape=cls.shape)
+        mask = numpy.zeros(cls.shape, dtype=numpy.int8)
+        mask[10,:] = 1  # horizontal gap
+        mask[:, 10] = 1  # vertical gap
+        mask[3, 3] = 1  # one dead pixel, in the middle of a module
+        detector.mask = mask
+        cls.detector = detector
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.detector = None
+
+    def build(self):
+        """Build a fresh MultiModule with module #2 fixed and the others displaced"""
+        mm = MultiModule.from_detector(self.detector)
+        self.assertEqual(mm.nb_modules, 4, "the cross-shaped mask defines 4 modules")
+        mm.modules[2].fixed = True
+        rng = numpy.random.default_rng(4242)
+        for module in mm.modules.values():
+            if not module.fixed:
+                module.param.set((rng.normal(scale=0.5), rng.normal(scale=0.5),
+                                  rng.normal(scale=0.05)))
+        return mm
+
+    def to_rgba(self, color):
+        from matplotlib.colors import to_rgba
+        return to_rgba(color)
+
+    def test_content(self):
+        """One mesh per module, colored according to its `fixed` flag"""
+        from matplotlib.axes import Axes
+        from matplotlib.collections import QuadMesh
+        from matplotlib.pyplot import close, subplots
+        mm = self.build()
+        _fig, ax = subplots()
+        try:
+            self.assertIs(mm.display(ax=ax), ax, "the axes it drew in are returned")
+            meshes = [i for i in ax.collections if isinstance(i, QuadMesh)]
+            self.assertEqual(len(meshes), mm.nb_modules, "one mesh per module")
+            colors = [tuple(mesh.get_cmap()(0.0)) for mesh in meshes]
+            self.assertEqual(colors.count(self.to_rgba(MultiModule.COLOR_FIXED)), 1,
+                             "the single fixed module is green")
+            self.assertEqual(colors.count(self.to_rgba(MultiModule.COLOR_FREE)), 3,
+                             "the 3 free modules are light yellow")
+            # 2 markers per module: the cross on the first pixel and its first row
+            self.assertEqual(len(ax.lines), 2 * mm.nb_modules,
+                             "first pixel and first row of every module")
+            self.assertEqual([i.get_marker() for i in ax.lines].count("x"), mm.nb_modules,
+                             "the first pixel of every module carries a cross")
+            self.assertEqual([i.get_linestyle() for i in ax.lines].count(":"), mm.nb_modules,
+                             "the first row of every module is dotted")
+            # 2 red arrows per *displaced* module: its first and its last pixel
+            arrows = [i for i in ax.texts if i.arrow_patch is not None]
+            self.assertEqual(len(arrows), 2 * mm.free_modules,
+                             "first and last pixel of every free module are connected")
+            for arrow in arrows:
+                self.assertEqual(self.to_rgba(arrow.arrow_patch.get_edgecolor()),
+                                 self.to_rgba(MultiModule.COLOR_DISPLACEMENT),
+                                 "the displacement is drawn in red")
+            self.assertIsNotNone(ax.get_legend(), "the legend is built by default")
+            labels = sorted(i.get_text() for i in ax.texts if i.arrow_patch is None)
+            self.assertEqual(labels, sorted(str(i) for i in mm.modules),
+                             "every module is labelled with its id by default")
+            self.assertIsInstance(ax, Axes)
+        finally:
+            close(_fig)
+
+    def test_masked_pixels(self):
+        """Masked pixels are transparent: they are masked out of the mesh"""
+        from matplotlib.collections import QuadMesh
+        from matplotlib.pyplot import close, subplots
+        mm = MultiModule.from_detector(self.detector)
+        _fig, ax = subplots()
+        try:
+            mm.display(ax=ax)
+            meshes = [i for i in ax.collections if isinstance(i, QuadMesh)]
+            self.assertEqual(sum(numpy.ma.getmaskarray(mesh.get_array()).sum()
+                                 for mesh in meshes), 1,
+                             "the dead pixel inside the bounding box of a module is masked")
+            self.assertEqual(sum(numpy.ma.count(mesh.get_array()) for mesh in meshes),
+                             int(numpy.logical_not(self.detector.mask).sum()),
+                             "every unmasked pixel of the detector is drawn exactly once")
+            for mesh in meshes:
+                self.assertEqual(tuple(mesh.get_cmap().get_bad()), (0.0, 0.0, 0.0, 0.0),
+                                 "masked pixels are transparent")
+        finally:
+            close(_fig)
+
+    def test_positions(self):
+        """The mesh holds the displaced position of the corners of every pixel"""
+        from matplotlib.collections import QuadMesh
+        from matplotlib.pyplot import close, subplots
+        mm = self.build()
+        _fig, ax = subplots()
+        try:
+            mm.display(ax=ax, grid=True)
+            meshes = [i for i in ax.collections if isinstance(i, QuadMesh)]
+            # the pixel centers, as used to build the refined detector
+            ref1, ref2 = mm.calc_displacement_map()
+            for module_id, mesh in zip(sorted(mm.modules), meshes):
+                module = mm.modules[module_id]
+                slice0, slice1 = module.bounding_box
+                coord = mesh.get_coordinates()
+                self.assertEqual(coord.shape,
+                                 (slice0.stop - slice0.start + 1,
+                                  slice1.stop - slice1.start + 1, 2),
+                                 f"module #{module_id}: one corner more than pixels")
+                # the center of a pixel is the mean of its 4 corners
+                center1 = 0.25 * (coord[:-1,:-1, 1] + coord[1:,:-1, 1] +
+                                  coord[:-1, 1:, 1] + coord[1:, 1:, 1])
+                center2 = 0.25 * (coord[:-1,:-1, 0] + coord[1:,:-1, 0] +
+                                  coord[:-1, 1:, 0] + coord[1:, 1:, 0])
+                sub = module.mask[slice0, slice1]
+                self.assertTrue(numpy.allclose(center1[sub], ref1[module.mask]),
+                                f"module #{module_id}: slow coordinate of the pixel centers")
+                self.assertTrue(numpy.allclose(center2[sub], ref2[module.mask]),
+                                f"module #{module_id}: fast coordinate of the pixel centers")
+        finally:
+            close(_fig)
+
+    def test_param_vector(self):
+        """Like to_detector, display accepts the parameter vector of the refinement"""
+        from matplotlib.collections import QuadMesh
+        from matplotlib.pyplot import close, subplots
+        mm = MultiModule.from_detector(self.detector)
+        mm.modules[2].fixed = True
+        rng = numpy.random.default_rng(1)
+        param = rng.normal(scale=0.3, size=ModuleParam.nb_param * mm.free_modules)
+        _fig, ax = subplots()
+        try:
+            # trailing poni-parameters are ignored, a truncated vector is rejected
+            mm.display(ax=ax, param=numpy.concatenate((param, rng.normal(size=5))))
+            self.assertRaises(ValueError, mm.display, param[:-1], ax)
+            from_vector = [i.get_coordinates() for i in ax.collections
+                           if isinstance(i, QuadMesh)]
+            ax.clear()
+            idx = 0
+            for module in mm.modules.values():
+                if module.fixed:
+                    continue
+                module.param.set(param[ModuleParam.nb_param * idx:
+                                       ModuleParam.nb_param * (idx + 1)])
+                idx += 1
+            mm.display(ax=ax)
+            from_modules = [i.get_coordinates() for i in ax.collections
+                            if isinstance(i, QuadMesh)]
+            self.assertEqual(len(from_vector), len(from_modules), "same number of meshes")
+            for vect, mod in zip(from_vector, from_modules):
+                self.assertTrue(numpy.allclose(vect, mod),
+                                "both ways to provide the module parameters agree")
+        finally:
+            close(_fig)
+
+    def test_axes_limits(self):
+        """The axes are wide enough for the magnified arrows to stay visible"""
+        from matplotlib.pyplot import close, subplots
+        mm = self.build()
+        _fig, ax = subplots()
+        try:
+            mm.display(ax=ax, arrow_scale=20)
+            xmin, xmax = ax.get_xlim()
+            ymin, ymax = ax.get_ylim()
+            tips = [i.xy for i in ax.texts if i.arrow_patch is not None]
+            self.assertEqual(len(tips), 2 * mm.free_modules, "one tip per arrow")
+            for x, y in tips:
+                self.assertTrue(xmin <= x <= xmax and ymin <= y <= ymax,
+                                f"the tip ({x}, {y}) is inside [{xmin}, {xmax}]x"
+                                f"[{ymin}, {ymax}]")
+            # with such a magnification, some arrows do leave the detector
+            self.assertTrue(xmin < 0 or xmax > self.shape[1] or
+                            ymin < 0 or ymax > self.shape[0],
+                            "the axes are wider than the detector itself")
+        finally:
+            close(_fig)
+
+    def test_options(self):
+        """The legend, the labels and the pixel grid can be switched off"""
+        from matplotlib.collections import QuadMesh
+        from matplotlib.pyplot import close, subplots
+        mm = self.build()
+        _fig, ax = subplots()
+        try:
+            mm.display(ax=ax, legend=False, grid=False, labels=False)
+            self.assertIsNone(ax.get_legend(), "no legend was requested")
+            self.assertEqual([i for i in ax.texts if i.arrow_patch is None], [],
+                             "no label was requested")
+            for mesh in ax.collections:
+                if isinstance(mesh, QuadMesh):
+                    self.assertEqual(mesh.get_edgecolor().size, 0,
+                                     "no pixel grid was requested")
+            # first pixel, first row and outline of the bounding box of every module
+            self.assertEqual(len(ax.lines), 3 * mm.nb_modules,
+                             "without the pixel grid, every module is outlined")
+            for line in ax.lines:
+                if len(line.get_xdata()) == 5:
+                    self.assertEqual(line.get_xdata()[0], line.get_xdata()[-1],
+                                     "the outline of the bounding box is a closed polygon")
+        finally:
+            close(_fig)
+
+    def test_no_axes(self):
+        """Without any axes, a new figure is created"""
+        from matplotlib.pyplot import close, get_fignums
+        mm = self.build()
+        before = get_fignums()
+        ax = mm.display()
+        try:
+            self.assertNotIn(ax.figure.number, before, "a new figure was created")
+        finally:
+            close(ax.figure)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestMultiModule))
     testsuite.addTest(loader(TestUncertainties))
     testsuite.addTest(loader(TestParameterVector))
+    testsuite.addTest(loader(TestDisplay))
     return testsuite
 
 
