@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013-2026 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/09/2026"
+__date__ = "02/10/2026"
 
 import logging
 import platform
@@ -92,13 +92,13 @@ class TestGroupFunction(unittest.TestCase):
         self.program = pyopencl.Program(self.ctx, get_opencl_code("pyfai:openCL/collective/reduction.cl")+
                                         get_opencl_code("pyfai:openCL/collective/scan.cl")+
                                         get_opencl_code("pyfai:openCL/collective/comb_sort.cl")).build()
-        self.test_sum_int_reduction = self.program.test_sum_int_reduction
-        self.test_sum_int_atomic = self.program.test_sum_int_atomic
-        self.test_cumsum = self.program.test_cumsum
-        self.test_sum_int_reduction = self.program.test_sum_int_reduction
-        self.test_blelloch_multi = self.program.test_blelloch_multi
-        self.test_combsort_float = self.program.test_combsort_float
-        self.test_combsort_float4 = self.program.test_combsort_float4
+        self.test_sum_int_reduction = pyopencl.Kernel(self.program, "test_sum_int_reduction")
+        self.test_sum_int_atomic = pyopencl.Kernel(self.program, "test_sum_int_atomic")
+        self.test_cumsum = pyopencl.Kernel(self.program, "test_cumsum")
+        self.test_sum_int_reduction = pyopencl.Kernel(self.program, "test_sum_int_reduction")
+        self.test_blelloch_multi = pyopencl.Kernel(self.program, "test_blelloch_multi")
+        self.test_combsort_float = pyopencl.Kernel(self.program, "test_combsort_float")
+        self.test_combsort_float4 = pyopencl.Kernel(self.program, "test_combsort_float4")
 
     def tearDown(self):
         self.img = self.data = None
