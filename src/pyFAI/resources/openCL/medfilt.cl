@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 21/08/2025
+ *   Last revision: 03/10/2026
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -147,7 +147,7 @@ csr_medfilt    (  const   global  float4  *data4,
     int start = indptr[bin_num];
     int stop = indptr[bin_num+1];
     int size = stop-start;
-    int sum_cnt, cnt, step=11;
+    int sum_cnt, cnt=0, step=11;
     int idx;
     char curr_error_model=error_model;
     float8 result;

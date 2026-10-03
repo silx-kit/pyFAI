@@ -11,8 +11,13 @@ int inline previous_step(int step, float ratio)
 }
 
 // smallest step smaller than the size ... iterative version.
+// Returns 0 when there is nothing to sort: with size<2 the second loop would
+// never end, since previous_step(0, ratio) is 0 and 0>=0 stays true.
 int inline first_step(int step, int size, float ratio)
 {
+    if (size<2)
+        return 0;
+
     while (step<size)
         step=next_step(step, ratio);
 
@@ -179,7 +184,7 @@ kernel void test_combsort_float(global volatile float* elements,
     int gid = get_group_id(1);
     int step = 11;     // magic value
     float ratio=1.3f;  // magic value
-    int cnt;
+    int cnt = 0;
 
     int start, stop, size;
     start = (gid)?positions[gid-1]:0;
@@ -210,7 +215,7 @@ kernel void test_combsort_float4(global volatile float4* elements,
     int gid = get_group_id(1);
     int step = 11;     // magic value
     float ratio=1.3f;  // magic value
-    int cnt;
+    int cnt = 0;
 
     int start, stop, size;
     start = (gid)?positions[gid-1]:0;

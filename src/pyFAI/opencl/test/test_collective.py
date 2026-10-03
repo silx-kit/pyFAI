@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2026"
+__date__ = "03/10/2026"
 
 import logging
 import platform
@@ -314,6 +314,39 @@ class TestGroupFunction(unittest.TestCase):
 
                 self.assertTrue(good, f"calculation is correct for WG={wg}")
 
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_sort_empty_bin(self):
+        """Empty and single-element bins used to hang first_step() forever: with
+        size<2 the step decreases down to 0 and `0>=size` never becomes false.
+        """
+        sizes = [0, 1, 0, 2, 5, 0, 1]
+        positions = numpy.cumsum(sizes).astype(numpy.int32)
+        wg = min(32, self.max_valid_wg)
+        shared = pyopencl.LocalMemory(4 * wg)
+        rng = UtilsTest.get_rng()
+
+        data = rng.random(positions[-1]).astype(numpy.float32)
+        data_d = pyopencl.array.to_device(self.queue, data)
+        positions_d = pyopencl.array.to_device(self.queue, positions)
+        self.program.test_combsort_float(self.queue, (wg, len(sizes)), (wg, 1),
+                                         data_d.data, positions_d.data, shared).wait()
+        res = data_d.get()
+
+        data4 = numpy.outer(data, numpy.ones(4, numpy.float32)).view(
+            numpy.dtype([("s0", "<f4"), ("s1", "<f4"), ("s2", "<f4"), ("s3", "<f4")]))
+        data4_d = pyopencl.array.to_device(self.queue, data4)
+        self.program.test_combsort_float4(self.queue, (wg, len(sizes)), (wg, 1),
+                                          data4_d.data, positions_d.data, shared).wait()
+        res4 = data4_d.get()["s0"].ravel()
+
+        start = 0
+        for size in sizes:
+            ref = numpy.sort(data[start:start + size])
+            self.assertTrue(numpy.array_equal(res[start:start + size], ref),
+                            f"float sort is correct for the bin of size {size}")
+            self.assertTrue(numpy.array_equal(res4[start:start + size], ref),
+                            f"float4 sort is correct for the bin of size {size}")
+            start += size
 
 
 def suite():
