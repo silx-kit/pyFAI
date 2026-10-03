@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2026"
+__date__ = "03/10/2026"
 
 import logging
 import unittest
@@ -599,25 +599,31 @@ class TestIrregularPixels(unittest.TestCase):
         """The physical content of the conversion: expressing the same data in
         a mirrored orientation negates the laboratory coordinate of the
         mirrored axis and leaves the other two alone."""
-        parameters = {"dist": 0.04, "poni1": 0.011, "poni2": 0.013,
+        parameters = {"dist": 0.04, "poni1": 0.037, "poni2": 0.031,
                       "rot1": 0.07, "rot2": 0.08, "rot3": 0.0}
-        for detector_name in [self.REGULAR, "ImXPadS70"]:
+        for detector_name in [self.REGULAR, *self.IRREGULAR]:
             reference = self.build_detector(detector_name, 3)
             beam, slow, fast = geometry.Geometry(detector=reference, wavelength=1e-10,
                                                 **parameters).calc_pos_zyx(corners=False)
+            slow_index, fast_index = numpy.indices(reference.shape, dtype=numpy.float64)
             for orientation in (1, 2, 4):
                 with self.subTest(detector=detector_name, orientation=orientation):
                     flip1, flip2 = FLIPPED_AXES[orientation]
                     converted = convert_orientation(parameters, reference, 3, orientation)
                     detector = self.build_detector(detector_name, orientation)
-                    got = geometry.Geometry(detector=detector, wavelength=1e-10,
-                                            **converted).calc_pos_zyx(corners=False)
+                    geom = geometry.Geometry(detector=detector, wavelength=1e-10,
+                                             **converted)
                     axes = [(beam, "beam"),
                             (-slow if flip1 else slow, "slow"),
                             (-fast if flip2 else fast, "fast")]
-                    for axis, (expected, label) in enumerate(axes):
-                        delta = abs(got[axis] - expected).max()
-                        self.assertLess(delta, 1e-7, f"{label} differs by {delta} m")
+                    for path, indices in [("implicit", {}),
+                                          ("explicit", {"d1": slow_index, "d2": fast_index})]:
+                        with self.subTest(path=path):
+                            got = geom.calc_pos_zyx(corners=False, **indices)
+                            for axis, (expected, label) in enumerate(axes):
+                                delta = abs(got[axis] - expected).max()
+                                self.assertLess(delta, 1e-7,
+                                                f"{path} {label} differs by {delta} m")
 
 
 def suite():
