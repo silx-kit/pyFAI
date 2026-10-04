@@ -32,6 +32,7 @@ __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 from typing import ClassVar
+import copy
 import logging
 import math
 from collections import OrderedDict
@@ -100,7 +101,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     def __init__(self, lut, image_size, checksum=None,
                  empty=None, unit=None, bin_centers=None, azim_centers=None, mask_checksum=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
-                 block_size=None, profile=False, extra_buffers=None):
+                 block_size=None, profile=False, extra_buffers=None, medfilt=False):
         """
         :param lut: 3-tuple of arrays
             data: coefficient of the matrix in a 1D vector of float32 - size of nnz
@@ -122,6 +123,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
         :param extra_buffers: List of additional buffer description  needed by derived classes
+        :param medfilt: set to True to initialize the integrator in median-filter mode,
+                        i.e. allocate right away the scratch space the sort of `medfilt`
+                        needs (8 bytes per non-zero element of the CSR matrix) instead
+                        of waiting for the first call
         """
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
                                   platformid=platformid, deviceid=deviceid,
@@ -161,6 +166,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
 
+        self._extra_buffers = extra_buffers
         if extra_buffers is not None:
             self.buffers += extra_buffers
 
@@ -198,6 +204,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
         if "amd" in  self.ctx.devices[0].platform.name.lower():
             self.workgroup_size["csr_integrate4_single"] = (1, 1)  # Very bad performances on AMD GPU for diverging threads!
 
+        if medfilt:
+            self._allocate_sort_space()
+
     @property
     def checksum(self):
         return self.on_device.get("data")
@@ -215,14 +224,23 @@ class OCL_CSR_Integrator(OpenclProcessing):
                               self.size,
                               checksum=self.on_device.get("data"),
                               empty=self.empty,
+                              unit=self.unit,
+                              bin_centers=self.bin_centers,
+                              azim_centers=self.azim_centers,
+                              mask_checksum=self.mask_checksum,
                               ctx=self.ctx,
                               block_size=self.block_size,
-                              profile=self.profile)
+                              profile=self.profile,
+                              extra_buffers=self._extra_buffers,
+                              medfilt=self.cl_mem.get("pairs") is not None)
 
     def __deepcopy__(self, memo=None):
         """deep copy of the object
 
         :return: deepcopy of the object
+
+        The unit and the checksums are left shared: units are registered singletons
+        and the checksums are immutable.
         """
         if memo is None:
             memo = {}
@@ -230,12 +248,20 @@ class OCL_CSR_Integrator(OpenclProcessing):
         memo[id(self._data)] = new_csr[0]
         memo[id(self._indices)] = new_csr[1]
         memo[id(self._indptr)] = new_csr[2]
+        new_bin_centers = copy.deepcopy(self.bin_centers, memo)
+        new_azim_centers = copy.deepcopy(self.azim_centers, memo)
         new_obj = self.__class__(new_csr, self.size,
                                  checksum=self.on_device.get("data"),
                                  empty=self.empty,
+                                 unit=self.unit,
+                                 bin_centers=new_bin_centers,
+                                 azim_centers=new_azim_centers,
+                                 mask_checksum=self.mask_checksum,
                                  ctx=self.ctx,
                                  block_size=self.block_size,
-                                 profile=self.profile)
+                                 profile=self.profile,
+                                 extra_buffers=copy.deepcopy(self._extra_buffers, memo),
+                                 medfilt=self.cl_mem.get("pairs") is not None)
         memo[id(self)] = new_obj
         return new_obj
 
