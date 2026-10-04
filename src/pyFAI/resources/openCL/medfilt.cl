@@ -117,8 +117,13 @@ float2 inline sum_float2_sum(local float* shared)
  * @param averint      Average signal
  * @param stdevpix     Float pointer to the output 1D array with the propagated error (std)
  * @param stdevpix     Float pointer to the output 1D array with the propagated error (sem)
+ * @param pairs        Float2 pointer to global memory, same length as work4, scratch
+ *                     space for the sort of the bins which do not fit in local memory
+ * @param capacity     Number of elements the shared_key/shared_pos buffers can hold
  * @param shared_int   Buffer of shared memory of size WORKGROUP_SIZE * sizeof(int)
  * @param shared_float Buffer of shared memory of size WORKGROUP_SIZE * 2 * sizeof(float)
+ * @param shared_key   Buffer of shared memory of size capacity * sizeof(float)
+ * @param shared_pos   Buffer of shared memory of size capacity * sizeof(int)
  * */
 
 
@@ -126,6 +131,7 @@ float2 inline sum_float2_sum(local float* shared)
 kernel void
 csr_medfilt    (  const   global  float4  *data4,
                           global  float4  *work4,
+                          global  float2  *pairs,
                   const   global  float   *coefs,
                   const   global  int     *indices,
                   const   global  int     *indptr,
@@ -133,12 +139,15 @@ csr_medfilt    (  const   global  float4  *data4,
                                   float    quant_max,
                   const           char     error_model,
                   const           float    empty,
+                  const           int      capacity,
                           global  float8  *summed,
                           global  float   *averint,
                           global  float   *stdevpix,
                           global  float   *stderrmean,
                           local   int*    shared_int,  // size of the workgroup size
-                          local   float*  shared_float // size of 2x the workgroup size
+                          local   float*  shared_float,// size of 2x the workgroup size
+                          local   float*  shared_key,  // size of capacity
+                          local   int*    shared_pos   // size of capacity
                           )
 {
     int bin_num = get_group_id(1);
@@ -170,35 +179,78 @@ csr_medfilt    (  const   global  float4  *data4,
         return;
     } // Early exit
 
-    // first populate the work4 array from data4
-    for (int i=start+tid; i<stop; i+=wg)
+    // Sort the pixels of the bin along the s0 component, i.e. the signal/norm ratio.
+    // A bin that fits in local memory is sorted there as (key, position) pairs: the
+    // comb sort then never touches global memory and moves 8 bytes per element
+    // instead of the 16 of a float4. Larger bins fall back to sorting work4 in place.
+
+    if (size<=capacity)
     {
-        float4 r4, w4;
-        int idx = indices[i];
-        float coef = (coefs == ZERO)?1.0f:coefs[i];
-        r4 = data4[idx];
+        for (int i=tid; i<size; i+=wg)
+        {
+            float4 r4 = data4[indices[start+i]];
+            shared_key[i] = r4.s0 / r4.s2;
+            shared_pos[i] = i;
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
 
-        w4.s0 = r4.s0 / r4.s2;
-        w4.s1 = r4.s0 * coef;
-        w4.s2 = r4.s1 * coef * coef;
-        w4.s3 = r4.s2 * coef;
+        combsort_local(shared_key, shared_pos, size, shared_int);
 
-        work4[i] = w4;
+        // apply the permutation while populating work4
+        for (int i=tid; i<size; i+=wg)
+        {
+            float4 r4, w4;
+            int j = shared_pos[i];
+            float coef = (coefs == ZERO)?1.0f:coefs[start+j];
+            r4 = data4[indices[start+j]];
+
+            w4.s0 = shared_key[i];
+            w4.s1 = r4.s0 * coef;
+            w4.s2 = r4.s1 * coef * coef;
+            w4.s3 = r4.s2 * coef;
+
+            work4[start+i] = w4;
+        }
     }
-    // printf("gid%d tid%d first populate the work4 array from data4\n",bin_num, tid);
-    barrier(CLK_GLOBAL_MEM_FENCE);
+    else
+    {
+        // Too large for local memory: the sort still runs on (key, position) pairs,
+        // in the global scratch space, which moves 8 bytes per element instead of
+        // the 16 of a float4.
+        for (int i=tid; i<size; i+=wg)
+        {
+            float4 r4 = data4[indices[start+i]];
+            pairs[start+i] = (float2)(r4.s0 / r4.s2, as_float(i));
+        }
+        barrier(CLK_GLOBAL_MEM_FENCE);
 
-    // then perform the sort in the work space along the s0 component
+        step = first_step(step, size, ratio);
 
-    step = first_step(step, size, ratio);
+        for (step=step; step>0; step=previous_step(step, ratio))
+            cnt = passe_float2(&pairs[start], size, step, shared_int);
 
-    for (step=step; step>0; step=previous_step(step, ratio))
-        cnt = passe_float4(&work4[start], size, step, shared_int);
+        while (cnt)
+            cnt = passe_float2(&pairs[start], size, 1, shared_int);
 
-    while (cnt)
-        cnt = passe_float4(&work4[start], size, 1, shared_int);
+        barrier(CLK_GLOBAL_MEM_FENCE);
 
-    // printf("gid%d tid%d perform the sort in the work space along the s0 component\n",bin_num, tid);
+        // apply the permutation while populating work4
+        for (int i=tid; i<size; i+=wg)
+        {
+            float4 r4, w4;
+            float2 pair = pairs[start+i];
+            int j = as_int(pair.s1);
+            float coef = (coefs == ZERO)?1.0f:coefs[start+j];
+            r4 = data4[indices[start+j]];
+
+            w4.s0 = pair.s0;
+            w4.s1 = r4.s0 * coef;
+            w4.s2 = r4.s1 * coef * coef;
+            w4.s3 = r4.s2 * coef;
+
+            work4[start+i] = w4;
+        }
+    }
 
     // Then perform the cumsort of the weights to s0
     // In blelloch scan, one workgroup can process 2wg in size.

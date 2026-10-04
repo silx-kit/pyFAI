@@ -62,6 +62,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     """
     BLOCK_SIZE = 32
     # Intel CPU driver claims preferred workgroup is 128 !
+    LOCAL_MEM_MARGIN = 256  # bytes of local memory left to the compiler in csr_medfilt
     buffers = (BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
@@ -128,6 +129,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         self._data, self._indices, self._indptr = lut
         self.bins = self._indptr.size - 1
+        self.max_bin_size = int(numpy.diff(self._indptr).max()) if self.bins else 0
         self.nbytes = self._data.nbytes + self._indices.nbytes + self._indptr.nbytes
         if self._data.shape[0] != self._indices.shape[0]:
             raise RuntimeError("data.shape[0] != indices.shape[0]")
@@ -417,6 +419,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.cl_kernel_args["csr_integrate4_single"] = self.cl_kernel_args["csr_integrate4"]
         self.cl_kernel_args["csr_medfilt"] =     OrderedDict((("output4", self.cl_mem["output4"]),
                                                               ("work4", self.cl_mem["work4"]),
+                                                              ("pairs", None),  # allocated on the first medfilt
                                                               ("data", self.cl_mem["data"]),
                                                               ("indices", self.cl_mem["indices"]),
                                                               ("indptr", self.cl_mem["indptr"]),
@@ -424,12 +427,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("quant_max", numpy.float32(0.5)),
                                                               ("error_model", numpy.int8(1)),
                                                               ("empty", numpy.float32(self.empty)),
+                                                              ("capacity", numpy.int32(0)),
                                                               ("merged8", self.cl_mem["merged8"]),
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("std", self.cl_mem["std"]),
                                                               ("sem", self.cl_mem["sem"]),
                                                               ("shared_int", pyopencl.LocalMemory(128)),
                                                               ("shared_float", pyopencl.LocalMemory(128)),
+                                                              ("shared_key", pyopencl.LocalMemory(128)),
+                                                              ("shared_pos", pyopencl.LocalMemory(128)),
                                                              ))
         self.cl_kernel_args["memset_out"] = OrderedDict((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged"))
         self.cl_kernel_args["memset_ng"] = OrderedDict((i, self.cl_mem[i]) for i in ("averint", "std", "merged8"))
@@ -1125,6 +1131,21 @@ class OCL_CSR_Integrator(OpenclProcessing):
                              std, sem, merged[:, 7])
         return res
 
+    def _allocate_sort_space(self):
+        """Allocate, on the first call, the scratch space the medfilt sort needs.
+
+        It holds one (key, position) pair per non-zero element of the CSR matrix,
+        8 bytes each, which reaches a couple of hundred MB on a large detector.
+        Only medfilt uses it, hence the lazy allocation.
+
+        Must be called outside of `self.sem`: allocate_buffers takes it and the
+        semaphore is not reentrant.
+        """
+        if self.cl_mem.get("pairs") is None:
+            self.allocate_buffers([BufferDescription("pairs", (self.data_size, 2),
+                                                     numpy.float32, mf.READ_WRITE)])
+            self.cl_kernel_args["csr_medfilt"]["pairs"] = self.cl_mem["pairs"]
+
     def medfilt(self, data, dark=None, dummy=None, delta_dummy=None,
                    variance=None, dark_variance=None,
                    flat=None, solidangle=None, polarization=None, absorption=None,
@@ -1167,6 +1188,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :return: namedtuple with "position intensity error signal variance normalization count"
         """
         error_model = ErrorModel.parse(error_model)
+        self._allocate_sort_space()
         events = []
         with self.sem:
             kernel_correction_name = "corrections4a"
@@ -1269,8 +1291,19 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_int["quant_min"] = numpy.float32(quant_min)
             kw_int["quant_max"] = numpy.float32(quant_max)
             wg_min = max(self.workgroup_size["csr_medfilt"])
-            kw_int["shared_int"] = pyopencl.LocalMemory(4 * wg_min)
-            kw_int["shared_float"] = pyopencl.LocalMemory(8 * wg_min)
+            nbytes_int = 4 * wg_min
+            nbytes_float = 8 * wg_min
+            kw_int["shared_int"] = pyopencl.LocalMemory(nbytes_int)
+            kw_int["shared_float"] = pyopencl.LocalMemory(nbytes_float)
+            # Bins which fit in the local memory left are sorted there, the others
+            # fall back to the comb sort in global memory. Asking for more than the
+            # largest bin would only waste local memory, hence the clamping.
+            free = (self.ctx.devices[0].local_mem_size - nbytes_int - nbytes_float
+                    - self.LOCAL_MEM_MARGIN)
+            capacity = min(self.max_bin_size, max(free // 8, 0))
+            kw_int["capacity"] = numpy.int32(capacity)
+            kw_int["shared_key"] = pyopencl.LocalMemory(4 * max(capacity, 1))
+            kw_int["shared_pos"] = pyopencl.LocalMemory(4 * max(capacity, 1))
             wdim_bins = (wg_min, self.bins)
 
 
