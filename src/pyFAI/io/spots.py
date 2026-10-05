@@ -2,7 +2,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2026"
+__date__ = "20/09/2026"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -42,6 +42,7 @@ from collections import OrderedDict
 
 import fabio
 import numpy
+import numexpr
 
 from .. import version
 from ..units import to_unit
@@ -210,7 +211,11 @@ def save_spots_cxi(filename, spots, beamline="beamline", ai=None, source=None, e
             total_int[i,:nbs] = s["intensity"]
             xpos[i,:nbs] = s["pos1"]
             ypos[i,:nbs] = s["pos0"]
-            snr[i,:nbs] = s["intensity"] / s["sigma"]
+            snr[i,:nbs] = numexpr.evaluate("where(sigma <= 0.0, nan, intensity / sigma)",
+                                {"intensity":s["intensity"],
+                                "sigma": s["sigma"],
+                                "nan": numpy.nan})
+
         result.create_dataset("peakTotalIntensity", data=total_int, **cmp)
         result.create_dataset("peakXPosRaw", data=xpos, **cmp)
         result.create_dataset("peakYPosRaw", data=ypos, **cmp)
