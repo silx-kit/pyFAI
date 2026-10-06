@@ -85,7 +85,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     "pyfai:openCL/ocl_azim_CSR.cl",
                     "pyfai:openCL/collective/reduction.cl",
                     "pyfai:openCL/collective/scan.cl",
-                    "pyfai:openCL/collective/comb_sort.cl",
                     "pyfai:openCL/medfilt.cl"
                     )
     mapping: ClassVar[dict] = {numpy.int8: "s8_to_float",
@@ -134,7 +133,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         self._data, self._indices, self._indptr = lut
         self.bins = self._indptr.size - 1
-        self.max_bin_size = int(numpy.diff(self._indptr).max()) if self.bins else 0
         self.nbytes = self._data.nbytes + self._indices.nbytes + self._indptr.nbytes
         if self._data.shape[0] != self._indices.shape[0]:
             raise RuntimeError("data.shape[0] != indices.shape[0]")
@@ -180,7 +178,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                          BufferDescription("sem", self.bins, numpy.float32, mf.READ_WRITE),
                          BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged8", (self.bins, 8), numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("work4", (self.data_size, 4), numpy.float32, mf.READ_WRITE),
                          ]
         try:
             self.set_profiling(profile)
@@ -345,9 +342,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 wg_max = self.kernels.max_workgroup_size(kernel_name)
                 wg_min = self.kernels.min_workgroup_size(kernel_name)
                 if kernel_name=="csr_medfilt":
-                    # limit the wg size due to
+                    # the radix-select needs 16 floats per thread, the scan 4 and the
+                    # count 1 int, hence 84 bytes per thread of local memory
                     device = self.ctx.devices[0]
-                    maxthreads = device.local_mem_size/12/4
+                    maxthreads = (device.local_mem_size - self.LOCAL_MEM_MARGIN) / 84
                     self.workgroup_size[kernel_name] = (wg_min,
                                                         min(wg_max, 2**(int(math.log2(maxthreads)))))
                 else:
@@ -444,7 +442,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
         self.cl_kernel_args["csr_integrate4_single"] = self.cl_kernel_args["csr_integrate4"]
         self.cl_kernel_args["csr_medfilt"] =     OrderedDict((("output4", self.cl_mem["output4"]),
-                                                              ("work4", self.cl_mem["work4"]),
                                                               ("pairs", None),  # allocated on the first medfilt
                                                               ("data", self.cl_mem["data"]),
                                                               ("indices", self.cl_mem["indices"]),
@@ -453,15 +450,13 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("quant_max", numpy.float32(0.5)),
                                                               ("error_model", numpy.int8(1)),
                                                               ("empty", numpy.float32(self.empty)),
-                                                              ("capacity", numpy.int32(0)),
                                                               ("merged8", self.cl_mem["merged8"]),
                                                               ("averint", self.cl_mem["averint"]),
                                                               ("std", self.cl_mem["std"]),
                                                               ("sem", self.cl_mem["sem"]),
                                                               ("shared_int", pyopencl.LocalMemory(128)),
                                                               ("shared_float", pyopencl.LocalMemory(128)),
-                                                              ("shared_key", pyopencl.LocalMemory(128)),
-                                                              ("shared_pos", pyopencl.LocalMemory(128)),
+                                                              ("shared_hist", pyopencl.LocalMemory(128)),
                                                              ))
         self.cl_kernel_args["memset_out"] = OrderedDict((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged"))
         self.cl_kernel_args["memset_ng"] = OrderedDict((i, self.cl_mem[i]) for i in ("averint", "std", "merged8"))
@@ -1158,9 +1153,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
         return res
 
     def _allocate_sort_space(self):
-        """Allocate, on the first call, the scratch space the medfilt sort needs.
+        """Allocate, on the first call, the scratch space medfilt needs.
 
-        It holds one (key, position) pair per non-zero element of the CSR matrix,
+        It holds one (key, weight) pair per non-zero element of the CSR matrix,
         8 bytes each, which reaches a couple of hundred MB on a large detector.
         Only medfilt uses it, hence the lazy allocation.
 
@@ -1317,19 +1312,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_int["quant_min"] = numpy.float32(quant_min)
             kw_int["quant_max"] = numpy.float32(quant_max)
             wg_min = max(self.workgroup_size["csr_medfilt"])
-            nbytes_int = 4 * wg_min
-            nbytes_float = 8 * wg_min
-            kw_int["shared_int"] = pyopencl.LocalMemory(nbytes_int)
-            kw_int["shared_float"] = pyopencl.LocalMemory(nbytes_float)
-            # Bins which fit in the local memory left are sorted there, the others
-            # fall back to the comb sort in global memory. Asking for more than the
-            # largest bin would only waste local memory, hence the clamping.
-            free = (self.ctx.devices[0].local_mem_size - nbytes_int - nbytes_float
-                    - self.LOCAL_MEM_MARGIN)
-            capacity = min(self.max_bin_size, max(free // 8, 0))
-            kw_int["capacity"] = numpy.int32(capacity)
-            kw_int["shared_key"] = pyopencl.LocalMemory(4 * max(capacity, 1))
-            kw_int["shared_pos"] = pyopencl.LocalMemory(4 * max(capacity, 1))
+            kw_int["shared_int"] = pyopencl.LocalMemory(4 * wg_min)
+            kw_int["shared_float"] = pyopencl.LocalMemory(16 * wg_min)
+            kw_int["shared_hist"] = pyopencl.LocalMemory(64 * wg_min)
             wdim_bins = (wg_min, self.bins)
 
 
