@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/08/2026"
+__date__ = "06/10/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -344,60 +344,37 @@ class Geometry:
 
     def _correct_parallax(
         self,
-        d1: numpy.ndarray,
-        d2: numpy.ndarray,
         p1: numpy.ndarray,
-        p2: numpy.ndarray
+        p2: numpy.ndarray,
+        p3: float | numpy.ndarray,
+        distance: float | None = None,
     ) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Calculate the displacement of pixels due to parallax effect.
 
-        :param d1: ndarray of dimension 1/2 containing the Y pixel positions
-        :param d2: ndarray of dimension 1/2 containing the X pixel positions
-        :param p1: ndarray of dimension 1/1 containing the x pixel positions in meter. MODIFIED IN PLACE!
-        :param p2: ndarray of dimension 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
-        :return: 2-arrays of same shape as d1 & d2 with the displacement in meters
+        :param p1: ndarray of dimension 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
+        :param p2: ndarray of dimension 1/2 containing the x pixel positions in meter. MODIFIED IN PLACE!
+        :param p3: ndarray of same shape as p1/p2 with the z pixel positions in meter, or a scalar.
+                   This is the sample-pixel distance along the normal of the detector, i.e. the
+                   sample-detector distance plus the (optional) z-offset of the pixel.
+        :param distance: sample-detector distance in meter, defaults to the one of the geometry.
+        :return: 2-arrays of same shape as p1 & p2 with the displacement in meters
 
-        p1 & p2 should contain the pixel coordinates after translation & **rotation**
+        p1 & p2 should contain the pixel coordinates after translation but **NOT** rotation
 
-        d1, d2, p1 and p2 should all have the same shape !!!
+        p1, p2 & p3 should all have the same shape !!!
         p1 & p2 get modified in place !
+
+        Nota: the incidence angle and the distance are both derived from the positions
+        provided, never from the geometry stored in `self`. This matters during a
+        geometry refinement, where the minimizer evaluates trial parameters without
+        updating the geometry: a correction read from `self` would stay frozen on the
+        starting geometry and bias the fit.
         """
         logger.info("in _correct_parallax")
         delta1 = delta2 = 0
         if self._parallax is not None:
-            r0 = numpy.vstack((p1.ravel(), p2.ravel()))
-            length = numpy.linalg.norm(r0, axis=0)
-            length[length == 0] = 1.0  # avoid zero division error
-            r0 /= length  # normalize array r0
-
-            displacement = self._parallax.correct(self.sin_incidence(d1.ravel(), d2.ravel()), self.dist)
-            delta1, delta2 = displacement * r0
-            delta1 = delta1.reshape(p1.shape)
-            delta2 = delta2.reshape(p2.shape)
-            p1 += delta1
-            p2 += delta2
-        return delta1, delta2
-
-    def _correct_parallax_v2(
-        self, p1: numpy.ndarray,
-        p2: numpy.ndarray,
-        p3: float | numpy.ndarray
-    ) -> tuple[numpy.ndarray, numpy.ndarray]:
-        """Calculate the displacement of pixels due to parallax effect.
-
-        :param p1: ndarray of dimension 1/2 containing the x pixel positions in meter. MODIFIED IN PLACE!
-        :param p2: ndarray of dimension 1/2 containing the y pixel positions in meter. MODIFIED IN PLACE!
-        :param p3: ndarray of dimension 1/2 containing the z pixel positions in meter or a scalar.
-        :return: 2-arrays of same shape as d1 & d2 with the displacement in meters
-
-        p1 & p2 should contain the pixel coordinates after translation but **NOT** rotation
-
-        p1, p2 & P3 should all have the same shape !!!
-        p1 & p2 get modified in place !
-        """
-        logger.info("in _correct_parallax_v2")
-        delta1 = delta2 = 0
-        if self._parallax is not None:
+            if distance is None:
+                distance = self._dist
             r0 = numpy.vstack((p1.ravel(), p2.ravel()))
             z = p3 if numpy.isscalar(p3) else p3.ravel()
             length = numpy.linalg.norm(r0, axis=0)
@@ -409,7 +386,7 @@ class Geometry:
                 sin_incidence = numexpr.evaluate("length/z/sqrt(1.0+(length/z)**2)")
             numpy.clip(sin_incidence, 0.0, 1.0, out=sin_incidence)
 
-            displacement = self._parallax.correct(sin_incidence, self.dist)
+            displacement = self._parallax.correct(sin_incidence, distance)
 
             length[length == 0] = 1.0  # avoid zero division error
             r0 /= length  # normalize array r0
@@ -451,7 +428,12 @@ class Geometry:
         p2 = p2 - poni2  # Makes a copy
 
         if do_parallax and (self._parallax is not None):
-            self._correct_parallax(d1, d2, p1, p2)
+            # Nota: this entry point has no access to the distance, hence it always
+            # uses the one of the geometry. Its callers all guard the call with
+            # `self._parallax is None`, so this is never reached with a trial geometry.
+            self._correct_parallax(p1, p2,
+                                   self._dist if p3 is None else self._dist + p3,
+                                   self._dist)
 
         return p1, p2, p3
 
@@ -540,12 +522,9 @@ class Geometry:
                     raise RuntimeError("p3 array size does not  size")
 
             if do_parallax and self._parallax is not None:
-                if corners or d1 is None or d2 is None:
-                    # full image
-                    self._correct_parallax_v2(p1, p2, p3)
-                else:
-                    # only several points
-                    self._correct_parallax(d1, d2, p1, p2)
+                # p1, p2 and p3 were just built from `param`, hence the correction
+                # follows the parameters the minimizer is currently evaluating.
+                self._correct_parallax(p1, p2, p3, dist)
 
             coord_det = numpy.vstack((p1, p2, p3))
             coord_sample = numpy.dot(self.rotation_matrix(param), coord_det)

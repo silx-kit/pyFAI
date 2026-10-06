@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 04/10/2026
+:Date: 06/10/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -11,9 +11,17 @@ Change-log of versions
 - New features:
 
   * `MultiModule.display()` draws the modules of a detector and the displacement of the corners highlighted (#2956)
-  * Median filtering on GPU is 3 to 12 times faster: the comb sort now spreads over the whole workgroup and sorts (key, index) pairs, in local memory when the bin fits.
+  * Median filtering on GPU is 8 to 18 times faster and no longer sorts the bin: the two bounds of the quantile window come from a weighted radix-select, which also frees the 16 bytes per non-zero element of the former work array.
 
 - Bug fixes:
+
+  * The parallax correction now follows the geometry under refinement. It used to read the
+    incidence angle and the sample-detector distance from the geometry object instead of the
+    trial parameters handed to `tth(d1, d2, param)`, hence it stayed frozen on the starting
+    geometry during the whole minimization: the correction acted as a constant offset, which
+    biased the refined distance and made the residual returned by `refine3` meaningless.
+    `Geometry._correct_parallax` and `Geometry._correct_parallax_v2` are merged into a single
+    method taking the positions already built from the trial parameters.
 
 - Documentation:
 
