@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2026"
+__date__ = "20/09/2026"
 __status__ = "development"
 
 import logging
@@ -207,15 +207,13 @@ class Distortion:
                         self.pos = self.detector.get_pixel_corners()[..., 1:] / pixel_size
                         if self._shape_out is None:
                             # if defined, it is probably because resize=False
-                            corner_pos = self.pos.view()
-                            corner_pos.shape = -1, 2
+                            corner_pos = self.pos.reshape(-1, 2)
                             pos1_min, pos2_min = corner_pos.min(axis=0)
                             pos1_max, pos2_max = corner_pos.max(axis=0)
                             self._shape_out = (ceil(pos1_max - pos1_min),
                                                ceil(pos2_max - pos2_min))
                             self.offset1, self.offset2 = pos1_min, pos2_min
-                        pixel_delta = self.pos.view()
-                        pixel_delta.shape = -1, 4, 2
+                        pixel_delta = self.pos.reshape(-1, 4, 2)
                         self.delta1, self.delta2 = ((numpy.ceil(pixel_delta.max(axis=1)) - numpy.floor(pixel_delta.min(axis=1))).max(axis=0)).astype(int)
         return self.pos
 

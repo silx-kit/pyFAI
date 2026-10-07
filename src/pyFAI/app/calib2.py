@@ -663,6 +663,7 @@ def main():
     else:
         qtArgs = options.qtargs.split()
     app = qt.QApplication(qtArgs)
+    app.setDesktopFileName("pyFAI-calib2")
     resources.silx_integration()
 
     settings = qt.QSettings(qt.QSettings.IniFormat,

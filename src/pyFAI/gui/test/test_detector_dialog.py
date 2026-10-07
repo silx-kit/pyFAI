@@ -31,12 +31,12 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2025"
+__date__ = "29/09/2026"
 
 import logging
 import unittest
 
-from silx.gui.utils import testutils
+from ..utils.testutils import TestCaseQt
 
 from pyFAI import detectors
 from pyFAI.test.utilstest import UtilsTest
@@ -46,7 +46,7 @@ from ..dialog.DetectorSelectorDialog import DetectorSelectorDrop
 logger = logging.getLogger(__name__)
 
 
-class TestDetectorDialog(testutils.TestCaseQt):
+class TestDetectorDialog(TestCaseQt):
 
     def test_detector(self):
         detector = detectors.Detector()

@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 15/09/2026
+:Date: 27/09/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -9,6 +9,8 @@ Change-log of versions
 -------------------
 
 - New features:
+
+  * `MultiModule.display()` draws the modules of a detector and the displacement of the corners highlighted (#2956)
 
 - Bug fixes:
 

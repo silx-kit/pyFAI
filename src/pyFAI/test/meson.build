@@ -1,5 +1,6 @@
 py.install_sources(
    ['__init__.py',
+    'profiler.py',
     'test_all.py',
     'test_average.py',
     'test_azimuthal_integrator.py',

@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/09/2026"
+__date__ = "17/09/2026"
 __status__ = "development"
 
 import json
@@ -612,6 +612,9 @@ class Worker:
         :param sync: wait for processing to be finished
 
         """
+        if self.shape is None:
+            logger.info("Skip warm-up because the input image shape is undefined")
+            return
         t = threading.Thread(target=self._warmup, name="_warmup")
         t.start()
         if sync:

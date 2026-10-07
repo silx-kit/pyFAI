@@ -31,12 +31,12 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2024"
+__date__ = "29/09/2026"
 
 import logging
 import unittest
 
-from silx.gui.utils import testutils
+from ..utils.testutils import TestCaseQt
 
 from pyFAI.io import integration_config
 from pyFAI.test.utilstest import UtilsTest
@@ -46,7 +46,7 @@ from ...gui.widgets.WorkerConfigurator import WorkerConfigurator
 logger = logging.getLogger(__name__)
 
 
-class TestIntegrationDialog(testutils.TestCaseQt):
+class TestIntegrationDialog(TestCaseQt):
 
     @classmethod
     def setUpClass(cls):

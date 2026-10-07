@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2026"
+__date__ = "20/09/2026"
 
 import logging
 import os
@@ -131,7 +131,7 @@ class TestMathUtil(utilstest.ParametricTestCase):
         """
         for sigma in [2, 9.0 / 8.0]:
             for mode in ["wrap", "reflect", "constant", "nearest", "mirror"]:
-                blurred1 = scipy.ndimage.filters.gaussian_filter(self.flat, sigma, mode=mode)
+                blurred1 = scipy.ndimage.gaussian_filter(self.flat, sigma, mode=mode)
                 blurred2 = mathutil.gaussian_filter(self.flat, sigma, mode=mode, use_scipy=False)
                 delta = abs((blurred1 - blurred2) / (blurred1)).max()
                 logger.info("Error for gaussian blur sigma: %s with mode %s is %s", sigma, mode, delta)
