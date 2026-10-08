@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/10/2020"
+__date__ = "02/10/2026"
 
 from silx.gui import qt
 
@@ -40,8 +40,10 @@ class DetectorFilterProxyModel(qt.QSortFilterProxyModel):
     def setManufacturerFilter(self, manufacturer):
         if self.__manufacturerFilter == manufacturer:
             return
+        self.beginFilterChange()
         self.__manufacturerFilter = manufacturer
-        self.invalidateFilter()
+        self.endFilterChange()
+        #self.invalidateFilter()
 
     def filterAcceptsRow(self, sourceRow, sourceParent):
         if self.__manufacturerFilter == "*":

@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "25/06/2023"
+__date__ = "02/10/2026"
 
 from silx.gui import qt
 
@@ -44,10 +44,12 @@ class CalibrantFilterProxyModel(qt.QSortFilterProxyModel):
     def setFilter(self, displayResource: bool, displayUser: bool, filenames=None):
         if (self.__displayResource == displayResource and self.__displayUser == displayUser):
             return
+        self.beginFilterChange()
         self.__displayResource = displayResource
         self.__displayUser = displayUser
         self.__filenames = filenames
-        self.invalidateFilter()
+        self.endFilterChange()
+        # self.invalidateFilter()
 
     def filterAcceptsRow(self, sourceRow, sourceParent):
         sourceModel = self.sourceModel()
