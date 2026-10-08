@@ -32,6 +32,7 @@ __copyright__ = "ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 from typing import ClassVar
+import copy
 import logging
 import math
 from collections import OrderedDict
@@ -62,6 +63,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     """
     BLOCK_SIZE = 32
     # Intel CPU driver claims preferred workgroup is 128 !
+    LOCAL_MEM_MARGIN = 256  # bytes of local memory left to the compiler in csr_medfilt
     buffers = (BufferDescription("output", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("output4", 4, numpy.float32, mf.READ_WRITE),
                BufferDescription("tmp", 1, numpy.float32, mf.READ_WRITE),
@@ -83,7 +85,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     "pyfai:openCL/ocl_azim_CSR.cl",
                     "pyfai:openCL/collective/reduction.cl",
                     "pyfai:openCL/collective/scan.cl",
-                    "pyfai:openCL/collective/comb_sort.cl",
                     "pyfai:openCL/medfilt.cl"
                     )
     mapping: ClassVar[dict] = {numpy.int8: "s8_to_float",
@@ -99,7 +100,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     def __init__(self, lut, image_size, checksum=None,
                  empty=None, unit=None, bin_centers=None, azim_centers=None, mask_checksum=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
-                 block_size=None, profile=False, extra_buffers=None):
+                 block_size=None, profile=False, extra_buffers=None, medfilt=False):
         """
         :param lut: 3-tuple of arrays
             data: coefficient of the matrix in a 1D vector of float32 - size of nnz
@@ -121,6 +122,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
         :param extra_buffers: List of additional buffer description  needed by derived classes
+        :param medfilt: set to True to initialize the integrator in median-filter mode,
+                        i.e. allocate right away the scratch space the sort of `medfilt`
+                        needs (8 bytes per non-zero element of the CSR matrix) instead
+                        of waiting for the first call
         """
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
                                   platformid=platformid, deviceid=deviceid,
@@ -159,6 +164,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
 
+        self._extra_buffers = extra_buffers
         if extra_buffers is not None:
             self.buffers += extra_buffers
 
@@ -172,7 +178,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
                          BufferDescription("sem", self.bins, numpy.float32, mf.READ_WRITE),
                          BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("merged8", (self.bins, 8), numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("work4", (self.data_size, 4), numpy.float32, mf.READ_WRITE),
                          ]
         try:
             self.set_profiling(profile)
@@ -196,6 +201,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
         if "amd" in  self.ctx.devices[0].platform.name.lower():
             self.workgroup_size["csr_integrate4_single"] = (1, 1)  # Very bad performances on AMD GPU for diverging threads!
 
+        if medfilt:
+            self._allocate_sort_space()
+
     @property
     def checksum(self):
         return self.on_device.get("data")
@@ -213,14 +221,23 @@ class OCL_CSR_Integrator(OpenclProcessing):
                               self.size,
                               checksum=self.on_device.get("data"),
                               empty=self.empty,
+                              unit=self.unit,
+                              bin_centers=self.bin_centers,
+                              azim_centers=self.azim_centers,
+                              mask_checksum=self.mask_checksum,
                               ctx=self.ctx,
                               block_size=self.block_size,
-                              profile=self.profile)
+                              profile=self.profile,
+                              extra_buffers=self._extra_buffers,
+                              medfilt=self.cl_mem.get("pairs") is not None)
 
     def __deepcopy__(self, memo=None):
         """deep copy of the object
 
         :return: deepcopy of the object
+
+        The unit and the checksums are left shared: units are registered singletons
+        and the checksums are immutable.
         """
         if memo is None:
             memo = {}
@@ -228,12 +245,20 @@ class OCL_CSR_Integrator(OpenclProcessing):
         memo[id(self._data)] = new_csr[0]
         memo[id(self._indices)] = new_csr[1]
         memo[id(self._indptr)] = new_csr[2]
+        new_bin_centers = copy.deepcopy(self.bin_centers, memo)
+        new_azim_centers = copy.deepcopy(self.azim_centers, memo)
         new_obj = self.__class__(new_csr, self.size,
                                  checksum=self.on_device.get("data"),
                                  empty=self.empty,
+                                 unit=self.unit,
+                                 bin_centers=new_bin_centers,
+                                 azim_centers=new_azim_centers,
+                                 mask_checksum=self.mask_checksum,
                                  ctx=self.ctx,
                                  block_size=self.block_size,
-                                 profile=self.profile)
+                                 profile=self.profile,
+                                 extra_buffers=copy.deepcopy(self._extra_buffers, memo),
+                                 medfilt=self.cl_mem.get("pairs") is not None)
         memo[id(self)] = new_obj
         return new_obj
 
@@ -317,9 +342,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 wg_max = self.kernels.max_workgroup_size(kernel_name)
                 wg_min = self.kernels.min_workgroup_size(kernel_name)
                 if kernel_name=="csr_medfilt":
-                    # limit the wg size due to
+                    # the radix-select needs 16 floats per thread, the scan 4 and the
+                    # count 1 int, hence 84 bytes per thread of local memory
                     device = self.ctx.devices[0]
-                    maxthreads = device.local_mem_size/12/4
+                    maxthreads = (device.local_mem_size - self.LOCAL_MEM_MARGIN) / 84
                     self.workgroup_size[kernel_name] = (wg_min,
                                                         min(wg_max, 2**(int(math.log2(maxthreads)))))
                 else:
@@ -416,7 +442,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
         self.cl_kernel_args["csr_integrate4_single"] = self.cl_kernel_args["csr_integrate4"]
         self.cl_kernel_args["csr_medfilt"] =     OrderedDict((("output4", self.cl_mem["output4"]),
-                                                              ("work4", self.cl_mem["work4"]),
+                                                              ("pairs", None),  # allocated on the first medfilt
                                                               ("data", self.cl_mem["data"]),
                                                               ("indices", self.cl_mem["indices"]),
                                                               ("indptr", self.cl_mem["indptr"]),
@@ -430,6 +456,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                               ("sem", self.cl_mem["sem"]),
                                                               ("shared_int", pyopencl.LocalMemory(128)),
                                                               ("shared_float", pyopencl.LocalMemory(128)),
+                                                              ("shared_hist", pyopencl.LocalMemory(128)),
                                                              ))
         self.cl_kernel_args["memset_out"] = OrderedDict((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged"))
         self.cl_kernel_args["memset_ng"] = OrderedDict((i, self.cl_mem[i]) for i in ("averint", "std", "merged8"))
@@ -1125,6 +1152,21 @@ class OCL_CSR_Integrator(OpenclProcessing):
                              std, sem, merged[:, 7])
         return res
 
+    def _allocate_sort_space(self):
+        """Allocate, on the first call, the scratch space medfilt needs.
+
+        It holds one (key, weight) pair per non-zero element of the CSR matrix,
+        8 bytes each, which reaches a couple of hundred MB on a large detector.
+        Only medfilt uses it, hence the lazy allocation.
+
+        Must be called outside of `self.sem`: allocate_buffers takes it and the
+        semaphore is not reentrant.
+        """
+        if self.cl_mem.get("pairs") is None:
+            self.allocate_buffers([BufferDescription("pairs", (self.data_size, 2),
+                                                     numpy.float32, mf.READ_WRITE)])
+            self.cl_kernel_args["csr_medfilt"]["pairs"] = self.cl_mem["pairs"]
+
     def medfilt(self, data, dark=None, dummy=None, delta_dummy=None,
                    variance=None, dark_variance=None,
                    flat=None, solidangle=None, polarization=None, absorption=None,
@@ -1167,6 +1209,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :return: namedtuple with "position intensity error signal variance normalization count"
         """
         error_model = ErrorModel.parse(error_model)
+        self._allocate_sort_space()
         events = []
         with self.sem:
             kernel_correction_name = "corrections4a"
@@ -1270,7 +1313,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw_int["quant_max"] = numpy.float32(quant_max)
             wg_min = max(self.workgroup_size["csr_medfilt"])
             kw_int["shared_int"] = pyopencl.LocalMemory(4 * wg_min)
-            kw_int["shared_float"] = pyopencl.LocalMemory(8 * wg_min)
+            kw_int["shared_float"] = pyopencl.LocalMemory(16 * wg_min)
+            kw_int["shared_hist"] = pyopencl.LocalMemory(64 * wg_min)
             wdim_bins = (wg_min, self.bins)
 
 

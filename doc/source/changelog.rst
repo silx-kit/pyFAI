@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 27/09/2026
+:Date: 04/10/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -11,6 +11,7 @@ Change-log of versions
 - New features:
 
   * `MultiModule.display()` draws the modules of a detector and the displacement of the corners highlighted (#2956)
+  * Median filtering on GPU is 3 to 12 times faster: the comb sort now spreads over the whole workgroup and sorts (key, index) pairs, in local memory when the bin fits.
 
 - Bug fixes:
 

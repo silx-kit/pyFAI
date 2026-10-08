@@ -18,6 +18,7 @@ def get_root():
 
 
 def get_ipynb(root):
+    """return the list of all notbooks registered in the git repo"""
     notebooks = []
     proc = subprocess.run(["git", "ls-files"], capture_output=True, cwd=root)
     assert proc.returncode == 0
@@ -59,11 +60,17 @@ def run_notebook(fn):
 
 
 if __name__ == "__main__":
+
     t0 = time.perf_counter()
     root = get_root()
     print("Working directory:", root)
     print("*"*50)
-    interactive = {n:check_interactive(n) for n in get_ipynb(root)}
+
+    if len(sys.argv)>1:
+        notebooks = [i for i in sys.argv[1:] if os.path.exists(i) and i.endswith("ipynb")]
+    else:
+        notebooks = get_ipynb(root)
+    interactive = {n:check_interactive(n) for n in notebooks}
     print("Interactive:\n"+"\n".join(i for i in interactive if interactive[i] is True))
     print("_"*139)
     print(f"|{'Path to non interactive notebook':100s} | {'Timing':20s} | {'Error ?':10s} |")
