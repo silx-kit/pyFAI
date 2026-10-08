@@ -40,6 +40,7 @@ __docformat__ = 'restructuredtext'
 import json
 import logging
 import os
+from pathlib import Path
 from collections import OrderedDict, namedtuple
 
 import numpy
@@ -563,16 +564,10 @@ class Goniometer:
             detector = Detector.factory(dico["detector"], dico.get("detector_config", None))
         return detector
 
+
     @classmethod
-    def sload(cls, filename):
-        """Class method for instantiating a Goniometer object from a JSON file
+    def sload_from_dict(cls, dico: dict) -> "Goniometer":
 
-        :param filename: name of the JSON file
-        :return: Goniometer object
-        """
-
-        with open(filename) as f:
-            dico = json.load(f)
         if "trans_function" not in dico:
             raise RuntimeError("No translation function defined in JSON file")
         file_version = dico["content"]
@@ -597,6 +592,33 @@ class Goniometer:
                     detector=detector,
                     wavelength=dico.get("wavelength"))
         return gonio
+
+
+    @classmethod
+    def sload(cls, anything: str|dict|Path) -> "Goniometer":
+        """Alternative constructor, instantiating a Goniometer object, if possible.
+
+        :param anything: can be a dict with the config, a string or the name of the JSON file
+        :return: Goniometer object
+        """
+        dico = None
+        if isinstance(anything, dict):
+            dico = anything
+        elif isinstance(anything, (str, Path)):
+            try:
+                if os.path.exists(anything):
+                    with open(anything) as f:
+                        dico = json.load(f)
+                else:
+                    dico = json.loads(anything)
+            except Exception as err:
+                logger.info(f"Unable to parse `{anything}` as JSON file: {type(err)},")
+        if dico is None:
+            msg = f"Unable to initialize goniometer from {anything}"
+            logger.error(msg)
+            raise ValueError(msg)
+
+        return cls.sload_from_dict(dico)
 
 
 class SingleGeometry:
