@@ -61,7 +61,7 @@ from .. import detectors, units, utils
 from ..containers import PolarizationArray, PolarizationDescription
 from ..io import integration_config
 from ..io.ponifile import PoniFile
-from ..parallax import Parallax, ThickSensor, ThinSensor
+from ..parallax import Beam, Parallax, ThickSensor, ThinSensor
 from ..units import CHI_RAD, TTH_RAD, CONST_hc, UnitFiber, to_unit
 from ..utils import ParallaxNotImplemented, crc32
 from ..utils.decorators import deprecated, deprecated_args, deprecated_warning
@@ -2721,7 +2721,8 @@ class Geometry:
     def enable_parallax(self,
                         activate:bool=True,
                         sensor_material:str=None,
-                        sensor_thickness:float|None=None):
+                        sensor_thickness:float|None=None,
+                        beam=None):
         """Method to activate parallax correction
 
         :param activate: set to False to disable parralax correction
@@ -2729,6 +2730,25 @@ class Geometry:
                                 by default use the one defined in the detector
         :param sensor_thickness: provide the name of the sensor thickness,
                                 by default use the one defined in the detector
+        :param beam: profile of the beam, which selects what the correction targets.
+                     `None` (the default) corrects the displacement of the *barycenter*
+                     of the energy deposit. Providing a beam corrects the displacement
+                     of the *maximum* of the peak instead, which is what a peak-picking
+                     algorithm or a 1D peak fit actually measures. Accepts a
+                     :class:`~pyFAI.parallax.Beam`, its configuration as a dictionary,
+                     or the FWHM of the peak in meter (gaussian profile).
+
+        Nota: most of the parallax effect is degenerate with the sample-detector
+        distance, which a calibration refines anyway: expect the refined distance to
+        drop by the mean absorption depth of the sensor (~150µm for 450µm of silicon at
+        13.45keV). Below 40° of incidence the rest is reparametrized away as well; what
+        the correction really buys sits at high incidence, where it reaches 0.7 pixel at
+        60° for such a sensor. See the tutorial `Parallax and the sample-detector
+        distance` for the full picture.
+
+        Nota: the beam is **not** stored in the poni-file, which only records whether the
+        parallax correction is on. A geometry saved with a beam comes back with the
+        barycenter model, and `save()` warns about it.
         """
 
         if activate:
@@ -2749,13 +2769,46 @@ class Geometry:
                 sensor = ThinSensor(thickness=sensor_config.thickness, mu=mu)
             else:
                 sensor = ThickSensor(mu=mu)
+            try:
+                beam = self._build_beam(beam)
+            except Exception as err:
+                logger.error(f"Unable to activate parallax with beam {beam}\n{type(err).__name__}: {err}")
+                return
             if self.detector.sensor and sensor_config != self.detector.sensor:
                 logger.warning(f"Replacing sensor {self.detector.sensor} with {sensor_config}.")
             self.detector.sensor = sensor_config
-            self.parallax = Parallax(sensor)  # performs the reset
+            # Building a Parallax tabulates the displacement over 1024 angles, which
+            # costs about a second when a beam is given (versus a few ms without).
+            # `enable_parallax` is called once per refinement pass by the calibration
+            # GUI, hence the short-cut when nothing changed.
+            config = {"class": Parallax.__name__,
+                      "sensor": sensor.get_config(),
+                      "beam": beam.get_config() if beam else None}
+            if self._parallax is not None and self._parallax.get_config() == config:
+                logger.debug("Parallax correction already set up, keeping it")
+                return
+            self.parallax = Parallax(sensor, beam)  # performs the reset
         else:
             self._parallax = None
             self.reset()
+
+    @staticmethod
+    def _build_beam(beam):
+        """Coerce the `beam` argument of `enable_parallax` into a Beam or None.
+
+        :param beam: a Beam, a configuration dictionary, the FWHM in meter, or None
+        :return: an instance of Beam, or None for the barycenter model
+        """
+        if beam is None or isinstance(beam, Beam):
+            return beam
+        if isinstance(beam, dict):
+            new = Beam()
+            new.set_config(beam)
+            return new
+        width = float(beam)
+        if width <= 0:
+            raise ValueError(f"The width of the beam must be positive, got {width}")
+        return Beam(width=width)
 
     # ############################################
     # Accessors and public properties of the class

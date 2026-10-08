@@ -268,21 +268,161 @@ class TestParallaxRefinement(unittest.TestCase):
                            "distance is biased by more than 100µm")
 
 
+
+class TestParallaxBeam(unittest.TestCase):
+    """`enable_parallax(beam=...)` selects what the correction targets.
+
+    Without a beam the displacement of the barycenter of the energy deposit is
+    corrected. The absorption profile being a decreasing exponential, its maximum stays
+    at the entrance of the sensor: a peak of finite width moves by less than the
+    barycenter does, and that is what a peak-picking algorithm measures.
+    """
+
+    THICKNESS = 450e-6
+    WIDTH = 150e-6  # 2 pixels of 75µm
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.detector = Detector(75e-6, 75e-6, max_shape=(1000, 1000))
+        cls.detector.sensor = SensorConfig(Si_MATERIAL, cls.THICKNESS)
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.detector = None
+
+    def new_geometry(self):
+        return load({"detector": self.detector, "distance": 0.1,
+                     "poni1": 0.0375, "poni2": 0.0375, "wavelength": 0.9218e-10})
+
+    def displacement(self, beam, degree=60):
+        """Displacement at the given incidence angle, in meter"""
+        geo = self.new_geometry()
+        geo.enable_parallax(True, beam=beam)
+        return geo, geo.parallax.displace(numpy.sin(numpy.radians(degree)))
+
+    def test_beam_flavours(self):
+        """A Beam, its configuration as a dict and a plain FWHM are all accepted"""
+        _, barycenter = self.displacement(None)
+        geo, width = self.displacement(self.WIDTH)
+        self.assertIsInstance(geo.parallax.beam, Beam)
+        self.assertEqual(geo.parallax.beam.profile, "gaussian", "default profile")
+        self.assertAlmostEqual(geo.parallax.beam.width, self.WIDTH, places=9)
+
+        geo, instance = self.displacement(Beam(self.WIDTH, "gaussian"))
+        self.assertAlmostEqual(width, instance, places=9, msg="a Beam instance is used as is")
+
+        geo, from_dict = self.displacement({"class": "Beam", "width": self.WIDTH,
+                                            "profile": "gaussian"})
+        self.assertAlmostEqual(width, from_dict, places=9, msg="a config dict is honoured")
+
+        # the maximum of a 2 pixel wide peak lags well behind the barycenter
+        self.assertLess(width, barycenter, "the maximum moves less than the barycenter")
+        self.assertGreater(width, 0.5 * barycenter, "but it does move")
+
+    def test_beam_is_not_rebuilt(self):
+        """Tabulating the displacement with a beam costs about a second, and the
+        calibration GUI calls `enable_parallax` once per refinement pass."""
+        geo = self.new_geometry()
+        geo.enable_parallax(True, beam=self.WIDTH)
+        former = geo.parallax
+        geo.enable_parallax(True, beam=self.WIDTH)
+        self.assertIs(geo.parallax, former, "an identical setup is kept")
+        geo.enable_parallax(True, beam=2 * self.WIDTH)
+        self.assertIsNot(geo.parallax, former, "a different beam is rebuilt")
+        geo.enable_parallax(True)
+        self.assertIsNone(geo.parallax.beam, "dropping the beam is rebuilt too")
+
+    def test_invalid_beam(self):
+        """A bad beam is reported and leaves the correction disabled"""
+        geo = self.new_geometry()
+        with self.assertLogs("pyFAI.geometry.core", level="ERROR"):
+            geo.enable_parallax(True, beam=-1.0)
+        self.assertIsNone(geo.parallax, "parallax stays disabled")
+
+    def test_beam_is_not_saved(self):
+        """The poni-file only records whether the correction is active: saving a
+        geometry which carries a beam has to warn about what is lost."""
+        geo = self.new_geometry()
+        geo.enable_parallax(True, beam=self.WIDTH)
+        with self.assertLogs("pyFAI.io.ponifile", level="WARNING"):
+            poni = PoniFile(geo)
+        self.assertTrue(poni.parallax, "the correction itself is recorded")
+
+
 class TestRaytracing(unittest.TestCase):
+
+    @staticmethod
+    def build_geometry(detector="Pilatus 100k", **kwargs):
+        """Azimuthal integrator with a 1mm thick silicon sensor and parallax enabled"""
+        config = {"detector": detector,
+                  "detector_config": {"sensor": {"material": "Si", "thickness": 1e-3}},
+                  "distance": 1e-1,
+                  "wavelength": 5e-11}
+        config.update(kwargs)
+        ai = load(config)
+        ai.enable_parallax(True)
+        return ai
+
     def test_extension(self):
         """Simple test that validates the extension works"""
-        ai = load({"detector": "Pilatus 100k",
-                         "detector_config":{"sensor": {"material":"Si", "thickness":1e-3}},
-                         "distance": 1e-1,
-                         "wavelength":5e-11})
-        ai.enable_parallax(True)
+        ai = self.build_geometry()
         self.assertAlmostEqual(ai.parallax.sensor.efficiency, 0.5041, delta=1e-4)
         rt=Raytracing(ai)
         data, indices, indptr = rt.calc_csr(1)
         self.assertEqual(indptr.size-1, numpy.prod(ai.detector.shape))
         self.assertEqual((indptr[1:] - indptr[:-1]).max(), 8)
         self.assertEqual(data.size, indices.size)
-        self.assertAlmostEqual(data.size/numpy.prod(ai.detector.shape), 3.56, delta=4e-3)
+        self.assertAlmostEqual(data.size/numpy.prod(ai.detector.shape), 4.344, delta=4e-3)
+
+    def test_default_oversampling(self):
+        """`calc_csr` used to assign the oversampling unconditionally, hence the
+        documented default `sample=0` set it to 0 and no ray was cast at all:
+        the sparse matrix came back empty."""
+        ai = self.build_geometry()
+        rt = Raytracing(ai)
+        self.assertEqual(rt.oversampling, 1, "one ray per pixel by default")
+        data = rt.calc_csr(0)[0]
+        self.assertEqual(rt.oversampling, 1, "calc_csr(0) keeps the oversampling")
+        self.assertGreater(data.size, 0, "the matrix is not empty")
+        self.assertTrue(numpy.allclose(data, rt.calc_csr(1)[0]),
+                        "calc_csr(0) and calc_csr(1) agree")
+
+    def test_rectangular_pixels(self):
+        """The voxel size along the slow dimension is `pixel1`; it used to be read
+        from `pixel2`, which only works for square pixels."""
+        detector = Detector(100e-6, 50e-6, max_shape=(100, 100))
+        detector.sensor = SensorConfig(Si_MATERIAL, 450e-6)
+        rt = Raytracing(self.build_geometry(detector, distance=0.05))
+        self.assertEqual(rt.vox, detector.pixel2, "vox is the fast dimension")
+        self.assertEqual(rt.voy, detector.pixel1, "voy is the slow dimension")
+
+    def test_centered_sampling(self):
+        """The sub-rays of a pixel sample it at the center of each sub-cell. They
+        used to start at `col + i/oversampling`, i.e. on the leading edge of the
+        pixel, which offsets every ray by half a pixel at `oversampling=1`.
+
+        The signature of the offset is an asymmetry: two pixels mirrored through a
+        PONI sitting at the center of a pixel must spread exactly the same way.
+        """
+        pixel = 75e-6
+        detector = Detector(pixel, pixel, max_shape=(101, 101))
+        detector.sensor = SensorConfig(Si_MATERIAL, 450e-6)
+        # the PONI is at the center of the pixel (50, 50)
+        ai = self.build_geometry(detector, distance=5e-3, wavelength=0.9218e-10,
+                                 poni1=50.5 * pixel, poni2=50.5 * pixel)
+        rt = Raytracing(ai, buffer_size=32)
+        for oversampling in (1, 4):
+            right = numpy.sort(rt.one_pixel(50, 95, sample=oversampling)[1])
+            left = numpy.sort(rt.one_pixel(50, 5, sample=oversampling)[1])
+            self.assertEqual(right.size, 5, "the ray crosses 5 voxels")
+            self.assertTrue(numpy.allclose(right, left, atol=1e-6),
+                            f"spread is symmetric for oversampling={oversampling}")
+            # a half-pixel offset would make column 95 the mirror of column 6
+            shifted = numpy.sort(rt.one_pixel(50, 6, sample=oversampling)[1])
+            self.assertFalse(numpy.allclose(right, shifted, atol=1e-6),
+                             f"rays are not offset by a pixel ({oversampling=})")
 
 
 def suite():
@@ -292,6 +432,7 @@ def suite():
     testsuite.addTest(loader(TestSensorMaterial))
     testsuite.addTest(loader(TestActivation))
     testsuite.addTest(loader(TestParallaxRefinement))
+    testsuite.addTest(loader(TestParallaxBeam))
     testsuite.addTest(loader(TestRaytracing))
     return testsuite
 
