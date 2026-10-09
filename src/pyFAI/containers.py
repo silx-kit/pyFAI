@@ -812,7 +812,7 @@ class IntegrateResult(_CopyableTuple):
         """
         return self._radial_range
 
-    def _set_radial_range(self, radial_range:tuple, unit=None):
+    def _set_radial_range(self, radial_range:tuple | None, unit=None):
         """Store the range covered by the radial axis.
 
         :param radial_range: 2-tuple with the lower and upper bound, or None
