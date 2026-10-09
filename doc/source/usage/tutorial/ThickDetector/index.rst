@@ -34,7 +34,7 @@ with the absorption profile, leading to some numerical correction to apply to th
 
 Finally, we present how parallax actually affects (perfect) data and how the correction handles the effect.
 
-A final document shows that the parallax correction is largely indistinguishable from a change in the 
+A final document shows that the parallax correction is largely indistinguishable from a change in the
 sample-detector distance, and assesses how much the correction actually matters once the geometry is accurately determined
 
 
