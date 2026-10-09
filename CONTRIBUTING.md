@@ -55,8 +55,8 @@ package, so a module forgotten in `test_all.py` is run by `pytest` only.
 
 ## AI policy
 
-pyFAI provides [guidelines for using AI](https://pyfai.readthedocs.io/en/stable/AI_policy.html), specifically "generative AI tools 
-like large language models". Please read them carefully before contributing 
+pyFAI provides [guidelines for using AI](https://pyfai.readthedocs.io/en/stable/AI_policy.html), specifically "generative AI tools
+like large language models". Please read them carefully before contributing
 if you used them in any way.
 
 # Few common rules to make common development simpler:
