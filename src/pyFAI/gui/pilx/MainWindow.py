@@ -82,11 +82,11 @@ class MainWindow(qt.QMainWindow):
     def _init_state(self) -> None:
         """Initialize the window state before creating its widgets."""
         self._file_name: str | None = None
-        self._unfixed_indices = None
-        self._fixed_indices = set()
-        self._background_point = None
-        self.worker_config = None
-        self._map_ptr = None  # Map of input-frame indices
+        self._unfixed_indices: ImageIndices | None = None
+        self._fixed_indices: set[ImageIndices] = set()
+        self._background_point: Point | None = None
+        self._worker_config: WorkerConfig | None = None
+        self._map_ptr: numpy.ndarray | None = None  # Map of input-frame indices
 
     def _init_ui(self) -> None:
         """Create and arrange the viewer widgets."""
@@ -179,11 +179,11 @@ class MainWindow(qt.QMainWindow):
             pyFAI_config_as_dict = json.loads(pyFAI_config_as_str)
             if "diffmap_config_version" in pyFAI_config_as_dict:
                 diffmap_config = DiffmapConfig.from_dict(pyFAI_config_as_dict, inplace=True)
-                self.worker_config = diffmap_config.ai
+                self._worker_config = diffmap_config.ai
             else:
-                self.worker_config = WorkerConfig.from_dict(pyFAI_config_as_dict, inplace=True)
+                self._worker_config = WorkerConfig.from_dict(pyFAI_config_as_dict, inplace=True)
 
-            radial_dset = get_radial_dataset(nxdata, size=self.worker_config.nbpt_rad)
+            radial_dset = get_radial_dataset(nxdata, size=self._worker_config.nbpt_rad)
             delta_radial = (radial_dset[-1] - radial_dset[0]) / len(radial_dset)
 
             if "offset" in nxprocess:
@@ -223,7 +223,7 @@ class MainWindow(qt.QMainWindow):
                 else:
                     self.warning(f"Cannot access diffraction images at {path}: not a group.")
 
-        self._radial_matrix = compute_radial_values(self.worker_config)
+        self._radial_matrix = compute_radial_values(self._worker_config)
         self._delta_radial_over_2 = delta_radial / 2
 
         self._map_plot_widget.setScatterData(map_data, fast_values, slow_values, fast_label, slow_label)
@@ -282,7 +282,7 @@ class MainWindow(qt.QMainWindow):
         else:
             mask_image = None
 
-        detector = self.worker_config.poni.detector
+        detector = self._worker_config.poni.detector
         if not detector:
             return mask_image
 
@@ -450,7 +450,7 @@ class MainWindow(qt.QMainWindow):
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file.get(self._nxprocess_path)
             nxdata = nxprocess["result"]
-            radial = get_radial_dataset(nxdata, size=self.worker_config.nbpt_rad)[()]
+            radial = get_radial_dataset(nxdata, size=self._worker_config.nbpt_rad)[()]
             i_min, i_max = get_indices_from_values(v_min, v_max, radial)
             full_map = get_signal_dataset(nxdata, default="intensity")
             axes_index = get_axes_index(full_map)
