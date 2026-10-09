@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013-2026 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2026"
+__date__ = "03/10/2026"
 
 import logging
 import platform
@@ -328,6 +328,123 @@ class TestGroupFunction(unittest.TestCase):
 
                 self.assertTrue(good, f"calculation is correct for WG={wg}")
 
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_sort2(self):
+        """
+        tests the sort of (key, payload) pairs stored as float2
+        """
+        data = numpy.arange(self.shape).astype(numpy.float32)
+        data = numpy.outer(data, numpy.ones(2, numpy.float32)).view(numpy.dtype([("s0", "<f4"), ("s1", "<f4")]))
+        numpy.random.shuffle(data)
+
+        maxi = round(numpy.log2(self.shape)) + 1
+        for i in range(5, maxi):
+            wg = 1 << i
+            ref = data.reshape((-1, wg))
+            positions = ((numpy.arange(ref.shape[0]) + 1) * wg).astype(numpy.int32)
+            positions_d = pyopencl.array.to_device(self.queue, positions)
+            data_d = pyopencl.array.to_device(self.queue, data)
+            try:
+                evt = self.program.test_combsort_float2(self.queue, (min(wg, self.max_valid_wg), ref.shape[0]), (min(wg, self.max_valid_wg), 1),
+                                                        data_d.data,
+                                                        positions_d.data,
+                                                        pyopencl.LocalMemory(4 * min(wg, self.max_valid_wg)))
+                evt.wait()
+            except Exception as error:
+                logger.error("Error %s on WG=%s: test_sort2", error, wg)
+                break
+            else:
+                res = data_d.get()
+                ref = numpy.sort(ref, order="s0")
+                good = numpy.array_equal(res.view(numpy.float32).ravel(), ref.view(numpy.float32).ravel())
+                logger.info("Wg: %s result: sort OK %s", wg, good)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_sort_local(self):
+        """
+        tests the comb sort of (key, position) pairs held in local memory
+        """
+        data = numpy.arange(self.shape).astype(numpy.float32)
+        numpy.random.shuffle(data)
+
+        maxi = round(numpy.log2(self.shape)) + 1
+        for i in range(5, maxi):
+            wg = 1 << i
+            ref = data.reshape((-1, wg))
+            positions = ((numpy.arange(ref.shape[0]) + 1) * wg).astype(numpy.int32)
+            positions_d = pyopencl.array.to_device(self.queue, positions)
+            data_d = pyopencl.array.to_device(self.queue, data)
+            lwg = min(wg, self.max_valid_wg)
+            try:
+                evt = self.program.test_combsort_local(self.queue, (lwg, ref.shape[0]), (lwg, 1),
+                                                       data_d.data,
+                                                       positions_d.data,
+                                                       pyopencl.LocalMemory(4 * lwg),
+                                                       pyopencl.LocalMemory(4 * wg),
+                                                       pyopencl.LocalMemory(4 * wg))
+                evt.wait()
+            except Exception as error:
+                logger.error("Error %s on WG=%s: test_sort_local", error, wg)
+                break
+            else:
+                res = data_d.get()
+                good = numpy.array_equal(res, numpy.sort(ref).ravel())
+                logger.info("Wg: %s result: sort OK %s", wg, good)
+                self.assertTrue(good, f"calculation is correct for WG={wg}")
+
+    @unittest.skipUnless(ocl, "pyopencl is missing")
+    def test_sort_empty_bin(self):
+        """Empty and single-element bins used to hang first_step() forever: with
+        size<2 the step decreases down to 0 and `0>=size` never becomes false.
+        """
+        sizes = [0, 1, 0, 2, 5, 0, 1]
+        positions = numpy.cumsum(sizes).astype(numpy.int32)
+        wg = min(32, self.max_valid_wg)
+        shared = pyopencl.LocalMemory(4 * wg)
+        rng = UtilsTest.get_rng()
+
+        data = rng.random(positions[-1]).astype(numpy.float32)
+        data_d = pyopencl.array.to_device(self.queue, data)
+        positions_d = pyopencl.array.to_device(self.queue, positions)
+        self.program.test_combsort_float(self.queue, (wg, len(sizes)), (wg, 1),
+                                         data_d.data, positions_d.data, shared).wait()
+        res = data_d.get()
+
+        data4 = numpy.outer(data, numpy.ones(4, numpy.float32)).view(
+            numpy.dtype([("s0", "<f4"), ("s1", "<f4"), ("s2", "<f4"), ("s3", "<f4")]))
+        data4_d = pyopencl.array.to_device(self.queue, data4)
+        self.program.test_combsort_float4(self.queue, (wg, len(sizes)), (wg, 1),
+                                          data4_d.data, positions_d.data, shared).wait()
+        res4 = data4_d.get()["s0"].ravel()
+
+        data2 = numpy.outer(data, numpy.ones(2, numpy.float32)).view(
+            numpy.dtype([("s0", "<f4"), ("s1", "<f4")]))
+        data2_d = pyopencl.array.to_device(self.queue, data2)
+        self.program.test_combsort_float2(self.queue, (wg, len(sizes)), (wg, 1),
+                                          data2_d.data, positions_d.data, shared).wait()
+        res2 = data2_d.get()["s0"].ravel()
+
+        local_d = pyopencl.array.to_device(self.queue, data)
+        capacity = max(max(sizes), 1)
+        self.program.test_combsort_local(self.queue, (wg, len(sizes)), (wg, 1),
+                                         local_d.data, positions_d.data, shared,
+                                         pyopencl.LocalMemory(4 * capacity),
+                                         pyopencl.LocalMemory(4 * capacity)).wait()
+        res_local = local_d.get()
+
+        start = 0
+        for size in sizes:
+            ref = numpy.sort(data[start:start + size])
+            self.assertTrue(numpy.array_equal(res[start:start + size], ref),
+                            f"float sort is correct for the bin of size {size}")
+            self.assertTrue(numpy.array_equal(res2[start:start + size], ref),
+                            f"float2 sort is correct for the bin of size {size}")
+            self.assertTrue(numpy.array_equal(res4[start:start + size], ref),
+                            f"float4 sort is correct for the bin of size {size}")
+            self.assertTrue(numpy.array_equal(res_local[start:start + size], ref),
+                            f"local sort is correct for the bin of size {size}")
+            start += size
 
 
 def suite():

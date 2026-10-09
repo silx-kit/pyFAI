@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 27/09/2026
+:Date: 06/10/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -11,10 +11,19 @@ Change-log of versions
 - New features:
 
   * `MultiModule.display()` draws the modules of a detector and the displacement of the corners highlighted (#2956)
+  * `Geometry.enable_parallax()`, `beam` parameter to switch from *barycenter* to *maximum* of the peak.
+  * Median filtering on GPU is 8 to 18 times faster and no longer sorts the bin: the two bounds of the quantile window come from a weighted radix-select, which also frees the 16 bytes per non-zero element of the former work array.
 
 - Bug fixes:
 
+  * The parallax correction now follows the geometry under refinement.
+  * `parallax_raytracing.Raytracing` works for non square pixels now.
+  * `Raytracing.calc_csr()` no longer returns an empty matrix for its documented default
+  * The sub-rays of `Raytracing` sample a pixel at the center of each sub-cell instead of its edge
+
 - Documentation:
+
+  * New tutorial `Parallax and the sample-detector distance`: parallax effect is degenerate with the distance
 
 - Code quality:
 
