@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 06/10/2026
+:Date: 09/10/2026
 :Keywords: Tutorial
 :Target: Scientists
 
@@ -34,9 +34,8 @@ with the absorption profile, leading to some numerical correction to apply to th
 
 Finally, we present how parallax actually affects (perfect) data and how the correction handles the effect.
 
-A last document explains why most of the parallax effect is degenerate with the
-sample-detector distance, and what the correction is actually worth once the geometry
-has been refined.
+A final document shows that the parallax correction is largely indistinguishable from a change in the 
+sample-detector distance, and assesses how much the correction actually matters once the geometry is accurately determined
 
 
 .. toctree::
