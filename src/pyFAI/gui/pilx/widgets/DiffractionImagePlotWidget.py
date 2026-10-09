@@ -32,10 +32,12 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2026"
+__date__ = "16/09/2026"
 __status__ = "development"
 
 import numpy
+from silx.gui import qt
+from silx.gui.plot.backends.BackendMatplotlib import BackendMatplotlibQt
 from silx.gui.plot.items import ImageData
 
 from ...utils.colorutils import DEFAULT_COLORMAP
@@ -45,10 +47,51 @@ from .ImagePlotWidget import ImagePlotWidget
 _LEGEND = "IMAGE"
 
 
-class DiffractionImagePlotWidget(ImagePlotWidget):
+class _DetectorMatplotlibBackend(BackendMatplotlibQt):
+    """Custom temporary backend to get around silx issue
+    https://github.com/silx-kit/silx/issues/4723.
 
-    def __init__(self, parent=None, backend=None):
+    Once it's fixed we can remove this custom subclass.
+    """
+
+    def setLimits(
+        self,
+        xmin: float,
+        xmax: float,
+        ymin: float,
+        ymax: float,
+        y2min: float | None = None,
+        y2max: float | None = None,
+    ) -> None:
+        """Apply axis limits without repeating PlotWidget's aspect adjustment.
+
+        :param xmin: Lower X-axis limit.
+        :param xmax: Upper X-axis limit.
+        :param ymin: Lower left Y-axis limit.
+        :param ymax: Upper left Y-axis limit.
+        :param y2min: Optional lower right Y-axis limit.
+        :param y2max: Optional upper right Y-axis limit.
+        :return: None.
+        """
+        # PlotWidget has already enforced aspect using the actual plot area.
+        # The silx backend repeats it using the full canvas, which can expand
+        # the limits on every pan event when the two rectangles differ.
+        keep_aspect = self.isKeepDataAspectRatio()
+        self.setKeepDataAspectRatio(False)
+        try:
+            super().setLimits(xmin, xmax, ymin, ymax, y2min, y2max)
+        finally:
+            self.setKeepDataAspectRatio(keep_aspect)
+
+class DiffractionImagePlotWidget(ImagePlotWidget):
+    """Display a detector image and its selected 2θ ROI."""
+
+    def __init__(self, parent: qt.QWidget | None = None, backend=None) -> None:
+        """Create the plot with an optional parent and silx backend."""
+        if backend is None or backend in ("matplotlib", "mpl"):
+            backend = _DetectorMatplotlibBackend
         super().__init__(parent, backend)
+        self.setAxesMargins(left=0.10, top=0.16, right=0.03, bottom=0.10)
         image_item = self.addImage([[]], legend=_LEGEND, colormap=DEFAULT_COLORMAP)
         if not isinstance(image_item, ImageData):
             raise RuntimeError("addImage should return a ImageData instance")
@@ -65,14 +108,19 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
 
     def setImageData(self,
                      image: numpy.ndarray,
-                     title: str=""):
+                     title: str="") -> None:
+        """Display ``image`` with ``title`` and reset zoom on its first display."""
         self._image_item.setData(image)
         if self._first_plot:
             self.resetZoom()
             self._first_plot = False
         self.setGraphTitle(title)
+        backend = self.getBackend()
+        if isinstance(backend, BackendMatplotlibQt):
+            backend.ax.title.set_fontsize(11)
 
     def getImageIndices(self, x_data: float, y_data: float) -> ImageIndices | None:
+        """Return the detector pixel at data coordinates, or None if outside."""
         tmp = self.dataToPixel(x_data, y_data)
         if tmp:
             pixel_x, pixel_y = tmp
@@ -87,7 +135,8 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
 
     def addContour(
         self, contour: numpy.ndarray, legend: str, linestyle: str | None=None
-    ):
+    ) -> None:
+        """Draw a detector-space ``contour`` with the given legend and style."""
         self.addCurve(
             contour[:, 1],
             contour[:, 0],
