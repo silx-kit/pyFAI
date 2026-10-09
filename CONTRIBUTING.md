@@ -53,6 +53,12 @@ to stay green: `run_tests.py` builds its suite from the `suite()` functions main
 hand in `pyFAI/test/test_all.py`, while `pytest` discovers every `test_*.py` of the
 package, so a module forgotten in `test_all.py` is run by `pytest` only.
 
+## AI policy
+
+pyFAI provides [guidelines for using AI](https://pyfai.readthedocs.io/en/stable/AI_policy.html), specifically "generative AI tools 
+like large language models". Please read them carefully before contributing 
+if you used them in any way.
+
 # Few common rules to make common development simpler:
 * Code formatting is generally PEP8, except for the GUI section where the CamelCase is used (due to inheritance of Qt classes).
 * Doc-strings are mandatory. They should contain the purpose of the function and the description of its signature, both input and output, for human beings. Discussion about the implementation are best done in comments.
