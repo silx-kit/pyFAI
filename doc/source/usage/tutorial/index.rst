@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 21/10/2021
+:Date: 30/09/2026
 :Keywords: Tutorials
 :Target: Advanced users tutorials using jupyter notebooks
 
@@ -42,5 +42,6 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Separation/index.rst
    Parallelization/index
    integrate2d.ipynb
+   rebin.ipynb
    FiberGrazingIncidence.ipynb
    Soleil/index.rst
