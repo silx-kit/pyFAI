@@ -48,7 +48,7 @@ _LEGEND = "IMAGE"
 
 
 class _DetectorMatplotlibBackend(BackendMatplotlibQt):
-    """Custom temporary backend to get around silx issue 
+    """Custom temporary backend to get around silx issue
     https://github.com/silx-kit/silx/issues/4723.
 
     Once it's fixed we can remove this custom subclass.
