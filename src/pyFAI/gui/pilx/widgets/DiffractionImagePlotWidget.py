@@ -47,8 +47,8 @@ from .ImagePlotWidget import ImagePlotWidget
 _LEGEND = "IMAGE"
 
 
-class DetectorMatplotlibBackend(BackendMatplotlibQt):
-    """Custom temporary backend to get around silx issue
+class _DetectorMatplotlibBackend(BackendMatplotlibQt):
+    """Custom temporary backend to get around silx issue 
     https://github.com/silx-kit/silx/issues/4723.
 
     Once it's fixed we can remove this custom subclass.
@@ -89,7 +89,7 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
     def __init__(self, parent: qt.QWidget | None = None, backend=None) -> None:
         """Create the plot with an optional parent and silx backend."""
         if backend is None or backend in ("matplotlib", "mpl"):
-            backend = DetectorMatplotlibBackend
+            backend = _DetectorMatplotlibBackend
         super().__init__(parent, backend)
         self.setAxesMargins(left=0.10, top=0.16, right=0.03, bottom=0.10)
         image_item = self.addImage([[]], legend=_LEGEND, colormap=DEFAULT_COLORMAP)
