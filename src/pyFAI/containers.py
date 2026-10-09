@@ -88,7 +88,7 @@ def _check_regular_binning(centers: numpy.array, name: str, rtol: float=1e-3) ->
     return False
 
 
-def _scale_range(value_range: tuple, unit=None) -> tuple:
+def _scale_range(value_range: tuple | None, unit=None) -> tuple | None:
     """Convert a range from the internal representation of pyFAI to a public unit
 
     :param value_range: 2-tuple with the lower and upper bound, or None
