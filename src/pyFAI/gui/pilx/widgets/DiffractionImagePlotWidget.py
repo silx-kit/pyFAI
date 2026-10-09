@@ -83,7 +83,6 @@ class DetectorMatplotlibBackend(BackendMatplotlibQt):
         finally:
             self.setKeepDataAspectRatio(keep_aspect)
 
-
 class DiffractionImagePlotWidget(ImagePlotWidget):
     """Display a detector image and its selected 2θ ROI."""
 
@@ -98,7 +97,6 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
             raise RuntimeError("addImage should return a ImageData instance")
         self._image_item = image_item
         self._first_plot = True
-        self._reset_zoom_when_shown = False
 
     def _dataConverter(self, x, y):
         image = self._image_item.getData(copy=False)
@@ -114,26 +112,12 @@ class DiffractionImagePlotWidget(ImagePlotWidget):
         """Display ``image`` with ``title`` and reset zoom on its first display."""
         self._image_item.setData(image)
         if self._first_plot:
-            if self.isVisible():
-                qt.QTimer.singleShot(0, self.resetZoom)
-            else:
-                self._reset_zoom_when_shown = True
+            self.resetZoom()
             self._first_plot = False
         self.setGraphTitle(title)
         backend = self.getBackend()
         if isinstance(backend, BackendMatplotlibQt):
             backend.ax.title.set_fontsize(11)
-
-    def showEvent(self, event: qt.QShowEvent) -> None:
-        """Finish the deferred first-image zoom when the plot becomes visible.
-
-        :param event: Qt show event passed to the base widget.
-        :return: None.
-        """
-        super().showEvent(event)
-        if self._reset_zoom_when_shown:
-            self._reset_zoom_when_shown = False
-            qt.QTimer.singleShot(0, self.resetZoom)
 
     def getImageIndices(self, x_data: float, y_data: float) -> ImageIndices | None:
         """Return the detector pixel at data coordinates, or None if outside."""
