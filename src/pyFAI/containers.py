@@ -1073,8 +1073,8 @@ class Integrate2dResult(IntegrateResult):
 
 
     def rebin1d(self, *,
-                radial_range:tuple=None,
-                azimuth_range:tuple=None) -> Integrate1dResult:
+                radial_range: tuple | None = None,
+                azimuth_range: tuple | None = None) -> Integrate1dResult:
         """Function that rebins an Integrate2dResult into a Integrate1dResult
 
         It keeps the radial bin-size unchanged but their number can vary and rebin the azimuthal bins into a single one.
