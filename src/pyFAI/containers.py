@@ -832,7 +832,7 @@ class IntegrateResult(_CopyableTuple):
         """
         return self._azimuth_range
 
-    def _set_azimuth_range(self, azimuth_range:tuple, unit=None):
+    def _set_azimuth_range(self, azimuth_range:tuple | None, unit=None):
         """Store the range covered by the azimuthal axis.
 
         :param azimuth_range: 2-tuple with the lower and upper bound, or None
