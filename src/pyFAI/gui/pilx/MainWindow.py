@@ -70,6 +70,26 @@ from .widgets.MapPlotWidget import MapPlotWidget
 logger = logging.getLogger(__name__)
 
 
+class _MainWindowSplitter(qt.QSplitter):
+    """Non-collapsible splitter sharing its space equally between two widgets."""
+
+    def __init__(
+        self,
+        orientation: qt.Qt.Orientation,
+        first: qt.QWidget,
+        second: qt.QWidget,
+        parent: qt.QWidget | None = None,
+    ) -> None:
+        super().__init__(orientation, parent)
+        self.addWidget(first)
+        self.addWidget(second)
+        self.setChildrenCollapsible(False)
+        self.setHandleWidth(6)
+        # Stretch factors only apply to widgets already in the splitter
+        self.setStretchFactor(0, 1)
+        self.setStretchFactor(1, 1)
+
+
 class MainWindow(qt.QMainWindow):
     sigFileChanged = qt.Signal(str)
 
@@ -106,21 +126,18 @@ class MainWindow(qt.QMainWindow):
         self._integrated_plot_widget = IntegratedPatternPlotWidget(self)
 
         self._central_widget = qt.QWidget()
-        right_splitter = qt.QSplitter(qt.Qt.Orientation.Vertical, self)
-        right_splitter.addWidget(self._map_plot_widget)
-        right_splitter.addWidget(self._integrated_plot_widget)
-        right_splitter.setChildrenCollapsible(False)
-        right_splitter.setHandleWidth(6)
-        right_splitter.setStretchFactor(0, 1)
-        right_splitter.setStretchFactor(1, 1)
-
-        plot_splitter = qt.QSplitter(qt.Qt.Orientation.Horizontal, self)
-        plot_splitter.addWidget(self._image_plot_widget)
-        plot_splitter.addWidget(right_splitter)
-        plot_splitter.setChildrenCollapsible(False)
-        plot_splitter.setHandleWidth(6)
-        plot_splitter.setStretchFactor(0, 1)
-        plot_splitter.setStretchFactor(1, 1)
+        right_splitter = _MainWindowSplitter(
+            qt.Qt.Orientation.Vertical,
+            self._map_plot_widget,
+            self._integrated_plot_widget,
+            self,
+        )
+        plot_splitter = _MainWindowSplitter(
+            qt.Qt.Orientation.Horizontal,
+            self._image_plot_widget,
+            right_splitter,
+            self,
+        )
 
         layout = qt.QVBoxLayout(self._central_widget)
         layout.setSpacing(0)
