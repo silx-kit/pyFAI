@@ -35,8 +35,8 @@ environment:
     matrix:
 
         # Python 3.10
-        - PYTHON_DIR: "C:\\Python\\3.10"
-          PYTHON_ARCH: "64"
+        #- PYTHON_DIR: "C:\\Python\\3.10"
+        #  PYTHON_ARCH: "64"
 
         # Python 3.11
         #- PYTHON_DIR: "C:\\Python\\3.11"
