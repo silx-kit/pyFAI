@@ -30,7 +30,7 @@
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2026"
+__date__ = "06/10/2026"
 __docformat__ = 'restructuredtext'
 
 import collections
@@ -264,6 +264,11 @@ class PoniFile:
         if "parallax" in dir(duck) and bool(duck.parallax):
             self._parallax = True
             self.API_VERSION = max(3, self.API_VERSION)
+            if getattr(duck.parallax, "beam", None) is not None:
+                _logger.warning("The poni-file format only records whether the parallax "
+                                "correction is active, not the beam `%s` it was set up "
+                                "with. Reloading this geometry falls back on the "
+                                "barycenter model.", duck.parallax.beam)
         else:
             self._parallax = None
             self.API_VERSION = 2.1

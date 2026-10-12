@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/05/2026"
+__date__ = "06/10/2026"
 
 import logging
 import unittest
@@ -39,9 +39,12 @@ import unittest
 import numpy
 
 from .. import load
+from ..calibrant import get_calibrant
+from ..detectors import Detector
 from ..detectors.sensors import CdTe_MATERIAL, SensorConfig, Si_MATERIAL
 from ..ext.parallax_raytracing import Raytracing
 from ..io.ponifile import PoniFile
+from ..geometryRefinement import GeometryRefinement
 from ..parallax import BaseSensor, Beam, Parallax, ThinSensor
 from ..test.utilstest import UtilsTest
 
@@ -120,21 +123,306 @@ class TestActivation(unittest.TestCase):
         self.assertEqual(PoniFile(a),PoniFile(b), "ponifiles are the same")
         self.assertEqual(str(a),str(b), "geometries are the same")
 
+
+class TestParallaxRefinement(unittest.TestCase):
+    """The parallax correction has to follow the geometry under refinement.
+
+    The minimizer of `GeometryRefinement` evaluates trial parameters through
+    `Geometry.tth(d1, d2, param)` **without** storing them in the geometry. A
+    correction which reads the distance or the PONI from `self` instead of from
+    `param` stays frozen on the starting geometry: it then acts as a constant
+    offset, which biases the fit and makes the returned residual meaningless.
+    """
+
+    PIXEL = 75e-6
+    SHAPE = (2167, 2070)
+    WAVELENGTH = 0.9218e-10
+    THICKNESS = 450e-6
+    # true geometry used to build the synthetic control points
+    DIST = 0.1
+    PONI1 = 0.0812
+    PONI2 = 0.0777
+    data = None
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.detector = Detector(cls.PIXEL, cls.PIXEL, max_shape=cls.SHAPE)
+        cls.calibrant = get_calibrant("LaB6")
+        cls.calibrant.wavelength = cls.WAVELENGTH
+        cls.sensor = cls.build_geometry(data=numpy.zeros((1, 3))).parallax.sensor
+        cls.data = cls.control_points()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.detector = cls.calibrant = cls.sensor = cls.data = None
+
+    @classmethod
+    def build_geometry(cls, parallax=True, data=None, **kwargs):
+        """Build a GeometryRefinement, with the parallax correction enabled or not"""
+        param = {"dist": cls.DIST, "poni1": cls.PONI1, "poni2": cls.PONI2,
+                 "rot1": 0.0, "rot2": 0.0, "rot3": 0.0}
+        param.update(kwargs)
+        geo = GeometryRefinement(cls.data if data is None else data,
+                                 detector=cls.detector,
+                                 wavelength=cls.WAVELENGTH, calibrant=cls.calibrant,
+                                 **param)
+        if parallax:
+            geo.enable_parallax(True, sensor_material="Si",
+                                sensor_thickness=cls.THICKNESS)
+        return geo
+
+    @classmethod
+    def control_points(cls):
+        """Synthetic control points, displaced by the parallax effect.
+
+        Without any tilt the incidence angle is the scattering angle, hence the
+        observed radius is simply `dist*tan(2th)` plus the displacement.
+        """
+        chi = numpy.linspace(0, 2 * numpy.pi, 60, endpoint=False)
+        cos_chi, sin_chi = numpy.cos(chi), numpy.sin(chi)
+        rows, cols, rings = [], [], []
+        two_th = [t for t in cls.calibrant.get_2th() if t < numpy.radians(55)]
+        for idx, tth in enumerate(two_th):
+            radius = cls.DIST * numpy.tan(tth) + cls.sensor.measure_displacement_integrate(tth)
+            d1 = (cls.PONI1 + radius * cos_chi) / cls.PIXEL - 0.5
+            d2 = (cls.PONI2 + radius * sin_chi) / cls.PIXEL - 0.5
+            valid = ((d1 > 0) & (d1 < cls.SHAPE[0]) &
+                     (d2 > 0) & (d2 < cls.SHAPE[1]))
+            rows.append(d1[valid])
+            cols.append(d2[valid])
+            rings.append(numpy.full(valid.sum(), idx))
+        return numpy.vstack((numpy.concatenate(rows),
+                             numpy.concatenate(cols),
+                             numpy.concatenate(rings))).T
+
+    def test_displacement_follows_param(self):
+        """Non regression: the correction used to be read from `self`, hence it was
+        the very same for every trial geometry (bug seen with parallax refinement)."""
+        geo = self.build_geometry()
+        d1 = numpy.array([100.0, 600.0, 1200.0, 1800.0])
+        d2 = numpy.array([100.0, 600.0, 1200.0, 1800.0])
+        reference = None
+        for dist in (0.05, 0.1, 0.3):
+            p1, p2, p3 = geo.detector.calc_cartesian_positions(d1, d2)
+            p1 = (p1 - self.PONI1).ravel()
+            p2 = (p2 - self.PONI2).ravel()
+            p3 = numpy.zeros(p1.size) + dist if p3 is None else (dist + p3).ravel()
+            before = numpy.hypot(p1, p2)
+            geo._correct_parallax(p1, p2, p3, dist)
+            # the correction undoes the parallax displacement, hence it is inwards
+            correction = numpy.hypot(p1, p2) - before
+            self.assertTrue((correction < 0).all(), "correction is inwards")
+            if reference is None:
+                reference = correction
+            else:
+                self.assertFalse(numpy.allclose(reference, correction),
+                                 "correction depends on the trial distance")
+
+    def test_tth_follows_param(self):
+        """`tth(d1, d2, param)` is the entry point of the minimizer: it goes through
+        `calc_pos_zyx(param=...)`, hence the correction has to follow `param` too.
+        """
+        geo = self.build_geometry()
+        d1 = numpy.array([100.0, 600.0, 1800.0])
+        d2 = numpy.array([100.0, 600.0, 1800.0])
+        # same trial geometry as the one stored: parallax must not change anything else
+        param = [self.DIST, self.PONI1, self.PONI2, 0.0, 0.0, 0.0]
+        reference = geo.tth(d1, d2, param)
+        self.assertTrue(numpy.allclose(reference, geo.tth(d1, d2)),
+                        "tth(param) matches tth() for the stored geometry")
+        for dist in (0.05, 0.3):
+            other = geo.tth(d1, d2, [dist] + param[1:])
+            # the parallax correction scales with the distance: a geometry-only
+            # calculation would give exactly arctan(r/dist) here.
+            naked = numpy.arctan(geo.rFunction(d1, d2, param) / dist)
+            self.assertFalse(numpy.allclose(other, naked, atol=1e-7),
+                             f"the correction is applied for dist={dist}")
+
+    def test_refinement_is_param_aware(self):
+        """A single refine3() must recover the true geometry whatever the starting
+        point. With the frozen correction, starting 20% off biased the distance by
+        more than 20µm and left a residual 2 orders of magnitude too large."""
+        for start in (0.1015, 0.105, 0.12):
+            geo = self.build_geometry(dist=start, poni1=0.0805, poni2=0.0785)
+            geo.refine3(10000, fix=["rot3", "wavelength"])
+            npt = self.data.shape[0]
+            rms = numpy.degrees(numpy.sqrt(geo.chi2() / npt)) * 1e3
+            self.assertAlmostEqual(geo.dist, self.DIST, delta=2e-6,
+                                   msg=f"distance recovered from {start}m")
+            self.assertAlmostEqual(geo.poni1, self.PONI1, delta=2e-6,
+                                   msg=f"poni1 recovered from {start}m")
+            self.assertAlmostEqual(geo.poni2, self.PONI2, delta=2e-6,
+                                   msg=f"poni2 recovered from {start}m")
+            self.assertLess(rms, 0.1, msg=f"residual below 0.1 mdeg from {start}m")
+
+    def test_refinement_without_parallax(self):
+        """Sanity check: without the correction the fit absorbs the displacement
+        into the distance, which is off by about the mean depth of absorption."""
+        geo = self.build_geometry(parallax=False, dist=0.1015,
+                                  poni1=0.0805, poni2=0.0785)
+        self.assertIsNone(geo.parallax)
+        geo.refine3(10000, fix=["rot3", "wavelength"])
+        self.assertGreater(geo.dist - self.DIST, 1e-4,
+                           "distance is biased by more than 100µm")
+
+
+
+class TestParallaxBeam(unittest.TestCase):
+    """`enable_parallax(beam=...)` selects what the correction targets.
+
+    Without a beam the displacement of the barycenter of the energy deposit is
+    corrected. The absorption profile being a decreasing exponential, its maximum stays
+    at the entrance of the sensor: a peak of finite width moves by less than the
+    barycenter does, and that is what a peak-picking algorithm measures.
+    """
+
+    THICKNESS = 450e-6
+    WIDTH = 150e-6  # 2 pixels of 75µm
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.detector = Detector(75e-6, 75e-6, max_shape=(1000, 1000))
+        cls.detector.sensor = SensorConfig(Si_MATERIAL, cls.THICKNESS)
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.detector = None
+
+    def new_geometry(self):
+        return load({"detector": self.detector, "distance": 0.1,
+                     "poni1": 0.0375, "poni2": 0.0375, "wavelength": 0.9218e-10})
+
+    def displacement(self, beam, degree=60):
+        """Displacement at the given incidence angle, in meter"""
+        geo = self.new_geometry()
+        geo.enable_parallax(True, beam=beam)
+        return geo, geo.parallax.displace(numpy.sin(numpy.radians(degree)))
+
+    def test_beam_flavours(self):
+        """A Beam, its configuration as a dict and a plain FWHM are all accepted"""
+        _, barycenter = self.displacement(None)
+        geo, width = self.displacement(self.WIDTH)
+        self.assertIsInstance(geo.parallax.beam, Beam)
+        self.assertEqual(geo.parallax.beam.profile, "gaussian", "default profile")
+        self.assertAlmostEqual(geo.parallax.beam.width, self.WIDTH, places=9)
+
+        geo, instance = self.displacement(Beam(self.WIDTH, "gaussian"))
+        self.assertAlmostEqual(width, instance, places=9, msg="a Beam instance is used as is")
+
+        geo, from_dict = self.displacement({"class": "Beam", "width": self.WIDTH,
+                                            "profile": "gaussian"})
+        self.assertAlmostEqual(width, from_dict, places=9, msg="a config dict is honoured")
+
+        # the maximum of a 2 pixel wide peak lags well behind the barycenter
+        self.assertLess(width, barycenter, "the maximum moves less than the barycenter")
+        self.assertGreater(width, 0.5 * barycenter, "but it does move")
+
+    def test_beam_is_not_rebuilt(self):
+        """Tabulating the displacement with a beam costs about a second, and the
+        calibration GUI calls `enable_parallax` once per refinement pass."""
+        geo = self.new_geometry()
+        geo.enable_parallax(True, beam=self.WIDTH)
+        former = geo.parallax
+        geo.enable_parallax(True, beam=self.WIDTH)
+        self.assertIs(geo.parallax, former, "an identical setup is kept")
+        geo.enable_parallax(True, beam=2 * self.WIDTH)
+        self.assertIsNot(geo.parallax, former, "a different beam is rebuilt")
+        geo.enable_parallax(True)
+        self.assertIsNone(geo.parallax.beam, "dropping the beam is rebuilt too")
+
+    def test_invalid_beam(self):
+        """A bad beam is reported and leaves the correction disabled"""
+        geo = self.new_geometry()
+        with self.assertLogs("pyFAI.geometry.core", level="ERROR"):
+            geo.enable_parallax(True, beam=-1.0)
+        self.assertIsNone(geo.parallax, "parallax stays disabled")
+
+    def test_beam_is_not_saved(self):
+        """The poni-file only records whether the correction is active: saving a
+        geometry which carries a beam has to warn about what is lost."""
+        geo = self.new_geometry()
+        geo.enable_parallax(True, beam=self.WIDTH)
+        with self.assertLogs("pyFAI.io.ponifile", level="WARNING"):
+            poni = PoniFile(geo)
+        self.assertTrue(poni.parallax, "the correction itself is recorded")
+
+
 class TestRaytracing(unittest.TestCase):
+
+    @staticmethod
+    def build_geometry(detector="Pilatus 100k", **kwargs):
+        """Azimuthal integrator with a 1mm thick silicon sensor and parallax enabled"""
+        config = {"detector": detector,
+                  "detector_config": {"sensor": {"material": "Si", "thickness": 1e-3}},
+                  "distance": 1e-1,
+                  "wavelength": 5e-11}
+        config.update(kwargs)
+        ai = load(config)
+        ai.enable_parallax(True)
+        return ai
+
     def test_extension(self):
         """Simple test that validates the extension works"""
-        ai = load({"detector": "Pilatus 100k",
-                         "detector_config":{"sensor": {"material":"Si", "thickness":1e-3}},
-                         "distance": 1e-1,
-                         "wavelength":5e-11})
-        ai.enable_parallax(True)
+        ai = self.build_geometry()
         self.assertAlmostEqual(ai.parallax.sensor.efficiency, 0.5041, delta=1e-4)
         rt=Raytracing(ai)
         data, indices, indptr = rt.calc_csr(1)
         self.assertEqual(indptr.size-1, numpy.prod(ai.detector.shape))
         self.assertEqual((indptr[1:] - indptr[:-1]).max(), 8)
         self.assertEqual(data.size, indices.size)
-        self.assertAlmostEqual(data.size/numpy.prod(ai.detector.shape), 3.56, delta=4e-3)
+        self.assertAlmostEqual(data.size/numpy.prod(ai.detector.shape), 4.344, delta=4e-3)
+
+    def test_default_oversampling(self):
+        """`calc_csr` used to assign the oversampling unconditionally, hence the
+        documented default `sample=0` set it to 0 and no ray was cast at all:
+        the sparse matrix came back empty."""
+        ai = self.build_geometry()
+        rt = Raytracing(ai)
+        self.assertEqual(rt.oversampling, 1, "one ray per pixel by default")
+        data = rt.calc_csr(0)[0]
+        self.assertEqual(rt.oversampling, 1, "calc_csr(0) keeps the oversampling")
+        self.assertGreater(data.size, 0, "the matrix is not empty")
+        self.assertTrue(numpy.allclose(data, rt.calc_csr(1)[0]),
+                        "calc_csr(0) and calc_csr(1) agree")
+
+    def test_rectangular_pixels(self):
+        """The voxel size along the slow dimension is `pixel1`; it used to be read
+        from `pixel2`, which only works for square pixels."""
+        detector = Detector(100e-6, 50e-6, max_shape=(100, 100))
+        detector.sensor = SensorConfig(Si_MATERIAL, 450e-6)
+        rt = Raytracing(self.build_geometry(detector, distance=0.05))
+        self.assertEqual(rt.vox, detector.pixel2, "vox is the fast dimension")
+        self.assertEqual(rt.voy, detector.pixel1, "voy is the slow dimension")
+
+    def test_centered_sampling(self):
+        """The sub-rays of a pixel sample it at the center of each sub-cell. They
+        used to start at `col + i/oversampling`, i.e. on the leading edge of the
+        pixel, which offsets every ray by half a pixel at `oversampling=1`.
+
+        The signature of the offset is an asymmetry: two pixels mirrored through a
+        PONI sitting at the center of a pixel must spread exactly the same way.
+        """
+        pixel = 75e-6
+        detector = Detector(pixel, pixel, max_shape=(101, 101))
+        detector.sensor = SensorConfig(Si_MATERIAL, 450e-6)
+        # the PONI is at the center of the pixel (50, 50)
+        ai = self.build_geometry(detector, distance=5e-3, wavelength=0.9218e-10,
+                                 poni1=50.5 * pixel, poni2=50.5 * pixel)
+        rt = Raytracing(ai, buffer_size=32)
+        for oversampling in (1, 4):
+            right = numpy.sort(rt.one_pixel(50, 95, sample=oversampling)[1])
+            left = numpy.sort(rt.one_pixel(50, 5, sample=oversampling)[1])
+            self.assertEqual(right.size, 5, "the ray crosses 5 voxels")
+            self.assertTrue(numpy.allclose(right, left, atol=1e-6),
+                            f"spread is symmetric for oversampling={oversampling}")
+            # a half-pixel offset would make column 95 the mirror of column 6
+            shifted = numpy.sort(rt.one_pixel(50, 6, sample=oversampling)[1])
+            self.assertFalse(numpy.allclose(right, shifted, atol=1e-6),
+                             f"rays are not offset by a pixel ({oversampling=})")
 
 
 def suite():
@@ -143,6 +431,8 @@ def suite():
     testsuite.addTest(loader(TestParallax))
     testsuite.addTest(loader(TestSensorMaterial))
     testsuite.addTest(loader(TestActivation))
+    testsuite.addTest(loader(TestParallaxRefinement))
+    testsuite.addTest(loader(TestParallaxBeam))
     testsuite.addTest(loader(TestRaytracing))
     return testsuite
 
