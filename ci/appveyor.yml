@@ -2,7 +2,7 @@
 # Windows
 # https://ci.appveyor.com/project/ESRF/pyFAI
 
-version: 2026.9.{build}
+version: 2026.10.{build}
 #shallow_clone: true
 clone_depth: 1
 build: false
@@ -123,7 +123,7 @@ test_script:
     # Print Python info
     - "python ci\\info_platform.py"
     - "pip list"
-    - "python run_pytest.py --installed"
+    - "python run_tests.py --installed"
 
     # Leave test virtualenv
     - "%VENV_TEST_DIR%\\Scripts\\deactivate.bat"
