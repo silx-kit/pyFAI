@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 04/10/2026
+:Date: 06/10/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -11,12 +11,20 @@ Change-log of versions
 - New features:
 
   * `MultiModule.display()` draws the modules of a detector and the displacement of the corners highlighted (#2956)
-  * Median filtering on GPU is 3x faster: the comb sort now spreads over the whole workgroup and sorts (key, index) pairs, in local memory when the bin fits.
+  * `Geometry.enable_parallax()`, `beam` parameter to switch from *barycenter* to *maximum* of the peak.
+  * Median filtering on GPU is 3x faster and no longer sorts the bin: the two bounds of the quantile window come from a weighted radix-select.
   * `Integrate2dResult.rebin1d()` gains `radial_range` and `azimuth_range`, to extract the pattern of an azimuthal sector out of a single 2D integration (#2961)
 
 - Bug fixes:
 
+  * The parallax correction now follows the geometry under refinement.
+  * `parallax_raytracing.Raytracing` works for non square pixels now.
+  * `Raytracing.calc_csr()` no longer returns an empty matrix for its documented default
+  * The sub-rays of `Raytracing` sample a pixel at the center of each sub-cell instead of its edge
+
 - Documentation:
+
+  * New tutorial `Parallax and the sample-detector distance`: parallax effect is degenerate with the distance
 
 - Code quality:
 
