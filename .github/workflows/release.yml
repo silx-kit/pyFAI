@@ -106,7 +106,7 @@ jobs:
         with:
           platforms: all
       - uses: ilammy/msvc-dev-cmd@v1
-      - uses: pypa/cibuildwheel@v3.2.1
+      - uses: pypa/cibuildwheel@b9e566a2b284570af229f6c2a33673410d0389a3  # v4.3.4
         env:
           # Use silx wheelhouse: needed for ppc64le
           CIBW_ENVIRONMENT_LINUX: "PIP_FIND_LINKS=https://www.silx.org/pub/wheelhouse/ PIP_TRUSTED_HOST=www.silx.org"
