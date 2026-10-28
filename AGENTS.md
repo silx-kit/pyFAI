@@ -1,190 +1,91 @@
 # AGENTS.md
 
-This file provides guidance to AI coding agents (Claude Code, Codex, …) when working with
-code in this repository. `CLAUDE.md` simply points here, so both stay in sync.
+Guidance for AI coding agents (Claude Code, Codex, …) working in this repository.
+`CLAUDE.md` simply points here, so both stay in sync.
 
-## Build and Test Commands
+## Skills
+
+Task-specific procedures live in `.agents/skills/`:
+
+- `bootstrap` — run code, a script or a CLI against the source tree (`python bootstrap.py ...`)
+- `test` — build and run the test suite (`run_tests.py`, `run_pytest.py`), lint
+- `issue` — triage a GitHub issue and write a minimal reproducer (read-only)
+- `prepare-fix` — branch, failing regression test, `ISSUE_XXX.md` and changelog line for an issue
+
+## Build and test, in short
 
 ```bash
-# Initial setup (first time only)
-python bootstrap.py           # compiles Cython extensions in-place, launches ipython with local pyFAI
-
-# Run full test suite (also rebuilds Cython if needed)
-python run_tests.py
-
-# Run a single test module
-python run_tests.py pyFAI.test.test_crystallography
-
-# Run a single test class or method
-python run_tests.py pyFAI.test.test_crystallography.TestCrystallography.test_caglioti
-
-# Skip the slowest parts: -o without OpenCL, -x without the Qt GUI, -l without the
-# memory-hungry tests. Unless the OpenCL code itself is under test, prefer:
-python run_tests.py -o pyFAI.test.test_bug_regression
-
-# Run tests with coverage
-python run_tests.py --coverage
-
-# Same test-suite, but in parallel: ~4x faster than run_tests.py. Same options,
-# same test names; -n sets the number of workers (default: one per physical core).
-# Requires the `test` extra: pip install pytest pytest-xdist
-python run_pytest.py
-python run_pytest.py -n 8
-python run_pytest.py -o pyFAI.test.test_crystallography
-python run_pytest.py pyFAI.test.test_crystallography.TestCrystallography.test_caglioti
-
-# Time and memory of every test, written to profile.json (forces a serial run)
-python run_pytest.py -m
-
-# Coverage: terminal summary + coverage.rst, the table of doc/source/coverage.rst
-# (needs pytest-cov; the modules of the test-suite are left out of the report)
-python run_pytest.py -c
-
-# Arguments after `--` reach pytest untouched
-python run_pytest.py -- -k distortion --durations=10
-
-# Straight to pytest, when the options of run_pytest.py are not needed
-python bootstrap.py -m pytest --pyargs pyFAI
-PYTEST_XDIST_AUTO_NUM_WORKERS=8 python bootstrap.py -m pytest --pyargs pyFAI
-
-# Build with meson/ninja directly (after initial setup)
-# The build directory is named build_py3xx, one per Python version (build_py313,
-# build_py314, ...), so several interpreters can be used side by side.
-cd build_py313 && ninja
-
-# Lint (runs ruff on src/)
-pre-commit run ruff-check --all-files
+python bootstrap.py -c "import pyFAI; print(pyFAI.__file__)"   # first call compiles the Cython code
+python run_tests.py -o pyFAI.test.test_bug_regression          # one module, without OpenCL
+python run_pytest.py                                           # whole suite in parallel
+pre-commit run ruff-check --all-files                          # lint
 ```
 
-`bootstrap.py` is the standard dev entry point: it recompiles Cython when needed and sets
-`PYTHONPATH` so the local tree takes precedence. Never `import pyFAI` directly from the
-source tree without it.
+- Never `import pyFAI` from the source tree without `bootstrap.py`: the extensions are built
+  by meson into `build_py3xx/` (one directory per Python version), not in place.
+- `run_tests.py` rebuilds *and reinstalls* into `build_py3xx/lib/.../site-packages`, the copy
+  the tests import. If the install step fails, the tests silently run against the previous
+  build: check the output.
+- `run_tests.py` (unittest) runs the hand-maintained `suite()` functions of `test_all.py`;
+  `run_pytest.py` collects every `test_*.py`. Both must stay green, and a new test module has
+  to be added to `test_all.py` **and** to the `meson.build` of its directory.
+- Useful switches: `-o` no OpenCL, `-x` no Qt GUI, `-l` no memory-hungry test. OpenCL on the
+  CPU implementation (pocl) can make `test_bug_regression` last 20 minutes: use `-o` unless
+  OpenCL is under test.
+- pytest options live in `[tool.pytest.ini_options]` of `pyproject.toml`; `-p no:logging` is
+  required (`set_prepost_emit_callback` refuses a root logger with two handlers).
+  `src/pyFAI/conftest.py` mirrors what `run_tests.py` does around the suite (environment
+  variables, pre-fetch of the test images, skipping `opencl/test` and `gui/test` when off).
 
-`run_pytest.py` is to pytest what `run_tests.py` is to unittest: it rebuilds the project,
-translates the dotted unittest test names into the `module::Class::method` form pytest
-expects, and turns the options into the environment variables the workers read. The two
-runners must stay green together.
-
-The pytest options live in `[tool.pytest.ini_options]` of `pyproject.toml`; the
-`-p no:logging` in there is required, as the logging plugin of pytest installs a second
-handler on the root logger and `pyFAI.utils.logging_utils.set_prepost_emit_callback`
-(used by `pyFAI-integrate`) refuses to patch a logger which has more than one.
-`src/pyFAI/conftest.py` does what `run_tests.py` does around the suite: it reads the
-`WITH_QT_TEST`/`PYFAI_OPENCL`/… environment variables, pre-fetches the test images from
-the controller process (concurrent workers would race on the cache) and skips collecting
-`opencl/test` or `gui/test` when the corresponding option is off — those modules fail at
-*import* time when pyopencl or Qt is missing, which `unittest` never notices because
-`suite()` imports them lazily.
-
-Both runners must stay green: `run_tests.py` builds its suite from the hand-maintained
-`suite()` functions of `test_all.py`, while pytest collects every `test_*.py` it finds. A
-module missing from `test_all.py` is simply never run by `run_tests.py`.
-
-`run_tests.py` rebuilds *and reinstalls* into `build_py3xx/lib/.../site-packages`, which is
-the copy the tests import: a source file which is not reinstalled is simply not tested. If
-the install step fails, the tests silently run against the previous build — check its output.
-
-Beware of the OpenCL tests when they run on the CPU implementation (pocl): one of them is
-extremely slow there, which can turn a 10-second module into a 20-minute one — this was
-observed on `test_bug_regression`. The time is spent in the execution of the test itself, not
-in the compilation of the kernels, and it comes from a bug in the thread scheduler of pocl;
-its developers expect it to be fixed in a future release. Until then, `-o` is the way out.
-
-## Architecture Overview
+## Architecture
 
 pyFAI converts 2D X-ray detector images into 1D or 2D diffraction patterns via azimuthal
-integration. The main layers from bottom to top:
+integration. From bottom to top:
 
-**Geometry** (`src/pyFAI/geometry/`)
-Converts detector pixel coordinates to scattering angles (2θ, q, χ). Core class is `Geometry`
-in `geometry/core.py`, built on a 6-parameter PONI (Point Of Normal Incidence) model. The
-`.poni` file format stores these parameters. Pixel coordinates follow the convention *the
-center of the first pixel is at (0, 0)*; `calc_cartesian_positions` adds the half-pixel offset.
+- **Geometry** (`src/pyFAI/geometry/`): detector pixel → scattering angles (2θ, q, χ). `Geometry`
+  in `geometry/core.py`, 6-parameter PONI model stored in `.poni` files. *The center of the
+  first pixel is at (0, 0)*; `calc_cartesian_positions` adds the half-pixel offset.
+- **Detectors** (`src/pyFAI/detectors/`): `Detector` base class (`_common.py`) with ~100
+  subclasses, handling curved detectors, spline distortions and pixel-size maps. When
+  `_pixel_corners` (`(nrow, ncol, 4, 3)`) is defined it takes precedence over the regular
+  grid; only NeXus (`detector.save()`) can store it. Some subclasses (e.g. `Eiger`) override
+  `calc_cartesian_positions` and ignore it: use a plain `Detector` to honour the corners.
+  `multi_module.py` refines the position of detector modules from powder rings
+  (https://doi.org/10.3390/cryst12020255); `MultiModule.to_detector()` exports the result.
+- **Integrators** (`src/pyFAI/integrator/`): `AzimuthalIntegrator` (`azimuthal.py`) inherits
+  from `Integrator` (`common.py`) which inherits from `Geometry`; `FiberIntegrator`
+  (`fiber.py`); `MultiGeometry` (`multi_geometry.py`).
+- **Engines** (`engines/`, `ext/`, `opencl/`): backends selected at runtime through
+  `IntegrationMethod` (`method_registry.py`): histogram, CSR, CSC and LUT on CPU (Python in
+  `engines/`, Cython in `ext/`), OpenCL variants in `opencl/`. The `splitPixel*`/`splitBBox*`
+  extensions trade accuracy for speed.
+- **Calibration** (`geometryRefinement.py`, `massif.py`, `blob_detection.py`,
+  `ext/watershed.pyx`, `gui/peak_picker.py`): control points from a calibrant image, then
+  `GeometryRefinement.refine3(fix=[...])` (constrained SLSQP, keeps the result only if χ²
+  improves). Peak pickers: `massif` (default), `blob`, `watershed`
+  (see `doc/source/control_points.rst`).
+- **Crystallography** (`crystallography/`): `Cell` (`cell.py`, d-spacings, `canonical_hkl()`),
+  `Calibrant` (`calibrant.py`), systematic absences in `space_groups.py`. Selection rules in
+  `Cell` are lambdas in `self.selection_rules`: `None` unknown, `False` forbidden, `True`
+  allowed. The `Miller` named tuple (`io/calibrant_config.py`) carries `(h, k, l)`.
+- **IO** (`io/`): `.poni`, calibrant `.D` files, results. `PoniFile` is **intentionally
+  immutable**: build a modified geometry with `poni.with_params(dist=0.5)` or
+  `poni.with_dist(0.5)`.
+- **GUI** (`gui/`): Qt6/PySide6, CamelCase. **CLI** (`app/`): entry points listed in
+  `pyproject.toml` (`pyFAI-calib2`, `pyFAI-integrate`, `diff_map`, …).
 
-**Detectors** (`src/pyFAI/detectors/`)
-Models detector pixel layout, including non-flat (curved) detectors, spline-based distortion
-corrections, and per-pixel size maps. `Detector` base class with ~100 subclasses for real
-instruments.
-- `_common.py` — the `Detector` base class. When `_pixel_corners` is defined (a
-  `(nrow, ncol, 4, 3)` array holding the position of the 4 corners of every pixel), it takes
-  precedence over the regular pixel grid, and the detector is flagged as neither uniform nor
-  contiguous. NeXus (`detector.save()`) is the only format able to store such a geometry.
-  Beware: some subclasses (e.g. `Eiger`) overwrite `calc_cartesian_positions` and ignore
-  `_pixel_corners`; use a plain `Detector` when the pixel corners must be honoured.
-- `multi_module.py` — refines the position of the individual modules of a detector
-  (2 translations + 1 rotation each) from powder diffraction rings recorded at several beam
-  centers, following https://doi.org/10.3390/cryst12020255. `MultiModuleRefinement.refine`
-  supports both scalar minimizers and least-squares optimizers (`lm`, `trf`, `dogbox`); the
-  latter are far faster and provide the jacobian, hence the uncertainties.
-  `MultiModule.to_detector()` exports the result as a `Detector` with pixel corners.
+## Conventions
 
-**Integrators** (`src/pyFAI/integrator/`)
-- `AzimuthalIntegrator` in `integrator/azimuthal.py` — main public class, inherits from
-  `Integrator` (in `integrator/common.py`) which inherits from `Geometry`.
-- `FiberIntegrator` in `integrator/fiber.py` — variant for fiber diffraction.
-- `MultiGeometry` in `multi_geometry.py` — handles detector arrays.
-
-**Engines** (`src/pyFAI/engines/`, `src/pyFAI/ext/`, `src/pyFAI/opencl/`)
-Multiple integration backends selected at runtime via `IntegrationMethod` (in
-`method_registry.py`):
-- CPU histogram: `engines/histogram_engine.py` backed by `ext/histogram.pyx`
-- CPU CSR (Compressed Sparse Row): `engines/CSR_engine.py` backed by `ext/splitBBoxCSR.pyx`
-- CPU CSC: `engines/CSC_engine.py` backed by `ext/splitBBoxCSC.pyx`
-- CPU LUT (Look-Up Table): `engines/azim_lut.py` backed by `ext/splitBBoxLUT.pyx`
-- OpenCL variants: `opencl/azim_csr.py`, `opencl/azim_hist.py`, `opencl/azim_lut.py`
-
-All Cython extensions live in `src/pyFAI/ext/`. The split-pixel variants (`splitPixel*`,
-`splitBBox*`) implement different pixel area decomposition strategies affecting accuracy vs.
-speed.
-
-**Calibration** (`src/pyFAI/geometryRefinement.py`, `src/pyFAI/massif.py`,
-`src/pyFAI/blob_detection.py`, `src/pyFAI/ext/watershed.pyx`, `src/pyFAI/gui/peak_picker.py`)
-Extracts control points from an image of a calibrant and refines the 6 PONI parameters.
-- `GeometryRefinement.refine3(fix=[...])` is the work-horse: a constrained least-squares fit
-  with `scipy.optimize.fmin_slsqp`, which keeps the result only if the χ² improves.
-- Three peak-picking algorithms, selected by `PeakPicker.VALID_METHODS`: `massif` (default),
-  `blob` and `watershed`. `massif` and `watershed` share the sub-pixel refinement of
-  `Bilinear.local_maxi` (`ext/bilinear.pxi`), a second order Taylor expansion; `blob` has its
-  own, in the scale-space of the difference of Gaussians. See `doc/source/control_points.rst`.
-
-**Crystallography** (`src/pyFAI/crystallography/`)
-- `Cell` in `cell.py` — unit cell with d-spacing calculation and calibrant generation.
-- `canonical_hkl()` in `cell.py` — selects representative Miller index from symmetry equivalents.
-- `Calibrant` in `calibrant.py` — list of d-spacings used during detector calibration.
-- `space_groups.py` — reflection condition rules (systematic absences).
-
-**IO** (`src/pyFAI/io/`)
-Reads/writes `.poni` files, calibrant configs (`.D` files), integration results. Calibrant
-config format defined in `io/calibrant_config.py`.
-- `PoniFile` (`io/ponifile.py`) is **intentionally immutable**: its geometry parameters are
-  read-only properties. A modified geometry is a *new* object, built with the copy-with API:
-  `poni.with_params(dist=0.5, rot1=1e-3)` or `poni.with_dist(0.5)`.
-
-**GUI** (`src/pyFAI/gui/`)
-Qt6/PySide6 applications. Uses CamelCase (unlike the rest of pyFAI which is PEP8 snake_case).
-
-**CLI apps** (`src/pyFAI/app/`)
-Entry points listed in `pyproject.toml`. Key ones: `pyFAI-calib2` (calibration GUI),
-`pyFAI-integrate` (batch integration), `diff_map` (mapping).
-
-## Key Conventions
-
-- **PEP8 everywhere except GUI** — Qt inheritance forces CamelCase in `gui/`.
-- **ruff** is the preferred formatter/linter; `pre-commit` runs `ruff-check --fix` on `src/`.
-  Do not run bulk formatting without agreement from the file's primary author.
-- **Docstrings are mandatory** on all public functions/classes; they must describe purpose and
-  full signature (args + return). Type hints are optional and must not replace docstrings.
-- **Update the `__date__ = "DD/MM/YYYY"` header** of every source file you modify. This
-  applies to `.py`, `.pyx` and `.rst` files (which use a `:Date:` field instead).
-- **Cython files** (`.pyx`, `.pxi`, `.pxd`) must be modified carefully — they are compiled
-  during the build, so the extension has to be rebuilt before the change has any effect. The
-  generated C/C++ files are not committed.
-- **`l` is a valid variable name** for the third Miller index; ruff's `E741` is suppressed
-  where needed with `# noqa: E741`.
-- **Selection rules** in `Cell` are lambdas appended to `self.selection_rules`; `None` return
-  means "unknown", `False` means forbidden, `True` means allowed.
-- The `Miller` type (a named tuple from `io/calibrant_config.py`) is used to carry `(h, k, l)`
-  throughout the crystallography layer.
+- PEP8 everywhere except `gui/` (Qt forces CamelCase).
+- **ruff** lints `src/` through `pre-commit` (`ruff-check --fix`). The formatter is
+  deliberately disabled: no bulk formatting without agreement from the file's main author.
+- **Docstrings are mandatory** on public functions/classes: purpose and full signature (args +
+  return). Type hints are optional and do not replace them.
+- **Update the `__date__ = "DD/MM/YYYY"` header** of every file you modify (`.py`, `.pyx`; `.rst`
+  files use a `:Date:` field).
+- **Cython** (`.pyx`, `.pxi`, `.pxd`): rebuilt during the build, so a change has no effect
+  before the extension is recompiled. Generated C/C++ files are not committed.
+- `l` is a valid name for the third Miller index; silence ruff's `E741` with `# noqa: E741`.
 - **Do not commit, push, delete files or remove directories** unless explicitly asked to.
   Report what should be committed or removed and let the maintainer decide.
 - **Canary** if you generate a commit message, a merge request description, a review reply,
@@ -193,19 +94,12 @@ Entry points listed in `pyproject.toml`. Key ones: `pyFAI-calib2` (calibration G
 
 ## Documentation
 
-The documentation lives in `doc/source/` and is built with Sphinx, using `myst_nb` to render
-the Jupyter notebooks.
+Sources are in `doc/source/` (Sphinx + `myst_nb`). The changelog is `doc/source/changelog.rst`.
 
-- Narrative documentation is written in reStructuredText, with a `:Author:`/`:Date:` header,
-  and referenced from a `toctree` — usually in `doc/source/pyFAI.rst` or
-  `doc/source/usage/index.rst`.
-- Tutorials are **notebooks stored with their outputs** (`doc/source/usage/tutorial/`): the
-  figures and printed values of the published documentation are the ones committed in the
-  `.ipynb`. When editing a notebook, keep the outputs consistent with the code, and never
-  claim in the text a number which the cells do not produce.
-- `doc/source/usage/rebuild_tutorials.py` re-executes every notebook tracked by git with
-  `nbconvert --execute --inplace`, skipping the interactive ones (`%matplotlib widget`). It is
-  expensive: run it deliberately, not as a side effect.
-- Notebooks are also the place where deprecation warnings become visible in the published
-  documentation, since the warnings are stored in the outputs. Fixing the code is not enough;
-  the stale warning has to leave the stored output too.
+- Narrative pages are reStructuredText with an `:Author:`/`:Date:` header, referenced from a
+  `toctree` (`doc/source/pyFAI.rst` or `doc/source/usage/index.rst`).
+- Tutorials (`doc/source/usage/tutorial/`) are **notebooks stored with their outputs**: keep
+  outputs consistent with the code, never claim in the text a number the cells do not produce,
+  and remove stale deprecation warnings from the stored outputs too.
+- `doc/source/usage/rebuild_tutorials.py` re-executes every tracked notebook (except the
+  interactive `%matplotlib widget` ones). It is expensive: run it deliberately.
