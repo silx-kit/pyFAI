@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2026"
+__date__ = "03/11/2026"
 
 import copy
 import logging
@@ -609,6 +609,93 @@ class TestRebin1dSector(unittest.TestCase):
         res2d = self.integrate2d()
         with self.assertRaises(ValueError):
             res2d.rebin1d(azimuth_range=(30.0, 30.0))
+
+    def test_to_1dresults(self):
+        "to_1dresults returns one curve per azimuthal bin, holding the row of this bin"
+        res2d = self.integrate2d()
+        results = res2d.to_1dresults()
+        self.assertIsInstance(results, tuple)
+        self.assertEqual(len(results), self.NPT_AZIM, "one result per azimuthal bin")
+        for i, res1d in enumerate(results):
+            self.assertIsInstance(res1d, containers.Integrate1dResult)
+            self.assertTrue(numpy.array_equal(res1d.radial, res2d.radial), f"radial of bin {i}")
+            for name in ("sum_signal", "sum_normalization", "sum_variance", "count"):
+                self.assertTrue(numpy.allclose(getattr(res1d, name), getattr(res2d, name)[i]),
+                                f"{name} of bin {i}")
+            self.assertEqual(res1d.unit, res2d.radial_unit, f"unit of bin {i}")
+
+    def test_to_1dresults_matches_integrate1d(self):
+        "Every result matches integrate1d restricted to the sector of its bin"
+        res2d = self.integrate2d()
+        results = res2d.to_1dresults()
+        # 360 bins over (-180, 180): bin i covers (i-180, i-179)
+        for i in (0, 90, 210, 359):
+            sector = (i - 180.0, i - 179.0)
+            ref1d = self.integrate1d(azimuth_range=sector)
+            self.assertSameCurve(results[i], ref1d, msg=f"azimuthal bin {i}")
+
+    def test_to_1dresults_is_a_partition(self):
+        "The curves of all azimuthal bins sum back to the full rebin1d"
+        res2d = self.integrate2d()
+        results = res2d.to_1dresults()
+        total = res2d.rebin1d()
+        self.assertTrue(numpy.allclose(sum(r.sum_signal for r in results), total.sum_signal),
+                        "signal is conserved")
+        self.assertTrue(numpy.allclose(sum(r.count for r in results), total.count),
+                        "count is conserved")
+
+    def test_to_1dresults_azimuth_range(self):
+        "The azimuth_range of each result is the boundaries of its bin, which frames its center"
+        res2d = self.integrate2d()
+        results = res2d.to_1dresults()
+        ranges = numpy.array([r.azimuth_range for r in results])
+        self.assertTrue(numpy.allclose(ranges[0, 0], self.AZIMUTH_RANGE[0]), "lower bound")
+        self.assertTrue(numpy.allclose(ranges[-1, 1], self.AZIMUTH_RANGE[1]), "upper bound")
+        self.assertTrue(numpy.allclose(ranges[1:, 0], ranges[:-1, 1]), "contiguous bins")
+        self.assertTrue(numpy.all(ranges[:, 0] < res2d.azimuthal), "center above lower bound")
+        self.assertTrue(numpy.all(ranges[:, 1] > res2d.azimuthal), "center below upper bound")
+
+    def test_to_1dresults_radial_range(self):
+        "A radial_range crops every curve the same way rebin1d does"
+        res2d = self.integrate2d()
+        results = res2d.to_1dresults(radial_range=(2.0, 6.0))
+        self.assertEqual(len(results), self.NPT_AZIM, "one result per azimuthal bin")
+        for i in (0, 210, 359):
+            res1d = results[i]
+            self.assertEqual(res1d.radial.size, 250, f"number of radial bins of bin {i}")
+            self.assertTrue(numpy.allclose(res1d.radial_range, (2.0, 6.0)),
+                            f"radial_range of bin {i}: {res1d.radial_range}")
+            self.assertTrue(numpy.allclose(res1d.count, res2d.count[i, 125:375]),
+                            f"count of bin {i}")
+            expected = res2d.rebin1d(radial_range=(2.0, 6.0), azimuth_range=res1d.azimuth_range)
+            self.assertSameCurve(res1d, expected, msg=f"azimuthal bin {i}")
+
+    def test_to_1dresults_implicit_ranges(self):
+        "to_1dresults works as well when integrate2d was called without any range"
+        res2d = self.ai.integrate2d(self.img, self.NPT_RAD, self.NPT_AZIM,
+                                    method=self.METHOD, unit=self.UNIT,
+                                    error_model="poisson")
+        results = res2d.to_1dresults()
+        self.assertEqual(len(results), self.NPT_AZIM, "one result per azimuthal bin")
+        edges = containers._to_edges(res2d.azimuthal)
+        for i in (0, 210, 359):
+            self.assertTrue(numpy.allclose(results[i].azimuth_range, (edges[i], edges[i + 1])),
+                            f"azimuth_range of bin {i}: {results[i].azimuth_range}")
+            self.assertTrue(numpy.allclose(results[i].count, res2d.count[i]), f"count of bin {i}")
+
+    def test_to_1dresults_irregular_binning_warning(self):
+        "A non uniform azimuthal binning is signaled once, not once per bin"
+        res2d = copy.deepcopy(self.ai.integrate2d(self.img, self.NPT_RAD, self.NPT_AZIM,
+                                                  method=self.METHOD, unit=self.UNIT))
+        res2d.azimuthal[:] = numpy.sign(res2d.azimuthal) * res2d.azimuthal ** 2
+        with TestLogging(logger="pyFAI.containers", warning=1):
+            res2d.to_1dresults()
+
+    def test_to_1dresults_empty_radial_range(self):
+        "A radial range holding no bin is rejected"
+        res2d = self.integrate2d()
+        with self.assertRaises(ValueError):
+            res2d.to_1dresults(radial_range=(30.0, 40.0))
 
 
 def suite():
