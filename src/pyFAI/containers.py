@@ -102,25 +102,45 @@ def _scale_range(value_range: tuple | None, unit=None) -> tuple | None:
     return tuple(float(i) * scale for i in value_range)
 
 
-def _select_bins(centers: numpy.array, edges: numpy.array, requested: tuple, name: str) -> tuple:
+def _select_bin_range(
+    bin_centers: numpy.array,
+    axis_range: tuple[float, float] | None,
+    requested_range: tuple[float, float] | None,
+    name: str,
+) -> tuple[slice, tuple[float, float] | None]:
     """Select the bins of an axis which lie inside the requested range.
 
-    The selection is performed on the *center* of the bins, which is half a bin
-    away from any boundary: this makes it immune to the rounding errors which
-    plague a comparison of the bin edges with the requested limits.
+    The selection is performed on the *center* of the bins.
 
-    :param centers: position of the center of every bin
-    :param edges: position of the len(centers)+1 boundaries of those bins
-    :param requested: 2-tuple with the requested minimum and maximum
-    :param name: name of the parameter, used in the error message
+    :param bin_centers: position of the center of every bin
+    :param axis_range: 2-tuple with the range covered by the axis, or None
+    :param requested_range: 2-tuple with the requested minimum and maximum, or None
+    :param name: name of the axis, used in the error messages
     :return: 2-tuple with the slice of the selected bins and the range they actually cover
+             (axis_range when no range was requested)
     """
-    inside = numpy.where(numpy.logical_and(centers >= min(requested),
-                                           centers <= max(requested)))[0]
+    if requested_range is None:
+        return slice(None), axis_range
+
+    _check_regular_binning(bin_centers, name)
+
+    inside = numpy.where(
+        numpy.logical_and(
+            bin_centers >= min(requested_range), bin_centers <= max(requested_range)
+        )
+    )[0]
     if len(inside) == 0:
-        raise ValueError(f"{name}={requested} does not contain any bin of the result")
+        raise ValueError(
+            f"{name}_range={requested_range} does not contain any bin of the result"
+        )
     first_bin = inside[0]
     last_bin = inside[-1]
+
+    if axis_range:
+        edges = numpy.linspace(*axis_range, len(bin_centers) + 1)
+    else:  # assume close to regular binning
+        edges = _to_edges(bin_centers)
+
     return slice(first_bin, last_bin + 1), (edges[first_bin], edges[last_bin + 1])
 
 
@@ -1072,9 +1092,11 @@ class Integrate2dResult(IntegrateResult):
         self._azimuthal_unit = unit
 
 
-    def rebin1d(self, *,
-                radial_range: tuple | None = None,
-                azimuth_range: tuple | None = None) -> Integrate1dResult:
+    def rebin1d(
+        self, *,
+        radial_range: tuple[float, float] | None = None,
+        azimuth_range: tuple[float, float] | None = None,
+    ) -> Integrate1dResult:
         """Function that rebins an Integrate2dResult into a Integrate1dResult
 
         It keeps the radial bin-size unchanged but their number can vary and rebin the azimuthal bins into a single one.
@@ -1088,28 +1110,66 @@ class Integrate2dResult(IntegrateResult):
         :param azimuth_range: 2-tuple with the new minimum and maximum range. Bins are collapsed along this dimension
         :return: Integrate1dResult
         """
-        azimuth_bins = slice(None)
-        radial_bins = slice(None)
-        new_radial_range = None
-        new_azimuth_range = None
-        if azimuth_range is not None:
-            _check_regular_binning(self.azimuthal, "azimuthal")
-            if self._azimuth_range:
-                edges = numpy.linspace(*self._azimuth_range, len(self.azimuthal) + 1)
-            else:  # assume close to regular binning
-                edges = _to_edges(self.azimuthal)
-            azimuth_bins, new_azimuth_range = _select_bins(self.azimuthal, edges,
-                                                           azimuth_range, "azimuth_range")
+        radial_bins, selected_radial_range = _select_bin_range(
+            self.radial, self._radial_range, radial_range, "radial"
+        )
+        azimuth_bins, selected_azimuth_range = _select_bin_range(
+            self.azimuthal, self._azimuth_range, azimuth_range, "azimuth"
+        )
+        return self._rebin1d(
+            radial_bins, selected_radial_range, azimuth_bins, selected_azimuth_range
+        )
 
-        if radial_range is not None:
-            _check_regular_binning(self.radial, "radial")
-            if self._radial_range:
-                edges = numpy.linspace(*self._radial_range, len(self.radial) + 1)
-            else:  # assume close to regular binning
-                edges = _to_edges(self.radial)
-            radial_bins, new_radial_range = _select_bins(self.radial, edges,
-                                                         radial_range, "radial_range")
+    def to_1dresults(
+        self, *, radial_range: tuple[float, float] | None = None
+    ) -> tuple[Integrate1dResult, ...]:
+        """Converts to N Integrate1dResult, one per azimuth bin.
 
+        `radial_range` is expressed in the unit of the `radial` array.
+        Only whole bins are selected and bin-size is left unchanged.
+        The range actually covered is available as the `radial_range`
+        of the returned objects.
+
+        :param radial_range: 2-tuple with the new minimum and maximum range in radial.
+        :return: tuple of Integrate1dResult, one per azimuthal bin
+        """
+        radial_bins, selected_radial_range = _select_bin_range(
+            self.radial, self._radial_range, radial_range, "radial"
+        )
+
+        _check_regular_binning(self.azimuthal, "azimuth")
+        if self._azimuth_range:
+            azimuth_edges = numpy.linspace(
+                *self._azimuth_range, len(self.azimuthal) + 1
+            )
+        else:  # assume close to regular binning
+            azimuth_edges = _to_edges(self.azimuthal)
+
+        return tuple(
+            self._rebin1d(
+                radial_bins,
+                selected_radial_range,
+                azimuth_bins=slice(i, i + 1),
+                azimuth_range=(azimuth_edges[i], azimuth_edges[i + 1]),
+            )
+            for i in range(len(self.azimuthal))
+        )
+
+    def _rebin1d(
+        self,
+        radial_bins: slice,
+        radial_range: tuple | None,
+        azimuth_bins: slice,
+        azimuth_range: tuple | None,
+    ) -> Integrate1dResult:
+        """Sum the selected bins along the azimuthal dimension into an Integrate1dResult
+
+        :param radial_bins: slice of the radial bins to keep
+        :param radial_range: range covered by those radial bins, stored in the result
+        :param azimuth_bins: slice of the azimuthal bins to collapse
+        :param azimuth_range: range covered by those azimuthal bins, stored in the result
+        :return: Integrate1dResult
+        """
         bins_rad = self.radial[radial_bins]
         sum_signal = self.sum_signal[azimuth_bins, radial_bins].sum(axis=0)
         sum_normalization = self.sum_normalization[azimuth_bins, radial_bins].sum(axis=0)
@@ -1158,8 +1218,8 @@ class Integrate2dResult(IntegrateResult):
         result._set_polarization_factor(self.polarization_factor)
         result._set_normalization_factor(self.normalization_factor)
         result._set_metadata(self.metadata)
-        result._set_radial_range(new_radial_range)
-        result._set_azimuth_range(new_azimuth_range)
+        result._set_radial_range(radial_range)
+        result._set_azimuth_range(azimuth_range)
         return result
 
 
