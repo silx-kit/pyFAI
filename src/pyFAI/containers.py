@@ -104,10 +104,10 @@ def _scale_range(value_range: tuple | None, unit=None) -> tuple | None:
 
 def _select_bin_range(
     bin_centers: numpy.array,
-    axis_range: tuple | None,
-    requested_range: tuple | None,
+    axis_range: tuple[float, float] | None,
+    requested_range: tuple[float, float] | None,
     name: str,
-) -> tuple[slice, tuple | None]:
+) -> tuple[slice, tuple[float, float] | None]:
     """Select the bins of an axis which lie inside the requested range.
 
     The selection is performed on the *center* of the bins.
@@ -1092,9 +1092,11 @@ class Integrate2dResult(IntegrateResult):
         self._azimuthal_unit = unit
 
 
-    def rebin1d(self, *,
-                radial_range: tuple | None = None,
-                azimuth_range: tuple | None = None) -> Integrate1dResult:
+    def rebin1d(
+        self, *,
+        radial_range: tuple[float, float] | None = None,
+        azimuth_range: tuple[float, float] | None = None,
+    ) -> Integrate1dResult:
         """Function that rebins an Integrate2dResult into a Integrate1dResult
 
         It keeps the radial bin-size unchanged but their number can vary and rebin the azimuthal bins into a single one.
@@ -1119,7 +1121,7 @@ class Integrate2dResult(IntegrateResult):
         )
 
     def to_1dresults(
-        self, *, radial_range: tuple | None = None
+        self, *, radial_range: tuple[float, float] | None = None
     ) -> tuple[Integrate1dResult, ...]:
         """Converts to N Integrate1dResult, one per azimuth bin.
 
