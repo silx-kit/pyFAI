@@ -117,10 +117,10 @@ def _select_bin_range(
     :param requested_range: 2-tuple with the requested minimum and maximum, or None
     :param name: name of the axis, used in the error messages
     :return: 2-tuple with the slice of the selected bins and the range they actually cover
-             (None when no range was requested)
+             (axis_range when no range was requested)
     """
     if requested_range is None:
-        return slice(None), None
+        return slice(None), axis_range
 
     _check_regular_binning(bin_centers, name)
 
