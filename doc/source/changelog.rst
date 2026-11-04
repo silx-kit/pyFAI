@@ -16,7 +16,7 @@ Change-log of versions
 
 - Bug fixes:
 
-  * Fix the calibrant files read or written under Windows (#2988)
+  * Fix the calibrant files read or written under Windows (#2988, #2990)
 
 - Documentation:
 
