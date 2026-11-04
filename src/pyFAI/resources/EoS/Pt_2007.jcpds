@@ -1,0 +1,14 @@
+VERSION: 4.0
+TITLE: Platinum (Pt) - Fei et al. (2007) 10.1073/pnas.0609013104
+REMARKS: Internally consistent pressure scale, BM3 formulation
+CRYSTAL SYSTEM: Cubic
+SPACE GROUP: Fm-3m
+CELL PARAMETERS: 3.9240 3.9240 3.9240 90.0 90.0 90.0
+VOLUME: 60.421
+THERMAL EXPANSION: 2.600e-5 0.0 0.0
+EOS: 276.4 5.12 0.0 1
+LINES: 4
+1 1 1   2.2655
+2 0 0   1.9620
+2 2 0   1.3873
+3 1 1   1.1831

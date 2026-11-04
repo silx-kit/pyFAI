@@ -1,0 +1,14 @@
+VERSION: 4.0
+TITLE: Gold (Au) - Tsuchiya (2003) Vinet EoS
+REMARKS: Standard gold pressure marker, Vinet formulation
+CRYSTAL SYSTEM: Cubic
+SPACE GROUP: Fm-3m
+CELL PARAMETERS: 4.0786 4.0786 4.0786 90.0 90.0 90.0
+VOLUME: 67.8504
+THERMAL EXPANSION: 4.278e-5 0.0 0.0
+EOS: 166.7 6.12 0.0 2
+LINES: 4
+1 1 1   2.3548
+2 0 0   2.0393
+2 2 0   1.4420
+3 1 1   1.2297
