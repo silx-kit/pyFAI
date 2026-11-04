@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2025 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2026 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "20/09/2026"
 
 import logging
 import unittest
@@ -88,22 +88,22 @@ class TestSparseIntegrate1d(unittest.TestCase):
         ref = self.integrate(method=("no", "histogram", "cython"))
 
         obt = self.integrate(method=("no", "lut", "cython"))
-        logger.debug("LUT delta on global result: %s", numpy.nanmax(abs(obt[1] - ref[1]) / ref[1]))
+        logger.debug("LUT delta on global result: %s", numpy.max(abs(numpy.divide(obt[1] - ref[1], ref[1], where=ref[1]!=0, out=None))))
         self.assertTrue(numpy.allclose(obt[1], ref[1]))
 
         obt = self.integrate(method=("no", "csr", "cython"))
-        logger.debug("CSR delta on global result: %s", numpy.nanmax(abs(obt[1] - ref[1]) / ref[1]))
+        logger.debug("CSR delta on global result: %s", numpy.max(abs(numpy.divide(obt[1] - ref[1], ref[1], where=ref[1]!=0, out=None))))
         self.assertTrue(numpy.allclose(obt[1], ref[1]))
 
     def test_sparse_bbox(self):
         ref = self.integrate(method=("bbox", "histogram", "cython"))
 
         obt = self.integrate(method=("bbox", "lut", "cython"))
-        logger.debug("delta on global result: %s", (abs(obt[1] - ref[1]) / ref[1]).max())
+        logger.debug("delta on global result: %s", numpy.max(abs(numpy.divide(obt[1] - ref[1], ref[1], where=ref[1]!=0, out=None))))
         self.assertTrue(numpy.allclose(obt[1], ref[1]))
 
         obt = self.integrate(method=("bbox", "csr", "cython"))
-        logger.debug("delta on global result: %s", (abs(obt[1] - ref[1]) / ref[1]).max())
+        logger.debug("delta on global result: %s", numpy.max(abs(numpy.divide(obt[1] - ref[1], ref[1], where=ref[1]!=0, out=None))))
         self.assertTrue(numpy.allclose(obt[1], ref[1]))
 
     def test_sparse_fullsplit(self):

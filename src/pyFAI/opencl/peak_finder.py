@@ -33,6 +33,7 @@ __copyright__ = "2014-2023, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 from typing import ClassVar
+import copy
 import logging
 import math
 from collections import OrderedDict
@@ -142,6 +143,52 @@ class OCL_PeakFinder(OCL_CSR_Integrator):
                 msk = numpy.where(self.mask)
                 self.radius2d[msk] = numpy.nan
             self.send_buffer(self.radius2d, "radius2d")
+
+
+    def __copy__(self):
+        """Shallow copy of the object
+
+        :return: copy of the object
+
+        OCL_CSR_Integrator cannot be reused here: the signature of this class
+        differs, it takes a radius and a mask instead of the azimuthal centers,
+        the mask checksum and the extra buffers.
+        """
+        return self.__class__((self._data, self._indices, self._indptr),
+                              self.size,
+                              checksum=self.on_device.get("data"),
+                              empty=self.empty,
+                              unit=self.unit,
+                              bin_centers=self.bin_centers,
+                              radius=self.radius2d,
+                              mask=self.mask,
+                              ctx=self.ctx,
+                              block_size=self.block_size,
+                              profile=self.profile)
+
+    def __deepcopy__(self, memo=None):
+        """deep copy of the object
+
+        :return: deepcopy of the object
+        """
+        if memo is None:
+            memo = {}
+        new_csr = self._data.copy(), self._indices.copy(), self._indptr.copy()
+        memo[id(self._data)] = new_csr[0]
+        memo[id(self._indices)] = new_csr[1]
+        memo[id(self._indptr)] = new_csr[2]
+        new_obj = self.__class__(new_csr, self.size,
+                                 checksum=self.on_device.get("data"),
+                                 empty=self.empty,
+                                 unit=self.unit,
+                                 bin_centers=copy.deepcopy(self.bin_centers, memo),
+                                 radius=copy.deepcopy(self.radius2d, memo),
+                                 mask=copy.deepcopy(self.mask, memo),
+                                 ctx=self.ctx,
+                                 block_size=self.block_size,
+                                 profile=self.profile)
+        memo[id(self)] = new_obj
+        return new_obj
 
     def guess_workgroup_size(self, block_size=None):
         """Determines the optimal workgroup size.

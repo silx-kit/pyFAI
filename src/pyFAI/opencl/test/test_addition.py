@@ -32,7 +32,7 @@ __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2026"
+__date__ = "02/10/2026"
 
 import logging
 import platform as platform_module
@@ -99,19 +99,20 @@ class TestAddition(unittest.TestCase):
         """
         tests the addition  kernel
         """
+        addition = pyopencl.Kernel(self.program, "addition")
         maxi = round(numpy.log2(self.shape))
         for i in range(maxi):
             d_array_result = pyopencl.array.empty_like(self.d_array_img)
             wg = 1 << i
             try:
-                evt = self.program.addition(self.queue, (self.shape,), (wg,),
-                                            self.d_array_img.data,
-                                            self.d_array_5.data,
-                                            d_array_result.data,
-                                            numpy.int32(self.shape))
+                evt = addition(self.queue, (self.shape,), (wg,),
+                                self.d_array_img.data,
+                                self.d_array_5.data,
+                                d_array_result.data,
+                                numpy.int32(self.shape))
                 evt.wait()
             except Exception as error:
-                max_valid_wg = self.program.addition.get_work_group_info(pyopencl.kernel_work_group_info.WORK_GROUP_SIZE, self.ctx.devices[0])
+                max_valid_wg = addition.get_work_group_info(pyopencl.kernel_work_group_info.WORK_GROUP_SIZE, self.ctx.devices[0])
                 msg = f"Error {error} on WG={wg}: {max_valid_wg}"
                 self.assertLess(max_valid_wg, wg, msg)
                 break

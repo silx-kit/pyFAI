@@ -34,7 +34,7 @@
 # gvim crap
 *~
 *.swp
-.*
+
 
 # Notebook
 .ipynb_checkpoints

@@ -31,13 +31,15 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "29/09/2026"
 
 import logging
 import unittest
 
 import numpy
 from silx.gui.utils import testutils
+
+from ..utils.testutils import TestCaseQt
 
 from ..model.DataModel import DataModel
 from ..model.ListModel import ListModel
@@ -46,7 +48,7 @@ from ..model.PeakModel import PeakModel
 _logger = logging.getLogger(__name__)
 
 
-class TestPeakModelization(testutils.TestCaseQt):
+class TestPeakModelization(TestCaseQt):
 
     def test_merge(self):
         data1 = numpy.array([[2, 3], [3, 3]])
@@ -64,7 +66,7 @@ class TestPeakModelization(testutils.TestCaseQt):
         self.assertEqual(result, 0)
 
 
-class TestListModel(testutils.TestCaseQt):
+class TestListModel(TestCaseQt):
 
     def test_add(self):
         listModel = ListModel()

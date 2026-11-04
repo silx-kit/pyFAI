@@ -31,14 +31,14 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2020"
+__date__ = "29/09/2026"
 
 import logging
 import unittest
 
 import numpy
 from silx.gui import qt
-from silx.gui.utils import testutils
+from ..utils.testutils import TestCaseQt
 
 import pyFAI.calibrant
 import pyFAI.detectors
@@ -49,7 +49,7 @@ from pyFAI.gui.CalibrationWindow import CalibrationWindow
 _logger = logging.getLogger(__name__)
 
 
-class TestCalibration(testutils.TestCaseQt):
+class TestCalibration(TestCaseQt):
 
     @classmethod
     def setUpClass(cls):

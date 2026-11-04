@@ -29,7 +29,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "30/09/2026"
 __status__ = "development"
 
 import collections
@@ -49,6 +49,99 @@ from .utils.dataclasses import case_insensitive_dataclass, dataclass  # noqa
 from .utils.decorators import deprecated_warning
 
 logger = logging.getLogger(__name__)
+
+
+def _to_center(edges: numpy.array) -> numpy.array:
+    """Convert an array of bin edges to their centers"""
+    return 0.5 * (edges[:-1] + edges[1:])
+
+def _to_edges(center: numpy.array) -> numpy.array:
+    """Convert an array of bin center to their edges, assuming a certain regularity
+
+    Use `_check_regular_binning` beforehand to validate this assumption.
+    """
+    edges = numpy.zeros(len(center) + 1)
+    edges[1:-1] = _to_center(center)
+    delta = center[1:] - center[:-1]
+    edges[0] = edges[1] - delta[0]
+    edges[-1] = edges[-2] + delta[-1]
+    return edges
+
+def _check_regular_binning(centers: numpy.array, name: str, rtol: float=1e-3) -> bool:
+    """Warn when the bins of an axis do not all share the same size.
+
+    Both ways of recovering the boundaries of the bins, from the stored range or
+    from the position of their centers, assume a regular binning: the result is
+    only an approximation when this is not the case.
+
+    :param centers: position of the center of every bin
+    :param name: name of the axis, used in the warning message
+    :param rtol: relative tolerance on the bin size
+    :return: True when the binning is regular
+    """
+    delta = centers[1:] - centers[:-1]
+    if delta.size == 0 or numpy.allclose(delta, delta[0], rtol=rtol):
+        return True
+    logger.warning("The %s axis is not regularly binned (bin size from %s to %s): "
+                   "the position of the bin boundaries is only an approximation.",
+                   name, delta.min(), delta.max())
+    return False
+
+
+def _scale_range(value_range: tuple | None, unit=None) -> tuple | None:
+    """Convert a range from the internal representation of pyFAI to a public unit
+
+    :param value_range: 2-tuple with the lower and upper bound, or None
+    :param unit: unit of the axis. None (the default) leaves the range untouched,
+                 which is what is needed when it is already in the public unit.
+    :return: 2-tuple of float, or None
+    """
+    if value_range is None:
+        return None
+    scale = getattr(unit, "scale", 1.0)
+    return tuple(float(i) * scale for i in value_range)
+
+
+def _select_bin_range(
+    bin_centers: numpy.array,
+    axis_range: tuple[float, float] | None,
+    requested_range: tuple[float, float] | None,
+    name: str,
+) -> tuple[slice, tuple[float, float] | None]:
+    """Select the bins of an axis which lie inside the requested range.
+
+    The selection is performed on the *center* of the bins.
+
+    :param bin_centers: position of the center of every bin
+    :param axis_range: 2-tuple with the range covered by the axis, or None
+    :param requested_range: 2-tuple with the requested minimum and maximum, or None
+    :param name: name of the axis, used in the error messages
+    :return: 2-tuple with the slice of the selected bins and the range they actually cover
+             (axis_range when no range was requested)
+    """
+    if requested_range is None:
+        return slice(None), axis_range
+
+    _check_regular_binning(bin_centers, name)
+
+    inside = numpy.where(
+        numpy.logical_and(
+            bin_centers >= min(requested_range), bin_centers <= max(requested_range)
+        )
+    )[0]
+    if len(inside) == 0:
+        raise ValueError(
+            f"{name}_range={requested_range} does not contain any bin of the result"
+        )
+    first_bin = inside[0]
+    last_bin = inside[-1]
+
+    if axis_range:
+        edges = numpy.linspace(*axis_range, len(bin_centers) + 1)
+    else:  # assume close to regular binning
+        edges = _to_edges(bin_centers)
+
+    return slice(first_bin, last_bin + 1), (edges[first_bin], edges[last_bin + 1])
 
 
 # Few named tuples
@@ -210,6 +303,8 @@ class IntegrateResult(_CopyableTuple):
         "_poni",
         "_weighted_average",
         "_dummy",
+        "_radial_range",
+        "_azimuth_range",
     }
     # Those expression are used to calculated mean, std and sem
     EXPR_AVG = numexpr.NumExpr("where(sum_normalization == 0.0, dummy, sum_signal/sum_normalization)")
@@ -241,6 +336,9 @@ class IntegrateResult(_CopyableTuple):
         self._sem = None  # standard error of the mean (error for the mean)
         self._poni = None  # Contains the geometry which was used for the integration
         self._weighted_average = None  # Should be True for weighted average and False for unweighted (legacy)
+        self._radial_range = None  # stored in the public unit of the radial axis
+        self._azimuth_range = None  # stored in the public unit of the azimuthal axis
+
 
     def __are_compatible__(self, other, strict:bool=True) -> None | str:
         """Ensure two objects are compatible to make some basic maths together.
@@ -709,6 +807,8 @@ class IntegrateResult(_CopyableTuple):
         """Re-linearize the radial dimension of the result
 
         :return: IntegrateResult with the same date but a linearized radial dimension
+
+        TODO: check the ranges are propagated accordingly !
         """
         log_unit = self.unit
         if "linear_unit" not in log_unit.extra_parameters:
@@ -723,6 +823,45 @@ class IntegrateResult(_CopyableTuple):
         result.radial[...] = radial_linear
         result._set_unit(lin_unit)
         return result
+
+    @property
+    def radial_range(self):
+        """Range covered by the radial axis, in the same unit as the `radial` array
+
+        :rtype: 2-tuple of float, or None when the whole range was integrated
+        """
+        return self._radial_range
+
+    def _set_radial_range(self, radial_range:tuple | None, unit=None):
+        """Store the range covered by the radial axis.
+
+        :param radial_range: 2-tuple with the lower and upper bound, or None
+        :param unit: radial unit. When provided, `radial_range` is expected in the
+                     internal representation of pyFAI and gets scaled to this unit,
+                     so that the stored range always matches the `radial` array.
+        """
+        self._radial_range = _scale_range(radial_range, unit)
+
+    @property
+    def azimuth_range(self):
+        """Range covered by the azimuthal axis, in the same unit as the `azimuthal` array
+
+        Degrees for a 1D result, which has no azimuthal axis of its own.
+
+        :rtype: 2-tuple of float, or None when the whole range was integrated
+        """
+        return self._azimuth_range
+
+    def _set_azimuth_range(self, azimuth_range:tuple | None, unit=None):
+        """Store the range covered by the azimuthal axis.
+
+        :param azimuth_range: 2-tuple with the lower and upper bound, or None
+        :param unit: azimuthal unit. When provided, `azimuth_range` is expected in
+                     the internal representation of pyFAI (radians) and gets scaled
+                     to this unit, so that the stored range always matches the
+                     `azimuthal` array.
+        """
+        self._azimuth_range = _scale_range(azimuth_range, unit)
 
 
 class Integrate1dResult(IntegrateResult):
@@ -953,15 +1092,87 @@ class Integrate2dResult(IntegrateResult):
         self._azimuthal_unit = unit
 
 
-    def rebin1d(self) -> Integrate1dResult:
+    def rebin1d(
+        self, *,
+        radial_range: tuple[float, float] | None = None,
+        azimuth_range: tuple[float, float] | None = None,
+    ) -> Integrate1dResult:
         """Function that rebins an Integrate2dResult into a Integrate1dResult
-        It keeps the number of radial bins unchanged but rebin the azimuthal bins into a single one.
 
+        It keeps the radial bin-size unchanged but their number can vary and rebin the azimuthal bins into a single one.
+
+        Both ranges are expressed in the unit of the matching axis of the result,
+        i.e. the one of the `radial` and `azimuthal` arrays. Only whole bins are
+        selected: the range actually covered is available as the `radial_range`
+        and `azimuth_range` of the returned object.
+
+        :param radial_range: 2-tuple with the new minimum and maximum range in radial. Bin size remains unchanged
+        :param azimuth_range: 2-tuple with the new minimum and maximum range. Bins are collapsed along this dimension
         :return: Integrate1dResult
         """
-        bins_rad = self.radial
-        sum_signal = self.sum_signal.sum(axis=0)
-        sum_normalization = self.sum_normalization.sum(axis=0)
+        radial_bins, selected_radial_range = _select_bin_range(
+            self.radial, self._radial_range, radial_range, "radial"
+        )
+        azimuth_bins, selected_azimuth_range = _select_bin_range(
+            self.azimuthal, self._azimuth_range, azimuth_range, "azimuth"
+        )
+        return self._rebin1d(
+            radial_bins, selected_radial_range, azimuth_bins, selected_azimuth_range
+        )
+
+    def to_1dresults(
+        self, *, radial_range: tuple[float, float] | None = None
+    ) -> tuple[Integrate1dResult, ...]:
+        """Converts to N Integrate1dResult, one per azimuth bin.
+
+        `radial_range` is expressed in the unit of the `radial` array.
+        Only whole bins are selected and bin-size is left unchanged.
+        The range actually covered is available as the `radial_range`
+        of the returned objects.
+
+        :param radial_range: 2-tuple with the new minimum and maximum range in radial.
+        :return: tuple of Integrate1dResult, one per azimuthal bin
+        """
+        radial_bins, selected_radial_range = _select_bin_range(
+            self.radial, self._radial_range, radial_range, "radial"
+        )
+
+        _check_regular_binning(self.azimuthal, "azimuth")
+        if self._azimuth_range:
+            azimuth_edges = numpy.linspace(
+                *self._azimuth_range, len(self.azimuthal) + 1
+            )
+        else:  # assume close to regular binning
+            azimuth_edges = _to_edges(self.azimuthal)
+
+        return tuple(
+            self._rebin1d(
+                radial_bins,
+                selected_radial_range,
+                azimuth_bins=slice(i, i + 1),
+                azimuth_range=(azimuth_edges[i], azimuth_edges[i + 1]),
+            )
+            for i in range(len(self.azimuthal))
+        )
+
+    def _rebin1d(
+        self,
+        radial_bins: slice,
+        radial_range: tuple | None,
+        azimuth_bins: slice,
+        azimuth_range: tuple | None,
+    ) -> Integrate1dResult:
+        """Sum the selected bins along the azimuthal dimension into an Integrate1dResult
+
+        :param radial_bins: slice of the radial bins to keep
+        :param radial_range: range covered by those radial bins, stored in the result
+        :param azimuth_bins: slice of the azimuthal bins to collapse
+        :param azimuth_range: range covered by those azimuthal bins, stored in the result
+        :return: Integrate1dResult
+        """
+        bins_rad = self.radial[radial_bins]
+        sum_signal = self.sum_signal[azimuth_bins, radial_bins].sum(axis=0)
+        sum_normalization = self.sum_normalization[azimuth_bins, radial_bins].sum(axis=0)
         intensity = numpy.empty(sum_signal.shape, dtype=numpy.float32)
 
         matching = {"sum_signal": sum_signal,
@@ -974,12 +1185,12 @@ class Integrate2dResult(IntegrateResult):
                       **kwargs, out=intensity)
 
         if self.sum_variance is not None:
-            matching["sum_variance"] = sum_variance = self.sum_variance.sum(axis=0)
+            matching["sum_variance"] = sum_variance = self.sum_variance[azimuth_bins, radial_bins].sum(axis=0)
             sem = numpy.zeros(sum_variance.shape, dtype=numpy.float32)
             self.EXPR_SEM(*(matching[key] for key in self.EXPR_SEM.input_names),
                           **kwargs, out=sem)
             result = Integrate1dResult(bins_rad, intensity, sem)
-            matching["sum_normalization2"] = sum_normalization2 = self.sum_normalization2.sum(axis=0)
+            matching["sum_normalization2"] = sum_normalization2 = self.sum_normalization2[azimuth_bins, radial_bins].sum(axis=0)
             result._set_sum_normalization2(sum_normalization2)
             result._set_sum_variance(sum_variance)
 
@@ -999,7 +1210,7 @@ class Integrate2dResult(IntegrateResult):
         result._set_method(self.method)
         result._set_unit(self.radial_unit)
         # result._set_azimuthal_unit(self.azimuth_unit)
-        result._set_count(self.count.sum(axis=0))
+        result._set_count(self.count[azimuth_bins, radial_bins].sum(axis=0))
         # result._set_sum(sum_)
         result._set_has_dark_correction(self.has_dark_correction)
         result._set_has_flat_correction(self.has_flat_correction)
@@ -1007,6 +1218,8 @@ class Integrate2dResult(IntegrateResult):
         result._set_polarization_factor(self.polarization_factor)
         result._set_normalization_factor(self.normalization_factor)
         result._set_metadata(self.metadata)
+        result._set_radial_range(radial_range)
+        result._set_azimuth_range(azimuth_range)
         return result
 
 

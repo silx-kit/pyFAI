@@ -32,7 +32,7 @@ __authors__ = ["Loïc Huder", "E. Gutierrez-Fernandez", "Jérôme Kieffer"]
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/01/2026"
+__date__ = "16/09/2026"
 __status__ = "development"
 
 import json
@@ -66,9 +66,28 @@ from .utils import (
 from .widgets.DiffractionImagePlotWidget import DiffractionImagePlotWidget
 from .widgets.IntegratedPatternPlotWidget import IntegratedPatternPlotWidget
 from .widgets.MapPlotWidget import MapPlotWidget
-from .widgets.TitleWidget import TitleWidget
 
 logger = logging.getLogger(__name__)
+
+
+class _MainWindowSplitter(qt.QSplitter):
+    """Non-collapsible splitter sharing its space equally between two widgets."""
+
+    def __init__(
+        self,
+        orientation: qt.Qt.Orientation,
+        first: qt.QWidget,
+        second: qt.QWidget,
+        parent: qt.QWidget | None = None,
+    ) -> None:
+        super().__init__(orientation, parent)
+        self.addWidget(first)
+        self.addWidget(second)
+        self.setChildrenCollapsible(False)
+        self.setHandleWidth(6)
+        # Stretch factors only apply to widgets already in the splitter
+        self.setStretchFactor(0, 1)
+        self.setStretchFactor(1, 1)
 
 
 class MainWindow(qt.QMainWindow):
@@ -76,8 +95,21 @@ class MainWindow(qt.QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
-        self._file_name: str | None = None
+        self._init_state()
+        self._init_ui()
+        self._connect_signals()
 
+    def _init_state(self) -> None:
+        """Initialize the window state before creating its widgets."""
+        self._file_name: str | None = None
+        self._unfixed_indices: ImageIndices | None = None
+        self._fixed_indices: set[ImageIndices] = set()
+        self._background_point: Point | None = None
+        self._worker_config: WorkerConfig | None = None
+        self._map_ptr: numpy.ndarray | None = None  # Map of input-frame indices
+
+    def _init_ui(self) -> None:
+        """Create and arrange the viewer widgets."""
         self.setWindowTitle("PyFAI-diffmap viewer")
 
         self._image_plot_widget = DiffractionImagePlotWidget(self)
@@ -85,42 +117,45 @@ class MainWindow(qt.QMainWindow):
             Colormap("gray", normalization="log")
         )
         self._image_plot_widget.setKeepDataAspectRatio(True)
-        self._image_plot_widget.plotClicked.connect(self.onMouseClickOnImage)
 
         self._map_plot_widget = MapPlotWidget(self)
-        self._map_plot_widget.clearPointsSignal.connect(self.clearPoints)
         self._map_plot_widget.setDefaultColormap(
             Colormap("viridis", normalization="log")
         )
-        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
-        self._map_plot_widget.pinContextEntrySelected.connect(self.fixMapPoint)
-        self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
-
-        self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
 
         self._integrated_plot_widget = IntegratedPatternPlotWidget(self)
-        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.onRoiEdition)
-        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.drawContoursOnImage)
-
-        self._title_widget = TitleWidget(self)
 
         self._central_widget = qt.QWidget()
-        layout = qt.QGridLayout(self._central_widget)
+        right_splitter = _MainWindowSplitter(
+            qt.Qt.Orientation.Vertical,
+            self._map_plot_widget,
+            self._integrated_plot_widget,
+            self,
+        )
+        plot_splitter = _MainWindowSplitter(
+            qt.Qt.Orientation.Horizontal,
+            self._image_plot_widget,
+            right_splitter,
+            self,
+        )
+
+        layout = qt.QVBoxLayout(self._central_widget)
         layout.setSpacing(0)
-        layout.addWidget(self._title_widget, 0, 0, 1, 2)
-        layout.addWidget(self._image_plot_widget, 1, 0, 2, 1)
-        layout.addWidget(self._map_plot_widget, 1, 1)
-        layout.addWidget(self._integrated_plot_widget, 2, 1)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(plot_splitter, 1)
         self._central_widget.setLayout(layout)
         self.setCentralWidget(self._central_widget)
 
-        self._unfixed_indices = None
-        self._fixed_indices = set()
-        self._background_point = None
-        self.worker_config = None
-
-        # declaration of instance variables
-        self._map_ptr = None # This is the map of the indices of input frame
+    def _connect_signals(self) -> None:
+        """Connect plot interactions to the window actions."""
+        self._image_plot_widget.plotClicked.connect(self.onMouseClickOnImage)
+        self._map_plot_widget.clearPointsSignal.connect(self.clearPoints)
+        self._map_plot_widget.plotClicked.connect(self.selectMapPoint)
+        self._map_plot_widget.pinContextEntrySelected.connect(self.fixMapPoint)
+        self._map_plot_widget.setBackgroundClicked.connect(self.setNewBackgroundCurve)
+        self.sigFileChanged.connect(self._map_plot_widget.onFileChange)
+        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.onRoiEdition)
+        self._integrated_plot_widget.roi.sigRegionChanged.connect(self.drawContoursOnImage)
 
     def initData(self,
                  file_name: str,
@@ -161,11 +196,11 @@ class MainWindow(qt.QMainWindow):
             pyFAI_config_as_dict = json.loads(pyFAI_config_as_str)
             if "diffmap_config_version" in pyFAI_config_as_dict:
                 diffmap_config = DiffmapConfig.from_dict(pyFAI_config_as_dict, inplace=True)
-                self.worker_config = diffmap_config.ai
+                self._worker_config = diffmap_config.ai
             else:
-                self.worker_config = WorkerConfig.from_dict(pyFAI_config_as_dict, inplace=True)
+                self._worker_config = WorkerConfig.from_dict(pyFAI_config_as_dict, inplace=True)
 
-            radial_dset = get_radial_dataset(nxdata, size=self.worker_config.nbpt_rad)
+            radial_dset = get_radial_dataset(nxdata, size=self._worker_config.nbpt_rad)
             delta_radial = (radial_dset[-1] - radial_dset[0]) / len(radial_dset)
 
             if "offset" in nxprocess:
@@ -205,10 +240,9 @@ class MainWindow(qt.QMainWindow):
                 else:
                     self.warning(f"Cannot access diffraction images at {path}: not a group.")
 
-        self._radial_matrix = compute_radial_values(self.worker_config)
+        self._radial_matrix = compute_radial_values(self._worker_config)
         self._delta_radial_over_2 = delta_radial / 2
 
-        self._title_widget.setText(os.path.basename(file_name))
         self._map_plot_widget.setScatterData(map_data, fast_values, slow_values, fast_label, slow_label)
         # BUG: selectMapPoint(0, 0) does not work at first render cause the picking fails
         initial_indices = ImageIndices(0, 0)
@@ -265,7 +299,7 @@ class MainWindow(qt.QMainWindow):
         else:
             mask_image = None
 
-        detector = self.worker_config.poni.detector
+        detector = self._worker_config.poni.detector
         if not detector:
             return mask_image
 
@@ -433,7 +467,7 @@ class MainWindow(qt.QMainWindow):
         with h5py.File(self._file_name, "r") as h5file:
             nxprocess = h5file.get(self._nxprocess_path)
             nxdata = nxprocess["result"]
-            radial = get_radial_dataset(nxdata, size=self.worker_config.nbpt_rad)[()]
+            radial = get_radial_dataset(nxdata, size=self._worker_config.nbpt_rad)[()]
             i_min, i_max = get_indices_from_values(v_min, v_max, radial)
             full_map = get_signal_dataset(nxdata, default="intensity")
             axes_index = get_axes_index(full_map)

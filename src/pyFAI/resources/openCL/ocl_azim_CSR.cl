@@ -633,6 +633,8 @@ csr_integrate(  const   global  float   *weights,
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
+        // Nota: this tree-reduction requires the workgroup size to be a power of
+        // two, else the odd element of a round is dropped from the sum.
         while (active_threads > 1) {
             active_threads /= 2 ;
             if (thread_id_loc < active_threads) {

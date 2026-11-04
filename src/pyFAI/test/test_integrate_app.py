@@ -111,7 +111,7 @@ class TestIntegrateApp(unittest.TestCase):
                 h5["/monitor/data"] = numpy.array(monitor)
         return path
 
-    def test_path(self):
+    def _test_path(self):
         path = os.path.join(self.tempDir)
         return path
 
@@ -200,7 +200,7 @@ class TestIntegrateApp(unittest.TestCase):
         expected = numpy.array([17.0, 26.0, 0.0])
         options.json = self.create_json()
         options.monitor_key = "/monitor/data"
-        options.output = os.path.join(self.test_path(), "result.h5")
+        options.output = os.path.join(self._test_path(), "result.h5")
 
         pyFAI.app.integrate.integrate_shell(options, [file1 + "::image/data"])
         self.assertTrue(os.path.exists(options.output))
@@ -217,7 +217,7 @@ class TestIntegrateApp(unittest.TestCase):
         file1 = self.create_edf_file("data1.edf", data)
         file2 = self.create_edf_file("data2.edf", data)
         options.json = self.create_json()
-        options.output = os.path.join(self.test_path(), "result.h5")
+        options.output = os.path.join(self._test_path(), "result.h5")
         pyFAI.app.integrate.integrate_shell(options, [file1, file2])
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
@@ -229,7 +229,7 @@ class TestIntegrateApp(unittest.TestCase):
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         file1 = self.create_edf_file("data1.edf", [data, data])
         options.json = self.create_json()
-        options.output = os.path.join(self.test_path(), "result.h5")
+        options.output = os.path.join(self._test_path(), "result.h5")
         pyFAI.app.integrate.integrate_shell(options, [file1])
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
@@ -242,7 +242,7 @@ class TestIntegrateApp(unittest.TestCase):
         file1 = self.create_edf_file("data1.edf", [data, data])
         file2 = self.create_edf_file("data2.edf", [data, data])
         options.json = self.create_json()
-        options.output = os.path.join(self.test_path(), "result.h5")
+        options.output = os.path.join(self._test_path(), "result.h5")
         pyFAI.app.integrate.integrate_shell(options, [file1, file2])
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
@@ -254,7 +254,7 @@ class TestIntegrateApp(unittest.TestCase):
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         file1 = self.create_h5_cube_file("data.h5", "image/data", [data, data, data, data])
         options.json = self.create_json()
-        options.output = os.path.join(self.test_path(), "result.h5")
+        options.output = os.path.join(self._test_path(), "result.h5")
         pyFAI.app.integrate.integrate_shell(options, [file1 + "::image/data"])
         self.assertTrue(os.path.exists(options.output))
         with h5py.File(options.output, mode="r") as h5:
@@ -267,7 +267,7 @@ class TestIntegrateApp(unittest.TestCase):
         file1 = self.create_edf_file("data1.edf", data)
         file2 = self.create_edf_file("data2.edf", data)
         options.json = self.create_json()
-        output_file = os.path.join(self.test_path(), "result.h5")
+        output_file = os.path.join(self._test_path(), "result.h5")
         options.output = output_file + "::my/entry"
         pyFAI.app.integrate.integrate_shell(options, [file1, file2])
         self.assertTrue(os.path.exists(output_file))
@@ -281,7 +281,7 @@ class TestIntegrateApp(unittest.TestCase):
         file1 = self.create_edf_file("data1.edf", data)
         options.json = self.create_json()
         options.write_mode = pyFAI.app.integrate.HDF5Writer.MODE_DELETE
-        options.output = os.path.join(self.test_path(), "result.h5")
+        options.output = os.path.join(self._test_path(), "result.h5")
         with h5py.File(options.output, mode="w") as h5:
             # Store something
             h5["entry_0000"] = 10
@@ -297,7 +297,7 @@ class TestIntegrateApp(unittest.TestCase):
         file1 = self.create_edf_file("data1.edf", data)
         options.json = self.create_json()
         options.write_mode = pyFAI.app.integrate.HDF5Writer.MODE_OVERWRITE
-        options.output = os.path.join(self.test_path(), "result.h5")
+        options.output = os.path.join(self._test_path(), "result.h5")
         with h5py.File(options.output, mode="w") as h5:
             # Store something
             h5["entry_0000"] = 10
@@ -315,7 +315,7 @@ class TestIntegrateApp(unittest.TestCase):
         file1 = self.create_edf_file("data1.edf", data)
         options.json = self.create_json()
         options.write_mode = pyFAI.app.integrate.HDF5Writer.MODE_APPEND
-        options.output = os.path.join(self.test_path(), "result.h5")
+        options.output = os.path.join(self._test_path(), "result.h5")
         with h5py.File(options.output, mode="w") as h5:
             # Store something
             h5["entry_0000"] = 10
@@ -332,7 +332,7 @@ class TestIntegrateApp(unittest.TestCase):
         file1 = self.create_edf_file("data1.edf", data)
         options.json = self.create_json()
         options.write_mode = pyFAI.app.integrate.HDF5Writer.MODE_ERROR
-        options.output = os.path.join(self.test_path(), "result.h5")
+        options.output = os.path.join(self._test_path(), "result.h5")
         with h5py.File(options.output, mode="w") as h5:
             # Store something
             h5["entry_0000"] = 10

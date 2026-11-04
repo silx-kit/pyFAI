@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2026"
+__date__ = "28/09/2026"
 __status__ = "development"
 
 import copy
@@ -172,6 +172,21 @@ class SingleModule:
 class MultiModule:
     """Split a detector in several modules"""
 
+    COLOR_FREE = "lightyellow"
+    "Color used by `display` for the modules whose position can be refined"
+
+    COLOR_FIXED = "green"
+    "Color used by `display` for the modules which are kept fixed"
+
+    COLOR_DISPLACEMENT = "red"
+    "Color of the arrows showing the displacement of the corner pixels in `display`"
+
+    COLOR_MARKER = "black"
+    "Color of the pixel grid, of the first-pixel cross and of the first-row line"
+
+    MAX_PIXEL_GRID = 10000
+    "Modules with more pixels than this are drawn without their pixel grid by `display`"
+
     def __init__(self):
         self.modules = {}  # this is contains all of modules
         self.lmask = None
@@ -249,27 +264,17 @@ class MultiModule:
         :return: a Detector instance with the `_pixel_corners` attribute defined
         """
         parent = self.detector
-        if param is not None:
-            expected = ModuleParam.nb_param * self.free_modules
-            if len(param) < expected:
-                raise ValueError(f"`param` should provide at least {expected} values "
-                                 f"({ModuleParam.nb_param} per free module), got {len(param)}")
+        params = self._split_param(param)
         pixel1 = parent.pixel1
         pixel2 = parent.pixel2
         # 4D array with, for every pixel, the (z, dim1, dim2) position of its 4 corners
         corners = parent.get_pixel_corners(correct_binning=False).astype(numpy.float64)
-        param_idx = 0
         for module_id in sorted(self.modules):
             module = self.modules[module_id]
             if module.fixed:
                 # `calc_displacement_map` is the identity for those, skip them
                 continue
-            if param is None:
-                sub_param = None
-            else:
-                sub_param = ModuleParam(*param[ModuleParam.nb_param * param_idx:
-                                               ModuleParam.nb_param * (param_idx + 1)])
-            param_idx += 1
+            sub_param = params[module_id]
             # fancy indexing provides a copy with the shape (nb_pixel, 4, 3)
             sub = corners[module.mask]
             shape = sub.shape[:-1]
@@ -286,6 +291,187 @@ class MultiModule:
         detector.mask = parent.mask
         detector.set_pixel_corners(corners)
         return detector
+
+    def _split_param(self, param=None):
+        """Split a parameter vector into one `ModuleParam` per free module
+
+        :param param: vector with `ModuleParam.nb_param` values (d0, d1, rot) per free
+                      module, in the order of the modules. Any trailing value, like the
+                      poni-parameters, is ignored. When None, the parameters currently
+                      stored in each module are returned.
+        :return: dict with the module-id as key and its `ModuleParam` as value. The fixed
+                 modules, which have no parameter, are absent from this dictionary.
+        """
+        if param is None:
+            return {i: m.param for i, m in self.modules.items() if not m.fixed}
+        expected = ModuleParam.nb_param * self.free_modules
+        if len(param) < expected:
+            raise ValueError(f"`param` should provide at least {expected} values "
+                             f"({ModuleParam.nb_param} per free module), got {len(param)}")
+        res = {}
+        param_idx = 0
+        for module_id in sorted(self.modules):
+            if self.modules[module_id].fixed:
+                continue
+            res[module_id] = ModuleParam(*param[ModuleParam.nb_param * param_idx:
+                                                ModuleParam.nb_param * (param_idx + 1)])
+            param_idx += 1
+        return res
+
+    def display(self, param=None, ax=None, arrow_scale=1.0, grid=None, legend=True,
+                labels=True):
+        """Draw the position of the pixels of every module with matplotlib
+
+        Each module is drawn pixel per pixel, at its displaced position: light yellow for
+        the modules whose position can be refined and green for the fixed ones. The masked
+        pixels belong to no module, hence they are left transparent.
+
+        Three extra markers tell how each module is laid out in memory:
+
+        * a cross on the center of its **first** pixel, i.e. the one with the lowest index,
+        * a dotted line along its **first row**, i.e. the direction along which the pixels
+          are contiguous in memory,
+        * a red arrow, for the first and the last pixel of the module, from the position
+          they have in the parent detector to their displaced position.
+
+        The limits of the axes are set wide enough for everything drawn to be visible, the
+        tip of the magnified arrows included: they usually stand outside of the detector.
+
+        Nota: every pixel is drawn as an individual quadrangle, which gets expensive on a
+        detector with millions of pixels.
+
+        :param param: optional vector with the refined parameters of the modules, as
+                      returned by `MultiModuleRefinement.refine`. It contains 3 values
+                      (d0, d1, rot) per free module; any trailing value, like the
+                      poni-parameters, is ignored. When None, the parameters currently
+                      stored in each module are used.
+        :param ax: matplotlib axes to draw in. When None, a new figure is created.
+        :param arrow_scale: magnification factor of the red displacement arrows. The
+                            refined displacements are usually a fraction of a pixel, i.e.
+                            invisible at the scale of the detector; a value larger than 1
+                            makes them visible, at the price of an exaggerated drawing.
+        :param grid: draw the outline of every pixel. The default (None) enables it only
+                     on modules small enough for the grid to remain readable. Modules
+                     drawn without their grid get the outline of their bounding box
+                     instead, so that adjacent ones stay distinguishable.
+        :param legend: set to False to skip the legend. A dictionary is forwarded to
+                       `ax.legend` as keyword arguments, for instance
+                       `{"loc": "upper left", "bbox_to_anchor": (1.01, 1)}` to move the
+                       legend out of the drawing.
+        :param labels: write the id of every module at its center. Set it to False on a
+                       detector with many modules, where the labels would overlap.
+        :return: the matplotlib axes the modules were drawn in
+        """
+        from matplotlib.colors import ListedColormap
+        from matplotlib.lines import Line2D
+        from matplotlib.patches import Patch
+        from matplotlib.pyplot import subplots
+
+        if ax is None:
+            _fig, ax = subplots()
+        params = self._split_param(param)
+        cmaps = {True: ListedColormap([self.COLOR_FIXED]),
+                 False: ListedColormap([self.COLOR_FREE])}
+        arrowprops = {"arrowstyle": "->", "color": self.COLOR_DISPLACEMENT,
+                      "shrinkA": 0, "shrinkB": 0}
+        # `annotate` does not extend the data limits: collect what has to stay visible
+        extent = []
+        for module_id in sorted(self.modules):
+            module = self.modules[module_id]
+            sub_param = params.get(module_id)
+            slice0, slice1 = module.bounding_box
+            sub_mask = module.mask[slice0, slice1]
+            # corners of the pixels of the bounding box: one more than the pixels
+            corner0, corner1 = numpy.meshgrid(
+                numpy.arange(slice0.start, slice0.stop + 1, dtype=numpy.float64),
+                numpy.arange(slice1.start, slice1.stop + 1, dtype=numpy.float64),
+                indexing="ij")
+            shape = corner0.shape
+            pos0, pos1 = module.calc_displacement_map(d1=corner0, d2=corner1,
+                                                      param=sub_param)
+            # a constant image, transparent wherever the pixel does not belong to the module
+            data = numpy.ma.masked_array(numpy.zeros(sub_mask.shape, dtype=numpy.int8),
+                                         mask=numpy.logical_not(sub_mask))
+            edges = sub_mask.size <= self.MAX_PIXEL_GRID if grid is None else grid
+            pos0 = pos0.reshape(shape)
+            pos1 = pos1.reshape(shape)
+            mesh = ax.pcolormesh(pos1, pos0, data,
+                                 cmap=cmaps[bool(module.fixed)], vmin=0, vmax=1,
+                                 shading="flat",
+                                 edgecolors=self.COLOR_MARKER if edges else "none",
+                                 linewidth=0.1 if edges else 0)
+            # the sticky edges of the mesh would clamp the axes to the detector itself
+            mesh.sticky_edges.x.clear()
+            mesh.sticky_edges.y.clear()
+            extent.append((pos1.min(), pos0.min()))
+            extent.append((pos1.max(), pos0.max()))
+            if not edges:
+                # without the pixel grid, adjacent modules would be indistinguishable:
+                # outline the bounding box, which stays a rectangle under the displacement
+                outline = ([0, 0, -1, -1, 0], [0, -1, -1, 0, 0])
+                ax.plot(pos1[outline], pos0[outline], color=self.COLOR_MARKER,
+                        linewidth=0.5)
+
+            # first and last pixel of the module, in the order they are stored in memory
+            flat = numpy.where(sub_mask.ravel())[0]
+            first0, first1 = numpy.unravel_index(flat[0], sub_mask.shape)
+            last0, last1 = numpy.unravel_index(flat[-1], sub_mask.shape)
+            # first row of the module: from its first to its last pixel
+            row = numpy.where(sub_mask[first0])[0]
+            # the center of the pixel (i, j) sits at (i+0.5, j+0.5) in pixel coordinates
+            ref0 = slice0.start + 0.5 + numpy.array([first0, last0, first0, first0],
+                                                    dtype=numpy.float64)
+            ref1 = slice1.start + 0.5 + numpy.array([first1, last1, row[0], row[-1]],
+                                                    dtype=numpy.float64)
+            new0, new1 = module.calc_displacement_map(d1=ref0, d2=ref1, param=sub_param)
+            ax.plot(new1[0], new0[0], linestyle="none", marker="x",
+                    color=self.COLOR_MARKER)
+            ax.plot(new1[2:], new0[2:], linestyle=":", color=self.COLOR_MARKER)
+            for idx in (0, 1):
+                delta0 = new0[idx] - ref0[idx]
+                delta1 = new1[idx] - ref1[idx]
+                if delta0 == 0.0 and delta1 == 0.0:
+                    continue
+                tip = (ref1[idx] + arrow_scale * delta1,
+                       ref0[idx] + arrow_scale * delta0)
+                ax.annotate("", xytext=(ref1[idx], ref0[idx]), xy=tip,
+                            arrowprops=arrowprops)
+                extent.append(tip)
+            if labels:
+                lab0, lab1 = module.calc_displacement_map(d1=module.center[0],
+                                                          d2=module.center[1],
+                                                          param=sub_param)
+                ax.annotate(str(module_id), (lab1[0], lab0[0]), color=self.COLOR_MARKER,
+                            ha="center", va="center")
+
+        fixed = self.nb_modules - self.free_modules
+        if legend:
+            handles = []
+            if self.free_modules:
+                handles.append(Patch(facecolor=self.COLOR_FREE, edgecolor=self.COLOR_MARKER,
+                                     label=f"{self.free_modules} free module(s)"))
+            if fixed:
+                handles.append(Patch(facecolor=self.COLOR_FIXED, edgecolor=self.COLOR_MARKER,
+                                     label=f"{fixed} fixed module(s)"))
+            scaled = "" if arrow_scale == 1 else f" (×{arrow_scale:g})"
+            handles += [
+                Line2D([], [], linestyle="none", marker="x", color=self.COLOR_MARKER,
+                       label="First pixel"),
+                Line2D([], [], linestyle=":", color=self.COLOR_MARKER, label="First row"),
+                Line2D([], [], color=self.COLOR_DISPLACEMENT,
+                       label=f"Displacement{scaled}"),
+            ]
+            kwargs = {"loc": "best", "fontsize": "small"}
+            if isinstance(legend, dict):
+                kwargs.update(legend)
+            ax.legend(handles=handles, **kwargs)
+        ax.set_xlabel("Dimension 2, fast (pixel)")
+        ax.set_ylabel("Dimension 1, slow (pixel)")
+        ax.set_title(f"{self.nb_modules} modules: {self.free_modules} free, {fixed} fixed")
+        ax.set_aspect("equal")
+        ax.update_datalim(extent)
+        ax.autoscale_view()
+        return ax
 
 
 class MultiModuleRefinement(MultiModule):

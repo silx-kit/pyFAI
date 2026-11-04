@@ -31,13 +31,14 @@ __author__ = "Loïc Huder"
 __contact__ = "loic.huder@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2025"
+__date__ = "16/09/2026"
 __status__ = "development"
 
 import argparse
 import logging
 import signal
 
+import silx
 from silx.gui import qt
 
 from .. import date as pyFAI_date
@@ -115,6 +116,7 @@ def main(args=None):
     data_path = options.data_path if options.data_path is not None else data_path
 
     app = qt.QApplication([])
+    silx.config._MPL_TIGHT_LAYOUT = True
     window = MainWindow()
     window.initData(file_name=options.filename,
                     dataset_path=data_path,

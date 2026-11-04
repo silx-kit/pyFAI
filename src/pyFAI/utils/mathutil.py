@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2026"
+__date__ = "16/10/2026"
 __status__ = "production"
 
 import logging
@@ -1058,8 +1058,8 @@ def quality_of_fit(
         rings = list(range(len(calibrant.get_2th())))
     q_theo = q_theo[rings]
     idx_theo = abs(numpy.add.outer(res.radial, -q_theo)).argmin(axis=0)
-    idx_maxi = numpy.empty((res.azimuthal.size, len(rings))) + numpy.nan
-    idx_fwhm = numpy.empty((res.azimuthal.size, len(rings))) + numpy.nan
+    idx_maxi = numpy.full((res.azimuthal.size, len(rings)), numpy.nan)
+    idx_fwhm = numpy.full((res.azimuthal.size, len(rings)), numpy.nan)
     signal = res.intensity
     gradient = numpy.gradient(signal, axis=-1)
     minima = numpy.where(numpy.logical_and(gradient[:, :-1] < 0, gradient[:, 1:] >= 0))
@@ -1072,6 +1072,8 @@ def quality_of_fit(
                 continue
             maxi = maxima[1][maxima[0] == idx]
             mini = minima[1][minima[0] == idx]
+            if maxi.size == 0: # sector without peak: it contributes no deviation
+                continue
             idx_max = maxi[abs(maxi - idx_th).argmin()]
             idx_inf = mini[mini < idx_max]
             if idx_inf.size:
