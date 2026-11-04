@@ -398,7 +398,7 @@ class CalibrantConfig:
         used by the high-pressure community (Dioptas, GSECARS, ...).
 
         The compression parameters (K0, K0P, DK0DT, DK0PDT) and the thermal
-        expansion (ALPHAT, DALPHAT) are turned into an EquationOfState
+        expansion (ALPHAT, DALPHADT) are turned into an EquationOfState
         instance stored in the ``eos`` attribute: a PVT composite when both
         are present, the bare model otherwise.
 
@@ -464,8 +464,8 @@ class CalibrantConfig:
             isothermal = BirchMurnaghan(k0=values["K0"], k0p=values.get("K0P", 4.0))
         if values.get("ALPHAT"):
             coefficients = [values["ALPHAT"]]
-            if values.get("DALPHAT"):
-                coefficients.append(values["DALPHAT"])
+            if values.get("DALPHADT"):
+                coefficients.append(values["DALPHADT"])
             thermal = VolumeExpansion(coefficients)
         if isothermal and thermal:
             eos = PVT(isothermal, thermal,
@@ -520,13 +520,13 @@ class CalibrantConfig:
             if dk0pdt:
                 lines.append(f"DK0PDT: {dk0pdt:.10g}")
         if thermal is not None:
-            dalphat = 0.0
+            dalphadt = 0.0
             if isinstance(thermal, VolumeExpansion):
                 if len(thermal.coefficients) > 2:
                     raise ValueError("JCPDS supports at most 2 volume-expansion coefficients")
                 alphat = thermal.coefficients[0]
                 if len(thermal.coefficients) > 1:
-                    dalphat = thermal.coefficients[1]
+                    dalphadt = thermal.coefficients[1]
             elif isinstance(thermal, ThermalExpansion) and not thermal.alpha1 and not thermal.alpha2:
                 logger.warning("Exponential thermal expansion approximated as linear in the JCPDS file")
                 alphat = thermal.alpha0
@@ -534,12 +534,12 @@ class CalibrantConfig:
                 logger.warning("Lattice expansion converted to a volume expansion, truncated at 2nd order, in the JCPDS file")
                 coefficients = thermal.coefficients + [0.0]
                 alphat = 3.0 * coefficients[0]
-                dalphat = 3.0 * coefficients[1] + 3.0 * coefficients[0] ** 2
+                dalphadt = 3.0 * coefficients[1] + 3.0 * coefficients[0] ** 2
             else:
                 raise ValueError(f"Unable to export thermal model {thermal!r} to JCPDS")
             lines.append(f"ALPHAT: {alphat:.10g}")
-            if dalphat:
-                lines.append(f"DALPHAT: {dalphat:.10g}")
+            if dalphadt:
+                lines.append(f"DALPHADT: {dalphadt:.10g}")
 
         cell = self.to_cell()
         if cell is None:

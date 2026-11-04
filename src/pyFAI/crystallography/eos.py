@@ -709,8 +709,8 @@ class VolumeExpansion(EquationOfState):
 
     This is the parametrization of JCPDS (version 4) files used by the
     high-pressure community (Dioptas, GSECARS):
-    V0(T) = V0 [1 + alpha(T) (T-T0)] with alpha(T) = ALPHAT + DALPHAT (T-T0),
-    i.e. ``coefficients = [ALPHAT, DALPHAT]``.
+    V0(T) = V0 [1 + alpha(T) (T-T0)] with alpha(T) = ALPHAT + DALPHADT (T-T0),
+    i.e. ``coefficients = [ALPHAT, DALPHADT]``.
     Pressure is ignored: the model only holds at the reference pressure.
 
     :param coefficients: polynomial coefficients [c1, c2, ...] of the

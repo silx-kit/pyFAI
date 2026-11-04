@@ -526,6 +526,7 @@ DK0DT: -0.021
 SYMMETRY: CUBIC
 A: 4.07860
 ALPHAT: 4.26e-05
+DALPHADT: 1.5e-08
 DIHKL: 2.35480, 100.0, 1, 1, 1
 DIHKL: 2.03930, 52.0, 2, 0, 0
 """
@@ -550,6 +551,7 @@ class TestJCPDS(unittest.TestCase):
         self.assertIsInstance(eos, PVT)
         self.assertAlmostEqual(eos.isothermal.k0, 166.65, places=6)
         self.assertAlmostEqual(eos.dk0dt, -0.021, places=6)
+        self.assertEqual(eos.thermal.coefficients, [4.26e-05, 1.5e-08])
         self.assertAlmostEqual(eos.v0, 4.0786 ** 3, places=6)
         # sanity check in gauge mode: compression at 10 GPa, 500 K
         self.assertLess(eos.linear_ratio(pressure=10.0, temperature=298.15), 1.0)
@@ -568,6 +570,7 @@ class TestJCPDS(unittest.TestCase):
         text = config.to_JCPDS()
         self.assertIn("SYMMETRY: CUBIC", text)
         self.assertIn("K0: 166.65", text)
+        self.assertIn("DALPHADT: 1e-09", text)
 
         fname = os.path.join(UtilsTest.tempdir, "Au_out.jcpds")
         config.save_JCPDS(fname)

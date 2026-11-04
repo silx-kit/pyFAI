@@ -1,14 +1,18 @@
-VERSION: 4.0
-TITLE: Gold (Au) - Tsuchiya (2003) Vinet EoS
-REMARKS: Standard gold pressure marker, Vinet formulation
-CRYSTAL SYSTEM: Cubic
-SPACE GROUP: Fm-3m
-CELL PARAMETERS: 4.0786 4.0786 4.0786 90.0 90.0 90.0
-VOLUME: 67.8504
-THERMAL EXPANSION: 4.278e-5 0.0 0.0
-EOS: 166.7 6.12 0.0 2
-LINES: 4
-1 1 1   2.3548
-2 0 0   2.0393
-2 2 0   1.4420
-3 1 1   1.2297
+VERSION:   4
+COMMENT: Gold (Au), Fm-3m - Tsuchiya (2003)
+COMMENT: WARNING: Vinet parameters in the original source, JCPDS assumes Birch-Murnaghan
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        166.700
+K0P:       6.120
+SYMMETRY:  CUBIC
+A:         4.07860
+VOLUME:    67.8474
+ALPHAT:    4.278e-05
+DIHKL:       2.3548   100.0   1   1   1
+DIHKL:       2.0393    49.4   2   0   0
+DIHKL:       1.4420    33.0   2   2   0
+DIHKL:       1.2297    39.8   3   1   1
+DIHKL:       1.1774    11.7   2   2   2
+DIHKL:       1.0196     6.5   4   0   0
+DIHKL:       0.9357    25.5   3   3   1
+DIHKL:       0.9120    26.2   4   2   0

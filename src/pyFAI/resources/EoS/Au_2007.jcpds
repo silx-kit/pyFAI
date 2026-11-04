@@ -1,14 +1,18 @@
-VERSION: 4.0
-TITLE: Gold (Au) - Fei Thermal EoS 10.1073/pnas.0609013104
-REMARKS: High P-T diffraction marker, BM3 formulation
-CRYSTAL SYSTEM: Cubic
-SPACE GROUP: Fm-3m
-CELL PARAMETERS: 4.0786 4.0786 4.0786 90.0 90.0 90.0
-VOLUME: 67.8504
-THERMAL EXPANSION: 4.300e-5 1.900e-8 0.0
-EOS: 167.0 5.0 0.0 1
-LINES: 4
-1 1 1   2.3548
-2 0 0   2.0393
-2 2 0   1.4420
-3 1 1   1.2297
+VERSION:   4
+COMMENT: Gold (Au), Fm-3m - Fei et al. (2007) PNAS 104, 9182-9186, doi:10.1073/pnas.0609013104, table 1
+COMMENT: 3rd order Birch-Murnaghan fit at 300 K (Vinet: K0=167 GPa, K0P=6.00)
+COMMENT: Thermal model of the source is Mie-Gruneisen-Debye, not representable in JCPDS: theta0=170 K, gamma0=2.97, q0=0.6
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        167.000
+K0P:       5.770
+SYMMETRY:  CUBIC
+A:         4.07865
+VOLUME:    67.8500
+DIHKL:       2.3548   100.0   1   1   1
+DIHKL:       2.0393    49.4   2   0   0
+DIHKL:       1.4420    33.0   2   2   0
+DIHKL:       1.2298    39.8   3   1   1
+DIHKL:       1.1774    11.7   2   2   2
+DIHKL:       1.0197     6.5   4   0   0
+DIHKL:       0.9357    25.5   3   3   1
+DIHKL:       0.9120    26.2   4   2   0

@@ -1,0 +1,20 @@
+VERSION:   4
+COMMENT: NaCl-B2 (CsCl-type), Pm-3m - Fei et al. (2007) PNAS 104, 9182-9186, doi:10.1073/pnas.0609013104, table 1
+COMMENT: 3rd order Birch-Murnaghan fit at 300 K (Vinet: K0=26.86 GPa, K0P=5.25)
+COMMENT: Thermal model of the source is Mie-Gruneisen-Debye, not representable in JCPDS: theta0=290 K, gamma0=1.70, q0=0.5
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        30.690
+K0P:       4.330
+SYMMETRY:  CUBIC
+A:         3.45800
+VOLUME:    41.3500
+DIHKL:       3.4580     5.8   1   0   0
+DIHKL:       2.4452   100.0   1   1   0
+DIHKL:       1.9965     0.9   1   1   1
+DIHKL:       1.7290    15.4   2   0   0
+DIHKL:       1.5465     1.1   2   1   0
+DIHKL:       1.4117    29.0   2   1   1
+DIHKL:       1.2226     8.6   2   2   0
+DIHKL:       1.1527     0.7   2   2   1
+DIHKL:       1.1527     0.2   3   0   0
+DIHKL:       1.0935    12.4   3   1   0
