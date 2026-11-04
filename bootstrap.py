@@ -45,6 +45,10 @@ def build_project(name, root_dir):
     :param str root_dir: Root directory of the project
     :return: The path to the directory were build was performed
     """
+    def read_lines(p):
+        out, err  = p.communicate()
+        return out.decode().splitlines()
+
     extra = []
     libdir = "lib"
     if sys.platform == "win32":
@@ -60,8 +64,17 @@ def build_project(name, root_dir):
                      shell=False, cwd=build, env=os.environ)
     p.wait()
     p = subprocess.Popen(["meson", "install", "--destdir", "."],
-                     shell=False, cwd=build, env=os.environ)
-    logger.debug("meson install ended with rc= %s", p.wait())
+                     shell=False, cwd=build, env=os.environ, stdout=subprocess.PIPE)
+    logs = []
+    with open("meson.log","w") as wd:
+        while p.returncode is None:
+            last_block = read_lines(p)
+            logs += last_block
+            wd.write(os.linesep.join(last_block))
+        if p.returncode:
+            print(os.linesep.join(logs))
+
+    logger.debug("meson install ended with rc= %s", p.returncode)
 
     home = None
     if os.environ.get("PYBUILD_NAME") == name:
