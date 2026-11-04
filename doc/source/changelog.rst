@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 04/10/2026
+:Date: 04/11/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -15,6 +15,8 @@ Change-log of versions
   * `Integrate2dResult.rebin1d()` gains `radial_range` and `azimuth_range`, to extract the pattern of an azimuthal sector out of a single 2D integration (#2961)
 
 - Bug fixes:
+
+  * Fix the calibrant files read or written under Windows (#2988)
 
 - Documentation:
 
