@@ -32,11 +32,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/09/2026"
+__date__ = "04/11/2026"
 
 import logging
 import os
 import unittest
+import unittest.mock
 from typing import ClassVar
 import numpy
 from ..crystallography import Cell, ReflectionCondition, resolution
@@ -537,7 +538,7 @@ class TestJCPDS(unittest.TestCase):
     def test_read(self):
         "Parse a Dioptas-like gold file"
         fname = os.path.join(UtilsTest.tempdir, "Au_ref.jcpds")
-        with open(fname, "w") as fd:
+        with open(fname, "w", encoding="utf-8") as fd:
             fd.write(AU_JCPDS)
         config = CalibrantConfig.from_JCPDS(fname)
         self.assertEqual(config.description, "Gold")
@@ -700,7 +701,7 @@ class TestCalibrantHeaders(unittest.TestCase):
                          v0=cell.volume)
         tmp = os.path.join(UtilsTest.tempdir, "CeO2_eos.D")
         config.save(tmp)
-        with open(tmp) as fd:
+        with open(tmp, encoding="utf-8") as fd:
             text = fd.read()
         self.assertIn("# EoS: {", text)
         clone = CalibrantConfig.from_dspacing(tmp)
@@ -728,14 +729,48 @@ class TestCalibrantHeaders(unittest.TestCase):
         config.eos = BirchMurnaghan(k0=220.0, k0p=4.4)
         tmp = os.path.join(UtilsTest.tempdir, "CeO2_bad_eos.D")
         config.save(tmp)
-        with open(tmp) as fd:
+        with open(tmp, encoding="utf-8") as fd:
             text = fd.read()
-        with open(tmp, "w") as fd:
+        with open(tmp, "w", encoding="utf-8") as fd:
             fd.write(text.replace('"model"', '"mangled'))
         with self.assertLogs("pyFAI.io.calibrant_config", level="WARNING"):
             clone = CalibrantConfig.from_dspacing(tmp)
         self.assertIsNone(clone.eos)
         self.assertEqual(len(clone.reflections), len(config.reflections))
+
+    @staticmethod
+    def _windows_open(file, mode="r", **kwargs):
+        "Mimic the defaults of `open` under Windows: cp1252 locale encoding, `\\n` written as `\\r\\n`"
+        if "b" not in mode:
+            kwargs.setdefault("encoding", "cp1252")
+            if "r" not in mode:
+                kwargs.setdefault("newline", "\r\n")
+        return open(file, mode, **kwargs)
+
+    def test_bug_2988_encoding(self):
+        "#2988: under Windows, the UTF-8 header of CeO2.D was decoded with the locale encoding"
+        with unittest.mock.patch("pyFAI.io.calibrant_config.open", self._windows_open, create=True):
+            config = self.config("CeO2")
+        self.assertIn("a=5.411651\N{LATIN CAPITAL LETTER A WITH RING ABOVE}", config.cell)
+        cell = config.to_cell()
+        self.assertIsNotNone(cell, "cell parsed from the header")
+        self.assertAlmostEqual(cell.a, 5.411651, places=6)
+
+    def test_bug_2988_line_endings(self):
+        "#2988: under Windows, saved .D files ended lines with `\\r\\r\\n`, losing the header on reading"
+        config = self.config("CeO2")
+        tmp = os.path.join(UtilsTest.tempdir, "CeO2_2988.D")
+        with unittest.mock.patch("pyFAI.io.calibrant_config.open", self._windows_open, create=True), \
+             unittest.mock.patch.object(os, "linesep", "\r\n"):
+            config.save(tmp)
+            clone = CalibrantConfig.from_dspacing(tmp)
+        with open(tmp, "rb") as fd:
+            self.assertNotIn(b"\r\r\n", fd.read())
+        self.assertEqual(clone.cell, config.cell)
+        self.assertEqual(clone.reference, config.reference)
+        self.assertIsNotNone(clone.to_cell())
+
+
 class TestLatticeCentring(unittest.TestCase):
     """Selection rules of the centred Bravais lattices, see issue #2794"""
 
