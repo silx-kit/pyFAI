@@ -45,7 +45,7 @@ other methods like MLEM.
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "07/11/2025"
+__date__ = "06/10/2026"
 __copyright__ = "2011-2022, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -92,8 +92,8 @@ cdef class Raytracing:
             raise RuntimeError("Expected a geometry with parallax enabled")
         detector = geom.detector
         shape = detector.shape
-        self.vox = float(detector.pixel2)
-        self.voy = float(detector.pixel2)
+        self.vox = float(detector.pixel2)  # fast dimension, along x
+        self.voy = float(detector.pixel1)  # slow dimension, along y
         self.voz = float(detector.sensor.thickness)
         self.mu = float(geom.parallax.sensor.mu)
         self.dist = float(geom.dist)
@@ -261,27 +261,28 @@ cdef class Raytracing:
         "return the number of elements in tmp_idx/tmp_coef which are to be used"
 
         cdef:
-            int i, j, tmp_size, last_buffer_size, n, x, y, idx
+            int i, j, k, m, tmp_size, n, x, y, idx
             float64_t rem, l, posx, posy, value, dos
 
         if self.mask[row, col]:
             return 0
 
         tmp_size = 0
-        last_buffer_size = tmp_idx.shape[0]
         tmp_idx[:] = -1
         tmp_coef[:] = 0.0
 
         for i in range(self.oversampling):
-            posx = (col+1.0*i/self.oversampling)*self.vox
+            # the sub-rays sample the pixel at the center of each sub-cell, so that
+            # their barycenter is the center of the pixel whatever the oversampling.
+            posx = (col+(i+0.5)/self.oversampling)*self.vox
             for j in range(self.oversampling):
-                posy = (row+1.0*j/self.oversampling)*self.voy
+                posy = (row+(j+0.5)/self.oversampling)*self.voy
                 n = self._calc_one_ray(posx, posy, array_x, array_y, array_len)
                 rem = 1.0
-                for i in range(min(n, self.buffer_size)):
-                    x = array_x[i]
-                    y = array_y[i]
-                    l = array_len[i]
+                for k in range(min(n, self.buffer_size)):
+                    x = array_x[k]
+                    y = array_y[k]
+                    l = array_len[k]
                     if (x<0) or (y<0) or (y>=self.height) or (x>=self.width):
                         break
                     elif (self.mask[y, x]):
@@ -290,13 +291,13 @@ cdef class Raytracing:
                     dos = exp(-self.mu*l)
                     value = rem - dos
                     rem = dos
-                    for j in range(self.buffer_size):
-                        if tmp_idx[j] == idx:
-                            tmp_coef[j] = tmp_coef[j] + value
+                    for m in range(self.buffer_size):
+                        if tmp_idx[m] == idx:
+                            tmp_coef[m] = tmp_coef[m] + value
                             break
-                        elif tmp_idx[j] < 0:
-                            tmp_idx[j] = idx
-                            tmp_coef[j] = value
+                        elif tmp_idx[m] < 0:
+                            tmp_idx[m] = idx
+                            tmp_coef[m] = value
                             tmp_size = tmp_size + 1
                             break
                     if tmp_size >= self.buffer_size:
@@ -307,7 +308,9 @@ cdef class Raytracing:
         """Calculate the content of the sparse matrix for the whole image in CSR format.
         The blurring matrix is actually the transposed array.
 
-        :param sample: Oversampling factor, actually if you request 2 it will trace 2x2 rays
+        :param sample: Oversampling factor, actually if you request 2 it will trace 2x2 rays.
+                       0 (the default) keeps the oversampling currently set, i.e. 1 ray
+                       per pixel unless a former call changed it.
         :param threads: number of threads to be used, 0 for max_threads
         :return: 3-tuple of arrays to build a CSR sparse matrix (in scipy)
         """
@@ -324,7 +327,6 @@ cdef class Raytracing:
 
         if sample:
             self.oversampling = sample
-        self.oversampling = sample
         data = numpy.zeros((self.size, self.buffer_size), dtype=numpy.float32)
         indices = numpy.zeros((self.size, self.buffer_size),dtype=numpy.int32)
         sizes = numpy.zeros(self.size, dtype=numpy.int32)
