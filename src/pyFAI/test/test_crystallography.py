@@ -513,6 +513,15 @@ class TestMieGruneisenDebye(unittest.TestCase):
                                    0.9: (38.120, 39.474, 42.909, 46.383, 49.882, 53.404),
                                    0.8: (107.766, 109.110, 112.598, 116.195, 119.876, 123.638),
                                    0.7: (236.477, 237.897, 241.675, 245.616, 249.679, 253.855)}
+    # tables 10 (NaCl-B1, at V/V0) and 11 (NaCl-B2, at the molar volume in cm^3), up to 2000 K
+    ISOCHORS_NACL_B1: ClassVar[dict] = {1.0: (0.000, 0.573, 1.962, 3.281, 4.524),
+                                        0.9: (3.271, 3.839, 5.250, 6.630, 7.972),
+                                        0.8: (9.233, 9.812, 11.282, 12.746, 14.193),
+                                        0.7: (20.226, 20.838, 22.416, 24.007, 25.593)}
+    ISOCHORS_NACL_B2: ClassVar[dict] = {17: (26.763, 27.462, 29.270, 31.093, 32.913),
+                                        15: (47.862, 48.625, 50.638, 52.683, 54.733),
+                                        13: (84.903, 85.747, 88.030, 90.372, 92.727),
+                                        11: (153.225, 154.161, 156.801, 159.546, 162.317)}
 
     def setUp(self):
         # table 1 of Dorogokupets & Dewaele (2007), V0 from Dewaele et al. (2004)
@@ -523,6 +532,15 @@ class TestMieGruneisenDebye(unittest.TestCase):
                                     theta0=220, gamma0=2.82, gamma_inf=1.83, beta=8.11,
                                     a=-166.9e-6, m=4.32, e=260.0e-6, g=2.4,
                                     natoms=4, v0=4 * 15.095)
+        # molar volumes of table 1, Z=4 formula units (8 atoms) for B1, Z=1 (2 atoms) for B2
+        self.nacl_b1 = MieGruneisenDebye(Vinet(k0=23.83, k0p=5.09),
+                                         theta0=270, gamma0=1.64, gamma_inf=1.12, beta=4.36,
+                                         a=-24.0e-6, m=7.02,
+                                         natoms=8, v0=4 * 27.015e24 / scipy.constants.Avogadro)
+        self.nacl_b2 = MieGruneisenDebye(Vinet(k0=29.72, k0p=5.14),
+                                         theta0=270, gamma0=1.64, gamma_inf=1.23, beta=6.83,
+                                         a=-24.0e-6, m=7.02,
+                                         natoms=2, v0=24.53e24 / scipy.constants.Avogadro)
 
     def check_isochors(self, eos, isochors):
         for ratio, pressures in isochors.items():
@@ -539,6 +557,12 @@ class TestMieGruneisenDebye(unittest.TestCase):
     def test_isochors_pt(self):
         "Expanded model, with anharmonic and electronic contributions: platinum"
         self.check_isochors(self.pt, self.ISOCHORS_PT)
+
+    def test_isochors_nacl(self):
+        "Expanded model with anharmonicity only, two atoms per formula unit: NaCl-B1 and NaCl-B2"
+        self.check_isochors(self.nacl_b1, self.ISOCHORS_NACL_B1)
+        # table 11 is given at the molar volume, V0 = 24.53 cm^3/mol
+        self.check_isochors(self.nacl_b2, {vm / 24.53: pressures for vm, pressures in self.ISOCHORS_NACL_B2.items()})
 
     def test_reference_conditions(self):
         self.assertAlmostEqual(self.au.volume_ratio(), 1.0, places=12)

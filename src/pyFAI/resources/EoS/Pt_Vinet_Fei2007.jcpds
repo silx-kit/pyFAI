@@ -2,7 +2,8 @@ VERSION:   4
 COMMENT: Platinum (Pt), Fm-3m - Fei et al. (2007) PNAS 104, 9182-9186, doi:10.1073/pnas.0609013104, table 1
 COMMENT: Vinet fit at 300 K, see Pt_BM3_Fei2007.jcpds for the 3rd order Birch-Murnaghan fit
 COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
-COMMENT: Thermal model of the source is Mie-Gruneisen-Debye, not representable in JCPDS: theta0=230 K, gamma0=2.72, q0=0.5
+COMMENT: Thermal model of the source: Mie-Gruneisen-Debye, theta0=230 K, gamma0=2.72, q=0.5
+COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on this model at 0 GPa between 298 and 1000 K: temperature within 0.3 K at 0 GPa, pressure within 0.2 GPa down to V/V0=0.8 up to 1000 K
 COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
 K0:        277.000
 K0P:       5.080
@@ -10,6 +11,10 @@ EOS:       VINET
 SYMMETRY:  CUBIC
 A:         3.92311
 VOLUME:    60.3800
+DK0DT:     -3.4457e-02
+DK0PDT:    1.7400e-04
+ALPHAT:    2.6378e-05
+DALPHADT:  2.4592e-09
 DIHKL:       2.2650   100.0   1   1   1
 DIHKL:       1.9616    49.1   2   0   0
 DIHKL:       1.3870    32.5   2   2   0
