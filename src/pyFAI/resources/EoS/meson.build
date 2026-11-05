@@ -13,6 +13,7 @@ py.install_sources(
     'Ne_BM3_Fei2007.jcpds',
     'Cu_Vinet_Dewaele2004.jcpds',
     'Fe-hcp_BM3_Miozzi2020.jcpds',
+    'Fe-hcp_Vinet_Dewaele2006.jcpds',
     'Fe-hcp_Vinet_Miozzi2020.jcpds',
     'Kr-fcc_BM3_Rosa2018.jcpds',
     'Ne_Vinet_Fei2007.jcpds',
