@@ -1,0 +1,23 @@
+VERSION:   4
+COMMENT: Krypton (Kr), fcc, Fm-3m - Rosa et al. (2018) Phys. Rev. B 97, 094115, doi:10.1103/PhysRevB.97.094115, table II
+COMMENT: 3rd order Birch-Murnaghan fit at room temperature between 1 and 140 GPa: V0=219.25(1) A3, K0=1.55(4) GPa, K0P=7.10(5)
+COMMENT: Pressure from the ruby and Ni scales of Dewaele et al. (2008) Phys. Rev. B 78, 104102
+COMMENT: V0 is an extrapolation: krypton is a fluid at ambient pressure and room temperature, fcc and hcp coexist from 2.7 GPa up to 140 GPa at least
+COMMENT: Anomaly of compression when the hcp fraction reaches 20% (about 20 GPa), table III: V0=220.10(1) A3, K0=1.04(3) GPa, K0P=9.9(1) between 1.4 and 13 GPa; V0=220.61(1) A3, K0=2.05(3) GPa, K0P=6.06(5) between 35 and 103 GPa
+COMMENT: No thermal model in the source
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factor of Rh used for Kr, no thermal factor)
+K0:        1.550
+K0P:       7.100
+SYMMETRY:  CUBIC
+A:         6.02994
+VOLUME:    219.2500
+DIHKL:       3.4814   100.0   1   1   1
+DIHKL:       3.0150    51.4   2   0   0
+DIHKL:       2.1319    37.6   2   2   0
+DIHKL:       1.8181    45.1   3   1   1
+DIHKL:       1.7407    13.0   2   2   2
+DIHKL:       1.5075     5.9   4   0   0
+DIHKL:       1.3834    17.6   3   3   1
+DIHKL:       1.3483    16.1   4   2   0
+DIHKL:       1.2309    11.9   4   2   2
+DIHKL:       1.1605    10.0   5   1   1

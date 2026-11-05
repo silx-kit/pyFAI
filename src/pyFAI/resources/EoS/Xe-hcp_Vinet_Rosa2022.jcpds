@@ -1,0 +1,30 @@
+VERSION:   4
+COMMENT: Xenon (Xe), hcp, P6_3/mmc - Rosa et al. (2022) Phys. Rev. B 105, 144103, doi:10.1103/PhysRevB.105.144103, table III
+COMMENT: Vinet fit at room temperature between 4 and 86 GPa (65 points): V0=118.71 A3, K0=4.24(4) GPa, K0P=6.35(3)
+COMMENT: Pressure from the ruby (up to 60 GPa) and Au scales of Dewaele et al. (2008) Phys. Rev. B 78, 104102
+COMMENT: V0 is an extrapolation: xenon is a fluid at ambient pressure and room temperature, fcc and hcp coexist above 5 GPa
+COMMENT: c/a=1.631(2), constant over the pressure range of the study, a and c from V0
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: No thermal model in the source
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factor of Rh used for Xe, no thermal factor)
+K0:        4.240
+K0P:       6.350
+EOS:       VINET
+SYMMETRY:  HEXAGONAL
+A:         4.38027
+C:         7.14422
+VOLUME:    118.7100
+DIHKL:       3.7934    22.9   1   0   0
+DIHKL:       3.5721    26.2   0   0   2
+DIHKL:       3.3504   100.0   1   0   1
+DIHKL:       2.6006    16.7   1   0   2
+DIHKL:       2.1901    20.1   1   1   0
+DIHKL:       2.0169    23.3   1   0   3
+DIHKL:       1.8967     3.2   2   0   0
+DIHKL:       1.8671    24.1   1   1   2
+DIHKL:       1.8332    17.0   2   0   1
+DIHKL:       1.7861     3.5   0   0   4
+DIHKL:       1.6752     4.2   2   0   2
+DIHKL:       1.6159     3.7   1   0   4
+DIHKL:       1.4836     8.3   2   0   3
+DIHKL:       1.4338     2.4   2   1   0
